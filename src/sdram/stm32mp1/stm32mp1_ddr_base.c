@@ -1703,20 +1703,20 @@ struct ddr_info {
 //	uint32_t mr3;
 //};
 
-struct stm32mp1_ddrphy_cal {
-	uint32_t dx0dllcr;
-	uint32_t dx0dqtr;
-	uint32_t dx0dqstr;
-	uint32_t dx1dllcr;
-	uint32_t dx1dqtr;
-	uint32_t dx1dqstr;
-	uint32_t dx2dllcr;
-	uint32_t dx2dqtr;
-	uint32_t dx2dqstr;
-	uint32_t dx3dllcr;
-	uint32_t dx3dqtr;
-	uint32_t dx3dqstr;
-};
+//struct stm32mp1_ddrphy_cal {
+//	uint32_t dx0dllcr;
+//	uint32_t dx0dqtr;
+//	uint32_t dx0dqstr;
+//	uint32_t dx1dllcr;
+//	uint32_t dx1dqtr;
+//	uint32_t dx1dqstr;
+//	uint32_t dx2dllcr;
+//	uint32_t dx2dqtr;
+//	uint32_t dx2dqstr;
+//	uint32_t dx3dllcr;
+//	uint32_t dx3dqtr;
+//	uint32_t dx3dqstr;
+//};
 
 struct stm32mp1_ddr_info {
 	const char *name;
@@ -1732,7 +1732,7 @@ struct stm32mp1_ddr_config_local {
 	struct stm32mp1_ddrctrl_perf c_perf;
 	struct stm32mp1_ddrphy_reg p_reg;
 	struct stm32mp1_ddrphy_timing p_timing;
-	struct stm32mp1_ddrphy_cal p_cal;
+	//struct stm32mp1_ddrphy_cal p_cal;
 };
 
 void ddr_enable_clock_local(void)
@@ -1910,21 +1910,21 @@ static const struct reg_desc ddrphy_timing[] = {
 	DDRPHY_REG_TIMING(mr3),
 };
 
-#define DDRPHY_REG_CAL(x)	DDRPHY_REG(x, stm32mp1_ddrphy_cal)
-static const struct reg_desc ddrphy_cal[] = {
-	DDRPHY_REG_CAL(dx0dllcr),
-	DDRPHY_REG_CAL(dx0dqtr),
-	DDRPHY_REG_CAL(dx0dqstr),
-	DDRPHY_REG_CAL(dx1dllcr),
-	DDRPHY_REG_CAL(dx1dqtr),
-	DDRPHY_REG_CAL(dx1dqstr),
-	DDRPHY_REG_CAL(dx2dllcr),
-	DDRPHY_REG_CAL(dx2dqtr),
-	DDRPHY_REG_CAL(dx2dqstr),
-	DDRPHY_REG_CAL(dx3dllcr),
-	DDRPHY_REG_CAL(dx3dqtr),
-	DDRPHY_REG_CAL(dx3dqstr),
-};
+//#define DDRPHY_REG_CAL(x)	DDRPHY_REG(x, stm32mp1_ddrphy_cal)
+//static const struct reg_desc ddrphy_cal[] = {
+//	DDRPHY_REG_CAL(dx0dllcr),
+//	DDRPHY_REG_CAL(dx0dqtr),
+//	DDRPHY_REG_CAL(dx0dqstr),
+//	DDRPHY_REG_CAL(dx1dllcr),
+//	DDRPHY_REG_CAL(dx1dqtr),
+//	DDRPHY_REG_CAL(dx1dqstr),
+//	DDRPHY_REG_CAL(dx2dllcr),
+//	DDRPHY_REG_CAL(dx2dqtr),
+//	DDRPHY_REG_CAL(dx2dqstr),
+//	DDRPHY_REG_CAL(dx3dllcr),
+//	DDRPHY_REG_CAL(dx3dqtr),
+//	DDRPHY_REG_CAL(dx3dqstr),
+//};
 
 #define DDR_REG_DYN(x)						\
 	{							\
@@ -1963,7 +1963,7 @@ enum reg_type {
 	rREG_MAP,
 	rREGPHY_REG,
 	rREGPHY_TIMING,
-	rREGPHY_CAL,
+	//rREGPHY_CAL,
 /*
  * Dynamic registers => managed in driver or not changed,
  * can be dumped in interactive mode.
@@ -2023,12 +2023,12 @@ static const struct ddr_reg_info ddr_registers[rREG_TYPE_NB] = {
 		.size = ARRAY_SIZE(ddrphy_timing),
 		.base = bDDRPHY_BASE
 	},
-	[rREGPHY_CAL] = {
-		.name = "cal",
-		.desc = ddrphy_cal,
-		.size = ARRAY_SIZE(ddrphy_cal),
-		.base = bDDRPHY_BASE
-	},
+//	[rREGPHY_CAL] = {
+//		.name = "cal",
+//		.desc = ddrphy_cal,
+//		.size = ARRAY_SIZE(ddrphy_cal),
+//		.base = bDDRPHY_BASE
+//	},
 	[rREG_DYN] = {
 		.name = "dyn",
 		.desc = ddr_dyn,
@@ -2717,7 +2717,7 @@ static void stm32mp1_ddr_init_priv(struct ddr_info *priv,
 	 */
 	set_reg(priv, rREGPHY_REG, &config->p_reg);
 	set_reg(priv, rREGPHY_TIMING, &config->p_timing);
-	set_reg(priv, rREGPHY_CAL, &config->p_cal);
+	//set_reg(priv, rREGPHY_CAL, &config->p_cal);
 
 	/* DDR3 = don't set DLLOFF for init mode */
 	if ((config->c_reg.mstr &
@@ -2931,21 +2931,21 @@ static void stm32mp1_ddr_get_config_local(struct stm32mp1_ddr_config_local * cfg
 
 	cfg->p_reg.zq0cr1 = 	 DDR_ZQ0CR1;
 	cfg->p_reg.dx0gcr = 	 DDR_DX0GCR;
-	cfg->p_cal.dx0dllcr =  DDR_DX0DLLCR;
-	cfg->p_cal.dx0dqtr = 	 DDR_DX0DQTR;
-	cfg->p_cal.dx0dqstr =  DDR_DX0DQSTR;
+	//cfg->p_cal.dx0dllcr =  DDR_DX0DLLCR;
+	//cfg->p_cal.dx0dqtr = 	 DDR_DX0DQTR;
+	//cfg->p_cal.dx0dqstr =  DDR_DX0DQSTR;
 	cfg->p_reg.dx1gcr = 	 DDR_DX1GCR;
-	cfg->p_cal.dx1dllcr =  DDR_DX1DLLCR;
-	cfg->p_cal.dx1dqtr = 	 DDR_DX1DQTR;
-	cfg->p_cal.dx1dqstr =  	DDR_DX1DQSTR;
+	//cfg->p_cal.dx1dllcr =  DDR_DX1DLLCR;
+	//cfg->p_cal.dx1dqtr = 	 DDR_DX1DQTR;
+	//cfg->p_cal.dx1dqstr =  	DDR_DX1DQSTR;
 	cfg->p_reg.dx2gcr = 	DDR_DX2GCR;
-	cfg->p_cal.dx2dllcr =  	DDR_DX2DLLCR;
-	cfg->p_cal.dx2dqtr = 	DDR_DX2DQTR;
-	cfg->p_cal.dx2dqstr =  	DDR_DX2DQSTR;
+	//cfg->p_cal.dx2dllcr =  	DDR_DX2DLLCR;
+	//cfg->p_cal.dx2dqtr = 	DDR_DX2DQTR;
+	//cfg->p_cal.dx2dqstr =  	DDR_DX2DQSTR;
 	cfg->p_reg.dx3gcr = 	DDR_DX3GCR;
-	cfg->p_cal.dx3dllcr =  	DDR_DX3DLLCR;
-	cfg->p_cal.dx3dqtr = 	DDR_DX3DQTR;
-	cfg->p_cal.dx3dqstr =  	DDR_DX3DQSTR;
+	//cfg->p_cal.dx3dllcr =  	DDR_DX3DLLCR;
+	//cfg->p_cal.dx3dqtr = 	DDR_DX3DQTR;
+	//cfg->p_cal.dx3dqstr =  	DDR_DX3DQSTR;
 }
 
 #define DDR_PATTERN	0xAAAAAAAAU

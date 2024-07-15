@@ -1,0 +1,5 @@
+MANIFEST_VERSION = openstlinux-6.1-yocto-mickledore-mp1-v23.06.21
+KERNEL_DT = ./DeviceTree/stm32157aac_lpddr3_x2/kernel
+OPTEE_DT = ./DeviceTree/stm32157aac_lpddr3_x2/optee-os
+UBOOT_DT = ./DeviceTree/stm32157aac_lpddr3_x2/u-boot
+TFA_DT = ./DeviceTree/stm32157aac_lpddr3_x2/tf-a

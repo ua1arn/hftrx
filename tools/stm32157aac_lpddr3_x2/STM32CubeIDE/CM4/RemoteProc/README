@@ -1,0 +1,26 @@
+
+This is a new Cortex-M project created from STM32CubeIDE.
+Its purpose is only to give the framework.
+It does not use any resources, only starting the co-processor:
+
+
+int main() {
+	int i=0;
+
+	for(i=0;i<100;i++);
+
+	while(1);
+}
+
+
+
+To load it run :
+./fw_cortex_m4.sh start
+
+
+To stop it :
+./fw_cortex_m4.sh stop
+
+
+It can be enriched and debugged from the IDE ;-)
+Have fun!
