@@ -7313,7 +7313,7 @@ static void single_rate_out_write_mcv(const FLOAT_t * kf, int coef_length, int c
 		else
 		{
 			//PRINTF(PSTR("send from wrk_coef[], n=%u, @0=%08lX\n"), (num_mac + mcv_reload_zero_insert) * num_cycles, wrk_coef [0]);
-			for (i = 0; i< (num_mac + mcv_reload_zero_insert) * num_cycles; ++i)
+			for (i = 0; i < (num_mac + mcv_reload_zero_insert) * num_cycles; ++i)
 			{
 				//coef[i] = wrk_coef[i] ;
 				board_fpga_fir_coef_p2(wrk_coef [i]);

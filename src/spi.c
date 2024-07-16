@@ -7357,7 +7357,9 @@ static uint_fast8_t board_fpga_get_INIT_DONE(void)
 #endif
 }
 
+#ifndef FPGALOADER_SPISPEED
 #define FPGALOADER_SPISPEED SPIC_SPEEDFAST
+#endif
 #define FPGALOADER_SPIMODE SPIC_MODE0
 
 void board_fpga_loader_initialize(void)
