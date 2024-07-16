@@ -3644,13 +3644,13 @@ union states
 
 #if (CPUSTYLE_R7S721 || 0)
 
-static uint16_t rbfimage0 [] =
+static uint8_t rbfimage0 [] =
 {
 #include BOARD_BITIMAGE_NAME
 };
 
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
-const uint16_t * getrbfimage(size_t * count)
+const uint8_t * getrbfimage(size_t * count)
 {
 	ASSERT(sizeof rbfimage0 >= sizeof (union states));
 

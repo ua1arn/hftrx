@@ -5484,31 +5484,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -1392 -64 -1344 -32)
-	(text "NOT" (rect 1 0 21 10)(font "Arial" (font_size 6)))
-	(text "inst2" (rect 3 21 26 33)(font "Arial" ))
-	(port
-		(pt 0 16)
-		(input)
-		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
-		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
-		(line (pt 0 16)(pt 13 16))
-	)
-	(port
-		(pt 48 16)
-		(output)
-		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
-		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
-		(line (pt 39 16)(pt 48 16))
-	)
-	(drawing
-		(line (pt 13 25)(pt 13 7))
-		(line (pt 13 7)(pt 31 16))
-		(line (pt 13 25)(pt 31 16))
-		(circle (rect 31 12 39 20))
-	)
-)
-(symbol
 	(rect -1416 0 -1384 16)
 	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
 	(text "inst85" (rect 3 5 32 17)(font "Arial" )(invisible))
@@ -8641,32 +8616,6 @@ applicable agreement for further details.
 	(pt -1752 112)
 )
 (connector
-	(pt -1344 -48)
-	(pt -1248 -48)
-	(bus)
-)
-(connector
-	(pt -1392 -48)
-	(pt -1408 -48)
-	(bus)
-)
-(connector
-	(pt -1408 -48)
-	(pt -1408 -80)
-	(bus)
-)
-(connector
-	(pt -1248 -80)
-	(pt -1408 -80)
-	(bus)
-)
-(connector
-	(text "w32[31..0],w32[31..0]" (rect -1440 -96 -1335 -84)(font "Arial" ))
-	(pt -1408 -80)
-	(pt -1440 -80)
-	(bus)
-)
-(connector
 	(pt -1400 16)
 	(pt -1248 16)
 	(bus)
@@ -8875,7 +8824,6 @@ applicable agreement for further details.
 (junction (pt -2600 320))
 (junction (pt -2208 320))
 (junction (pt -4856 -984))
-(junction (pt -1408 -80))
 (text "Previous" (rect -2280 1000 -2231 1014)(font "Arial" (font_size 8)))
 (text "Current" (rect -2280 1096 -2238 1110)(font "Arial" (font_size 8)))
 (text "Previous" (rect -1904 -112 -1855 -98)(font "Arial" (font_size 8)))

@@ -1015,6 +1015,10 @@ void prog_select_impl(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	)
 {
+#ifdef targetnone
+	if (target == targetnone)
+		return;
+#endif
 	spi_to_write(target);	// shifted address
 #if UC1608_CSP
 	if (target == SPI_CSEL255)
@@ -1031,6 +1035,10 @@ void prog_unselect_impl(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	)
 {
+#ifdef targetnone
+	if (target == targetnone)
+		return;
+#endif
 #if UC1608_CSP
 	spi_unselect255();
 #endif /* UC1608_CSP */
@@ -7564,13 +7572,13 @@ restart:
 #if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
 
 /* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
-static ALIGNX_BEGIN const uint16_t rbfimage0 [] ALIGNX_END =
+static ALIGNX_BEGIN const uint8_t rbfimage0 [] ALIGNX_END =
 {
 #include BOARD_BITIMAGE_NAME
 };
 
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
-const uint16_t * getrbfimage(size_t * count)
+const uint8_t * getrbfimage(size_t * count)
 {
 	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
 	return & rbfimage0 [0];
@@ -7578,56 +7586,15 @@ const uint16_t * getrbfimage(size_t * count)
 
 #endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
 
-
-#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
-
-void fpga_send16_p1(uint_fast16_t v16)
-{
-#if WITHSPIEXT16// for skip in test configurations
-	hardware_spi_b16_p1(v16);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	// Software SPI
-	spi_progval8_p1(targetnone, v16 >> 8);
-	spi_progval8_p2(targetnone, v16 >> 0);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-
-}
-
-void fpga_send16_p2(uint_fast16_t v16)
-{
-#if WITHSPIEXT16// for skip in test configurations
-	hardware_spi_b16_p2(v16);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	// Software SPI
-	spi_progval8_p2(targetnone, v16 >> 8);
-	spi_progval8_p2(targetnone, v16 >> 0);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-
-}
-
 /* FPGA загружается процессором с помощью SPI */
 void board_fpga_loader_PS(void)
 {
 	unsigned retries = 0;
-
-#if WITHSPIEXT16	// for skip in test configurations
-	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	// Software SPI
-	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-
 restart:
 
 	if (++ retries > 4)
 	{
 		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
-
-#if WITHSPIEXT16	// for skip in test configurations
-		hardware_spi_disconnect();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-		spi_unselect(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
 		return;
 	}
 	;
@@ -7635,8 +7602,8 @@ restart:
 	unsigned long w = 1000;
 	do {
 		size_t rbflength;
-		const uint16_t * p = getrbfimage(& rbflength);
-		unsigned score = 0;
+		const uint8_t * const rbfbase = getrbfimage(& rbflength);
+		//unsigned score = 0;
 
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
@@ -7684,64 +7651,21 @@ restart:
 		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
 		{
-			unsigned wcd = 0;
-			size_t n = rbflength - 1;
-			//
-
-#if WITHSPIEXT16// for skip in test configurations
-			hardware_spi_b16_p1(* p ++);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-			// Software SPI
-			const uint_fast16_t v16 = * p ++;
-			spi_progval8_p1(targetnone, v16 >> 8);
-			spi_progval8_p2(targetnone, v16 >> 0);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-			++ score;
-			while (n --)
-			{
-				if (board_fpga_get_CONF_DONE() != 0)
-				{
-					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u\n", score);
-		#if WITHSPIEXT16	// for skip in test configurations
-					hardware_spi_complete_b16();
-		#else /* WITHSPIEXT16 */	// for skip in test configurations
-					spi_complete(targetnone);
-		#endif /* WITHSPIEXT16 */	// for skip in test configurations
-					goto restart;
-				}
-#if WITHSPIEXT16	// for skip in test configurations
-				hardware_spi_b16_p2(* p ++);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-				const uint_fast16_t v16_2 = * p ++;
-				spi_progval8_p2(targetnone, v16_2 >> 8);
-				spi_progval8_p2(targetnone, v16_2 >> 0);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-				++ score;
-			}
-#if WITHSPIEXT16	// for skip in test configurations
-			hardware_spi_complete_b16();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-			spi_complete(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
+			prog_spi_io(targetnone, SPIC_SPEEDFAST, SPIC_MODE0, rbfbase, rbflength, NULL, 0, NULL, 0);
+			//size_t n = rbflength - 1;
 
 			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
-			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
+			unsigned wcd = 0;
+			while (wcd < 10000 && board_fpga_get_CONF_DONE() == 0)
 			{
+				static const uint8_t fill [16];
 				++ wcd;
-#if WITHSPIEXT16	// for skip in test configurations
-				hardware_spi_b16_p1(0xffff);
-				hardware_spi_complete_b16();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-				const uint_fast16_t v16_3 = 0xFFFF;
-				spi_progval8_p1(targetnone, v16_3 >> 8);
-				spi_progval8_p2(targetnone, v16_3 >> 0);
-				spi_complete(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
+				prog_spi_io(targetnone, SPIC_SPEEDFAST, SPIC_MODE0, fill, ARRAY_SIZE(fill), NULL, 0, NULL, 0);
 			}
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
-			if (wcd >= rbflength)
+			if (board_fpga_get_CONF_DONE() == 0)
 				goto restart;
 			/*
 			After the configuration data is accepted and CONF_DONE goes
@@ -7758,12 +7682,6 @@ restart:
 		if (-- w == 0)
 			goto restart;
 	}
-
-#if WITHSPIEXT16	// for skip in test configurations
-	hardware_spi_disconnect();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	spi_unselect(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
 }
 

@@ -28,7 +28,6 @@ int main(int argc, char* argv[])
 	{
 		enum { ROWSOZE = 8 };
 		int pos = 0;
-		unsigned int words = 0;
 		unsigned int bytes = 0;
 		FILE * fpo = fopen(argv [2], "wt");
 
@@ -42,32 +41,25 @@ int main(int argc, char* argv[])
 		//fprintf(fpo, "{\n");
 		for (;;)
 		{
-			int c1, c2;
+			int c1;
 			unsigned pv;
 
 			c1 = fgetc(fpi);
 			if (c1 == EOF)
 				break;
 			++ bytes;
-			c2 = fgetc(fpi);
-			if (c2 == EOF)
-				pv = revbits8((unsigned char) c1) * 256 | 0xff;
-			else
-			{
-				++ bytes;
-				pv = revbits8((unsigned char) c1) * 256 | revbits8((unsigned char) c2);
-			}
+			pv = revbits8((unsigned char) c1);
 			fprintf(fpo, " 0x%04X,%s", pv, ((pos + 1) >= ROWSOZE) ? "\n" : "");
 			pos = (pos + 1) % ROWSOZE;
-			++ words;
+			++ bytes;
 		}
 		if (pos != 0)
 			fprintf(fpo, "\n");
 		//fprintf(fpo, "};\n");
-		fprintf(fpo, "/* %u bytes converted to %u words. */\n", bytes, words);
+		fprintf(fpo, "/* %u bytes converted. */\n", bytes);
 		fclose(fpo);
-		//fprintf(stdout, "static const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0]; /* %u 16-bit words (0x%08lx)*/\n", words, words);
-		fprintf(stderr, "file '%s', %u bytes converted to %u words.\n", argv [1], bytes, words);
+		//fprintf(stdout, "static const size_t rbflength = sizeof rbfimage / sizeof rbfimage [0]; /* %u 16-bit bytes (0x%08lx)*/\n", bytes, bytes);
+		fprintf(stderr, "file '%s', %u bytes converted.\n", argv [1], bytes);
 	}
 	return 0;
 }
