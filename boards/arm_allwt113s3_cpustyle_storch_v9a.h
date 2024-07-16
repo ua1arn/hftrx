@@ -521,6 +521,7 @@
 	#define targetdataflash 0xFF
 	#define targetnone 0x00
 	#define FPGALOADER_SPISPEED SPIC_SPEEDUFAST
+	#define SPIDF_SPEEDC SPIC_SPEEDUFAST
 
 	#define targetext1		(UINT32_C(1) << 0)		// PG0 ext1 on front panel CSEXT1
 	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B

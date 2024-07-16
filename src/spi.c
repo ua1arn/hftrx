@@ -4302,7 +4302,9 @@ void nand_tests(void)
 
 #if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
 
+#ifndef SPIDF_SPEEDC
 #define SPIDF_SPEEDC SPIC_SPEEDFAST
+#endif
 
 static IRQLSPINLOCK_t spidflock;	// протокольная блокировка (несколько физических обменов)
 
@@ -4603,6 +4605,7 @@ void spidf_initialize(void)
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 }
 
 static void spidf_unselect(IRQL_t irql)
