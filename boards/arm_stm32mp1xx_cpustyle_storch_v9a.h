@@ -282,8 +282,8 @@
 	#define ENCODER2_BITA		(1u << 15)		// PG15
 	#define ENCODER2_BITB		(1u << 14)		// PG14
 
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define EENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
+	#define EENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
 	#define BOARD_GPIOG_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
@@ -292,18 +292,24 @@
 	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
+	#define ENCODER2_NOSPOOL 1
 	#define ENCODER_INITIALIZE() \
 		do { \
 			static einthandler_t h1; \
 			static einthandler_t h2; \
-			arm_hardware_piog_inputs(ENCODER_BITS); \
-			arm_hardware_piog_updown(ENCODER_BITS, ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
-			arm_hardware_piog_inputs(ENCODER2_BITS); \
-			arm_hardware_piog_updown(ENCODER2_BITS, ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, 0*ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_piog_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+			static ticker_t th2; \
+			/* main encoder */ \
+			arm_hardware_piog_inputs(EENCODER_BITS); \
+			arm_hardware_piog_updown(EENCODER_BITS, EENCODER_BITS, 0); \
+			einthandler_initialize(& h1, EENCODER_BITS, spool_encinterrupts, & encoder1); \
+			arm_hardware_piog_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
+			/* func encoder */ \
+			arm_hardware_piog_inputs(EENCODER2_BITS); \
+			arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
+			einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
+			arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+			/* ticker for spool */ \
+			ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
 		} while (0)
 
 #endif

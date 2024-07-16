@@ -527,7 +527,7 @@ void encoders_initialize(void)
 	ticker_initialize(& encticker, 1, encspeed_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker);
 #endif /* WITHENCODER */
-#if WITHENCODER2 && ! WITHENCODER3 && ! WITHENCODER4	// хак чтобы на velociraptor не вызывалось по таймеру
+#if ! ENCODER2_NOSPOOL && WITHENCODER2	// хак чтобы на velociraptor не вызывалось по таймеру
 	// второй енкодер всегда по опросу
 	ticker_initialize(& encticker2, 1, spool_encinterrupt2_local, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker2);

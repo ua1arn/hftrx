@@ -267,6 +267,7 @@
 	#define ENCODER2_BITS_GET() 	((TARGET_ENCODER2_PORT & TARGET_ENCODER2_BITS) >> TARGET_ENCODER2_B_POS)
 	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * 2 + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0))
 
+	#define ENCODER2_NOSPOOL 1
 	#define ENCODER_INITIALIZE() do { \
 		static einthandler_t eh1; \
 		static einthandler_t eh2; \

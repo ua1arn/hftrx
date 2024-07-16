@@ -16,6 +16,7 @@
 #define GPIOIRQL IRQL_SYSTEM
 
 static VLIST_ENTRY einthead [26];	// a..z lists
+#define EIHEAD_STM32 0
 
 void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler, void * ctx)
 {
@@ -1664,6 +1665,10 @@ void gpioX_setstate(
 		if ((ipins & EXTI_IMR1_IM15) != 0)
 			arm_hardware_set_handler(EXTI15_IRQn, EXTI15_IRQHandler, priority, targetcpu);
 
+		// Add interrupt handler to chain
+		h->mask = ipins;
+		InsertHeadVList(& einthead [EIHEAD_STM32], & h->item);
+
 	}
 
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
@@ -1789,6 +1794,9 @@ void gpioX_setstate(
 				arm_hardware_set_handler(EXTI9_5_IRQn, EXTI9_5_IRQHandler, priority, targetcpu);
 			if ((ipins & (EXTI_IMR1_IM15 | EXTI_IMR1_IM14 | EXTI_IMR1_IM13 | EXTI_IMR1_IM12 | EXTI_IMR1_IM11 | EXTI_IMR1_IM10)) != 0)
 				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
+	        // Add interrupt handler to chain
+	        h->mask = ipins;
+	        InsertHeadVList(& einthead [EIHEAD_STM32], & h->item);
 		}
 
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
@@ -10275,6 +10283,8 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		spool_nmeapps(NULL);	/* прерывание по изменению сигнала на входе от PPS */
 	}
 #endif /* WITHLFM && BOARD_PPSIN_BIT */
+
+	gpioX_invokeinterrupt(& einthead [EIHEAD_STM32], pr);
 }
 
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */

@@ -301,6 +301,7 @@
 	#define ENCODER5_BITS_GET() (((ENCODER5_INPUT_PORT & ENCODER5_BITA) != 0) * 2 + ((ENCODER5_INPUT_PORT & ENCODER5_BITB) != 0))	// ENC3F
 	#define ENCODER6_BITS_GET() (((ENCODER6_INPUT_PORT & ENCODER6_BITA) != 0) * 2 + ((ENCODER6_INPUT_PORT & ENCODER6_BITB) != 0))	// ENC4F
 
+	#define ENCODER2_NOSPOOL 1
 	#define ENCODER_INITIALIZE() do { \
 		static einthandler_t eh1; \
 		static einthandler_t eh2; \
