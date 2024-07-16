@@ -540,15 +540,6 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 		#define COLORPIP_SPECTRUMLINE		COLORPIP_YELLOW
 
 	#elif COLORSTYLE_BLUE
-		#define COLORPIP_GRIDCOLOR0      	TFTRGB(128, 128, 0)        //COLOR_GRAY - center marker
-		#define COLORPIP_GRIDCOLOR2     	COLOR_GRAY        //COLOR_DARKRED - other markers
-		#define COLORPIP_GRIDDIGITS 		COLOR_YELLOW
-		#define COLORPIP_SPECTRUMBG     	COLOR_BLACK
-		#define COLORPIP_SPECTRUMBG2    	COLOR_CYAN        		//COLOR_CYAN - полоса пропускания приемника
-		#define COLORPIP_SPECTRUMFG			COLOR_GREEN		// цвет спектра при сполошном заполнении
-		#define DESIGNCOLOR_SPECTRUMFENCE	COLOR_WHITE	//COLOR_WHITE
-		//#define COLORPIP_SPECTRUMLINE		COLORPIP_GREEN
-		#define COLORPIP_SPECTRUMLINE		COLORPIP_YELLOW
 
 	#else
 		// old
@@ -646,6 +637,17 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 
 #elif COLORSTYLE_BLUE
+
+	#define COLORPIP_GRIDCOLOR0      	TFTRGB(128, 128, 0)        //COLOR_GRAY - center marker
+	#define COLORPIP_GRIDCOLOR2     	COLOR_GRAY        //COLOR_DARKRED - other markers
+	#define COLORPIP_GRIDDIGITS 		COLOR_YELLOW
+	#define COLORPIP_SPECTRUMBG     	COLOR_BLACK
+	#define COLORPIP_SPECTRUMBG2    	COLOR_CYAN        		//COLOR_CYAN - полоса пропускания приемника
+	#define COLORPIP_SPECTRUMFG			COLOR_GREEN		// цвет спектра при сполошном заполнении
+	#define DESIGNCOLOR_SPECTRUMFENCE	COLOR_WHITE	//COLOR_WHITE
+	//#define COLORPIP_SPECTRUMLINE		COLORPIP_GREEN
+	#define COLORPIP_SPECTRUMLINE		COLORPIP_YELLOW
+
 	#define DESIGNBIGCOLOR 		COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
 	#define DESIGNBIGCOLORB 	COLORPIP_WHITE //COLORPIP_SPECTRUMBG2		// цвет частоты дополнительного приемника
 	#define DESIGNBIGCOLORBINACTIVE COLORPIP_GRAY
@@ -669,7 +671,6 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 	#define FMENUTEXT			COLORPIP_GREEN
 	#define FMENUBACK			COLORPIP_BLACK
-
 
 #else /* COLORSTYLE_RED */
 
