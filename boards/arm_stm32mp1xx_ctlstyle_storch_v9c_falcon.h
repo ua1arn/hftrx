@@ -433,6 +433,7 @@
 	//#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_UA1CEI	1
 	//#define COLORSTYLE_RED	1
+	#define COLORSTYLE_BLUE	1
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */

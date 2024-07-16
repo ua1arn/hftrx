@@ -220,6 +220,8 @@
 	//#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_UA1CEI	1
 	//#define COLORSTYLE_RED	1
+	#define COLORSTYLE_BLUE	1
+
 	#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 
 	#define WITHPABIASMIN		0
