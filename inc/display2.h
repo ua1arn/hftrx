@@ -580,6 +580,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 	#define DSGN_STATETEXT	COLORPIP_RED	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_STATEBACK	COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
 #elif COLORSTYLE_GREEN
 	/* цветовая схема для эксперементов */
@@ -608,6 +610,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 	#define DSGN_STATETEXT	COLORPIP_GREEN	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_STATEBACK	COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
 #elif COLORSTYLE_UA1CEI
 
@@ -634,6 +638,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 	#define DSGN_STATETEXT	COLORPIP_GREEN	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_STATEBACK	COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
 
 #elif COLORSTYLE_BLUE
@@ -664,6 +670,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
 	#define DSGN_STATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_STATEBACK			COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
 #else /* COLORSTYLE_RED */
 
@@ -692,6 +700,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 		#define DSGN_FMENUTEXT			COLORPIP_GREEN
 		#define DSGN_FMENUBACK			COLORPIP_BLACK
+		#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+		#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
 	#else /* LCDMODE_MAIN_L8 */
 		#define DSGN_BIGCOLOR 		COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
@@ -717,6 +727,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 		#define DSGN_FMENUTEXT			COLORPIP_GREEN
 		#define DSGN_FMENUBACK			COLORPIP_BLACK
+		#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+		#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
 	#endif /* LCDMODE_MAIN_L8 */
 

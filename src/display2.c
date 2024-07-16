@@ -3414,7 +3414,7 @@ static void display2_legend_rx(
 	)
 {
 #if defined(SMETERMAP)
-	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
+	colmain_setcolors(DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
 	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
