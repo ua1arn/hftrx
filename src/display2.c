@@ -330,23 +330,23 @@ static const COLORPAIR_T colors_2rxtx [2] =
 // Параметры отображения состояний из трех вариантов
 static const COLORPAIR_T colors_4state [4] =
 {
-	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
-	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
-	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
-	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+	{	DSGN_LABELINACTIVETEXT,	DSGN_LABELINACTIVEBACK,	},
+	{	DSGN_LABELACTIVETEXT,	DSGN_LABELACTIVEBACK,	},
+	{	DSGN_LABELACTIVETEXT,	DSGN_LABELACTIVEBACK,	},
+	{	DSGN_LABELACTIVETEXT,	DSGN_LABELACTIVEBACK,	},
 };
 
 // Параметры отображения состояний из двух вариантов
 static const COLORPAIR_T colors_2state [2] =
 {
-	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
-	{	LABELACTIVETEXT,	LABELACTIVEBACK,	},
+	{	DSGN_LABELINACTIVETEXT,	DSGN_LABELINACTIVEBACK,	},
+	{	DSGN_LABELACTIVETEXT,	DSGN_LABELACTIVEBACK,	},
 };
 
 // Параметры отображения состояний из двух вариантов (активный - на красном фонк)
 static const COLORPAIR_T colors_2state_rec [2] =
 {
-	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
+	{	DSGN_LABELINACTIVETEXT,	DSGN_LABELINACTIVEBACK,	},
 	{	COLORPIP_RED,	COLORPIP_BLACK,	},
 };
 
@@ -359,14 +359,14 @@ static const COLORPAIR_T colors_1state [1] =
 // Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1statevoltage [1] =
 {
-	{	DESIGNCOLORSTATETEXT,	DESIGNCOLORSTATEBACK,	},
+	{	DSGN_STATETEXT,	DSGN_STATEBACK,	},
 };
 
 // Параметры отображения состояний FUNC MENU из двух вариантов
 static const COLORPAIR_T colors_2fmenu [2] =
 {
-	{	FMENUINACTIVETEXT,	FMENUINACTIVEBACK,	},
-	{	FMENUACTIVETEXT,	FMENUACTIVEBACK,	},
+	{	DSGN_FMENUINACTIVETEXT,	DSGN_FMENUINACTIVEBACK,	},
+	{	DSGN_FMENUACTIVETEXT,	DSGN_FMENUACTIVEBACK,	},
 };
 
 // Параметры отображения текстов без вариантов
@@ -379,32 +379,32 @@ static const COLORPAIR_T colors_1fmenu [1] =
 // синий
 static const COLORPAIR_T colors_1stateBlue [1] =
 {
-	{	DESIGNBIGCOLORB,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLORB,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения частоты дополнительного приемника
 static const COLORPAIR_T colors_2freqB [2] =
 {
-	{	DESIGNBIGCOLORBINACTIVE,	DSGN_LABELBACK,	},
-	{	DESIGNBIGCOLORB,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLORBINACTIVE,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLORB,	DSGN_LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
 static const COLORPAIR_T colors_2modeB [2] =
 {
-	{	DESIGNBIGCOLORBINACTIVE,	DSGN_LABELBACK,	},
-	{	DESIGNBIGCOLORB,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLORBINACTIVE,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLORB,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения частоты основного приемника
 static const COLORPAIR_T colors_1freq [1] =
 {
-	{	DESIGNBIGCOLOR,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLOR,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения режима основного приемника
 static const COLORPAIR_T colors_1mode [1] =
 {
-	{	DESIGNBIGCOLOR,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLOR,	DSGN_LABELBACK,	},
 };
 
 #if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
