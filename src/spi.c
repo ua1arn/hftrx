@@ -7357,9 +7357,11 @@ static uint_fast8_t board_fpga_get_INIT_DONE(void)
 #endif
 }
 
+#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
+#define FPGALOADER_SPIMODE SPIC_MODE0
+
 void board_fpga_loader_initialize(void)
 {
-	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
@@ -7651,7 +7653,7 @@ restart:
 		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
 		{
-			prog_spi_io(targetnone, SPIC_SPEEDFAST, SPIC_MODE0, rbfbase, rbflength, NULL, 0, NULL, 0);
+			prog_spi_io(targetnone, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE, rbfbase, rbflength, NULL, 0, NULL, 0);
 			//size_t n = rbflength - 1;
 
 			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
@@ -7661,7 +7663,7 @@ restart:
 			{
 				static const uint8_t fill [16];
 				++ wcd;
-				prog_spi_io(targetnone, SPIC_SPEEDFAST, SPIC_MODE0, fill, ARRAY_SIZE(fill), NULL, 0, NULL, 0);
+				prog_spi_io(targetnone, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE, fill, ARRAY_SIZE(fill), NULL, 0, NULL, 0);
 			}
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
