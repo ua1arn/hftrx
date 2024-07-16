@@ -3673,11 +3673,11 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
 	// код (COLORPIP_BASE + 15) освободися. GUI_MENUSELECTCOLOR?
 
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR0      , COLOR24(0x80, 0x80, 0x00));        //COLOR_GRAY - center marker
-	fillfour_xltrgb24(xltable, COLORPIP_GRIDCOLOR2     	, COLOR24(0x80, 0x00, 0x00));        //COLOR_DARKRED - other markers
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG     	, COLOR24(0x00, 0x00, 0x00));            // фон спектра вне полосы пропускания
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMBG2   	, COLOR24(0x00, 0x80, 0x80));        // фон спектра - полоса пропускания приемника
-	fillfour_xltrgb24(xltable, COLORPIP_SPECTRUMFG		, COLOR24(0x00, 0xFF, 0x00));		// цвет спектра при сполошном заполнении
+	fillfour_xltrgb24(xltable, DSGN_GRIDCOLOR0      , COLOR24(0x80, 0x80, 0x00));        //COLOR_GRAY - center marker
+	fillfour_xltrgb24(xltable, DSGN_GRIDCOLOR2     	, COLOR24(0x80, 0x00, 0x00));        //COLOR_DARKRED - other markers
+	fillfour_xltrgb24(xltable, DSGN_SPECTRUMBG     	, COLOR24(0x00, 0x00, 0x00));            // фон спектра вне полосы пропускания
+	fillfour_xltrgb24(xltable, DSGN_SPECTRUMBG2   	, COLOR24(0x00, 0x80, 0x80));        // фон спектра - полоса пропускания приемника
+	fillfour_xltrgb24(xltable, DSGN_SPECTRUMFG		, COLOR24(0x00, 0xFF, 0x00));		// цвет спектра при сполошном заполнении
 
 #elif LCDMODE_COLORED && ! LCDMODE_DUMMY
 	//PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");

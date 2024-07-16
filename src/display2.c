@@ -353,7 +353,7 @@ static const COLORPAIR_T colors_2state_rec [2] =
 // Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1state [1] =
 {
-	{	LABELTEXT,	LABELBACK,	},
+	{	DSGN_LABELTEXT,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения текстов без вариантов
@@ -372,39 +372,39 @@ static const COLORPAIR_T colors_2fmenu [2] =
 // Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1fmenu [1] =
 {
-	{	FMENUTEXT,	FMENUBACK,	},
+	{	DSGN_FMENUTEXT,	DSGN_FMENUBACK,	},
 };
 
 // Параметры отображения текстов без вариантов
 // синий
 static const COLORPAIR_T colors_1stateBlue [1] =
 {
-	{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	DESIGNBIGCOLORB,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения частоты дополнительного приемника
 static const COLORPAIR_T colors_2freqB [2] =
 {
-	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
-	{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	DESIGNBIGCOLORBINACTIVE,	DSGN_LABELBACK,	},
+	{	DESIGNBIGCOLORB,	DSGN_LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
 static const COLORPAIR_T colors_2modeB [2] =
 {
-	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
-	{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	DESIGNBIGCOLORBINACTIVE,	DSGN_LABELBACK,	},
+	{	DESIGNBIGCOLORB,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения частоты основного приемника
 static const COLORPAIR_T colors_1freq [1] =
 {
-	{	DESIGNBIGCOLOR,	LABELBACK,	},
+	{	DESIGNBIGCOLOR,	DSGN_LABELBACK,	},
 };
 
 // Параметры отображения режима основного приемника
 static const COLORPAIR_T colors_1mode [1] =
 {
-	{	DESIGNBIGCOLOR,	LABELBACK,	},
+	{	DESIGNBIGCOLOR,	DSGN_LABELBACK,	},
 };
 
 #if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
@@ -2276,7 +2276,7 @@ static void display2_preovf3(
 	}
 	else
 	{
-		colmain_setcolors(LABELTEXT, LABELBACK);
+		colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 		display_at_P(x, y, hamradio_get_pre_value_P());
 	}
 }
@@ -2387,7 +2387,7 @@ static void display_att_tx3(
 	const uint_fast8_t tx = hamradio_get_tx();
 	const FLASHMEM char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
-	colmain_setcolors(LABELTEXT, LABELBACK);
+	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	ASSERT(strlen(text) == 3);
 	display_at_P(x, y, text);
 }
@@ -2424,7 +2424,7 @@ static void display_vfomode1(
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const label = hamradio_get_vfomode3_value(& state);
 
-	colmain_setcolors(LABELTEXT, LABELBACK);
+	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -3414,7 +3414,7 @@ static void display2_legend_rx(
 	)
 {
 #if defined(SMETERMAP)
-	colmain_setcolors(LABELTEXT, LABELBACK);
+	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	display_at_P(x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
@@ -3427,7 +3427,7 @@ static void display2_legend_tx(
 	)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	colmain_setcolors(LABELTEXT, LABELBACK);
+	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 				display_at_P(x, y, PSTR(SWRPWRMAP));
@@ -5039,7 +5039,7 @@ display2_wfl_init(
 			bwpic, ALLDX, ALLDY,
 			0, 0,
 			ALLDX, ALLDY,
-			TFTALPHA(picalpha, COLORPIP_SPECTRUMBG2)
+			TFTALPHA(picalpha, DSGN_SPECTRUMBG2)
 			);
 	}
 }
@@ -5124,9 +5124,9 @@ display_colorgrid_xor(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR0;	// макркер на центре
-	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;	// макркеры частот сетки
-	const COLORPIP_T colordigits = COLORPIP_GRIDDIGITS;	// макркеры частот сетки
+	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
+	const COLORPIP_T color = DSGN_GRIDCOLOR2;	// макркеры частот сетки
+	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
 
 	//
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
@@ -5177,9 +5177,9 @@ display_colorgrid_set(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR0;	// макркер на центре
-	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;
-	const COLORPIP_T colordigits = COLORPIP_GRIDDIGITS;	// макркеры частот сетки
+	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
+	const COLORPIP_T color = DSGN_GRIDCOLOR2;
+	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
 	const uint_fast8_t markerh = 10;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -5235,7 +5235,7 @@ display_colorgrid_3dss(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T colorcenter = COLORPIP_GRIDCOLOR0;	// макркер на центре
+	const COLORPIP_T colorcenter = DSGN_GRIDCOLOR0;	// макркер на центре
 	const COLORPIP_T colorgrid = COLORPIP_GREEN;
 	const uint_fast16_t row = row0 + h + 3;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
@@ -5419,7 +5419,7 @@ static void display2_spectrum(
 	{
 		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
 	}
-	colmain_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG); // цвет спектра при сполошном заполнении
+	colmain_setcolors(DSGN_SPECTRUMBG, DSGN_SPECTRUMFG); // цвет спектра при сполошном заполнении
 
 #else /* */
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
@@ -5432,7 +5432,7 @@ static void display2_spectrum(
 #else
 	const uint_fast16_t spy = ALLDY - 15;
 #endif
-	const COLORPIP_T rxbwcolor = display2_rxbwcolor(COLORPIP_SPECTRUMBG2, COLORPIP_SPECTRUMBG);
+	const COLORPIP_T rxbwcolor = display2_rxbwcolor(DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -5480,7 +5480,7 @@ static void display2_spectrum(
 						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
 							if (x > xleft && x < xrightv && gview3dss_mark)
-								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, COLORPIP_SPECTRUMFG);
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, DSGN_SPECTRUMFG);
 							else
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, gvars.color_scale [j]);
 						}
@@ -5554,17 +5554,17 @@ static void display2_spectrum(
 			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
 			if (ALLDX / (xrightv - xleft) > 8)
 			{
-				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, COLORPIP_SPECTRUMBG);
+				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, DSGN_SPECTRUMBG);
 			}
 			else
 			{
 				if (xleft > 0)
 				{
-					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, COLORPIP_SPECTRUMBG);
+					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, DSGN_SPECTRUMBG);
 				}
 				if (xrightv < ALLDX)
 				{
-					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, COLORPIP_SPECTRUMBG);
+					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, DSGN_SPECTRUMBG);
 				}
 			}
 
@@ -5595,12 +5595,12 @@ static void display2_spectrum(
 				}
 				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
 				{
-					colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, SPDY - ynew, COLORPIP_SPECTRUMFG);
+					colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, x, ynew + SPY0, SPDY - ynew, DSGN_SPECTRUMFG);
 				}
 
 				if (x)
 				{
-					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, COLORPIP_SPECTRUMLINE, 1);
+					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast, x, ynew, DSGN_SPECTRUMLINE, 1);
 				}
 				ylast = ynew;
 			}
@@ -5858,7 +5858,7 @@ static void display2_waterfall(
 			}
 			else
 			{
-				const COLORPIP_T rxbwcolor = display2_rxbwcolor(COLORPIP_SPECTRUMBG2, COLORPIP_SPECTRUMBG);
+				const COLORPIP_T rxbwcolor = display2_rxbwcolor(DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
 				// Изображение двух вертикальных линий по краям "шторки".
 				colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, WFDY, rxbwcolor);
 				colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xright, WFY0, WFDY, rxbwcolor);
