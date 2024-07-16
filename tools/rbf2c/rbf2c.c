@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 				break;
 			++ bytes;
 			pv = revbits8((unsigned char) c1);
-			fprintf(fpo, " 0x%04X,%s", pv, ((pos + 1) >= ROWSOZE) ? "\n" : "");
+			fprintf(fpo, " 0x%02X,%s", pv, ((pos + 1) >= ROWSOZE) ? "\n" : "");
 			pos = (pos + 1) % ROWSOZE;
 			++ bytes;
 		}
