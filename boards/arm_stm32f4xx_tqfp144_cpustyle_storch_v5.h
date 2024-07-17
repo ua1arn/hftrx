@@ -524,6 +524,8 @@
 		SPI_CSEL_PG1	| 	/* PG1 FPGA control registers CS */ \
 		0)
 
+	#define targetnone 0xDEBF				/* FPGA image loader pseudo chip select signal */
+
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 	//#define SPI_NAEN_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
