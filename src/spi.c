@@ -7635,7 +7635,7 @@ restart:
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
-			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1\n");
 			goto restart;
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -7651,7 +7651,7 @@ restart:
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
-			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1\n");
 			goto restart;
 		}
 		/* 3) Выдать байты (бладший бит .rbf файла первым) */
