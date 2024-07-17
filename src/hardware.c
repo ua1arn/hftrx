@@ -2650,23 +2650,24 @@ sysinit_ttbr_initialize(void)
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
 #if WITHSMPSYSTEM
 	// TTBR0
-	const unsigned IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const unsigned RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
 			(uintptr_t) tlbbase |
-			(!! (IRGN_attr & 0x01) << 6) | (!! (IRGN_attr & 0x02) << 0) |	// IRGN
+			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
+			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
 			(RGN_attr << 3) |	// RGN
-			1*(1u << 5) |	// NOS - Not Outer Shareable bit FIXME: test RAMNC
-			1*(1u << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+			1*(UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
+			1*(UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
 			0);
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
 			(uintptr_t) tlbbase |
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
-			(0x01u << 3) |	// RGN
-			0*(1u << 5) |	// NOS
-			0*(1u << 1) |	// S
+			(UINT32_C(1) << 3) |	// RGN
+			0*(UINT32_C(1) << 5) |	// NOS
+			0*(UINT32_C(1) << 1) |	// S
 			0);
 #endif /* WITHSMPSYSTEM */
 	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
