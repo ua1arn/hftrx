@@ -2656,7 +2656,7 @@ sysinit_ttbr_initialize(void)
 			(uintptr_t) tlbbase |
 			(!! (IRGN_attr & 0x01) << 6) | (!! (IRGN_attr & 0x02) << 0) |	// IRGN
 			(RGN_attr << 3) |	// RGN
-			1*(1u << 5) |	// NOS - Not Outer Shareable bi
+			1*(1u << 5) |	// NOS - Not Outer Shareable bit FIXME: test RAMNC
 			1*(1u << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
 			0);
 #else /* WITHSMPSYSTEM */
