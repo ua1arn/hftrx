@@ -280,9 +280,18 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2 fsbl.alw32
-  
-app_run: $(PROJECT)_app.alw32
+
+ddr_init:
 	$(XFEL) ddr t113-s3
+	busybox sleep 0.5s
+
+# Load image and exec to SystemInit address
+ddr_init_s4:
+	$(XFEL) write 0x00028000 fsbl_frz_s4.alw32
+	$(XFEL) exec 0x000286c0 
+	busybox sleep 0.5s
+
+app_run: ddr_init $(PROJECT)_app.alw32
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 	
@@ -291,8 +300,7 @@ _app_run: fsbl.alw32
 	$(XFEL) write 0x00028000 fsbl.alw32
 	$(XFEL) exec 0x00028000 
 
-app_runXBOOT: xboot_t113_800.bin
-	$(XFEL) ddr t113-s3
+app_runXBOOT: ddr_init xboot_t113_800.bin
 	$(XFEL) write 0x40000000 xboot_t113_800.bin
 	$(XFEL) exec 0x40000000 
 

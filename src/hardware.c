@@ -217,8 +217,8 @@ void xc7z_gpio_output(uint8_t pin)
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 
-static RAMDTCM LCLSPINLOCK_t tickerslock = LCLSPINLOCK_INIT;
-static RAMDTCM LCLSPINLOCK_t adcdoneslock = LCLSPINLOCK_INIT;
+static RAMDTCM IRQLSPINLOCK_t tickerslock;
+static RAMDTCM IRQLSPINLOCK_t adcdoneslock;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
@@ -240,23 +240,19 @@ void ticker_add(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& tickerslock);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	InsertHeadVList(& tickers, & p->item);
-	LCLSPIN_UNLOCK(& tickerslock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
 void ticker_remove(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& tickerslock);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
 	RemoveEntryVList(& p->item);
-	LCLSPIN_UNLOCK(& tickerslock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
 /* начало интервала в случае TICKERMD_MANUAL */
@@ -264,8 +260,7 @@ void ticker_start(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& tickerslock);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
 	switch (p->mode)
 	{
 	case TICKERMD_MANUAL:
@@ -273,8 +268,7 @@ void ticker_start(ticker_t * p)
 	default:
 		break;
 	}
-	LCLSPIN_UNLOCK(& tickerslock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
 /* изменение периода запущенного тикера */
@@ -282,8 +276,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& tickerslock);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
 	if (p->period < nticks)
 	{
 		p->period = nticks;
@@ -293,8 +286,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 		p->period = nticks;
 		p->ticks = 0;
 	}
-	LCLSPIN_UNLOCK(& tickerslock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
 // Вызывается из обработчика системного таймера
@@ -302,8 +294,7 @@ static void tickers_event(void)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& tickerslock);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
 	PVLIST_ENTRY t;
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	for (t = tickers.Blink; t != & tickers;)
@@ -337,13 +328,12 @@ static void tickers_event(void)
 		}
 		t = tnext;
 	}
-	LCLSPIN_UNLOCK(& tickerslock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
 void tickers_initialize(void)
 {
-	LCLSPINLOCK_INITIALIZE(& tickerslock);
+	IRQLSPINLOCK_INITIALIZE(& tickerslock, TICKER_IRQL);
 	InitializeListHead(& tickers);
 }
 
@@ -351,17 +341,15 @@ void tickers_deinitialize(void)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& tickerslock);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
 	RemoveEntryVList(& tickers);
-	LCLSPIN_UNLOCK(& tickerslock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
 // инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
-	LCLSPINLOCK_INITIALIZE(& adcdoneslock);
+	IRQLSPINLOCK_INITIALIZE(& adcdoneslock, TICKER_IRQL);
 	InitializeListHead(& adcdones);
 }
 
@@ -375,15 +363,18 @@ void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 // регистрируется обработчик конца преобразования АЦП
 void adcdone_add(adcdone_t * p)
 {
-	LCLSPIN_LOCK(& adcdoneslock);
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql);
 	InsertHeadVList(& adcdones, & p->item);
-	LCLSPIN_UNLOCK(& adcdoneslock);
+	IRQLSPIN_UNLOCK(& adcdoneslock, oldIrql);
 }
 
 static void adcdones_event(void)
 {
-	LCLSPIN_LOCK(& adcdoneslock);
+	IRQL_t oldIrql;
 
+	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql);
 	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
@@ -393,7 +384,7 @@ static void adcdones_event(void)
 		if (p->cb != NULL)
 			(p->cb)(p->ctx);
 	}
-	LCLSPIN_UNLOCK(& adcdoneslock);
+	IRQLSPIN_UNLOCK(& adcdoneslock, oldIrql);
 }
 
 static volatile uint32_t sys_now_counter;

@@ -4868,7 +4868,7 @@ void allwnrt113_pll_initialize(void)
 	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
 #endif
 #if (CPUSTYLE_F133 || CPUSTYLE_T113_S4)
-	set_pll_riscv_axi(RV_PLL_CPU_N);	// see sdram.c
+	//set_pll_riscv_axi(RV_PLL_CPU_N);	// see sdram.c
 #endif
 
 	//set_pll_periph0();
@@ -9398,7 +9398,7 @@ sysinit_pll_initialize(int forced)
 	CCU->APB2_CFG_REG = 0x02000304;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
 	allwnr_a64_mbus_initialize();
 
-#elif CPUSTYLE_T113
+#elif CPUSTYLE_T113 && ! WITHISBOOTLOADER_DDR
 
 	/* Off bootloader USB */
 	if (1)
