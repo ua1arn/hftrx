@@ -281,7 +281,10 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32
 
-ddr_init:
+DDR_INIT=ddr_init_s3
+#DDR_INIT=ddr_init_s4
+
+ddr_init_s3:
 	$(XFEL) ddr t113-s3
 	busybox sleep 0.5s
 
@@ -291,7 +294,7 @@ ddr_init_s4:
 	$(XFEL) exec 0x000286c0 
 	busybox sleep 0.5s
 
-app_run: $(PROJECT)_app.alw32 ddr_init
+app_run: $(PROJECT)_app.alw32 $(DDR_INIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 	
@@ -300,7 +303,7 @@ _app_run: fsbl.alw32
 	$(XFEL) write 0x00028000 fsbl.alw32
 	$(XFEL) exec 0x00028000 
 
-app_runXBOOT: xboot_t113_800.bin ddr_init
+app_runXBOOT: xboot_t113_800.bin $(DDR_INIT)
 	$(XFEL) write 0x40000000 xboot_t113_800.bin
 	$(XFEL) exec 0x40000000 
 
