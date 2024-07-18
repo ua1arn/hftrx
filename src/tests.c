@@ -10569,6 +10569,7 @@ void hightests(void)
 	//hmain();
 #if 0
 	{
+		// V3s clocks information print
 		PRINTF("allwnr_v3s_get_cpu_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_cpu_freq() / 1000 / 1000));
 		PRINTF("allwnr_v3s_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_axi_freq() / 1000 / 1000));
 		PRINTF("allwnr_v3s_get_sysapb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_sysapb_freq() / 1000 / 1000));
@@ -10581,7 +10582,21 @@ void hightests(void)
 #if 0
 	{
 		// Video Encoding test
-		CCU->VE_CLK_REG |= UINT32_C(1) << 31;
+#if CPUSTYLE_V3S
+
+		CCU->VE_CLK_REG |= UINT32_C(1) << 31;	// VE_SCLK_GATING
+		(void) CCU->VE_CLK_REG;
+
+		CCU->BUS_CLK_GATING_REG1 |= UINT32_C(1) << 0;	// VE_GATING
+		(void) CCU->BUS_CLK_GATING_REG1;
+		CCU->BUS_SOFT_RST_REG1 &= ~ UINT32_C(1) << 0;	// VE_RST
+		(void) CCU->BUS_SOFT_RST_REG1;
+		CCU->BUS_SOFT_RST_REG1 |= UINT32_C(1) << 0;	// VE_RST
+		(void) CCU->BUS_SOFT_RST_REG1;
+
+#else /* CPUSTYLE_V3S */
+
+		CCU->VE_CLK_REG |= UINT32_C(1) << 31;	// VE_SCLK_GATING
 		(void) CCU->VE_CLK_REG;
 
 		CCU->VE_BGR_REG |= UINT32_C(1) << 0;	// VE_GATING
@@ -10590,6 +10605,8 @@ void hightests(void)
 		(void) CCU->VE_BGR_REG;
 		CCU->VE_BGR_REG |= (UINT32_C(1) << 16);	// VE_RST
 		(void) CCU->VE_BGR_REG;
+
+#endif /* CPUSTYLE_V3S */
 
 		PRINTF("VE_VERSION=%08X\n", (unsigned) VENCODER->VE_VERSION);
 		printhex32(VENCODER_BASE, VENCODER, sizeof * VENCODER);
