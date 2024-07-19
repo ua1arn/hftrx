@@ -17991,7 +17991,7 @@ static void menu_print(void)
         	#elif CPUSTYLE_R7S721
         			msg = PSTR("RENESAS");
 			#elif CPUSTYLE_T113
-					msg = PSTR("Allw T128-S3");
+					msg = allwnrt113_get_chipid() == CHIPID_T113M4020DC0 ? PSTR("Allw T128-M4") : PSTR("Allw T128-S3");
 			#elif CPUSTYLE_F133
 					msg = PSTR("Allw F133-A");
         	#else

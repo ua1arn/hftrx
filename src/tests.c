@@ -11002,9 +11002,10 @@ void hightests(void)
 	{
 		uint32_t midr;
 		asm volatile("mrc p15, 0, %0, c0, c0, 0" : "=r" (midr));
-		// T113M4: IIDR=0200143B, midr=410FC075
-		// T113S3: IIDR=0200143B, midr=410FC075
+		// T113M4: IIDR=0200143B, midr=410FC075 xfel sid: 934072002c0048140105061c54731853
+		// T113S3: IIDR=0200143B, midr=410FC075 xfel sid: 934060000c00481401464015586213cc
 		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
+		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
 		dbg_flush();	/* for see rv64 running effects on UART0 */
 		//	la	a0, 0x02500000
 		//	la	a1, 0x23

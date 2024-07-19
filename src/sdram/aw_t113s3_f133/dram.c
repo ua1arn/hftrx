@@ -74,9 +74,9 @@
 
  *
  */
-#if CPUSTYLE_T113_S4
+#if CPUSTYLE_T113
 
-static dram_para_t ddrp3 =
+static dram_para_t t113m4_ddrp3 =
 {
 	.dram_clk = 936,	// s3: 792
 	.dram_type = 3,
@@ -104,15 +104,7 @@ static dram_para_t ddrp3 =
 	.dram_tpr13 = 0x34000100,
 };
 
-int sys_dram_init(void)
-{
-	set_pll_cpux_axi(PLL_CPU_N);
-	return init_DRAM(0, & ddrp3) != 0;
-}
-
-#elif CPUSTYLE_T113
-
-static dram_para_t ddrp3 =
+static dram_para_t t113s3_ddrp3 =
 {
 	.dram_clk = 792,
 	.dram_type = 3,
@@ -142,9 +134,18 @@ static dram_para_t ddrp3 =
 
 int sys_dram_init(void)
 {
-	ddrp3.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
-	set_pll_cpux_axi(PLL_CPU_N);
-	return init_DRAM(0, & ddrp3) != 0;
+	if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
+	{
+		//ddrp3.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
+		set_pll_cpux_axi(PLL_CPU_N);
+		return init_DRAM(0, & t113m4_ddrp3) != 0;
+	}
+	else
+	{
+		//ddrp3.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
+		set_pll_cpux_axi(PLL_CPU_N);
+		return init_DRAM(0, & t113s3_ddrp3) != 0;
+	}
 }
 
 #elif CPUSTYLE_F133

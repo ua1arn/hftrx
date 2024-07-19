@@ -4021,6 +4021,12 @@ void allwnrt113_set_pll_cpux(unsigned m, unsigned n)
 //	uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 //
 //}
+//	#define CHIPID_T113S3 		0x6000
+//	#define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
+uint_fast32_t allwnrt113_get_chipid(void)
+{
+	return SID->SID_DATA [0] & 0xFFFF;
+}
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
