@@ -11008,7 +11008,7 @@ void hightests(void)
 		//	la	a1, 0x23
 		//	sb	a1, 0 (a0)
 		//	xxx:	j	xxx
-		// Test: write byte 0x23 ('#') to 0x02500000 = UART0 data tegister
+		// Test: write byte 0x23 ('#') to 0x02500000 = UART0 data register
 		static const uint32_t rv64code [] = {
 				0x02500537, // 37 05 50 02
 				0x0230059B,	// 9B 05 30 02
@@ -11018,14 +11018,20 @@ void hightests(void)
 
 		dcache_clean_all();
 
+		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
+		(void) CCU->RISC_CFG_BGR_REG;
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
+
+#if 0
+		/* setup RISC-V CPU & AXI clock */
 		CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-				0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
-				//0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
+				//0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
+				0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
 				0;
 		CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
+#endif
 
 		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
-		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 
 		RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32((uintptr_t) rv64code);
 		RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32((uintptr_t) rv64code);
