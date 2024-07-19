@@ -281,8 +281,8 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32
 
-DDR_INIT=ddr_init_s3
-#DDR_INIT=ddr_init_s4
+#DDR_INIT=ddr_init_s3
+DDR_INIT=ddr_init_s4
 
 ddr_init_s3:
 	$(XFEL) ddr t113-s3

@@ -3972,7 +3972,7 @@ void allwnrt113_set_pll_cpux(unsigned m, unsigned n)
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ ((0xffu << 8) | (0x3u << 0));
+	val &= ~ (UINT32_C(0xFF) << 8) & ~ (UINT32_C(0x03) << 0);
 	val |= ((n - 1) << 8);		//was: PLL_CPU_N
 	val |= ((m - 1) << 0);
 
