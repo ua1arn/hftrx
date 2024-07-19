@@ -11001,9 +11001,6 @@ void hightests(void)
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHDEBUG
 	{
 		dbg_flush();	/* for see rv64 running effects on UART0 */
-		//	The Hotplug Flag Register is 0x070005DC.
-		//	The Soft Entry Address Register is 0x070005E0.
-
 		//	la	a0, 0x02500000
 		//	la	a1, 0x23
 		//	sb	a1, 0 (a0)
@@ -11015,13 +11012,10 @@ void hightests(void)
 				0x00B50023, // 23 00 B5 00
 				0x0000006F, // 6F 00 00 00,
 		};
-
 		dcache_clean_all();
-
 		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 		(void) CCU->RISC_CFG_BGR_REG;
 		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
-
 #if 0
 		/* setup RISC-V CPU & AXI clock */
 		CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
@@ -11030,9 +11024,7 @@ void hightests(void)
 				0;
 		CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
 #endif
-
 		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
-
 		RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32((uintptr_t) rv64code);
 		RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32((uintptr_t) rv64code);
 		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << 0));	/* De-assert rv64 reset */
