@@ -11023,7 +11023,7 @@ void hightests(void)
 				0;
 		CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
 #endif
-		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
+		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
 		RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) rv64code; //ptr_lo32((uintptr_t) rv64code);
 		RISC_CFG->RISC_STA_ADD1_REG = 0;//ptr_hi32((uintptr_t) rv64code);
 		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << 0));	/* De-assert rv64 reset */
