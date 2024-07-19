@@ -24,6 +24,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "utils.h"
 #include "gpio.h"
 #include "src/touch/touch.h"
 
@@ -2370,21 +2371,6 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 //{
 //	* (volatile uint32_t *) a = v;
 //}
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-static uint32_t ptr_hi32(uintptr_t v)
-{
-	if (sizeof v == sizeof (uint32_t))
-		return 0;
-	return v >> 32;
-}
-
-static uint32_t ptr_lo32(uintptr_t v)
-{
-	return (uint32_t) v;
-}
-#pragma GCC diagnostic pop
 
 #if LCDMODE_MAIN_ARGB8888
 	static const uint32_t ui_format = 0x00;	//  0x00: ARGB_8888

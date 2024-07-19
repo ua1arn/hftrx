@@ -6489,8 +6489,9 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 	}
 
 	if (err)
+	{
 		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
-
+	}
 	return err;
 }
 

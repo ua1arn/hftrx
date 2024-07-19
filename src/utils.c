@@ -406,3 +406,20 @@ uint_fast8_t uint8_queue_empty(const u8queue_t * q)
 }
 
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+
+uint32_t ptr_hi32(uintptr_t v)
+{
+	if (sizeof v == sizeof (uint32_t))
+		return 0;
+	return v >> 32;
+}
+
+uint32_t ptr_lo32(uintptr_t v)
+{
+	return (uint32_t) v;
+}
+
+#pragma GCC diagnostic pop

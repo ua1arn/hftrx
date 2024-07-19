@@ -191,7 +191,8 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соотв
 //extern const FLASHMEM unsigned char revbittable [256];
 uint_fast8_t revbits8(uint_fast8_t v);	// Функция разворота младших восьми бит
 
-
+uint32_t ptr_hi32(uintptr_t v);
+uint32_t ptr_lo32(uintptr_t v);
 
 #ifdef __cplusplus
 }
