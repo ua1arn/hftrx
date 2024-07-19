@@ -11000,6 +11000,11 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHDEBUG
 	{
+		uint32_t midr;
+		asm volatile("mrc p15, 0, %0, c0, c0, 0" : "=r" (midr));
+		// T113M4: IIDR=0200143B, midr=410FC075
+		// T113S3: IIDR=0200143B, midr=410FC075
+		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
 		dbg_flush();	/* for see rv64 running effects on UART0 */
 		//	la	a0, 0x02500000
 		//	la	a1, 0x23
