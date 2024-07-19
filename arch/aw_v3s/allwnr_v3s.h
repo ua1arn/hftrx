@@ -32,7 +32,6 @@
 
 #include "device.h"
 
-#include "core_ca.h"
 #include "system_allwnr_v3s.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */

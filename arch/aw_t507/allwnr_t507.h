@@ -111,7 +111,6 @@
 //  #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
 //#endif
 
-#include "core_ca.h"
 #include "system_allwnr_t507.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */

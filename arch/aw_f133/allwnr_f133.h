@@ -29,12 +29,6 @@
 #define __GIC_PRESENT                 0U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 0U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
-
-#include <stdint.h>
-#define __IO volatile
-
-//#include "core_ca.h"
-#include "cmsis_gcc.h"
 #include "system_allwnr_f133.h"
 
 #include "device.h"

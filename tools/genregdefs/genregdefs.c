@@ -14,6 +14,9 @@
 static int flag_riscv = 0;
 static int flag_svd = 0;
 static int flag_debug = 0;
+static int flag_cortexm3 = 0;
+static int flag_cortexm4 = 0;
+static int flag_cortexm7 = 0;
 
 /* debug stuff */
 #if 0
@@ -283,12 +286,12 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
-					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "const volatile" : "volatile", fldtype, regp->fldname, regp->fldrept);
+					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "__I" : "__IO", fldtype, regp->fldname, regp->fldrept);
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
 					// Plain field
-					emitline(indent + INDENT, "%s %s %s;", regp->roflag ? "const volatile" : "volatile", fldtype, regp->fldname);
+					emitline(indent + INDENT, "%s %s %s;", regp->roflag ? "__I" : "__IO", fldtype, regp->fldname);
 					offs += regp->fldsize;
 				}
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", regp->fldoffs + baseoffset, regp->comment);
@@ -1019,7 +1022,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp, unsigned base
 		if (regp->fldrept) {
 			unsigned size;
 			// Array forming
-			//emitline(indent + INDENT, "volatile %s %s [0x%03X];",
+			//emitline(indent + INDENT, "__IO %s %s [0x%03X];",
 			//		fldtype, regp->fldname, regp->fldrept);
 			emitline(indent, "<cluster>" "\n");
 			emitudecimal(indent + 1, "dim", regp->fldrept);
@@ -1031,7 +1034,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp, unsigned base
 
 		} else {
 			// Plain field
-			//emitline(indent + INDENT, "volatile %s %s;", fldtype,
+			//emitline(indent + INDENT, "__IO %s %s;", fldtype,
 			//		regp->fldname);
 			offs += emitregister000(indent, regp, 0);
 		}
@@ -1319,6 +1322,24 @@ static void generate_cmsis(void) {
 		free(maps);
 	}
 
+	{
+		/* CMSIS includes here */
+		if (flag_riscv) {
+			emitline(0, "#include <core_rv64.h>\n");
+		} else if (flag_cortexm7) {
+			emitline(0, "#include <core_cm7.h>\n");
+		} else if (flag_cortexm4) {
+			emitline(0, "#include <core_cm4.h>\n");
+		} else if (flag_cortexm3) {
+			emitline(0, "#include <core_cm3.h>\n");
+		} else {
+			emitline(0, "#include <core_ca.h>\n");
+		}
+
+		emitline(0, "#include <stdint.h>\n");
+		emitline(0, "\n");
+	}
+
 	if (1) {
 		/* structures */
 		PLIST_ENTRY t;
@@ -1390,6 +1411,21 @@ int main(int argc, char *argv[], char *envp[]) {
 
 	if (argc > 1 && strcmp(argv[1], "--riscv") == 0) {
 		flag_riscv = 1;
+		--argc;
+		++argv;
+	}
+	if (argc > 1 && strcmp(argv[1], "--cortexm3") == 0) {
+		flag_cortexm3 = 1;
+		--argc;
+		++argv;
+	}
+	if (argc > 1 && strcmp(argv[1], "--cortexm4") == 0) {
+		flag_cortexm4 = 1;
+		--argc;
+		++argv;
+	}
+	if (argc > 1 && strcmp(argv[1], "--cortexm7") == 0) {
+		flag_cortexm7 = 1;
 		--argc;
 		++argv;
 	}
