@@ -260,11 +260,11 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			const unsigned sz = regp->fldoffs - offs;
 
 			if (sz == 4) {
-				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n", offs);
+				emitline(indent + INDENT + 5, "uint32_t reserved_0x%03X;\n", offs);
 			} else if (sz != 0 && (sz % 4) == 0) {
-				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+				emitline(indent + INDENT + 5, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
 			} else if (sz != 0) {
-				emitline(indent + INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+				emitline(indent + INDENT + 5, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
 			}
 			offs = regp->fldoffs;
 		}

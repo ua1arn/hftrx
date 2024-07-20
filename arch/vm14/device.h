@@ -100,7 +100,6 @@ typedef enum IRQn
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR  Base */
 
 #include <core_ca.h>
-#include <stdint.h>
 
 /*
  * @brief CMCTR
@@ -108,13 +107,13 @@ typedef enum IRQn
 /*!< CMCTR Контроллер управления синхронизацией */
 typedef struct CMCTR_Type
 {
-             uint32_t reserved_0x000;
+         uint32_t reserved_0x000;
     __IO uint32_t DIV_MPU_CTR;                        /*!< Offset 0x004 Регистр делителя частоты MPUCLK */
     __IO uint32_t DIV_ATB_CTR;                        /*!< Offset 0x008 Регистр делителя частоты ATCLK */
     __IO uint32_t DIV_APB_CTR;                        /*!< Offset 0x00C Регистр делителя частоты APCLK */
     __IO uint32_t CHIP_REVISION;                      /*!< Offset 0x010 Регистр ревизии микросхемы */
     __IO uint32_t GATE_MPU_CTR;                       /*!< Offset 0x014 Регистр по управлению отключением частот в CMCTR_MPU */
-             uint32_t reserved_0x018 [0x0005];
+         uint32_t reserved_0x018 [0x0005];
     __IO uint32_t DIV_GPU_CTR;                        /*!< Offset 0x02C Регистр делителя частоты GPU_ACLK */
     __IO uint32_t DIV_DDR0_CTR;                       /*!< Offset 0x030 Регистр делителя частоты DDR0_SCLK */
     __IO uint32_t DIV_DDR1_CTR;                       /*!< Offset 0x034 Регистр делителя частоты DDR1_SCLK */
@@ -124,15 +123,15 @@ typedef struct CMCTR_Type
     __IO uint32_t DIV_SYS1_CTR;                       /*!< Offset 0x044 Регистр делителя частоты L3_PCLK и связанных с ней частот */
     __IO uint32_t GATE_CORE_CTR;                      /*!< Offset 0x048 Регистр по управлению отключением частот в CMCTR_CORE */
     __IO uint32_t GATE_SYS_CTR;                       /*!< Offset 0x04C Регистр по управлению отключением частот в CMCTR_SYS */
-             uint32_t reserved_0x050 [0x0006];
+         uint32_t reserved_0x050 [0x0006];
     __IO uint32_t GATE_DSP_CTR;                       /*!< Offset 0x068 Регистр по управлению отключением частот в CMCTR_DSP */
-             uint32_t reserved_0x06C [0x0005];
+         uint32_t reserved_0x06C [0x0005];
     __IO uint32_t MUX_CLKOUT;                         /*!< Offset 0x080 Регистр выбора частоты для вывода CLKOUT */
     __IO uint32_t DIV_CLKOUT;                         /*!< Offset 0x084 Регистр делителя частоты для вывода CLKOUT */
     __IO uint32_t GATE_CLKOUT;                        /*!< Offset 0x088 Регистр управления отключением частоты для вывода CLKOUT */
-             uint32_t reserved_0x08C;
+         uint32_t reserved_0x08C;
     __IO uint32_t LS_ENABLE;                          /*!< Offset 0x090 Регистр контроля функции LightSleep памятей микросхемы */
-             uint32_t reserved_0x094 [0x001B];
+         uint32_t reserved_0x094 [0x001B];
     __IO uint32_t SEL_APLL;                           /*!< Offset 0x100 Регистр контроля APLL */
     __IO uint32_t SEL_CPLL;                           /*!< Offset 0x104 Регистр контроля CPLL */
     __IO uint32_t SEL_DPLL;                           /*!< Offset 0x108 Регистр контроля DPLL */
@@ -244,7 +243,7 @@ typedef struct I2S_Type
     __IO uint32_t CCR;                                /*!< Offset 0x010 Регистр конфигурации тактовой частоты. W/R 0x10 0x10 */
     __IO uint32_t RXFFR;                              /*!< Offset 0x014 Регистр сброса FIFO буферов блока приема. W 0x0 0x14 */
     __IO uint32_t TXFFR;                              /*!< Offset 0x018 Регистр сброса FIFO буферов блока передачи. W 0x0 0x18 */
-             uint32_t reserved_0x01C;
+         uint32_t reserved_0x01C;
     __IO uint32_t LRBR0_LTHR0;                        /*!< Offset 0x020 Регистр «левого» слова приемника. R 0x0 0x20, Регистр «левого» слова нулевого передатчика. W 0x0 0x20 */
     __IO uint32_t RRBR0;                              /*!< Offset 0x024 Регистр «правого» слова приемника. R 0x0 0x24, Регистр «правого» слова нулевого передатчика. W 0x0 0x24 */
     __IO uint32_t RER0;                               /*!< Offset 0x028 Регистр включения приемника. W/R 0x1 0x28 */
@@ -259,57 +258,57 @@ typedef struct I2S_Type
     __IO uint32_t TFCR0;                              /*!< Offset 0x04C Регистр конфигурации FIFO нулевого передатчика. W/R 0x3 0x4C */
     __IO uint32_t RFF0;                               /*!< Offset 0x050 Регистр сброса FIFO приемника. W 0x0 0x50 */
     __IO uint32_t TFF0;                               /*!< Offset 0x054 Регистр сброса FIFO нулевого передатчика. W 0x0 0x54 */
-             uint32_t reserved_0x058 [0x0002];
+         uint32_t reserved_0x058 [0x0002];
     __IO uint32_t LTHR1;                              /*!< Offset 0x060 Регистр «левого» слова первого передатчика. W 0x0 0x60 */
     __IO uint32_t RTHR1;                              /*!< Offset 0x064 Регистр «правого» слова первого передатчика. W 0x0 0x64 */
-             uint32_t reserved_0x068;
+         uint32_t reserved_0x068;
     __IO uint32_t TER1;                               /*!< Offset 0x06C Регистр включения первого передатчика W/R 0x1 0x6C */
-             uint32_t reserved_0x070;
+         uint32_t reserved_0x070;
     __IO uint32_t TCR1;                               /*!< Offset 0x074 Регистр конфигурации первого передатчика. W/R 0x5 0x74 */
     __IO uint32_t ISR1;                               /*!< Offset 0x078 Регистр статуса прерывания первого канала. R 0x10 0x78 */
     __IO uint32_t IMR1;                               /*!< Offset 0x07C Регистр маски прерывания первого канала. W/R 0x33 0x7C */
-             uint32_t reserved_0x080;
+         uint32_t reserved_0x080;
     __IO uint32_t TOR1;                               /*!< Offset 0x084 Регистр переполнения первого передатчика. R 0x0 0x84 */
-             uint32_t reserved_0x088;
+         uint32_t reserved_0x088;
     __IO uint32_t TFCR1;                              /*!< Offset 0x08C Регистр конфигурации FIFO первого передатчика. W/R 0x3 0x8C */
-             uint32_t reserved_0x090;
+         uint32_t reserved_0x090;
     __IO uint32_t TFF1;                               /*!< Offset 0x094 Регистр сброса FIFO первого передатчика. W 0x0 0x94 */
-             uint32_t reserved_0x098 [0x0002];
+         uint32_t reserved_0x098 [0x0002];
     __IO uint32_t LTHR2;                              /*!< Offset 0x0A0 Регистр «левого» слова второго передатчика. W 0x0 0xA0 */
     __IO uint32_t RTHR2;                              /*!< Offset 0x0A4 Регистр «правого» слова второго передатчика. W 0x0 0xA4 */
-             uint32_t reserved_0x0A8;
+         uint32_t reserved_0x0A8;
     __IO uint32_t TER2;                               /*!< Offset 0x0AC Регистр включения второго передатчика W/R 0x1 0xAC */
-             uint32_t reserved_0x0B0;
+         uint32_t reserved_0x0B0;
     __IO uint32_t TCR2;                               /*!< Offset 0x0B4 Регистр конфигурации второго передатчика. W/R 0x5 0xB4 */
     __IO uint32_t ISR2;                               /*!< Offset 0x0B8 Регистр статуса прерывания второго канала. R 0x10 0xB8 */
     __IO uint32_t IMR2;                               /*!< Offset 0x0BC Регистр маски прерывания второго канала. W/R 0x33 0xBC */
-             uint32_t reserved_0x0C0;
+         uint32_t reserved_0x0C0;
     __IO uint32_t TOR2;                               /*!< Offset 0x0C4 Регистр переполнения второго передатчика. R 0x0 0xC4 */
-             uint32_t reserved_0x0C8;
+         uint32_t reserved_0x0C8;
     __IO uint32_t TFCR2;                              /*!< Offset 0x0CC Регистр конфигурации FIFO второго передатчика. W/R 0x3 0xCC */
-             uint32_t reserved_0x0D0;
+         uint32_t reserved_0x0D0;
     __IO uint32_t TFF2;                               /*!< Offset 0x0D4 Регистр сброса FIFO второго передатчика. W 0x0 0xD4 */
-             uint32_t reserved_0x0D8 [0x0002];
+         uint32_t reserved_0x0D8 [0x0002];
     __IO uint32_t LTHR3;                              /*!< Offset 0x0E0 Регистр «левого» слова третьего передатчика. W 0x0 0xE0 */
     __IO uint32_t RTHR3;                              /*!< Offset 0x0E4 Регистр «правого» слова третьего передатчика. W 0x0 0xE4 */
-             uint32_t reserved_0x0E8;
+         uint32_t reserved_0x0E8;
     __IO uint32_t TER3;                               /*!< Offset 0x0EC Регистр включения третьего передатчика W/R 0x1 0xEC */
-             uint32_t reserved_0x0F0;
+         uint32_t reserved_0x0F0;
     __IO uint32_t TCR3;                               /*!< Offset 0x0F4 Регистр конфигурации третьего передатчика. W/R 0x5 0xF4 */
     __IO uint32_t ISR3;                               /*!< Offset 0x0F8 Регистр статуса прерывания третьего канала. R 0x10 0xF8 */
     __IO uint32_t IMR3;                               /*!< Offset 0x0FC Регистр маски прерывания третьего канала. W/R 0x33 0xFC */
-             uint32_t reserved_0x100;
+         uint32_t reserved_0x100;
     __IO uint32_t TOR3;                               /*!< Offset 0x104 Регистр переполнения третьего передатчика. R 0x0 0x104 */
-             uint32_t reserved_0x108;
+         uint32_t reserved_0x108;
     __IO uint32_t TFCR3;                              /*!< Offset 0x10C Регистр конфигурации FIFO третьего передатчика. W/R 0x3 0x10C */
-             uint32_t reserved_0x110;
+         uint32_t reserved_0x110;
     __IO uint32_t TFF3;                               /*!< Offset 0x114 Регистр сброса FIFO третьего передатчика. W 0x0 0x114 */
-             uint32_t reserved_0x118 [0x002A];
+         uint32_t reserved_0x118 [0x002A];
     __IO uint32_t RXDMA;                              /*!< Offset 0x1C0 Регистр DMA приема. R 0x0 0x1C0 */
-             uint32_t reserved_0x1C4;
+         uint32_t reserved_0x1C4;
     __IO uint32_t TXDMA;                              /*!< Offset 0x1C8 Регистр DMA передачи. W 0x0 0x1C8 */
     __IO uint32_t RTXDMA;                             /*!< Offset 0x1CC Регистр сброса DMA передачи. W 0x0 0x1CC */
-             uint32_t reserved_0x1D0 [0x0008];
+         uint32_t reserved_0x1D0 [0x0008];
     __IO uint32_t I2S_COMP_PARAM_2;                   /*!< Offset 0x1F0 Второй регистр параметров компонента. R 0x48c 0x1F0 */
     __IO uint32_t I2S_COMP_PARAM_1;                   /*!< Offset 0x1F4 Первый регистр параметров компонента. R 0x24c067e 0x1F4 */
     __IO uint32_t I2S_COMP_VERSION;                   /*!< Offset 0x1F8 Регистр ревизии компонента. R 0x3130362a 0x1F8 */
@@ -369,7 +368,7 @@ typedef struct NANDMPORT_Type
     __IO uint32_t ERROR_COUNT_6BIT;                   /*!< Offset 0x060 RW Счётчик 6-битных ошибок */
     __IO uint32_t ERROR_COUNT_7BIT;                   /*!< Offset 0x064 RW Счётчик 7-битных ошибок */
     __IO uint32_t ERROR_COUNT_8BIT;                   /*!< Offset 0x068 RW Счётчик 8-битных ошибок */
-             uint32_t reserved_0x06C [0x0005];
+         uint32_t reserved_0x06C [0x0005];
     __IO uint32_t SLAVE_DMA_CFG;                      /*!< Offset 0x080 RW Регистр конфигурации Slave DMA */
 } NANDMPORT_TypeDef; /* size of structure = 0x084 */
 /*
@@ -378,7 +377,7 @@ typedef struct NANDMPORT_Type
 /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. */
 typedef struct NORMPORT_Type
 {
-             uint32_t reserved_0x000 [0x0400];
+         uint32_t reserved_0x000 [0x0400];
     __IO uint32_t SMC_MEMC_STATUS;                    /*!< Offset 0x1000 RO Регистр состояния контроллера */
     __IO uint32_t SMC_MEMIF_CFG;                      /*!< Offset 0x1004 RO Регистр конфигурации интерфейса памяти */
     __IO uint32_t SMC_MEMC_CFG_SET;                   /*!< Offset 0x1008 WO Регистр установки конфигурации контроллера */
@@ -386,15 +385,15 @@ typedef struct NORMPORT_Type
     __IO uint32_t SMC_DIRECT_CMD;                     /*!< Offset 0x1010 WO Регистр команд */
     __IO uint32_t SMC_SET_CYCLES;                     /*!< Offset 0x1014 WO Регистр настройки циклов доступа к памяти */
     __IO uint32_t SMC_SET_OPMODE;                     /*!< Offset 0x1018 WO Регистр настройки операции с памятью */
-             uint32_t reserved_0x101C;
+         uint32_t reserved_0x101C;
     __IO uint32_t SMC_REFRESH_PERIOD_0;               /*!< Offset 0x1020 RW Регистр периода обновления */
-             uint32_t reserved_0x1024 [0x0037];
+         uint32_t reserved_0x1024 [0x0037];
     __IO uint32_t SMC_SRAM_CYCLES0_0;                 /*!< Offset 0x1100 RO Регистр параметров цикла доступа к памяти 0 */
     __IO uint32_t SMC_OPMODE0_0;                      /*!< Offset 0x1104 RO Регистр режима операции для памяти 0 */
-             uint32_t reserved_0x1108 [0x0006];
+         uint32_t reserved_0x1108 [0x0006];
     __IO uint32_t SMC_SRAM_CYCLES0_1;                 /*!< Offset 0x1120 RO Регистр параметров цикла доступа к памяти 1 */
     __IO uint32_t SMC_OPMODE0_1;                      /*!< Offset 0x1124 RO Регистр режима операции для памяти 1 */
-             uint32_t reserved_0x1128 [0x03AE];
+         uint32_t reserved_0x1128 [0x03AE];
     __IO uint32_t SMC_PERIPH_ID_0;                    /*!< Offset 0x1FE0 RO ID регистр периферии 0 */
     __IO uint32_t SMC_PERIPH_ID_1;                    /*!< Offset 0x1FE4 RO ID регистр периферии 1 */
     __IO uint32_t SMC_PERIPH_ID_2;                    /*!< Offset 0x1FE8 RO ID регистр периферии 2 */
@@ -403,12 +402,12 @@ typedef struct NORMPORT_Type
     __IO uint32_t SMC_PCELL_ID_1;                     /*!< Offset 0x1FF4 RO ID регистр компонента 1 */
     __IO uint32_t SMC_PCELL_ID_2;                     /*!< Offset 0x1FF8 RO ID регистр компонента 2 */
     __IO uint32_t SMC_PCELL_ID_3;                     /*!< Offset 0x1FFC RO ID регистр компонента 3 */
-             uint32_t reserved_0x2000 [0x0003];
+         uint32_t reserved_0x2000 [0x0003];
     __IO uint32_t STATIC_MEM_CFG_0;                   /*!< Offset 0x200C RW Регистр настройки внешней памяти */
-             uint32_t reserved_0x2010;
+         uint32_t reserved_0x2010;
     __IO uint32_t ADDR_CFG_0;                         /*!< Offset 0x2014 RW Регистр настройки адреса 0 */
     __IO uint32_t ADDR_CFG_1;                         /*!< Offset 0x2018 RW Регистр настройки адреса 1 */
-             uint32_t reserved_0x201C [0x0002];
+         uint32_t reserved_0x201C [0x0002];
     __IO uint32_t BYTE_ORDER;                         /*!< Offset 0x2024 RW Регистр настройки порядка байтов */
 } NORMPORT_TypeDef; /* size of structure = 0x2028 */
 /*
@@ -419,7 +418,7 @@ typedef struct PMCTR_Type
 {
     __IO uint32_t SYS_PWR_UP;                         /*!< Offset 0x000 undocumented */
     __IO uint32_t SYS_PWR_DOWN;                       /*!< Offset 0x004 undocumented */
-             uint32_t reserved_0x008;
+         uint32_t reserved_0x008;
     __IO uint32_t SYS_PWR_STATUS;                     /*!< Offset 0x00C Регистр статуса доменов */
     __IO uint32_t SYS_PWR_IMASK;                      /*!< Offset 0x010 Регистр маски прерывания SYS_PWR_INT */
     __IO uint32_t SYS_PWR_IRSTAT;                     /*!< Offset 0x014 Регистр наличного статуса прерывания SYS_PWR_ISTAT */
@@ -429,7 +428,7 @@ typedef struct PMCTR_Type
     __IO uint32_t DDR_PIN_RET;                        /*!< Offset 0x024 Регистр перевода выводов DDR в режим хранения состояния */
     __IO uint32_t DDR_INIT_END;                       /*!< Offset 0x028 Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации */
     __IO uint32_t WARM_RST_EN;                        /*!< Offset 0x02C Регистр разрешения «теплого» сброса */
-             uint32_t reserved_0x030 [0x0004];
+         uint32_t reserved_0x030 [0x0004];
     __IO uint32_t SW_RST;                             /*!< Offset 0x040 Регистр программного «теплого» сброса */
     __IO uint32_t WARM_RST_STATUS;                    /*!< Offset 0x044 Регистр статуса последнего сброса */
     __IO uint32_t PDM_RST_STATUS;                     /*!< Offset 0x048 Регистр статуса сброса доменов питания */
@@ -439,10 +438,10 @@ typedef struct PMCTR_Type
     __IO uint32_t ALWAYS_MISC0;                       /*!< Offset 0x070 Регистр общего назначения, не сбрасываемый при «теплом» сбросе */
     __IO uint32_t ALWAYS_MISC1;                       /*!< Offset 0x074 Регистр общего назначения, не сбрасываемый при «теплом» сбросе */
     __IO uint32_t WARM_BOOT_OVRD;                     /*!< Offset 0x078 Регистр управления загрузкой при «теплом» сбросе */
-             uint32_t reserved_0x07C;
+         uint32_t reserved_0x07C;
     __IO uint32_t CORE_PWR_UP;                        /*!< Offset 0x080 Регистр включения доменов */
     __IO uint32_t CORE_PWR_DOWN;                      /*!< Offset 0x084 Регистр выключения доменов */
-             uint32_t reserved_0x088;
+         uint32_t reserved_0x088;
     __IO uint32_t CORE_PWR_STATUS;                    /*!< Offset 0x08C Регистр статуса доменов */
     __IO uint32_t CORE_PWR_IMASK;                     /*!< Offset 0x090 Регистр маски прерывания CORE_PWR_INT */
     __IO uint32_t CORE_PWR_IRSTAT;                    /*!< Offset 0x094 Регистр наличного статуса прерывания CORE_PWR_INT */
@@ -458,7 +457,7 @@ typedef struct SDMA_Type
 {
     __IO uint32_t DSR;                                /*!< Offset 0x000 RO Состояние потока управления */
     __IO uint32_t DPC;                                /*!< Offset 0x004 RO Счётчик команд потока управления */
-             uint32_t reserved_0x008 [0x0006];
+         uint32_t reserved_0x008 [0x0006];
     __IO uint32_t INTEN;                              /*!< Offset 0x020 RW Разрешение прерываний */
     __IO uint32_t INT_EVENT_RIS;                      /*!< Offset 0x024 RO Статус прерываний/событий */
     __IO uint32_t INTMIS;                             /*!< Offset 0x028 RO Статус прерываний */
@@ -466,15 +465,15 @@ typedef struct SDMA_Type
     __IO uint32_t FSRD;                               /*!< Offset 0x030 RO Сбой потока управления */
     __IO uint32_t FSRC;                               /*!< Offset 0x034 RO Сбой потоков каналов */
     __IO uint32_t FTRD;                               /*!< Offset 0x038 RO Тип сбоя потока управления */
-             uint32_t reserved_0x03C;
+         uint32_t reserved_0x03C;
     __IO uint32_t FTR [0x008];                        /*!< Offset 0x040 RO Тип ошибки канала 0..7 */
-             uint32_t reserved_0x060 [0x0028];
+         uint32_t reserved_0x060 [0x0028];
     struct
     {
         __IO uint32_t CSR;                            /*!< Offset 0x100 RO Статус канала 0..7 */
         __IO uint32_t CPC;                            /*!< Offset 0x104 RO PC канала 0..7 */
     } CSR_CPC [0x008];                                /*!< Offset 0x100 Статус и PC канала 0..7 */
-             uint32_t reserved_0x140 [0x00B0];
+         uint32_t reserved_0x140 [0x00B0];
     struct
     {
         __IO uint32_t SAR;                            /*!< Offset 0x400 RO Адрес Источника для канала 0..7 */
@@ -482,21 +481,21 @@ typedef struct SDMA_Type
         __IO uint32_t CCR;                            /*!< Offset 0x408 RO Регистр управления для канала 0..7 */
         __IO uint32_t LC0;                            /*!< Offset 0x40C RO Счётчик циклов 0 для канала 0..7 */
         __IO uint32_t LC1;                            /*!< Offset 0x410 RO Счётчик циклов 1 для канала 0..7 */
-                 uint32_t reserved_0x014 [0x0003];
+             uint32_t reserved_0x014 [0x0003];
     } CH [0x008];                                     /*!< Offset 0x400 Состояния каналов 0..7 */
-             uint32_t reserved_0x500 [0x0200];
+         uint32_t reserved_0x500 [0x0200];
     __IO uint32_t DBGSTATUS;                          /*!< Offset 0xD00 RO Debug Status Register */
     __IO uint32_t DBGCMD;                             /*!< Offset 0xD04 WO Debug Command Register */
     __IO uint32_t DBGINST0;                           /*!< Offset 0xD08 WO 0-ой регистр отладки */
     __IO uint32_t DBGINST1;                           /*!< Offset 0xD0C WO 1-ый регистр отладки */
-             uint32_t reserved_0xD10 [0x003C];
+         uint32_t reserved_0xD10 [0x003C];
     __IO uint32_t CR [0x005];                         /*!< Offset 0xE00 RO Регистр конфигурации 0..4 */
     __IO uint32_t CRD;                                /*!< Offset 0xE14 RO Конфигурация SDMA */
-             uint32_t reserved_0xE18 [0x001A];
+         uint32_t reserved_0xE18 [0x001A];
     __IO uint32_t WD;                                 /*!< Offset 0xE80 RW Сторожевой регистр */
-             uint32_t reserved_0xE84 [0x0057];
+         uint32_t reserved_0xE84 [0x0057];
     __IO uint32_t periph_id_n;                        /*!< Offset 0xFE0 RO ID регистры периферии. */
-             uint32_t reserved_0xFE4 [0x0003];
+         uint32_t reserved_0xFE4 [0x0003];
     __IO uint32_t pcell_id_n;                         /*!< Offset 0xFF0 RO ID регистры компонента. */
 } SDMA_TypeDef; /* size of structure = 0xFF4 */
 /*
@@ -509,7 +508,7 @@ typedef struct SMCTR_Type
     __IO uint32_t BOOT_REMAP;                         /*!< Offset 0x004 Регистр управления картой памяти при начальной загрузке */
     __IO uint32_t MPU_CFGNMFI;                        /*!< Offset 0x008 Регистр разрешения немаскируемого FIQ в MPU */
     __IO uint32_t DDR_REMAP;                          /*!< Offset 0x00C Регистр управления картой памяти для DDR */
-             uint32_t reserved_0x010 [0x0005];
+         uint32_t reserved_0x010 [0x0005];
     __IO uint32_t MIPI_MUX;                           /*!< Offset 0x024 Регистр мультиплексирования MIPI DSI */
     __IO uint32_t CHIP_ID;                            /*!< Offset 0x028 ID микросхемы */
     __IO uint32_t CHIP_CONFIG;                        /*!< Offset 0x02C Регистр конфигурации микросхемы */
@@ -533,7 +532,7 @@ typedef struct SWIC_Type
     __IO uint32_t TX_SPEED;                           /*!< Offset 0x010 Регистр коэффициента скорости передачи WR 0x10 */
     __IO uint32_t TX_CODE;                            /*!< Offset 0x014 Регистр управляющего символа (маркера времени, кода распределенного прерывания, кода подтверждения, кода CC11) для передачи в сеть WR 0x14 */
     __IO uint32_t RX_SPEED;                           /*!< Offset 0x018 Регистр скорости приема данных в канале SpaceWire RD 0x18 */
-             uint32_t reserved_0x01C;
+         uint32_t reserved_0x01C;
     __IO uint32_t CNT_RX_PACK;                        /*!< Offset 0x020 Регистр счетчика принятых пакетов ненулевой длины RD/WR 0x20 */
     __IO uint32_t ISR_L;                              /*!< Offset 0x024 Младшие разряды регистра ISR RD/WR 0x24 */
     __IO uint32_t ISR_H;                              /*!< Offset 0x028 Старшие разряды регистра ISR RD/WR 0x28 */
@@ -586,16 +585,16 @@ typedef struct UART_Type
     __IO uint32_t UART_LSR;                           /*!< Offset 0x014 UART Line Status Register */
     __IO uint32_t UART_MSR;                           /*!< Offset 0x018 UART Modem Status Register */
     __IO uint32_t UART_SCR;                           /*!< Offset 0x01C UART Scratch Register */
-             uint32_t reserved_0x020 [0x0004];
+         uint32_t reserved_0x020 [0x0004];
     __IO uint32_t UART_SRBR_STHR [0x010];             /*!< Offset 0x030  */
-             uint32_t reserved_0x070 [0x0003];
+         uint32_t reserved_0x070 [0x0003];
     __IO uint32_t UART_USR;                           /*!< Offset 0x07C  */
     __IO uint32_t UART_TFL;                           /*!< Offset 0x080  */
     __IO uint32_t UART_RFL;                           /*!< Offset 0x084  */
     __IO uint32_t UART_SRR;                           /*!< Offset 0x088  */
     __IO uint32_t UART_SRTS;                          /*!< Offset 0x08C  */
     __IO uint32_t UART_SBCR;                          /*!< Offset 0x090 check address (was: 0x80)  */
-             uint32_t reserved_0x094;
+         uint32_t reserved_0x094;
     __IO uint32_t UART_SFE;                           /*!< Offset 0x098  */
     __IO uint32_t UART_SRT;                           /*!< Offset 0x09C  */
     __IO uint32_t UART_STET;                          /*!< Offset 0x0A0  */
