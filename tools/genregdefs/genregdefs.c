@@ -1336,7 +1336,7 @@ static void generate_cmsis(void) {
 			emitline(0, "#include <core_ca.h>\n");
 		}
 
-		emitline(0, "#include <stdint.h>\n");
+		//emitline(0, "#include <stdint.h>\n");
 		emitline(0, "\n");
 	}
 
