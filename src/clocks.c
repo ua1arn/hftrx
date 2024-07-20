@@ -3936,7 +3936,7 @@ static void set_mbus(void)
 	(void) CCU->MBUS_CLK_REG;
 	/* Enable mbus master clock gating */
 //	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
-#if (CPUSTYLE_F133 || CPUSTYLE_T113_S4)
+#if CPUSTYLE_F133
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
 #endif /* (CPUSTYLE_F133 || CPUSTYLE_T113_S4) */
 }
@@ -4872,9 +4872,8 @@ void allwnrt113_pll_initialize(void)
 {
 #if CPUSTYLE_T113
 	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
-#endif
-#if (CPUSTYLE_F133 || CPUSTYLE_T113_S4)
-	//set_pll_riscv_axi(RV_PLL_CPU_N);	// see sdram.c
+#elif CPUSTYLE_F133)
+	set_pll_riscv_axi(RV_PLL_CPU_N);	// see sdram.c
 #endif
 
 	//set_pll_periph0();

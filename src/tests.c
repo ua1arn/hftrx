@@ -10998,44 +10998,48 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHDEBUG
+#if 0 && (CPUSTYLE_T113) && WITHDEBUG
 	{
-		uint32_t midr;
-		asm volatile("mrc p15, 0, %0, c0, c0, 0" : "=r" (midr));
-		// T113M4: IIDR=0200143B, midr=410FC075 xfel sid: 934072002c0048140105061c54731853
-		// T113S3: IIDR=0200143B, midr=410FC075 xfel sid: 934060000c00481401464015586213cc
-		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
-		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
-		dbg_flush();	/* for see rv64 running effects on UART0 */
-		//	la	a0, 0x02500000
-		//	la	a1, 0x23
-		//	sb	a1, 0 (a0)
-		//	xxx:	j	xxx
-		// Test: write byte 0x23 ('#') to 0x02500000 = UART0 data register
-		static const uint32_t rv64code [] = {
-				0x02500537, // 37 05 50 02
-				0x0230059B,	// 9B 05 30 02
-				0x00B50023, // 23 00 B5 00
-				0x0000006F, // 6F 00 00 00,
-		};
-		dcache_clean_all();
-		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
-#if 0
-		/* setup RISC-V CPU & AXI clock */
-		CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-				//0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
-				0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
-				0;
-		CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
-#endif
-		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
-		RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) rv64code; //ptr_lo32((uintptr_t) rv64code);
-		RISC_CFG->RISC_STA_ADD1_REG = 0;//ptr_hi32((uintptr_t) rv64code);
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << 0));	/* De-assert rv64 reset */
+//		uint32_t midr;
+//		asm volatile("mrc p15, 0, %0, c0, c0, 0" : "=r" (midr));
+//		// T113M4: IIDR=0200143B, midr=410FC075 xfel sid: 934072002c0048140105061c54731853
+//		// T113S3: IIDR=0200143B, midr=410FC075 xfel sid: 934060000c00481401464015586213cc
+//		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
+//		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
+		if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
+		{
+			dbg_flush();	/* for see rv64 running effects on UART0 */
+			//	la	a0, 0x02500000
+			//	la	a1, 0x23
+			//	sb	a1, 0 (a0)
+			//	xxx:	j	xxx
+			// Test: write byte 0x23 ('#') to 0x02500000 = UART0 data register
+			static const uint32_t rv64code [] = {
+					0x02500537, // 37 05 50 02
+					0x0230059B,	// 9B 05 30 02
+					0x00B50023, // 23 00 B5 00
+					0x0000006F, // 6F 00 00 00,
+			};
+			dcache_clean_all();
+			CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
+			CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
+			CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
+	#if 0
+			/* setup RISC-V CPU & AXI clock */
+			CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+					//0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
+					0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
+					0;
+			CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
+	#endif
+			CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
+			RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) rv64code; //ptr_lo32((uintptr_t) rv64code);
+			RISC_CFG->RISC_STA_ADD1_REG = 0;//ptr_hi32((uintptr_t) rv64code);
+			CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << 0));	/* De-assert rv64 reset */
 
-		local_delay_ms(100);	/* see '#' on serial port UART0 */
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
+			local_delay_ms(100);	/* see '#' on serial port UART0 */
+			CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
+		}
 	}
 #endif
 #if 0 && CPUSTYLE_CA53
