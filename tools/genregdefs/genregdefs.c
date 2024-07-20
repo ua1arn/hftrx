@@ -286,12 +286,12 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
-					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "__I" : "__IO", fldtype, regp->fldname, regp->fldrept);
+					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "__I " : "__IO", fldtype, regp->fldname, regp->fldrept);
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
 					// Plain field
-					emitline(indent + INDENT, "%s %s %s;", regp->roflag ? "__I" : "__IO", fldtype, regp->fldname);
+					emitline(indent + INDENT, "%s %s %s;", regp->roflag ? "__I " : "__IO", fldtype, regp->fldname);
 					offs += regp->fldsize;
 				}
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", regp->fldoffs + baseoffset, regp->comment);
