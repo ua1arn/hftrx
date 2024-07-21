@@ -87,34 +87,30 @@ static volatile uint_fast64_t rlfm_position;// = 0;
 static volatile uint_fast64_t rlfm_nsteps;
 static volatile uint_fast64_t rlfm_currfreqX;	//текущач частота
 static volatile uint_fast64_t rlfm_freqStepX;	//шаг приращения
-static LCLSPINLOCK_t lfmlock = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t lfmlock = IRQLSPINLOCK_INIT;
 
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	LCLSPIN_LOCK(& lfmlock);
+	IRQLSPIN_LOCK(& lfmlock, & oldIrql, LFMSYS_IRQL);
 
 	if (rlfm_isrunning == 0)
 	{
 		rlfm_isrunning = 1;
 	}
 
-	LCLSPIN_UNLOCK(& lfmlock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lfmlock, oldIrql);
 }
 
 void lfm_disable(void)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	LCLSPIN_LOCK(& lfmlock);
+	IRQLSPIN_LOCK(& lfmlock, & oldIrql, LFMSYS_IRQL);
 
 	rlfm_isrunning = 0;
 
-	LCLSPIN_UNLOCK(& lfmlock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lfmlock, oldIrql);
 }
 
 int iflfmactive(void)

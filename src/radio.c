@@ -11866,21 +11866,20 @@ uint_fast8_t hamradio_get_bkin_value(void)
 	return bkinenable;
 }
 
-static LCLSPINLOCK_t lockcwmsg = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
+#define CATCWMSG_IRQL IRQL_SYSTEM
 static const char * usersend;
 
 void uif_key_sendcw(const char * msg)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& lockcwmsg);
+	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, CATCWMSG_IRQL);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
 	else
 		usersend = msg;
-	LCLSPIN_UNLOCK(& lockcwmsg);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lockcwmsg, oldIrql);
 }
 
 #else
@@ -13703,7 +13702,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
 
 #if WITHUSBHW && WITHUSBCDCACM
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
@@ -13717,7 +13716,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	return;
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
@@ -14720,7 +14719,7 @@ static void
 cat_reset_ptt(void)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(CATSYS_IRQL, & oldIrql);
 	cattunemode = catstatetx = 0;
 	LowerIrql(oldIrql);
 }
@@ -14748,7 +14747,7 @@ cat_get_ptt(void)
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		RiseIrql(CATSYS_IRQL, & oldIrql);
 		const uint_fast8_t r = cat_get_signal(catsigptt);
 		LowerIrql(oldIrql);
 
@@ -14768,7 +14767,7 @@ uint_fast8_t cat_get_keydown(void)
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		RiseIrql(CATSYS_IRQL, & oldIrql);
 		const uint_fast8_t r = cat_get_signal(catsigkey);
 		LowerIrql(oldIrql);
 
@@ -14799,7 +14798,7 @@ static void processcat_enable(uint_fast8_t enable)
 	if (! catprocenable)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		RiseIrql(CATSYS_IRQL, & oldIrql);
 		HARDWARE_CAT_ENABLERX(0);
 		HARDWARE_CAT_ENABLETX(0);
 		catstatein = CATSTATE_HALTED;
@@ -14821,7 +14820,7 @@ static void processcat_enable(uint_fast8_t enable)
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		RiseIrql(CATSYS_IRQL, & oldIrql);
 		catstatetxdata = 0;
 		cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
@@ -14903,7 +14902,7 @@ cat_answer_forming(void)
 		const uint_fast8_t i = ilast;
 		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		RiseIrql(CATSYS_IRQL, & oldIrql);
 		if (cat_answer_map [i] != 0)
 		{
 			const uint_fast8_t answerparam = cat_answerparam_map [i];
@@ -15842,16 +15841,13 @@ static char beacon_getnextcw(void)
 #elif WITHELKEY && WITHTX
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& lockcwmsg);
+	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, CATCWMSG_IRQL);
 	if (usersend != NULL && * usersend != '\0')
 	{
-		LCLSPIN_UNLOCK(& lockcwmsg);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& lockcwmsg, oldIrql);
 		return * usersend ++;
 	}
-	LCLSPIN_UNLOCK(& lockcwmsg);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lockcwmsg, oldIrql);
 	return '\0';
 #else /* WITHBEACON */
 	return '\0';
@@ -16016,7 +16012,7 @@ static void dpcobj_exit(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 	dp->flag = 0;
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 }
@@ -16028,7 +16024,7 @@ static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
 
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 	v = dp->flag;
 	dp->flag = 1;
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
@@ -16046,7 +16042,7 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp)
 	if (dpcobj_traylock(dp))
 		return 0;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 	InsertHeadList(& dpclistentries, & dp->item);
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
@@ -16060,7 +16056,7 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 
 	dpcobj_exit(dp);
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 	RemoveEntryList(& dp->item);
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
@@ -16077,7 +16073,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp)
 	if (dpcobj_traylock(dp))
 		return 0;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 	InsertHeadList(& dpclistcall, & dp->item);
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
@@ -16098,7 +16094,7 @@ void board_dpc_processing(void)
 	{
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 		for (t = dpclistentries.Blink; t != & dpclistentries; t = t->Blink)
 		{
 			ASSERT(t != NULL);
@@ -16107,7 +16103,7 @@ void board_dpc_processing(void)
 
 			(* dp->fn)(dp->ctx);
 
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 		}
 		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 	}
@@ -16115,7 +16111,7 @@ void board_dpc_processing(void)
 	{
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 		while (! IsListEmpty(& dpclistcall))
 		{
 			PLIST_ENTRY t = RemoveTailList(& dpclistcall);
@@ -16127,7 +16123,7 @@ void board_dpc_processing(void)
 			(* dp->fn)(dp->ctx);
 			dpcobj_exit(dp);
 
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
+			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
 		}
 		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 	}
@@ -18534,10 +18530,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #if WITHLFM
 	case KBD_CODE_DWATCHTOGGLE:
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		lfm_run();
-		LowerIrql(oldIrql);
 		return 1;	/* клавиша уже обработана */
 #elif WITHUSEDUALWATCH
 	case KBD_CODE_DWATCHHOLD:
@@ -19629,20 +19622,6 @@ dspcontrol_mainloop(void)
 	PRINTF(PSTR("dspcontrol_mainloop started.\n"));
 
 	board_update();
-#if 0
-	// Тест производительности.
-	// при запрещённых прерываниях смотрим выхолную частоту на выводе процессора
-	// и сравниваем с тем, что стало при разрешённых прерываниях.
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	for (;;)
-	{
-		local_delay_ms(50);
-		arm_hardware_pioa_outputs(1, 1);
-		local_delay_ms(50);
-		arm_hardware_pioa_outputs(1, 0);
-	}
-#endif
 
 	for (;;)
 	{

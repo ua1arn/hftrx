@@ -839,6 +839,9 @@ uint_fast8_t usbd_cdc1_getdtr(void);
 
 uint_fast8_t usbd_cdc2_getrts(void);
 uint_fast8_t usbd_cdc2_getdtr(void);
+#define USBSYS_IRQL IRQL_SYSTEM
+#define CATSYS_IRQL IRQL_SYSTEM
+#define LFMSYS_IRQL IRQL_REALTIME
 
 void AT91F_PIOA_IRQHandler(void);
 void AT91F_ADC_IRQHandler(void);

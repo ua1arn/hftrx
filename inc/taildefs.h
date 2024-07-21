@@ -209,7 +209,7 @@ void LowerIrql(IRQL_t newIRQL);
 #endif  /* ! LINUX_SUBSYSTEM */
 
 
-	#define DPC_IRQL	IRQL_REALTIME
+	#define DPCSYS_IRQL	IRQL_REALTIME
 
 	typedef void (* udpcfn_t)(void *);
 	typedef struct dpcobj_tag

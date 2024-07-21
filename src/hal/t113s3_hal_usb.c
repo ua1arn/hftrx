@@ -96,7 +96,7 @@
 #define  wBoot_dma_requestrx(sect)     0
 #define  wBoot_dma_requesttx(sect)     0
 
-static LCLSPINLOCK_t lockusbdev = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t lockusbdev = IRQLSPINLOCK_INIT;
 static usb_struct * volatile gpusb = NULL;
 
 #if WITHUSBDMSC
@@ -2102,7 +2102,7 @@ static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_E
 	#define SECOND_CDC_OFFSET 1
 #endif /* WITHUSBCDCACM_N > 1 */
 
-static LCLSPINLOCK_t catlock = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t catlock = IRQLSPINLOCK_INIT;
 
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
@@ -2113,11 +2113,12 @@ static LCLSPINLOCK_t catlock = LCLSPINLOCK_INIT;
 uint_fast8_t usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 	return state;
 }
 
@@ -2126,11 +2127,12 @@ uint_fast8_t usbd_cdc1_getrts(void)
 uint_fast8_t usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 	return state;
 }
 
@@ -2140,11 +2142,12 @@ uint_fast8_t usbd_cdc2_getrts(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 	return state;
 #else /* WITHUSBCDCACM_N > 1 */
 	return 0;
@@ -2157,11 +2160,12 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 {
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 	return state;
 #else /* WITHUSBCDCACM_N > 1 */
 	return 0;
@@ -2176,8 +2180,7 @@ static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество дан
 void usbd_cdc_send(const void * buff, size_t length)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& lockusbdev);
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
@@ -2199,8 +2202,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 //  		}
 //  		while(ret == USB_RETVAL_NOTCOMP);
 	}
-	LCLSPIN_UNLOCK(& lockusbdev);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 }
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
@@ -2221,9 +2223,10 @@ uint_fast8_t usbd_cdc_ready(void)	/* временное решение для п
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	usbd_cdc_txenabled [offset] = state;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
@@ -2231,9 +2234,10 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	usbd_cdcX_rxenabled [offset] = state;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
@@ -2243,10 +2247,11 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	//USBD_HandleTypeDef * const pdev = ctx;
 	(void) ctx;
-	LCLSPIN_LOCK(& catlock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
-	LCLSPIN_UNLOCK(& catlock);
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
 
 /* использование буфера принятых данных */
@@ -3927,13 +3932,11 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 	PCD_HandleTypeDef * hpcd = (PCD_HandleTypeDef*) pdev->pData;
 	ASSERT(hpcd != NULL);
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& lockusbdev);
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	usb_device_function(hpcd);
 
-	LCLSPIN_UNLOCK(& lockusbdev);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 }
 
 void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
@@ -3942,13 +3945,11 @@ void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 	ASSERT(hpcd != NULL);
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& lockusbdev);
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	awxx_setup_fifo(pusb);
 
-	LCLSPIN_UNLOCK(& lockusbdev);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 }
 
 static void usb_params_init(PCD_HandleTypeDef *hpcd)
@@ -4062,8 +4063,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	//uint32_t temp;
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-  	LCLSPIN_LOCK(& lockusbdev);
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
   	usb_struct_init(hpcd);	// так же сбрасывается адрес в регистрах
 
@@ -4098,8 +4098,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
-  	LCLSPIN_UNLOCK(& lockusbdev);
-  	LowerIrql(oldIrql);
+  	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 
 	return;
 }
@@ -4215,8 +4214,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-  	LCLSPIN_LOCK(& lockusbdev);
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
 
@@ -4367,8 +4365,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
   	usb_device_function(hpcd);
 
-  	LCLSPIN_UNLOCK(& lockusbdev);
-  	LowerIrql(oldIrql);
+  	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 }
 
 /**

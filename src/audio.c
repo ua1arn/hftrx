@@ -1443,7 +1443,7 @@ typedef struct agcstate
 	FLOAT_t  agcfastcap;	// разница после выпрямления
 	FLOAT_t  agcslowcap;	// разница после выпрямления
 	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
-	LCLSPINLOCK_t lock /* = LCLSPINLOCK_INIT */;
+	IRQLSPINLOCK_t lock /* = IRQLSPINLOCK_INIT */;
 } agcstate_t;
 
 typedef struct agcparams
@@ -1582,7 +1582,8 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 static void
 agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 {
-	LCLSPIN_LOCK(& st->lock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 
 	if (st->agcfastcap < sample)
 	{
@@ -1623,23 +1624,25 @@ agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 		// не меняется значение
 		st->agchangticks = agcp->hungticks;
 	}
-	LCLSPIN_UNLOCK(& st->lock);
+	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 }
 
 static FLOAT_t agc_result_slow(agcstate_t * st)
 {
-	LCLSPIN_LOCK(& st->lock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
-	LCLSPIN_UNLOCK(& st->lock);
+	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 
 	return v;
 }
 
 static FLOAT_t agc_result_fast(agcstate_t * st)
 {
-	LCLSPIN_LOCK(& st->lock);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 	const FLOAT_t v = st->agcfastcap;
-	LCLSPIN_UNLOCK(& st->lock);
+	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 
 	return v;
 }
@@ -3312,7 +3315,7 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
-	LCLSPINLOCK_INITIALIZE(& st->lock);
+	IRQLSPINLOCK_INITIALIZE(& st->lock);
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;

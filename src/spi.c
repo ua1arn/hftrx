@@ -4340,9 +4340,9 @@ static uint8_t dmyb [SPDFIO_numwires];
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidflock);
 #if ! USESPIDFSHARESPI
-	IRQLSPINLOCK_INITIALIZE(& spidfcslock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidfcslock);
 #endif /* ! USESPIDFSHARESPI */
 #if defined (SPIDF_SOFTINITIALIZE)
 	// Connect I/O pins
@@ -5475,7 +5475,7 @@ static IRQL_t spidf_iostart(
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidflock);
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_QSPIEN;
@@ -5640,7 +5640,7 @@ static void spidf_unselect(IRQL_t irql)
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidflock);
 
 	//PRINTF("SPIBSC0.SMDMCR=%08lX\n", SPIBSC0.SMDMCR);
 	//PRINTF("SPIBSC0.SPBCR=%08lX\n", SPIBSC0.SPBCR);

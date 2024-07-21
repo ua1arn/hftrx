@@ -4180,8 +4180,8 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #endif /* CPU types */
 
-static RAMDTCM LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
-static RAMDTCM LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
+static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
+static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
