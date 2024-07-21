@@ -7869,25 +7869,3 @@ void hardware_channels_enable(void)
 		p->enable_tx(1);
 	}
 }
-
-#if 0
-static LCLSPINLOCK_t loclk = LCLSPINLOCK_INIT;
-static int lockedv;
-
-// Получить старое значение переменной и обнулить
-// Если переменная модифицируется прерыванием на упрвне SYSTEM
-int fn(int v)
-{
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& loclk);
-
-	int oldv = lockedv;
-	lockedv = 0;
-
-	LCLSPIN_UNLOCK(& loclk);
-	LowerIrql(oldIrql);
-
-	return oldv;
-}
-#endif
