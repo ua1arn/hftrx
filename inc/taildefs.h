@@ -148,7 +148,7 @@ typedef struct irqlspinlock_tag
 
 #define IRQLSPINLOCK_t lclspinlock_t
 
-#define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
+#define IRQLSPINLOCK_INIT { md }
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
