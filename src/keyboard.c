@@ -275,7 +275,7 @@ kbd_scan_local(uint_fast8_t * key)
 		return 0;
 }
 
-static IRQLSPINLOCK_t irqllock;
+static IRQLSPINLOCK_t irqllock = IRQLSPINLOCK_INIT;
 static volatile uint_fast8_t kbd_ready;
 
 static u8queue_t kbdq;
@@ -293,7 +293,7 @@ kbd_spool(void * ctx)
 
 #if ! WITHBBOX
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
 		uint8_queue_put(& kbdq, code);
 
@@ -350,7 +350,7 @@ uint_fast8_t kbd_scan(uint_fast8_t * v)
 {
 	uint_fast8_t f;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& irqllock, & oldIrql);
+	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
 	f = uint8_queue_get(& kbdq, v);
 
@@ -374,7 +374,7 @@ void kbd_initialize(void)
 	static ticker_t kbdticker;
 	static adcdone_t aevent;
 
-	IRQLSPINLOCK_INITIALIZE(& irqllock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& irqllock);
 
 	kbd_last = board_get_pressed_key();
 	if (kbd_last != KEYBOARD_NOKEY)

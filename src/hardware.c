@@ -217,8 +217,10 @@ void xc7z_gpio_output(uint8_t pin)
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 
-static RAMDTCM IRQLSPINLOCK_t tickerslock;
-static RAMDTCM IRQLSPINLOCK_t adcdoneslock;
+static IRQLSPINLOCK_t tickerslock = IRQLSPINLOCK_INIT;
+#define TICKERSLOCK_IRQL TICKER_IRQL
+static IRQLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
+#define ADCDONESLOCK_IRQL TICKER_IRQL
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
@@ -240,7 +242,7 @@ void ticker_add(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	InsertHeadVList(& tickers, & p->item);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
@@ -250,7 +252,7 @@ void ticker_remove(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	RemoveEntryVList(& p->item);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
@@ -260,7 +262,7 @@ void ticker_start(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	switch (p->mode)
 	{
 	case TICKERMD_MANUAL:
@@ -276,7 +278,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	if (p->period < nticks)
 	{
 		p->period = nticks;
@@ -294,7 +296,7 @@ static void tickers_event(void)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	PVLIST_ENTRY t;
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	for (t = tickers.Blink; t != & tickers;)
@@ -333,7 +335,7 @@ static void tickers_event(void)
 
 void tickers_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& tickerslock, TICKER_IRQL);
+	IRQLSPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
 }
 
@@ -341,7 +343,7 @@ void tickers_deinitialize(void)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	RemoveEntryVList(& tickers);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
@@ -349,7 +351,7 @@ void tickers_deinitialize(void)
 // инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& adcdoneslock, TICKER_IRQL);
+	IRQLSPINLOCK_INITIALIZE(& adcdoneslock);
 	InitializeListHead(& adcdones);
 }
 
@@ -365,7 +367,7 @@ void adcdone_add(adcdone_t * p)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql);
+	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql, TICKER_IRQL);
 	InsertHeadVList(& adcdones, & p->item);
 	IRQLSPIN_UNLOCK(& adcdoneslock, oldIrql);
 }
@@ -374,7 +376,7 @@ static void adcdones_event(void)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql);
+	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql, TICKER_IRQL);
 	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{

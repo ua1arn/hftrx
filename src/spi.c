@@ -663,13 +663,14 @@ typedef struct lowspiio_tag
 } lowspiio_t;
 
 #if USESPILOCK
-static IRQLSPINLOCK_t spicslock;
+static IRQLSPINLOCK_t spicslock = IRQLSPINLOCK_INIT;
+#define SPICSLOCK_IRQL IRQL_SYSTEM
 #endif /* USESPILOCK */
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
 #if USESPILOCK
-	IRQLSPIN_LOCK(& spicslock, oldIrql);
+	IRQLSPIN_LOCK(& spicslock, oldIrql, SPICSLOCK_IRQL);
 #else /* USESPILOCK */
 	* oldIrql = IRQL_SYSTEM;	// dummy value
 #endif /* USESPILOCK */
@@ -698,11 +699,12 @@ void spidf_operate_unlock(IRQL_t irql)
 
 #else /* USESPIDFSHARESPI */
 
-static IRQLSPINLOCK_t spidfcslock;
+static IRQLSPINLOCK_t spidfcslock = IRQLSPINLOCK_INIT;
+#define SPIDFCSLOCK_IRQL IRQL_SYSTEM
 
 void spidf_operate_lock(IRQL_t * oldIrql)
 {
-	IRQLSPIN_LOCK(& spidfcslock, oldIrql);
+	IRQLSPIN_LOCK(& spidfcslock, oldIrql, SPIDFCSLOCK_IRQL);
 }
 
 void spidf_operate_unlock(IRQL_t irql)
@@ -3987,7 +3989,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 void spi_initialize(void)
 {
 #if USESPILOCK
-	IRQLSPINLOCK_INITIALIZE(& spicslock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spicslock);
 #endif /* USESPILOCK */
 
 #if WITHSPIHW && WITHSPISW
@@ -4306,11 +4308,12 @@ void nand_tests(void)
 #define SPIDF_SPEEDC SPIC_SPEEDFAST
 #endif
 
-static IRQLSPINLOCK_t spidflock;	// протокольная блокировка (несколько физических обменов)
+static IRQLSPINLOCK_t spidflock = IRQLSPINLOCK_INIT;	// протокольная блокировка (несколько физических обменов)
+#define SPIDFLOCK_IRQL IRQL_SYSTEM
 
 static void accureDATAFLASH(IRQL_t * oldIRQL)
 {
-	IRQLSPIN_LOCK(& spidflock, oldIRQL);
+	IRQLSPIN_LOCK(& spidflock, oldIRQL, SPIDFLOCK_IRQL);
 }
 
 static void releaseDATAFLASH(IRQL_t setIRQL)
@@ -4598,9 +4601,9 @@ static int spi_verify_b8(spitarget_t target, const void * buf, int len, uint_fas
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidflock);
 #if ! USESPIDFSHARESPI
-	IRQLSPINLOCK_INITIALIZE(& spidfcslock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidfcslock);
 #endif /* ! USESPIDFSHARESPI */
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize

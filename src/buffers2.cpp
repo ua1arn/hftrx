@@ -385,6 +385,7 @@ class blists
 	typedef typeof(buffitem_t::v) element_t;
 public:
 	IRQLSPINLOCK_t irqllocl;
+	IRQL_t irqllockarg;
 #if WITHBUFFERSDEBUG
 	int errallocate;
 	int saveount;
@@ -416,6 +417,7 @@ public:
 
 	}
 	blists(IRQL_t airql, const char * aname, buffitem_t * storage, unsigned capacity) :
+		irqllockarg(airql),
 #if WITHBUFFERSDEBUG
 		errallocate(0),
 		saveount(0),
@@ -434,7 +436,7 @@ public:
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
-		IRQLSPINLOCK_INITIALIZE(& irqllocl, airql);
+		IRQLSPINLOCK_INITIALIZE(& irqllocl);
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
 			buffitem_t * const p = & storage [i];
@@ -460,7 +462,7 @@ public:
 		ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 
 		InsertHeadList(& freelist, & p->item);
 		++ freecount;
@@ -477,7 +479,7 @@ public:
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 
 		InsertHeadList(& readylist, & p->item);
 		++ readycount;
@@ -494,7 +496,7 @@ public:
 	bool get_readybuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
@@ -518,7 +520,7 @@ public:
 	bool get_freebuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& freelist);
@@ -545,7 +547,7 @@ public:
 		IRQL_t oldIrql;
 
 		InitializeListHead(list);
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
@@ -562,7 +564,7 @@ public:
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 
 		while (! IsListEmpty(list))
 		{
@@ -657,7 +659,7 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
@@ -674,7 +676,7 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 
 		fqin.spool10ms();
 		fqout.spool10ms();
@@ -3289,7 +3291,7 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 	PLIST_ENTRY t;
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3304,7 +3306,7 @@ void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOA
 	IRQL_t oldIrql;
 	PLIST_ENTRY t;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3322,7 +3324,7 @@ void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 	IRQL_t oldIrql;
 	PLIST_ENTRY t;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
@@ -3337,7 +3339,7 @@ void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx
 
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	InsertHeadList(& list->head, & target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3346,7 +3348,7 @@ void unsubscribefloat(deliverylist_t * list, subscribefloat_t * target)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3357,7 +3359,7 @@ void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx
 
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	InsertHeadList(& list->head, & target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3366,7 +3368,7 @@ void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql);
+	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3374,7 +3376,8 @@ void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
 void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 {
 	InitializeListHead(& list->head);
-	IRQLSPINLOCK_INITIALIZE(& list->listlock, irqlv);
+	list->irql = irqlv;
+	IRQLSPINLOCK_INITIALIZE(& list->listlock);
 }
 
 #endif /* WITHINTEGRATEDDSP */

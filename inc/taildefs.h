@@ -137,20 +137,19 @@ typedef struct lclspinlock_tag {
 
 typedef struct irqlspinlock_tag
 {
-	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 } IRQLSPINLOCK_t;
 
-//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
-#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
+#define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
+#define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); } while (0)
 #else /* ! LINUX_SUBSYSTEM */
 
 /* Linux targets: No any hardware IRQ control */
 
 #define IRQLSPINLOCK_t lclspinlock_t
 
-//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
-#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
+#define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
+#define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
@@ -198,13 +197,13 @@ void LowerIrql(IRQL_t newIRQL);
 #if ! LINUX_SUBSYSTEM
 
 	/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
-	#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
+	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
 
 #else  /* ! LINUX_SUBSYSTEM */
 
 	/* Linux targets: No any hardware IRQ control */
-	#define IRQLSPIN_LOCK(p, oldIrql) do { LCLSPIN_LOCK(p); } while (0)
+	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { LCLSPIN_LOCK(p); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
 
 #endif  /* ! LINUX_SUBSYSTEM */

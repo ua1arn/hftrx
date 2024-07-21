@@ -16002,12 +16002,12 @@ static void second_01_s_event(void * ctx)
 
 static LIST_ENTRY dpclistentries;	// list of dpcobj_t - периодичски вызываемые функции
 static LIST_ENTRY dpclistcall;	// list of dpcobj_t = однократно вызываемые функции
-static IRQLSPINLOCK_t dpclistlock;
+static IRQLSPINLOCK_t dpclistlock = IRQLSPINLOCK_INIT;
 
 /* инициализация списка user-mode опросных функций */
 void board_dpc_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& dpclistlock, DPC_IRQL);
+	IRQLSPINLOCK_INITIALIZE(& dpclistlock);
 	InitializeListHead(& dpclistentries);
 	InitializeListHead(& dpclistcall);
 }
@@ -16016,7 +16016,7 @@ static void dpcobj_exit(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 	dp->flag = 0;
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 }
@@ -16028,7 +16028,7 @@ static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
 
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 	v = dp->flag;
 	dp->flag = 1;
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
@@ -16046,7 +16046,7 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp)
 	if (dpcobj_traylock(dp))
 		return 0;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 	InsertHeadList(& dpclistentries, & dp->item);
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
@@ -16060,7 +16060,7 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 
 	dpcobj_exit(dp);
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 	RemoveEntryList(& dp->item);
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
@@ -16077,7 +16077,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp)
 	if (dpcobj_traylock(dp))
 		return 0;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 	InsertHeadList(& dpclistcall, & dp->item);
 	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
@@ -16098,7 +16098,7 @@ void board_dpc_processing(void)
 	{
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 		for (t = dpclistentries.Blink; t != & dpclistentries; t = t->Blink)
 		{
 			ASSERT(t != NULL);
@@ -16107,7 +16107,7 @@ void board_dpc_processing(void)
 
 			(* dp->fn)(dp->ctx);
 
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 		}
 		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 	}
@@ -16115,7 +16115,7 @@ void board_dpc_processing(void)
 	{
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 		while (! IsListEmpty(& dpclistcall))
 		{
 			PLIST_ENTRY t = RemoveTailList(& dpclistcall);
@@ -16127,7 +16127,7 @@ void board_dpc_processing(void)
 			(* dp->fn)(dp->ctx);
 			dpcobj_exit(dp);
 
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPC_IRQL);
 		}
 		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 	}

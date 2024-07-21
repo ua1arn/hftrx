@@ -3922,13 +3922,14 @@ typedef struct fftbuff_tag
 
 static LIST_ENTRY fftbuffree;
 static LIST_ENTRY fftbufready;
-static IRQLSPINLOCK_t fftlock;
+static IRQLSPINLOCK_t fftlock = IRQLSPINLOCK_INIT;
+#define FFTLOCL_IRQL IRQL_REALTIME
 
 // realtime-mode function
 uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql);
+	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftbuffree))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
@@ -3954,7 +3955,7 @@ uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 void saveready_fftbuffer(fftbuff_t * p)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql);
+	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	while (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
@@ -3968,7 +3969,7 @@ void saveready_fftbuffer(fftbuff_t * p)
 void release_fftbuffer(fftbuff_t * p)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql);
+	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	InsertHeadList(& fftbuffree, & p->item);
 	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 }
@@ -3977,7 +3978,7 @@ void release_fftbuffer(fftbuff_t * p)
 uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql);
+	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftbufready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
@@ -4051,7 +4052,7 @@ void fftbuffer_initialize(void)
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffI, filled);
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffQ, filled);
 	}
-	IRQLSPINLOCK_INITIALIZE(& fftlock, IRQL_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& fftlock);
 }
 
 #if (__ARM_FP & 0x08) || __riscv_d

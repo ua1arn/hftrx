@@ -573,6 +573,7 @@ typedef struct deliverylist_tag
 {
 	LIST_ENTRY head;
 	IRQLSPINLOCK_t listlock;
+	IRQL_t irql;
 } deliverylist_t;
 
 /* irqlv - на каком уровне IRQL_t будут вызываться фуекции подписавшихся */

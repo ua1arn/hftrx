@@ -69,7 +69,8 @@ uint8_t ft8_tx = 0;
 uint32_t bufind = 0;
 uint8_t ft8_mox_request = 0;
 volatile uint8_t ft8_encode_req = 0;
-static IRQLSPINLOCK_t ft8bufflock /* = IRQLSPINLOCK_INIT */;
+static IRQLSPINLOCK_t ft8bufflock = IRQLSPINLOCK_INIT;
+#define FT8PROC_IRQL IRQL_REALTIME
 
 static subscribefloat_t ft8_outregister;
 
@@ -559,7 +560,7 @@ static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	if (fill_ft8_buf1 == 1)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
+		IRQLSPIN_LOCK(& ft8bufflock, & oldIrql, FT8PROC_IRQL);
 		ASSERT(bufind1 < bufsize);
 		ft8.rx_buf1 [bufind1] = ch0;
 		bufind1 ++;
@@ -575,7 +576,7 @@ static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	if (fill_ft8_buf2 == 1)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
+		IRQLSPIN_LOCK(& ft8bufflock, & oldIrql, FT8PROC_IRQL);
 		ASSERT(bufind2 < bufsize);
 		ft8.rx_buf2 [bufind2] = ch0;
 		bufind2 ++;
@@ -592,7 +593,7 @@ static void ft8fill(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 void ft8_start_fill(void)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
+	IRQLSPIN_LOCK(& ft8bufflock, & oldIrql, FT8PROC_IRQL);
 	if (fill_ft8_buf1)
 	{
 		PRINTF("ft8: start fill 2\n");
@@ -609,7 +610,7 @@ void ft8_start_fill(void)
 void ft8_stop_fill(void)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& ft8bufflock, & oldIrql);
+	IRQLSPIN_LOCK(& ft8bufflock, & oldIrql, FT8PROC_IRQL);
 
 	fill_ft8_buf1 = 0;
 	fill_ft8_buf1 = 0;
@@ -638,7 +639,7 @@ void ft8_do_encode(void)
 
 void ft8_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& ft8bufflock, IRQL_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& ft8bufflock);
 
 	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
 	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
