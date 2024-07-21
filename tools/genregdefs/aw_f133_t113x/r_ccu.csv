@@ -2,19 +2,11 @@
 # https://github.com/Evlers/linux_kernel_t113/blob/d7d8c971c9c5d436c03f85b9bd18e0f90abbec00/arch/arm/boot/dts/sun8i-t113.dtsi#L1227
 # https://github.com/Tina-Linux/tina-t113-linux-5.4/blob/150c69d4f2b0886db269cc7883f007e2cdcd839c/drivers/clk/sunxi-ng/ccu-sun8iw20-r.c#L131
 
-# see also R_PRCM
-
 # R_PRCM used in ddr memory initialization
 
 #type; R_PRCM
+
 #base; R_PRCM 0x07010000
-
-#regdef; VDD_SYS_PWROFF_GATING_REG; 0x250;
-#regdef; ANALOG_PWROFF_GATING_REG; 0x254;
-
-#typeend;
-
-#type; R_CCU
 #base; R_CCU 0x07010000
 
 #regdef; VDD_SYS_PWROFF_GATING_REG; 0x250;

@@ -242,7 +242,7 @@ typedef enum IRQn
 #define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Video Decoding Base */
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG RISC-V core configuration register Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
-#define R_CCU_BASE ((uintptr_t) 0x07010000)           /*!< R_CCU  Base */
+#define R_CCU_BASE ((uintptr_t) 0x07010000)           /*!< R_PRCM  Base */
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
@@ -2168,16 +2168,6 @@ typedef struct RTC_Type
          uint32_t reserved_0x314 [0x033B];
 } RTC_TypeDef; /* size of structure = 0x1000 */
 /*
- * @brief R_CCU
- */
-/*!< R_CCU  */
-typedef struct R_CCU_Type
-{
-         uint32_t reserved_0x000 [0x0094];
-    __IO uint32_t VDD_SYS_PWROFF_GATING_REG;          /*!< Offset 0x250  */
-    __IO uint32_t ANALOG_PWROFF_GATING_REG;           /*!< Offset 0x254  */
-} R_CCU_TypeDef; /* size of structure = 0x258 */
-/*
  * @brief R_CPUCFG
  */
 /*!< R_CPUCFG  */
@@ -3439,7 +3429,7 @@ typedef struct VE_Type
 #define TVD0 ((TVD0_TypeDef *) TVD0_BASE)             /*!< TVD0 Video Decoding register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
-#define R_CCU ((R_CCU_TypeDef *) R_CCU_BASE)          /*!< R_CCU  register set access pointer */
+#define R_CCU ((R_PRCM_TypeDef *) R_CCU_BASE)         /*!< R_CCU  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
