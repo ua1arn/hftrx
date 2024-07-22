@@ -12619,6 +12619,38 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>SYSMAP</name>
+  <description>XuanTie-Openc906</description>
+  <baseAddress>0xEFFFF000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <register>
+      <name>ADDR</name>
+      <displayName>ADDR</displayName>
+      <description>Upper 28 bits of an address.</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
+      <description>Page attributes of memory</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SYS_CFG</name>
   <description></description>
   <baseAddress>0x03000000</baseAddress>

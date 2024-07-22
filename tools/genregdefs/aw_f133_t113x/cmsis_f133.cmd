@@ -2,7 +2,7 @@
 
 SET CONVERTER=..\Debug\genregdefs.exe 
 SET OUTFILE=..\..\..\arch\aw_f133\device.h
-SET FILELIST=risc_cfg.csv risc_wdg.csv risc_timestamp.csv ccu.csv plic.csv sys_cfg.csv ^
+SET FILELIST=risc_cfg.csv risc_wdg.csv risc_timestamp.csv ccu.csv plic.csv sysmap.csv sys_cfg.csv ^
 	can.csv uart.csv gpio.csv smhc.csv i2s_pcm.csv dmic.csv owa.csv audio_codec.csv twi.csv spi.csv ^
 	cir_rx.csv cir_tx.csv ledc.csv tpadc.csv gpadc.csv ce.csv rtc.csv iommu.csv ths.csv timer.csv hstimer.csv ^
 	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^

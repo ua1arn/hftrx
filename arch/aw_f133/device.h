@@ -91,6 +91,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define SYSMAP_BASE ((uintptr_t) 0xEFFFF000)          /*!< SYSMAP XuanTie-Openc906 Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
@@ -2222,6 +2223,18 @@ typedef struct SPI_Type
          uint32_t reserved_0x304 [0x033F];
 } SPI_TypeDef; /* size of structure = 0x1000 */
 /*
+ * @brief SYSMAP
+ */
+/*!< SYSMAP XuanTie-Openc906 */
+typedef struct SYSMAP_Type
+{
+    struct
+    {
+        __IO uint32_t ADDR;                           /*!< Offset 0x000 Upper 28 bits of an address. */
+        __IO uint32_t ATTR;                           /*!< Offset 0x004 Page attributes of memory */
+    } PARAM [0x008];                                  /*!< Offset 0x000 address spaces 0..7 */
+} SYSMAP_TypeDef; /* size of structure = 0x040 */
+/*
  * @brief SYS_CFG
  */
 /*!< SYS_CFG  */
@@ -3188,6 +3201,7 @@ typedef struct VE_Type
 
 /* Access pointers */
 
+#define SYSMAP ((SYSMAP_TypeDef *) SYSMAP_BASE)       /*!< SYSMAP XuanTie-Openc906 register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */

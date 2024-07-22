@@ -2685,22 +2685,96 @@ sysinit_ttbr_initialize(void)
 
 #elif CPUSTYLE_RISCV
 
+#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
+#define RAM_ATTRS 	(UINT32_C(0x03) << 2)	// Cacheable memory
+#define NCRAM_ATTRS 		(UINT32_C(0x01) << 2)	// Non-cacheable memory
+
+#define FULLADFSZ 32	// Not __riscv_xlen
+
 	csr_write_satp(0);
-//
+	printhex32(SYSMAP_BASE, SYSMAP, sizeof * SYSMAP);
+
+	{
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
+		{
+			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
+			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
+					i,
+					(unsigned) (SYSMAP->PARAM [i].ADDR << (FULLADFSZ - 28)),
+					(attr >> 4) & 0x01,
+					(attr >> 3) & 0x01,
+					(attr >> 2) & 0x01
+					);
+		}
+	}
+
+	SYSMAP->PARAM [0].ADDR = (0x00000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [1].ADDR = (0x40000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+
+	SYSMAP->PARAM [2].ADDR = (__ramnc_base >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
+
+	SYSMAP->PARAM [3].ADDR = (__ramnc_top >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
+
+	//
+	SYSMAP->PARAM [4].ADDR = (0xF0000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [5].ADDR = (0xF1000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [6].ADDR = (0xF2000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [7].ADDR = (0xF3000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
+
+	{
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
+		{
+			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
+			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
+					i,
+					(unsigned) (SYSMAP->PARAM [i].ADDR << (FULLADFSZ - 28)),
+					(attr >> 4) & 0x01,
+					(attr >> 3) & 0x01,
+					(attr >> 2) & 0x01
+					);
+		}
+	}
+
+//	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+//	volatile uint32_t * const tlbbase = & __TTB_BASE;
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
 //	csr_write_sptbr((uintptr_t) tlbbase >> 10);
-//
-//	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
-//	// 3.1.6 Virtualization Management Field in mstatus Register
-//	// Table 3.3: Encoding of virtualization management field VM[4:0]
-//
+
+	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
+	// 3.1.6 Virtualization Management Field in mstatus Register
+	// Table 3.3: Encoding of virtualization management field VM[4:0]
+
 //	{
 //		uint_xlen_t v = csr_read_mstatus();
 //		v &= ~ ((uint_xlen_t) 0x1F) << 24;	// VM[4:0]
 //		v |= ((uint_xlen_t) 0x08) << 24;	// Set Page-based 32-bit virtual addressing.
 //		//csr_write_mstatus(v);
 //	}
+
+
+	// 15.1.2 M-mode exception configuration register group
+	// https://riscv.org/wp-content/uploads/2019/08/riscv-privileged-20190608-1.pdf
+
 
 #endif
 }
