@@ -123,10 +123,8 @@ SECTIONS
 		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
 		QUAD ((__bss_end__ - __bss_start__) / 4)
-	/*
 		QUAD (__bss2_start__)
 		QUAD ((__bss2_end__ - __bss2_start__) / 4)
-	*/
 		__zero_table_end64__ = .;
 	} > RAM
 
@@ -198,6 +196,16 @@ SECTIONS
 		. = ALIGN(64);
 		*(.noinit*)
 		*(.framebuff*)
+	} > DDR3
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
 	} > DDR3
 
 	.heap (NOLOAD):
