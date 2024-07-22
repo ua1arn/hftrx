@@ -1137,7 +1137,8 @@ typedef struct DMIC_Type
     __IO uint32_t HPF_EN_CTR;                         /*!< Offset 0x038 High Pass Filter Enable Control Register */
     __IO uint32_t HPF_COEF_REG;                       /*!< Offset 0x03C High Pass Filter Coefficient Register */
     __IO uint32_t HPF_GAIN_REG;                       /*!< Offset 0x040 High Pass Filter Gain Register */
-} DMIC_TypeDef; /* size of structure = 0x044 */
+         uint32_t reserved_0x044 [0x00EF];
+} DMIC_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief DSI
  */

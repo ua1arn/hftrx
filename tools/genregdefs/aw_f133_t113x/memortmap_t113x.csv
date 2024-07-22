@@ -1,5 +1,4 @@
 #type; GPIO
-
 #base; GPIOB 0x02000030
 #base; GPIOC 0x02000060
 #base; GPIOD 0x02000090
@@ -9,19 +8,16 @@
 #typeend;
 
 #type; GPIOBLOCK
-
 #base; GPIOBLOCK 0x02000000
 #typeend;
 
 #type; GPIOINT
-
 #base; GPIOINTB 0x02000220
 #base; GPIOINTC 0x02000240
 #base; GPIOINTD 0x02000260
 #base; GPIOINTE 0x02000280
 #base; GPIOINTF 0x020002A0
 #base; GPIOINTG 0x020002C0
-
 #irq; GPIOB_NS 101 
 #irq; GPIOB_S 102 
 #irq; GPIOC_NS 103 
@@ -33,7 +29,6 @@
 #irq; GPIOF_NS 109 
 #irq; GPIOF_S 110 
 #irq; GPIOG_NS 111 
-
 #irqrv; GPIOB_NS 85 
 #irqrv; GPIOC_NS 87 
 #irqrv; GPIOD_NS 89
@@ -49,7 +44,6 @@
 #base; UART3 0x02500C00
 #base; UART4 0x02501000
 #base; UART5 0x02501400
-
 #irq; UART0 34
 #irq; UART1 35
 #irq; UART2 36
@@ -63,3 +57,39 @@
 #irqrv; UART4 22
 #irqrv; UART5 23
 #typeend;
+
+#type; TWI
+#base; TWI0 0x02502000
+#base; TWI1 0x02502400
+#base; TWI2 0x02502800
+#base; TWI3 0x02502C00
+#irq; TWI0 41
+#irq; TWI1 42
+#irq; TWI2 43
+#irq; TWI3 44
+#irqrv; TWI0 25
+#irqrv; TWI1 26
+#irqrv; TWI2 27
+#irqrv; TWI3 28
+#typeend;
+
+#type; TIMER
+#base; TIMER 0x02050000
+#irq; TIMER0 91
+#irq; TIMER1 92
+#irq; WATCHDOG 95
+#irqrv; TIMER0 75
+#irqrv; TIMER1 76
+#irqrv; WATCHDOG 79
+#typeend;
+
+#type; DMIC
+#base; DMIC 0x02031000
+#typeend;
+
+#type; GPADC
+#base; GPADC 0x02009000
+#irq; GPADC 89
+#irqrv; GPADC 73
+#typeend;
+
