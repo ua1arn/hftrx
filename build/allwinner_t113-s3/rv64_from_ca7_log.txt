@@ -1,0 +1,109 @@
+arm_hardware_sdram_initialize start
+default: allwnrt113_get_pll_ddr_freq()=432000000
+default: allwnrt113_get_dram_freq()=600000000
+DRAM BOOT DRIVE INFO: V0.24
+DRAM CLK = 936 MHz
+DRAM Type = 3 (2:DDR2,3:DDR3)
+DRAMC read ODT off
+ZQ value = 0x2d
+DDR CLK = 1872 MHz
+DDR efuse: 0xa
+DDR Using MAP: 0
+MCTL_COM_REMAP0 = 0x1
+MCTL_COM_REMAP1 = 0x0
+MCTL_COM_REMAP2 = 0x0
+MCTL_COM_REMAP3 = 0x0
+single rank and full DQ!
+DDR CLK = 1872 MHz
+DDR efuse: 0xa
+DDR Using MAP: 0
+MCTL_COM_REMAP0 = 0x1
+MCTL_COM_REMAP1 = 0x0
+MCTL_COM_REMAP2 = 0x0
+MCTL_COM_REMAP3 = 0x0
+rank 0 row = 14
+para->dram_para1 = 0x10e2
+rank 0 bank = 8
+para->dram_para1 = 0x10e2
+rank 0 page size = 2 KB
+para->dram_para1 = 0x10e2
+DRAM ODT value: 0x42
+DDR CLK = 1872 MHz
+DDR efuse: 0xa
+DDR Using MAP: 0
+MCTL_COM_REMAP0 = 0x1
+MCTL_COM_REMAP1 = 0x0
+MCTL_COM_REMAP2 = 0x0
+MCTL_COM_REMAP3 = 0x0
+DRAM: size = 256MB
+DRAM: simple test OK
+settings: allwnrt113_get_pll_ddr_freq()=1872000000
+settings: allwnrt113_get_dram_freq()=1872000000
+arm_hardware_sdram_initialize done
+$CPU0: VBAR=00020140, TTBR0=42000008, cpsr=000001DF, SCTLR=20C5187D, ACTLR=00006040, sp=00047FE8, MPIDR=80000000
+Version Jul 22 2024 15:27:16 1 debug session starts.
+hardware_channels_initialize: dummy audio codec
+hardware_channels_initialize: dummy FPGA I/Q
+hardware_channels_initialize: dummy FPGA spectrum for WFM
+display_hardware_initialize start
+display_hardware_initialize done
+Most of hardware initialized.
+initialize2() started.
+KBD ok
+initialize2: finished.
+hardware_channels_enable: dummy audio codec
+hardware_channels_enable: dummy FPGA I/Q
+hardware_channels_enable: dummy FPGA spectrum for WFM
+__GNUC__=13, __GNUC_MINOR__=2
+bootloader_mainloop: wait user/USB loop [0002956C]
+bootloader_mainloop: user user/USB loop, CPU_FREQ=1200 MHz
+bootloader_mainloop: user boot button released
+spidf: ID=0xEF devId=0x4017, mf_dlen=0x00
+bootloader_copyapp: addr=40000100, len=0005B318
+spidf: ID=0xEF devId=0x4017, mf_dlen=0x00
+bootloader_copyapp done - checksum okay.
+bootloader_mainloop: ip=40000100
+EFFFF000: FFFFFFFF FFFFFDFF FFFFFFFF FFFFFFFF FBFFFBFF FDFFDFFF FFFFFFBF FFFFFFFF
+EFFFF020: FFFDFFFF FFFFFFFD FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFBFFFFF FFFFFFFF
+SYSMAP zone0: base=FFFFFFF0 SO=1, C=1. B=1
+SYSMAP zone1: base=FFFFFFF0 SO=1, C=1. B=1
+SYSMAP zone2: base=BFFFBFF0 SO=1, C=1. B=1
+SYSMAP zone3: base=FFFFFBF0 SO=1, C=1. B=1
+SYSMAP zone4: base=FFDFFFF0 SO=1, C=1. B=1
+SYSMAP zone5: base=FFFFFFF0 SO=1, C=1. B=1
+SYSMAP zone6: base=FFFFFFF0 SO=1, C=1. B=1
+SYSMAP zone7: base=FBFFFFF0 SO=1, C=1. B=1
+SYSMAP zone0: base=00000000 SO=1, C=0. B=0
+SYSMAP zone1: base=40000000 SO=0, C=1. B=1
+SYSMAP zone2: base=40300000 SO=0, C=0. B=1
+SYSMAP zone3: base=40400000 SO=0, C=1. B=1
+SYSMAP zone4: base=F0000000 SO=1, C=0. B=0
+SYSMAP zone5: base=F1000000 SO=1, C=0. B=0
+SYSMAP zone6: base=F2000000 SO=1, C=0. B=0
+SYSMAP zone7: base=F3000000 SO=1, C=0. B=0
+Version Jul 22 2024 14:40:07 1 debug session starts.
+hardware_channels_initialize: audiocodechw-hwblock-duplex-master
+AudioCodec: prei=0, value=0, lrckf=24576000, (clk=24571428)
+AudioCodec: allwnrt113_get_audio_codec_adc_freq()=24571 kHz
+AudioCodec: allwnrt113_get_audio_codec_dac_freq()=24571 kHz
+ADCINPUTS_COUNT=8: 14,14,15,10,7,2,1,0
+hardware_adc_initialize
+display_hardware_initialize start
+allwnrt113_get_de_freq()=297 MHz
+display_hardware_initialize done
+Most of hardware initialized.
+initialize2() started.
+KBD ok
+initialize2: finished.
+dsp_initialize: ARMI2SRATE=48000, ARMI2SRATE100=48000.00
+spidf: ID=0xEF devId=0x4017, mf_dlen=0x00
+spidf: ID=0xEF devId=0x4017, mf_dlen=0x00
+hardware_channels_enable: audiocodechw-hwblock-duplex-master
+af codec type = 'audiocodechw'
+audiocodechw_setvolume: gain=24, mute=0, mutespk=0
+if codec type = 'FPGA_V1'
+__GNUC__=13, __GNUC_MINOR__=2
+spidf: ID=0xEF devId=0x4017, mf_dlen=0x00
+spidf: ID=0xEF devId=0x4017, mf_dlen=0x00
+audiocodechw_setvolume: gain=24, mute=0, mutespk=0
+usb_device: DFU EP0 OUT: req=0x0B, wLength=0x0000, wValue=0x0000
