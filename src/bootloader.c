@@ -200,13 +200,29 @@ bootloader_launch_app(uintptr_t ip)
 
 	}
 	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+#if 0
 
+	// start RV64 core as application
+	const unsigned tgcode = 0;	// core for start
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
+	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
+	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << tgcode));	/* Assert rv64 reset */
+	CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
+	RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32((uintptr_t) ip);
+	RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32((uintptr_t) ip);
+	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << tgcode));	/* De-assert rv64 reset */
+	for (;;)
+	{
+		__WFE();
+	}
+
+#else
 
 	(* (void (*)(void)) ip)();
-
-
 	for (;;)
 		;
+
+#endif
 }
 
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
