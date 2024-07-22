@@ -2230,7 +2230,7 @@ typedef struct SYSMAP_Type
 {
     struct
     {
-        __IO uint32_t ADDR;                           /*!< Offset 0x000 Upper 28 bits of an address. */
+        __IO uint32_t ADDR;                           /*!< Offset 0x000 Upper 28 bits of an address. The largest address (noninclusive) of address space */
         __IO uint32_t ATTR;                           /*!< Offset 0x004 Page attributes of memory */
     } PARAM [0x008];                                  /*!< Offset 0x000 address spaces 0..7 */
 } SYSMAP_TypeDef; /* size of structure = 0x040 */

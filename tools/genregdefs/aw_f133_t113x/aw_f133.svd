@@ -12630,7 +12630,7 @@
      <register>
       <name>ADDR</name>
       <displayName>ADDR</displayName>
-      <description>Upper 28 bits of an address.</description>
+      <description>Upper 28 bits of an address. The largest address (noninclusive) of address space</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
       <access>read-write</access>

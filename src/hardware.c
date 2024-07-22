@@ -2721,36 +2721,37 @@ sysinit_ttbr_initialize(void)
 //		}
 //	}
 
-	// See /, SYSMAP_FLAGi
-
-	SYSMAP->PARAM [0].ADDR = (0x00000000 >> SYSMAP_ASH);
-	SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [1].ADDR = (0x00000000 >> SYSMAP_ASH);
-	SYSMAP->PARAM [1].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [2].ADDR = (0x40000000 >> SYSMAP_ASH);
-	SYSMAP->PARAM [2].ATTR = RAM_ATTRS;
 
 	extern uint32_t __RAMNC_BASE;
 	extern uint32_t __RAMNC_TOP;
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 
-	SYSMAP->PARAM [3].ADDR = (__ramnc_base >> SYSMAP_ASH);
+	// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
+
+	SYSMAP->PARAM [0].ADDR = (0x10000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+	SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [1].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+	SYSMAP->PARAM [1].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [2].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+	SYSMAP->PARAM [2].ATTR = RAM_ATTRS;
+
+	SYSMAP->PARAM [3].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [3].ATTR = NCRAM_ATTRS;
 
-	SYSMAP->PARAM [4].ADDR = (__ramnc_top >> SYSMAP_ASH);
+	SYSMAP->PARAM [4].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [4].ATTR = RAM_ATTRS;
 
 	// DRAM space ends at 0xC0000000
-	SYSMAP->PARAM [5].ADDR = (0xC0000000 >> SYSMAP_ASH);
+	SYSMAP->PARAM [5].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
 
-	SYSMAP->PARAM [6].ADDR = (0xC1000000 >> SYSMAP_ASH);
+	SYSMAP->PARAM [6].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
 
-	SYSMAP->PARAM [7].ADDR = (0xC2000000 >> SYSMAP_ASH);
+	SYSMAP->PARAM [7].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
 
 	{
