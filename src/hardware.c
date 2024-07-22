@@ -2705,7 +2705,7 @@ sysinit_ttbr_initialize(void)
 	//memset(SYSMAP, 0xFF, 2 * sizeof * SYSMAP);
 	printhex32(SYSMAP_BASE, SYSMAP, 2 * sizeof * SYSMAP);
 
-	const unsigned SYSMAP_ASH = 12;
+	const unsigned SYSMAP_ASH = 12;	// 40-28
 //	{
 //		unsigned i;
 //		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
