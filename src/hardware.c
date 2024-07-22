@@ -3341,7 +3341,15 @@ sysinit_cache_core0_initialize(void)
 	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
 	//	*/
 	//	csr_set(CSR_MXSTATUS, 0x638000);
-	csr_set_bits_mxstatus(0x638000);
+	csr_set_bits_mxstatus(
+			1 * (UINT32_C(1) << 15) |
+			1 * (UINT32_C(1) << 16) |
+			1 * (UINT32_C(1) << 17) |
+			//1 * (UINT32_C(1) << 21) |
+			1 * (UINT32_C(1) << 22) |
+			0
+			//0x638000
+			);
 
 	//
 	//
