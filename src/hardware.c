@@ -2685,15 +2685,27 @@ sysinit_ttbr_initialize(void)
 
 #elif CPUSTYLE_RISCV
 
-#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
-#define RAM_ATTRS 	(UINT32_C(0x03) << 2)	// Cacheable memory
-#define NCRAM_ATTRS 		(UINT32_C(0x01) << 2)	// Non-cacheable memory
+	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
+	// Strong Order, Cacheable, Bufferable, Shareable, Security
 
-#define FULLADFSZ 32	// Not __riscv_xlen
+	#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
+	#define RAM_ATTRS 	(UINT32_C(0x03) << 2)	// Cacheable memory
+	#define NCRAM_ATTRS 		(UINT32_C(0x01) << 2)	// Non-cacheable memory
+
+	#define FULLADFSZ 32	// Not __riscv_xlen
 
 	csr_write_satp(0);
-//	printhex32(SYSMAP_BASE, SYSMAP, sizeof * SYSMAP);
-//
+
+	// XuanTie-Openc906 SYSMAP
+
+	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
+	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
+	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
+	// ? 0xEFFFF000
+	//memset(SYSMAP, 0xFF, 2 * sizeof * SYSMAP);
+	printhex32(SYSMAP_BASE, SYSMAP, 2 * sizeof * SYSMAP);
+
+	const unsigned SYSMAP_ASH = 12;
 //	{
 //		unsigned i;
 //		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
@@ -2701,43 +2713,44 @@ sysinit_ttbr_initialize(void)
 //			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
 //			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
 //					i,
-//					(unsigned) (SYSMAP->PARAM [i].ADDR << (FULLADFSZ - 28)),
+//					(unsigned) (SYSMAP->PARAM [i].ADDR << SYSMAP_ASH),
 //					(attr >> 4) & 0x01,
 //					(attr >> 3) & 0x01,
 //					(attr >> 2) & 0x01
 //					);
 //		}
 //	}
-	// See SYSMAP_BASE_ADDRi, SYSMAP_FLAGi
 
-	SYSMAP->PARAM [0].ADDR = (0x00000000 >> (FULLADFSZ - 28));
+	// See /, SYSMAP_FLAGi
+
+	SYSMAP->PARAM [0].ADDR = (0x00000000 >> SYSMAP_ASH);
 	SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
 
-	SYSMAP->PARAM [1].ADDR = (0x40000000 >> (FULLADFSZ - 28));
-	SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
+	SYSMAP->PARAM [1].ADDR = (0x00000000 >> SYSMAP_ASH);
+	SYSMAP->PARAM [1].ATTR = DEVICE_ATTRS;
+
+	SYSMAP->PARAM [2].ADDR = (0x40000000 >> SYSMAP_ASH);
+	SYSMAP->PARAM [2].ATTR = RAM_ATTRS;
 
 	extern uint32_t __RAMNC_BASE;
 	extern uint32_t __RAMNC_TOP;
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 
-	SYSMAP->PARAM [2].ADDR = (__ramnc_base >> (FULLADFSZ - 28));
-	SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
+	SYSMAP->PARAM [3].ADDR = (__ramnc_base >> SYSMAP_ASH);
+	SYSMAP->PARAM [3].ATTR = NCRAM_ATTRS;
 
-	SYSMAP->PARAM [3].ADDR = (__ramnc_top >> (FULLADFSZ - 28));
-	SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
+	SYSMAP->PARAM [4].ADDR = (__ramnc_top >> SYSMAP_ASH);
+	SYSMAP->PARAM [4].ATTR = RAM_ATTRS;
 
-	//
-	SYSMAP->PARAM [4].ADDR = (0xF0000000 >> (FULLADFSZ - 28));
-	SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [5].ADDR = (0xF1000000 >> (FULLADFSZ - 28));
+	// DRAM space ends at 0xC0000000
+	SYSMAP->PARAM [5].ADDR = (0xC0000000 >> SYSMAP_ASH);
 	SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
 
-	SYSMAP->PARAM [6].ADDR = (0xF2000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [6].ADDR = (0xC1000000 >> SYSMAP_ASH);
 	SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
 
-	SYSMAP->PARAM [7].ADDR = (0xF3000000 >> (FULLADFSZ - 28));
+	SYSMAP->PARAM [7].ADDR = (0xC2000000 >> SYSMAP_ASH);
 	SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
 
 	{
@@ -2747,7 +2760,7 @@ sysinit_ttbr_initialize(void)
 			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
 			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
 					i,
-					(unsigned) (SYSMAP->PARAM [i].ADDR << (FULLADFSZ - 28)),
+					(unsigned) (SYSMAP->PARAM [i].ADDR << SYSMAP_ASH),
 					(attr >> 4) & 0x01,
 					(attr >> 3) & 0x01,
 					(attr >> 2) & 0x01
