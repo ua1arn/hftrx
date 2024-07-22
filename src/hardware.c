@@ -2692,22 +2692,23 @@ sysinit_ttbr_initialize(void)
 #define FULLADFSZ 32	// Not __riscv_xlen
 
 	csr_write_satp(0);
-	printhex32(SYSMAP_BASE, SYSMAP, sizeof * SYSMAP);
-
-	{
-		unsigned i;
-		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
-		{
-			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
-					i,
-					(unsigned) (SYSMAP->PARAM [i].ADDR << (FULLADFSZ - 28)),
-					(attr >> 4) & 0x01,
-					(attr >> 3) & 0x01,
-					(attr >> 2) & 0x01
-					);
-		}
-	}
+//	printhex32(SYSMAP_BASE, SYSMAP, sizeof * SYSMAP);
+//
+//	{
+//		unsigned i;
+//		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
+//		{
+//			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
+//			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
+//					i,
+//					(unsigned) (SYSMAP->PARAM [i].ADDR << (FULLADFSZ - 28)),
+//					(attr >> 4) & 0x01,
+//					(attr >> 3) & 0x01,
+//					(attr >> 2) & 0x01
+//					);
+//		}
+//	}
+	// See SYSMAP_BASE_ADDRi, SYSMAP_FLAGi
 
 	SYSMAP->PARAM [0].ADDR = (0x00000000 >> (FULLADFSZ - 28));
 	SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
