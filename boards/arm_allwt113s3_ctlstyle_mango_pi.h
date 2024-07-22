@@ -22,7 +22,8 @@
 	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
-	#define RV_PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+	//#define RV_PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+	#define RV_PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
 	#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz https://linux-sunxi.org/T113-s3 say about 1.2 GHz */
 
 	#if 1//WITHISBOOTLOADER

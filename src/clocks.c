@@ -4021,6 +4021,7 @@ void allwnrt113_set_pll_cpux(unsigned m, unsigned n)
 //	uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 //
 //}
+//	#define CHIPID_F133A 		0x5C00
 //	#define CHIPID_T113S3 		0x6000
 //	#define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
 uint_fast32_t allwnrt113_get_chipid(void)
@@ -4872,7 +4873,7 @@ void allwnrt113_pll_initialize(void)
 {
 #if CPUSTYLE_T113
 	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
-#elif CPUSTYLE_F133)
+#elif CPUSTYLE_F133
 	set_pll_riscv_axi(RV_PLL_CPU_N);	// see sdram.c
 #endif
 
