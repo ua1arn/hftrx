@@ -2,7 +2,7 @@
 #base; SYSMAP 0xEFFFF000
 
 #aggreg; PARAM; 0x0000 8; address spaces 0..7
-#regdef; ADDR; 0x000; Upper 28 bits of an address.
+#regdef; ADDR; 0x000; Upper 28 bits of an address. The largest address (noninclusive) of address space
 #regdef; ATTR; 0x004; Page attributes of memory
 #aggregend;
 

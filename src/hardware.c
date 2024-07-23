@@ -2702,25 +2702,8 @@ sysinit_ttbr_initialize(void)
 	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
 	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
 	// ? 0xEFFFF000
-	//memset(SYSMAP, 0xFF, 2 * sizeof * SYSMAP);
-	printhex32(SYSMAP_BASE, SYSMAP, 2 * sizeof * SYSMAP);
 
 	const unsigned SYSMAP_ASH = 12;	// 40-28
-//	{
-//		unsigned i;
-//		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
-//		{
-//			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-//			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
-//					i,
-//					(unsigned) (SYSMAP->PARAM [i].ADDR << SYSMAP_ASH),
-//					(attr >> 4) & 0x01,
-//					(attr >> 3) & 0x01,
-//					(attr >> 2) & 0x01
-//					);
-//		}
-//	}
-
 
 	extern uint32_t __RAMNC_BASE;
 	extern uint32_t __RAMNC_TOP;
@@ -2752,7 +2735,7 @@ sysinit_ttbr_initialize(void)
 	SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
 
-	SYSMAP->PARAM [7].ADDR = (0xFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+	SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
 	SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
 
 	{
@@ -2760,9 +2743,9 @@ sysinit_ttbr_initialize(void)
 		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
 		{
 			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-			PRINTF("SYSMAP zone%u: base=%08X SO=%u, C=%u. B=%u\n",
+			PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
 					i,
-					(unsigned) (SYSMAP->PARAM [i].ADDR << SYSMAP_ASH),
+					(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
 					(attr >> 4) & 0x01,
 					(attr >> 3) & 0x01,
 					(attr >> 2) & 0x01
