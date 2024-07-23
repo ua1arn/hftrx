@@ -2132,14 +2132,13 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 
 #endif
 
-//	__asm__ __volatile__(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
-//	__asm__ __volatile__(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
-//	__asm__ __volatile__(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
-//	__asm__ __volatile__(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
-//	__asm__ __volatile__(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
-//	__asm__ __volatile__(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
-//	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
-//	__asm__ __volatile__(".4byte 0x0190000b\n":::"memory"); /* sync.s */
+//      __asm__ __volatile__(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
+//      __asm__ __volatile__(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
+//      __asm__ __volatile__(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
+//      __asm__ __volatile__(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
+//      __asm__ __volatile__(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
+//      __asm__ __volatile__(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
+//      __asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 //
 
 // Сейчас в эту память будем читать по DMA
@@ -2152,10 +2151,11 @@ void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 		{
 			__asm__ __volatile__(
 					"\t" "mv a0,%0\n"
-					"\t" ".4byte 0x0265000b\n" /* dcache.iva a0 */
+					//"\t" ".4byte 0x0265000b\n" /* dcache.iva a0 */
+					"\t" ".4byte 0x02a5000b\n" /* dcache.ipa a0 */
 					:: "r"(base):"a0");
 		}
-		__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2169,10 +2169,11 @@ void dcache_clean(uintptr_t base, int_fast32_t dsize)
 		{
 			__asm__ __volatile__(
 					"\t" "mv a0,%0\n"
-					"\t" ".4byte 0x0245000b\n" /* dcache.cva a0 */
+					//"\t" ".4byte 0x0245000b\n" /* dcache.cva a0 */
+					"\t" ".4byte 0x0285000b\n" /* dcache.cpa a0 */
 					:: "r"(base):"a0");
 		}
-		__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2186,10 +2187,11 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 		{
 			__asm__ __volatile__(
 					"\t" "mv a0,%0\n"
-					"\t" ".4byte 0x0275000b\n" /* dcache.civa a0 */
+					//"\t" ".4byte 0x0275000b\n" /* dcache.civa a0 */
+					"\t" ".4byte 0x02b5000b\n" /* dcache.cipa a0 */
 					:: "r"(base):"a0");
 		}
-		__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2694,7 +2696,16 @@ sysinit_ttbr_initialize(void)
 
 	#define FULLADFSZ 32	// Not __riscv_xlen
 
+	#define CSR_SATP_MODE_PHYS   0
+	#define CSR_SATP_MODE_SV32   1
+	#define CSR_SATP_MODE_SV39   8
+	#define CSR_SATP_MODE_SV48   9
+	#define CSR_SATP_MODE_SV57   10
+
+	PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
+	//csr_write_satp(csr_read_satp() | CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60));
 	csr_write_satp(0);
+	PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
 
 	// XuanTie-Openc906 SYSMAP
 
