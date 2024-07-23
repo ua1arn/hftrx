@@ -212,6 +212,7 @@ uint_fast32_t allwnrt113_get_axi_freq(void);	// ???
 
 uint_fast32_t allwnrt113_get_chipid(void);
 #define CHIPID_F133A 		0x5C00
+#define CHIPID_D1S 			0x5E00
 #define CHIPID_T113S3 		0x6000
 #define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
 
