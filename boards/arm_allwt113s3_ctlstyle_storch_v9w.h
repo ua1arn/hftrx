@@ -6,7 +6,9 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// rmainunit_sv9w.pcb
+// rmainunit_sv9x.pcb
 
 #ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_H_INCLUDED
 #define ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_H_INCLUDED 1

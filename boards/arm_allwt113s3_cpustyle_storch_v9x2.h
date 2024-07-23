@@ -5,9 +5,9 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// rmainunit_sv9x2.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// rmainunit_sv9x2.pcb
+// rmainunit_sv9x3.pcb
 
 #ifndef ARM_ALWT113S3_CPUSTYLE_STORCH_V9X2_H_INCLUDED
 #define ARM_ALWT113S3_CPUSTYLE_STORCH_V9X2_H_INCLUDED 1
