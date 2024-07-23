@@ -2688,9 +2688,9 @@ sysinit_ttbr_initialize(void)
 	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
 	// Strong Order, Cacheable, Bufferable, Shareable, Security
 
+	#define RAM_ATTRS 		(UINT32_C(0x03) << 2)	// Cacheable memory
+	#define NCRAM_ATTRS 	(UINT32_C(0x01) << 2)	// Non-cacheable memory
 	#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
-	#define RAM_ATTRS 	(UINT32_C(0x03) << 2)	// Cacheable memory
-	#define NCRAM_ATTRS 		(UINT32_C(0x01) << 2)	// Non-cacheable memory
 
 	#define FULLADFSZ 32	// Not __riscv_xlen
 
@@ -2703,53 +2703,56 @@ sysinit_ttbr_initialize(void)
 	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
 	// ? 0xEFFFF000
 
-	const unsigned SYSMAP_ASH = 12;	// 40-28
-
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-
-	// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
-
-	// The smallest address of address space 0 is 0x0
-	SYSMAP->PARAM [0].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [1].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
-
-	SYSMAP->PARAM [2].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
-
-	SYSMAP->PARAM [3].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
-
-	// DRAM space ends at 0xC0000000
-	SYSMAP->PARAM [4].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [5].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
-
-	SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-	SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
-
+	if (0)
 	{
-		unsigned i;
-		for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
+		const unsigned SYSMAP_ASH = 12;	// 40-28
+
+		extern uint32_t __RAMNC_BASE;
+		extern uint32_t __RAMNC_TOP;
+		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+
+		// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
+
+		// The smallest address of address space 0 is 0x0
+		SYSMAP->PARAM [0].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [1].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
+
+		SYSMAP->PARAM [2].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
+
+		SYSMAP->PARAM [3].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
+
+		// DRAM space ends at 0xC0000000
+		SYSMAP->PARAM [4].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [5].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
+
 		{
-			const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-			PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
-					i,
-					(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
-					(attr >> 4) & 0x01,
-					(attr >> 3) & 0x01,
-					(attr >> 2) & 0x01
-					);
+			unsigned i;
+			for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
+			{
+				const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
+				PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
+						i,
+						(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
+						(attr >> 4) & 0x01,
+						(attr >> 3) & 0x01,
+						(attr >> 2) & 0x01
+						);
+			}
 		}
 	}
 
