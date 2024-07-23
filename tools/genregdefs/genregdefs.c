@@ -391,8 +391,8 @@ static int ucompare(unsigned a, unsigned b) {
 
 /* qsort parameter */
 static int compare_base(const void *v1, const void *v2) {
-	const struct basemap *p1 = v1;
-	const struct basemap *p2 = v2;
+	const struct basemap *const p1 = v1;
+	const struct basemap *const p2 = v2;
 	if (p1->base == p2->base) {
 		return strcmp(p1->xname, p2->xname);
 	}
@@ -401,8 +401,8 @@ static int compare_base(const void *v1, const void *v2) {
 
 /* qsort parameter */
 static int compare_irq(const void *v1, const void *v2) {
-	const struct irqmap *p1 = v1;
-	const struct irqmap *p2 = v2;
+	const struct irqmap *const p1 = v1;
+	const struct irqmap *const p2 = v2;
 
 	if (p1->irq == p2->irq) {
 		return strcmp(p1->xname, p2->xname);
@@ -412,8 +412,8 @@ static int compare_irq(const void *v1, const void *v2) {
 
 /* qsort parameter */
 static int compare_pfltypes(const void *v1, const void *v2) {
-	const struct parsedfile **p1 = v1;
-	const struct parsedfile **p2 = v2;
+	const struct parsedfile **const p1 = v1;
+	const struct parsedfile **const p2 = v2;
 
 	return strcmp((*p1)->bname, (*p2)->bname);
 }
