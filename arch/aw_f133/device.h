@@ -91,7 +91,6 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define SYSMAP_BASE ((uintptr_t) 0xEFFFF000)          /*!< SYSMAP XuanTie-Openc906 Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
@@ -206,6 +205,7 @@ typedef enum IRQn
 #define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)   /*!< C0_CPUX_MBIST  Base */
 #define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Platform-Level Interrupt Controller (PLIC) Base */
 #define CLINT_BASE ((uintptr_t) 0x14000000)           /*!< CLINT  Base */
+#define SYSMAP_BASE ((uintptr_t) 0xEFFFF000)          /*!< SYSMAP XuanTie-Openc906 Base */
 
 #include <core_rv64.h>
 
@@ -3201,7 +3201,6 @@ typedef struct VE_Type
 
 /* Access pointers */
 
-#define SYSMAP ((SYSMAP_TypeDef *) SYSMAP_BASE)       /*!< SYSMAP XuanTie-Openc906 register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
@@ -3310,6 +3309,7 @@ typedef struct VE_Type
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
 #define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC Platform-Level Interrupt Controller (PLIC) register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */
+#define SYSMAP ((SYSMAP_TypeDef *) SYSMAP_BASE)       /*!< SYSMAP XuanTie-Openc906 register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

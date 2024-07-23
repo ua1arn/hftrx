@@ -286,7 +286,8 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
-					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "__I " : "__IO", fldtype, regp->fldname, regp->fldrept);
+					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "__I " : "__IO", fldtype, regp->fldname,
+							regp->fldrept);
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
@@ -379,6 +380,15 @@ struct irqmap {
 	struct parsedfile *pfl;
 };
 
+static int ucompare(unsigned a, unsigned b) {
+	if (a == b)
+		return 0;
+	if (a < b)
+		return -1;
+	else
+		return +1;
+}
+
 /* qsort parameter */
 static int compare_base(const void *v1, const void *v2) {
 	const struct basemap *p1 = v1;
@@ -386,7 +396,7 @@ static int compare_base(const void *v1, const void *v2) {
 	if (p1->base == p2->base) {
 		return strcmp(p1->xname, p2->xname);
 	}
-	return p1->base - p2->base;
+	return ucompare(p1->base, p2->base);
 }
 
 /* qsort parameter */
