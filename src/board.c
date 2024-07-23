@@ -7589,12 +7589,12 @@ static void board_rtc_initialize(void)
 	static ticker_t rtcticker;
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	board_rtc_cache_update(NULL);
+	LowerIrql(oldIrql);
 
 	ticker_initialize(& rtcticker, NTICKS(500), board_rtc_cache_update, NULL);
 	ticker_add(& rtcticker);
-	LowerIrql(oldIrql);
 
 #endif /* WITHRTCCACHED */
 }
