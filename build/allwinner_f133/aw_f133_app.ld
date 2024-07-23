@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM (rwx) 	: ORIGIN = 0x40000100, LENGTH = 64M - 256 	/* DDR internal memory - 64 MB - 16 kB - 256 B*/
+  DDR3 (rwx) 	: ORIGIN = 0x40000100, LENGTH = 64M - 256 	/* DDR internal memory - 64 MB - 16 kB - 256 B*/
   SRAM_A1 (rwx)	: ORIGIN = 0x00020000, LENGTH = 160k	/*  */
 }
 
@@ -73,24 +73,24 @@ SECTIONS
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 
-	} > RAM
+	} > DDR3
 
 	.gcc_except_table :
 	{
 		*(.gcc_except_table)
 		*(.gcc_except_table.*)
-	} > RAM
+	} > DDR3
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > RAM
+	} > DDR3
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > RAM
+	} > DDR3
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
@@ -109,7 +109,7 @@ SECTIONS
 		QUAD (__data2_start__)
 		QUAD ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end64__ = .;
-	} > RAM
+	} > DDR3
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -120,12 +120,10 @@ SECTIONS
 		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
 		QUAD ((__bss_end__ - __bss_start__) / 4)
-	/*
 		QUAD (__bss2_start__)
 		QUAD ((__bss2_end__ - __bss2_start__) / 4)
-	*/
 		__zero_table_end64__ = .;
-	} > RAM
+	} > DDR3
 
 	/* __etext = .; */
 
@@ -159,7 +157,7 @@ SECTIONS
 
 		__data_end__ = .;
 
-	} > RAM
+	} > DDR3
 
 	__etext2 = .;
 
@@ -171,7 +169,7 @@ SECTIONS
 		*(.dtcm*)
 
 		__data2_end__ = .;
-	} > RAM /* was: STSRAN */
+	} > DDR3 /* was: STSRAN */
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
@@ -184,14 +182,24 @@ SECTIONS
 		*(COMMON)
 
 		__bss_end__ = .;
-	} > RAM
+	} > DDR3
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 		*(.framebuff*)
-	} > RAM
+	} > DDR3
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
+	} > DDR3
 
 	.heap (NOLOAD):
 	{
@@ -200,7 +208,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM
+	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -208,11 +216,11 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > RAM
+	} > DDR3
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

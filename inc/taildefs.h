@@ -148,7 +148,7 @@ typedef struct irqlspinlock_tag
 
 #define IRQLSPINLOCK_t lclspinlock_t
 
-#define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
+#define IRQLSPINLOCK_INIT { md }
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
@@ -365,7 +365,7 @@ void LowerIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-	#define RAMNC //__attribute__((section(".ramnc")))
+	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_XC7Z
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))

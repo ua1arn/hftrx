@@ -191,7 +191,7 @@ static dram_para_t ddrp2 = {
 
 int sys_dram_init(void)
 {
-	ddrp2.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
+	//ddrp2.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
 	set_pll_riscv_axi(RV_PLL_CPU_N);
 	return init_DRAM(0, & ddrp2) != 0;
 }

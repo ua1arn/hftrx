@@ -11005,9 +11005,10 @@ void hightests(void)
 //		// T113M4: IIDR=0200143B, midr=410FC075 xfel sid: 934072002c0048140105061c54731853
 //		// T113S3: IIDR=0200143B, midr=410FC075 xfel sid: 934060000c00481401464015586213cc
 //		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
-//		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
+		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
 		if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
 		{
+			PRINTF("freq = %u MHz, PLL_CPU_CTRL_REG=%08X,CPU_AXI_CFG_REG=%08X\n", (unsigned) (allwnrt113_get_pll_cpu_freq() / 1000 / 1000), (unsigned) CCU->PLL_CPU_CTRL_REG, (unsigned) CCU->CPU_AXI_CFG_REG);
 			dbg_flush();	/* for see rv64 running effects on UART0 */
 			//	la	a0, 0x02500000
 			//	la	a1, 0x23
@@ -11021,17 +11022,24 @@ void hightests(void)
 					0x0000006F, // 6F 00 00 00,
 			};
 			dcache_clean_all();
+
+			/* reset RISC-V core */
 			CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
 			CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 			CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << 0));	/* Assert rv64 reset */
-	#if 0
+
 			/* setup RISC-V CPU & AXI clock */
-			CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-					//0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
-					0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
+			//	RISC-V Clock = Clock Source/M.
+			//	RISC-V_AXI Clock = RISC-V Clock/N.
+			const uint_fast32_t M = 1;	// FACTOR_N is from 1 to 3.
+			const uint_fast32_t N = 3;	// FACTOR_M is from 0 to 31.
+			CCU->RISC_CLK_REG =
+					0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
+					(N - 1) * (UINT32_C(1) << 8) |	// RISC-V_DIV_CFG
+					(M - 1) * (UINT32_C(1) << 0) |	// RISC-V_AXI_DIV_CFG
 					0;
-			CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
-	#endif
+			CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);
+
 			CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
 			RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) rv64code; //ptr_lo32((uintptr_t) rv64code);
 			RISC_CFG->RISC_STA_ADD1_REG = 0;//ptr_hi32((uintptr_t) rv64code);
