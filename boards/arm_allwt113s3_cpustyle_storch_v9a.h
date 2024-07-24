@@ -651,6 +651,36 @@
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
+// TRX-CROSS board
+//	HOST-RESET2		PD16
+//	HOST-RESET		PD15
+//	HOST-PTT-OUT	PD14
+//	HOST-PTT-IN		PD13
+// 	UART2-TX		PD1		Antenna control port
+// 	UART2-RX		PD2
+
+#define HOSTCONTROL_RESET2	(UINT32_C(1) << 16)	// PD16
+#define HOSTCONTROL_RESET	(UINT32_C(1) << 15)	// PD15
+#define HOSTCONTROL_PTT_OUT	(UINT32_C(1) << 14)	// PD14
+#define HOSTCONTROL_PTT_IN	(UINT32_C(1) << 13)	// PD13
+
+#define HOSTCONTROL_INITIALIZE() do { \
+	arm_hardware_piod_outputs(HOSTCONTROL_RESET2, 0 * HOSTCONTROL_RESET2); \
+	arm_hardware_piod_outputs(HOSTCONTROL_RESET, 0 * HOSTCONTROL_RESET); \
+	arm_hardware_piod_outputs(HOSTCONTROL_PTT_OUT, 1 * HOSTCONTROL_PTT_OUT); \
+	arm_hardware_piod_outputs(HOSTCONTROL_RESET2, 1 * HOSTCONTROL_RESET2); \
+	arm_hardware_piod_outputs(HOSTCONTROL_RESET, 1 * HOSTCONTROL_RESET); \
+	arm_hardware_piod_inputs(HOSTCONTROL_PTT_IN); \
+	} while (0)
+
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const portholder_t TXMASK = (UINT32_C(1) << 1); /* PD1 UART2-TX */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 2); /* PD2 UART2-RX - pull-up RX data */  \
+		arm_hardware_piod_altfn2(TXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piod_altfn2(RXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+
 
 #define TARGET_ENC2BTN_BIT (UINT32_C(1) << 6)	// PE6 - second encoder button with pull-up
 
@@ -1126,6 +1156,7 @@
 		TUNE_INITIALIZE(); \
 		BOARD_USERBOOT_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
+		/* HOSTCONTROL_INITIALIZE(); */ \
 	} while (0)
 
 	// TUSB parameters
