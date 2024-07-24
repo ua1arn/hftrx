@@ -1277,7 +1277,6 @@ static unsigned UAC2_AS_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast32_t samplefreq1 = dsp_get_samplerateuacout();
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
