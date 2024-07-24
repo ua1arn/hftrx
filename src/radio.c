@@ -798,14 +798,14 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		AGCMODE_MED = 0,
 		AGCMODE_FAST = 0
 		};
-	static const FLASHMEM struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ 0x00, "    ", "   " },
-	};
+//	static const FLASHMEM struct {
+//		uint_fast8_t code;
+//		char label4 [5];
+//		char label3 [4];
+//	}  agcmodes [] =
+//	{
+//		{ BOARD_AGCCODE_ON, "    ", "   " },
+//	};
 #elif WITHAGCMODEONOFF
 	/* перечисление всех возможных режимов АРУ
 	 */
@@ -2864,7 +2864,9 @@ static const FLASHMEM char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]
 	*/
 struct modeprops
 {
-	uint8_t agc;	/* режим АРУ для данногосемейства режимов */
+#if ! WITHAGCMODENONE
+	uint8_t agc;	/* режим АРУ для данного семейства режимов */
+#endif /* ! WITHAGCMODENONE */
 	uint8_t filter;	/* индекс фильтра в общей таблице фильтров */
 	//uint16_t step;	/* шаг валкодера в данном режиме */
 
@@ -3613,7 +3615,9 @@ static uint_fast8_t gfi;			/* номер фильтра (сквозной) дл�
 static uint_fast16_t gstep;
 static uint_fast16_t gstepbigv;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
+#if ! WITHAGCMODENONE
 static uint_fast8_t gagcmode;
+#endif /* ! WITHAGCMODENONE */
 #if WITHIF4DSP
 	static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
 	static uint_fast8_t gnoisereductvl = 25;	// noise reduction
@@ -11515,6 +11519,9 @@ updateboardZZZ(
 		#if ! WITHAGCMODENONE
 			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
+		#else /* ! WITHAGCMODENONE */
+			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
+			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 		#endif /* ! WITHAGCMODENONE */
 		#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
 			board_set_affilter(gaffilter);
@@ -12312,6 +12319,7 @@ uif_key_click_bandjump2(uint_fast32_t f)
 	updateboard(1, 1);
 }
 
+#if ! WITHAGCMODENONE
 /* AGC mode switch
 	 - вызывает сохранение состояния режима */
 static void
@@ -12321,6 +12329,7 @@ uif_key_click_agcmode(void)
 	save_i8(RMT_AGC_BASE(submodes [gsubmode].mode), gagcmode);
 	updateboard(1, 0);
 }
+#endif /* ! WITHAGCMODENONE */
 
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 

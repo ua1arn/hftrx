@@ -190,7 +190,7 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальная девиация в NFM
 
-static uint_fast8_t 	glob_dspagc;
+static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
