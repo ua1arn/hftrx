@@ -2278,7 +2278,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define APRWval 		0x03	/* Full access */
 #define APROval 		0x06	/* All write accesses generate Permission faults */
 #define DOMAINval		0x0F
-#define SECTIONval		0x02	/* 0b10, Section or Supersection */
+#define SECTIONval		0x02	/* 0b10, Section or Supersection, PXN  */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
@@ -2345,7 +2345,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 #define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection */ \
+		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
 		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
