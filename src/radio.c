@@ -4334,9 +4334,9 @@ enum
 	#endif /* WITHELKEY */
 
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
-	static const uint_fast8_t pretxdelay = 1;	/* признак того, что требуется снятие питания со второго смесителя */
+	enum { pretxdelay = 1 };	/* признак того, что требуется снятие питания со второго смесителя */
 #else
-	static const uint_fast8_t pretxdelay = 0;
+	enum { pretxdelay = 0 };
 #endif
 
 	static uint_fast8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
