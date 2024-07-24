@@ -67,7 +67,7 @@ static uint_fast8_t		glob_swaprts;		// управление боковой вы�
 
 static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
-static volatile uint_fast8_t uacoutalt;
+static volatile uint_fast8_t uacoutalt = UACOUTALT_NONE;
 
 #else /* WITHUSBHW && WITHUSBUAC */
 

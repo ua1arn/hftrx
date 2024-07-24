@@ -450,6 +450,7 @@ enum interfaces_tag
 enum
 {
 	UACINALT_NONE = 0,
+#if WITHUSBUACIN
 	UACINALT_AUDIO48,
 #if ! WITHUSBUACIN2
 	#if WITHRTS96
@@ -459,6 +460,7 @@ enum
 		UACINALT_RTS192,
 	#endif /* WITHRTS192 */
 #endif /* ! WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 	//
 	UACINALT_top
 };
@@ -481,8 +483,10 @@ enum
 enum
 {
 	UACOUTALT_NONE = 0,
+#if WITHUSBUACOUT
 	UACOUTALT_AUDIO48,
-
+#endif /* WITHUSBUACOUT */
+	//
 	UACOUTALT_top
 };
 
