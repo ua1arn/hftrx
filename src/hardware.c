@@ -1589,7 +1589,7 @@ __STATIC_INLINE void __FPU_Enable_fixed(void)
 /** \brief  Get IFAR
 \return		Instruction Fault Address register value
 */
-__STATIC_FORCEINLINE uint32_t __get_IFAR(void)
+uint32_t __get_IFAR(void)
 {
 	uint32_t result;
 	__get_CP(15, 0, result, 6, 0, 2);
@@ -1602,7 +1602,7 @@ __STATIC_FORCEINLINE uint32_t __get_IFAR(void)
 /** \brief  Get DFAR
 \return		Data Fault Address register value
 */
-__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
+uint32_t __get_DFAR(void)
 {
 	uint32_t result;
 	__get_CP(15, 0, result, 6, 0, 0);
@@ -1822,13 +1822,25 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
 }
 
+
+int_fast32_t dcache_rowsize(void)
+{
+	return DCACHEROWSIZE;
+}
+
+
+int_fast32_t icache_rowsize(void)
+{
+	return ICACHEROWSIZE;
+}
+
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 
 /** \brief  Set DCCMVAU
 
   Data cache clean
  */
-__STATIC_FORCEINLINE void __set_DCCMVAU(uint32_t value)
+void __set_DCCMVAU(uint32_t value)
 {
   __set_CP(15, 0, value, 7, 11, 1);
 }
@@ -1838,7 +1850,7 @@ __STATIC_FORCEINLINE void __set_DCCMVAU(uint32_t value)
 // 	see Terms used in describing the maintenance operations on page B2-1272.
 // 	When the data is stated to be an MVA, it does not have to be cache line aligned.
 
-__STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
+void L1_CleanDCache_by_Addr(void * __restrict addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -1855,7 +1867,7 @@ __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t ds
 	}
 }
 
-__STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+void L1_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -1872,7 +1884,7 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 	}
 }
 
-__STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+void L1_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -1885,18 +1897,43 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
-		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
+}
+
+
+/** \brief  Get CTR
+\return		Cache Type Register value
+*/
+uint32_t __get_CTR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 0, 0, 1);
+	return result;
+}
+
+int_fast32_t dcache_rowsize(void)
+{
+	const uint32_t v = __get_CTR();
+	const uint32_t DminLine = (v >> 16) & 0x0F;	// Log2 of the number of words in the smallest cache line of all the data caches and unified caches that are controlled by the processor
+	return 4 << DminLine;
+}
+
+int_fast32_t icache_rowsize(void)
+{
+	const uint32_t v = __get_CTR();
+	const uint32_t IminLine = (v >> 0) & 0x0F;	// Log2 of the number of words in the smallest cache line of all the instruction caches and unified caches that are controlled by the processor
+	return 4 << IminLine;
 }
 
 #if (__L2C_PRESENT == 1)
 
-__STATIC_FORCEINLINE void L2_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
+void L2_CleanDCache_by_Addr(void *__restrict addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = (uintptr_t) addr /* & ~ (uintptr_t) (DCACHEROWSIZE - 1U) */;
 		do
 		{
 			// Clean cache by physical address
@@ -1907,12 +1944,12 @@ __STATIC_FORCEINLINE void L2_CleanDCache_by_Addr(volatile void *addr, int32_t ds
 	}
 }
 
-__STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+void L2_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = (uintptr_t) addr /* & ~ (uintptr_t) (DCACHEROWSIZE - 1U) */;
 		do
 		{
 			// Clean and Invalidate cache by physical address
@@ -1923,12 +1960,12 @@ __STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 	}
 }
 
-__STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+void L2_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = (uintptr_t) addr /* & ~ (uintptr_t) (DCACHEROWSIZE - 1U) */;
 		do
 		{
 			// Invalidate cache by physical address
@@ -2202,6 +2239,18 @@ void dcache_clean_all(void)
 	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 }
 
+
+int_fast32_t dcache_rowsize(void)
+{
+	return DCACHEROWSIZE;
+}
+
+
+int_fast32_t icache_rowsize(void)
+{
+	return ICACHEROWSIZE;
+}
+
 #else
 
 // Заглушки
@@ -2224,6 +2273,18 @@ void dcache_clean_all(void)
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 {
+}
+
+
+int_fast32_t dcache_rowsize(void)
+{
+	return DCACHEROWSIZE;
+}
+
+
+int_fast32_t icache_rowsize(void)
+{
+	return ICACHEROWSIZE;
 }
 
 #endif /* CPUSTYLE_ARM_CM7 */
@@ -2652,7 +2713,7 @@ sysinit_ttbr_initialize(void)
 			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
 			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
 			(RGN_attr << 3) |	// RGN
-			1*(UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
+			!1*(UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
 			1*(UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
 			0);
 #else /* WITHSMPSYSTEM */
@@ -3213,6 +3274,10 @@ static void setactlr(void)
 static void
 sysinit_cache_core0_initialize(void)
 {
+	PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
+	ASSERT(DCACHEROWSIZE == dcache_rowsize());
+	ASSERT(ICACHEROWSIZE == icache_rowsize());
+
 #if defined (__CORTEX_M)
 	#if __ICACHE_PRESENT
 
@@ -3749,7 +3814,7 @@ void halt32(void)
 // Table G7-3 AArch32 VMSA (coproc==0b1111) register summary, in MCR/MRC parameter order
 
 // Address that execution starts from after reset when executing in 32-bit state.
-__STATIC_FORCEINLINE uint32_t __get_RVBAR(void)
+uint32_t __get_RVBAR(void)
 {
 	  uint32_t result;
 	  __get_CP(15, 0, result, 12, 0, 1);
@@ -3757,7 +3822,7 @@ __STATIC_FORCEINLINE uint32_t __get_RVBAR(void)
 }
 
 // Address that execution starts from after reset when executing in 32-bit state.
-__STATIC_FORCEINLINE void __set_RVBAR(uint32_t rvbar)
+void __set_RVBAR(uint32_t rvbar)
 {
 	  __set_CP(15, 0, rvbar, 12, 0, 1);
 }
