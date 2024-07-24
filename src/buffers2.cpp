@@ -3195,7 +3195,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 	uacinrtsalt = v;
 }
 
-uint_fast8_t buffers_get_uacoutalt(void)
+uint_fast8_t buffers_get_uacoutactive(void)
 {
 	return uacoutalt != UACOUTALT_NONE;
 }

@@ -880,7 +880,7 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
-uint_fast8_t buffers_get_uacoutalt(void);
+uint_fast8_t buffers_get_uacoutactive(void);
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep);
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);

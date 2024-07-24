@@ -202,7 +202,7 @@ static volatile uint_fast8_t datavox;	/* автоматическое измен
 static uint_fast8_t istxreplaced(void)
 {
 #if WITHUSBHW && WITHUSBUACOUT
-	return (datavox != 0 && buffers_get_uacoutalt() != 0);
+	return (datavox != 0 && buffers_get_uacoutactive() != 0);
 #else /* WITHUSBHW && WITHUSBUACOUT */
 	return 0;
 #endif /* WITHUSBHW && WITHUSBUACOUT */
