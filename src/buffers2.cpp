@@ -3197,7 +3197,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 
 uint_fast8_t buffers_get_uacoutalt(void)
 {
-	return uacoutalt == UACOUTALT_AUDIO48;
+	return uacoutalt != UACOUTALT_NONE;
 }
 
 void
