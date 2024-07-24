@@ -1,0 +1,2535 @@
+Information for device USB2.0 High-Speed True HD Audio (VID=0x0D8C PID=0x0314):
+
+*** ERROR: Descriptor has errors! ***
+
+------------------------------
+Connection Information:
+------------------------------
+Device current bus speed: HighSpeed
+Device supports USB 1.1 specification
+Device supports USB 2.0 specification
+Device address: 0x0002
+Current configuration value: 0x00
+Number of open pipes: 0
+
+
+------------------------------
+Device Descriptor:
+------------------------------
+0x12	bLength
+0x01	bDescriptorType
+0x0200	bcdUSB
+0xEF	bDeviceClass      (Miscellaneous device)
+0x02	bDeviceSubClass   
+0x01	bDeviceProtocol   
+0x40	bMaxPacketSize0   (64 bytes)
+0x0D8C	idVendor
+0x0314	idProduct
+0x0108	bcdDevice
+0x01	iManufacturer   "CMEDIA"
+0x02	iProduct        "USB2.0 High-Speed True HD Audio"
+0x00	iSerialNumber
+0x01	bNumConfigurations
+
+Device Qualifier Descriptor:
+------------------------------
+0x0A	bLength
+0x06	bDescriptorType
+0x0200	bcdUSB
+0xEF	bDeviceClass      (Miscellaneous device)
+0x02	bDeviceSubClass   
+0x01	bDeviceProtocol   
+0x40	bMaxPacketSize0   (64 bytes)
+0x01	bNumConfigurations 
+0x00	bReserved 
+
+
+-------------------------
+Configuration Descriptor:
+-------------------------
+0x09	bLength
+0x02	bDescriptorType
+0x04A0	wTotalLength   (1184 bytes)
+0x0A	bNumInterfaces
+0x01	bConfigurationValue
+0x00	iConfiguration
+0xC0	bmAttributes   (Self-powered Device)
+0x32	bMaxPower      (100 mA)
+
+Interface Association Descriptor:
+------------------------------
+0x08	bLength
+0x0B	bDescriptorType
+0x00	bFirstInterface
+0x07	bInterfaceCount
+0x01	bFunctionClass      (Audio Device Class)
+0x00	bFunctionSubClass   
+0x20	bFunctionProtocol   (Audio Protocol IP version 2.00)
+0x00	iFunction
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x00	bInterfaceNumber
+0x00	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x01	bInterfaceSubClass   (Audio Control Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AC Interface Header Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0200	bcdADC
+0x0A	bCategory   (PRO_AUDIO)
+0x0141	wTotalLength   (321 bytes)
+0x00	bmControls
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x12	bCSourceID
+0x00	bNrChannels   (0 channels)
+0x00000000	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x02	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x13	bCSourceID
+0x00	bNrChannels   (0 channels)
+0x00000000	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x03	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x14	bCSourceID
+0x00	bNrChannels   (0 channels)
+0x00000000	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x04	bTerminalID
+0x0201	wTerminalType   (Microphone)
+0x00	bAssocTerminal
+0x15	bCSourceID
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x05	bTerminalID
+0x0603	wTerminalType   (Line connector)
+0x00	bAssocTerminal
+0x16	bCSourceID
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x06	bTerminalID
+0x0605	wTerminalType   (S/PDIF interface)
+0x00	bAssocTerminal
+0x17	bCSourceID
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x07	bTerminalID
+0x0301	wTerminalType   (Speaker)
+0x00	bAssocTerminal
+0x0D	bSourceID
+0x12	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x08	bTerminalID
+0x0605	wTerminalType   (S/PDIF interface)
+0x00	bAssocTerminal
+0x0E	bSourceID
+0x13	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x09	bTerminalID
+0x0302	wTerminalType   (Headphones)
+0x00	bAssocTerminal
+0x0F	bSourceID
+0x14	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x0A	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x10	bSourceID
+0x15	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x0B	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x11	bSourceID
+0x16	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x0C	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x06	bSourceID
+0x17	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x0D	bUnitID
+0x01	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x0000000C	bmaControls(1)
+          Volume Control            - host programmable
+0x0000000C	bmaControls(2)
+          Volume Control            - host programmable
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x0E	bUnitID
+0x02	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x00000000	bmaControls(1)
+0x00000000	bmaControls(2)
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x0F	bUnitID
+0x03	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x0000000C	bmaControls(1)
+          Volume Control            - host programmable
+0x0000000C	bmaControls(2)
+          Volume Control            - host programmable
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x10	bUnitID
+0x04	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x00000000	bmaControls(1)
+0x00000000	bmaControls(2)
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x11	bUnitID
+0x05	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x00000000	bmaControls(1)
+0x00000000	bmaControls(2)
+0x00	iFeature
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x12	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x13	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x14	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x15	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x16	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x17	bClockID
+0x00	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x8F	bEndpointAddress  (IN endpoint 15)
+0x03	bmAttributes      (Transfer: Interrupt / Synch: None / Usage: Data)
+0x0006	wMaxPacketSize    (1 x 6 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x01	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x04	iInterface   "Speaker"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x01	bInterfaceNumber
+0x01	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x05	bEndpointAddress  (OUT endpoint 5)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x85	bEndpointAddress  (IN endpoint 5)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x01	bInterfaceNumber
+0x02	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x03	bSubslotSize
+0x18	bBitResolution   (24 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x05	bEndpointAddress  (OUT endpoint 5)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x009C	wMaxPacketSize    (1 x 156 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x85	bEndpointAddress  (IN endpoint 5)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x05	iInterface   "SPDIF Output"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x01	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x02	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x06	bEndpointAddress  (OUT endpoint 6)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x86	bEndpointAddress  (IN endpoint 6)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x02	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x02	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x03	bSubslotSize
+0x18	bBitResolution   (24 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x06	bEndpointAddress  (OUT endpoint 6)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x009C	wMaxPacketSize    (1 x 156 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x86	bEndpointAddress  (IN endpoint 6)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x03	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x02	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x03	bFormatType   (FORMAT_TYPE_3)
+0x00001381	bmFormats
+          IEC61937_AC-3
+          IEC61937_DTS-I
+          IEC61937_DTS-II
+          IEC61937_DTS-III
+          TYPE_III_WMA
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 3 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x03	bFormatType   (FORMAT_TYPE_3)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x06	bEndpointAddress  (OUT endpoint 6)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x86	bEndpointAddress  (IN endpoint 6)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x03	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x0B	iInterface   "Headphone"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x03	bInterfaceNumber
+0x01	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x03	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x07	bEndpointAddress  (OUT endpoint 7)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x87	bEndpointAddress  (IN endpoint 7)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x03	bInterfaceNumber
+0x02	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x03	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x03	bSubslotSize
+0x18	bBitResolution   (24 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x07	bEndpointAddress  (OUT endpoint 7)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x009C	wMaxPacketSize    (1 x 156 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x87	bEndpointAddress  (IN endpoint 7)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0004	wMaxPacketSize    (1 x 4 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x04	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x06	iInterface   "Microphone In"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x04	bInterfaceNumber
+0x01	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0A	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x89	bEndpointAddress  (IN endpoint 9)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x04	bInterfaceNumber
+0x02	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0A	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x03	bSubslotSize
+0x18	bBitResolution   (24 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x89	bEndpointAddress  (IN endpoint 9)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x009C	wMaxPacketSize    (1 x 156 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x05	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x09	iInterface   "Line In"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x05	bInterfaceNumber
+0x01	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0B	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x88	bEndpointAddress  (IN endpoint 8)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x05	bInterfaceNumber
+0x02	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0B	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x03	bSubslotSize
+0x18	bBitResolution   (24 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x88	bEndpointAddress  (IN endpoint 8)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x009C	wMaxPacketSize    (1 x 156 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x06	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x07	iInterface   "SPDIF Input"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x06	bInterfaceNumber
+0x01	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0C	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x8A	bEndpointAddress  (IN endpoint 10)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x0068	wMaxPacketSize    (1 x 104 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x06	bInterfaceNumber
+0x02	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0C	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x03	bSubslotSize
+0x18	bBitResolution   (24 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x8A	bEndpointAddress  (IN endpoint 10)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x009C	wMaxPacketSize    (1 x 156 bytes)
+0x01	bInterval         (1 microframes)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Association Descriptor:
+------------------------------
+0x08	bLength
+0x0B	bDescriptorType
+0x07	bFirstInterface
+0x01	bInterfaceCount
+0x03	bFunctionClass      (Human Interface Device Class)
+0x00	bFunctionSubClass   
+0x00	bFunctionProtocol   
+0x00	iFunction
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x07	bInterfaceNumber
+0x00	bAlternateSetting
+0x01	bNumEndPoints
+0x03	bInterfaceClass      (Human Interface Device Class)
+0x00	bInterfaceSubClass   
+0x00	bInterfaceProtocol   
+0x00	iInterface
+
+HID Descriptor:
+------------------------------
+0x09	bLength
+0x21	bDescriptorType
+0x0100	bcdHID
+0x00	bCountryCode
+0x01	bNumDescriptors
+0x22	bDescriptorType   (Report descriptor)
+0x0032	bDescriptorLength
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x84	bEndpointAddress  (IN endpoint 4)
+0x03	bmAttributes      (Transfer: Interrupt / Synch: None / Usage: Data)
+0x0010	wMaxPacketSize    (1 x 16 bytes)
+0x04	bInterval         (8 microframes)
+
+Interface Association Descriptor:
+------------------------------
+0x08	bLength
+0x0B	bDescriptorType
+0x08	bFirstInterface
+0x02	bInterfaceCount
+0x01	bFunctionClass      (Audio Device Class)
+0x00	bFunctionSubClass   
+0x00	bFunctionProtocol   (Audio Protocol undefined)
+0x00	iFunction
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x08	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x01	bInterfaceSubClass   (Audio Control Interface)
+0x00	bInterfaceProtocol   (Audio Protocol undefined)
+0x0C	iInterface   "USB2.0 MIDI Device"
+
+AC Interface Header Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0100	bcdADC
+0x0009	wTotalLength   (9 bytes)
+0x01	bInCollection
+0x09	baInterfaceNr(1)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x09	bInterfaceNumber
+0x00	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x03	bInterfaceSubClass   (MIDI Streaming Interface)
+0x00	bInterfaceProtocol   (Audio Protocol undefined)
+0x00	iInterface
+
+MS Interface Header Descriptor:
+------------------------------
+0x07	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0100	bcdMSC
+0x003D	wTotalLength   (61 bytes)
+
+MS MIDI IN Jack Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bJackType
+0x01	bJackID
+0x00	iJack
+
+MS MIDI IN Jack Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x02	bJackType
+0x02	bJackID
+0x00	iJack
+
+MS MIDI OUT Jack Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x01	bJackType
+0x03	bJackID
+0x01	bNrInputPins
+0x02	baSourceID(1)
+0x01	baSourcePin(1)
+0x00	iJack
+
+MS MIDI OUT Jack Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x02	bJackType
+0x04	bJackID
+0x01	bNrInputPins
+0x01	baSourceID(1)
+0x01	baSourcePin(1)
+0x00	iJack
+
+Endpoint Descriptor (Audio/MIDI 1.0):
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+*** ERROR: Invalid descriptor length 0x07 for Audio/MIDI 1.0 endpoint (9 bytes expected)
+Hex dump: 
+0x07 0x05 0x01 0x02 0x40 0x00 0x00 
+
+MS Bulk Data Endpoint Descriptor:
+------------------------------
+0x05	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bNumEmbMIDIJack
+0x01	baAssocJackID(1)
+
+Endpoint Descriptor (Audio/MIDI 1.0):
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+*** ERROR: Invalid descriptor length 0x07 for Audio/MIDI 1.0 endpoint (9 bytes expected)
+Hex dump: 
+0x07 0x05 0x82 0x02 0x40 0x00 0x00 
+
+MS Bulk Data Endpoint Descriptor:
+------------------------------
+0x05	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bNumEmbMIDIJack
+0x03	baAssocJackID(1)
+
+
+-------------------------------------
+Other Speed Configuration Descriptor:
+-------------------------------------
+0x09	bLength
+0x07	bDescriptorType
+0x0377	wTotalLength   (887 bytes)
+0x0A	bNumInterfaces
+0x01	bConfigurationValue
+0x00	iConfiguration
+0xC0	bmAttributes   (Self-powered Device)
+0x32	bMaxPower      (100 mA)
+
+Interface Association Descriptor:
+------------------------------
+0x08	bLength
+0x0B	bDescriptorType
+0x00	bFirstInterface
+0x07	bInterfaceCount
+0x01	bFunctionClass      (Audio Device Class)
+0x00	bFunctionSubClass   
+0x20	bFunctionProtocol   (Audio Protocol IP version 2.00)
+0x00	iFunction
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x00	bInterfaceNumber
+0x00	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x01	bInterfaceSubClass   (Audio Control Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AC Interface Header Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0200	bcdADC
+0x0A	bCategory   (PRO_AUDIO)
+0x0141	wTotalLength   (321 bytes)
+0x00	bmControls
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x12	bCSourceID
+0x00	bNrChannels   (0 channels)
+0x00000000	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x02	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x13	bCSourceID
+0x00	bNrChannels   (0 channels)
+0x00000000	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x03	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x14	bCSourceID
+0x00	bNrChannels   (0 channels)
+0x00000000	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x04	bTerminalID
+0x0201	wTerminalType   (Microphone)
+0x00	bAssocTerminal
+0x15	bCSourceID
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x05	bTerminalID
+0x0603	wTerminalType   (Line connector)
+0x00	bAssocTerminal
+0x16	bCSourceID
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Input Terminal Descriptor:
+------------------------------
+0x11	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x06	bTerminalID
+0x0605	wTerminalType   (S/PDIF interface)
+0x00	bAssocTerminal
+0x17	bCSourceID
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+0x40	bmControls
+          Cluster Control      - read only
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x07	bTerminalID
+0x0301	wTerminalType   (Speaker)
+0x00	bAssocTerminal
+0x0D	bSourceID
+0x12	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x08	bTerminalID
+0x0605	wTerminalType   (S/PDIF interface)
+0x00	bAssocTerminal
+0x0E	bSourceID
+0x13	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x09	bTerminalID
+0x0302	wTerminalType   (Headphones)
+0x00	bAssocTerminal
+0x0F	bSourceID
+0x14	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x0A	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x10	bSourceID
+0x15	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x0B	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x11	bSourceID
+0x16	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Output Terminal Descriptor:
+------------------------------
+0x0C	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x0C	bTerminalID
+0x0101	wTerminalType   (USB Streaming)
+0x00	bAssocTerminal
+0x06	bSourceID
+0x17	bCSourceID
+0x0000	bmControls
+0x00	iTerminal
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x0D	bUnitID
+0x01	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x0000000C	bmaControls(1)
+          Volume Control            - host programmable
+0x0000000C	bmaControls(2)
+          Volume Control            - host programmable
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x0E	bUnitID
+0x02	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x00000000	bmaControls(1)
+0x00000000	bmaControls(2)
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x0F	bUnitID
+0x03	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x0000000C	bmaControls(1)
+          Volume Control            - host programmable
+0x0000000C	bmaControls(2)
+          Volume Control            - host programmable
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x10	bUnitID
+0x04	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x00000000	bmaControls(1)
+0x00000000	bmaControls(2)
+0x00	iFeature
+
+AC Feature Unit Descriptor:
+------------------------------
+0x12	bLength
+0x24	bDescriptorType
+0x06	bDescriptorSubtype
+0x11	bUnitID
+0x05	bSourceID
+0x00000003	bmaControls(0)
+          Mute Control              - host programmable
+0x00000000	bmaControls(1)
+0x00000000	bmaControls(2)
+0x00	iFeature
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x12	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x13	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x14	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x15	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x16	bClockID
+0x03	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+AC Clock Source Descriptor:
+------------------------------
+0x08	bLength
+0x24	bDescriptorType
+0x0A	bDescriptorSubtype
+0x17	bClockID
+0x00	bmAttributes
+0x07	bmControls
+          Clock Frequency Control - host programmable
+          Clock Validity Control  - read only
+0x00	bAssocTerminal
+0x00	iClockSource
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x8F	bEndpointAddress  (IN endpoint 15)
+0x03	bmAttributes      (Transfer: Interrupt / Synch: None / Usage: Data)
+0x0006	wMaxPacketSize    (1 x 6 bytes)
+0x01	bInterval         (1 frames)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x01	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x04	iInterface   "Speaker"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x01	bInterfaceNumber
+0x01	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x05	bEndpointAddress  (OUT endpoint 5)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x85	bEndpointAddress  (IN endpoint 5)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0003	wMaxPacketSize    (1 x 3 bytes)
+0x01	bInterval         (1 frames)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x05	iInterface   "SPDIF Output"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x01	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x02	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x06	bEndpointAddress  (OUT endpoint 6)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x86	bEndpointAddress  (IN endpoint 6)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0003	wMaxPacketSize    (1 x 3 bytes)
+0x01	bInterval         (1 frames)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x02	bInterfaceNumber
+0x02	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x02	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x03	bFormatType   (FORMAT_TYPE_3)
+0x00001381	bmFormats
+          IEC61937_AC-3
+          IEC61937_DTS-I
+          IEC61937_DTS-II
+          IEC61937_DTS-III
+          TYPE_III_WMA
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 3 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x03	bFormatType   (FORMAT_TYPE_3)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x06	bEndpointAddress  (OUT endpoint 6)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x86	bEndpointAddress  (IN endpoint 6)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0003	wMaxPacketSize    (1 x 3 bytes)
+0x01	bInterval         (1 frames)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x03	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x0B	iInterface   "Headphone"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x03	bInterfaceNumber
+0x01	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x03	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x07	bEndpointAddress  (OUT endpoint 7)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x87	bEndpointAddress  (IN endpoint 7)
+0x11	bmAttributes      (Transfer: Isochronous / Synch: None / Usage: Feedback)
+0x0003	wMaxPacketSize    (1 x 3 bytes)
+0x01	bInterval         (1 frames)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x04	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x06	iInterface   "Microphone In"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x04	bInterfaceNumber
+0x01	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0A	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x89	bEndpointAddress  (IN endpoint 9)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x05	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x09	iInterface   "Line In"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x05	bInterfaceNumber
+0x01	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0B	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x88	bEndpointAddress  (IN endpoint 8)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x06	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x07	iInterface   "SPDIF Input"
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x06	bInterfaceNumber
+0x01	bAlternateSetting
+0x01	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x02	bInterfaceSubClass   (Audio Streaming Interface)
+0x20	bInterfaceProtocol   (Audio Protocol IP version 2.00)
+0x00	iInterface
+
+AS Interface Descriptor:
+------------------------------
+0x10	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0C	bTerminalLink
+0x05	bmControls
+          Active Alternate Setting Control - read only
+          Valid Alternate Settings Control - read only
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x00000001	bmFormats
+          PCM
+0x02	bNrChannels   (2 channels)
+0x00000003	bmChannelConfig
+0x00	iChannelNames
+
+AS Format Type 1 Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bFormatType   (FORMAT_TYPE_1)
+0x02	bSubslotSize
+0x10	bBitResolution   (16 bits per sample)
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x8A	bEndpointAddress  (IN endpoint 10)
+0x05	bmAttributes      (Transfer: Isochronous / Synch: Asynchronous / Usage: Data)
+0x00C8	wMaxPacketSize    (1 x 200 bytes)
+0x01	bInterval         (1 frames)
+
+AS Isochronous Data Endpoint Descriptor:
+------------------------------
+0x08	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x00	bmAttributes
+0x00	bmControls
+0x00	bLockDelayUnits   (undefined)
+0x0000	wLockDelay
+
+Interface Association Descriptor:
+------------------------------
+0x08	bLength
+0x0B	bDescriptorType
+0x07	bFirstInterface
+0x01	bInterfaceCount
+0x03	bFunctionClass      (Human Interface Device Class)
+0x00	bFunctionSubClass   
+0x00	bFunctionProtocol   
+0x00	iFunction
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x07	bInterfaceNumber
+0x00	bAlternateSetting
+0x01	bNumEndPoints
+0x03	bInterfaceClass      (Human Interface Device Class)
+0x00	bInterfaceSubClass   
+0x00	bInterfaceProtocol   
+0x00	iInterface
+
+HID Descriptor:
+------------------------------
+0x09	bLength
+0x21	bDescriptorType
+0x0100	bcdHID
+0x00	bCountryCode
+0x01	bNumDescriptors
+0x22	bDescriptorType   (Report descriptor)
+0x0032	bDescriptorLength
+
+Endpoint Descriptor:
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+0x84	bEndpointAddress  (IN endpoint 4)
+0x03	bmAttributes      (Transfer: Interrupt / Synch: None / Usage: Data)
+0x0010	wMaxPacketSize    (1 x 16 bytes)
+0x01	bInterval         (1 frames)
+
+Interface Association Descriptor:
+------------------------------
+0x08	bLength
+0x0B	bDescriptorType
+0x08	bFirstInterface
+0x02	bInterfaceCount
+0x01	bFunctionClass      (Audio Device Class)
+0x00	bFunctionSubClass   
+0x00	bFunctionProtocol   (Audio Protocol undefined)
+0x00	iFunction
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x08	bInterfaceNumber
+0x00	bAlternateSetting
+0x00	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x01	bInterfaceSubClass   (Audio Control Interface)
+0x00	bInterfaceProtocol   (Audio Protocol undefined)
+0x0C	iInterface   "USB2.0 MIDI Device"
+
+AC Interface Header Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0100	bcdADC
+0x0009	wTotalLength   (9 bytes)
+0x01	bInCollection
+0x09	baInterfaceNr(1)
+
+Interface Descriptor:
+------------------------------
+0x09	bLength
+0x04	bDescriptorType
+0x09	bInterfaceNumber
+0x00	bAlternateSetting
+0x02	bNumEndPoints
+0x01	bInterfaceClass      (Audio Device Class)
+0x03	bInterfaceSubClass   (MIDI Streaming Interface)
+0x00	bInterfaceProtocol   (Audio Protocol undefined)
+0x00	iInterface
+
+MS Interface Header Descriptor:
+------------------------------
+0x07	bLength
+0x24	bDescriptorType
+0x01	bDescriptorSubtype
+0x0100	bcdMSC
+0x003D	wTotalLength   (61 bytes)
+
+MS MIDI IN Jack Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x01	bJackType
+0x01	bJackID
+0x00	iJack
+
+MS MIDI IN Jack Descriptor:
+------------------------------
+0x06	bLength
+0x24	bDescriptorType
+0x02	bDescriptorSubtype
+0x02	bJackType
+0x02	bJackID
+0x00	iJack
+
+MS MIDI OUT Jack Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x01	bJackType
+0x03	bJackID
+0x01	bNrInputPins
+0x02	baSourceID(1)
+0x01	baSourcePin(1)
+0x00	iJack
+
+MS MIDI OUT Jack Descriptor:
+------------------------------
+0x09	bLength
+0x24	bDescriptorType
+0x03	bDescriptorSubtype
+0x02	bJackType
+0x04	bJackID
+0x01	bNrInputPins
+0x01	baSourceID(1)
+0x01	baSourcePin(1)
+0x00	iJack
+
+Endpoint Descriptor (Audio/MIDI 1.0):
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+*** ERROR: Invalid descriptor length 0x07 for Audio/MIDI 1.0 endpoint (9 bytes expected)
+Hex dump: 
+0x07 0x05 0x01 0x02 0x40 0x00 0x00 
+
+MS Bulk Data Endpoint Descriptor:
+------------------------------
+0x05	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bNumEmbMIDIJack
+0x01	baAssocJackID(1)
+
+Endpoint Descriptor (Audio/MIDI 1.0):
+------------------------------
+0x07	bLength
+0x05	bDescriptorType
+*** ERROR: Invalid descriptor length 0x07 for Audio/MIDI 1.0 endpoint (9 bytes expected)
+Hex dump: 
+0x07 0x05 0x82 0x02 0x40 0x00 0x00 
+
+MS Bulk Data Endpoint Descriptor:
+------------------------------
+0x05	bLength
+0x25	bDescriptorType
+0x01	bDescriptorSubtype
+0x01	bNumEmbMIDIJack
+0x03	baAssocJackID(1)
+
+Microsoft OS Descriptor is not available. Error code: 0x0000001F
+
+
+--------------------------------
+String Descriptor Table
+--------------------------------
+Index  LANGID  String
+0x00   0x0000  0x0409 
+0x01   0x0409  "CMEDIA"
+0x02   0x0409  "USB2.0 High-Speed True HD Audio"
+0x04   0x0409  "Speaker"
+0x05   0x0409  "SPDIF Output"
+0x06   0x0409  "Microphone In"
+0x07   0x0409  "SPDIF Input"
+0x09   0x0409  "Line In"
+0x0B   0x0409  "Headphone"
+0x0C   0x0409  "USB2.0 MIDI Device"
+
+------------------------------
+
+Connection path for device: 
+Intel(R) 7 Series/C216 Chipset Family USB Enhanced Host Controller - 1E26
+Root Hub
+Generic USB Hub
+USB2.0 High-Speed True HD Audio (VID=0x0D8C PID=0x0314) Port: 2
+
+Running on: Windows 8.1
+
+Brought to you by TDD v2.19.0, Dec  5 2023, 12:08:38
