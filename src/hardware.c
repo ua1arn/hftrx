@@ -2303,9 +2303,9 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define DEVICE_ATTRS CACHEATTR_NOCACHE
 #define NCRAM_ATTRS CACHEATTR_NOCACHE
 
-#define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)
-#define Cval_RAM		MKATTR_Cval(RAM_ATTRS)
-#define Bval_RAM		MKATTR_Bval(RAM_ATTRS)
+#define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)	// Define the Outer cache attribute
+#define Cval_RAM		MKATTR_Cval(RAM_ATTRS)		// Define the Inner cache attribute
+#define Bval_RAM		MKATTR_Bval(RAM_ATTRS)		// Define the Inner cache attribute
 
 #if WITHSMPSYSTEM
 	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
@@ -2313,9 +2313,9 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
-#define TEXval_NCRAM	MKATTR_TEXval(NCRAM_ATTRS)
-#define Cval_NCRAM		MKATTR_Cval(NCRAM_ATTRS)
-#define Bval_NCRAM		MKATTR_Bval(NCRAM_ATTRS)
+#define TEXval_NCRAM	MKATTR_TEXval(NCRAM_ATTRS)	// Define the Outer cache attribute
+#define Cval_NCRAM		MKATTR_Cval(NCRAM_ATTRS)	// Define the Inner cache attribute
+#define Bval_NCRAM		MKATTR_Bval(NCRAM_ATTRS)	// Define the Inner cache attribute
 
 #if WITHSMPSYSTEM
 	#define SHAREDval_NCRAM 1		// required for ldrex.. and strex.. functionality
@@ -2331,9 +2331,9 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 	#define SHAREDval_DEVICE 	0
 #else
 	/* Shareable Device */
-	#define TEXval_DEVICE	MKATTR_TEXval(DEVICE_ATTRS)
-	#define Cval_DEVICE		MKATTR_Cval(DEVICE_ATTRS)
-	#define Bval_DEVICE		MKATTR_Bval(DEVICE_ATTRS)
+	#define TEXval_DEVICE	MKATTR_TEXval(DEVICE_ATTRS)	// Define the Outer cache attribute
+	#define Cval_DEVICE		MKATTR_Cval(DEVICE_ATTRS)	// Define the Inner cache attribute
+	#define Bval_DEVICE		MKATTR_Bval(DEVICE_ATTRS)	// Define the Inner cache attribute
 
 	#if WITHSMPSYSTEM
 		#define SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
@@ -2345,19 +2345,19 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 #define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		(SECTIONval) * (1u << 0) |	/* 0b10, Section or Supersection */ \
-		!! (Bv) * (1u << 2) |	/* B */ \
-		!! (Cv) * (1u << 3) |	/* C */ \
-		!! (XNv) * (1u << 4) |	/* XN The Execute-never bit. */ \
-		(DOMAINv) * (1u << 5) |	/* DOMAIN */ \
-		0 * (1u << 9) |	/* implementation defined */ \
-		(((APv) >> 0) & 0x03) * (1u << 10) |	/* AP [1..0] */ \
-		((TEXv) & 0x07) * (1u << 12) |	/* TEX */ \
-		(((APv) >> 2) & 0x01) * (1u << 15) |	/* AP[2] */ \
-		!! (SHAREDv) * (1u << 16) |	/* S */ \
-		0 * (1u << 17) |	/* nG */ \
-		0 * (1u << 18) |	/* 0 */ \
-		0 * (1u << 19) |	/* NS */ \
+		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection */ \
+		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
+		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
+		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
+		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
+		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
+		(((APv) >> 0) & 0x03) * (UINT32_C(1) << 10) |	/* AP [1..0] */ \
+		((TEXv) & 0x07) * (UINT32_C(1) << 12) |	/* TEX */ \
+		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 15) |	/* AP[2] */ \
+		!! (SHAREDv) * (UINT32_C(1) << 16) |	/* S */ \
+		0 * (UINT32_C(1) << 17) |	/* nG */ \
+		0 * (UINT32_C(1) << 18) |	/* 0 */ \
+		0 * (UINT32_C(1) << 19) |	/* NS */ \
 		0 \
 	)
 
