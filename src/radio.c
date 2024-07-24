@@ -17960,38 +17960,47 @@ static void menu_print(void)
         		{
         			const FLASHMEM char * msg;
 			#if defined (WITHCPUNAME)
-				msg = PSTR(WITHCPUNAME);
+					msg = PSTR(WITHCPUNAME);
 			#elif CPUSTYLE_STM32MP1
-        			RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
-        			(void) RCC->MP_APB5ENSETR;
-        			RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
-        			(void) RCC->MP_APB5LPENSETR;
+					RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
+					(void) RCC->MP_APB5ENSETR;
+					RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
+					(void) RCC->MP_APB5LPENSETR;
 
-        			const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
-        			switch (rpn)
-        			{
-        			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
-        			case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
-        			case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
-        			case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
-        			case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
-        			case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
-        			case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
-        			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
-        			default: 	msg = PSTR("STM32MP15xxx"); break;
-        			}
+					const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+					switch (rpn)
+					{
+					case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
+					case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
+					case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
+					case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
+					case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
+					case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
+					case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
+					case 0x81:	msg = PSTR("STM32MP157Dx"); break;
+					default: 	msg = PSTR("STM32MP15xxx"); break;
+					}
 			#elif CPUSTYLE_XC7Z
-        			msg = PSTR("ZYNQ 7020");
+					msg = PSTR("ZYNQ 7020");
         	#elif CPUSTYLE_XCZU
-        			msg = PSTR("ZYNQ USCALE");
+					msg = PSTR("ZYNQ USCALE");
         	#elif CPUSTYLE_R7S721
-        			msg = PSTR("RENESAS");
-			#elif CPUSTYLE_T113
-					msg = allwnrt113_get_chipid() == CHIPID_T113M4020DC0 ? PSTR("Allw T128-M4") : PSTR("Allw T128-S3");
-			#elif CPUSTYLE_F133
-					msg = PSTR("Allw F133-A");
+					msg = PSTR("RENESAS");
+			#elif CPUSTYLE_T113 || CPUSTYLE_F133
+					switch (allwnrt113_get_chipid())
+					{
+					default:
+					case CHIPID_T113S3: 		msg = PSTR("Allw T113-S3"); break;
+					case CHIPID_T113M4020DC0: 	msg = PSTR("Allw T113-M4"); break;
+					case CHIPID_F133A: 			msg = PSTR("Allw F133A"); break;
+					case CHIPID_D1S: 			msg = PSTR("Allw D1s"); break;
+					}
+			#elif CPUSTYLE_H616
+					msg = msg = PSTR("Allw H616");
+			#elif CPUSTYLE_T507
+					msg = msg = PSTR("Allw T507");
         	#else
-        			msg = PSTR("CPUxxx");
+					msg = PSTR("CPUxxx");
         	#endif
         			width = VALUEW;
         			comma = strlen_P(msg);
