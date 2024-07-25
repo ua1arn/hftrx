@@ -237,7 +237,7 @@ $(OBJSA):
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
+%_app.elf: $(OBJS) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 

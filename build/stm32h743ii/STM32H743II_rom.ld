@@ -3,12 +3,12 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-	ITCMRAM (rwx) : ORIGIN = 0x00000000, LENGTH = 64K	/* ITCMRAM-RAM */
-	FLASH (rx)    : ORIGIN = 0x08000000, LENGTH = 2048K	/* FLASH on AXIM interface */
-	DTCMRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 128K	/* DTCMRAM Data DTCMRAM-RAM */
-	RAM_D1 (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K	/* AXI SRAM - LTDC frame buffer */
-	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288K	/* SRAM1, SRAM2, SRAM3 */
-	RAM_D3 (xrw)  : ORIGIN = 0x38000000, LENGTH = 64K	/* SRAM4 */
+	ITCMRAM (rwx) : ORIGIN = 0x00000000, LENGTH = 64k	/* ITCMRAM-RAM */
+	FLASH (rx)    : ORIGIN = 0x08000000, LENGTH = 2048k	/* FLASH on AXIM interface */
+	DTCMRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 128k	/* DTCMRAM Data DTCMRAM-RAM */
+	RAM_D1 (xrw)  : ORIGIN = 0x24000000, LENGTH = 512k	/* AXI SRAM - LTDC frame buffer */
+	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288k	/* SRAM1, SRAM2, SRAM3 */
+	RAM_D3 (xrw)  : ORIGIN = 0x38000000, LENGTH = 64k	/* SRAM4 */
 }
 
 /* Library configurations */
