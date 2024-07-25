@@ -599,6 +599,13 @@
 		} \
 	} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
 		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
@@ -728,8 +735,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW || WITHTWIHW
-	// TWI1-SCK PG8 SCL
-	// TWI1-SDA PG9 SDA
+	// TWI1-SCK PG8 SCL UART1-RTS
+	// TWI1-SDA PG9 SDA UART1-CTS
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 8)		// TWI1-SCK PG8 SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOG->DATA)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOG, (v), 0 * (v)); } while (0)
