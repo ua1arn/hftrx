@@ -64,8 +64,19 @@
 //#define WITHUSBDEV_DMAENABLE 1
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
+
+#if WITHDEBUG
+	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+#elif WITHAUTOTUNER_UA1CEI
+	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+	void user_uart2_onrxchar(uint_fast8_t c);
+	void user_uart2_ontxchar(void * ctx);
+	#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar((c)); } while (0)
+	#define HARDWARE_UART2_ONTXCHAR(ctx) do { user_uart2_ontxchar((ctx)); } while (0)
+
+#endif /* WITHDEBUG */
 
 #define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1

@@ -313,38 +313,6 @@ board_ctlregs_spi_send_frame(
 
 #include <ctype.h>
 
-static void nmeatuner_putc(uint8_t c)
-{
-	while (0 == HARDWARE_NMEA_PUTCHAR(c))
-		;
-}
-
-// Передача в канал указанного массива. Ожидание, если очередь заполнена
-static void nmeatuner_write(const uint8_t * buff, size_t n)
-{
-	while (n --)
-	{
-		const uint8_t c = * buff ++;
-		nmeatuner_putc(c);
-	}
-}
-
-static void nmeatuner_format(const char * format, ...)
-{
-	char b [256];
-	int n, i;
-
-	n = local_snprintf_P(b, sizeof b / sizeof b [0], format);
-
-	for (i = 0; i < n; ++ i)
-		nmeatuner_putc(b [i]);
-}
-
-void nmeatuner_sendchar(void * ctx)
-{
-	(void) ctx;
-}
-
 enum nmeaparser_states
 {
 	NMEAST_INITIALIZED,
@@ -433,7 +401,7 @@ static uint_fast8_t hex2int(uint_fast8_t c)
 
 static dpcobj_t dpc_ua1ceituner;
 
-static void ua1ceituner_send(void *);
+static void ua1ceituner_send(void);
 
 
 /* вызывается из обработчика прерываний */
@@ -527,8 +495,100 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 	}
 }
 
+// Очереди символов для обмена
+
+// Очередь символов для передачи в канал обмена
+static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
+static u8queue_t rxq;
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart2_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putchar(int c)
+{
+	if (c == '\n')
+		nmeaX_putchar('\r');
+
+	nmeaX_putc(c);
+	return c;
+}
+
+void nmeaX_puts_impl(const char * s, size_t len)
+{
+	while (len --)
+	{
+		const char c = * s ++;
+		nmeaX_putchar(c);
+	}
+}
+
+/* Передача строки без '$' в начале и с завершающим  '*'
+ * Ведущий символ '$' и контрольный код формируются тут.
+ */
+static void nmea_send(const char * body, size_t len)
+{
+	static const char hex [] = "0123456789ABCDEF";
+	unsigned xorv = calcxorv(body, len);
+
+	nmeaX_putchar('$');
+	nmeaX_puts_impl(body, len);
+	nmeaX_putchar(hex [(xorv >> 4) & 0x0F]);
+	nmeaX_putchar(hex [(xorv >> 0) & 0x0F]);
+	nmeaX_putchar('\n');
+}
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart2_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart2_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart2_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart2_enabletx(0);
+	}
+	else
+	{
+		hardware_uart2_enabletx(0);
+	}
+}
+
 static void
-ua1ceituner_send(void * not_used)
+ua1ceituner_send(void)
 {
 	//управление устройством
 	//Обмен на скорости 250 kb/s, 8-N-1
@@ -558,7 +618,8 @@ ua1ceituner_send(void * not_used)
 	  VREF              //ADC  измерения опорного напряжения
 	  *CS<CR><LF>
 	*/
-	nmeatuner_format(
+	static char state [1024];
+	unsigned len = local_snprintf_P(state, ARRAY_SIZE(state),
 			"$COM,"
 			"%d,"	// RX_TX_state,        //0 = RX 1 = TX
 			"%d,"	// BND_number,       //номер диапазона  1 - 10
@@ -569,7 +630,7 @@ ua1ceituner_send(void * not_used)
 			"%d,"	// SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
 			"%d,"	// SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
 			"%d"	// отключение тюнера 0 - тютер используется, 1 - режим BYPAS
-			"*FF\r\n",	// *CS<CR><LF>
+			"*",	// *CS<CR><LF>
 			glob_tx,
 			glob_bandf3,
 			! glob_classamode,	// 1=class AB, 0=class A
@@ -580,18 +641,46 @@ ua1ceituner_send(void * not_used)
 			glob_tuner_bypass ? 0 : glob_tuner_L,
 			glob_tuner_bypass
 		);
+	nmea_send(state, len);
+}
+
+static dpcobj_t uart2_dpc_timed;
+static ticker_t uart2_ticker;
+
+/* system-mode function */
+static void uart2_timer_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc_call(& uart2_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+}
+
+/* Функционирование USER MODE обработчиков */
+static void uart2_dpc_spool(void * ctx)
+{
+	ua1ceituner_send();
 }
 
 void nmeatuner_initialize(void)
 {
-	dpcobj_initialize(& dpc_ua1ceituner, ua1ceituner_send, NULL);
+	static uint8_t txb [2048];
+	static uint8_t rxb [512];
+	const uint_fast32_t baudrate = 250000L;
+
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	hardware_uart2_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart2_set_speed(baudrate);
+	hardware_uart2_enablerx(1);
+	hardware_uart2_enabletx(0);
+
+	dpcobj_initialize(& dpc_ua1ceituner, uart2_dpc_spool, NULL);
+	dpcobj_initialize(& uart2_dpc_timed, uart2_dpc_spool, NULL);
+	ticker_initialize(& uart2_ticker, NTICKS(1000), uart2_timer_event, NULL);
+	ticker_add(& uart2_ticker);
 
 	nmeaparser_state = NMEAST_INITIALIZED;
-
-	HARDWARE_NMEA_INITIALIZE(250000L);
-	HARDWARE_NMEA_SET_SPEED(250000L);
-	HARDWARE_NMEA_ENABLERX(1);
-	HARDWARE_NMEA_ENABLETX(0);
 }
 
 #endif /* WITHAUTOTUNER_UA1CEI */
@@ -7850,22 +7939,6 @@ static void uartX_write(const uint8_t * buff, size_t n)
 	}
 }
 
-static void uartX_format(const char * format, ...)
-{
-	char b [256];
-	int n, i;
-	va_list	ap;
-	va_start(ap, format);
-
-	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
-
-	for (i = 0; i < n; ++ i)
-		nmeaX_putc(b [i]);
-
-	va_end(ap);
-}
-
-
 // передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putchar(int c)
 {
@@ -8004,7 +8077,7 @@ static void prog_update_noplanes(void)
 #endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
 #if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send(NULL);
+	ua1ceituner_send();
 #endif /* WITHAUTOTUNER_UA1CEI */
 
 #if WITHMGLOOP
