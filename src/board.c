@@ -7671,6 +7671,7 @@ static void board_rtc_initialize(void)
 		uint_fast8_t hour, minute, seconds;
 		
 		board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
+		PRINTF(PSTR("board_rtc_initialize: set defaults %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 		board_rtc_setdatetime(year, month, day, hour, minute, seconds);
 	}
 #if WITHRTCCACHED

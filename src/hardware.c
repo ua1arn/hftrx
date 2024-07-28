@@ -3274,7 +3274,7 @@ static void setactlr(void)
 static void
 sysinit_cache_core0_initialize(void)
 {
-	PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
+	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
 	ASSERT(ICACHEROWSIZE == icache_rowsize());
 

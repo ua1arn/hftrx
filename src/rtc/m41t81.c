@@ -193,7 +193,6 @@ void board_rtc_setdatetime(
 
 }
 
-
 void board_rtc_setdate(
 	uint_fast16_t year,
 	uint_fast8_t month,	// 1..12
@@ -230,7 +229,9 @@ void board_rtc_getdate(
 	}
 	else
 	{
-
+		* year = 2000;		// r=7
+		* month = 1;	// r=6 01-12
+		* dayofmonth = 1;		// r=5
 	}
 }
 
@@ -251,7 +252,9 @@ void board_rtc_gettime(
 	}
 	else
 	{
-
+		* hour = 0;		// r=3
+		* minute = 0;	// r=2
+		* seconds = 0;	// r=1
 	}
 }
 
@@ -278,7 +281,12 @@ void board_rtc_getdatetime(
 	}
 	else
 	{
-
+		* year = 2000;		// r=7
+		* month = 1;		// r=6
+		* dayofmonth = 1;		// r=5
+		* hour = 0;		// r=3
+		* minute = 0;	// r=2
+		* seconds = 0;	// r=1
 	}
 }
 
@@ -289,13 +297,13 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	uint8_t rtc_calibratioin = 0x10;
 
 	if (m41t81_setclearbit(0x08, 0x1f, rtc_calibratioin))
-		return 0;
+		return 1;
 	if (m41t81_setclearbit(0x0c, 0x40, 0x00))	// ht=0
-		return 0;
+		return 1;
 	if (m41t81_setclearbit(0x01, 0x80, 0x00))	// st=0
-		return 0;
+		return 1;
 	if (m41t81_setclearbit(0x03, 0xc0, 0xc0))	// CB=1, CEB=1
-		return 0;
+		return 1;
 
 	return 0;
 }
