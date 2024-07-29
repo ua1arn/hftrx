@@ -1255,6 +1255,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color);
 
 #endif /* WITHRLEDECOMPRESS */
+void hardware_framebuffers_initialize(void);
 
 #ifdef __cplusplus
 }

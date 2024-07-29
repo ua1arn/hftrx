@@ -42,112 +42,6 @@ const char * savewhere = "no func";
 //#include "./byte2crun.h"
 //#endif /* ! LCDMODE_LTDC_L24 */
 
-typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
-
-#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
-	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
-#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
-	//#define framebuff (framebuff0)
-	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
-#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
-
-#if ! defined (SDRAM_BANK_ADDR)
-	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T fbfX ALIGNX_END;
-
-	static uint_fast8_t drawframe;
-
-	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-	uint_fast8_t colmain_fb_next(void)
-	{
-		drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;
-		return drawframe;
-	}
-
-	PACKEDCOLORPIP_T *
-	colmain_fb_draw(void)
-	{
-		return fbfX [drawframe];
-	}
-
-	void colmain_fb_initialize(void)
-	{
-//		uint_fast8_t i;
-//		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-//			memset(fbfX [i], 0, sizeof fbfX [0]);
-	}
-
-	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-	{
-		uint_fast8_t i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			if ((uintptr_t) fbfX [i] == addr)
-				return i;
-		}
-		ASSERT(0);
-		return 0;
-	}
-
-#elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
-
-	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-	uint_fast8_t colmain_fb_next(void)
-	{
-		return 0;
-	}
-
-	PACKEDCOLORPIP_T *
-	colmain_fb_draw(void)
-	{
-		return & framebuff[0][0];
-	}
-
-	void colmain_fb_initialize(void)
-	{
-		//memset(framebuff, 0, sizeof framebuff);
-	}
-
-	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-	{
-		uint_fast8_t i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			if ((uintptr_t) framebuff [i] == addr)
-				return i;
-		}
-		ASSERT(0);
-		return 0;
-	}
-
-#else
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-
-	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-	uint_fast8_t colmain_fb_next(void)
-	{
-		return 0;
-	}
-
-	PACKEDCOLORPIP_T *
-	colmain_fb_draw(void)
-	{
-		return fbf;
-	}
-
-	void colmain_fb_initialize(void)
-	{
-		//memset(fbf, 0, sizeof fbf);
-	}
-
-	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-	{
-		return 0;
-	}
-
-
-#endif /* LCDMODE_LTDC */
-
 #if LCDMODE_LTDC
 
 void display_putpixel(
@@ -2032,18 +1926,7 @@ void display_hardware_initialize(void)
 #endif /* WITHMDMAHW */
 
 #if WITHLTDCHW
-	const videomode_t * const vdmode = & vdmode0;
-	colmain_fb_initialize();
-	uintptr_t frames [LCDMODE_MAIN_PAGES];
-	unsigned i;
-	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-	{
-		frames [i] = (uintptr_t) fbfX [i];
-	}
-	// STM32xxx LCD-TFT Controller (LTDC)
-	// RENESAS Video Display Controller 5
-	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
-	hardware_ltdc_initialize(frames, vdmode);
+	hardware_framebuffers_initialize();
 	colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
@@ -2089,17 +1972,7 @@ void display_wakeup(void)
 {
 #if WITHLTDCHW
 	const videomode_t * const vdmode = & vdmode0;
-	colmain_fb_initialize();
-	uintptr_t frames [LCDMODE_MAIN_PAGES];
-	unsigned i;
-	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-	{
-		frames [i] = (uintptr_t) fbfX [i];
-	}
-	// STM32xxx LCD-TFT Controller (LTDC)
-	// RENESAS Video Display Controller 5
-	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
-    hardware_ltdc_initialize(frames, vdmode);
+	hardware_framebuffers_initialize();
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
     tc358768_wakeup(vdmode);
