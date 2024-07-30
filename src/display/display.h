@@ -1011,7 +1011,7 @@ void display_snapshot_write(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t 
 void display_snapshot_req(void);
 
 PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения
-uint_fast8_t colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
+void colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);
 void colmain_fb_list(uintptr_t * frames);	// получение массива планирующихся для работы framebuffers
 

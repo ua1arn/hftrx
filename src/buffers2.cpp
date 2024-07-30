@@ -3475,25 +3475,21 @@ void buffers_diagnostics(void)
 
 typedef ALIGNX_BEGIN struct colmainfb
 {
-	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 } ALIGNX_END colmainfb_t;
 
 typedef buffitem<colmainfb_t> colmainfbbuf_t;
 
 static RAMFRAMEBUFF colmainfbbuf_t colmainfbbuf [LCDMODE_MAIN_PAGES];
-
-// буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef dmahandle<COLORPIP_T, colmainfbbuf_t, 0, 0> colmainfbdma_t;
-
 static colmainfbdma_t colmainfbdma(IRQL_REALTIME, "fb", colmainfbbuf, ARRAY_SIZE(colmainfbbuf));
 
 static uint_fast8_t drawframe;
 
-// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-uint_fast8_t colmain_fb_next(void)
+// переключиться на использование для DRAW следующего фреймбуфера
+void colmain_fb_next(void)
 {
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;
-	return drawframe;
 }
 
 PACKEDCOLORPIP_T *

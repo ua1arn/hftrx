@@ -750,9 +750,10 @@ void display_nextfb(void)
 	ASSERT((frame % DCACHEROWSIZE) == 0);
 	dcache_clean_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 	hardware_ltdc_main_set(frame);
-	const unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
+	colmain_fb_next();
+
 #if WITHOPENVG
-	openvg_next(page);
+	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
 #endif /* WITHOPENVG */
 }
 
