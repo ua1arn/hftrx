@@ -3482,7 +3482,7 @@ typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DI
 
 #if ! defined (SDRAM_BANK_ADDR)
 	// буфер экрана
-	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T fbfX ALIGNX_END;
+	static RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T fbfX ALIGNX_END;
 
 	static uint_fast8_t drawframe;
 
@@ -3499,13 +3499,6 @@ typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DI
 		return fbfX [drawframe];
 	}
 
-	void colmain_fb_initialize(void)
-	{
-//		uint_fast8_t i;
-//		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-//			memset(fbfX [i], 0, sizeof fbfX [0]);
-	}
-
 	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
 	{
 		uint_fast8_t i;
@@ -3516,6 +3509,16 @@ typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DI
 		}
 		ASSERT(0);
 		return 0;
+	}
+
+	// получение массива планирующихся для работы framebuffers
+	void colmain_fb_list(uintptr_t * frames)
+	{
+		unsigned i;
+		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+		{
+			frames [i] = (uintptr_t) fbfX [i];
+		}
 	}
 
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
@@ -3532,11 +3535,6 @@ typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DI
 		return & framebuff[0][0];
 	}
 
-	void colmain_fb_initialize(void)
-	{
-		//memset(framebuff, 0, sizeof framebuff);
-	}
-
 	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
 	{
 		uint_fast8_t i;
@@ -3549,8 +3547,18 @@ typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DI
 		return 0;
 	}
 
+	// получение массива планирующихся для работы framebuffers
+	void colmain_fb_list(uintptr_t * frames)
+	{
+		unsigned i;
+		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+		{
+			frames [i] = (uintptr_t) framebuff [i];
+		}
+	}
+
 #else
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 
 	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
 	uint_fast8_t colmain_fb_next(void)
@@ -3564,34 +3572,19 @@ typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DI
 		return fbf;
 	}
 
-	void colmain_fb_initialize(void)
-	{
-		//memset(fbf, 0, sizeof fbf);
-	}
-
 	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
 	{
 		return 0;
 	}
 
 
-#endif /* LCDMODE_LTDC */
-
-	void hardware_framebuffers_initialize(void)
+	// получение массива планирующихся для работы framebuffers
+	void colmain_fb_list(uintptr_t * frames)
 	{
-		const videomode_t * const vdmode = & vdmode0;
-		colmain_fb_initialize();
-		uintptr_t frames [LCDMODE_MAIN_PAGES];
-		unsigned i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			frames [i] = (uintptr_t) fbfX [i];
-		}
-		// STM32xxx LCD-TFT Controller (LTDC)
-		// RENESAS Video Display Controller 5
-		//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
-		hardware_ltdc_initialize(frames, vdmode);
+		frames [i] = (uintptr_t) fbf;
 	}
+
+#endif /* LCDMODE_LTDC */
 #endif
 // инициализация системы буферов
 void buffers_initialize(void)

@@ -1012,8 +1012,8 @@ void display_snapshot_req(void);
 
 PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения
 uint_fast8_t colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-void colmain_fb_initialize(void);
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);
+void colmain_fb_list(uintptr_t * frames);	// получение массива планирующихся для работы framebuffers
 
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
@@ -1255,7 +1255,6 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color);
 
 #endif /* WITHRLEDECOMPRESS */
-void hardware_framebuffers_initialize(void);
 
 #ifdef __cplusplus
 }

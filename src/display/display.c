@@ -1926,8 +1926,12 @@ void display_hardware_initialize(void)
 #endif /* WITHMDMAHW */
 
 #if WITHLTDCHW
-	hardware_framebuffers_initialize();
-	colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
+	{
+		uintptr_t frames [LCDMODE_MAIN_PAGES];
+		colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
+		hardware_ltdc_initialize(frames, & vdmode0);
+		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
+	}
 
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
@@ -1971,8 +1975,12 @@ void display_hdmi_initialize(void)
 void display_wakeup(void)
 {
 #if WITHLTDCHW
-	const videomode_t * const vdmode = & vdmode0;
-	hardware_framebuffers_initialize();
+	{
+		uintptr_t frames [LCDMODE_MAIN_PAGES];
+		colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
+		hardware_ltdc_initialize(frames, & vdmode0);
+		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
+	}
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
     tc358768_wakeup(vdmode);
