@@ -10599,7 +10599,7 @@ static void lidar_parse(unsigned char c)
 			unsigned Dist = buff [0] + buff [1] * 256;	// Distanc, cm
 			unsigned Strength = buff [2] + buff [3] * 256;	// When the signal strength is lower than 100 or equal to 65535, the detection is unreliable
 			unsigned Temp = buff [4] + buff [5] * 256;	//Temp(Temperature): Represents the chip temperature of TFmini Plus. Degree centigrade = Temp / 8 -256
-			int Temperature = (Temp / 8) - 256;
+			int Temperature = (int) (Temp / 8) - 256;
 			PRINTF("Dist=%u cm, Streingth=%u, Temperature=%+d C\n", Dist, Strength, Temperature);
 			//printhex(0, buff, ARRAY_SIZE(buff));
 		}
