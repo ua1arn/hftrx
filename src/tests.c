@@ -10561,6 +10561,7 @@ void testde(void)
 #endif
 
 #if 0
+// Benewake TFmini Plus LIDAR
 static void lidar_parse(unsigned char c)
 {
 	static unsigned pos = 0;
@@ -10569,8 +10570,6 @@ static void lidar_parse(unsigned char c)
 
 	switch (pos)
 	{
-	default:
-		pos = 0;
 	case 0:
 		cks = c;
 		if (c == 0x59)
@@ -10588,22 +10587,21 @@ static void lidar_parse(unsigned char c)
 			pos = 0;
 		}
 		break;
-	case 2:
-	case 3:
-	case 4:
-	case 5:
-	case 6:
-	case 7:
+	default:
+		// 2..7
 		buff [pos ++ - 2] = c;
 		cks += c;
 		break;
 	case 8:
 		if (c == (cks & 0xFF))
 		{
-			// Use valid date
-			unsigned distance = buff [0] + buff [1] * 256;
-			PRINTF("distance=%u\n", distance);
-			printhex(0, buff, ARRAY_SIZE(buff));
+			// Use valid data
+			unsigned Dist = buff [0] + buff [1] * 256;	// Distanc, cm
+			unsigned Strength = buff [2] + buff [3] * 256;	// When the signal strength is lower than 100 or equal to 65535, the detection is unreliable
+			unsigned Temp = buff [4] + buff [5] * 256;	//Temp(Temperature): Represents the chip temperature of TFmini Plus. Degree centigrade = Temp / 8 -256
+			int Temperature = (Temp / 8) - 256;
+			PRINTF("Dist=%u cm, Streingth=%u, Temperature=%+d C\n", Dist, Strength, Temperature);
+			//printhex(0, buff, ARRAY_SIZE(buff));
 		}
 		pos = 0;
 		break;
@@ -10630,7 +10628,7 @@ void hightests(void)
 		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
 	}
 #endif
-#if 0
+#if 0 && ! WITHISBOOTLOADER
 	{
 		// Test lidar
 		// Benewake TFmini Plus LIDAR
@@ -10663,6 +10661,18 @@ void hightests(void)
 		//	59 59 E6 01 6D 04 40 09 53
 		//	59 59 E5 01 70 04 40 09 55
 
+		PRINTF("Benewake TFmini Plus LIDAR test\n");
+		const uint_fast32_t baudrate = 115200;
+		hardware_uart1_initialize(1, baudrate, 8, 0, 0);
+		hardware_uart1_set_speed(baudrate);
+		hardware_uart1_enablerx(1);
+		for (;;)
+		{
+			char c;
+			if (hardware_uart1_getchar(& c))
+				lidar_parse(c);
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 		static const uint8_t data [] =
 		{
 				1,2,3,4,5,6,7,8,9,0,

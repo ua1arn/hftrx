@@ -33,6 +33,8 @@
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
+#define WITHUART1HW	1	/* TX=PG6 TX=PG7 Используется периферийный контроллер последовательного порта UART1 */
+
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
@@ -673,6 +675,15 @@
 		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+
+// WITHUART1HW
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const portholder_t TXMASK = (UINT32_C(1) << 6); /* PG6 UART1-TX */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PG7 UART1-RX - pull-up RX data */  \
+		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHCAN0HW
