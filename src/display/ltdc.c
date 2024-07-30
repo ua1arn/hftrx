@@ -3673,14 +3673,15 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 
 #if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 
+// realtime priority handler
 static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 {
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
-	uint_fast32_t  reg = TCONLCD_PTR->LCD_GINT0_REG;
+	uint_fast32_t reg = TCONLCD_PTR->LCD_GINT0_REG;
 
 	if (reg & LCD_VB_INT_FLAG)
 	{
-		TCONLCD_PTR->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;
+		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
 		PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 	}
 //  if (reg & FSYNC_INT_FLAG){
@@ -3699,7 +3700,7 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 	TCON_LCD0->LCD_GINT0_REG |= LCD_VB_INT_EN; // LCD_LINE_INT_EN |
 	// add irq handler
 	// #define TCONLCD_IRQ TCON_LCD0_IRQn
-	arm_hardware_set_handler_system(TCONLCD_IRQ, TCON_LCD_VerticalBlanking_IRQHandler);
+	arm_hardware_set_handler_realtime(TCONLCD_IRQ, TCON_LCD_VerticalBlanking_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif
 }
