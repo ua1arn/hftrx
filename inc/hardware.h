@@ -833,6 +833,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer a
 void hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 void hardware_ltdc_L8_palette(void);	// Palette reload
+void hardware_ltdc_vblank(unsigned ix);	// Update framebuffer if needed
 
 uint_fast8_t usbd_cdc1_getrts(void);
 uint_fast8_t usbd_cdc1_getdtr(void);

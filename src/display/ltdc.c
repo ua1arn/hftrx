@@ -3682,12 +3682,17 @@ static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 	if (reg & LCD_VB_INT_FLAG)
 	{
 		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
-		PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
+		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
+		hardware_ltdc_vblank(TCONLCD_IX);	// Update framebuffer if needed
 	}
-//  if (reg & FSYNC_INT_FLAG){
+
+//  if (reg & FSYNC_INT_FLAG)
+//	{
 //		TCON_LCD0->LCD_GINT0_REG &= ~FSYNC_INT_FLAG;
 //		PRINTF("TCON_LCD_VB_IRQHandler:FSYNC_INT_FLAG 0x%x\n", (unsigned) TCON_LCD0->LCD_GINT0_REG);
+//		hardware_ltdc_vblank(TCONLCD_IX);	// Update framebuffer if needed
 //	}
+
 }
 #endif /* defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ */
 
@@ -5073,6 +5078,12 @@ void hardware_ltdc_main_set(uintptr_t p1)
 
 	hardware_ltdc_vsync();		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
+}
+
+// Update framebuffer if needed
+void hardware_ltdc_vblank(unsigned ix)
+{
+
 }
 
 /* Palette reload */
