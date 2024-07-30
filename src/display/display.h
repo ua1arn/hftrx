@@ -1010,6 +1010,7 @@ void display_snapshot(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t dx, ui
 void display_snapshot_write(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения в файл */
 void display_snapshot_req(void);
 
+#define LCDMODE_MAIN_PAGES	2
 PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения
 void colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);	// получить индекс виделбуфера по его адресу

@@ -2449,37 +2449,11 @@ extern "C" {
 
 /* Зависимости для поределения конфигурации видеосистемы */
 
-#if LCDMODE_V0
-	/* Обычная конфигурация одна страница без PIP с L8 на основном экране */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	1
-	#define LCDMODE_PIXELSIZE 1
-
-	// 0..COLORPIP_BASE-1 - волопад
-	// COLORPIP_BASE..127 - надписи и элементы дизайна
-	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
-	// 0..95 - палитра водопада
-	// 96..111 - норм цвета
-	// 112..127 - первая степень AA
-	// Заполнение палитры производится в display2_xltrgb24()
-
-	#define COLORPIP_SHADED 128
-	#define COLORPIP_ALIASED 16
-	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
-
-	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
-
-	#define WITHFASTWATERFLOW 1
-
-#elif LCDMODE_V2
+#if LCDMODE_V2
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 1
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -2503,7 +2477,6 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 1
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -2527,7 +2500,6 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 2
 
 	#define WITHFASTWATERFLOW 1
@@ -2537,7 +2509,6 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 2
 
 	#define WITHFASTWATERFLOW 1
@@ -2547,20 +2518,6 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_ARGB8888	1
-
-	#define LCDMODE_MAIN_PAGES	2
-	#define LCDMODE_PIXELSIZE 4
-
-	#define WITHFASTWATERFLOW 1
-
-
-#elif LCDMODE_V5A_3PAGES
-	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_ARGB8888	1
-
-	#define LCDMODE_MAIN_PAGES	3
 	#define LCDMODE_PIXELSIZE 4
 
 	#define WITHFASTWATERFLOW 1
@@ -2570,7 +2527,6 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 2
 
 	#define WITHFASTWATERFLOW 1
@@ -2579,7 +2535,6 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	//#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	0
 	#define LCDMODE_PIXELSIZE 1
 
 	#define LCDMODE_PIP_PAGES	0
