@@ -141,7 +141,6 @@ static int hwacc_rtmx_waitdone(void)
 //			G2D_ROT->ROT_INT = MASK;
 //			break;
 //		}
-		hardware_nonguiyield();
 		if (-- n == 0)
 		{
 			PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
@@ -186,7 +185,6 @@ static int hwacc_rot_waitdone(void)
 			G2D_ROT->ROT_INT = MASK;
 			break;
 		}
-		hardware_nonguiyield();
 		if (-- n == 0)
 		{
 			//PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
@@ -819,7 +817,6 @@ mdma_startandwait(void)
 	while ((MDMA_CH->CISR & MDMA_CISR_CTCIF_Msk) == 0)	// Channel x Channel Transfer Complete interrupt flag
 	{
 		ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
-		hardware_nonguiyield();
 	}
 	//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
@@ -1236,7 +1233,7 @@ hwaccel_rect_u16(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		hardware_nonguiyield();
+		;
 	__DMB();
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
@@ -1380,7 +1377,7 @@ hwaccel_rect_u24(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		hardware_nonguiyield();
+		;
 	__DMB();
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
@@ -1503,7 +1500,7 @@ hwaccel_rect_u32(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		hardware_nonguiyield();
+		;
 	__DMB();
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
@@ -2141,7 +2138,7 @@ void hwaccel_bitblt(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		hardware_nonguiyield();
+		;
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error

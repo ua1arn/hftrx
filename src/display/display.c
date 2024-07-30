@@ -138,7 +138,7 @@ display_scroll_down(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		hardware_nonguiyield();
+		;
 	__DMB();
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
@@ -197,7 +197,7 @@ display_scroll_up(
 
 	/* ожидаем выполнения операции */
 	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		hardware_nonguiyield();
+		;
 	__DMB();
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error

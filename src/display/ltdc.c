@@ -1487,12 +1487,12 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		; //hardware_nonguiyield();
+		;
 	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/*!< Immediately Reload. */
 	(void) LTDC->SRCR;
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		; //hardware_nonguiyield();
+		;
 
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
@@ -1504,12 +1504,12 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif /* LCDMODE_MAIN_L8 */
 
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		; //hardware_nonguiyield();
+		;
 	/* LTDC reload configuration */  
 	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
 	(void) LTDC->SRCR;
 	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
-		;//hardware_nonguiyield();
+		;
 
 	ltdc_tfcon_cfg(vdmode);
 	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
@@ -1523,8 +1523,6 @@ hardware_ltdc_deinitialize(void)
 	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
-	//while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
-	//	;//hardware_nonguiyield();
 
 #if CPUSTYLE_STM32H7XX
     /* Reset pulse to LTDC */
@@ -1563,12 +1561,12 @@ void hardware_ltdc_pip_set(uintptr_t p)
 	LAYER_PIP->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
+		;
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
+		;
 }
 
 /* Turn PIP off (main layer only). */
@@ -1593,7 +1591,7 @@ void hardware_ltdc_L8_palette(void)
 	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
 	(void) LTDC->SRCR;
 	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
-		;//hardware_nonguiyield();
+		;
 #endif /* */
 }
 
@@ -1604,7 +1602,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
+		;
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
@@ -1613,7 +1611,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediate Reload. */
 	(void) LTDC->SRCR;
 	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
-		hardware_nonguiyield();
+		;
 }
 
 /* ожидаем начало кадра */
@@ -1621,14 +1619,14 @@ static void hardware_ltdc_vsync(void)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
+		;
 
 	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 	(void) LTDC->SRCR;
 
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
-		hardware_nonguiyield();
+		;
 }
 
 /* Set MAIN frame buffer address. Wait for VSYNC. */
@@ -2385,31 +2383,22 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 	static const uint32_t ui_format = 0x0A;
 #endif
 
+
+#define LCD_VB_INT_EN  (UINT32_C(1) << 31)	// Enable the Vb interrupt
+#define TCONLCD_VB_INT_FLAG  (UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(void)
 {
-	// Ожилание смены кадра через номер поля в RTMIX
-//	const int rtmixid = RTMIXID;
-//	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-//	if (glb == NULL)
-//		return;
-//	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
-//	for (;;)
-//	{
-//		const uint_fast8_t state2 = (glb->GLB_STS >> 8) & 1;
-//		if (state != state2)
-//			break;
-//		hardware_nonguiyield();
-//	}
 #if defined (TCONLCD_PTR)
-    TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
-    while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
-        hardware_nonguiyield();
+    TCONLCD_PTR->LCD_GINT0_REG &= ~ TCONLCD_VB_INT_FLAG;         //clear TCONLCD_VB_INT_FLAG
+    while ((TCONLCD_PTR->LCD_GINT0_REG & TCONLCD_VB_INT_FLAG) == 0) //wait  TCONLCD_VB_INT_FLAG
+        ;
 #endif /* defined (TCONLCD_PTR) */
 #if defined (TCONTV_PTR)
     TCONTV_PTR->TV_GINT0_REG &= ~ (UINT32_C(1) << 14);         //clear TV_VB_INT_FLAG
     while ((TCONTV_PTR->TV_GINT0_REG & (UINT32_C(1) << 14)) == 0) //wait  TV_VB_INT_FLAG
-        hardware_nonguiyield();
+        ;
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -3664,34 +3653,20 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
-//#define GRAPHIC_CPU TARGETCPU_CPU1
-
-#define LCD_LINE_INT_EN (UINT32_C(1) << 29)	// Enable the line interrupt
-#define LCD_VB_INT_EN  (UINT32_C(1) << 31)	// Enable the Vb interrupt
-#define LCD_VB_INT_FLAG  (UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
-#define FSYNC_INT_FLAG (UINT32_C(1) << 0)	// Asserted at the fsync signal in every frame
-
 #if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 
 // realtime priority handler
 static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 {
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
-	uint_fast32_t reg = TCONLCD_PTR->LCD_GINT0_REG;
+	const uint_fast32_t reg = TCONLCD_PTR->LCD_GINT0_REG;
 
-	if (reg & LCD_VB_INT_FLAG)
+	if (reg & TCONLCD_VB_INT_FLAG)
 	{
-		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
+		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ TCONLCD_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(TCONLCD_IX);	// Update framebuffer if needed
 	}
-
-//  if (reg & FSYNC_INT_FLAG)
-//	{
-//		TCON_LCD0->LCD_GINT0_REG &= ~FSYNC_INT_FLAG;
-//		PRINTF("TCON_LCD_VB_IRQHandler:FSYNC_INT_FLAG 0x%x\n", (unsigned) TCON_LCD0->LCD_GINT0_REG);
-//		hardware_ltdc_vblank(TCONLCD_IX);	// Update framebuffer if needed
-//	}
 
 }
 #endif /* defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ */
@@ -3700,11 +3675,11 @@ static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
-#if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 	// enabling the irq after io settings
-	TCON_LCD0->LCD_GINT0_REG |= LCD_VB_INT_EN; // LCD_LINE_INT_EN |
+#if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 	// add irq handler
 	// #define TCONLCD_IRQ TCON_LCD0_IRQn
+	TCON_LCD0->LCD_GINT0_REG |= LCD_VB_INT_EN;
 	arm_hardware_set_handler_realtime(TCONLCD_IRQ, TCON_LCD_VerticalBlanking_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif

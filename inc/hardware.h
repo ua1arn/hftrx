@@ -1034,7 +1034,6 @@ void arm_hardware_populte_second_initialize(void);
 
 void hardware_set_dotclock(unsigned long dotfreq);
 unsigned long hardware_get_dotclock(unsigned long dotfreq);
-void hardware_nonguiyield(void);
 uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
 int toshiba_ddr_power_init(void);

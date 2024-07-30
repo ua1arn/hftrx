@@ -10898,16 +10898,6 @@ FLOAT_t local_log(FLOAT_t x)
 
 #endif /* WITHINTEGRATEDDSP */
 
-/* функция вызывается при ожидании опросом разного рода событий связанных с аппаартурой,
- * в том числе наступление следующего кадра.
- * Выводить на экран строго нельзя.
- * Вызывается в контексте USER.
- * */
-void hardware_nonguiyield(void)
-{
-
-}
-
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
 {
