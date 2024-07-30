@@ -1012,7 +1012,7 @@ void display_snapshot_req(void);
 
 PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения
 void colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера
-uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);
+uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);	// получить индекс виделбуфера по его адресу
 void colmain_fb_list(uintptr_t * frames);	// получение массива планирующихся для работы framebuffers
 
 #if WITHALPHA

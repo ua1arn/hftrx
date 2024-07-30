@@ -3498,6 +3498,8 @@ colmain_fb_draw(void)
 	return colmainfbbuf [drawframe].v.buff;
 }
 
+// Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
+// получить индекс виделбуфера по его адресу
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
 {
 	uint_fast8_t i;
@@ -3510,6 +3512,7 @@ uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
 	return 0;
 }
 
+// Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
 // получение массива планирующихся для работы framebuffers
 void colmain_fb_list(uintptr_t * frames)
 {
