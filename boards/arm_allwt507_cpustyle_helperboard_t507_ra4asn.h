@@ -153,12 +153,15 @@
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	#endif /* WITHINTEGRATEDDSP */
 
-	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
-	//#define WITHGPUHW	1	/* Graphic processor unit */
+	#if ! LCDMODE_DUMMY
+		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+		//#define WITHGPUHW	1	/* Graphic processor unit */
+		//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+	#endif
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/

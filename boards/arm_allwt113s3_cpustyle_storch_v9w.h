@@ -123,6 +123,7 @@
 		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 		//#define WITHGPUHW	1	/* Graphic processor unit */
+		//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 	#endif
 
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */

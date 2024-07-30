@@ -3671,7 +3671,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #define LCD_VB_INT_FLAG  (UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
 #define FSYNC_INT_FLAG (UINT32_C(1) << 0)	// Asserted at the fsync signal in every frame
 
-#if 0
+#if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 
 static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 {
@@ -3688,18 +3688,18 @@ static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 //		PRINTF("TCON_LCD_VB_IRQHandler:FSYNC_INT_FLAG 0x%x\n", (unsigned) TCON_LCD0->LCD_GINT0_REG);
 //	}
 }
-#endif
+#endif /* defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ */
 
 // Set and open interrupt function
 static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
-#if 0
+#if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 	// enabling the irq after io settings
 	TCON_LCD0->LCD_GINT0_REG |= LCD_VB_INT_EN; // LCD_LINE_INT_EN |
 	// add irq handler
 	// #define TCONLCD_IRQ TCON_LCD0_IRQn
-	arm_hardware_set_handler_system(TCON_LCD0_IRQn, TCON_LCD_VerticalBlanking_IRQHandler);
+	arm_hardware_set_handler_system(TCONLCD_IRQ, TCON_LCD_VerticalBlanking_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif
 }
