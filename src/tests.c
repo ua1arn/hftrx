@@ -10560,6 +10560,56 @@ void testde(void)
 }
 #endif
 
+#if 0
+static void lidar_parse(unsigned char c)
+{
+	static unsigned pos = 0;
+	static unsigned cks;
+	static unsigned char buff [6];
+
+	switch (pos)
+	{
+	default:
+		pos = 0;
+	case 0:
+		cks = c;
+		if (c == 0x59)
+			pos = 1;
+		break;
+	case 1:
+		if (c == 0x59)
+		{
+			pos = 2;
+			cks += c;
+		}
+		else
+		{
+			// 2-nd signature byte wrong
+			pos = 0;
+		}
+		break;
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		buff [pos ++ - 2] = c;
+		cks += c;
+		break;
+	case 8:
+		if (c == (cks & 0xFF))
+		{
+			// Use valid date
+			unsigned distance = buff [0] + buff [1] * 256;
+			PRINTF("distance=%u\n", distance);
+			printhex(0, buff, ARRAY_SIZE(buff));
+		}
+		pos = 0;
+		break;
+	}
+}
+#endif
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
@@ -10578,6 +10628,57 @@ void hightests(void)
 		PRINTF("allwnr_v3s_get_ahb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb1_freq() / 1000 / 1000));
 		PRINTF("allwnr_v3s_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
+	}
+#endif
+#if 0
+	{
+		// Test lidar
+		// Benewake TFmini Plus LIDAR
+		// https://amperka.ru/product/lidar-tfmini-plus
+		// https://wiki.amperka.ru/products:lidar-tfmini-plus
+
+		//	RED		5V
+		//	BLACK	GND
+		//	GREEN	TX
+		//	WHITE	RX
+
+		// 115200 8-N-1
+		//	(count, data) = pi.bb_serial_read(RX)
+		//	if count > 8:
+		//	for i in range(0, count - 9):
+		//	if data[i] == 89 and data[i + 1] == 89:
+		//	  checksum = 0
+		//	  for j in range(0, 8):
+		//		checksum = checksum + data[i + j]
+		//	  checksum = checksum % 256
+		//	  if checksum == data[i + 8]:
+		//		distance = data[i + 2] + data[i + 3] * 256
+		//		return distance
+
+		//	59 59 E5 01 6A 04 40 09 4F
+		//	59 59 E6 01 72 04 40 09 58
+		//	59 59 E7 01 6A 04 40 09 51
+		//	59 59 E5 01 69 04 40 09 4E
+		//	59 59 E6 01 6A 04 40 09 50
+		//	59 59 E6 01 6D 04 40 09 53
+		//	59 59 E5 01 70 04 40 09 55
+
+		static const uint8_t data [] =
+		{
+				1,2,3,4,5,6,7,8,9,0,
+			0x59, 0x59, 0xE5, 0x01, 0x6A, 0x04, 0x40, 0x09, 0x4F,
+			0x59, 0x59, 0xE6, 0x01, 0x72, 0x04, 0x40, 0x09, 0x58,
+			0x59, 0x59, 0xE7, 0x01, 0x6A, 0x04, 0x40, 0x09, 0x51,
+			0x59, 0x59, 0xE5, 0x01, 0x69, 0x04, 0x40, 0x09, 0x4E,
+			0x59, 0x59, 0xE6, 0x01, 0x6A, 0x04, 0x40, 0x09, 0x50,
+			0x59, 0x59, 0xE6, 0x01, 0x6D, 0x04, 0x40, 0x09, 0x53,
+			0x59, 0x59, 0xE5, 0x01, 0x70, 0x04, 0x40, 0x09, 0x55,
+		};
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(data); ++ i)
+		{
+			lidar_parse(data [i]);
+		}
 	}
 #endif
 #if 0
