@@ -3469,123 +3469,63 @@ void buffers_diagnostics(void)
 
 #endif /* WITHBUFFERSDEBUG */
 
-#if 1
+#if LCDMODE_LTDC && WITHLTDCHW
 
-typedef PACKEDCOLORPIP_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, DIM_FIRST)];
+// работа с видеобуферами
 
-#if defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC
-	#define framebuff (* (FRAMEBUFF_T *) SDRAM_BANK_ADDR)
-#else /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
-	//#define framebuff (framebuff0)
-	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
-#endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
+typedef ALIGNX_BEGIN struct colmainfb
+{
+	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
+} ALIGNX_END colmainfb_t;
 
-#if ! defined (SDRAM_BANK_ADDR)
-	// буфер экрана
-	static RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T fbfX ALIGNX_END;
+typedef buffitem<colmainfb_t> colmainfbbuf_t;
 
-	static uint_fast8_t drawframe;
+static RAMFRAMEBUFF colmainfbbuf_t colmainfbbuf [LCDMODE_MAIN_PAGES];
 
-	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-	uint_fast8_t colmain_fb_next(void)
+// буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
+typedef dmahandle<COLORPIP_T, colmainfbbuf_t, 0, 0> colmainfbdma_t;
+
+static colmainfbdma_t colmainfbdma(IRQL_REALTIME, "fb", colmainfbbuf, ARRAY_SIZE(colmainfbbuf));
+
+static uint_fast8_t drawframe;
+
+// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
+uint_fast8_t colmain_fb_next(void)
+{
+	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;
+	return drawframe;
+}
+
+PACKEDCOLORPIP_T *
+colmain_fb_draw(void)
+{
+	return colmainfbbuf [drawframe].v.buff;
+}
+
+uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
+{
+	uint_fast8_t i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 	{
-		drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;
-		return drawframe;
+		if ((uintptr_t) colmainfbbuf [i].v.buff == addr)
+			return i;
 	}
+	ASSERT(0);
+	return 0;
+}
 
-	PACKEDCOLORPIP_T *
-	colmain_fb_draw(void)
+// получение массива планирующихся для работы framebuffers
+void colmain_fb_list(uintptr_t * frames)
+{
+	unsigned i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 	{
-		return fbfX [drawframe];
+		frames [i] = (uintptr_t) colmainfbbuf [i].v.buff;
 	}
+}
 
-	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-	{
-		uint_fast8_t i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			if ((uintptr_t) fbfX [i] == addr)
-				return i;
-		}
-		ASSERT(0);
-		return 0;
-	}
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
 
-	// получение массива планирующихся для работы framebuffers
-	void colmain_fb_list(uintptr_t * frames)
-	{
-		unsigned i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			frames [i] = (uintptr_t) fbfX [i];
-		}
-	}
-
-#elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
-
-	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-	uint_fast8_t colmain_fb_next(void)
-	{
-		return 0;
-	}
-
-	PACKEDCOLORPIP_T *
-	colmain_fb_draw(void)
-	{
-		return & framebuff[0][0];
-	}
-
-	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-	{
-		uint_fast8_t i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			if ((uintptr_t) framebuff [i] == addr)
-				return i;
-		}
-		ASSERT(0);
-		return 0;
-	}
-
-	// получение массива планирующихся для работы framebuffers
-	void colmain_fb_list(uintptr_t * frames)
-	{
-		unsigned i;
-		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-		{
-			frames [i] = (uintptr_t) framebuff [i];
-		}
-	}
-
-#else
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-
-	// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
-	uint_fast8_t colmain_fb_next(void)
-	{
-		return 0;
-	}
-
-	PACKEDCOLORPIP_T *
-	colmain_fb_draw(void)
-	{
-		return fbf;
-	}
-
-	uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-	{
-		return 0;
-	}
-
-
-	// получение массива планирующихся для работы framebuffers
-	void colmain_fb_list(uintptr_t * frames)
-	{
-		frames [i] = (uintptr_t) fbf;
-	}
-
-#endif /* LCDMODE_LTDC */
-#endif
 // инициализация системы буферов
 void buffers_initialize(void)
 {
