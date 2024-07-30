@@ -824,7 +824,7 @@ typedef struct videomode_tag
 extern const videomode_t vdmode0;
 extern const videomode_t vdmode_NTSC0;	/* NTSC TV out parameters */
 extern const videomode_t vdmode_PAL0;	/* PAL TV out parameters */
-void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
+void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
 
 void hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */

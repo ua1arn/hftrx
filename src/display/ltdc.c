@@ -726,7 +726,7 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 }
 
 void
-hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+hardware_ltdc_initialize(const videomode_t * vdmode)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
@@ -1359,7 +1359,7 @@ static void LCDx_LayerInitPIP(
 }
 
 void
-hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+hardware_ltdc_initialize(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -1654,7 +1654,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 
 #elif LINUX_SUBSYSTEM && ! WITHLVGL
 
-void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
 	linux_framebuffer_init();
 }
@@ -1692,10 +1692,13 @@ static void hardware_ltdc_vsync(void)
 
 static DisplayCtrl dispCtrl;
 
-void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
 	int Status;
 	static XAxiVdma AxiVdma;
+	uintptr_t frames [LCDMODE_MAIN_PAGES];
+
+	colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
@@ -4953,7 +4956,7 @@ void de2_init(const uintptr_t * frames)
 
 #endif /* CPUSTYLE_A64 */
 
-void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
 	const unsigned disp = RTMIXID - 1;
@@ -4962,6 +4965,8 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 #if WITHHDMITVHW && 0
 	if (1)
 	{
+		uintptr_t frames [LCDMODE_MAIN_PAGES];
+		colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
 		// See https://github.com/catphish/allwinner-bare-metal/blob/master/display.h#L1
 
 		// This function initializes the HDMI port and TCON.
@@ -4973,7 +4978,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 		  TP();
 		  lcd_init();
 		  TP();
-		  de2_init(frames_unused);
+		  de2_init(frames);
 		  TP();
 
 	}
@@ -5077,7 +5082,7 @@ void hardware_ltdc_L8_palette(void)
 #else
 	//#error Wrong CPUSTYLE_xxxx
 
-void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
 }
 

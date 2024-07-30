@@ -1928,9 +1928,7 @@ void display_hardware_initialize(void)
 
 #if WITHLTDCHW
 	{
-		uintptr_t frames [LCDMODE_MAIN_PAGES];
-		colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
-		hardware_ltdc_initialize(frames, & vdmode0);
+		hardware_ltdc_initialize(& vdmode0);
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 
@@ -1977,9 +1975,7 @@ void display_wakeup(void)
 {
 #if WITHLTDCHW
 	{
-		uintptr_t frames [LCDMODE_MAIN_PAGES];
-		colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
-		hardware_ltdc_initialize(frames, & vdmode0);
+		hardware_ltdc_initialize(& vdmode0);
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 #endif /* WITHLTDCHW */
