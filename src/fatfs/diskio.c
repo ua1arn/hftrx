@@ -165,7 +165,7 @@ DSTATUS disk_initialize (
 	//PRINTF(PSTR("disk_initialize drv=%u (n=%u)\n"), drv, (sizeof drvfuncs / sizeof drvfuncs [0]));
 	if (drv < (sizeof drvfuncs / sizeof drvfuncs [0]))
 		return drvfuncs [drv]->Initialize(drv);	// detect media
-	return STA_NODISK;
+	return STA_NOINIT;
 }
 
 DSTATUS disk_status (
