@@ -494,6 +494,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define COLORPIP_OLIVE		 COLOR_OLIVE
 	#define COLORPIP_DARKGRAY    COLOR_DARKGRAY
 	#define COLORPIP_DARKGREEN   COLOR_DARKGREEN
+	#define COLORPIP_DARKGRED    COLOR_DARKRED
 	#define COLORPIP_DARKCYAN    COLOR_DARKCYAN
 	#define COLORPIP_BLUE        COLOR_BLUE
 	#define COLORPIP_GREEN       COLOR_GREEN
@@ -510,6 +511,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 		#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKRED      // полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGREEN      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_RED			// цвет спектра при сполошном заполнении
 		#define DESIGNCOLOR_SPECTRUMFENCE	COLOR_WHITE
 		#define DSGN_SPECTRUMLINE		COLORPIP_RED
@@ -522,6 +524,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 		#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKGREEN      // полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
 		#define DESIGNCOLOR_SPECTRUMFENCE	COLOR_WHITE
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
@@ -534,6 +537,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 		#define DSGN_SPECTRUMBG     	COLOR_BLACK
 		#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        		//COLOR_CYAN - полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLOR_GREEN		// цвет спектра при сполошном заполнении
 		#define DESIGNCOLOR_SPECTRUMFENCE	COLOR_WHITE	//COLOR_WHITE
 		//#define DSGN_SPECTRUMLINE		COLORPIP_GREEN

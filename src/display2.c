@@ -3492,7 +3492,8 @@ static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old va
 	#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX + 1)	/* Количество перекрывающися буферов FFT спектра (2^param). */
 #endif
 
-static PACKEDCOLORPIP_T bwpic [GXSIZE(ALLDX, ALLDY)];
+static PACKEDCOLORPIP_T bwpic_A [GXSIZE(ALLDX, ALLDY)];
+static PACKEDCOLORPIP_T bwpic_B [GXSIZE(ALLDX, ALLDY)];
 
 enum
 {
@@ -5037,10 +5038,16 @@ display2_wfl_init(
 	{
 		unsigned picalpha = 128;	// Полупрозрачность
 		colpip_fillrect(
-			bwpic, ALLDX, ALLDY,
+			bwpic_A, ALLDX, ALLDY,
 			0, 0,
 			ALLDX, ALLDY,
 			TFTALPHA(picalpha, DSGN_SPECTRUMBG2)
+			);
+		colpip_fillrect(
+			bwpic_B, ALLDX, ALLDY,
+			0, 0,
+			ALLDX, ALLDY,
+			TFTALPHA(picalpha, DSGN_SPECTRUMBG2RX2)
 			);
 	}
 }
@@ -5613,8 +5620,8 @@ static void display2_spectrum(
 						(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
 						colorpip, BUFDIM_X, BUFDIM_Y,
 						xleft, SPY0,
-						(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
-						bwpic, ALLDX, ALLDY,
+						(uintptr_t) bwpic_A, GXSIZE(ALLDX, ALLDY) * sizeof bwpic_A [0],
+						bwpic_A, ALLDX, ALLDY,
 						0, 0,	// координаты окна источника
 						xrightv - xleft, SPDY, // размер окна источника
 						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
@@ -5849,8 +5856,8 @@ static void display2_waterfall(
 						(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
 						colorpip, BUFDIM_X, BUFDIM_Y,
 						xleft, WFY0,
-						(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
-						bwpic, ALLDX, ALLDY,
+						(uintptr_t) bwpic_A, GXSIZE(ALLDX, ALLDY) * sizeof bwpic_A [0],
+						bwpic_A, ALLDX, ALLDY,
 						0, 0,	// координаты окна источника
 						xrightv - xleft, WFDY, // размер окна источника
 						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
