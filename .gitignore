@@ -5,7 +5,7 @@
 product.h
 boards/atmega644_ctlstyle_v1.h
 *.prefs
-.settings/*.*
+.settings/
 *.log
 *.tlog
 *.cnt
@@ -17,10 +17,6 @@ boards/atmega644_ctlstyle_v1.h
 *.clw
 *.opt
 *.bin
-
-.settings/language.settings.xml
-.cproject
-.project
 
 # Builded tools for linux
 build/stm32mp157axx/bin2ihex
