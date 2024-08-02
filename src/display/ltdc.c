@@ -5052,6 +5052,7 @@ void hardware_ltdc_main_set(uintptr_t p1)
 			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 			0;
 
+	hardware_ltdc_vsync();		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 }
 

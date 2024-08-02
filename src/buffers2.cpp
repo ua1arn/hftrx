@@ -3482,48 +3482,9 @@ typedef ALIGNX_BEGIN struct colmain0fb
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
-static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
+static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES + 1];
 typedef dmahandle<COLORPIP_T, colmain0fbbuf_t, 0, 0> colmain0fbdma_t;
 static colmain0fbdma_t colmain0fbdma(IRQL_REALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
-
-static uint_fast8_t drawframe;
-
-// переключиться на использование для DRAW следующего фреймбуфера
-void colmain_fb_next(void)
-{
-	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;
-}
-
-PACKEDCOLORPIP_T *
-colmain_fb_draw(void)
-{
-	return colmain0fbbuf [drawframe].v.buff;
-}
-
-// Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
-// получить индекс виделбуфера по его адресу
-uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
-{
-	uint_fast8_t i;
-	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-	{
-		if ((uintptr_t) colmain0fbbuf [i].v.buff == addr)
-			return i;
-	}
-	ASSERT(0);
-	return 0;
-}
-
-// Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
-// получение массива планирующихся для работы framebuffers
-void colmain_fb_list(uintptr_t * frames)
-{
-	unsigned i;
-	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-	{
-		frames [i] = (uintptr_t) colmain0fbbuf [i].v.buff;
-	}
-}
 
 /////////
 /// Interfaces
@@ -3568,6 +3529,78 @@ int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffe
 	return colmain0fbdma.get_datasize();
 }
 
+#if WITHLTDCHWVBLANKIRQ
+
+static uintptr_t fb0;
+
+PACKEDCOLORPIP_T *
+colmain_fb_draw(void)
+{
+	if (fb0 == 0)
+	{
+		fb0 = allocate_dmabuffercolmain0fb();
+	}
+	return (PACKEDCOLORPIP_T *) fb0;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void colmain_nextfb(uintptr_t frame)
+{
+	ASSERT(fb0 == frame);
+	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
+	hardware_ltdc_main_set(frame);
+#if WITHOPENVG
+	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
+#endif /* WITHOPENVG */
+}
+
+#else /* WITHLTDCHWVBLANKIRQ */
+
+static uint_fast8_t drawframe;
+
+PACKEDCOLORPIP_T *
+colmain_fb_draw(void)
+{
+	return colmain0fbbuf [drawframe].v.buff;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void colmain_nextfb(uintptr_t frame)
+{
+	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
+	hardware_ltdc_main_set(frame);
+	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
+#if WITHOPENVG
+	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
+#endif /* WITHOPENVG */
+}
+
+#endif /* WITHLTDCHWVBLANKIRQ */
+
+// Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
+// получить индекс видеобуфера по его адресу
+uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
+{
+	uint_fast8_t i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		if ((uintptr_t) colmain0fbbuf [i].v.buff == addr)
+			return i;
+	}
+	ASSERT(0);
+	return 0;
+}
+
+// Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
+// получение массива планирующихся для работы framebuffers
+void colmain_fb_list(uintptr_t * frames)
+{
+	unsigned i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		frames [i] = (uintptr_t) colmain0fbbuf [i].v.buff;
+	}
+}
 
 #endif /* LCDMODE_LTDC && WITHLTDCHW */
 

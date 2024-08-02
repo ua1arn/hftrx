@@ -13496,9 +13496,7 @@ void hightests(void)
 			}
 			colpip_string_tbg(fr, DIM_X, DIM_Y, 0, 0, msg, COLORPIP_RED);
 
-			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-			hardware_ltdc_main_set((uintptr_t) fr);
-			colmain_fb_next();
+			colmain_nextfb((uintptr_t) fr);
 		}
 	}
 #endif

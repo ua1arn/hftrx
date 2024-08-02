@@ -748,13 +748,7 @@ void display_nextfb(void)
 //	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
-	dcache_clean_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-	hardware_ltdc_main_set(frame);
-	colmain_fb_next();
-
-#if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
-#endif /* WITHOPENVG */
+	colmain_nextfb(frame);
 }
 
 /* вызывается при разрешённых прерываниях. */
