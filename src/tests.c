@@ -5595,7 +5595,7 @@ static void BarTest(void)
 
 		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
 
-		display_flush();
+		display_nextfb();
 		//local_delay_ms(5);
 		board_dpc_processing();		// обработка отложенного вызова user mode функций
 	}
@@ -5685,7 +5685,7 @@ GridTest(void)
 	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
 	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
 
-	display_flush();
+	display_nextfb();
 
 	for (;;)
 		;
@@ -10613,7 +10613,7 @@ static void lidar_parse(unsigned char c)
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
-	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+	//hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
 #if 0
@@ -12231,7 +12231,7 @@ void hightests(void)
 
 			rendertiger(tiger, DIM_X, DIM_Y);
 			rendertest2(DIM_X, DIM_Y);
-			display_flush();		// наблюдаем процесс
+			display_nextfb();		// наблюдаем процесс
 			const time_t end = time(NULL);
 #if defined (GET_CPU_TEMPERATURE)
 		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
@@ -13399,7 +13399,7 @@ void hightests(void)
 		}
 		linesStart += (DIM_X * 4);
 	}
-	display_flush();
+	display_nextfb();
 	for (;;)
 		;
 #endif
@@ -13433,7 +13433,7 @@ void hightests(void)
 			}
 		}
 
-		display_flush();
+		display_nextfb();
 		for (;;)
 			;
 	}
@@ -13496,7 +13496,7 @@ void hightests(void)
 			}
 			colpip_string_tbg(fr, DIM_X, DIM_Y, 0, 0, msg, COLORPIP_RED);
 
-			colmain_nextfb((uintptr_t) fr);
+			colmain_nextfb();
 		}
 	}
 #endif

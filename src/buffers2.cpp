@@ -3482,7 +3482,7 @@ typedef ALIGNX_BEGIN struct colmain0fb
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
-static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES + 1];
+static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
 typedef dmahandle<COLORPIP_T, colmain0fbbuf_t, 0, 0> colmain0fbdma_t;
 static colmain0fbdma_t colmain0fbdma(IRQL_REALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
@@ -3494,7 +3494,7 @@ static colmain0fbdma_t colmain0fbdma(IRQL_REALTIME, "fb0", colmain0fbbuf, ARRAY_
 uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
 {
 	colmain0fb_t * dest;
-	while (! colmain0fbdma.get_freebufferforced(& dest))
+	while (! colmain0fbdma.get_freebuffer_raw(& dest) && ! colmain0fbdma.get_readybuffer_raw(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -3502,7 +3502,7 @@ uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer fo
 uintptr_t getfilled_dmabuffercolmain0fb(void) /* take from queue Frame buffer for display 0 */
 {
 	colmain0fb_t * dest;
-	if (! colmain0fbdma.get_readybuffer(& dest))
+	if (! colmain0fbdma.get_readybuffer_raw(& dest))
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -3544,11 +3544,14 @@ colmain_fb_draw(void)
 }
 
 /* поставить на отображение этот буфер, запросить следующий */
-void colmain_nextfb(uintptr_t frame)
+void colmain_nextfb(void)
 {
-	ASSERT(fb0 == frame);
-	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
-	hardware_ltdc_main_set(frame);
+//	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
+////	char s [32];
+////	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
+////	display_at(0, 0, s);
+	save_dmabuffercolmain0fb((uintptr_t) colmain_fb_draw());
+	fb0 = allocate_dmabuffercolmain0fb();
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
 #endif /* WITHOPENVG */
@@ -3565,13 +3568,14 @@ colmain_fb_draw(void)
 }
 
 /* поставить на отображение этот буфер, запросить следующий */
-void colmain_nextfb(uintptr_t frame)
+void colmain_nextfb(void)
 {
+	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
 	hardware_ltdc_main_set(frame);
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 #if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
+	openvg_next(colmain_getindexbyaddr());
 #endif /* WITHOPENVG */
 }
 

@@ -727,19 +727,6 @@ void display_set_contrast(uint_fast8_t v)
 {
 }
 
-// для framebufer дисплеев - вытолкнуть кэш память
-// Функция используется только в тестах и для выдачи аварийных сообщений.
-// Ждать синхронизации дисплея не требуется.
-void display_flush(void)
-{
-	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
-//	char s [32];
-//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
-//	display_at(0, 0, s);
-	dcache_clean(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-	hardware_ltdc_main_set_no_vsync(frame);
-}
-
 /* переключаем на следующий фреймбуфер. Модификация этой памяти больше производиться не будет. */
 void display_nextfb(void)
 {
@@ -748,7 +735,7 @@ void display_nextfb(void)
 //	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
-	colmain_nextfb(frame);
+	colmain_nextfb();
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -1926,7 +1913,7 @@ void display_hardware_initialize(void)
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 
-	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+	//hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
