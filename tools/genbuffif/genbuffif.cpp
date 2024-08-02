@@ -6,12 +6,12 @@
 void genonjectset(const char * obj, const char * comment)
 {
 	fprintf(stdout, "/* %s */\n", comment);
-	fprintf(stdout, "uintptr_t allocate_dmabuffer%s(void); /* take free buffer */\n", obj);
-	fprintf(stdout, "uintptr_t getfilled_dmabuffer%s(void); /* take from queue */\n", obj);
-	fprintf(stdout, "void release_dmabuffer%s(uintptr_t addr);\n", obj);
-	fprintf(stdout, "void save_dmabuffer%s(uintptr_t addr); /* save to queue */\n", obj);
-	fprintf(stdout, "int_fast32_t cachesize_dmabuffer%s(void); /* parameter for cache manipulation functions */\n", obj);
-	fprintf(stdout, "int_fast32_t datasize_dmabuffer%s(void); /* parameter for DMA */\n", obj);
+	fprintf(stdout, "uintptr_t allocate_dmabuffer%s(void); /* take free buffer %s */\n", obj, comment);
+	fprintf(stdout, "uintptr_t getfilled_dmabuffer%s(void); /* take from queue %s */\n", obj, comment);
+	fprintf(stdout, "void release_dmabuffer%s(uintptr_t addr);  /* release %s */\n", obj, comment);
+	fprintf(stdout, "void save_dmabuffer%s(uintptr_t addr); /* save to queue %s */\n", obj, comment);
+	fprintf(stdout, "int_fast32_t cachesize_dmabuffer%s(void); /* parameter for cache manipulation functions %s */\n", obj, comment);
+	fprintf(stdout, "int_fast32_t datasize_dmabuffer%s(void); /* parameter for DMA %s */\n", obj, comment);
 
 	fprintf(stdout, "\n");
 
@@ -51,7 +51,10 @@ static const struct params params0 [] =
 	{	"btin8k",	"BT audio from radio, sample rate 8000", },
 	{	"btin16k",	"BT audio from radio, sample rate 16000", },
 	{	"btin32k",	"BT audio from radio, sample rate 32000", },
+
 	{	"btin44p1k",	"BT audio from radio, sample rate 44100", },
+	{	"colmain0fb",	"Frame buffer for display 0", },
+	{	"colmain1fb",	"Frame buffer for display 1 (HDMI)", },
 
 };
 

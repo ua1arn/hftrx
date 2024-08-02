@@ -3473,16 +3473,18 @@ void buffers_diagnostics(void)
 
 // работа с видеобуферами
 
-typedef ALIGNX_BEGIN struct colmainfb
+typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
-} ALIGNX_END colmainfb_t;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = 1, nch = 1 };	// stub for resampling support
+} ALIGNX_END colmain0fb_t;
 
-typedef buffitem<colmainfb_t> colmainfbbuf_t;
+typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
-static RAMFRAMEBUFF colmainfbbuf_t colmainfbbuf [LCDMODE_MAIN_PAGES];
-typedef dmahandle<COLORPIP_T, colmainfbbuf_t, 0, 0> colmainfbdma_t;
-static colmainfbdma_t colmainfbdma(IRQL_REALTIME, "fb", colmainfbbuf, ARRAY_SIZE(colmainfbbuf));
+static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
+typedef dmahandle<COLORPIP_T, colmain0fbbuf_t, 0, 0> colmain0fbdma_t;
+static colmain0fbdma_t colmain0fbdma(IRQL_REALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
 static uint_fast8_t drawframe;
 
@@ -3495,7 +3497,7 @@ void colmain_fb_next(void)
 PACKEDCOLORPIP_T *
 colmain_fb_draw(void)
 {
-	return colmainfbbuf [drawframe].v.buff;
+	return colmain0fbbuf [drawframe].v.buff;
 }
 
 // Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
@@ -3505,7 +3507,7 @@ uint_fast8_t colmain_getindexbyaddr(uintptr_t addr)
 	uint_fast8_t i;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 	{
-		if ((uintptr_t) colmainfbbuf [i].v.buff == addr)
+		if ((uintptr_t) colmain0fbbuf [i].v.buff == addr)
 			return i;
 	}
 	ASSERT(0);
@@ -3519,9 +3521,53 @@ void colmain_fb_list(uintptr_t * frames)
 	unsigned i;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 	{
-		frames [i] = (uintptr_t) colmainfbbuf [i].v.buff;
+		frames [i] = (uintptr_t) colmain0fbbuf [i].v.buff;
 	}
 }
+
+/////////
+/// Interfaces
+///
+/* Frame buffer for display 0 */
+
+uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
+{
+	colmain0fb_t * dest;
+	while (! colmain0fbdma.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+uintptr_t getfilled_dmabuffercolmain0fb(void) /* take from queue Frame buffer for display 0 */
+{
+	colmain0fb_t * dest;
+	if (! colmain0fbdma.get_readybuffer(& dest))
+		return 0;
+	return (uintptr_t) dest->buff;
+}
+
+void release_dmabuffercolmain0fb(uintptr_t addr)  /* release Frame buffer for display 0 */
+{
+	colmain0fb_t * const p = CONTAINING_RECORD(addr, colmain0fb_t, buff);
+	colmain0fbdma.release_buffer(p);
+}
+
+void save_dmabuffercolmain0fb(uintptr_t addr) /* save to queue Frame buffer for display 0 */
+{
+	colmain0fb_t * const p = CONTAINING_RECORD(addr, colmain0fb_t, buff);
+	colmain0fbdma.save_buffer(p);
+}
+
+int_fast32_t cachesize_dmabuffercolmain0fb(void) /* parameter for cache manipulation functions Frame buffer for display 0 */
+{
+	return colmain0fbdma.get_cachesize();
+}
+
+int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffer for display 0 */
+{
+	return colmain0fbdma.get_datasize();
+}
+
 
 #endif /* LCDMODE_LTDC && WITHLTDCHW */
 
