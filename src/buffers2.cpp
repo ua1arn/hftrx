@@ -3532,6 +3532,7 @@ int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffe
 #if WITHLTDCHWVBLANKIRQ
 
 static uintptr_t fb0;
+static uintptr_t lastsetfb0;
 
 PACKEDCOLORPIP_T *
 colmain_fb_draw(void)
@@ -3546,15 +3547,34 @@ colmain_fb_draw(void)
 /* поставить на отображение этот буфер, запросить следующий */
 void colmain_nextfb(void)
 {
-//	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
-////	char s [32];
-////	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
-////	display_at(0, 0, s);
-	save_dmabuffercolmain0fb((uintptr_t) colmain_fb_draw());
+	if (fb0 != 0)
+	{
+	//	char s [32];
+	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
+	//	display_at(0, 0, s);
+		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
+		save_dmabuffercolmain0fb(fb0);
+	}
 	fb0 = allocate_dmabuffercolmain0fb();
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
 #endif /* WITHOPENVG */
+}
+
+// Update framebuffer if needed
+void hardware_ltdc_vblank(unsigned ix)
+{
+	const uintptr_t p1 = getfilled_dmabuffercolmain0fb();
+	if (p1 != 0)
+	{
+		if (lastsetfb0 != 0)
+		{
+			release_dmabuffercolmain0fb(lastsetfb0);
+		}
+		lastsetfb0 = p1;
+
+		hardware_ltdc_main_set_no_vsync(p1);
+	}
 }
 
 #else /* WITHLTDCHWVBLANKIRQ */

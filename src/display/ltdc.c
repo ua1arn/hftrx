@@ -4994,59 +4994,8 @@ hardware_ltdc_deinitialize(void)
 }
 
 #if WITHLTDCHWVBLANKIRQ
-// Update framebuffer if needed
-void hardware_ltdc_vblank(unsigned ix)
-{
-	static uintptr_t lastset;
-	const int rtmixid = RTMIXID;
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
-	const uintptr_t p1 = getfilled_dmabuffercolmain0fb();
-	if (p1 != 0)
-	{
-		//dbg_putchar('+');
-		if (lastset != 0)
-		{
-			release_dmabuffercolmain0fb(lastset);
-		}
-		lastset = p1;
-		dcache_clean_invalidate(p1, cachesize_dmabuffercolmain0fb());
-		t113_de_set_address_vi(rtmixid, p1, 1);
-		//t113_de_set_address_ui(rtmixid, p1, 1);
-
-		bld->BLD_EN_COLOR_CTL =
-				((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-				//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
-				0;
-
-		t113_de_update(rtmixid);	/* Update registers */
-
-	}
-	else
-	{
-		//dbg_putchar('-');
-	}
-}
 
 #else /* WITHLTDCHWVBLANKIRQ */
-
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
-{
-	const int rtmixid = RTMIXID;
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
-
-	t113_de_set_address_vi(rtmixid, p1, 1);
-	// 5.10.9.1 BLD fill color control register
-	// BLD_FILL_COLOR_CTL
-	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-		0;
-}
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
@@ -5094,6 +5043,22 @@ void hardware_ltdc_main_set(uintptr_t p1)
 	t113_de_update(rtmixid);	/* Update registers */
 }
 #endif /* WITHLTDCHWVBLANKIRQ */
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
+{
+	const int rtmixid = RTMIXID;
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
+
+	t113_de_set_address_vi(rtmixid, p1, 1);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	bld->BLD_EN_COLOR_CTL =
+		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+		0;
+}
 
 /* Palette reload */
 void hardware_ltdc_L8_palette(void)
