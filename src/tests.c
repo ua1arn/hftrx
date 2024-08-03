@@ -5595,7 +5595,7 @@ static void BarTest(void)
 
 		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
 
-		display_nextfb();
+		colmain_nextfb();
 		//local_delay_ms(5);
 		board_dpc_processing();		// обработка отложенного вызова user mode функций
 	}
@@ -5685,7 +5685,7 @@ GridTest(void)
 	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
 	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
 
-	display_nextfb();
+	colmain_nextfb();
 
 	for (;;)
 		;
@@ -10614,7 +10614,7 @@ void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	display_fillrect(0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-	display_nextfb();
+	colmain_nextfb();
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
 #if 0
@@ -10751,7 +10751,7 @@ void hightests(void)
 			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
 			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
-			display_nextfb();
+			colmain_nextfb();
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
 			int change = 0;
 			// X limits check
@@ -12232,7 +12232,7 @@ void hightests(void)
 
 			rendertiger(tiger, DIM_X, DIM_Y);
 			rendertest2(DIM_X, DIM_Y);
-			display_nextfb();		// наблюдаем процесс
+			colmain_nextfb();		// наблюдаем процесс
 			const time_t end = time(NULL);
 #if defined (GET_CPU_TEMPERATURE)
 		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
@@ -12246,7 +12246,7 @@ void hightests(void)
 		{
 			int pos;
 			int total = 100;
-			display_nextfb();
+			colmain_nextfb();
 			for (pos = 0; ; pos = (pos + 1) % total)
 			{
 				uint_fast8_t kbch, repeat;
@@ -12257,10 +12257,10 @@ void hightests(void)
 				}
 
 				//rendertest1(DIM_X, DIM_Y);
-				//display_nextfb();
+				//colmain_nextfb();
 
 				rendertestdynamic(DIM_X, DIM_Y, pos, total);
-				display_nextfb();
+				colmain_nextfb();
 			}
 		}
 
@@ -12277,17 +12277,17 @@ void hightests(void)
 			}
 			rendertest1(DIM_X, DIM_Y);
 			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_RED);
-			display_nextfb();
+			colmain_nextfb();
 			//local_delay_ms(300);
 
 			rendertest2(DIM_X, DIM_Y);
 			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_GREEN);
-			display_nextfb();
+			colmain_nextfb();
 			//local_delay_ms(300);
 
 			rendertest3(DIM_X, DIM_Y);
 			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_BLUE);
-			display_nextfb();
+			colmain_nextfb();
 			//local_delay_ms(300);
 		}
 
@@ -13400,7 +13400,7 @@ void hightests(void)
 		}
 		linesStart += (DIM_X * 4);
 	}
-	display_nextfb();
+	colmain_nextfb();
 	for (;;)
 		;
 #endif
@@ -13434,7 +13434,7 @@ void hightests(void)
 			}
 		}
 
-		display_nextfb();
+		colmain_nextfb();
 		for (;;)
 			;
 	}
@@ -13896,7 +13896,7 @@ void hightests(void)
 					c = UINT8_C(0);
 					display_setbgcolor(TFTRGB(c, c, c));
 					display2_bgreset();
-					display_nextfb();
+					colmain_nextfb();
 					local_delay_ms(1000);
 				}
 				{
@@ -13904,7 +13904,7 @@ void hightests(void)
 					c = UINT8_C(0xFF);
 					display_setbgcolor(TFTRGB(c, c, c));
 					display2_bgreset();
-					display_nextfb();
+					colmain_nextfb();
 					local_delay_ms(1000);
 				}
 
@@ -13919,7 +13919,7 @@ void hightests(void)
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 				display_at(0, 0, b);
-				display_nextfb();
+				colmain_nextfb();
 				local_delay_ms(50);
 			}
 			for (; -- c > 0; )
@@ -13929,7 +13929,7 @@ void hightests(void)
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 				display_at(0, 0, b);
-				display_nextfb();
+				colmain_nextfb();
 				local_delay_ms(50);
 			}
 			continue;
@@ -13943,7 +13943,7 @@ void hightests(void)
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 				display_at(0, 0, b);
-				display_nextfb();
+				colmain_nextfb();
 				local_delay_ms(2000);
 			}
 			continue;
@@ -13955,7 +13955,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(2000);
 		}
 		//for (; c -- > 0; )
@@ -13970,7 +13970,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(2000);
 		}
 		//for (; c -- > 0; )
@@ -13985,7 +13985,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(2000);
 		}
 		//for (; c -- > 0; )
@@ -14011,7 +14011,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -14026,7 +14026,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -14041,7 +14041,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -14056,7 +14056,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
-			display_nextfb();
+			colmain_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -14698,7 +14698,7 @@ void hightests(void)
 #endif
 
 #if WITHLTDCHW && LCDMODE_LTDC
-	display_nextfb();	// Скрыть результаты теста, разнести рисуемый и ообрадаемый буферы
+	colmain_nextfb();	// Скрыть результаты теста, разнести рисуемый и ообрадаемый буферы
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 }
 

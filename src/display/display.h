@@ -406,7 +406,6 @@ void display_hdmi_initialize(void);
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
 void display_uninitialize(void);			/* вызывается при разрешённых прерываниях. */
-void display_nextfb(void);				/* переключаем на следующий фреймбуфер */
 void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 

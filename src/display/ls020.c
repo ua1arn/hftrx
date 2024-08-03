@@ -593,7 +593,7 @@ void display_uninitialize(void)
 	ls020_poweroff();
 }
 
-void display_nextfb(void)
+void colmain_nextfb(void)
 {
 }
 

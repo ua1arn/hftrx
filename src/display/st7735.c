@@ -1459,7 +1459,7 @@ void display_uninitialize(void)
 	spi_unselect(targetlcd);		/* Disable SPI */
 }
 
-void display_nextfb(void)
+void colmain_nextfb(void)
 {
 }
 

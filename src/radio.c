@@ -19285,7 +19285,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 		display_at_P(0, 0, msg);
-		display_nextfb();
+		colmain_nextfb();
 
 		PRINTF(PSTR("KBD fault\n"));
 		for (;;)
@@ -19314,7 +19314,7 @@ void initialize2(void)
 
 		display_menu_digit(0, 0, sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(0, 1, msg);
-		display_nextfb();
+		colmain_nextfb();
 
 		wrong_NVRAM_END();
 		//hardware_cw_diagnostics(0, 0, 0);	// 'S'
@@ -19378,7 +19378,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
-			display_nextfb();
+			colmain_nextfb();
 
 			for (;;)
 			{
@@ -19416,7 +19416,7 @@ void initialize2(void)
 
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
-			display_nextfb();
+			colmain_nextfb();
 
 			PRINTF(PSTR("NVRAM fault1\n"));
 			for (;;)
@@ -19450,7 +19450,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
-			display_nextfb();
+			colmain_nextfb();
 
 			for (;;)
 			{
@@ -19497,7 +19497,7 @@ void initialize2(void)
 
 			display_menu_digit(0, 1, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
-			display_nextfb();
+			colmain_nextfb();
 
 			for (;;)
 				;

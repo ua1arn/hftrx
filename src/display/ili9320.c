@@ -704,7 +704,7 @@ void display_uninitialize(void)
 {
 }
 
-void display_nextfb(void)
+void colmain_nextfb(void)
 {
 }
 

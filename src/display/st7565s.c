@@ -566,7 +566,7 @@ void display_uninitialize(void)
 	st7565s_write_cmd(CMD_DISPLAY_OFF);
 }
 
-void display_nextfb(void)
+void colmain_nextfb(void)
 {
 }
 

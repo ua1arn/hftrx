@@ -1175,7 +1175,7 @@ display2_nextfb(
 #if WITHLTDCHW && LCDMODE_LTDC
 
 	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
-	display_nextfb();
+	colmain_nextfb();
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 }
 

@@ -373,7 +373,7 @@ static void uc1608_resetdelay(void)
 	local_delay_ms(150); // Delay 50 ms
 }
 
-void display_nextfb(void)
+void colmain_nextfb(void)
 {
 }
 

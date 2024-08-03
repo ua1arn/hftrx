@@ -576,7 +576,7 @@ void display_uninitialize(void)
 	i2c_stop();
 }
 
-void display_nextfb(void)
+void colmain_nextfb(void)
 {
 }
 
