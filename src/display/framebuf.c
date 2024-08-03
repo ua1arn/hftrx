@@ -616,7 +616,7 @@ static void t113_fillrect(
 
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
-	G2D_BLD->BLD_FILL_COLOR [0] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
+	G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 
 	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 	G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
