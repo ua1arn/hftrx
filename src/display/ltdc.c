@@ -2385,15 +2385,15 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 #endif
 
 
-#define LCD_VB_INT_EN  (UINT32_C(1) << 31)	// Enable the Vb interrupt
-#define TCONLCD_VB_INT_FLAG  (UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
+#define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
 
-/* ожидаем начало кадра */
+/* ожидаем начало кадра - используется если не по прерываниям*/
 static void hardware_ltdc_vsync(void)
 {
 #if defined (TCONLCD_PTR)
-    TCONLCD_PTR->LCD_GINT0_REG &= ~ TCONLCD_VB_INT_FLAG;         //clear TCONLCD_VB_INT_FLAG
-    while ((TCONLCD_PTR->LCD_GINT0_REG & TCONLCD_VB_INT_FLAG) == 0) //wait  TCONLCD_VB_INT_FLAG
+    TCONLCD_PTR->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
+    while ((TCONLCD_PTR->LCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
         ;
 #endif /* defined (TCONLCD_PTR) */
 #if defined (TCONTV_PTR)
@@ -3657,14 +3657,14 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 
 // realtime priority handler
-static void TCON_LCD_VerticalBlanking_IRQHandler(void)
+static void TCON_LCD_IRQHandler(void)
 {
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
 	const uint_fast32_t reg = TCONLCD_PTR->LCD_GINT0_REG;
 
-	if (reg & TCONLCD_VB_INT_FLAG)
+	if (reg & LCD_VB_INT_FLAG)
 	{
-		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ TCONLCD_VB_INT_FLAG;
+		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(TCONLCD_IX);	// Update framebuffer if needed
 	}
@@ -3678,10 +3678,8 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 	(void) vdmode;
 	// enabling the irq after io settings
 #if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
-	// add irq handler
-	// #define TCONLCD_IRQ TCON_LCD0_IRQn
-	TCON_LCD0->LCD_GINT0_REG |= LCD_VB_INT_EN;
-	arm_hardware_set_handler_realtime(TCONLCD_IRQ, TCON_LCD_VerticalBlanking_IRQHandler);
+	TCON_LCD0->LCD_GINT0_REG = LCD_VB_INT_EN;
+	arm_hardware_set_handler_realtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif
 }
