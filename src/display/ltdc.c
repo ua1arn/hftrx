@@ -3654,7 +3654,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
-#if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
+#if WITHLTDCHWVBLANKIRQ
 
 // realtime priority handler
 static void TCON_LCD_IRQHandler(void)
@@ -3670,18 +3670,18 @@ static void TCON_LCD_IRQHandler(void)
 	}
 
 }
-#endif /* defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ */
+#endif /* WITHLTDCHWVBLANKIRQ */
 
 // Set and open interrupt function
 static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
 	// enabling the irq after io settings
-#if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
+#if WITHLTDCHWVBLANKIRQ
 	TCON_LCD0->LCD_GINT0_REG = LCD_VB_INT_EN;
 	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
-#endif
+#endif /* WITHLTDCHWVBLANKIRQ */
 }
 
 // Open module enable
@@ -4963,6 +4963,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	}
 #endif /* WITHHDMITVHW */
+
 	hardware_de_initialize(vdmode);
 	awxx_deoutmapping(disp);
 

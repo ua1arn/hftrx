@@ -1304,6 +1304,7 @@
 	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
+	#define TCONLCD_IRQ TCON_LCD0_IRQn
 	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 
 //	#define	TCONTV_IX 0	/* 0: TCON_TV0, 2: TCON_TV1 */
