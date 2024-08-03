@@ -9762,6 +9762,11 @@
   <name>TCON0</name>
   <description>TCON0 LVDS/RGB/MIPI-DSI Interface</description>
   <baseAddress>0x01C0C000</baseAddress>
+  <interrupt>
+   <name>TCON0</name>
+   <value>118</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>LCD_GCTL_REG</name>
@@ -10057,6 +10062,11 @@
   <name>TCON1</name>
   <description>TCON1 HDMI Interface</description>
   <baseAddress>0x01C0D000</baseAddress>
+  <interrupt>
+   <name>TCON1</name>
+   <value>119</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TCON_GCTL_REG</name>

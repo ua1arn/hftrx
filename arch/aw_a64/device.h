@@ -80,6 +80,8 @@ typedef enum IRQn
     USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  */
     USBOHCI1_IRQn = 107,                              /*!< USB_OHCI_Capability  */
     TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller */
+    TCON0_IRQn = 118,                                 /*!< TCON0 TCON0 interrupt */
+    TCON1_IRQn = 119,                                 /*!< TCON1 TCON1 interrupt */
     DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top */
     GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 */
     GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 */
