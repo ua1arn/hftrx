@@ -732,11 +732,7 @@ void display_initialize(void)
 {
 #if WITHOPENVG
 	PACKEDCOLORPIP_T * frames [LCDMODE_MAIN_PAGES];
-	unsigned i;
-	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
-	{
-		frames [i] = fbfX [i];
-	}
+	colmain_fb_list(frames);
 	openvg_init(frames);
 #endif /* WITHOPENVG */
 }
