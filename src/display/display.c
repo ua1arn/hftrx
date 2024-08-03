@@ -727,17 +727,6 @@ void display_set_contrast(uint_fast8_t v)
 {
 }
 
-/* переключаем на следующий фреймбуфер. Модификация этой памяти больше производиться не будет. */
-void colmain_nextfb(void)
-{
-	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
-//	char s [32];
-//	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
-//	display_at(0, 0, s);
-	ASSERT((frame % DCACHEROWSIZE) == 0);
-	colmain_nextfb();
-}
-
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
