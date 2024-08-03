@@ -3679,7 +3679,7 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 	// enabling the irq after io settings
 #if defined (TCONLCD_IRQ) && WITHLTDCHWVBLANKIRQ
 	TCON_LCD0->LCD_GINT0_REG = LCD_VB_INT_EN;
-	arm_hardware_set_handler_realtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
+	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif
 }

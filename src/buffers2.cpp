@@ -3484,7 +3484,7 @@ typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
 static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
 typedef dmahandle<COLORPIP_T, colmain0fbbuf_t, 0, 0> colmain0fbdma_t;
-static colmain0fbdma_t colmain0fbdma(IRQL_REALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
+static colmain0fbdma_t colmain0fbdma(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
 /////////
 /// Interfaces
@@ -3494,6 +3494,7 @@ static colmain0fbdma_t colmain0fbdma(IRQL_REALTIME, "fb0", colmain0fbbuf, ARRAY_
 uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
 {
 	colmain0fb_t * dest;
+	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
 	while (! colmain0fbdma.get_freebuffer_raw(& dest) && ! colmain0fbdma.get_readybuffer_raw(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
