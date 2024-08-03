@@ -10742,16 +10742,19 @@ void hightests(void)
 		unsigned steps = 0;
 		for (;;)
 		{
+			PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
 			char s [32];
 			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background
-			//colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
-			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+			//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+			colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
 			// Draw rextangle
-			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
-			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
+			colpip_fillrect(fb, DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
+			colpip_string_tbg(fb, DIM_X, DIM_Y, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
 			colmain_nextfb();
+
+
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
 			int change = 0;
 			// X limits check
