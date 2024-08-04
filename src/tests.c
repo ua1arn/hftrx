@@ -12216,7 +12216,17 @@ void hightests(void)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		//disableAllIRQs();
+
+		rendertest2(DIM_X, DIM_Y);
+		colmain_nextfb();		// наблюдаем результат
+
+		local_delay_ms(500);
+		rendertest3(DIM_X, DIM_Y);
+		colmain_nextfb();		// наблюдаем результат
+
+		local_delay_ms(500);
+		rendertestdynamic(DIM_X, DIM_Y, 0, 1);
+		colmain_nextfb();		// наблюдаем результат
 	#if 1
 
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
@@ -12234,8 +12244,7 @@ void hightests(void)
 			}
 
 			rendertiger(tiger, DIM_X, DIM_Y);
-			rendertest2(DIM_X, DIM_Y);
-			colmain_nextfb();		// наблюдаем процесс
+			colmain_nextfb();		// наблюдаем результат
 			const time_t end = time(NULL);
 #if defined (GET_CPU_TEMPERATURE)
 		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());

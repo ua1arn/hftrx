@@ -3557,23 +3557,22 @@ void colmain_nextfb(void)
 	}
 	fb0 = allocate_dmabuffercolmain0fb();
 #if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr(colmain_fb_draw()));
+	openvg_next(colmain_getindexbyaddr(fb0));
 #endif /* WITHOPENVG */
 }
 
 // Update framebuffer if needed
 void hardware_ltdc_vblank(unsigned ix)
 {
-	const uintptr_t p1 = getfilled_dmabuffercolmain0fb();
-	if (p1 != 0)
+	const uintptr_t fb = getfilled_dmabuffercolmain0fb();
+	if (fb != 0)
 	{
 		if (lastsetfb0 != 0)
 		{
 			release_dmabuffercolmain0fb(lastsetfb0);
 		}
-		lastsetfb0 = p1;
-
-		hardware_ltdc_main_set_no_vsync(p1);
+		hardware_ltdc_main_set_no_vsync(fb);
+		lastsetfb0 = fb;
 	}
 }
 

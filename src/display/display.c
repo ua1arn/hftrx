@@ -731,7 +731,7 @@ void display_set_contrast(uint_fast8_t v)
 void display_initialize(void)
 {
 #if WITHOPENVG
-	PACKEDCOLORPIP_T * frames [LCDMODE_MAIN_PAGES];
+	uintptr_t frames [LCDMODE_MAIN_PAGES];
 	colmain_fb_list(frames);
 	openvg_init(frames);
 #endif /* WITHOPENVG */

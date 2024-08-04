@@ -45,7 +45,7 @@ static int isBigEndian(void) { return 0; }
 static int isBigEndian(void) { return 1; }
 #endif
 
-void openvg_init(PACKEDCOLORPIP_T * const * frames)
+void openvg_init(const uintptr_t * frames)
 {
 
 #if LCDMODE_MAIN_RGB565
@@ -106,7 +106,7 @@ void openvg_next(unsigned page)
 }
 #else /* WITHOPENVG */
 
-void openvg_init(PACKEDCOLORPIP_T * const * frames)
+void openvg_init(const uintptr_t * frames)
 {
 }
 
