@@ -133,6 +133,7 @@ void board_set_tuner_bypass(uint_fast8_t v);	/* обход согласующе�
 void board_set_autotune(uint_fast8_t v);	/* Находимся в режиме настройки согласующего устройства */
 void board_set_showovf(uint_fast8_t v);		/* Показ индикатора переполнения АЦП */
 void board_set_forcexvrtr(uint_fast8_t v);	/* принудительно включить коммутацию трансвертора */
+void board_set_mikemute(uint_fast8_t v);	/* отключить микрофонный усилитель */
 
 void board_set_user1(uint_fast8_t v);
 void board_set_user2(uint_fast8_t v);

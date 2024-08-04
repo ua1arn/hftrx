@@ -9063,11 +9063,13 @@ update_lo0(
 	const uint_fast8_t enable = lo0side != LOCODE_INVALID;
 	board_set_xvrtr(enable);
 	synth_lo0_setfreq(getlo0(lo0hint), enable);
+#if WITHIF4DSP
 #if XVTR_R820T2
 	board_set_swaprts(enable);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 #else /* XVTR_R820T2 */
 	board_set_swaprts(lo0side == LOCODE_LOWER);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
 #endif /* XVTR_R820T2 */
+#endif /* WITHIF4DSP */
 }
 
 /* перенастройка формирования гетеродина для указанного режима. */
