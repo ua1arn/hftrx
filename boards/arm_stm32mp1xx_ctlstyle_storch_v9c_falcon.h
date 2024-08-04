@@ -431,7 +431,6 @@
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	//#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_UA1CEI	1
 	//#define COLORSTYLE_RED	1
 	#define COLORSTYLE_BLUE	1
 

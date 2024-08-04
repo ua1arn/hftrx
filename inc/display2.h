@@ -530,20 +530,6 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
 
-	#elif COLORSTYLE_UA1CEI
-		// old
-		#define DSGN_GRIDCOLOR0     	COLOR_WHITE        // center marker
-		#define DSGN_GRIDCOLOR2     	COLOR_DARKRED        // other markers
-		#define DSGN_GRIDDIGITS 		COLOR_YELLOW
-
-		#define DSGN_SPECTRUMBG     	COLOR_BLACK
-		#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        		//COLOR_CYAN - полоса пропускания приемника
-		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
-		#define DSGN_SPECTRUMFG			COLOR_GREEN		// цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE	COLOR_WHITE	//COLOR_WHITE
-		//#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
-		#define DSGN_SPECTRUMLINE		COLORPIP_YELLOW
-		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
 
 	#elif COLORSTYLE_BLUE
 
@@ -620,34 +606,6 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
-#elif COLORSTYLE_UA1CEI
-
-	#define DSGN_BIGCOLOR 			COLORPIP_WHITE //
-	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW // цвет частоты дополнительного приемника
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKCYAN
-
-	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
-	#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
-	#define DSGN_FMENUINACTIVETEXT	COLORPIP_DARKCYAN
-	#define DSGN_FMENUINACTIVEBACK	COLORPIP_BLACK
-
-	#define DSGN_LABELACTIVETEXT	COLORPIP_WHITE
-	#define DSGN_LABELACTIVEBACK	COLORPIP_BLACK
-
-	#define DSGN_LABELINACTIVETEXT	COLORPIP_DARKCYAN
-	#define DSGN_LABELINACTIVEBACK	COLORPIP_BLACK
-
-	#define DSGN_LABELTEXT			COLORPIP_WHITE
-	#define DSGN_LABELBACK			COLORPIP_BLACK
-
-	#define DSGN_FMENUTEXT			COLORPIP_GREEN
-	#define DSGN_FMENUBACK			COLORPIP_BLACK
-
-	#define DSGN_STATETEXT			COLORPIP_GREEN	// температура, напряжение - was DSGN_LABELTEXT
-	#define DSGN_STATEBACK			COLORPIP_BLACK
-	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
-	#define DSGN_SMLABELBACK		COLORPIP_BLACK
-
 #elif COLORSTYLE_BLUE
 
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
@@ -670,6 +628,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED        // other markers
 	#define DSGN_SPECTRUMBG     	COLORPIP_BLACK            //COLORPIP_BLACK
 	#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        //  полоса пропускания приемника
+	#define DSGN_SPECTRUMBG2RX2    	COLORPIP_DARKRED        //  полоса пропускания приемника RX2
 	#define DSGN_SPECTRUMFG			COLORPIP_GREEN
 	#define DSGN_SPECTRUMFENCE		COLORPIP_WHITE
 	#define DSGN_SPECTRUMLINE		COLORPIP_YELLOW
