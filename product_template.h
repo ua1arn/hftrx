@@ -46,49 +46,7 @@
 //#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb UHF modem v2
 #endif /* NIGHTBUILD */
 
-#if CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V6	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v6.h"	// Rmainunit_v4bm.pcb
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v6_mkryukov.h"	// Rmainunit_v4bm.pcb
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v6_RV1CB.h"	// Rmainunit_v4bm.pcb
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v6.h"	// Rmainunit_v3bm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_RAVENDSP_V7	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7.h"	// Rmainunit_v5bm.pcb
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_yuri5555.h"	// Rmainunit_v5bm.pcb
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_RW1AM.h"	// Rmainunit_v5bm.pcb Пётр RW1AM
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_raven_v7_UY5UM.h"	// Rmainunit_v5bm.pcb Игорь Романович UY5UM
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_raven_v7.h"	// Rmainunit_v5bm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V1	// SD-CARD. DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_penkevich.h"	// penkevich, Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RA9OH.h"	// Rmainunit_v5dm.pcb (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_R4DR.h"	// Rmainunit_v5dm.pcb (thermo stab) (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_RD1AD.h"	// Rmainunit_v5cm.pcb (USB)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v1_OUSSOV.h"	// Rmainunit_v5cm.pcb (USB)
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v1.h"	// Rmainunit_v5cm.pcb, Rmainunit_v5dm.pcb
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V2	// wide LCD, SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2.h"	// UA0YAS (RA0CGS) Rmainunit_v5em.pcb (USBx2)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v2_RX3M.h"	// RX3M Rmainunit_v5em.pcb (USBx2)
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v2.h"	// Rmainunit_v5em.pcb (USBx2)
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V3	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_Piter_Kor.h"	// Piter_Kor Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_R0CC.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UT3NZ.h"	// stm32h743ziT6, EPSON 50 MHz Rmainunit_v5km.pcb (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_hansolo.h"	// Дачь gansolo@rambler.ru Rmainunit_v5jm.pcb (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_UA9WF.h"	// Rmainunit_v5fm.pcb LTC2217 (USBx2, wide display interface)
-	//#include "boards/arm_stm32f7xx_tqfp144_ctlstyle_storch_v3_RA9W.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v3_headset.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v3.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V4	// модем v2
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v4.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v4.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5 && 0	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
+#if CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5 && 0	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5_progdfu.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5_progdfu.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
@@ -267,7 +225,7 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_vm14_cpustyle_v0.h"
 #else
-	#define LCDMODE_RDX0154		1
+	#define LCDMODE_DUMMY	1
 	#define BANDSELSTYLERE_NOTHING	1
 	#define	CTLREGMODE_NOCTLREG	1
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

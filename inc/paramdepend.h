@@ -1375,31 +1375,6 @@ extern "C" {
 	//#define WITHSPISW 	1	/* Использование программного контроллера SPI */
 #endif
 
-
-#if LCDMODE_RDX0154 || LCDMODE_RDX0120 || LCDMODE_RDX0077 || LCDMODE_RDT065
-	#define LCDMODE_UC1601 1
-#endif /* LCDMODE_RDX0154 || LCDMODE_RDX0120 || LCDMODE_RDX0077 || LCDMODE_RDT065 */
-#if LCDMODE_TIC218 || LCDMODE_TIC154
-	#define LCDMODE_PCF8535 1
-#endif /* LCDMODE_TIC218 */
-#if LCDMODE_G1203H
-	#define LCDMODE_PCF8531 1
-#endif /* LCDMODE_G1203H */
-#if LCDMODE_M9546
-	#define LCDMODE_PCF8576C 1
-#endif /* LCDMODE_M9546 */
-#if LCDMODE_WH2002 || LCDMODE_WH1602 || LCDMODE_WH2004 || LCDMODE_WH1604 || LCDMODE_WH2002_IGOR
-	#define LCDMODE_HD44780 1
-#endif /* LCDMODE_WH2002 || LCDMODE_WH1602 || LCDMODE_WH2004 || LCDMODE_WH1604 ||LCDMODE_WH2002_IGOR */
-
-#if LCDMODE_RDX0154
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 132
-	#define DIM_Y 64
-#endif /* LCDMODE_RDX0154 */
-
-
 #if LCDMODE_LQ043T3DX02K		/* PSP-1000 with S1D113780, or attached to LTDC hardware controller */
 	//#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	//#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
@@ -1456,116 +1431,6 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_H497TLB01P4 */
 
-#if LCDMODE_S1D13781		/* PSP-1000 with S1D113780 */
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 480
-	#define DIM_Y 272
-	#define LCDMODE_COLORED	1
-	#define LCDMODE_HORFILL	1
-#endif /* LCDMODE_S1D13781 */
-
-#if LCDMODE_TIC154 || LCDMODE_TIC218
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 133
-	#define DIM_Y 64
-#endif /* LCDMODE_TIC154 || LCDMODE_TIC218 */
-
-#if LCDMODE_RDX0077			/* RDX0077	*/
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 128
-	#define DIM_Y 64
-#endif /* LCDMODE_RDX0077 */
-
-#if LCDMODE_RDX0077			/* RDX0077	*/
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 128
-	#define DIM_Y 64
-#endif /* LCDMODE_RDX0077 */
-
-#if LCDMODE_RDT065				/* RDT065 - Индикатор 132*64 с контроллером UC1601, XMIRROR & TOPDOWN */
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 132
-	#define DIM_Y 64
-#endif /* LCDMODE_RDT065 */
-
-#if LCDMODE_G1203H				/* G1203H	*/
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-	#define DIM_X 128
-	#define DIM_Y 32
-#endif /* LCDMODE_G1203H */
-
-#if LCDMODE_PCF8535 || LCDMODE_UC1601 || LCDMODE_PCF8531
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-#endif
-
-#if LCDMODE_UC1601
-	#define LCDMODE_HARD_I2C	1	/* I2C interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-#elif LCDMODE_LS020
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-#elif LCDMODE_LPH88 || LCDMODE_EM027BS013
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
-#elif LCDMODE_L2F50
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-#endif
-
-#if LCDMODE_LS020 || LCDMODE_LPH88 || LCDMODE_L2F50	/* LS02 color graphics display */
-	#define DIM_X 176
-	#define DIM_Y 132
-	#define LCDMODE_COLORED	1
-#endif /* LCDMODE_LS020 */
-
-#if LCDMODE_ILI9320	/* ILI9320 color graphics display */
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI	1	/* SPI only, no Reset, no Address need */
-	#define DIM_X 320
-	#define DIM_Y 240
-	#define LCDMODE_COLORED	1
-#endif /* LCDMODE_ILI9320 */
-
-#if LCDMODE_ILI9225	/* SF-TC220H-9223A-N - ILI9225С based color graphics display */
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 220
-	#define DIM_Y 176
-	#define LCDMODE_COLORED	1
-#endif /* LCDMODE_ILI9225 */
-
-#if LCDMODE_ST7781	/* 328*240 TFT color display  */
-	//#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 320
-	#define DIM_Y 240
-	#define LCDMODE_COLORED	1
-#endif /* LCDMODE_ST7781 */
-
-#if LCDMODE_UC1608
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 240
-	#define DIM_Y 128
-#endif /* LCDMODE_UC1608 */
-
-#if LCDMODE_ST7735
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 160
-	#define DIM_Y 128
-	#define LCDMODE_COLORED	1
-	#define LCDMODE_RGB565 1	// старый дисплей
-	//#define LCDMODE_BGR565 1	// перевернутые цыета
-	#define LCDMODE_PIXELSIZE 2
-#endif /* LCDMODE_ST7735 */
-
 #if LCDMODE_ILI9341
 	#define LCDMODE_HARD_SPI	1	/* SPI interface */
 	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
@@ -1575,38 +1440,6 @@ extern "C" {
 	#define LCDMODE_RGB565 1
 	#define LCDMODE_PIXELSIZE 2
 #endif
-
-#if LCDMODE_ILI8961
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI	1	/* SPI only, no Reset, no Address need */
-	#define DIM_X 320
-	#define DIM_Y 240
-	#define LCDMODE_COLORED	1
-	#define LCDMODE_HORFILL	1
-#endif
-
-#if LCDMODE_ILI9163			/* этот контроллер обслуживается в основном совпадающим с ST7735 кодом */
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 176
-	#define DIM_Y 132
-	#define LCDMODE_COLORED	1
-	#define LCDMODE_BGR565 1
-
-
-	#if LCDMODE_ILI9163_TOPDOWN
-		#undef LCDMODE_ST7735_TOPDOWN 	// в основном совпадающий набор функций
-	#else
-		#define LCDMODE_ST7735_TOPDOWN 1	// в основном совпадающий набор функций
-	#endif
-#endif
-
-#if LCDMODE_ST7565S || LCDMODE_PTE1206
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 128
-	#define DIM_Y 64
-#endif /* LCDMODE_ST7565S || LCDMODE_PTE1206 */
 
 /*
  * Выбор описателя расположения элементов, отбражаемых на дисплее.
