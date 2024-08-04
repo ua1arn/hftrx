@@ -1010,9 +1010,9 @@ void display_snapshot_write(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t 
 void display_snapshot_req(void);
 
 #if WITHLTDCHWVBLANKIRQ
-	#define LCDMODE_MAIN_PAGES	3
+	#define LCDMODE_MAIN_PAGES	3	// Используются буферы: один для полготовки изоображения, один готовый к отображению, один текцщий отображаемый
 #else /* WITHLTDCHWVBLANKIRQ */
-	#define LCDMODE_MAIN_PAGES	2
+	#define LCDMODE_MAIN_PAGES	2	// Используются буферы: один для полготовки изоображения, один текцщий отображаемый
 #endif /* WITHLTDCHWVBLANKIRQ */
 
 PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения

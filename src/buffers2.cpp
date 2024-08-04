@@ -3473,6 +3473,7 @@ void buffers_diagnostics(void)
 
 // работа с видеобуферами
 
+/* Frame buffer for display 0 */
 typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
@@ -3484,11 +3485,6 @@ typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
 typedef blists<colmain0fbbuf_t, 0, 0> colmain0fblist_t;
 static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
-
-/////////
-/// Interfaces
-///
-/* Frame buffer for display 0 */
 
 uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
 {
@@ -3515,6 +3511,10 @@ void release_dmabuffercolmain0fb(uintptr_t addr)  /* release Frame buffer for di
 
 void save_dmabuffercolmain0fb(uintptr_t addr) /* save to queue Frame buffer for display 0 */
 {
+	// поддерживаем один элемент в очереди готовых
+	colmain0fb_t * old;
+	if (colmain0fblist.get_readybuffer_raw(& old))
+		colmain0fblist.release_buffer(old);
 	colmain0fb_t * const p = CONTAINING_RECORD(addr, colmain0fb_t, buff);
 	colmain0fblist.save_buffer(p);
 }
