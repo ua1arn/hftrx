@@ -65,9 +65,7 @@ OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
-RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -78,15 +76,8 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/Core_A/Source \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
+	$(CMSISDIR)/Core_A/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -130,9 +121,27 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-#SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
+
+ifeq (1, 0)
+# RTOSX
+RTOSXDIR = $(CMSISDIR)/RTOS2
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
+SRCDIRS += $(PRJROOT)/lib/rtx
+DINCDIR += \
+	$(RTOSXDIR)/Include \
+	$(RTOSXDIR)/RTX/Include
+endif
+
+ifeq (1, 1)
+# CMSIS_DSP
+SRCDIRS +=
+DINCDIR += \
+	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/ComputeLibrary/Include \
+	$(CMSISDSPDIR)/Source \
+	$(CMSISDSPDIR)/PrivateInclude
+endif
 
 ifeq (1, 0)
 # lvgl
