@@ -10613,7 +10613,8 @@ static void lidar_parse(unsigned char c)
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
-	display_fillrect(0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+	display_fillrect(0, 0, DIM_X, DIM_Y, display_getbgcolor());
+	display_at(0, 0, "Start...");
 	colmain_nextfb();
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
