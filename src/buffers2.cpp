@@ -3594,7 +3594,7 @@ void colmain_nextfb(void)
 	hardware_ltdc_main_set(frame);
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 #if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr());
+	openvg_next(colmain_getindexbyaddr((uintptr_t) colmain_fb_draw()));
 #endif /* WITHOPENVG */
 }
 
