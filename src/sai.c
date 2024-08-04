@@ -3606,7 +3606,6 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 
-	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
 	/* в каждом регистре управления для восьми каналов */
 	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
 	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2Sn_SDINCHMAP1 - каналы 7..4
@@ -3619,15 +3618,14 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
 		0;
 
-	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
-	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
-	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
-	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+	i2s->I2Sn_SDINCHMAP [0] = (i2s->I2Sn_SDINCHMAP [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	i2s->I2Sn_SDINCHMAP [1] = (i2s->I2Sn_SDINCHMAP [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	i2s->I2Sn_SDINCHMAP [2] = (i2s->I2Sn_SDINCHMAP [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	i2s->I2Sn_SDINCHMAP [3] = (i2s->I2Sn_SDINCHMAP [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
 
 #elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	__IO uint32_t * const reg = i2s->I2S_PCM_RXCHMAP;
 	/* в каждом регистре управления для восьми каналов */
 	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
 	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
@@ -3640,10 +3638,10 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
 		0;
 
-	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
-	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
-	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
-	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+	i2s->I2S_PCM_RXCHMAP [0] = (i2s->I2S_PCM_RXCHMAP [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	i2s->I2S_PCM_RXCHMAP [1] = (i2s->I2S_PCM_RXCHMAP [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	i2s->I2S_PCM_RXCHMAP [2] = (i2s->I2S_PCM_RXCHMAP [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	i2s->I2S_PCM_RXCHMAP [3] = (i2s->I2S_PCM_RXCHMAP [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
 #else
 	#warning Unexpected CPUSTYLE_xxx
 #endif
