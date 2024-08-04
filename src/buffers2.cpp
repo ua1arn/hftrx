@@ -3477,14 +3477,13 @@ typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = 1, nch = 1 };	// stub for resampling support
 } ALIGNX_END colmain0fb_t;
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
 static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
-typedef dmahandle<COLORPIP_T, colmain0fbbuf_t, 0, 0> colmain0fbdma_t;
-static colmain0fbdma_t colmain0fbdma(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
+typedef blists<colmain0fbbuf_t, 0, 0> colmain0fblist_t;
+static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
 /////////
 /// Interfaces
@@ -3495,7 +3494,7 @@ uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer fo
 {
 	colmain0fb_t * dest;
 	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
-	while (! colmain0fbdma.get_freebuffer_raw(& dest) && ! colmain0fbdma.get_readybuffer_raw(& dest))
+	while (! colmain0fblist.get_freebuffer_raw(& dest) && ! colmain0fblist.get_readybuffer_raw(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -3503,7 +3502,7 @@ uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer fo
 uintptr_t getfilled_dmabuffercolmain0fb(void) /* take from queue Frame buffer for display 0 */
 {
 	colmain0fb_t * dest;
-	if (! colmain0fbdma.get_readybuffer_raw(& dest))
+	if (! colmain0fblist.get_readybuffer_raw(& dest))
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -3511,23 +3510,23 @@ uintptr_t getfilled_dmabuffercolmain0fb(void) /* take from queue Frame buffer fo
 void release_dmabuffercolmain0fb(uintptr_t addr)  /* release Frame buffer for display 0 */
 {
 	colmain0fb_t * const p = CONTAINING_RECORD(addr, colmain0fb_t, buff);
-	colmain0fbdma.release_buffer(p);
+	colmain0fblist.release_buffer(p);
 }
 
 void save_dmabuffercolmain0fb(uintptr_t addr) /* save to queue Frame buffer for display 0 */
 {
 	colmain0fb_t * const p = CONTAINING_RECORD(addr, colmain0fb_t, buff);
-	colmain0fbdma.save_buffer(p);
+	colmain0fblist.save_buffer(p);
 }
 
 int_fast32_t cachesize_dmabuffercolmain0fb(void) /* parameter for cache manipulation functions Frame buffer for display 0 */
 {
-	return colmain0fbdma.get_cachesize();
+	return colmain0fblist.get_cachesize();
 }
 
 int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffer for display 0 */
 {
-	return colmain0fbdma.get_datasize();
+	return colmain0fblist.get_datasize();
 }
 
 #if WITHLTDCHWVBLANKIRQ
