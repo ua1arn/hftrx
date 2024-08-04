@@ -3567,11 +3567,11 @@ void hardware_ltdc_vblank(unsigned ix)
 	const uintptr_t fb = getfilled_dmabuffercolmain0fb();
 	if (fb != 0)
 	{
+		hardware_ltdc_main_set_no_vsync(fb);
 		if (lastsetfb0 != 0)
 		{
 			release_dmabuffercolmain0fb(lastsetfb0);
 		}
-		hardware_ltdc_main_set_no_vsync(fb);
 		lastsetfb0 = fb;
 	}
 }
