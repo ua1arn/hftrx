@@ -278,7 +278,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 		if (1 /*regp->fldoffs == offs*/) {
 			if (!IsListEmpty(&regp->aggregate)) {
 				/* Emit aggregate type */
-				emitline(indent + INDENT, "struct\n");
+				emitline(indent + INDENT, "__PACKED_STRUCT\n"); /* CMSIS 1-byte alligned struct */
 				emitline(indent + INDENT, "{\n");
 				offs += regp->fldrept * genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
 				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname, regp->fldrept);
@@ -326,7 +326,7 @@ void genstruct(struct parsedfile *pfl) {
 	emitline(0, " */\n");
 
 	emitline(0, "/*!< %s %s */\n", pfl->bname, pfl->comment ? pfl->comment : "");
-	emitline(0, "typedef struct %s_Type\n", pfl->bname);
+	emitline(0, "typedef __PACKED_STRUCT %s_Type\n", pfl->bname);	/* CMSIS 1-byte alligned struct */
 	emitline(0, "{\n");
 
 	offs = genreglist(0, &pfl->regslist, 0);

@@ -302,12 +302,12 @@ typedef enum IRQn
  * @brief AHUB
  */
 /*!< AHUB Audio HUB */
-typedef struct AHUB_Type
+typedef __PACKED_STRUCT AHUB_Type
 {
          uint32_t reserved_0x000 [0x0002];
     __IO uint32_t AHUB_RST;                           /*!< Offset 0x008 AHUB Reset */
     __IO uint32_t AHUB_GAT;                           /*!< Offset 0x00C AHUB Gating */
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t APBIF_TXn_CTRL;                 /*!< Offset 0x010 APBIF TXn Control */
         __IO uint32_t APBIF_TXnIRQ_CTRL;              /*!< Offset 0x014 APBIF TXn DMA & Interrupt Control */
@@ -321,7 +321,7 @@ typedef struct AHUB_Type
              uint32_t reserved_0x028 [0x0002];
     } APBIF_TX [0x003];                               /*!< Offset 0x010 APBIF TX (n=0~2) */
          uint32_t reserved_0x0A0 [0x0018];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t APBIF_RXn_CTRL;                 /*!< Offset 0x100 APBIF RXn Control */
         __IO uint32_t APBIF_RXnIRQ_CTRL;              /*!< Offset 0x104 APBIF RXn DMA & Interrupt Control */
@@ -336,7 +336,7 @@ typedef struct AHUB_Type
              uint32_t reserved_0x028 [0x0002];
     } APBIF_RX [0x003];                               /*!< Offset 0x100 APBIF RX (n=0~2) */
          uint32_t reserved_0x190 [0x021C];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t DAMn_CTRL;                      /*!< Offset 0xA00 DAM Control */
              uint32_t reserved_0x004 [0x0003];
@@ -351,7 +351,7 @@ typedef struct AHUB_Type
  * @brief AUDIO_CODEC
  */
 /*!< AUDIO_CODEC Audio Codec */
-typedef struct AUDIO_CODEC_Type
+typedef __PACKED_STRUCT AUDIO_CODEC_Type
 {
     __IO uint32_t AC_DAC_DPC;                         /*!< Offset 0x000 DAC Digital Part Control Register */
          uint32_t reserved_0x004 [0x0003];
@@ -422,7 +422,7 @@ typedef struct AUDIO_CODEC_Type
  * @brief C0_CPUX_CFG_H616
  */
 /*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List */
-typedef struct C0_CPUX_CFG_H616_Type
+typedef __PACKED_STRUCT C0_CPUX_CFG_H616_Type
 {
     __IO uint32_t C0_RST_CTRL;                        /*!< Offset 0x000 Cluster 0 Reset Control Register */
          uint32_t reserved_0x004 [0x0003];
@@ -432,7 +432,7 @@ typedef struct C0_CPUX_CFG_H616_Type
          uint32_t reserved_0x01C [0x0002];
     __IO uint32_t CACHE_CFG_REG;                      /*!< Offset 0x024 Cache Configuration Register */
          uint32_t reserved_0x028 [0x0006];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t LOW;                            /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
         __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
@@ -448,7 +448,7 @@ typedef struct C0_CPUX_CFG_H616_Type
  * @brief C0_CPUX_CFG_T507
  */
 /*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List */
-typedef struct C0_CPUX_CFG_T507_Type
+typedef __PACKED_STRUCT C0_CPUX_CFG_T507_Type
 {
     __IO uint32_t C0_RST_CTRL;                        /*!< Offset 0x000 Cluster 0 Reset Control Register */
          uint32_t reserved_0x004 [0x0003];
@@ -467,7 +467,7 @@ typedef struct C0_CPUX_CFG_T507_Type
  * @brief CCU
  */
 /*!< CCU Clock Controller Unit (CCU) */
-typedef struct CCU_Type
+typedef __PACKED_STRUCT CCU_Type
 {
     __IO uint32_t PLL_CPUX_CTRL_REG;                  /*!< Offset 0x000 PLL_CPUX Control Register */
          uint32_t reserved_0x004 [0x0003];
@@ -695,7 +695,7 @@ typedef struct CCU_Type
  * @brief CE
  */
 /*!< CE The Crypto Engine (CE) module */
-typedef struct CE_Type
+typedef __PACKED_STRUCT CE_Type
 {
     __IO uint32_t CE_TDA;                             /*!< Offset 0x000 Task Descriptor Address */
          uint32_t reserved_0x004;
@@ -722,7 +722,7 @@ typedef struct CE_Type
  * @brief CPU_SUBSYS_CTRL_H616
  */
 /*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_H616_Type
+typedef __PACKED_STRUCT CPU_SUBSYS_CTRL_H616_Type
 {
     __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
     __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
@@ -737,7 +737,7 @@ typedef struct CPU_SUBSYS_CTRL_H616_Type
  * @brief CPU_SUBSYS_CTRL_T507
  */
 /*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_T507_Type
+typedef __PACKED_STRUCT CPU_SUBSYS_CTRL_T507_Type
 {
     __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
     __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
@@ -749,7 +749,7 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
     __IO uint32_t DBG_STATE;                          /*!< Offset 0x01C Debug State Register */
     __IO uint32_t CPUx_CTRL_REG [0x004];              /*!< Offset 0x020 CPU0..CPU3 Control Register */
          uint32_t reserved_0x030 [0x0004];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t LOW;                            /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
         __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
@@ -759,10 +759,10 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
  * @brief DE_BLD
  */
 /*!< DE_BLD Display Engine (DE) - Blender */
-typedef struct DE_BLD_Type
+typedef __PACKED_STRUCT DE_BLD_Type
 {
     __IO uint32_t BLD_EN_COLOR_CTL;                   /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t BLD_FILL_COLOR;                 /*!< Offset 0x004 BLD fill color register */
         __IO uint32_t BLD_CH_ISIZE;                   /*!< Offset 0x008 BLD input memory size register */
@@ -792,7 +792,7 @@ typedef struct DE_BLD_Type
  * @brief DE_BLS
  */
 /*!< DE_BLS Blue Level Stretch (BLS) */
-typedef struct DE_BLS_Type
+typedef __PACKED_STRUCT DE_BLS_Type
 {
     __IO uint32_t BLS_CTRL_REG;                       /*!< Offset 0x000 BLS module control register */
     __IO uint32_t BLS_SIZE_REG;                       /*!< Offset 0x004 BLS size register */
@@ -807,7 +807,7 @@ typedef struct DE_BLS_Type
  * @brief DE_DNS
  */
 /*!< DE_DNS Denoise (DNS) */
-typedef struct DE_DNS_Type
+typedef __PACKED_STRUCT DE_DNS_Type
 {
     __IO uint32_t DNS_CTL;                            /*!< Offset 0x000 DNS module control register */
     __IO uint32_t DNS_SIZE;                           /*!< Offset 0x004 DNS size register */
@@ -816,7 +816,7 @@ typedef struct DE_DNS_Type
  * @brief DE_FCC
  */
 /*!< DE_FCC Fancy color curvature (FCC) */
-typedef struct DE_FCC_Type
+typedef __PACKED_STRUCT DE_FCC_Type
 {
     __IO uint32_t FCC_CTL_REG;                        /*!< Offset 0x000 FCC Control Register */
     __IO uint32_t FCC_INPUT_SIZE_REG;                 /*!< Offset 0x004 FCC Input Size Register */
@@ -827,7 +827,7 @@ typedef struct DE_FCC_Type
  * @brief DE_FCE
  */
 /*!< DE_FCE Fresh and Contrast Enhancement (FCE) */
-typedef struct DE_FCE_Type
+typedef __PACKED_STRUCT DE_FCE_Type
 {
     __IO uint32_t GCTRL_REG;                          /*!< Offset 0x000 Control register */
     __IO uint32_t FCE_SIZE_REG;                       /*!< Offset 0x004 Size setting register */
@@ -866,7 +866,7 @@ typedef struct DE_FCE_Type
  * @brief DE_GLB
  */
 /*!< DE_GLB Display Engine (DE) - Global Control */
-typedef struct DE_GLB_Type
+typedef __PACKED_STRUCT DE_GLB_Type
 {
     __IO uint32_t GLB_CTL;                            /*!< Offset 0x000 Global control register */
     __IO uint32_t GLB_STS;                            /*!< Offset 0x004 Global status register */
@@ -879,7 +879,7 @@ typedef struct DE_GLB_Type
  * @brief DE_TOP
  */
 /*!< DE_TOP Display Engine (DE) TOP (APB) */
-typedef struct DE_TOP_Type
+typedef __PACKED_STRUCT DE_TOP_Type
 {
     __IO uint32_t DE_SCLK_GATE;                       /*!< Offset 0x000 DE SCLK Gating Register */
     __IO uint32_t DE_HCLK_GATE;                       /*!< Offset 0x004 DE HCLK Gating Register */
@@ -898,9 +898,9 @@ typedef struct DE_TOP_Type
  * @brief DE_UI
  */
 /*!< DE_UI Display Engine (DE) - UI surface */
-typedef struct DE_UI_Type
+typedef __PACKED_STRUCT DE_UI_Type
 {
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t ATTR;                           /*!< Offset 0x000  */
         __IO uint32_t SIZE;                           /*!< Offset 0x004  */
@@ -920,9 +920,9 @@ typedef struct DE_UI_Type
  * @brief DE_VI
  */
 /*!< DE_VI Display Engine (DE) - VI surface */
-typedef struct DE_VI_Type
+typedef __PACKED_STRUCT DE_VI_Type
 {
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t ATTR;                           /*!< Offset 0x000  */
         __IO uint32_t SIZE;                           /*!< Offset 0x004  */
@@ -946,7 +946,7 @@ typedef struct DE_VI_Type
  * @brief DE_VSU
  */
 /*!< DE_VSU Video Scaler Unit (VSU) */
-typedef struct DE_VSU_Type
+typedef __PACKED_STRUCT DE_VSU_Type
 {
     __IO uint32_t VSU_CTRL_REG;                       /*!< Offset 0x000 VSU Module Control Register */
          uint32_t reserved_0x004;
@@ -999,7 +999,7 @@ typedef struct DE_VSU_Type
  * @brief DISP_IF_TOP
  */
 /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) */
-typedef struct DISP_IF_TOP_Type
+typedef __PACKED_STRUCT DISP_IF_TOP_Type
 {
     __IO uint32_t TV_CLK_SRC_RGB_SRC;                 /*!< Offset 0x000 TCON_TV CClock SSelect and RGB Source S Select Register */
          uint32_t reserved_0x004 [0x0006];
@@ -1010,7 +1010,7 @@ typedef struct DISP_IF_TOP_Type
  * @brief DMAC
  */
 /*!< DMAC  */
-typedef struct DMAC_Type
+typedef __PACKED_STRUCT DMAC_Type
 {
     __IO uint32_t DMAC_IRQ_EN_REG0;                   /*!< Offset 0x000 DMAC IRQ Enable Register 0 */
     __IO uint32_t DMAC_IRQ_EN_REG1;                   /*!< Offset 0x004 DMAC IRQ Enable Register 1 */
@@ -1024,7 +1024,7 @@ typedef struct DMAC_Type
          uint32_t reserved_0x02C;
     __I  uint32_t DMAC_STA_REG;                       /*!< Offset 0x030 DMAC Status Register */
          uint32_t reserved_0x034 [0x0033];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t DMAC_EN_REGN;                   /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
         __IO uint32_t DMAC_PAU_REGN;                  /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
@@ -1046,7 +1046,7 @@ typedef struct DMAC_Type
  * @brief DMIC
  */
 /*!< DMIC Digital Microphone Interface */
-typedef struct DMIC_Type
+typedef __PACKED_STRUCT DMIC_Type
 {
     __IO uint32_t DMIC_EN;                            /*!< Offset 0x000 DMIC Enable Control Register */
     __IO uint32_t DMIC_SR;                            /*!< Offset 0x004 DMIC Sample Rate Register */
@@ -1070,7 +1070,7 @@ typedef struct DMIC_Type
  * @brief EMAC
  */
 /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
-typedef struct EMAC_Type
+typedef __PACKED_STRUCT EMAC_Type
 {
     __IO uint32_t EMAC_BASIC_CTL0;                    /*!< Offset 0x000 EMAC Basic Control Register0 */
     __IO uint32_t EMAC_BASIC_CTL1;                    /*!< Offset 0x004 EMAC Basic Control Register1 */
@@ -1091,7 +1091,7 @@ typedef struct EMAC_Type
     __IO uint32_t EMAC_RX_HASH1;                      /*!< Offset 0x044 EMAC Hash Table Register1 */
     __IO uint32_t EMAC_MII_CMD;                       /*!< Offset 0x048 EMAC Management Interface Command Register */
     __IO uint32_t EMAC_MII_DATA;                      /*!< Offset 0x04C EMAC Management Interface Data Register */
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t HIGH;                           /*!< Offset 0x050 EMAC MAC Address High Register */
         __IO uint32_t LOW;                            /*!< Offset 0x054 EMAC MAC Address Low Register */
@@ -1112,7 +1112,7 @@ typedef struct EMAC_Type
  * @brief G2D_ROT
  */
 /*!< G2D_ROT Graphic 2D Rotate */
-typedef struct G2D_ROT_Type
+typedef __PACKED_STRUCT G2D_ROT_Type
 {
     __IO uint32_t ROT_CTL;                            /*!< Offset 0x000 ROT_CTL						 */
     __IO uint32_t ROT_INT;                            /*!< Offset 0x004 ROT_INT				 */
@@ -1153,7 +1153,7 @@ typedef struct G2D_ROT_Type
  * @brief G2D_TOP
  */
 /*!< G2D_TOP Graphic 2D top */
-typedef struct G2D_TOP_Type
+typedef __PACKED_STRUCT G2D_TOP_Type
 {
     __IO uint32_t G2D_SCLK_GATE;                      /*!< Offset 0x000  */
     __IO uint32_t G2D_HCLK_GATE;                      /*!< Offset 0x004  */
@@ -1165,7 +1165,7 @@ typedef struct G2D_TOP_Type
  * @brief GPADC
  */
 /*!< GPADC  */
-typedef struct GPADC_Type
+typedef __PACKED_STRUCT GPADC_Type
 {
     __IO uint32_t GP_SR_CON;                          /*!< Offset 0x000 GPADC Sample Rate Configure Register */
     __IO uint32_t GP_CTRL;                            /*!< Offset 0x004 GPADC Control Register */
@@ -1197,7 +1197,7 @@ typedef struct GPADC_Type
  * @brief GPIO
  */
 /*!< GPIO Port Controller */
-typedef struct GPIO_Type
+typedef __PACKED_STRUCT GPIO_Type
 {
     __IO uint32_t CFG [0x004];                        /*!< Offset 0x000 Configure Register */
     __IO uint32_t DATA;                               /*!< Offset 0x010 Data Register */
@@ -1208,9 +1208,9 @@ typedef struct GPIO_Type
  * @brief GPIOBLOCK
  */
 /*!< GPIOBLOCK Port Controller */
-typedef struct GPIOBLOCK_Type
+typedef __PACKED_STRUCT GPIOBLOCK_Type
 {
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t CFG [0x004];                    /*!< Offset 0x000 Configure Register */
         __IO uint32_t DATA;                           /*!< Offset 0x010 Data Register */
@@ -1218,7 +1218,7 @@ typedef struct GPIOBLOCK_Type
         __IO uint32_t PULL [0x002];                   /*!< Offset 0x01C Pull Register */
     } GPIO_PINS [0x009];                              /*!< Offset 0x000 GPIO pin control */
          uint32_t reserved_0x144 [0x002F];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t EINT_CFG [0x004];               /*!< Offset 0x200 External Interrupt Configure Registers */
         __IO uint32_t EINT_CTL;                       /*!< Offset 0x210 External Interrupt Control Register */
@@ -1235,7 +1235,7 @@ typedef struct GPIOBLOCK_Type
  * @brief GPIOINT
  */
 /*!< GPIOINT  */
-typedef struct GPIOINT_Type
+typedef __PACKED_STRUCT GPIOINT_Type
 {
     __IO uint32_t EINT_CFG [0x004];                   /*!< Offset 0x000 External Interrupt Configure Registers */
     __IO uint32_t EINT_CTL;                           /*!< Offset 0x010 External Interrupt Control Register */
@@ -1247,7 +1247,7 @@ typedef struct GPIOINT_Type
  * @brief GPU_CONTROL
  */
 /*!< GPU_CONTROL  */
-typedef struct GPU_CONTROL_Type
+typedef __PACKED_STRUCT GPU_CONTROL_Type
 {
     __I  uint32_t GPU_ID;                             /*!< Offset 0x000 (RO) GPU and revision identifier */
     __I  uint32_t L2_FEATURES;                        /*!< Offset 0x004 (RO) Level 2 cache features */
@@ -1368,7 +1368,7 @@ typedef struct GPU_CONTROL_Type
  * @brief GPU_JOB_CONTROL
  */
 /*!< GPU_JOB_CONTROL  */
-typedef struct GPU_JOB_CONTROL_Type
+typedef __PACKED_STRUCT GPU_JOB_CONTROL_Type
 {
     __IO uint32_t JOB_IRQ_RAWSTAT;                    /*!< Offset 0x000 Raw interrupt status register */
     __IO uint32_t JOB_IRQ_CLEAR;                      /*!< Offset 0x004 Interrupt clear register */
@@ -1379,14 +1379,14 @@ typedef struct GPU_JOB_CONTROL_Type
  * @brief GPU_MMU
  */
 /*!< GPU_MMU  */
-typedef struct GPU_MMU_Type
+typedef __PACKED_STRUCT GPU_MMU_Type
 {
     __IO uint32_t MMU_IRQ_RAWSTAT;                    /*!< Offset 0x000 (RW) Raw interrupt status register */
     __IO uint32_t MMU_IRQ_CLEAR;                      /*!< Offset 0x004 (WO) Interrupt clear register */
     __IO uint32_t MMU_IRQ_MASK;                       /*!< Offset 0x008 (RW) Interrupt mask register */
     __I  uint32_t MMU_IRQ_STATUS;                     /*!< Offset 0x00C (RO) Interrupt status register */
          uint32_t reserved_0x010 [0x003C];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t AS_TRANSTAB_LO;                 /*!< Offset 0x100 (RW) Translation Table Base Address for address space n, low word */
         __IO uint32_t AS_TRANSTAB_HI;                 /*!< Offset 0x104 (RW) Translation Table Base Address for address space n, high word */
@@ -1410,7 +1410,7 @@ typedef struct GPU_MMU_Type
  * @brief HDMI_PHY
  */
 /*!< HDMI_PHY  */
-typedef struct HDMI_PHY_Type
+typedef __PACKED_STRUCT HDMI_PHY_Type
 {
     __IO uint32_t DBG_CTRL;                           /*!< Offset 0x000 DBG_CTRL */
     __IO uint32_t REXT_CTRL;                          /*!< Offset 0x004 REXT_CTRL */
@@ -1434,7 +1434,7 @@ typedef struct HDMI_PHY_Type
  * @brief HDMI_TX
  */
 /*!< HDMI_TX  */
-typedef struct HDMI_TX_Type
+typedef __PACKED_STRUCT HDMI_TX_Type
 {
          uint32_t reserved_0x000 [0x0080];
     __IO uint8_t  HDMI_TX_INVID0;                     /*!< Offset 0x200 TBD */
@@ -1507,7 +1507,7 @@ typedef struct HDMI_TX_Type
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
-typedef struct I2S_PCM_Type
+typedef __PACKED_STRUCT I2S_PCM_Type
 {
     __IO uint32_t I2Sn_CTL;                           /*!< Offset 0x000 I2Sn Control */
     __IO uint32_t I2Sn_FMT0;                          /*!< Offset 0x004 I2Sn Format 0 */
@@ -1518,7 +1518,7 @@ typedef struct I2S_PCM_Type
     __IO uint32_t I2Sn_CHCFG;                         /*!< Offset 0x024 I2Sn Channel Configuration */
     __IO uint32_t I2Sn_IRQ_CTRL;                      /*!< Offset 0x028 I2Sn DMA & Interrupt Control */
     __IO uint32_t I2Sn_IRQ_STS;                       /*!< Offset 0x02C I2Sn DMA & Interrupt Status */
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t I2Sn_SDOUTm_SLOTCTR;            /*!< Offset 0x030 (n=0~3)(m=0~3) */
         __IO uint32_t I2Sn_SDOUTmCHMAP0;              /*!< Offset 0x034 I2Sn SDOUTm Channel Mapping 0 */
@@ -1533,7 +1533,7 @@ typedef struct I2S_PCM_Type
  * @brief IOMMU
  */
 /*!< IOMMU IOMMU (I/O Memory management unit) */
-typedef struct IOMMU_Type
+typedef __PACKED_STRUCT IOMMU_Type
 {
          uint32_t reserved_0x000 [0x0004];
     __IO uint32_t IOMMU_RESET_REG;                    /*!< Offset 0x010 IOMMU ResetRegister */
@@ -1681,7 +1681,7 @@ typedef struct IOMMU_Type
  * @brief LRADC
  */
 /*!< LRADC  */
-typedef struct LRADC_Type
+typedef __PACKED_STRUCT LRADC_Type
 {
     __IO uint32_t LRADC_CTRL;                         /*!< Offset 0x000 LRADC Control Register */
     __IO uint32_t LRADC_INTC;                         /*!< Offset 0x004 LRADC Interrupt Control Register */
@@ -1692,7 +1692,7 @@ typedef struct LRADC_Type
  * @brief NDFC
  */
 /*!< NDFC Nand Flash Controller */
-typedef struct NDFC_Type
+typedef __PACKED_STRUCT NDFC_Type
 {
     __IO uint32_t NDFC_CTL;                           /*!< Offset 0x000 NDFC Configure and Control Register */
     __IO uint32_t NDFC_ST;                            /*!< Offset 0x004 NDFC Status Information Register */
@@ -1737,7 +1737,7 @@ typedef struct NDFC_Type
  * @brief OWA
  */
 /*!< OWA One Wire Audio */
-typedef struct OWA_Type
+typedef __PACKED_STRUCT OWA_Type
 {
     __IO uint32_t OWA_GEN_CTL;                        /*!< Offset 0x000 (null) */
     __IO uint32_t OWA_TX_CFIG;                        /*!< Offset 0x004 OWA TX Configuration Register */
@@ -1757,7 +1757,7 @@ typedef struct OWA_Type
  * @brief PRCM
  */
 /*!< PRCM Power Reset Clock Management module */
-typedef struct PRCM_Type
+typedef __PACKED_STRUCT PRCM_Type
 {
     __IO uint32_t CPUS_CFG_REG;                       /*!< Offset 0x000 CPUS Configuration Register */
          uint32_t reserved_0x004 [0x0002];
@@ -1802,7 +1802,7 @@ typedef struct PRCM_Type
  * @brief PWM
  */
 /*!< PWM Pulse Width Modulation module */
-typedef struct PWM_Type
+typedef __PACKED_STRUCT PWM_Type
 {
     __IO uint32_t PIER;                               /*!< Offset 0x000 PWM IRQ Enable Register */
     __IO uint32_t PISR;                               /*!< Offset 0x004 PWM IRQ Status Register */
@@ -1817,7 +1817,7 @@ typedef struct PWM_Type
     __IO uint32_t PER;                                /*!< Offset 0x040 PWM Enable Register */
     __IO uint32_t CER;                                /*!< Offset 0x044 Capture Enable Register */
          uint32_t reserved_0x048 [0x0006];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t PCR;                            /*!< Offset 0x060 PWM Control Register */
         __IO uint32_t PPR;                            /*!< Offset 0x064 PWM Period Register */
@@ -1832,7 +1832,7 @@ typedef struct PWM_Type
  * @brief RTC
  */
 /*!< RTC Real Time Clock */
-typedef struct RTC_Type
+typedef __PACKED_STRUCT RTC_Type
 {
     __IO uint32_t LOSC_CTRL_REG;                      /*!< Offset 0x000 Low Oscillator Control Register */
     __IO uint32_t LOSC_AUTO_SWT_STA_REG;              /*!< Offset 0x004 LOSC Auto Switch Status Register */
@@ -1873,7 +1873,7 @@ typedef struct RTC_Type
  * @brief RTWB_RCQ
  */
 /*!< RTWB_RCQ  */
-typedef struct RTWB_RCQ_Type
+typedef __PACKED_STRUCT RTWB_RCQ_Type
 {
     __IO uint32_t RTWB_RCQ_IRQ;                       /*!< Offset 0x000 RTWB_RCQ_IRQ_OFFSET          (0x8200) */
     __IO uint32_t RTWB_RCQ_STS;                       /*!< Offset 0x004 RTWB_RCQ_STS_OFFSET          (0x8204) */
@@ -1884,7 +1884,7 @@ typedef struct RTWB_RCQ_Type
  * @brief R_CAN
  */
 /*!< R_CAN Car Area Network controller */
-typedef struct R_CAN_Type
+typedef __PACKED_STRUCT R_CAN_Type
 {
     __IO uint32_t CAN_MSEL;                           /*!< Offset 0x000 CAN mode select register */
     __IO uint32_t CAN_CMD;                            /*!< Offset 0x004 CAN command register */
@@ -1907,7 +1907,7 @@ typedef struct R_CAN_Type
  * @brief SCR
  */
 /*!< SCR Smart Card Reader */
-typedef struct SCR_Type
+typedef __PACKED_STRUCT SCR_Type
 {
     __IO uint32_t SCR_CSR;                            /*!< Offset 0x000 Smart Card Reader Control and Status Register */
     __IO uint32_t SCR_INTEN;                          /*!< Offset 0x004 Smart Card Reader Interrupt Enable Register 1 */
@@ -1931,7 +1931,7 @@ typedef struct SCR_Type
  * @brief SID
  */
 /*!< SID  */
-typedef struct SID_Type
+typedef __PACKED_STRUCT SID_Type
 {
          uint32_t reserved_0x000 [0x0080];
     __IO uint32_t SID_DATA [0x004];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
@@ -1941,7 +1941,7 @@ typedef struct SID_Type
  * @brief SMC
  */
 /*!< SMC  */
-typedef struct SMC_Type
+typedef __PACKED_STRUCT SMC_Type
 {
          uint32_t reserved_0x000 [0x0400];
 } SMC_TypeDef; /* size of structure = 0x1000 */
@@ -1949,7 +1949,7 @@ typedef struct SMC_Type
  * @brief SMHC
  */
 /*!< SMHC SD-MMC Host Controller */
-typedef struct SMHC_Type
+typedef __PACKED_STRUCT SMHC_Type
 {
     __IO uint32_t SMHC_CTRL;                          /*!< Offset 0x000 Control Register */
     __IO uint32_t SMHC_CLKDIV;                        /*!< Offset 0x004 Clock Control Register */
@@ -2003,7 +2003,7 @@ typedef struct SMHC_Type
  * @brief SPC
  */
 /*!< SPC  */
-typedef struct SPC_Type
+typedef __PACKED_STRUCT SPC_Type
 {
          uint32_t reserved_0x000 [0x0400];
 } SPC_TypeDef; /* size of structure = 0x1000 */
@@ -2011,7 +2011,7 @@ typedef struct SPC_Type
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
-typedef struct SPI_Type
+typedef __PACKED_STRUCT SPI_Type
 {
          uint32_t reserved_0x000;
     __IO uint32_t SPI_GCR;                            /*!< Offset 0x004 SPI Global Control Register */
@@ -2045,7 +2045,7 @@ typedef struct SPI_Type
  * @brief SYS_CFG
  */
 /*!< SYS_CFG  */
-typedef struct SYS_CFG_Type
+typedef __PACKED_STRUCT SYS_CFG_Type
 {
          uint32_t reserved_0x000;
     __IO uint32_t MEMMAP_REG;                         /*!< Offset 0x004 DE memory control Register */
@@ -2059,7 +2059,7 @@ typedef struct SYS_CFG_Type
  * @brief TCON_LCD
  */
 /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
-typedef struct TCON_LCD_Type
+typedef __PACKED_STRUCT TCON_LCD_Type
 {
     __IO uint32_t LCD_GCTL_REG;                       /*!< Offset 0x000 LCD Global Control Register */
     __IO uint32_t LCD_GINT0_REG;                      /*!< Offset 0x004 LCD Global Interrupt Register0 */
@@ -2129,7 +2129,7 @@ typedef struct TCON_LCD_Type
  * @brief TCON_TV
  */
 /*!< TCON_TV TV Output */
-typedef struct TCON_TV_Type
+typedef __PACKED_STRUCT TCON_TV_Type
 {
     __IO uint32_t TV_GCTL_REG;                        /*!< Offset 0x000 TV Global Control Register */
     __IO uint32_t TV_GINT0_REG;                       /*!< Offset 0x004 TV Global Interrupt Register0 */
@@ -2158,7 +2158,7 @@ typedef struct TCON_TV_Type
     __IO uint32_t TV_SAFE_PERIOD_REG;                 /*!< Offset 0x1F0 TV Safe Period Register */
          uint32_t reserved_0x1F4 [0x0043];
     __IO uint32_t TV_FILL_CTL_REG;                    /*!< Offset 0x300 TV Fill Data Control Register */
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t TV_FILL_BEGIN_REG;              /*!< Offset 0x304 TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2) */
         __IO uint32_t TV_FILL_END_REG;                /*!< Offset 0x308 TV Fill Data End Register  0x0308+N*0x0C(N=0..2) */
@@ -2176,7 +2176,7 @@ typedef struct TCON_TV_Type
  * @brief THS
  */
 /*!< THS Thermal Sensor */
-typedef struct THS_Type
+typedef __PACKED_STRUCT THS_Type
 {
     __IO uint32_t THS_CTRL;                           /*!< Offset 0x000 THS Control Register */
     __IO uint32_t THS_EN;                             /*!< Offset 0x004 THS Enable Register */
@@ -2204,12 +2204,12 @@ typedef struct THS_Type
  * @brief TIMER
  */
 /*!< TIMER  */
-typedef struct TIMER_Type
+typedef __PACKED_STRUCT TIMER_Type
 {
     __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
     __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
          uint32_t reserved_0x008 [0x0002];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t CTRL_REG;                       /*!< Offset 0x010 Timer n Control Register */
         __IO uint32_t INTV_VALUE_REG;                 /*!< Offset 0x014 Timer n Interval Value Register */
@@ -2234,7 +2234,7 @@ typedef struct TIMER_Type
  * @brief TS0
  */
 /*!< TS0  */
-typedef struct TS0_Type
+typedef __PACKED_STRUCT TS0_Type
 {
          uint32_t reserved_0x000 [0x0400];
 } TS0_TypeDef; /* size of structure = 0x1000 */
@@ -2242,7 +2242,7 @@ typedef struct TS0_Type
  * @brief TSC
  */
 /*!< TSC Transport Stream Controller */
-typedef struct TSC_Type
+typedef __PACKED_STRUCT TSC_Type
 {
          uint32_t reserved_0x000 [0x0004];
     __IO uint32_t TSC_PCTLR;                          /*!< Offset 0x010 TSC Port Control Register */
@@ -2256,7 +2256,7 @@ typedef struct TSC_Type
  * @brief TSD
  */
 /*!< TSD Transport Stream Controller */
-typedef struct TSD_Type
+typedef __PACKED_STRUCT TSD_Type
 {
     __IO uint32_t TSD_CTLR;                           /*!< Offset 0x000 TSD Control Register */
     __IO uint32_t TSD_STAR;                           /*!< Offset 0x004 TSD Status Register */
@@ -2268,7 +2268,7 @@ typedef struct TSD_Type
  * @brief TSF
  */
 /*!< TSF Transport Stream Controller */
-typedef struct TSF_Type
+typedef __PACKED_STRUCT TSF_Type
 {
     __IO uint32_t TSF_CTLR;                           /*!< Offset 0x000 TSF Control Register */
     __IO uint32_t TSF_PPR;                            /*!< Offset 0x004 TSF Packet Parameter Register */
@@ -2298,7 +2298,7 @@ typedef struct TSF_Type
  * @brief TSG
  */
 /*!< TSG Transport Stream Controller */
-typedef struct TSG_Type
+typedef __PACKED_STRUCT TSG_Type
 {
     __IO uint32_t TSG_CTLR;                           /*!< Offset 0x000 TSG Control Register */
     __IO uint32_t TSG_PPR;                            /*!< Offset 0x004 TSG Packet Parameter Register */
@@ -2312,7 +2312,7 @@ typedef struct TSG_Type
  * @brief TWI
  */
 /*!< TWI  */
-typedef struct TWI_Type
+typedef __PACKED_STRUCT TWI_Type
 {
     __IO uint32_t TWI_ADDR;                           /*!< Offset 0x000 TWI Slave Address Register */
     __IO uint32_t TWI_XADDR;                          /*!< Offset 0x004 TWI Extended Slave Address Register */
@@ -2341,7 +2341,7 @@ typedef struct TWI_Type
  * @brief UART
  */
 /*!< UART  */
-typedef struct UART_Type
+typedef __PACKED_STRUCT UART_Type
 {
     __IO uint32_t UART_RBR_THR_DLL;                   /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
     __IO uint32_t UART_DLH_IER;                       /*!< Offset 0x004  */
@@ -2370,7 +2370,7 @@ typedef struct UART_Type
  * @brief USBEHCI
  */
 /*!< USBEHCI  */
-typedef struct USBEHCI_Type
+typedef __PACKED_STRUCT USBEHCI_Type
 {
     __IO uint16_t E_CAPLENGTH;                        /*!< Offset 0x000 EHCI Capability Register Length Register */
     __IO uint16_t E_HCIVERSION;                       /*!< Offset 0x002 EHCI Host Interface Version Number Register */
@@ -2415,7 +2415,7 @@ typedef struct USBEHCI_Type
  * @brief USBOTG
  */
 /*!< USBOTG USB OTG Dual-Role Device controller */
-typedef struct USBOTG_Type
+typedef __PACKED_STRUCT USBOTG_Type
 {
     __IO uint32_t USB_EPFIFO [0x006];                 /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
          uint32_t reserved_0x018 [0x000A];
@@ -2438,7 +2438,7 @@ typedef struct USBOTG_Type
     __IO uint32_t USB_EPATTR;                         /*!< Offset 0x08C USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register */
     __IO uint32_t USB_TXFIFO;                         /*!< Offset 0x090 USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
     __IO uint32_t USB_RXFIFO;                         /*!< Offset 0x094 USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
-    struct
+    __PACKED_STRUCT
     {
         __IO uint16_t USB_TXFADDR;                    /*!< Offset 0x098 USB_TXFADDR */
         __IO uint8_t  USB_TXHADDR;                    /*!< Offset 0x09A USB_TXHADDR */
@@ -2462,7 +2462,7 @@ typedef struct USBOTG_Type
     __IO uint32_t USB_DMA_INTE;                       /*!< Offset 0x500 USB DMA Interrupt Enable Register */
     __IO uint32_t USB_DMA_INTS;                       /*!< Offset 0x504 USB DMA Interrupt Status Register */
          uint32_t reserved_0x508 [0x000E];
-    struct
+    __PACKED_STRUCT
     {
         __IO uint32_t CHAN_CFG;                       /*!< Offset 0x540 USB DMA Channel Configuration Register */
         __IO uint32_t SDRAM_ADD;                      /*!< Offset 0x544 USB DMA Channel Configuration Register */
@@ -2474,7 +2474,7 @@ typedef struct USBOTG_Type
  * @brief USBPHYC
  */
 /*!< USBPHYC HCI Contgroller and PHY Interface Description */
-typedef struct USBPHYC_Type
+typedef __PACKED_STRUCT USBPHYC_Type
 {
     __IO uint32_t USB_CTRL;                           /*!< Offset 0x000 HCI Interface Register - REG_ISCR 0x00 */
          uint32_t reserved_0x004 [0x0003];
@@ -2489,7 +2489,7 @@ typedef struct USBPHYC_Type
  * @brief USB_EHCI_Capability
  */
 /*!< USB_EHCI_Capability  */
-typedef struct USB_EHCI_Capability_Type
+typedef __PACKED_STRUCT USB_EHCI_Capability_Type
 {
     __I  uint32_t HCCAPBASE;                          /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
     __I  uint32_t HCSPARAMS;                          /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
@@ -2507,7 +2507,7 @@ typedef struct USB_EHCI_Capability_Type
  * @brief USB_OHCI_Capability
  */
 /*!< USB_OHCI_Capability  */
-typedef struct USB_OHCI_Capability_Type
+typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 {
     __IO uint32_t O_HcRevision;                       /*!< Offset 0x000 OHCI Revision Register (not documented) */
     __IO uint32_t O_HcControl;                        /*!< Offset 0x004 OHCI Control Register */
@@ -2536,7 +2536,7 @@ typedef struct USB_OHCI_Capability_Type
  * @brief VE
  */
 /*!< VE Video Encoding */
-typedef struct VE_Type
+typedef __PACKED_STRUCT VE_Type
 {
     __IO uint32_t VE_CTRL;                            /*!< Offset 0x000 Sub-Engine Select and RAM type select */
     __IO uint32_t VE_RESET;                           /*!< Offset 0x004 Sub-Engines Reset */
