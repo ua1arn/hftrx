@@ -627,23 +627,14 @@ static void t113_fillrect(
 		/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 		 */
 		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
-		G2D_BLD->BLD_FILL_COLOR [1] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
-		G2D_BLD->BLD_FILL_COLOR [2] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
-		G2D_BLD->BLD_FILL_COLOR [3] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 
-		/* источник когда есть совпадние ??? */
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
-		/* источник для анализа ??? */
 		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_CH_ISIZE [2] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [2] = 0;// ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_CH_ISIZE [3] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [3] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable
+			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable - old frame buffer
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
