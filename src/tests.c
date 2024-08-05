@@ -10613,11 +10613,29 @@ static void lidar_parse(unsigned char c)
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
-	display_fillrect(0, 0, DIM_X, DIM_Y, display_getbgcolor());
-	display_at(0, 0, "Start...");
-	colmain_nextfb();
+	{
+		display_fillrect(0, 0, DIM_X, DIM_Y, display_getbgcolor());
+		display_at(0, 0, "Start...");
+		colmain_nextfb();
+	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
+#if 0 && WITHLTDCHW && LCDMODE_LTDC
+	{
+		PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+		const uint_fast16_t dx = DIM_X;
+		const uint_fast16_t dy = DIM_Y;
+
+		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, COLOR_RED, FILL_FLAG_NONE);
+		colpip_fillrect2(buffer, dx, dy, 100, 100, 100, 100, TFTALPHA(128, COLOR_BLUE), FILL_FLAG_MIXBG);
+		colpip_fillrect2(buffer, dx, dy, 150, 150, 100, 100, TFTALPHA(128, COLOR_GREEN), FILL_FLAG_MIXBG);
+		display_at(0, 0, "Start...");
+		colmain_nextfb();
+		for (;;)
+			;
+	}
+#endif /* WITHLTDCHW && LCDMODE_LTDC */
+
 #if 0
 	{
 		// V3s clocks information print

@@ -799,6 +799,22 @@ colpip_fillrect(
 	COLORPIP_T color
 	);
 
+#define FILL_FLAG_NONE		0x00
+#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
+
+/* заполнение прямоугольника в буфере произвольным цветом
+*/
+void
+colpip_fillrect2(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
+	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
+	COLORPIP_T color,
+	unsigned fillmask
+	);
+
 #define BITBLT_FLAG_NONE			0x00
 #define BITBLT_FLAG_CKEY			0x01
 #define BITBLT_FLAG_SRC_ABGR8888		0x02	/* исходный имедж - ABGR8888 (от LuPng) */
