@@ -589,6 +589,8 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 	}
 }
 
+static RAMNC PACKEDCOLORPIP_T ds0 [GXSIZE(DIM_X, DIM_Y)];
+
 static void t113_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -609,6 +611,8 @@ static void t113_fillrect(
 
 	if (fillmask & FILL_FLAG_MIXBG)
 	{
+		memset(ds0, 0xFF, sizeof ds0);
+		const uintptr_t pds0 = (uintptr_t) ds0;
 		// todo:  xxx
 		/* установка поверхности - источника (анализируется) */
 		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
@@ -617,8 +621,8 @@ static void t113_fillrect(
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(taddr);
-		G2D_UI2->UI_HADD = ptr_hi32(taddr);
+		G2D_UI2->UI_LADD = ptr_lo32(pds0);
+		G2D_UI2->UI_HADD = ptr_hi32(pds0);
 
 		/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 		 */
@@ -639,7 +643,7 @@ static void t113_fillrect(
 		G2D_BLD->BLD_CH_OFFSET [3] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			//(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable
+			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
