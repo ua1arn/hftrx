@@ -822,12 +822,12 @@ display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * 
 // Выдача строки из ПЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at_P(uint_fast8_t x, uint_fast8_t y, const FLASHMEM char * s)
+display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string_P(x, y + lowhalf, s, lowhalf);
+		display_string_P(xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
