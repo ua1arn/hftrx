@@ -620,18 +620,12 @@ static void t113_fillrect(
 		G2D_UI2->UI_LADD = ptr_lo32(taddr);
 		G2D_UI2->UI_HADD = ptr_hi32(taddr);
 
-        G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 1, 0, 1); //0x00010001;	// G2D_BLD_COPY
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 0, 0, 0); //0x00000000;	// G2D_BLD_CLEAR
-
-		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
-		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
-
 		/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 		 */
 		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
+		G2D_BLD->BLD_FILL_COLOR [1] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
+		G2D_BLD->BLD_FILL_COLOR [2] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
+		G2D_BLD->BLD_FILL_COLOR [3] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 
 		/* источник когда есть совпадние ??? */
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
@@ -639,15 +633,23 @@ static void t113_fillrect(
 		/* источник для анализа ??? */
 		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE [2] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [2] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE [3] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [3] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
 
-		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-
+        G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+
+		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
+
+		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 
 		/* Write-back settings */
 		G2D_WB->WB_ATT = WB_ImageFormat;
