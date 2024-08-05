@@ -635,7 +635,7 @@ static void t113_fillrect(
 			0;
 
         G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 3); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 
 		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
