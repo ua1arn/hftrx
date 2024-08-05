@@ -10626,7 +10626,7 @@ void hightests(void)
 		const uint_fast16_t dx = DIM_X;
 		const uint_fast16_t dy = DIM_Y;
 
-		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(128, COLOR_RED), FILL_FLAG_NONE);
+		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(255, COLOR_RED), FILL_FLAG_NONE);
 		colpip_fillrect2(buffer, dx, dy, 100, 100, 100, 100, TFTALPHA(128, COLOR_BLUE), FILL_FLAG_MIXBG);
 		colpip_fillrect2(buffer, dx, dy, 150, 150, 100, 100, TFTALPHA(128, COLOR_GREEN), FILL_FLAG_MIXBG);
 		display_at(0, 0, "Start...");

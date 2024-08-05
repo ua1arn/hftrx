@@ -3492,9 +3492,6 @@ static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old va
 	#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX + 1)	/* Количество перекрывающися буферов FFT спектра (2^param). */
 #endif
 
-static PACKEDCOLORPIP_T bwpic_A [GXSIZE(ALLDX, ALLDY)];
-static PACKEDCOLORPIP_T bwpic_B [GXSIZE(ALLDX, ALLDY)];
-
 enum
 {
 	FFTOVERLAP = 1,
@@ -5033,23 +5030,6 @@ display2_wfl_init(
 	wflclear();	// Очистка водопада
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
-
-	if (colpip_hasalpha())
-	{
-		unsigned picalpha = 128;	// Полупрозрачность
-		colpip_fillrect(
-			bwpic_A, ALLDX, ALLDY,
-			0, 0,
-			ALLDX, ALLDY,
-			TFTALPHA(picalpha, DSGN_SPECTRUMBG2)
-			);
-		colpip_fillrect(
-			bwpic_B, ALLDX, ALLDY,
-			0, 0,
-			ALLDX, ALLDY,
-			TFTALPHA(picalpha, DSGN_SPECTRUMBG2RX2)
-			);
-	}
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -5616,15 +5596,13 @@ static void display2_spectrum(
 			if (colpip_hasalpha())
 			{
 				// Изображение "шторки".
-				colpip_bitblt(
-						(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
+				unsigned picalpha = 128;	// Полупрозрачность
+				colpip_fillrect2(
 						colorpip, BUFDIM_X, BUFDIM_Y,
 						xleft, SPY0,
-						(uintptr_t) bwpic_A, GXSIZE(ALLDX, ALLDY) * sizeof bwpic_A [0],
-						bwpic_A, ALLDX, ALLDY,
-						0, 0,	// координаты окна источника
 						xrightv - xleft, SPDY, // размер окна источника
-						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
+						TFTALPHA(picalpha, DSGN_SPECTRUMBG2),
+						FILL_FLAG_NONE | FILL_FLAG_MIXBG
 					);
 			}
 
@@ -5851,16 +5829,14 @@ static void display2_waterfall(
 			if (colpip_hasalpha())
 			{
 				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+				unsigned picalpha = 128;	// Полупрозрачность
 
-				colpip_bitblt(
-						(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
+				colpip_fillrect2(
 						colorpip, BUFDIM_X, BUFDIM_Y,
 						xleft, WFY0,
-						(uintptr_t) bwpic_A, GXSIZE(ALLDX, ALLDY) * sizeof bwpic_A [0],
-						bwpic_A, ALLDX, ALLDY,
-						0, 0,	// координаты окна источника
 						xrightv - xleft, WFDY, // размер окна источника
-						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
+						TFTALPHA(picalpha, DSGN_SPECTRUMBG2),
+						FILL_FLAG_NONE | FILL_FLAG_MIXBG
 					);
 
 			}

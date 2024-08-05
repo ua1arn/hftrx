@@ -589,8 +589,6 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 	}
 }
 
-//static RAMNC PACKEDCOLORPIP_T ds0 [GXSIZE(DIM_X, DIM_Y)];
-
 static void t113_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -611,9 +609,6 @@ static void t113_fillrect(
 
 	if (fillmask & FILL_FLAG_MIXBG)
 	{
-		//memset(ds0, 0x3f, sizeof ds0);
-		//const uintptr_t pds0 = (uintptr_t) ds0;
-		// todo:  xxx
 		/* установка поверхности - источника (анализируется) */
 		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
@@ -640,7 +635,7 @@ static void t113_fillrect(
 			0;
 
         G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 3); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 
 		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
