@@ -639,6 +639,7 @@ static void t113_fillrect(
 		G2D_BLD->BLD_CH_OFFSET [3] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
+			//(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
@@ -650,13 +651,6 @@ static void t113_fillrect(
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
 		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-
-		/* Write-back settings */
-		G2D_WB->WB_ATT = WB_ImageFormat;
-		G2D_WB->WB_SIZE = tsizehw;
-		G2D_WB->WB_PITCH0 = tstride;
-		G2D_WB->WB_LADD0 = ptr_lo32(taddr);
-		G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 	}
 	else
 	{
@@ -681,14 +675,14 @@ static void t113_fillrect(
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
-
-		/* Write-back settings */
-		G2D_WB->WB_ATT = WB_ImageFormat;
-		G2D_WB->WB_SIZE = tsizehw;
-		G2D_WB->WB_PITCH0 = tstride;
-		G2D_WB->WB_LADD0 = ptr_lo32(taddr);
-		G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 	}
+
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_ImageFormat;
+	G2D_WB->WB_SIZE = tsizehw;
+	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
+	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
 }
