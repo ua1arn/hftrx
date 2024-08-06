@@ -10626,11 +10626,24 @@ void hightests(void)
 		const uint_fast16_t dx = DIM_X;
 		const uint_fast16_t dy = DIM_Y;
 
-		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(255, COLOR_RED), FILL_FLAG_NONE);
-		display_at_P(0, 0, "Start...");
-		display_at_P(100 / GRID2X(1), 100 / GRID2Y(1), "test");
-		colpip_fillrect2(buffer, dx, dy, 100, 100, 100, 100, TFTALPHA(128, COLOR_BLUE), FILL_FLAG_MIXBG);
-		colpip_fillrect2(buffer, dx, dy, 150, 150, 100, 100, TFTALPHA(255, COLOR_GREEN), FILL_FLAG_MIXBG);
+		unsigned opaque;
+
+		opaque = 255;
+		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
+		PRINTF("Background (opaque=%u)\n", opaque);
+		printhex32(0, buffer, 16);
+		//display_at_P(0, 0, "Start...");
+		//display_at_P(100 / GRID2X(1), 100 / GRID2Y(1), "test");
+
+		opaque = 128;
+		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
+		PRINTF("blue (opaque=%u)\n", opaque);
+		printhex32(0, buffer, 16);
+
+		opaque = 128;
+		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
+		PRINTF("green (opaque=%u)\n", opaque);
+		printhex32(0, buffer, 16);
 		colmain_nextfb();
 		for (;;)
 			;
