@@ -2530,11 +2530,77 @@ void hardware_twi_master_configure(void)
 
 	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
 
 #elif CPUSTYLE_A64
 
-	#warning Should be implemented for CPUSTYLE_A64
+	const uint_fast32_t sclfreq = 400000;
+
+#if defined (TWIHARD_PTR)
+	{
+		TWI_TypeDef * const twi = TWIHARD_PTR;
+		if (0)
+		{
+
+		}
+	#if defined (S_TWI0)
+		else if (twi == S_TWI0)
+		{
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		}
+	#endif /* defined (S_TWI0) */
+		else
+		{
+			const unsigned TWIx = TWIHARD_IX;
+			CCU->BUS_CLK_GATING_REG3 |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+			CCU->BUS_SOFT_RST_REG4 &= ~ (UINT32_C(1) << (0 + TWIx));	// Assert reset
+			CCU->BUS_SOFT_RST_REG4 |= UINT32_C(1) << (0 + TWIx);	// De-assert reset
+		}
+
+		t113_i2c_set_rate(twi, sclfreq, TWIHARD_FREQ);
+
+		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
+
+		twi->TWI_SRST |= UINT32_C(1) << 0;
+		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
+			;
+	}
+#endif /* defined (TWIHARD_PTR) */
+
+#if defined (TWIHARD2_PTR)
+	{
+		TWI_TypeDef * const twi = TWIHARD2_PTR;
+		if (0)
+		{
+
+		}
+	#if defined (S_TWI0)
+		else if (twi == S_TWI0)
+		{
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		}
+	#endif /* defined (S_TWI0) */
+		else
+		{
+			const unsigned TWIx = TWIHARD2_IX;
+			CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+			CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
+			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+		}
+
+		t113_i2c_set_rate(twi, sclfreq, TWIHARD2_FREQ);
+
+		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
+
+		twi->TWI_SRST |= UINT32_C(1) << 0;
+		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
+			;
+	}
+#endif /* defined (TWIHARD_PTR) */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
@@ -2565,10 +2631,10 @@ void hardware_twi_master_configure(void)
 
 		t113_i2c_set_rate(twi, sclfreq, TWIHARD_FREQ);
 
-		twi->TWI_CNTR =  1u << 6;	// BUS_EN
+		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
 
-		twi->TWI_SRST |= 1u << 0;
-		while ((twi->TWI_SRST & (1u << 0)) != 0)
+		twi->TWI_SRST |= UINT32_C(1) << 0;
+		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
 			;
 	}
 #endif /* defined (TWIHARD_PTR) */
@@ -2598,10 +2664,10 @@ void hardware_twi_master_configure(void)
 
 		t113_i2c_set_rate(twi, sclfreq, TWIHARD2_FREQ);
 
-		twi->TWI_CNTR =  1u << 6;	// BUS_EN
+		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
 
-		twi->TWI_SRST |= 1u << 0;
-		while ((twi->TWI_SRST & (1u << 0)) != 0)
+		twi->TWI_SRST |= UINT32_C(1) << 0;
+		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
 			;
 	}
 #endif /* defined (TWIHARD_PTR) */
