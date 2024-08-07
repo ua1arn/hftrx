@@ -10622,10 +10622,12 @@ void hightests(void)
 	//hmain();
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
-		PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+		static RAMNC PACKEDCOLORPIP_T buffer [GXSIZE(DIM_X, DIM_Y)];
+		//PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 		const uint_fast16_t dx = DIM_X;
 		const uint_fast16_t dy = DIM_Y;
 
+		memset(buffer, 0x55, sizeof buffer);
 		unsigned opaque;
 
 		opaque = 255;

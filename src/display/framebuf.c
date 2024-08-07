@@ -589,6 +589,26 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 	}
 }
 
+// https://github.com/DongshanPI/D1s-Melis/blob/b289fdae3e6245c3f185259903c91e7db204cfb5/ekernel/drivers/hal/source/g2d_rcq/g2d_mixer_type.h#L375
+// ROP_INDEX structure:
+//	union g2d_mixer_rop_ch3_index0 {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int index0node0:3;
+//			unsigned int index0node1:1;
+//			unsigned int index0node2:1;
+//			unsigned int index0node3:1;
+//			unsigned int index0node4:4;
+//			unsigned int index0node5:1;
+//			unsigned int index0node6:4;
+//			unsigned int index0node7:1;
+//			unsigned int ch0ign_en:1;
+//			unsigned int ch1ign_en:1;
+//			unsigned int ch2ign_en:1;
+//			unsigned int res0:13;
+//		} bits;
+//	};
+
 static void t113_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
 	uint_fast16_t dx_UNUSED,	// ширина буфера
@@ -622,7 +642,9 @@ static void t113_fillrect(
 		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
- 		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
+		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
@@ -643,6 +665,8 @@ static void t113_fillrect(
 		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
 		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
@@ -654,9 +678,7 @@ static void t113_fillrect(
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 1, 0, 1); //0x00010001;	// G2D_BLD_COPY
-		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 0, 0, 0); //0x00000000;	// G2D_BLD_CLEAR
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(0, 0); // G2D_BLD_CLEAR
 
 	}
 
@@ -2321,6 +2343,8 @@ void hwaccel_bitblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
 
 		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
@@ -2361,6 +2385,8 @@ void hwaccel_bitblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
 
 		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
 		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
@@ -2613,6 +2639,8 @@ void hwaccel_stretchblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
 
 //		G2D_BLD->BLD_CTL = awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 //		G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
@@ -2651,6 +2679,8 @@ void hwaccel_stretchblt(
 			0;
 
 		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
 		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
 	}
 
