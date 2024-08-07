@@ -5032,20 +5032,6 @@ display2_wfl_init(
 	wfl_avg_clear();	// Сброс фильтра
 }
 
-// получить горизонтальную позицию для заданного отклонения в герцах
-// Использовать для "статической" разметки дисплея - полоса пропускания, маркер частоты приема.
-static uint_fast16_t
-deltafreq2x(
-	int_fast32_t fc_unused,	// центральная частота
-	int_fast16_t delta,	// отклонение от центральной частоты в герцах
-	int_fast32_t bw,	// полоса обзора
-	uint_fast16_t width	// ширина экрана
-	)
-{
-	const int_fast32_t dp = (delta + bw / 2) * (width - 1) / bw;
-	return dp;
-}
-
 // Получить абсолюьный пиксель горизонтальной позиции для заданой частоты
 // Значения в пикселях меньше чем частота в герцах - тип шире, чем uint_fast32_t не требуется
 static
@@ -5087,6 +5073,30 @@ deltafreq2x_abs(
 	if (pm - p0 >= width)
 		return UINT16_MAX;	// Правее правого края окна
 	return pm - p0;
+}
+
+/* координаты в пикселях информации на спектре/вожопаде */
+struct dispmap
+{
+	uint_fast16_t xcenter;
+	uint_fast16_t xleft [2];
+	uint_fast16_t xright [2];
+};
+
+static void display2_getdispmap(struct dispmap * p)
+{
+	const int_fast32_t bw = display_zoomedbw();
+	int_fast32_t f0 = hamradio_get_freq_pathi(0);	// частота центра экрана
+	const int_fast32_t fz = 10000000;	// расчёт положений отногсительно одной и той же частоты - изюежать "прыгания" ихображения при перестройке
+	unsigned pathi;
+
+	for (pathi = 0; pathi < 2; ++ pathi)
+	{
+		const int_fast32_t df = hamradio_get_freq_pathi(pathi) - f0;
+		p->xleft [pathi] = deltafreq2x_abs(fz, hamradio_getleft_bp(pathi) + df, bw, ALLDX);	// левый край шторки
+		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df, bw, ALLDX);	// правый край шторки
+	}
+	p->xcenter = deltafreq2x_abs(fz, 0, bw, ALLDX);	// маркер центральной частоты
 }
 
 static uint_fast8_t
@@ -5160,7 +5170,8 @@ display_colorgrid_set(
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
-	int_fast32_t bw		// span
+	int_fast32_t bw,		// span
+	const struct dispmap * dm
 	)
 {
 	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
@@ -5207,7 +5218,10 @@ display_colorgrid_set(
 			}
 		}
 	}
-	colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	if (dm->xcenter != UINT16_MAX)
+	{
+		colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, dm->xcenter, row0, h, color0);	// center frequency marker
+	}
 }
 
 // отрисовка маркеров частот для 3DSS
@@ -5339,80 +5353,10 @@ static void display2_spectrum(
 	dctx_t * pctx
 	)
 {
-#if HHWMG
-	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскраски растровой картинки.
-
-	if (1 || hamradio_get_tx() == 0)
-	{
-		const GTG_t gtg = { spectmonoscr, ALLDX, SPDY, };
-		uint_fast16_t x;
-		uint_fast16_t y;
-		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
-		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторуи
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
-		uint_fast16_t xmarker = deltafreq2x(f0, 0, bw, ALLDX);	// центральная частота
-
-		if (xleft > xright)
-			xleft = 0;
-		if (xright == xleft)
-			xright = xleft + 1;
-
-		// формирование растра
-		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
-
-		if (glob_fillspect == 0)
-		{
-			/* рисуем спектр ломанной линией */
-			uint_fast16_t ylast = 0;
-			// отображение спектра
-			for (x = 0; x < ALLDX; ++ x)
-			{
-				// логарифм - в вертикальную координату
-				const uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
-				if (x != 0)
-					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
-				ylast = ynew;
-			}
-		}
-		else
-		{
-			// отображение спектра заполненной зоной
-			for (x = 0; x < ALLDX; ++ x)
-			{
-				// логарифм - в вертикальную координату
-				const int yv = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);	//отображаемый уровень, yv = 0..SPDY
-				for (y = yv; y < SPDY; ++ y)
-					display_pixelbuffer(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// set точку
-			}
-		}
-		// формирование изображения шторки (XOR).
-		for (x = xleft; x <= xright; ++ x)
-		{
-			for (y = 0; y < SPDY; ++ y)
-				display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, x, SPY0 + y);	// xor точку
-		}
-		// формирование маркера центральной частоты (XOR).
-		if (xmarker < ALLDX && xmarker != xleft && xmarker != xright)
-		{
-			for (y = 0; y < SPDY; ++ y)
-				display_pixelbuffer_xor(spectmonoscr, ALLDX, SPDY, xmarker, SPY0 + y);	// xor точку
-		}
-	}
-	else
-	{
-		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
-	}
-	colmain_setcolors(DSGN_SPECTRUMBG, DSGN_SPECTRUMFG); // цвет спектра при сполошном заполнении
-
-#else /* */
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
 	(void) x0;
 	(void) y0;
 	(void) pctx;
-	const COLORPIP_T rxbwcolor = display2_rxbwcolor(DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -5421,17 +5365,8 @@ static void display2_spectrum(
 		uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(0);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
-		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
-
-		if (xleft > xright)
-			xleft = 0;
-		if (xright == xleft)
-			xright = xleft + 1;
-		if (xright >= ALLDX)
-			xright = ALLDX - 1;
-
-		const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+		struct dispmap dm;
+		display2_getdispmap(& dm);
 
 		if (0)
 		{
@@ -5440,6 +5375,18 @@ static void display2_spectrum(
 #if WITHVIEW_3DSS
 		else if (glob_view_style == VIEW_3DSS)
 		{
+			uint_fast16_t xleft = dm.xleft [0];		// левый край шторки
+			uint_fast16_t xright = dm.xright [0];	// правый край шторки
+			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+				return;
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= ALLDX)
+				xright = ALLDX - 1;
+
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 		#if WITHTOUCHGUI
 			const uint_fast16_t spy = ALLDY - FOOTER_HEIGHT - 15;
 		#else
@@ -5540,34 +5487,40 @@ static void display2_spectrum(
 		else
 		{
 			/* рисуем спектр ломанной линией */
-			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
-			if (ALLDX / (xrightv - xleft) > 8)
-			{
-				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, DSGN_SPECTRUMBG);
-			}
-			else
-			{
-				if (xleft > 0)
-				{
-					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, xleft, SPDY, DSGN_SPECTRUMBG);
-				}
-				if (xrightv < ALLDX)
-				{
-					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, DSGN_SPECTRUMBG);
-				}
-			}
+			/* стираем старый фон */
+			colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, DSGN_SPECTRUMBG);
 
 			if (! colpip_hasalpha())
 			{
-				// Изображение "шторки" под спектром.
-				if (xleft < xrightv)
+				// Изображение "шторки" на спектре.
+				uint_fast8_t splitflag;
+				uint_fast8_t pathi;
+				hamradio_get_vfomode3_value(& splitflag);
+				for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 				{
-					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
+					const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+					uint_fast16_t xleft = dm.xleft [pathi];		// левый край шторки
+					uint_fast16_t xright = dm.xright [pathi];	// правый край шторки
+					if (xleft == UINT16_MAX || xright == UINT16_MAX)
+						continue;
+					if (xleft > xright)
+						xleft = 0;
+					if (xright == xleft)
+						xright = xleft + 1;
+					if (xright >= ALLDX)
+						xright = ALLDX - 1;
+
+					const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+					// Изображение "шторки" под спектром.
+					if (xleft < xrightv)
+					{
+						colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
+					}
 				}
 			}
 
 			uint_fast16_t ylast = 0;
-			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw);	// отрисовка маркеров частот
+			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw, & dm);	// отрисовка маркеров частот
 
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
@@ -5596,21 +5549,35 @@ static void display2_spectrum(
 
 			if (colpip_hasalpha())
 			{
-				// Изображение "шторки".
-				unsigned picalpha = 128;	// Полупрозрачность
-				colpip_fillrect2(
-						colorpip, BUFDIM_X, BUFDIM_Y,
-						xleft, SPY0,
-						xrightv - xleft, SPDY, // размер окна источника
-						TFTALPHA(picalpha, DSGN_SPECTRUMBG2),
-						FILL_FLAG_NONE | FILL_FLAG_MIXBG
-					);
+				// Изображение "шторки" на спектре.
+				uint_fast8_t splitflag;
+				uint_fast8_t pathi;
+				hamradio_get_vfomode3_value(& splitflag);
+				for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+				{
+					uint_fast16_t xleft = dm.xleft [pathi];		// левый край шторки
+					uint_fast16_t xright = dm.xright [pathi];	// правый край шторки
+					if (xleft == UINT16_MAX || xright == UINT16_MAX)
+						continue;
+					if (xleft > xright)
+						xleft = 0;
+					if (xright == xleft)
+						xright = xleft + 1;
+					if (xright >= ALLDX)
+						xright = ALLDX - 1;
+					unsigned picalpha = 128;	// Полупрозрачность
+					colpip_fillrect2(
+							colorpip, BUFDIM_X, BUFDIM_Y,
+							xleft, SPY0,
+							xright + 1 - xleft, SPDY, // размер окна источника
+							TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
+							FILL_FLAG_NONE | FILL_FLAG_MIXBG
+						);
+				}
 			}
 
 		}
 	}
-
-#endif
 }
 
 // формирование данных спектра для последующего отображения
@@ -5718,50 +5685,7 @@ static void display2_waterfall(
 	dctx_t * pctx
 	)
 {
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-
-		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
-		const int_fast32_t bw = display_zoomedbw();
-		uint_fast16_t x, y;
-		const uint_fast16_t xm = deltafreq2x(f0, 0, bw, ALLDX);
-		int_fast16_t hscroll = wfclear ? ALLDX : wfhscroll;
-		(void) pctx;
-
-	#if 1
-		// следы спектра ("водопад")
-		// сдвигаем вниз, отрисовываем только верхнюю строку
-		display_scroll_down(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfvscroll, hscroll);
-		x = 0;
-		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + 0 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
-	#elif 1
-		// следы спектра ("фонтан")
-		// сдвигаем вверх, отрисовываем только нижнюю строку
-		display_scroll_up(GRID2X(x0), GRID2Y(y0) + WFY0, ALLDX, WFDY, wfvscroll, hscroll);
-		x = 0;
-		display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + WFDY - 1 + WFY0, & wfarray [wfrow] [0]);	// display_plot inside for one row
-	#else
-		// следы спектра ("водопад")
-		// отрисовываем весь экран
-		for (y = 0; y < WFDY; ++ y)
-		{
-			// отрисовка горизонтальными линиями
-			x = 0;
-			display_wfputrow(GRID2X(x0) + x, GRID2Y(y0) + y + WFY0, & wfarray [(wfrow + y) % WFDY] [0]);	// display_plot inside for one row
-		}
-	#endif
-		// Запрос на сдвиг исполнен
-		wfhscroll = 0;
-		wfvscroll = 0;
-		wfclear = 0;
-
-#elif HHWMG
-	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскраски растровой картинки.
-
-	// следы спектра ("водопад") на монохромных дисплеях
-
-#elif WITHFASTWATERFLOW || ! LCDMODE_MAIN_L8
+#if WITHFASTWATERFLOW || ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
@@ -5812,41 +5736,48 @@ static void display2_waterfall(
 
 		if (hamradio_get_bringtuneA())
 		{
-			const uint_fast8_t pathi = 0;	// RX A
-			const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
-			const int_fast32_t bw = display_zoomedbw();
-			uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
-			uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
-
-			if (xleft > xright)
-				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
-			if (xright >= ALLDX)
-				xright = ALLDX - 1;
-
-			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-
-			if (colpip_hasalpha())
+			struct dispmap dm;
+			display2_getdispmap(& dm);
+			uint_fast8_t splitflag;
+			uint_fast8_t pathi;
+			hamradio_get_vfomode3_value(& splitflag);
+			for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 			{
-				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
-				unsigned picalpha = 128;	// Полупрозрачность
-				colpip_fillrect2(
-						colorpip, BUFDIM_X, BUFDIM_Y,
-						xleft, WFY0,
-						xrightv - xleft, WFDY, // размер окна источника
-						TFTALPHA(picalpha, DSGN_SPECTRUMBG2),
-						FILL_FLAG_NONE | FILL_FLAG_MIXBG
-					);
+				uint_fast16_t xleft = dm.xleft [pathi];		// левый край шторки
+				uint_fast16_t xright = dm.xright [pathi];	// правый край шторки
 
-			}
-			else
-			{
-				const COLORPIP_T rxbwcolor = display2_rxbwcolor(DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-				// Изображение двух вертикальных линий по краям "шторки".
-				colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, WFDY, rxbwcolor);
-				colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xright, WFY0, WFDY, rxbwcolor);
-				//colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, xrightv - xleft, WFDY, COLORPIP_WHITE);
+				if (xleft != UINT16_MAX && xright != UINT16_MAX)
+				{
+					if (colpip_hasalpha())
+					{
+						if (xleft > xright)
+							xleft = 0;
+						if (xright == xleft)
+							xright = xleft + 1;
+						if (xright >= ALLDX)
+							xright = ALLDX - 1;
+
+						const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+						/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+						unsigned picalpha = 128;	// Полупрозрачность
+						colpip_fillrect2(
+								colorpip, BUFDIM_X, BUFDIM_Y,
+								xleft, WFY0,
+								xrightv - xleft, WFDY, // размер окна источника
+								TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
+								FILL_FLAG_NONE | FILL_FLAG_MIXBG
+							);
+
+					}
+					else
+					{
+						const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+						// Изображение двух вертикальных линий по краям "шторки".
+						colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, WFDY, rxbwcolor);
+						colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xright, WFY0, WFDY, rxbwcolor);
+						//colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, xrightv - xleft, WFDY, COLORPIP_WHITE);
+					}
+				}
 			}
 		}
 	}
