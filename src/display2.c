@@ -5083,6 +5083,7 @@ struct dispmap
 	uint_fast16_t xright [2];
 };
 
+/* получение оконных координат границ полосы пропускания и центра спектра */
 static void display2_getdispmap(struct dispmap * p)
 {
 	const int_fast32_t bw = display_zoomedbw();
