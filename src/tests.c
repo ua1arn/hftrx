@@ -10646,7 +10646,7 @@ void hightests(void)
 		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
 		PRINTF("green (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
-		colmain_nextfb();
+		//colmain_nextfb();
 		for (;;)
 			;
 	}

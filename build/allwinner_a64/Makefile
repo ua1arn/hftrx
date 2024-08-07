@@ -59,8 +59,8 @@ CORE += -mfpu=neon-vfpv4
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Os -flto
-#OPT = -Ofast
+#OPT = -Os -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -285,7 +285,7 @@ fsbl.alw32: $(PROJECT)_boot.bin
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 # Take from tc1_a64_boot.map
-SystemInitAddr = 0x00018b30
+SystemInitAddr = 0x0002157c
 
 # Invoke SystemInit 
 ddr_init: fsbl_frz.alw32
