@@ -12063,6 +12063,10 @@ void hightests(void)
 #endif
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
+
+		#define ICPIDR0	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE0))
+		#define ICPIDR1	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE4))
+		#define ICPIDR2	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE8))
 		// GIC version diagnostics
 		// Renesas: ARM GICv1
 		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B

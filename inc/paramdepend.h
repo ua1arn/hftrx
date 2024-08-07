@@ -1083,10 +1083,6 @@ extern "C" {
 
 	typedef uint_fast32_t IRQL_t;
 
-	#define ICPIDR0	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE0))
-	#define ICPIDR1	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE4))
-	#define ICPIDR2	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xFE8))
-
 	#if WITHNESTEDINTERRUPTS
 
 		// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
@@ -1181,7 +1177,7 @@ extern "C" {
 	#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер */
 	#define ARM_REALTIME_PRIORITY		2	/* звук */
 	#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
-	#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+	#define ARM_USER_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
@@ -1189,13 +1185,6 @@ extern "C" {
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
-
-#elif CPUSTYLE_UBLAZE
-
-	typedef uint_fast32_t IRQL_t;
-
-	#define global_enableIRQ() do { } while (0)
-	#define global_disableIRQ() do { } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
@@ -1382,7 +1371,7 @@ extern "C" {
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
-#endif /* LCDMODE_S1D13781 */
+#endif /* LCDMODE_LQ043T3DX02K */
 
 #if LCDMODE_AT070TN90	/* AT070TN90 panel (800*480) - 7" display */
 	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
@@ -1392,7 +1381,7 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_AT070TN90 */
 
-#if 1 && LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
+#if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 1024
 	#define DIM_Y 600
@@ -1400,7 +1389,7 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_AT070TNA2 */
 
-#if 1 && LCDMODE_LQ123K3LG01	/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
+#if LCDMODE_LQ123K3LG01	/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
 	#define DIM_X 1280
 	#define DIM_Y 480
 	#define LCDMODE_COLORED	1
@@ -1414,14 +1403,6 @@ extern "C" {
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_TCG104XGLPAPNN */
-
-#if 0 && LCDMODE_AT070TNA2	/* xxxx panel (1280*720) - 10" display */
-	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
-	#define DIM_X 1280
-	#define DIM_Y 720
-	#define LCDMODE_COLORED	1
-	#define LCDMODE_HORFILL	1
-#endif /* LCDMODE_AT070TNA2 */
 
 #if LCDMODE_H497TLB01P4	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
@@ -1439,7 +1420,7 @@ extern "C" {
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_RGB565 1
 	#define LCDMODE_PIXELSIZE 2
-#endif
+#endif /* LCDMODE_ILI9341 */
 
 /*
  * Выбор описателя расположения элементов, отбражаемых на дисплее.

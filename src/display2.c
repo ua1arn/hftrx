@@ -5036,7 +5036,7 @@ display2_wfl_init(
 // Использовать для "статической" разметки дисплея - полоса пропускания, маркер частоты приема.
 static uint_fast16_t
 deltafreq2x(
-	int_fast32_t fc,	// центральная частота
+	int_fast32_t fc_unused,	// центральная частота
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
 	int_fast32_t bw,	// полоса обзора
 	uint_fast16_t width	// ширина экрана
@@ -5426,8 +5426,8 @@ static void display2_spectrum(
 	// построения изображения по bitmap с раскрашиванием
 	if (1 || hamradio_get_tx() == 0)
 	{
-		const uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
+		uint_fast8_t pathi = 0;	// RX A
+		const uint_fast32_t f0 = hamradio_get_freq_pathi(0);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
 		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
@@ -5441,8 +5441,12 @@ static void display2_spectrum(
 
 		const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 
+		if (0)
+		{
+
+		}
 #if WITHVIEW_3DSS
-		if (glob_view_style == VIEW_3DSS)
+		else if (glob_view_style == VIEW_3DSS)
 		{
 			static uint_fast8_t current_3dss_step = 0;
 			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
@@ -5535,8 +5539,8 @@ static void display2_spectrum(
 
 			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
 		}
-		else
 #endif /* WITHVIEW_3DSS */
+		else
 		{
 			/* рисуем спектр ломанной линией */
 			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
