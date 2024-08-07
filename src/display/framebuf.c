@@ -290,7 +290,7 @@ static void t113_fillrect(
 	COLOR24_T color24_unused,
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	COLORPIP_T pipecolor,	// цвет
+	COLORPIP_T color,	// цвет
 	unsigned fillmask
 	)
 {
