@@ -590,8 +590,8 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 }
 
 static void t113_fillrect(
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx,	// ширина буфера
+	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
+	uint_fast16_t dx_UNUSED,	// ширина буфера
 	uintptr_t taddr,
 	uint_fast32_t tstride,
 	uint_fast32_t tsizehw,
@@ -619,9 +619,11 @@ static void t113_fillrect(
 		G2D_UI2->UI_LADD = ptr_lo32(taddr);
 		G2D_UI2->UI_HADD = ptr_hi32(taddr);
 
-		/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
-		 */
 		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+ 		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
@@ -633,28 +635,16 @@ static void t113_fillrect(
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
-
-        G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 3); // отрисовка полупрозначного прямоугольника уменьшает интенсивность цветов под ним (alpha канал не меняется)
-		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
-		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
-		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 	}
 	else
 	{
+		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 1, 0, 1); //0x00010001;	// G2D_BLD_COPY
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 0, 0, 0); //0x00000000;	// G2D_BLD_CLEAR
-
 		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
-
-		/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
-		 */
-		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
@@ -664,6 +654,10 @@ static void t113_fillrect(
 			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
 			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 			0;
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 1, 0, 1); //0x00010001;	// G2D_BLD_COPY
+		//G2D_BLD->BLD_CTL = awxx_bld_ctl(0, 0, 0, 0); //0x00000000;	// G2D_BLD_CLEAR
+
 	}
 
 	/* Write-back settings */
@@ -2314,10 +2308,10 @@ void hwaccel_bitblt(
 		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
-		/* источник когда есть совпадние ??? */
+		/* источник когда есть совпадние */
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
-		/* источник для анализа ??? */
+		/* источник для анализа */
 		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
 
