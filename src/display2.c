@@ -5089,8 +5089,6 @@ deltafreq2x_abs(
 	return pm - p0;
 }
 
-#define MARKERH 10
-
 static uint_fast8_t
 isvisibletext(
 	uint_fast16_t dx, // ширина буфера
@@ -5102,8 +5100,7 @@ isvisibletext(
 }
 
 // отрисовка маркеров частот
-static
-void
+static void
 display_colorgrid_xor(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
@@ -5112,6 +5109,7 @@ display_colorgrid_xor(
 	int_fast32_t bw		// span
 	)
 {
+	const int MARKERH = 10;
 	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
 	const COLORPIP_T color = DSGN_GRIDCOLOR2;	// макркеры частот сетки
 	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
@@ -5414,12 +5412,6 @@ static void display2_spectrum(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
-
-#if WITHTOUCHGUI
-	const uint_fast16_t spy = ALLDY - FOOTER_HEIGHT - 15;
-#else
-	const uint_fast16_t spy = ALLDY - 15;
-#endif
 	const COLORPIP_T rxbwcolor = display2_rxbwcolor(DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
@@ -5448,6 +5440,11 @@ static void display2_spectrum(
 #if WITHVIEW_3DSS
 		else if (glob_view_style == VIEW_3DSS)
 		{
+		#if WITHTOUCHGUI
+			const uint_fast16_t spy = ALLDY - FOOTER_HEIGHT - 15;
+		#else
+			const uint_fast16_t spy = ALLDY - 15;
+		#endif
 			static uint_fast8_t current_3dss_step = 0;
 			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
@@ -5562,7 +5559,7 @@ static void display2_spectrum(
 
 			if (! colpip_hasalpha())
 			{
-				// Изображение "шторки".
+				// Изображение "шторки" под спектром.
 				if (xleft < xrightv)
 				{
 					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
@@ -5834,7 +5831,6 @@ static void display2_waterfall(
 			{
 				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
 				unsigned picalpha = 128;	// Полупрозрачность
-
 				colpip_fillrect2(
 						colorpip, BUFDIM_X, BUFDIM_Y,
 						xleft, WFY0,
