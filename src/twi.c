@@ -2578,20 +2578,22 @@ void hardware_twi_master_configure(void)
 		{
 
 		}
-	#if defined (S_TWI0)
-		else if (twi == S_TWI0)
+	#if defined (R_TWI)
+		else if (twi == R_TWI)
 		{
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+			// https://github.com/torvalds/linux/blob/d4560686726f7a357922f300fc81f5964be8df04/drivers/clk/sunxi-ng/ccu-sun8i-r.c#L62
+
+			R_PRCM->APB0_CLK_GATING_REG |= (UINT32_C(1) << 6);	// R_TWI Open the clock gate
+			R_PRCM->APB0_SOFT_RST_REG &= ~ (UINT32_C(1) << 6);	// Assert R_TWI reset
+			R_PRCM->APB0_SOFT_RST_REG |= (UINT32_C(1) << 6);	// De-assert R_TWI reset
 		}
-	#endif /* defined (S_TWI0) */
+	#endif /* defined (R_TWI) */
 		else
 		{
 			const unsigned TWIx = TWIHARD2_IX;
-			CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
-			CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
-			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+			CCU->BUS_CLK_GATING_REG3 |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+			CCU->BUS_SOFT_RST_REG4 &= ~ (UINT32_C(1) << (0 + TWIx));	// Assert reset
+			CCU->BUS_SOFT_RST_REG4 |= UINT32_C(1) << (0 + TWIx);	// De-assert reset
 		}
 
 		t113_i2c_set_rate(twi, sclfreq, TWIHARD2_FREQ);
