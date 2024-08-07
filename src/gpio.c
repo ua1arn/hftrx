@@ -911,19 +911,12 @@ void sysinit_gpio_initialize(void)
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;
 
-	uint32_t reg_val;
-	// R_GPIO reset deassert
-	reg_val = readl(R_PRCM_BASE + 0xb0);
-	reg_val |= (UINT32_C(1) << 0);
-	writel(reg_val, R_PRCM_BASE+0xb0);
-
 	// R_GPIO GATING open
 	// Valid bit 7..0
 	// bit 0 = GPIO(L) gating
 	// bit 6 = TWI gating
-	reg_val = readl(R_PRCM_BASE + 0x28);
-	reg_val |= (UINT32_C(1) << 0);
-	writel(reg_val, R_PRCM_BASE+0x28);
+	R_PRCM->APB0_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+	R_PRCM->APB0_SOFT_RST_REG |= (UINT32_C(1) << 0);	// De-assert R_PIO reset
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 

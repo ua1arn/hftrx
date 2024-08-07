@@ -2,6 +2,9 @@
 #base; R_PRCM 0x01F01400
 #regdef; CPUS_CLK_REG; 0x0000; CPUS Clock Register
 #regdef; APB0_CFG_REG; 0x000C; APB0 Configuration Register
+
+# https://github.com/torvalds/linux/blob/d4560686726f7a357922f300fc81f5964be8df04/drivers/clk/sunxi-ng/ccu-sun8i-r.c#L62
+
 #regdef; APB0_CLK_GATING_REG; 0x0028; APB0 Clock Gating Register
 #regdef; PLL_CTRL_REG1; 0x0044; PLL Control Register 1
 #regdef; R_CIR_RX_CLK_REG; 0x0054; R_CIR_RX Clock Register
