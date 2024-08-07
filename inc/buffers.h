@@ -862,6 +862,14 @@ void save_dmabuffercolmain1fb(uintptr_t addr); /* save to queue Frame buffer for
 int_fast32_t cachesize_dmabuffercolmain1fb(void); /* parameter for cache manipulation functions Frame buffer for display 1 (HDMI) */
 int_fast32_t datasize_dmabuffercolmain1fb(void); /* parameter for DMA Frame buffer for display 1 (HDMI) */
 
+/* Ethernet0 buffers */
+uintptr_t allocate_dmabuffereth0io(void); /* take free buffer Ethernet0 buffers */
+uintptr_t getfilled_dmabuffereth0io(void); /* take from queue Ethernet0 buffers */
+void release_dmabuffereth0io(uintptr_t addr);  /* release Ethernet0 buffers */
+void save_dmabuffereth0io(uintptr_t addr); /* save to queue Ethernet0 buffers */
+int_fast32_t cachesize_dmabuffereth0io(void); /* parameter for cache manipulation functions Ethernet0 buffers */
+int_fast32_t datasize_dmabuffereth0io(void); /* parameter for DMA Ethernet0 buffers */
+
 //-----------------------
 
 /* audio samples for recording */

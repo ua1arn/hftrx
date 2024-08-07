@@ -56,6 +56,8 @@ static const struct params params0 [] =
 	{	"colmain0fb",	"Frame buffer for display 0", },
 	{	"colmain1fb",	"Frame buffer for display 1 (HDMI)", },
 
+	{	"eth0io",	"Ethernet0 buffers", },
+
 };
 
 int main(int argc, char* argv[])

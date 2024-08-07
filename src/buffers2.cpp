@@ -1508,6 +1508,69 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 
+#if 0
+
+typedef struct
+{
+	ALIGNX_BEGIN  uint8_t buff [1500] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	enum { ss = 2, nch = 2 };
+} eth0io_t;
+
+typedef buffitem<eth0io_t> eth0iobuf_t;
+
+static RAMNC eth0iobuf_t eth0iobuf [33];	// количество буферов
+
+typedef dmahandle<int_fast16_t, eth0iobuf_t, 1, 1> eth0iodma_t;
+
+static eth0iodma_t eth0iodma(IRQL_REALTIME, "eth0io", eth0iobuf, ARRAY_SIZE(eth0iobuf));
+
+/* Ethernet0 buffers */
+// can not be zero
+uintptr_t allocate_dmabuffereth0io(void)
+{
+	eth0io_t * dest;
+	while (! eth0iodma.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
+// can not be zero
+uintptr_t getfilled_dmabuffereth0io(void)
+{
+	eth0io_t * dest;
+	while (! eth0iodma.get_readybuffer(& dest) && ! eth0iodma.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+	return 0;
+}
+
+void save_dmabuffereth0io(uintptr_t addr)
+{
+	eth0io_t * const p = CONTAINING_RECORD(addr, eth0io_t, buff);
+	eth0iodma.save_buffer(p);
+}
+
+
+void release_dmabuffereth0io(uintptr_t addr)
+{
+	eth0io_t * const p = CONTAINING_RECORD(addr, eth0io_t, buff);
+	ASSERT(p->tag == BUFFTAG_RTS96);
+	eth0iodma.release_buffer(p);
+}
+
+int_fast32_t cachesize_dmabuffereth0io(void) /* parameter for cache manipulation functions Ethernet0 buffers */
+{
+	return eth0iodma.get_cachesize();
+}
+
+int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffers */
+{
+	return eth0iodma.get_datasize();
+}
+
+#endif
+
 #if WITHUSEUSBBT
 
 #define BTSSCALE 20
