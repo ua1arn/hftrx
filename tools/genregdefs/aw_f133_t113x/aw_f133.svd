@@ -6563,7 +6563,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>4</dim>
+    <dim>2</dim>
     <addressOffset>0x00000010</addressOffset>
     <register>
      <name>BLD_FILL_COLOR</name>
@@ -6574,10 +6574,10 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
    <cluster>
-    <dim>4</dim>
+    <dim>2</dim>
     <addressOffset>0x00000020</addressOffset>
     <register>
      <name>BLD_CH_ISIZE</name>
@@ -6588,10 +6588,10 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
    <cluster>
-    <dim>4</dim>
+    <dim>2</dim>
     <addressOffset>0x00000030</addressOffset>
     <register>
      <name>BLD_CH_OFFSET</name>
@@ -6602,7 +6602,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x008</dimIncrement>
    </cluster>
    <register>
     <name>BLD_PREMUL_CTL</name>
@@ -6700,7 +6700,7 @@
     <register>
      <name>ROP_INDEX</name>
      <displayName>ROP_INDEX</displayName>
-     <description>ROP_INDEX N=0..1     </description>
+     <description>ROP_INDEX N=0..1 ch3_index0 (tina linux sources has two elements)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>

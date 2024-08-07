@@ -1304,9 +1304,12 @@ typedef __PACKED_STRUCT G2D_BLD_Type
 {
     __IO uint32_t BLD_FILL_COLOR_CTL;                 /*!< Offset 0x000 BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106   */
          uint32_t reserved_0x004 [0x0003];
-    __IO uint32_t BLD_FILL_COLOR [0x004];             /*!< Offset 0x010 BLD_FILLC  N=0..1  */
-    __IO uint32_t BLD_CH_ISIZE [0x004];               /*!< Offset 0x020 BLD_CH_ISIZE N=0..1   */
-    __IO uint32_t BLD_CH_OFFSET [0x004];              /*!< Offset 0x030 BLD_CH_OFFSET N=0..1 */
+    __IO uint32_t BLD_FILL_COLOR [0x002];             /*!< Offset 0x010 BLD_FILLC  N=0..1  */
+         uint32_t reserved_0x018 [0x0002];
+    __IO uint32_t BLD_CH_ISIZE [0x002];               /*!< Offset 0x020 BLD_CH_ISIZE N=0..1   */
+         uint32_t reserved_0x028 [0x0002];
+    __IO uint32_t BLD_CH_OFFSET [0x002];              /*!< Offset 0x030 BLD_CH_OFFSET N=0..1 */
+         uint32_t reserved_0x038 [0x0002];
     __IO uint32_t BLD_PREMUL_CTL;                     /*!< Offset 0x040 BLD_PREMUL_CTL      */
     __IO uint32_t BLD_BK_COLOR;                       /*!< Offset 0x044 BLD_BK_COLOR        */
     __IO uint32_t BLD_SIZE;                           /*!< Offset 0x048 BLD_SIZE            */
@@ -1318,7 +1321,7 @@ typedef __PACKED_STRUCT G2D_BLD_Type
     __IO uint32_t BLD_OUT_COLOR;                      /*!< Offset 0x060 BLD_OUT_COLOR       */
          uint32_t reserved_0x064 [0x0007];
     __IO uint32_t ROP_CTL;                            /*!< Offset 0x080 ROP_CTL             */
-    __IO uint32_t ROP_INDEX [0x004];                  /*!< Offset 0x084 ROP_INDEX N=0..1      */
+    __IO uint32_t ROP_INDEX [0x004];                  /*!< Offset 0x084 ROP_INDEX N=0..1 ch3_index0 (tina linux sources has two elements) */
          uint32_t reserved_0x094 [0x001B];
     __IO uint32_t BLD_CSC_CTL;                        /*!< Offset 0x100 BLD_CSC_CTL         */
          uint32_t reserved_0x104 [0x0003];

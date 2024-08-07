@@ -29,9 +29,9 @@
 #base; G2D_BLD 0x05410400
 
 #regdef; BLD_FILL_COLOR_CTL	; 0x000 ; BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106  
-#regdef; BLD_FILL_COLOR		; 0x010 4 ; BLD_FILLC  N=0..1 
-#regdef; BLD_CH_ISIZE     	; 0x020 4; BLD_CH_ISIZE N=0..1  
-#regdef; BLD_CH_OFFSET    	; 0x030 4 ; BLD_CH_OFFSET N=0..1
+#regdef; BLD_FILL_COLOR		; 0x010 2 ; BLD_FILLC  N=0..1 
+#regdef; BLD_CH_ISIZE     	; 0x020 2; BLD_CH_ISIZE N=0..1  
+#regdef; BLD_CH_OFFSET    	; 0x030 2 ; BLD_CH_OFFSET N=0..1
 #regdef; BLD_PREMUL_CTL    ; 0x040 ; BLD_PREMUL_CTL     
 #regdef; BLD_BK_COLOR      ; 0x044 ; BLD_BK_COLOR       
 #regdef; BLD_SIZE          ; 0x048 ; BLD_SIZE           
@@ -42,7 +42,7 @@
 #regdef; BLD_KEY_MIN       ; 0x05C ; BLD_KEY_MIN        
 #regdef; BLD_OUT_COLOR     ; 0x060 ; BLD_OUT_COLOR      
 #regdef; ROP_CTL           ; 0x080 ; ROP_CTL            
-#regdef; ROP_INDEX         ; 0x084 4; ROP_INDEX N=0..1     
+#regdef; ROP_INDEX         ; 0x084 4; ROP_INDEX N=0..1 ch3_index0 (tina linux sources has two elements)
 #regdef; BLD_CSC_CTL       ; 0x100 ; BLD_CSC_CTL        
 #regdef; BLD_CSC0_COEF00   ; 0x110 ; BLD_CSC0_COEF00    
 #regdef; BLD_CSC0_COEF01   ; 0x114 ; BLD_CSC0_COEF01    
