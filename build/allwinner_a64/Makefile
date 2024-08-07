@@ -284,11 +284,16 @@ bootloader: BOOT2
 SystemInitAddr = 0x000221b8
 
 # Invoke SystemInit 
-boot_run: fsbl_frz.alw32
+ddr_init: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr)
 
-app_run: $(PROJECT)_app.alw32 boot_run
+# test bootloader
+_app_run: fsbl.alw32
+	$(XFEL) write 0x00018000 fsbl.alw32
+	$(XFEL) exec 0x00018000 
+
+app_run: $(PROJECT)_app.alw32 ddr_init
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 
