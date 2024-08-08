@@ -9213,10 +9213,11 @@ hamradio_getleft_bp(uint_fast8_t pathi)
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t forcelsb = getforcelsb(freq);
-	const uint_fast8_t alsbmode = getsubmodelsb(gsubmode, forcelsb);	// Принимаемая модуляция на нижней боковой
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t submode = gsubmode;	// TODO: брать модуляцию нужного приемника
+	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
-	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const uint_fast8_t mode = submodes [submode].mode;
 	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
 
 	switch (mode)
@@ -9240,10 +9241,11 @@ hamradio_getright_bp(uint_fast8_t pathi)
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t forcelsb = getforcelsb(freq);
-	const uint_fast8_t alsbmode = getsubmodelsb(gsubmode, forcelsb);	// Принимаемая модуляция на нижней боковой
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const uint_fast8_t submode = gsubmode;	// TODO: брать модуляцию нужного приемника
+	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
+	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
-	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const uint_fast8_t mode = submodes [submode].mode;
 	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
 
 	switch (mode)
