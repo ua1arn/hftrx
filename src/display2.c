@@ -4808,7 +4808,6 @@ struct dispmap
 	int_fast32_t f0pix;
 	int_fast32_t bw;
 	int_fast32_t f0;	// частота центра экрана
-	int_fast32_t pixleft;	// абсолютный пиксель левого края окна
 };
 
 static int_fast32_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
@@ -5066,14 +5065,17 @@ deltafreq2abspix(
 // Возврат UINT16_MAX при невозможности отобразить запрошенную частоту в указанном окне
 static
 uint_fast16_t
-deltafreq2x_wnd(
-	int_fast32_t fm,	// частота маркера
+deltafreq2x_abs(
+	int_fast32_t f0,	// центральная частота в герцах
+	int_fast16_t delta,	// отклонение от центральной частоты в герцах
 	int_fast32_t bw,	// полоса обзора в герцах
-	uint_fast16_t width,	// ширина экрана в пикселях
-	int_fast32_t pixleft	// абсолютный пиксель левого края окна
+	uint_fast16_t width	// ширина экрана в пикселях
 	)
 {
+	const int_fast32_t fm = f0 + delta;	// частота маркера
 	const int_fast32_t pm = deltafreq2abspix(fm, bw, width);	// абсолютный пиксель маркера
+	const int_fast32_t freqleft = f0 - bw / 2;	// частота левого края окна
+	const int_fast32_t pixleft = deltafreq2abspix(freqleft, bw, width);	// абсолютный пиксель левого края окна
 
 	if (pm < pixleft)
 		return UINT16_MAX;	// Левее левого края окна
@@ -5083,28 +5085,23 @@ deltafreq2x_wnd(
 }
 
 /* получение оконных координат границ полосы пропускания и центра спектра */
-static void display2_getdispmap(
-		struct dispmap * p
-		)
+static void display2_getdispmap(struct dispmap * p)
 {
-	const int_fast32_t fz = 10000000;	// расчёт положений относительно одной и той же частоты - избежать "прыгания" изображения при перестройке
 	const int_fast32_t bw = display_zoomedbw();
 	const int_fast32_t f0 = hamradio_get_freq_pathi(0);	// частота центра экрана
-	const int_fast32_t freqleft = f0 - bw / 2;	// частота левого края окна
-	const int_fast32_t pixleft = deltafreq2abspix(freqleft, bw, ALLDX);	// абсолютный пиксель левого края окна
+	const int_fast32_t fz = 10000000;	// расчёт положений отногсительно одной и той же частоты - изюежать "прыгания" ихображения при перестройке
 	unsigned pathi;
 
 	for (pathi = 0; pathi < 2; ++ pathi)
 	{
 		const int_fast32_t df = hamradio_get_freq_pathi(pathi) - f0;
-		p->xleft [pathi] = deltafreq2x_wnd(fz + hamradio_getleft_bp(pathi) + df, bw, ALLDX, pixleft);	// левый край шторки
-		p->xright [pathi] = deltafreq2x_wnd(fz + hamradio_getright_bp(pathi) + df, bw, ALLDX, pixleft);	// правый край шторки
+		p->xleft [pathi] = deltafreq2x_abs(fz, hamradio_getleft_bp(pathi) + df, bw, ALLDX);	// левый край шторки
+		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df, bw, ALLDX);	// правый край шторки
 	}
-	p->xcenter = deltafreq2x_wnd(fz, bw, ALLDX, pixleft);	// маркер центральной частоты
+	p->xcenter = deltafreq2x_abs(fz, 0, bw, ALLDX);	// маркер центральной частоты
 	p->f0pix = deltafreq2abspix(f0, bw, ALLDX);	/* pixel of frequency at middle of spectrum */
 	p->bw = bw;
 	p->f0 = f0;
-	p->pixleft = pixleft;
 }
 
 static uint_fast8_t
@@ -5115,6 +5112,53 @@ isvisibletext(
 	)
 {
 	return (x + w) <= dx;
+}
+
+// отрисовка маркеров частот
+static void
+display_colorgrid_xor(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
+	uint_fast16_t h,	// высота
+	int_fast32_t f0,	// center frequency
+	int_fast32_t bw		// span
+	)
+{
+	const int MARKERH = 10;
+	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
+	const COLORPIP_T color = DSGN_GRIDCOLOR2;	// макркеры частот сетки
+	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
+
+	//
+	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t halfbw = bw / 2;
+	int_fast32_t df;	// кратное сетке значение
+	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
+	{
+		if (df > - halfbw)
+		{
+			uint_fast16_t xmarker;
+			// Маркер частоты кратной glob_gridstep - XOR линию
+			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			if (xmarker != UINT16_MAX)
+			{
+				char buf2 [16];
+				uint_fast16_t freqw;	// ширина строки со значением частоты
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+				freqw = strwidth3(buf2);
+				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(BUFDIM_X, xtext, freqw))
+				{
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, colordigits);
+					colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
+				}
+				else
+					colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
+			}
+		}
+	}
+	colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
 // Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
@@ -5161,7 +5205,7 @@ display_colorgrid_set(
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			const uint_fast16_t xmarker = deltafreq2x_wnd(f0 + df, bw, ALLDX, dm->pixleft);
+			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
@@ -5209,7 +5253,7 @@ display_colorgrid_3dss(
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			xmarker = deltafreq2x_wnd(f0 + df, bw, ALLDX, latched_dm.pixleft);
+			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
