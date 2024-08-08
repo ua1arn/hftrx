@@ -4798,11 +4798,24 @@ dsp_getspectrumrow(
 enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 //enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
 
+
+/* координаты в пикселях информации на спектре/вожопаде */
+struct dispmap
+{
+	uint_fast16_t xcenter;
+	uint_fast16_t xleft [2];
+	uint_fast16_t xright [2];
+	int_fast32_t f0pix;
+	int_fast32_t bw;
+	int_fast32_t f0;	// частота центра экрана
+};
+
 static int_fast32_t wffreqpix;			// глобальный пиксель по x центра спектра, для которой в последной раз отрисовали.
 static uint_fast8_t wfzoompow2;				// масштаб, с которым выводили спектр
 static int_fast16_t wfhscroll;			// сдвиг по шоризонтали (отрицаельный - влево) для водопада.
 static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в рабочем направлении) для водопада.
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
+struct dispmap latched_dm;
 
 
 #if WITHVIEW_3DSS
@@ -5047,47 +5060,35 @@ deltafreq2abspix(
 	return pc;
 }
 
-// получить горизонтальную позицию для заданного отклонения в герцах
+// получить горизонтальную позицию в окне для заданного отклонения в герцах
 // Использовать для "динамической" разметки дисплея - риски, кратные 10 кГц.
 // Возврат UINT16_MAX при невозможности отобразить запрошенную частоту в указанном окне
 static
 uint_fast16_t
 deltafreq2x_abs(
-	int_fast32_t fc,	// центральная частота
+	int_fast32_t f0,	// центральная частота в герцах
 	int_fast16_t delta,	// отклонение от центральной частоты в герцах
-	int_fast32_t bw,	// полоса обзора
-	uint_fast16_t width	// ширина экрана
+	int_fast32_t bw,	// полоса обзора в герцах
+	uint_fast16_t width	// ширина экрана в пикселях
 	)
 {
-	const int_fast32_t fm = fc + delta;	// частота маркера
+	const int_fast32_t fm = f0 + delta;	// частота маркера
 	const int_fast32_t pm = deltafreq2abspix(fm, bw, width);	// абсолютный пиксель маркера
-	const int_fast32_t f0 = fc - bw / 2;	// частота левого края окна
-	const int_fast32_t p0 = deltafreq2abspix(f0, bw, width);	// абсолютный пиксель левого края окна
+	const int_fast32_t freqleft = f0 - bw / 2;	// частота левого края окна
+	const int_fast32_t pixleft = deltafreq2abspix(freqleft, bw, width);	// абсолютный пиксель левого края окна
 
-//	if (fm < 0)
-//		return UINT16_MAX;	// частота маркера края выходит за пределы представимого
-//	if (f0 < 0)
-//		return UINT16_MAX;	// частота левого края выходит за пределы представимого
-	if (pm < p0)
+	if (pm < pixleft)
 		return UINT16_MAX;	// Левее левого края окна
-	if (pm - p0 >= width)
+	if ((pm - pixleft) >= (int) width)
 		return UINT16_MAX;	// Правее правого края окна
-	return pm - p0;
+	return pm - pixleft;
 }
-
-/* координаты в пикселях информации на спектре/вожопаде */
-struct dispmap
-{
-	uint_fast16_t xcenter;
-	uint_fast16_t xleft [2];
-	uint_fast16_t xright [2];
-};
 
 /* получение оконных координат границ полосы пропускания и центра спектра */
 static void display2_getdispmap(struct dispmap * p)
 {
 	const int_fast32_t bw = display_zoomedbw();
-	int_fast32_t f0 = hamradio_get_freq_pathi(0);	// частота центра экрана
+	const int_fast32_t f0 = hamradio_get_freq_pathi(0);	// частота центра экрана
 	const int_fast32_t fz = 10000000;	// расчёт положений отногсительно одной и той же частоты - изюежать "прыгания" ихображения при перестройке
 	unsigned pathi;
 
@@ -5098,6 +5099,9 @@ static void display2_getdispmap(struct dispmap * p)
 		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df, bw, ALLDX);	// правый край шторки
 	}
 	p->xcenter = deltafreq2x_abs(fz, 0, bw, ALLDX);	// маркер центральной частоты
+	p->f0pix = deltafreq2abspix(f0, bw, ALLDX);	/* pixel of frequency at middle of spectrum */
+	p->bw = bw;
+	p->f0 = f0;
 }
 
 static uint_fast8_t
@@ -5364,10 +5368,6 @@ static void display2_spectrum(
 	if (1 || hamradio_get_tx() == 0)
 	{
 		uint_fast8_t pathi = 0;	// RX A
-		const uint_fast32_t f0 = hamradio_get_freq_pathi(0);	/* frequency at middle of spectrum */
-		const int_fast32_t bw = display_zoomedbw();
-		struct dispmap dm;
-		display2_getdispmap(& dm);
 
 		if (0)
 		{
@@ -5376,8 +5376,10 @@ static void display2_spectrum(
 #if WITHVIEW_3DSS
 		else if (glob_view_style == VIEW_3DSS)
 		{
-			uint_fast16_t xleft = dm.xleft [0];		// левый край шторки
-			uint_fast16_t xright = dm.xright [0];	// правый край шторки
+			const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
+			const int_fast32_t bw = latched_dm.bw;
+			uint_fast16_t xleft = latched_dm.xleft [0];		// левый край шторки
+			uint_fast16_t xright = latched_dm.xright [0];	// правый край шторки
 			if (xleft == UINT16_MAX || xright == UINT16_MAX)
 				return;
 			if (xleft > xright)
@@ -5487,6 +5489,8 @@ static void display2_spectrum(
 #endif /* WITHVIEW_3DSS */
 		else
 		{
+			const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
+			const int_fast32_t bw = latched_dm.bw;
 			/* рисуем спектр ломанной линией */
 			/* стираем старый фон */
 			colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, 0, SPY0, ALLDX, SPDY, DSGN_SPECTRUMBG);
@@ -5500,8 +5504,8 @@ static void display2_spectrum(
 				for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 				{
 					const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-					uint_fast16_t xleft = dm.xleft [pathi];		// левый край шторки
-					uint_fast16_t xright = dm.xright [pathi];	// правый край шторки
+					uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+					uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
 					if (xleft == UINT16_MAX || xright == UINT16_MAX)
 						continue;
 					if (xleft > xright)
@@ -5521,7 +5525,7 @@ static void display2_spectrum(
 			}
 
 			uint_fast16_t ylast = 0;
-			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw, & dm);	// отрисовка маркеров частот
+			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
@@ -5556,8 +5560,8 @@ static void display2_spectrum(
 				hamradio_get_vfomode3_value(& splitflag);
 				for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 				{
-					uint_fast16_t xleft = dm.xleft [pathi];		// левый край шторки
-					uint_fast16_t xright = dm.xright [pathi];	// правый край шторки
+					uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+					uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
 					if (xleft == UINT16_MAX || xright == UINT16_MAX)
 						continue;
 					if (xleft > xright)
@@ -5596,8 +5600,7 @@ static void display2_latchwaterfall(
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
-	const int_fast32_t bw = display_zoomedbw();
-	const int_fast32_t f0pix = deltafreq2abspix(hamradio_get_freq_pathi(pathi), bw, ALLDX);	/* pixel of frequency at middle of spectrum */
+	display2_getdispmap(& latched_dm);
 
 	int_fast16_t hscroll = 0;
 	uint_fast8_t hclear = 0;
@@ -5607,14 +5610,14 @@ static void display2_latchwaterfall(
 		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
 		hclear = 1;
 	}
-	else if (wffreqpix == f0pix)
+	else if (wffreqpix == latched_dm.f0pix)
 	{
 		// не менялась частота (в видимых пикселях)
 	}
-	else if (wffreqpix > f0pix)
+	else if (wffreqpix > latched_dm.f0pix)
 	{
 		// частота уменьшилась - надо сдвигать картинку вправо
-		const uint_fast32_t deltapix = wffreqpix - f0pix;
+		const uint_fast32_t deltapix = wffreqpix - latched_dm.f0pix;
 		if (deltapix < ALLDX / 2)
 		{
 			hscroll = (int_fast16_t) deltapix;
@@ -5627,10 +5630,10 @@ static void display2_latchwaterfall(
 			hclear = 1;
 		}
 	}
-	else if (wffreqpix < f0pix)
+	else if (wffreqpix < latched_dm.f0pix)
 	{
 		// частота увеличилась - надо сдвигать картинку влево
-		const uint_fast32_t deltapix = f0pix - wffreqpix;
+		const uint_fast32_t deltapix = latched_dm.f0pix - wffreqpix;
 		if (deltapix < ALLDX / 2)
 		{
 			hscroll = - (int_fast16_t) deltapix;
@@ -5672,7 +5675,7 @@ static void display2_latchwaterfall(
 		}
 	}
 
-	wffreqpix = f0pix;
+	wffreqpix = latched_dm.f0pix;
 	wfzoompow2 = glob_zoomxpow2;
 	wfhscroll += hscroll;
 	wfvscroll = wfvscroll < WFDY ? wfvscroll + 1 : WFDY;
@@ -5737,15 +5740,13 @@ static void display2_waterfall(
 
 		if (hamradio_get_bringtuneA())
 		{
-			struct dispmap dm;
-			display2_getdispmap(& dm);
 			uint_fast8_t splitflag;
 			uint_fast8_t pathi;
 			hamradio_get_vfomode3_value(& splitflag);
 			for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 			{
-				uint_fast16_t xleft = dm.xleft [pathi];		// левый край шторки
-				uint_fast16_t xright = dm.xright [pathi];	// правый край шторки
+				uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+				uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
 
 				if (xleft != UINT16_MAX && xright != UINT16_MAX)
 				{
