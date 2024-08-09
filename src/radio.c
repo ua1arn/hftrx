@@ -13718,9 +13718,9 @@ static void
 cat_answervariable(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	//PRINTF(PSTR("cat_answervariable: '%*.*s'"), len, len, p);
+	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
 
-#if WITHUSBHW && WITHUSBCDCACM
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
 	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -13733,7 +13733,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	catstateout = CATSTATEO_SENDREADY;
 	LowerIrql(oldIrql);
 	return;
-#endif /* WITHUSBHW && WITHUSBCDCACM */
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 
 	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
