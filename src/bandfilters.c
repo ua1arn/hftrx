@@ -484,8 +484,6 @@ void bandf_calc_initialize(void)
 
 #elif \
 	CTLREGMODE_RAVENDSP_V1 || /* Трансивер Вороненок с IF DSP трактом */ \
-	CTLREGMODE_RAVENDSP_V3 || /* "Воронёнок" с DSP и FPGA */ \
-	CTLREGMODE_RAVENDSP_V4 || \
 	CTLREGMODE_RAVENDSP_V5 || \
 	CTLREGMODE_RAVENDSP_V6 || \
 	CTLREGMODE_RAVENDSP_V7 || \

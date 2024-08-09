@@ -293,12 +293,12 @@ board_ctlregs_spi_send_frame(
 	#include "chip/r820t.h"
 #endif /* XVTR_R820T2 */
 
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
+#if CTLREGMODE_RAVENDSP_V5
 
 	static uint_fast8_t flag_ctldacreg;	/* признак модификации теневых значений. Требуется вывод в регистры */
 	static uint_fast8_t flag_ctrlreg;	/* признак модификации теневых значений. Требуется вывод в регистры */
 
-#elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
+#elif (ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 
 	static uint_fast8_t flag_rxctrlreg;	/* признак модификации теневых значений. Требуется вывод в регистры */
 	static uint_fast8_t flag_ctldacreg;	/* признак модификации теневых значений. Требуется вывод в регистры */
@@ -2734,185 +2734,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
-#elif CTLREGMODE_RAVENDSP_V3	// трансивер "Воронёнок" с DSP и FPGA
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// трансивер "Воронёнок" с DSP и FPGA
-static void 
-//NOINLINEAT
-prog_rxctrlreg(uint_fast8_t plane)
-{
-	// registers chain control register
-	{
-		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
-		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
-		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
-
-		enum
-		{
-			HARDWARE_OPA2674I_FULLPOWER = 0x03,
-			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-			HARDWARE_OPA2674I_SHUTDOWN = 0x00
-		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
-		{
-			HARDWARE_OPA2674I_IDLEPOWER,
-			HARDWARE_OPA2674I_POWERCUTBACK,
-			HARDWARE_OPA2674I_FULLPOWER,
-		};
-
-		const spitarget_t target = targetctl1;
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
-
-		rbtype_t rbbuff [6] = { 0 };
-
-		// STP08CP05TTR на части передатчика
-		RBNULL(054, 4);
-		RBVAL(052, ~ (txgated ? powerxlat [glob_stage2level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 2
-		RBVAL(050, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-
-		// STP08CP05TTR на части передатчика
-		RBVAL8(040, 1U << glob_bandf2);		// D0..D7: band select бит выбора диапазонного фильтра передатчика
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL8(030, glob_tx ? 0 : (1U << glob_bandf));		// D0..D7: band select бит выбора диапазонного фильтра приёмника
-
-		// STP08CP05TTR DD3 в управлении диапазонными фильтрами приёмника
-		RBVAL(026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBNULL(024, 2);
-		RBBIT(023, glob_tx);				// OUT3 (pin 08): переключение антенного реле - в макетах
-		RBNULL(021, 2);
-		RBBIT(020, glob_bandf == 0);		// OUT0 (pin 05): средневолновый ФНЧ
-
-		// SN74HC595PW рядом с DIN8
-		RBNULL(014, 4);
-		RBVAL(010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
-
-		// STP08CP05TTR рядом с DIN8
-		RBNULL(007, 1);
-		RBBIT(006, glob_tx);				// D6: ext ptt signal
-		RBBIT(005, glob_bandf == 0);		// D5: средневолновый ФНЧ - управление реле
-		RBNULL(003, 2);
-		RBVAL(001, (glob_bglight - WITHLCDBACKLIGHTMIN), 2);	/* D2:D1 - LCD backlight */
-		RBBIT(000, glob_kblight);			/* D0: keyboard backlight */
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
-static void 
-//NOINLINEAT
-prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V3
-{
-	const spitarget_t target = targetdac1;
-	// Выдача кода на цифровой потенциометр AD5260BRUZ50 в управлении частотой опорного генератора
-
-	IRQL_t irql
-	spi_operate_lock(& irql);
-	spi_select(target, CTLREG_SPIMODE);
-	spi_progval8_p1(target, glob_dac1);
-	spi_complete(target);
-	spi_unselect(target);
-	spi_operate_unlock(irql);
-}
-
-#elif CTLREGMODE_RAVENDSP_V4	// "Воронёнок" с DSP и FPGA, SD-CARD
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// "Воронёнок" с DSP и FPGA, SD-CARD
-static void 
-//NOINLINEAT
-prog_rxctrlreg(uint_fast8_t plane)
-{
-	// registers chain control register
-	{
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
-		const uint_fast8_t attvalue2db = glob_attvalue / 2;
-		const uint_fast8_t attvalue2dbhalf = attvalue2db / 2;
-		// подготовка кодов для управления аттенюаторами
-		const uint_fast8_t attvalue1 = (attvalue2dbhalf);
-		const uint_fast8_t attvalue2 = (attvalue2db - attvalue2dbhalf);
-
-		//PRINTF(PSTR("a1=%u, a2=%u\n"), attvalue1, attvalue2);
-
-		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
-		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
-		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
-
-		enum
-		{
-			HARDWARE_OPA2674I_FULLPOWER = 0x03,
-			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-			HARDWARE_OPA2674I_SHUTDOWN = 0x00
-		};
-		/*
-		static const FLASHMEM uint_fast8_t powerxlat [] =
-		{
-			HARDWARE_OPA2674I_IDLEPOWER,
-			HARDWARE_OPA2674I_POWERCUTBACK,
-			HARDWARE_OPA2674I_FULLPOWER,
-		};
-		*/
-		const spitarget_t target = targetctl1;
-
-		rbtype_t rbbuff [6] = { 0 };
-		// Полный вариант сборки платы
-		// 74HC595 управление программируемым аттенюатором AT-220
-		RBVAL(056, 2 - ((attvalue1 & 0x01) != 0), 2);
-		RBVAL(054, 2 - ((attvalue1 & 0x02) != 0), 2);
-		RBVAL(052, 2 - ((attvalue1 & 0x04) != 0), 2);
-		RBVAL(050, 2 - ((attvalue1 & 0x08) != 0), 2);
-
-		// 74HC595 управление программируемым аттенюатором AT-220
-		RBVAL(046, 2 - ((attvalue2 & 0x01) != 0), 2);
-		RBVAL(044, 2 - ((attvalue2 & 0x02) != 0), 2);
-		RBVAL(042, 2 - ((attvalue2 & 0x04) != 0), 2);
-		RBVAL(040, 2 - ((attvalue2 & 0x08) != 0), 2);
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL8(030, glob_tx ? 0 : (1U << glob_bandf));		// D0..D7: band select бит выбора диапазонного фильтра приёмника
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBBIT(021, txgated);				// D1: ~PA BIAS
-		RBBIT(020, glob_bandf == 0);		// D0: средневолновый ФНЧ
-
-		// SN74HC595PW рядом с DIN8
-		RBNULL(014, 4);
-		RBVAL(010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
-
-		// STP08CP05TTR рядом с DIN8
-		RBNULL(007, 1);
-		RBBIT(006, glob_tx);				// D6: EXT PTT signal
-		RBBIT(005, glob_bandf == 0);		// D5: средневолновый ФНЧ - управление реле
-		RBBIT(004, glob_sdcardpoweron);		/* D4: SD CARD POWER */
-		RBBIT(003, lcdblcode & 0x02);		/* D3	- LCD backlight */
-		RBBIT(002, lcdblcode & 0x02);		/* D2	- LCD backlight */
-		RBBIT(001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(000, glob_preamp && glob_bandf != 0 /*glob_kblight*/);			/* D0: keyboard backlight заменён на внешнее управление УВЧ */
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
-static void 
-//NOINLINEAT
-prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V4
-{
-	const spitarget_t target = targetdac1;
-	// Выдача кода на цифровой потенциометр AD5260BRUZ50 в управлении частотой опорного генератора
-
-	IRQL_t irql
-	spi_operate_lock(& irql);
-	spi_select(target, CTLREG_SPIMODE);
-	spi_progval8_p1(target, glob_dac1);
-	spi_complete(target);
-	spi_unselect(target);
-	spi_operate_unlock(irql);
-}
 
 #elif CTLREGMODE_RAVENDSP_V5	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -4591,154 +4412,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
-#elif CTLREGMODE_V7_ARM //ARM_CTLSTYLE_V7_H_INCLUDED	//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором, 6 ГУН
-
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-/* ctl register interface */
-static void 
-//NOINLINEAT
-prog_ctldacreg(void)	// CTLSTYLE_V7 @ ARM
-{
-	const spitarget_t target = targetctldac1;
-#if defined (LO1MODE_HYBRID) || defined (LO1MODE_FIXSCALE)
-	const uint_fast8_t vcomask = (1U << glob_vco);
-#else
-	const uint_fast8_t vcomask = 0;
-#endif
-
-	prog_select(target);	/* start sending data to target chip */
-
-#if defined (DAC1_TYPE)
-	prog_val(target, glob_dac1, 8);
-#endif /* defined (DAC1_TYPE) */
-
-	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	prog_bit(target, ! glob_reset_n);		/* d7 in control register - ad9951 RESET */
-	prog_bit(target, 0x00 /* glob_bglight */);				/* d6 in control register - LD light ON */
-	prog_val(target, vcomask, 6);	/* d0..d5 in control register */
-
-	prog_unselect(target);	/* done sending data to target chip */
-}
-
-static void 
-//NOINLINEAT
-prog_rxctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetrxc1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	prog_select(target);	/* start sending data to target chip */
-	/* учет диапазона - на 0-м диапазоне обход УВЧ включается принудительно */
-	prog_val(target, glob_bandf, 4);			// D4..D7: band select код выбора диапазонного фильтра
-	prog_val(target, glob_att, 2);	/* D3:D2: ATTENUATOR RELAYS POWER */
-	prog_bit(target, glob_preamp && (glob_bandf != 0));				/* D1: RF amplifier */
-	prog_bit(target, glob_tx);					/* D0: TX mode: 1 - TX режим передачи */
-
-	// programming RX control registers
-	// filter codes:
-	// 0x06 - fil3 3.1 kHz
-	// 0x01 - fil2 2.7 kHz
-	// 0x00 - fil0 9.0 kHz
-	// 0x02 - fil1 6.0 kHz
-	// 0x03 - fil5 0.5 kHz
-	// 0x04 - fil2 15 kHz (bypass)
-	// 0x05 - unused (9 kHz filter in FM strip)
-	// 0x07 - unused (6 kHz filter in FM strip)
-	prog_val(target, glob_filter, 3);	/* D5, D6, D7: select IF filter, wrong order of bits */
-	prog_bit(target, 0x00);		/* D4 unused output */
-	prog_bit(target, 0x00);		/* D3 unused output */
-	prog_bit(target, glob_tx ? 0x00 : fm);		/* D2: FM DETECTOR POWER */
-	prog_bit(target, 0x00);	/* D1 unused output  */
-	prog_bit(target, 0x00);	/* D0 unused output  */
-
-	prog_bit(target, (glob_boardagc == BOARD_AGCCODE_OFF));		/* D7: AGC OFF */
-	prog_val(target, glob_boardagc, 3);	/* D4,D5,D6:  AGC code (delay) */
-	prog_val(target, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* D2..D3: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
-	prog_bit(target, glob_tx);		/* D1: IF amp ad605 OFF in TX mode */
-	prog_bit(target, fm || am);	// D0: switch lo4 off in AM and FM modes
-
-	prog_unselect(target);	/* done sending data to target chip */
-
-
-}
-
-#elif CTLREGMODE_V7_ATMEGA //ATMEGA_CTLSTYLE_V7_H_INCLUDED	//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором, 6 ГУН
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// Ьез FM
-/* ctl register interface */
-static void 
-//NOINLINEAT
-prog_ctldacreg(void)	// CTLSTYLE_V7 @ ATMEGA
-{
-	const spitarget_t target = targetctldac1;
-#if defined (LO1MODE_HYBRID) || defined (LO1MODE_FIXSCALE)
-	const uint_fast8_t vcomask = (1U << glob_vco);
-#else
-	const uint_fast8_t vcomask = 0;
-#endif
-
-	prog_select(target);	/* start sending data to target chip */
-
-#if defined (DAC1_TYPE)
-	prog_val(target, glob_dac1, 8);
-#endif /* defined (DAC1_TYPE) */
-
-	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	prog_bit(target, ! glob_reset_n);		/* d7 in control register - ad9951 RESET */
-	prog_bit(target, 0x00 /* glob_bglight */);				/* d6 in control register - LD light ON */
-	prog_val(target, vcomask, 6);	/* d0..d5 in control register */
-
-	prog_unselect(target);	/* done sending data to target chip */
-}
-
-static void 
-//NOINLINEAT
-prog_rxctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetrxc1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-
-	prog_select(target);	/* start sending data to target chip */
-	/* учет диапазона - на 0-м диапазоне обход УВЧ включается принудительно */
-	prog_val(target, glob_bandf, 4);			// D4..D7: band select код выбора диапазонного фильтра
-	prog_bit(target, 0 != (glob_att & 0x02));	/* D3: second stage (20 dB) atteuator on */
-	prog_bit(target, 0 != (glob_att & 0x01));	/* D2: 10 dB ATTENUATOR RELAYS POWER */
-	prog_bit(target, glob_preamp && (glob_bandf != 0));				/* D1: RF amplifier */
-	prog_bit(target, glob_tx);					/* D0: TX mode: 1 - TX режим передачи */
-
-	// programming RX control registers
-	// filter codes:
-	// 0x06 - fil3 3.1 kHz
-	// 0x01 - fil2 2.7 kHz
-	// 0x00 - fil0 9.0 kHz
-	// 0x02 - fil1 6.0 kHz
-	// 0x03 - fil5 0.5 kHz
-	// 0x04 - fil2 15 kHz (bypass)
-	// 0x05 - unused (9 kHz filter in FM strip)
-	// 0x07 - unused (6 kHz filter in FM strip)
-	prog_val(target, glob_filter, 3);	/* D5, D6, D7: select IF filter, wrong order of bits */
-	prog_bit(target, 0x00);		/* D4 unused output */
-	prog_bit(target, 0x00);		/* D3 unused output */
-	prog_bit(target, glob_tx ? 0x00 : fm);		/* D2: FM DETECTOR POWER */
-	prog_bit(target, 0x00);	/* D1 unused output  */
-	prog_bit(target, 0x00);	/* D0 unused output  */
-
-	prog_bit(target, (glob_boardagc == BOARD_AGCCODE_OFF));		/* D7: AGC OFF */
-	prog_val(target, glob_boardagc, 3);	/* D4,D5,D6:  AGC code (delay) */
-	prog_val(target, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* D2..D3: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
-	prog_bit(target, glob_tx);		/* D1: IF amp ad605 OFF in TX mode */
-	prog_bit(target, fm || am);	// D0: switch lo4 off in AM and FM modes
-
-	prog_unselect(target);	/* done sending data to target chip */
-
-
-}
-
 #elif ARM_CTLSTYLE_V7A_H_INCLUDED		//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 /* ctl register interface */
@@ -5148,7 +4821,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #endif
 
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
+#if CTLREGMODE_RAVENDSP_V5
 
 static void 
 board_update_rxctrlreg(void)
@@ -5177,10 +4850,10 @@ static void board_update_initial(void)
 {
 	prog_gpioreg();
 	prog_update_noplanes();
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
+#if CTLREGMODE_RAVENDSP_V5
 	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	board_update_rxctrlreg();
-#elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
+#elif (ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	board_update_rxctrlreg();
 #else
@@ -5222,7 +4895,7 @@ board_update(void)
 	board_update_spi2();	// Зависящие от предидущих (например, кодек, RESET которого формируется через SPI регистр)
 
 
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
+#if CTLREGMODE_RAVENDSP_V5
 	if (flag_ctldacreg != 0)
 	{
 		flag_ctldacreg = 0;
@@ -5239,7 +4912,7 @@ board_update(void)
 			prog_rxctrlreg(plane); 	/* управление приемником */
 	}
 
-#elif ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
+#elif ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
 	if (flag_ctldacreg != 0)
 	{
 		flag_ctldacreg = 0;
@@ -5272,9 +4945,9 @@ board_update(void)
 static void
 board_ctlreg1changed(void)
 {
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
+#if CTLREGMODE_RAVENDSP_V5
 		flag_ctrlreg = 1;	/* управление синтезатором  */
-#elif ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
+#elif ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
 		flag_rxctrlreg = 1;	/* управление приемником */
 #else
 		flag_ctrlreg = 1;
@@ -5285,9 +4958,9 @@ board_ctlreg1changed(void)
 static void
 board_ctlreg2changed(void)
 {
-#if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
+#if CTLREGMODE_RAVENDSP_V5
 	flag_ctldacreg = 1;	/* управление ЦАП */
-#elif ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
+#elif ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED
 	flag_ctldacreg = 1;	/* управление синтезатором и ЦАП */
 #else
 	flag_ctrlreg = 1; 

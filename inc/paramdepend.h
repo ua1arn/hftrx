@@ -2213,7 +2213,7 @@ extern "C" {
 		#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
 	#endif /* WITHIF4DSP */
 
-#elif (ATMEGA_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
+#elif (ARM_CTLSTYLE_V7_H_INCLUDED || ARM_CTLSTYLE_V7A_H_INCLUDED)
 
 	#define WITHPREAMPATT2_10DB		1	// Управление УВЧ и двухкаскадным аттенюатором
 	#define WITHAGCMODE5STAGES	1	// 4 скорости и выключенно
