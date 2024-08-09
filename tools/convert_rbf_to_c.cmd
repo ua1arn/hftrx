@@ -10,7 +10,6 @@ rbf2c.exe %SRCPATH%\t1_v7_1ch.rbf ..\rbf\rbfimage_v7_1ch.h
 rbf2c.exe %SRCPATH%\t1_v7_2ch.rbf ..\rbf\rbfimage_v7_2ch.h
 rbf2c.exe %SRCPATH%\t1_v7a_2ch.rbf ..\rbf\rbfimage_v7a_2ch.h
 rbf2c.exe %SRCPATH%\t1_v7h_2ch.rbf ..\rbf\rbfimage_v7h_2ch.h
-rbf2c.exe %SRCPATH%\t1_v7_oleg4z.rbf ..\rbf\rbfimage_oleg4z.h
 
 @rem Renesas
 

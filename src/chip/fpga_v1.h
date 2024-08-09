@@ -78,11 +78,7 @@ static void prog_fpga_freq1(
 	const phase_t * val		/* FTW parameter for NCO */
 	)
 {
-#if (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
-    prog_fpga_freqX(target, val, FPGA_DECODE_NCO1);
-#else /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
     mirror_nco1 = * val;
-#endif /* (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
 }
 
 static void prog_fpga_freq2(
