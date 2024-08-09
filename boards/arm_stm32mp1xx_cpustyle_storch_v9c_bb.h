@@ -51,10 +51,17 @@
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
+#if 1
+	#define WITHCAT_USART1		1
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+#endif
+
 #if 0
+	// antenna controller
 	#define WITHCAT_USART4		1
 	#define WITHUARTFIFO	1	/* испольование FIFO */
-	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
+	#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 #endif
 
 #define BOARD_TUH_RHPORT 1
@@ -92,8 +99,8 @@
 //	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 //	#define WITHOHCIHW_OHCIPORT 0
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
+//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+//	#define WITHMODEM_CDC	1
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
@@ -172,9 +179,9 @@
 	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
 	#define WITHUSBHW_OHCI_IX	0
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHCAT_LWIP		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
+//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+//	#define WITHCAT_LWIP		1	/* использовать виртуальный последовательный порт на USB соединении */
+//	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
 		#if WITHLWIP
@@ -371,7 +378,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART4)
+#if (WITHCAT && WITHCAT_USART4) || (WITHCAT && WITHCAT_USART1)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -703,12 +710,13 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART4HW
+// PB8 UART4-RX, PH13 UART4-TX
 #define HARDWARE_UART4_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (UINT32_C(1) << 11); /* PG11: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = (UINT32_C(1) << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piog_altfn2(TXMASK, 6); /* AF6 */ \
-		arm_hardware_piob_altfn2(RXMASK, 8); /* AF8 */ \
-		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 13); /* PH13: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 8); /* PB8: RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_pioh_altfn2(TXMASK, 8); /* PH13 AF8 */ \
+		arm_hardware_piob_altfn2(RXMASK, 8); /* PB8 AF8 */ \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); /* PB8 */ \
 	} while (0)
 
 // WITHUART1HW
