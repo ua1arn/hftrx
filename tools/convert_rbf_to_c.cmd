@@ -28,7 +28,6 @@ rbf2c.exe %SRCPATH%\t1_v9c_2ch.rbf ..\rbf\rbfimage_v9c_2ch.h
 rbf2c.exe %SRCPATH%\t1_v9d_2ch.rbf ..\rbf\rbfimage_v9d_2ch.h
 
 rbf2c.exe %SRCPATHLONG%\t1_v9m_velo.rbf ..\rbf\rbfimage_v9m_velo.h
-bin2c.exe %SRCPATHLONG%\t1_v9m_velo.zip ..\rbf\rbfimage_v9m_velo_zip.h
 
 @rem Allwinner T507-H
 
