@@ -51,12 +51,12 @@
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-#if 1
+#if WITHCAT
 	#define WITHCATSPEED 115200
 	#define WITHCAT_USART1		1
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 	#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
-#endif
+#endif /* WITHCAT */
 
 #if 0
 	// antenna controller
