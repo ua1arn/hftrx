@@ -540,6 +540,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 		#define DSGN_GRIDDIGITS 	COLOR_YELLOW
 		#define DSGN_SPECTRUMBG     COLOR_BLACK
 		#define DSGN_SPECTRUMBG2    COLOR_CYAN        		//COLOR_CYAN - полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2    COLOR_DARKRED        		//COLOR_CYAN - полоса пропускания приемника
 		#define DSGN_SPECTRUMFG		COLOR_GREEN		// цвет спектра при сполошном заполнении
 		#define DSGN_SPECTRUMFENCE	COLOR_WHITE	//COLOR_WHITE
 		//#define DSGN_SPECTRUMLINE	COLORPIP_GREEN
