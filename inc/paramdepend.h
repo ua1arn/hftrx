@@ -646,6 +646,7 @@ extern "C" {
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
+	#define BOARD_USART1_FREQ  (stm32mp1_uart1_get_freq())
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
