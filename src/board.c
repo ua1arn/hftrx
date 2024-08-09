@@ -7588,10 +7588,6 @@ void board_initialize(void)
 	board_update_initial();		// Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 	board_reset();			/* формирование импульса на reset_n */
 
-#if WITHSPISLAVE
-	hardware_spi_slave_initialize();
-#endif /* WITHSPISLAVE */
-
 	hardware_channels_initialize();	// SAI, I2S и подключенная на них периферия
 
 #if WITHCPUDACHW

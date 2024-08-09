@@ -5755,80 +5755,53 @@ static uint_fast8_t flag_dsp1reg;	/* признак модификации те�
 static uint_fast8_t flag_flt1reg;	/* признак модификации теневых значений. Требуется вывод в регистры */
 static uint_fast8_t flag_codec1reg;	/* признак модификации теневых значений. Требуется вывод в регистры */
 
-/* запрос может устанавливаться из обработчика прерывания в случае WITHSPISLAVE */
 void prog_dsplreg_update(void)
 {	
 	uint_fast8_t f;
-#if WITHSPISLAVE
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = flag_dsp1reg;
 	flag_dsp1reg = 0;
-	LowerIrql(oldIrql);
-#else /* WITHSPISLAVE */
-	f = flag_dsp1reg;
-	flag_dsp1reg = 0;
-#endif /* WITHSPISLAVE */
 	if (f != 0)
 	{
 		prog_dsplreg();
 	}
 }
-/* запрос может устанавливаться из обработчика прерывания в случае WITHSPISLAVE */
+
 void prog_fltlreg_update(void)
 {	
 	uint_fast8_t f;
-#if WITHSPISLAVE
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = flag_flt1reg;
 	flag_flt1reg = 0;
-	LowerIrql(oldIrql);
-#else /* WITHSPISLAVE */
-	f = flag_flt1reg;
-	flag_flt1reg = 0;
-#endif /* WITHSPISLAVE */
 	if (f != 0)
 	{
 		prog_fltlreg();
 	}
 }
 
-/* запрос может устанавливаться из обработчика прерывания в случае WITHSPISLAVE */
 void prog_codecreg_update(void)		// услолвное обновление регистров аудио кодека
 {
 	uint_fast8_t f;
-#if WITHSPISLAVE
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = flag_codec1reg;
 	flag_codec1reg = 0;
-	LowerIrql(oldIrql);
-#else /* WITHSPISLAVE */
-	f = flag_codec1reg;
-	flag_codec1reg = 0;
-#endif /* WITHSPISLAVE */
 	if (f != 0)
 	{
 		prog_codec1reg();
 	}
 }
 
-/* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
 /* Установка запроса на обновление сигналов управления */
 void
 board_dsp1regchanged(void)
 {
 	flag_dsp1reg = 1; 
 }
-/* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
+
 /* Установка запроса на обновление сигналов управления */
 void
 board_flt1regchanged(void)
 {
 	flag_flt1reg = 1; 
 }
-/* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
+
 /* Установка запроса на обновление сигналов управления */
 void
 board_codec1regchanged(void)
@@ -6622,53 +6595,3 @@ board_set_dspagc(uint_fast8_t n)
 		board_dsp1regchanged();
 	}
 }
-
-#if WITHSPISLAVE
-
-// вызывается из прерывания для обработки принятого блока данных
-void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len)
-{
-	if (len == DSPCTL_BUFSIZE)
-	{
-		board_set_dspmodeA(buff [DSPCTL_OFFSET_MODEA]);
-		board_set_dspmodeB(buff [DSPCTL_OFFSET_MODEB]);
-		board_set_boardagc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
-		board_set_dspagc(buff [DSPCTL_OFFSET_AGCOFF] ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
-#if ! WITHPOTIFGAIN
-		board_set_ifgain(buff [DSPCTL_OFFSET_IFGAIN_HI] * 256 + buff [DSPCTL_OFFSET_IFGAIN_LO]);
-#endif /* ! WITHPOTIFGAIN */
-#if ! WITHPOTAFGAIN
-		board_set_afgain(buff [DSPCTL_OFFSET_AFGAIN_HI] * 256 + buff [DSPCTL_OFFSET_AFGAIN_LO]);
-#endif /* ! WITHPOTAFGAIN */
-		board_set_afmute(buff [DSPCTL_OFFSET_AFMUTE]);
-		board_set_agc_t1(buff [DSPCTL_OFFSET_AGC_T1]);
-		board_set_agc_t2(buff [DSPCTL_OFFSET_AGC_T2]);
-		board_set_agc_t4(buff [DSPCTL_OFFSET_AGC_T4]);
-		board_set_agc_thung(buff [DSPCTL_OFFSET_AGC_THUNG]);
-		board_set_agcrate(buff [DSPCTL_OFFSET_AGCRATE]);	// на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ
-	
-		board_set_mik1level(buff [DSPCTL_OFFSET_MICLEVEL_HI] * 256 + buff [DSPCTL_OFFSET_MICLEVEL_LO]);
-
-		board_set_afhighcutrx(buff [DSPCTL_OFFSET_HIGHCUTRX_HI] * 256 + buff [DSPCTL_OFFSET_HIGHCUTRX_LO]);
-		board_set_aflowcutrx(buff [DSPCTL_OFFSET_LOWCUTRX_HI] * 256 + buff [DSPCTL_OFFSET_LOWCUTRX_LO]);
-
-		board_set_afhighcuttx(buff [DSPCTL_OFFSET_HIGHCUTTX_HI] * 256 + buff [DSPCTL_OFFSET_HIGHCUTTX_LO]);
-		board_set_aflowcuttx(buff [DSPCTL_OFFSET_LOWCUTTX_HI] * 256 + buff [DSPCTL_OFFSET_LOWCUTTX_LO]);
-
-		board_set_cwedgetime(buff [DSPCTL_OFFSET_CWEDGETIME]);
-		board_set_sidetonelevel(buff [DSPCTL_OFFSET_SIDETONELVL]);
-
-		board_set_notch_mode(buff [DSPCTL_OFFSET_NOTCH_MODE]);
-		board_set_notch_width(buff [DSPCTL_OFFSET_NOTCH_WIDTH_HI] * 256 + buff [DSPCTL_OFFSET_NOTCH_WIDTH_LO]);
-		board_set_notch_freq(buff [DSPCTL_OFFSET_NOTCH_FREQ_HI] * 256 + buff [DSPCTL_OFFSET_NOTCH_FREQ_LO]);
-		board_set_lo6(buff [DSPCTL_OFFSET_LO6_FREQ_HI] * 256 + buff [DSPCTL_OFFSET_LO6_FREQ_LO]);
-		board_set_fullbw6(buff [DSPCTL_OFFSET_FULLBW6_HI] * 256 + buff [DSPCTL_OFFSET_FULLBW6_LO]);
-		board_set_digigainmax(buff [DSPCTL_OFFSET_DIGIGAINMAX]);
-		//board_set_fltsofter(buff [DSPCTL_OFFSET_FLTSOFTER]);
-		board_set_amdepth(buff [DSPCTL_OFFSET_AMDEPTH]);
-		board_set_mikeagc(buff [DSPCTL_OFFSET_MIKEAGC]);
-		board_set_mikehclip(buff [DSPCTL_OFFSET_MIKEHCLIP]);
-	}
-}
-
-#endif /* WITHSPISLAVE */

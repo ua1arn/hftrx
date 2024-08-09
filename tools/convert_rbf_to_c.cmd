@@ -4,7 +4,6 @@ rem set SRCPATH=..\fpga_q181std\output_files
 
 @rem STM32F/STM32H
 
-rbf2c.exe %SRCPATH%\t1_v4.rbf ..\rbf\rbfimage_v4.h
 rbf2c.exe %SRCPATH%\t1_v5_2ch.rbf ..\rbf\rbfimage_v5_2ch.h
 rbf2c.exe %SRCPATH%\t1_v6_2ch.rbf ..\rbf\rbfimage_v6_2ch.h
 rbf2c.exe %SRCPATH%\t1_v7_1ch.rbf ..\rbf\rbfimage_v7_1ch.h

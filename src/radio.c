@@ -19626,10 +19626,6 @@ application_initialize(void)
 		board_update();
 	}
 
-#if WITHSPISLAVE
-	hardware_spi_slave_enable(SPIC_MODE3);
-#endif /* WITHSPISLAVE */
-
 #if WITHTOUCHGUI
 	gui_initialize();
 
@@ -19641,23 +19637,6 @@ application_initialize(void)
 	bt_initialize();
 #endif /* WITHUSEUSBBT */
 }
-
-#if WITHSPISLAVE
-// основной цикл программы при работе в режиме управляемого извне DSP
-static void
-dspcontrol_mainloop(void)
-{
-	PRINTF(PSTR("dspcontrol_mainloop started.\n"));
-
-	board_update();
-
-	for (;;)
-	{
-		board_update();	// Все произошедшие изменения (обработка прерываний по приёму управляющих блоков от HOST-контроллера воспринимаются здесь.
-		__WFI();
-	}
-}
-#endif /* WITHSPISLAVE */
 
 #if WITHAUTOTUNER
 

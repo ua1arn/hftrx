@@ -102,10 +102,8 @@ main(void)
 	siggen_mainloop();
 #elif 0
 	hamradio_mainloop_beacon();
-#elif WITHSPISLAVE
-	dspcontrol_mainloop();
-#else /* WITHSPISLAVE */
+#else
 	application_mainloop();
-#endif /* WITHSPISLAVE */
+#endif
 	return 0;
 }
