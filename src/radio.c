@@ -8805,6 +8805,17 @@ static const FLASHMEM uint_fast8_t catbr2int [] =
 //#endif /* CPUSTYLE_ARM */
 };
 
+static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
+{
+	const uint_fast8_t v = baudrate / BRSCALE;
+	uint_fast8_t i;
+	for (i = 0; i < ARRAY_SIZE(catbr2int); ++ i)
+	{
+		if (catbr2int [i] == v)
+			return i;
+	}
+	return old;
+}
 
 static int_fast32_t
 //NOINLINEAT
@@ -19275,7 +19286,9 @@ void initialize2(void)
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
 	bandf2adjust_initialize();
 #endif /* WITHTX */
-
+#ifdef WITHCATSPEED
+	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+#endif
 	display_reset();
 	display_initialize();
 
