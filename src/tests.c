@@ -10612,6 +10612,10 @@ static void lidar_parse(unsigned char c)
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
 {
+#if LINUX_SUBSYSTEM && WITHAD9363IIO && 0
+	int ad9363_iio_test (const char * uri);
+	ad9363_iio_test("usb:");
+#endif
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		display_fillrect(0, 0, DIM_X, DIM_Y, display_getbgcolor());
