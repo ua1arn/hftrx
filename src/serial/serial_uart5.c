@@ -52,7 +52,10 @@
 		if (cr1 & USART_CR1_RXNEIE)
 		{
 			if (isr & USART_ISR_RXNE_RXFNE)
-				HARDWARE_UART5_ONRXCHAR(UART5->RDR);
+			{
+				const uint_fast8_t c = UART5->RDR;
+				HARDWARE_UART5_ONRXCHAR(c);
+			}
 			if (isr & USART_ISR_ORE)
 			{
 				UART5->ICR = USART_ICR_ORECF;

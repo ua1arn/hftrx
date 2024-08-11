@@ -13712,16 +13712,16 @@ void cat2_sendchar(void * ctx)
 static uint_fast8_t
 cat_answer_ready(void)
 {
-#if WITHUSBHW && WITHUSBCDCACM
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
 	uint_fast8_t f;
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	f = usbd_cdc_ready();
 	LowerIrql(oldIrql);
 	return f;
-#else /* WITHUSBHW && WITHUSBCDCACM */
+#else /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 	return 1;
-#endif /* WITHUSBHW && WITHUSBCDCACM */
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
 
 // Вызов из user-mode программы

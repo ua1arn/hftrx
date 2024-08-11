@@ -35,18 +35,28 @@
 	void RAMFUNC_NONILINE USART1_IRQHandler(void)
 	{
 		const uint_fast32_t isr = USART1->ISR;
+		const uint_fast32_t cr1 = USART1->CR1;
 
-		if (isr & USART_ISR_RXNE)
-			HARDWARE_UART1_ONRXCHAR(USART1->RDR);
-		if (isr & USART_ISR_ORE)
+		if (cr1 & USART_CR1_RXNEIE)
 		{
-			USART1->ICR = USART_ICR_ORECF;
-			HARDWARE_UART1_ONOVERFLOW();
+			if (isr & USART_ISR_RXNE_RXFNE)
+			{
+				const uint_fast8_t c = USART1->RDR;
+				HARDWARE_UART1_ONRXCHAR(c);
+			}
+			if (isr & USART_ISR_ORE)
+			{
+				USART1->ICR = USART_ICR_ORECF;
+				HARDWARE_UART1_ONOVERFLOW();
+			}
+			if (isr & USART_ISR_FE)
+				USART1->ICR = USART_ICR_FECF;
 		}
-		if (isr & USART_ISR_FE)
-			USART1->ICR = USART_ICR_FECF;
-		if (isr & USART_ISR_TXE)
-			HARDWARE_UART1_ONTXCHAR(USART1);
+		if (cr1 & USART_CR1_TXEIE)
+		{
+			if (isr & USART_ISR_TXE_TXFNF)
+				HARDWARE_UART1_ONTXCHAR(USART1);
+		}
 	}
 
 #elif CPUSTYLE_AT91SAM7S
