@@ -360,7 +360,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	nau8822_setreg(11, 0xFF);	// RESET off (write value ignored)
 	nau8822_setreg(11, 0x00);	// RESET off (write value ignored)
 
-	nau8822_pll(0, 8u << 24);
+	//nau8822_pll(0, 8u << 24);
 
 	// R1 Bit 8, DCBUFEN, set to logic = 1 if setting up for greater than 3.60V operation
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_1, 0x1cd); // was: 0x1cd - pll off, input to internal bias buffer in high-Z floating condition
