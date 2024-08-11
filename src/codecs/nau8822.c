@@ -55,36 +55,14 @@ void nau8822_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if 1//WITHSPILOWSUPPORTT
-		// Работа совместно с фоновым обменом SPI по прерываниям
-		uint8_t txbuf [2];
+	const uint8_t txbuf [] = { fulldata >> 8, fulldata >> 0, };
 
-		USBD_poke_u16_BE(txbuf, fulldata);
-		prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
-
-	#elif WITHSPIEXT16
-
-		hardware_spi_connect_b16(NAU8822_SPISPEED, NAU8822_SPIMODE);
-		prog_select(target);	/* start sending data to target chip */
-		hardware_spi_b16_p1(fulldata);
-		hardware_spi_complete_b16();
-		prog_unselect(target);
-		hardware_spi_disconnect();
-
-	#else /* WITHSPIEXT16 */
-
-		spi_select(target, NAU8822_SPIMODE);
-		spi_progval8_p1(target, fulldata >> 8);		// LSB=b8 of datav
-		spi_progval8_p2(target, fulldata >> 0);
-		spi_complete(target);
-		spi_unselect(target);
-
-	#endif /* WITHSPIEXT16 */
+	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
 
 	#if WITHTWIHW
-		uint8_t buff [] = { fulldata >> 8, fulldata >> 0, };
+		const uint8_t buff [] = { fulldata >> 8, fulldata >> 0, };
 		i2chw_write(NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
 	#elif WITHTWISW
 		// кодек управляется по I2C
@@ -110,8 +88,6 @@ void nau8822_setreg(
 static void nau8822_input_config(void)
 {
 	nau8822_setreg(NAU8822_INPUT_CONTROL, NAU8822_INPUT_CONTROL_VAL);
-	//nau8822_setreg(NAU8822_INPUT_CONTROL, NAU8822_INPUT_CONTROL_VAL);
-
 }
 
 /* Установка громкости на наушники */
