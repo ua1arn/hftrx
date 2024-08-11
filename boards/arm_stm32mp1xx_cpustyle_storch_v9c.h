@@ -35,27 +35,25 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
-//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-
 // OHCI at USB1HSFSP2_BASE
 //#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHDEBUG
-	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
-	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
-	#define WITHDEBUG_UART4	1
+	#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+	#define WITHUART1HW_FIFO	1	/* использование FIFO */
+	#define WITHDEBUG_UART1		1
 #endif /* WITHDEBUG */
 
 #if WITHLFM
-	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
-	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
+	#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+	#define WITHUART1HW_FIFO	1	/* использование FIFO */
 #endif /* WITHDEBUG */
 
 #if 0
-	#define WITHCAT_UART4		1
-	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
-	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
-#endif
+	#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+	#define WITHUART1HW_FIFO	1	/* использование FIFO */
+	#define WITHCAT_UART1		1
+endif
 
 #define BOARD_TUH_RHPORT 1
 
@@ -702,12 +700,12 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-// WITHUART4HW
-#define HARDWARE_UART4_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (UINT32_C(1) << 11); /* PG11: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = (UINT32_C(1) << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piog_altfn50(TXMASK, 6); /* AF6 */ \
-		arm_hardware_piob_altfn50(RXMASK, 8); /* AF8 */ \
+// WITHUART1HW
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 11); /* PG11: USART1_TX TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 2); /* PB2: USART1_RX RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_piog_altfn2(TXMASK, 4); /* PG11 AF4 */ \
+		arm_hardware_piob_altfn2(RXMASK, 4); /* PB2 AF4 */ \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
