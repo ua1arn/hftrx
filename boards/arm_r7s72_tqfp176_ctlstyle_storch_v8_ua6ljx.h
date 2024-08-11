@@ -197,7 +197,7 @@
 	//#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
@@ -309,7 +309,7 @@
 	#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//

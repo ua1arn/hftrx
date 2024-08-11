@@ -367,7 +367,7 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 #else /* WITHISBOOTLOADER */
@@ -409,7 +409,7 @@
 
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */

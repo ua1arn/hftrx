@@ -217,7 +217,7 @@
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
@@ -269,7 +269,7 @@
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 

@@ -256,7 +256,7 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */

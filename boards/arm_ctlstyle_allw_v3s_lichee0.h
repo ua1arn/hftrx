@@ -248,7 +248,7 @@
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
@@ -297,7 +297,7 @@
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
-	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	//
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHRTOS	1	/* Использование RTOS */
