@@ -51,7 +51,8 @@
 	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-#if WITHCAT
+#if WITHCAT && 1
+	// Disable WITHCAT_CDC
 	#define WITHCATSPEED 115200
 	#define WITHCAT_UART1		1
 	#define WITHUART1HW_FIFO	1	/* испольование FIFO */
