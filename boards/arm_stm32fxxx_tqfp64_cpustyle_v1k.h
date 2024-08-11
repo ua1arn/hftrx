@@ -46,7 +46,7 @@
 
 	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
-	#define WITHCAT_USART1		1
+	#define WITHCAT_UART1		1
 	#define WITHDEBUG_UART1	1
 	#define WITHMODEM_UART1	1
 
@@ -183,7 +183,7 @@
 
 
 
-#if (WITHCAT && WITHCAT_USART1)
+#if (WITHCAT && WITHCAT_UART1)
 	// CAT control lines
 	#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) // was PINA 
 	#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/

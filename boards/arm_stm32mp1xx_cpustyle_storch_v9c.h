@@ -52,7 +52,7 @@
 #endif /* WITHDEBUG */
 
 #if 0
-	#define WITHCAT_USART4		1
+	#define WITHCAT_UART4		1
 	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
 #endif
@@ -371,7 +371,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART4)
+#if (WITHCAT && WITHCAT_UART4)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -393,7 +393,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART4) */
+#endif /* (WITHCAT && WITHCAT_UART4) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

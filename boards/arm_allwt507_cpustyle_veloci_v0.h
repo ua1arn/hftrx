@@ -37,7 +37,7 @@
 
 //#define WITHUART5HW_FIFO	1	/* испольование FIFO */
 #define WITHUART5HW	1		/* mini dinn8	*/
-//#define WITHCAT_USART5 1
+//#define WITHCAT_UART5 1
 
 #define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
 
@@ -368,7 +368,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART5)
+#if (WITHCAT && WITHCAT_UART5)
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(gpioX_getinputs(GPIOA))
 	//#define FROMCAT_BIT_RTS				(UINT32_C(1) << 11)	/* PA11 сигнал RTS от FT232RL	*/
@@ -385,7 +385,7 @@
 	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART5) */
+#endif /* (WITHCAT && WITHCAT_UART5) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

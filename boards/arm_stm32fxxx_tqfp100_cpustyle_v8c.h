@@ -31,7 +31,7 @@
 #if WITHUSBHW
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
-	//#define WITHCAT_USART2		1
+	//#define WITHCAT_UART2		1
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 	#define WITHDEBUG_UART2	1
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -49,7 +49,7 @@
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHCAT_USART2		1
+	#define WITHCAT_UART2		1
 	#define WITHDEBUG_UART2	1
 	#define WITHMODEM_UART2	1
 

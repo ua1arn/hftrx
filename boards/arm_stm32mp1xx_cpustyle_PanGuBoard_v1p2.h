@@ -37,7 +37,7 @@
 
 
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
-//#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
+//#define WITHSLIP_UART5	1	// сетевой интерфейс SLIP на UART5
 
 // OHCI at USB1HSFSP2_BASE
 #define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -139,7 +139,7 @@
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на CDC
+	//#define WITHSLIP_CDC	1	// сетевой интерфейс SLIP на CDC
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
@@ -333,7 +333,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -355,7 +355,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

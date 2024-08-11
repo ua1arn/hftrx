@@ -28,7 +28,7 @@
 //#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHCAT_USART2		1
+#define WITHCAT_UART2		1
 #define WITHDEBUG_UART2	1
 #define WITHMODEM_UART2	1
 

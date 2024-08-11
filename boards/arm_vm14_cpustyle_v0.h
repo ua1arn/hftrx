@@ -45,7 +45,7 @@
 	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART0		1
+//#define WITHCAT_UART0		1
 #define WITHDEBUG_UART0	1
 
 #if WITHISBOOTLOADER
@@ -273,7 +273,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -293,7 +293,7 @@
 	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

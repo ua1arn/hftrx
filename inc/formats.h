@@ -401,7 +401,7 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 
 #endif /* WITHDEBUG && WITHUART6HW && WITHDEBUG_UART6 */
 
-#if WITHCAT && WITHUART0HW && WITHCAT_USART0
+#if WITHCAT && WITHUART0HW && WITHCAT_UART0
 	// CAT функции работают через UART0
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
@@ -463,9 +463,9 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat2_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHCAT && WITHUART0HW && WITHCAT_USART0 */
+#endif /* WITHCAT && WITHUART0HW && WITHCAT_UART0 */
 
-#if WITHCAT && WITHUART1HW && WITHCAT_USART1
+#if WITHCAT && WITHUART1HW && WITHCAT_UART1
 	// CAT функции работают через USART1
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
@@ -527,9 +527,9 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat2_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHCAT && WITHUART1HW && WITHCAT_USART1 */
+#endif /* WITHCAT && WITHUART1HW && WITHCAT_UART1 */
 
-#if WITHCAT && WITHUART2HW && WITHCAT_USART2
+#if WITHCAT && WITHUART2HW && WITHCAT_UART2
 	// CAT функции работают через USART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
@@ -587,9 +587,9 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat2_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
+#endif /* WITHCAT && WITHUART2HW && WITHCAT_UART2 */
 
-#if WITHCAT && WITHUART4HW && WITHCAT_USART4
+#if WITHCAT && WITHUART4HW && WITHCAT_UART4
 	// CAT функции работают через UART4
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
@@ -651,9 +651,9 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat2_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHCAT && WITHUART4HW && WITHCAT_USART4 */
+#endif /* WITHCAT && WITHUART4HW && WITHCAT_UART4 */
 
-#if WITHCAT && WITHUART5HW && WITHCAT_USART5
+#if WITHCAT && WITHUART5HW && WITHCAT_UART5
 	// CAT функции работают через UART5
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
@@ -715,9 +715,9 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat2_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHCAT && WITHUART5HW && WITHCAT_USART5 */
+#endif /* WITHCAT && WITHUART5HW && WITHCAT_UART5 */
 
-#if WITHLWIP && WITHUART7HW && WITHCAT7_UART7
+#if WITHLWIP && WITHUART7HW && WITHSLIP_UART7
 	// CAT7 функции работают через UART7
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -762,9 +762,9 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat7_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHLWIP && WITHUART7HW && WITHCAT7_UART7 */
+#endif /* WITHLWIP && WITHUART7HW && WITHSLIP_UART7 */
 
-#if WITHLWIP && WITHUART5HW && WITHCAT7_UART5
+#if WITHLWIP && WITHUART5HW && WITHSLIP_UART5
 	// CAT7 функции работают через UART5
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -809,7 +809,7 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat7_txdone(ctx); \
 		} while (0)
 
-#endif /* WITHLWIP && WITHUART5HW && WITHCAT7_UART5 */
+#endif /* WITHLWIP && WITHUART5HW && WITHSLIP_UART5 */
 
 #if WITHCAT && WITHUSBCDCACM && WITHCAT_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
@@ -959,7 +959,7 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 
 #endif /* WITHCAT && WITHUSEUSBBT && WITHCAT_BT */
 
-#if WITHLWIP && WITHUSBCDCACM && WITHCAT7_CDC
+#if WITHLWIP && WITHUSBCDCACM && WITHSLIP_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -1003,7 +1003,7 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 			cat7_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHLWIP && WITHUSBCDCACM && WITHCAT7_CDC */
+#endif /* WITHLWIP && WITHUSBCDCACM && WITHSLIP_CDC */
 
 
 #if WITHMODEM && WITHUSBCDCACM && WITHMODEM_CDC

@@ -19,7 +19,7 @@
 #define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 */
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-#define WITHCAT_USART0		1
+#define WITHCAT_UART0		1
 #define WITHDEBUG_UART0	1
 //#define WITHMODEM_UART0	1
 

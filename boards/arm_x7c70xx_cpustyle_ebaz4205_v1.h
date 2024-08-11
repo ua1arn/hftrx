@@ -36,7 +36,7 @@
 #define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 
-//#define WITHCAT_USART1		1
+//#define WITHCAT_UART1		1
 #define WITHDEBUG_UART1	1
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -401,7 +401,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -423,7 +423,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

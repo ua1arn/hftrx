@@ -53,14 +53,14 @@
 
 #if WITHCAT
 	#define WITHCATSPEED 115200
-	#define WITHCAT_USART1		1
+	#define WITHCAT_UART1		1
 	#define WITHUART1HW_FIFO	1	/* испольование FIFO */
 	#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 #endif /* WITHCAT */
 
 #if 0
 	// antenna controller
-	#define WITHCAT_USART4		1
+	#define WITHCAT_UART4		1
 	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 	#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 #endif
@@ -379,7 +379,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART4) || (WITHCAT && WITHCAT_USART1)
+#if (WITHCAT && WITHCAT_UART4) || (WITHCAT && WITHCAT_UART1)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -401,7 +401,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART4) */
+#endif /* (WITHCAT && WITHCAT_UART4) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

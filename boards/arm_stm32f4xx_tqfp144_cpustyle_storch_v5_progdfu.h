@@ -58,7 +58,7 @@
 
 #define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
-//#define WITHCAT_USART2		1
+//#define WITHCAT_UART2		1
 #define WITHDEBUG_UART2	1
 
 //#define WITHUAC2		1	/* UAC2 support */
@@ -255,7 +255,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -277,7 +277,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

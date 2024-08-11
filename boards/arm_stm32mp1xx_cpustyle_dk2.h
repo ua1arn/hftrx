@@ -45,15 +45,15 @@
 #if 0
 	// debug config
 	#define WITHUART4HW	1	/* RX PB3, TX PB4 Используется периферийный контроллер последовательного порта #7 */
-	#define WITHCAT7_UART4	1	// сетевой интерфейс SLIP на UART7
+	#define WITHSLIP_UART4	1	// сетевой интерфейс SLIP на UART7
 	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 
 #elif 0
 	#define WITHUART7HW	1	/* RX PB3, TX PB4 Используется периферийный контроллер последовательного порта #7 */
-	#define WITHCAT7_UART7	1	// сетевой интерфейс SLIP на UART7
+	#define WITHSLIP_UART7	1	// сетевой интерфейс SLIP на UART7
 	#define WITHUART7HW_FIFO	1	/* испольование FIFO */
 
-	//#define WITHCAT_USART1		1
+	//#define WITHCAT_UART1		1
 	#define WITHDEBUG_UART4	1
 
 #endif
@@ -103,7 +103,7 @@
 #elif 0
 
 	#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
-	#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
+	#define WITHSLIP_UART5	1	// сетевой интерфейс SLIP на UART5
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
@@ -141,7 +141,7 @@
 
 #else
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на USB CDC
+	#define WITHSLIP_CDC	1	// сетевой интерфейс SLIP на USB CDC
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
 
@@ -279,7 +279,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -301,7 +301,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

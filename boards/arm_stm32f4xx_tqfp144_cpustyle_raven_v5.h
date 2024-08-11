@@ -73,7 +73,7 @@
 
 	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
-	#define WITHCAT_USART1		1
+	#define WITHCAT_UART1		1
 	#define WITHDEBUG_UART1	1
 	#define WITHMODEM_UART1	1
 
@@ -254,7 +254,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART1)
+#if (WITHCAT && WITHCAT_UART1)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -287,7 +287,7 @@
 			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART1) */
+#endif /* (WITHCAT && WITHCAT_UART1) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

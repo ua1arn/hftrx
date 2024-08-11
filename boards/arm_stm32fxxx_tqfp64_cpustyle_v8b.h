@@ -49,7 +49,7 @@
 
 	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
-	#define WITHCAT_USART1		1
+	#define WITHCAT_UART1		1
 	#define WITHMODEM_UART1	1
 	#define WITHMODEM_UART1	1
 

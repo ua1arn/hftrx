@@ -51,7 +51,7 @@
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
 
-	//#define WITHCAT_USART3	1
+	//#define WITHCAT_UART3	1
 	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 
@@ -121,7 +121,7 @@
 	// USB host parameters
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHCAT_USART2	1
+	//#define WITHCAT_UART2	1
 	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
 
@@ -363,7 +363,7 @@
 #endif /* WITHSDHCHW */
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART1)
+#if (WITHCAT && WITHCAT_UART1)
 	// CAT data lites
 	// RXD at P6_14, TXD at P6_15
 
@@ -387,7 +387,7 @@
 			arm_hardware_pio2_inputs(FROMCAT_BIT_RTS); \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART1) */
+#endif /* (WITHCAT && WITHCAT_UART1) */
 
 #if (WITHCAT && WITHCAT_CDC)
 	// CAT data lites

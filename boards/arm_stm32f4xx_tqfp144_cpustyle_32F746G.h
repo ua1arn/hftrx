@@ -68,7 +68,7 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 //#define WITHMODEM_CDC	1
-//#define WITHCAT_USART2		1
+//#define WITHCAT_UART2		1
 //#define WITHDEBUG_CDC	1
 //#define WITHDEBUG			1
 #define WITHDEBUG_UART1	1
@@ -271,7 +271,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART1)
+#if (WITHCAT && WITHCAT_UART1)
 	// CAT data lites
 	// RXD at PB7, TXD at PA9
 
@@ -297,9 +297,9 @@
 			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART1) */
+#endif /* (WITHCAT && WITHCAT_UART1) */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -321,7 +321,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHNMEA && WITHNMEA_UART1)
 	// CAT data lites
