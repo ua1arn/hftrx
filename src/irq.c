@@ -1066,8 +1066,6 @@ void IRQ_Handler_GIC(void)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
-	#if WITHNESTEDINTERRUPTS
-
 		if (f != (IRQHandler_t) 0)
 		{
 //			static const char hex [16] = "0123456789ABCDEF";
@@ -1080,15 +1078,6 @@ void IRQ_Handler_GIC(void)
 			__disable_irq();					/* modify I bit in CPSR */
 			//dbg_putchar('_');
 		}
-
-	#else /* WITHNESTEDINTERRUPTS */
-
-		if (f != (IRQHandler_t) 0)
-		{
-			(* f)();	    /* Call interrupt handler */
-		}
-
-	#endif /* WITHNESTEDINTERRUPTS */
 
 		//dbg_putchar('5');
 	}
@@ -1600,7 +1589,7 @@ void VMEI_Handler(void)
 	//PRINTF(/* "VMEI_Handler enter: int_" */ "ID=%u\n", int_id);
 	if (int_id != 0)
 	{
-	#if WITHNESTEDINTERRUPTS
+		// nested interrupts support
 		const uint_fast8_t priority = PLIC->PLIC_MTH_REG;	/* текущий уровень приоритета (bits 4..0) */
 		PLIC->PLIC_MTH_REG = PLIC->PLIC_PRIO_REGn [int_id];	/* обрабатываемый уровень приоритета */
 		const uint_xlen_t mepc = csr_read_mepc();
@@ -1608,16 +1597,16 @@ void VMEI_Handler(void)
 		const uint_xlen_t mstatus = csr_read_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); /* раразршение прерываний */
 		ASSERT((mstatus & MSTATUS_MIE_BIT_MASK) == 0);	/* прерывания были запрещены при входе в обработчик */
 		//ASSERT(PLIC->PLIC_MTH_REG > priority);		/* прервать может только более высокий уровень */
-	#endif /* WITHNESTEDINTERRUPTS */
+
 		__FPU_Enable();
 		ASSERT(int_id < MAX_IRQ_n);
 		(plic_vectors [int_id])();
-	#if WITHNESTEDINTERRUPTS
+
 		csr_write_mstatus(mstatus);		/* прерывания запрещаются здесь - до mret */
 		csr_write_mcause(mcause);
 		csr_write_mepc(mepc);
 		PLIC->PLIC_MTH_REG = priority;	/* восстанавливаем обрабатываемый уровень приоритета */
-	#endif /* WITHNESTEDINTERRUPTS */
+
 		PLIC->PLIC_MCLAIM_REG = int_id;	/* EOI */
 	}
 	//PRINTF(/* "VMEI_Handler  exit: int_" */ "id=%u\n", int_id);
@@ -2380,7 +2369,6 @@ void cpu_initialize(void)
 		r7s721_intc_initialize();
 	#endif /* CPUSTYLE_R7S721 */
 
-	#if WITHNESTEDINTERRUPTS
 		gARM_OVERREALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
 		gARM_REALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
 		gARM_SYSTEM_PRIORITY = GIC_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
@@ -2390,7 +2378,6 @@ void cpu_initialize(void)
 		gARM_BASEPRI_ALL_ENABLED = GIC_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
 
 		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
 	#if WITHSMPSYSTEM

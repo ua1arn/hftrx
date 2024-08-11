@@ -73,11 +73,11 @@ uint8_t stream_get_state(void);
 
 #endif /* WITHEXTIO_LAN */
 
-extern pthread_mutex_t md;
+extern pthread_mutex_t linux_md;
 
 #define LCLSPINLOCK_t		pthread_mutex_t
 #define LCLSPINLOCK_INIT	PTHREAD_MUTEX_INITIALIZER
-#define LCLSPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & md, sizeof(md)); } while(0)
+#define LCLSPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & linux_md, sizeof(linux_md)); } while(0)
 
 struct cond_thread {
     pthread_cond_t   ready_cond;

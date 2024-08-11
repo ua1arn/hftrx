@@ -14841,29 +14841,12 @@ void vApplicationIRQHandler( uint32_t ulICCIAR )
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
-	#if 0//WITHNESTEDINTERRUPTS
-
-		if (f != (IRQHandler_t) 0)
-		{
-//			static const char hex [16] = "0123456789ABCDEF";
-//			if ((int_id >> 8) & 0x0F)
-//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
-//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
-//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
-			__enable_irq();						/* modify I bit in CPSR */
-			(* f)();	    /* Call interrupt handler */
-			__disable_irq();					/* modify I bit in CPSR */
-			//dbg_putchar('_');
-		}
-
-	#else /* WITHNESTEDINTERRUPTS */
 
 		if (f != (IRQHandler_t) 0)
 		{
 			(* f)();	    /* Call interrupt handler */
 		}
 
-	#endif /* WITHNESTEDINTERRUPTS */
 
 		//dbg_putchar('5');
 	}

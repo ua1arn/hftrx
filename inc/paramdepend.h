@@ -1030,36 +1030,26 @@ extern "C" {
 
 #elif defined (__CORTEX_M)
 
-	/* Cortex-M tergets */
+	/* Cortex-M targets */
 
 	typedef uint_fast32_t IRQL_t;
 
-	#if WITHNESTEDINTERRUPTS
+	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
+	extern uint32_t gARM_OVERREALTIME_PRIORITY;
+	extern uint32_t gARM_REALTIME_PRIORITY;
+	extern uint32_t gARM_SYSTEM_PRIORITY;
+	extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
+	extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
+	extern uint32_t gARM_BASEPRI_ALL_ENABLED;
+	// See usage of functions NVIC_PriorityGroupConfig and NVIC_SetPriorityGrouping
+	// A lower priority value indicating a higher priority of running handler
+	#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
+	#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
+	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
-		extern uint32_t gARM_OVERREALTIME_PRIORITY;
-		extern uint32_t gARM_REALTIME_PRIORITY;
-		extern uint32_t gARM_SYSTEM_PRIORITY;
-		extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
-		extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
-		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
-		// See usage of functions NVIC_PriorityGroupConfig and NVIC_SetPriorityGrouping
-		// A lower priority value indicating a higher priority of running handler
-		#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
-		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
-		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
-
-		#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-		#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-		#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-		
-	#else /* WITHNESTEDINTERRUPTS */
-
-		#define ARM_OVERREALTIME_PRIORITY	(0)
-		#define ARM_REALTIME_PRIORITY	(0)
-		#define ARM_SYSTEM_PRIORITY	(0)
-
-	#endif /* WITHNESTEDINTERRUPTS */
+	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)
@@ -1084,82 +1074,63 @@ extern "C" {
 
 	typedef uint_fast32_t IRQL_t;
 
-	#if WITHNESTEDINTERRUPTS
+	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
+	extern uint32_t gARM_OVERREALTIME_PRIORITY;
+	extern uint32_t gARM_REALTIME_PRIORITY;
+	extern uint32_t gARM_SYSTEM_PRIORITY;
+	extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
+	extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
+	extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 
-		// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
-		extern uint32_t gARM_OVERREALTIME_PRIORITY;
-		extern uint32_t gARM_REALTIME_PRIORITY;
-		extern uint32_t gARM_SYSTEM_PRIORITY;
-		extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
-		extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
-		extern uint32_t gARM_BASEPRI_ALL_ENABLED;
+	#define GIC_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
 
-		#define GIC_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
+	#define IRQL_SYSTEM GIC_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
+	#define IRQL_REALTIME GIC_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
+	#define IRQL_OVERREALTIME GIC_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
+	/*
+		GICC_PMR == INTC.ICCPMR
 
-		#define IRQL_SYSTEM GIC_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
-		#define IRQL_REALTIME GIC_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
-		#define IRQL_OVERREALTIME GIC_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
-		/*
-			GICC_PMR == INTC.ICCPMR
+		Provides an interrupt priority filter.
+		Only interrupts with higher priority than the value in this
+		register are signaled to the processor.
 
-			Provides an interrupt priority filter. 
-			Only interrupts with higher priority than the value in this
-			register are signaled to the processor.
+	*/
+	enum
+	{
+		PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+		PRI_IPC_ONLY,
+		PRI_OVRT,
+		PRI_RT,
+		PRI_SYS,
+		PRI_USER,
 
-		*/
-		enum
-		{
-			PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
-			PRI_IPC_ONLY,
-			PRI_OVRT,
-			PRI_RT,
-			PRI_SYS,
-			PRI_USER,
-
-//			gARM_OVERREALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
-//			gARM_REALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
-//			gARM_SYSTEM_PRIORITY = GIC_ENCODE_PRIORITY(PRI_SYS),		// value for GIC_SetPriority
+//		gARM_OVERREALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
+//		gARM_REALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
+//		gARM_SYSTEM_PRIORITY = GIC_ENCODE_PRIORITY(PRI_SYS),		// value for GIC_SetPriority
 //
-//			gARM_BASEPRI_ONLY_REALTIME = GIC_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
-//			gARM_BASEPRI_ALL_ENABLED = GIC_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
-			PRI_count
-		};
+//		gARM_BASEPRI_ONLY_REALTIME = GIC_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
+//		gARM_BASEPRI_ALL_ENABLED = GIC_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
+		PRI_count
+	};
 
-		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
-		#define BOARD_SGI_PRIO	GIC_ENCODE_PRIORITY(PRI_IPC)
+	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
+	#define BOARD_SGI_PRIO	GIC_ENCODE_PRIORITY(PRI_IPC)
 
-		#define RUNNING_PRI	((GICInterface->RPR & 0xFF) >> GIC_PRIORITYSHIFT) // The current running priority on the CPU interface.
+	#define RUNNING_PRI	((GICInterface->RPR & 0xFF) >> GIC_PRIORITYSHIFT) // The current running priority on the CPU interface.
 
-		// A lower priority value indicating a higher priority
-		#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
-		#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
-		#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
+	// A lower priority value indicating a higher priority
+	#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
+	#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
+	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-		#if defined(__aarch64__)
+	#if defined(__aarch64__)
 
-			#define global_enableIRQ() do { \
-				} while (0)
-			#define global_disableIRQ() do { \
+		#define global_enableIRQ() do { \
 			} while (0)
+		#define global_disableIRQ() do { \
+		} while (0)
 
-		#else /* defined(__aarch64__) */
-
-			#define global_enableIRQ() do { \
-				__enable_irq(); \
-				} while (0)
-			#define global_disableIRQ() do { \
-				__disable_irq(); \
-			} while (0)
-		#endif /* defined(__aarch64__) */
-
-	#else /* WITHNESTEDINTERRUPTS */
-
-		#define ARM_OVERREALTIME_PRIORITY	0
-		#define ARM_REALTIME_PRIORITY	0
-		#define ARM_SYSTEM_PRIORITY		0
-
-		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
-		#define BOARD_SGI_PRIO	0
+	#else /* defined(__aarch64__) */
 
 		#define global_enableIRQ() do { \
 			__enable_irq(); \
@@ -1167,8 +1138,7 @@ extern "C" {
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
 		} while (0)
-
-	#endif /* WITHNESTEDINTERRUPTS */
+	#endif /* defined(__aarch64__) */
 
 #elif CPUSTYLE_RISCV
 
@@ -2247,7 +2217,7 @@ extern "C" {
 #else
 	//#error Undefined CTLREGMODE_xxx option
 #endif
-#define WITHHARDINTERLOCK (WITHNESTEDINTERRUPTS && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 || (__CORTEX_A != 0)))
+#define WITHHARDINTERLOCK (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 || (__CORTEX_A != 0))
 
 #ifndef WITHFLATMENU
 	#define WITHFLATMENU (CTLSTYLE_SW2011ALL && ! CPUSTYLE_ATMEGA_XXX4)

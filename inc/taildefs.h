@@ -142,13 +142,15 @@ typedef struct irqlspinlock_tag
 
 #define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); } while (0)
+
 #else /* ! LINUX_SUBSYSTEM */
 
 /* Linux targets: No any hardware IRQ control */
 
 #define IRQLSPINLOCK_t lclspinlock_t
 
-#define IRQLSPINLOCK_INIT { md }
+extern pthread_mutex_t linux_md;	/* added by mgs */
+#define IRQLSPINLOCK_INIT { linux_md }
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
@@ -219,7 +221,7 @@ void LowerIrql(IRQL_t newIRQL);
 	{
 		LIST_ENTRY item;
 		uint8_t flag;
-		void (* fn)(void *);
+		udpcfn_t fn;
 		void * ctx;
 	} dpcobj_t;
 
@@ -227,7 +229,7 @@ void LowerIrql(IRQL_t newIRQL);
 	void board_dpc_processing(void);
 	uint_fast8_t board_dpc_addentry(dpcobj_t * dp);	// Запрос периодического вызова user-mode функциии (0 - уже помещён в список)
 	uint_fast8_t board_dpc_call(dpcobj_t * dp); // Запрос отложенного вызова user-mode функции (0 - ранее запрошенный вызов еще не выполнился)
-	uint_fast8_t board_dpc_delentry(dpcobj_t * dp);	// Удвление
+	uint_fast8_t board_dpc_delentry(dpcobj_t * dp);	// Удаление периодического вызова
 
 	void board_dpc_initialize(void);	/* инициализация списка user-mode опросных функций */
 

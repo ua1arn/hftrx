@@ -35,7 +35,7 @@
 
 //#define WITHISBOOTLOADER	1	/* выполняем make bootloader */
 //#define WITHISBOOTLOADER0	(WITHISBOOTLOADER && CPUSTYLE_R7S721)	/* Renesas specific option - FSBL. Открыть эту строку и запустить make bootloader */
-//#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* T507, H616, A64, T113-s4 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */
+//#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* for xfel: T507, H616, A64, T113-s4 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */
 
 // Дисплей с фреймбуфером:
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N

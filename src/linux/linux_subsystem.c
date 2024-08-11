@@ -1095,7 +1095,7 @@ void linux_wait_iq(void)
 
 /****************************************************************/
 
-pthread_mutex_t md = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t linux_md = PTHREAD_MUTEX_INITIALIZER;
 
 void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 {

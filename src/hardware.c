@@ -2945,9 +2945,7 @@ sysinit_fpu_initialize(void)
 
 	{
 		GIC_Enable();
-	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));
-	#endif /* WITHNESTEDINTERRUPTS */
+		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));	// nested interrupts support
 	}
 
 #endif
@@ -3116,13 +3114,10 @@ sysinit_vbar_initialize(void)
 #if WITHRTOS
 	extern unsigned long __Vectors_rtos;
 	const uintptr_t vbase = (uintptr_t) & __Vectors_rtos;
-#elif WITHNESTEDINTERRUPTS
-	extern unsigned long __Vectors_nested;
-	const uintptr_t vbase = (uintptr_t) & __Vectors_nested;
-#else /* WITHNESTEDINTERRUPTS */
+#else /* WITHRTOS */
 	extern unsigned long __Vectors;
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
-#endif /* WITHNESTEDINTERRUPTS */
+#endif /* WITHRTOS */
 
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
 
@@ -4379,9 +4374,7 @@ void Reset_CPUn_Handler(void)
 
 	{
 		GIC_Enable();
-	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_IPC_ONLY));
-	#endif /* WITHNESTEDINTERRUPTS */
+		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_IPC_ONLY));	// nested interrupts support
 	}
 
 	L1C_InvalidateDCacheAll();
@@ -4404,9 +4397,7 @@ void Reset_CPUn_Handler(void)
 	unsigned core = arm_hardware_cpuid();
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
-#if WITHNESTEDINTERRUPTS
-	GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));
-#endif /* WITHNESTEDINTERRUPTS */
+	GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));	// nested interrupts support
 
 #if WITHLWIP
 	network_initialize();

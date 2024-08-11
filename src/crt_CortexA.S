@@ -84,40 +84,16 @@ __Vectors:
 	ldr pc, IRQAddr      /* IRQ interrupt         */
 	ldr pc, FIQAddr      /* FIQ interrupt         */
 
+ResetAddr:	.word Reset_Handler
+UndefAddr:  .word Undef_Handler
+SWIAddr:    .word SWI_Handler
+PAbortAddr: .word PAbort_Handler
+DAbortAddr: .word DAbort_Handler
+HypAddr:  	.word Hyp_Handler
+IRQAddr:    .word IRQ_Handler
+FIQAddr:    .word FIQ_Handler
 
-ResetAddr:     .word Reset_Handler
-UndefAddr:     .word Undef_Handler
-SWIAddr:       .word SWI_Handler
-PAbortAddr:    .word PAbort_Handler
-DAbortAddr:    .word DAbort_Handler
-HypAddr:  	   .word Hyp_Handler
-IRQAddr:       .word IRQ_Handler
-FIQAddr:       .word FIQ_Handler
-	.ltorg
-
-	.align 6
-	.global __Vectors_nested
-__Vectors_nested:
-	ldr pc, ResetAddr_n    /* Reset                 */
-	ldr pc, UndefAddr_n    /* Undefined instruction */
-	ldr pc, SWIAddr_n      /* Software interrupt    */
-	ldr pc, PAbortAddr_n   /* Prefetch abort        */
-	ldr pc, DAbortAddr_n   /* Data abort            */
-	ldr pc, HypAddr_n 		/* Entry to Hyp mode	 */
-	ldr pc, IRQAddr_n      /* IRQ interrupt         */
-	ldr pc, FIQAddr_n      /* FIQ interrupt         */
-
-
-ResetAddr_n:     .word Reset_Handler
-UndefAddr_n:     .word Undef_Handler
-SWIAddr_n:       .word SWI_Handler
-PAbortAddr_n:    .word PAbort_Handler
-DAbortAddr_n:    .word DAbort_Handler
-HypAddr_n:  	 .word Hyp_Handler
-IRQAddr_n:       .word IRQ_Handler_n
-FIQAddr_n:       .word FIQ_Handler
    .ltorg
-
 
 	.align 6
 	.global __Vectors_rtos
@@ -348,7 +324,6 @@ ExitFunction:
 */
  	.align 	4, 0
     .func   IRQ_Handler
-IRQ_Handler_n:
 IRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
