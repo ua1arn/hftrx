@@ -67,10 +67,10 @@
 
 #if WITHDEBUG
 	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART2HW_FIFO	1	/* испольование FIFO */
 #elif WITHAUTOTUNER_UA1CEI
 	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART2HW_FIFO	1	/* испольование FIFO */
 	void user_uart2_onrxchar(uint_fast8_t c);
 	void user_uart2_ontxchar(void * ctx);
 	#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar((c)); } while (0)

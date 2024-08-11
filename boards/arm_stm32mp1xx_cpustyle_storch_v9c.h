@@ -42,18 +42,18 @@
 
 #if WITHDEBUG
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 	#define WITHDEBUG_UART4	1
 #endif /* WITHDEBUG */
 
 #if WITHLFM
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 #if 0
 	#define WITHCAT_USART4		1
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
 #endif
 

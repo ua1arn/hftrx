@@ -46,12 +46,12 @@
 	// debug config
 	#define WITHUART4HW	1	/* RX PB3, TX PB4 Используется периферийный контроллер последовательного порта #7 */
 	#define WITHCAT7_UART4	1	// сетевой интерфейс SLIP на UART7
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
 
 #elif 0
 	#define WITHUART7HW	1	/* RX PB3, TX PB4 Используется периферийный контроллер последовательного порта #7 */
 	#define WITHCAT7_UART7	1	// сетевой интерфейс SLIP на UART7
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART7HW_FIFO	1	/* испольование FIFO */
 
 	//#define WITHCAT_USART1		1
 	#define WITHDEBUG_UART4	1

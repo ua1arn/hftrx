@@ -391,11 +391,11 @@ void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	UART5->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART5HW_FIFO
 	UART5->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART5HW_FIFO */
 	UART5->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART5HW_FIFO */
 
 	UART5->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -510,11 +510,11 @@ xxxx!;
 
 	UART5->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART5HW_FIFO
 	UART5->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART5HW_FIFO */
 	UART5->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART5HW_FIFO */
 
 	UART5->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

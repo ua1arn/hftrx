@@ -460,11 +460,11 @@ void hardware_uart4_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	UART4->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART4HW_FIFO
 	UART4->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART4HW_FIFO */
 	UART4->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART4HW_FIFO */
 
 	UART4->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -602,11 +602,11 @@ xxxx!;
 
 	UART4->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART4HW_FIFO
 	UART4->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART4HW_FIFO */
 	UART4->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART4HW_FIFO */
 
 	UART4->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

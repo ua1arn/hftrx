@@ -35,7 +35,7 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
 	#define WITHUART1HW	1	// tx: PG6 rx: PG7 Используется периферийный контроллер последовательного порта #1 UART1 */
-	//#define WITHUARTFIFO	1	/* испольование FIFO */
+	//#define WITHUART1HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 #define WITHDEBUG_UART1	1

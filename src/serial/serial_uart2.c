@@ -417,11 +417,11 @@ void hardware_uart2_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	USART2->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART2HW_FIFO
 	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART2HW_FIFO */
 	USART2->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART2HW_FIFO */
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -567,11 +567,11 @@ xxxx!;
 
 	USART2->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART2HW_FIFO
 	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART2HW_FIFO */
 	USART2->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART2HW_FIFO */
 
 	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

@@ -376,11 +376,11 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	USART3->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART3HW_FIFO
 	USART3->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART3HW_FIFO */
 	USART3->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART3HW_FIFO */
 
 	USART3->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 
@@ -471,11 +471,11 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	USART3->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART3HW_FIFO
 	USART3->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART3HW_FIFO */
 	USART3->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART3HW_FIFO */
 
 	USART3->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

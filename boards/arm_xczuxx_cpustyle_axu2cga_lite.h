@@ -67,7 +67,7 @@ enum {
 #define CALIBRATION_TX_SHIFT			25
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-//#define WITHUARTFIFO	1	/* испольование FIFO */
+//#define WITHUART2HW_FIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
 //#define WITHDEBUG_USART2	1

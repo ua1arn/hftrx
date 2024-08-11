@@ -53,7 +53,9 @@
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 //#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 //#define WITHUART7HW	1	/* PF6, PF7: UART7_RX=PF6, UART7_TX=PF7 Используется периферийный контроллер последовательного порта #2 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
+#define WITHUART1HW_FIFO	1	/* испольование FIFO */
+#define WITHUART2HW_FIFO	1	/* испольование FIFO */
+#define WITHUART7HW_FIFO	1	/* испольование FIFO */
 
 #define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1

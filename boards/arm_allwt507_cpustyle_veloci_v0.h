@@ -35,7 +35,7 @@
 	#define WITHUART0HW	1		/* отлдочный порт */
 #endif /* WITHDEBUG */
 
-//#define WITHUARTFIFO	1	/* испольование FIFO */
+//#define WITHUART5HW_FIFO	1	/* испольование FIFO */
 #define WITHUART5HW	1		/* mini dinn8	*/
 //#define WITHCAT_USART5 1
 

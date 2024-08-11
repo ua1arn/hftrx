@@ -830,11 +830,11 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	USART1->CR1 = 0;
 
 #if ! defined (__CORTEX_M)
-#if WITHUARTFIFO
+#if WITHUART1HW_FIFO
 	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART1HW_FIFO */
 	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART1HW_FIFO */
 #endif
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
@@ -1009,11 +1009,11 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	USART1->CR1 = 0;
 
-#if WITHUARTFIFO
+#if WITHUART1HW_FIFO
 	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUARTFIFO */
+#else /* WITHUART1HW_FIFO */
 	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUARTFIFO */
+#endif /* WITHUART1HW_FIFO */
 
 	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
 

@@ -37,7 +37,7 @@
 
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
-	//#define WITHUARTFIFO	1	/* испольование FIFO */
+	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART0		1

@@ -40,7 +40,7 @@
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
 #define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
+#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 
 #define WITHDEBUG_UART0	1
 

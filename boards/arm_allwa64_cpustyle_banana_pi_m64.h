@@ -30,7 +30,7 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
-	//#define WITHUARTFIFO	1	/* испольование FIFO */
+	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART0		1

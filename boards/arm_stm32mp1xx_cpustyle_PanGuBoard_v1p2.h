@@ -27,15 +27,14 @@
 
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#define WITHUARTFIFO	1	/* испольование FIFO */
 
 #if WITHDEBUG
 	//#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
 	#define WITHUART4HW	1	/* debug PanGu Board UART4_RX PB2, UART4_TX PG11 Используется периферийный контроллер последовательного порта #4 */
+	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
+	#define WITHDEBUG_UART4	1
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-#define WITHDEBUG_UART4	1
 
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
 //#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5

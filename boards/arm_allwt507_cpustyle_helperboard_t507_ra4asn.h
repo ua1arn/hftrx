@@ -42,7 +42,7 @@
 #if WITHDEBUG
     #define WITHDEBUG_UART0    1
     #define WITHUART0HW    1
-	//#define WITHUARTFIFO	1	/* испольование FIFO */
+	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 #if WITHISBOOTLOADER
