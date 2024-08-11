@@ -35,35 +35,46 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-
 // OHCI at USB1HSFSP2_BASE
 //#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
-#if WITHDEBUG
-	#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
-	#define WITHUART1HW_FIFO	1	/* испольование FIFO */
-	#define WITHDEBUG_UART1	1
-#endif /* WITHDEBUG */
+#if 1
+	// work
 
-#if WITHLFM
-	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
-	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
-#endif /* WITHDEBUG */
+	#if WITHCAT
+		// Disable WITHCAT_CDC
+		#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+		#define WITHUART1HW_FIFO	1	/* использование FIFO */
+		#define WITHCATSPEED 115200
+		#define WITHCAT_UART1		1
+	#endif /* WITHCAT */
 
-#if WITHCAT && 1
-	// Disable WITHCAT_CDC
-	#define WITHCATSPEED 115200
-	#define WITHCAT_UART1		1
-	#define WITHUART1HW_FIFO	1	/* испольование FIFO */
-	#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
-#endif /* WITHCAT */
+	#if WITHDEBUG
+		#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW_FIFO	1	/* использование FIFO */
+		#define WITHDEBUG_UART4	1
+	#endif /* WITHDEBUG */
 
-#if 0
-	// antenna controller
-	#define WITHCAT_UART4		1
-	#define WITHUART4HW_FIFO	1	/* испольование FIFO */
-	#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+	#if 0
+		// antenna controller
+		#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW_FIFO	1	/* использование FIFO */
+		#define WITHCAT_UART4		1
+	#endif
+
+	#if WITHLFM
+		#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW_FIFO	1	/* использование FIFO */
+	#endif /* WITHDEBUG */
+
+#else
+	// swap portr
+
+	#if WITHDEBUG
+		#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+		#define WITHUART1HW_FIFO	1	/* использование FIFO */
+		#define WITHDEBUG_UART1	1
+	#endif /* WITHDEBUG */
 #endif
 
 #define BOARD_TUH_RHPORT 1
@@ -519,6 +530,27 @@
 
 #endif /* WITHSDHCHW */
 
+
+	#define HOSTBB_LED1_BIT  (UINT32_C(1) << 5)	// PB5 - led on host board
+	#define HOSTBB_LED2_BIT  (UINT32_C(1) << 7)	// PC7 - led/heartbeat from ethernet modula
+	#define HOSTBB_PTTIN_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN
+	#define HOSTBB_PTTOUT_BIT  (UINT32_C(1) << 10)	// PH10 - PTT_OUT
+	#define HOSTBB_RESET_BIT  (UINT32_C(1) << 11)	// PH11 - RESET OUT
+	#define HOSTBB_RESET2_BIT  (UINT32_C(1) << 12)	// PH12 - RESET_OUT2
+
+	#define HOSTBB_INITIALIZE() do { \
+		arm_hardware_pioh_inputs(HOSTBB_PTTIN_BIT); /* set as input with pull-up */ \
+		arm_hardware_pioh_updown(HOSTBB_PTTIN_BIT, HOSTBB_PTTIN_BIT, 0); \
+		arm_hardware_pioc_inputs(HOSTBB_LED2_BIT); /* set as input with pull-up */ \
+		arm_hardware_pioc_updown(HOSTBB_LED2_BIT, 0, HOSTBB_LED2_BIT); \
+		arm_hardware_pioh_opendrain(HOSTBB_PTTOUT_BIT, HOSTBB_PTTOUT_BIT); /* open drain */ \
+		arm_hardware_pioh_opendrain(HOSTBB_RESET_BIT, 0 * HOSTBB_RESET_BIT); /* open drain */ \
+		arm_hardware_pioh_opendrain(HOSTBB_RESET2_BIT, 0 * HOSTBB_RESET2_BIT); /* open drain */ \
+		local_delay_ms(10); \
+		arm_hardware_pioh_opendrain(HOSTBB_RESET_BIT, 1 * HOSTBB_RESET_BIT); /* open drain */ \
+		arm_hardware_pioh_opendrain(HOSTBB_RESET2_BIT, 1 * HOSTBB_RESET2_BIT); /* open drain */ \
+	} while (0)
+
 #if WITHTX
 
 	// txpath outputs not used
@@ -560,8 +592,11 @@
 	#define PTT2_BIT_PTT				(UINT32_C(1) << 3)		// PF3 - PTT2
 	#define PTT3_TARGET_PIN				(gpioX_getinputs(GPIOF))
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 15)		// PF15 - PTT3
+
+	#define PTT4_TARGET_PIN				(gpioX_getinputs(GPIOH))
+	#define PTT4_BIT_PTT				HOSTBB_PTTIN_BIT	// PH9 - PTT_IN
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 /*|| (PTT4_TARGET_PIN & PTT4_BIT_PTT) == 0*/)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
@@ -570,6 +605,8 @@
 			arm_hardware_piof_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
 			arm_hardware_piof_inputs(PTT3_BIT_PTT); \
 			arm_hardware_piof_updown(PTT3_BIT_PTT, PTT3_BIT_PTT, 0); \
+			/*arm_hardware_pioh_inputs(PTT4_TARGET_PIN); */\
+			/*arm_hardware_pioh_updown(PTT4_TARGET_PIN, PTT4_TARGET_PIN, 0); */\
 		} while (0)
 	// ---
 	// TUNE input - PF4
@@ -713,6 +750,7 @@
 
 // WITHUART4HW
 // PB8 UART4-RX, PH13 UART4-TX
+// Разъем IDC-40
 #define HARDWARE_UART4_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (UINT32_C(1) << 13); /* PH13: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (UINT32_C(1) << 8); /* PB8: RX DATA line (2 MHz) - pull-up RX data */  \
@@ -1150,19 +1188,18 @@
 	#endif
 
 	#define BOARD_BLINK_BIT (UINT32_C(1) << 13)	// PA13 - led on Storch board
-	#define BOARD_BLINK2_BIT (UINT32_C(1) << 5)	// PB5 - led on host board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_pioa_opendrain(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
-		arm_hardware_piob_outputs(BOARD_BLINK2_BIT, 1 * BOARD_BLINK2_BIT); \
+		arm_hardware_piob_outputs(HOSTBB_LED1_BIT, 1 * HOSTBB_LED1_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) { \
 				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
-				(GPIOB)->BSRR = BSRR_S(BOARD_BLINK2_BIT); \
+				(GPIOB)->BSRR = BSRR_S(HOSTBB_LED1_BIT); \
 			} else {\
 				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
-				(GPIOB)->BSRR = BSRR_C(BOARD_BLINK2_BIT); \
+				(GPIOB)->BSRR = BSRR_C(HOSTBB_LED1_BIT); \
 			} \
 		} while (0)
 
@@ -1173,9 +1210,6 @@
 			arm_hardware_piog_inputs(BOARD_GPIOG_USERBOOT_BIT); /* set as input with pull-up */ \
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
 		} while (0)
-
-	#define HOSTBB_INITIALIZE() do { \
-	} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \

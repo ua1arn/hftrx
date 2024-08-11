@@ -12116,7 +12116,7 @@ void hightests(void)
 		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
 	}
 #endif
-#if 1 && defined (DDRPHYC) && WITHDEBUG && CPUSTYLE_STM32MP1
+#if 0 && defined (DDRPHYC) && WITHDEBUG && CPUSTYLE_STM32MP1
 	{
 		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
 		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
