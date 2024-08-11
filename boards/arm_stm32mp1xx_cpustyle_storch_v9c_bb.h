@@ -41,40 +41,48 @@
 #if 1
 	// work
 
-	#if WITHCAT
-		// Disable WITHCAT_CDC
-		#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
-		#define WITHUART1HW_FIFO	1	/* использование FIFO */
-		#define WITHCATSPEED 115200
-		#define WITHCAT_UART1		1
-	#endif /* WITHCAT */
-
 	#if WITHDEBUG
-		#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 		#define WITHUART4HW_FIFO	1	/* использование FIFO */
 		#define WITHDEBUG_UART4	1
 	#endif /* WITHDEBUG */
 
+	#if WITHCAT
+		// Disable WITHCAT_CDC
+		#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+		#define WITHUART1HW_FIFO	1	/* использование FIFO */
+		#define WITHCAT_UART1		1
+		#define WITHCATSPEED 115200
+	#endif /* WITHCAT */
+
 	#if 0
 		// antenna controller
-		#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 		#define WITHUART4HW_FIFO	1	/* использование FIFO */
 		#define WITHCAT_UART4		1
 	#endif
 
 	#if WITHLFM
-		#define WITHUART4HW	1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 		#define WITHUART4HW_FIFO	1	/* использование FIFO */
 	#endif /* WITHDEBUG */
 
 #else
-	// swap portr
+	// swap ports
 
 	#if WITHDEBUG
-		#define WITHUART1HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+		#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 		#define WITHUART1HW_FIFO	1	/* использование FIFO */
-		#define WITHDEBUG_UART1	1
+		#define WITHDEBUG_UART1		1
 	#endif /* WITHDEBUG */
+
+	#if WITHCAT
+		// Disable WITHCAT_CDC
+		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
+		#define WITHUART4HW_FIFO	1	/* использование FIFO */
+		#define WITHCAT_UART4		1
+		#define WITHCATSPEED 115200
+	#endif /* WITHCAT */
 #endif
 
 #define BOARD_TUH_RHPORT 1
@@ -533,14 +541,14 @@
 
 	#define HOSTBB_LED1_BIT  (UINT32_C(1) << 5)	// PB5 - led on host board
 	#define HOSTBB_LED2_BIT  (UINT32_C(1) << 7)	// PC7 - led/heartbeat from ethernet modula
-	#define HOSTBB_PTTIN_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN
+	//#define HOSTBB_PTTIN_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN
 	#define HOSTBB_PTTOUT_BIT  (UINT32_C(1) << 10)	// PH10 - PTT_OUT
 	#define HOSTBB_RESET_BIT  (UINT32_C(1) << 11)	// PH11 - RESET OUT
 	#define HOSTBB_RESET2_BIT  (UINT32_C(1) << 12)	// PH12 - RESET_OUT2
 
 	#define HOSTBB_INITIALIZE() do { \
-		arm_hardware_pioh_inputs(HOSTBB_PTTIN_BIT); /* set as input with pull-up */ \
-		arm_hardware_pioh_updown(HOSTBB_PTTIN_BIT, HOSTBB_PTTIN_BIT, 0); \
+		/*arm_hardware_pioh_inputs(HOSTBB_PTTIN_BIT); *//* set as input with pull-up */ \
+		/*arm_hardware_pioh_updown(HOSTBB_PTTIN_BIT, HOSTBB_PTTIN_BIT, 0); */\
 		arm_hardware_pioc_inputs(HOSTBB_LED2_BIT); /* set as input with pull-up */ \
 		arm_hardware_pioc_updown(HOSTBB_LED2_BIT, 0, HOSTBB_LED2_BIT); \
 		arm_hardware_pioh_opendrain(HOSTBB_PTTOUT_BIT, HOSTBB_PTTOUT_BIT); /* open drain */ \
