@@ -333,8 +333,8 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	io_control(0);
 
 	nau8822_setreg(NAU8822_RESET, 0x00);	// RESET
-	nau8822_setreg(11, 0xFF);	// RESET off (write value ignored)
-	nau8822_setreg(11, 0x00);	// RESET off (write value ignored)
+	nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 0xFF);	// RESET off (write value ignored)
+	nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 0x00);	// RESET off (write value ignored)
 
 	//nau8822_pll(0, 8u << 24);
 
