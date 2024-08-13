@@ -11757,7 +11757,7 @@ updateboardZZZ(
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
 		#if WITHCAT_MUX
-			board_set_catmux(gcatmux);
+			board_set_catmux(gcatmux);	// BOARD_CATMUX_USB or BOARD_CATMUX_DIN8
 		#endif /* WITHCAT_MUX */
 	#endif	/* WITHCAT */
 
