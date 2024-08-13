@@ -4030,7 +4030,11 @@ enum
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
-	#if WITHCAT_CDC
+	#if WITHCAT_MUX
+		enum { nopttsig = BOARD_CATSIG_NONE };
+		enum { nokeysig = BOARD_CATSIG_NONE };
+		static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
+	#elif WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
 			enum { nopttsig = BOARD_CATSIG_SER1_DTR };		// устройство без органов управления и индикации
 			enum { nokeysig = BOARD_CATSIG_NONE };		// устройство без органов управления и индикации
@@ -4047,8 +4051,6 @@ enum
 	static uint_fast8_t catsigptt = nopttsig;	/* Выбраный сигнал для перехода на передачу по CAT */
 #endif /* WITHTX */
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
-
-	static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
 
 #else /* WITHCAT */
 
@@ -11754,7 +11756,9 @@ updateboardZZZ(
 	#if WITHCAT
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
-		board_set_catmux(gcatmux);
+		#if WITHCAT_MUX
+			board_set_catmux(gcatmux);
+		#endif /* WITHCAT_MUX */
 	#endif	/* WITHCAT */
 
 	#if WITHMODEM
@@ -13708,30 +13712,41 @@ void cat2_sendchar(void * ctx)
 	}
 }
 
+static uint_fast8_t cat_answer_ready_uart(void)
+{
+	return 1;
+}
+
+#if WITHUSBHW && WITHUSBCDCACM
+static uint_fast8_t cat_answer_ready_cdcacm(void)
+{
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+	RiseIrql(USBSYS_IRQL, & oldIrql);
+	f = usbd_cdc_ready();
+	LowerIrql(oldIrql);
+	return f;
+}
+#endif /* WITHUSBHW && WITHUSBCDCACM */
+
 // user-mode function
 static uint_fast8_t
 cat_answer_ready(void)
 {
-#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	f = usbd_cdc_ready();
-	LowerIrql(oldIrql);
-	return f;
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
+	return board_get_catmux() == BOARD_CATMUX_USB ? cat_answer_ready_cdcacm() : cat_answer_ready_uart();
+#elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
+	return cat_answer_ready_cdcacm();
 #else /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
-	return 1;
+	return cat_answer_ready_uart();
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
 
-// Вызов из user-mode программы
+#if WITHUSBHW && WITHUSBCDCACM
 static void
-cat_answervariable(const char * p, uint_fast8_t len)
+cat_answervariable_cdcacm(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
-
-#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
 	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -13743,9 +13758,13 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	usbd_cdc_send(p, len);
 	catstateout = CATSTATEO_SENDREADY;
 	LowerIrql(oldIrql);
-	return;
-#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
+}
+#endif /* WITHUSBHW && WITHUSBCDCACM */
 
+static void
+cat_answervariable_uart(const char * p, uint_fast8_t len)
+{
+	IRQL_t oldIrql;
 	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -13766,6 +13785,29 @@ cat_answervariable(const char * p, uint_fast8_t len)
 		HARDWARE_CAT_ENABLETX(0);
 	}
 	LowerIrql(oldIrql);
+}
+
+// Вызов из user-mode программы
+static void
+cat_answervariable(const char * p, uint_fast8_t len)
+{
+	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
+
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
+	if (board_get_catmux() == BOARD_CATMUX_USB)
+	{
+		cat_answervariable_cdcacm(p, len);
+	}
+	else
+	{
+		cat_answervariable_uart(p, len);
+	}
+
+#elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
+	cat_answervariable_cdcacm(p, len);
+#else
+	cat_answervariable_uart(p, len);
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
 
 
@@ -19288,6 +19330,8 @@ void initialize2(void)
 #endif /* WITHTX */
 #ifdef WITHCATSPEED
 	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+#else
+	catbaudrate = findcatbaudrate(catbaudrate, 9600);
 #endif
 	display_reset();
 	display_initialize();
