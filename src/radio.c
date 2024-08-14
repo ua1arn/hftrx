@@ -19328,11 +19328,13 @@ void initialize2(void)
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
 	bandf2adjust_initialize();
 #endif /* WITHTX */
+#if WITHCAT
 #ifdef WITHCATSPEED
 	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
 #else
 	catbaudrate = findcatbaudrate(catbaudrate, 9600);
 #endif
+#endif /* WITHCAT */
 	display_reset();
 	display_initialize();
 
