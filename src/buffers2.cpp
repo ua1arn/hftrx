@@ -1555,7 +1555,6 @@ void save_dmabuffereth0io(uintptr_t addr)
 void release_dmabuffereth0io(uintptr_t addr)
 {
 	eth0io_t * const p = CONTAINING_RECORD(addr, eth0io_t, buff);
-	ASSERT(p->tag == BUFFTAG_RTS96);
 	eth0iodma.release_buffer(p);
 }
 
@@ -3541,6 +3540,7 @@ typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
 } ALIGNX_END colmain0fb_t;
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
