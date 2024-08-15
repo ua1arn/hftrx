@@ -200,16 +200,6 @@ SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
 ifeq (1, 0)
-# unzipLIB
-# https://github.com/bitbank2/unzipLIB.git
-
-UNZIPLIBDIR := $(PRJROOT)/lib/unzipLIB
-DINCDIR += $(UNZIPLIBDIR)/src
-SRCDIRS += $(UNZIPLIBDIR)/src
-
-endif
-
-ifeq (1, 0)
 # FreeRTOS
 RTOSDIR := $(PRJROOT)/lib/FreeRTOS-Kernel-main
 DINCDIR += \
