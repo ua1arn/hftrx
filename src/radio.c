@@ -3626,8 +3626,8 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
-static uint_fast16_t gstep;
-static uint_fast16_t gstepbigv;	/* шаг для второго валкодера в режимие подстройки частоты */
+static uint_fast16_t gstep_ENC1;
+static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 #if ! WITHAGCMODENONE
 static uint_fast8_t gagcmode;
@@ -4030,7 +4030,11 @@ enum
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
-	#if WITHCAT_CDC
+	#if WITHCAT_MUX
+		enum { nopttsig = BOARD_CATSIG_NONE };
+		enum { nokeysig = BOARD_CATSIG_NONE };
+		static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
+	#elif WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
 			enum { nopttsig = BOARD_CATSIG_SER1_DTR };		// устройство без органов управления и индикации
 			enum { nokeysig = BOARD_CATSIG_NONE };		// устройство без органов управления и индикации
@@ -4047,8 +4051,6 @@ enum
 	static uint_fast8_t catsigptt = nopttsig;	/* Выбраный сигнал для перехода на передачу по CAT */
 #endif /* WITHTX */
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
-
-	static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
 
 #else /* WITHCAT */
 
@@ -8509,7 +8511,7 @@ getsubmode(
 
 /* функция вызывается из updateboard при измененияя параметров приёма
  * Устанавливает "кэшированные" состояния режима работы -
-   gsubmode, gstep, gagcmode, gfi, gmode.
+   gsubmode, gstep_ENC1, gagcmode, gfi, gmode.
 */
 static void
 //NOINLINEAT
@@ -8529,18 +8531,28 @@ setgsubmode(
 #if ! WITHAGCMODENONE
 	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
 #endif /* ! WITHAGCMODENONE */
+#if ENCODER2_NOSPOOL
+	// ENCODER2 - тоже высокого разрешения, для перестройки по частоте второго тракта
+	{
+		gstep_ENC1 = pmodet->step10 [0] * 10;
+		gstep_ENC2 = pmodet->step10 [0] * 10;
+		gencderate = 1;
+
+	}
+#else
 	if (gusefast || gbigstep)
 	{
-		gstep = pmodet->step10 [1] * 10;
-		gstepbigv = pmodet->step10 [1] * 10;
+		gstep_ENC1 = pmodet->step10 [1] * 10;
+		gstep_ENC2 = pmodet->step10 [1] * 10;
 		gencderate = 1;
 	}
 	else
 	{
-		gstep = pmodet->step10 [0] * 10;
-		gstepbigv = pmodet->step10 [1] * 10;
-		gencderate = gstep / STEP_MINIMAL;
+		gstep_ENC1 = pmodet->step10 [0] * 10;
+		gstep_ENC2 = pmodet->step10 [1] * 10;
+		gencderate = gstep_ENC1 / STEP_MINIMAL;
 	}
+#endif
 }
 #if ! WITHAGCMODENONE
 #endif /* ! WITHAGCMODENONE */
@@ -11754,7 +11766,9 @@ updateboardZZZ(
 	#if WITHCAT
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
-		board_set_catmux(gcatmux);
+		#if WITHCAT_MUX
+			board_set_catmux(gcatmux);	// BOARD_CATMUX_USB or BOARD_CATMUX_DIN8
+		#endif /* WITHCAT_MUX */
 	#endif	/* WITHCAT */
 
 	#if WITHMODEM
@@ -13708,30 +13722,41 @@ void cat2_sendchar(void * ctx)
 	}
 }
 
+static uint_fast8_t cat_answer_ready_uart(void)
+{
+	return 1;
+}
+
+#if WITHUSBHW && WITHUSBCDCACM
+static uint_fast8_t cat_answer_ready_cdcacm(void)
+{
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+	RiseIrql(USBSYS_IRQL, & oldIrql);
+	f = usbd_cdc_ready();
+	LowerIrql(oldIrql);
+	return f;
+}
+#endif /* WITHUSBHW && WITHUSBCDCACM */
+
 // user-mode function
 static uint_fast8_t
 cat_answer_ready(void)
 {
-#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	f = usbd_cdc_ready();
-	LowerIrql(oldIrql);
-	return f;
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
+	return board_get_catmux() == BOARD_CATMUX_USB ? cat_answer_ready_cdcacm() : cat_answer_ready_uart();
+#elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
+	return cat_answer_ready_cdcacm();
 #else /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
-	return 1;
+	return cat_answer_ready_uart();
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
 
-// Вызов из user-mode программы
+#if WITHUSBHW && WITHUSBCDCACM
 static void
-cat_answervariable(const char * p, uint_fast8_t len)
+cat_answervariable_cdcacm(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
-
-#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
 	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -13743,9 +13768,13 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	usbd_cdc_send(p, len);
 	catstateout = CATSTATEO_SENDREADY;
 	LowerIrql(oldIrql);
-	return;
-#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
+}
+#endif /* WITHUSBHW && WITHUSBCDCACM */
 
+static void
+cat_answervariable_uart(const char * p, uint_fast8_t len)
+{
+	IRQL_t oldIrql;
 	RiseIrql(CATSYS_IRQL, & oldIrql);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
@@ -13766,6 +13795,29 @@ cat_answervariable(const char * p, uint_fast8_t len)
 		HARDWARE_CAT_ENABLETX(0);
 	}
 	LowerIrql(oldIrql);
+}
+
+// Вызов из user-mode программы
+static void
+cat_answervariable(const char * p, uint_fast8_t len)
+{
+	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
+
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
+	if (board_get_catmux() == BOARD_CATMUX_USB)
+	{
+		cat_answervariable_cdcacm(p, len);
+	}
+	else
+	{
+		cat_answervariable_uart(p, len);
+	}
+
+#elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
+	cat_answervariable_cdcacm(p, len);
+#else
+	cat_answervariable_uart(p, len);
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
 
 
@@ -19286,9 +19338,13 @@ void initialize2(void)
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
 	bandf2adjust_initialize();
 #endif /* WITHTX */
+#if WITHCAT
 #ifdef WITHCATSPEED
 	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+#else
+	catbaudrate = findcatbaudrate(catbaudrate, 9600);
 #endif
+#endif /* WITHCAT */
 	display_reset();
 	display_initialize();
 
@@ -19958,7 +20014,7 @@ hamradio_main_step(void)
 			int_least16_t nrotate;
 			int_least16_t nrotate2;
 
-			/* переход по частоте - шаг берется из gstep */
+			/* переход по частоте - шаг берется из gstep_ENC1 */
 			#if WITHBBOX && defined (WITHBBOXFREQ)
 				nrotate = 0;	// ignore encoder
 				nrotate2 = 0;	// ignore encoder
@@ -20067,16 +20123,16 @@ hamradio_main_step(void)
 				{
 					/* Валкодер A: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep * jumpsize * - nrotate), gstep, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate), gstep, TUNE_BOTTOM);
+					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep_ENC1 * jumpsize * - nrotate), gstep_ENC1, tune_bottom(bi_main));
+					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate), gstep_ENC1, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
 				else if (nrotate > 0)
 				{
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep * jumpsize * nrotate), gstep, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep, TUNE_TOP);
+					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep_ENC1 * jumpsize * nrotate), gstep_ENC1, tune_top(bi_main));
+					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep_ENC1, TUNE_TOP);
 					freqchanged = 1;
 				}
 #if ! WITHTOUCHGUI
@@ -20087,16 +20143,16 @@ hamradio_main_step(void)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstepbigv * jumpsize2 * - nrotate2), gstepbigv, tune_bottom(bi_sub));
-					//gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - (jumpsize2 * - nrotate2), gstep, TUNE_BOTTOM);
+					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep_ENC2 * jumpsize2 * - nrotate2), gstep_ENC2, tune_bottom(bi_sub));
+					//gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - (jumpsize2 * - nrotate2), gstep_ENC1, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
 				else if (nrotate2 > 0)
 				{
 					/* Валкодер B: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstepbigv * jumpsize2 * nrotate2), gstepbigv, tune_top(bi_sub));
-					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstepbigv, TUNE_TOP);
+					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep_ENC2 * jumpsize2 * nrotate2), gstep_ENC2, tune_top(bi_sub));
+					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep_ENC2, TUNE_TOP);
 					freqchanged = 1;
 				}
 #endif /* ! WITHTOUCHGUI */

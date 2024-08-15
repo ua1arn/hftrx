@@ -5765,6 +5765,7 @@ board_set_showovf(uint_fast8_t v)
 	glob_showovf = n;
 }
 
+// BOARD_CATMUX_USB or BOARD_CATMUX_DIN8
 void
 board_set_catmux(uint_fast8_t n)	// выбор одного из каналов CAT
 {

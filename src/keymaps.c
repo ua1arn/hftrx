@@ -1066,11 +1066,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 13 BAND UP
 	{ KIF_NONE,		KBD_ENC5_PRESS,			KBD_ENC5_HOLD,			' ', },		// 14 3rd small encoder (encoder5 object) ENCF3
 	{ KIF_NONE,		KBD_ENC6_PRESS,			KBD_ENC6_HOLD,			' ', },		// 15 4th small encoder (encoder6 object) ENCF4
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 16
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 17
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 18
+	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
+	{ KIF_NONE,		KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// 17 RIT
+	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_MAX,			' ', },		// 18 A/B
 	{ KIF_NONE,		KBD_ENC3_PRESS,			KBD_ENC3_HOLD,			' ', },		// 19 1st small encoder (encoder3 object) ENCF1
-	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/PRE
+	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/IPO ATT/PRE
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// 21 ANT1/ANT2
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// 22 TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 23 MOX/TUNE
