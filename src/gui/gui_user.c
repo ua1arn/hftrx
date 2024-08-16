@@ -295,6 +295,9 @@ static window_t windows [] = {
 #if WITHWNB
 	{ WINDOW_WNBCONFIG, 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
 #endif /* WITHWNB */
+#if WITHAD936XIIO
+	{ WINDOW_IIOCONFIG,  	 WINDOW_UTILS,			ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
+#endif /* WITHAD936XIIO */
 };
 
 /* Возврат ссылки на окно */
@@ -2096,9 +2099,12 @@ static void window_utilites_process(void)
 #if WITHIQSHIFT
 		add_element("btn_shift", 100, 44, 0, 0, "IQ shift");
 #endif /* WITHIQSHIFT */
-#if WITHEXTIO_LAN
+#if LINUX_SUBSYSTEM && WITHEXTIO_LAN
 		add_element("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
-#endif /* WITHEXTIO_LAN */
+#endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
+		add_element("btn_9363", 100, 44, 0, 0, "AD9363|stream");
+#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 
 		x = 0;
 		y = 0;
@@ -2170,12 +2176,18 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_SHIFT));
 			}
 #endif /* WITHIQSHIFT */
-#if WITHEXTIO_LAN
+#if LINUX_SUBSYSTEM && WITHEXTIO_LAN
 			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_stream"))
 			{
 				open_window(get_win(WINDOW_EXTIOLAN));
 			}
-#endif /* WITHEXTIO_LAN */
+#endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
+			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_9363"))
+			{
+				open_window(get_win(WINDOW_IIOCONFIG));
+			}
+#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 		}
 		break;
 
@@ -6646,5 +6658,124 @@ static void window_wnbconfig_process(void)
 }
 
 #endif /* WITHWNB */
+
+#if WITHAD936XIIO
+
+static void window_iioconfig_process(void)
+{
+	window_t * const win = get_win(WINDOW_IIOCONFIG);
+	static unsigned update = 0;
+	static int status = 10;
+
+	const char status_str[3][20] = { "AD936x found", "Error", "Streaming" };
+	const char button_str[3][10] = { "Start", "Find", "Stop" };
+	static char uri[20] = "usb:";
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		unsigned x = 0, y = 0, interval = 24;
+
+		add_element("lbl_status", 0, FONT_MEDIUM, COLORPIP_WHITE, 9);
+		add_element("lbl_status_str", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		add_element("lbl_iio_name", 0, FONT_MEDIUM, COLORPIP_WHITE, 9);
+		add_element("lbl_iio_val", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+
+		add_element("btn_uri_edit", 86, 44, 0, 0, "Edit...");
+		add_element("btn_action", 86, 44, 0, 0, "Find");
+
+		label_t * lbl_status = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_status");
+		lbl_status->x = 0;
+		lbl_status->y = 0;
+		lbl_status->visible = VISIBLE;
+		local_snprintf_P(lbl_status->text, ARRAY_SIZE(lbl_status->text), "Status: ");
+
+		label_t * lbl_status_str = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_status_str");
+		lbl_status_str->x = get_label_width(lbl_status) + 10;;
+		lbl_status_str->y = lbl_status->y;
+		lbl_status_str->visible = VISIBLE;
+		memset(lbl_status_str->text, 0, ARRAY_SIZE(lbl_status_str->text));
+
+		label_t * lbl_iio_name = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_iio_name");
+		lbl_iio_name->x = 0;
+		lbl_iio_name->y = get_label_height(lbl_status) + 10;
+		lbl_iio_name->visible = VISIBLE;
+		local_snprintf_P(lbl_iio_name->text, ARRAY_SIZE(lbl_iio_name->text), "URI:    ");
+
+		label_t * lbl_iio_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_iio_val");
+		lbl_iio_val->x = get_label_width(lbl_iio_name) + 10;
+		lbl_iio_val->y = lbl_iio_name->y;
+		lbl_iio_val->visible = VISIBLE;
+
+		button_t * btn_uri_edit = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_uri_edit");
+		btn_uri_edit->x1 = 0;
+		btn_uri_edit->y1 = lbl_iio_name->y + get_label_height(lbl_iio_name) + 10;
+		btn_uri_edit->visible = VISIBLE;
+
+		button_t * btn_action = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action");
+		btn_action->x1 = btn_uri_edit->x1 + btn_uri_edit->w + 10;
+		btn_action->y1 = btn_uri_edit->y1;
+		btn_action->visible = VISIBLE;
+
+		enable_window_move(win);
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		update = 1;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+	if (IS_BUTTON_PRESS)
+	{
+		button_t * bh = (button_t *) ptr;
+
+		if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_uri_edit"))
+		{
+			keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
+		}
+		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action"))
+		{
+			if (status == 10 || status == 1)
+				status = gui_ad936x_find(uri);
+			else if (status == 0)
+				status = gui_ad936x_start();
+			else if (status == 2)
+				status = gui_ad936x_stop();
+
+			update = 1;
+		}
+	}
+
+	break;
+
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
+		break;
+
+	default:
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		label_t * lbl_iio_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_iio_val");
+		local_snprintf_P(lbl_iio_val->text, ARRAY_SIZE(lbl_iio_val->text), "%s", uri);
+
+		if (status < 10)
+		{
+			label_t * lbl_status_str = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_status_str");
+			local_snprintf_P(lbl_status_str->text, ARRAY_SIZE(lbl_status_str->text), "%s",  status_str[status]);
+
+			button_t * btn_action = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action");
+			local_snprintf_P(btn_action->text, ARRAY_SIZE(btn_action->text), "%s",  button_str[status]);
+		}
+	}
+}
+
+#endif /* WITHAD936XIIO */
 
 #endif /* WITHTOUCHGUI */

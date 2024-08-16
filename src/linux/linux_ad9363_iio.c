@@ -3,8 +3,11 @@
  */
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "buffers.h"
+#include "audio.h"
+#include <arm_math.h>
 
-#if LINUX_SUBSYSTEM && WITHAD9363IIO && 1
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
 
 // source: https://github.com/analogdevicesinc/libiio/blob/main/examples/ad9361-iiostream.c
 
@@ -16,6 +19,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <errno.h>
+#include "fir_coeffs.h"
 
 /* helper macros */
 #define MHZ(x) ((long long)(x*1000000.0 + .5))
@@ -28,7 +32,8 @@
 	} \
 }
 
-#define BLOCK_SIZE (1024 * 1024)
+#define DECIM_COEFF	24
+#define BLOCK_SIZE	(DMABUFFSIZE32RX * DECIM_COEFF / 2)
 
 /* RX is input, TX is output */
 enum iodev { RX, TX };
@@ -58,10 +63,51 @@ static struct iio_channels_mask *rxmask = NULL;
 static struct iio_channels_mask *txmask = NULL;
 
 static bool stop = false;
+extern uint32_t * ph_fifo;
 
-void stop_stream(void)
+static int32_t buf96k_i[DMABUFFSIZE32RX / 2], buf96k_q[DMABUFFSIZE32RX / 2];
+static int32_t buf2304k_i[BLOCK_SIZE], buf2304k_q[BLOCK_SIZE];
+
+static uint32_t cnt96 = 0, cnt2304 = 0;
+
+arm_fir_decimate_instance_q31 firdec_x24_i, firdec_x24_q;
+q31_t fir_state_i[NUM_FIR_TAPS + BLOCK_SIZE - 1], fir_state_q[NUM_FIR_TAPS + BLOCK_SIZE - 1];
+
+void iq_mutex_unlock(void);
+
+void iio_stop_stream(void)
 {
 	stop = true;
+}
+
+void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
+{
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
+	uint32_t * b = (uint32_t *) addr32rx;
+
+	for (int i = 0; i < DMABUFFSIZE32RX; i += 8)
+	{
+		b[i + 0] = buf_i[* count];
+		b[i + 1] = buf_q[* count];
+
+		b[i + 4] = buf_i[* count];
+		b[i + 5] = buf_q[* count];
+		(* count) ++;
+
+		b[i + 6] = buf_i[* count];
+		b[i + 7] = buf_q[* count];
+		(* count) ++;
+	}
+
+	save_dmabuffer32rx(addr32rx);
+
+	uintptr_t addr_ph = getfilled_dmabuffer16tx();
+	b = (uint32_t *) addr_ph;
+
+	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+		* ph_fifo = b[i];
+
+	release_dmabuffer16tx(addr_ph);
 }
 
 void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
@@ -77,6 +123,9 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 
 	dev = iio_channel_get_device(rxchn);
 	ctx = iio_device_get_context(dev);
+
+	arm_fir_decimate_init_q31(& firdec_x24_i, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, fir_state_i, BLOCK_SIZE);
+	arm_fir_decimate_init_q31(& firdec_x24_q, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, fir_state_q, BLOCK_SIZE);
 
 	while (!stop) {
 		int16_t *p_dat, *p_end;
@@ -98,34 +147,46 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 
 		/* READ: Get pointers to RX buf and read IQ from RX buf port 0 */
 		p_inc = rx_sample;
-		p_end = iio_block_end(rxblock);
-		for (p_dat = iio_block_first(rxblock, rxchn); p_dat < p_end;
-		     p_dat += p_inc / sizeof(*p_dat)) {
+		p_end = (int16_t *) iio_block_end(rxblock);
+		for (p_dat = (int16_t *) iio_block_first(rxblock, rxchn); p_dat < p_end;
+		     p_dat += p_inc / sizeof(*p_dat))
+		{
 			/* Example: swap I and Q */
 			int16_t i = p_dat[0];
 			int16_t q = p_dat[1];
 
-			p_dat[0] = q;
-			p_dat[1] = i;
+			buf2304k_i[cnt2304] = i << 16;
+			buf2304k_q[cnt2304] = q << 16;
+
+			cnt2304 ++;
+			if (cnt2304 >= BLOCK_SIZE)
+			{
+				cnt2304 = 0;
+				arm_fir_decimate_q31(& firdec_x24_i, buf2304k_i, buf96k_i, BLOCK_SIZE);
+				arm_fir_decimate_q31(& firdec_x24_q, buf2304k_q, buf96k_q, BLOCK_SIZE);
+
+				uint16_t j = 0;
+
+				iq_proc(buf96k_i, buf96k_q, & j);
+				iq_proc(buf96k_i, buf96k_q, & j);
+
+				iq_mutex_unlock();
+			}
 		}
 
 		/* WRITE: Get pointers to TX buf and write IQ to TX buf port 0 */
 		p_inc = tx_sample;
-		p_end = iio_block_end(txblock);
-		for (p_dat = iio_block_first(txblock, txchn); p_dat < p_end;
+		p_end = (int16_t *) iio_block_end(txblock);
+		for (p_dat = (int16_t *) iio_block_first(txblock, txchn); p_dat < p_end;
 		     p_dat += p_inc / sizeof(*p_dat)) {
-			p_dat[0] = 0; /* Real (I) */
-			p_dat[1] = 0; /* Imag (Q) */
+			* (int16_t *) (p_dat + 0) = 0; /* Real (I) */
+			* (int16_t *) (p_dat + 1) = 0; /* Imag (Q) */
 		}
-
-		nrx += block_size / rx_sample;
-		ntx += block_size / tx_sample;
-		printf("\tRX %8.2f MSmp, TX %8.2f MSmp\n", nrx / 1e6, ntx / 1e6);
 	}
 }
 
 /* cleanup and exit */
-static void shutdown(void)
+void ad936x_shutdown(void)
 {
 	printf("* Destroying streams\n");
 	if (rxstream) {iio_stream_destroy(rxstream); }
@@ -144,15 +205,9 @@ static void shutdown(void)
 	// exit(0);
 }
 
-static void handle_sig(int sig)
-{
-	printf("Waiting for process to finish... Got signal %d\n", sig);
-	stop_stream();
-}
-
 /* check return value of attr_write function */
 static void errchk(int v, const char* what) {
-	 if (v < 0) { fprintf(stderr, "Error %d writing to channel \"%s\"\nvalue may not be supported.\n", v, what); shutdown(); }
+	 if (v < 0) { fprintf(stderr, "Error %d writing to channel \"%s\"\nvalue may not be supported.\n", v, what); ad936x_shutdown(); }
 }
 
 /* write attribute: long long int */
@@ -249,23 +304,25 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	return true;
 }
 
-#if 1
-/* simple configuration and streaming */
-/* usage:
- * Default context, assuming local IIO devices, i.e., this script is run on ADALM-Pluto for example
- $./a.out
- * URI context, find out the uri by typing `iio_info -s` at the command line of the host PC
- $./a.out usb:x.x.x
- */
-int ad9363_iio_test (const char * uri)
+uint8_t gui_ad936x_find(const char * uri)
+{
+	if (rxstream) return 2;
+
+	if (ctx) { iio_context_destroy(ctx); }
+	ctx = iio_create_context(NULL, uri);
+
+	if (iio_err(ctx)) return 1;
+
+	if (get_ad9361_phy()) return 0;
+
+	return 1;
+}
+
+int ad9363_iio_start (const char * uri)
 {
 	// Streaming devices
 	struct iio_device *tx;
 	struct iio_device *rx;
-
-	// RX and TX sample counters
-	size_t nrx = 0;
-	size_t ntx = 0;
 
 	// RX and TX sample size
 	size_t rx_sample_sz, tx_sample_sz;
@@ -276,20 +333,19 @@ int ad9363_iio_test (const char * uri)
 
 	int err;
 
-	// Listen to ctrl+c and IIO_ENSURE
-	signal(SIGINT, handle_sig);
-
 	// RX stream config
-	rxcfg.bw_hz = MHZ(2);   // 2 MHz rf bandwidth
-	rxcfg.fs_hz = MHZ(2.5);   // 2.5 MS/s rx sample rate
-	rxcfg.lo_hz = GHZ(2.5); // 2.5 GHz rf frequency
+	rxcfg.bw_hz = MHZ(2.0);   	// 2 MHz rf bandwidth
+	rxcfg.fs_hz = MHZ(2.304);   // for x24 decimation
+	rxcfg.lo_hz = MHZ(433.0); 	// todo: add freq change
 	rxcfg.rfport = "A_BALANCED"; // port A (select for rf freq.)
 
 	// TX stream config
-	txcfg.bw_hz = MHZ(1.5); // 1.5 MHz rf bandwidth
-	txcfg.fs_hz = MHZ(2.5);   // 2.5 MS/s tx sample rate
-	txcfg.lo_hz = GHZ(2.5); // 2.5 GHz rf frequency
+	txcfg.bw_hz = MHZ(2.0); 	// 2.0 MHz rf bandwidth
+	txcfg.fs_hz = MHZ(2.304);   // for x24 interpolation
+	txcfg.lo_hz = MHZ(433.0); 	// todo: add freq change
 	txcfg.rfport = "A"; // port A (select for rf freq.)
+
+	if (ctx) { iio_context_destroy(ctx); }
 
 	printf("* Acquiring IIO context\n");
 	IIO_ENSURE((ctx = iio_create_context(NULL, uri)) && "No context");
@@ -312,13 +368,13 @@ int ad9363_iio_test (const char * uri)
 	rxmask = iio_create_channels_mask(iio_device_get_channels_count(rx));
 	if (!rxmask) {
 		fprintf(stderr, "Unable to alloc channels mask\n");
-		shutdown();
+		ad936x_shutdown();
 	}
 
 	txmask = iio_create_channels_mask(iio_device_get_channels_count(tx));
 	if (!txmask) {
 		fprintf(stderr, "Unable to alloc channels mask\n");
-		shutdown();
+		ad936x_shutdown();
 	}
 
 	printf("* Enabling IIO streaming channels\n");
@@ -327,20 +383,20 @@ int ad9363_iio_test (const char * uri)
 	iio_channel_enable(tx0_i, txmask);
 	iio_channel_enable(tx0_q, txmask);
 
-	printf("* Creating non-cyclic IIO buffers with 1 MiS\n");
+	printf("* Creating non-cyclic IIO buffers with 2.304 MiS\n");
 	rxbuf = iio_device_create_buffer(rx, 0, rxmask);
 	err = iio_err(rxbuf);
 	if (err) {
 		rxbuf = NULL;
 		printf("Could not create RX buffer: %d\n", err);
-		shutdown();
+		ad936x_shutdown();
 	}
 	txbuf = iio_device_create_buffer(tx, 0, txmask);
 	err = iio_err(txbuf);
 	if (err) {
 		txbuf = NULL;
 		printf("Could not create TX buffer: %d\n", err);
-		shutdown();
+		ad936x_shutdown();
 	}
 
 	rxstream = iio_buffer_create_stream(rxbuf, 4, BLOCK_SIZE);
@@ -348,7 +404,7 @@ int ad9363_iio_test (const char * uri)
 	if (err) {
 		rxstream = NULL;
 		printf("Could not create RX stream: %d\n", iio_err(rxstream));
-		shutdown();
+		ad936x_shutdown();
 	}
 
 	txstream = iio_buffer_create_stream(txbuf, 4, BLOCK_SIZE);
@@ -356,20 +412,19 @@ int ad9363_iio_test (const char * uri)
 	if (err) {
 		txstream = NULL;
 		printf("Could not create TX stream: %d\n", iio_err(txstream));
-		shutdown();
+		ad936x_shutdown();
 	}
 
 	rx_sample_sz = iio_device_get_sample_size(rx, rxmask);
 	tx_sample_sz = iio_device_get_sample_size(tx, txmask);
 
-	printf("* Starting IO streaming (press CTRL+C to cancel)\n");
+	printf("* Starting IO streaming\n");
 	stream(rx_sample_sz, tx_sample_sz, BLOCK_SIZE,
 	       rxstream, txstream, rx0_i, tx0_i);
 
-	shutdown();
+	ad936x_shutdown();
 
 	return 0;
 }
-#endif
 
-#endif /* LINUX_SUBSYSTEM && WITHAD9363IIO */
+#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */

@@ -121,6 +121,10 @@ uint8_t wnb_state_switch(void);
 void wnb_set_threshold(uint16_t v);
 uint16_t wnb_get_threshold(void);
 
+uint8_t gui_ad936x_find(const char * uri);
+uint8_t gui_ad936x_start(void);
+uint8_t gui_ad936x_stop(void);
+
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
 void gui_initialize(void);

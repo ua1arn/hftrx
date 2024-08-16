@@ -458,7 +458,7 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 /*************************************************************/
 
 void * iq_rx_blkmem;
-volatile static uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
+volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
@@ -473,6 +473,12 @@ enum {
 };
 
 uint8_t rxbuf[SIZERX8] = { 0 };
+
+void iq_mutex_unlock(void)
+{
+	if (ct_iq)
+		safe_cond_signal(ct_iq);
+}
 
 static void iq_proccessing(uint8_t * buf, uint32_t len)
 {
@@ -530,8 +536,7 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 		save_dmabuffer16rx(addr_mic);
 	}
 
-	if (ct_iq)
-		safe_cond_signal(ct_iq);
+	iq_mutex_unlock();
 }
 
 #if WITHWNB		// Simple noise blanker в PL
@@ -1014,6 +1019,15 @@ void linux_cancel_thread(pthread_t tid)
     	perror("pthread_join");
 }
 
+static void handle_sig(int sig)
+{
+	printf("Waiting for process to finish... Got signal %d\n", sig);
+#if WITHAD936XIIO
+	iio_stop_stream();
+#endif /* WITHAD936XIIO */
+	linux_exit();
+}
+
 void linux_subsystem_init(void)
 {
 	char spid[6];
@@ -1023,6 +1037,8 @@ void linux_subsystem_init(void)
 
 	linux_xgpio_init();
 	linux_iq_init();
+
+	signal(SIGINT, handle_sig);
 
 #if WITHLVGL
 	lvgl_init();
@@ -1384,7 +1400,7 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 void evdev_initialize(void)
 {
-	const char * argv [] = { "/sbin/modprobe", "gt911.ko", NULL, };
+	const char * argv [] = { "/sbin/modprobe", "gt911", NULL, };
 	linux_run_shell_cmd(argv);
 	usleep(500000);
 
@@ -1454,5 +1470,33 @@ unsigned long xc7z_get_arm_freq(void)
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line) {}
 void LowerIrql(IRQL_t newIRQL) {}
+
+#if WITHAD936XIIO
+
+pthread_t iio_t;
+
+void * iio_stream_thread(void * args)
+{
+	ad9363_iio_start("usb:");
+	return NULL;
+}
+
+uint8_t gui_ad936x_start(void)
+{
+	linux_cancel_thread(iq_interrupt_t);
+	linux_create_thread(& iio_t, iio_stream_thread, 95, 1);
+
+	return 2;
+}
+
+uint8_t gui_ad936x_stop(void)
+{
+	linux_cancel_thread(iio_t);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+
+	return 0;
+}
+
+#endif /* WITHAD936XIIO */
 
 #endif /* LINUX_SUBSYSTEM */

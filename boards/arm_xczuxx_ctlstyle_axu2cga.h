@@ -248,7 +248,7 @@
 			#define WITHCPUTHERMOLEVEL		1
 			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
 			#define WITHWNB					1	// Simple noise blanker
-			#define	WITHAD9363IIO			1	// External AD9363 board
+			#define	WITHAD936XIIO			1	// External AD936x board
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

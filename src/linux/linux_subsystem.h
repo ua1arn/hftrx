@@ -110,6 +110,10 @@ void linux_wait_iq(void);
 int rpmsg_init(void);
 void evdev_initialize(void);
 
+int ad9363_iio_start (const char * uri);
+void ad936x_shutdown(void);
+void iio_stop_stream(void);
+
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
 uint_fast8_t gpio_readpin(uint8_t pin);
