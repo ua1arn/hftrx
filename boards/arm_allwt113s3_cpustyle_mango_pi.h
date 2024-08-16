@@ -1132,6 +1132,8 @@
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define BOARD_TCONTVFREQ (allwnrt113_get_tcontv_freq())
+		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define BOARD_TVEFREQ (allwnrt113_get_tve_freq())
 	#endif
 
 

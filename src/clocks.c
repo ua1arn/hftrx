@@ -4203,6 +4203,16 @@ uint_fast32_t allwnrt113_get_video0_x1_freq(void)
 	return allwnrt113_get_video0pllx4_freq() / 4;
 }
 
+uint_fast32_t allwnrt113_get_video0_x4_freq(void)
+{
+	return allwnrt113_get_video0pllx4_freq();
+}
+
+uint_fast32_t allwnrt113_get_video1_x4_freq(void)
+{
+	return allwnrt113_get_video1pllx4_freq();
+}
+
 uint_fast32_t allwnrt113_get_video1_x2_freq(void)
 {
 	return allwnrt113_get_video1pllx4_freq() / 2;
@@ -4751,6 +4761,45 @@ uint_fast32_t allwnrt113_get_tcontv_freq(void)
 
 	// TCONTV_CLK = Clock Source/M/N.
 	switch ((clkreg >> 24) & 0x07)	// CLK_SRC_SEL
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnrt113_get_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnrt113_get_video0pllx4_freq() / pgdiv;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnrt113_get_video1_x1_freq() / pgdiv;
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnrt113_get_video1pllx4_freq() / pgdiv;
+	case 0x04:
+		// 100: PLL_PERI(2X)
+		return allwnrt113_get_peripll2x_freq() / pgdiv;
+	case 0x05:
+		// 101: PLL_AUDIO1(DIV2)
+		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
+	}
+}
+
+// T113
+uint_fast32_t allwnrt113_get_tve_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TVE_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	/* M=FACTOR_M+1 */
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03); // Factor N
+	const uint_fast32_t pgdiv = M * N;
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
+	//	100: PLL_PERI(2X)
+	//	101: PLL_AUDIO1(DIV2)
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:

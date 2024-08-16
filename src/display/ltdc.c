@@ -1856,6 +1856,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 #endif
 
 #define RTMIXID 1	/* 1 or 2 */
+#define RTMIXIDTV 2	/* 1 or 2 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
@@ -2396,6 +2397,11 @@ static void hardware_ltdc_vsync(void)
     while ((TCONLCD_PTR->LCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
         ;
 #endif /* defined (TCONLCD_PTR) */
+}
+
+/* ожидаем начало кадра - используется если не по прерываниям*/
+static void hardware_tvout_ltdc_vsync(void)
+{
 #if defined (TCONTV_PTR)
     TCONTV_PTR->TV_GINT0_REG &= ~ (UINT32_C(1) << 14);         //clear TV_VB_INT_FLAG
     while ((TCONTV_PTR->TV_GINT0_REG & (UINT32_C(1) << 14)) == 0) //wait  TV_VB_INT_FLAG
