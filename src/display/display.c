@@ -1903,6 +1903,7 @@ void display_hardware_initialize(void)
 #endif /* WITHLTDCHW */
 
 #if LCDMODETX_TC358778XBG
+	const videomode_t * const vdmode = & vdmode0;
 	tc358768_initialize(vdmode);
 	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
@@ -1946,7 +1947,8 @@ void display_wakeup(void)
 	}
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
-    tc358768_wakeup(vdmode);
+	const videomode_t * const vdmode = & vdmode0;
+  tc358768_wakeup(vdmode);
     panel_wakeup();
 #endif /* LCDMODETX_TC358778XBG */
 #if LCDMODEX_SII9022A
