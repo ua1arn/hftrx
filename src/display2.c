@@ -6004,9 +6004,7 @@ display_walktrough(
 		if (validforredraw(p, key, subset) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, pctx);
-	#if WITHINTEGRATEDDSP
-		audioproc_spool_user();		// решение проблем с прерыванием звука при стирании экрана
-	#endif /* WITHINTEGRATEDDSP */
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
 	}
 }
 

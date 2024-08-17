@@ -695,9 +695,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe, ui
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
 
-#if WITHINTEGRATEDDSP
-	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
-#endif /* WITHINTEGRATEDDSP */
+	board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
 
 	HCD_URBStateTypeDef state2 = HAL_HCD_HC_GetURBState(phost->pData, pipe);
 	HCD_URBStateTypeDef state;

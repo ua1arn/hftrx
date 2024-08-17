@@ -4416,49 +4416,12 @@ void Reset_CPUn_Handler(void)
 #endif /* CPUSTYLE_VM14 */
 
 	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
-#if 0
-
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
 		__DMB();
-		__WFI();
+		//__WFI();
 	}
-
-#else
-
-#if HARDWARE_NCORES > 3
-	if (arm_hardware_cpuid() == 2)
-	{
-		for (;;)
-		{
-#if WITHINTEGRATEDDSP
-			audioproc_spool_user();
-			__DMB();
-#else /* WITHINTEGRATEDDSP */
-			__WFI();
-#endif /* WITHINTEGRATEDDSP */
-		}
-	}
-	if (arm_hardware_cpuid() == 3)
-	{
-		for (;;)
-		{
-#if WITHINTEGRATEDDSP
-			dsphftrxproc_spool_user(NULL);
-			__DMB();
-#else /* WITHINTEGRATEDDSP */
-			__WFI();
-#endif /* WITHINTEGRATEDDSP */
-		}
-	}
-#endif /* HARDWARE_NCORES > 2 */
-	// Idle loop
-	for (;;)
-	{
-		__WFI();
-	}
-#endif
 }
 
 // Вызывается из main

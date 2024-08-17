@@ -1393,9 +1393,14 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-void dsphftrxproc_spool_user(void)
+// Обработка сразу в прерывании
+#define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 4) || ! WITHSMPSYSTEM)))
+#define TXSPOOLCORE 3
+
+static void dsphftrxproc_spool_user(void * ctx)
 {
 	voice32rx_t * dest;
+	(void) ctx;
 	if (voice32rx.get_readybuffer(& dest))
 	{
 		process_dmabuffer32rx(dest->buff);
@@ -1409,9 +1414,9 @@ void save_dmabuffer32rx(uintptr_t addr)
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	voice32rx.save_buffer(p);
 	// dsphftrxproc_spool_user on other CPUs
-#if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
-	dsphftrxproc_spool_user();
-#endif /* WITHINTEGRATEDDSP */
+#if TXSPOOLCOND
+	dsphftrxproc_spool_user(NULL);
+#endif /* TXSPOOLCOND */
 }
 
 ///////////////////////////////////////
@@ -3824,6 +3829,14 @@ void buffers_initialize(void)
 	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 #endif /* WITHRTS192 */
+
+#if ! TXSPOOLCOND
+
+	static dpcobj_t dsphftrxproc_spool_dpc;
+	dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
+	board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
+
+#endif /* ! TXSPOOLCOND */
 
 #if WITHUSEUSBBT
 
