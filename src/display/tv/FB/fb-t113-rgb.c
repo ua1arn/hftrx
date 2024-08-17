@@ -338,7 +338,7 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat)
 //GPIO ���������������� � PIO.c
 
 #ifdef TVE_MODE
-	printf("\n" "fb_t113_rgb_init for mode PAL\n");
+	PRINTF("fb_t113_rgb_init for mode PAL\n");
     //TCONTVandTVE_Init(DISP_TV_MOD_NTSC);
     TCONTVandTVE_Init(DISP_TV_MOD_PAL);
 

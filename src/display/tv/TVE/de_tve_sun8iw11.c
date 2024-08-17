@@ -21,7 +21,7 @@ static void __iomem *tve_top_reg_base[TVE_TOP_DEVIVE_NUM];
 int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address)
 {
 //	if (sel > 2)
-//		printf("sel is %u,err!", sel);
+//		PRINTF("sel is %u,err!", sel);
 //	else
 		tve_reg_base[sel] = address;
 	return 0;

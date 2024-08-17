@@ -4804,8 +4804,8 @@ static void TVE_Init(uint32_t mode)
  tve2_low_enhance(sel,0); //0,1,2
 
 
-// if(tve2_low_get_dac_status(0))printf("DAC connected!\n");
-// else                         printf("DAC NOT connected!\n");
+// if(tve2_low_get_dac_status(0))PRINTF("DAC connected!\n");
+// else                         PRINTF("DAC NOT connected!\n");
 	PRINTF("TVE_Init done\n");
 }
 #endif /* defined (TCONTV_PTR) */
@@ -5373,8 +5373,8 @@ void TVE_Init2(uint32_t mode)
 
  PRINTF("TVE Open...\n");
 
-// if(tve2_low_get_dac_status(0))printf("DAC connected!\n");
-// else                         printf("DAC NOT connected!\n");
+// if(tve2_low_get_dac_status(0))PRINTF("DAC connected!\n");
+// else                         PRINTF("DAC NOT connected!\n");
 }
 
 void TCONTVandTVE_Init2(unsigned int mode)
@@ -5950,7 +5950,7 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat)
 //GPIO инициализированы в PIO.c
 
 #ifdef TVE_MODE
-	printf("\n" "fb_t113_rgb_init for mode PAL\n");
+	PRINTF("\n" "fb_t113_rgb_init for mode PAL\n");
     //TCONTVandTVE_Init(DISP_TV_MOD_NTSC);
     TCONTVandTVE_Init2(DISP_TV_MOD_PAL);
 

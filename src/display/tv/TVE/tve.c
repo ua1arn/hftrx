@@ -126,10 +126,10 @@ void TVE_Init(uint32_t mode)
 
  tve_low_enhance(0,0); //0,1,2
 
- printf("TVE Open...\n");
+ PRINTF("TVE Open...\n");
 
-// if(tve_low_get_dac_status(0))printf("DAC connected!\n");
-// else                         printf("DAC NOT connected!\n");
+// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
+// else                         PRINTF("DAC NOT connected!\n");
 }
 
 void TCONTVandTVE_Init(unsigned int mode)
