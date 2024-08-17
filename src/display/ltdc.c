@@ -4910,7 +4910,7 @@ static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 	}
 }
 
-static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat, const videomode_t * vdmode)
+static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat, const videomode_t * vdmode)
 {
 //GPIO ���������������� � PIO.c
 
@@ -4918,7 +4918,7 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat, const videomode_t
 	//	const videomode_t * vdmode_CRT = & vdmode_PAL0;
 	//PRINTF("fb_t113_rgb_init for mode PAL\n");
     //TCONTVandTVE_Init(DISP_TV_MOD_NTSC);
-    TCONTVandTVE_Init(DISP_TV_MOD_PAL, vdmode);
+    TCONTVandTVE_Init(mode, vdmode);
 
 #else
 	t113_tconlcd2_disable(pdat);
@@ -4972,7 +4972,9 @@ static void TCONLCD_Clock(void)
 
 void lcd_init4(void)
 {
-	const videomode_t * vdmode = & vdmode_PAL0;
+	const videomode_t * const vdmode = & vdmode_PAL0;
+	const unsigned mode = DISP_TV_MOD_PAL;
+
  TCONLCD_Clock();
 
 	unsigned int val;
@@ -5030,7 +5032,7 @@ void lcd_init4(void)
 	pdat.timing.den_active     = 1;	       //!!!
 	pdat.timing.clk_active     = 0;
 
-	fb_t113_rgb_init(&pdat, vdmode);
+	fb_t113_rgb_init(mode, &pdat, vdmode);
 
 	//lcd_backlight_init();
 }
