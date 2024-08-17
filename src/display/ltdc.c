@@ -4021,8 +4021,8 @@ int32_t tve_low_dac_enable(uint32_t sel);                                    //
 //#define TV_INT_NUMBER  123
 //#define TVE_INT_NUMBER 126
 
-void TCONTVandTVE_Init(unsigned int mode);
-void TV_VSync(void);
+static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode);
+//void TV_VSync(void);
 
 #ifdef TV_Encoder_BASE
 
@@ -4910,14 +4910,15 @@ static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 	}
 }
 
-static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat)
+static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat, const videomode_t * vdmode)
 {
 //GPIO ���������������� � PIO.c
 
 #ifdef TVE_MODE
-	PRINTF("fb_t113_rgb_init for mode PAL\n");
+	//	const videomode_t * vdmode_CRT = & vdmode_PAL0;
+	//PRINTF("fb_t113_rgb_init for mode PAL\n");
     //TCONTVandTVE_Init(DISP_TV_MOD_NTSC);
-    TCONTVandTVE_Init(DISP_TV_MOD_PAL);
+    TCONTVandTVE_Init(DISP_TV_MOD_PAL, vdmode);
 
 #else
 	t113_tconlcd2_disable(pdat);
@@ -4971,6 +4972,7 @@ static void TCONLCD_Clock(void)
 
 void lcd_init4(void)
 {
+	const videomode_t * vdmode = & vdmode_PAL0;
  TCONLCD_Clock();
 
 	unsigned int val;
@@ -5028,7 +5030,7 @@ void lcd_init4(void)
 	pdat.timing.den_active     = 1;	       //!!!
 	pdat.timing.clk_active     = 0;
 
-	fb_t113_rgb_init(&pdat);
+	fb_t113_rgb_init(&pdat, vdmode);
 
 	//lcd_backlight_init();
 }
@@ -6119,7 +6121,7 @@ tcon_tv0;
 
 #define TCON_TV0_local2 ((tcon_tv0*)TCON_TV0_BASE)
 
-void VIDEO1_PLL(void)
+static void VIDEO1_PLL(void)
 {
  uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
 
@@ -6136,7 +6138,7 @@ void VIDEO1_PLL(void)
  CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
 }
 
-void TVE_Clock(void)
+static void TVE_Clock(void)
 {
 	CCU->TVE_BGR_REG&=~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
 	CCU->TVE_CLK_REG=(1UL<<31)|(3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
@@ -6144,14 +6146,14 @@ void TVE_Clock(void)
 	CCU->TVE_BGR_REG|=(1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
 }
 
-void DPSS_Clock(void)
+static void DPSS_Clock(void)
 {
 	CCU->DPSS_TOP_BGR_REG&=~(1<<16);                      //assert reset DPSS_TOP
 	CCU->DPSS_TOP_BGR_REG|=1;                             //gate pass DPSS_TOP
 	CCU->DPSS_TOP_BGR_REG|=(1<<16);                       //de-assert reset DPSS_TOP
 }
 
-void TCONTV_Clock(void)
+static void TCONTV_Clock(void)
 {
  CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
  CCU->TCONTV_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
@@ -6159,7 +6161,7 @@ void TCONTV_Clock(void)
  CCU->TCONTV_BGR_REG|=(1<<16);                         //de-assert reset TCON_TV
 }
 
-void TCONTV_Init(uint32_t mode)
+static void TCONTV_Init(uint32_t mode)
 {
  if(mode==DISP_TV_MOD_NTSC)
  {
@@ -6190,13 +6192,13 @@ void TCONTV_Init(uint32_t mode)
  TCON_TV0_local2->GCTL_REG=(1UL<<31)|(1<<1); //enable TCONTV
 }
 
-void TV_VSync(void)
-{
- TCON_TV0_local2->GINT0_REG&=~(1<<14);
- while(!(TCON_TV0_local2->GINT0_REG&(1<<14)));
-}
+//void TV_VSync(void)
+//{
+// TCON_TV0_local2->GINT0_REG&=~(1<<14);
+// while(!(TCON_TV0_local2->GINT0_REG&(1<<14)));
+//}
 
-void TVE_Init(uint32_t mode)
+static void TVE_Init(uint32_t mode)
 {
 // tve_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
 // tve_low_set_reg_base(0,(void __iomem*)TVE_BASE);
@@ -6220,7 +6222,7 @@ void TVE_Init(uint32_t mode)
 // else                         PRINTF("DAC NOT connected!\n");
 }
 
-void TCONTVandTVE_Init(unsigned int mode)
+static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode)
 {
  TCONTV_Clock();
  DPSS_Clock();
