@@ -3033,29 +3033,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 }
 
 
-
-static void VIDEO1_PLL(void)
-{
-	PRINTF("video1 pll default to %u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
-	uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
-
-	v&=~(0xFF<<8);
-	v|=(1UL<<31)|(1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
-
-	CCU->PLL_VIDEO1_CTRL_REG=v;
-
-	CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
-
-	while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28))) //Wait pll stable
-	;
-	local_delay_ms(20);
-
-	CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
-
-	PRINTF("video1 pll set to %u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
-}
-
-
 static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32_t needfreq)
 {
 	PRINTF("t113_tcontv_CCU_configuration start, needfreq=%u\n", (unsigned) needfreq);
@@ -3854,79 +3831,622 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 #if defined (TCONTV_PTR)
 
+/* +++++ */
+//#include "reg-ccu.h"
+#include "reg-de.h"
+#include "reg-tconlcd.h"
 
-enum disp_tv_mode
+#include "fb-t113-rgb.h"
+
+#ifdef TVE_MODE
+
+#include "tve.h"
+
+#endif
+
+//#include "io.h"
+//
+//#include "Lowlevel.h"
+
+struct fb_t113_rgb_pdata_t
 {
-	DISP_TV_MOD_480I                = 0,
-	DISP_TV_MOD_576I                = 1,
-	DISP_TV_MOD_480P                = 2,
-	DISP_TV_MOD_576P                = 3,
-	DISP_TV_MOD_720P_50HZ           = 4,
-	DISP_TV_MOD_720P_60HZ           = 5,
-	DISP_TV_MOD_1080I_50HZ          = 6,
-	DISP_TV_MOD_1080I_60HZ          = 7,
-	DISP_TV_MOD_1080P_24HZ          = 8,
-	DISP_TV_MOD_1080P_50HZ          = 9,
-	DISP_TV_MOD_1080P_60HZ          = 0xa,
-	DISP_TV_MOD_1080P_24HZ_3D_FP    = 0x17,
-	DISP_TV_MOD_720P_50HZ_3D_FP     = 0x18,
-	DISP_TV_MOD_720P_60HZ_3D_FP     = 0x19,
-	DISP_TV_MOD_1080P_25HZ          = 0x1a,
-	DISP_TV_MOD_1080P_30HZ          = 0x1b,
-	DISP_TV_MOD_PAL                 = 0xb,
-	DISP_TV_MOD_PAL_SVIDEO          = 0xc,
-	DISP_TV_MOD_NTSC                = 0xe,
-	DISP_TV_MOD_NTSC_SVIDEO         = 0xf,
-	DISP_TV_MOD_PAL_M               = 0x11,
-	DISP_TV_MOD_PAL_M_SVIDEO        = 0x12,
-	DISP_TV_MOD_PAL_NC              = 0x14,
-	DISP_TV_MOD_PAL_NC_SVIDEO       = 0x15,
-	DISP_TV_MOD_3840_2160P_30HZ     = 0x1c,
-	DISP_TV_MOD_3840_2160P_25HZ     = 0x1d,
-	DISP_TV_MOD_3840_2160P_24HZ     = 0x1e,
-	DISP_TV_MOD_4096_2160P_24HZ     = 0x1f,
-	DISP_TV_MOD_4096_2160P_25HZ     = 0x20,
-	DISP_TV_MOD_4096_2160P_30HZ     = 0x21,
-	DISP_TV_MOD_3840_2160P_60HZ     = 0x22,
-	DISP_TV_MOD_4096_2160P_60HZ     = 0x23,
-	DISP_TV_MOD_3840_2160P_50HZ     = 0x24,
-	DISP_TV_MOD_4096_2160P_50HZ     = 0x25,
-	DISP_TV_MOD_2560_1440P_60HZ     = 0x26,
-	DISP_TV_MOD_1440_2560P_70HZ     = 0x27,
-	DISP_TV_MOD_1080_1920P_60HZ	= 0x28,
-	DISP_TV_MOD_1280_1024P_60HZ     = 0x41,
-	DISP_TV_MOD_1024_768P_60HZ      = 0x42,
-	DISP_TV_MOD_900_540P_60HZ       = 0x43,
-	DISP_TV_MOD_1920_720P_60HZ      = 0x44,
+	uintptr_t virt_de;
+	uintptr_t virt_tconlcd;
 
-	/*Just for the solution of hdmi edid detailed timiming block*/
-	DISP_HDMI_MOD_DT0                = 0x4a,
-	DISP_HDMI_MOD_DT1                = 0x4b,
-	DISP_HDMI_MOD_DT2                = 0x4c,
-	DISP_HDMI_MOD_DT3                = 0x4d,
-	/*
-	 * vga
-	 * NOTE:macro'value of new solution must between
-	 * DISP_VGA_MOD_640_480P_60 and DISP_VGA_MOD_MAX_NUM
-	 * or you have to modify is_vag_mode function in drv_tv.h
-	 */
-	DISP_VGA_MOD_640_480P_60         = 0x50,
-	DISP_VGA_MOD_800_600P_60         = 0x51,
-	DISP_VGA_MOD_1024_768P_60        = 0x52,
-	DISP_VGA_MOD_1280_768P_60        = 0x53,
-	DISP_VGA_MOD_1280_800P_60        = 0x54,
-	DISP_VGA_MOD_1366_768P_60        = 0x55,
-	DISP_VGA_MOD_1440_900P_60        = 0x56,
-	DISP_VGA_MOD_1920_1080P_60       = 0x57,
-	DISP_VGA_MOD_1920_1200P_60 = 0x58,
-	DISP_TV_MOD_3840_1080P_30 = 0x59,
-	DISP_VGA_MOD_1280_720P_60        = 0x5a,
-	DISP_VGA_MOD_1600_900P_60        = 0x5b,
-	DISP_VGA_MOD_MAX_NUM             = 0x5c,
+	unsigned int clk_tconlcd;
+	int rst_de;
+	int rst_tconlcd;
+	int width;
+	int height;
+	int bits_per_pixel;
+	int bytes_per_pixel;
+	int pixlen;
 
-	DISP_TV_MODE_NUM
+	struct {
+		int pixel_clock_hz;
+		int h_front_porch;
+		int h_back_porch;
+		int h_sync_len;
+		int v_front_porch;
+		int v_back_porch;
+		int v_sync_len;
+		int h_sync_active;
+		int v_sync_active;
+		int den_active;
+		int clk_active;
+	} timing;
 };
 
+static struct fb_t113_rgb_pdata_t pdat;
+
+
+static uint32_t read32(uintptr_t addr)
+{
+	return * (volatile uint32_t *) addr;
+}
+
+static void write32(uintptr_t addr, uint32_t value)
+{
+	* (volatile uint32_t *) addr = value;
+}
+
+static void t113_tvout_de_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
+	write32((uintptr_t)&glb->dbuff, 1);
+}
+
+static void t113_tvout_de_set_address(struct fb_t113_rgb_pdata_t * pdat, void * vram, uint8_t plane)
+{
+ if(plane)
+ {
+  struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
+  write32((uintptr_t)&ui->cfg[0].top_laddr,(uint32_t)vram);                                //ARGB
+ }
+ else
+ {
+  struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low priority
+  write32((uintptr_t)&vi->cfg[0].top_laddr[0], (uint32_t)vram                        );    //Y
+  write32((uintptr_t)&vi->cfg[0].top_laddr[1],((uint32_t)vram)+(TVD_WIDTH*TVD_HEIGHT));    //UV
+ }
+}
+
+static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_clk_t * clk = (struct de_clk_t *)(pdat->virt_de);
+	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
+	struct de_bld_t * bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
+
+        struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
+
+	struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
+	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
+
+	unsigned int size = ((( TVD_HEIGHT /*pdat->height*/ - 1) << 16) | (pdat->width - 1));
+	unsigned int val;
+	int i;
+
+	val = read32((uintptr_t)&clk->rst_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t)&clk->rst_cfg, val);
+
+	val = read32((uintptr_t)&clk->gate_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t)&clk->gate_cfg, val);
+
+	val = read32((uintptr_t)&clk->bus_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t)&clk->bus_cfg, val);
+
+	val = read32((uintptr_t)&clk->sel_cfg);
+	val &= ~(1 << 0);
+	write32((uintptr_t)&clk->sel_cfg, val);
+
+	write32((uintptr_t)&glb->ctl, (1 << 0));
+	write32((uintptr_t)&glb->status, 0);
+	write32((uintptr_t)&glb->dbuff, 1);
+	write32((uintptr_t)&glb->size, size);
+
+	for(i = 0; i < 4; i++)
+	{
+		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
+		memset(chan, 0, i == 0 ? sizeof(struct de_vi_t) : sizeof(struct de_ui_t));
+	}
+
+	memset(bld,0,sizeof(struct de_bld_t));
+
+	write32((uintptr_t)&bld->fcolor_ctl,0x00000303);              //enable pipe 0 & 1
+	write32((uintptr_t)&bld->fcolor_ctl,0x00000101);              //enable pipe mgs
+
+//                                           pipe3   pipe2  pipe1  pipe0
+	write32((uintptr_t)&bld->route,(3<<12)|(2<<8)|(1<<4)|(0<<0)); //ch0=>pipe0, ch1=>pipe1, ch2=>pipe2, ch3=>pipe3
+
+	write32((uintptr_t)&bld->premultiply,0);
+	write32((uintptr_t)&bld->bkcolor,0xff0000FF);
+	write32((uintptr_t)&bld->bkcolor,0xffFFFF00);	// mgs
+
+	uint32_t bldmode = 0x03010301;	// default (mgs)
+	//uint32_t bldmode = 0x03020302;
+	write32((uintptr_t)&bld->bld_mode[0],bldmode);
+	write32((uintptr_t)&bld->bld_mode[1],bldmode);             //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
+
+	write32((uintptr_t)&bld->output_size, size);
+	write32((uintptr_t)&bld->out_ctl, 0);
+	write32((uintptr_t)&bld->ck_ctl, 0);
+
+	for(i = 0; i < 4; i++)
+	{
+		write32((uintptr_t)&bld->attr[i].fcolor, 0xff000000);
+		write32((uintptr_t)&bld->attr[i].insize, size);
+	}
+
+	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
+	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
+	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
+	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
+	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
+	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
+	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
+	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
+
+//https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_csc.c
+#ifndef TVE_MODE
+
+#if is_composite
+		/* set CSC coefficients */
+		write32((uintptr_t)&csc->coef11,0x00000400 );
+		write32((uintptr_t)&csc->coef12,0x00000000 );
+		write32((uintptr_t)&csc->coef13,0x0000059B );
+		write32((uintptr_t)&csc->coef14,0xFFFD322E );
+
+		write32((uintptr_t)&csc->coef21,0x00000400 );
+		write32((uintptr_t)&csc->coef22,0xFFFFFEA0 );
+		write32((uintptr_t)&csc->coef23,0xFFFFFD25 );
+		write32((uintptr_t)&csc->coef24,0x00021DD5 );
+
+		write32((uintptr_t)&csc->coef31,0x00000400 );
+		write32((uintptr_t)&csc->coef32,0x00000716 );
+		write32((uintptr_t)&csc->coef33,0x00000000 );
+		write32((uintptr_t)&csc->coef34,0xFFFC74BD );
+
+		/* alpha for modes with alpha */
+		write32((uintptr_t)&csc->globalpha,0xff << 24 );
+
+		/* enable CSC unit */
+		write32((uintptr_t)&csc->csc_ctl,1);
+#else
+		write32((uintptr_t)&csc->csc_ctl,0);
+#endif
+
+#endif
+
+//https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_vi_scaler.c
+
+#if is_composite
+
+ uint32_t src_w=TVD_WIDTH;
+ uint32_t src_h=TVD_HEIGHT;
+
+ uint32_t dst_w=LCD_PIXEL_WIDTH;
+ uint32_t dst_h=LCD_PIXEL_HEIGHT;
+
+ uint32_t hscale=(src_w<<16)/dst_w;
+ uint32_t vscale=(src_h<<16)/dst_h;
+
+ sun8i_vi_scaler_setup(src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
+ sun8i_vi_scaler_enable(1);
+
+#endif
+
+//CH0 VI ----------------------------------------------------------------------------
+
+	write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|((is_composite?DE2_FORMAT_YUV420_V1U1V0U0:DE2_FORMAT)<<8)|((is_composite^1)<<15)); //VI
+	//write32((uintptr_t)&vi->cfg[0].attr,0); //VI mgs
+	write32((uintptr_t)&vi->cfg[0].size, size);
+	write32((uintptr_t)&vi->cfg[0].coord, 0);
+
+        write32((uintptr_t)&vi->cfg[0].pitch[0],pdat->width); //Y
+        write32((uintptr_t)&vi->cfg[0].pitch[1],pdat->width); //UV
+
+//	write32((uintptr_t)&vi->cfg[0].top_laddr[0],VIDEO_MEMORY0                       ); //Y
+//	write32((uintptr_t)&vi->cfg[0].top_laddr[1],VIDEO_MEMORY0+(TVD_WIDTH*TVD_HEIGHT)); //UV
+
+	write32((uintptr_t)&vi->ovl_size[0],size); //Y
+	write32((uintptr_t)&vi->ovl_size[1],size); //UV
+	write32((uintptr_t)&vi->fcolor [0], 0xFFFF0000);
+
+/*
+	write32((uintptr_t)&vi->hori[0], (dst_w<<16)|src_w); //Y
+	write32((uintptr_t)&vi->hori[1], (dst_w<<16)|src_w); //UV
+
+	write32((uintptr_t)&vi->vert[0], (dst_h<<16)|src_h); //Y
+	write32((uintptr_t)&vi->vert[1], (dst_h<<16)|src_h); //UV
+*/
+
+//CH1 UI -----------------------------------------------------------------------------
+
+	write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(UINT32_C(1) << 16));           //������� ���� � ���������� ������
+	//write32((uintptr_t)&ui->cfg[0].attr, 0);
+	write32((uintptr_t)&ui->cfg[0].size, size);
+	write32((uintptr_t)&ui->cfg[0].coord, 0);
+	write32((uintptr_t)&ui->cfg[0].pitch, BYTE_PER_PIXEL * pdat->width);
+//	write32((uintptr_t)&ui->cfg[0].top_laddr,VIDEO_MEMORY1);                                  //VIDEO_MEMORY1
+	write32((uintptr_t)&ui->ovl_size, size);
+}
+
+static void t113_tconlcd2_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	unsigned int val;
+
+	val = read32((uintptr_t)&tcon->gctrl);
+	val |= (1 << 31);
+	write32((uintptr_t)&tcon->gctrl, val);
+}
+
+static void t113_tconlcd2_disable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	unsigned int val;
+	val = read32((uintptr_t)&tcon->dclk);
+	val &= ~(0xf << 28);
+	write32((uintptr_t)&tcon->dclk, val);
+
+	write32((uintptr_t)&tcon->gctrl, 0);
+	write32((uintptr_t)&tcon->gint0, 0);
+}
+
+static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	int bp, total;
+	unsigned int val;
+
+	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
+	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0) );
+
+	val = pdat->clk_tconlcd / pdat->timing.pixel_clock_hz;
+
+	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val /* /2 */ ) << 0));                     //������ �� 2, ������� ������ �� ���������� � 2 ���� ��������
+
+	write32((uintptr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
+
+	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
+	total = pdat->width + pdat->timing.h_front_porch + bp;
+	write32((uintptr_t)&tcon->timing1, ((total - 1) << 16) | ((bp - 1) << 0));
+
+	bp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
+	total = pdat->height + pdat->timing.v_front_porch + bp;
+	write32((uintptr_t)&tcon->timing2, ((total * 2) << 16) | ((bp - 1) << 0));
+
+	write32((uintptr_t)&tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
+
+	val = (0 << 31) | (1 << 28);
+	if(!pdat->timing.h_sync_active)
+		val |= (1 << 25);
+	if(!pdat->timing.v_sync_active)
+		val |= (1 << 24);
+	if(!pdat->timing.den_active)
+		val |= (1 << 27);
+	if(!pdat->timing.clk_active)
+		val |= (1 << 26);
+	write32((uintptr_t)&tcon->io_polarity, val);
+	write32((uintptr_t)&tcon->io_tristate, 0);
+}
+
+static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+
+	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
+	{
+		write32((uintptr_t)&tcon->frm_seed[0], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[1], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[2], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[3], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[4], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[5], 0x11111111);
+		write32((uintptr_t)&tcon->frm_table[0], 0x01010000);
+		write32((uintptr_t)&tcon->frm_table[1], 0x15151111);
+		write32((uintptr_t)&tcon->frm_table[2], 0x57575555);
+		write32((uintptr_t)&tcon->frm_table[3], 0x7f7f7777);
+
+		if(pdat->bits_per_pixel == 16)
+			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (1 << 6) | (0 << 5)| (1 << 4));
+		else if(pdat->bits_per_pixel == 18)
+			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (0 << 6) | (0 << 5)| (0 << 4));
+	}
+}
+
+static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat)
+{
+//GPIO ���������������� � PIO.c
+
+#ifdef TVE_MODE
+	PRINTF("fb_t113_rgb_init for mode PAL\n");
+    //TCONTVandTVE_Init(DISP_TV_MOD_NTSC);
+    TCONTVandTVE_Init(DISP_TV_MOD_PAL);
+
+#else
+	t113_tconlcd2_disable(pdat);
+	t113_tconlcd2_set_timing(pdat);
+	t113_tconlcd2_set_dither(pdat);
+	t113_tconlcd2_enable(pdat);
+#endif
+
+	t113_tvout_de_set_mode(pdat);
+	t113_tvout_de_enable(pdat);
+}
+
+#if 0
+static void lcd_backlight_init(void){
+	GPIO_InitTypeDef InitGpio;
+	InitGpio.GPIO_Mode = GPIO_Mode_AF5;
+	InitGpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	InitGpio.GPIO_Pin = GPIO_Pin_22;
+	GPIO_Init(GPIOD, &InitGpio);
+
+	PWM_InitTypeDef PWM_InitStruct;
+	PWM_InitStruct.chennal 		= PWM_Chennel_7;
+	PWM_InitStruct.clock		= PWM_HOSC;
+	PWM_InitStruct.clock_div	= PWM_DIV_8;
+	PWM_InitStruct.prescal_k	= 20-1;
+	PWM_InitStruct.active_state = PWM_High;
+	PWM_InitStruct.period 		= 200-1;
+	PWM_InitStruct.duty		= 50;
+
+	pwm_init(&PWM_InitStruct);
+
+
+	pwm_set_duty(7,100);
+}
+
+void lcd_set_pwm(unsigned char pwm){
+	volatile unsigned int addr;
+	unsigned int val=0;
+	addr = (0x02000c00+0x0104+7*0x20);
+	write32(addr, ((pwm<<0)|(100<<16)));			//(PWM_ACT_CYCLE<<0)|(PWM_ENTIRE_CYCLE<<16)
+}
+#endif
+
+static void TCONLCD_Clock(void)
+{
+ CCU->TCONLCD_BGR_REG&=~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
+ CCU->TCONLCD_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
+ CCU->TCONLCD_BGR_REG|=1;                             //gate pass TCON_LCD
+ CCU->TCONLCD_BGR_REG|=(UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
+}
+
+void lcd_init4(void)
+{
+ TCONLCD_Clock();
+
+	unsigned int val;
+
+	//val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
+	val = CCU->DE_CLK_REG;
+	val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
+	//write32((T113_CCU_BASE + CCU_DE_CLK_REG), val);
+	CCU->DE_CLK_REG = val;
+	//Open the clock gate
+	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+	val = CCU->DE_BGR_REG;
+	val |= (1 << 0);
+	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
+	CCU->DE_BGR_REG = val;
+	//de-assert reset
+	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+	val = CCU->DE_BGR_REG;
+	val |= (1 << 16);
+	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
+	CCU->DE_BGR_REG = val;
+
+/*
+	val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
+	val |= (1 << 31) | (1 << 24);					//TCON CLK: 24*99/2=1188 MHz
+	write32((T113_CCU_BASE + CCU_TCONLCD_CLK_REG), val);
+	//Open the clock gate
+	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+	val |= (1 << 0);
+	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
+	//eassert reset
+	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+	val |= (1 << 16);
+	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
+*/
+
+	pdat.virt_tconlcd = T113_TCONLCD_BASE;
+	pdat.virt_de = T113_DE_BASE;
+	pdat.clk_tconlcd = 297000000; //1188000000;
+	pdat.width = LCD_PIXEL_WIDTH;
+	pdat.height = LCD_PIXEL_HEIGHT;
+	pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
+	pdat.bytes_per_pixel = BYTE_PER_PIXEL;
+	pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
+
+	pdat.timing.pixel_clock_hz = 29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
+	pdat.timing.h_front_porch  = 40;       //160;
+	pdat.timing.h_back_porch   = 87;       //140;
+	pdat.timing.h_sync_len     = 1;        //20;
+	pdat.timing.v_front_porch  = 13;       //13;
+	pdat.timing.v_back_porch   = 31;       //31;
+	pdat.timing.v_sync_len     = 1;        //2;
+	pdat.timing.h_sync_active  = 0;
+	pdat.timing.v_sync_active  = 0;
+	pdat.timing.den_active     = 1;	       //!!!
+	pdat.timing.clk_active     = 0;
+
+	fb_t113_rgb_init(&pdat);
+
+	//lcd_backlight_init();
+}
+
+void LCD_SwitchAddress(uint32_t address,uint8_t plane)
+{
+ t113_tvout_de_set_address(&pdat,(void*)address,plane);
+ t113_tvout_de_enable(&pdat);
+}
+
+#include "tve.h"
+
+//#include "Gate.h"
+//#include "delay.h"
+
+typedef struct
+{
+ volatile uint32_t GCTL_REG;           // !!! 0x00 TCON Control
+ volatile uint32_t GINT0_REG;          // !!! 0x04 Interrupt_0
+ volatile uint32_t GINT1_REG;          // !!! 0x08 Interrupt_1
+
+ volatile uint32_t RES0[13];
+
+ volatile uint32_t SRC_CTL_REG;        // !!! 0x40 TCON0 Control
+
+ volatile uint32_t RES1[17];
+
+ volatile uint32_t IO_POL_REG;         // !!! 0x88 TV SYNC Signal Polarity Register
+ volatile uint32_t IO_TRI_REG;         // !!! 0x8C TV SYNC Signal volatile Control Register
+
+ volatile uint32_t CTL_REG;            // !!! 0x90 TCON1 Control
+ volatile uint32_t BASIC_REG[6];       // !!! 0x94..0xA8 TCON1 Basic Timing 0..5
+
+ volatile uint32_t RES2[20];
+
+ volatile uint32_t DEBUG_REG;          // !!! 0xFC TCON Debug Information
+}
+tcon_tv0;
+
+#define TCON_TV0_local2 ((tcon_tv0*)TCON_TV0_BASE)
+
+void VIDEO1_PLL(void)
+{
+ uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
+
+ v&=~(0xFF<<8);
+ v|=(1UL<<31)|(1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
+
+ CCU->PLL_VIDEO1_CTRL_REG=v;
+
+ CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
+
+ while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28))); //Wait pll stable
+ local_delay_ms(20);
+
+ CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+}
+
+void TVE_Clock(void)
+{
+	CCU->TVE_BGR_REG&=~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
+	CCU->TVE_CLK_REG=(1UL<<31)|(3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
+	CCU->TVE_BGR_REG|=(1<<1)|1;                           //gate pass for TVE & TVE_TOP
+	CCU->TVE_BGR_REG|=(1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
+}
+
+void DPSS_Clock(void)
+{
+	CCU->DPSS_TOP_BGR_REG&=~(1<<16);                      //assert reset DPSS_TOP
+	CCU->DPSS_TOP_BGR_REG|=1;                             //gate pass DPSS_TOP
+	CCU->DPSS_TOP_BGR_REG|=(1<<16);                       //de-assert reset DPSS_TOP
+}
+
+void TCONTV_Clock(void)
+{
+ CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
+ CCU->TCONTV_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
+ CCU->TCONTV_BGR_REG|=1;                               //gate pass TCON_TV
+ CCU->TCONTV_BGR_REG|=(1<<16);                         //de-assert reset TCON_TV
+}
+
+void TCONTV_Init(uint32_t mode)
+{
+ if(mode==DISP_TV_MOD_NTSC)
+ {
+  TCON_TV0_local2->CTL_REG = 0x80000000 | ((525 - 480 ) << 4);   //VT-V
+  TCON_TV0_local2->BASIC_REG[0] = ((720 - 1) << 16) | (480 - 1); //H,V
+  TCON_TV0_local2->BASIC_REG[1] = ((720 - 1) << 16) | (480 - 1);
+  TCON_TV0_local2->BASIC_REG[2] = ((720 - 1) << 16) | (480 - 1);
+  TCON_TV0_local2->BASIC_REG[3] = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
+  TCON_TV0_local2->BASIC_REG[4] = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
+  TCON_TV0_local2->BASIC_REG[5] = (62 << 16) | 6;                //HS, VS
+ }
+ else //PAL
+ {
+  TCON_TV0_local2->CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
+  TCON_TV0_local2->BASIC_REG[0] = ((720 - 1) << 16) | (576 - 1); //H,V
+  TCON_TV0_local2->BASIC_REG[1] = ((720 - 1) << 16) | (576 - 1);
+  TCON_TV0_local2->BASIC_REG[2] = ((720 - 1) << 16) | (576 - 1);
+  TCON_TV0_local2->BASIC_REG[3] = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
+  TCON_TV0_local2->BASIC_REG[4] = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
+  TCON_TV0_local2->BASIC_REG[5] = (64 << 16) | 5;                //HS, VS
+ }
+
+ TCON_TV0_local2->IO_POL_REG = 0;
+ TCON_TV0_local2->IO_TRI_REG = 0x0FFFFFFF;
+
+ TCON_TV0_local2->SRC_CTL_REG=0;             //0 - DE, 1..7 - test
+ TCON_TV0_local2->GINT0_REG=(1<<30);         //enable Vblank int
+ TCON_TV0_local2->GCTL_REG=(1UL<<31)|(1<<1); //enable TCONTV
+}
+
+void TV_VSync(void)
+{
+ TCON_TV0_local2->GINT0_REG&=~(1<<14);
+ while(!(TCON_TV0_local2->GINT0_REG&(1<<14)));
+}
+
+void TVE_Init(uint32_t mode)
+{
+ tve_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
+ tve_low_set_reg_base(0,(void __iomem*)TVE_BASE);
+
+ tve_low_init(0);
+
+ tve_low_dac_autocheck_disable(0);
+// tve_low_dac_autocheck_enable(0);
+
+ tve_low_set_tv_mode(0,mode,0);
+
+ tve_low_dac_enable(0);
+
+ tve_low_open(0);
+
+ tve_low_enhance(0,0); //0,1,2
+
+ PRINTF("TVE Open...\n");
+
+// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
+// else                         PRINTF("DAC NOT connected!\n");
+}
+
+void TCONTVandTVE_Init(unsigned int mode)
+{
+ TCONTV_Clock();
+ DPSS_Clock();
+
+ VIDEO1_PLL();
+ TVE_Clock();
+
+// Undocumented registers ---------------------------------------------------------------
+
+ (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x00))&=~1;      //0 - CCU clock, 1 - TVE clock
+ (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x20))|=(1<<20); //enable clk for TCON_TV0_local2
+
+ uint32_t v=(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C));
+ v&=0xFFFFFFF0;
+ v|=0x00000002;
+ (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C))=v;        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
+
+// --------------------------------------------------------------------------------------
+
+ TCONTV_Init(mode);
+ TVE_Init(mode);
+}
+
+/* ----- */
 
 static void t113_TVE_initialize(const videomode_t * vdmode, unsigned mode)
 {
@@ -4096,718 +4616,12 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 
 #if defined (TCONTV_PTR)
 
-#define TVE_DEVICE_NUM 1
-#define TVE_TOP_DEVIVE_NUM 1
-#define TVE_DAC_NUM 1
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-//#include "Type.h"
-
-#define __iomem /*volatile*/
-
-/* tv encoder registers offset */
-#define TVE_000    (0x000)
-#define TVE_004    (0x004)
-#define TVE_008    (0x008)
-#define TVE_00C    (0x00c)
-#define TVE_010    (0x010)
-#define TVE_014    (0x014)
-#define TVE_018    (0x018)
-#define TVE_01C    (0x01c)
-#define TVE_020    (0x020)
-#define TVE_024    (0x024)
-#define TVE_030    (0X030)
-#define TVE_034    (0x034)
-#define TVE_038    (0x038)
-#define TVE_03C    (0x03c)
-#define TVE_040    (0x040)
-#define TVE_044    (0x044)
-#define TVE_048    (0x048)
-#define TVE_04C    (0x04c)
-#define TVE_0F8    (0x0f8)
-#define TVE_0FC    (0x0fc)
-#define TVE_100    (0x100)
-#define TVE_104    (0x104)
-#define TVE_108    (0x108)
-#define TVE_10C    (0x10c)
-#define TVE_110    (0x110)
-#define TVE_114    (0x114)
-#define TVE_118    (0x118)
-#define TVE_11C    (0x11c)
-#define TVE_120    (0x120)
-#define TVE_124    (0x124)
-#define TVE_128    (0x128)
-#define TVE_12C    (0x12c)
-#define TVE_130    (0x130)
-#define TVE_134    (0x134)
-#define TVE_138    (0x138)
-#define TVE_13C    (0x13C)
-#define TVE_300    (0x300)
-#define TVE_304    (0x304)
-#define TVE_308    (0x308)
-#define TVE_30C    (0x30c)
-#define TVE_380    (0x380)
-#define TVE_3A0    (0x3a0)
-
-#define TVE_TOP_020    (0x020)
-#define TVE_TOP_024    (0x024)
-#define TVE_TOP_028    (0x028)
-#define TVE_TOP_02C    (0x02C)
-#define TVE_TOP_030    (0x030)
-#define TVE_TOP_034    (0x034)
-#define TVE_TOP_0F0    (0x0F0)
-
-#define TVE_WUINT32(sel,offset,value)           (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) ))=(value))
-#define TVE_RUINT32(sel,offset)                 (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )))
-#define TVE_SET_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )) |= (bit))
-#define TVE_CLR_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )) &= (~(bit)))
-#define TVE_INIT_BIT(sel,offset,c,s)            (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )) = \
-                                                (((*(volatile uint32_t *)( TV_Encoder_BASE + (offset) )) & (~(c))) | (s)))
-
-#define TVE_TOP_WUINT32(offset,value)           (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) ))=(value))
-#define TVE_TOP_RUINT32(offset)                 (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )))
-#define TVE_TOP_SET_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )) |= (bit))
-#define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )) &= (~(bit)))
-#define TVE_TOP_INIT_BIT(offset,c,s)            (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )) = \
-                                               (((*(volatile uint32_t *)( TVE_TOP_BASE + (offset) )) & (~(c))) | (s)))
-
-int32_t tve2_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ );
-int32_t tve2_low_open(uint32_t sel);                                          //
-int32_t tve2_low_close(uint32_t sel);
-int32_t tve_resync_enable(uint32_t sel);
-int32_t tve_resync_disable(uint32_t sel);
-int32_t tve2_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali); //
-int32_t tve2_low_get_dac_status(uint32_t sel);
-int32_t tve2_low_dac_autocheck_enable(uint32_t sel);
-int32_t tve2_low_dac_autocheck_disable(uint32_t sel);                         //
-uint32_t tve2_low_get_sid(uint32_t index);
-int32_t tve2_low_enhance(uint32_t sel, uint32_t mode);
-int32_t tve2_low_dac_enable(uint32_t sel);                                    //
-//extern uint sid_read_key(uint key_index);
-
-typedef struct
-{
- volatile uint32_t GCTL_REG;           // !!! 0x00 TCON Control
- volatile uint32_t GINT0_REG;          // !!! 0x04 Interrupt_0
- volatile uint32_t GINT1_REG;          // !!! 0x08 Interrupt_1
-
- volatile uint32_t RES0[13];
-
- volatile uint32_t SRC_CTL_REG;        // !!! 0x40 TCON0 Control
-
- volatile uint32_t RES1[17];
-
- volatile uint32_t IO_POL_REG;         // !!! 0x88 TV SYNC Signal Polarity Register
- volatile uint32_t IO_TRI_REG;         // !!! 0x8C TV SYNC Signal volatile Control Register
-
- volatile uint32_t CTL_REG;            // !!! 0x90 TCON1 Control
- volatile uint32_t BASIC_REG[6];       // !!! 0x94..0xA8 TCON1 Basic Timing 0..5
-
- volatile uint32_t RES2[20];
-
- volatile uint32_t DEBUG_REG;          // !!! 0xFC TCON Debug Information
-}
-tcon_tv0;
-
-
-
 ///////////////
 ///
 
 
-int32_t tve2_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
-{
-	uint32_t i = 0;
-
-	int32_t dac_cal = 512;
-
-//	uint32_t dac_type_set = 0;
-
-	/* init dac config as disable status first */
-//	for (i = 0; i < TVE_DAC_NUM; i++)
-//		dac_type_info[sel][i] = 7;
-
-//	for (i = 0; i < num; i++) {
-//		dac_info[sel][dac_no[i]] = 1;
-//		dac_type_info[sel][dac_no[i]] = dac_type[i];
-//	}
-
-//	for (i = 0; i < TVE_DAC_NUM; i++) {
-//		if (dac_info[sel][i]) {
-//			dac_cal = (int32_t)cali[i] + offset[i];
-			TVE_TOP_WUINT32(TVE_TOP_020 + 0x020*i,
-					(i<<4)|((sel+1)<<0));
-			TVE_TOP_WUINT32(TVE_TOP_02C + 0x020*i, 0x023a);
-			TVE_TOP_WUINT32(TVE_TOP_030 + 0x020*i, 0x0010);
-			TVE_TOP_WUINT32(TVE_TOP_028 + 0x020*i,
-					((0x8000| dac_cal )<<16)|0x4200);
-//		}
-
-//	}
-
-//	for (i = 0; i < TVE_DAC_NUM; i++)
-//		dac_type_set |= dac_type_info[sel][i]<<(4+3*i);
-	TVE_WUINT32(sel, TVE_008, 0 /*dac_type_set*/ );
-
-	return 0;
-}
-
-int32_t tve2_low_dac_enable(uint32_t sel)
-{
-	uint32_t i = 0;
-
-//	for (i = 0; i < TVE_DAC_NUM; i++) {
-//		if (dac_info[sel][i])
-			TVE_TOP_SET_BIT(TVE_TOP_028 + 0x020*i, 1<<0);
-//	}
-
-	return 0;
-}
-
-int32_t tve2_low_dac_disable(uint32_t sel)
-{
-	uint32_t i = 0;
-
-//	for (i = 0; i < TVE_DAC_NUM; i++) {
-//		if (dac_info[sel][i])
-			TVE_TOP_CLR_BIT(TVE_TOP_028 + 0x020*i, 1<<0);
-//	}
-
-	return 0;
-}
-
-int32_t tve2_low_open(uint32_t sel)
-{
-	TVE_SET_BIT(sel, TVE_000, UINT32_C(1) << 31);
-	TVE_SET_BIT(sel, TVE_000, UINT32_C(1) << 0);
-	return 0;
-}
-
-int32_t tve2_low_close(uint32_t sel)
-{
-	TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 31);
-	TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 0);
-	return 0;
-}
-
-int32_t tve2_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
-{
-	uint32_t deflick  = 0;
-	uint32_t reg_sync = 0;
-
-	switch (mode) {
-	case DISP_TV_MOD_PAL:
-		deflick  = 1;
-		reg_sync = 0x2005000a;
-		TVE_WUINT32(sel, TVE_004, 0x07060001 | (1<<19)); //19 bit: Input_Chroma_Data_Sampling_Rate_Sel => 0: 4:4:4, 1: 4:2:2
-		TVE_WUINT32(sel, TVE_00C, 0x02004000);
-		TVE_WUINT32(sel, TVE_010, 0x2a098acb);
-		TVE_WUINT32(sel, TVE_014, 0x008a0018);
-		TVE_WUINT32(sel, TVE_018, 0x00000016);
-		TVE_WUINT32(sel, TVE_01C, 0x00160271);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000001);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_10C, 0x00002929);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x0016447e);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000fc);
-		TVE_WUINT32(sel, TVE_124, 0x000005a0);
-		TVE_WUINT32(sel, TVE_128, 0x00010000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x200f000c);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x00000000);
-		TVE_WUINT32(sel, TVE_3A0, 0x00030001);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00300000);
-		TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 0);
-		TVE_WUINT32(sel, TVE_130, reg_sync);
-		TVE_WUINT32(sel, TVE_014, 0x00820020);
-		TVE_WUINT32(sel, TVE_130, 0x20050013);
-		TVE_WUINT32(sel, TVE_380, (deflick == 0)
-					? 0x00000000 : 0x0<<10 | 0x3<<8);
-		break;
-	case DISP_TV_MOD_NTSC:
-		deflick  = 1;
-		reg_sync = 0x20050368;
-		TVE_WUINT32(sel, TVE_004, 0x07060000 | (1<<19)); //19 bit: Input_Chroma_Data_Sampling_Rate_Sel => 0: 4:4:4, 1: 4:2:2
-		TVE_WUINT32(sel, TVE_00C, 0x02004000);
-		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
-		TVE_WUINT32(sel, TVE_014, 0x00760020);
-		TVE_WUINT32(sel, TVE_018, 0x00000016);
-		TVE_WUINT32(sel, TVE_01C, 0x0016020d);
-		TVE_WUINT32(sel, TVE_020, 0x00f000f0);
-		TVE_WUINT32(sel, TVE_100, 0x00000001);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000002);
-		TVE_WUINT32(sel, TVE_10C, 0x0000004f);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x0016447e);
-		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
-		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
-		TVE_WUINT32(sel, TVE_124, 0x000005a0);
-		TVE_WUINT32(sel, TVE_128, 0x00000000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x200f000c);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x00000001);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00300000);
-		TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 0);
-		TVE_WUINT32(sel, TVE_130, reg_sync);
-		TVE_WUINT32(sel, TVE_130, 0x20050364);
-		TVE_WUINT32(sel, TVE_380, (deflick == 0)
-					? 0x00000000 : 0x0<<10 | 0x3<<8);
-		break;
-	case DISP_TV_MOD_480I:
-		TVE_WUINT32(sel, TVE_004, 0x07060000);
-		TVE_WUINT32(sel, TVE_00C, 0x02004000);
-		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
-		TVE_WUINT32(sel, TVE_014, 0x00760020);
-		TVE_WUINT32(sel, TVE_018, 0x00000016);
-		TVE_WUINT32(sel, TVE_01C, 0x0016020d);
-		TVE_WUINT32(sel, TVE_020, 0x00f000f0);
-		TVE_WUINT32(sel, TVE_100, 0x00000001);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000002);
-		TVE_WUINT32(sel, TVE_10C, 0x0000004f);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x0016447e);
-		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
-		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
-		TVE_WUINT32(sel, TVE_124, 0x000005a0);
-		TVE_WUINT32(sel, TVE_128, 0x00000000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x200f000c);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x00000001);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00300000);
-
-		break;
-	case DISP_TV_MOD_576I:
-		TVE_WUINT32(sel, TVE_004, 0x07060001);
-		TVE_WUINT32(sel, TVE_00C, 0x02004000);
-		TVE_WUINT32(sel, TVE_010, 0x2a098acb);
-		TVE_WUINT32(sel, TVE_014, 0x008a0018);
-		TVE_WUINT32(sel, TVE_018, 0x00000016);
-		TVE_WUINT32(sel, TVE_01C, 0x00160271);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000001);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_10C, 0x00002929);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x0016447e);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000fc);
-		TVE_WUINT32(sel, TVE_124, 0x000005a0);
-		TVE_WUINT32(sel, TVE_128, 0x00010000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x200f000c);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x00000000);
-		TVE_WUINT32(sel, TVE_3A0, 0x00030001);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00300000);
-		break;
-	case DISP_TV_MOD_480P:
-		TVE_WUINT32(sel, TVE_004, 0x07040002);
-		TVE_WUINT32(sel, TVE_00C, 0x00002000);
-		TVE_WUINT32(sel, TVE_014, 0x00760020);
-		TVE_WUINT32(sel, TVE_018, 0x00000016);
-		TVE_WUINT32(sel, TVE_01C, 0x002C020D);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000001);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000002);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x0016447e);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
-		TVE_WUINT32(sel, TVE_124, 0x000005a0);
-		TVE_WUINT32(sel, TVE_128, 0x00010000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000E000C);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x00000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00400000);
-		break;
-	case DISP_TV_MOD_576P:
-		TVE_WUINT32(sel, TVE_004, 0x07060003);
-		TVE_WUINT32(sel, TVE_00C, 0x00002000);
-		TVE_WUINT32(sel, TVE_014, 0x008a0018);
-		TVE_WUINT32(sel, TVE_018, 0x00000016);
-		TVE_WUINT32(sel, TVE_01C, 0x002C0271);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000001);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x0016447e);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
-		TVE_WUINT32(sel, TVE_124, 0x000005a0);
-		TVE_WUINT32(sel, TVE_128, 0x00010000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x800B000C);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x00000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00400000);
-		break;
-	case DISP_TV_MOD_720P_60HZ:
-		TVE_WUINT32(sel, TVE_004, 0x0706000a);
-		TVE_WUINT32(sel, TVE_00C, 0x00003000);
-		TVE_WUINT32(sel, TVE_014, 0x01040046);
-		TVE_WUINT32(sel, TVE_018, 0x05000046);
-		TVE_WUINT32(sel, TVE_01C, 0x001902EE);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000001);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0xDC280228);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
-		TVE_WUINT32(sel, TVE_124, 0x00000500);
-		TVE_WUINT32(sel, TVE_128, 0x00030000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000C0008);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x07000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00000000);
-		break;
-	case DISP_TV_MOD_720P_50HZ:
-		TVE_WUINT32(sel, TVE_004, 0x0706000a);
-		TVE_WUINT32(sel, TVE_00C, 0x00003000);
-		TVE_WUINT32(sel, TVE_014, 0x01040190);
-		TVE_WUINT32(sel, TVE_018, 0x05000190);
-		TVE_WUINT32(sel, TVE_01C, 0x001902EE);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000001);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0xDC280228);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
-		TVE_WUINT32(sel, TVE_124, 0x00000500);
-		TVE_WUINT32(sel, TVE_128, 0x00030000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000E000C);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x07000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00000000);
-		break;
-	case DISP_TV_MOD_1080I_60HZ:
-		TVE_WUINT32(sel, TVE_004, 0x0706000c);
-		TVE_WUINT32(sel, TVE_00C, 0x00003010);
-		TVE_WUINT32(sel, TVE_014, 0x00C0002C);
-		TVE_WUINT32(sel, TVE_018, 0x0370002C);
-		TVE_WUINT32(sel, TVE_01C, 0x00140465);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x582C442C);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
-		TVE_WUINT32(sel, TVE_124, 0x00000780);
-		TVE_WUINT32(sel, TVE_128, 0x00030000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000E0008);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x07000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00000000);
-		break;
-	case DISP_TV_MOD_1080I_50HZ:
-		TVE_WUINT32(sel, TVE_004, 0x0706000c);
-		TVE_WUINT32(sel, TVE_00C, 0x00003010);
-		TVE_WUINT32(sel, TVE_014, 0x00C001E4);
-		TVE_WUINT32(sel, TVE_018, 0x03700108);
-		TVE_WUINT32(sel, TVE_01C, 0x00140465);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x582C442C);
-		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
-		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
-		TVE_WUINT32(sel, TVE_124, 0x00000780);
-		TVE_WUINT32(sel, TVE_128, 0x00030000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000E0008);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x07000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00000000);
-		break;
-	case DISP_TV_MOD_1080P_60HZ:
-		TVE_WUINT32(sel, TVE_004, 0x0004000e);
-		TVE_WUINT32(sel, TVE_00C, 0x00003010);
-		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
-		TVE_WUINT32(sel, TVE_014, 0x00c0002c);
-		TVE_WUINT32(sel, TVE_018, 0x07bc002c);
-		TVE_WUINT32(sel, TVE_01C, 0x00290465);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000001);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x582c022c);
-		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
-		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
-		TVE_WUINT32(sel, TVE_124, 0x00000780);
-		TVE_WUINT32(sel, TVE_128, 0x00030000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000e000c);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x07000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00000000);
-		break;
-	case DISP_TV_MOD_1080P_50HZ:
-		TVE_WUINT32(sel, TVE_004, 0x0004000e);
-		TVE_WUINT32(sel, TVE_00C, 0x00003010);
-		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
-		TVE_WUINT32(sel, TVE_014, 0x00C001E4);
-		TVE_WUINT32(sel, TVE_018, 0x07BC01E4);
-		TVE_WUINT32(sel, TVE_01C, 0x00290465);
-		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
-		TVE_WUINT32(sel, TVE_100, 0x00000000);
-		TVE_WUINT32(sel, TVE_104, 0x00000000);
-		TVE_WUINT32(sel, TVE_108, 0x00000005);
-		TVE_WUINT32(sel, TVE_110, 0x00000000);
-		TVE_WUINT32(sel, TVE_114, 0x582c022c);
-		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
-		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
-		TVE_WUINT32(sel, TVE_124, 0x00000780);
-		TVE_WUINT32(sel, TVE_128, 0x00030000);
-		TVE_WUINT32(sel, TVE_12C, 0x00000101);
-		TVE_WUINT32(sel, TVE_130, 0x000e000c);
-		TVE_WUINT32(sel, TVE_134, 0x00000000);
-		TVE_WUINT32(sel, TVE_138, 0x00000000);
-		TVE_WUINT32(sel, TVE_13C, 0x07000000);
-		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-		TVE_WUINT32(sel, TVE_120, 0x01e80320);
-		TVE_WUINT32(sel, TVE_380, 0x00000000);
-		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
-		TVE_WUINT32(sel, TVE_000, 0x00000000);
-		break;
-
-	case DISP_VGA_MOD_640_480P_60:
-	case DISP_VGA_MOD_800_600P_60:
-	case DISP_VGA_MOD_1024_768P_60:
-	case DISP_VGA_MOD_1280_768P_60:
-	case DISP_VGA_MOD_1280_800P_60:
-	case DISP_VGA_MOD_1366_768P_60:
-	case DISP_VGA_MOD_1440_900P_60:
-	case DISP_VGA_MOD_1600_900P_60:
-	case DISP_VGA_MOD_1280_720P_60:
-	case DISP_VGA_MOD_1920_1080P_60:
-	case DISP_VGA_MOD_1920_1200P_60:
-		TVE_WUINT32(sel, TVE_004, 0x08000000);
-		break;
-
-	default:
-		break;
-	}
-
-	return 0;
-}
-
-/* 0:unconnected; 1:connected; */
-int32_t tve2_low_get_dac_status(uint32_t sel)
-{
-	uint32_t readval = 0;
-	uint32_t result = 0;
-	uint32_t i = 0;
-
-//	for (i = 0; i < TVE_DAC_NUM; i++) {
-//		if (dac_info[sel][i] == 1) {
-			readval = (TVE_RUINT32(sel, TVE_038)>>(8*i))&3;
-
-//			if (readval == 1) {
-//				result = 1;
-//				break;
-//			}
-//		}
-//	}
-
-	return readval; //result;
-}
-
-int32_t tve2_low_dac_autocheck_enable(uint32_t sel)
-{
-	uint8_t i = 0;
-
-	TVE_SET_BIT(sel, TVE_000, 0x80000000);	/* tvclk enable */
-	TVE_WUINT32(sel, TVE_0F8, 0x00000200);
-
-#if defined(CONFIG_MACH_SUN50IW9)
-	TVE_WUINT32(sel, TVE_0FC, 0x014700FF);	/* 10ms x 10 */
-	TVE_SET_BIT(sel, TVE_030, 0x80000000);  /* new detect mode */
-#else
-	TVE_WUINT32(sel, TVE_0FC, 0x0A3C00FF);	/* 20ms x 10 */
-#endif
-
-	TVE_WUINT32(sel, TVE_03C, 0x00009999);
-//	for (i = 0; i < TVE_DAC_NUM; i++) {
-//		if (dac_info[sel][i] == 1)
-			TVE_SET_BIT(sel, TVE_030, 1<<i);/* detect enable */
-//	}
-
-	return 0;
-}
-
-int32_t tve2_low_dac_autocheck_disable(uint32_t sel)
-{
-	uint8_t i = 0;
-
-//	for (i = 0; i < TVE_DAC_NUM; i++) {
-//		if (dac_info[sel][i] == 1)
-			TVE_CLR_BIT(sel, TVE_030, 1<<i);
-//	}
-	return 0;
-}
-
-#if 0
-#if defined (CONFIG_MACH_SUN50IW9)
-uint32_t tve2_low_get_sid(uint32_t index)
-{
-	uint32_t efuse = 0;
-
-	efuse = (readl(0x0300622c) >> 16) + (readl(0x03006230) << 16);
-
-	if (efuse > 5)
-		efuse -= 5;
-
-	return efuse;
-}
-#else
-uint32_t tve2_low_get_sid(uint32_t index)
-{
-	int32_t ret = 0;
-	int32_t buf_len = 32 * TVE_DAC_NUM;
-	uint32_t efuse[TVE_DAC_NUM] = {0};
-
-	if (index > TVE_DAC_NUM - 1)
-		return 0;
-
-	ret = sunxi_efuse_read(EFUSE_TV_OUT_NAME, &efuse, &buf_len);
-	if (ret < 0)
-		return 0;
-
-	return efuse[index];
-}
-#endif
-#endif
-
-int32_t tve2_low_enhance(uint32_t sel, uint32_t mode)
-{
-	if (mode == 0) {
-		TVE_CLR_BIT(sel, TVE_000, UINT32_C(0x0F) << 10); /* deflick off */
-		TVE_SET_BIT(sel, TVE_000, 0x5<<10); /* deflick is 5 */
-		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 31); /* lti on */
-		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 16); /* notch off */
-	} else if (mode == 1) {
-		TVE_CLR_BIT(sel, TVE_000, UINT32_C(0x0F) << 10);
-		TVE_SET_BIT(sel, TVE_000, 0x5<<10);
-		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 31);
-		TVE_CLR_BIT(sel, TVE_00C, UINT32_C(1) << 16);
-	} else if (mode == 2) {
-		TVE_CLR_BIT(sel, TVE_000, UINT32_C(0x0F) << 10);
-		TVE_CLR_BIT(sel, TVE_00C, UINT32_C(1) << 31);
-		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 16);
-	}
-	return 0;
-}
-
 ///////////////////////////
 ///
-
-static void TVE_Init(uint32_t mode)
-{
-	PRINTF("TVE_Init\n");
-	unsigned sel = 0;
-// tve2_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
-// tve2_low_set_reg_base(0,(void __iomem*)TV_Encoder_BASE);
-
- tve2_low_init(sel);
-
- tve2_low_dac_autocheck_disable(sel);
-// tve2_low_dac_autocheck_enable(sel);
-
- tve2_low_set_tv_mode(sel,mode,0);
-
- tve2_low_dac_enable(sel);
-
- tve2_low_open(sel);
-
- tve2_low_enhance(sel,0); //0,1,2
-
-
-// if(tve2_low_get_dac_status(0))PRINTF("DAC connected!\n");
-// else                         PRINTF("DAC NOT connected!\n");
-	PRINTF("TVE_Init done\n");
-}
 #endif /* defined (TCONTV_PTR) */
 
 static void t113_tvout2_initsteps(const videomode_t * vdmode)

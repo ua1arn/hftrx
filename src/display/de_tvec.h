@@ -146,7 +146,7 @@ enum disp_tv_mode
 #define TVE_TOP_034    (0x034)
 #define TVE_TOP_0F0    (0x0F0)
 
-#define TVE_GET_REG_BASE(sel)                   (tve_reg_base[sel])
+#define TVE_GET_REG_BASE(sel)                   (TV_Encoder_BASE)
 #define TVE_WUINT32(sel,offset,value)           (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) ))=(value))
 #define TVE_RUINT32(sel,offset)                 (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )))
 #define TVE_SET_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) |= (bit))
@@ -154,7 +154,7 @@ enum disp_tv_mode
 #define TVE_INIT_BIT(sel,offset,c,s)            (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) = \
                                                 (((*(volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) & (~(c))) | (s)))
 
-#define TVE_TOP_GET_REG_BASE                    (tve_top_reg_base[0])
+#define TVE_TOP_GET_REG_BASE                    (TVE_TOP_BASE)
 #define TVE_TOP_WUINT32(offset,value)           (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) ))=(value))
 #define TVE_TOP_RUINT32(offset)                 (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )))
 #define TVE_TOP_SET_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) |= (bit))
