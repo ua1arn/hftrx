@@ -10765,7 +10765,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0
+#if 1
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -10788,7 +10788,7 @@ void hightests(void)
 			PRINTF("size of picture0 = %u\n", (unsigned) (sizeof picture0));
 			//colpip_fill(fb, dx, dy, COLORPIP_GRAY);
 			ASSERT(sizeof fb >= sizeof picture0);
-			memcpy(fb, picture0, sizeof fb);
+			memcpy(fb, picture0, sizeof picture0);
 
 //			colpip_fillrect(fb, dx, dy, 0, 0, 50, dy, TFTRGB(255, 128, 128));
 //			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, dy, TFTRGB(255, 128, 128));
@@ -10801,7 +10801,7 @@ void hightests(void)
 //			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, 50, TFTRGB(255, 128, 128));
 //			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
 
-			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0*(uintptr_t) fb);
+			hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
 		}
 	#endif /* defined (TCONTV_PTR) */
 		unsigned count = 3;		// количество смен направления до оконяания теста
