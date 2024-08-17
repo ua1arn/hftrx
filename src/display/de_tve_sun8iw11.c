@@ -9,6 +9,8 @@
 #include "hardware.h"
 #include "formats.h"
 
+#ifdef TV_Encoder_BASE
+
 #include "de_tvec.h"
 
 //#include <efuse_map.h>
@@ -594,3 +596,5 @@ int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 	}
 	return 0;
 }
+
+#endif
