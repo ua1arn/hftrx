@@ -10778,7 +10778,7 @@ void hightests(void)
 				#include "build/allwinner_t113-s3/picture.h"
 			};
 			lcd_init();
-			LCD_SwitchAddress((uintptr_t) picture0, 0);
+			hardware_ltdc_tvout_set4((uintptr_t) picture0, 0);
 			for (;;)
 				;
 			const videomode_t * vdmode_CRT = & vdmode_PAL0;
@@ -15587,7 +15587,8 @@ void lowtests(void)
 		TP();
 		lcd_init();
 		TP();
-		LCD_SwitchAddress((uintptr_t) picture0, 0);
+		hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
+		//LCD_SwitchAddress((uintptr_t) picture0, 0);
 		TP();
 		for (;;)
 			;
