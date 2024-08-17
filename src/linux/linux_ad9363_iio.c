@@ -4,6 +4,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "buffers.h"
+#include "formats.h"
 #include "audio.h"
 #include <arm_math.h>
 
@@ -44,6 +45,8 @@ struct stream_cfg {
 	long long fs_hz; // Baseband sample rate in Hz
 	long long lo_hz; // Local oscillator frequency in Hz
 	const char* rfport; // Port name
+	const char*	gain_mode;	// manual fast_attack slow_attack
+	int gain_val;	// -3 ... 71 dB
 };
 
 /* static scratch mem for strings */
@@ -288,7 +291,7 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	struct iio_channel *chn = NULL;
 
 	// Configure phy and lo channels
-	printf("* Acquiring AD9361 phy channel %d\n", chid);
+	//printf("* Acquiring AD9361 phy channel %d\n", chid);
 	if (!get_phy_chan(type, chid, &chn)) {	return false; }
 
 	attr = iio_channel_find_attr(chn, "rf_port_select");
@@ -297,11 +300,31 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	wr_ch_lli(chn, "rf_bandwidth",       cfg->bw_hz);
 	wr_ch_lli(chn, "sampling_frequency", cfg->fs_hz);
 
+	if (type == RX)
+	{
+		wr_ch_str(chn, "gain_control_mode", cfg->gain_mode);
+		wr_ch_lli(chn, "hardwaregain", cfg->gain_val);
+	}
+
 	// Configure LO channel
-	printf("* Acquiring AD9361 %s lo channel\n", type == TX ? "TX" : "RX");
+	//printf("* Acquiring AD9361 %s lo channel\n", type == TX ? "TX" : "RX");
 	if (!get_lo_chan(type, &chn)) { return false; }
 	wr_ch_lli(chn, "frequency", cfg->lo_hz);
+
 	return true;
+}
+
+void gui_ad936x_set_gain(uint8_t type, int gain)
+{
+	struct iio_channel *chn = NULL;
+	const char * modes[2] = { "manual", "fast_attack" };
+
+	if (type > 1) return;
+	if (gain < -3 || gain > 70) return;
+	if (! get_phy_chan(RX, 0, & chn)) return;
+
+	wr_ch_str(chn, "gain_control_mode", modes[type]);
+	if (! type) wr_ch_lli(chn, "hardwaregain", gain);
 }
 
 uint8_t gui_ad936x_find(const char * uri)
@@ -338,6 +361,8 @@ int ad9363_iio_start (const char * uri)
 	rxcfg.fs_hz = MHZ(2.304);   // for x24 decimation
 	rxcfg.lo_hz = MHZ(433.0); 	// todo: add freq change
 	rxcfg.rfport = "A_BALANCED"; // port A (select for rf freq.)
+	rxcfg.gain_mode = "manual";
+	rxcfg.gain_val = 20;
 
 	// TX stream config
 	txcfg.bw_hz = MHZ(2.0); 	// 2.0 MHz rf bandwidth

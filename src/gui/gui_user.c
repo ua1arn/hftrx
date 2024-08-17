@@ -296,7 +296,7 @@ static window_t windows [] = {
 	{ WINDOW_WNBCONFIG, 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
 #endif /* WITHWNB */
 #if WITHAD936XIIO
-	{ WINDOW_IIOCONFIG,  	 WINDOW_UTILS,			ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
+	{ WINDOW_IIOCONFIG,  	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
 #endif /* WITHAD936XIIO */
 };
 
@@ -696,7 +696,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8",  	 	"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_iio",  	 	"AD936x", 			},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_wnb", 		"WNB", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
@@ -832,7 +832,6 @@ static void gui_main_process(void)
 			button_t * btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
-			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 			button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
 
 			if (bh == btn_notch)
@@ -938,6 +937,12 @@ static void gui_main_process(void)
 				update = 1;
 			}
 #endif /* WITHTX */
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
+			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_iio"))
+			{
+				open_window(get_win(WINDOW_IIOCONFIG));
+			}
+#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 		}
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
@@ -2102,9 +2107,6 @@ static void window_utilites_process(void)
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
 		add_element("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-		add_element("btn_9363", 100, 44, 0, 0, "AD9363|stream");
-#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 
 		x = 0;
 		y = 0;
@@ -2182,12 +2184,6 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_EXTIOLAN));
 			}
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_9363"))
-			{
-				open_window(get_win(WINDOW_IIOCONFIG));
-			}
-#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 		}
 		break;
 
@@ -6665,10 +6661,11 @@ static void window_iioconfig_process(void)
 {
 	window_t * const win = get_win(WINDOW_IIOCONFIG);
 	static unsigned update = 0;
-	static int status = 10;
+	static int status = 10, gain_mode = 0, gain_val = 20;
 
-	const char status_str[3][20] = { "AD936x found", "Error", "Streaming" };
-	const char button_str[3][10] = { "Start", "Find", "Stop" };
+	const char * status_str[3] = { "AD936x found", "Error", "Streaming" };
+	const char * button_str[3] = { "Start", "Find", "Stop" };
+	const char * gainmode_str[2] = { "Gain|manual", "Gain|auto" };
 	static char uri[20] = "usb:";
 
 	if (win->first_call)
@@ -6683,6 +6680,9 @@ static void window_iioconfig_process(void)
 
 		add_element("btn_uri_edit", 86, 44, 0, 0, "Edit...");
 		add_element("btn_action", 86, 44, 0, 0, "Find");
+		add_element("btn_gain_type", 86, 44, 0, 0, "Gain|manual");
+		add_element("btn_gain_add", 44, 44, 0, 0, "+");
+		add_element("btn_gain_sub", 44, 44, 0, 0, "-");
 
 		label_t * lbl_status = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_status");
 		lbl_status->x = 0;
@@ -6691,7 +6691,7 @@ static void window_iioconfig_process(void)
 		local_snprintf_P(lbl_status->text, ARRAY_SIZE(lbl_status->text), "Status: ");
 
 		label_t * lbl_status_str = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_status_str");
-		lbl_status_str->x = get_label_width(lbl_status) + 10;;
+		lbl_status_str->x = get_label_width(lbl_status) + 10;
 		lbl_status_str->y = lbl_status->y;
 		lbl_status_str->visible = VISIBLE;
 		memset(lbl_status_str->text, 0, ARRAY_SIZE(lbl_status_str->text));
@@ -6716,6 +6716,23 @@ static void window_iioconfig_process(void)
 		btn_action->x1 = btn_uri_edit->x1 + btn_uri_edit->w + 10;
 		btn_action->y1 = btn_uri_edit->y1;
 		btn_action->visible = VISIBLE;
+
+		button_t * btn_gain_type = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_type");
+		btn_gain_type->x1 = btn_action->x1;
+		btn_gain_type->y1 = btn_action->y1 + btn_action->h + 10;
+		btn_gain_type->visible = VISIBLE;
+
+		button_t * btn_gain_sub = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_sub");
+		btn_gain_sub->x1 = btn_gain_type->x1 - btn_gain_sub->w - 10;
+		btn_gain_sub->y1 = btn_gain_type->y1;
+		btn_gain_sub->visible = VISIBLE;
+		btn_gain_sub->payload = -1;
+
+		button_t * btn_gain_add = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_add");
+		btn_gain_add->x1 = btn_gain_type->x1 + btn_gain_type->w + 10;
+		btn_gain_add->y1 = btn_gain_type->y1;
+		btn_gain_add->visible = VISIBLE;
+		btn_gain_add->payload = 1;
 
 		enable_window_move(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -6745,6 +6762,23 @@ static void window_iioconfig_process(void)
 
 			update = 1;
 		}
+		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_type"))
+		{
+			gain_mode = ! gain_mode;
+			gui_ad936x_set_gain(gain_mode, gain_val);
+			update = 1;
+		}
+		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_add") ||
+				bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_sub"))
+		{
+			if (gain_val + bh->payload > 3 || gain_val + bh->payload < 70)
+			{
+				gain_val += bh->payload;
+				gui_ad936x_set_gain(gain_mode, gain_val);
+				update = 1;
+			}
+
+		}
 	}
 
 	break;
@@ -6765,13 +6799,26 @@ static void window_iioconfig_process(void)
 		label_t * lbl_iio_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_iio_val");
 		local_snprintf_P(lbl_iio_val->text, ARRAY_SIZE(lbl_iio_val->text), "%s", uri);
 
+		button_t * btn_gain_type = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_type");
+		btn_gain_type->state = status != 2 ? DISABLED : CANCELLED;
+		if (gain_mode)
+			local_snprintf_P(btn_gain_type->text, ARRAY_SIZE(btn_gain_type->text), "Gain|auto");
+		else
+			local_snprintf_P(btn_gain_type->text, ARRAY_SIZE(btn_gain_type->text), "Gain|%d dB", gain_val);
+
+		button_t * btn_gain_add = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_add");
+		btn_gain_add->state = (status == 2 && ! gain_mode) ? CANCELLED : DISABLED;
+
+		button_t * btn_gain_sub = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_sub");
+		btn_gain_sub->state = (status == 2 && ! gain_mode) ? CANCELLED : DISABLED;
+
 		if (status < 10)
 		{
 			label_t * lbl_status_str = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_status_str");
 			local_snprintf_P(lbl_status_str->text, ARRAY_SIZE(lbl_status_str->text), "%s",  status_str[status]);
 
 			button_t * btn_action = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action");
-			local_snprintf_P(btn_action->text, ARRAY_SIZE(btn_action->text), "%s",  button_str[status]);
+			local_snprintf_P(btn_action->text, ARRAY_SIZE(btn_action->text), "%s", button_str[status]);
 		}
 	}
 }
