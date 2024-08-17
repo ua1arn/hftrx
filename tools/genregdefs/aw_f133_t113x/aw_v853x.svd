@@ -15252,42 +15252,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>TVE_DAC_CFG0</name>
-    <displayName>TVE_DAC_CFG0</displayName>
-    <description>TV Encoder DAC CFG0 Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TVE_DAC_CFG1</name>
-    <displayName>TVE_DAC_CFG1</displayName>
-    <description>TV Encoder DAC CFG1 Register</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TVE_DAC_CFG2</name>
-    <displayName>TVE_DAC_CFG2</displayName>
-    <description>TV Encoder DAC CFG2 Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TVE_DAC_CFG3</name>
-    <displayName>TVE_DAC_CFG3</displayName>
-    <description>TV Encoder DAC CFG2 Register</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000028</addressOffset>
+    <register>
+     <name>TVE_DAC_CFG</name>
+     <displayName>TVE_DAC_CFG</displayName>
+     <description>TV Encoder DAC CFG0..CFG3 Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
    <register>
     <name>TVE_DAC_TEST</name>
     <displayName>TVE_DAC_TEST</displayName>

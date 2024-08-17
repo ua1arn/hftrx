@@ -4020,7 +4020,7 @@ enum disp_tv_mode
 
 #define TVE_TOP_020    (0x020)
 #define TVE_TOP_024    (0x024)
-#define TVE_TOP_028    (0x028)
+#define TVE_TOP_028    (0x028)	// TVEE_TOP-TVE_DAC_CFG
 #define TVE_TOP_02C    (0x02C)
 #define TVE_TOP_030    (0x030)
 #define TVE_TOP_034    (0x034)
@@ -4041,22 +4041,22 @@ enum disp_tv_mode
 #define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) &= (~(bit)))
 #define TVE_TOP_INIT_BIT(offset,c,s)            (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) = \
                                                (((*(volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) & (~(c))) | (s)))
-
-int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address);           //
-int32_t tve_low_set_top_reg_base(void __iomem *address);                //
-int32_t tve_low_set_sid_base(void __iomem *address);
-int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ );
-int32_t tve_low_open(uint32_t sel);                                          //
-int32_t tve_low_close(uint32_t sel);
-int32_t tve_resync_enable(uint32_t sel);
-int32_t tve_resync_disable(uint32_t sel);
-int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali); //
-int32_t tve_low_get_dac_status(uint32_t sel);
-int32_t tve_low_dac_autocheck_enable(uint32_t sel);
-int32_t tve_low_dac_autocheck_disable(uint32_t sel);                         //
-uint32_t tve_low_get_sid(uint32_t index);
-int32_t tve_low_enhance(uint32_t sel, uint32_t mode);
-int32_t tve_low_dac_enable(uint32_t sel);                                    //
+//
+//int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address);           //
+//int32_t tve_low_set_top_reg_base(void __iomem *address);                //
+//int32_t tve_low_set_sid_base(void __iomem *address);
+//int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ );
+//int32_t tve_low_open(uint32_t sel);                                          //
+//int32_t tve_low_close(uint32_t sel);
+//int32_t tve_resync_enable(uint32_t sel);
+//int32_t tve_resync_disable(uint32_t sel);
+//int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali); //
+//int32_t tve_low_get_dac_status(uint32_t sel);
+//int32_t tve_low_dac_autocheck_enable(uint32_t sel);
+//int32_t tve_low_dac_autocheck_disable(uint32_t sel);                         //
+//uint32_t tve_low_get_sid(uint32_t index);
+//int32_t tve_low_enhance(uint32_t sel, uint32_t mode);
+//int32_t tve_low_dac_enable(uint32_t sel);                                    //
 //extern uint sid_read_key(uint key_index);
 
 //#include "de_tvec.h"
@@ -4643,7 +4643,7 @@ int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 #endif
 
 
-#define T113_DE_BASE		(0x05000000)
+#define T113_DE_BASE		DE_BASE //(0x05000000)
 
 #define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
 #define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
@@ -4733,6 +4733,7 @@ struct de_ui_t {
 	uint32_t ovl_size;
 };
 
+#if 0
 struct de_csc_t {
 	uint32_t csc_ctl; //0x00
 	uint8_t res[0xc];
@@ -4754,7 +4755,9 @@ struct de_csc_t {
 
         uint32_t globalpha; //0x40
 };
+#endif
 
+#if ! defined TVE_MODE
 
 struct t113_tconlcd_reg_t {
 	uint32_t gctrl;				/* 0x00 */
@@ -4812,14 +4815,16 @@ struct t113_tconlcd_reg_t {
 	uint32_t gamma_table[256];		/* 0x400 */
 };
 
+#endif
+
 struct fb_t113_rgb_pdata_t
 {
 	uintptr_t virt_de;
 	void * virt_tconlcd;
 
 	unsigned int clk_tconlcd;
-	int rst_de;
-	int rst_tconlcd;
+//	int rst_de;
+//	int rst_tconlcd;
 	int width;
 	int height;
 	int bits_per_pixel;
@@ -4827,7 +4832,7 @@ struct fb_t113_rgb_pdata_t
 	int pixlen;
 
 	struct {
-		int pixel_clock_hz;
+		//int pixel_clock_hz;
 		int h_front_porch;
 		int h_back_porch;
 		int h_sync_len;
@@ -5041,6 +5046,8 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	write32((uintptr_t)&ui->ovl_size, size);
 }
 
+#if ! defined TVE_MODE
+// not for TVE_MODE
 static void t113_tconlcd2_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
@@ -5051,6 +5058,7 @@ static void t113_tconlcd2_enable(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t)&tcon->gctrl, val);
 }
 
+// not for TVE_MODE
 static void t113_tconlcd2_disable(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
@@ -5063,7 +5071,8 @@ static void t113_tconlcd2_disable(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t)&tcon->gint0, 0);
 }
 
-static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat)
+// not for TVE_MODE
+static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
 {
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
 	int bp, total;
@@ -5072,7 +5081,7 @@ static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
 	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0) );
 
-	val = pdat->clk_tconlcd / pdat->timing.pixel_clock_hz;
+	val = pdat->clk_tconlcd / display_getdotclock(vdmode);
 
 	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val /* /2 */ ) << 0));                     //������ �� 2, ������� ������ �� ���������� � 2 ���� ��������
 
@@ -5101,6 +5110,7 @@ static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t)&tcon->io_tristate, 0);
 }
 
+// not for TVE_MODE
 static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
@@ -5125,6 +5135,8 @@ static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 	}
 }
 
+#endif
+
 static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat, const videomode_t * vdmode)
 {
 #ifdef TVE_MODE
@@ -5132,7 +5144,7 @@ static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat
 
 #else
 	t113_tconlcd2_disable(pdat);
-	t113_tconlcd2_set_timing(pdat);
+	t113_tconlcd2_set_timing(pdat, vdmode);
 	t113_tconlcd2_set_dither(pdat);
 	t113_tconlcd2_enable(pdat);
 #endif
@@ -5204,7 +5216,7 @@ void lcd_init4(void)
 	pdat.bytes_per_pixel = BYTE_PER_PIXEL;
 	pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
 
-	pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
+	//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
 	pdat.timing.h_front_porch  = 40;       //160;
 	pdat.timing.h_back_porch   = 87;       //140;
 	pdat.timing.h_sync_len     = 1;        //20;
@@ -6386,9 +6398,6 @@ static void TCONTV_Init(uint32_t mode)
 
 static void TVE_Init(uint32_t mode)
 {
-// tve_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
-// tve_low_set_reg_base(0,(void __iomem*)TVE_BASE);
-
  tve_low_init(0);
 
  tve_low_dac_autocheck_disable(0);
@@ -6401,8 +6410,6 @@ static void TVE_Init(uint32_t mode)
  tve_low_open(0);
 
  tve_low_enhance(0,0); //0,1,2
-
- PRINTF("TVE Open...\n");
 
 // if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
 // else                         PRINTF("DAC NOT connected!\n");
@@ -6507,7 +6514,7 @@ static void t113_TVE_initialize(const videomode_t * vdmode, unsigned mode)
 				(UINT32_C(0x00) << 4) |	// DAC_MAP 000: OUT0
 				(UINT32_C(0x01) << 0) |	// DAC_SEL 01: TVE0
 				0;
-			TVE_TOP->TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
+			TVE_TOP->TVE_DAC_CFG [0] |= (UINT32_C(1) << 0);	// DAC_EN
 
 //			CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
 //			CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17);	// TVE_RST

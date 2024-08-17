@@ -2703,10 +2703,7 @@ typedef __PACKED_STRUCT TVE_TOP_Type
          uint32_t reserved_0x000 [0x0008];
     __IO uint32_t TVE_DAC_MAP;                        /*!< Offset 0x020 TV Encoder DAC MAP Register */
     __IO uint32_t TVE_DAC_STATUS;                     /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
-    __IO uint32_t TVE_DAC_CFG0;                       /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
-    __IO uint32_t TVE_DAC_CFG1;                       /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
-    __IO uint32_t TVE_DAC_CFG2;                       /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
-    __IO uint32_t TVE_DAC_CFG3;                       /*!< Offset 0x034 TV Encoder DAC CFG2 Register */
+    __IO uint32_t TVE_DAC_CFG [0x004];                /*!< Offset 0x028 TV Encoder DAC CFG0..CFG3 Register */
          uint32_t reserved_0x038 [0x002E];
     __IO uint32_t TVE_DAC_TEST;                       /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
 } TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
