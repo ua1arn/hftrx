@@ -12,7 +12,7 @@
 
 #ifdef TVE_MODE
 
-#include "../TVE/tve.h"
+#include "tve.h"
 
 #endif
 

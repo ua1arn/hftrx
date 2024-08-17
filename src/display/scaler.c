@@ -3,7 +3,7 @@
 
 #include "scaler_coeff.h"
 
-#include "../FB/reg-de.h"
+#include "reg-de.h"
 
 #define IS_DE3 0
 #define CHANNEL 0
@@ -58,11 +58,11 @@
 
 #define regmap_write(x,y,z) (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z)
 
-#define regmap_update_bits(x,y,z,t)                    \
+#define regmap_update_bits(x,y,z,t) do { \
 {                                                      \
  (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))&=~(z); \
  (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))|=(t);  \
-}                                                      \
+} while (0)
 
 static uint32_t sun8i_vi_scaler_base(int channel)
 {
