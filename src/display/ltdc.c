@@ -5253,8 +5253,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
-	lcd_init();
-	return;
 #if WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
 #elif WITHMIPIDSISHW

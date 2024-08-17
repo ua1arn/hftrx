@@ -10777,7 +10777,7 @@ void hightests(void)
 			{
 				#include "build/allwinner_t113-s3/picture.h"
 			};
-			lcd_init();
+			lcd_init4();
 			hardware_ltdc_tvout_set4((uintptr_t) picture0, 0);
 			for (;;)
 				;
@@ -10806,7 +10806,7 @@ void hightests(void)
 //			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
 
 			hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
-			LCD_SwitchAddress((uintptr_t) fb, 0);
+			//LCD_SwitchAddress((uintptr_t) fb, 0);
 			for (;;)
 				;
 		}
@@ -15585,7 +15585,7 @@ void lowtests(void)
 			#include "build/allwinner_t113-s3/picture.h"
 		};
 		TP();
-		lcd_init();
+		lcd_init4();
 		TP();
 		hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
 		//LCD_SwitchAddress((uintptr_t) picture0, 0);
