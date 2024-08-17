@@ -14,26 +14,26 @@
 #include "de_tvec.h"
 
 //#include <efuse_map.h>
-
-// /*static*/ unsigned int dac_info[TVE_DEVICE_NUM][TVE_DAC_NUM];
-static void __iomem *tve_reg_base[TVE_DEVICE_NUM];
-static void __iomem *tve_top_reg_base[TVE_TOP_DEVIVE_NUM];
-//static unsigned int dac_type_info[TVE_DEVICE_NUM][TVE_DAC_NUM];
-
-int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address)
-{
-//	if (sel > 2)
-//		PRINTF("sel is %u,err!", sel);
-//	else
-		tve_reg_base[sel] = address;
-	return 0;
-}
-
-int32_t tve_low_set_top_reg_base(void __iomem *address)
-{
-	tve_top_reg_base[0] = address;
-	return 0;
-}
+//
+//// /*static*/ unsigned int dac_info[TVE_DEVICE_NUM][TVE_DAC_NUM];
+//static void __iomem *tve_reg_base[TVE_DEVICE_NUM];
+//static void __iomem *tve_top_reg_base[TVE_TOP_DEVIVE_NUM];
+////static unsigned int dac_type_info[TVE_DEVICE_NUM][TVE_DAC_NUM];
+//
+//int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address)
+//{
+////	if (sel > 2)
+////		PRINTF("sel is %u,err!", sel);
+////	else
+//		tve_reg_base[sel] = address;
+//	return 0;
+//}
+//
+//int32_t tve_low_set_top_reg_base(void __iomem *address)
+//{
+//	tve_top_reg_base[0] = address;
+//	return 0;
+//}
 
 int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
 {

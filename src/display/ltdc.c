@@ -3840,7 +3840,19 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 #ifdef TVE_MODE
 
-#include "tve.h"
+
+#include "de_tvec.h"
+
+//#define DISPLAY_TOP_BASE 0x05460000
+//#define TCON_TV0_BASE    0x05470000
+//#define TVE_TOP_BASE     0x05600000
+//#define TVE_BASE         0x05604000
+
+//#define TV_INT_NUMBER  123
+//#define TVE_INT_NUMBER 126
+
+void TCONTVandTVE_Init(unsigned int mode);
+void TV_VSync(void);
 
 #endif
 
@@ -5342,10 +5354,7 @@ void sun8i_vi_scaler_enable(uint8_t enable)
 		     SUN8I_SCALER_VSU_CTRL(base), val);
 }
 
-#include "tve.h"
-
-//#include "Gate.h"
-//#include "delay.h"
+/* ********************************* */
 
 typedef struct
 {
@@ -5452,8 +5461,8 @@ void TV_VSync(void)
 
 void TVE_Init(uint32_t mode)
 {
- tve_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
- tve_low_set_reg_base(0,(void __iomem*)TVE_BASE);
+// tve_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
+// tve_low_set_reg_base(0,(void __iomem*)TVE_BASE);
 
  tve_low_init(0);
 
