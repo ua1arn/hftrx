@@ -258,6 +258,7 @@ extern "C" {
 
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
+			#define HARDWARE_NCORES 1
 			#define WITHCPUNAME "STM32H7xx"
 
 		#elif CPUSTYLE_STM32F7XX
@@ -279,6 +280,7 @@ extern "C" {
 
 			#define HSIFREQ 16000000u
 
+			#define HARDWARE_NCORES 1
 			#define WITHCPUNAME "STM32F7xx"
 
 		#elif CPUSTYLE_STM32F4XX
@@ -290,6 +292,7 @@ extern "C" {
 
 			#define HSIFREQ 16000000u	// 16 MHz
 
+			#define HARDWARE_NCORES 1
 			#define WITHCPUNAME "STM32F4xx"
 
 		#endif
@@ -388,6 +391,7 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
+	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "ATSAM3S"
 
 #elif CPUSTYLE_ATSAM4S
@@ -418,6 +422,7 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
+	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "ATSAM4S"
 
 #elif CPUSTYLE_AT91SAM9XE
@@ -480,6 +485,7 @@ extern "C" {
 	#else
 		#error Erong HARDWARE_ADCBITS value
 	#endif
+	#define HARDWARE_NCORES 1
 
 #elif CPUSTYLE_ATXMEGA
 
@@ -505,6 +511,7 @@ extern "C" {
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast8_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+	#define HARDWARE_NCORES 1
 
 #elif CPUSTYLE_TMS320F2833X
 
@@ -513,6 +520,7 @@ extern "C" {
 	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+	#define HARDWARE_NCORES 1
 
 #elif CPUSTYLE_R7S721
 
@@ -567,6 +575,7 @@ extern "C" {
 	#define GIC_CONFIG_EDGE 0x03
 	#define GIC_CONFIG_LEVEL 0x01
 
+	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "R7S721"
 
 #elif CPUSTYLE_STM32MP1
@@ -1007,6 +1016,7 @@ extern "C" {
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 	#define TICKS_FREQUENCY 200
+	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "MicroBlaze"
 
 #else
