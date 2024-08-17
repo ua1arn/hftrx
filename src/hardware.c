@@ -3608,36 +3608,45 @@ SystemInit(void)
 #endif
 }
 
+#endif /* LINUX_SUBSYSTEM */
+
 
 ////////////////////
 /// поддержка отложенного вызова user-mode функций
 
 static LIST_ENTRY dpclistentries [HARDWARE_NCORES];	// list of dpcobj_t - периодичски вызываемые функции
-static LIST_ENTRY dpclistcall [HARDWARE_NCORES];	// list of dpcobj_t = однократно вызываемые функции
-static IRQLSPINLOCK_t dpclistlock = IRQLSPINLOCK_INIT;
+static LIST_ENTRY dpclistcalls [HARDWARE_NCORES];	// list of dpcobj_t = однократно вызываемые функции
+static IRQLSPINLOCK_t dpclistlocks [HARDWARE_NCORES];
 
 /* инициализация списка user-mode опросных функций */
 void board_dpc_initialize(void)
 {
 	unsigned i;
-	IRQLSPINLOCK_INITIALIZE(& dpclistlock);
+	for (i = 0; i < ARRAY_SIZE(dpclistlocks); ++ i)
+	{
+		IRQLSPINLOCK_INITIALIZE(& dpclistlocks [i]);
+	}
 	for (i = 0; i < ARRAY_SIZE(dpclistentries); ++ i)
 	{
 		InitializeListHead(& dpclistentries [i]);
 	}
-	for (i = 0; i < ARRAY_SIZE(dpclistcall); ++ i)
+	for (i = 0; i < ARRAY_SIZE(dpclistcalls); ++ i)
 	{
-		InitializeListHead(& dpclistcall [i]);
+		InitializeListHead(& dpclistcalls [i]);
+	}
+	for (i = 0; i < ARRAY_SIZE(dpclistcalls); ++ i)
+	{
+		InitializeListHead(& dpclistcalls [i]);
 	}
 }
 
 static void dpcobj_exit(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+	IRQLSPINLOCK_t * const lock = & dpclistlocks [dp->coreid];
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 	dp->flag = 0;
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
 }
 
 // возврат не-0 если уже занято
@@ -3646,11 +3655,12 @@ static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
 	uint_fast8_t v;
 
 	IRQL_t oldIrql;
+	IRQLSPINLOCK_t * const lock = & dpclistlocks [dp->coreid];
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 	v = dp->flag;
 	dp->flag = 1;
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return v;
 }
@@ -3660,15 +3670,17 @@ static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
 uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
 	IRQL_t oldIrql;
+	IRQLSPINLOCK_t * const lock = & dpclistlocks [coreid];
 
 	ASSERT(coreid < HARDWARE_NCORES);
 	// предотвращение повторного включения в очередь того же запроса
 	if (dpcobj_traylock(dp))
 		return 0;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->coreid = coreid;
 	InsertHeadList(& dpclistentries [coreid], & dp->item);
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return 1;
 }
@@ -3677,12 +3689,13 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
+	IRQLSPINLOCK_t * const lock = & dpclistlocks [dp->coreid];
 
 	dpcobj_exit(dp);
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 	RemoveEntryList(& dp->item);
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return 1;
 }
@@ -3692,15 +3705,17 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
 	IRQL_t oldIrql;
+	IRQLSPINLOCK_t * const lock = & dpclistlocks [coreid];
 	ASSERT(coreid < HARDWARE_NCORES);
 
 	// предотвращение повторного включения в очередь того же запроса
 	if (dpcobj_traylock(dp))
 		return 0;
 
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-	InsertHeadList(& dpclistcall [coreid], & dp->item);
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->coreid = coreid;
+	InsertHeadList(& dpclistcalls [coreid], & dp->item);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return 1;
 }
@@ -3723,49 +3738,49 @@ uint_fast8_t board_dpc_coreid(void)
 void board_dpc_processing(void)
 {
 	const uint_fast8_t coreid = board_dpc_coreid();
+	IRQLSPINLOCK_t * const lock = & dpclistlocks [coreid];
 	ASSERT(coreid < HARDWARE_NCORES);
 	// Выполнение периодического вызова user-mode функций по списку
 	{
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 		const LIST_ENTRY * const list = & dpclistentries [coreid];
 		for (t = list->Blink; t != list; t = t->Blink)
 		{
 			ASSERT(t != NULL);
 			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
-			IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+			IRQLSPIN_UNLOCK(lock, oldIrql);
 
+			ASSERT(coreid == dp->coreid);
 			(* dp->fn)(dp->ctx);
 
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 		}
-		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+		IRQLSPIN_UNLOCK(lock, oldIrql);
 	}
 	// Выполнение однократно вызываемых user-mode функций по списку
 	{
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-		LIST_ENTRY * list = & dpclistcall [coreid];
+		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+		LIST_ENTRY * list = & dpclistcalls [coreid];
 		while (! IsListEmpty(list))
 		{
 			PLIST_ENTRY t = RemoveTailList(list);
-			IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+			IRQLSPIN_UNLOCK(lock, oldIrql);
 			ASSERT(t != NULL);
 
 			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
-
+			ASSERT(coreid == dp->coreid);
 			(* dp->fn)(dp->ctx);
 			dpcobj_exit(dp);
 
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
+			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 		}
-		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+		IRQLSPIN_UNLOCK(lock, oldIrql);
 	}
 }
-
-#endif /* LINUX_SUBSYSTEM */
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
