@@ -3731,7 +3731,11 @@ void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
 // 0..HARDWARE_NCORES-1
 uint_fast8_t board_dpc_coreid(void)
 {
+#if LINUX_SUBSYSTEM
+	return 0;
+#else /* LINUX_SUBSYSTEM */
 	return arm_hardware_cpuid();
+#endif /* LINUX_SUBSYSTEM */
 }
 
 // user-mode функция обработки списков запросов dpc на текущем процессоре
@@ -3764,7 +3768,7 @@ void board_dpc_processing(void)
 		IRQL_t oldIrql;
 		PLIST_ENTRY t;
 		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		LIST_ENTRY * list = & dpclistcalls [coreid];
+		LIST_ENTRY * const list = & dpclistcalls [coreid];
 		while (! IsListEmpty(list))
 		{
 			PLIST_ENTRY t = RemoveTailList(list);
