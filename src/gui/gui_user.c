@@ -293,7 +293,7 @@ static window_t windows [] = {
 	{ WINDOW_EXTIOLAN, 		 WINDOW_UTILS,			ALIGN_CENTER_X,  "LAN IQ Stream server", 1, window_stream_process, },
 #endif /* WITHEXTIO_LAN */
 #if WITHWNB
-	{ WINDOW_WNBCONFIG, 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
+	{ WINDOW_WNBCONFIG, 	 WINDOW_RECEIVE,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
 #endif /* WITHWNB */
 #if WITHAD936XIIO
 	{ WINDOW_IIOCONFIG,  	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
@@ -697,7 +697,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_iio",  	 	"AD936x", 			},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_wnb", 		"WNB", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8", 		"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -832,20 +832,13 @@ static void gui_main_process(void)
 			button_t * btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
-			button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
+			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 
 			if (bh == btn_notch)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
-#if WITHWNB
-			else if (bh == btn_wnb)
-			{
-				btn_wnb->is_locked = wnb_state_switch();
-			}
-#endif /* WITHWNB */
-
 #if WITHFT8
 			else if (bh == btn_ft8)
 			{
@@ -5197,6 +5190,7 @@ static void window_receive_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp", "", 			},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", 	},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_DNR",    "DNR", 		},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_WNB",    "WNB", 		},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
@@ -5239,6 +5233,7 @@ static void window_receive_process(void)
 			button_t * btn_AGC = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 			button_t * btn_mode = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mode");
 			button_t * btn_DNR = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
+			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 
 			if (bh == btn_att)
 			{
@@ -5267,6 +5262,23 @@ static void window_receive_process(void)
 			{
 				hamradio_change_nr();
 			}
+#if WITHWNB
+			else if (bh == btn_WNB)
+			{
+				btn_WNB->is_locked = wnb_state_switch();
+			}
+#endif /* WITHWNB */
+		}
+		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
+#if WITHWNB
+			if (bh == btn_WNB)
+			{
+				open_window(get_win(WINDOW_WNBCONFIG));
+			}
+#endif /* WITHWNB */
 		}
 		break;
 
