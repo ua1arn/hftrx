@@ -336,7 +336,7 @@ static void uart5_req(void)
 }
 
 // передача запроса раз в PERIODSPOOL милисекунд
-// ВЫполняется из USER LEVEL
+// Выполняется из USER LEVEL
 static void uart5_dpc_spool(void * ctx)
 {
 	uart5_req();

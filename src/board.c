@@ -7198,19 +7198,31 @@ void board_initialize(void)
 
 #if WITHRTCCACHED
 
-	static volatile uint_fast16_t board_rtc_cached_year = 2000;
-	static volatile uint_fast8_t board_rtc_cached_month = 1;
-	static volatile uint_fast8_t board_rtc_cached_dayofmonth = 1;
-	static volatile uint_fast8_t board_rtc_cached_hour;
-	static volatile uint_fast8_t board_rtc_cached_minute;
-	static volatile uint_fast8_t board_rtc_cached_seconds;
+	static uint_fast16_t board_rtc_cached_year = 2000;
+	static uint_fast8_t board_rtc_cached_month = 1;
+	static uint_fast8_t board_rtc_cached_dayofmonth = 1;
+	static uint_fast8_t board_rtc_cached_hour;
+	static uint_fast8_t board_rtc_cached_minute;
+	static uint_fast8_t board_rtc_cached_seconds;
 
+	// Выполняется из USER LEVEL
 static void board_rtc_cache_update(void * ctx)
 {
+	(void) ctx;	// приходит NULL
 	board_rtc_getdatetime(
 			& board_rtc_cached_year, & board_rtc_cached_month, & board_rtc_cached_dayofmonth,
 			& board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_seconds
 			);
+}
+
+static dpcobj_t board_rtc_timed;
+static ticker_t board_rtc_ticker;
+
+static void board_rtc_cache_spool(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc_call(& board_rtc_timed);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 #endif /* WITHRTCCACHED */
@@ -7248,17 +7260,14 @@ static void board_rtc_initialize(void)
 		PRINTF(PSTR("board_rtc_initialize: set defaults %4d-%02d-%02d %02d:%02d:%02d\n"), year, month, day, hour, minute, seconds);
 		board_rtc_setdatetime(year, month, day, hour, minute, seconds);
 	}
+
 #if WITHRTCCACHED
 
-	static ticker_t rtcticker;
-
-	IRQL_t oldIrql;
-	RiseIrql(TICKER_IRQL, & oldIrql);
 	board_rtc_cache_update(NULL);
-	LowerIrql(oldIrql);
 
-	ticker_initialize(& rtcticker, NTICKS(500), board_rtc_cache_update, NULL);
-	ticker_add(& rtcticker);
+	dpcobj_initialize(& board_rtc_timed, board_rtc_cache_update, NULL);
+	ticker_initialize(& board_rtc_ticker, NTICKS(500), board_rtc_cache_spool, NULL);
+	ticker_add(& board_rtc_ticker);
 
 #endif /* WITHRTCCACHED */
 }
