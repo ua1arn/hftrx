@@ -4969,8 +4969,13 @@ static void TCONLCD_Clock(void)
 
 void lcd_init4(void)
 {
+#if 1
 	const videomode_t * const vdmode = & vdmode_PAL0;
 	const unsigned mode = DISP_TV_MOD_PAL;
+#else
+	const videomode_t * const vdmode = & vdmode_NTSC0;
+	const unsigned mode = DISP_TV_MOD_NTSC;
+#endif
 
  TCONLCD_Clock();
 
