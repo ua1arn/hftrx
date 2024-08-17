@@ -4793,7 +4793,7 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 //CH0 VI ----------------------------------------------------------------------------
 
 	write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|((is_composite?DE2_FORMAT_YUV420_V1U1V0U0:DE2_FORMAT)<<8)|((is_composite^1)<<15)); //VI
-	//write32((uintptr_t)&vi->cfg[0].attr,0); //VI mgs
+	write32((uintptr_t)&vi->cfg[0].attr,0); //VI mgs
 	write32((uintptr_t)&vi->cfg[0].size, size);
 	write32((uintptr_t)&vi->cfg[0].coord, 0);
 
@@ -4818,7 +4818,7 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 //CH1 UI -----------------------------------------------------------------------------
 
 	write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(UINT32_C(1) << 16));           //������� ���� � ���������� ������
-	//write32((uintptr_t)&ui->cfg[0].attr, 0);
+	write32((uintptr_t)&ui->cfg[0].attr, 0);	// mgs
 	write32((uintptr_t)&ui->cfg[0].size, size);
 	write32((uintptr_t)&ui->cfg[0].coord, 0);
 	write32((uintptr_t)&ui->cfg[0].pitch, BYTE_PER_PIXEL * pdat->width);
