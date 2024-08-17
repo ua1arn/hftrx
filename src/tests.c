@@ -10777,7 +10777,11 @@ void hightests(void)
 			{
 				#include "build/allwinner_t113-s3/picture.h"
 			};
-			const videomode_t * vdmode_CRT = & vdmode_NTSC0;
+			lcd_init();
+			LCD_SwitchAddress((uintptr_t) picture0, 0);
+			for (;;)
+				;
+			const videomode_t * vdmode_CRT = & vdmode_PAL0;
 			int dx = vdmode_CRT->width;
 			int dy = vdmode_CRT->height;
 			//enum { dx = 720, dy = 480 };
@@ -10801,7 +10805,10 @@ void hightests(void)
 //			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, 50, TFTRGB(255, 128, 128));
 //			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
 
-			hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
+			//hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
+			LCD_SwitchAddress((uintptr_t) fb, 0);
+			for (;;)
+				;
 		}
 	#endif /* defined (TCONTV_PTR) */
 		unsigned count = 3;		// количество смен направления до оконяания теста
@@ -15571,6 +15578,22 @@ void signal_handler(int n, siginfo_t *info, void *unused)
 
 void lowtests(void)
 {
+#if 1
+	{
+		static const uint8_t picture0 [] =
+		{
+			#include "build/allwinner_t113-s3/picture.h"
+		};
+		TP();
+		lcd_init();
+		TP();
+		LCD_SwitchAddress((uintptr_t) picture0, 0);
+		TP();
+		for (;;)
+			;
+
+	}
+#endif
 #if 0
 	// cached memory tests
 	{
