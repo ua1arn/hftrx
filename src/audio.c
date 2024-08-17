@@ -5654,10 +5654,12 @@ void dsp_initialize(void)
 		audio_update(spf, pathi);
 	gwprof = spf;
 
+	dpcobj_initialize(& user_audioproc_dpc, user_audioproc_dpc_func, NULL);
 #if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
 	// See hardware.c - call audioproc_spool_user() */
-	dpcobj_initialize(& user_audioproc_dpc, user_audioproc_dpc_func, NULL);
-	board_dpc_addentry(& user_audioproc_dpc);
+	board_dpc_addentry(& user_audioproc_dpc, board_dpc_coreid());
+#else
+	//board_dpc_addentry(& user_audioproc_dpc, 2);
 #endif /* WITHINTEGRATEDDSP */
 
 	modem_update();

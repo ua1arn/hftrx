@@ -484,7 +484,7 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
 				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
-				VERIFY(board_dpc_call(& dpc_ua1ceituner));
+				VERIFY(board_dpc_call(& dpc_ua1ceituner, board_dpc_coreid()));
 
 			}
 		}
@@ -652,7 +652,7 @@ static void uart2_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart2_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart2_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 /* Функционирование USER MODE обработчиков */
@@ -7222,7 +7222,7 @@ static void board_rtc_cache_spool(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& board_rtc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& board_rtc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 #endif /* WITHRTCCACHED */
@@ -7630,7 +7630,7 @@ static void uart0_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart0_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart0_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 static void ua1cei_magloop_initialize(void)

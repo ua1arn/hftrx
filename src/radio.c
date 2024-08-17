@@ -5900,8 +5900,8 @@ static void tuner_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	//VERIFY(board_dpc_call(& dpcobj_tunertimer));
-	board_dpc_call(& dpcobj_tunertimer);
+	//VERIFY(board_dpc_call(& dpcobj_tunertimer, board_dpc_coreid()));
+	board_dpc_call(& dpcobj_tunertimer, board_dpc_coreid());
 }
 
 /* закончили установку нового состояния тюнера - запускаем новый период таймера */
@@ -15855,7 +15855,7 @@ static dpcobj_t cat_dpc;
 static void cat_initialize(void)
 {
 	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL);
-	board_dpc_addentry(& cat_dpc);
+	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 }
 
 #endif	/* WITHCAT */
@@ -16062,8 +16062,8 @@ static void second_1_s_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	//VERIFY(board_dpc_call(& dpcobj_1stimer));
-	board_dpc_call(& dpcobj_1stimer);
+	//VERIFY(board_dpc_call(& dpcobj_1stimer, board_dpc_coreid()));
+	board_dpc_call(& dpcobj_1stimer, board_dpc_coreid());
 }
 
 /* Вызывается из обработчика прерываний десять раз в секунду */
@@ -16071,8 +16071,8 @@ static void second_01_s_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	//VERIFY(board_dpc_call(& dpcobj_1stimer));
-	board_dpc_call(& dpcobj_01_s_timer);
+	//VERIFY(board_dpc_call(& dpcobj_1stimer, board_dpc_coreid()));
+	board_dpc_call(& dpcobj_01_s_timer, board_dpc_coreid());
 }
 
 ////////////////////
@@ -16116,7 +16116,7 @@ static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
 
 // Запрос отложенного вызова user-mode функций
 /* добавить функцию для периодического вызова */
-uint_fast8_t board_dpc_addentry(dpcobj_t * dp)
+uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
 	IRQL_t oldIrql;
 
@@ -16147,7 +16147,7 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 
 // Запрос отложенного вызова user-mode функций
 /* добавить функцию для однократного вызова */
-uint_fast8_t board_dpc_call(dpcobj_t * dp)
+uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
 	IRQL_t oldIrql;
 
@@ -16169,9 +16169,17 @@ void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
 	dp->ctx = arg;
 }
 
-// user-mode функция обработки списков запросов dpc
+// получить core id текушего потока
+// 0..HARDWARE_NCORES-1
+uint_fast8_t board_dpc_coreid(void)
+{
+	return arm_hardware_cpuid();
+}
+
+// user-mode функция обработки списков запросов dpc на текущем процессоре
 void board_dpc_processing(void)
 {
+	const uint_fast8_t coreid = board_dpc_coreid();
 	// Выполнение периодического вызова user-mode функций по списку
 	{
 		IRQL_t oldIrql;

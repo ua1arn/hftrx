@@ -1063,7 +1063,7 @@ void modem_initialze(void)
 
 
 	dpcobj_initialize(& modem_dpc, processmodem, NULL);
-	board_dpc_addentry(& modem_dpc);
+	board_dpc_addentry(& modem_dpc, board_dpc_coreid());
 }
 
 #endif /* WITHMODEM */

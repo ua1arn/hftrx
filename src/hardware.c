@@ -4416,6 +4416,17 @@ void Reset_CPUn_Handler(void)
 #endif /* CPUSTYLE_VM14 */
 
 	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
+#if 0
+
+	for (;;)
+	{
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
+		__DMB();
+		__WFI();
+	}
+
+#else
+
 #if HARDWARE_NCORES > 3
 	if (arm_hardware_cpuid() == 2)
 	{
@@ -4434,7 +4445,7 @@ void Reset_CPUn_Handler(void)
 		for (;;)
 		{
 #if WITHINTEGRATEDDSP
-			dsphftrxproc_spool_user();
+			dsphftrxproc_spool_user(NULL);
 			__DMB();
 #else /* WITHINTEGRATEDDSP */
 			__WFI();
@@ -4447,6 +4458,7 @@ void Reset_CPUn_Handler(void)
 	{
 		__WFI();
 	}
+#endif
 }
 
 // Вызывается из main

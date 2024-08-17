@@ -324,7 +324,7 @@ void board_usb_initialize(void)
 	MX_USB_HOST_Init();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 	dpcobj_initialize(& usb_dpc_entry, board_usb_dpc, NULL);
-	board_dpc_addentry(& usb_dpc_entry);
+	board_dpc_addentry(& usb_dpc_entry, board_dpc_coreid());
 	//PRINTF("board_usb_initialize done\n");
 #endif /* WITHUSBHW */
 }

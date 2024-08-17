@@ -122,7 +122,7 @@ static void uart0_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart0_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart0_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 static int state;	// состояния разбора (соответствует номеру байта в принятом пакете).
@@ -237,7 +237,7 @@ void user_uart0_initialize(void)
 	ticker_add(& uart0_ticker);
 
 	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);
-	board_dpc_addentry(& uart0_dpc_entry);
+	board_dpc_addentry(& uart0_dpc_entry, board_dpc_coreid());
 #endif
 }
 

@@ -710,7 +710,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   {
 #if WITHISBOOTLOADER
 
-	  board_dpc_call(& dpc_deffereddetach);
+	  board_dpc_call(& dpc_deffereddetach, board_dpc_coreid());
 #endif /* WITHISBOOTLOADER */
   }
   else

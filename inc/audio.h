@@ -691,8 +691,8 @@ extern volatile phase_t mirror_nco3;
 extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
 
-void dsphftrxproc_spool_user(void);
-void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
+void dsphftrxproc_spool_user(void);	// old: cpuid=3
+void audioproc_spool_user(void);	// old: cpuid=2 вызывать при выполнении длительных операций
 
 #ifdef __cplusplus
 }
