@@ -130,7 +130,7 @@
 #regdef; FCOLOR; 0x0C0 4;
 #regdef; TOP_HADDR; 0x0D0 3;
 #regdef; BOT_HADDR; 0x0DC 3;
-#regdef; OVL_SIZE; 0x0E8; OVL_V overlay window size register
+#regdef; OVL_SIZE; 0x0E8 2; OVL_Y, OVL_UV overlay window size register
 #regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
 #regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
 #typeend;

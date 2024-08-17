@@ -1232,8 +1232,7 @@ typedef __PACKED_STRUCT DE_VI_Type
     __IO uint32_t FCOLOR [0x004];                     /*!< Offset 0x0C0  */
     __IO uint32_t TOP_HADDR [0x003];                  /*!< Offset 0x0D0  */
     __IO uint32_t BOT_HADDR [0x003];                  /*!< Offset 0x0DC  */
-    __IO uint32_t OVL_SIZE;                           /*!< Offset 0x0E8 OVL_V overlay window size register */
-         uint32_t reserved_0x0EC;
+    __IO uint32_t OVL_SIZE [0x002];                   /*!< Offset 0x0E8 OVL_Y, OVL_UV overlay window size register */
     __IO uint32_t HORI [0x002];                       /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     __IO uint32_t VERT [0x002];                       /*!< Offset 0x0F8 OVL_V vertical down sample control register */
          uint32_t reserved_0x100 [0x01C0];

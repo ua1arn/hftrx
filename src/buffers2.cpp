@@ -3592,10 +3592,73 @@ int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffe
 	return colmain0fblist.get_datasize();
 }
 
+#if defined (TCONTV_PTR)
+
+/* Frame buffer for display 1 */
+typedef ALIGNX_BEGIN struct colmain1fb
+{
+	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
+} ALIGNX_END colmain1fb_t;
+
+typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
+
+static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_MAIN_PAGES];
+typedef blists<colmain1fbbuf_t, 0, 0> colmain1fblist_t;
+static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb0", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
+
+uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 0 */
+{
+	colmain1fb_t * dest;
+	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
+	while (! colmain1fblist.get_freebuffer_raw(& dest) && ! colmain1fblist.get_readybuffer_raw(& dest))
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer for display 0 */
+{
+	colmain1fb_t * dest;
+	if (! colmain1fblist.get_readybuffer_raw(& dest))
+		return 0;
+	return (uintptr_t) dest->buff;
+}
+
+void release_dmabuffercolmain1fb(uintptr_t addr)  /* release Frame buffer for display 0 */
+{
+	colmain1fb_t * const p = CONTAINING_RECORD(addr, colmain1fb_t, buff);
+	colmain1fblist.release_buffer(p);
+}
+
+void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for display 0 */
+{
+	// поддерживаем один элемент в очереди готовых
+	colmain1fb_t * old;
+	if (colmain1fblist.get_readybuffer_raw(& old))
+		colmain1fblist.release_buffer(old);
+	colmain1fb_t * const p = CONTAINING_RECORD(addr, colmain1fb_t, buff);
+	colmain1fblist.save_buffer(p);
+}
+
+int_fast32_t cachesize_dmabuffercolmain1fb(void) /* parameter for cache manipulation functions Frame buffer for display 0 */
+{
+	return colmain1fblist.get_cachesize();
+}
+
+int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffer for display 0 */
+{
+	return colmain1fblist.get_datasize();
+}
+#endif /* defined (TCONTV_PTR) */
+
 #if WITHLTDCHWVBLANKIRQ
 
 static uintptr_t fb0;
-static uintptr_t lastsetfb0;
+static uintptr_t lastset0fb;
+
+static uintptr_t fb1;
+static uintptr_t lastset1fb;
 
 PACKEDCOLORPIP_T *
 colmain_fb_draw(void)
@@ -3627,15 +3690,40 @@ void colmain_nextfb(void)
 // Update framebuffer if needed
 void hardware_ltdc_vblank(unsigned ix)
 {
-	const uintptr_t fb = getfilled_dmabuffercolmain0fb();
-	if (fb != 0)
+	switch (ix)
 	{
-		hardware_ltdc_main_set_no_vsync(fb);
-		if (lastsetfb0 != 0)
+	case 0:
+		/* main display */
 		{
-			release_dmabuffercolmain0fb(lastsetfb0);
+			const uintptr_t fb = getfilled_dmabuffercolmain0fb();
+			if (fb != 0)
+			{
+				hardware_ltdc_main_set_no_vsync(fb);
+				if (lastset0fb != 0)
+				{
+					release_dmabuffercolmain0fb(lastset0fb);
+				}
+				lastset0fb = fb;
+			}
 		}
-		lastsetfb0 = fb;
+		break;
+#if defined (TCONTV_PTR)
+	case 1:
+		/* TVOUT / HDMI display */
+		{
+			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
+			if (fb != 0)
+			{
+				hardware_ltdc_tvout_set_no_vsync(fb);
+				if (lastset1fb != 0)
+				{
+					release_dmabuffercolmain1fb(lastset1fb);
+				}
+				lastset1fb = fb;
+			}
+		}
+		break;
+#endif
 	}
 }
 

@@ -29,6 +29,8 @@
 #include "gpio.h"
 #include "src/touch/touch.h"
 
+static void TVE_Init(uint32_t mode);
+
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
 #define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_MIPIDSI_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
@@ -1856,7 +1858,9 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 #endif
 
 #define RTMIXID 1	/* 1 or 2 */
+#if defined (TCONTV_PTR)
 #define RTMIXIDTV 2	/* 1 or 2 */
+#endif
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
@@ -2375,6 +2379,24 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 //	* (volatile uint32_t *) a = v;
 //}
 
+
+//для VI
+#define DE2_FORMAT_YUV420_V1U1V0U0 0x08
+#define DE2_FORMAT_YUV420_U1V1U0V0 0x09
+#define DE2_FORMAT_YUV420_PLANAR   0x0A
+
+//для UI
+#define DE2_FORMAT_ARGB_8888	0x00
+#define DE2_FORMAT_ABGR_8888	0x01
+#define DE2_FORMAT_BGRA_8888	0x03
+#define DE2_FORMAT_XRGB_8888	0x04
+#define DE2_FORMAT_XBGR_8888	0x05
+#define DE2_FORMAT_RGB_888	0x08
+#define DE2_FORMAT_BGR_888	0x09
+#define DE2_FORMAT_RGB_565	0x0A
+#define DE2_FORMAT_ARGB_1555	0x10
+#define DE2_FORMAT_ABGR_1555	0x11
+
 #if LCDMODE_MAIN_ARGB8888
 	static const uint32_t ui_format = 0x00;	//  0x00: ARGB_8888
 	//const uint32_t ui_format = 0x04;	// 0x04: XRGB_8888
@@ -2497,6 +2519,60 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 
 }
 
+/* VI (VI0) */
+static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_fast8_t vi_format)
+{
+	const videomode_t * vdmode_CRT = & vdmode_NTSC0;
+	DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
+
+	if (vi == NULL)
+		return;
+
+	if (vram == 0)
+	{
+		vi->CFG [VI_CFG_INDEX].ATTR = 0;
+		return;
+	}
+	const uint_fast32_t attr =
+		((vram != 0) << 0) |	// enable
+#if 0
+		(UINT32_C(255) << 24) | // LAY_GLBALPHA
+		(UINT32_C(1) << 1) | 	// LAY_ALPHA _MODE: 0x1:Globe alpha enable
+#endif
+		(vi_format << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+		0*(UINT32_C(1) << 15) |	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
+		//(UINT32_C(1) << 4) |	// LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+		0;
+
+	const uintptr_t vram0 = vram;
+	const uintptr_t vram1 = vram0 + (vdmode_CRT->height * vdmode_CRT->width);
+
+	vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram0);	// The setting of this register is U/UV channel address.
+	vi->TOP_HADDR [0] = (ptr_hi32(vram0) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
+	vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] = ptr_lo32(vram1);	// The setting of this register is U/UV channel address.
+	vi->TOP_HADDR [1] = (ptr_hi32(vram1) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
+
+	vi->CFG [VI_CFG_INDEX].ATTR = attr;
+
+	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
+	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
+
+	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+	vi->CFG [VI_CFG_INDEX].COORD = 0;
+	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+	vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
+	vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
+	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
+	vi->OVL_SIZE [1] = ovl_ui_mbsize;	// UV
+	vi->HORI [0] = 0;
+	vi->VERT [0] = 0;
+	vi->FCOLOR [0] = 0xFFFF0000;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+
+	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
+	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
+
+}
+
 static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 {
 	DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
@@ -2608,7 +2684,7 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 			vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
 			vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
 			vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
-			vi->OVL_SIZE = ovl_ui_mbsize;
+			vi->OVL_SIZE [0] = ovl_ui_mbsize;
 			vi->HORI [0] = 0;
 			vi->VERT [0] = 0;
 			vi->FCOLOR [0] = 0xFFFF0000;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
@@ -2619,7 +2695,7 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [0] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
 			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [1] == uipitch);	// PLANE 0 - The setting of this register is U/UV channel.
 			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [2] == uipitch);	// PLANE 0 - The setting of this register is V channel.
-			ASSERT(vi->OVL_SIZE == ovl_ui_mbsize);
+			ASSERT(vi->OVL_SIZE [0] == ovl_ui_mbsize);
 			ASSERT(vi->HORI [0] == 0);
 			ASSERT(vi->VERT [0] == 0);
 			ASSERT(vi->FCOLOR [0] == 0xFFFF0000);	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
@@ -2953,10 +3029,35 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #endif /* defined (TCONLCD_PTR) */
 }
 
-static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
+
+
+static void VIDEO1_PLL(void)
 {
+	PRINTF("video1 pll default to %u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+	uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
+
+	v&=~(0xFF<<8);
+	v|=(1UL<<31)|(1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
+
+	CCU->PLL_VIDEO1_CTRL_REG=v;
+
+	CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
+
+	while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28))) //Wait pll stable
+	;
+	local_delay_ms(20);
+
+	CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+
+	PRINTF("video1 pll set to %u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+}
+
+
+static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32_t needfreq)
+{
+	PRINTF("t113_tcontv_CCU_configuration start, needfreq=%u\n", (unsigned) needfreq);
+
 #if defined (TCONTV_PTR)
-    divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 
 #if CPUSTYLE_A64
 
@@ -3050,7 +3151,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	const unsigned ix = TCONTV_IX;	// TCON_TV0
+	const unsigned ix = TCONTV_IX;	// TCONTV_PTR
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -3060,7 +3161,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
     DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
-		0x02 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_TV0
+		0x02 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCONTV_PTR
 		0x03 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV1
 		0;
     if (needfreq != 0)
@@ -3144,40 +3245,38 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	/* Configure TCONTV clock */
-    if (needfreq != 0)
-    {
-		unsigned divider;
-		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-		PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-    	ASSERT(divider < 16);
-    	// LVDS
-        TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-    		0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
-    		(prei << 8) |	// FACTOR_N 0..3: 1..8
-    		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-    		0;
-        TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
-    }
-    else
-    {
-    	ASSERT(prei >= 0 && prei <= 3);
-    	ASSERT(divider >= 1 && divider <= 16);
-    	TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-    		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
-    		(prei << 8) |	// FACTOR_N 0..3: 1..8
-    		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-    		0;
-    	TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
-    }
+	/* Configure TCONTV clock (TCONTV_CLK_REG register) */
+	//    CLK_SRC_SEL
+	//    Clock Source Select
+	//    000: PLL_VIDEO0(1X)
+	//    001: PLL_VIDEO0(4X)
+	//    010: PLL_VIDEO1(1X)
+	//    011: PLL_VIDEO1(4X)
+	//    100: PLL_PERI(2X)
+	//    101: PLL_AUDIO1(DIV2)
+
+	unsigned divider;
+	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	ASSERT(divider < 16);
+    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		(prei << 8) |	// FACTOR_N 0..3: 1..8
+		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
 	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
     local_delay_us(10);
+
+//	TCONTV_CCU_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
+//	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
+//    local_delay_us(10);
 
     CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
 
     {
 		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1) << 0);      //selected 0 - CCU clock, 1 - TVE clock
-		DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
+		DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCONTV_PTR
 
 //    	 uint32_t v = DISPLAY_TOP-> DE_PORT_PERH_SEL;
 //    	 v &= UINT32_C(0xFFFFFFF0);
@@ -3186,10 +3285,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 
     }
 
-#if WITHLVDSHW || WITHDSIHW
-    CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
-#endif /* WITHLVDSHW || WITHDSIHW */
 
     CCU->TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);	// TCONTV_RST
     CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV_RST
@@ -3219,24 +3314,6 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 		0;
     local_delay_us(10);
 #endif /* defined (TCONLCD_PTR) */
-}
-
-static void t113_TV_clock_configuration(const videomode_t * vdmode)
-{
-#if defined (TCONTV_PTR) && 0
-	unsigned val;
-	// dclk
-	// 31..28: TCON0_Dclk_En
-	// 6..0: TCON0_Dclk_Div
-	val = BOARD_TCONTVFREQ / display_getdotclock(vdmode);
-	//PRINTF(t113_TV_clock_configuration: "ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
-	ASSERT(val >= 1 && val <= 127);
-	TCONTV_PTR->LCD_DCLK_REG =
-		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
-		val * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
-		0;
-    local_delay_us(10);
-#endif /* defined (TCONTV_PTR) */
 }
 
 
@@ -3471,7 +3548,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 #endif /* defined (TCONLCD_PTR) */
 }
 
-//#define TCONTV_PTR TCON_TV0
+//#define TCONTV_PTR TCONTV_PTR
 
 static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 {
@@ -3499,20 +3576,25 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 	//	LCD0_TCON1_BASIC4 = (2250 << 16) | 40;
 	//	LCD0_TCON1_BASIC5 = (43 << 16) | 4;
 
-	TCONTV_PTR->TV_CTL_REG = (VTOTAL - HEIGHT) << 4;   //VT-V
+	TCONTV_PTR->TV_CTL_REG =
+		(VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
+		0;
 
 	// XI YI
-	TCONTV_PTR->TV_BASIC0_REG = (
-		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
-		);
+	TCONTV_PTR->TV_BASIC0_REG =
+		((WIDTH - 1) << 16) |
+		((HEIGHT - 1) << 0) |
+		0;
 	// LS_XO LS_YO NOTE: LS_YO = TV_YI
-	TCONTV_PTR->TV_BASIC1_REG = (
-		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
-		);
+	TCONTV_PTR->TV_BASIC1_REG =
+		((WIDTH - 1) << 16) |
+		((HEIGHT - 1) << 0) |
+		0;
 	// TV_XO TV_YO
-	TCONTV_PTR->TV_BASIC2_REG = (
-		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
-		);
+	TCONTV_PTR->TV_BASIC2_REG =
+		((WIDTH - 1) << 16) |
+		((HEIGHT - 1) << 0) |
+		0;
 	// HT HBP
 	TCONTV_PTR->TV_BASIC3_REG =
 		((HTOTAL - 1) << 16) |		// TOTAL
@@ -3572,6 +3654,48 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 //			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
 //			(unsigned) TCONTV_PTR->TV_BASIC5_REG
 //			);
+
+	// DISP_TV_MOD_NTSC
+
+//	 if (1)//(mode==DISP_TV_MOD_NTSC)
+//	 {
+//		 TCONTV_PTR->TV_CTL_REG = (UINT32_C(1) << 31) | ((525 - 480 ) << 4);   //VT-V
+//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (480 - 1); //H,V
+//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (480 - 1);
+//	  TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (480 - 1);
+//	  TCONTV_PTR->TV_BASIC3_REG = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
+//	  TCONTV_PTR->TV_BASIC4_REG = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
+//	  TCONTV_PTR->TV_BASIC5_REG = (62 << 16) | 6;                //HS, VS
+//	 }
+//	 else //PAL
+//	 {
+//		 TCONTV_PTR->TV_CTL_REG = (UINT32_C(1) << 31) | ((625 - 576 ) << 4);   //VT-V
+//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (576 - 1); //H,V
+//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (576 - 1);
+//		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (576 - 1);
+//		 TCONTV_PTR->TV_BASIC3_REG = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
+//		 TCONTV_PTR->TV_BASIC4_REG = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
+//		 TCONTV_PTR->TV_BASIC5_REG = (64 << 16) | 5;                //HS, VS
+//	 }
+
+	 TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);
+
+	 TCONTV_PTR->TV_IO_POL_REG = 0;
+	 TCONTV_PTR->TV_IO_TRI_REG = 0;//0x0FFFFFFF;
+
+	//	 TV_SRC_SEL
+	//	 TV Source Select
+	//	 000: DE
+	//	 001: Color Check
+	//	 010: Grayscale Check
+	//	 011: Black by White Check
+	//	 100: Reserved
+	//	 101: Reserved
+	//	 111: Gridding Check
+
+	 TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
+	 TCONTV_PTR->TV_GINT0_REG = (UINT32_C(1) << 30);         //enable Vblank int
+	 TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 31) |(1<<1); //enable TCONTV
 
 #endif /* defined (TCONTV_PTR) */
 
@@ -3707,22 +3831,16 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 // Paraleal RGB mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
-	//const videomode_t * vdmodeCRT = & vdmode_NTSC0;
-	const videomode_t * vdmodeCRT = & vdmode_PAL0;
-
 	unsigned prei = 0;
 	unsigned divider = 1;
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider, 0);
-	t113_tcontv_CCU_configuration(vdmode, prei, divider, display_getdotclock(vdmode));
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
 	t113_HV_clock_configuration(vdmode);
-	t113_TV_clock_configuration(vdmode);
 	// step3 - Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
-	t113_set_TV_sequence_parameters(vdmodeCRT);
 	// step4 - Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - Set and open interrupt function
@@ -3731,50 +3849,173 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
-
-static void t113_TVE_initialize(const videomode_t * vdmode)
-{
 #if defined (TCONTV_PTR)
-	const uint_fast32_t needfreq = display_getdotclock(vdmode);
-	unsigned divider;
-	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	PRINTF("t113_TVE_initialize: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-	ASSERT(divider < 16);
-	// LVDS
-	CCU->TVE_CLK_REG =
-		0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
-		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-	CCU->TVE_CLK_REG |= (UINT32_C(1) << 31);
 
 
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 0);	// TVE_TOP_GATING
-	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 16);	// TVE_TOP_RST
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 16);	// TVE_TOP_RST
-	PRINTF("1 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
+enum disp_tv_mode
+{
+	DISP_TV_MOD_480I                = 0,
+	DISP_TV_MOD_576I                = 1,
+	DISP_TV_MOD_480P                = 2,
+	DISP_TV_MOD_576P                = 3,
+	DISP_TV_MOD_720P_50HZ           = 4,
+	DISP_TV_MOD_720P_60HZ           = 5,
+	DISP_TV_MOD_1080I_50HZ          = 6,
+	DISP_TV_MOD_1080I_60HZ          = 7,
+	DISP_TV_MOD_1080P_24HZ          = 8,
+	DISP_TV_MOD_1080P_50HZ          = 9,
+	DISP_TV_MOD_1080P_60HZ          = 0xa,
+	DISP_TV_MOD_1080P_24HZ_3D_FP    = 0x17,
+	DISP_TV_MOD_720P_50HZ_3D_FP     = 0x18,
+	DISP_TV_MOD_720P_60HZ_3D_FP     = 0x19,
+	DISP_TV_MOD_1080P_25HZ          = 0x1a,
+	DISP_TV_MOD_1080P_30HZ          = 0x1b,
+	DISP_TV_MOD_PAL                 = 0xb,
+	DISP_TV_MOD_PAL_SVIDEO          = 0xc,
+	DISP_TV_MOD_NTSC                = 0xe,
+	DISP_TV_MOD_NTSC_SVIDEO         = 0xf,
+	DISP_TV_MOD_PAL_M               = 0x11,
+	DISP_TV_MOD_PAL_M_SVIDEO        = 0x12,
+	DISP_TV_MOD_PAL_NC              = 0x14,
+	DISP_TV_MOD_PAL_NC_SVIDEO       = 0x15,
+	DISP_TV_MOD_3840_2160P_30HZ     = 0x1c,
+	DISP_TV_MOD_3840_2160P_25HZ     = 0x1d,
+	DISP_TV_MOD_3840_2160P_24HZ     = 0x1e,
+	DISP_TV_MOD_4096_2160P_24HZ     = 0x1f,
+	DISP_TV_MOD_4096_2160P_25HZ     = 0x20,
+	DISP_TV_MOD_4096_2160P_30HZ     = 0x21,
+	DISP_TV_MOD_3840_2160P_60HZ     = 0x22,
+	DISP_TV_MOD_4096_2160P_60HZ     = 0x23,
+	DISP_TV_MOD_3840_2160P_50HZ     = 0x24,
+	DISP_TV_MOD_4096_2160P_50HZ     = 0x25,
+	DISP_TV_MOD_2560_1440P_60HZ     = 0x26,
+	DISP_TV_MOD_1440_2560P_70HZ     = 0x27,
+	DISP_TV_MOD_1080_1920P_60HZ	= 0x28,
+	DISP_TV_MOD_1280_1024P_60HZ     = 0x41,
+	DISP_TV_MOD_1024_768P_60HZ      = 0x42,
+	DISP_TV_MOD_900_540P_60HZ       = 0x43,
+	DISP_TV_MOD_1920_720P_60HZ      = 0x44,
 
-	TVE_TOP->TVE_DAC_MAP =
-		(UINT32_C(0x00) << 4) |	// DAC_MAP 000: OUT0
-		(UINT32_C(0x01) << 0) |	// DAC_SEL 01: TVE0
-		0;
-	TVE_TOP->TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
+	/*Just for the solution of hdmi edid detailed timiming block*/
+	DISP_HDMI_MOD_DT0                = 0x4a,
+	DISP_HDMI_MOD_DT1                = 0x4b,
+	DISP_HDMI_MOD_DT2                = 0x4c,
+	DISP_HDMI_MOD_DT3                = 0x4d,
+	/*
+	 * vga
+	 * NOTE:macro'value of new solution must between
+	 * DISP_VGA_MOD_640_480P_60 and DISP_VGA_MOD_MAX_NUM
+	 * or you have to modify is_vag_mode function in drv_tv.h
+	 */
+	DISP_VGA_MOD_640_480P_60         = 0x50,
+	DISP_VGA_MOD_800_600P_60         = 0x51,
+	DISP_VGA_MOD_1024_768P_60        = 0x52,
+	DISP_VGA_MOD_1280_768P_60        = 0x53,
+	DISP_VGA_MOD_1280_800P_60        = 0x54,
+	DISP_VGA_MOD_1366_768P_60        = 0x55,
+	DISP_VGA_MOD_1440_900P_60        = 0x56,
+	DISP_VGA_MOD_1920_1080P_60       = 0x57,
+	DISP_VGA_MOD_1920_1200P_60 = 0x58,
+	DISP_TV_MOD_3840_1080P_30 = 0x59,
+	DISP_VGA_MOD_1280_720P_60        = 0x5a,
+	DISP_VGA_MOD_1600_900P_60        = 0x5b,
+	DISP_VGA_MOD_MAX_NUM             = 0x5c,
 
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
-	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17);	// TVE_RST
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17);	// TVE_RST
-	PRINTF("2 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
+	DISP_TV_MODE_NUM
+};
 
-	//printhex32(TVE_TOP_BASE, TVE_TOP, 256);
 
-	TV_Encoder->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
-	TV_Encoder->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
+static void t113_TVE_initialize(const videomode_t * vdmode, unsigned mode)
+{
+    if (0)
+    {
 
-	//printhex32(TV_Encoder_BASE, TV_Encoder, 256);
-	PRINTF("TV_Encoder->TVE_038_REG=%08" PRIX32 "\n", TV_Encoder->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
+    	VIDEO1_PLL();
 
-#endif /* defined (TCONTV_PTR) */
+    	//	CLK_SRC_SEL
+    	//	Clock Source Select
+    	//	000: PLL_VIDEO0(1X)
+    	//	001: PLL_VIDEO0(4X)
+    	//	010: PLL_VIDEO1(1X)
+    	//	011: PLL_VIDEO1(4X)
+    	//	100: PLL_PERI(2X)
+    	//	101: PLL_AUDIO1(DIV2)
+
+    	TVE_CCU_CLK_REG = (3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
+
+    	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
+
+    	CCU->TVE_BGR_REG = 0;
+    	//CCU->TVE_BGR_REG &= ~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
+    	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
+    	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
+
+    	PRINTF("t113_tcontv_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+        local_delay_us(10);
+    }
+
+    if (1)
+    {
+
+    	VIDEO1_PLL();
+
+    	//	CLK_SRC_SEL
+    	//	Clock Source Select
+    	//	000: PLL_VIDEO0(1X)
+    	//	001: PLL_VIDEO0(4X)
+    	//	010: PLL_VIDEO1(1X)
+    	//	011: PLL_VIDEO1(4X)
+    	//	100: PLL_PERI(2X)
+    	//	101: PLL_AUDIO1(DIV2)
+
+    	const uint_fast32_t needfreq = 216000000;//8 * display_getdotclock(vdmode);
+
+    	unsigned divider;
+    	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video1_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+    	PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+    	ASSERT(divider < 16);
+    	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+    		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO1(4X)
+    		(prei << 8) |	// FACTOR_N 0..3: 1..8
+    		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+    		0;
+    	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
+
+    	CCU->TVE_BGR_REG = 0;
+    	//CCU->TVE_BGR_REG &= ~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
+    	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
+    	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
+
+    	PRINTF("t113_tcontv_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+        local_delay_us(10);
+    }
+
+	 TVE_Init(mode);
+	 if (0)
+	 {
+
+			TVE_TOP->TVE_DAC_MAP =
+				(UINT32_C(0x00) << 4) |	// DAC_MAP 000: OUT0
+				(UINT32_C(0x01) << 0) |	// DAC_SEL 01: TVE0
+				0;
+			TVE_TOP->TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
+
+//			CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
+//			CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17);	// TVE_RST
+//			CCU->TVE_BGR_REG |= (UINT32_C(1) << 17);	// TVE_RST
+//			PRINTF("2 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
+
+			//printhex32(TVE_TOP_BASE, TVE_TOP, 256);
+
+			TV_Encoder->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
+			TV_Encoder->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
+
+			//printhex32(TV_Encoder_BASE, TV_Encoder, 256);
+			PRINTF("TV_Encoder->TVE_038_REG=%08" PRIX32 "\n", TV_Encoder->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
+	 }
+
 }
+#endif /* defined (TCONTV_PTR) */
 
 #if 0
 
@@ -3850,6 +4091,748 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 
 #endif
 
+#if defined (TCONTV_PTR)
+
+#define TVE_DEVICE_NUM 1
+#define TVE_TOP_DEVIVE_NUM 1
+#define TVE_DAC_NUM 1
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+//#include "Type.h"
+
+#define __iomem /*volatile*/
+
+/* tv encoder registers offset */
+#define TVE_000    (0x000)
+#define TVE_004    (0x004)
+#define TVE_008    (0x008)
+#define TVE_00C    (0x00c)
+#define TVE_010    (0x010)
+#define TVE_014    (0x014)
+#define TVE_018    (0x018)
+#define TVE_01C    (0x01c)
+#define TVE_020    (0x020)
+#define TVE_024    (0x024)
+#define TVE_030    (0X030)
+#define TVE_034    (0x034)
+#define TVE_038    (0x038)
+#define TVE_03C    (0x03c)
+#define TVE_040    (0x040)
+#define TVE_044    (0x044)
+#define TVE_048    (0x048)
+#define TVE_04C    (0x04c)
+#define TVE_0F8    (0x0f8)
+#define TVE_0FC    (0x0fc)
+#define TVE_100    (0x100)
+#define TVE_104    (0x104)
+#define TVE_108    (0x108)
+#define TVE_10C    (0x10c)
+#define TVE_110    (0x110)
+#define TVE_114    (0x114)
+#define TVE_118    (0x118)
+#define TVE_11C    (0x11c)
+#define TVE_120    (0x120)
+#define TVE_124    (0x124)
+#define TVE_128    (0x128)
+#define TVE_12C    (0x12c)
+#define TVE_130    (0x130)
+#define TVE_134    (0x134)
+#define TVE_138    (0x138)
+#define TVE_13C    (0x13C)
+#define TVE_300    (0x300)
+#define TVE_304    (0x304)
+#define TVE_308    (0x308)
+#define TVE_30C    (0x30c)
+#define TVE_380    (0x380)
+#define TVE_3A0    (0x3a0)
+
+#define TVE_TOP_020    (0x020)
+#define TVE_TOP_024    (0x024)
+#define TVE_TOP_028    (0x028)
+#define TVE_TOP_02C    (0x02C)
+#define TVE_TOP_030    (0x030)
+#define TVE_TOP_034    (0x034)
+#define TVE_TOP_0F0    (0x0F0)
+
+#define TVE_WUINT32(sel,offset,value)           (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) ))=(value))
+#define TVE_RUINT32(sel,offset)                 (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )))
+#define TVE_SET_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )) |= (bit))
+#define TVE_CLR_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )) &= (~(bit)))
+#define TVE_INIT_BIT(sel,offset,c,s)            (*((volatile uint32_t *)( TV_Encoder_BASE + (offset) )) = \
+                                                (((*(volatile uint32_t *)( TV_Encoder_BASE + (offset) )) & (~(c))) | (s)))
+
+#define TVE_TOP_WUINT32(offset,value)           (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) ))=(value))
+#define TVE_TOP_RUINT32(offset)                 (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )))
+#define TVE_TOP_SET_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )) |= (bit))
+#define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )) &= (~(bit)))
+#define TVE_TOP_INIT_BIT(offset,c,s)            (*((volatile uint32_t *)( TVE_TOP_BASE + (offset) )) = \
+                                               (((*(volatile uint32_t *)( TVE_TOP_BASE + (offset) )) & (~(c))) | (s)))
+
+int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ );
+int32_t tve_low_open(uint32_t sel);                                          //
+int32_t tve_low_close(uint32_t sel);
+int32_t tve_resync_enable(uint32_t sel);
+int32_t tve_resync_disable(uint32_t sel);
+int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali); //
+int32_t tve_low_get_dac_status(uint32_t sel);
+int32_t tve_low_dac_autocheck_enable(uint32_t sel);
+int32_t tve_low_dac_autocheck_disable(uint32_t sel);                         //
+uint32_t tve_low_get_sid(uint32_t index);
+int32_t tve_low_enhance(uint32_t sel, uint32_t mode);
+int32_t tve_low_dac_enable(uint32_t sel);                                    //
+//extern uint sid_read_key(uint key_index);
+
+typedef struct
+{
+ volatile uint32_t GCTL_REG;           // !!! 0x00 TCON Control
+ volatile uint32_t GINT0_REG;          // !!! 0x04 Interrupt_0
+ volatile uint32_t GINT1_REG;          // !!! 0x08 Interrupt_1
+
+ volatile uint32_t RES0[13];
+
+ volatile uint32_t SRC_CTL_REG;        // !!! 0x40 TCON0 Control
+
+ volatile uint32_t RES1[17];
+
+ volatile uint32_t IO_POL_REG;         // !!! 0x88 TV SYNC Signal Polarity Register
+ volatile uint32_t IO_TRI_REG;         // !!! 0x8C TV SYNC Signal volatile Control Register
+
+ volatile uint32_t CTL_REG;            // !!! 0x90 TCON1 Control
+ volatile uint32_t BASIC_REG[6];       // !!! 0x94..0xA8 TCON1 Basic Timing 0..5
+
+ volatile uint32_t RES2[20];
+
+ volatile uint32_t DEBUG_REG;          // !!! 0xFC TCON Debug Information
+}
+tcon_tv0;
+
+
+
+///////////////
+///
+
+
+int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
+{
+	uint32_t i = 0;
+
+	int32_t dac_cal = 512;
+
+//	uint32_t dac_type_set = 0;
+
+	/* init dac config as disable status first */
+//	for (i = 0; i < TVE_DAC_NUM; i++)
+//		dac_type_info[sel][i] = 7;
+
+//	for (i = 0; i < num; i++) {
+//		dac_info[sel][dac_no[i]] = 1;
+//		dac_type_info[sel][dac_no[i]] = dac_type[i];
+//	}
+
+//	for (i = 0; i < TVE_DAC_NUM; i++) {
+//		if (dac_info[sel][i]) {
+//			dac_cal = (int32_t)cali[i] + offset[i];
+			TVE_TOP_WUINT32(TVE_TOP_020 + 0x020*i,
+					(i<<4)|((sel+1)<<0));
+			TVE_TOP_WUINT32(TVE_TOP_02C + 0x020*i, 0x023a);
+			TVE_TOP_WUINT32(TVE_TOP_030 + 0x020*i, 0x0010);
+			TVE_TOP_WUINT32(TVE_TOP_028 + 0x020*i,
+					((0x8000| dac_cal )<<16)|0x4200);
+//		}
+
+//	}
+
+//	for (i = 0; i < TVE_DAC_NUM; i++)
+//		dac_type_set |= dac_type_info[sel][i]<<(4+3*i);
+	TVE_WUINT32(sel, TVE_008, 0 /*dac_type_set*/ );
+
+	return 0;
+}
+
+int32_t tve_low_dac_enable(uint32_t sel)
+{
+	uint32_t i = 0;
+
+//	for (i = 0; i < TVE_DAC_NUM; i++) {
+//		if (dac_info[sel][i])
+			TVE_TOP_SET_BIT(TVE_TOP_028 + 0x020*i, 1<<0);
+//	}
+
+	return 0;
+}
+
+int32_t tve_low_dac_disable(uint32_t sel)
+{
+	uint32_t i = 0;
+
+//	for (i = 0; i < TVE_DAC_NUM; i++) {
+//		if (dac_info[sel][i])
+			TVE_TOP_CLR_BIT(TVE_TOP_028 + 0x020*i, 1<<0);
+//	}
+
+	return 0;
+}
+
+int32_t tve_low_open(uint32_t sel)
+{
+	TVE_SET_BIT(sel, TVE_000, UINT32_C(1) << 31);
+	TVE_SET_BIT(sel, TVE_000, UINT32_C(1) << 0);
+	return 0;
+}
+
+int32_t tve_low_close(uint32_t sel)
+{
+	TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 31);
+	TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 0);
+	return 0;
+}
+
+int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
+{
+	uint32_t deflick  = 0;
+	uint32_t reg_sync = 0;
+
+	switch (mode) {
+	case DISP_TV_MOD_PAL:
+		deflick  = 1;
+		reg_sync = 0x2005000a;
+		TVE_WUINT32(sel, TVE_004, 0x07060001 | (1<<19)); //19 bit: Input_Chroma_Data_Sampling_Rate_Sel => 0: 4:4:4, 1: 4:2:2
+		TVE_WUINT32(sel, TVE_00C, 0x02004000);
+		TVE_WUINT32(sel, TVE_010, 0x2a098acb);
+		TVE_WUINT32(sel, TVE_014, 0x008a0018);
+		TVE_WUINT32(sel, TVE_018, 0x00000016);
+		TVE_WUINT32(sel, TVE_01C, 0x00160271);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000001);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_10C, 0x00002929);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x0016447e);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000fc);
+		TVE_WUINT32(sel, TVE_124, 0x000005a0);
+		TVE_WUINT32(sel, TVE_128, 0x00010000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x200f000c);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x00000000);
+		TVE_WUINT32(sel, TVE_3A0, 0x00030001);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00300000);
+		TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 0);
+		TVE_WUINT32(sel, TVE_130, reg_sync);
+		TVE_WUINT32(sel, TVE_014, 0x00820020);
+		TVE_WUINT32(sel, TVE_130, 0x20050013);
+		TVE_WUINT32(sel, TVE_380, (deflick == 0)
+					? 0x00000000 : 0x0<<10 | 0x3<<8);
+		break;
+	case DISP_TV_MOD_NTSC:
+		deflick  = 1;
+		reg_sync = 0x20050368;
+		TVE_WUINT32(sel, TVE_004, 0x07060000 | (1<<19)); //19 bit: Input_Chroma_Data_Sampling_Rate_Sel => 0: 4:4:4, 1: 4:2:2
+		TVE_WUINT32(sel, TVE_00C, 0x02004000);
+		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
+		TVE_WUINT32(sel, TVE_014, 0x00760020);
+		TVE_WUINT32(sel, TVE_018, 0x00000016);
+		TVE_WUINT32(sel, TVE_01C, 0x0016020d);
+		TVE_WUINT32(sel, TVE_020, 0x00f000f0);
+		TVE_WUINT32(sel, TVE_100, 0x00000001);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000002);
+		TVE_WUINT32(sel, TVE_10C, 0x0000004f);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x0016447e);
+		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
+		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
+		TVE_WUINT32(sel, TVE_124, 0x000005a0);
+		TVE_WUINT32(sel, TVE_128, 0x00000000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x200f000c);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x00000001);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00300000);
+		TVE_CLR_BIT(sel, TVE_000, UINT32_C(1) << 0);
+		TVE_WUINT32(sel, TVE_130, reg_sync);
+		TVE_WUINT32(sel, TVE_130, 0x20050364);
+		TVE_WUINT32(sel, TVE_380, (deflick == 0)
+					? 0x00000000 : 0x0<<10 | 0x3<<8);
+		break;
+	case DISP_TV_MOD_480I:
+		TVE_WUINT32(sel, TVE_004, 0x07060000);
+		TVE_WUINT32(sel, TVE_00C, 0x02004000);
+		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
+		TVE_WUINT32(sel, TVE_014, 0x00760020);
+		TVE_WUINT32(sel, TVE_018, 0x00000016);
+		TVE_WUINT32(sel, TVE_01C, 0x0016020d);
+		TVE_WUINT32(sel, TVE_020, 0x00f000f0);
+		TVE_WUINT32(sel, TVE_100, 0x00000001);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000002);
+		TVE_WUINT32(sel, TVE_10C, 0x0000004f);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x0016447e);
+		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
+		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
+		TVE_WUINT32(sel, TVE_124, 0x000005a0);
+		TVE_WUINT32(sel, TVE_128, 0x00000000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x200f000c);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x00000001);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00300000);
+
+		break;
+	case DISP_TV_MOD_576I:
+		TVE_WUINT32(sel, TVE_004, 0x07060001);
+		TVE_WUINT32(sel, TVE_00C, 0x02004000);
+		TVE_WUINT32(sel, TVE_010, 0x2a098acb);
+		TVE_WUINT32(sel, TVE_014, 0x008a0018);
+		TVE_WUINT32(sel, TVE_018, 0x00000016);
+		TVE_WUINT32(sel, TVE_01C, 0x00160271);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000001);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_10C, 0x00002929);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x0016447e);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000fc);
+		TVE_WUINT32(sel, TVE_124, 0x000005a0);
+		TVE_WUINT32(sel, TVE_128, 0x00010000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x200f000c);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x00000000);
+		TVE_WUINT32(sel, TVE_3A0, 0x00030001);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 1<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00300000);
+		break;
+	case DISP_TV_MOD_480P:
+		TVE_WUINT32(sel, TVE_004, 0x07040002);
+		TVE_WUINT32(sel, TVE_00C, 0x00002000);
+		TVE_WUINT32(sel, TVE_014, 0x00760020);
+		TVE_WUINT32(sel, TVE_018, 0x00000016);
+		TVE_WUINT32(sel, TVE_01C, 0x002C020D);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000001);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000002);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x0016447e);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
+		TVE_WUINT32(sel, TVE_124, 0x000005a0);
+		TVE_WUINT32(sel, TVE_128, 0x00010000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000E000C);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x00000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00400000);
+		break;
+	case DISP_TV_MOD_576P:
+		TVE_WUINT32(sel, TVE_004, 0x07060003);
+		TVE_WUINT32(sel, TVE_00C, 0x00002000);
+		TVE_WUINT32(sel, TVE_014, 0x008a0018);
+		TVE_WUINT32(sel, TVE_018, 0x00000016);
+		TVE_WUINT32(sel, TVE_01C, 0x002C0271);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000001);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x0016447e);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
+		TVE_WUINT32(sel, TVE_124, 0x000005a0);
+		TVE_WUINT32(sel, TVE_128, 0x00010000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x800B000C);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x00000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00400000);
+		break;
+	case DISP_TV_MOD_720P_60HZ:
+		TVE_WUINT32(sel, TVE_004, 0x0706000a);
+		TVE_WUINT32(sel, TVE_00C, 0x00003000);
+		TVE_WUINT32(sel, TVE_014, 0x01040046);
+		TVE_WUINT32(sel, TVE_018, 0x05000046);
+		TVE_WUINT32(sel, TVE_01C, 0x001902EE);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000001);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0xDC280228);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
+		TVE_WUINT32(sel, TVE_124, 0x00000500);
+		TVE_WUINT32(sel, TVE_128, 0x00030000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000C0008);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x07000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00000000);
+		break;
+	case DISP_TV_MOD_720P_50HZ:
+		TVE_WUINT32(sel, TVE_004, 0x0706000a);
+		TVE_WUINT32(sel, TVE_00C, 0x00003000);
+		TVE_WUINT32(sel, TVE_014, 0x01040190);
+		TVE_WUINT32(sel, TVE_018, 0x05000190);
+		TVE_WUINT32(sel, TVE_01C, 0x001902EE);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000001);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0xDC280228);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
+		TVE_WUINT32(sel, TVE_124, 0x00000500);
+		TVE_WUINT32(sel, TVE_128, 0x00030000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000E000C);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x07000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00000000);
+		break;
+	case DISP_TV_MOD_1080I_60HZ:
+		TVE_WUINT32(sel, TVE_004, 0x0706000c);
+		TVE_WUINT32(sel, TVE_00C, 0x00003010);
+		TVE_WUINT32(sel, TVE_014, 0x00C0002C);
+		TVE_WUINT32(sel, TVE_018, 0x0370002C);
+		TVE_WUINT32(sel, TVE_01C, 0x00140465);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x582C442C);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
+		TVE_WUINT32(sel, TVE_124, 0x00000780);
+		TVE_WUINT32(sel, TVE_128, 0x00030000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000E0008);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x07000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00000000);
+		break;
+	case DISP_TV_MOD_1080I_50HZ:
+		TVE_WUINT32(sel, TVE_004, 0x0706000c);
+		TVE_WUINT32(sel, TVE_00C, 0x00003010);
+		TVE_WUINT32(sel, TVE_014, 0x00C001E4);
+		TVE_WUINT32(sel, TVE_018, 0x03700108);
+		TVE_WUINT32(sel, TVE_01C, 0x00140465);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x582C442C);
+		TVE_WUINT32(sel, TVE_118, 0x0000a8a8);
+		TVE_WUINT32(sel, TVE_11C, 0x001000F0);
+		TVE_WUINT32(sel, TVE_124, 0x00000780);
+		TVE_WUINT32(sel, TVE_128, 0x00030000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000E0008);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x07000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00000000);
+		break;
+	case DISP_TV_MOD_1080P_60HZ:
+		TVE_WUINT32(sel, TVE_004, 0x0004000e);
+		TVE_WUINT32(sel, TVE_00C, 0x00003010);
+		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
+		TVE_WUINT32(sel, TVE_014, 0x00c0002c);
+		TVE_WUINT32(sel, TVE_018, 0x07bc002c);
+		TVE_WUINT32(sel, TVE_01C, 0x00290465);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000001);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x582c022c);
+		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
+		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
+		TVE_WUINT32(sel, TVE_124, 0x00000780);
+		TVE_WUINT32(sel, TVE_128, 0x00030000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000e000c);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x07000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00000000);
+		break;
+	case DISP_TV_MOD_1080P_50HZ:
+		TVE_WUINT32(sel, TVE_004, 0x0004000e);
+		TVE_WUINT32(sel, TVE_00C, 0x00003010);
+		TVE_WUINT32(sel, TVE_010, 0x21f07c1f);
+		TVE_WUINT32(sel, TVE_014, 0x00C001E4);
+		TVE_WUINT32(sel, TVE_018, 0x07BC01E4);
+		TVE_WUINT32(sel, TVE_01C, 0x00290465);
+		TVE_WUINT32(sel, TVE_020, 0x00fc00fc);
+		TVE_WUINT32(sel, TVE_100, 0x00000000);
+		TVE_WUINT32(sel, TVE_104, 0x00000000);
+		TVE_WUINT32(sel, TVE_108, 0x00000005);
+		TVE_WUINT32(sel, TVE_110, 0x00000000);
+		TVE_WUINT32(sel, TVE_114, 0x582c022c);
+		TVE_WUINT32(sel, TVE_118, 0x0000a0a0);
+		TVE_WUINT32(sel, TVE_11C, 0x001000f0);
+		TVE_WUINT32(sel, TVE_124, 0x00000780);
+		TVE_WUINT32(sel, TVE_128, 0x00030000);
+		TVE_WUINT32(sel, TVE_12C, 0x00000101);
+		TVE_WUINT32(sel, TVE_130, 0x000e000c);
+		TVE_WUINT32(sel, TVE_134, 0x00000000);
+		TVE_WUINT32(sel, TVE_138, 0x00000000);
+		TVE_WUINT32(sel, TVE_13C, 0x07000000);
+		TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+		TVE_WUINT32(sel, TVE_120, 0x01e80320);
+		TVE_WUINT32(sel, TVE_380, 0x00000000);
+		TVE_INIT_BIT(sel, TVE_004, UINT32_C(1) << 16, 0<<16);
+		TVE_WUINT32(sel, TVE_000, 0x00000000);
+		break;
+
+	case DISP_VGA_MOD_640_480P_60:
+	case DISP_VGA_MOD_800_600P_60:
+	case DISP_VGA_MOD_1024_768P_60:
+	case DISP_VGA_MOD_1280_768P_60:
+	case DISP_VGA_MOD_1280_800P_60:
+	case DISP_VGA_MOD_1366_768P_60:
+	case DISP_VGA_MOD_1440_900P_60:
+	case DISP_VGA_MOD_1600_900P_60:
+	case DISP_VGA_MOD_1280_720P_60:
+	case DISP_VGA_MOD_1920_1080P_60:
+	case DISP_VGA_MOD_1920_1200P_60:
+		TVE_WUINT32(sel, TVE_004, 0x08000000);
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+/* 0:unconnected; 1:connected; */
+int32_t tve_low_get_dac_status(uint32_t sel)
+{
+	uint32_t readval = 0;
+	uint32_t result = 0;
+	uint32_t i = 0;
+
+//	for (i = 0; i < TVE_DAC_NUM; i++) {
+//		if (dac_info[sel][i] == 1) {
+			readval = (TVE_RUINT32(sel, TVE_038)>>(8*i))&3;
+
+//			if (readval == 1) {
+//				result = 1;
+//				break;
+//			}
+//		}
+//	}
+
+	return readval; //result;
+}
+
+int32_t tve_low_dac_autocheck_enable(uint32_t sel)
+{
+	uint8_t i = 0;
+
+	TVE_SET_BIT(sel, TVE_000, 0x80000000);	/* tvclk enable */
+	TVE_WUINT32(sel, TVE_0F8, 0x00000200);
+
+#if defined(CONFIG_MACH_SUN50IW9)
+	TVE_WUINT32(sel, TVE_0FC, 0x014700FF);	/* 10ms x 10 */
+	TVE_SET_BIT(sel, TVE_030, 0x80000000);  /* new detect mode */
+#else
+	TVE_WUINT32(sel, TVE_0FC, 0x0A3C00FF);	/* 20ms x 10 */
+#endif
+
+	TVE_WUINT32(sel, TVE_03C, 0x00009999);
+//	for (i = 0; i < TVE_DAC_NUM; i++) {
+//		if (dac_info[sel][i] == 1)
+			TVE_SET_BIT(sel, TVE_030, 1<<i);/* detect enable */
+//	}
+
+	return 0;
+}
+
+int32_t tve_low_dac_autocheck_disable(uint32_t sel)
+{
+	uint8_t i = 0;
+
+//	for (i = 0; i < TVE_DAC_NUM; i++) {
+//		if (dac_info[sel][i] == 1)
+			TVE_CLR_BIT(sel, TVE_030, 1<<i);
+//	}
+	return 0;
+}
+
+#if 0
+#if defined (CONFIG_MACH_SUN50IW9)
+uint32_t tve_low_get_sid(uint32_t index)
+{
+	uint32_t efuse = 0;
+
+	efuse = (readl(0x0300622c) >> 16) + (readl(0x03006230) << 16);
+
+	if (efuse > 5)
+		efuse -= 5;
+
+	return efuse;
+}
+#else
+uint32_t tve_low_get_sid(uint32_t index)
+{
+	int32_t ret = 0;
+	int32_t buf_len = 32 * TVE_DAC_NUM;
+	uint32_t efuse[TVE_DAC_NUM] = {0};
+
+	if (index > TVE_DAC_NUM - 1)
+		return 0;
+
+	ret = sunxi_efuse_read(EFUSE_TV_OUT_NAME, &efuse, &buf_len);
+	if (ret < 0)
+		return 0;
+
+	return efuse[index];
+}
+#endif
+#endif
+
+int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
+{
+	if (mode == 0) {
+		TVE_CLR_BIT(sel, TVE_000, UINT32_C(0x0F) << 10); /* deflick off */
+		TVE_SET_BIT(sel, TVE_000, 0x5<<10); /* deflick is 5 */
+		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 31); /* lti on */
+		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 16); /* notch off */
+	} else if (mode == 1) {
+		TVE_CLR_BIT(sel, TVE_000, UINT32_C(0x0F) << 10);
+		TVE_SET_BIT(sel, TVE_000, 0x5<<10);
+		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 31);
+		TVE_CLR_BIT(sel, TVE_00C, UINT32_C(1) << 16);
+	} else if (mode == 2) {
+		TVE_CLR_BIT(sel, TVE_000, UINT32_C(0x0F) << 10);
+		TVE_CLR_BIT(sel, TVE_00C, UINT32_C(1) << 31);
+		TVE_SET_BIT(sel, TVE_00C, UINT32_C(1) << 16);
+	}
+	return 0;
+}
+
+///////////////////////////
+///
+
+static void TVE_Init(uint32_t mode)
+{
+	PRINTF("TVE_Init\n");
+	unsigned sel = 0;
+// tve_low_set_top_reg_base((void __iomem*)TVE_TOP_BASE);
+// tve_low_set_reg_base(0,(void __iomem*)TV_Encoder_BASE);
+
+ tve_low_init(sel);
+
+ tve_low_dac_autocheck_disable(sel);
+// tve_low_dac_autocheck_enable(sel);
+
+ tve_low_set_tv_mode(sel,mode,0);
+
+ tve_low_dac_enable(sel);
+
+ tve_low_open(sel);
+
+ tve_low_enhance(sel,0); //0,1,2
+
+
+// if(tve_low_get_dac_status(0))printf("DAC connected!\n");
+// else                         printf("DAC NOT connected!\n");
+	PRINTF("TVE_Init done\n");
+}
+#endif /* defined (TCONTV_PTR) */
+
+static void t113_tvout_initsteps(const videomode_t * vdmode)
+{
+	const uint_fast32_t tvoutfreq = display_getdotclock(vdmode);
+	// step0 - CCU configuration
+	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
+	t113_tcontv_CCU_configuration(vdmode, tvoutfreq);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	//t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	//t113_LVDS_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	//t113_set_sequence_parameters(vdmode);
+	t113_set_TV_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open IO output
+	//t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	//t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	//t113_DSI_controller_configuration(vdmode);
+	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	//t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	//t113_open_module_enable(vdmode);
+}
+
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
@@ -3858,14 +4841,13 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
-	t113_tcontv_CCU_configuration(vdmode, prei, divider, 0);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
 	t113_LVDS_clock_configuration(vdmode);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
-	t113_set_TV_sequence_parameters(vdmode);
+	//t113_set_TV_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -4214,7 +5196,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
     if (1)
     {
-		const int rtmixid = 1;
+		const int rtmixid = RTMIXID;
         // Enable RT-Mixer 0
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
@@ -4222,7 +5204,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
 
     	/* перенаправление выхода DE */
-    	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+    	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
 
     	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer 1 */
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
@@ -4237,9 +5219,10 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
     }
 
-    if (RTMIXID == 2)
+#if defined (TCONTV_PTR)
+    //if (RTMIXID == 2)
     {
-    	const int rtmixid = 2;
+    	const int rtmixid = RTMIXIDTV;	// TV
        // Enable RT-Mixer 1
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
@@ -4257,6 +5240,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
     }
+#endif /* defined (TCONTV_PTR) */
 
 #else
 	#error Undefined CPUSTYLE_xxx
@@ -4271,9 +5255,15 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 	t113_tcon_dsi_initsteps(vdmode);
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
-	t113_TVE_initialize(vdmode);
 #endif /* WITHLVDSHW */
 
+#if defined (TCONTV_PTR)
+
+	const videomode_t * vdmode_CRT = & vdmode_NTSC0;
+	t113_tvout_initsteps(vdmode_CRT);
+	t113_TVE_initialize(vdmode_CRT, DISP_TV_MOD_NTSC);
+
+#endif /* defined (TCONTV_PTR) */
 }
 
 static void awxx_deoutmapping(unsigned disp)
@@ -4300,7 +5290,7 @@ static void awxx_deoutmapping(unsigned disp)
 	case 0:
 		DE_TOP->DE2TCON_MUX =
 			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
-			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCON_TV0 (?) */
+			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCONTV_PTR (?) */
 			0x01 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD1 */
 			0x00 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD0 */
 			0;
@@ -4308,7 +5298,7 @@ static void awxx_deoutmapping(unsigned disp)
 	case 1:
 		DE_TOP->DE2TCON_MUX =
 			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
-			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCON_TV0 (?) */
+			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCONTV_PTR (?) */
 			0x00 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD0 */
 			0x01 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD1 */
 			0;
@@ -4319,7 +5309,7 @@ static void awxx_deoutmapping(unsigned disp)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* перенаправление выхода DE */
-	DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -4946,8 +5936,6 @@ void de2_init(const uintptr_t * frames)
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
-	const unsigned disp = RTMIXID - 1;
-	const int rtmixid = RTMIXID;
 
 #if WITHHDMITVHW && 0
 	if (1)
@@ -4971,26 +5959,43 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	}
 #endif /* WITHHDMITVHW */
 
-	hardware_de_initialize(vdmode);
-	awxx_deoutmapping(disp);
+	{
+		hardware_de_initialize(vdmode);
+		awxx_deoutmapping(RTMIXID - 1);
 
-	hardware_tcon_initialize(vdmode);
+		hardware_tcon_initialize(vdmode);	// внутри и для TV OUT
 
-	// Set DE MODE if need, mapping GPIO pins
-	ltdc_tfcon_cfg(vdmode);
+		// Set DE MODE if need, mapping GPIO pins
+		ltdc_tfcon_cfg(vdmode);
 
-    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
-    {
-		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-		t113_de_update(rtmixid);	/* Update registers */
-    }
-#if CPUSTYLE_T507
-    {
-    	t113_vsu_setup(rtmixid, vdmode, vdmode);
-    }
+		{
+			const int rtmixid = RTMIXID;
+			const unsigned disp = rtmixid - 1;
+		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_update(rtmixid);	/* Update registers */
+		#if CPUSTYLE_T507
+		    {
+		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
+		    }
+		#endif
+		}
+#if defined (TCONTV_PTR)
+		{
+			const videomode_t * vdmode_CRT = & vdmode_NTSC0;
+			const int rtmixid = RTMIXIDTV;
+			const unsigned disp = rtmixid - 1;
+		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_update(rtmixid);	/* Update registers */
+		#if CPUSTYLE_T507
+		    {
+		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
+		    }
+		#endif
+		}
 #endif
-//	printhex32(DISPLAY_TOP_BASE, (void *) DISPLAY_TOP_BASE, 256);
-//	printhex32(TCON_TV0_BASE, TCON_TV0, 256);
+	}
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
@@ -5002,6 +6007,30 @@ hardware_ltdc_deinitialize(void)
 #if WITHLTDCHWVBLANKIRQ
 
 #else /* WITHLTDCHWVBLANKIRQ */
+
+void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
+{
+#if defined (TCONTV_PTR)
+	const int rtmixid = RTMIXIDTV;
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
+
+	// Note: the layer priority is layer3>layer2>layer1>layer0
+	t113_de_set_address_vi2(rtmixid, layer0, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
+	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
+
+	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
+
+	bld->BLD_EN_COLOR_CTL =
+		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
+		0;
+
+	hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
+	t113_de_update(rtmixid);	/* Update registers */
+#endif /* defined (TCONTV_PTR) */
+}
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
@@ -5064,6 +6093,24 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	bld->BLD_EN_COLOR_CTL =
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		0;
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void hardware_ltdc_tvout_set_no_vsync(uintptr_t p1)
+{
+#if defined (TCONTV_PTR)
+	const int rtmixid = RTMIXIDTV;
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
+
+	t113_de_set_address_vi(rtmixid, p1, 1);
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	bld->BLD_EN_COLOR_CTL =
+		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+		0;
+#endif
 }
 
 /* Palette reload */

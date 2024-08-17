@@ -10771,7 +10771,40 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		unsigned count = 20;		// количество смен направления до оконяания теста
+	#if defined (TCONTV_PTR)
+		{
+			static const uint8_t picture0 [] =
+			{
+				#include "build/allwinner_t113-s3/picture.h"
+			};
+			const videomode_t * vdmode_CRT = & vdmode_NTSC0;
+			int dx = vdmode_CRT->width;
+			int dy = vdmode_CRT->height;
+			//enum { dx = 720, dy = 480 };
+			PACKEDCOLORPIP_T fb [GXSIZE(dx, dy)];
+
+
+			PRINTF("size of fb = %u\n", (unsigned) (sizeof fb));
+			PRINTF("size of picture0 = %u\n", (unsigned) (sizeof picture0));
+			//colpip_fill(fb, dx, dy, COLORPIP_GRAY);
+			ASSERT(sizeof fb >= sizeof picture0);
+			memcpy(fb, picture0, sizeof fb);
+
+//			colpip_fillrect(fb, dx, dy, 0, 0, 50, dy, TFTRGB(255, 128, 128));
+//			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, dy, TFTRGB(255, 128, 128));
+
+//			colpip_fillrect(fb, dx, dy, 0, 0, 50, 50, TFTRGB(255, 128, 128));
+//			colpip_fillrect(fb, dx, dy, 50, 50, 50, 50, TFTRGB(255, 128, 128));
+//			colpip_fillrect(fb, dx, dy, 100, 100, 50, 50, TFTRGB(255, 128, 128));
+//			colpip_fillrect(fb, dx, dy, 150, 150, 50, 50, TFTRGB(255, 128, 128));
+//
+//			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, 50, TFTRGB(255, 128, 128));
+//			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
+
+			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0*(uintptr_t) fb);
+		}
+	#endif /* defined (TCONTV_PTR) */
+		unsigned count = 3;		// количество смен направления до оконяания теста
 		const int rectX = DIM_X / 8;
 		const int rectY = DIM_Y / 4;
 		int stepX = 1;
@@ -10781,7 +10814,13 @@ void hightests(void)
 		unsigned steps = 0;
 		for (;;)
 		{
+			enum { dx = DIM_X, dy = DIM_Y };
 			PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+//			colpip_fill(fb, dx, dy, COLOR_GRAY);
+//			colpip_fillrect(fb, dx, dy, 50, 50, 50, 50, TFTRGB(230, 128, 128));
+//			hardware_ltdc_main_set4((uintptr_t) fb, 0, 0, 0);
+//			for (;;)
+//				;
 			char s [32];
 			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background

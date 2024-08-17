@@ -1834,6 +1834,7 @@ const videomode_t vdmode_NTSC0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 480,			/* LCD PIXEL HEIGHT           */
+
 	.hsync = 63,				/* Horizontal synchronization */
 	.hbp = 60,				/* Horizontal back porch      */
 	.hfp = 15,				/* Horizontal front porch */
@@ -1854,6 +1855,7 @@ const videomode_t vdmode_PAL0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 576,			/* LCD PIXEL HEIGHT           */
+
 	.hsync = 65,			/* Horizontal synchronization */
 	.hbp = 68,				/* Horizontal back porch      */
 	.hfp = 11,				/* Horizontal front porch  */
