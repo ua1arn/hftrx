@@ -13481,30 +13481,6 @@ void hightests(void)
 		// 800x480, Allwinner t507, @1200 MHz, RGB565, software 0.4s
 	}
 #endif
-#if 0
-	#include "display/pict.h"
-	uint_fast16_t xcoi, ycoi;
-	uint_fast32_t linesStart = 0;
-	uint_fast32_t pixelIdx = 0;
-
-	PACKEDCOLORPIP_T * frame = colmain_fb_draw();
-
-	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-
-	for(ycoi = 0; ycoi < DIM_Y; ycoi++)
-	{
-		for(xcoi = 0; xcoi < (DIM_X * 4); xcoi+=4)
-		{
-			frame[linesStart + xcoi    ] = gImage_pict[pixelIdx++];
-			frame[linesStart + xcoi + 1] = gImage_pict[pixelIdx++];
-			frame[linesStart + xcoi + 2] = gImage_pict[pixelIdx++];
-		}
-		linesStart += (DIM_X * 4);
-	}
-	colmain_nextfb();
-	for (;;)
-		;
-#endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
