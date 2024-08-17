@@ -1830,6 +1830,7 @@ const videomode_t vdmode0 =
 #endif
 
 /* NTSC TV out parameters */
+/* Aspect ratio 1.5 */
 const videomode_t vdmode_NTSC0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
@@ -1851,6 +1852,7 @@ const videomode_t vdmode_NTSC0 =
 };
 
 /* PAL TV out parameters */
+/* Aspect ratio 1.25 */
 const videomode_t vdmode_PAL0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
