@@ -10805,7 +10805,7 @@ void hightests(void)
 //			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, 50, TFTRGB(255, 128, 128));
 //			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
 
-			//hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
+			hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
 			LCD_SwitchAddress((uintptr_t) fb, 0);
 			for (;;)
 				;

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "reg-ccu.h"
+//#include "reg-ccu.h"
 #include "reg-de.h"
 #include "reg-tconlcd.h"
 
@@ -240,7 +240,7 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 //CH1 UI -----------------------------------------------------------------------------
 
-	write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(1<<16));           //������� ���� � ���������� ������
+	write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(UINT32_C(1) << 16));           //������� ���� � ���������� ������
 	//write32((uintptr_t)&ui->cfg[0].attr, 0);
 	write32((uintptr_t)&ui->cfg[0].size, size);
 	write32((uintptr_t)&ui->cfg[0].coord, 0);
@@ -354,7 +354,7 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t *pdat)
 }
 
 #if 0
-void lcd_backlight_init(void){
+static void lcd_backlight_init(void){
 	GPIO_InitTypeDef InitGpio;
 	InitGpio.GPIO_Mode = GPIO_Mode_AF5;
 	InitGpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
@@ -384,12 +384,12 @@ void lcd_set_pwm(unsigned char pwm){
 }
 #endif
 
-void TCONLCD_Clock(void)
+static void TCONLCD_Clock(void)
 {
- CCU->TCONLCD_BGR_REG&=~(1<<16);                      //assert reset TCON_LCD
- CCU->TCONLCD_CLK_REG=(1UL<<31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
+ CCU->TCONLCD_BGR_REG&=~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
+ CCU->TCONLCD_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
  CCU->TCONLCD_BGR_REG|=1;                             //gate pass TCON_LCD
- CCU->TCONLCD_BGR_REG|=(1<<16);                       //de-assert reset TCON_LCD
+ CCU->TCONLCD_BGR_REG|=(UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
 }
 
 void lcd_init(void)
@@ -398,17 +398,23 @@ void lcd_init(void)
 
 	unsigned int val;
 
-	val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
+	//val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
+	val = CCU->DE_CLK_REG;
 	val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
-	write32((T113_CCU_BASE + CCU_DE_CLK_REG), val);
+	//write32((T113_CCU_BASE + CCU_DE_CLK_REG), val);
+	CCU->DE_CLK_REG = val;
 	//Open the clock gate
-	val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+	val = CCU->DE_BGR_REG;
 	val |= (1 << 0);
-	write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
+	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
+	CCU->DE_BGR_REG = val;
 	//de-assert reset
-	val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+	val = CCU->DE_BGR_REG;
 	val |= (1 << 16);
-	write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
+	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
+	CCU->DE_BGR_REG = val;
 
 /*
 	val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
