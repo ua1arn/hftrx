@@ -4723,7 +4723,6 @@ static void write32(uintptr_t addr, uint32_t value)
 
 static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 {
-	const unsigned disp = (rtmixid - 1);
 	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
 	struct de_bld_t * bld = (struct de_bld_t *) de3_getbld(rtmixid); //(pdat->virt_de + T113_DE_MUX_BLD);
 
@@ -4733,36 +4732,6 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 
 	const unsigned int size = ((( vdmode->height - 1) << 16) | (vdmode->width - 1));
 	int i;
-
-//	if (0)
-//	{
-//		struct de_clk_t * clk = (struct de_clk_t *) DE_TOP;//(pdat->virt_de);
-//
-//		unsigned int val;
-//
-//		val = read32((uintptr_t)&clk->rst_cfg);
-//		val |= UINT32_C(1) << 0;
-//		write32((uintptr_t)&clk->rst_cfg, val);
-//
-//		val = read32((uintptr_t)&clk->gate_cfg);
-//		val |= UINT32_C(1) << 0;
-//		write32((uintptr_t)&clk->gate_cfg, val);
-//
-//		val = read32((uintptr_t)&clk->bus_cfg);
-//		val |= UINT32_C(1) << 0;
-//		write32((uintptr_t)&clk->bus_cfg, val);
-//
-////		val = read32((uintptr_t)&clk->sel_cfg);
-////		val &= ~(1 << 0);
-////		write32((uintptr_t)&clk->sel_cfg, val);
-//	}
-	if (1)
-	{
-    	DE_TOP->GATE_CFG |= UINT32_C(1) << disp;
-    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << disp);
-    	DE_TOP->RST_CFG |= UINT32_C(1) << disp;
-    	DE_TOP->BUS_CFG |= UINT32_C(1) << disp;
-	}
 
 
 	///
@@ -7342,7 +7311,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #if defined (TCONTV_PTR)
 		{
 			const videomode_t * vdmode_CRT = & vdmode_PAL0;
-			const int rtmixid = RTMIXIDTV;
+			const int rtmixid = RTMIXID; //RTMIXIDTV;
 			const unsigned disp = rtmixid - 1;
 		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
@@ -7364,26 +7333,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			#endif
 
 
-				unsigned int val;
-
-
-				PRINTF("2 allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
-
-				// assert reset
-				val = CCU->DE_BGR_REG;
-				val &= ~ (1 << 16);
-				CCU->DE_BGR_REG = val;
-
-				// de-assert reset
-				val = CCU->DE_BGR_REG;
-				val |= (1 << 16);
-				CCU->DE_BGR_REG = val;
-
-
 				TCONTV_Init(mode, vdmode);
 				TVE_Init(mode, vdmode);
 
-				int rtmixid = RTMIXID;	// RTMIXIDTV
 				t113_tvout_de_set_mode(vdmode, rtmixid);
 				//t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 #if is_composite
