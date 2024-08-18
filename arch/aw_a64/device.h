@@ -73,6 +73,7 @@ typedef enum IRQn
     IOMMU_IRQn = 96,                                  /*!< IOMMU  */
     SPI0_IRQn = 97,                                   /*!< SPI Serial Peripheral Interface */
     SPI1_IRQn = 98,                                   /*!< SPI Serial Peripheral Interface */
+    TVE_IRQn = 100,                                   /*!< TVE_TOP TV encoder interrupt */
     NAND_IRQn = 102,                                  /*!< NDFC NAND Flash Controller Interface */
     USBOTG0_IRQn = 103,                               /*!< USBOTG USB OTG Dual-Role Device controller */
     USBEHCI0_IRQn = 104,                              /*!< USB_EHCI_Capability  */
@@ -210,6 +211,8 @@ typedef enum IRQn
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE  Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE  Base */
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
+#define TVE_TOP_BASE ((uintptr_t) 0x06520000)         /*!< TVE_TOP TV Output (TV_Encoder) - H616 only Base */
+#define TV_Encoder_BASE ((uintptr_t) 0x06524000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
 
 #include <core_ca.h>
@@ -1992,7 +1995,7 @@ typedef __PACKED_STRUCT TVD_TOP_Type
 /*
  * @brief TVE_TOP
  */
-/*!< TVE_TOP TV Output (TV_Encoder) */
+/*!< TVE_TOP TV Output (TV_Encoder) - H616 only */
 typedef __PACKED_STRUCT TVE_TOP_Type
 {
          uint32_t reserved_0x000 [0x0008];
@@ -2761,6 +2764,8 @@ typedef __PACKED_STRUCT VE_Type
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
+#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) - H616 only register set access pointer */
+#define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 
 
