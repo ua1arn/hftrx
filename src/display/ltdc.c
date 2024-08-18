@@ -4727,7 +4727,6 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
 	struct de_bld_t * bld = (struct de_bld_t *) de3_getbld(rtmixid); //(pdat->virt_de + T113_DE_MUX_BLD);
 
-	//struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
 
 	struct de_vi_t * vi = (struct de_vi_t *) de3_getvi(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
 	struct de_ui_t * ui = (struct de_ui_t *) de3_getui(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
@@ -4774,6 +4773,7 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 	while (read32((uintptr_t)&glb->dbuff) & 1)
 		;
 
+
 //	for(i = 0; i < 4; i++)
 //	{
 //		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
@@ -4806,6 +4806,7 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 		write32((uintptr_t)&bld->attr[i].fcolor, 0xff000000);
 		write32((uintptr_t)&bld->attr[i].insize, size);
 	}
+	return;
 
 //	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
 //	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
@@ -4821,8 +4822,9 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 
 //https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_csc.c
 #ifndef TVE_MODE
-
+	{
 #if is_composite
+		struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
 		/* set CSC coefficients */
 		write32((uintptr_t)&csc->coef11,0x00000400 );
 		write32((uintptr_t)&csc->coef12,0x00000000 );
@@ -4847,26 +4849,11 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 #else
 		write32((uintptr_t)&csc->csc_ctl,0);
 #endif
+	}
 
 #endif
 
 //https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_vi_scaler.c
-
-#if is_composite
-
- uint32_t src_w=TVD_WIDTH;
- uint32_t src_h=TVD_HEIGHT;
-
- uint32_t dst_w=vdmode->width;//LCD_PIXEL_WIDTH;
- uint32_t dst_h=vdmode->height;//LCD_PIXEL_HEIGHT;
-
- uint32_t hscale=(src_w<<16)/dst_w;
- uint32_t vscale=(src_h<<16)/dst_h;
-
- sun8i_vi_scaler_setup(src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
- sun8i_vi_scaler_enable(1);
-
-#endif
 
 //CH0 VI ----------------------------------------------------------------------------
 
@@ -7290,6 +7277,21 @@ void de2_init(const uintptr_t * frames)
 
 #endif /* CPUSTYLE_A64 */
 
+static void t113_vi_scaler_setup(const videomode_t * vdmode)
+{
+	uint32_t src_w=TVD_WIDTH;
+	uint32_t src_h=TVD_HEIGHT;
+
+	uint32_t dst_w=vdmode->width;//LCD_PIXEL_WIDTH;
+	uint32_t dst_h=vdmode->height;//LCD_PIXEL_HEIGHT;
+
+	uint32_t hscale=(src_w<<16)/dst_w;
+	uint32_t vscale=(src_h<<16)/dst_h;
+
+	sun8i_vi_scaler_setup(src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
+	sun8i_vi_scaler_enable(1);
+}
+
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
@@ -7383,7 +7385,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 				int rtmixid = RTMIXID;	// RTMIXIDTV
 				t113_tvout_de_set_mode(vdmode, rtmixid);
-				//t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+				//t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+#if is_composite
+				t113_vi_scaler_setup(vdmode);
+#endif
 				t113_de_update(rtmixid);	/* Update registers */
 				}
 		}
