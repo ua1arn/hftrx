@@ -4592,7 +4592,7 @@ static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 #define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
 #define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
-struct de_clk_t {
+__PACKED_STRUCT de_clk_t {
 	uint32_t gate_cfg;
 	uint32_t bus_cfg;
 	uint32_t rst_cfg;
@@ -4600,14 +4600,14 @@ struct de_clk_t {
 	uint32_t sel_cfg;
 };
 
-struct de_glb_t {
+__PACKED_STRUCT de_glb_t {
 	uint32_t ctl;
 	uint32_t status;
 	uint32_t dbuff;
 	uint32_t size;
 };
 
-struct de_bld_t {
+__PACKED_STRUCT de_bld_t {
 	uint32_t fcolor_ctl;
 	struct {
 		uint32_t fcolor;
@@ -4632,7 +4632,7 @@ struct de_bld_t {
 	uint32_t out_ctl;
 };
 
-struct de_vi_t {
+__PACKED_STRUCT de_vi_t {
 	struct {
 		uint32_t attr;
 		uint32_t size;
@@ -4649,7 +4649,7 @@ struct de_vi_t {
 	uint32_t vert[2];
 };
 
-struct de_ui_t {
+__PACKED_STRUCT de_ui_t {
 	struct {
 		uint32_t attr;
 		uint32_t size;
@@ -4763,19 +4763,19 @@ struct fb_t113_rgb_pdata_t
 	int bytes_per_pixel;
 	int pixlen;
 
-	struct {
-		//int pixel_clock_hz;
-		int h_front_porch;
-		int h_back_porch;
-		int h_sync_len;
-		int v_front_porch;
-		int v_back_porch;
-		int v_sync_len;
-		int h_sync_active;
-		int v_sync_active;
-		int den_active;
-		int clk_active;
-	} timing;
+//	struct {
+//		//int pixel_clock_hz;
+//		int h_front_porch;
+//		int h_back_porch;
+//		int h_sync_len;
+//		int v_front_porch;
+//		int v_back_porch;
+//		int v_sync_len;
+//		int h_sync_active;
+//		int v_sync_active;
+//		int den_active;
+//		int clk_active;
+//	} timing;
 };
 
 
@@ -4789,16 +4789,16 @@ static void write32(uintptr_t addr, uint32_t value)
 	* (volatile uint32_t *) addr = value;
 }
 
-static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
+static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode, int rtmixid)
 {
-	struct de_clk_t * clk = (struct de_clk_t *)(pdat->virt_de);
-	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	struct de_bld_t * bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
+	struct de_clk_t * clk = (struct de_clk_t *) DE_TOP;//(pdat->virt_de);
+	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
+	struct de_bld_t * bld = (struct de_bld_t *) de3_getbld(rtmixid); //(pdat->virt_de + T113_DE_MUX_BLD);
 
 	//struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
 
-	struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
-	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
+	struct de_vi_t * vi = (struct de_vi_t *) de3_getvi(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
+	struct de_ui_t * ui = (struct de_ui_t *) de3_getui(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
 
 	unsigned int size = ((( TVD_HEIGHT /*pdat->height*/ - 1) << 16) | (pdat->width - 1));
 	unsigned int val;
@@ -7442,21 +7442,21 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
 
 				//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
-				pdat.timing.h_front_porch  = 40;       //160;
-				pdat.timing.h_back_porch   = 87;       //140;
-				pdat.timing.h_sync_len     = 1;        //20;
-				pdat.timing.v_front_porch  = 13;       //13;
-				pdat.timing.v_back_porch   = 31;       //31;
-				pdat.timing.v_sync_len     = 1;        //2;
-				pdat.timing.h_sync_active  = 0;
-				pdat.timing.v_sync_active  = 0;
-				pdat.timing.den_active     = 1;	       //!!!
-				pdat.timing.clk_active     = 0;
+//				pdat.timing.h_front_porch  = 40;       //160;
+//				pdat.timing.h_back_porch   = 87;       //140;
+//				pdat.timing.h_sync_len     = 1;        //20;
+//				pdat.timing.v_front_porch  = 13;       //13;
+//				pdat.timing.v_back_porch   = 31;       //31;
+//				pdat.timing.v_sync_len     = 1;        //2;
+//				pdat.timing.h_sync_active  = 0;
+//				pdat.timing.v_sync_active  = 0;
+//				pdat.timing.den_active     = 1;	       //!!!
+//				pdat.timing.clk_active     = 0;
 
 				TCONTV_Init(mode, vdmode);
 				TVE_Init(mode, vdmode);
 
-				t113_tvout_de_set_mode(& pdat, vdmode);
+				t113_tvout_de_set_mode(& pdat, vdmode, 1);
 				//t113_tvout_de_enable(pdat);
 				t113_de_update(RTMIXID);	// RTMIXIDTV
 				}
