@@ -5932,17 +5932,6 @@ static void VIDEO1_PLL(void)
 	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
 }
 
-// 216 МГц тактирования на TVE
-static void TVE_Clock(void)
-{
-	CCU->TVE_BGR_REG&=~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
-	CCU->TVE_CLK_REG=(UINT32_C(1) << 31)|(3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
-	CCU->TVE_BGR_REG|=(1<<1)|1;                           //gate pass for TVE & TVE_TOP
-	CCU->TVE_BGR_REG|=(1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
-
-	PRINTF("allwnrt113_get_tve_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tve_freq() / 1000 / 1000));
-}
-
 static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 {
 	tve_low_init(0);
@@ -5991,6 +5980,7 @@ static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
 	PRINTF("TCONTV_Init: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 }
 
+// 216 МГц тактирования на TVE
 static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 {
 	VIDEO1_PLL();
@@ -6004,11 +5994,11 @@ static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 	//	100: PLL_PERI(2X)
 	//	101: PLL_AUDIO1(DIV2)
 
-	const uint_fast32_t needfreq = 216000000;//8 * display_getdotclock(vdmode);
+	const uint_fast32_t needfreq = 216000000;
 
 	unsigned divider;
 	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video1_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	PRINTF("TVE_Init: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
 	ASSERT(divider < 16);
 	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
 		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO1(4X)
@@ -6022,10 +6012,8 @@ static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
 	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
 
-	PRINTF("t113_tcontv_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+	PRINTF("TVE_Init: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);
-
-	TVE_Clock();
 
 	TVE_DAC_Init(mode, vdmode);
 }
