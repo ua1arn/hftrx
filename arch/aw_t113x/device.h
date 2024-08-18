@@ -96,7 +96,7 @@ typedef enum IRQn
     TCON_LCD0_IRQn = 122,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
     TCON_TV0_IRQn = 123,                              /*!< TCON_TV  */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface */
-    TV_Encoder_IRQn = 126,                            /*!< TVE_TOP TV Output (TV_Encoder) */
+    TVE_IRQn = 126,                                   /*!< TVE_TOP TV encoder interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  */
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  */
     CSIC_PARSER0_IRQn = 132,                          /*!< CSIC_PARSER  */
@@ -231,6 +231,7 @@ typedef enum IRQn
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
 #define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
+#define TVE0_BASE ((uintptr_t) 0x05604000)            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define CSI_BASE ((uintptr_t) 0x05800000)             /*!< CSI  Base */
 #define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU  Base */
@@ -2636,8 +2637,15 @@ typedef __PACKED_STRUCT TVE_TOP_Type
          uint32_t reserved_0x000 [0x0008];
     __IO uint32_t TVE_DAC_MAP;                        /*!< Offset 0x020 TV Encoder DAC MAP Register */
     __IO uint32_t TVE_DAC_STATUS;                     /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
-    __IO uint32_t TVE_DAC_CFG [0x004];                /*!< Offset 0x028 TV Encoder DAC CFG0..CFG3 Register */
-         uint32_t reserved_0x038 [0x002E];
+    __PACKED_STRUCT
+    {
+        __IO uint32_t TVE_DAC_CFG0;                   /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
+        __IO uint32_t TVE_DAC_CFG1;                   /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
+        __IO uint32_t TVE_DAC_CFG2;                   /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
+        __IO uint32_t TVE_DAC_CFG3;                   /*!< Offset 0x034 TV Encoder DAC CFG3 Register */
+             uint32_t reserved_0x010 [0x0004];
+    } CH [0x001];                                     /*!< Offset 0x028 Channel [0..?] */
+         uint32_t reserved_0x048 [0x002A];
     __IO uint32_t TVE_DAC_TEST;                       /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
 } TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
 /*
@@ -3419,6 +3427,7 @@ typedef __PACKED_STRUCT VE_Type
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
+#define TVE0 ((TV_Encoder_TypeDef *) TVE0_BASE)       /*!< TVE0 TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */

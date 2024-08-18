@@ -1,4 +1,3 @@
-
 # Television Decoder (TVD) is an interface that transforms Composite Video Broadcast Signal (CVBS) or component signal into YUV data.
 
 #type; TVD_TOP; Video Decoding
