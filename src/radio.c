@@ -5900,8 +5900,8 @@ static void tuner_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	//VERIFY(board_dpc_call(& dpcobj_tunertimer));
-	board_dpc_call(& dpcobj_tunertimer);
+	//VERIFY(board_dpc_call(& dpcobj_tunertimer, board_dpc_coreid()));
+	board_dpc_call(& dpcobj_tunertimer, board_dpc_coreid());
 }
 
 /* закончили установку нового состояния тюнера - запускаем новый период таймера */
@@ -10851,10 +10851,11 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 }
 
 
-// user-mode processing
+// user-mode processing - NR, эквалайзер приёмника
 void
-audioproc_spool_user(void)
+user_audioproc(void * ctx)
 {
+	(void) ctx;
 #if LINUX_SUBSYSTEM
 	linux_wait_iq();
 #endif /* LINUX_SUBSYSTEM */
@@ -15855,7 +15856,7 @@ static dpcobj_t cat_dpc;
 static void cat_initialize(void)
 {
 	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL);
-	board_dpc_addentry(& cat_dpc);
+	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 }
 
 #endif	/* WITHCAT */
@@ -16062,8 +16063,8 @@ static void second_1_s_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	//VERIFY(board_dpc_call(& dpcobj_1stimer));
-	board_dpc_call(& dpcobj_1stimer);
+	//VERIFY(board_dpc_call(& dpcobj_1stimer, board_dpc_coreid()));
+	board_dpc_call(& dpcobj_1stimer, board_dpc_coreid());
 }
 
 /* Вызывается из обработчика прерываний десять раз в секунду */
@@ -16071,145 +16072,10 @@ static void second_01_s_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	//VERIFY(board_dpc_call(& dpcobj_1stimer));
-	board_dpc_call(& dpcobj_01_s_timer);
+	//VERIFY(board_dpc_call(& dpcobj_1stimer, board_dpc_coreid()));
+	board_dpc_call(& dpcobj_01_s_timer, board_dpc_coreid());
 }
 
-////////////////////
-/// поддержка отложенного вызова user-mode функций
-
-static LIST_ENTRY dpclistentries;	// list of dpcobj_t - периодичски вызываемые функции
-static LIST_ENTRY dpclistcall;	// list of dpcobj_t = однократно вызываемые функции
-static IRQLSPINLOCK_t dpclistlock = IRQLSPINLOCK_INIT;
-
-/* инициализация списка user-mode опросных функций */
-void board_dpc_initialize(void)
-{
-	IRQLSPINLOCK_INITIALIZE(& dpclistlock);
-	InitializeListHead(& dpclistentries);
-	InitializeListHead(& dpclistcall);
-}
-
-static void dpcobj_exit(dpcobj_t * dp)
-{
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-	dp->flag = 0;
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-}
-
-// возврат не-0 если уже занято
-static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
-{
-	uint_fast8_t v;
-
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-	v = dp->flag;
-	dp->flag = 1;
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-
-	return v;
-}
-
-// Запрос отложенного вызова user-mode функций
-/* добавить функцию для периодического вызова */
-uint_fast8_t board_dpc_addentry(dpcobj_t * dp)
-{
-	IRQL_t oldIrql;
-
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpcobj_traylock(dp))
-		return 0;
-
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-	InsertHeadList(& dpclistentries, & dp->item);
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-
-	return 1;
-}
-
-/* Удалить функцию для периодического вызова */
-uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
-{
-	IRQL_t oldIrql;
-
-	dpcobj_exit(dp);
-
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-	RemoveEntryList(& dp->item);
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-
-	return 1;
-}
-
-// Запрос отложенного вызова user-mode функций
-/* добавить функцию для однократного вызова */
-uint_fast8_t board_dpc_call(dpcobj_t * dp)
-{
-	IRQL_t oldIrql;
-
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpcobj_traylock(dp))
-		return 0;
-
-	IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-	InsertHeadList(& dpclistcall, & dp->item);
-	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-
-	return 1;
-}
-
-void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
-{
-	dp->flag = 0;
-	dp->fn = func;
-	dp->ctx = arg;
-}
-
-// user-mode функция обработки списков запросов dpc
-void board_dpc_processing(void)
-{
-	// Выполнение периодического вызова user-mode функций по списку
-	{
-		IRQL_t oldIrql;
-		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-		for (t = dpclistentries.Blink; t != & dpclistentries; t = t->Blink)
-		{
-			ASSERT(t != NULL);
-			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
-			IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-
-			(* dp->fn)(dp->ctx);
-
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-		}
-		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-	}
-	// Выполнение однократно вызываемых user-mode функций по списку
-	{
-		IRQL_t oldIrql;
-		PLIST_ENTRY t;
-		IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-		while (! IsListEmpty(& dpclistcall))
-		{
-			PLIST_ENTRY t = RemoveTailList(& dpclistcall);
-			IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-			ASSERT(t != NULL);
-
-			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
-
-			(* dp->fn)(dp->ctx);
-			dpcobj_exit(dp);
-
-			IRQLSPIN_LOCK(& dpclistlock, & oldIrql, DPCSYS_IRQL);
-		}
-		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
-	}
-}
 
 // TODO: перенести эти функции на выполнение по board_dpc_addentry
 void app_processing(
@@ -19200,8 +19066,6 @@ applowinitialize(void)
 #if WITHGNSS
 	gnss_initialize();
 #endif /* WITHGNSS */
-
-	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 
 #if WITHNMEA && WITHAUTOTUNER_UA1CEI
 

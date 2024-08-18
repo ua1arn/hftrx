@@ -3607,7 +3607,196 @@ SystemInit(void)
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
 }
+
 #endif /* LINUX_SUBSYSTEM */
+
+
+////////////////////
+/// поддержка отложенного вызова user-mode функций
+
+typedef struct dpcdata
+{
+	IRQLSPINLOCK_t lock;
+	LIST_ENTRY dpclistentries;	// list of dpcobj_t - периодичски вызываемые функции
+	LIST_ENTRY dpclistcalls;	// list of dpcobj_t = однократно вызываемые функции
+} DPCDATA_t;
+
+static DPCDATA_t dpcdatas [HARDWARE_NCORES];
+
+/* инициализация списка user-mode опросных функций */
+void board_dpc_initialize(void)
+{
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(dpcdatas); ++ i)
+	{
+		DPCDATA_t * const dpc = & dpcdatas [i];
+		IRQLSPINLOCK_INITIALIZE(& dpc->lock);
+		InitializeListHead(& dpc->dpclistentries);
+		InitializeListHead(& dpc->dpclistcalls);
+	}
+}
+
+void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
+{
+	dp->flag = 0;
+	dp->fn = func;
+	dp->ctx = arg;
+}
+
+static void dpcobj_release(dpcobj_t * dp)
+{
+	IRQL_t oldIrql;
+	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->flag = 0;
+	IRQLSPIN_UNLOCK(lock, oldIrql);
+}
+
+// возврат не-0 если уже занято
+static uint_fast8_t dpcobj_accure(dpcobj_t * dp)
+{
+	uint_fast8_t v;
+
+	IRQL_t oldIrql;
+	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	v = dp->flag;
+	dp->flag = 1;
+	IRQLSPIN_UNLOCK(lock, oldIrql);
+
+	return v;
+}
+
+// Запрос отложенного вызова user-mode функций
+/* добавить функцию для периодического вызова */
+uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
+{
+	IRQL_t oldIrql;
+	DPCDATA_t * const dpc = & dpcdatas [coreid];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	ASSERT(coreid < HARDWARE_NCORES);
+
+	// предотвращение повторного включения в очередь того же запроса
+	if (dpcobj_accure(dp))
+		return 0;
+
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->coreid = coreid;
+	dp->delflag = 0;
+	InsertHeadList(& dpc->dpclistentries, & dp->item);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
+
+	return 1;
+}
+
+/* Удалить функцию для периодического вызова */
+uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
+{
+	IRQL_t oldIrql;
+	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->delflag = 1;	/* удаление будет произведено про оработке списка */
+	IRQLSPIN_UNLOCK(lock, oldIrql);
+
+	return 1;
+}
+
+// Запрос отложенного вызова user-mode функций
+/* добавить функцию для однократного вызова */
+uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
+{
+	IRQL_t oldIrql;
+	DPCDATA_t * const dpc = & dpcdatas [coreid];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	ASSERT(coreid < HARDWARE_NCORES);
+
+	// предотвращение повторного включения в очередь того же запроса
+	if (dpcobj_accure(dp))
+		return 0;
+
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->coreid = coreid;
+	InsertHeadList(& dpc->dpclistcalls, & dp->item);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
+
+	return 1;
+}
+
+// получить core id текушего потока
+// 0..HARDWARE_NCORES-1
+uint_fast8_t board_dpc_coreid(void)
+{
+#if LINUX_SUBSYSTEM
+	return 0;
+#else /* LINUX_SUBSYSTEM */
+	return arm_hardware_cpuid();
+#endif /* LINUX_SUBSYSTEM */
+}
+
+// user-mode функция обработки списков запросов dpc на текущем процессоре
+void board_dpc_processing(void)
+{
+	DPCDATA_t * const dpc = & dpcdatas [board_dpc_coreid()];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	ASSERT(coreid < HARDWARE_NCORES);
+	// Выполнение периодического вызова user-mode функций по списку
+	{
+		IRQL_t oldIrql;
+		PLIST_ENTRY t;
+		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+		const LIST_ENTRY * const list = & dpc->dpclistentries;
+		LIST_ENTRY * tnext;
+		for (t = list->Blink; t != list; t = tnext)
+		{
+			ASSERT(t != NULL);
+			tnext = t->Blink;
+			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
+			IRQLSPIN_UNLOCK(lock, oldIrql);
+
+			ASSERT(coreid == dp->coreid);
+			if (dp->delflag)
+			{
+				/* удалние функции, ранее помещённой в список */
+				RemoveEntryList(& dp->item);
+				//RemoveEntryList(t);
+			}
+			else
+			{
+				/* выполнение функции, ранее помещённой в список */
+				(* dp->fn)(dp->ctx);
+			}
+
+			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+		}
+		IRQLSPIN_UNLOCK(lock, oldIrql);
+	}
+	// Выполнение однократно вызываемых user-mode функций по списку
+	{
+		IRQL_t oldIrql;
+		PLIST_ENTRY t;
+		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+		LIST_ENTRY * const list = & dpc->dpclistcalls;
+		while (! IsListEmpty(list))
+		{
+			PLIST_ENTRY t = RemoveTailList(list);
+			IRQLSPIN_UNLOCK(lock, oldIrql);
+			ASSERT(t != NULL);
+
+			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
+			ASSERT(coreid == dp->coreid);
+			(* dp->fn)(dp->ctx);
+			dpcobj_release(dp);
+
+			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+		}
+		IRQLSPIN_UNLOCK(lock, oldIrql);
+	}
+}
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
@@ -3709,7 +3898,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, UINT32_C(1) << targetcore, 0x00);	// CPU1, filer=0
 }
 
 #elif CPUSTYLE_XC7Z
@@ -4416,36 +4605,11 @@ void Reset_CPUn_Handler(void)
 #endif /* CPUSTYLE_VM14 */
 
 	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
-#if HARDWARE_NCORES > 3
-	if (arm_hardware_cpuid() == 2)
-	{
-		for (;;)
-		{
-#if WITHINTEGRATEDDSP
-			audioproc_spool_user();
-			__DMB();
-#else /* WITHINTEGRATEDDSP */
-			__WFI();
-#endif /* WITHINTEGRATEDDSP */
-		}
-	}
-	if (arm_hardware_cpuid() == 3)
-	{
-		for (;;)
-		{
-#if WITHINTEGRATEDDSP
-			dsphftrxproc_spool_user();
-			__DMB();
-#else /* WITHINTEGRATEDDSP */
-			__WFI();
-#endif /* WITHINTEGRATEDDSP */
-		}
-	}
-#endif /* HARDWARE_NCORES > 2 */
-	// Idle loop
 	for (;;)
 	{
-		__WFI();
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
+		__DMB();
+		//__WFI();
 	}
 }
 

@@ -360,7 +360,7 @@ static void uart1_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart1_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart1_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 static dpcobj_t uart1_dpc_entry;
@@ -418,7 +418,7 @@ void user_uart1_initialize(void)
 	ticker_add(& uart1_ticker);
 
 	dpcobj_initialize(& uart1_dpc_entry, uart1_spool, NULL);
-	board_dpc_addentry(& uart1_dpc_entry);
+	board_dpc_addentry(& uart1_dpc_entry, board_dpc_coreid());
 }
 
 #endif /* WITHCTRLBOARDT507 */

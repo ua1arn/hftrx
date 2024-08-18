@@ -351,7 +351,7 @@ static void uart5_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart5_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart5_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 void user_uart5_initialize(void)
@@ -374,7 +374,7 @@ void user_uart5_initialize(void)
 	ticker_add(& uart5_ticker);
 
 	dpcobj_initialize(& uart5_dpc_entry, uart5_spool, NULL);
-	board_dpc_addentry(& uart5_dpc_entry);
+	board_dpc_addentry(& uart5_dpc_entry, board_dpc_coreid());
 }
 
 #endif /* WITHCTRLBOARDT507 */

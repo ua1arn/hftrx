@@ -227,7 +227,7 @@ void nmeagnss_parsechar(uint_fast8_t c)
 #if WITHLFM
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
 #endif /* WITHLFM */
-				board_dpc_call(& dpcobj_gnss);	// Update RTC by NMEA time
+				board_dpc_call(& dpcobj_gnss, board_dpc_coreid());	// Update RTC by NMEA time
 			}
 		}
 		break;
@@ -288,7 +288,7 @@ void nmeagnss_initialize(void)
 
 	dpcobj_initialize(& dpcobj_gnss, dpc_parsehandler, NULL);		// Update RTC by NMEA time
 
-//	VERIFY(board_dpc_addentry(& nmeaspool));
+//	VERIFY(board_dpc_addentry(& nmeaspool, board_dpc_coreid()));
 
 //	static uint8_t rxb [512];
 //	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));

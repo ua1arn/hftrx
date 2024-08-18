@@ -48,6 +48,8 @@ lowinitialize(void)
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 #endif /* ! WITHRTOS */
+
+	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 }
 
 /* Главная функция программы */

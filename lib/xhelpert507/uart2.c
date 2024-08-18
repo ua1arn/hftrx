@@ -287,7 +287,7 @@ void user_uart2_initialize(void)
 	hardware_uart2_enabletx(0);
 
 //	dpcobj_initialize(& uart2_dpc_entry, uart2_spool, NULL);
-//	board_dpc_addentry(& uart2_dpc_entry);
+//	board_dpc_addentry(& uart2_dpc_entry, board_dpc_coreid());
 }
 
 #endif /* WITHCTRLBOARDT507 */

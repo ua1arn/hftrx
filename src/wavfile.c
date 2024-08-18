@@ -664,7 +664,7 @@ void sdcardinitialize(void)
 {
 	sdstate = SDSTATE_IDLE;
 	dpcobj_initialize(& sdcard_dpc_entry, sdcard_doc_process, NULL);
-	board_dpc_addentry(& sdcard_dpc_entry);
+	board_dpc_addentry(& sdcard_dpc_entry, board_dpc_coreid());
 }
 
 void sdcarddeinitialize(void)

@@ -691,8 +691,7 @@ extern volatile phase_t mirror_nco3;
 extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
 
-void dsphftrxproc_spool_user(void);
-void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
+void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
 
 #ifdef __cplusplus
 }

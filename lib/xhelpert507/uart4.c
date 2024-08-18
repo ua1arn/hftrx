@@ -920,7 +920,7 @@ void user_uart4_initialize(void)
 #endif /* ! (WITHDEBUG && WITHDEBUG_UART4) */
 
 	dpcobj_initialize(& uart4_dpc_entry, uart4_spool, NULL);
-	board_dpc_addentry(& uart4_dpc_entry);
+	board_dpc_addentry(& uart4_dpc_entry, board_dpc_coreid());
 }
 
 #endif /* WITHCTRLBOARDT507 */

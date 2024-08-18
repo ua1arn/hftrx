@@ -10775,7 +10775,7 @@ void hightests(void)
 		{
 			static const uint8_t picture0 [] =
 			{
-				#include "build/allwinner_t113-s3/picture.h"
+				#include "src/testdata/picture.h"
 			};
 			lcd_init4();
 			hardware_ltdc_tvout_set4((uintptr_t) picture0, 0);
@@ -15558,7 +15558,7 @@ void lowtests(void)
 	{
 		static const uint8_t picture0 [] =
 		{
-			#include "build/allwinner_t113-s3/picture.h"
+			#include "src/testdata/picture.h"
 		};
 		TP();
 		lcd_init4();

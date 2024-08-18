@@ -484,7 +484,7 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
 				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
-				VERIFY(board_dpc_call(& dpc_ua1ceituner));
+				VERIFY(board_dpc_call(& dpc_ua1ceituner, board_dpc_coreid()));
 
 			}
 		}
@@ -652,7 +652,7 @@ static void uart2_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart2_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart2_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 /* Функционирование USER MODE обработчиков */
@@ -7196,14 +7196,12 @@ void board_initialize(void)
 
 #if defined (RTC1_TYPE)
 
-#if WITHRTCCACHED
-
-	static uint_fast16_t board_rtc_cached_year = 2000;
-	static uint_fast8_t board_rtc_cached_month = 1;
-	static uint_fast8_t board_rtc_cached_dayofmonth = 1;
-	static uint_fast8_t board_rtc_cached_hour;
-	static uint_fast8_t board_rtc_cached_minute;
-	static uint_fast8_t board_rtc_cached_seconds;
+static uint_fast16_t board_rtc_cached_year = 2000;
+static uint_fast8_t board_rtc_cached_month = 1;
+static uint_fast8_t board_rtc_cached_dayofmonth = 1;
+static uint_fast8_t board_rtc_cached_hour;
+static uint_fast8_t board_rtc_cached_minute;
+static uint_fast8_t board_rtc_cached_seconds;
 
 	// Выполняется из USER LEVEL
 static void board_rtc_cache_update(void * ctx)
@@ -7215,17 +7213,10 @@ static void board_rtc_cache_update(void * ctx)
 			);
 }
 
-static dpcobj_t board_rtc_timed;
-static ticker_t board_rtc_ticker;
-
 static void board_rtc_cache_spool(void * ctx)
 {
-	(void) ctx;	// приходит NULL
-
-	board_dpc_call(& board_rtc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call((dpcobj_t *) ctx, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
-
-#endif /* WITHRTCCACHED */
 
 /* вызывается при разрешённых прерываниях. */
 static void board_rtc_initialize(void)
@@ -7261,15 +7252,14 @@ static void board_rtc_initialize(void)
 		board_rtc_setdatetime(year, month, day, hour, minute, seconds);
 	}
 
-#if WITHRTCCACHED
-
 	board_rtc_cache_update(NULL);
 
-	dpcobj_initialize(& board_rtc_timed, board_rtc_cache_update, NULL);
-	ticker_initialize(& board_rtc_ticker, NTICKS(500), board_rtc_cache_spool, NULL);
-	ticker_add(& board_rtc_ticker);
+	static dpcobj_t board_rtc_timed;
+	static ticker_t board_rtc_ticker;
 
-#endif /* WITHRTCCACHED */
+	dpcobj_initialize(& board_rtc_timed, board_rtc_cache_update, NULL);
+	ticker_initialize(& board_rtc_ticker, NTICKS(500), board_rtc_cache_spool, & board_rtc_timed);
+	ticker_add(& board_rtc_ticker);
 }
 
 #else /* defined (RTC1_TYPE) */
@@ -7342,20 +7332,9 @@ void board_rtc_cached_getdate(
 	uint_fast8_t * dayofmonth
 	)
 {
-#if WITHRTCCACHED
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
 	* year = board_rtc_cached_year;
 	* month = board_rtc_cached_month;
 	* dayofmonth = board_rtc_cached_dayofmonth;
-
-	LowerIrql(oldIrql);
-
-#else /* WITHRTCCACHED */
-	board_rtc_getdate(year, month, dayofmonth);
-#endif /* WITHRTCCACHED */
 }
 
 void board_rtc_cached_gettime(
@@ -7364,20 +7343,9 @@ void board_rtc_cached_gettime(
 	uint_fast8_t * seconds
 	)
 {
-#if WITHRTCCACHED
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
 	* seconds = board_rtc_cached_seconds;
-
-	LowerIrql(oldIrql);
-
-#else /* WITHRTCCACHED */
-	board_rtc_gettime(hour, minute, seconds);
-#endif /* WITHRTCCACHED */
 }
 
 void board_rtc_cached_getdatetime(
@@ -7389,23 +7357,12 @@ void board_rtc_cached_getdatetime(
 	uint_fast8_t * seconds
 	)
 {
-#if WITHRTCCACHED
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
 	* year = board_rtc_cached_year;
 	* month = board_rtc_cached_month;
 	* dayofmonth = board_rtc_cached_dayofmonth;
 	* hour = board_rtc_cached_hour;
 	* minute = board_rtc_cached_minute;
 	* seconds = board_rtc_cached_seconds;
-
-	LowerIrql(oldIrql);
-
-#else /* WITHRTCCACHED */
-	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, seconds);
-#endif /* WITHRTCCACHED */
 }
 
 void board_get_compile_datetime(
@@ -7630,7 +7587,7 @@ static void uart0_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart0_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart0_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 static void ua1cei_magloop_initialize(void)

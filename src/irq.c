@@ -1813,30 +1813,16 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
-#if CPUSTYLE_ATMEGA
-/* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
-
-void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
-{
-	* oldIrql = SREG;
-    __asm__ volatile ("" ::: "memory");
-	cli();
-}
-
-void LowerIrql(IRQL_t newIRQL)
-{
-    SREG = newIRQL;
-    __asm__ volatile ("" ::: "memory");
-}
-
-#elif CPUSTYLE_ATXMEGA
-#elif (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
-
 /* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
 /* Работа с текущим ядром */
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if LINUX_SUBSYSTEM
+#elif CPUSTYLE_ATMEGA
+	* oldIrql = SREG;
+    __asm__ volatile ("" ::: "memory");
+	cli();
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	if (GIC_GetInterfacePriorityMask() >= newIRQL)
 		; /* Не понижаем приоритет */
 	else
@@ -1869,7 +1855,11 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 /* Работа с текущим ядром */
 void LowerIrql(IRQL_t newIRQL)
 {
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if LINUX_SUBSYSTEM
+#elif CPUSTYLE_ATMEGA
+    SREG = newIRQL;
+    __asm__ volatile ("" ::: "memory");
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	GIC_SetInterfacePriorityMask(newIRQL);
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
@@ -1880,6 +1870,8 @@ void LowerIrql(IRQL_t newIRQL)
 	#warning Implement LowerIrql
 #endif
 }
+
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
@@ -1892,7 +1884,7 @@ uint_fast8_t arm_hardware_clustersize(void)
 
 	return ((GIC_DistributorInfo() >> 5) & 0x07) + 1;	// CPUNumber Indicates the number of implemented processors:
 
-#else /* CPUSTYLE_STM32MP1 */
+#else
 
 	return 1;
 
@@ -1915,7 +1907,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return csr_read_mhartid();
 
-#else /* CPUSTYLE_STM32MP1 */
+#else
 
 	return 0;
 
@@ -2011,13 +2003,17 @@ void arm_hardware_populte_second_initialize(void)
 }
 
 #endif /* WITHSMPSYSTEM */
+#endif
+
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
 	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
-#if CPUSTYLE_AT91SAM7S
+#if LINUX_SUBSYSTEM
+#elif CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
 
@@ -2107,7 +2103,8 @@ void arm_hardware_enable_handler(uint_fast16_t int_ida)
 	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 
-#if CPUSTYLE_AT91SAM7S
+#if LINUX_SUBSYSTEM
+#elif CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
 
@@ -2152,7 +2149,8 @@ void arm_hardware_disable_handler(uint_fast16_t int_ida)
 	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 
-#if CPUSTYLE_AT91SAM7S
+#if LINUX_SUBSYSTEM
+#elif CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
 
