@@ -3741,7 +3741,8 @@ uint_fast8_t board_dpc_coreid(void)
 // user-mode функция обработки списков запросов dpc на текущем процессоре
 void board_dpc_processing(void)
 {
-	DPCDATA_t * const dpc = & dpcdatas [board_dpc_coreid()];
+	const uint_fast8_t coreid = board_dpc_coreid();
+	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
 	ASSERT(coreid < HARDWARE_NCORES);
 	// Выполнение периодического вызова user-mode функций по списку

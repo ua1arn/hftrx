@@ -4026,7 +4026,7 @@ enum disp_tv_mode
 #define TVE_TOP_034    (0x034)
 #define TVE_TOP_0F0    (0x0F0)
 
-#define TVE_GET_REG_BASE(sel)                   (TV_Encoder_BASE)
+#define TVE_GET_REG_BASE(sel)                   (TVENCODER_BASE)
 #define TVE_WUINT32(sel,offset,value)           (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) ))=(value))
 #define TVE_RUINT32(sel,offset)                 (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )))
 #define TVE_SET_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) |= (bit))
@@ -4073,7 +4073,7 @@ enum disp_tv_mode
 static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode);
 //void TV_VSync(void);
 
-#ifdef TV_Encoder_BASE
+#ifdef TVENCODER_BASE
 
 
 int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
@@ -6514,7 +6514,7 @@ static void t113_TVE_initialize(const videomode_t * vdmode, unsigned mode)
 				(UINT32_C(0x00) << 4) |	// DAC_MAP 000: OUT0
 				(UINT32_C(0x01) << 0) |	// DAC_SEL 01: TVE0
 				0;
-			TVE_TOP->TVE_DAC_CFG [0] |= (UINT32_C(1) << 0);	// DAC_EN
+			TVE_TOP->CH [0].TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
 
 //			CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
 //			CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17);	// TVE_RST
@@ -6523,11 +6523,11 @@ static void t113_TVE_initialize(const videomode_t * vdmode, unsigned mode)
 
 			//printhex32(TVE_TOP_BASE, TVE_TOP, 256);
 
-			TV_Encoder->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
-			TV_Encoder->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
+			TVENCODER_PTR->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
+			TVENCODER_PTR->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
 
-			//printhex32(TV_Encoder_BASE, TV_Encoder, 256);
-			PRINTF("TV_Encoder->TVE_038_REG=%08" PRIX32 "\n", TV_Encoder->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
+			//printhex32(TVENCODER_BASE, TVENCODER_PTR, 256);
+			PRINTF("TVENCODER_PTR->TVE_038_REG=%08" PRIX32 "\n", TVENCODER_PTR->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
 	 }
 
 }
