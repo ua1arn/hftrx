@@ -3831,27 +3831,21 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 #if defined (TCONTV_PTR)
 
+
+#define TVE_MODE
+#define is_composite 1
+
 /* +++++ */
 
 #define TVD_WIDTH  720
 #define TVD_HEIGHT 576
 
-#define TVD_SIZE (TVD_WIDTH*TVD_HEIGHT)
+#define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
 
 //---------------------------------------
 
-#define TVE_MODE
-
-#define is_composite 1
-
-#if is_composite
-
-extern void sun8i_vi_scaler_setup(uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
-extern void sun8i_vi_scaler_enable(uint8_t enable);
-
-#endif
-
-//#define LCD_INT_NUMBER 122
+void sun8i_vi_scaler_setup(uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
+void sun8i_vi_scaler_enable(uint8_t enable);
 
 //��� VI
 #define DE2_FORMAT_YUV420_V1U1V0U0 0x08
@@ -3870,37 +3864,9 @@ extern void sun8i_vi_scaler_enable(uint8_t enable);
 #define DE2_FORMAT_ARGB_1555	0x10
 #define DE2_FORMAT_ABGR_1555	0x11
 
-//#ifdef TVE_MODE
-//
-//#define LCD_PIXEL_WIDTH  720
-//#define LCD_PIXEL_HEIGHT 576
-//
-//#else
-//
-//#define LCD_PIXEL_WIDTH  800
-//#define LCD_PIXEL_HEIGHT 480
-//
-//#endif
-
-#define BYTE_PER_PIXEL     4
+#define UI_BYTE_PER_PIXEL     4
 
 #define DE2_FORMAT DE2_FORMAT_ABGR_8888
-
-
-#ifdef TVE_MODE
-
-
-#define TVE_DEVICE_NUM 1
-#define TVE_TOP_DEVIVE_NUM 1
-#define TVE_DAC_NUM 1
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-//#include "Type.h"
-
-#define __iomem /*volatile*/
 
 enum disp_tv_mode
 {
@@ -4041,42 +4007,11 @@ enum disp_tv_mode
 #define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) &= (~(bit)))
 #define TVE_TOP_INIT_BIT(offset,c,s)            (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) = \
                                                (((*(volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) & (~(c))) | (s)))
-//
-//int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address);           //
-//int32_t tve_low_set_top_reg_base(void __iomem *address);                //
-//int32_t tve_low_set_sid_base(void __iomem *address);
-//int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ );
-//int32_t tve_low_open(uint32_t sel);                                          //
-//int32_t tve_low_close(uint32_t sel);
-//int32_t tve_resync_enable(uint32_t sel);
-//int32_t tve_resync_disable(uint32_t sel);
-//int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali); //
-//int32_t tve_low_get_dac_status(uint32_t sel);
-//int32_t tve_low_dac_autocheck_enable(uint32_t sel);
-//int32_t tve_low_dac_autocheck_disable(uint32_t sel);                         //
-//uint32_t tve_low_get_sid(uint32_t index);
-//int32_t tve_low_enhance(uint32_t sel, uint32_t mode);
-//int32_t tve_low_dac_enable(uint32_t sel);                                    //
-//extern uint sid_read_key(uint key_index);
-
-//#include "de_tvec.h"
-
-
-//#define DISPLAY_TOP_BASE 0x05460000
-//#define TCON_TV0_BASE    0x05470000
-//#define TVE_TOP_BASE     0x05600000
-//#define TVE_BASE         0x05604000
-
-//#define TV_INT_NUMBER  123
-//#define TVE_INT_NUMBER 126
-
-static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode);
-//void TV_VSync(void);
 
 #ifdef TVENCODER_BASE
 
 
-int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
+static int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
 {
 	uint32_t i = 0;
 
@@ -4113,7 +4048,7 @@ int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t
 	return 0;
 }
 
-int32_t tve_low_dac_enable(uint32_t sel)
+static int32_t tve_low_dac_enable(uint32_t sel)
 {
 	uint32_t i = 0;
 
@@ -4125,7 +4060,7 @@ int32_t tve_low_dac_enable(uint32_t sel)
 	return 0;
 }
 
-int32_t tve_low_dac_disable(uint32_t sel)
+static int32_t tve_low_dac_disable(uint32_t sel)
 {
 	uint32_t i = 0;
 
@@ -4137,21 +4072,21 @@ int32_t tve_low_dac_disable(uint32_t sel)
 	return 0;
 }
 
-int32_t tve_low_open(uint32_t sel)
+static int32_t tve_low_open(uint32_t sel)
 {
 	TVE_SET_BIT(sel, TVE_000, 0x1<<31);
 	TVE_SET_BIT(sel, TVE_000, 0x1<<0);
 	return 0;
 }
 
-int32_t tve_low_close(uint32_t sel)
+static int32_t tve_low_close(uint32_t sel)
 {
 	TVE_CLR_BIT(sel, TVE_000, 0x1<<31);
 	TVE_CLR_BIT(sel, TVE_000, 0x1<<0);
 	return 0;
 }
 
-int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
+static int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
 {
 	uint32_t deflick  = 0;
 	uint32_t reg_sync = 0;
@@ -4532,7 +4467,7 @@ int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
 }
 
 /* 0:unconnected; 1:connected; */
-int32_t tve_low_get_dac_status(uint32_t sel)
+static int32_t tve_low_get_dac_status(uint32_t sel)
 {
 	uint32_t readval = 0;
 	uint32_t result = 0;
@@ -4552,7 +4487,7 @@ int32_t tve_low_get_dac_status(uint32_t sel)
 	return readval; //result;
 }
 
-int32_t tve_low_dac_autocheck_enable(uint32_t sel)
+static int32_t tve_low_dac_autocheck_enable(uint32_t sel)
 {
 	uint8_t i = 0;
 
@@ -4575,7 +4510,7 @@ int32_t tve_low_dac_autocheck_enable(uint32_t sel)
 	return 0;
 }
 
-int32_t tve_low_dac_autocheck_disable(uint32_t sel)
+static int32_t tve_low_dac_autocheck_disable(uint32_t sel)
 {
 	uint8_t i = 0;
 
@@ -4588,7 +4523,7 @@ int32_t tve_low_dac_autocheck_disable(uint32_t sel)
 
 #if 0
 #if defined (CONFIG_MACH_SUN50IW9)
-uint32_t tve_low_get_sid(uint32_t index)
+static uint32_t tve_low_get_sid(uint32_t index)
 {
 	uint32_t efuse = 0;
 
@@ -4600,7 +4535,7 @@ uint32_t tve_low_get_sid(uint32_t index)
 	return efuse;
 }
 #else
-uint32_t tve_low_get_sid(uint32_t index)
+static uint32_t tve_low_get_sid(uint32_t index)
 {
 	int32_t ret = 0;
 	int32_t buf_len = 32 * TVE_DAC_NUM;
@@ -4618,7 +4553,7 @@ uint32_t tve_low_get_sid(uint32_t index)
 #endif
 #endif
 
-int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
+static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 {
 	if (mode == 0) {
 		TVE_CLR_BIT(sel, TVE_000, 0xf<<10); /* deflick off */
@@ -4639,9 +4574,6 @@ int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 }
 
 #endif
-
-#endif
-
 
 #define T113_DE_BASE		DE_BASE //(0x05000000)
 
@@ -5018,7 +4950,7 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	write32((uintptr_t)&ui->cfg[0].attr, 0);	// mgs
 	write32((uintptr_t)&ui->cfg[0].size, size);
 	write32((uintptr_t)&ui->cfg[0].coord, 0);
-	write32((uintptr_t)&ui->cfg[0].pitch, BYTE_PER_PIXEL * pdat->width);
+	write32((uintptr_t)&ui->cfg[0].pitch, UI_BYTE_PER_PIXEL * pdat->width);
 //	write32((uintptr_t)&ui->cfg[0].top_laddr,VIDEO_MEMORY1);                                  //VIDEO_MEMORY1
 	write32((uintptr_t)&ui->ovl_size, size);
 }
@@ -6219,16 +6151,13 @@ static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
+	//const uint_fast32_t needfreq = display_getdotclock(vdmode);
 	CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
-	if (0)
-	{
-		CCU->TCONTV_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
-	}
-	if (1)
+
 	{
 		unsigned divider;
 		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-		PRINTF("TCONTV_Init: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+		PRINTF("TCONTV_Init: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
 		ASSERT(divider < 16);
 	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
 			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
@@ -6239,10 +6168,11 @@ static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
 	    local_delay_us(10);
 
 	}
+
 	CCU->TCONTV_BGR_REG |= 1;                               //gate pass TCON_TV
 	CCU->TCONTV_BGR_REG |= (1<<16);                         //de-assert reset TCON_TV
 
-	PRINTF("TCONTV_Init=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
+	PRINTF("TCONTV_Init: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 }
 
 static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
@@ -7598,8 +7528,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
 				pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
 				pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
-				pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
-				pdat.bytes_per_pixel = BYTE_PER_PIXEL;
+				pdat.bits_per_pixel  = UI_BYTE_PER_PIXEL*8;
+				pdat.bytes_per_pixel = UI_BYTE_PER_PIXEL;
 				pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
 
 				//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
