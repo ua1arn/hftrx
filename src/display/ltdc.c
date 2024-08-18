@@ -6163,6 +6163,7 @@ void sun8i_vi_scaler_enable(uint8_t enable)
 
 /* ********************************* */
 
+/* Требуется откуда-то получить 216 МГц тактирования на TVE */
 static void VIDEO1_PLL(void)
 {
 	uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
@@ -6181,9 +6182,11 @@ static void VIDEO1_PLL(void)
 	CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
 	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
 
+	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
 	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
 }
 
+// 216 МГц тактирования на TVE
 static void TVE_Clock(void)
 {
 	CCU->TVE_BGR_REG&=~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
@@ -6192,16 +6195,6 @@ static void TVE_Clock(void)
 	CCU->TVE_BGR_REG|=(1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
 
 	PRINTF("allwnrt113_get_tve_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tve_freq() / 1000 / 1000));
-}
-
-static void TCONTV_Clock(void)
-{
-	CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
-	CCU->TCONTV_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
-	CCU->TCONTV_BGR_REG|=1;                               //gate pass TCON_TV
-	CCU->TCONTV_BGR_REG|=(1<<16);                         //de-assert reset TCON_TV
-
-	PRINTF("BOARD_TCONTVFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
 }
 
 static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
@@ -6223,11 +6216,37 @@ static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 	// else                         PRINTF("DAC NOT connected!\n");
 }
 
-static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode)
+static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
 {
-	TCONTV_Clock();
+	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
+	CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
+	if (0)
+	{
+		CCU->TCONTV_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
+	}
+	if (1)
+	{
+		unsigned divider;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+		PRINTF("TCONTV_Init: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+		ASSERT(divider < 16);
+	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+			(prei << 8) |	// FACTOR_N 0..3: 1..8
+			((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+			0;
+	    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
+	    local_delay_us(10);
 
+	}
+	CCU->TCONTV_BGR_REG |= 1;                               //gate pass TCON_TV
+	CCU->TCONTV_BGR_REG |= (1<<16);                         //de-assert reset TCON_TV
 
+	PRINTF("TCONTV_Init=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
+}
+
+static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
+{
 	VIDEO1_PLL();
 
 	//	CLK_SRC_SEL
@@ -6369,10 +6388,9 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 
 static void t113_tvout2_initsteps(const videomode_t * vdmode)
 {
-	const uint_fast32_t tvoutfreq = display_getdotclock(vdmode);
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
-	t113_tcontv_CCU_configuration(vdmode, tvoutfreq);
+	t113_tcontv_CCU_configuration(vdmode, display_getdotclock(vdmode));
 	// step1 - same as step1 in HV mode: Select HV interface type
 	//t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -7597,7 +7615,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				pdat.timing.clk_active     = 0;
 
 			#ifdef TVE_MODE
-				TCONTVandTVE_Init(mode, vdmode);
+				TCONTV_Init(mode, vdmode);
+				TVE_Init(mode, vdmode);
 
 			#else
 				{
