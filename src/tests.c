@@ -10793,6 +10793,7 @@ void hightests(void)
 			//colpip_fill(fb, dx, dy, COLORPIP_GRAY);
 			ASSERT(sizeof fb >= sizeof picture0);
 			memcpy(fb, picture0, sizeof picture0);
+			dcache_clean((uintptr_t) fb. sizeof picture0);
 
 //			colpip_fillrect(fb, dx, dy, 0, 0, 50, dy, TFTRGB(255, 128, 128));
 //			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, dy, TFTRGB(255, 128, 128));
