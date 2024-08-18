@@ -1,7 +1,16 @@
-#type; TVE_TOP; TV Output (TV_Encoder)
-#base; TVE_TOP 0x05600000; TV Output (TV_Encoder)
+#type; TVE_TOP; TV Output TV Encoder (display out interface = CVBS OUT)
+#base; TVE_TOP 0x05600000; TV Encoder (display out interface = CVBS OUT)
 #irq; TVE 126; TV encoder interrupt
 #irqrv; TVE 110; TV encoder interrupt
+#typeend;
+
+#type; TV_Encoder; TV Encoder (display out interface = CVBS OUT)
+#base; TVE0 0x05604000; TV Encoder (display out interface = CVBS OUT)
+#typeend;
+
+# only registesr layouts
+
+#type; TVE_TOP; TV Output TV Encoder (display out interface = CVBS OUT)
 
 #regdef; TVE_DAC_MAP; 0x0020; TV Encoder DAC MAP Register
 #regdef; TVE_DAC_STATUS; 0x0024; TV Encoder DAC STAUTS Register
@@ -17,9 +26,6 @@
 #typeend;
 
 #type; TV_Encoder; TV Encoder (display out interface = CVBS OUT)
-#base; TV_Encoder 0x05604000; TV Output (TV_Encoder)
-#base; TVE0 0x05604000; TV Output (TV_Encoder)
-
 #regdef; TVE_000_REG; 0x0000; TV Encoder Clock Gating Register
 #regdef; TVE_004_REG; 0x0004; TV Encoder Configuration Register
 #regdef; TVE_008_REG; 0x0008; TV Encoder DAC Register1

@@ -1134,6 +1134,7 @@
 		#define BOARD_TCONTVFREQ (allwnrt113_get_tcontv_freq())
 		#define	TVENCODER_IX 0	/* 0 -TVE0 */
 		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
+		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define BOARD_TVEFREQ (allwnrt113_get_tve_freq())
 	#endif

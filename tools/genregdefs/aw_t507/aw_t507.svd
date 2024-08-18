@@ -12284,7 +12284,7 @@
   </peripheral>
   <peripheral>
   <name>TVE_TOP</name>
-  <description>TV Output (TV_Encoder)</description>
+  <description>TV Encoder (display out interface = CVBS OUT)</description>
   <baseAddress>0x06520000</baseAddress>
   <interrupt>
    <name>TVE</name>
@@ -12365,7 +12365,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TV_Encoder</name>
+  <name>TVE0</name>
   <description>TV Encoder (display out interface = CVBS OUT)</description>
   <baseAddress>0x06524000</baseAddress>
   <registers>
@@ -12721,10 +12721,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral derivedFrom="TV_Encoder">
-  <name>TVE0</name>
-  <baseAddress>0x06524000</baseAddress>
   </peripheral>
   <peripheral>
   <name>TWI0</name>

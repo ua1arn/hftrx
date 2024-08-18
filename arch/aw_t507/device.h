@@ -281,9 +281,8 @@ typedef enum IRQn
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
-#define TVE_TOP_BASE ((uintptr_t) 0x06520000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
+#define TVE_TOP_BASE ((uintptr_t) 0x06520000)         /*!< TVE_TOP TV Encoder (display out interface = CVBS OUT) Base */
 #define TVE0_BASE ((uintptr_t) 0x06524000)            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
-#define TV_Encoder_BASE ((uintptr_t) 0x06524000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
@@ -2314,7 +2313,7 @@ typedef __PACKED_STRUCT TSG_Type
 /*
  * @brief TVE_TOP
  */
-/*!< TVE_TOP TV Output (TV_Encoder) */
+/*!< TVE_TOP TV Encoder (display out interface = CVBS OUT) */
 typedef __PACKED_STRUCT TVE_TOP_Type
 {
          uint32_t reserved_0x000 [0x0008];
@@ -3119,9 +3118,8 @@ typedef __PACKED_STRUCT VE_Type
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
-#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
+#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define TVE0 ((TV_Encoder_TypeDef *) TVE0_BASE)       /*!< TVE0 TV Encoder (display out interface = CVBS OUT) register set access pointer */
-#define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
