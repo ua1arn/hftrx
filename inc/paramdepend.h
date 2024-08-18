@@ -2400,9 +2400,6 @@ extern "C" {
 	#undef WITHDSPLOCALTXFIR
 #endif
 
-// Работа с кешированным состоянием RTC
-#define WITHRTCCACHED (WITHSPILOWSUPPORTT && defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_DS1305))
-
 #if (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI
 	#error WIHSPIDFOVERSPI and ( WIHSPIDFSW or WIHSPIDFHW ) can not be used together
 #endif /* (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI */
