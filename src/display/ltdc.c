@@ -6458,9 +6458,10 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
 #endif
 
-    if (1)
+    //if (1)
     {
-		const int rtmixid = RTMIXID;
+    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
+		const int rtmixid = 1;
         // Enable RT-Mixer 0
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
@@ -6471,7 +6472,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
     	// DISPLAY_TOP->DE_PORT_PERH_SEL; // see also
 
-    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer 1 */
+    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
 		{
