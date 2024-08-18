@@ -3602,7 +3602,7 @@ static void dosaveserialport(const char * fname)
 		char c;
 
 		board_dpc_processing();		// обработка отложенного вызова user mode функций
-	if (dbg_getchar(& kbch) != 0)
+		if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
 			{
