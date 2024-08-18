@@ -4800,7 +4800,8 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	struct de_vi_t * vi = (struct de_vi_t *) de3_getvi(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
 	struct de_ui_t * ui = (struct de_ui_t *) de3_getui(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
 
-	unsigned int size = ((( TVD_HEIGHT /*pdat->height*/ - 1) << 16) | (pdat->width - 1));
+	const unsigned int size = ((( vdmode->height - 1) << 16) | (vdmode->width - 1));
+
 	unsigned int val;
 	int i;
 
@@ -4820,24 +4821,27 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	val &= ~(1 << 0);
 	write32((uintptr_t)&clk->sel_cfg, val);
 
+	///
 	write32((uintptr_t)&glb->ctl, (1 << 0));
 	write32((uintptr_t)&glb->status, 0);
 	write32((uintptr_t)&glb->dbuff, 1);
 	write32((uintptr_t)&glb->size, size);
+	while (read32((uintptr_t)&glb->dbuff) & 1)
+		;
 
-	for(i = 0; i < 4; i++)
-	{
-		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
-		memset(chan, 0, i == 0 ? sizeof(struct de_vi_t) : sizeof(struct de_ui_t));
-	}
+//	for(i = 0; i < 4; i++)
+//	{
+//		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
+//		memset(chan, 0, i == 0 ? sizeof(struct de_vi_t) : sizeof(struct de_ui_t));
+//	}
 
-	memset(bld,0,sizeof(struct de_bld_t));
+//	memset(bld,0,sizeof(struct de_bld_t));
 
-	write32((uintptr_t)&bld->fcolor_ctl,0x00000303);              //enable pipe 0 & 1
-	write32((uintptr_t)&bld->fcolor_ctl,0x00000101);              //enable pipe mgs
+//	write32((uintptr_t)&bld->fcolor_ctl,0x00000303);              //enable pipe 0 & 1
+//	write32((uintptr_t)&bld->fcolor_ctl,0x00000101);              //enable pipe mgs
 
 //                                           pipe3   pipe2  pipe1  pipe0
-	write32((uintptr_t)&bld->route,(3<<12)|(2<<8)|(1<<4)|(0<<0)); //ch0=>pipe0, ch1=>pipe1, ch2=>pipe2, ch3=>pipe3
+//	write32((uintptr_t)&bld->route,(3<<12)|(2<<8)|(1<<4)|(0<<0)); //ch0=>pipe0, ch1=>pipe1, ch2=>pipe2, ch3=>pipe3
 
 	write32((uintptr_t)&bld->premultiply,0);
 	write32((uintptr_t)&bld->bkcolor,0xff0000FF);
@@ -4858,17 +4862,17 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 		write32((uintptr_t)&bld->attr[i].insize, size);
 	}
 
-	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
-	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
-	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
-	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
-	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
+//	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
 
 //https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_csc.c
 #ifndef TVE_MODE
