@@ -224,6 +224,7 @@ void LowerIrql(IRQL_t newIRQL);
 		uint8_t flag;
 		udpcfn_t fn;
 		void * ctx;
+		uint8_t delflag;	// помечена для удаления
 	} dpcobj_t;
 
 	void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg);

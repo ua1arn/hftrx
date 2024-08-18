@@ -3685,6 +3685,7 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 
 	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 	dp->coreid = coreid;
+	dp->delflag = 0;
 	InsertHeadList(& dpc->dpclistentries, & dp->item);
 	IRQLSPIN_UNLOCK(lock, oldIrql);
 
@@ -3698,10 +3699,8 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
 
-	dpcobj_release(dp);
-
 	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	RemoveEntryList(& dp->item);
+	dp->delflag = 1;	/* удаление будет произведено про оработке списка */
 	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return 1;
@@ -3751,14 +3750,26 @@ void board_dpc_processing(void)
 		PLIST_ENTRY t;
 		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 		const LIST_ENTRY * const list = & dpc->dpclistentries;
-		for (t = list->Blink; t != list; t = t->Blink)
+		LIST_ENTRY * tnext;
+		for (t = list->Blink; t != list; t = tnext)
 		{
 			ASSERT(t != NULL);
+			tnext = t->Blink;
 			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
 			IRQLSPIN_UNLOCK(lock, oldIrql);
 
 			ASSERT(coreid == dp->coreid);
-			(* dp->fn)(dp->ctx);
+			if (dp->delflag)
+			{
+				/* удалние функции, ранее помещённой в список */
+				RemoveEntryList(& dp->item);
+				//RemoveEntryList(t);
+			}
+			else
+			{
+				/* выполнение функции, ранее помещённой в список */
+				(* dp->fn)(dp->ctx);
+			}
 
 			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
 		}
