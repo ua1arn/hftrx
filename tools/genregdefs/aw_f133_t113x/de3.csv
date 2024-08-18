@@ -145,3 +145,11 @@
 #regdef; padding 0; 0x8000; Need for address arithmetics
 #aggregend;
 #typeend;
+
+#type; DE_VSU
+
+#base; DE_MIXER0_VSU0 0x05120000
+#base; DE_MIXER0_VSU1 0x05140000
+#base; DE_MIXER1_VSU0 0x05220000
+
+#typeend;

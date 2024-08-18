@@ -4546,7 +4546,7 @@ static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 
 #endif
 
-#define T113_DE_BASE		DE_BASE //(0x05000000)
+//#define T113_DE_BASE		DE_BASE //(0x05000000)
 
 #define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
 #define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
@@ -4882,13 +4882,13 @@ static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 #define SUN8I_SCALER_VSU_CTRL_COEFF_RDY		BIT(4)
 
 //#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
-
-#define regmap_write(id, x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z); } while (0)
+#define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
+#define regmap_write(id, x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
 
 #define regmap_update_bits(id, x,y,z,t) do { \
 {                                                      \
- (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))&=~(z); \
- (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))|=(t);  \
+ (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))&=~(z); \
+ (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))|=(t);  \
 } while (0)
 
 static const uint32_t bicubic8coefftab32_left[480] = {
@@ -7233,6 +7233,15 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	}
 #endif /* WITHHDMITVHW */
 
+//	{
+//		uintptr_t p;
+//		p = T113_DE_BASE_N((1))+T113_DE_MUX_VSU;
+//		PRINTF("VSU at 0x%08X\n", p);
+//		ASSERT(p == DE_MIXER0_VSU0_BASE);
+//		p = T113_DE_BASE_N((2))+T113_DE_MUX_VSU;
+//		PRINTF("VSU at 0x%08X\n", p);
+//		ASSERT(p == DE_MIXER1_VSU0_BASE);
+//	}
 	{
 	#if 1
 		const videomode_t * const vdmode_CRT = & vdmode_PAL0;
