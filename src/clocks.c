@@ -3927,6 +3927,7 @@ static void set_dma(void)
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);
 }
 
+// T113
 static void set_mbus(void)
 {
 	/* Reset mbus domain */

@@ -5161,7 +5161,7 @@ static void TCONLCD_Clock(void)
  CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
 }
 
-void lcd_init4(void)
+static void lcd_init4(void)
 {
 #if 1
 	const videomode_t * const vdmode = & vdmode_PAL0;
