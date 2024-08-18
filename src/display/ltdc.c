@@ -2742,37 +2742,6 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 //	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 }
 
-#if 0
-
-static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)TCON_LCD0_BASE;
-
-	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
-	{
-		write32((uintptr_t) & tcon->frm_seed[0], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[1], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[2], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[3], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[4], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[5], 0x11111111);
-		write32((uintptr_t) & tcon->frm_table[0], 0x01010000);
-		write32((uintptr_t) & tcon->frm_table[1], 0x15151111);
-		write32((uintptr_t) & tcon->frm_table[2], 0x57575555);
-		write32((uintptr_t) & tcon->frm_table[3], 0x7f7f7777);
-
-		// 31: TCON_FRM_EN: 0: disable, 1: enable
-		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
-		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
-		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
-		write32((uintptr_t) & tcon->frm_ctrl, TCON_FRM_MODE_VAL);
-		/* режим и формат выхода */
-		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
-	}
-}
-
-#endif
-
 // LVDS: mstep1, HV: step1: Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
@@ -4749,35 +4718,6 @@ struct t113_tconlcd_reg_t {
 
 #endif
 
-struct fb_t113_rgb_pdata_t
-{
-	uintptr_t virt_de;
-	void * virt_tconlcd;
-
-	unsigned int clk_tconlcd;
-//	int rst_de;
-//	int rst_tconlcd;
-	int width;
-	int height;
-	int bits_per_pixel;
-	int bytes_per_pixel;
-	int pixlen;
-
-//	struct {
-//		//int pixel_clock_hz;
-//		int h_front_porch;
-//		int h_back_porch;
-//		int h_sync_len;
-//		int v_front_porch;
-//		int v_back_porch;
-//		int v_sync_len;
-//		int h_sync_active;
-//		int v_sync_active;
-//		int den_active;
-//		int clk_active;
-//	} timing;
-};
-
 
 static uint32_t read32(uintptr_t addr)
 {
@@ -4789,7 +4729,7 @@ static void write32(uintptr_t addr, uint32_t value)
 	* (volatile uint32_t *) addr = value;
 }
 
-static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode, int rtmixid)
+static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 {
 	struct de_clk_t * clk = (struct de_clk_t *) DE_TOP;//(pdat->virt_de);
 	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
@@ -4930,8 +4870,8 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	write32((uintptr_t)&vi->cfg[0].size, size);
 	write32((uintptr_t)&vi->cfg[0].coord, 0);
 
-        write32((uintptr_t)&vi->cfg[0].pitch[0],pdat->width); //Y
-        write32((uintptr_t)&vi->cfg[0].pitch[1],pdat->width); //UV
+        write32((uintptr_t)&vi->cfg[0].pitch[0],vdmode->width); //Y
+        write32((uintptr_t)&vi->cfg[0].pitch[1],vdmode->width); //UV
 
 //	write32((uintptr_t)&vi->cfg[0].top_laddr[0],VIDEO_MEMORY0                       ); //Y
 //	write32((uintptr_t)&vi->cfg[0].top_laddr[1],VIDEO_MEMORY0+(TVD_WIDTH*TVD_HEIGHT)); //UV
@@ -4954,7 +4894,7 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	write32((uintptr_t)&ui->cfg[0].attr, 0);	// mgs
 	write32((uintptr_t)&ui->cfg[0].size, size);
 	write32((uintptr_t)&ui->cfg[0].coord, 0);
-	write32((uintptr_t)&ui->cfg[0].pitch, UI_BYTE_PER_PIXEL * pdat->width);
+	write32((uintptr_t)&ui->cfg[0].pitch, UI_BYTE_PER_PIXEL * vdmode->width);
 //	write32((uintptr_t)&ui->cfg[0].top_laddr,VIDEO_MEMORY1);                                  //VIDEO_MEMORY1
 	write32((uintptr_t)&ui->ovl_size, size);
 }
@@ -7433,36 +7373,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				CCU->DE_BGR_REG = val;
 
 
-
-				struct fb_t113_rgb_pdata_t pdat;
-
-				pdat.virt_tconlcd = TCONLCD_PTR;
-				pdat.virt_de = T113_DE_BASE;
-				pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
-				pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
-				pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
-				pdat.bits_per_pixel  = UI_BYTE_PER_PIXEL*8;
-				pdat.bytes_per_pixel = UI_BYTE_PER_PIXEL;
-				pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
-
-				//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
-//				pdat.timing.h_front_porch  = 40;       //160;
-//				pdat.timing.h_back_porch   = 87;       //140;
-//				pdat.timing.h_sync_len     = 1;        //20;
-//				pdat.timing.v_front_porch  = 13;       //13;
-//				pdat.timing.v_back_porch   = 31;       //31;
-//				pdat.timing.v_sync_len     = 1;        //2;
-//				pdat.timing.h_sync_active  = 0;
-//				pdat.timing.v_sync_active  = 0;
-//				pdat.timing.den_active     = 1;	       //!!!
-//				pdat.timing.clk_active     = 0;
-
 				TCONTV_Init(mode, vdmode);
 				TVE_Init(mode, vdmode);
 
-				t113_tvout_de_set_mode(& pdat, vdmode, 1);
-				//t113_tvout_de_enable(pdat);
-				t113_de_update(RTMIXID);	// RTMIXIDTV
+				int rtmixid = RTMIXID;	// RTMIXIDTV
+				t113_tvout_de_set_mode(vdmode, rtmixid);
+				t113_de_update(rtmixid);
 				}
 		}
 
