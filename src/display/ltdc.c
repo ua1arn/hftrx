@@ -2320,7 +2320,7 @@ static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
 	switch (rtmixid)
 	{
-	default: return 0;
+	default: return NULL;
 	case 1: return DE_MIXER0_GLB;
 	case 2: return DE_MIXER1_GLB;
 	}
@@ -2332,7 +2332,7 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
 	ASSERT(id >= 1);
 	switch (rtmixid)
 	{
-	default: return 0;
+	default: return NULL;
 	case 1: return id <= ARRAY_SIZE(rtmix0_vimap) ? rtmix0_vimap [id - 1] : NULL;
 	case 2: return id <= ARRAY_SIZE(rtmix1_vimap) ? rtmix1_vimap [id - 1] : NULL;
 	}
@@ -2344,7 +2344,7 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 	ASSERT(id >= 1);
 	switch (rtmixid)
 	{
-	default: return 0;
+	default: return NULL;
 	case 1: return id <= ARRAY_SIZE(rtmix0_uimap) ? rtmix0_uimap [id - 1] : NULL;
 	case 2: return id <= ARRAY_SIZE(rtmix1_uimap) ? rtmix1_uimap [id - 1] : NULL;
 	}
@@ -4568,31 +4568,6 @@ __PACKED_STRUCT de_glb_t {
 	uint32_t size;
 };
 
-__PACKED_STRUCT de_bld_t {
-	uint32_t fcolor_ctl;
-	struct {
-		uint32_t fcolor;
-		uint32_t insize;
-		uint32_t offset;
-		uint32_t dum;
-	} attr[4];
-	uint32_t dum0[15];
-	uint32_t route;
-	uint32_t premultiply;
-	uint32_t bkcolor;
-	uint32_t output_size;
-	uint32_t bld_mode[4];
-	uint32_t dum1[4];
-	uint32_t ck_ctl;
-	uint32_t ck_cfg;
-	uint32_t dum2[2];
-	uint32_t ck_max[4];
-	uint32_t dum3[4];
-	uint32_t ck_min[4];
-	uint32_t dum4[3];
-	uint32_t out_ctl;
-};
-
 __PACKED_STRUCT de_vi_t {
 	struct {
 		uint32_t attr;
@@ -4723,8 +4698,10 @@ static void write32(uintptr_t addr, uint32_t value)
 
 static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 {
-	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
-	struct de_bld_t * bld = (struct de_bld_t *) de3_getbld(rtmixid); //(pdat->virt_de + T113_DE_MUX_BLD);
+	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid);
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
 
 
 	struct de_vi_t * vi = (struct de_vi_t *) de3_getvi(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
@@ -4757,23 +4734,23 @@ static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 //                                           pipe3   pipe2  pipe1  pipe0
 //	write32((uintptr_t)&bld->route,(3<<12)|(2<<8)|(1<<4)|(0<<0)); //ch0=>pipe0, ch1=>pipe1, ch2=>pipe2, ch3=>pipe3
 
-	write32((uintptr_t)&bld->premultiply,0);
-	write32((uintptr_t)&bld->bkcolor,0xff0000FF);
-	write32((uintptr_t)&bld->bkcolor,0xffFFFF00);	// mgs
+	write32((uintptr_t)&bld->PREMULTIPLY,0);
+	write32((uintptr_t)&bld->BKCOLOR,0xff0000FF);
+	write32((uintptr_t)&bld->BKCOLOR,0xffFFFF00);	// mgs
 
 	uint32_t bldmode = 0x03010301;	// default (mgs)
 	//uint32_t bldmode = 0x03020302;
-	write32((uintptr_t)&bld->bld_mode[0],bldmode);
-	write32((uintptr_t)&bld->bld_mode[1],bldmode);             //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
+	write32((uintptr_t)&bld->BLD_MODE[0],bldmode);
+	write32((uintptr_t)&bld->BLD_MODE[1],bldmode);             //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
 
-	write32((uintptr_t)&bld->output_size, size);
-	write32((uintptr_t)&bld->out_ctl, 0);
-	write32((uintptr_t)&bld->ck_ctl, 0);
+	write32((uintptr_t)&bld->OUTPUT_SIZE, size);
+	write32((uintptr_t)&bld->OUT_CTL, 0);
+	write32((uintptr_t)&bld->CK_CTL, 0);
 
 	for(i = 0; i < 4; i++)
 	{
-		write32((uintptr_t)&bld->attr[i].fcolor, 0xff000000);
-		write32((uintptr_t)&bld->attr[i].insize, size);
+		write32((uintptr_t)&bld->CH[i].BLD_FILL_COLOR, 0xff000000);
+		write32((uintptr_t)&bld->CH[i].BLD_CH_ISIZE, size);
 	}
 	return;
 
