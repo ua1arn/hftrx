@@ -12284,7 +12284,7 @@
   </peripheral>
   <peripheral>
   <name>TVE_TOP</name>
-  <description>TV Output (TV_Encoder) - H616 only</description>
+  <description>TV Output (TV_Encoder)</description>
   <baseAddress>0x06520000</baseAddress>
   <interrupt>
    <name>TVE</name>
@@ -12721,6 +12721,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="TV_Encoder">
+  <name>TVE0</name>
+  <baseAddress>0x06524000</baseAddress>
   </peripheral>
   <peripheral>
   <name>TWI0</name>

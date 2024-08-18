@@ -15229,7 +15229,7 @@
   <description>TV Output (TV_Encoder)</description>
   <baseAddress>0x05600000</baseAddress>
   <interrupt>
-   <name>TV_Encoder</name>
+   <name>TVE</name>
    <value>110</value>
    <description></description>
   </interrupt>
@@ -15663,6 +15663,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="TV_Encoder">
+  <name>TVE0</name>
+  <baseAddress>0x05604000</baseAddress>
   </peripheral>
   <peripheral>
   <name>TWI0</name>

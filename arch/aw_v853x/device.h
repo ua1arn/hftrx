@@ -94,7 +94,7 @@ typedef enum IRQn
     TCON_LCD0_IRQn = 122,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
     TCON_TV0_IRQn = 123,                              /*!< TCON_TV  */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface */
-    TV_Encoder_IRQn = 126,                            /*!< TVE_TOP TV Output (TV_Encoder) */
+    TVE_IRQn = 126,                                   /*!< TVE_TOP TV encoder interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  */
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  */
     CSIC_DMA2_IRQn = 129,                             /*!< CSIC_DMA  */
@@ -228,6 +228,7 @@ typedef enum IRQn
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
 #define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
+#define TVE0_BASE ((uintptr_t) 0x05604000)            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define CSI_BASE ((uintptr_t) 0x05800800)             /*!< CSI  Base */
 #define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP  Base */
@@ -3481,6 +3482,7 @@ typedef __PACKED_STRUCT VE_Type
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
+#define TVE0 ((TV_Encoder_TypeDef *) TVE0_BASE)       /*!< TVE0 TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */
