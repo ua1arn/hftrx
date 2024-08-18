@@ -4955,97 +4955,6 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	write32((uintptr_t)&ui->ovl_size, size);
 }
 
-#if ! defined TVE_MODE
-// not for TVE_MODE
-static void t113_tconlcd2_enable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	unsigned int val;
-
-	val = read32((uintptr_t)&tcon->gctrl);
-	val |= (1 << 31);
-	write32((uintptr_t)&tcon->gctrl, val);
-}
-
-// not for TVE_MODE
-static void t113_tconlcd2_disable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	unsigned int val;
-	val = read32((uintptr_t)&tcon->dclk);
-	val &= ~(0xf << 28);
-	write32((uintptr_t)&tcon->dclk, val);
-
-	write32((uintptr_t)&tcon->gctrl, 0);
-	write32((uintptr_t)&tcon->gint0, 0);
-}
-
-// not for TVE_MODE
-static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	int bp, total;
-	unsigned int val;
-
-	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
-	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0) );
-
-	val = pdat->clk_tconlcd / display_getdotclock(vdmode);
-
-	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val /* /2 */ ) << 0));                     //������ �� 2, ������� ������ �� ���������� � 2 ���� ��������
-
-	write32((uintptr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
-
-	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
-	total = pdat->width + pdat->timing.h_front_porch + bp;
-	write32((uintptr_t)&tcon->timing1, ((total - 1) << 16) | ((bp - 1) << 0));
-
-	bp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
-	total = pdat->height + pdat->timing.v_front_porch + bp;
-	write32((uintptr_t)&tcon->timing2, ((total * 2) << 16) | ((bp - 1) << 0));
-
-	write32((uintptr_t)&tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
-
-	val = (0 << 31) | (1 << 28);
-	if(!pdat->timing.h_sync_active)
-		val |= (1 << 25);
-	if(!pdat->timing.v_sync_active)
-		val |= (1 << 24);
-	if(!pdat->timing.den_active)
-		val |= (1 << 27);
-	if(!pdat->timing.clk_active)
-		val |= (1 << 26);
-	write32((uintptr_t)&tcon->io_polarity, val);
-	write32((uintptr_t)&tcon->io_tristate, 0);
-}
-
-// not for TVE_MODE
-static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-
-	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
-	{
-		write32((uintptr_t)&tcon->frm_seed[0], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[1], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[2], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[3], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[4], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[5], 0x11111111);
-		write32((uintptr_t)&tcon->frm_table[0], 0x01010000);
-		write32((uintptr_t)&tcon->frm_table[1], 0x15151111);
-		write32((uintptr_t)&tcon->frm_table[2], 0x57575555);
-		write32((uintptr_t)&tcon->frm_table[3], 0x7f7f7777);
-
-		if(pdat->bits_per_pixel == 16)
-			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (1 << 6) | (0 << 5)| (1 << 4));
-		else if(pdat->bits_per_pixel == 18)
-			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (0 << 6) | (0 << 5)| (0 << 4));
-	}
-}
-
-#endif
-
 #define IS_DE3 0
 #define CHANNEL 0
 
@@ -7544,19 +7453,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				pdat.timing.den_active     = 1;	       //!!!
 				pdat.timing.clk_active     = 0;
 
-			#ifdef TVE_MODE
 				TCONTV_Init(mode, vdmode);
 				TVE_Init(mode, vdmode);
-
-			#else
-				{
-
-					t113_tconlcd2_disable(& pdat);
-					t113_tconlcd2_set_timing(& pdat, vdmode);
-					t113_tconlcd2_set_dither(& pdat);
-					t113_tconlcd2_enable(& pdat);
-				}
-			#endif
 
 				t113_tvout_de_set_mode(& pdat, vdmode);
 				//t113_tvout_de_enable(pdat);
