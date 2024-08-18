@@ -3227,10 +3227,12 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32
 		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1) << 0);      //selected 0 - CCU clock, 1 - TVE clock
 		DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCONTV_PTR
 
+		PRINTF("Before 1: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 //    	 uint32_t v = DISPLAY_TOP-> DE_PORT_PERH_SEL;
 //    	 v &= UINT32_C(0xFFFFFFF0);
 //    	 v |= UINT32_C(0x00000002);
 //    	 DISPLAY_TOP->DE_PORT_PERH_SEL = v;       //0 - DE to TCON_LCD, 2 - DE to TCON_TV
+		PRINTF("Afrer 1: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 
     }
 
@@ -7268,10 +7270,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	//0 - CCU clock, 1 - TVE clock
 				DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
 
+				PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
 				v&=0xFFFFFFF0;
 				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
 				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
+				PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 			}
 			TCONTV_Init(mode, vdmode_CRT);
 			TVE_Init(mode, vdmode_CRT);
