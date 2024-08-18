@@ -4560,46 +4560,39 @@ static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 #define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
 #define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
 #define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
-
-__PACKED_STRUCT de_glb_t {
-	uint32_t ctl;
-	uint32_t status;
-	uint32_t dbuff;
-	uint32_t size;
-};
-
-__PACKED_STRUCT de_vi_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch[3];
-		uint32_t top_laddr[3];
-		uint32_t bot_laddr[3];
-	} cfg[4];
-	uint32_t fcolor[4];
-	uint32_t top_haddr[3];
-	uint32_t bot_haddr[3];
-	uint32_t ovl_size[2];
-	uint32_t hori[2];
-	uint32_t vert[2];
-};
-
-__PACKED_STRUCT de_ui_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch;
-		uint32_t top_laddr;
-		uint32_t bot_laddr;
-		uint32_t fcolor;
-		uint32_t dum;
-	} cfg[4];
-	uint32_t top_haddr;
-	uint32_t bot_haddr;
-	uint32_t ovl_size;
-};
+//
+//__PACKED_STRUCT de_vi_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch[3];
+//		uint32_t top_laddr[3];
+//		uint32_t bot_laddr[3];
+//	} cfg[4];
+//	uint32_t fcolor[4];
+//	uint32_t top_haddr[3];
+//	uint32_t bot_haddr[3];
+//	uint32_t ovl_size[2];
+//	uint32_t hori[2];
+//	uint32_t vert[2];
+//};
+//
+//__PACKED_STRUCT de_ui_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch;
+//		uint32_t top_laddr;
+//		uint32_t bot_laddr;
+//		uint32_t fcolor;
+//		uint32_t dum;
+//	} cfg[4];
+//	uint32_t top_haddr;
+//	uint32_t bot_haddr;
+//	uint32_t ovl_size;
+//};
 
 #if 0
 struct de_csc_t {
@@ -4698,26 +4691,26 @@ static void write32(uintptr_t addr, uint32_t value)
 
 static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 {
-	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid);
+	//struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid);
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 
 
-	struct de_vi_t * vi = (struct de_vi_t *) de3_getvi(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
-	struct de_ui_t * ui = (struct de_ui_t *) de3_getui(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
+//	struct de_vi_t * vi = (struct de_vi_t *) de3_getvi(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
+//	struct de_ui_t * ui = (struct de_ui_t *) de3_getui(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
 
 	const unsigned int size = ((( vdmode->height - 1) << 16) | (vdmode->width - 1));
 	int i;
 
 
 	///
-	write32((uintptr_t)&glb->ctl, (1 << 0));
-	write32((uintptr_t)&glb->status, 0);
-	write32((uintptr_t)&glb->dbuff, 1);
-	write32((uintptr_t)&glb->size, size);
-	while (read32((uintptr_t)&glb->dbuff) & 1)
-		;
+//	write32((uintptr_t)&glb->ctl, (1 << 0));
+//	write32((uintptr_t)&glb->status, 0);
+//	write32((uintptr_t)&glb->dbuff, 1);
+//	write32((uintptr_t)&glb->size, size);
+//	while (read32((uintptr_t)&glb->dbuff) & 1)
+//		;
 
 
 //	for(i = 0; i < 4; i++)
@@ -4798,43 +4791,43 @@ static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 	}
 
 #endif
-
-//https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_vi_scaler.c
-
-//CH0 VI ----------------------------------------------------------------------------
-
-	//write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|((is_composite?DE2_FORMAT_YUV420_V1U1V0U0:DE2_FORMAT)<<8)|((is_composite^1)<<15)); //VI
-	write32((uintptr_t)&vi->cfg[0].attr,0); //VI mgs
-	write32((uintptr_t)&vi->cfg[0].size, size);
-	write32((uintptr_t)&vi->cfg[0].coord, 0);
-
-        write32((uintptr_t)&vi->cfg[0].pitch[0],vdmode->width); //Y
-        write32((uintptr_t)&vi->cfg[0].pitch[1],vdmode->width); //UV
-
-//	write32((uintptr_t)&vi->cfg[0].top_laddr[0],VIDEO_MEMORY0                       ); //Y
-//	write32((uintptr_t)&vi->cfg[0].top_laddr[1],VIDEO_MEMORY0+(TVD_WIDTH*TVD_HEIGHT)); //UV
-
-	write32((uintptr_t)&vi->ovl_size[0],size); //Y
-	write32((uintptr_t)&vi->ovl_size[1],size); //UV
-	write32((uintptr_t)&vi->fcolor [0], 0xFFFF0000);
-
-/*
-	write32((uintptr_t)&vi->hori[0], (dst_w<<16)|src_w); //Y
-	write32((uintptr_t)&vi->hori[1], (dst_w<<16)|src_w); //UV
-
-	write32((uintptr_t)&vi->vert[0], (dst_h<<16)|src_h); //Y
-	write32((uintptr_t)&vi->vert[1], (dst_h<<16)|src_h); //UV
-*/
-
-//CH1 UI -----------------------------------------------------------------------------
-
-	//write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(UINT32_C(1) << 16));           //������� ���� � ���������� ������
-	write32((uintptr_t)&ui->cfg[0].attr, 0);	// mgs
-	write32((uintptr_t)&ui->cfg[0].size, size);
-	write32((uintptr_t)&ui->cfg[0].coord, 0);
-	write32((uintptr_t)&ui->cfg[0].pitch, UI_BYTE_PER_PIXEL * vdmode->width);
-//	write32((uintptr_t)&ui->cfg[0].top_laddr,VIDEO_MEMORY1);                                  //VIDEO_MEMORY1
-	write32((uintptr_t)&ui->ovl_size, size);
+//
+////https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_vi_scaler.c
+//
+////CH0 VI ----------------------------------------------------------------------------
+//
+//	//write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|((is_composite?DE2_FORMAT_YUV420_V1U1V0U0:DE2_FORMAT)<<8)|((is_composite^1)<<15)); //VI
+//	write32((uintptr_t)&vi->cfg[0].attr,0); //VI mgs
+//	write32((uintptr_t)&vi->cfg[0].size, size);
+//	write32((uintptr_t)&vi->cfg[0].coord, 0);
+//
+//        write32((uintptr_t)&vi->cfg[0].pitch[0],vdmode->width); //Y
+//        write32((uintptr_t)&vi->cfg[0].pitch[1],vdmode->width); //UV
+//
+////	write32((uintptr_t)&vi->cfg[0].top_laddr[0],VIDEO_MEMORY0                       ); //Y
+////	write32((uintptr_t)&vi->cfg[0].top_laddr[1],VIDEO_MEMORY0+(TVD_WIDTH*TVD_HEIGHT)); //UV
+//
+//	write32((uintptr_t)&vi->ovl_size[0],size); //Y
+//	write32((uintptr_t)&vi->ovl_size[1],size); //UV
+//	write32((uintptr_t)&vi->fcolor [0], 0xFFFF0000);
+//
+///*
+//	write32((uintptr_t)&vi->hori[0], (dst_w<<16)|src_w); //Y
+//	write32((uintptr_t)&vi->hori[1], (dst_w<<16)|src_w); //UV
+//
+//	write32((uintptr_t)&vi->vert[0], (dst_h<<16)|src_h); //Y
+//	write32((uintptr_t)&vi->vert[1], (dst_h<<16)|src_h); //UV
+//*/
+//
+////CH1 UI -----------------------------------------------------------------------------
+//
+//	//write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(UINT32_C(1) << 16));           //������� ���� � ���������� ������
+//	write32((uintptr_t)&ui->cfg[0].attr, 0);	// mgs
+//	write32((uintptr_t)&ui->cfg[0].size, size);
+//	write32((uintptr_t)&ui->cfg[0].coord, 0);
+//	write32((uintptr_t)&ui->cfg[0].pitch, UI_BYTE_PER_PIXEL * vdmode->width);
+////	write32((uintptr_t)&ui->cfg[0].top_laddr,VIDEO_MEMORY1);                                  //VIDEO_MEMORY1
+//	write32((uintptr_t)&ui->ovl_size, size);
 }
 
 #define IS_DE3 0
