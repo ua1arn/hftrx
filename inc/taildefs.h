@@ -220,7 +220,7 @@ void LowerIrql(IRQL_t newIRQL);
 	typedef struct dpcobj_tag
 	{
 		LIST_ENTRY item;
-		uint_fast8_t coreid;	// в какой список включили
+		uint8_t coreid;	// в какой список включили - 0..HARDWARE_NCORES-1
 		uint8_t flag;
 		udpcfn_t fn;
 		void * ctx;
