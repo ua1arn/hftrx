@@ -3805,8 +3805,8 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 #define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
 
-void sun8i_vi_scaler_setup(uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
-void sun8i_vi_scaler_enable(uint8_t enable);
+void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
+void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable);
 
 #if defined (TCONTV_PTR)
 
@@ -4883,9 +4883,9 @@ static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 
 //#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 
-#define regmap_write(x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z); } while (0)
+#define regmap_write(id, x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z); } while (0)
 
-#define regmap_update_bits(x,y,z,t) do { \
+#define regmap_update_bits(id, x,y,z,t) do { \
 {                                                      \
  (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))&=~(z); \
  (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))|=(t);  \
@@ -5752,7 +5752,7 @@ static int sun8i_vi_scaler_coef_index(unsigned int step)
 	}
 }
 
-static void sun8i_vi_scaler_set_coeff(uint32_t base, uint32_t hstep, uint32_t vstep)
+static void sun8i_vi_scaler_set_coeff(int rtmixid, uint32_t base, uint32_t hstep, uint32_t vstep)
 {
 	const uint32_t *ch_left, *ch_right, *cy;
 	int offset, i;
@@ -5770,27 +5770,27 @@ static void sun8i_vi_scaler_set_coeff(uint32_t base, uint32_t hstep, uint32_t vs
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(map, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
 			     lan3coefftab32_left[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
 			     lan3coefftab32_right[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
 			     ch_left[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
 			     ch_right[offset + i]);
 	}
 
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(map, SUN8I_SCALER_VSU_YVCOEFF(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YVCOEFF(base, i),
 			     lan2coefftab32[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_CVCOEFF(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CVCOEFF(base, i),
 			     cy[offset + i]);
 	}
 }
 
-void sun8i_vi_scaler_setup(uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint32_t dst_h, uint32_t hscale, uint32_t vscale, uint32_t hphase, uint32_t vphase)
+void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint32_t dst_h, uint32_t hscale, uint32_t vscale, uint32_t hphase, uint32_t vphase)
 {
 	uint32_t chphase, cvphase;
 	uint32_t insize, outsize;
@@ -5828,42 +5828,42 @@ void sun8i_vi_scaler_setup(uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint3
 		else
 			val = SUN50I_SCALER_VSU_SCALE_MODE_NORMAL;
 
-		regmap_write(mixer->engine.regs,
+		regmap_write(rtmixid, mixer->engine.regs,
 			     SUN50I_SCALER_VSU_SCALE_MODE(base), val);
 	}
 
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YINSIZE(base), insize);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YHSTEP(base), hscale);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YVSTEP(base), vscale);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YHPHASE(base), hphase);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YVPHASE(base), vphase);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CINSIZE(base),
 		     SUN8I_VI_SCALER_SIZE(src_w / HSUB,
 					  src_h / VSUB));
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CHSTEP(base),
 		     hscale / HSUB);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CVSTEP(base),
 		     vscale / VSUB);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CHPHASE(base), chphase);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
 
-	sun8i_vi_scaler_set_coeff(base,
+	sun8i_vi_scaler_set_coeff(rtmixid, base,
 				  hscale, vscale);
 }
 
-void sun8i_vi_scaler_enable(uint8_t enable)
+void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 {
 	uint32_t val, base;
 
@@ -5875,7 +5875,7 @@ void sun8i_vi_scaler_enable(uint8_t enable)
 	else
 		val = 0;
 
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CTRL(base), val);
 }
 
@@ -7192,7 +7192,7 @@ void de2_init(const uintptr_t * frames)
 
 #endif /* CPUSTYLE_A64 */
 
-static void t113_vi_scaler_setup(const videomode_t * vdmode)
+static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
 {
 	uint32_t src_w=TVD_WIDTH;
 	uint32_t src_h=TVD_HEIGHT;
@@ -7203,8 +7203,8 @@ static void t113_vi_scaler_setup(const videomode_t * vdmode)
 	uint32_t hscale=(src_w<<16)/dst_w;
 	uint32_t vscale=(src_h<<16)/dst_h;
 
-	sun8i_vi_scaler_setup(src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
-	sun8i_vi_scaler_enable(1);
+	sun8i_vi_scaler_setup(rtmixid, src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
+	sun8i_vi_scaler_enable(rtmixid, 1);
 }
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
@@ -7234,10 +7234,20 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif /* WITHHDMITVHW */
 
 	{
+	#if 1
+		const videomode_t * const vdmode_CRT = & vdmode_PAL0;
+		const unsigned mode = DISP_TV_MOD_PAL;
+	#else
+		const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
+		const unsigned mode = DISP_TV_MOD_NTSC;
+	#endif
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
 		hardware_tcon_initialize(vdmode);
+		TCONTV_Init(mode, vdmode_CRT);
+		TVE_Init(mode, vdmode_CRT);
+		TVE_DAC_Init(mode, vdmode_CRT);
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -7256,14 +7266,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-		#if 1
-			const videomode_t * const vdmode_CRT = & vdmode_PAL0;
-			const unsigned mode = DISP_TV_MOD_PAL;
-		#else
-			const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
-			const unsigned mode = DISP_TV_MOD_NTSC;
-		#endif
-			const int rtmixid = RTMIXID;
+			const int rtmixid = RTMIXID;	// RTMIXIDTV
 			const unsigned disp = rtmixid - 1;
 
 
@@ -7279,9 +7282,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
 				PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 			}
-			TCONTV_Init(mode, vdmode_CRT);
-			TVE_Init(mode, vdmode_CRT);
-			TVE_DAC_Init(mode, vdmode_CRT);
 
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
@@ -7290,7 +7290,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_update(rtmixid);	/* Update registers */
 
 		#if is_composite
-			t113_vi_scaler_setup(vdmode_CRT);
+			t113_vi_scaler_setup(rtmixid, vdmode_CRT);
 		#endif
 		#if CPUSTYLE_T507
 		    {
@@ -7318,7 +7318,7 @@ hardware_ltdc_deinitialize(void)
 void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXID;
+	const int rtmixid = RTMIXID;	// RTMIXIDTV
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
