@@ -5114,23 +5114,6 @@ static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 #endif
 
-static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat, const videomode_t * vdmode)
-{
-#ifdef TVE_MODE
-    TCONTVandTVE_Init(mode, vdmode);
-
-#else
-	t113_tconlcd2_disable(pdat);
-	t113_tconlcd2_set_timing(pdat, vdmode);
-	t113_tconlcd2_set_dither(pdat);
-	t113_tconlcd2_enable(pdat);
-#endif
-
-	t113_tvout_de_set_mode(pdat, vdmode);
-	//t113_tvout_de_enable(pdat);
-	t113_de_update(RTMIXID);	// RTMIXIDTV
-}
-
 #define IS_DE3 0
 #define CHANNEL 0
 
@@ -7712,6 +7695,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				CCU->DE_BGR_REG = val;
 
 
+
 				struct fb_t113_rgb_pdata_t pdat;
 
 				pdat.virt_tconlcd = TCONLCD_PTR;
@@ -7735,8 +7719,23 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				pdat.timing.den_active     = 1;	       //!!!
 				pdat.timing.clk_active     = 0;
 
-				fb_t113_rgb_init(mode, &pdat, vdmode);
-			}
+			#ifdef TVE_MODE
+				TCONTVandTVE_Init(mode, vdmode);
+
+			#else
+				{
+
+					t113_tconlcd2_disable(& pdat);
+					t113_tconlcd2_set_timing(& pdat, vdmode);
+					t113_tconlcd2_set_dither(& pdat);
+					t113_tconlcd2_enable(& pdat);
+				}
+			#endif
+
+				t113_tvout_de_set_mode(& pdat, vdmode);
+				//t113_tvout_de_enable(pdat);
+				t113_de_update(RTMIXID);	// RTMIXIDTV
+				}
 		}
 
 
