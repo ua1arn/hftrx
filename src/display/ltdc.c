@@ -4721,7 +4721,7 @@ static void write32(uintptr_t addr, uint32_t value)
 	* (volatile uint32_t *) addr = value;
 }
 
-static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
+static void t113_de_set_mode_tvout(const videomode_t * vdmode, int rtmixid)
 {
 	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
 	struct de_bld_t * bld = (struct de_bld_t *) de3_getbld(rtmixid); //(pdat->virt_de + T113_DE_MUX_BLD);
@@ -5986,6 +5986,8 @@ static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
 	CCU->TCONTV_BGR_REG |= 1;                               //gate pass TCON_TV
 	CCU->TCONTV_BGR_REG |= (1<<16);                         //de-assert reset TCON_TV
 
+	t113_set_TV_sequence_parameters(vdmode);
+
 	PRINTF("TCONTV_Init: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 }
 
@@ -6025,7 +6027,6 @@ static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 
 	TVE_Clock();
 
-	t113_set_TV_sequence_parameters(vdmode);
 	TVE_DAC_Init(mode, vdmode);
 }
 
@@ -7307,10 +7308,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const int rtmixid = RTMIXID; //RTMIXIDTV;
 			const unsigned disp = rtmixid - 1;
 
-			TCONTV_Init(mode, vdmode_CRT);
-			TVE_Init(mode, vdmode_CRT);
+
 			{
-				// unsocumented registers
+				// Undocumented registers
 				DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	//0 - CCU clock, 1 - TVE clock
 				DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
 
@@ -7319,10 +7319,13 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
 				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
 			}
+			TCONTV_Init(mode, vdmode_CRT);
+			TVE_Init(mode, vdmode_CRT);
 
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
-			t113_tvout_de_set_mode(vdmode_CRT, rtmixid);
-			//t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_set_mode_tvout(vdmode_CRT, rtmixid);
+
 			t113_de_update(rtmixid);	/* Update registers */
 
 		#if is_composite
