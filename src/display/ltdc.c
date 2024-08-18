@@ -4873,15 +4873,15 @@ static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const vide
 	int i;
 
 	val = read32((uintptr_t)&clk->rst_cfg);
-	val |= 1 << 0;
+	val |= UINT32_C(1) << 0;
 	write32((uintptr_t)&clk->rst_cfg, val);
 
 	val = read32((uintptr_t)&clk->gate_cfg);
-	val |= 1 << 0;
+	val |= UINT32_C(1) << 0;
 	write32((uintptr_t)&clk->gate_cfg, val);
 
 	val = read32((uintptr_t)&clk->bus_cfg);
-	val |= 1 << 0;
+	val |= UINT32_C(1) << 0;
 	write32((uintptr_t)&clk->bus_cfg, val);
 
 	val = read32((uintptr_t)&clk->sel_cfg);
@@ -6627,8 +6627,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	//#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
 	/* Set ahb gating to pass */
-//	setbits_le32(&ccm->ahb_reset1_cfg, 1 << AHB_RESET_OFFSET_DE);
-//	setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_DE);
+//	setbits_le32(&ccm->ahb_reset1_cfg, UINT32_C(1) << AHB_RESET_OFFSET_DE);
+//	setbits_le32(&ccm->ahb_gate1, UINT32_C(1) << AHB_GATE_OFFSET_DE);
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	unsigned divider = 8;
