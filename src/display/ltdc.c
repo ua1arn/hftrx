@@ -5909,29 +5909,6 @@ void sun8i_vi_scaler_enable(uint8_t enable)
 
 /* ********************************* */
 
-/* Требуется откуда-то получить 216 МГц тактирования на TVE */
-static void VIDEO1_PLL(void)
-{
-	uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
-	//v = 0;
-	v &=~(0xFF<<8);
-	v |= (1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
-
-	CCU->PLL_VIDEO1_CTRL_REG=v;
-
-	CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
-
-	while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28)))	 //Wait pll stable
-		;
-	local_delay_ms(20);
-
-	CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
-
-	//PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
-	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
-}
-
 static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 {
 	tve_low_init(0);
@@ -5983,7 +5960,28 @@ static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
 // 216 МГц тактирования на TVE
 static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 {
-	VIDEO1_PLL();
+	const uint_fast32_t needfreq = 216000000;
+	{
+		const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
+		uint32_t v = CCU->PLL_VIDEO1_CTRL_REG;
+		//v = 0;
+		v &= ~ (0xFF<<8);
+		v |= (1<<30) | ((N-1)<<8);
+
+		CCU->PLL_VIDEO1_CTRL_REG=v;
+
+		CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
+
+		while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28)))	 //Wait pll stable
+			;
+		local_delay_ms(20);
+
+		CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+		CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
+
+		//PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+	}
 
 	//	CLK_SRC_SEL
 	//	Clock Source Select
@@ -5994,7 +5992,6 @@ static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 	//	100: PLL_PERI(2X)
 	//	101: PLL_AUDIO1(DIV2)
 
-	const uint_fast32_t needfreq = 216000000;
 
 	unsigned divider;
 	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video1_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
