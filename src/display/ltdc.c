@@ -6025,19 +6025,6 @@ static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 
 	TVE_Clock();
 
-	// Undocumented registers ---------------------------------------------------------------
-
-	(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x00))&=~1;      //0 - CCU clock, 1 - TVE clock
-	(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x20))|=(1<<20); //enable clk for TCON_TV0_local2
-
-	uint32_t v=(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C));
-	v&=0xFFFFFFF0;
-	v|=0x00000002;
-	(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C))=v;        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-
-	// --------------------------------------------------------------------------------------
-
-	//TCONTV_timings_Init(mode, vdmode);
 	t113_set_TV_sequence_parameters(vdmode);
 	TVE_DAC_Init(mode, vdmode);
 }
@@ -7322,6 +7309,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 			TCONTV_Init(mode, vdmode_CRT);
 			TVE_Init(mode, vdmode_CRT);
+			{
+				// unsocumented registers
+				DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	//0 - CCU clock, 1 - TVE clock
+				DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
+
+				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
+				v&=0xFFFFFFF0;
+				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
+				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
+			}
 
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_tvout_de_set_mode(vdmode_CRT, rtmixid);
