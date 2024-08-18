@@ -3248,7 +3248,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32
 	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
     local_delay_us(10);
 
-//	TCONTV_CCU_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
+//	TCONTV_CCU_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
 //	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
 //    local_delay_us(10);
 
@@ -6163,119 +6163,64 @@ void sun8i_vi_scaler_enable(uint8_t enable)
 
 /* ********************************* */
 
-//typedef struct
-//{
-// volatile uint32_t GCTL_REG;           // !!! 0x00 TCON Control
-// volatile uint32_t GINT0_REG;          // !!! 0x04 Interrupt_0
-// volatile uint32_t GINT1_REG;          // !!! 0x08 Interrupt_1
-//
-// volatile uint32_t RES0[13];
-//
-// volatile uint32_t SRC_CTL_REG;        // !!! 0x40 TCON0 Control
-//
-// volatile uint32_t RES1[17];
-//
-// volatile uint32_t IO_POL_REG;         // !!! 0x88 TV SYNC Signal Polarity Register
-// volatile uint32_t IO_TRI_REG;         // !!! 0x8C TV SYNC Signal volatile Control Register
-//
-// volatile uint32_t CTL_REG;            // !!! 0x90 TCON1 Control
-// volatile uint32_t BASIC_REG[6];       // !!! 0x94..0xA8 TCON1 Basic Timing 0..5
-//
-// volatile uint32_t RES2[20];
-//
-// volatile uint32_t DEBUG_REG;          // !!! 0xFC TCON Debug Information
-//}
-//tcon_tv0;
-//
-//#define TCON_TV0_local2 ((tcon_tv0*)TCON_TV0_BASE)
-
 static void VIDEO1_PLL(void)
 {
- uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
+	uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
+	//v = 0;
+	v &=~(0xFF<<8);
+	v |= (1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
 
- v&=~(0xFF<<8);
- v|=(1UL<<31)|(1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
+	CCU->PLL_VIDEO1_CTRL_REG=v;
 
- CCU->PLL_VIDEO1_CTRL_REG=v;
+	CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
 
- CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
+	while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28)))	 //Wait pll stable
+		;
+	local_delay_ms(20);
 
- while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28))); //Wait pll stable
- local_delay_ms(20);
+	CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
 
- CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
 }
 
 static void TVE_Clock(void)
 {
 	CCU->TVE_BGR_REG&=~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
-	CCU->TVE_CLK_REG=(1UL<<31)|(3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
+	CCU->TVE_CLK_REG=(UINT32_C(1) << 31)|(3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
 	CCU->TVE_BGR_REG|=(1<<1)|1;                           //gate pass for TVE & TVE_TOP
 	CCU->TVE_BGR_REG|=(1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
+
+	PRINTF("allwnrt113_get_tve_freq()=%u MHz\n", (unsigned) (allwnrt113_get_tve_freq() / 1000 / 1000));
 }
 
 static void TCONTV_Clock(void)
 {
- CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
- CCU->TCONTV_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
- CCU->TCONTV_BGR_REG|=1;                               //gate pass TCON_TV
- CCU->TCONTV_BGR_REG|=(1<<16);                         //de-assert reset TCON_TV
+	CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
+	CCU->TCONTV_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
+	CCU->TCONTV_BGR_REG|=1;                               //gate pass TCON_TV
+	CCU->TCONTV_BGR_REG|=(1<<16);                         //de-assert reset TCON_TV
+
+	PRINTF("BOARD_TCONTVFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
 }
-
-//static void TCONTV_timings_Init(unsigned int mode, const videomode_t * vdmode)
-//{
-// if(mode==DISP_TV_MOD_NTSC)
-// {
-//  TCON_TV0_local2->CTL_REG = 0x80000000 | ((525 - 480 ) << 4);   //VT-V
-//  TCON_TV0_local2->BASIC_REG[0] = ((720 - 1) << 16) | (480 - 1); //H,V
-//  TCON_TV0_local2->BASIC_REG[1] = ((720 - 1) << 16) | (480 - 1);
-//  TCON_TV0_local2->BASIC_REG[2] = ((720 - 1) << 16) | (480 - 1);
-//  TCON_TV0_local2->BASIC_REG[3] = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
-//  TCON_TV0_local2->BASIC_REG[4] = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
-//  TCON_TV0_local2->BASIC_REG[5] = (62 << 16) | 6;                //HS, VS
-// }
-// else //PAL
-// {
-//  TCON_TV0_local2->CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
-//  TCON_TV0_local2->BASIC_REG[0] = ((720 - 1) << 16) | (576 - 1); //H,V
-//  TCON_TV0_local2->BASIC_REG[1] = ((720 - 1) << 16) | (576 - 1);
-//  TCON_TV0_local2->BASIC_REG[2] = ((720 - 1) << 16) | (576 - 1);
-//  TCON_TV0_local2->BASIC_REG[3] = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
-//  TCON_TV0_local2->BASIC_REG[4] = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
-//  TCON_TV0_local2->BASIC_REG[5] = (64 << 16) | 5;                //HS, VS
-// }
-//
-// TCON_TV0_local2->IO_POL_REG = 0;
-// TCON_TV0_local2->IO_TRI_REG = 0x0FFFFFFF;
-//
-// TCON_TV0_local2->SRC_CTL_REG=0;             //0 - DE, 1..7 - test
-// TCON_TV0_local2->GINT0_REG=(1<<30);         //enable Vblank int
-// TCON_TV0_local2->GCTL_REG=(1UL<<31)|(1<<1); //enable TCONTV
-//}
-
-//void TV_VSync(void)
-//{
-// TCON_TV0_local2->GINT0_REG&=~(1<<14);
-// while(!(TCON_TV0_local2->GINT0_REG&(1<<14)));
-//}
 
 static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 {
- tve_low_init(0);
+	tve_low_init(0);
 
- tve_low_dac_autocheck_disable(0);
-// tve_low_dac_autocheck_enable(0);
+	tve_low_dac_autocheck_disable(0);
+	// tve_low_dac_autocheck_enable(0);
 
- tve_low_set_tv_mode(0,mode,0);
+	tve_low_set_tv_mode(0,mode,0);
 
- tve_low_dac_enable(0);
+	tve_low_dac_enable(0);
 
- tve_low_open(0);
+	tve_low_open(0);
 
- tve_low_enhance(0,0); //0,1,2
+	tve_low_enhance(0,0); //0,1,2
 
-// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
-// else                         PRINTF("DAC NOT connected!\n");
+	// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
+	// else                         PRINTF("DAC NOT connected!\n");
 }
 
 static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode)
