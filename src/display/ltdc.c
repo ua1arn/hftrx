@@ -4846,8 +4846,6 @@ struct fb_t113_rgb_pdata_t
 	} timing;
 };
 
-static struct fb_t113_rgb_pdata_t pdat;
-
 
 static uint32_t read32(uintptr_t addr)
 {
@@ -4859,34 +4857,13 @@ static void write32(uintptr_t addr, uint32_t value)
 	* (volatile uint32_t *) addr = value;
 }
 
-static void t113_tvout_de_enable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	write32((uintptr_t)&glb->dbuff, 1);
-}
-
-static void t113_tvout_de_set_address(struct fb_t113_rgb_pdata_t * pdat, void * vram, uint8_t plane)
-{
- if(plane)
- {
-  struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
-  write32((uintptr_t)&ui->cfg[0].top_laddr,(uint32_t)vram);                                //ARGB
- }
- else
- {
-  struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low priority
-  write32((uintptr_t)&vi->cfg[0].top_laddr[0], (uint32_t)vram                        );    //Y
-  write32((uintptr_t)&vi->cfg[0].top_laddr[1],((uint32_t)vram)+(TVD_WIDTH*TVD_HEIGHT));    //UV
- }
-}
-
 static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
 {
 	struct de_clk_t * clk = (struct de_clk_t *)(pdat->virt_de);
 	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
 	struct de_bld_t * bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
 
-        struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
+	//struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
 
 	struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
 	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
@@ -5150,27 +5127,9 @@ static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat
 #endif
 
 	t113_tvout_de_set_mode(pdat, vdmode);
-	t113_tvout_de_enable(pdat);
+	//t113_tvout_de_enable(pdat);
+	t113_de_update(RTMIXID);	// RTMIXIDTV
 }
-//
-//static void TCONLCD_Clock(void)
-//{
-// CCU->TCONLCD_BGR_REG &= ~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
-// CCU->TCONLCD_CLK_REG = (UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
-// CCU->TCONLCD_BGR_REG |= 1;                             //gate pass TCON_LCD
-// CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
-//}
-
-//void LCD_SwitchAddress(uint32_t address,uint8_t plane)
-//{
-// t113_tvout_de_set_address(&pdat,(void*)address,plane);
-// t113_tvout_de_enable(&pdat);
-//}
-
-
-//#include "scaler_coeff.h"
-
-//#include "reg-de.h"
 
 #define IS_DE3 0
 #define CHANNEL 0
@@ -7738,19 +7697,11 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const unsigned mode = DISP_TV_MOD_NTSC;
 		#endif
 
-			//TCONLCD_Clock();
 
 			unsigned int val;
 
-			val = 0;//CCU->DE_CLK_REG;
-			val &= ~ (UINT32_C(0x0F) << 0);
-			val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
-			CCU->DE_CLK_REG = val;
 
-			// Open the clock gate
-			val = CCU->DE_BGR_REG;
-			val |= (1 << 0);
-			CCU->DE_BGR_REG = val;
+			PRINTF("2 allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
 
 			// assert reset
 			val = CCU->DE_BGR_REG;
@@ -7762,19 +7713,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			val |= (1 << 16);
 			CCU->DE_BGR_REG = val;
 
-		/*
-			val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
-			val |= (1 << 31) | (1 << 24);					//TCON CLK: 24*99/2=1188 MHz
-			write32((T113_CCU_BASE + CCU_TCONLCD_CLK_REG), val);
-			//Open the clock gate
-			val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-			val |= (1 << 0);
-			write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-			//eassert reset
-			val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-			val |= (1 << 16);
-			write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-		*/
+
+			struct fb_t113_rgb_pdata_t pdat;
 
 			pdat.virt_tconlcd = TCONLCD_PTR;
 			pdat.virt_de = T113_DE_BASE;
