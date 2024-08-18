@@ -10777,10 +10777,17 @@ void hightests(void)
 			{
 				#include "src/testdata/picture.h"
 			};
-			lcd_init4();
-			hardware_ltdc_tvout_set4((uintptr_t) picture0, 0);
-			for (;;)
-				;
+			{
+				TP();
+				//lcd_init4();
+				TP();
+				hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
+				//LCD_SwitchAddress((uintptr_t) picture0, 0);
+				TP();
+				for (;;)
+					;
+
+			}
 			const videomode_t * vdmode_CRT = & vdmode_PAL0;
 			int dx = vdmode_CRT->width;
 			int dy = vdmode_CRT->height;
@@ -10793,7 +10800,7 @@ void hightests(void)
 			//colpip_fill(fb, dx, dy, COLORPIP_GRAY);
 			ASSERT(sizeof fb >= sizeof picture0);
 			memcpy(fb, picture0, sizeof picture0);
-			dcache_clean((uintptr_t) fb. sizeof picture0);
+			dcache_clean((uintptr_t) fb, sizeof picture0);
 
 //			colpip_fillrect(fb, dx, dy, 0, 0, 50, dy, TFTRGB(255, 128, 128));
 //			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, dy, TFTRGB(255, 128, 128));
@@ -15555,23 +15562,6 @@ void signal_handler(int n, siginfo_t *info, void *unused)
 
 void lowtests(void)
 {
-#if 0
-	{
-		static const uint8_t picture0 [] =
-		{
-			#include "src/testdata/picture.h"
-		};
-		TP();
-		lcd_init4();
-		TP();
-		hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
-		//LCD_SwitchAddress((uintptr_t) picture0, 0);
-		TP();
-		for (;;)
-			;
-
-	}
-#endif
 #if 0
 	// cached memory tests
 	{
