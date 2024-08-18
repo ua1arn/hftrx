@@ -10765,7 +10765,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0
+#if 1
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -10781,7 +10781,7 @@ void hightests(void)
 			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
 			//LCD_SwitchAddress((uintptr_t) picture0, 0);
 			TP();
-			for (;1;)
+			for (;0;)
 			{
 				board_dpc_processing();
 				char c;
@@ -10826,7 +10826,7 @@ void hightests(void)
 			char c;
 			if (dbg_getchar(& c))
 			{
-				//PRINTF("skey=%02X\n", (unsigned char) c);
+				PRINTF("skey=%02X\n", (unsigned char) c);
 				static unsigned code;
 				switch (c)
 				{
@@ -10837,8 +10837,12 @@ void hightests(void)
 					code --;
 					break;
 				}
-				DISPLAY_TOP->DE_PORT_PERH_SEL = code;
-				PRINTF("DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+
+//				DISPLAY_TOP->DE_PORT_PERH_SEL = code;
+//				PRINTF("DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+
+//				DE_TOP->SEL_CFG = code;
+//				PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
 
 			}
 			int change = 0;

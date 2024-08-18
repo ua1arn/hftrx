@@ -1857,9 +1857,9 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
-#define RTMIXID 1	/* 1 or 2 */
+#define RTMIXID 2	/* 1 or 2 */
 #if defined (TCONTV_PTR)
-#define RTMIXIDTV 2	/* 1 or 2 */
+#define RTMIXIDTV 1	/* 1 or 2 */
 #endif
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
@@ -6428,6 +6428,7 @@ static void awxx_deoutmapping(unsigned disp)
 
 	/* перенаправление выхода DE */
 	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+	DE_TOP->SEL_CFG=0x00000001;
 	PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
 #else
 	#error Undefined CPUSTYLE_xxx
@@ -7135,7 +7136,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-			const int rtmixid = RTMIXID; //RTMIXIDTV;
+			const int rtmixid = RTMIXIDTV; //RTMIXIDTV;
 			//const unsigned disp = rtmixid - 1;
 
 
@@ -7148,8 +7149,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
 				v&=0xFFFFFFF0;
 				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-				v = 0x0002;
-				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
+				v = 0;//0x00010;
+				//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
 				PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 			}
 
@@ -7186,7 +7187,7 @@ hardware_ltdc_deinitialize(void)
 void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXID; //RTMIXIDTV;
+	const int rtmixid = RTMIXIDTV; //RTMIXIDTV;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
