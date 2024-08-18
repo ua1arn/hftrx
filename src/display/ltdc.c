@@ -5928,7 +5928,7 @@ static void VIDEO1_PLL(void)
 	CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
 	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
 
-	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+	//PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
 	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
 }
 
@@ -5939,7 +5939,7 @@ static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 	tve_low_dac_autocheck_disable(0);
 	// tve_low_dac_autocheck_enable(0);
 
-	tve_low_set_tv_mode(0,mode,0);
+	tve_low_set_tv_mode(0, mode, 0);
 
 	tve_low_dac_enable(0);
 
@@ -6015,7 +6015,6 @@ static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 	PRINTF("TVE_Init: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);
 
-	TVE_DAC_Init(mode, vdmode);
 }
 
 /* ----- */
@@ -7309,6 +7308,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			}
 			TCONTV_Init(mode, vdmode_CRT);
 			TVE_Init(mode, vdmode_CRT);
+			TVE_DAC_Init(mode, vdmode_CRT);
 
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
