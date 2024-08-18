@@ -10777,30 +10777,20 @@ void hightests(void)
 			{
 				#include "src/testdata/picture.h"
 			};
+			TP();
+			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
+			//LCD_SwitchAddress((uintptr_t) picture0, 0);
+			TP();
+			for (;1;)
 			{
-				TP();
-
-//				enum { dx = DIM_X, dy = DIM_Y };
-//				PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-//				colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
-//				colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, 50, 50, TFTRGB(255, 0, 0));
-//				colmain_nextfb();
-
-				TP();
-				hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
-				//LCD_SwitchAddress((uintptr_t) picture0, 0);
-				TP();
-				for (;1;)
+				board_dpc_processing();
+				char c;
+				if (dbg_getchar(& c))
 				{
-					board_dpc_processing();
-					char c;
-					if (dbg_getchar(& c))
-					{
-						PRINTF("key=%02X\n", (unsigned char) c);
-					}
+					PRINTF("key=%02X\n", (unsigned char) c);
 				}
-
 			}
+
 		}
 	#endif /* defined (TCONTV_PTR) */
 		unsigned count = 3;		// количество смен направления до оконяания теста
@@ -10868,6 +10858,7 @@ void hightests(void)
 			posX += stepX;
 			posY += stepY;
 		}
+		PRINTF("Done squash test\n");
 	}
 #endif
 #if 0

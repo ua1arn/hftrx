@@ -3800,6 +3800,14 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
+#define TVD_WIDTH  720
+#define TVD_HEIGHT 576
+
+#define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
+
+void sun8i_vi_scaler_setup(uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
+void sun8i_vi_scaler_enable(uint8_t enable);
+
 #if defined (TCONTV_PTR)
 
 
@@ -3808,15 +3816,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 /* +++++ */
 
-#define TVD_WIDTH  720
-#define TVD_HEIGHT 576
-
-#define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
-
 //---------------------------------------
-
-void sun8i_vi_scaler_setup(uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
-void sun8i_vi_scaler_enable(uint8_t enable);
 
 //��� VI
 #define DE2_FORMAT_YUV420_V1U1V0U0 0x08
@@ -6469,6 +6469,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
     	/* перенаправление выхода DE */
     	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+    	// DISPLAY_TOP->DE_PORT_PERH_SEL; // see also
 
     	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer 1 */
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
@@ -6483,10 +6484,10 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
     }
 
-#if defined (TCONTV_PTR)
+#if 1//defined (TCONTV_PTR)
     //if (RTMIXID == 2)
     {
-    	const int rtmixid = RTMIXIDTV;	// TV
+    	const int rtmixid = 2;//RTMIXIDTV;	// TV
        // Enable RT-Mixer 1
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
@@ -6566,7 +6567,7 @@ static void awxx_deoutmapping(unsigned disp)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* перенаправление выхода DE */
-	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+	DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -7233,7 +7234,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	{
 		hardware_de_initialize(vdmode);
-		awxx_deoutmapping(RTMIXID - 1);
+		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
 		hardware_tcon_initialize(vdmode);
 
