@@ -7310,39 +7310,33 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-			const videomode_t * vdmode_CRT = & vdmode_PAL0;
+		#if 1
+			const videomode_t * const vdmode_CRT = & vdmode_PAL0;
+			const unsigned mode = DISP_TV_MOD_PAL;
+		#else
+			const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
+			const unsigned mode = DISP_TV_MOD_NTSC;
+		#endif
 			const int rtmixid = RTMIXID; //RTMIXIDTV;
 			const unsigned disp = rtmixid - 1;
-		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+
+			TCONTV_Init(mode, vdmode_CRT);
+			TVE_Init(mode, vdmode_CRT);
+
+			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+			t113_tvout_de_set_mode(vdmode_CRT, rtmixid);
+			//t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
+
+		#if is_composite
+			t113_vi_scaler_setup(vdmode_CRT);
+		#endif
 		#if CPUSTYLE_T507
 		    {
 		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
 		    }
 		#endif
 //			t113_tvout2_initsteps(vdmode_CRT);
-			if (1)
-			{
-			#if 1
-				const videomode_t * const vdmode = & vdmode_PAL0;
-				const unsigned mode = DISP_TV_MOD_PAL;
-			#else
-				const videomode_t * const vdmode = & vdmode_NTSC0;
-				const unsigned mode = DISP_TV_MOD_NTSC;
-			#endif
-
-
-				TCONTV_Init(mode, vdmode);
-				TVE_Init(mode, vdmode);
-
-				t113_tvout_de_set_mode(vdmode, rtmixid);
-				//t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-#if is_composite
-				t113_vi_scaler_setup(vdmode);
-#endif
-				t113_de_update(rtmixid);	/* Update registers */
-				}
 		}
 
 
