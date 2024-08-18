@@ -7135,8 +7135,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-			const int rtmixid = RTMIXID; // RTMIXIDTV;
-			const unsigned disp = rtmixid - 1;
+			const int rtmixid = RTMIXID; //RTMIXIDTV;
+			//const unsigned disp = rtmixid - 1;
 
 
 			{
@@ -7186,23 +7186,23 @@ hardware_ltdc_deinitialize(void)
 void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXID; // RTMIXIDTV;
+	const int rtmixid = RTMIXID; //RTMIXIDTV;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address_vi2(rtmixid, layer0, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
+	//t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
 
 	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
 
 	bld->BLD_EN_COLOR_CTL =
 		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
+		//((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 		0;
 
-	//hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
+	hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 #endif /* defined (TCONTV_PTR) */
 }
