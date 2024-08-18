@@ -7261,7 +7261,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
 			const unsigned mode = DISP_TV_MOD_NTSC;
 		#endif
-			const int rtmixid = RTMIXID; //RTMIXIDTV;
+			const int rtmixid = RTMIXID;
 			const unsigned disp = rtmixid - 1;
 
 
@@ -7275,7 +7275,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				v&=0xFFFFFFF0;
 				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
 				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
-				PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+				PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 			}
 			TCONTV_Init(mode, vdmode_CRT);
 			TVE_Init(mode, vdmode_CRT);

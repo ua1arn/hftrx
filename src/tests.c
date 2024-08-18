@@ -10790,7 +10790,7 @@ void hightests(void)
 				hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
 				//LCD_SwitchAddress((uintptr_t) picture0, 0);
 				TP();
-				for (;;)
+				for (;1;)
 				{
 					board_dpc_processing();
 					char c;
@@ -10801,35 +10801,6 @@ void hightests(void)
 				}
 
 			}
-			const videomode_t * vdmode_CRT = & vdmode_PAL0;
-			int dx = vdmode_CRT->width;
-			int dy = vdmode_CRT->height;
-			//enum { dx = 720, dy = 480 };
-			PACKEDCOLORPIP_T fb [GXSIZE(dx, dy)];
-
-
-			PRINTF("size of fb = %u\n", (unsigned) (sizeof fb));
-			PRINTF("size of picture0 = %u\n", (unsigned) (sizeof picture0));
-			//colpip_fill(fb, dx, dy, COLORPIP_GRAY);
-			ASSERT(sizeof fb >= sizeof picture0);
-			memcpy(fb, picture0, sizeof picture0);
-			dcache_clean((uintptr_t) fb, sizeof picture0);
-
-//			colpip_fillrect(fb, dx, dy, 0, 0, 50, dy, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, dy, TFTRGB(255, 128, 128));
-
-//			colpip_fillrect(fb, dx, dy, 0, 0, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, 50, 50, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, 100, 100, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, 150, 150, 50, 50, TFTRGB(255, 128, 128));
-//
-//			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
-
-			hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
-			//LCD_SwitchAddress((uintptr_t) fb, 0);
-			for (;;)
-				;
 		}
 	#endif /* defined (TCONTV_PTR) */
 		unsigned count = 3;		// количество смен направления до оконяания теста
@@ -10862,6 +10833,11 @@ void hightests(void)
 
 
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			char c;
+			if (dbg_getchar(& c))
+			{
+				PRINTF("skey=%02X\n", (unsigned char) c);
+			}
 			int change = 0;
 			// X limits check
 			if (stepX > 0 && posX + rectX >= DIM_X)
