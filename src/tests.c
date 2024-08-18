@@ -10765,7 +10765,7 @@ void hightests(void)
 
 	}
 #endif
-#if 1
+#if 0
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
