@@ -7194,14 +7194,14 @@ void board_initialize(void)
 #endif /* WITHMGLOOP */
 }
 
-#if defined (RTC1_TYPE)
-
 static uint_fast16_t board_rtc_cached_year = 2000;
 static uint_fast8_t board_rtc_cached_month = 1;
 static uint_fast8_t board_rtc_cached_dayofmonth = 1;
 static uint_fast8_t board_rtc_cached_hour;
 static uint_fast8_t board_rtc_cached_minute;
 static uint_fast8_t board_rtc_cached_seconds;
+
+#if defined (RTC1_TYPE)
 
 	// Выполняется из USER LEVEL
 static void board_rtc_cache_update(void * ctx)
@@ -7263,6 +7263,11 @@ static void board_rtc_initialize(void)
 }
 
 #else /* defined (RTC1_TYPE) */
+
+static void board_rtc_initialize(void)
+{
+	board_get_compile_datetime(& board_rtc_cached_year, & board_rtc_cached_month, & board_rtc_cached_dayofmonth, & board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_seconds);
+}
 
 // Функция-заглушка для работы FAT FS на системах без RTC
 void board_rtc_getdatetime(
@@ -7698,9 +7703,7 @@ void board_init_chips(void)
 	#endif
 #endif /* LO1DIVIDEVCO */
 
-#if defined (RTC1_TYPE)
 	board_rtc_initialize();
-#endif /* defined (RTC1_TYPE) */
 
 #if defined (TSC1_TYPE)
 	board_tsc_initialize();
