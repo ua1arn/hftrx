@@ -5155,10 +5155,10 @@ static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat
 
 static void TCONLCD_Clock(void)
 {
- CCU->TCONLCD_BGR_REG&=~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
- CCU->TCONLCD_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
- CCU->TCONLCD_BGR_REG|=1;                             //gate pass TCON_LCD
- CCU->TCONLCD_BGR_REG|=(UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
+ CCU->TCONLCD_BGR_REG &= ~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
+ CCU->TCONLCD_CLK_REG = (UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
+ CCU->TCONLCD_BGR_REG |= 1;                             //gate pass TCON_LCD
+ CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
 }
 
 void lcd_init4(void)
@@ -5171,26 +5171,28 @@ void lcd_init4(void)
 	const unsigned mode = DISP_TV_MOD_NTSC;
 #endif
 
- TCONLCD_Clock();
+	TCONLCD_Clock();
 
 	unsigned int val;
 
-	//val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
-	val = CCU->DE_CLK_REG;
+	val = 0;//CCU->DE_CLK_REG;
+	val &= ~ (UINT32_C(0x0F) << 0);
 	val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
-	//write32((T113_CCU_BASE + CCU_DE_CLK_REG), val);
 	CCU->DE_CLK_REG = val;
-	//Open the clock gate
-	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+
+	// Open the clock gate
 	val = CCU->DE_BGR_REG;
 	val |= (1 << 0);
-	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
 	CCU->DE_BGR_REG = val;
-	//de-assert reset
-	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+
+	// assert reset
+	val = CCU->DE_BGR_REG;
+	val &= ~ (1 << 16);
+	CCU->DE_BGR_REG = val;
+
+	// de-assert reset
 	val = CCU->DE_BGR_REG;
 	val |= (1 << 16);
-	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
 	CCU->DE_BGR_REG = val;
 
 /*
@@ -5295,7 +5297,7 @@ void lcd_init4(void)
 
 //#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 
-#define regmap_write(x,y,z) (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z)
+#define regmap_write(x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z); } while (0)
 
 #define regmap_update_bits(x,y,z,t) do { \
 {                                                      \
