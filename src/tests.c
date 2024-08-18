@@ -10779,13 +10779,26 @@ void hightests(void)
 			};
 			{
 				TP();
-				//lcd_init4();
+
+//				enum { dx = DIM_X, dy = DIM_Y };
+//				PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+//				colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+//				colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, 50, 50, TFTRGB(255, 0, 0));
+//				colmain_nextfb();
+
 				TP();
 				hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
 				//LCD_SwitchAddress((uintptr_t) picture0, 0);
 				TP();
 				for (;;)
-					;
+				{
+					board_dpc_processing();
+					char c;
+					if (dbg_getchar(& c))
+					{
+						PRINTF("key=%02X\n", (unsigned char) c);
+					}
+				}
 
 			}
 			const videomode_t * vdmode_CRT = & vdmode_PAL0;

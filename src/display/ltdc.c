@@ -7683,63 +7683,60 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
 		    }
 		#endif
-		}
-		//	const videomode_t * vdmode_CRT = & vdmode_PAL0;
-		//	t113_tvout2_initsteps(vdmode_CRT);
-		//	t113_TVE_initialize(vdmode_CRT, DISP_TV_MOD_PAL);
-		//    TCONTVandTVE_Init2(DISP_TV_MOD_PAL);
-		{
-		#if 1
-			const videomode_t * const vdmode = & vdmode_PAL0;
-			const unsigned mode = DISP_TV_MOD_PAL;
-		#else
-			const videomode_t * const vdmode = & vdmode_NTSC0;
-			const unsigned mode = DISP_TV_MOD_NTSC;
-		#endif
+//			t113_tvout2_initsteps(vdmode_CRT);
+//			t113_TVE_initialize(vdmode_CRT, DISP_TV_MOD_PAL);
+			if (1)
+			{
+			#if 1
+				const videomode_t * const vdmode = & vdmode_PAL0;
+				const unsigned mode = DISP_TV_MOD_PAL;
+			#else
+				const videomode_t * const vdmode = & vdmode_NTSC0;
+				const unsigned mode = DISP_TV_MOD_NTSC;
+			#endif
 
 
-			unsigned int val;
+				unsigned int val;
 
 
-			PRINTF("2 allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
+				PRINTF("2 allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
 
-			// assert reset
-			val = CCU->DE_BGR_REG;
-			val &= ~ (1 << 16);
-			CCU->DE_BGR_REG = val;
+				// assert reset
+				val = CCU->DE_BGR_REG;
+				val &= ~ (1 << 16);
+				CCU->DE_BGR_REG = val;
 
-			// de-assert reset
-			val = CCU->DE_BGR_REG;
-			val |= (1 << 16);
-			CCU->DE_BGR_REG = val;
+				// de-assert reset
+				val = CCU->DE_BGR_REG;
+				val |= (1 << 16);
+				CCU->DE_BGR_REG = val;
 
 
-			struct fb_t113_rgb_pdata_t pdat;
+				struct fb_t113_rgb_pdata_t pdat;
 
-			pdat.virt_tconlcd = TCONLCD_PTR;
-			pdat.virt_de = T113_DE_BASE;
-			pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
-			pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
-			pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
-			pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
-			pdat.bytes_per_pixel = BYTE_PER_PIXEL;
-			pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
+				pdat.virt_tconlcd = TCONLCD_PTR;
+				pdat.virt_de = T113_DE_BASE;
+				pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
+				pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
+				pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
+				pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
+				pdat.bytes_per_pixel = BYTE_PER_PIXEL;
+				pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
 
-			//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
-			pdat.timing.h_front_porch  = 40;       //160;
-			pdat.timing.h_back_porch   = 87;       //140;
-			pdat.timing.h_sync_len     = 1;        //20;
-			pdat.timing.v_front_porch  = 13;       //13;
-			pdat.timing.v_back_porch   = 31;       //31;
-			pdat.timing.v_sync_len     = 1;        //2;
-			pdat.timing.h_sync_active  = 0;
-			pdat.timing.v_sync_active  = 0;
-			pdat.timing.den_active     = 1;	       //!!!
-			pdat.timing.clk_active     = 0;
+				//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
+				pdat.timing.h_front_porch  = 40;       //160;
+				pdat.timing.h_back_porch   = 87;       //140;
+				pdat.timing.h_sync_len     = 1;        //20;
+				pdat.timing.v_front_porch  = 13;       //13;
+				pdat.timing.v_back_porch   = 31;       //31;
+				pdat.timing.v_sync_len     = 1;        //2;
+				pdat.timing.h_sync_active  = 0;
+				pdat.timing.v_sync_active  = 0;
+				pdat.timing.den_active     = 1;	       //!!!
+				pdat.timing.clk_active     = 0;
 
-			fb_t113_rgb_init(mode, &pdat, vdmode);
-
-			//lcd_backlight_init();
+				fb_t113_rgb_init(mode, &pdat, vdmode);
+			}
 		}
 
 
@@ -7760,7 +7757,7 @@ hardware_ltdc_deinitialize(void)
 void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXID;	// RTMIXIDTV
+	const int rtmixid = RTMIXID;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7776,7 +7773,7 @@ void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN fr
 		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 		0;
 
-	hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
+	//hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 #endif /* defined (TCONTV_PTR) */
 }
