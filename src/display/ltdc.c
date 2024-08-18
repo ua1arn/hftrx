@@ -5152,88 +5152,14 @@ static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat
 	t113_tvout_de_set_mode(pdat, vdmode);
 	t113_tvout_de_enable(pdat);
 }
-
-static void TCONLCD_Clock(void)
-{
- CCU->TCONLCD_BGR_REG &= ~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
- CCU->TCONLCD_CLK_REG = (UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
- CCU->TCONLCD_BGR_REG |= 1;                             //gate pass TCON_LCD
- CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
-}
-
-static void lcd_init4(void)
-{
-#if 1
-	const videomode_t * const vdmode = & vdmode_PAL0;
-	const unsigned mode = DISP_TV_MOD_PAL;
-#else
-	const videomode_t * const vdmode = & vdmode_NTSC0;
-	const unsigned mode = DISP_TV_MOD_NTSC;
-#endif
-
-	TCONLCD_Clock();
-
-	unsigned int val;
-
-	val = 0;//CCU->DE_CLK_REG;
-	val &= ~ (UINT32_C(0x0F) << 0);
-	val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
-	CCU->DE_CLK_REG = val;
-
-	// Open the clock gate
-	val = CCU->DE_BGR_REG;
-	val |= (1 << 0);
-	CCU->DE_BGR_REG = val;
-
-	// assert reset
-	val = CCU->DE_BGR_REG;
-	val &= ~ (1 << 16);
-	CCU->DE_BGR_REG = val;
-
-	// de-assert reset
-	val = CCU->DE_BGR_REG;
-	val |= (1 << 16);
-	CCU->DE_BGR_REG = val;
-
-/*
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
-	val |= (1 << 31) | (1 << 24);					//TCON CLK: 24*99/2=1188 MHz
-	write32((T113_CCU_BASE + CCU_TCONLCD_CLK_REG), val);
-	//Open the clock gate
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-	val |= (1 << 0);
-	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-	//eassert reset
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-	val |= (1 << 16);
-	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-*/
-
-	pdat.virt_tconlcd = TCONLCD_PTR;
-	pdat.virt_de = T113_DE_BASE;
-	pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
-	pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
-	pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
-	pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
-	pdat.bytes_per_pixel = BYTE_PER_PIXEL;
-	pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
-
-	//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
-	pdat.timing.h_front_porch  = 40;       //160;
-	pdat.timing.h_back_porch   = 87;       //140;
-	pdat.timing.h_sync_len     = 1;        //20;
-	pdat.timing.v_front_porch  = 13;       //13;
-	pdat.timing.v_back_porch   = 31;       //31;
-	pdat.timing.v_sync_len     = 1;        //2;
-	pdat.timing.h_sync_active  = 0;
-	pdat.timing.v_sync_active  = 0;
-	pdat.timing.den_active     = 1;	       //!!!
-	pdat.timing.clk_active     = 0;
-
-	fb_t113_rgb_init(mode, &pdat, vdmode);
-
-	//lcd_backlight_init();
-}
+//
+//static void TCONLCD_Clock(void)
+//{
+// CCU->TCONLCD_BGR_REG &= ~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
+// CCU->TCONLCD_CLK_REG = (UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
+// CCU->TCONLCD_BGR_REG |= 1;                             //gate pass TCON_LCD
+// CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
+//}
 
 //void LCD_SwitchAddress(uint32_t address,uint8_t plane)
 //{
@@ -6420,7 +6346,7 @@ static void TVE_Init(uint32_t mode)
 static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode)
 {
  TCONTV_Clock();
- DPSS_Clock();
+ //DPSS_Clock();
 
  VIDEO1_PLL();
  TVE_Clock();
@@ -7069,16 +6995,6 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */
-
-#if defined (TCONTV_PTR)
-
-//	const videomode_t * vdmode_CRT = & vdmode_PAL0;
-//	t113_tvout2_initsteps(vdmode_CRT);
-//	t113_TVE_initialize(vdmode_CRT, DISP_TV_MOD_PAL);
-//    TCONTVandTVE_Init2(DISP_TV_MOD_PAL);
-
-
-#endif /* defined (TCONTV_PTR) */
 }
 
 static void awxx_deoutmapping(unsigned disp)
@@ -7778,7 +7694,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXID - 1);
 
-		hardware_tcon_initialize(vdmode);	// внутри и для TV OUT
+		hardware_tcon_initialize(vdmode);
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -7809,6 +7725,84 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		    }
 		#endif
 		}
+		//	const videomode_t * vdmode_CRT = & vdmode_PAL0;
+		//	t113_tvout2_initsteps(vdmode_CRT);
+		//	t113_TVE_initialize(vdmode_CRT, DISP_TV_MOD_PAL);
+		//    TCONTVandTVE_Init2(DISP_TV_MOD_PAL);
+		{
+		#if 1
+			const videomode_t * const vdmode = & vdmode_PAL0;
+			const unsigned mode = DISP_TV_MOD_PAL;
+		#else
+			const videomode_t * const vdmode = & vdmode_NTSC0;
+			const unsigned mode = DISP_TV_MOD_NTSC;
+		#endif
+
+			//TCONLCD_Clock();
+
+			unsigned int val;
+
+			val = 0;//CCU->DE_CLK_REG;
+			val &= ~ (UINT32_C(0x0F) << 0);
+			val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
+			CCU->DE_CLK_REG = val;
+
+			// Open the clock gate
+			val = CCU->DE_BGR_REG;
+			val |= (1 << 0);
+			CCU->DE_BGR_REG = val;
+
+			// assert reset
+			val = CCU->DE_BGR_REG;
+			val &= ~ (1 << 16);
+			CCU->DE_BGR_REG = val;
+
+			// de-assert reset
+			val = CCU->DE_BGR_REG;
+			val |= (1 << 16);
+			CCU->DE_BGR_REG = val;
+
+		/*
+			val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
+			val |= (1 << 31) | (1 << 24);					//TCON CLK: 24*99/2=1188 MHz
+			write32((T113_CCU_BASE + CCU_TCONLCD_CLK_REG), val);
+			//Open the clock gate
+			val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+			val |= (1 << 0);
+			write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
+			//eassert reset
+			val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+			val |= (1 << 16);
+			write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
+		*/
+
+			pdat.virt_tconlcd = TCONLCD_PTR;
+			pdat.virt_de = T113_DE_BASE;
+			pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
+			pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
+			pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
+			pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
+			pdat.bytes_per_pixel = BYTE_PER_PIXEL;
+			pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
+
+			//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
+			pdat.timing.h_front_porch  = 40;       //160;
+			pdat.timing.h_back_porch   = 87;       //140;
+			pdat.timing.h_sync_len     = 1;        //20;
+			pdat.timing.v_front_porch  = 13;       //13;
+			pdat.timing.v_back_porch   = 31;       //31;
+			pdat.timing.v_sync_len     = 1;        //2;
+			pdat.timing.h_sync_active  = 0;
+			pdat.timing.v_sync_active  = 0;
+			pdat.timing.den_active     = 1;	       //!!!
+			pdat.timing.clk_active     = 0;
+
+			fb_t113_rgb_init(mode, &pdat, vdmode);
+
+			//lcd_backlight_init();
+		}
+
+
 #endif
 	}
     //PRINTF("hardware_ltdc_initialize done.\n");
