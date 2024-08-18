@@ -4561,14 +4561,6 @@ static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 #define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
 #define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
-__PACKED_STRUCT de_clk_t {
-	uint32_t gate_cfg;
-	uint32_t bus_cfg;
-	uint32_t rst_cfg;
-	uint32_t div_cfg;
-	uint32_t sel_cfg;
-};
-
 __PACKED_STRUCT de_glb_t {
 	uint32_t ctl;
 	uint32_t status;
@@ -4731,7 +4723,7 @@ static void write32(uintptr_t addr, uint32_t value)
 
 static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 {
-	struct de_clk_t * clk = (struct de_clk_t *) DE_TOP;//(pdat->virt_de);
+	const unsigned disp = (rtmixid - 1);
 	struct de_glb_t * glb = (struct de_glb_t *) de3_getglb(rtmixid); //(pdat->virt_de + T113_DE_MUX_GLB);
 	struct de_bld_t * bld = (struct de_bld_t *) de3_getbld(rtmixid); //(pdat->virt_de + T113_DE_MUX_BLD);
 
@@ -4741,25 +4733,38 @@ static void t113_tvout_de_set_mode(const videomode_t * vdmode, int rtmixid)
 	struct de_ui_t * ui = (struct de_ui_t *) de3_getui(rtmixid, 1); //(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
 
 	const unsigned int size = ((( vdmode->height - 1) << 16) | (vdmode->width - 1));
-
-	unsigned int val;
 	int i;
 
-	val = read32((uintptr_t)&clk->rst_cfg);
-	val |= UINT32_C(1) << 0;
-	write32((uintptr_t)&clk->rst_cfg, val);
+//	if (0)
+//	{
+//		struct de_clk_t * clk = (struct de_clk_t *) DE_TOP;//(pdat->virt_de);
+//
+//		unsigned int val;
+//
+//		val = read32((uintptr_t)&clk->rst_cfg);
+//		val |= UINT32_C(1) << 0;
+//		write32((uintptr_t)&clk->rst_cfg, val);
+//
+//		val = read32((uintptr_t)&clk->gate_cfg);
+//		val |= UINT32_C(1) << 0;
+//		write32((uintptr_t)&clk->gate_cfg, val);
+//
+//		val = read32((uintptr_t)&clk->bus_cfg);
+//		val |= UINT32_C(1) << 0;
+//		write32((uintptr_t)&clk->bus_cfg, val);
+//
+////		val = read32((uintptr_t)&clk->sel_cfg);
+////		val &= ~(1 << 0);
+////		write32((uintptr_t)&clk->sel_cfg, val);
+//	}
+	if (1)
+	{
+    	DE_TOP->GATE_CFG |= UINT32_C(1) << disp;
+    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << disp);
+    	DE_TOP->RST_CFG |= UINT32_C(1) << disp;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << disp;
+	}
 
-	val = read32((uintptr_t)&clk->gate_cfg);
-	val |= UINT32_C(1) << 0;
-	write32((uintptr_t)&clk->gate_cfg, val);
-
-	val = read32((uintptr_t)&clk->bus_cfg);
-	val |= UINT32_C(1) << 0;
-	write32((uintptr_t)&clk->bus_cfg, val);
-
-	val = read32((uintptr_t)&clk->sel_cfg);
-	val &= ~(1 << 0);
-	write32((uintptr_t)&clk->sel_cfg, val);
 
 	///
 	write32((uintptr_t)&glb->ctl, (1 << 0));
@@ -7378,7 +7383,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 				int rtmixid = RTMIXID;	// RTMIXIDTV
 				t113_tvout_de_set_mode(vdmode, rtmixid);
-				t113_de_update(rtmixid);
+				//t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+				t113_de_update(rtmixid);	/* Update registers */
 				}
 		}
 
