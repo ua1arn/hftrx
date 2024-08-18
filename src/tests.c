@@ -10846,6 +10846,7 @@ void hightests(void)
 
 			}
 			int change = 0;
+
 			// X limits check
 			if (stepX > 0 && posX + rectX >= DIM_X)
 			{
@@ -10869,8 +10870,8 @@ void hightests(void)
 				change = 1;
 			}
 
-//			if (change && -- count == 0)
-//				break;
+			if (change && -- count == 0)
+				break;
 
 			posX += stepX;
 			posY += stepY;
