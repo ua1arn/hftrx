@@ -10781,7 +10781,7 @@ void hightests(void)
 			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
 			//LCD_SwitchAddress((uintptr_t) picture0, 0);
 			TP();
-			for (;1;)
+			for (;0;)
 			{
 				board_dpc_processing();
 				char c;
