@@ -3887,7 +3887,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 1u << targetcore, 0x00);	// CPU1, filer=0
+	GIC_SendSGI(SGI8_IRQn, UINT32_C(1) << targetcore, 0x00);	// CPU1, filer=0
 }
 
 #elif CPUSTYLE_XC7Z

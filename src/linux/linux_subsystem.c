@@ -1468,9 +1468,6 @@ unsigned long xc7z_get_arm_freq(void)
 }
 #endif
 
-void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line) {}
-void LowerIrql(IRQL_t newIRQL) {}
-
 #if WITHAD936XIIO
 
 pthread_t iio_t;
