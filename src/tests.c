@@ -10781,13 +10781,13 @@ void hightests(void)
 			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
 			//LCD_SwitchAddress((uintptr_t) picture0, 0);
 			TP();
-			for (;0;)
+			for (;1;)
 			{
 				board_dpc_processing();
 				char c;
 				if (dbg_getchar(& c))
 				{
-					PRINTF("key=%02X\n", (unsigned char) c);
+					PRINTF("pkey=%02X\n", (unsigned char) c);
 				}
 			}
 
@@ -10826,7 +10826,20 @@ void hightests(void)
 			char c;
 			if (dbg_getchar(& c))
 			{
-				PRINTF("skey=%02X\n", (unsigned char) c);
+				//PRINTF("skey=%02X\n", (unsigned char) c);
+				static unsigned code;
+				switch (c)
+				{
+				case '+':
+					code ++;
+					break;
+				case '-':
+					code --;
+					break;
+				}
+				DISPLAY_TOP->DE_PORT_PERH_SEL = code;
+				PRINTF("DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+
 			}
 			int change = 0;
 			// X limits check
@@ -10852,8 +10865,8 @@ void hightests(void)
 				change = 1;
 			}
 
-			if (change && -- count == 0)
-				break;
+//			if (change && -- count == 0)
+//				break;
 
 			posX += stepX;
 			posY += stepY;

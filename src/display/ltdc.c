@@ -7276,7 +7276,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-			const int rtmixid = RTMIXIDTV;
+			const int rtmixid = RTMIXID; // RTMIXIDTV;
 			const unsigned disp = rtmixid - 1;
 
 
@@ -7289,7 +7289,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
 				v&=0xFFFFFFF0;
 				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-				//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
+				v = 0x0002;
+				DISPLAY_TOP->DE_PORT_PERH_SEL = v;
 				PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 			}
 
@@ -7328,7 +7329,7 @@ hardware_ltdc_deinitialize(void)
 void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXIDTV;
+	const int rtmixid = RTMIXID; // RTMIXIDTV;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
