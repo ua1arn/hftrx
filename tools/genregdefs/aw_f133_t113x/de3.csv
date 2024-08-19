@@ -15,7 +15,7 @@
 #regdef; BUS_CFG;		0x004;	? HCLK_GATE ? DE HCLK Gating Register
 #regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
 #regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
-#regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
+#regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register - lower bit swap DE outputs
 #regdef; DE_IP_CFG; 	0x024;	DE IP Configure Register
 
 #typeend;
@@ -144,4 +144,12 @@
 #regdef;  CFG; 0x000; 
 #regdef; padding 0; 0x8000; Need for address arithmetics
 #aggregend;
+#typeend;
+
+#type; DE_VSU
+
+#base; DE_MIXER0_VSU0 0x05120000
+#base; DE_MIXER0_VSU1 0x05140000
+#base; DE_MIXER1_VSU0 0x05220000
+
 #typeend;

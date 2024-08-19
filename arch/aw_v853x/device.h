@@ -205,12 +205,15 @@ typedef enum IRQn
 #define DE_MIXER0_VI1_BASE ((uintptr_t) 0x05102000)   /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_MIXER0_UI1_BASE ((uintptr_t) 0x05103000)   /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_MIXER0_VEP0_BASE ((uintptr_t) 0x05120000)  /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_MIXER0_VSU0_BASE ((uintptr_t) 0x05120000)  /*!< DE_VSU  Base */
 #define DE_MIXER0_VEP1_BASE ((uintptr_t) 0x05140000)  /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_MIXER0_VSU1_BASE ((uintptr_t) 0x05140000)  /*!< DE_VSU  Base */
 #define DE_MIXER0_DEP_BASE ((uintptr_t) 0x051A0000)   /*!< DE_DEP DRC (dynamic range controller) Base */
 #define DE_MIXER1_GLB_BASE ((uintptr_t) 0x05200000)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x05201000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_MIXER1_VI1_BASE ((uintptr_t) 0x05202000)   /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_MIXER1_VEP0_BASE ((uintptr_t) 0x05220000)  /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_MIXER1_VSU0_BASE ((uintptr_t) 0x05220000)  /*!< DE_VSU  Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */

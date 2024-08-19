@@ -3602,7 +3602,7 @@ static void dosaveserialport(const char * fname)
 		char c;
 
 		board_dpc_processing();		// обработка отложенного вызова user mode функций
-	if (dbg_getchar(& kbch) != 0)
+		if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
 			{
@@ -10777,39 +10777,20 @@ void hightests(void)
 			{
 				#include "src/testdata/picture.h"
 			};
-			lcd_init4();
-			hardware_ltdc_tvout_set4((uintptr_t) picture0, 0);
-			for (;;)
-				;
-			const videomode_t * vdmode_CRT = & vdmode_PAL0;
-			int dx = vdmode_CRT->width;
-			int dy = vdmode_CRT->height;
-			//enum { dx = 720, dy = 480 };
-			PACKEDCOLORPIP_T fb [GXSIZE(dx, dy)];
+			TP();
+			hardware_ltdc_tvout_set2(1*(uintptr_t) picture0, 0);
+			//LCD_SwitchAddress((uintptr_t) picture0, 0);
+			TP();
+			for (;0;)
+			{
+				board_dpc_processing();
+				char c;
+				if (dbg_getchar(& c))
+				{
+					PRINTF("pkey=%02X\n", (unsigned char) c);
+				}
+			}
 
-
-			PRINTF("size of fb = %u\n", (unsigned) (sizeof fb));
-			PRINTF("size of picture0 = %u\n", (unsigned) (sizeof picture0));
-			//colpip_fill(fb, dx, dy, COLORPIP_GRAY);
-			ASSERT(sizeof fb >= sizeof picture0);
-			memcpy(fb, picture0, sizeof picture0);
-			dcache_clean((uintptr_t) fb. sizeof picture0);
-
-//			colpip_fillrect(fb, dx, dy, 0, 0, 50, dy, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, dy, TFTRGB(255, 128, 128));
-
-//			colpip_fillrect(fb, dx, dy, 0, 0, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, 50, 50, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, 100, 100, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, 150, 150, 50, 50, TFTRGB(255, 128, 128));
-//
-//			colpip_fillrect(fb, dx, dy, dx - 50, 0, 50, 50, TFTRGB(255, 128, 128));
-//			colpip_fillrect(fb, dx, dy, dx - 50, dy - 50, 50, 50, TFTRGB(255, 128, 128));
-
-			hardware_ltdc_tvout_set4(1*(uintptr_t) fb, 0*(uintptr_t) fb);
-			//LCD_SwitchAddress((uintptr_t) fb, 0);
-			for (;;)
-				;
 		}
 	#endif /* defined (TCONTV_PTR) */
 		unsigned count = 3;		// количество смен направления до оконяания теста
@@ -10842,7 +10823,30 @@ void hightests(void)
 
 
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			char c;
+			if (dbg_getchar(& c))
+			{
+				PRINTF("skey=%02X\n", (unsigned char) c);
+				static unsigned code;
+				switch (c)
+				{
+				case '+':
+					code ++;
+					break;
+				case '-':
+					code --;
+					break;
+				}
+
+//				DISPLAY_TOP->DE_PORT_PERH_SEL = code;
+//				PRINTF("DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+
+//				DE_TOP->SEL_CFG = code;
+//				PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
+
+			}
 			int change = 0;
+
 			// X limits check
 			if (stepX > 0 && posX + rectX >= DIM_X)
 			{
@@ -10872,6 +10876,7 @@ void hightests(void)
 			posX += stepX;
 			posY += stepY;
 		}
+		PRINTF("Done squash test\n");
 	}
 #endif
 #if 0
@@ -15555,23 +15560,6 @@ void signal_handler(int n, siginfo_t *info, void *unused)
 
 void lowtests(void)
 {
-#if 0
-	{
-		static const uint8_t picture0 [] =
-		{
-			#include "src/testdata/picture.h"
-		};
-		TP();
-		lcd_init4();
-		TP();
-		hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
-		//LCD_SwitchAddress((uintptr_t) picture0, 0);
-		TP();
-		for (;;)
-			;
-
-	}
-#endif
 #if 0
 	// cached memory tests
 	{
