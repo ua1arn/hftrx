@@ -832,7 +832,12 @@ static void gui_main_process(void)
 			button_t * btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
+#if WITHFT8
 			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+#endif
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
+			button_t * btn_iio = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_iio");
+#endif
 
 			if (bh == btn_notch)
 			{
@@ -931,9 +936,19 @@ static void gui_main_process(void)
 			}
 #endif /* WITHTX */
 #if LINUX_SUBSYSTEM && WITHAD936XIIO
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_iio"))
+			else if (bh == btn_iio)
 			{
-				open_window(get_win(WINDOW_IIOCONFIG));
+				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+				else
+				{
+					window_t * const win = get_win(WINDOW_IIOCONFIG);
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_iio);
+				}
 			}
 #endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 		}
