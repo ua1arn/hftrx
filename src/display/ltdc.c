@@ -29,7 +29,7 @@
 #include "gpio.h"
 #include "src/touch/touch.h"
 
-static void TVE_Init(uint32_t mode);
+static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vdmode);
 
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
 #define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_MIPIDSI_INITIALIZE))
@@ -1857,9 +1857,9 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
-#define RTMIXID 1	/* 1 or 2 */
+#define RTMIXID 2	/* 1 or 2 */
 #if defined (TCONTV_PTR)
-#define RTMIXIDTV 2	/* 1 or 2 */
+#define RTMIXIDTV 1	/* 1 or 2 */
 #endif
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
@@ -2320,7 +2320,7 @@ static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
 	switch (rtmixid)
 	{
-	default: return 0;
+	default: return NULL;
 	case 1: return DE_MIXER0_GLB;
 	case 2: return DE_MIXER1_GLB;
 	}
@@ -2332,7 +2332,7 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
 	ASSERT(id >= 1);
 	switch (rtmixid)
 	{
-	default: return 0;
+	default: return NULL;
 	case 1: return id <= ARRAY_SIZE(rtmix0_vimap) ? rtmix0_vimap [id - 1] : NULL;
 	case 2: return id <= ARRAY_SIZE(rtmix1_vimap) ? rtmix1_vimap [id - 1] : NULL;
 	}
@@ -2344,7 +2344,7 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 	ASSERT(id >= 1);
 	switch (rtmixid)
 	{
-	default: return 0;
+	default: return NULL;
 	case 1: return id <= ARRAY_SIZE(rtmix0_uimap) ? rtmix0_uimap [id - 1] : NULL;
 	case 2: return id <= ARRAY_SIZE(rtmix1_uimap) ? rtmix1_uimap [id - 1] : NULL;
 	}
@@ -2499,6 +2499,8 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 		vi->CFG [VI_CFG_INDEX].ATTR = 0;
 		return;
 	}
+	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
@@ -2513,6 +2515,13 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram);	// The setting of this register is U/UV channel address.
 	vi->TOP_HADDR [0] = (ptr_hi32(vram) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 	vi->CFG [VI_CFG_INDEX].ATTR = attr;
+
+	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+	vi->CFG [VI_CFG_INDEX].COORD = 0;
+	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
+	vi->HORI [0] = 0;
+	vi->VERT [0] = 0;
 
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
 	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
@@ -2533,6 +2542,8 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		vi->CFG [VI_CFG_INDEX].ATTR = 0;
 		return;
 	}
+	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
+	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
@@ -2552,11 +2563,6 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] = ptr_lo32(vram1);	// The setting of this register is U/UV channel address.
 	vi->TOP_HADDR [1] = (ptr_hi32(vram1) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 
-	vi->CFG [VI_CFG_INDEX].ATTR = attr;
-
-	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
-	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
-
 	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
@@ -2567,6 +2573,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 	vi->HORI [0] = 0;
 	vi->VERT [0] = 0;
 	vi->FCOLOR [0] = 0xFFFFFFFF;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram0));
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] == ptr_lo32(vram1));
@@ -2586,6 +2593,8 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 		ui->CFG [UI_CFG_INDEX].ATTR = 0;
 		return;
 	}
+	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 		(ui_format << 8) | 		//верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
@@ -2597,7 +2606,17 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
+	ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+	ui->CFG [UI_CFG_INDEX].COORD = 0;
+	ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
+	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
+	ui->OVL_SIZE = ovl_ui_mbsize;
 	ui->CFG [UI_CFG_INDEX].ATTR = attr;
+
+	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+	ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
+	ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
+	ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
 	ui->CFG [UI_CFG_INDEX].FCOLOR = 0x0FFFF0000;
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
@@ -2671,107 +2690,7 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 		bld->CH [i].BLD_CH_OFFSET = 0;
 		ASSERT(bld->CH [i].BLD_CH_ISIZE == ovl_ui_mbsize);
 	}
-
-	int vich = 1;
-	for (vich = 1; vich <= VI_LASTIX(rtmixid); vich ++)
-	{
-		DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
-		if (vi != NULL)
-		{
-			const uint32_t attr = 0;	// disabled
-
-			vi->CFG [VI_CFG_INDEX].ATTR = attr;
-			vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-			vi->CFG [VI_CFG_INDEX].COORD = 0;
-			vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
-			vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
-			vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
-			vi->OVL_SIZE [0] = ovl_ui_mbsize;
-			vi->OVL_SIZE [1] = ovl_ui_mbsize;
-			vi->HORI [0] = 0;
-			vi->VERT [0] = 0;
-			vi->FCOLOR [0] = 0xFFFF0000;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
-
-			ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
-			ASSERT(vi->CFG [VI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-			ASSERT(vi->CFG [VI_CFG_INDEX].COORD == 0);
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [0] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [1] == uipitch);	// PLANE 0 - The setting of this register is U/UV channel.
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [2] == uipitch);	// PLANE 0 - The setting of this register is V channel.
-			ASSERT(vi->OVL_SIZE [0] == ovl_ui_mbsize);
-			ASSERT(vi->HORI [0] == 0);
-			ASSERT(vi->VERT [0] == 0);
-			ASSERT(vi->FCOLOR [0] == 0xFFFF0000);	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
-		}
-	}
-
-	int uich = 1;
-	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
-	{
-		//DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-		DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
-		if (ui != NULL)
-		{
-			const uint32_t attr = 0;	// disabled
-
-			ui->CFG [UI_CFG_INDEX].ATTR = attr;
-			ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-			ui->CFG [UI_CFG_INDEX].COORD = 0;
-			ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-			ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
-			ui->OVL_SIZE = ovl_ui_mbsize;
-
-			ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
-			ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-			ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
-			ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
-		}
-	}
-
-	/* Не все блоки могут быть в t113-s3 */
-//	write32(DE_BASE + T113_DE_MUX_VSU, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
-//	write32(DE_BASE + T113_DE_MUX_FCE, 0);
-//	write32(DE_BASE + T113_DE_MUX_BWS, 0);
-//	write32(DE_BASE + T113_DE_MUX_LTI, 0);
-//	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
-//	write32(DE_BASE + T113_DE_MUX_ASE, 0);
-//	write32(DE_BASE + T113_DE_MUX_FCC, 0);
-//	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 }
-
-#if 0
-
-static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)TCON_LCD0_BASE;
-
-	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
-	{
-		write32((uintptr_t) & tcon->frm_seed[0], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[1], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[2], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[3], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[4], 0x11111111);
-		write32((uintptr_t) & tcon->frm_seed[5], 0x11111111);
-		write32((uintptr_t) & tcon->frm_table[0], 0x01010000);
-		write32((uintptr_t) & tcon->frm_table[1], 0x15151111);
-		write32((uintptr_t) & tcon->frm_table[2], 0x57575555);
-		write32((uintptr_t) & tcon->frm_table[3], 0x7f7f7777);
-
-		// 31: TCON_FRM_EN: 0: disable, 1: enable
-		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
-		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
-		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
-		write32((uintptr_t) & tcon->frm_ctrl, TCON_FRM_MODE_VAL);
-		/* режим и формат выхода */
-		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
-	}
-}
-
-#endif
 
 // LVDS: mstep1, HV: step1: Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
@@ -3033,10 +2952,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 }
 
 
-static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32_t needfreq)
+static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 {
-	PRINTF("t113_tcontv_CCU_configuration start, needfreq=%u\n", (unsigned) needfreq);
-
+	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
 #if defined (TCONTV_PTR)
 
 #if CPUSTYLE_A64
@@ -3225,51 +3143,29 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	/* Configure TCONTV clock (TCONTV_CLK_REG register) */
-	//    CLK_SRC_SEL
-	//    Clock Source Select
-	//    000: PLL_VIDEO0(1X)
-	//    001: PLL_VIDEO0(4X)
-	//    010: PLL_VIDEO1(1X)
-	//    011: PLL_VIDEO1(4X)
-	//    100: PLL_PERI(2X)
-	//    101: PLL_AUDIO1(DIV2)
+	// TODO: move to sane pll as t113_tve_CCU_configuration - pll_video1
+	//const uint_fast32_t needfreq = display_getdotclock(vdmode);
+	TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);                        //assert reset TCON_TV
 
-	unsigned divider;
-	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-	ASSERT(divider < 16);
-    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
-		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
-	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
-    local_delay_us(10);
+	{
+		unsigned divider;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+		PRINTF("t113_tcontv_CCU_configuration: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
+		ASSERT(divider < 16);
+	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+			(prei << 8) |	// FACTOR_N 0..3: 1..8
+			((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+			0;
+	    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
+	    local_delay_us(10);
 
-//	TCONTV_CCU_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
-//	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
-//    local_delay_us(10);
+	}
 
-    CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
+	TCONTV_BGR_REG |= (UINT32_C(1) << 0);                               //gate pass TCON_TV
+	TCONTV_BGR_REG |= (UINT32_C(1) << 16);                         //de-assert reset TCON_TV
 
-    {
-		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1) << 0);      //selected 0 - CCU clock, 1 - TVE clock
-		DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCONTV_PTR
-
-//    	 uint32_t v = DISPLAY_TOP-> DE_PORT_PERH_SEL;
-//    	 v &= UINT32_C(0xFFFFFFF0);
-//    	 v |= UINT32_C(0x00000002);
-//    	 DISPLAY_TOP->DE_PORT_PERH_SEL = v;       //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-
-    }
-
-
-    CCU->TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);	// TCONTV_RST
-    CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV_RST
-
-    local_delay_us(10);
+	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 
 #else
 
@@ -3528,9 +3424,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 #endif /* defined (TCONLCD_PTR) */
 }
 
-//#define TCONTV_PTR TCONTV_PTR
-
-static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
+static void t113_tcontv_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 
@@ -3590,73 +3484,6 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
-
-//	PRINTF("1 sync: %08X %08X %08X %08X %08X %08X %08X\n",
-//			(unsigned) TCONTV_PTR->TV_CTL_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC5_REG
-//			);
-//	 if(1)
-//	 {
-//		 //NTSC
-//		 TCONTV_PTR->TV_CTL_REG =
-//				 0x80000000 |
-//				 ((525 - 480 ) << 4
-//				);   //VT-V
-//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (480 - 1); //H,V
-//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (480 - 1);
-//		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (480 - 1);
-//		 TCONTV_PTR->TV_BASIC3_REG = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
-//		 TCONTV_PTR->TV_BASIC4_REG = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
-//		 TCONTV_PTR->TV_BASIC5_REG = (62 << 16) | 6;                //HS, VS - 63, 7
-//	 }
-//	 else
-//	 {
-//		 //PAL
-//		 TCONTV_PTR->TV_CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
-//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (576 - 1); //H,V
-//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (576 - 1);
-//		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (576 - 1);
-//		 TCONTV_PTR->TV_BASIC3_REG = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
-//		 TCONTV_PTR->TV_BASIC4_REG = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
-//		 TCONTV_PTR->TV_BASIC5_REG = (64 << 16) | 5;                //HS, VS - 65, 6
-//	 }
-//	PRINTF("2 sync: %08X %08X %08X %08X %08X %08X %08X\n",
-//			(unsigned) TCONTV_PTR->TV_CTL_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
-//			(unsigned) TCONTV_PTR->TV_BASIC5_REG
-//			);
-
-	// DISP_TV_MOD_NTSC
-
-//	 if (1)//(mode==DISP_TV_MOD_NTSC)
-//	 {
-//		 TCONTV_PTR->TV_CTL_REG = (UINT32_C(1) << 31) | ((525 - 480 ) << 4);   //VT-V
-//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (480 - 1); //H,V
-//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (480 - 1);
-//	  TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (480 - 1);
-//	  TCONTV_PTR->TV_BASIC3_REG = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
-//	  TCONTV_PTR->TV_BASIC4_REG = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
-//	  TCONTV_PTR->TV_BASIC5_REG = (62 << 16) | 6;                //HS, VS
-//	 }
-//	 else //PAL
-//	 {
-//		 TCONTV_PTR->TV_CTL_REG = (UINT32_C(1) << 31) | ((625 - 576 ) << 4);   //VT-V
-//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (576 - 1); //H,V
-//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (576 - 1);
-//		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (576 - 1);
-//		 TCONTV_PTR->TV_BASIC3_REG = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
-//		 TCONTV_PTR->TV_BASIC4_REG = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
-//		 TCONTV_PTR->TV_BASIC5_REG = (64 << 16) | 5;                //HS, VS
-//	 }
 
 	 TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);
 
@@ -3829,29 +3656,23 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
-#if defined (TCONTV_PTR)
-
-/* +++++ */
-
 #define TVD_WIDTH  720
 #define TVD_HEIGHT 576
 
-#define TVD_SIZE (TVD_WIDTH*TVD_HEIGHT)
+#define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
 
-//---------------------------------------
+void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
+void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable);
+
+#if defined (TCONTV_PTR)
+
 
 #define TVE_MODE
-
 #define is_composite 1
 
-#if is_composite
+/* +++++ */
 
-extern void sun8i_vi_scaler_setup(uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
-extern void sun8i_vi_scaler_enable(uint8_t enable);
-
-#endif
-
-//#define LCD_INT_NUMBER 122
+//---------------------------------------
 
 //��� VI
 #define DE2_FORMAT_YUV420_V1U1V0U0 0x08
@@ -3870,37 +3691,9 @@ extern void sun8i_vi_scaler_enable(uint8_t enable);
 #define DE2_FORMAT_ARGB_1555	0x10
 #define DE2_FORMAT_ABGR_1555	0x11
 
-//#ifdef TVE_MODE
-//
-//#define LCD_PIXEL_WIDTH  720
-//#define LCD_PIXEL_HEIGHT 576
-//
-//#else
-//
-//#define LCD_PIXEL_WIDTH  800
-//#define LCD_PIXEL_HEIGHT 480
-//
-//#endif
-
-#define BYTE_PER_PIXEL     4
+#define UI_BYTE_PER_PIXEL     4
 
 #define DE2_FORMAT DE2_FORMAT_ABGR_8888
-
-
-#ifdef TVE_MODE
-
-
-#define TVE_DEVICE_NUM 1
-#define TVE_TOP_DEVIVE_NUM 1
-#define TVE_DAC_NUM 1
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-//#include "Type.h"
-
-#define __iomem /*volatile*/
 
 enum disp_tv_mode
 {
@@ -4041,42 +3834,11 @@ enum disp_tv_mode
 #define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) &= (~(bit)))
 #define TVE_TOP_INIT_BIT(offset,c,s)            (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) = \
                                                (((*(volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) & (~(c))) | (s)))
-//
-//int32_t tve_low_set_reg_base(uint32_t sel, void __iomem *address);           //
-//int32_t tve_low_set_top_reg_base(void __iomem *address);                //
-//int32_t tve_low_set_sid_base(void __iomem *address);
-//int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ );
-//int32_t tve_low_open(uint32_t sel);                                          //
-//int32_t tve_low_close(uint32_t sel);
-//int32_t tve_resync_enable(uint32_t sel);
-//int32_t tve_resync_disable(uint32_t sel);
-//int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali); //
-//int32_t tve_low_get_dac_status(uint32_t sel);
-//int32_t tve_low_dac_autocheck_enable(uint32_t sel);
-//int32_t tve_low_dac_autocheck_disable(uint32_t sel);                         //
-//uint32_t tve_low_get_sid(uint32_t index);
-//int32_t tve_low_enhance(uint32_t sel, uint32_t mode);
-//int32_t tve_low_dac_enable(uint32_t sel);                                    //
-//extern uint sid_read_key(uint key_index);
-
-//#include "de_tvec.h"
-
-
-//#define DISPLAY_TOP_BASE 0x05460000
-//#define TCON_TV0_BASE    0x05470000
-//#define TVE_TOP_BASE     0x05600000
-//#define TVE_BASE         0x05604000
-
-//#define TV_INT_NUMBER  123
-//#define TVE_INT_NUMBER 126
-
-static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode);
-//void TV_VSync(void);
 
 #ifdef TVENCODER_BASE
 
 
-int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
+static int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t *offset, uint32_t *dac_type, uint32_t num */ )
 {
 	uint32_t i = 0;
 
@@ -4113,7 +3875,7 @@ int32_t tve_low_init(uint32_t sel /* , uint32_t *dac_no, uint32_t *cali, int32_t
 	return 0;
 }
 
-int32_t tve_low_dac_enable(uint32_t sel)
+static int32_t tve_low_dac_enable(uint32_t sel)
 {
 	uint32_t i = 0;
 
@@ -4125,7 +3887,7 @@ int32_t tve_low_dac_enable(uint32_t sel)
 	return 0;
 }
 
-int32_t tve_low_dac_disable(uint32_t sel)
+static int32_t tve_low_dac_disable(uint32_t sel)
 {
 	uint32_t i = 0;
 
@@ -4137,21 +3899,21 @@ int32_t tve_low_dac_disable(uint32_t sel)
 	return 0;
 }
 
-int32_t tve_low_open(uint32_t sel)
+static int32_t tve_low_open(uint32_t sel)
 {
 	TVE_SET_BIT(sel, TVE_000, 0x1<<31);
 	TVE_SET_BIT(sel, TVE_000, 0x1<<0);
 	return 0;
 }
 
-int32_t tve_low_close(uint32_t sel)
+static int32_t tve_low_close(uint32_t sel)
 {
 	TVE_CLR_BIT(sel, TVE_000, 0x1<<31);
 	TVE_CLR_BIT(sel, TVE_000, 0x1<<0);
 	return 0;
 }
 
-int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
+static int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
 {
 	uint32_t deflick  = 0;
 	uint32_t reg_sync = 0;
@@ -4532,7 +4294,7 @@ int32_t tve_low_set_tv_mode(uint32_t sel, enum disp_tv_mode mode, uint32_t cali)
 }
 
 /* 0:unconnected; 1:connected; */
-int32_t tve_low_get_dac_status(uint32_t sel)
+static int32_t tve_low_get_dac_status(uint32_t sel)
 {
 	uint32_t readval = 0;
 	uint32_t result = 0;
@@ -4552,7 +4314,7 @@ int32_t tve_low_get_dac_status(uint32_t sel)
 	return readval; //result;
 }
 
-int32_t tve_low_dac_autocheck_enable(uint32_t sel)
+static int32_t tve_low_dac_autocheck_enable(uint32_t sel)
 {
 	uint8_t i = 0;
 
@@ -4575,7 +4337,7 @@ int32_t tve_low_dac_autocheck_enable(uint32_t sel)
 	return 0;
 }
 
-int32_t tve_low_dac_autocheck_disable(uint32_t sel)
+static int32_t tve_low_dac_autocheck_disable(uint32_t sel)
 {
 	uint8_t i = 0;
 
@@ -4588,7 +4350,7 @@ int32_t tve_low_dac_autocheck_disable(uint32_t sel)
 
 #if 0
 #if defined (CONFIG_MACH_SUN50IW9)
-uint32_t tve_low_get_sid(uint32_t index)
+static uint32_t tve_low_get_sid(uint32_t index)
 {
 	uint32_t efuse = 0;
 
@@ -4600,7 +4362,7 @@ uint32_t tve_low_get_sid(uint32_t index)
 	return efuse;
 }
 #else
-uint32_t tve_low_get_sid(uint32_t index)
+static uint32_t tve_low_get_sid(uint32_t index)
 {
 	int32_t ret = 0;
 	int32_t buf_len = 32 * TVE_DAC_NUM;
@@ -4618,7 +4380,7 @@ uint32_t tve_low_get_sid(uint32_t index)
 #endif
 #endif
 
-int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
+static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 {
 	if (mode == 0) {
 		TVE_CLR_BIT(sel, TVE_000, 0xf<<10); /* deflick off */
@@ -4640,10 +4402,7 @@ int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 
 #endif
 
-#endif
-
-
-#define T113_DE_BASE		DE_BASE //(0x05000000)
+//#define T113_DE_BASE		DE_BASE //(0x05000000)
 
 #define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
 #define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
@@ -4659,79 +4418,39 @@ int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 #define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
 #define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
 #define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
-
-struct de_clk_t {
-	uint32_t gate_cfg;
-	uint32_t bus_cfg;
-	uint32_t rst_cfg;
-	uint32_t div_cfg;
-	uint32_t sel_cfg;
-};
-
-struct de_glb_t {
-	uint32_t ctl;
-	uint32_t status;
-	uint32_t dbuff;
-	uint32_t size;
-};
-
-struct de_bld_t {
-	uint32_t fcolor_ctl;
-	struct {
-		uint32_t fcolor;
-		uint32_t insize;
-		uint32_t offset;
-		uint32_t dum;
-	} attr[4];
-	uint32_t dum0[15];
-	uint32_t route;
-	uint32_t premultiply;
-	uint32_t bkcolor;
-	uint32_t output_size;
-	uint32_t bld_mode[4];
-	uint32_t dum1[4];
-	uint32_t ck_ctl;
-	uint32_t ck_cfg;
-	uint32_t dum2[2];
-	uint32_t ck_max[4];
-	uint32_t dum3[4];
-	uint32_t ck_min[4];
-	uint32_t dum4[3];
-	uint32_t out_ctl;
-};
-
-struct de_vi_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch[3];
-		uint32_t top_laddr[3];
-		uint32_t bot_laddr[3];
-	} cfg[4];
-	uint32_t fcolor[4];
-	uint32_t top_haddr[3];
-	uint32_t bot_haddr[3];
-	uint32_t ovl_size[2];
-	uint32_t hori[2];
-	uint32_t vert[2];
-};
-
-struct de_ui_t {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch;
-		uint32_t top_laddr;
-		uint32_t bot_laddr;
-		uint32_t fcolor;
-		uint32_t dum;
-	} cfg[4];
-	uint32_t top_haddr;
-	uint32_t bot_haddr;
-	uint32_t ovl_size;
-};
+//
+//__PACKED_STRUCT de_vi_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch[3];
+//		uint32_t top_laddr[3];
+//		uint32_t bot_laddr[3];
+//	} cfg[4];
+//	uint32_t fcolor[4];
+//	uint32_t top_haddr[3];
+//	uint32_t bot_haddr[3];
+//	uint32_t ovl_size[2];
+//	uint32_t hori[2];
+//	uint32_t vert[2];
+//};
+//
+//__PACKED_STRUCT de_ui_t {
+//	struct {
+//		uint32_t attr;
+//		uint32_t size;
+//		uint32_t coord;
+//		uint32_t pitch;
+//		uint32_t top_laddr;
+//		uint32_t bot_laddr;
+//		uint32_t fcolor;
+//		uint32_t dum;
+//	} cfg[4];
+//	uint32_t top_haddr;
+//	uint32_t bot_haddr;
+//	uint32_t ovl_size;
+//};
 
 #if 0
 struct de_csc_t {
@@ -4817,37 +4536,6 @@ struct t113_tconlcd_reg_t {
 
 #endif
 
-struct fb_t113_rgb_pdata_t
-{
-	uintptr_t virt_de;
-	void * virt_tconlcd;
-
-	unsigned int clk_tconlcd;
-//	int rst_de;
-//	int rst_tconlcd;
-	int width;
-	int height;
-	int bits_per_pixel;
-	int bytes_per_pixel;
-	int pixlen;
-
-	struct {
-		//int pixel_clock_hz;
-		int h_front_porch;
-		int h_back_porch;
-		int h_sync_len;
-		int v_front_porch;
-		int v_back_porch;
-		int v_sync_len;
-		int h_sync_active;
-		int v_sync_active;
-		int den_active;
-		int clk_active;
-	} timing;
-};
-
-static struct fb_t113_rgb_pdata_t pdat;
-
 
 static uint32_t read32(uintptr_t addr)
 {
@@ -4858,391 +4546,6 @@ static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
 }
-
-static void t113_tvout_de_enable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	write32((uintptr_t)&glb->dbuff, 1);
-}
-
-static void t113_tvout_de_set_address(struct fb_t113_rgb_pdata_t * pdat, void * vram, uint8_t plane)
-{
- if(plane)
- {
-  struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
-  write32((uintptr_t)&ui->cfg[0].top_laddr,(uint32_t)vram);                                //ARGB
- }
- else
- {
-  struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low priority
-  write32((uintptr_t)&vi->cfg[0].top_laddr[0], (uint32_t)vram                        );    //Y
-  write32((uintptr_t)&vi->cfg[0].top_laddr[1],((uint32_t)vram)+(TVD_WIDTH*TVD_HEIGHT));    //UV
- }
-}
-
-static void t113_tvout_de_set_mode(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
-{
-	struct de_clk_t * clk = (struct de_clk_t *)(pdat->virt_de);
-	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	struct de_bld_t * bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
-
-        struct de_csc_t * csc = (struct de_csc_t *)(pdat->virt_de + T113_DE_MUX_DCSC);
-
-	struct de_vi_t * vi = (struct de_vi_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 0); //CH0 VI low  priority
-	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1); //CH1 UI high priority
-
-	unsigned int size = ((( TVD_HEIGHT /*pdat->height*/ - 1) << 16) | (pdat->width - 1));
-	unsigned int val;
-	int i;
-
-	val = read32((uintptr_t)&clk->rst_cfg);
-	val |= 1 << 0;
-	write32((uintptr_t)&clk->rst_cfg, val);
-
-	val = read32((uintptr_t)&clk->gate_cfg);
-	val |= 1 << 0;
-	write32((uintptr_t)&clk->gate_cfg, val);
-
-	val = read32((uintptr_t)&clk->bus_cfg);
-	val |= 1 << 0;
-	write32((uintptr_t)&clk->bus_cfg, val);
-
-	val = read32((uintptr_t)&clk->sel_cfg);
-	val &= ~(1 << 0);
-	write32((uintptr_t)&clk->sel_cfg, val);
-
-	write32((uintptr_t)&glb->ctl, (1 << 0));
-	write32((uintptr_t)&glb->status, 0);
-	write32((uintptr_t)&glb->dbuff, 1);
-	write32((uintptr_t)&glb->size, size);
-
-	for(i = 0; i < 4; i++)
-	{
-		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
-		memset(chan, 0, i == 0 ? sizeof(struct de_vi_t) : sizeof(struct de_ui_t));
-	}
-
-	memset(bld,0,sizeof(struct de_bld_t));
-
-	write32((uintptr_t)&bld->fcolor_ctl,0x00000303);              //enable pipe 0 & 1
-	write32((uintptr_t)&bld->fcolor_ctl,0x00000101);              //enable pipe mgs
-
-//                                           pipe3   pipe2  pipe1  pipe0
-	write32((uintptr_t)&bld->route,(3<<12)|(2<<8)|(1<<4)|(0<<0)); //ch0=>pipe0, ch1=>pipe1, ch2=>pipe2, ch3=>pipe3
-
-	write32((uintptr_t)&bld->premultiply,0);
-	write32((uintptr_t)&bld->bkcolor,0xff0000FF);
-	write32((uintptr_t)&bld->bkcolor,0xffFFFF00);	// mgs
-
-	uint32_t bldmode = 0x03010301;	// default (mgs)
-	//uint32_t bldmode = 0x03020302;
-	write32((uintptr_t)&bld->bld_mode[0],bldmode);
-	write32((uintptr_t)&bld->bld_mode[1],bldmode);             //Fs=Ad, Fd=1-As, Qs=Ad, Qd=1-As
-
-	write32((uintptr_t)&bld->output_size, size);
-	write32((uintptr_t)&bld->out_ctl, 0);
-	write32((uintptr_t)&bld->ck_ctl, 0);
-
-	for(i = 0; i < 4; i++)
-	{
-		write32((uintptr_t)&bld->attr[i].fcolor, 0xff000000);
-		write32((uintptr_t)&bld->attr[i].insize, size);
-	}
-
-	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
-	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
-	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
-	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
-	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
-	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
-	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
-
-//https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_csc.c
-#ifndef TVE_MODE
-
-#if is_composite
-		/* set CSC coefficients */
-		write32((uintptr_t)&csc->coef11,0x00000400 );
-		write32((uintptr_t)&csc->coef12,0x00000000 );
-		write32((uintptr_t)&csc->coef13,0x0000059B );
-		write32((uintptr_t)&csc->coef14,0xFFFD322E );
-
-		write32((uintptr_t)&csc->coef21,0x00000400 );
-		write32((uintptr_t)&csc->coef22,0xFFFFFEA0 );
-		write32((uintptr_t)&csc->coef23,0xFFFFFD25 );
-		write32((uintptr_t)&csc->coef24,0x00021DD5 );
-
-		write32((uintptr_t)&csc->coef31,0x00000400 );
-		write32((uintptr_t)&csc->coef32,0x00000716 );
-		write32((uintptr_t)&csc->coef33,0x00000000 );
-		write32((uintptr_t)&csc->coef34,0xFFFC74BD );
-
-		/* alpha for modes with alpha */
-		write32((uintptr_t)&csc->globalpha,0xff << 24 );
-
-		/* enable CSC unit */
-		write32((uintptr_t)&csc->csc_ctl,1);
-#else
-		write32((uintptr_t)&csc->csc_ctl,0);
-#endif
-
-#endif
-
-//https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun8i_vi_scaler.c
-
-#if is_composite
-
- uint32_t src_w=TVD_WIDTH;
- uint32_t src_h=TVD_HEIGHT;
-
- uint32_t dst_w=vdmode->width;//LCD_PIXEL_WIDTH;
- uint32_t dst_h=vdmode->height;//LCD_PIXEL_HEIGHT;
-
- uint32_t hscale=(src_w<<16)/dst_w;
- uint32_t vscale=(src_h<<16)/dst_h;
-
- sun8i_vi_scaler_setup(src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
- sun8i_vi_scaler_enable(1);
-
-#endif
-
-//CH0 VI ----------------------------------------------------------------------------
-
-	//write32((uintptr_t)&vi->cfg[0].attr,(1<<0)|((is_composite?DE2_FORMAT_YUV420_V1U1V0U0:DE2_FORMAT)<<8)|((is_composite^1)<<15)); //VI
-	write32((uintptr_t)&vi->cfg[0].attr,0); //VI mgs
-	write32((uintptr_t)&vi->cfg[0].size, size);
-	write32((uintptr_t)&vi->cfg[0].coord, 0);
-
-        write32((uintptr_t)&vi->cfg[0].pitch[0],pdat->width); //Y
-        write32((uintptr_t)&vi->cfg[0].pitch[1],pdat->width); //UV
-
-//	write32((uintptr_t)&vi->cfg[0].top_laddr[0],VIDEO_MEMORY0                       ); //Y
-//	write32((uintptr_t)&vi->cfg[0].top_laddr[1],VIDEO_MEMORY0+(TVD_WIDTH*TVD_HEIGHT)); //UV
-
-	write32((uintptr_t)&vi->ovl_size[0],size); //Y
-	write32((uintptr_t)&vi->ovl_size[1],size); //UV
-	write32((uintptr_t)&vi->fcolor [0], 0xFFFF0000);
-
-/*
-	write32((uintptr_t)&vi->hori[0], (dst_w<<16)|src_w); //Y
-	write32((uintptr_t)&vi->hori[1], (dst_w<<16)|src_w); //UV
-
-	write32((uintptr_t)&vi->vert[0], (dst_h<<16)|src_h); //Y
-	write32((uintptr_t)&vi->vert[1], (dst_h<<16)|src_h); //UV
-*/
-
-//CH1 UI -----------------------------------------------------------------------------
-
-	//write32((uintptr_t)&ui->cfg[0].attr,(1<<0)|(DE2_FORMAT<<8)|(0xff<<24)|(UINT32_C(1) << 16));           //������� ���� � ���������� ������
-	write32((uintptr_t)&ui->cfg[0].attr, 0);	// mgs
-	write32((uintptr_t)&ui->cfg[0].size, size);
-	write32((uintptr_t)&ui->cfg[0].coord, 0);
-	write32((uintptr_t)&ui->cfg[0].pitch, BYTE_PER_PIXEL * pdat->width);
-//	write32((uintptr_t)&ui->cfg[0].top_laddr,VIDEO_MEMORY1);                                  //VIDEO_MEMORY1
-	write32((uintptr_t)&ui->ovl_size, size);
-}
-
-#if ! defined TVE_MODE
-// not for TVE_MODE
-static void t113_tconlcd2_enable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	unsigned int val;
-
-	val = read32((uintptr_t)&tcon->gctrl);
-	val |= (1 << 31);
-	write32((uintptr_t)&tcon->gctrl, val);
-}
-
-// not for TVE_MODE
-static void t113_tconlcd2_disable(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	unsigned int val;
-	val = read32((uintptr_t)&tcon->dclk);
-	val &= ~(0xf << 28);
-	write32((uintptr_t)&tcon->dclk, val);
-
-	write32((uintptr_t)&tcon->gctrl, 0);
-	write32((uintptr_t)&tcon->gint0, 0);
-}
-
-// not for TVE_MODE
-static void t113_tconlcd2_set_timing(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	int bp, total;
-	unsigned int val;
-
-	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
-	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0) );
-
-	val = pdat->clk_tconlcd / display_getdotclock(vdmode);
-
-	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val /* /2 */ ) << 0));                     //������ �� 2, ������� ������ �� ���������� � 2 ���� ��������
-
-	write32((uintptr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
-
-	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
-	total = pdat->width + pdat->timing.h_front_porch + bp;
-	write32((uintptr_t)&tcon->timing1, ((total - 1) << 16) | ((bp - 1) << 0));
-
-	bp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
-	total = pdat->height + pdat->timing.v_front_porch + bp;
-	write32((uintptr_t)&tcon->timing2, ((total * 2) << 16) | ((bp - 1) << 0));
-
-	write32((uintptr_t)&tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
-
-	val = (0 << 31) | (1 << 28);
-	if(!pdat->timing.h_sync_active)
-		val |= (1 << 25);
-	if(!pdat->timing.v_sync_active)
-		val |= (1 << 24);
-	if(!pdat->timing.den_active)
-		val |= (1 << 27);
-	if(!pdat->timing.clk_active)
-		val |= (1 << 26);
-	write32((uintptr_t)&tcon->io_polarity, val);
-	write32((uintptr_t)&tcon->io_tristate, 0);
-}
-
-// not for TVE_MODE
-static void t113_tconlcd2_set_dither(struct fb_t113_rgb_pdata_t * pdat)
-{
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-
-	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
-	{
-		write32((uintptr_t)&tcon->frm_seed[0], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[1], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[2], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[3], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[4], 0x11111111);
-		write32((uintptr_t)&tcon->frm_seed[5], 0x11111111);
-		write32((uintptr_t)&tcon->frm_table[0], 0x01010000);
-		write32((uintptr_t)&tcon->frm_table[1], 0x15151111);
-		write32((uintptr_t)&tcon->frm_table[2], 0x57575555);
-		write32((uintptr_t)&tcon->frm_table[3], 0x7f7f7777);
-
-		if(pdat->bits_per_pixel == 16)
-			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (1 << 6) | (0 << 5)| (1 << 4));
-		else if(pdat->bits_per_pixel == 18)
-			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (0 << 6) | (0 << 5)| (0 << 4));
-	}
-}
-
-#endif
-
-static void fb_t113_rgb_init(unsigned int mode, struct fb_t113_rgb_pdata_t *pdat, const videomode_t * vdmode)
-{
-#ifdef TVE_MODE
-    TCONTVandTVE_Init(mode, vdmode);
-
-#else
-	t113_tconlcd2_disable(pdat);
-	t113_tconlcd2_set_timing(pdat, vdmode);
-	t113_tconlcd2_set_dither(pdat);
-	t113_tconlcd2_enable(pdat);
-#endif
-
-	t113_tvout_de_set_mode(pdat, vdmode);
-	t113_tvout_de_enable(pdat);
-}
-
-static void TCONLCD_Clock(void)
-{
- CCU->TCONLCD_BGR_REG&=~(UINT32_C(1) << 16);                      //assert reset TCON_LCD
- CCU->TCONLCD_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(1<<8)|(2-1); //clock on, PLL_VIDEO0(4x), N=2, M=2 => 1188/2/2 = 297 MHz
- CCU->TCONLCD_BGR_REG|=1;                             //gate pass TCON_LCD
- CCU->TCONLCD_BGR_REG|=(UINT32_C(1) << 16);                       //de-assert reset TCON_LCD
-}
-
-void lcd_init4(void)
-{
-#if 1
-	const videomode_t * const vdmode = & vdmode_PAL0;
-	const unsigned mode = DISP_TV_MOD_PAL;
-#else
-	const videomode_t * const vdmode = & vdmode_NTSC0;
-	const unsigned mode = DISP_TV_MOD_NTSC;
-#endif
-
- TCONLCD_Clock();
-
-	unsigned int val;
-
-	//val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
-	val = CCU->DE_CLK_REG;
-	val |= (1 << 31) | (3 << 0);					//DE CLK: 300 MHz
-	//write32((T113_CCU_BASE + CCU_DE_CLK_REG), val);
-	CCU->DE_CLK_REG = val;
-	//Open the clock gate
-	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
-	val = CCU->DE_BGR_REG;
-	val |= (1 << 0);
-	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
-	CCU->DE_BGR_REG = val;
-	//de-assert reset
-	//val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
-	val = CCU->DE_BGR_REG;
-	val |= (1 << 16);
-	//write32((T113_CCU_BASE + CCU_DE_BGR_REG), val);
-	CCU->DE_BGR_REG = val;
-
-/*
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
-	val |= (1 << 31) | (1 << 24);					//TCON CLK: 24*99/2=1188 MHz
-	write32((T113_CCU_BASE + CCU_TCONLCD_CLK_REG), val);
-	//Open the clock gate
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-	val |= (1 << 0);
-	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-	//eassert reset
-	val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-	val |= (1 << 16);
-	write32((T113_CCU_BASE + CCU_TCONLCD_BGR_REG), val);
-*/
-
-	pdat.virt_tconlcd = TCONLCD_PTR;
-	pdat.virt_de = T113_DE_BASE;
-	pdat.clk_tconlcd = display_getdotclock(vdmode) * 10;//297000000; //1188000000;
-	pdat.width = vdmode->width; //LCD_PIXEL_WIDTH;
-	pdat.height = vdmode->height; //LCD_PIXEL_HEIGHT;
-	pdat.bits_per_pixel  = BYTE_PER_PIXEL*8;
-	pdat.bytes_per_pixel = BYTE_PER_PIXEL;
-	pdat.pixlen = pdat.width * pdat.height * pdat.bytes_per_pixel;
-
-	//pdat.timing.pixel_clock_hz = display_getdotclock(vdmode); //29232000; //50000000; // 29232000/(800+40+87+1)/(480+13+31+1) = 60 FPS
-	pdat.timing.h_front_porch  = 40;       //160;
-	pdat.timing.h_back_porch   = 87;       //140;
-	pdat.timing.h_sync_len     = 1;        //20;
-	pdat.timing.v_front_porch  = 13;       //13;
-	pdat.timing.v_back_porch   = 31;       //31;
-	pdat.timing.v_sync_len     = 1;        //2;
-	pdat.timing.h_sync_active  = 0;
-	pdat.timing.v_sync_active  = 0;
-	pdat.timing.den_active     = 1;	       //!!!
-	pdat.timing.clk_active     = 0;
-
-	fb_t113_rgb_init(mode, &pdat, vdmode);
-
-	//lcd_backlight_init();
-}
-
-//void LCD_SwitchAddress(uint32_t address,uint8_t plane)
-//{
-// t113_tvout_de_set_address(&pdat,(void*)address,plane);
-// t113_tvout_de_enable(&pdat);
-//}
-
-
-//#include "scaler_coeff.h"
-
-//#include "reg-de.h"
 
 #define IS_DE3 0
 #define CHANNEL 0
@@ -5294,13 +4597,13 @@ void lcd_init4(void)
 #define SUN8I_SCALER_VSU_CTRL_COEFF_RDY		BIT(4)
 
 //#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+#define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
+#define regmap_write(id, x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
 
-#define regmap_write(x,y,z) (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))=(z)
-
-#define regmap_update_bits(x,y,z,t) do { \
+#define regmap_update_bits(id, x,y,z,t) do { \
 {                                                      \
- (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))&=~(z); \
- (*(volatile uint32_t*)(T113_DE_BASE+T113_DE_MUX_VSU+(y)))|=(t);  \
+ (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))&=~(z); \
+ (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))|=(t);  \
 } while (0)
 
 static const uint32_t bicubic8coefftab32_left[480] = {
@@ -6164,7 +5467,7 @@ static int sun8i_vi_scaler_coef_index(unsigned int step)
 	}
 }
 
-static void sun8i_vi_scaler_set_coeff(uint32_t base, uint32_t hstep, uint32_t vstep)
+static void sun8i_vi_scaler_set_coeff(int rtmixid, uint32_t base, uint32_t hstep, uint32_t vstep)
 {
 	const uint32_t *ch_left, *ch_right, *cy;
 	int offset, i;
@@ -6182,27 +5485,27 @@ static void sun8i_vi_scaler_set_coeff(uint32_t base, uint32_t hstep, uint32_t vs
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(map, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
 			     lan3coefftab32_left[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
 			     lan3coefftab32_right[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
 			     ch_left[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
 			     ch_right[offset + i]);
 	}
 
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(map, SUN8I_SCALER_VSU_YVCOEFF(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YVCOEFF(base, i),
 			     lan2coefftab32[offset + i]);
-		regmap_write(map, SUN8I_SCALER_VSU_CVCOEFF(base, i),
+		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CVCOEFF(base, i),
 			     cy[offset + i]);
 	}
 }
 
-void sun8i_vi_scaler_setup(uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint32_t dst_h, uint32_t hscale, uint32_t vscale, uint32_t hphase, uint32_t vphase)
+void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint32_t dst_h, uint32_t hscale, uint32_t vscale, uint32_t hphase, uint32_t vphase)
 {
 	uint32_t chphase, cvphase;
 	uint32_t insize, outsize;
@@ -6240,42 +5543,42 @@ void sun8i_vi_scaler_setup(uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint3
 		else
 			val = SUN50I_SCALER_VSU_SCALE_MODE_NORMAL;
 
-		regmap_write(mixer->engine.regs,
+		regmap_write(rtmixid, mixer->engine.regs,
 			     SUN50I_SCALER_VSU_SCALE_MODE(base), val);
 	}
 
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YINSIZE(base), insize);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YHSTEP(base), hscale);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YVSTEP(base), vscale);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YHPHASE(base), hphase);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_YVPHASE(base), vphase);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CINSIZE(base),
 		     SUN8I_VI_SCALER_SIZE(src_w / HSUB,
 					  src_h / VSUB));
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CHSTEP(base),
 		     hscale / HSUB);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CVSTEP(base),
 		     vscale / VSUB);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CHPHASE(base), chphase);
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
 
-	sun8i_vi_scaler_set_coeff(base,
+	sun8i_vi_scaler_set_coeff(rtmixid, base,
 				  hscale, vscale);
 }
 
-void sun8i_vi_scaler_enable(uint8_t enable)
+void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 {
 	uint32_t val, base;
 
@@ -6287,250 +5590,90 @@ void sun8i_vi_scaler_enable(uint8_t enable)
 	else
 		val = 0;
 
-	regmap_write(mixer->engine.regs,
+	regmap_write(rtmixid, mixer->engine.regs,
 		     SUN8I_SCALER_VSU_CTRL(base), val);
 }
 
 /* ********************************* */
 
-typedef struct
+static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vdmode)
 {
- volatile uint32_t GCTL_REG;           // !!! 0x00 TCON Control
- volatile uint32_t GINT0_REG;          // !!! 0x04 Interrupt_0
- volatile uint32_t GINT1_REG;          // !!! 0x08 Interrupt_1
+	tve_low_init(0);
 
- volatile uint32_t RES0[13];
+	tve_low_dac_autocheck_disable(0);
+	// tve_low_dac_autocheck_enable(0);
 
- volatile uint32_t SRC_CTL_REG;        // !!! 0x40 TCON0 Control
+	tve_low_set_tv_mode(0, mode, 0);
 
- volatile uint32_t RES1[17];
+	tve_low_dac_enable(0);
 
- volatile uint32_t IO_POL_REG;         // !!! 0x88 TV SYNC Signal Polarity Register
- volatile uint32_t IO_TRI_REG;         // !!! 0x8C TV SYNC Signal volatile Control Register
+	tve_low_open(0);
 
- volatile uint32_t CTL_REG;            // !!! 0x90 TCON1 Control
- volatile uint32_t BASIC_REG[6];       // !!! 0x94..0xA8 TCON1 Basic Timing 0..5
+	tve_low_enhance(0,0); //0,1,2
 
- volatile uint32_t RES2[20];
-
- volatile uint32_t DEBUG_REG;          // !!! 0xFC TCON Debug Information
-}
-tcon_tv0;
-
-#define TCON_TV0_local2 ((tcon_tv0*)TCON_TV0_BASE)
-
-static void VIDEO1_PLL(void)
-{
- uint32_t v=CCU->PLL_VIDEO1_CTRL_REG;
-
- v&=~(0xFF<<8);
- v|=(1UL<<31)|(1<<30)|((72-1)<<8);      //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
-
- CCU->PLL_VIDEO1_CTRL_REG=v;
-
- CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
-
- while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28))); //Wait pll stable
- local_delay_ms(20);
-
- CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+	// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
+	// else                         PRINTF("DAC NOT connected!\n");
 }
 
-static void TVE_Clock(void)
+// 216 МГц тактирования на TVE
+static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 {
-	CCU->TVE_BGR_REG&=~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
-	CCU->TVE_CLK_REG=(1UL<<31)|(3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
-	CCU->TVE_BGR_REG|=(1<<1)|1;                           //gate pass for TVE & TVE_TOP
-	CCU->TVE_BGR_REG|=(1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
-}
+	const uint_fast32_t needfreq = 216000000;
+	{
+		const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
+		uint32_t v = CCU->PLL_VIDEO1_CTRL_REG;
+		//v = 0;
+		v &= ~ (0xFF<<8);
+		v |= (1<<30) | ((N-1)<<8);
 
-static void DPSS_Clock(void)
-{
-	CCU->DPSS_TOP_BGR_REG&=~(1<<16);                      //assert reset DPSS_TOP
-	CCU->DPSS_TOP_BGR_REG|=1;                             //gate pass DPSS_TOP
-	CCU->DPSS_TOP_BGR_REG|=(1<<16);                       //de-assert reset DPSS_TOP
-}
+		CCU->PLL_VIDEO1_CTRL_REG=v;
 
-static void TCONTV_Clock(void)
-{
- CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
- CCU->TCONTV_CLK_REG=(1UL<<31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
- CCU->TCONTV_BGR_REG|=1;                               //gate pass TCON_TV
- CCU->TCONTV_BGR_REG|=(1<<16);                         //de-assert reset TCON_TV
-}
+		CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
 
-static void TCONTV_Init(uint32_t mode)
-{
- if(mode==DISP_TV_MOD_NTSC)
- {
-  TCON_TV0_local2->CTL_REG = 0x80000000 | ((525 - 480 ) << 4);   //VT-V
-  TCON_TV0_local2->BASIC_REG[0] = ((720 - 1) << 16) | (480 - 1); //H,V
-  TCON_TV0_local2->BASIC_REG[1] = ((720 - 1) << 16) | (480 - 1);
-  TCON_TV0_local2->BASIC_REG[2] = ((720 - 1) << 16) | (480 - 1);
-  TCON_TV0_local2->BASIC_REG[3] = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
-  TCON_TV0_local2->BASIC_REG[4] = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
-  TCON_TV0_local2->BASIC_REG[5] = (62 << 16) | 6;                //HS, VS
- }
- else //PAL
- {
-  TCON_TV0_local2->CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
-  TCON_TV0_local2->BASIC_REG[0] = ((720 - 1) << 16) | (576 - 1); //H,V
-  TCON_TV0_local2->BASIC_REG[1] = ((720 - 1) << 16) | (576 - 1);
-  TCON_TV0_local2->BASIC_REG[2] = ((720 - 1) << 16) | (576 - 1);
-  TCON_TV0_local2->BASIC_REG[3] = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
-  TCON_TV0_local2->BASIC_REG[4] = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
-  TCON_TV0_local2->BASIC_REG[5] = (64 << 16) | 5;                //HS, VS
- }
+		while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28)))	 //Wait pll stable
+			;
+		local_delay_ms(20);
 
- TCON_TV0_local2->IO_POL_REG = 0;
- TCON_TV0_local2->IO_TRI_REG = 0x0FFFFFFF;
+		CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+		CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
 
- TCON_TV0_local2->SRC_CTL_REG=0;             //0 - DE, 1..7 - test
- TCON_TV0_local2->GINT0_REG=(1<<30);         //enable Vblank int
- TCON_TV0_local2->GCTL_REG=(1UL<<31)|(1<<1); //enable TCONTV
-}
+		//PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+	}
 
-//void TV_VSync(void)
-//{
-// TCON_TV0_local2->GINT0_REG&=~(1<<14);
-// while(!(TCON_TV0_local2->GINT0_REG&(1<<14)));
-//}
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
+	//	100: PLL_PERI(2X)
+	//	101: PLL_AUDIO1(DIV2)
 
-static void TVE_Init(uint32_t mode)
-{
- tve_low_init(0);
 
- tve_low_dac_autocheck_disable(0);
-// tve_low_dac_autocheck_enable(0);
+	unsigned divider;
+	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video1_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	ASSERT(divider < 16);
+	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO1(4X)
+		(prei << 8) |	// FACTOR_N 0..3: 1..8
+		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
 
- tve_low_set_tv_mode(0,mode,0);
+	CCU->TVE_BGR_REG = 0;
+	//CCU->TVE_BGR_REG &= ~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
+	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
+	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
 
- tve_low_dac_enable(0);
+	PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+	local_delay_us(10);
 
- tve_low_open(0);
-
- tve_low_enhance(0,0); //0,1,2
-
-// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
-// else                         PRINTF("DAC NOT connected!\n");
-}
-
-static void TCONTVandTVE_Init(unsigned int mode, const videomode_t * vdmode)
-{
- TCONTV_Clock();
- DPSS_Clock();
-
- VIDEO1_PLL();
- TVE_Clock();
-
-// Undocumented registers ---------------------------------------------------------------
-
- (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x00))&=~1;      //0 - CCU clock, 1 - TVE clock
- (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x20))|=(1<<20); //enable clk for TCON_TV0_local2
-
- uint32_t v=(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C));
- v&=0xFFFFFFF0;
- v|=0x00000002;
- (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C))=v;        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-
-// --------------------------------------------------------------------------------------
-
- TCONTV_Init(mode);
- TVE_Init(mode);
 }
 
 /* ----- */
 
-static void t113_TVE_initialize(const videomode_t * vdmode, unsigned mode)
-{
-    if (0)
-    {
-
-    	VIDEO1_PLL();
-
-    	//	CLK_SRC_SEL
-    	//	Clock Source Select
-    	//	000: PLL_VIDEO0(1X)
-    	//	001: PLL_VIDEO0(4X)
-    	//	010: PLL_VIDEO1(1X)
-    	//	011: PLL_VIDEO1(4X)
-    	//	100: PLL_PERI(2X)
-    	//	101: PLL_AUDIO1(DIV2)
-
-    	TVE_CCU_CLK_REG = (3<<24)|(1<<8)|(2-1);      //clock on, PLL_VIDEO1(4x), N=2, M=2 => 864/2/2 = 216 MHz
-
-    	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
-
-    	CCU->TVE_BGR_REG = 0;
-    	//CCU->TVE_BGR_REG &= ~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
-    	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
-    	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
-
-    	PRINTF("t113_tcontv_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
-        local_delay_us(10);
-    }
-
-    if (1)
-    {
-
-    	VIDEO1_PLL();
-
-    	//	CLK_SRC_SEL
-    	//	Clock Source Select
-    	//	000: PLL_VIDEO0(1X)
-    	//	001: PLL_VIDEO0(4X)
-    	//	010: PLL_VIDEO1(1X)
-    	//	011: PLL_VIDEO1(4X)
-    	//	100: PLL_PERI(2X)
-    	//	101: PLL_AUDIO1(DIV2)
-
-    	const uint_fast32_t needfreq = 216000000;//8 * display_getdotclock(vdmode);
-
-    	unsigned divider;
-    	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video1_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-    	PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-    	ASSERT(divider < 16);
-    	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-    		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO1(4X)
-    		(prei << 8) |	// FACTOR_N 0..3: 1..8
-    		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-    		0;
-    	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
-
-    	CCU->TVE_BGR_REG = 0;
-    	//CCU->TVE_BGR_REG &= ~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
-    	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
-    	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
-
-    	PRINTF("t113_tcontv_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
-        local_delay_us(10);
-    }
-
-	 TVE_Init(mode);
-	 if (0)
-	 {
-
-			TVE_TOP->TVE_DAC_MAP =
-				(UINT32_C(0x00) << 4) |	// DAC_MAP 000: OUT0
-				(UINT32_C(0x01) << 0) |	// DAC_SEL 01: TVE0
-				0;
-			TVE_TOP->CH [0].TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
-
-//			CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
-//			CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17);	// TVE_RST
-//			CCU->TVE_BGR_REG |= (UINT32_C(1) << 17);	// TVE_RST
-//			PRINTF("2 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
-
-			//printhex32(TVE_TOP_BASE, TVE_TOP, 256);
-
-			TVENCODER_PTR->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
-			TVENCODER_PTR->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
-
-			//printhex32(TVENCODER_BASE, TVENCODER_PTR, 256);
-			PRINTF("TVENCODER_PTR->TVE_038_REG=%08" PRIX32 "\n", TVENCODER_PTR->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
-	 }
-
-}
 #endif /* defined (TCONTV_PTR) */
 
 #if 0
@@ -6617,30 +5760,8 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 ///
 #endif /* defined (TCONTV_PTR) */
 
-static void t113_tvout2_initsteps(const videomode_t * vdmode)
+static void t113_tvout_initsteps(const videomode_t * vdmode)
 {
-	const uint_fast32_t tvoutfreq = display_getdotclock(vdmode);
-	// step0 - CCU configuration
-	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
-	t113_tcontv_CCU_configuration(vdmode, tvoutfreq);
-	// step1 - same as step1 in HV mode: Select HV interface type
-	//t113_select_HV_interface_type(vdmode);
-	// step2 - Clock configuration
-	//t113_LVDS_clock_configuration(vdmode);
-	// step3 - same as step3 in HV mode: Set sequuence parameters
-	//t113_set_sequence_parameters(vdmode);
-	t113_set_TV_sequence_parameters(vdmode);
-	// step4 - same as step4 in HV mode: Open volatile output
-	//t113_open_IO_output(vdmode);
-	// step5 - set LVDS digital logic configuration
-	//t113_set_LVDS_digital_logic(vdmode);
-	// step6 - LVDS controller configuration
-	//t113_DSI_controller_configuration(vdmode);
-	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
-	// step7 - same as step5 in HV mode: Set and open interrupt function
-	//t113_set_and_open_interrupt_function(vdmode);
-	// step8 - same as step6 in HV mode: Open module enable
-	//t113_open_module_enable(vdmode);
 }
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
@@ -6657,7 +5778,6 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_LVDS_clock_configuration(vdmode);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
-	//t113_set_TV_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -6690,14 +5810,12 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz, lanes=%u, depth=%u, pixelclock=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000, nlanes, pixdepth, display_getdotclock(vdmode) / 1000 / 1000);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider, dsifreq);
-	t113_tcontv_CCU_configuration(vdmode, prei, divider, 0);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
 	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
-	t113_set_TV_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -6740,8 +5858,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	//#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
 	/* Set ahb gating to pass */
-//	setbits_le32(&ccm->ahb_reset1_cfg, 1 << AHB_RESET_OFFSET_DE);
-//	setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_DE);
+//	setbits_le32(&ccm->ahb_reset1_cfg, UINT32_C(1) << AHB_RESET_OFFSET_DE);
+//	setbits_le32(&ccm->ahb_gate1, UINT32_C(1) << AHB_GATE_OFFSET_DE);
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	unsigned divider = 8;
@@ -7004,9 +6122,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
 #endif
 
-    if (1)
     {
-		const int rtmixid = RTMIXID;
+    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
+		const int rtmixid = 1;
         // Enable RT-Mixer 0
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
@@ -7015,8 +6133,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
     	/* перенаправление выхода DE */
     	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+    	// DISPLAY_TOP->DE_PORT_PERH_SEL; // see also
 
-    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer 1 */
+    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
 		{
@@ -7029,10 +6148,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
     }
 
-#if defined (TCONTV_PTR)
-    //if (RTMIXID == 2)
+#if 1
     {
-    	const int rtmixid = RTMIXIDTV;	// TV
+    	const int rtmixid = 2;
        // Enable RT-Mixer 1
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
@@ -7050,13 +6168,12 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
     }
-#endif /* defined (TCONTV_PTR) */
+#endif
 
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
 }
-
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
@@ -7067,17 +6184,36 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */
+}
 
 #if defined (TCONTV_PTR)
+static void hardware_tcontv_initialize(unsigned int mode, const videomode_t * vdmode)
+{
+	// step0 - CCU configuration
+	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
+	t113_tcontv_CCU_configuration(vdmode);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	//t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	//t113_LVDS_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_tcontv_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open volatile output
+	//t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	//t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	//t113_DSI_controller_configuration(vdmode);
+	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	//t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	//t113_open_module_enable(vdmode);
 
-//	const videomode_t * vdmode_CRT = & vdmode_PAL0;
-//	t113_tvout2_initsteps(vdmode_CRT);
-//	t113_TVE_initialize(vdmode_CRT, DISP_TV_MOD_PAL);
-//    TCONTVandTVE_Init2(DISP_TV_MOD_PAL);
-
-
-#endif /* defined (TCONTV_PTR) */
+	t113_tve_CCU_configuration(vdmode);
+	t113_tve_DAC_configuration(mode, vdmode);
 }
+#endif /* defined (TCONTV_PTR) */
 
 static void awxx_deoutmapping(unsigned disp)
 {
@@ -7123,6 +6259,8 @@ static void awxx_deoutmapping(unsigned disp)
 
 	/* перенаправление выхода DE */
 	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+	DE_TOP->SEL_CFG=0x00000001;
+	PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -7746,6 +6884,21 @@ void de2_init(const uintptr_t * frames)
 
 #endif /* CPUSTYLE_A64 */
 
+static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
+{
+	uint32_t src_w=TVD_WIDTH;
+	uint32_t src_h=TVD_HEIGHT;
+
+	uint32_t dst_w=vdmode->width;//LCD_PIXEL_WIDTH;
+	uint32_t dst_h=vdmode->height;//LCD_PIXEL_HEIGHT;
+
+	uint32_t hscale=(src_w<<16)/dst_w;
+	uint32_t vscale=(src_h<<16)/dst_h;
+
+	sun8i_vi_scaler_setup(rtmixid, src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
+	sun8i_vi_scaler_enable(rtmixid, 1);
+}
+
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
@@ -7772,11 +6925,33 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	}
 #endif /* WITHHDMITVHW */
 
+//	{
+//		uintptr_t p;
+//		p = T113_DE_BASE_N((1))+T113_DE_MUX_VSU;
+//		PRINTF("VSU at 0x%08X\n", p);
+//		ASSERT(p == DE_MIXER0_VSU0_BASE);
+//		p = T113_DE_BASE_N((2))+T113_DE_MUX_VSU;
+//		PRINTF("VSU at 0x%08X\n", p);
+//		ASSERT(p == DE_MIXER1_VSU0_BASE);
+//	}
 	{
-		hardware_de_initialize(vdmode);
-		awxx_deoutmapping(RTMIXID - 1);
+#if defined (TCONTV_PTR)
+	#if 1
+		const videomode_t * const vdmode_CRT = & vdmode_PAL0;
+		const unsigned mode = DISP_TV_MOD_PAL;
+	#else
+		const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
+		const unsigned mode = DISP_TV_MOD_NTSC;
+	#endif
+#endif
 
-		hardware_tcon_initialize(vdmode);	// внутри и для TV OUT
+		hardware_de_initialize(vdmode);
+		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
+
+		hardware_tcon_initialize(vdmode);
+#if defined (TCONTV_PTR)
+		hardware_tcontv_initialize(mode, vdmode_CRT);
+#endif /* defined (TCONTV_PTR) */
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -7795,18 +6970,38 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-			const videomode_t * vdmode_CRT = & vdmode_PAL0;
 			const int rtmixid = RTMIXIDTV;
-			const unsigned disp = rtmixid - 1;
-		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+
+			{
+				// Undocumented registers
+				DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	//0 - CCU clock, 1 - TVE clock
+				DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
+
+				PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
+				v&=0xFFFFFFF0;
+				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
+				v = 0;//0x00010;
+				//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
+				PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+			}
+
+			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
+
+		#if is_composite
+			t113_vi_scaler_setup(rtmixid, vdmode_CRT);
+		#endif
 		#if CPUSTYLE_T507
 		    {
 		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
 		    }
 		#endif
+//			t113_tvout2_initsteps(vdmode_CRT);
 		}
+
+
 #endif
 	}
     //PRINTF("hardware_ltdc_initialize done.\n");
@@ -7821,10 +7016,10 @@ hardware_ltdc_deinitialize(void)
 
 #else /* WITHLTDCHWVBLANKIRQ */
 
-void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_tvout_set2(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXID;	// RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
