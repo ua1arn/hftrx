@@ -10778,7 +10778,7 @@ void hightests(void)
 				#include "src/testdata/picture.h"
 			};
 			TP();
-			hardware_ltdc_tvout_set4(1*(uintptr_t) picture0, 0);
+			hardware_ltdc_tvout_set2(1*(uintptr_t) picture0, 0);
 			//LCD_SwitchAddress((uintptr_t) picture0, 0);
 			TP();
 			for (;0;)

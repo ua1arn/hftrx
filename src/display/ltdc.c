@@ -2499,6 +2499,8 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 		vi->CFG [VI_CFG_INDEX].ATTR = 0;
 		return;
 	}
+	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
@@ -2513,6 +2515,13 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram);	// The setting of this register is U/UV channel address.
 	vi->TOP_HADDR [0] = (ptr_hi32(vram) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 	vi->CFG [VI_CFG_INDEX].ATTR = attr;
+
+	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+	vi->CFG [VI_CFG_INDEX].COORD = 0;
+	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
+	vi->HORI [0] = 0;
+	vi->VERT [0] = 0;
 
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
 	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
@@ -2533,6 +2542,8 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		vi->CFG [VI_CFG_INDEX].ATTR = 0;
 		return;
 	}
+	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
+	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
@@ -2552,11 +2563,6 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] = ptr_lo32(vram1);	// The setting of this register is U/UV channel address.
 	vi->TOP_HADDR [1] = (ptr_hi32(vram1) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 
-	vi->CFG [VI_CFG_INDEX].ATTR = attr;
-
-	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
-	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
-
 	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
@@ -2567,6 +2573,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 	vi->HORI [0] = 0;
 	vi->VERT [0] = 0;
 	vi->FCOLOR [0] = 0xFFFFFFFF;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram0));
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] == ptr_lo32(vram1));
@@ -2586,6 +2593,8 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 		ui->CFG [UI_CFG_INDEX].ATTR = 0;
 		return;
 	}
+	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 		(ui_format << 8) | 		//верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
@@ -2597,7 +2606,17 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
+	ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+	ui->CFG [UI_CFG_INDEX].COORD = 0;
+	ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
+	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
+	ui->OVL_SIZE = ovl_ui_mbsize;
 	ui->CFG [UI_CFG_INDEX].ATTR = attr;
+
+	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+	ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
+	ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
+	ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
 	ui->CFG [UI_CFG_INDEX].FCOLOR = 0x0FFFF0000;
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
@@ -2671,75 +2690,6 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 		bld->CH [i].BLD_CH_OFFSET = 0;
 		ASSERT(bld->CH [i].BLD_CH_ISIZE == ovl_ui_mbsize);
 	}
-
-	int vich = 1;
-	for (vich = 1; vich <= VI_LASTIX(rtmixid); vich ++)
-	{
-		DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
-		if (vi != NULL)
-		{
-			const uint32_t attr = 0;	// disabled
-
-			vi->CFG [VI_CFG_INDEX].ATTR = attr;
-			vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-			vi->CFG [VI_CFG_INDEX].COORD = 0;
-			vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
-			vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
-			vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
-			vi->OVL_SIZE [0] = ovl_ui_mbsize;
-			vi->OVL_SIZE [1] = ovl_ui_mbsize;
-			vi->HORI [0] = 0;
-			vi->VERT [0] = 0;
-			vi->FCOLOR [0] = 0xFFFF0000;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
-
-			ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
-			ASSERT(vi->CFG [VI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-			ASSERT(vi->CFG [VI_CFG_INDEX].COORD == 0);
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [0] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [1] == uipitch);	// PLANE 0 - The setting of this register is U/UV channel.
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [2] == uipitch);	// PLANE 0 - The setting of this register is V channel.
-			ASSERT(vi->OVL_SIZE [0] == ovl_ui_mbsize);
-			ASSERT(vi->HORI [0] == 0);
-			ASSERT(vi->VERT [0] == 0);
-			ASSERT(vi->FCOLOR [0] == 0xFFFF0000);	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
-		}
-	}
-
-	int uich = 1;
-	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
-	{
-		//DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-		DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
-		if (ui != NULL)
-		{
-			const uint32_t attr = 0;	// disabled
-
-			ui->CFG [UI_CFG_INDEX].ATTR = attr;
-			ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-			ui->CFG [UI_CFG_INDEX].COORD = 0;
-			ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-			ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
-			ui->OVL_SIZE = ovl_ui_mbsize;
-
-			ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
-			ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-			ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
-			ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
-		}
-	}
-
-	/* Не все блоки могут быть в t113-s3 */
-//	write32(DE_BASE + T113_DE_MUX_VSU, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU1, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU2, 0);
-//	write32(DE_BASE + T113_DE_MUX_GSU3, 0);
-//	write32(DE_BASE + T113_DE_MUX_FCE, 0);
-//	write32(DE_BASE + T113_DE_MUX_BWS, 0);
-//	write32(DE_BASE + T113_DE_MUX_LTI, 0);
-//	write32(DE_BASE + T113_DE_MUX_PEAK, 0);
-//	write32(DE_BASE + T113_DE_MUX_ASE, 0);
-//	write32(DE_BASE + T113_DE_MUX_FCC, 0);
-//	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 }
 
 // LVDS: mstep1, HV: step1: Select HV interface type
@@ -7066,7 +7016,7 @@ hardware_ltdc_deinitialize(void)
 
 #else /* WITHLTDCHWVBLANKIRQ */
 
-void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_tvout_set2(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
 	const int rtmixid = RTMIXIDTV;
@@ -7076,13 +7026,13 @@ void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN fr
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address_vi2(rtmixid, layer0, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-	//t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
+	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
 
 	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
 
 	bld->BLD_EN_COLOR_CTL =
 		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-		//((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
+		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 		0;
 
 	hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
