@@ -2709,7 +2709,8 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
-
+// T113: use video0 pll
+// T507: use video1 pll
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
 #if defined (TCONLCD_PTR)
@@ -2951,7 +2952,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #endif /* defined (TCONLCD_PTR) */
 }
 
-
+// T113: use video0 pll
 static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
@@ -2972,7 +2973,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 //    		0x00 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
 //    		0x01 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_LCD1
 //			0;
-    if (needfreq != 0)
     {
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
@@ -2991,12 +2991,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
 		PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
 		TCONTV_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
-    		0;
-    }
-    else
-    {
-    	TCONTV_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
     }
@@ -3062,7 +3056,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 		0x02 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCONTV_PTR
 		0x03 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV1
 		0;
-    if (needfreq != 0)
+
     {
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
@@ -3084,12 +3078,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
     }
-    else
-    {
-    	TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
-    		0;
-    }
+
     TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
 
@@ -5616,6 +5605,7 @@ static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vd
 }
 
 // 216 МГц тактирования на TVE
+// T113: use video1 pll
 static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 216000000;
