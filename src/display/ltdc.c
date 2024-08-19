@@ -3134,7 +3134,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
 	// TODO: move to sane pll as t113_tve_CCU_configuration - pll_video1
 	//const uint_fast32_t needfreq = display_getdotclock(vdmode);
-	TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);                        //assert reset TCON_TV
 
 	{
 		unsigned divider;
@@ -3152,6 +3151,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 	}
 
 	TCONTV_BGR_REG |= (UINT32_C(1) << 0);                               //gate pass TCON_TV
+	TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);                        //assert reset TCON_TV
 	TCONTV_BGR_REG |= (UINT32_C(1) << 16);                         //de-assert reset TCON_TV
 
 	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
@@ -5610,24 +5610,24 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 216000000;
 	{
-		const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO1(4x) = 24*N/M = 24*72/2 = 864 MHz
+		const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
 		uint32_t v = CCU->PLL_VIDEO1_CTRL_REG;
 		//v = 0;
 		v &= ~ (0xFF<<8);
-		v |= (1<<30) | ((N-1)<<8);
+		v |= (UINT32_C(1) << 30) | ((N-1) << 8);
 
-		CCU->PLL_VIDEO1_CTRL_REG=v;
+		CCU->PLL_VIDEO1_CTRL_REG = v;
 
-		CCU->PLL_VIDEO1_CTRL_REG|=(1<<29);          //Lock enable
+		CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
 
-		while(!(CCU->PLL_VIDEO1_CTRL_REG&(1<<28)))	 //Wait pll stable
+		while(!(CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))	 //Wait pll stable
 			;
 		local_delay_ms(20);
 
-		CCU->PLL_VIDEO1_CTRL_REG&=~(1<<29);         //Lock disable
+		CCU->PLL_VIDEO1_CTRL_REG &=~(UINT32_C(1) << 29);         //Lock disable
 		CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
 
-		//PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
 		PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
 	}
 

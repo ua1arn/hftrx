@@ -4327,7 +4327,7 @@ uint_fast32_t allwnrt113_get_audio_codec_adc_freq(void)
 		return allwnrt113_get_audio0pll1x_freq() / pgdiv;
 	case 0x01:	/* 10: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
-	case 0x02: /* 11: PLL_AUDIO1(DIV5) */
+	case 0x02: 	/* 10: PLL_AUDIO1(DIV5) */
 		return allwnrt113_get_audio1pll_div5_freq() / pgdiv;
 	}
 }
@@ -4344,9 +4344,9 @@ uint_fast32_t allwnrt113_get_g2d_freq(void)
 		return allwnrt113_get_peripll2x_freq() / M;
 	case 0x01:	/* 001: PLL_VIDEO0(4X) */
 		return allwnrt113_get_video0pllx4_freq() / M;
-	case 0x02:	/* 001: PLL_VIDEO1(4X) */
+	case 0x02:	/* 010: PLL_VIDEO1(4X) */
 		return allwnrt113_get_video1pllx4_freq() / M;
-	case 0x03: /* 011: PLL_AUDIO1(DIV2) */
+	case 0x03: 	/* 011: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_audio1pll_div2_freq() / M;
 	}
 }
