@@ -3002,10 +3002,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 }
 
 
-static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32_t needfreq)
+static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 {
-	PRINTF("t113_tcontv_CCU_configuration start, needfreq=%u\n", (unsigned) needfreq);
-
 #if defined (TCONTV_PTR)
 
 #if CPUSTYLE_A64
@@ -3194,53 +3192,30 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode,uint_fast32
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	/* Configure TCONTV clock (TCONTV_CLK_REG register) */
-	//    CLK_SRC_SEL
-	//    Clock Source Select
-	//    000: PLL_VIDEO0(1X)
-	//    001: PLL_VIDEO0(4X)
-	//    010: PLL_VIDEO1(1X)
-	//    011: PLL_VIDEO1(4X)
-	//    100: PLL_PERI(2X)
-	//    101: PLL_AUDIO1(DIV2)
+	// TODO: movre to sane pll as TVE_Init
+	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
+	//const uint_fast32_t needfreq = display_getdotclock(vdmode);
+	CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
 
-	unsigned divider;
-	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-	ASSERT(divider < 16);
-    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
-		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
-	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
-    local_delay_us(10);
+	{
+		unsigned divider;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+		PRINTF("hardware_tcontv_initialize: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
+		ASSERT(divider < 16);
+	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+			(prei << 8) |	// FACTOR_N 0..3: 1..8
+			((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+			0;
+	    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
+	    local_delay_us(10);
 
-//	TCONTV_CCU_CLK_REG=(UINT32_C(1) << 31)|(1<<24)|(2<<8)|(11-1);  //clock on, PLL_VIDEO0(4x), N=4, M=11 => 1188/4/11 = 27 MHz
-//	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
-//    local_delay_us(10);
+	}
 
-    CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
+	CCU->TCONTV_BGR_REG |= 1;                               //gate pass TCON_TV
+	CCU->TCONTV_BGR_REG |= (1<<16);                         //de-assert reset TCON_TV
 
-    {
-		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1) << 0);      //selected 0 - CCU clock, 1 - TVE clock
-		DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCONTV_PTR
-
-		PRINTF("Before 1: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
-//    	 uint32_t v = DISPLAY_TOP-> DE_PORT_PERH_SEL;
-//    	 v &= UINT32_C(0xFFFFFFF0);
-//    	 v |= UINT32_C(0x00000002);
-//    	 DISPLAY_TOP->DE_PORT_PERH_SEL = v;       //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-		PRINTF("Afrer 1: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
-
-    }
-
-
-    CCU->TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);	// TCONTV_RST
-    CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV_RST
-
-    local_delay_us(10);
+	PRINTF("hardware_tcontv_initialize: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 
 #else
 
@@ -5759,35 +5734,6 @@ static void TVE_DAC_Init(unsigned int mode, const videomode_t * vdmode)
 	// else                         PRINTF("DAC NOT connected!\n");
 }
 
-static void TCONTV_Init(unsigned int mode, const videomode_t * vdmode)
-{
-	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
-	//const uint_fast32_t needfreq = display_getdotclock(vdmode);
-	CCU->TCONTV_BGR_REG&=~(1<<16);                        //assert reset TCON_TV
-
-	{
-		unsigned divider;
-		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-		PRINTF("TCONTV_Init: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
-		ASSERT(divider < 16);
-	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-			(prei << 8) |	// FACTOR_N 0..3: 1..8
-			((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-			0;
-	    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
-	    local_delay_us(10);
-
-	}
-
-	CCU->TCONTV_BGR_REG |= 1;                               //gate pass TCON_TV
-	CCU->TCONTV_BGR_REG |= (1<<16);                         //de-assert reset TCON_TV
-
-	t113_set_TV_sequence_parameters(vdmode);
-
-	PRINTF("TCONTV_Init: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
-}
-
 // 216 МГц тактирования на TVE
 static void TVE_Init(unsigned int mode, const videomode_t * vdmode)
 {
@@ -5933,11 +5879,11 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 ///
 #endif /* defined (TCONTV_PTR) */
 
-static void t113_tvout2_initsteps(const videomode_t * vdmode)
+static void t113_tvout_initsteps(const videomode_t * vdmode)
 {
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
-	t113_tcontv_CCU_configuration(vdmode, display_getdotclock(vdmode));
+	t113_tcontv_CCU_configuration(vdmode);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	//t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -6004,7 +5950,6 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz, lanes=%u, depth=%u, pixelclock=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000, nlanes, pixdepth, display_getdotclock(vdmode) / 1000 / 1000);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider, dsifreq);
-	t113_tcontv_CCU_configuration(vdmode, prei, divider, 0);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -6317,7 +6262,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
 #endif
 
-    //if (1)
     {
     	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
 		const int rtmixid = 1;
@@ -6344,10 +6288,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
     }
 
-#if 1//defined (TCONTV_PTR)
-    //if (RTMIXID == 2)
+#if 1
     {
-    	const int rtmixid = 2;//RTMIXIDTV;	// TV
+    	const int rtmixid = 2;
        // Enable RT-Mixer 1
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
@@ -6365,13 +6308,12 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
     }
-#endif /* defined (TCONTV_PTR) */
+#endif
 
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
 }
-
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
@@ -6382,6 +6324,11 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */
+}
+
+static void hardware_tcontv_initialize(const videomode_t * vdmode)
+{
+	t113_tvout_initsteps(vdmode);
 }
 
 static void awxx_deoutmapping(unsigned disp)
@@ -7104,6 +7051,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 //		ASSERT(p == DE_MIXER1_VSU0_BASE);
 //	}
 	{
+#if defined (TCONTV_PTR)
 	#if 1
 		const videomode_t * const vdmode_CRT = & vdmode_PAL0;
 		const unsigned mode = DISP_TV_MOD_PAL;
@@ -7111,13 +7059,20 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
 		const unsigned mode = DISP_TV_MOD_NTSC;
 	#endif
+#endif
+
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
 		hardware_tcon_initialize(vdmode);
-		TCONTV_Init(mode, vdmode_CRT);
+#if defined (TCONTV_PTR)
+		hardware_tcontv_initialize(vdmode_CRT);
+#endif
+
+#if defined (TCONTV_PTR)
 		TVE_Init(mode, vdmode_CRT);
 		TVE_DAC_Init(mode, vdmode_CRT);
+#endif
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -7136,9 +7091,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #if defined (TCONTV_PTR)
 		{
-			const int rtmixid = RTMIXIDTV; //RTMIXIDTV;
-			//const unsigned disp = rtmixid - 1;
-
+			const int rtmixid = RTMIXIDTV;
 
 			{
 				// Undocumented registers
@@ -7187,7 +7140,7 @@ hardware_ltdc_deinitialize(void)
 void hardware_ltdc_tvout_set4(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
 {
 #if defined (TCONTV_PTR)
-	const int rtmixid = RTMIXIDTV; //RTMIXIDTV;
+	const int rtmixid = RTMIXIDTV;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
