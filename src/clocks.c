@@ -4934,9 +4934,9 @@ void allwnrt113_pll_initialize(void)
 	set_dma();
 
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
-	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-	allwnrt113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+//	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+//	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+//	allwnrt113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
