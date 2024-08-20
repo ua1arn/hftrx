@@ -4910,10 +4910,10 @@ uint_fast32_t allwnrt113_get_dsp_freq(void)
 		/* 010: CLK16M_RC */
 		return allwnrt113_get_16M_freq() / M;
 	case 0x03:
-		/* 010: PLL_PERI(2X) */
+		/* 011: PLL_PERI(2X) */
 		return allwnrt113_get_peripll2x_freq() / M;
 	case 0x04:
-		/*110: PLL_AUDIO1(DIV2) */
+		/* 100: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_audio1pll_div2_freq() / M;
 	}
 }
