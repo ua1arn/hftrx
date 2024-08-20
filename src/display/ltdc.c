@@ -5606,22 +5606,28 @@ static void t113_tcon_tcontv_PLL_configuration(void)
 #if CPUSTYLE_A64
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
-	const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
-	uint32_t v = CCU->PLL_VIDEO1_CTRL_REG;
-	//v = 0;
-	v &= ~ (0xFF<<8);
-	v |= (UINT32_C(1) << 30) | ((N-1) << 8);
 
-	CCU->PLL_VIDEO0_CTRL_REG = v;
+	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
+	const uint_fast32_t M = 4;
+
+	CCU->PLL_VIDEO0_CTRL_REG =
+		1 * (UINT32_C(1) << 31) |	// PLL_EN
+		1 * (UINT32_C(1) << 30) |	// PLL_LDO_EN
+		1 * (UINT32_C(1) << 27) |	// PLL_OUTPUT_GATE
+		(N - 1) * (UINT32_C(1) << 8) |
+		(M - 1) * (UINT32_C(1) << 0) |
+		0;
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
 
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
+	PRINTF("New 2 CCU->PLL_VIDEO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_VIDEO0_CTRL_REG);
 
 	while(!(CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))	 //Wait pll stable
 		;
 	local_delay_ms(20);
 
 	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
+
 
 	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
 	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
@@ -5639,7 +5645,6 @@ static void t113_tcon_tcontv_PLL_configuration(void)
 
 
 // 216 МГц тактирования на TVE
-// T113: use video1 pll
 static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 216000000;
@@ -5658,7 +5663,7 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 
 	unsigned divider;
 	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
 	ASSERT(divider < 16);
 	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
 		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO1(4X)
@@ -5672,7 +5677,7 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
 	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
 
-	PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);
 #else
 #endif
