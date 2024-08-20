@@ -5625,6 +5625,14 @@ static void t113_tcon_tcontv_PLL_configuration(void)
 
 	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
 	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+
+    // DISPLAY_TOP access
+	//PRINTF("1 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+	//local_delay_us(10);
+	//PRINTF("2 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
+
 #else
 #endif
 }
@@ -6060,8 +6068,16 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	/* Configure DE clock (no FACTOR_N on this CPU) */
 	unsigned divider = 4;
 	ASSERT(divider >= 1 && divider <= 31);
+
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000: PLL_PERI(2X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(4X)
+	//	011: PLL_AUDIO1(DIV2)
+
 	CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
-		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: 000: PLL_PERI(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
@@ -6072,12 +6088,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
 
-    // DISPLAY_TOP access
-	//PRINTF("1 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
-	//local_delay_us(10);
-	//PRINTF("2 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
 	/* Global DE settings */
 //	PRINTF("DE_TOP before:\n");
