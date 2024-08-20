@@ -3130,13 +3130,10 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	// TODO: move to sane pll as t113_tve_CCU_configuration - pll_video1
-	//const uint_fast32_t needfreq = display_getdotclock(vdmode);
-
 	{
 		unsigned divider;
 		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-		PRINTF("t113_tcontv_CCU_configuration: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
+		//PRINTF("t113_tcontv_CCU_configuration: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
 		ASSERT(divider < 16);
 	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
 			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
@@ -3151,8 +3148,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 	TCONTV_BGR_REG |= (UINT32_C(1) << 0);                               //gate pass TCON_TV
 	TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);                        //assert reset TCON_TV
 	TCONTV_BGR_REG |= (UINT32_C(1) << 16);                         //de-assert reset TCON_TV
-
-	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
+	//PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 
 #else
 
@@ -5620,24 +5616,19 @@ static void t113_tcon_tcontv_PLL_configuration(void)
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
 
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
-	PRINTF("New 2 CCU->PLL_VIDEO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_VIDEO0_CTRL_REG);
 
-	while(!(CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))	 //Wait pll stable
+	while((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
 		;
-	local_delay_ms(20);
 
 	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
 
 
-	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
-	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+//	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+//	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
 
     // DISPLAY_TOP access
-	//PRINTF("1 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
-	//local_delay_us(10);
-	//PRINTF("2 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
 #else
 #endif
@@ -6087,7 +6078,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
-	PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
+	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
 
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
@@ -6274,7 +6265,7 @@ static void awxx_deoutmapping(unsigned disp)
 	/* перенаправление выхода DE */
 	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
 	DE_TOP->SEL_CFG=0x00000001;
-	PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
+	//PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -6992,13 +6983,13 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 				DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	//0 - CCU clock, 1 - TVE clock
 				DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
 
-				PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+				//PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
 				v&=0xFFFFFFF0;
 				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
 				v = 0;//0x00010;
 				//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
-				PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+				//PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 			}
 
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
