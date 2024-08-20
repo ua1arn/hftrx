@@ -2956,8 +2956,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
-#if defined (TCONTV_PTR)
-
 #if CPUSTYLE_A64
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
@@ -3159,7 +3157,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 #else
 
 #endif
-#endif /* defined (TCONTV_PTR) */
 }
 
 // HV step2 - Clock configuration
@@ -5604,32 +5601,43 @@ static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vd
 	// else                         PRINTF("DAC NOT connected!\n");
 }
 
+static void t113_tcon_tcontv_PLL_configuration(void)
+{
+#if CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
+	uint32_t v = CCU->PLL_VIDEO1_CTRL_REG;
+	//v = 0;
+	v &= ~ (0xFF<<8);
+	v |= (UINT32_C(1) << 30) | ((N-1) << 8);
+
+	CCU->PLL_VIDEO1_CTRL_REG = v;
+
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
+
+	while(!(CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))	 //Wait pll stable
+		;
+	local_delay_ms(20);
+
+	CCU->PLL_VIDEO1_CTRL_REG &=~(UINT32_C(1) << 29);         //Lock disable
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
+
+	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+#else
+#endif
+}
+
+
 // 216 МГц тактирования на TVE
 // T113: use video1 pll
 static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 216000000;
-	{
-		const uint_fast32_t N = 72;     //N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
-		uint32_t v = CCU->PLL_VIDEO1_CTRL_REG;
-		//v = 0;
-		v &= ~ (0xFF<<8);
-		v |= (UINT32_C(1) << 30) | ((N-1) << 8);
-
-		CCU->PLL_VIDEO1_CTRL_REG = v;
-
-		CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
-
-		while(!(CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))	 //Wait pll stable
-			;
-		local_delay_ms(20);
-
-		CCU->PLL_VIDEO1_CTRL_REG &=~(UINT32_C(1) << 29);         //Lock disable
-		CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31);
-
-		PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
-	}
+#if CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	//	CLK_SRC_SEL
 	//	Clock Source Select
@@ -5639,7 +5647,6 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 	//	011: PLL_VIDEO1(4X)
 	//	100: PLL_PERI(2X)
 	//	101: PLL_AUDIO1(DIV2)
-
 
 	unsigned divider;
 	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video1_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
@@ -5659,6 +5666,8 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 
 	PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);
+#else
+#endif
 
 }
 
@@ -6938,6 +6947,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
+		t113_tcon_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
 		hardware_tcon_initialize(vdmode);
 #if defined (TCONTV_PTR)
 		hardware_tcontv_initialize(mode, vdmode_CRT);
