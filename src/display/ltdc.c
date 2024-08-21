@@ -2725,10 +2725,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-//    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
-//    		0x00 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
-//    		0x01 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_LCD1
-//			0;
     if (needfreq != 0)
     {
     	// LVDS mode
@@ -2815,10 +2811,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
-		0x00 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
-		0x01 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_LCD1
-		0;
     if (needfreq != 0)
     {
     	// LVDS mode
@@ -2964,11 +2956,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-//    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
-//    		0x00 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
-//    		0x01 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_LCD1
-//			0;
     {
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
@@ -3047,11 +3034,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
     DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
-		0x02 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCONTV_PTR
-		0x03 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV1
-		0;
 
     {
     	// LVDS mode
@@ -6283,38 +6265,61 @@ static void awxx_deoutmapping(unsigned disp)
 //	DE_TOP->DE2TCON_MUX = SET_BITS(disp * 2, 2, DE_TOP->DE2TCON_MUX, targetix);
 
 	// Target codes (unconfirmed)
+	// de_top_set_de2tcon_mux
+	//
+	// Undocumented (2 bits)
 	enum
 	{
-		TG_TCONLCD0 = 0,
-		TG_TCONLCD1,
-		TG_TCONTV0,
-		TG_TCONTV1,
-		TG_HDMI,
+		TG_DE2TCONLCD0 = 0,
+		TG_DE2TCONLCD1,
+		TG_DE2TCONTV0,
+		TG_DE2TCONTV1,
+	};
+	// Documented (4 bits)
+	enum
+	{
+		TG_DE_PORT_PERH_TCONLCD0 = 0,
+		TG_DE_PORT_PERH_TCONLCD1,
+		TG_DE_PORT_PERH_TCONTV0,
+		TG_DE_PORT_PERH_TCONTV1,
 	};
 #if defined (TCONTV_PTR)
+	// Documented
+//    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
+//		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
+//		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
+//		0;
+	// Undocumented
 	DE_TOP->DE2TCON_MUX =
-		TG_TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-		TG_TCONLCD1 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output */
-		TG_TCONLCD0 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output */
-		TG_TCONTV0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+		TG_DE2TCONLCD0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+		TG_DE2TCONTV0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
 #else
+	// Documented
+//    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
+//		TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
+//		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
+//		0;
 	switch (disp)
 	{
 	case 0:
+		// Undocumented
 		DE_TOP->DE2TCON_MUX =
-			TG_TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-			TG_TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-			TG_TCONLCD1 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output */
-			TG_TCONLCD0 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output */
+			TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+			TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+			TG_DE2TCONLCD1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+			TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 			0;
 		break;
 	case 1:
+		// Undocumented
 		DE_TOP->DE2TCON_MUX =
-			TG_TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-			TG_TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-			TG_TCONLCD0 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output */
-			TG_TCONLCD1 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output */
+			TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+			TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+			TG_DE2TCONLCD0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+			TG_DE2TCONLCD1 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 			0;
 		break;
 	}
