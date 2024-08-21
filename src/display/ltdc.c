@@ -3648,9 +3648,6 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
-void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
-void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable);
-
 #if defined (TCONTV_PTR)
 
 
@@ -4539,11 +4536,11 @@ static void write32(uintptr_t addr, uint32_t value)
 #define HSUB 2
 #define VSUB 2
 
-#define DE2_VI_SCALER_UNIT_BASE 0x20000
-#define DE2_VI_SCALER_UNIT_SIZE 0x20000
-
-#define DE3_VI_SCALER_UNIT_BASE 0x20000
-#define DE3_VI_SCALER_UNIT_SIZE 0x08000
+//#define DE2_VI_SCALER_UNIT_BASE 0x20000
+//#define DE2_VI_SCALER_UNIT_SIZE 0x20000
+//
+//#define DE3_VI_SCALER_UNIT_BASE 0x20000
+//#define DE3_VI_SCALER_UNIT_SIZE 0x08000
 
 #define BIT(x) (1U<<(x))
 
@@ -5491,7 +5488,7 @@ static void sun8i_vi_scaler_set_coeff(int rtmixid, uint32_t base, uint32_t hstep
 	}
 }
 
-void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint32_t dst_h, uint32_t hscale, uint32_t vscale, uint32_t hphase, uint32_t vphase)
+static void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, uint32_t dst_w, uint32_t dst_h, uint32_t hscale, uint32_t vscale, uint32_t hphase, uint32_t vphase)
 {
 	uint32_t chphase, cvphase;
 	uint32_t insize, outsize;
@@ -5564,7 +5561,7 @@ void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, uint32_t
 				  hscale, vscale);
 }
 
-void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
+static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 {
 	uint32_t val, base;
 
@@ -5601,19 +5598,16 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
 
 static void t113_tve_DAC_configuration(const videomode_t * vdmode)
 {
+	const unsigned sel = 0;
 	const unsigned mode = vdmode->ntsc ? DISP_TV_MOD_NTSC : DISP_TV_MOD_PAL;
-	tve_low_init(0);
 
-	tve_low_dac_autocheck_disable(0);
-	// tve_low_dac_autocheck_enable(0);
-
-	tve_low_set_tv_mode(0, mode, 0);
-
-	tve_low_dac_enable(0);
-
-	tve_low_open(0);
-
-	tve_low_enhance(0,0); //0,1,2
+	tve_low_init(sel);
+	tve_low_dac_autocheck_disable(sel);
+	// tve_low_dac_autocheck_enable(sel);
+	tve_low_set_tv_mode(sel, mode, 0);
+	tve_low_dac_enable(sel);
+	tve_low_open(sel);
+	tve_low_enhance(sel, 0); //0,1,2
 
 	// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
 	// else                         PRINTF("DAC NOT connected!\n");
