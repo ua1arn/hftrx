@@ -947,7 +947,7 @@ void arm_hardware_mdma_initialize(void)
 		//	Clock Source Select
 		//	0: PLL_DE
 		//	1: PLL_PERI0(2X)
-		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(0x01) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
 			(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
 			0;
@@ -1000,9 +1000,8 @@ void arm_hardware_mdma_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
 	//local_delay_us(10);
 
-	// PLL_VIDEO1 may be used for LVDS synchronization
 	// User manual say about 250 MHz default.
-	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
+	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x1F) << 0)) |
 		0x00 * (UINT32_C(1) << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
 		(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
 		0;
