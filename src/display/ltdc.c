@@ -2543,8 +2543,10 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		vi->CFG [VI_CFG_INDEX].ATTR = 0;
 		return;
 	}
-	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
-	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
+//	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
+//	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
+	const uint32_t ovl_ui_mbsize = (((TVD_HEIGHT - 1) << 16) | (TVD_WIDTH - 1));
+	const uint32_t uipitch = TVD_WIDTH;
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
@@ -2557,7 +2559,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		0;
 
 	const uintptr_t vram0 = vram;
-	const uintptr_t vram1 = vram0 + (vdmode_CRT->height * vdmode_CRT->width);
+	const uintptr_t vram1 = vram0 + TVD_SIZE;//(vdmode_CRT->height * vdmode_CRT->width);
 
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram0);	// The setting of this register is U/UV channel address.
 	vi->TOP_HADDR [0] = (ptr_hi32(vram0) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
