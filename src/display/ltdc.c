@@ -2707,8 +2707,8 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
-// T113: use video0 pll
-// T507: use video1 pll
+// T113: PLL_VIDEO1
+// T507: PLL_VIDEO1
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
 #if defined (TCONLCD_PTR)
@@ -2908,12 +2908,12 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     if (needfreq != 0)
     {
     	prei = 0;
-    	divider = calcdivround2(allwnrt113_get_video0pllx4_freq(), needfreq);
+    	divider = calcdivround2(allwnrt113_get_video1pllx4_freq(), needfreq);
 		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
     	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-    		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+    		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
@@ -2924,7 +2924,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     	ASSERT(prei >= 0 && prei <= 3);
     	ASSERT(divider >= 1 && divider <= 16);
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-    		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
+    		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(1X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
@@ -5728,10 +5728,56 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 
 #endif
 
-static void t113_tcon_tcontv_PLL_configuration(void)
+// T113: PLL_VIDEO1
+// T507: PLL_VIDEO1
+static void t113_tcon_PLL_configuration(void)
 {
 #if CPUSTYLE_A64
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+
+	/* Lock enable */
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
+
+	/* Wait pll stable */
+	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
+		;
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+
+	/* Lock enable */
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
+
+	/* Wait pll stable */
+	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
+		;
+
+#else
+#endif
+}
+
+// T113: PLL_VIDEO0
+// T507: PLL_VIDEO0
+static void t113_tcontv_PLL_configuration(void)
+{
+#if CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+
+	/* Lock enable */
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);
+
+	/* Wait pll stable */
+	while (! (CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))
+		;
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
@@ -5748,7 +5794,7 @@ static void t113_tcon_tcontv_PLL_configuration(void)
 
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
 
-	while((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
+	while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
 		;
 
 	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
@@ -5760,6 +5806,11 @@ static void t113_tcon_tcontv_PLL_configuration(void)
     // DISPLAY_TOP access
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+
+#if defined (TCONTV_PTR)
+	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
+	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
+#endif /* defined (TCONTV_PTR) */
 
 #else
 #endif
@@ -5932,11 +5983,14 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
 	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
-	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	0: PLL_DE
+	//	1: PLL_PERI0(2X)
 	unsigned divider = 1;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
@@ -6267,7 +6321,19 @@ static void awxx_deoutmapping(unsigned disp)
 	/* перенаправление выхода DE */
 	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
 	DE_TOP->SEL_CFG=0x00000001;
+
 	//PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
+	{
+		// Undocumented registers
+
+		//PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+		uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
+		v&=0xFFFFFFF0;
+		v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
+		v = 0;//0x00010;
+		//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
+		//PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
+	}
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -6934,9 +7000,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
-		t113_tcon_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
+		t113_tcon_PLL_configuration();
 		hardware_tcon_initialize(vdmode);
 #if defined (TCONTV_PTR)
+		t113_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
 		hardware_tcontv_initialize(vdmode_CRT);
 #endif /* defined (TCONTV_PTR) */
 
@@ -6955,23 +7022,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		    }
 		#endif
 		}
+
 #if defined (TCONTV_PTR)
 		{
 			const int rtmixid = RTMIXIDTV;
-
-			{
-				// Undocumented registers
-				DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	//0 - CCU clock, 1 - TVE clock
-				DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
-
-				//PRINTF("Before: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
-				uint32_t v= DISPLAY_TOP->DE_PORT_PERH_SEL;
-				v&=0xFFFFFFF0;
-				v|=0x00000002;	        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
-				v = 0;//0x00010;
-				//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
-				//PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
-			}
 
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow

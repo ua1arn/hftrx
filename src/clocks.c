@@ -9538,8 +9538,8 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 #if WITHGPUHW
 	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG);
