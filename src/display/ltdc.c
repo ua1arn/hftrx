@@ -1855,7 +1855,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
-#define RTMIXID 2	/* 1 or 2 */
+#define RTMIXIDLCD 2	/* 1 or 2 */
 #if defined (TCONTV_PTR)
 #define RTMIXIDTV 1	/* 1 or 2 */
 #endif
@@ -5921,7 +5921,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	DE_TOP->AHB_RESET |= (UINT32_C(1) << 1);		// CORE1_AHB_RESET
 
 	{
-		const int rtmixid = RTMIXID;
+		const int rtmixid = RTMIXIDLCD;
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
 		{
@@ -5976,7 +5976,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
 
-	const unsigned disp = RTMIXID - 1;
+	const unsigned disp = RTMIXIDLCD - 1;
 
 	// CORE0..CORE3 bits valid
 
@@ -6024,7 +6024,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	}
 
 	{
-		const int rtmixid = RTMIXID;
+		const int rtmixid = RTMIXIDLCD;
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
@@ -7008,7 +7008,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 
 		hardware_de_initialize(vdmode);
-		awxx_deoutmapping(RTMIXID - 1);	// Какой RTMIX использовать для вывода на TCONLCD
+		awxx_deoutmapping(RTMIXIDLCD - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
 		t113_tcon_PLL_configuration();
 		hardware_tcon_initialize(vdmode);
@@ -7021,7 +7021,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		ltdc_tfcon_cfg(vdmode);
 
 		{
-			const int rtmixid = RTMIXID;
+			const int rtmixid = RTMIXIDLCD;
 			const unsigned disp = rtmixid - 1;
 		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
@@ -7089,7 +7089,7 @@ void hardware_ltdc_tvout_set2(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN fr
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
-	const int rtmixid = RTMIXID;
+	const int rtmixid = RTMIXIDLCD;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7116,7 +7116,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 /* set visible buffer start. Wait VSYNC. */
 void hardware_ltdc_main_set(uintptr_t p1)
 {
-	const int rtmixid = RTMIXID;
+	const int rtmixid = RTMIXIDLCD;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7136,7 +7136,7 @@ void hardware_ltdc_main_set(uintptr_t p1)
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
-	const int rtmixid = RTMIXID;
+	const int rtmixid = RTMIXIDLCD;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
