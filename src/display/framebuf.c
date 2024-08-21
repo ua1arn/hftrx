@@ -934,7 +934,7 @@ void arm_hardware_mdma_initialize(void)
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	{
 		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-		unsigned M = 2;	/* M = 1..32 */
+		unsigned M = 5;	/* M = 1..32 */
 		unsigned divider = 0;
 
 		CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
@@ -943,8 +943,12 @@ void arm_hardware_mdma_initialize(void)
 
 		// PLL_VIDEO1 may be used for LVDS synchronization
 		// User manual say about 250 MHz default.
+		//	CLK_SRC_SEL.
+		//	Clock Source Select
+		//	0: PLL_DE
+		//	1: PLL_PERI0(2X)
 		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-			0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
+			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
 			(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
