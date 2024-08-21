@@ -1327,8 +1327,8 @@
 		#define	TVENCODER_IX 0	/* 0 -TVE0 */
 		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
-		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
-		#define BOARD_TVEFREQ (allwnrt113_get_tve_freq())
+		#define	TVE_CCU_CLK_REG (CCU->TVE0_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define BOARD_TVEFREQ (allwnr_t507_get_tve0_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

@@ -2903,7 +2903,7 @@ uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
-uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
@@ -2914,7 +2914,7 @@ uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
@@ -3213,6 +3213,7 @@ uint_fast32_t allwnr_t507_get_mbus_freq(void)
 	}
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_de_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
@@ -3500,6 +3501,32 @@ uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV1_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t pgdiv = M * N;
+	// SCLK = Clock Source/M/N
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq() / pgdiv;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnr_t507_get_pll_video1_x1_freq() / pgdiv;
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	}
+}
+
+// T507
+uint_fast32_t allwnr_t507_get_tve0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TVE0_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
 	const uint_fast32_t pgdiv = M * N;

@@ -2906,7 +2906,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     	// LVDS
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
     		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
-    		(prei << 8) |	// FACTOR_N 0..3: 1..8
+    		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
         TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
@@ -2917,7 +2917,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     	ASSERT(divider >= 1 && divider <= 16);
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
     		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(1X)
-    		(prei << 8) |	// FACTOR_N 0..3: 1..8
+    		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
         TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
@@ -3104,8 +3104,8 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 		ASSERT(divider < 16);
 	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
 			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-			(prei << 8) |	// FACTOR_N 0..3: 1..8
-			((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+			prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+			divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 			0;
 	    TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
 	    local_delay_us(10);
@@ -5584,6 +5584,33 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 	const uint_fast32_t needfreq = 216000000;
 #if CPUSTYLE_A64
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	Clock Source Select
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
+
+
+	unsigned divider;
+	unsigned prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	ASSERT(divider < 16);
+	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
+
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE0_GATING & TVE_TOP
+	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16); 	//                 //assert reset for TVE0_RST & TVE_TOP_RST
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE0_RST & TVE_TOP_RST
+
+	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+	local_delay_us(10);
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	//	CLK_SRC_SEL
@@ -5600,9 +5627,9 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
 	ASSERT(divider < 16);
 	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO1(4X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
-		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
 	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
 
