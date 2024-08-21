@@ -10777,9 +10777,10 @@ void hightests(void)
 			{
 				#include "src/testdata/picture.h"
 			};
-			TP();
-			hardware_ltdc_tvout_set2(1*(uintptr_t) picture0, 0);
-			//LCD_SwitchAddress((uintptr_t) picture0, 0);
+			PACKEDTVBUFF_T * const fb = tvout_fb_draw();
+			memcpy(fb, picture0, sizeof picture0);
+			//memcpy(fb, picture0, datasize_dmabuffer1fb());
+			tvout_nextfb();
 			TP();
 			for (;0;)
 			{

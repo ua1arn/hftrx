@@ -2409,6 +2409,9 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 #define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
 #define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
 
+#define TV_VB_INT_EN  		(UINT32_C(1) << 30)	// Enable the Vb interrupt
+#define TV_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
+
 /* ожидаем начало кадра - используется если не по прерываниям*/
 static void hardware_ltdc_vsync(void)
 {
@@ -3554,9 +3557,24 @@ static void TCON_LCD_IRQHandler(void)
 	{
 		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
-		hardware_ltdc_vblank(TCONLCD_IX);	// Update framebuffer if needed
+		hardware_ltdc_vblank(0);	// Update framebuffer if needed
 	}
 
+}
+
+static void TCONTV_IRQHandler(void)
+{
+#if defined (TCONTV_PTR)
+	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
+	const uint_fast32_t reg = TCONTV_PTR->TV_GINT0_REG;
+
+	if (reg & LCD_VB_INT_FLAG)
+	{
+		TCONTV_PTR->TV_GINT0_REG = reg & ~ TV_VB_INT_FLAG;
+		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
+		hardware_ltdc_vblank(1);	// Update framebuffer if needed
+	}
+#endif /* defined (TCONTV_PTR) */
 }
 #endif /* WITHLTDCHWVBLANKIRQ */
 
@@ -3565,12 +3583,29 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
 	// enabling the irq after io settings
+#if defined (TCONLCD_PTR)
 #if WITHLTDCHWVBLANKIRQ
-	TCON_LCD0->LCD_GINT0_REG = LCD_VB_INT_EN;
+	TCONLCD_PTR->LCD_GINT0_REG = LCD_VB_INT_EN;
 	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
+#endif /* defined (TCONLCD_PTR) */
 }
+
+// Set and open interrupt function
+static void t113_tcontv_set_and_open_interrupt_function(const videomode_t * vdmode)
+{
+	(void) vdmode;
+	// enabling the irq after io settings
+#if defined (TCONTV_PTR)
+#if WITHLTDCHWVBLANKIRQ
+	TCONTV_PTR->TV_GINT0_REG = TV_VB_INT_EN;
+	arm_hardware_set_handler_overrealtime(TCONTV_IRQ, TCONTV_IRQHandler);
+	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
+#endif /* WITHLTDCHWVBLANKIRQ */
+#endif /* defined (TCONTV_PTR) */
+}
+
 
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
@@ -3579,6 +3614,11 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 #endif /* defined (TCONLCD_PTR) */
+}
+
+// Open module enable
+static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
+{
 #if defined (TCONTV_PTR)
 	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
@@ -6262,9 +6302,9 @@ static void hardware_tcontv_initialize(const videomode_t * vdmode)
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	//t113_set_and_open_interrupt_function(vdmode);
+	t113_tcontv_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
-	//t113_open_module_enable(vdmode);
+	t113_tcontv_open_module_enable(vdmode);
 
 	t113_tve_CCU_configuration(vdmode);
 	t113_tve_DAC_configuration(vdmode);

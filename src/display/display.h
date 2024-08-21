@@ -1048,7 +1048,7 @@ typedef uint8_t PACKEDTVBUFF_T;
 typedef uint_fast8_t TVBUFF_T;
 
 PACKEDTVBUFF_T * tvout_fb_draw(void);
-void colmain_nextfb(void);
+void tvout_nextfb(void);
 
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
