@@ -4851,6 +4851,29 @@ uint_fast32_t allwnrt113_get_tve_freq(void)
 	}
 }
 
+// T113
+uint_fast32_t allwnrt113_get_tvd_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TVD_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);	/* M=FACTOR_M+1 */
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / M;
+	case 0x01:
+		// 010: PLL_VIDEO0(1X)
+		return allwnrt113_get_video0_x1_freq() / M;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnrt113_get_video1_x1_freq() / M;
+	case 0x03:
+		// 011: PLL_PERI(1X)
+		return allwnrt113_get_peripll1x_freq() / M;
+	}
+}
+
 uint_fast32_t allwnrt113_get_dsi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DSI_CLK_REG;
