@@ -3045,7 +3045,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
-    //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
+    DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
     DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
@@ -3055,19 +3055,19 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
     {
     	// LVDS mode
-       	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+       	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
 		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnrt113_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
-		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
-		CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
-		while ((CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
+		CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
+		CCU->PLL_VIDEO0_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
+		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
+		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
+		while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
+		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
 
 		PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
     	TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
@@ -3082,21 +3082,8 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 	CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
 	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
 
-#if WITHLVDSHW
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-
-    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
-
-//    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-//    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-//
-//    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
-//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
-#endif /* WITHLVDSHW */
+//    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+//    local_delay_ms(10);
 
 
 #if WITHHDMITVHW
@@ -3644,7 +3631,6 @@ void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable);
 
 
 #define TVE_MODE
-#define is_composite 1
 
 /* +++++ */
 
@@ -6295,25 +6281,44 @@ static void awxx_deoutmapping(unsigned disp)
 //	DE_TOP->DE2TCON_MUX = SET_BITS(3 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
 
 //	DE_TOP->DE2TCON_MUX = SET_BITS(disp * 2, 2, DE_TOP->DE2TCON_MUX, targetix);
+
+	// Target codes (unconfirmed)
+	enum
+	{
+		TG_TCONLCD0 = 0,
+		TG_TCONLCD1,
+		TG_TCONTV0,
+		TG_TCONTV1,
+		TG_HDMI,
+	};
+#if defined (TCONTV_PTR)
+	DE_TOP->DE2TCON_MUX =
+		TG_TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+		TG_TCONLCD1 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output */
+		TG_TCONLCD0 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output */
+		TG_TCONTV0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+		0;
+#else
 	switch (disp)
 	{
 	case 0:
 		DE_TOP->DE2TCON_MUX =
-			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
-			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCONTV_PTR (?) */
-			0x01 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD1 */
-			0x00 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD0 */
+			TG_TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+			TG_TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+			TG_TCONLCD1 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output */
+			TG_TCONLCD0 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output */
 			0;
 		break;
 	case 1:
 		DE_TOP->DE2TCON_MUX =
-			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
-			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCONTV_PTR (?) */
-			0x00 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD0 */
-			0x01 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD1 */
+			TG_TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+			TG_TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+			TG_TCONLCD0 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output */
+			TG_TCONLCD1 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output */
 			0;
 		break;
 	}
+#endif
 	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -7016,11 +7021,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
-		#if CPUSTYLE_T507
-		    {
-		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
-		    }
-		#endif
 		}
 
 #if defined (TCONTV_PTR)
@@ -7030,16 +7030,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
-
-		#if is_composite
-			t113_vi_scaler_setup(rtmixid, vdmode_CRT);
-		#endif
 		#if CPUSTYLE_T507
 		    {
-		    	t113_vsu_setup(rtmixid, vdmode, vdmode);
+		    	t113_vsu_setup(rtmixid, vdmode_CRT, vdmode_CRT);
 		    }
+		#else
+			{
+				t113_vi_scaler_setup(rtmixid, vdmode_CRT);
+			}
 		#endif
-//			t113_tvout2_initsteps(vdmode_CRT);
+
 		}
 
 

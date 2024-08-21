@@ -5,6 +5,6 @@
 
 #regdef; TV_CLK_SRC_RGB_SRC; 0x0000; TCON_TV Clock Select and RGB Source Select Register
 #regdef; DE_PORT_PERH_SEL; 0x001C; DE Source Select TCON R Register
-#regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister
+#regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating Register
 
 #typeend;
