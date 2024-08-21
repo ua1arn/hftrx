@@ -665,7 +665,24 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
+		if (hasresample)
+		{
+			PRINTF("+%u,-%u", wbadded, wbdeleted);
+		}
+#endif /* WITHBUFFERSDEBUG */
+	}
+
+	void debugslow()
+	{
+#if WITHBUFFERSDEBUG
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		unsigned fin = fqin.getfreq();
+		unsigned fout = fqout.getfreq();
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, readycount, freecount, (unsigned) fin, (unsigned) fout);
 		if (hasresample)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
@@ -3451,91 +3468,6 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 #endif /* WITHINTEGRATEDDSP */
 
 
-#if WITHBUFFERSDEBUG
-
-void buffers_diagnostics(void)
-{
-#if WITHUSEUSBBT
-	btout44p1k.debug();
-	btout32k.debug();
-	btout16k.debug();
-	btout8k.debug();
-#endif
-#if WITHINTEGRATEDDSP
-#if 1
-	denoise16list.debug();
-	codec16rx.debug();
-	codec16tx.debug();
-	moni16.debug();
-	voice32tx.debug();
-	voice32rx.debug();
-#endif
-#if 0
-	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
-	uacout48.debug();
-#endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
-#if WITHRTS192
-	uacinrts192.debug();
-#endif
-#if WITHRTS96
-	uacinrts96.debug();
-#endif
-	uacin48.debug();
-#endif
-#endif
-	//message8.debug();
-
-	PRINTF("\n");
-#endif /* WITHINTEGRATEDDSP */
-}
-
-
-/* вызывается из обработчика таймерного прерывания */
-static void buffers_spool(void * ctx)
-{
-#if WITHUSEUSBBT
-	btout44p1k.spool10ms();
-	btout32k.spool10ms();
-	btout16k.spool10ms();
-	btout8k.spool10ms();
-#endif
-#if WITHINTEGRATEDDSP
-	// internal sources/targets
-	//denoise16list.spool10ms();
-	codec16rx.spool10ms();
-	codec16tx.spool10ms();
-	moni16.spool10ms();
-	voice32tx.spool10ms();
-	voice32rx.spool10ms();
-	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	uacout48.spool10ms();
-#endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-#if WITHRTS192
-	uacinrts192.spool10ms();
-#endif
-#if WITHRTS96
-	uacinrts96.spool10ms();
-#endif
-#endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-	uacin48.spool10ms();
-#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
-	//message8.spool10ms();
-#endif /* WITHINTEGRATEDDSP */
-}
-
-#else /* WITHBUFFERSDEBUG */
-
-void buffers_diagnostics(void)
-{
-}
-
-#endif /* WITHBUFFERSDEBUG */
-
 #if LCDMODE_LTDC && WITHLTDCHW
 
 // работа с видеобуферами
@@ -3545,7 +3477,7 @@ typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T) };	// stub for resampling support
 } ALIGNX_END colmain0fb_t;
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
@@ -3831,6 +3763,107 @@ void colmain_fb_list(uintptr_t * frames)
 }
 
 #endif /* LCDMODE_LTDC && WITHLTDCHW */
+
+#if WITHBUFFERSDEBUG
+
+void buffers_diagnostics(void)
+{
+#if WITHUSEUSBBT
+	btout44p1k.debug();
+	btout32k.debug();
+	btout16k.debug();
+	btout8k.debug();
+#endif
+#if WITHINTEGRATEDDSP
+#if 1
+	denoise16list.debug();
+	codec16rx.debug();
+	codec16tx.debug();
+	moni16.debug();
+	voice32tx.debug();
+	voice32rx.debug();
+#endif
+#if 1
+	// USB
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
+	uacout48.debug();
+#endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
+#if WITHRTS192
+	uacinrts192.debug();
+#endif
+#if WITHRTS96
+	uacinrts96.debug();
+#endif
+	uacin48.debug();
+#endif
+#endif
+	//message8.debug();
+
+#if LCDMODE_LTDC && WITHLTDCHW && 0
+	colmain0fblist.debugslow();
+#if defined (TCONTV_PTR)
+	colmain1fblist.debugslow();
+#endif /* defined (TCONTV_PTR) */
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
+
+	PRINTF("\n");
+#endif /* WITHINTEGRATEDDSP */
+}
+
+#if LCDMODE_LTDC && WITHLTDCHW
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
+
+/* вызывается из обработчика таймерного прерывания */
+static void buffers_spool(void * ctx)
+{
+#if WITHUSEUSBBT
+	btout44p1k.spool10ms();
+	btout32k.spool10ms();
+	btout16k.spool10ms();
+	btout8k.spool10ms();
+#endif
+#if WITHINTEGRATEDDSP
+	// internal sources/targets
+	//denoise16list.spool10ms();
+	codec16rx.spool10ms();
+	codec16tx.spool10ms();
+	moni16.spool10ms();
+	voice32tx.spool10ms();
+	voice32rx.spool10ms();
+	// USB
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
+	uacout48.spool10ms();
+#endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192.spool10ms();
+#endif
+#if WITHRTS96
+	uacinrts96.spool10ms();
+#endif
+#endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+	uacin48.spool10ms();
+#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
+#endif /* WITHINTEGRATEDDSP */
+	//message8.spool10ms();
+
+#if LCDMODE_LTDC && WITHLTDCHW
+	colmain0fblist.spool10ms();
+#if defined (TCONTV_PTR)
+	colmain1fblist.spool10ms();
+#endif /* defined (TCONTV_PTR) */
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
+}
+
+#else /* WITHBUFFERSDEBUG */
+
+void buffers_diagnostics(void)
+{
+}
+
+#endif /* WITHBUFFERSDEBUG */
 
 // инициализация системы буферов
 void buffers_initialize(void)
