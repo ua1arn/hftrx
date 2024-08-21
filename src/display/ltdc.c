@@ -5988,9 +5988,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	//	Clock Source Select
 	//	0: PLL_DE
 	//	1: PLL_PERI0(2X)
-	unsigned divider = 1;
+	unsigned divider = 4;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-		0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
