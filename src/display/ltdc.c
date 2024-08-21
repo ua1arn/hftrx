@@ -2952,9 +2952,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #endif /* defined (TCONLCD_PTR) */
 }
 
-// T113: use video0 pll
 static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 {
+#if defined (TCONTV_PTR)
 	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
 #if CPUSTYLE_A64
 
@@ -3145,14 +3145,15 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
 
 	}
 
-	TCONTV_BGR_REG |= (UINT32_C(1) << 0);                               //gate pass TCON_TV
-	TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);                        //assert reset TCON_TV
-	TCONTV_BGR_REG |= (UINT32_C(1) << 16);                         //de-assert reset TCON_TV
+	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 0);                               //gate pass TCON_TV
+	TCONTV_CCU_BGR_REG &= ~ (UINT32_C(1) << 16);                        //assert reset TCON_TV
+	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 16);                         //de-assert reset TCON_TV
 	//PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONTVFREQ=%u Hz\n", (unsigned) BOARD_TCONTVFREQ);
 
 #else
 
 #endif
+#endif /* defined (TCONTV_PTR) */
 }
 
 // HV step2 - Clock configuration
@@ -5597,43 +5598,6 @@ static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vd
 	// else                         PRINTF("DAC NOT connected!\n");
 }
 
-static void t113_tcon_tcontv_PLL_configuration(void)
-{
-#if CPUSTYLE_A64
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
-	const uint_fast32_t M = 4;
-
-	CCU->PLL_VIDEO0_CTRL_REG =
-		1 * (UINT32_C(1) << 31) |	// PLL_EN
-		1 * (UINT32_C(1) << 30) |	// PLL_LDO_EN
-		1 * (UINT32_C(1) << 27) |	// PLL_OUTPUT_GATE
-		(N - 1) * (UINT32_C(1) << 8) |
-		(M - 1) * (UINT32_C(1) << 0) |
-		0;
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
-
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
-
-	while((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
-		;
-
-	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
-
-
-//	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
-//	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
-
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
-
-#else
-#endif
-}
-
 
 // 216 МГц тактирования на TVE
 static void t113_tve_CCU_configuration(const videomode_t * vdmode)
@@ -5678,6 +5642,7 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 /* ----- */
 
 #endif /* defined (TCONTV_PTR) */
+
 
 #if 0
 
@@ -5753,15 +5718,42 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 
 #endif
 
-#if defined (TCONTV_PTR)
+static void t113_tcon_tcontv_PLL_configuration(void)
+{
+#if CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-///////////////
-///
+	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
+	const uint_fast32_t M = 4;
+
+	CCU->PLL_VIDEO0_CTRL_REG =
+		1 * (UINT32_C(1) << 31) |	// PLL_EN
+		1 * (UINT32_C(1) << 30) |	// PLL_LDO_EN
+		1 * (UINT32_C(1) << 27) |	// PLL_OUTPUT_GATE
+		(N - 1) * (UINT32_C(1) << 8) |
+		(M - 1) * (UINT32_C(1) << 0) |
+		0;
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
+
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
+
+	while((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
+		;
+
+	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
 
 
-///////////////////////////
-///
-#endif /* defined (TCONTV_PTR) */
+//	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
+//	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+
+#else
+#endif
+}
 
 static void t113_tvout_initsteps(const videomode_t * vdmode)
 {

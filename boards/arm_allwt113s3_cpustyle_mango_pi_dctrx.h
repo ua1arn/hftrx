@@ -1074,8 +1074,6 @@
 		/*arm_hardware_piod_altfn2(UINT32_C(1) << 21, GPIO_CFG_AF3);	*//* PD21 TWI2-SDA SDA */ \
 	} while (0)
 
-#endif /* WITHLTDCHW */
-
 	#if 1
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
@@ -1089,9 +1087,20 @@
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define BOARD_TCONTVFREQ (allwnrt113_get_tcontv_freq())
 	#endif
+
+	#if 0
+		#define	TVENCODER_IX 0	/* 0 -TVE0 */
+		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
+		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
+		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define BOARD_TVEFREQ (allwnrt113_get_tve_freq())
+	#endif
+
+#endif /* WITHLTDCHW */
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
