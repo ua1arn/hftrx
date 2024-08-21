@@ -7451,7 +7451,7 @@ stm32f4xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(get_videomode())), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 	// Настройка PLLSAI
@@ -7485,7 +7485,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(get_videomode())), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
@@ -7681,7 +7681,7 @@ stm32f7xx_pllsai_initialize(void)
 #if defined (RCC_PLLSAICFGR_PLLSAIR)
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(get_videomode())), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
@@ -7724,7 +7724,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(get_videomode())), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 }
@@ -7945,7 +7945,7 @@ stm32h7xx_pll_initialize(void)
 		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divisor - не требуется корректировань число
 		0;
 	//
-	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock(& vdmode0));
+	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock(get_videomode()));
 	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3_Msk | RCC_PLL3DIVR_R3_Msk)) |
 		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3_Msk) |
 		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3_Msk) |	// нужно для нормального переключения SPI clock USB clock
@@ -8078,7 +8078,7 @@ static void stm32h7xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(get_videomode())), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 

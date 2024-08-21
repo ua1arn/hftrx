@@ -1036,6 +1036,20 @@ void colmain_nextfb(void);	// переключиться на использов
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);	// получить индекс видеобуфера по его адресу
 void colmain_fb_list(uintptr_t * frames);	// получение массива планирующихся для работы framebuffers
 
+//-----------------------
+#define LCDMODE_TVOUT_PAGES	3	// Используются буферы: один для полготовки изоображения, один готовый к отображению, один текцщий отображаемый
+
+#define TVD_WIDTH  720
+#define TVD_HEIGHT 576
+
+#define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
+
+typedef uint8_t PACKEDTVBUFF_T;
+typedef uint_fast8_t TVBUFF_T;
+
+PACKEDTVBUFF_T * tvout_fb_draw(void);
+void colmain_nextfb(void);
+
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
 #else

@@ -29,8 +29,6 @@
 #include "gpio.h"
 #include "src/touch/touch.h"
 
-static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vdmode);
-
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
 #define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_MIPIDSI_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
@@ -2531,7 +2529,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 /* VI (VI0) */
 static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_fast8_t vi_format)
 {
-	const videomode_t * vdmode_CRT = & vdmode_PAL0;
+	const videomode_t * const vdmode_CRT = get_videomode_CRT();
 	DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
 
 	if (vi == NULL)
@@ -3638,11 +3636,6 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
 }
-
-#define TVD_WIDTH  720
-#define TVD_HEIGHT 576
-
-#define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
 
 void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w,uint32_t src_h,uint32_t dst_w,uint32_t dst_h,uint32_t hscale,uint32_t vscale,uint32_t hphase,uint32_t vphase);
 void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable);
@@ -5579,8 +5572,26 @@ void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 
 /* ********************************* */
 
-static void t113_tve_DAC_configuration(unsigned int mode, const videomode_t * vdmode)
+static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
 {
+	uint32_t src_w = TVD_WIDTH;
+	uint32_t src_h = TVD_HEIGHT;
+
+	uint32_t dst_w = vdmode->width;//LCD_PIXEL_WIDTH;
+	uint32_t dst_h = vdmode->height;//LCD_PIXEL_HEIGHT;
+
+	uint32_t hscale = (src_w << 16) / dst_w;
+	uint32_t vscale = (src_h << 16) / dst_h;
+
+	sun8i_vi_scaler_setup(rtmixid, src_w, src_h, dst_w, dst_h, hscale, vscale, 0, 0);
+	sun8i_vi_scaler_enable(rtmixid, 1);
+}
+
+/* ********************************* */
+
+static void t113_tve_DAC_configuration(const videomode_t * vdmode)
+{
+	const unsigned mode = vdmode->ntsc ? DISP_TV_MOD_NTSC : DISP_TV_MOD_PAL;
 	tve_low_init(0);
 
 	tve_low_dac_autocheck_disable(0);
@@ -5627,10 +5638,9 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 		0;
 	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
 
-	CCU->TVE_BGR_REG = 0;
-	//CCU->TVE_BGR_REG &= ~((1<<17)|(1<<16));                 //assert reset for TVE & TVE_TOP
-	CCU->TVE_BGR_REG |= (1<<1)| (1<<0);                           //gate pass for TVE & TVE_TOP
-	CCU->TVE_BGR_REG |= (1<<17)|(1<<16);                    //de-assert reset for TVE & TVE_TOP
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE & TVE_TOP
+	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);                 //assert reset for TVE & TVE_TOP
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE & TVE_TOP
 
 	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);
@@ -6184,7 +6194,7 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 }
 
 #if defined (TCONTV_PTR)
-static void hardware_tcontv_initialize(unsigned int mode, const videomode_t * vdmode)
+static void hardware_tcontv_initialize(const videomode_t * vdmode)
 {
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
@@ -6208,7 +6218,7 @@ static void hardware_tcontv_initialize(unsigned int mode, const videomode_t * vd
 	//t113_open_module_enable(vdmode);
 
 	t113_tve_CCU_configuration(vdmode);
-	t113_tve_DAC_configuration(mode, vdmode);
+	t113_tve_DAC_configuration(vdmode);
 }
 #endif /* defined (TCONTV_PTR) */
 
@@ -6881,21 +6891,6 @@ void de2_init(const uintptr_t * frames)
 
 #endif /* CPUSTYLE_A64 */
 
-static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
-{
-	uint32_t src_w=TVD_WIDTH;
-	uint32_t src_h=TVD_HEIGHT;
-
-	uint32_t dst_w=vdmode->width;//LCD_PIXEL_WIDTH;
-	uint32_t dst_h=vdmode->height;//LCD_PIXEL_HEIGHT;
-
-	uint32_t hscale=(src_w<<16)/dst_w;
-	uint32_t vscale=(src_h<<16)/dst_h;
-
-	sun8i_vi_scaler_setup(rtmixid, src_w,src_h,dst_w,dst_h,hscale,vscale,0,0);
-	sun8i_vi_scaler_enable(rtmixid, 1);
-}
-
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
@@ -6933,13 +6928,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 //	}
 	{
 #if defined (TCONTV_PTR)
-	#if 1
-		const videomode_t * const vdmode_CRT = & vdmode_PAL0;
-		const unsigned mode = DISP_TV_MOD_PAL;
-	#else
-		const videomode_t * const vdmode_CRT = & vdmode_NTSC0;
-		const unsigned mode = DISP_TV_MOD_NTSC;
-	#endif
+	const videomode_t * const vdmode_CRT = get_videomode_CRT();
 #endif
 
 		hardware_de_initialize(vdmode);
@@ -6948,7 +6937,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		t113_tcon_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
 		hardware_tcon_initialize(vdmode);
 #if defined (TCONTV_PTR)
-		hardware_tcontv_initialize(mode, vdmode_CRT);
+		hardware_tcontv_initialize(vdmode_CRT);
 #endif /* defined (TCONTV_PTR) */
 
 		// Set DE MODE if need, mapping GPIO pins
@@ -7110,7 +7099,7 @@ void hardware_ltdc_tvout_set_no_vsync(uintptr_t p1)
 	if (bld == NULL)
 		return;
 
-	t113_de_set_address_vi(rtmixid, p1, 1);
+	t113_de_set_address_vi2(rtmixid, p1, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =

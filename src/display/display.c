@@ -1461,7 +1461,7 @@ void colpip_copy_to_draw(
 	/**
 	  * @brief  RK043FN48H Size
 	  */
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 480,				/* LCD PIXEL WIDTH            */
 	.height = 272,			/* LCD PIXEL HEIGHT           */
@@ -1493,7 +1493,7 @@ const videomode_t vdmode0 =
 #elif LCDMODE_AT070TN90
 
 	/* AT070TN90 panel (800*480) - 7" display HV mode */
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 800,			/* LCD PIXEL WIDTH            */
 	.height = 480,			/* LCD PIXEL HEIGHT           */
@@ -1531,7 +1531,7 @@ const videomode_t vdmode0 =
 
 /* AT070TNA2 panel (1024*600) - 7" display HV mode */
 // HX8282-A01.pdf, page 38
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 1024,			/* LCD PIXEL WIDTH            */
 	.height = 600,			/* LCD PIXEL HEIGHT           */
@@ -1590,7 +1590,7 @@ const videomode_t vdmode0 =
 	//	pinfo.lcdc.border_clr = 0;
 	//	pinfo.lcdc.underflow_clr = 0xff;
 	//	pinfo.lcdc.hsync_skew = 0;
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 1280,			/* LCD PIXEL WIDTH            */
 	.height = 720,			/* LCD PIXEL HEIGHT           */
@@ -1627,7 +1627,7 @@ const videomode_t vdmode0 =
 #elif LCDMODE_LQ123K3LG01
 
 /* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 1280,			/* LCD PIXEL WIDTH            */
 	.height = 480,			/* LCD PIXEL HEIGHT           */
@@ -1669,7 +1669,7 @@ const videomode_t vdmode0 =
 // horizontal period 1114 / 1344 / 1400
 // vertical period 778 / 806 / 845
 // Synchronization method should be DE mode
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 1024,			/* LCD PIXEL WIDTH            */
 	.height = 768,			/* LCD PIXEL HEIGHT           */
@@ -1699,7 +1699,7 @@ const videomode_t vdmode0 =
 
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 320 * 3,				/* LCD PIXEL WIDTH            */
 	.height = 240,			/* LCD PIXEL HEIGHT           */
@@ -1725,7 +1725,7 @@ const videomode_t vdmode0 =
 
 #elif LCDMODE_ILI9341
 	// SF-TC240T-9370-T (320*240)
-static const const videomode_t vdmode0 =
+static static const const videomode_t vdmode0 =
 {
 
 	.width = 240,				/* LCD PIXEL WIDTH            */
@@ -1757,7 +1757,7 @@ static const const videomode_t vdmode0 =
 	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
 	// https://stash.phytec.com/projects/TIRTOS/repos/vps-phytec/raw/src/boards/src/bsp_boardPriv.h?at=e8b92520f41e6523301d120dae15db975ad6d0da
 	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 1280,			/* LCD PIXEL HEIGHT           */
@@ -1794,7 +1794,7 @@ const videomode_t vdmode0 =
 	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
 	// https://stash.phytec.com/projects/TIRTOS/repos/vps-phytec/raw/src/boards/src/bsp_boardPriv.h?at=e8b92520f41e6523301d120dae15db975ad6d0da
 	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
-const videomode_t vdmode0 =
+static const videomode_t vdmode0 =
 {
 	.width = 800,			/* LCD PIXEL WIDTH            */
 	.height = 1280,			/* LCD PIXEL HEIGHT           */
@@ -1831,7 +1831,7 @@ const videomode_t vdmode0 =
 
 /* NTSC TV out parameters */
 /* Aspect ratio 1.5 */
-const videomode_t vdmode_NTSC0 =
+static const videomode_t vdmode_NTSC0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 480,			/* LCD PIXEL HEIGHT           */
@@ -1848,12 +1848,13 @@ const videomode_t vdmode_NTSC0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
+	.ntsc = 1,
 	.fps = 60	/* frames per second */
 };
 
 /* PAL TV out parameters */
 /* Aspect ratio 1.25 */
-const videomode_t vdmode_PAL0 =
+static const videomode_t vdmode_PAL0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 576,			/* LCD PIXEL HEIGHT           */
@@ -1870,8 +1871,19 @@ const videomode_t vdmode_PAL0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
+	.ntsc = 0,
 	.fps = 60	/* frames per second */
 };
+
+const videomode_t * get_videomode(void)
+{
+	return & vdmode0;
+}
+
+const videomode_t * get_videomode_CRT(void)
+{
+	return & vdmode_PAL0;
+}
 
 #endif /* WITHLTDCHW */
 /*
@@ -1898,7 +1910,7 @@ void display_hardware_initialize(void)
 
 #if WITHLTDCHW
 	{
-		hardware_ltdc_initialize(& vdmode0);
+		hardware_ltdc_initialize(get_videomode());
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 
@@ -1907,7 +1919,7 @@ void display_hardware_initialize(void)
 #endif /* WITHLTDCHW */
 
 #if LCDMODETX_TC358778XBG
-	const videomode_t * const vdmode = & vdmode0;
+	const videomode_t * const vdmode = get_videomode();
 	tc358768_initialize(vdmode);
 	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
@@ -1931,7 +1943,7 @@ void display_hardware_initialize(void)
 
 void display_hdmi_initialize(void)
 {
-	const videomode_t * const vdmode = & vdmode0;
+	const videomode_t * const vdmode = get_videomode();
 //#if LCDMODETX_TC358778XBG
 //	tc358768_initialize(vdmode);
 //	panel_initialize(vdmode);
@@ -1946,12 +1958,12 @@ void display_wakeup(void)
 {
 #if WITHLTDCHW
 	{
-		hardware_ltdc_initialize(& vdmode0);
+		hardware_ltdc_initialize(get_videomode());
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
-	const videomode_t * const vdmode = & vdmode0;
+	const videomode_t * const vdmode = get_videomode();
   tc358768_wakeup(vdmode);
     panel_wakeup();
 #endif /* LCDMODETX_TC358778XBG */

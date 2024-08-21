@@ -818,12 +818,17 @@ typedef struct videomode_tag
 	unsigned deneg; 		/* negative de polarity: (normal: de is 0 while sync) */
 	unsigned lq43reset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 	unsigned fps;	/* frames per second */
+	unsigned ntsc;
 
 } videomode_t;
 
-extern const videomode_t vdmode0;
-extern const videomode_t vdmode_NTSC0;	/* NTSC TV out parameters */
-extern const videomode_t vdmode_PAL0;	/* PAL TV out parameters */
+//extern const videomode_t vdmode0;
+//extern const videomode_t vdmode_NTSC0;	/* NTSC TV out parameters */
+//extern const videomode_t vdmode_PAL0;	/* PAL TV out parameters */
+
+const videomode_t * get_videomode(void);
+const videomode_t * get_videomode_CRT(void);
+
 void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
 

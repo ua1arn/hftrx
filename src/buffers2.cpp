@@ -3609,9 +3609,9 @@ typedef ALIGNX_BEGIN struct colmain1fb
 
 typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
 
-static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_MAIN_PAGES];
+static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_TVOUT_PAGES];
 typedef blists<colmain1fbbuf_t, 0, 0> colmain1fblist_t;
-static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb0", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
+static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
 
 uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 0 */
 {
@@ -3662,9 +3662,6 @@ int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffe
 static uintptr_t fb0;
 static uintptr_t lastset0fb;
 
-static uintptr_t fb1;
-static uintptr_t lastset1fb;
-
 PACKEDCOLORPIP_T *
 colmain_fb_draw(void)
 {
@@ -3691,6 +3688,37 @@ void colmain_nextfb(void)
 	openvg_next(colmain_getindexbyaddr(fb0));
 #endif /* WITHOPENVG */
 }
+
+#if defined (TCONTV_PTR)
+
+static uintptr_t fb1;
+static uintptr_t lastset1fb;
+
+PACKEDTVBUFF_T *
+tvout_fb_draw(void)
+{
+	if (fb1 == 0)
+	{
+		fb1 = allocate_dmabuffercolmain1fb();
+	}
+	return (PACKEDTVBUFF_T *) fb1;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void tvout_nextfb(void)
+{
+	if (fb1 != 0)
+	{
+	//	char s [32];
+	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb1);
+	//	display_at(0, 0, s);
+		dcache_clean_invalidate(fb1, cachesize_dmabuffercolmain1fb());
+		save_dmabuffercolmain1fb(fb1);
+	}
+	fb1 = allocate_dmabuffercolmain1fb();
+}
+
+#endif	/* defined (TCONTV_PTR) */
 
 // Update framebuffer if needed
 void hardware_ltdc_vblank(unsigned ix)
@@ -3753,6 +3781,27 @@ void colmain_nextfb(void)
 	openvg_next(colmain_getindexbyaddr((uintptr_t) colmain_fb_draw()));
 #endif /* WITHOPENVG */
 }
+
+#if defined (TCONTV_PTR)
+
+static uint_fast8_t drawtvframe;
+
+PACKEDTVBUFF_T *
+tvout_fb_draw(void)
+{
+	return (PACKEDTVBUFF_T *) colmain1fbbuf [drawtvframe].v.buff;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void tvout_nextfb(void)
+{
+	const uintptr_t frame = (uintptr_t) tvout_fb_draw();
+	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain1fb());
+	hardware_tvout_main_set(frame);
+	drawtvframe = (drawtvframe + 1) % LCDMODE_TVOUT_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
+}
+
+#endif	/* defined (TCONTV_PTR) */
 
 #endif /* WITHLTDCHWVBLANKIRQ */
 
