@@ -3797,7 +3797,7 @@ void tvout_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) tvout_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain1fb());
-	hardware_tvout_main_set(frame);
+	hardware_ltdc_tvout_set2(frame, 0);
 	drawtvframe = (drawtvframe + 1) % LCDMODE_TVOUT_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 }
 
