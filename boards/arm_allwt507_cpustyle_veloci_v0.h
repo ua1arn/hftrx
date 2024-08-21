@@ -836,6 +836,8 @@
 		switch (target) { \
 		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
+		case targettsc1: local_delay_us(1); break; /* XPT2046 SPI chip select signal */ \
+		case targetfpga1: local_delay_us(1); break; /* FPGA control registers CS1 */ \
 		default: local_delay_us(1); break; \
 		} \
 	} while (0)
@@ -1042,8 +1044,8 @@
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(5); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(5); } while (0)
 	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 12)	/* PE12 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -1062,6 +1064,7 @@
 			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
 			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
 			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
+			local_delay_us(5); \
 		} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
