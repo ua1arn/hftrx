@@ -2518,14 +2518,14 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
 	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-	vi->CFG [VI_CFG_INDEX].COORD = 0;
+//	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
 	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
-	vi->HORI [0] = 0;
-	vi->VERT [0] = 0;
+//	vi->HORI [0] = 0;
+//	vi->VERT [0] = 0;
 
-	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
-	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
+//	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
+//	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
 
 }
 
@@ -2565,20 +2565,20 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 	vi->TOP_HADDR [1] = (ptr_hi32(vram1) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 
 	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-	vi->CFG [VI_CFG_INDEX].COORD = 0;
+//	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
 	vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
-	vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
+//	vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
 	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
 	vi->OVL_SIZE [1] = ovl_ui_mbsize;	// UV
-	vi->HORI [0] = 0;
-	vi->VERT [0] = 0;
-	vi->FCOLOR [0] = 0xFFFFFFFF;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+//	vi->HORI [0] = 0;
+//	vi->VERT [0] = 0;
+//	vi->FCOLOR [0] = 0xFFFFFFFF;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
 	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
-	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram0));
-	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] == ptr_lo32(vram1));
-	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
+//	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram0));
+//	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [1] == ptr_lo32(vram1));
+//	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
 
 }
 
@@ -2608,18 +2608,18 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
 	ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-	ui->CFG [UI_CFG_INDEX].COORD = 0;
+//	ui->CFG [UI_CFG_INDEX].COORD = 0;
 	ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
+//	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
 	ui->OVL_SIZE = ovl_ui_mbsize;
 	ui->CFG [UI_CFG_INDEX].ATTR = attr;
+//	ui->CFG [UI_CFG_INDEX].FCOLOR = 0x0FFFF0000;
 
-	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
-	ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-	ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
-	ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
-	ui->CFG [UI_CFG_INDEX].FCOLOR = 0x0FFFF0000;
-	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+//	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+//	ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
+//	ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
+//	ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
+//	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
 static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned color24)
@@ -3546,7 +3546,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 
 #if WITHLTDCHWVBLANKIRQ
 
-// realtime priority handler
+// overrealtime priority handler
 static void TCON_LCD_IRQHandler(void)
 {
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
@@ -3561,6 +3561,7 @@ static void TCON_LCD_IRQHandler(void)
 
 }
 
+// overrealtime priority handler
 static void TCONTV_IRQHandler(void)
 {
 #if defined (TCONTV_PTR)
