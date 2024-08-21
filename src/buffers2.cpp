@@ -3602,7 +3602,7 @@ int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffe
 /* Frame buffer for display 1 */
 typedef ALIGNX_BEGIN struct colmain1fb
 {
-	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDTVBUFF_T buff [(TVD_SIZE * 3 + 1) / 2] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
 	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
 } ALIGNX_END colmain1fb_t;
