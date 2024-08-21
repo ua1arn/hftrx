@@ -6291,10 +6291,10 @@ static void awxx_deoutmapping(unsigned disp)
 //		0;
 	// Undocumented
 	DE_TOP->DE2TCON_MUX =
-		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+		TG_DE2TCONTV0 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
 		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
 		TG_DE2TCONLCD0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-		TG_DE2TCONTV0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+		TG_DE2TCONTV1 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
 #else
 	// Documented
