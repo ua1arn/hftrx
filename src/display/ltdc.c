@@ -2426,8 +2426,8 @@ static void hardware_ltdc_vsync(void)
 static void hardware_tvout_ltdc_vsync(void)
 {
 #if defined (TCONTV_PTR)
-    TCONTV_PTR->TV_GINT0_REG &= ~ (UINT32_C(1) << 14);         //clear TV_VB_INT_FLAG
-    while ((TCONTV_PTR->TV_GINT0_REG & (UINT32_C(1) << 14)) == 0) //wait  TV_VB_INT_FLAG
+    TCONTV_PTR->TV_GINT0_REG &= ~ TV_VB_INT_FLAG;         //clear TV_VB_INT_FLAG
+    while ((TCONTV_PTR->TV_GINT0_REG & TV_VB_INT_FLAG) == 0) //wait  TV_VB_INT_FLAG
         ;
 #endif /* defined (TCONLCD_PTR) */
 }
@@ -3454,8 +3454,7 @@ static void t113_tcontv_sequence_parameters(const videomode_t * vdmode)
 	//	 111: Gridding Check
 
 	 TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
-	 TCONTV_PTR->TV_GINT0_REG = (UINT32_C(1) << 30);         //enable Vblank int
-	 TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 31) |(1<<1); //enable TCONTV
+	 TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 1); //enable TCONTV
 
 #endif /* defined (TCONTV_PTR) */
 
@@ -3568,7 +3567,7 @@ static void TCONTV_IRQHandler(void)
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
 	const uint_fast32_t reg = TCONTV_PTR->TV_GINT0_REG;
 
-	if (reg & LCD_VB_INT_FLAG)
+	if (reg & TV_VB_INT_FLAG)
 	{
 		TCONTV_PTR->TV_GINT0_REG = reg & ~ TV_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
