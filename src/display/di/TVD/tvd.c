@@ -6,18 +6,15 @@
 
 #include "src/display/display.h"
 
-#include "tvd.h"
+#include "bsp_tvd.h"
 
-//static uint8_t FilterAddress[TVD_3D_COMP_BUFFER_SIZE] __attribute__ ((aligned(128))); //буфер для фильтра
-static uint8_t *FilterAddress=NULL;                                                     //не используется
-
-void TVD_Clock(void)                   //включает все нужные клоки, гейты, снимает с ресета
+static void TVD_Clock(void)                   //включает все нужные клоки, гейты, снимает с ресета
 {
 	const uint_fast32_t needfreq = 27000000;
 	CCU->TVD_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);      //assert TVD & TVD_TOP reset
 
 	{
-		unsigned divider = alcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
+		unsigned divider = calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
 		//PRINTF("TVD_Clock: needfreq=%u Hz, divider=%u\n", (unsigned) needfreq, (unsigned) divider);
 		ASSERT(divider <= 32);
 		TVD_CCU_CLK_REG =
@@ -37,7 +34,10 @@ void TVD_Clock(void)                   //включает все нужные к
 	CCU->TVD_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
 }
 
-void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
+//static uint8_t FilterAddress[TVD_3D_COMP_BUFFER_SIZE] __attribute__ ((aligned(128))); //буфер для фильтра
+static uint8_t *FilterAddress=NULL;                                                     //не используется
+
+static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 {
 	const unsigned sel = 0;
  TVD_Clock();
@@ -103,17 +103,17 @@ void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
  tvd_irq_enable(sel, TVD_IRQ_FRAME_END);            //разрешаем прерывания FRAME_END
 }
 
-void TVD_CaptureOn(void)                    //включить кэпчуринг
+static void TVD_CaptureOn(void)                    //включить кэпчуринг
 {
  tvd_capture_on(0);
 }
 
-void TVD_CaptureOff(void)                   //выключить кэпчуринг
+static void TVD_CaptureOff(void)                   //выключить кэпчуринг
 {
  tvd_capture_off(0);
 }
 
-uint32_t TVD_Status(void)                        //состояние: 0 - кадр не готов, 1 - кадр готов
+static uint32_t TVD_Status(void)                        //состояние: 0 - кадр не готов, 1 - кадр готов
 {
  uint32_t status;
  tvd_irq_status_get(0,TVD_IRQ_FRAME_END,&status);
