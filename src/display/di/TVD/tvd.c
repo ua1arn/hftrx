@@ -152,24 +152,7 @@ uint32_t TVD_Status(void)                        //состояние: 0 - ка�
 }
 
 #include "../DI/sunxi_di.h"
-//static const uint8_t picture0 [] =
-//{
-//	#include "src/testdata/picture.h"
-//};
 
-static RAMNC uint8_t doutb [(TVD_SIZE * 3) / 2];
-void tdout(void)
-{
-	//printhex(0, doutb, 256);
-	PACKEDTVBUFF_T * const fb = tvout_fb_draw();
-	//di_dev_apply2((uintptr_t) picture0, (uintptr_t) picture0, (uintptr_t) fb);
-	local_delay_ms(100);
-	memcpy(fb, doutb, sizeof doutb);
-	//memcpy(fb, picture0, datasize_dmabuffer1fb());
-	tvout_nextfb();
-}
-
-// mgs
 void TVD_Handler(void)
 {
 	//dbg_putchar('<');
@@ -187,52 +170,46 @@ void TVD_Handler(void)
 	if (old)
 	{
 		//PRINTF("%08X ", old);
-		//save_dmabuffercolmain1fb(old);
-		release_dmabuffercolmain1fb(old);
+		save_dmabuffercolmain1fb(old);
+		//release_dmabuffercolmain1fb(old);
 		//return;
 		//запуск де-интерлейсера
 		//di_dev_apply(TVD_Shift+1, DI_Shift+1);
-		di_dev_apply2(old, old, (uintptr_t) doutb);
+		//di_dev_apply2(old, old, (uintptr_t) doutb);
 	}
 
 	//dbg_putchar('>');
 }
 
-void DI_Handler(void)
-{
-	//dbg_putchar('I');
-	di_dev_query_state_with_clear(); //подтверждение прерывания
-
-	//смена буфера DI
-	//DI_Shift++;
-
-	//флаг готовности
-	//Ready_DI=1;
-	//dbg_putchar('i');
-}
+//void DI_Handler(void)
+//{
+//	//dbg_putchar('I');
+//	di_dev_query_state_with_clear(); //подтверждение прерывания
+//
+//	//смена буфера DI
+//	//DI_Shift++;
+//
+//	//флаг готовности
+//	//Ready_DI=1;
+//	//dbg_putchar('i');
+//}
 
 void cap_test(void)
 {
 
-	DI_INIT();
+//	DI_INIT();
+//	di_dev_query_state_with_clear();                                  //очистка флага прерывания
+//	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
 
-//	eGon2_InsINT_Func(TVD_INT_NUMBER,(int*)TVD_Handler,(void*)0);
-//	GIC_SetPriority(TVD_INT_NUMBER,0x40);                             //низкий приоритет
 	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);                        //очистка флага прерывания
-//	eGon2_EnableInt(TVD_INT_NUMBER);
 	arm_hardware_set_handler_system(TVD_IRQn, TVD_Handler);
 
-//	eGon2_InsINT_Func(DI_INT_NUMBER,(int*)DI_Handler,(void*)0);
-//	GIC_SetPriority(DI_INT_NUMBER,0x30);                              //средний приоритет
-	di_dev_query_state_with_clear();                                  //очистка флага прерывания
-//	eGon2_EnableInt(DI_INT_NUMBER);
-	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
 
-	TVD_Init(1);	// PAL
 
 
 	//di_dev_apply2(allocate_dmabuffercolmain1fb(), allocate_dmabuffercolmain1fb(), diout);
 
+	TVD_Init(1);	// PAL
 	TVD_CaptureOn();
 
 }
