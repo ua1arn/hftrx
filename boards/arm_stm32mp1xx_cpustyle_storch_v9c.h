@@ -53,7 +53,7 @@
 	#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 	#define WITHUART1HW_FIFO	1	/* использование FIFO */
 	#define WITHCAT_UART1		1
-endif
+#endif
 
 #define BOARD_TUH_RHPORT 1
 
