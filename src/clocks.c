@@ -4863,7 +4863,7 @@ uint_fast32_t allwnrt113_get_tvd_freq(void)
 		/* 000: HOSC */
 		return allwnrt113_get_hosc_freq() / M;
 	case 0x01:
-		// 010: PLL_VIDEO0(1X)
+		// 001: PLL_VIDEO0(1X)
 		return allwnrt113_get_video0_x1_freq() / M;
 	case 0x02:
 		// 010: PLL_VIDEO1(1X)

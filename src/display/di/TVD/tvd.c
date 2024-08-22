@@ -41,15 +41,30 @@ uint8_t *FilterAddress=NULL;                                                    
 
 void TVD_Clock(void)                   //включает все нужные клоки, гейты, снимает с ресета
 {
- CCU->TVD_BGR_REG&=~((UINT32_C(1) << 17)|(UINT32_C(1) << 16));      //assert TVD & TVD_TOP reset
+	const uint_fast32_t needfreq = 27000000;
+	CCU->TVD_BGR_REG&=~((UINT32_C(1) << 17)|(UINT32_C(1) << 16));      //assert TVD & TVD_TOP reset
 
- CCU->TVD_CLK_REG=(UINT32_C(1) <<31)|(UINT32_C(1) << 24)|(11-1); //clock enable TVD PLL_VIDEO0(1x)/11 =297/11 = 27 MHz (CVBS Clock)
+	{
+		unsigned divider;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), 27000000), 4, (8 | 4 | 2 | 1), & divider, 1);
+		//PRINTF("TVD_Clock: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
+		ASSERT(divider < 16);
+		CCU->TVD_CLK_REG = (CCU->TVD_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
+		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+		CCU->TVD_CLK_REG |= (UINT32_C(1) << 31);
+		local_delay_us(10);
 
- CCU->TVD_BGR_REG|=(UINT32_C(1) << 1)|1;                //pass TVD & TVD_TOP clock
+		//PRINTF("TVD_Clock: allwnrt113_get_tvd_freq()=%u Hz\n", (unsigned) allwnrt113_get_tvd_freq());
+	}
 
- CCU->MBUS_MAT_CLK_GATING_REG|=(UINT32_C(1) << 7);      //gating MBUS clock for TVIN
+	CCU->TVD_BGR_REG|=(UINT32_C(1) << 1)|1;                //pass TVD & TVD_TOP clock
 
- CCU->TVD_BGR_REG|=(UINT32_C(1) << 17)|(UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 7);	// TVIN_MCLK_EN
+
+	CCU->TVD_BGR_REG|=(UINT32_C(1) << 17)|(UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
 }
 
 void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
@@ -137,12 +152,18 @@ uint32_t TVD_Status(void)                        //состояние: 0 - ка�
 }
 
 #include "../DI/sunxi_di.h"
+//static const uint8_t picture0 [] =
+//{
+//	#include "src/testdata/picture.h"
+//};
 
 static RAMNC uint8_t doutb [(TVD_SIZE * 3) / 2];
 void tdout(void)
 {
 	//printhex(0, doutb, 256);
 	PACKEDTVBUFF_T * const fb = tvout_fb_draw();
+	//di_dev_apply2((uintptr_t) picture0, (uintptr_t) picture0, (uintptr_t) fb);
+	local_delay_ms(100);
 	memcpy(fb, doutb, sizeof doutb);
 	//memcpy(fb, picture0, datasize_dmabuffer1fb());
 	tvout_nextfb();
@@ -168,22 +189,10 @@ void TVD_Handler(void)
 		//PRINTF("%08X ", old);
 		//save_dmabuffercolmain1fb(old);
 		release_dmabuffercolmain1fb(old);
-		di_dev_apply2(old, old, (uintptr_t) doutb);
-		return;
-		static uintptr_t din;
-		static uintptr_t diout;
-
-		if (din)
-			release_dmabuffercolmain1fb(diout);
-
-		if (diout)
-			save_dmabuffercolmain1fb(diout);
-		diout = allocate_dmabuffercolmain1fb();
-
-		din = old;
+		//return;
 		//запуск де-интерлейсера
 		//di_dev_apply(TVD_Shift+1, DI_Shift+1);
-		di_dev_apply2(din, din, diout);
+		di_dev_apply2(old, old, (uintptr_t) doutb);
 	}
 
 	//dbg_putchar('>');
@@ -191,7 +200,7 @@ void TVD_Handler(void)
 
 void DI_Handler(void)
 {
-	//dbg_putchar('i');
+	//dbg_putchar('I');
 	di_dev_query_state_with_clear(); //подтверждение прерывания
 
 	//смена буфера DI
@@ -199,13 +208,11 @@ void DI_Handler(void)
 
 	//флаг готовности
 	//Ready_DI=1;
-
+	//dbg_putchar('i');
 }
 
 void cap_test(void)
 {
-	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 7);	// TVIN_MCLK_EN
-	//CCU->MBUS_MAT_CLK_GATING_REG |= 0x00000d87;
 
 	DI_INIT();
 
