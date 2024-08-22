@@ -3563,10 +3563,11 @@ static void TCON_LCD_IRQHandler(void)
 
 }
 
+#if defined (TCONTV_PTR)
+
 // overrealtime priority handler
 static void TCONTV_IRQHandler(void)
 {
-#if defined (TCONTV_PTR)
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
 	const uint_fast32_t reg = TCONTV_PTR->TV_GINT0_REG;
 
@@ -3578,37 +3579,43 @@ static void TCONTV_IRQHandler(void)
 			hardware_ltdc_vblank(1);	// Update framebuffer if needed
 		}
 	}
-#endif /* defined (TCONTV_PTR) */
 }
+
+#endif /* defined (TCONTV_PTR) */
+
 #endif /* WITHLTDCHWVBLANKIRQ */
+
+#if defined (TCONLCD_PTR)
 
 // Set and open interrupt function
 static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
 	// enabling the irq after io settings
-#if defined (TCONLCD_PTR)
 #if WITHLTDCHWVBLANKIRQ
 	TCONLCD_PTR->LCD_GINT0_REG = LCD_VB_INT_EN;
 	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
-#endif /* defined (TCONLCD_PTR) */
 }
+
+#endif /* defined (TCONLCD_PTR) */
+
+#if defined (TCONTV_PTR)
 
 // Set and open interrupt function
 static void t113_tcontv_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
 	// enabling the irq after io settings
-#if defined (TCONTV_PTR)
 #if WITHLTDCHWVBLANKIRQ
 	TCONTV_PTR->TV_GINT0_REG = TV_VB_INT_EN;
 	arm_hardware_set_handler_overrealtime(TCONTV_IRQ, TCONTV_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
-#endif /* defined (TCONTV_PTR) */
 }
+
+#endif /* defined (TCONTV_PTR) */
 
 
 // Open module enable
