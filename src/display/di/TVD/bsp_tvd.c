@@ -19,7 +19,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if WIHSTVDHW
+#if WITHTVDHW
 
 #include "bsp_tvd.h"
 
@@ -775,4 +775,4 @@ void tvd_cagc_config(unsigned sel, uint32_t enable)
 	tvd_devicep(sel)->tvd_clamp_agc1.bits.cagc_en = enable;
 }
 
-#endif /* WIHSTVDHW */
+#endif /* WITHTVDHW */

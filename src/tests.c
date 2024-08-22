@@ -10880,7 +10880,7 @@ void hightests(void)
 		PRINTF("Done squash test\n");
 	}
 #endif
-#if 1 && WIHSTVDHW
+#if 1 && WITHTVDHW
 	{
 		cap_test();
 

@@ -12,7 +12,7 @@
  */
 #include "hardware.h"
 #include "formats.h"
-#if WIHSTVDHW
+#if WITHTVDHW
 
 #include "src/display/display.h"
 
@@ -533,4 +533,4 @@ void DI_INIT(void)
  di_dev_enable_irq(1);
 }
 
-#endif /* WIHSTVDHW */
+#endif /* WITHTVDHW */

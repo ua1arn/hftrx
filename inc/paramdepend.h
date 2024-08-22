@@ -963,6 +963,8 @@ extern "C" {
 		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
 		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
+
+	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw F133-A"
 
 #elif CPUSTYLE_XCZU

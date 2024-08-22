@@ -1,7 +1,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if WIHSTVDHW
+#if WITHTVDHW
 #include "buffers.h"
 
 #include "src/display/display.h"
@@ -180,4 +180,4 @@ void cap_test(void)
 
 }
 
-#endif /* WIHSTVDHW */
+#endif /* WITHTVDHW */

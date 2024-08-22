@@ -1128,7 +1128,6 @@
 #endif /* WITHLTDCHW */
 
 	#if 1
-		#define WIHSTCONLCDHW 1	// Same as WITHLTDCHW
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
@@ -1138,7 +1137,7 @@
 	#endif
 
 	#if 1
-		#define WIHSTVEHW 1	/* Use TV Encoder hardware (CVBS output) */
+		#define WITHTVEHW 1	/* Use TV Encoder hardware (CVBS output) */
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
@@ -1154,11 +1153,12 @@
 	#endif
 
 	#if 1
-		#define WIHSTVDHW 1	/* Use TV Decoder hardware (capture CVBS signal) */
+		#define WITHTVDHW 1	/* Use TV Decoder hardware (capture CVBS signal) */
 		#define	TVDECODER_IX 0	/* 0 -TVD0 */
 		#define	TVDECODER_PTR TVD0	/* 0 - TVD0 */
 		#define	TVDECODER_BASE TVD0_BASE	/* 0 - TVD0 */
 		#define	TVD_CCU_CLK_REG (CCU->TVD_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define WITHTVDHW_INPUT 0
 	#endif
 
 
