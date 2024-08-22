@@ -23,10 +23,10 @@
 
 #define msleep mdelay
 
-#define kmalloc(a,b) malloc(a)
-#define kfree free
-
-#define pr_warn(...)
+//#define kmalloc(a,b) malloc(a)
+//#define kfree free
+//
+//#define pr_warn(...)
 
 #define FLITER_NUM 1
 #define TVD_3D_COMP_BUFFER_SIZE (0x400000)

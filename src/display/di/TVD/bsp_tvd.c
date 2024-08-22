@@ -595,6 +595,7 @@ int32_t tvd_adc_config(uint32_t adc, uint32_t en)
  * version :
  * history :
  */
+#if 0
 uint32_t tvd_dbgmode_dump_data(uint32_t chan_sel, uint32_t mode, uintptr_t dump_dst_addr,
 			  uint32_t data_length)
 {
@@ -750,6 +751,7 @@ uint32_t tvd_dbgmode_dump_data(uint32_t chan_sel, uint32_t mode, uintptr_t dump_
 
 	return 0;
 }
+#endif
 
 void tvd_agc_auto_config(unsigned sel)
 {
