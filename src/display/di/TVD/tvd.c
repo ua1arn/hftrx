@@ -1,7 +1,8 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if defined (TVDECODER_PTR)
+#if WIHSTVDHW
+#include "buffers.h"
 
 #include "src/display/display.h"
 
@@ -53,61 +54,68 @@ void TVD_Clock(void)                   //включает все нужные к
 
 void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 {
+	const unsigned sel = 0;
  TVD_Clock();
 
  tvd_top_set_reg_base(TVD_TOP_BASE);             //установка базового адреса для TVD_TOP
  tvd_set_reg_base(0,TVD0_BASE);                  //установка базового адреса для TVD0
 
- tvd_reset(0);                                   //сброс
+ tvd_reset(sel);                                   //сброс
 
  tvd_input_sel(0);                               //выбран TVIN0
 
- tvd_init(0,CVBS_INTERFACE);                     //CVBS - композитный видеосигнал
+ tvd_init(sel, CVBS_INTERFACE);                     //CVBS - композитный видеосигнал
 
- tvd_config(0,CVBS_INTERFACE,mode);              //NTSC или PAL
+ tvd_config(sel, CVBS_INTERFACE,mode);              //NTSC или PAL
 
- tvd_set_wb_fmt(0,TVD_PL_YUV420);                //TVD_PL_YUV420 - планарный формат: компонента яркости и компоненты цвета отдельно)
+ tvd_set_wb_fmt(sel, TVD_PL_YUV420);                //TVD_PL_YUV420 - планарный формат: компонента яркости и компоненты цвета отдельно)
 
  if(mode==NTSC)
  {
   #if 0                                          //для случая TVD_MB_YUV420
-  tvd_set_wb_width(0,704);
-  tvd_set_wb_width_jump(0,704);
-  tvd_set_wb_height(0,448/2);
+  tvd_set_wb_width(sel, 704);
+  tvd_set_wb_width_jump(sel, 704);
+  tvd_set_wb_height(sel, 448/2);
   #else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
-  tvd_set_wb_width(0,720);
-  tvd_set_wb_width_jump(0,720);
-  tvd_set_wb_height(0,480/2);
+  tvd_set_wb_width(sel, 720);
+  tvd_set_wb_width_jump(sel, 720);
+  tvd_set_wb_height(sel, 480/2);
   #endif
 
  }
  else //PAL
  {
   #if 0                                          //для случая TVD_MB_YUV420
-  tvd_set_wb_width(0,704);
-  tvd_set_wb_width_jump(0,704);
-  tvd_set_wb_height(0,448/2);
+  tvd_set_wb_width(sel, 704);
+  tvd_set_wb_width_jump(sel, 704);
+  tvd_set_wb_height(sel, 448/2);
   #else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
-  tvd_set_wb_width(0,720);
-  tvd_set_wb_width_jump(0,720);
-  tvd_set_wb_height(0,576/2);
+  tvd_set_wb_width(sel, 720);
+  tvd_set_wb_width_jump(sel, 720);
+  tvd_set_wb_height(sel, 576/2);
   #endif
  }
 
- tvd_set_wb_uv_swap(0,0);                        //0 - V4L2_PIX_FMT_NV12 и V4L2_PIX_FMT_NV16, 1 - V4L2_PIX_FMT_NV21 и V4L2_PIX_FMT_NV61
+ tvd_set_wb_uv_swap(sel, 0);                        //0 - V4L2_PIX_FMT_NV12 и V4L2_PIX_FMT_NV16, 1 - V4L2_PIX_FMT_NV21 и V4L2_PIX_FMT_NV61
 
- tvd_3d_mode(0,0,(uint32_t)FilterAddress);            //0 - disable, 1 - enable
+ tvd_3d_mode(sel, 0,(uint32_t)FilterAddress);            //0 - disable, 1 - enable
 
- tvd_agc_auto_config(0);                         //AGC
- tvd_cagc_config(0,1);                           //chroma AGC
- tvd_blue_display_mode(0,0);                     //0 - disabled, 1 - enabled, 2 - auto
-#if 0
+ tvd_agc_auto_config(sel);                         //AGC
+ tvd_cagc_config(sel, 1);                           //chroma AGC
+ tvd_blue_display_mode(sel, 0);                     //0 - disabled, 1 - enabled, 2 - auto
+
  // mgs
- tvd_set_wb_addr(0,TVD_YBUF[0],TVD_CBUF[0]);     //устанавливаем адреса буферов компонент яркости и цвета
-#endif
+ {
+		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		const uintptr_t vram0 = vram;
+		const uintptr_t vram1 = vram0 + TVD_SIZE;
+		uintptr_t old = tvd_set_wb_addr2(sel,  vram0, vram1);
+		//PRINTF("old = %08X\n", (unsigned) old);
+		ASSERT(old == 0);
+ }
 
- tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);      //очищаем флаг прерывания FRAME_END
- tvd_irq_enable(0,TVD_IRQ_FRAME_END);            //разрешаем прерывания FRAME_END
+ tvd_irq_status_clear(sel, TVD_IRQ_FRAME_END);      //очищаем флаг прерывания FRAME_END
+ tvd_irq_enable(sel, TVD_IRQ_FRAME_END);            //разрешаем прерывания FRAME_END
 }
 
 void TVD_CaptureOn(void)                    //включить кэпчуринг
@@ -128,4 +136,66 @@ uint32_t TVD_Status(void)                        //состояние: 0 - ка�
  return status;
 }
 
-#endif /* defined (TVDECODER_PTR) */
+#include "../DI/sunxi_di.h"
+// mgs
+void TVD_Handler(void)
+{
+	dbg_putchar('<');
+	//подтверждение прерывания
+	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);
+
+	//смена буфера TVD
+	//TVD_Shift++;
+
+	//установка нового адреса TVD
+	uintptr_t vram = allocate_dmabuffercolmain1fb();
+	const uintptr_t vram0 = vram;
+	const uintptr_t vram1 = vram0 + TVD_SIZE;
+	uintptr_t old = tvd_set_wb_addr2(0,vram0, vram1);
+	if (old)
+		save_dmabuffercolmain1fb(old);
+
+	//запуск де-интерлейсера
+	//di_dev_apply(TVD_Shift+1, DI_Shift+1);
+	di_dev_apply(0, 0);
+
+	dbg_putchar('>');
+}
+
+void DI_Handler(void)
+{
+	dbg_putchar('+');
+	di_dev_query_state_with_clear(); //подтверждение прерывания
+
+	//смена буфера DI
+	//DI_Shift++;
+
+	//флаг готовности
+	//Ready_DI=1;
+
+	dbg_putchar('-');
+}
+
+void cap_test(void)
+{
+	DI_INIT();
+
+//	eGon2_InsINT_Func(TVD_INT_NUMBER,(int*)TVD_Handler,(void*)0);
+//	GIC_SetPriority(TVD_INT_NUMBER,0x40);                             //низкий приоритет
+//	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);                        //очистка флага прерывания
+//	eGon2_EnableInt(TVD_INT_NUMBER);
+	arm_hardware_set_handler_system(TVD_IRQn, TVD_Handler);
+
+//	eGon2_InsINT_Func(DI_INT_NUMBER,(int*)DI_Handler,(void*)0);
+//	GIC_SetPriority(DI_INT_NUMBER,0x30);                              //средний приоритет
+//	di_dev_query_state_with_clear();                                  //очистка флага прерывания
+//	eGon2_EnableInt(DI_INT_NUMBER);
+	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
+
+	TVD_Init(1);	// PAL
+
+	TVD_CaptureOn();
+
+}
+
+#endif /* WIHSTVDHW */

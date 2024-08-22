@@ -961,7 +961,8 @@ int32_t tvd_config(uint32_t sel, uint32_t interface, uint32_t mode);
 int32_t tvd_set_wb_width(uint32_t sel, uint32_t width);
 int32_t tvd_set_wb_width_jump(uint32_t sel, uint32_t width_jump);
 int32_t tvd_set_wb_height(uint32_t sel, uint32_t height);
-int32_t tvd_set_wb_addr(uint32_t sel, uint32_t addr_y, uint32_t addr_c);
+int32_t tvd_set_wb_addr(uint32_t sel, uintptr_t addr_y, uintptr_t addr_c);
+uintptr_t tvd_set_wb_addr2(uint32_t sel, uintptr_t addr_y, uintptr_t addr_c);
 int32_t tvd_set_wb_fmt(uint32_t sel, TVD_FMT_T fmt);
 int32_t tvd_set_wb_uv_swap(uint32_t sel, uint32_t swap);
 int32_t tvd_set_wb_field(uint32_t sel, uint32_t is_field_mode, uint32_t is_field_even);
@@ -983,7 +984,7 @@ int32_t tvd_set_contrast(uint32_t sel, uint32_t contrast);
 uint32_t tvd_get_saturation(uint32_t sel);
 uint32_t tvd_get_luma(uint32_t sel);
 uint32_t tvd_get_contrast(uint32_t sel);
-void tvd_3d_mode(uint32_t _3d_sel, uint32_t _3d_en, uint32_t _3d_addr);
+void tvd_3d_mode(uint32_t _3d_sel, uint32_t _3d_en, uintptr_t _3d_addr);
 uint32_t tvd_dbgmode_dump_data(uint32_t chan_sel, uint32_t mode, uintptr_t dump_dst_addr,
 			  uint32_t data_length);
 void tvd_agc_auto_config(uint32_t sel);

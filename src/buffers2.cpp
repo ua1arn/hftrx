@@ -3545,16 +3545,23 @@ static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_TVOUT_PAGES];
 typedef blists<colmain1fbbuf_t, 0, 0> colmain1fblist_t;
 static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
 
-uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 0 */
+// can not be zero
+uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 1 */
 {
 	colmain1fb_t * dest;
+#if 1
+	while (! colmain1fblist.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+#else
 	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
 	while (! colmain1fblist.get_freebuffer_raw(& dest) && ! colmain1fblist.get_readybuffer_raw(& dest))
 		ASSERT(0);
+#endif
 	return (uintptr_t) dest->buff;
 }
 
-uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer for display 0 */
+uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer for display 1 */
 {
 	colmain1fb_t * dest;
 	if (! colmain1fblist.get_readybuffer_raw(& dest))
@@ -3562,13 +3569,13 @@ uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer fo
 	return (uintptr_t) dest->buff;
 }
 
-void release_dmabuffercolmain1fb(uintptr_t addr)  /* release Frame buffer for display 0 */
+void release_dmabuffercolmain1fb(uintptr_t addr)  /* release Frame buffer for display 1 */
 {
 	colmain1fb_t * const p = CONTAINING_RECORD(addr, colmain1fb_t, buff);
 	colmain1fblist.release_buffer(p);
 }
 
-void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for display 0 */
+void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for display 1 */
 {
 	// поддерживаем один элемент в очереди готовых
 	colmain1fb_t * old;
@@ -3578,12 +3585,12 @@ void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for 
 	colmain1fblist.save_buffer(p);
 }
 
-int_fast32_t cachesize_dmabuffercolmain1fb(void) /* parameter for cache manipulation functions Frame buffer for display 0 */
+int_fast32_t cachesize_dmabuffercolmain1fb(void) /* parameter for cache manipulation functions Frame buffer for display 1 */
 {
 	return colmain1fblist.get_cachesize();
 }
 
-int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffer for display 0 */
+int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffer for display 1 */
 {
 	return colmain1fblist.get_datasize();
 }

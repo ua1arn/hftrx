@@ -12,10 +12,11 @@
  */
 #include "hardware.h"
 #include "formats.h"
-#if defined (TVDECODER_PTR)
+#if WIHSTVDHW
 
 #include "src/display/display.h"
 
+#include "buffers.h"
 #include "di110_reg.h"
 #include "di110.h"
 
@@ -381,6 +382,36 @@ int32_t di_dev_apply(uint8_t n,uint8_t m)
 	FB_ARG.out_fb0.buf.addr.y_addr =TVD_YBUF[3+(m&1)]; //3,4,3,4,...
 	FB_ARG.out_fb0.buf.addr.cb_addr=TVD_CBUF[3+(m&1)];
 	FB_ARG.out_fb0.buf.addr.cr_addr=TVD_CBUF[3+(m&1)];
+#else
+	{
+		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		const uintptr_t vramY = vram;
+		const uintptr_t vramC = vram + TVD_SIZE;
+
+		FB_ARG.in_fb0.buf.addr.y_addr = vramY;
+		FB_ARG.in_fb0.buf.addr.cb_addr= vramC;
+		FB_ARG.in_fb0.buf.addr.cr_addr= vramC;
+	}
+
+	{
+		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		const uintptr_t vramY = vram;
+		const uintptr_t vramC = vram + TVD_SIZE;
+
+		FB_ARG.in_fb1.buf.addr.y_addr = vramY;
+		FB_ARG.in_fb1.buf.addr.cb_addr= vramC;
+		FB_ARG.in_fb1.buf.addr.cr_addr= vramC;
+	}
+	{
+		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		const uintptr_t vramY = vram;
+		const uintptr_t vramC = vram + TVD_SIZE;
+
+
+		FB_ARG.out_fb0.buf.addr.y_addr =vramY; //3,4,3,4,...
+		FB_ARG.out_fb0.buf.addr.cb_addr=vramC;
+		FB_ARG.out_fb0.buf.addr.cr_addr=vramC;
+	}
 #endif
 	struct di_reg *reg = di_dev_get_reg_base();
 
@@ -440,4 +471,4 @@ void DI_INIT(void)
  di_dev_enable_irq(1);
 }
 
-#endif /* defined (TVDECODER_PTR) */
+#endif /* WIHSTVDHW */

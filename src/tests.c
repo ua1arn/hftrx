@@ -10765,7 +10765,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && LCDMODE_LTDC && WITHLTDCHW
+#if 1 && LCDMODE_LTDC && WITHLTDCHW
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -10878,6 +10878,20 @@ void hightests(void)
 			posY += stepY;
 		}
 		PRINTF("Done squash test\n");
+	}
+#endif
+#if 1
+	{
+		cap_test();
+
+	}
+#endif
+#if 0
+	{
+		PRINTF("DE_MIXER0_VSU0_BASE:\n");
+		printhex32(DE_MIXER0_VSU0_BASE, DE_MIXER0_VSU0_BASE, 128);
+		PRINTF("DE_MIXER1_VSU0_BASE:\n");
+		printhex32(DE_MIXER1_VSU0_BASE, DE_MIXER1_VSU0_BASE, 128);
 	}
 #endif
 #if 0

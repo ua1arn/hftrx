@@ -19,6 +19,8 @@
 #include "hardware.h"
 #include "formats.h"
 
+#if WIHSTVDHW
+
 #include "bsp_tvd.h"
 
 static volatile __tvd_top_dev_t *tvd_top_dev;
@@ -39,7 +41,7 @@ int32_t tvd_set_reg_base(uint32_t sel, unsigned long base)
 	return 0;
 }
 
-void tvd_3d_mode(uint32_t _3d_sel, uint32_t _3d_en, uint32_t _3d_addr)
+void tvd_3d_mode(uint32_t _3d_sel, uint32_t _3d_en, uintptr_t _3d_addr)
 {
 	tvd_top_dev->tvd_3d_ctl3.bits.comb_3d_addr0 = _3d_addr;
 	tvd_top_dev->tvd_3d_ctl4.bits.comb_3d_addr1 = _3d_addr+0x200000;
@@ -397,14 +399,25 @@ int32_t tvd_set_wb_height(uint32_t sel, uint32_t height)
  * @param[OUT]
  * @return
  */
-int32_t tvd_set_wb_addr(uint32_t sel, uint32_t addr_y, uint32_t addr_c)
+//int32_t tvd_set_wb_addr(uint32_t sel, uintptr_t addr_y, uintptr_t addr_c)
+//{
+//	//make sure 1 frame change 1 buffer,no need to detect this bit
+//	//while(tvd_device[sel]->tvd_wb1.bits.wb_addr_valid);
+//	tvd_device[sel]->tvd_wb3.bits.ch1_y_addr = addr_y;
+//	tvd_device[sel]->tvd_wb4.bits.ch1_c_addr = addr_c;
+//	tvd_device[sel]->tvd_wb1.bits.wb_addr_valid = 1;
+//	return 0;
+//}
+
+uintptr_t tvd_set_wb_addr2(uint32_t sel, uintptr_t addr_y, uintptr_t addr_c)
 {
+	uintptr_t old = tvd_device[sel]->tvd_wb3.bits.ch1_y_addr;
 	//make sure 1 frame change 1 buffer,no need to detect this bit
 	//while(tvd_device[sel]->tvd_wb1.bits.wb_addr_valid);
 	tvd_device[sel]->tvd_wb3.bits.ch1_y_addr = addr_y;
 	tvd_device[sel]->tvd_wb4.bits.ch1_c_addr = addr_c;
 	tvd_device[sel]->tvd_wb1.bits.wb_addr_valid = 1;
-	return 0;
+	return old;
 }
 
 int32_t tvd_set_wb_fmt(uint32_t sel, TVD_FMT_T fmt)
@@ -755,3 +768,5 @@ void tvd_cagc_config(uint32_t sel, uint32_t enable)
 {
 	tvd_device[sel]->tvd_clamp_agc1.bits.cagc_en = enable;
 }
+
+#endif /* WIHSTVDHW */
