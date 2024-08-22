@@ -952,46 +952,46 @@ typedef enum {
     TVD_PL_YUV422					=	2,
 } TVD_FMT_T;
 
-int32_t tvd_top_set_reg_base(unsigned long base);
-int32_t tvd_set_reg_base(uint32_t sel, unsigned long base);
-int32_t tvd_init(uint32_t sel, uint32_t interface);
-int32_t tvd_deinit(uint32_t sel, uint32_t interface);
-int32_t tvd_get_status(uint32_t sel, uint32_t *locked, uint32_t *system);
-int32_t tvd_config(uint32_t sel, uint32_t interface, uint32_t mode);
-int32_t tvd_set_wb_width(uint32_t sel, uint32_t width);
-int32_t tvd_set_wb_width_jump(uint32_t sel, uint32_t width_jump);
-int32_t tvd_set_wb_height(uint32_t sel, uint32_t height);
-int32_t tvd_set_wb_addr(uint32_t sel, uintptr_t addr_y, uintptr_t addr_c);
-uintptr_t tvd_set_wb_addr2(uint32_t sel, uintptr_t addr_y, uintptr_t addr_c);
-int32_t tvd_set_wb_fmt(uint32_t sel, TVD_FMT_T fmt);
-int32_t tvd_set_wb_uv_swap(uint32_t sel, uint32_t swap);
-int32_t tvd_set_wb_field(uint32_t sel, uint32_t is_field_mode, uint32_t is_field_even);
-int32_t tvd_capture_on(uint32_t sel);
-int32_t tvd_capture_off(uint32_t sel);
-int32_t tvd_irq_enable(uint32_t sel, TVD_IRQ_T irq_id);
-int32_t tvd_irq_disable(uint32_t sel, TVD_IRQ_T irq_id);
-int32_t tvd_irq_status_get(uint32_t sel, TVD_IRQ_T irq_id, uint32_t *irq_status);
-int32_t tvd_irq_status_clear(uint32_t sel, TVD_IRQ_T irq_id);
-int32_t tvd_dma_irq_status_get(uint32_t sel, uint32_t *irq_status);
-int32_t tvd_dma_irq_status_clear_err_flag(uint32_t sel, uint32_t irq_status);
+int32_t tvd_top_set_reg_base(uintptr_t base);
+int32_t tvd_set_reg_base(unsigned sel, uintptr_t base);
+int32_t tvd_init(unsigned sel, uint32_t interface);
+int32_t tvd_deinit(unsigned sel, uint32_t interface);
+int32_t tvd_get_status(unsigned sel, uint32_t *locked, uint32_t *system);
+int32_t tvd_config(unsigned sel, uint32_t interface, uint32_t mode);
+int32_t tvd_set_wb_width(unsigned sel, uint32_t width);
+int32_t tvd_set_wb_width_jump(unsigned sel, uint32_t width_jump);
+int32_t tvd_set_wb_height(unsigned sel, uint32_t height);
+int32_t tvd_set_wb_addr(unsigned sel, uintptr_t addr_y, uintptr_t addr_c);
+uintptr_t tvd_set_wb_addr2(unsigned sel, uintptr_t addr_y, uintptr_t addr_c);
+int32_t tvd_set_wb_fmt(unsigned sel, TVD_FMT_T fmt);
+int32_t tvd_set_wb_uv_swap(unsigned sel, uint32_t swap);
+int32_t tvd_set_wb_field(unsigned sel, uint32_t is_field_mode, uint32_t is_field_even);
+int32_t tvd_capture_on(unsigned sel);
+int32_t tvd_capture_off(unsigned sel);
+int32_t tvd_irq_enable(unsigned sel, TVD_IRQ_T irq_id);
+int32_t tvd_irq_disable(unsigned sel, TVD_IRQ_T irq_id);
+int32_t tvd_irq_status_get(unsigned sel, TVD_IRQ_T irq_id, uint32_t *irq_status);
+int32_t tvd_irq_status_clear(unsigned sel, TVD_IRQ_T irq_id);
+int32_t tvd_dma_irq_status_get(unsigned sel, uint32_t *irq_status);
+int32_t tvd_dma_irq_status_clear_err_flag(unsigned sel, uint32_t irq_status);
 
-void tvd_enable_chanel(uint32_t sel, uint32_t en);           //���������� � tvd_init()
+void tvd_enable_chanel(unsigned sel, uint32_t en);           //���������� � tvd_init()
 
 int32_t tvd_adc_config(uint32_t adc, uint32_t en);               //���������� � tvd_init()
-int32_t tvd_set_saturation(uint32_t sel, uint32_t saturation);
-int32_t tvd_set_luma(uint32_t sel, uint32_t luma);
-int32_t tvd_set_contrast(uint32_t sel, uint32_t contrast);
-uint32_t tvd_get_saturation(uint32_t sel);
-uint32_t tvd_get_luma(uint32_t sel);
-uint32_t tvd_get_contrast(uint32_t sel);
-void tvd_3d_mode(uint32_t _3d_sel, uint32_t _3d_en, uintptr_t _3d_addr);
+int32_t tvd_set_saturation(unsigned sel, uint32_t saturation);
+int32_t tvd_set_luma(unsigned sel, uint32_t luma);
+int32_t tvd_set_contrast(unsigned sel, uint32_t contrast);
+uint32_t tvd_get_saturation(unsigned sel);
+uint32_t tvd_get_luma(unsigned sel);
+uint32_t tvd_get_contrast(unsigned sel);
+void tvd_3d_mode(unsigned _3d_sel, uint32_t _3d_en, uintptr_t _3d_addr);
 uint32_t tvd_dbgmode_dump_data(uint32_t chan_sel, uint32_t mode, uintptr_t dump_dst_addr,
 			  uint32_t data_length);
-void tvd_agc_auto_config(uint32_t sel);
-void tvd_agc_manual_config(uint32_t sel, uint32_t agc_manual_val);
-void tvd_cagc_config(uint32_t sel, uint32_t enable);
-int32_t tvd_get_lock(uint32_t sel);
-void tvd_blue_display_mode(uint32_t sel, uint32_t mode);
-void tvd_reset(uint32_t sel);
+void tvd_agc_auto_config(unsigned sel);
+void tvd_agc_manual_config(unsigned sel, uint32_t agc_manual_val);
+void tvd_cagc_config(unsigned sel, uint32_t enable);
+int32_t tvd_get_lock(unsigned sel);
+void tvd_blue_display_mode(unsigned sel, uint32_t mode);
+void tvd_reset(unsigned sel);
 void tvd_input_sel(uint32_t input);
 #endif

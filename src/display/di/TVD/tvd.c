@@ -14,7 +14,7 @@ static void TVD_Clock(void)                   //включает все нужн
 	CCU->TVD_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);      //assert TVD & TVD_TOP reset
 
 	{
-		unsigned divider = calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
+		const unsigned divider = calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
 		//PRINTF("TVD_Clock: needfreq=%u Hz, divider=%u\n", (unsigned) needfreq, (unsigned) divider);
 		ASSERT(divider <= 32);
 		TVD_CCU_CLK_REG =
@@ -83,7 +83,7 @@ static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 
  tvd_set_wb_uv_swap(sel, 0);                        //0 - V4L2_PIX_FMT_NV12 и V4L2_PIX_FMT_NV16, 1 - V4L2_PIX_FMT_NV21 и V4L2_PIX_FMT_NV61
 
- tvd_3d_mode(sel, 0,(uint32_t)FilterAddress);            //0 - disable, 1 - enable
+ tvd_3d_mode(sel, 0, (uintptr_t)FilterAddress);            //0 - disable, 1 - enable
 
  tvd_agc_auto_config(sel);                         //AGC
  tvd_cagc_config(sel, 1);                           //chroma AGC
