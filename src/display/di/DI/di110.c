@@ -423,7 +423,7 @@ int32_t di_dev_apply(uint8_t n,uint8_t m)
 }
 
 /* invoked in every di process. */
-int32_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2)
+uintptr_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2, uintptr_t vramOUT)
 {
 #if 0
 	// mgs
@@ -439,6 +439,7 @@ int32_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2)
 	FB_ARG.out_fb0.buf.addr.cb_addr=TVD_CBUF[3+(m&1)];
 	FB_ARG.out_fb0.buf.addr.cr_addr=TVD_CBUF[3+(m&1)];
 #else
+	uintptr_t old = FB_ARG.out_fb0.buf.addr.y_addr;
 	{
 		const uintptr_t vramY = vram1;
 		const uintptr_t vramC = vram1 + TVD_SIZE;
@@ -457,7 +458,7 @@ int32_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2)
 		FB_ARG.in_fb1.buf.addr.cr_addr= vramC;
 	}
 	{
-		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		const uintptr_t vram = vramOUT;
 		const uintptr_t vramY = vram;
 		const uintptr_t vramC = vram + TVD_SIZE;
 
@@ -473,7 +474,7 @@ int32_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2)
 
 	di_dev_start();
 
-	return 0;
+	return old;
 }
 
 //---
@@ -482,11 +483,17 @@ void DI_Clock(void)
 {
  CCU->DI_BGR_REG &= ~ (UINT32_C(1) << 16);       //assert reset
 
- CCU->DI_CLK_REG = (UINT32_C(1) << 31)|(2-1); //clock on, PLL_PERI(2x), M=2 => 1200/2 = 600 MHz
+ CCU->DI_CLK_REG =
+		 (UINT32_C(1) << 31) |
+		 0x00 * (UINT32_C(1) << 24) |
+		 (2-1) * (UINT32_C(1) << 0) | //clock on, PLL_PERI(2x), M=2 => 1200/2 = 600 MHz
+		 0;
 
  CCU->DI_BGR_REG |= (UINT32_C(1) << 0);              //pass gate
 
- CCU->DI_CLK_REG |= (UINT32_C(1) << 16);        //de-assert reset
+ CCU->DI_BGR_REG |= (UINT32_C(1) << 16);        //de-assert reset
+
+ PRINTF("DI_Clock: %u MHz\n", (unsigned) (allwnrt113_get_di_freq() / 1000 / 1000));
 }
 
 void DI_INIT(void)

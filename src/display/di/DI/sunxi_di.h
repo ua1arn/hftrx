@@ -173,6 +173,6 @@ void DI_INIT(void);
 int32_t di_dev_apply(uint8_t n,uint8_t m);
 bool di_dev_is_busy(void);
 uint32_t di_dev_query_state_with_clear(void);
-int32_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2);
+uintptr_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2, uintptr_t vramOUT);
 
 #endif /* #ifndef _UAPI_SUNXI_DI_H_ */

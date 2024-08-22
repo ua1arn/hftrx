@@ -137,6 +137,8 @@ uint32_t TVD_Status(void)                        //состояние: 0 - ка�
 }
 
 #include "../DI/sunxi_di.h"
+
+
 // mgs
 void TVD_Handler(void)
 {
@@ -156,9 +158,21 @@ void TVD_Handler(void)
 	{
 		//PRINTF("%08X ", old);
 		save_dmabuffercolmain1fb(old);
+		return;
+		static uintptr_t din;
+		static uintptr_t diout;
+
+		if (din)
+			release_dmabuffercolmain1fb(diout);
+
+		if (diout)
+			save_dmabuffercolmain1fb(diout);
+		diout = allocate_dmabuffercolmain1fb();
+
+		din = old;
 		//запуск де-интерлейсера
 		//di_dev_apply(TVD_Shift+1, DI_Shift+1);
-		////di_dev_apply2(old, old);
+		di_dev_apply2(din, din, diout);
 	}
 
 	//dbg_putchar('>');
@@ -166,7 +180,7 @@ void TVD_Handler(void)
 
 void DI_Handler(void)
 {
-	dbg_putchar('+');
+	//dbg_putchar('i');
 	di_dev_query_state_with_clear(); //подтверждение прерывания
 
 	//смена буфера DI
@@ -175,11 +189,13 @@ void DI_Handler(void)
 	//флаг готовности
 	//Ready_DI=1;
 
-	dbg_putchar('-');
 }
 
 void cap_test(void)
 {
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 7);	// TVIN_MCLK_EN
+	//CCU->MBUS_MAT_CLK_GATING_REG |= 0x00000d87;
+
 	DI_INIT();
 
 //	eGon2_InsINT_Func(TVD_INT_NUMBER,(int*)TVD_Handler,(void*)0);
@@ -195,6 +211,9 @@ void cap_test(void)
 	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
 
 	TVD_Init(1);	// PAL
+
+
+	//di_dev_apply2(allocate_dmabuffercolmain1fb(), allocate_dmabuffercolmain1fb(), diout);
 
 	TVD_CaptureOn();
 
