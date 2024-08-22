@@ -346,7 +346,7 @@ static void di_dev_apply_top_para(struct di_process_fb_arg *fb_arg)
 					| fb_arg->di_mode;
 }
 
-static void di_dev_set_mdflag( /* struct di_client *client */uint32_t dma_addr,uint32_t width)
+static void di_dev_set_mdflag( /* struct di_client *client */uintptr_t dma_addr,uint32_t width)
 {
 	struct di_reg *reg = di_dev_get_reg_base();
 
@@ -415,7 +415,61 @@ int32_t di_dev_apply(uint8_t n,uint8_t m)
 #endif
 	struct di_reg *reg = di_dev_get_reg_base();
 
-	di_dev_set_addr(reg,&FB_ARG);
+	di_dev_set_addr(reg, &FB_ARG);
+
+	di_dev_start();
+
+	return 0;
+}
+
+/* invoked in every di process. */
+int32_t di_dev_apply2(uintptr_t vram1, uintptr_t vram2)
+{
+#if 0
+	// mgs
+	FB_ARG.in_fb0.buf.addr.y_addr =TVD_YBUF[(n+0)%3]; //0,1,2,0,1,2,...
+	FB_ARG.in_fb0.buf.addr.cb_addr=TVD_CBUF[(n+0)%3];
+	FB_ARG.in_fb0.buf.addr.cr_addr=TVD_CBUF[(n+0)%3];
+
+	FB_ARG.in_fb1.buf.addr.y_addr =TVD_YBUF[(n+1)%3];
+	FB_ARG.in_fb1.buf.addr.cb_addr=TVD_CBUF[(n+1)%3];
+	FB_ARG.in_fb1.buf.addr.cr_addr=TVD_CBUF[(n+1)%3];
+
+	FB_ARG.out_fb0.buf.addr.y_addr =TVD_YBUF[3+(m&1)]; //3,4,3,4,...
+	FB_ARG.out_fb0.buf.addr.cb_addr=TVD_CBUF[3+(m&1)];
+	FB_ARG.out_fb0.buf.addr.cr_addr=TVD_CBUF[3+(m&1)];
+#else
+	{
+		const uintptr_t vramY = vram1;
+		const uintptr_t vramC = vram1 + TVD_SIZE;
+
+		FB_ARG.in_fb0.buf.addr.y_addr = vramY;
+		FB_ARG.in_fb0.buf.addr.cb_addr= vramC;
+		FB_ARG.in_fb0.buf.addr.cr_addr= vramC;
+	}
+
+	{
+		const uintptr_t vramY = vram2;
+		const uintptr_t vramC = vram2 + TVD_SIZE;
+
+		FB_ARG.in_fb1.buf.addr.y_addr = vramY;
+		FB_ARG.in_fb1.buf.addr.cb_addr= vramC;
+		FB_ARG.in_fb1.buf.addr.cr_addr= vramC;
+	}
+	{
+		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		const uintptr_t vramY = vram;
+		const uintptr_t vramC = vram + TVD_SIZE;
+
+
+		FB_ARG.out_fb0.buf.addr.y_addr =vramY; //3,4,3,4,...
+		FB_ARG.out_fb0.buf.addr.cb_addr=vramC;
+		FB_ARG.out_fb0.buf.addr.cr_addr=vramC;
+	}
+#endif
+	struct di_reg *reg = di_dev_get_reg_base();
+
+	di_dev_set_addr(reg, &FB_ARG);
 
 	di_dev_start();
 
@@ -463,9 +517,10 @@ void DI_INIT(void)
  di_dev_apply_top_para(&FB_ARG);
  di_dev_set_fb(&FB_ARG);
 
-#if 0
+#if 1
  // mgs
- di_dev_set_mdflag(FB_ARG.di_mode?0:TVD_YBUF[5],TVD_WIDTH);
+ //di_dev_set_mdflag(FB_ARG.di_mode?0:TVD_YBUF[5],TVD_WIDTH);
+ di_dev_set_mdflag((uintptr_t) 0, TVD_WIDTH);
 #endif
 
  di_dev_enable_irq(1);

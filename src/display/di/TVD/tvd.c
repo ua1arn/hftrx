@@ -140,7 +140,7 @@ uint32_t TVD_Status(void)                        //состояние: 0 - ка�
 // mgs
 void TVD_Handler(void)
 {
-	dbg_putchar('<');
+	//dbg_putchar('<');
 	//подтверждение прерывания
 	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);
 
@@ -153,13 +153,15 @@ void TVD_Handler(void)
 	const uintptr_t vram1 = vram0 + TVD_SIZE;
 	uintptr_t old = tvd_set_wb_addr2(0,vram0, vram1);
 	if (old)
+	{
+		//PRINTF("%08X ", old);
 		save_dmabuffercolmain1fb(old);
+		//запуск де-интерлейсера
+		//di_dev_apply(TVD_Shift+1, DI_Shift+1);
+		////di_dev_apply2(old, old);
+	}
 
-	//запуск де-интерлейсера
-	//di_dev_apply(TVD_Shift+1, DI_Shift+1);
-	di_dev_apply(0, 0);
-
-	dbg_putchar('>');
+	//dbg_putchar('>');
 }
 
 void DI_Handler(void)
@@ -182,13 +184,13 @@ void cap_test(void)
 
 //	eGon2_InsINT_Func(TVD_INT_NUMBER,(int*)TVD_Handler,(void*)0);
 //	GIC_SetPriority(TVD_INT_NUMBER,0x40);                             //низкий приоритет
-//	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);                        //очистка флага прерывания
+	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);                        //очистка флага прерывания
 //	eGon2_EnableInt(TVD_INT_NUMBER);
 	arm_hardware_set_handler_system(TVD_IRQn, TVD_Handler);
 
 //	eGon2_InsINT_Func(DI_INT_NUMBER,(int*)DI_Handler,(void*)0);
 //	GIC_SetPriority(DI_INT_NUMBER,0x30);                              //средний приоритет
-//	di_dev_query_state_with_clear();                                  //очистка флага прерывания
+	di_dev_query_state_with_clear();                                  //очистка флага прерывания
 //	eGon2_EnableInt(DI_INT_NUMBER);
 	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
 
