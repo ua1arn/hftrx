@@ -1094,6 +1094,16 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF3); /* PD10 LVDS1_V0P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF3); /* PD11 LVDS1_V0N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF3); /* PD12 LVDS1_V1P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF3); /* PD13 LVDS1_V1N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF3); /* PD14 LVDS1_V2P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF3); /* PD15 LVDS1_V2N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3); /* PD16 LVDS1_CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF3); /* PD17 LVDS1_CKN */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF3); /* PD18 LVDS1_V3P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF3); /* PD19 LVDS1_V3N */ \
 	} while (0)
 
 	// PD0..PD9: mipi-dsi connect
@@ -1118,6 +1128,7 @@
 #endif /* WITHLTDCHW */
 
 	#if 1
+		#define WIHSTCONLCDHW 1	// Same as WITHLTDCHW
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
@@ -1127,6 +1138,7 @@
 	#endif
 
 	#if 1
+		#define WIHSTVEHW 1	/* Use TV Encoder hardware (CVBS output) */
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
@@ -1142,6 +1154,7 @@
 	#endif
 
 	#if 1
+		#define WIHSTVDHW 1	/* Use TV Decoder hardware (capture CVBS signal) */
 		#define	TVDECODER_IX 0	/* 0 -TVD0 */
 		#define	TVDECODER_PTR TVD0	/* 0 - TVD0 */
 		#define	TVDECODER_BASE TVD0_BASE	/* 0 - TVD0 */

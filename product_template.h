@@ -140,7 +140,6 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_helperboard_t507_ra4asn.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	#define WITHISBOOTLOADER 1
 	#include "boards/arm_allwt507_ctlstyle_xhelperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_xhelperboard_t507.h"
