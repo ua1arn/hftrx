@@ -12,8 +12,6 @@
 #ifndef ARM_ALW_T507_CTL_XHELPERBOARD_H_INCLUDED
 #define ARM_ALW_T507_CTL_XHELPERBOARD_H_INCLUDED 1
 
-#define WITHCTRLBOARDT507 1
-
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -233,7 +231,13 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define FORMATFROMLIBRARY 	1
 
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD - загрузчик работает через eMMC
+	#define WITHISBOOTLOADERRAWDISK	1	// чтение application с предопределённого смещения на накопителе
+	#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
+
 #else /* WITHISBOOTLOADER */
+
+	#define WITHCTRLBOARDT507 1
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
