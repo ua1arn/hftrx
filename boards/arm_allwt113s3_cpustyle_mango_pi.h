@@ -1158,6 +1158,7 @@
 		#define	TVDECODER_IX 0	/* 0 -TVD0 */
 		#define	TVDECODER_PTR TVD0	/* 0 - TVD0 */
 		#define	TVDECODER_BASE TVD0_BASE	/* 0 - TVD0 */
+		#define	TVD_CCU_CLK_REG (CCU->TVD_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
 	#endif
 
 

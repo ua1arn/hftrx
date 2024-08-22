@@ -8,63 +8,33 @@
 
 #include "tvd.h"
 
-//const uint32_t TVD_YBUF[10]= //буфер для компоненты яркости
-//{
-// VIDEO_MEMORY0+(( 0*TVD_SIZE)/2),
-// VIDEO_MEMORY0+(( 3*TVD_SIZE)/2),
-// VIDEO_MEMORY0+(( 6*TVD_SIZE)/2),
-// VIDEO_MEMORY0+(( 9*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((12*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((15*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((18*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((21*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((24*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((27*TVD_SIZE)/2),
-//};
-//
-//const uint32_t TVD_CBUF[10]= //буфер для компонент цвета
-//{
-// VIDEO_MEMORY0+(( 2*TVD_SIZE)/2),
-// VIDEO_MEMORY0+(( 5*TVD_SIZE)/2),
-// VIDEO_MEMORY0+(( 8*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((11*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((14*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((17*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((20*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((23*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((26*TVD_SIZE)/2),
-// VIDEO_MEMORY0+((29*TVD_SIZE)/2),
-//};
-
-//uint8_t FilterAddress[TVD_3D_COMP_BUFFER_SIZE] __attribute__ ((aligned(128))); //буфер для фильтра
-uint8_t *FilterAddress=NULL;                                                     //не используется
+//static uint8_t FilterAddress[TVD_3D_COMP_BUFFER_SIZE] __attribute__ ((aligned(128))); //буфер для фильтра
+static uint8_t *FilterAddress=NULL;                                                     //не используется
 
 void TVD_Clock(void)                   //включает все нужные клоки, гейты, снимает с ресета
 {
 	const uint_fast32_t needfreq = 27000000;
-	CCU->TVD_BGR_REG&=~((UINT32_C(1) << 17)|(UINT32_C(1) << 16));      //assert TVD & TVD_TOP reset
+	CCU->TVD_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);      //assert TVD & TVD_TOP reset
 
 	{
-		unsigned divider;
-		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), 27000000), 4, (8 | 4 | 2 | 1), & divider, 1);
-		//PRINTF("TVD_Clock: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
-		ASSERT(divider < 16);
-		CCU->TVD_CLK_REG = (CCU->TVD_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
-		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
-		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-		CCU->TVD_CLK_REG |= (UINT32_C(1) << 31);
+		unsigned divider = alcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
+		//PRINTF("TVD_Clock: needfreq=%u Hz, divider=%u\n", (unsigned) needfreq, (unsigned) divider);
+		ASSERT(divider <= 32);
+		TVD_CCU_CLK_REG =
+			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
+			(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x1F: 1..32)
+			0;
+		TVD_CCU_CLK_REG |= (UINT32_C(1) << 31);
 		local_delay_us(10);
 
 		//PRINTF("TVD_Clock: allwnrt113_get_tvd_freq()=%u Hz\n", (unsigned) allwnrt113_get_tvd_freq());
 	}
 
-	CCU->TVD_BGR_REG|=(UINT32_C(1) << 1)|1;                //pass TVD & TVD_TOP clock
+	CCU->TVD_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                //pass TVD & TVD_TOP clock
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 7);	// TVIN_MCLK_EN
 
-	CCU->TVD_BGR_REG|=(UINT32_C(1) << 17)|(UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
+	CCU->TVD_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
 }
 
 void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
@@ -201,15 +171,11 @@ void cap_test(void)
 //	di_dev_query_state_with_clear();                                  //очистка флага прерывания
 //	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
 
-	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);                        //очистка флага прерывания
-	arm_hardware_set_handler_system(TVD_IRQn, TVD_Handler);
-
-
-
-
 	//di_dev_apply2(allocate_dmabuffercolmain1fb(), allocate_dmabuffercolmain1fb(), diout);
 
 	TVD_Init(1);	// PAL
+	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);                        //очистка флага прерывания
+	arm_hardware_set_handler_system(TVD_IRQn, TVD_Handler);
 	TVD_CaptureOn();
 
 }
