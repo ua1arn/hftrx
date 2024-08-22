@@ -138,6 +138,15 @@ uint32_t TVD_Status(void)                        //состояние: 0 - ка�
 
 #include "../DI/sunxi_di.h"
 
+static RAMNC uint8_t doutb [(TVD_SIZE * 3) / 2];
+void tdout(void)
+{
+	//printhex(0, doutb, 256);
+	PACKEDTVBUFF_T * const fb = tvout_fb_draw();
+	memcpy(fb, doutb, sizeof doutb);
+	//memcpy(fb, picture0, datasize_dmabuffer1fb());
+	tvout_nextfb();
+}
 
 // mgs
 void TVD_Handler(void)
@@ -157,7 +166,9 @@ void TVD_Handler(void)
 	if (old)
 	{
 		//PRINTF("%08X ", old);
-		save_dmabuffercolmain1fb(old);
+		//save_dmabuffercolmain1fb(old);
+		release_dmabuffercolmain1fb(old);
+		di_dev_apply2(old, old, (uintptr_t) doutb);
 		return;
 		static uintptr_t din;
 		static uintptr_t diout;

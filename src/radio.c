@@ -19911,6 +19911,11 @@ hamradio_main_step(void)
 					{
 					case 0x00:
 						break;
+#if WIHSTVDHW
+					case 'v':
+						tdout();
+						break;
+#endif
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
