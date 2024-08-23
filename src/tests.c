@@ -10880,7 +10880,7 @@ void hightests(void)
 		PRINTF("Done squash test\n");
 	}
 #endif
-#if 1 && WITHTVDHW
+#if 0 && WITHTVDHW && LCDMODE_LTDC && WITHLTDCHW
 	{
 		cap_test();
 
