@@ -28,11 +28,6 @@
 //#define WITHCAN0HW 1
 #define WITHCAN1HW 1
 
-#if WITHINTEGRATEDDSP
-	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
-#endif /* WITHINTEGRATEDDSP */
-
 #define WITHUART1HW	1	/* TX=PG6 TX=PG7 Используется периферийный контроллер последовательного порта UART1 */
 
 #if WITHDEBUG
@@ -107,6 +102,11 @@
 //	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
 //	#define WITHSDHC1HW	1		/* SDIO */
 
+
+	#if WITHINTEGRATEDDSP
+//		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+//		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+	#endif /* WITHINTEGRATEDDSP */
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
@@ -1136,7 +1136,7 @@
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
 
-	#if 1
+	#if 0
 		#define WITHTVEHW 1	/* Use TV Encoder hardware (CVBS output) */
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */

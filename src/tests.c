@@ -10765,7 +10765,7 @@ void hightests(void)
 
 	}
 #endif
-#if 1 && LCDMODE_LTDC && WITHLTDCHW
+#if 0 && LCDMODE_LTDC && WITHLTDCHW
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
