@@ -3536,7 +3536,7 @@ typedef ALIGNX_BEGIN struct colmain1fb
 {
 	ALIGNX_BEGIN PACKEDTVBUFF_T buff [(TVD_SIZE * 3 + 1) / 2] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (uint8_t) };	// stub for resampling support
 } ALIGNX_END colmain1fb_t;
 
 typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
@@ -3549,7 +3549,7 @@ static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, 
 uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 1 */
 {
 	colmain1fb_t * dest;
-#if 1
+#if 0
 	while (! colmain1fblist.get_freebufferforced(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
