@@ -3193,16 +3193,16 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 #else /* defined (LCD_LVDS_IF_REG_VALUE) */
 
 	TCONLCD_PTR->LCD_LVDS_IF_REG =
-	(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
-	(0u << 30) |	/* LCD_LVDS_LINK: 0: single link */
-	(! UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
-	(0u << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
-	(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
-	0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
-	0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
-	0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
-	0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
-	0;
+		1 * (UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
+		0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */
+		0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
+		0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
+		1 * (UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
+		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
+		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
+		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
+		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
+		0;
 
 #endif /* defined (LCD_LVDS_IF_REG_VALUE) */
 #endif /* defined (TCONLCD_PTR) */
