@@ -2993,6 +2993,33 @@ static void display_time5(
 #endif /* defined (RTC1_TYPE) */
 }
 
+
+static volatile unsigned sofcount;
+static uint32_t softicks;
+
+unsigned hamradio_get_getsoffreq(void)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	unsigned count = sofcount;
+	sofcount = 0;
+	LowerIrql(oldIrql);
+
+	uint32_t nowticks = sys_now();
+	uint32_t difftime = nowticks - softicks;
+	softicks = nowticks;
+	unsigned n = count * 1000 / difftime;
+	return n;
+}
+
+void hamradio_tick_sof(void)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	++ sofcount;
+	LowerIrql(oldIrql);
+}
+
 // Печать частоты SOF пакетов USB device.
 static void display2_freqsof9(
 	uint_fast8_t x,
@@ -3000,7 +3027,6 @@ static void display2_freqsof9(
 	dctx_t * pctx
 	)
 {
-#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 	char buf2 [13];
 	unsigned v = hamradio_get_getsoffreq();
 	v = ulmin(v, 99999);
@@ -3011,7 +3037,6 @@ static void display2_freqsof9(
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 9);
 	display2_text(x, y, labels, colors_1stateBlue, 0);
-#endif /*  WITHUSBHW && defined (WITHUSBHW_DEVICE) */
 }
 
 // Печать времени - только часы и минуты, без секунд

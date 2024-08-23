@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define msleep mdelay
+//#define msleep mdelay
 
 //#define kmalloc(a,b) malloc(a)
 //#define kfree free
