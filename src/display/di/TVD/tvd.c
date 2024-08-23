@@ -42,8 +42,8 @@ static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 	const unsigned sel = 0;
 
 	TVD_Clock();
-	tvd_top_set_reg_base(TVD_TOP_BASE);  //установка базового адреса для TVD_TOP
-	tvd_set_reg_base(sel, TVD0_BASE);         //установка базового адреса для TVD0
+	tvd_top_set_reg_base(TVDECODER_TOP_BASE);  //установка базового адреса для TVD_TOP
+	tvd_set_reg_base(sel, TVDECODER_BASE);         //установка базового адреса для TVD0
 	tvd_reset(sel);                                   //сброс
 	tvd_input_sel(WITHTVDHW_INPUT);                               //выбран TVIN0
 	tvd_init(sel, CVBS_INTERFACE);              //CVBS - композитный видеосигнал
@@ -53,29 +53,29 @@ static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 	if (mode == NTSC)
 	{
 		//NTSC
-#if 0                                          //для случая TVD_MB_YUV420
-  tvd_set_wb_width(sel, 704);
-  tvd_set_wb_width_jump(sel, 704);
-  tvd_set_wb_height(sel, 448/2);
-  #else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
+	#if 0                                          //для случая TVD_MB_YUV420
+		tvd_set_wb_width(sel, 704);
+		tvd_set_wb_width_jump(sel, 704);
+		tvd_set_wb_height(sel, 448/2);
+	#else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
 		tvd_set_wb_width(sel, 720);
 		tvd_set_wb_width_jump(sel, 720);
 		tvd_set_wb_height(sel, 480 / 2);
-#endif
+	#endif
 
 	}
 	else
 	{
 		//PAL
-#if 0                                          //для случая TVD_MB_YUV420
-  tvd_set_wb_width(sel, 704);
-  tvd_set_wb_width_jump(sel, 704);
-  tvd_set_wb_height(sel, 448/2);
-  #else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
+	#if 0                                          //для случая TVD_MB_YUV420
+		tvd_set_wb_width(sel, 704);
+		tvd_set_wb_width_jump(sel, 704);
+		tvd_set_wb_height(sel, 448/2);
+	#else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
 		tvd_set_wb_width(sel, 720);
 		tvd_set_wb_width_jump(sel, 720);
 		tvd_set_wb_height(sel, 576 / 2);
-#endif
+	#endif
 	}
 
 	tvd_set_wb_uv_swap(sel, 0); //0 - V4L2_PIX_FMT_NV12 и V4L2_PIX_FMT_NV16, 1 - V4L2_PIX_FMT_NV21 и V4L2_PIX_FMT_NV61
