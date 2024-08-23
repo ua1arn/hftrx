@@ -869,7 +869,7 @@ static int axp858_set_dcdc5(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC5_EN);
 }
 
-/* Fix fornon-sequential register address */
+/* Fix for non-sequential register address */
 static int axp858_getaldor(int aldo_num)
 {
 	switch (aldo_num)
