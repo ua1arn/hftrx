@@ -1613,7 +1613,6 @@ void Undef_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
 
-	dbg_puts_impl_P(PSTR("Undef_Handler trapped.\n"));
 	PRINTF("UndefHandler trapped[%p]\n", Undef_Handler);
 	PRINTF("CPUID=%d\n", (int) (__get_MPIDR() & 0x03));
 	unsigned i;
@@ -1628,8 +1627,8 @@ void Undef_Handler(void)
 void SWI_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
-	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	dbg_puts_impl_P("SWIHandler trapped.\n");
+	PRINTF("CPUID=%d\n", (int) (__get_MPIDR() & 0x03));
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
@@ -3700,7 +3699,7 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
 
 	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->delflag = 1;	/* удаление будет произведено про оработке списка */
+	dp->delflag = 1;	/* удаление будет произведено при обработке списка */
 	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return 1;
@@ -3797,6 +3796,10 @@ void board_dpc_processing(void)
 		}
 		IRQLSPIN_UNLOCK(lock, oldIrql);
 	}
+#if WITHSMPSYSTEM
+	__DMB();
+	//__WFI();
+#endif /* WITHSMPSYSTEM */
 }
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -3805,7 +3808,7 @@ static void cortexa_cpuinfo(void)
 {
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%p, MPIDR=%08X\n"),
+	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%p, MPIDR=%08X\n",
 			(unsigned) (__get_MPIDR() & 0x03),
 			(void *) __get_VBAR(),
 			(void *) __get_TTBR0(),
@@ -4609,8 +4612,6 @@ void Reset_CPUn_Handler(void)
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		__DMB();
-		//__WFI();
 	}
 }
 
