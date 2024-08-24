@@ -6185,11 +6185,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	/* LINEIN use */
 
 	// ADCx Analog Control Register
-	//AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// LEft ADC1 Channel Enable
-	//AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// Right ADC1 Channel Enable
+	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// LEft ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// Right ADC1 Channel Enable
 	// Left audio
 	AUDIO_CODEC->ADC1_REG &= ~ (UINT32_C(1) << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
 	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 23);	// LINEINLEN LINEINL Enable
+	// Mic audio
+	AUDIO_CODEC->ADC3_REG &= ~ (UINT32_C(1) << 31);	// MIC3 ADC3 Channel Disable
 
 	// ADCx Analog Control Register
 	// Right audio
@@ -6200,11 +6202,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	/* FMIN use */
 
 	// ADCx Analog Control Register
-	//AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// LEft ADC1 Channel Enable
-	//AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// Right ADC1 Channel Enable
+	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// LEft ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// Right ADC1 Channel Enable
 	// Left audio
 	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
 	AUDIO_CODEC->ADC1_REG &= ~ (UINT32_C(1) << 23);	// LINEINLEN LINEINL Disable
+	// Mic audio
+	AUDIO_CODEC->ADC3_REG &= ~ (UINT32_C(1) << 31);	// MIC3 ADC3 Channel Disable
 
 	// Right audio
 	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
@@ -6218,8 +6222,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->ADC1_REG &= ~ (UINT32_C(1) << 31);	// LEft ADC1 Channel Disable
 	AUDIO_CODEC->ADC2_REG &= ~ (UINT32_C(1) << 31);	// Right ADC1 Channel Disable
 
-#endif
-
 	// ADC3 Analog Control Register
 	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 31);	// MIC3
 	// MIC3
@@ -6227,11 +6229,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (UINT32_C(0x0F) << 8)) | (UINT32_C(0x0F) << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
 
+#endif
+
 	// Установка усиления
 	AUDIO_CODEC->ADC_VOL_CTRL1 =
 #if WITHCODEC1_WHBLOCK_LINEIN || WITHCODEC1_WHBLOCK_FMIN
-		180 * (UINT32_C(1) << 8) |		// ADC2_VOL
-		180 * (UINT32_C(1) << 0) |		// ADC1_VOL
+		200 * (UINT32_C(1) << 8) |		// ADC2_VOL
+		200 * (UINT32_C(1) << 0) |		// ADC1_VOL
 #else
 		180 * (UINT32_C(1) << 16) |	// ADC3_VOL (0xA0 - middle point)
 #endif
