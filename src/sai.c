@@ -6181,7 +6181,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	   (UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
 	   0;
 
-#if 0
+#if WITHCODEC1_WHBLOCK_LINEIN
 	/* LINEIN use */
 
 	// ADCx Analog Control Register
@@ -6196,7 +6196,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->ADC2_REG &= ~ (UINT32_C(1) << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
 	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
 
-#elif 0
+#elif WITHCODEC1_WHBLOCK_FMIN
 	/* FMIN use */
 
 	// ADCx Analog Control Register
@@ -6229,9 +6229,12 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// Установка усиления
 	AUDIO_CODEC->ADC_VOL_CTRL1 =
+#if WITHCODEC1_WHBLOCK_LINEIN || WITHCODEC1_WHBLOCK_FMIN
+		180 * (UINT32_C(1) << 8) |		// ADC2_VOL
+		180 * (UINT32_C(1) << 0) |		// ADC1_VOL
+#else
 		180 * (UINT32_C(1) << 16) |	// ADC3_VOL (0xA0 - middle point)
-		0*0xA0 * (UINT32_C(1) << 8) |		// ADC2_VOL
-		0*0xA0 * (UINT32_C(1) << 0) |		// ADC1_VOL
+#endif
 		0;
 
 #else
@@ -6457,7 +6460,18 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
 static void audiocodechw_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
-
+	// Установка усиления
+	if (0)
+	{
+		AUDIO_CODEC->ADC_VOL_CTRL1 =
+	#if WITHCODEC1_WHBLOCK_LINEIN || WITHCODEC1_WHBLOCK_FMIN
+			180 * (UINT32_C(1) << 8) |		// ADC2_VOL
+			180 * (UINT32_C(1) << 0) |		// ADC1_VOL
+	#else
+			180 * (UINT32_C(1) << 16) |	// ADC3_VOL (0xA0 - middle point)
+	#endif
+			0;
+	}
 }
 
 /* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */

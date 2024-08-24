@@ -1014,8 +1014,13 @@ uintptr_t allocate_dmabuffer16rx(void)
 static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 {
 	enum { L, R };
+#if (WITHCODEC1_WHBLOCK_LINEIN || WITHCODEC1_WHBLOCK_FMIN) && defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_AWHWCODEC)
+	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_LEFT]);
+	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_RIGHT]);
+#else
 	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
 	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
+#endif
 	return DMABUFFSTEP16RX;
 }
 
@@ -1058,6 +1063,7 @@ void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 	codec16tx.savedata(ch0, ch1, putcbf_dmabuffer16tx);
 }
 
+/* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
 void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1)
 {
 	codec16rx.savedata(ch0, ch1, putcbf_dmabuffer16rx);
