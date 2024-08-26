@@ -2688,10 +2688,12 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 	bld->CK_CTL = 0;
 	for (i = 0; i < ARRAY_SIZE(bld->CH); i++)
 	{
-		bld->CH [i].BLD_FILL_COLOR = 0x00000000; //0*0xff000000;
+		//PRINTF("BLD_CH rtmixid=%d, %u\n", rtmixid, i);
+		bld->CH [i].BLD_FILL_COLOR = 0xff000000;
 		bld->CH [i].BLD_CH_ISIZE = ovl_ui_mbsize;
 		bld->CH [i].BLD_CH_OFFSET = 0;
 		ASSERT(bld->CH [i].BLD_CH_ISIZE == ovl_ui_mbsize);
+		ASSERT(bld->CH [i].BLD_FILL_COLOR == 0xff000000);
 	}
 }
 
@@ -5986,13 +5988,26 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
 
-	const unsigned disp = RTMIXIDLCD - 1;
+    {
+    	const unsigned disp = RTMIXIDLCD - 1;
 
-	// CORE0..CORE3 bits valid
+    	// CORE0..CORE3 bits valid
 
- 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
- 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
+     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
 
+    }
+#if defined (TCONTV_PTR)
+    {
+    	const unsigned disp = RTMIXIDTV - 1;
+
+    	// CORE0..CORE3 bits valid
+
+     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
+
+    }
+#endif
  	// Only one bit writable
  	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
@@ -6053,7 +6068,30 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
 	}
+#if defined (TCONTV_PTR)
+	{
+		const int rtmixid = RTMIXIDTV;
 
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb != NULL)
+		{
+			glb->GLB_CTL =
+					(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+					(UINT32_C(1) << 0) |		// EN RT enable/disable
+					0;
+
+			glb->GLB_CLK |= (UINT32_C(1) << 0);
+
+			//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
+			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
+			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
+
+			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+		}
+	}
+#endif
+
+#if 0
 	unsigned chn;
 	for (chn = 0; chn < de_feat_get_num_chns(disp); ++ chn)
 	{
@@ -6063,7 +6101,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
 	}
 
-
+#endif
+#if 0
 	if (0)
 	{
 
@@ -6092,6 +6131,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			}
 		}
 	}
+#endif
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
