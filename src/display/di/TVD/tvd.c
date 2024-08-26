@@ -56,7 +56,7 @@ static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 	#if 0                                          //для случая TVD_MB_YUV420
 		tvd_set_wb_width(sel, 704);
 		tvd_set_wb_width_jump(sel, 704);
-		tvd_set_wb_height(sel, 448/2);
+		tvd_set_wb_height(sel, 448 / 2);
 	#else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
 		tvd_set_wb_width(sel, 720);
 		tvd_set_wb_width_jump(sel, 720);
@@ -70,7 +70,7 @@ static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 	#if 0                                          //для случая TVD_MB_YUV420
 		tvd_set_wb_width(sel, 704);
 		tvd_set_wb_width_jump(sel, 704);
-		tvd_set_wb_height(sel, 448/2);
+		tvd_set_wb_height(sel, 448 / 2);
 	#else                                          //для остальных случаев (в том числе для TVD_PL_YUV420)
 		tvd_set_wb_width(sel, 720);
 		tvd_set_wb_width_jump(sel, 720);
