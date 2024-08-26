@@ -974,7 +974,7 @@ void arm_hardware_mdma_initialize(void)
 		(void) G2D_TOP->G2D_SCLK_GATE;
 		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 		(void) G2D_TOP->G2D_HCLK_GATE;
-		G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+		G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1) & ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
 		(void) G2D_TOP->G2D_AHB_RST;
 		G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 		(void) G2D_TOP->G2D_AHB_RST;
@@ -1028,7 +1028,7 @@ void arm_hardware_mdma_initialize(void)
 	(void) G2D_TOP->G2D_SCLK_GATE;
 	G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_HCLK_GATE;
-	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1) & ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
 	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
