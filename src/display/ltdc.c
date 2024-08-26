@@ -2847,9 +2847,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
 
-	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
-	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
-	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
+	TCONLCD_CCU_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+	TCONLCD_CCU_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+	TCONLCD_CCU_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
 
 #if WITHLVDSHW
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
