@@ -11,7 +11,7 @@
 static void TVD_Clock(void)                   //включает все нужные клоки, гейты, снимает с ресета
 {
 	const uint_fast32_t needfreq = 27000000;
-	CCU->TVD_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);      //assert TVD & TVD_TOP reset
+	TVD_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);      //assert TVD & TVD_TOP reset
 
 	{
 		const unsigned divider = calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
@@ -27,11 +27,11 @@ static void TVD_Clock(void)                   //включает все нужн
 		//PRINTF("TVD_Clock: allwnrt113_get_tvd_freq()=%u Hz\n", (unsigned) allwnrt113_get_tvd_freq());
 	}
 
-	CCU->TVD_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                //pass TVD & TVD_TOP clock
+	TVD_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                //pass TVD & TVD_TOP clock
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 7);	// TVIN_MCLK_EN
 
-	CCU->TVD_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
+	TVD_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);         //de-assert TVD & TVD_TOP reset
 }
 
 //static uint8_t FilterAddress[TVD_3D_COMP_BUFFER_SIZE] __attribute__ ((aligned(128))); //буфер для фильтра

@@ -5588,9 +5588,9 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 		0;
 	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
 
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE0_GATING & TVE_TOP
-	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16); 	//                 //assert reset for TVE0_RST & TVE_TOP_RST
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE0_RST & TVE_TOP_RST
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE0_GATING & TVE_TOP
+	TVE_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16); 	//                 //assert reset for TVE0_RST & TVE_TOP_RST
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE0_RST & TVE_TOP_RST
 
 	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);
@@ -5616,9 +5616,9 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 		0;
 	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
 
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE & TVE_TOP
-	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);                 //assert reset for TVE & TVE_TOP
-	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE & TVE_TOP
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE & TVE_TOP
+	TVE_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);                 //assert reset for TVE & TVE_TOP
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE & TVE_TOP
 
 	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
 	local_delay_us(10);

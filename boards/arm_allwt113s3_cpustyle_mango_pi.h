@@ -1150,6 +1150,7 @@
 		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define	TVE_CCU_BGR_REG (CCU->TVE_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define BOARD_TVEFREQ (allwnrt113_get_tve_freq())
 	#endif
 
@@ -1159,6 +1160,7 @@
 		#define	TVDECODER_PTR TVD0	/* 0 - TVD0 */
 		#define	TVDECODER_TOP_BASE TVD_TOP_BASE
 		#define	TVDECODER_BASE TVD0_BASE	/* 0 - TVD0 */
+		#define	TVD_CCU_BGR_REG (CCU->TVD_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define	TVD_CCU_CLK_REG (CCU->TVD_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define WITHTVDHW_INPUT 0
 	#endif
