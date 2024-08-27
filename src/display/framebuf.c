@@ -67,11 +67,13 @@ static void softfill(
 
 #if LCDMODE_MAIN_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define ROT_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
 	#define VI_ImageFormat 0x0A
+	#define ROT_ImageFormat 0x0A
 	#define UI_ImageFormat 0x0A
 	#define WB_ImageFormat 0x0A
 
@@ -79,12 +81,10 @@ static void softfill(
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if defined (G2D_MIXER)
 
-
-#else
 /* Отключаем все источники */
-static void awxx_g2d_reset(void)
+static void awxx_g2d_mixer_reset(void)
 {
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
@@ -163,7 +163,7 @@ static void awxx_g2d_rtmix_startandwait(void)
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
-#endif
+#endif /* defined (G2D_MIXER) */
 
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
@@ -227,7 +227,7 @@ hwaccel_rotcopy(
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 
 	G2D_ROT->ROT_CTL = 0;
-	G2D_ROT->ROT_IFMT = VI_ImageFormat;
+	G2D_ROT->ROT_IFMT = ROT_ImageFormat;
 
 	G2D_ROT->ROT_ISIZE = ssizehw;
 	G2D_ROT->ROT_IPITCH0 = sstride;	// Y/RGB/ARGB data memory. Should be 128bit aligned.
@@ -260,7 +260,7 @@ hwaccel_rotcopy(
 
 }
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if ! defined (G2D_MIXER)
 
 static COLORPIP_T bgcolor;
 static PACKEDCOLORPIP_T bgscreen [GXSIZE(DIM_X, DIM_Y)];
@@ -624,7 +624,7 @@ static void t113_fillrect(
 	)
 {
 
-	awxx_g2d_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
 	if (fillmask & FILL_FLAG_MIXBG)
@@ -2245,7 +2245,7 @@ void hwaccel_bitblt(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
 
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
@@ -2260,7 +2260,7 @@ void hwaccel_bitblt(
 
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -2290,7 +2290,7 @@ void hwaccel_bitblt(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
-	awxx_g2d_reset(); /* Отключаем все источники */
+	awxx_g2d_mixer_reset(); /* Отключаем все источники */
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
@@ -2483,7 +2483,7 @@ void hwaccel_stretchblt(
 	ASSERT(dx >= w);
 	ASSERT(dy >= h);
 
-#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
 
 	//#warning T507/H616 STRETCH BLT should be implemented
 
@@ -2502,7 +2502,7 @@ void hwaccel_stretchblt(
 
 	hwaccel_rotcopy(srclinear, sstride, ssizehw, dstlinear, tstride, tsizehw, 0);
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Использование G2D для формирования изображений */
 
 //	memset(G2D_V0, 0, sizeof * G2D_V0);
@@ -2530,7 +2530,7 @@ void hwaccel_stretchblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	awxx_g2d_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
