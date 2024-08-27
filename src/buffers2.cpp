@@ -791,6 +791,7 @@ class dmahandle: public blists<element_t, hasresample, hacheckready>
 {
 	typedef blists<element_t, hasresample, hacheckready> parent_t;
 	typedef typeof (element_t::v) wel_t;
+	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
 	unsigned wbn;
 	wel_t * rb;
@@ -807,7 +808,24 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(typeof (wel_t::buff [0]) * b, sample_t ch0, sample_t ch1))
+	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1))
+	{
+		if (wb == NULL)
+		{
+			if (! parent_t::get_freebuffer(& wb))
+				return;
+			wbn = 0;
+		}
+		wbn += putcbf(wb->buff + wbn, ch0, ch1);
+		if (wbn >= ARRAY_SIZE(wb->buff))
+		{
+			parent_t::save_buffer(wb);
+			wb = NULL;
+		}
+	}
+
+	// поэлементное заполнение буферов
+	void savedata_raw(sample_t ch0, sample_t ch1, unsigned (* putcbf)(rawsample_t * b, rawsample_t ch0, rawsample_t ch1))
 	{
 		if (wb == NULL)
 		{
@@ -1033,10 +1051,18 @@ static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+//static unsigned putcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+//{
+//	b [DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, ch0);
+//	b [DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, ch1);
+//	return DMABUFFSTEP16RX;
+//}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabuffer16rx_raw(aubufv_t * b, aubufv_t ch0, aubufv_t ch1)
 {
-	b [DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, ch0);
-	b [DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, ch1);
+	b [DMABUFF16RX_LEFT] = ch0;
+	b [DMABUFF16RX_RIGHT] = ch1;
 	return DMABUFFSTEP16RX;
 }
 
@@ -1064,9 +1090,15 @@ void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 }
 
 /* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
-void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1)
+//static void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1)
+//{
+//	codec16rx.savedata(ch0, ch1, putcbf_dmabuffer16rx);
+//}
+
+/* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
+static void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1)
 {
-	codec16rx.savedata(ch0, ch1, putcbf_dmabuffer16rx);
+	codec16rx.savedata_raw(ch0, ch1, putcbf_dmabuffer16rx_raw);
 }
 
 // Поэлементное заполнение DMA буфера AF DAC
@@ -3254,7 +3286,8 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		savedemod_to_AF_proc(left, left);
 #endif /* WITHDSPEXTDDC */
 #if WITHFPGAPIPE_CODEC1
-		elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
+		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
+		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
 #endif /* WITHFPGAPIPE_CODEC1 */
 	}
 
