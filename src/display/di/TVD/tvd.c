@@ -3,10 +3,11 @@
 
 #if WITHTVDHW
 #include "buffers.h"
-
+#include "gpio.h"
 #include "src/display/display.h"
-
 #include "bsp_tvd.h"
+
+#include <string.h>
 
 static void TVD_Clock(void)                   //включает все нужные клоки, гейты, снимает с ресета
 {
@@ -89,6 +90,7 @@ static void TVD_Init(uint32_t mode)                          //mode: NTSC, PAL
 	// mgs
 	{
 		const uintptr_t vram = allocate_dmabuffercolmain1fb();
+		dcache_clean_invalidate(vram, cachesize_dmabuffercolmain1fb());
 		const uintptr_t vram0 = vram;
 		const uintptr_t vram1 = vram0 + TVD_SIZE;
 		uintptr_t old = tvd_set_wb_addr2(sel, vram0, vram1);
@@ -120,25 +122,68 @@ static uint32_t TVD_Status(void)                        //состояние: 0 
 
 #include "../DI/sunxi_di.h"
 
+static const unsigned tbx [] =
+{
+	#include "src/testdata/pal_set.bin"
+};
+
+static unsigned tbd [];
+
+static unsigned recode288(unsigned v)
+{
+	ASSERT(v < ARRAY_SIZE(tbx));
+	return tbx [v];
+}
+
+static void vdecode(uintptr_t dst, uintptr_t src)
+{
+	uintptr_t vramsrc0 = src;
+	uintptr_t vramsrc1 = src + TVD_SIZE;
+	uintptr_t vramdst0 = dst;
+	uintptr_t vramdst1 = dst + TVD_SIZE;
+
+//	memcpy(dst, src, TVD_SIZE * 3 / 2);
+//	dcache_clean(dst, TVD_SIZE * 3 / 2);
+//	return;
+	unsigned row = 0;
+	for (row = 0; row < TVD_HEIGHT; row += 2)
+	{
+		const unsigned drow = 2 * recode288(row / 2);
+		// копирование области двух строк
+		memcpy((void *) (vramdst0 + drow * TVD_WIDTH), (void *) (vramsrc0 + row * TVD_WIDTH), TVD_WIDTH * 2);		// для двух строк
+		memcpy((void *) (vramdst1 + drow * TVD_WIDTH / 2), (void *) (vramsrc1 + row * TVD_WIDTH / 2), TVD_WIDTH);	// для двух строк
+	}
+	//memcpy(dst, src, TVD_SIZE * 3 / 2);
+}
+
+#define EMASK (1u << 11)
 void TVD_Handler(void)
 {
 	//dbg_putchar('<');
 	//подтверждение прерывания
-	tvd_irq_status_clear(0,TVD_IRQ_FRAME_END);
+	tvd_irq_status_clear(0, TVD_IRQ_FRAME_END);
 
 	//смена буфера TVD
 	//TVD_Shift++;
 
 	//установка нового адреса TVD
 	uintptr_t vram = allocate_dmabuffercolmain1fb();
+	dcache_clean_invalidate(vram, cachesize_dmabuffercolmain1fb());
 	const uintptr_t vram0 = vram;
 	const uintptr_t vram1 = vram0 + TVD_SIZE;
-	uintptr_t old = tvd_set_wb_addr2(0,vram0, vram1);
+	uintptr_t old = tvd_set_wb_addr2(0, vram0, vram1);
 	if (old)
 	{
+		if (gpioX_getinputs(GPIOG) & EMASK)
+		{
+			save_dmabuffercolmain1fb(old);
+			return;
+		}
 		//PRINTF("%08X ", old);
-		save_dmabuffercolmain1fb(old);
-		//release_dmabuffercolmain1fb(old);
+		uintptr_t vramout = allocate_dmabuffercolmain1fb();
+		vdecode(vramout, old);
+		save_dmabuffercolmain1fb(vramout);
+		release_dmabuffercolmain1fb(old);
 		//return;
 		//запуск де-интерлейсера
 		//di_dev_apply(TVD_Shift+1, DI_Shift+1);
@@ -163,7 +208,15 @@ void TVD_Handler(void)
 
 void cap_test(void)
 {
-
+	arm_hardware_piog_inputs(EMASK);
+	{
+		unsigned i;
+		ASSERT(288 == ARRAY_SIZE(tbx));
+		for (i = 0; i < ARRAY_SIZE(tbx); ++ i)
+		{
+			tbd [tbx[i]] = i;
+		}
+	}
 //	DI_INIT();
 //	di_dev_query_state_with_clear();                                  //очистка флага прерывания
 //	arm_hardware_set_handler_system(DI_IRQn, DI_Handler);
