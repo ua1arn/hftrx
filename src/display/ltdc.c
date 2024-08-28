@@ -4437,7 +4437,6 @@ static void write32(uintptr_t addr, uint32_t value)
 }
 
 #define IS_DE3 0
-#define CHANNEL 0
 
 #define HSUB 2
 #define VSUB 2
@@ -5310,7 +5309,7 @@ static const uint32_t lan2coefftab32[480] = {
 	0x0e1d1401, 0x0f1d1301, 0x0f1d1301, 0x101e1200,
 };
 
-static uint32_t sun8i_vi_scaler_base(int channel)
+static uintptr_t sun8i_vi_scaler_base(int rtmixid)
 {
  return 0;
 
@@ -5349,7 +5348,7 @@ static int sun8i_vi_scaler_coef_index(unsigned int step)
 	}
 }
 
-static void sun8i_vi_scaler_set_coeff(int rtmixid, uint32_t base, uint32_t hstep, uint32_t vstep)
+static void sun8i_vi_scaler_set_coeff(int rtmixid, uintptr_t base, uint32_t hstep, uint32_t vstep)
 {
 	const uint32_t *ch_left, *ch_right, *cy;
 	int offset, i;
@@ -5391,9 +5390,9 @@ static void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, u
 {
 	uint32_t chphase, cvphase;
 	uint32_t insize, outsize;
-	uint32_t base;
+	uintptr_t base;
 
-	base = sun8i_vi_scaler_base(CHANNEL);
+	base = sun8i_vi_scaler_base(rtmixid);
 
 	hphase <<= SUN8I_VI_SCALER_PHASE_FRAC - 16;
 	vphase <<= SUN8I_VI_SCALER_PHASE_FRAC - 16;
@@ -5462,9 +5461,10 @@ static void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, u
 
 static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 {
-	uint32_t val, base;
+	uint32_t val;
+	uintptr_t base;
 
-	base = sun8i_vi_scaler_base(CHANNEL);
+	base = sun8i_vi_scaler_base(rtmixid);
 
 	if (enable)
 		val = SUN8I_SCALER_VSU_CTRL_EN |
@@ -5535,7 +5535,7 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 }
 #endif
 
-static void t113_scaler_initialize(int rtmixid, const videomode_t * vdmode)
+static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmode)
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
     {
@@ -7075,14 +7075,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
 
-		{
-			const int rtmixid = RTMIXIDLCD;
-			const unsigned disp = rtmixid - 1;
-		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-			t113_de_update(rtmixid);	/* Update registers */
-		}
-
 #if defined (TCONTV_PTR)
 		{
 			const int rtmixid = RTMIXIDTV;
@@ -7091,11 +7083,20 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
 
-			t113_scaler_initialize(rtmixid, vdmode_CRT);
+			t113_de_scaler_initialize(rtmixid, vdmode_CRT);
 		}
-
-
 #endif
+
+		{
+			const int rtmixid = RTMIXIDLCD;
+			const unsigned disp = rtmixid - 1;
+		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_update(rtmixid);	/* Update registers */
+
+			t113_de_scaler_initialize(rtmixid, vdmode);
+			sun8i_vi_scaler_enable(rtmixid, 0);
+		}
 	}
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
