@@ -2444,49 +2444,6 @@ static void t113_de_update(int rtmixid)
 		;
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64*0
-
-static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
-{
-	const uint_fast32_t scale_x = (uint_fast64_t) vdmodein->width * 0x100000 / vdmodeout->width;
-	const uint_fast32_t scale_y = (uint_fast64_t) vdmodein->height * 0x100000 / vdmodeout->height;
-	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
-	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
-	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
-	if (vsu == NULL)
-		return;
-
-	//memset(vsu, 0, sizeof * vsu);
-	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
-	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
-
-	vsu->VSU_SCALE_MODE_REG = 0x00;	// 0x0:UI mode (for ARGB/YUV444 format)
-
-	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
-	vsu->VSU_Y_SIZE_REG   = ssize;
-	vsu->VSU_Y_HSTEP_REG  = scale_x;
-	vsu->VSU_Y_VSTEP_REG  = scale_y;
-	vsu->VSU_C_SIZE_REG   = ssize;	// input size
-	vsu->VSU_C_HSTEP_REG  = scale_x;
-	vsu->VSU_C_VSTEP_REG  = scale_y;
-
-	for (int n=0; n<32; n++)
-	{
-
-		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
-		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
-		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
-
-		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
-		vsu->VSU_C_HCOEF1_REGN [n] = 0;
-		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
-	}
-
-	//vsu->VSU_CTRL_REG = (UINT32_C(1) << 4) | (UINT32_C(1) << 0);	// COEF_SWITCH_EN EN
-}
-
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
-
 /* VI (VI0) */
 static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 {
@@ -4528,15 +4485,8 @@ static void write32(uintptr_t addr, uint32_t value)
 #define SUN8I_SCALER_VSU_CTRL_EN		BIT(0)
 #define SUN8I_SCALER_VSU_CTRL_COEFF_RDY		BIT(4)
 
-//#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 #define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
-#define regmap_write(id, x,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
-
-#define regmap_update_bits(id, x,y,z,t) do { \
-{                                                      \
- (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))&=~(z); \
- (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))|=(t);  \
-} while (0)
+#define regmap_write(id,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
 
 static const uint32_t bicubic8coefftab32_left[480] = {
 	0x40000000, 0x40ff0000, 0x3ffe0000, 0x3efe0000,
@@ -5417,22 +5367,22 @@ static void sun8i_vi_scaler_set_coeff(int rtmixid, uint32_t base, uint32_t hstep
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
+		regmap_write(rtmixid, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
 			     lan3coefftab32_left[offset + i]);
-		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
+		regmap_write(rtmixid, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
 			     lan3coefftab32_right[offset + i]);
-		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
+		regmap_write(rtmixid, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
 			     ch_left[offset + i]);
-		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
+		regmap_write(rtmixid, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
 			     ch_right[offset + i]);
 	}
 
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_YVCOEFF(base, i),
+		regmap_write(rtmixid, SUN8I_SCALER_VSU_YVCOEFF(base, i),
 			     lan2coefftab32[offset + i]);
-		regmap_write(rtmixid, map, SUN8I_SCALER_VSU_CVCOEFF(base, i),
+		regmap_write(rtmixid, SUN8I_SCALER_VSU_CVCOEFF(base, i),
 			     cy[offset + i]);
 	}
 }
@@ -5475,35 +5425,35 @@ static void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, u
 		else
 			val = SUN50I_SCALER_VSU_SCALE_MODE_NORMAL;
 
-		regmap_write(rtmixid, mixer->engine.regs,
+		regmap_write(rtmixid,
 			     SUN50I_SCALER_VSU_SCALE_MODE(base), val);
 	}
 
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_YINSIZE(base), insize);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_YHSTEP(base), hscale);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_YVSTEP(base), vscale);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_YHPHASE(base), hphase);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_YVPHASE(base), vphase);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_CINSIZE(base),
 		     SUN8I_VI_SCALER_SIZE(src_w / HSUB,
 					  src_h / VSUB));
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_CHSTEP(base),
 		     hscale / HSUB);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_CVSTEP(base),
 		     vscale / VSUB);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_CHPHASE(base), chphase);
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
 
 	sun8i_vi_scaler_set_coeff(rtmixid, base,
@@ -5522,7 +5472,7 @@ static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 	else
 		val = 0;
 
-	regmap_write(rtmixid, mixer->engine.regs,
+	regmap_write(rtmixid,
 		     SUN8I_SCALER_VSU_CTRL(base), val);
 }
 
@@ -5541,6 +5491,61 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
 
 	sun8i_vi_scaler_setup(rtmixid, src_w, src_h, dst_w, dst_h, hscale, vscale, 0, 0);
 	sun8i_vi_scaler_enable(rtmixid, 1);
+}
+
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+
+static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
+{
+	const uint_fast32_t scale_x = (uint_fast64_t) vdmodein->width * 0x100000 / vdmodeout->width;
+	const uint_fast32_t scale_y = (uint_fast64_t) vdmodein->height * 0x100000 / vdmodeout->height;
+	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
+	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
+	if (vsu == NULL)
+		return;
+
+	//memset(vsu, 0, sizeof * vsu);
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	vsu->VSU_SCALE_MODE_REG = 0x00;	// 0x0:UI mode (for ARGB/YUV444 format)
+
+	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
+	vsu->VSU_Y_SIZE_REG   = ssize;
+	vsu->VSU_Y_HSTEP_REG  = scale_x;
+	vsu->VSU_Y_VSTEP_REG  = scale_y;
+	vsu->VSU_C_SIZE_REG   = ssize;	// input size
+	vsu->VSU_C_HSTEP_REG  = scale_x;
+	vsu->VSU_C_VSTEP_REG  = scale_y;
+
+	for (int n=0; n < 32; n++)
+	{
+
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
+		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
+
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
+		vsu->VSU_C_HCOEF1_REGN [n] = 0;
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
+	}
+
+	//vsu->VSU_CTRL_REG = (UINT32_C(1) << 4) | (UINT32_C(1) << 0);	// COEF_SWITCH_EN EN
+}
+#endif
+
+static void t113_scaler_initialize(int rtmixid, const videomode_t * vdmode)
+{
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+    {
+    	t113_vsu_setup(rtmixid, vdmode, vdmode);
+    }
+#else
+	{
+		t113_vi_scaler_setup(rtmixid, vdmode);
+	}
+#endif
 }
 
 /* ********************************* */
@@ -7085,16 +7090,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
-		#if CPUSTYLE_T507
-		    {
-		    	t113_vsu_setup(rtmixid, vdmode_CRT, vdmode_CRT);
-		    }
-		#else
-			{
-				t113_vi_scaler_setup(rtmixid, vdmode_CRT);
-			}
-		#endif
 
+			t113_scaler_initialize(rtmixid, vdmode_CRT);
 		}
 
 
