@@ -3914,9 +3914,9 @@ void buffers_diagnostics(void)
 // инициализация системы буферов
 void buffers_initialize(void)
 {
-	static ticker_t buffticker;
 
 #if WITHBUFFERSDEBUG
+	static ticker_t buffticker;
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
