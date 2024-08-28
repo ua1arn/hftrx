@@ -124,18 +124,25 @@ static uint32_t TVD_Status(void)                        //состояние: 0 
 
 static const unsigned tbx [] =
 {
+		287,
 	#include "src/testdata/pal_set.bin"
 };
 
-static unsigned tbd [];
+static unsigned tbd [ARRAY_SIZE(tbx)];
 
-static unsigned recode288(unsigned v)
+static unsigned encode288(unsigned v)
 {
 	ASSERT(v < ARRAY_SIZE(tbx));
 	return tbx [v];
 }
 
-static void vdecode(uintptr_t dst, uintptr_t src)
+static unsigned decode288(unsigned v)
+{
+	ASSERT(v < ARRAY_SIZE(tbd));
+	return tbd [v];
+}
+
+static void vdecode(uintptr_t dst, uintptr_t src, unsigned (* recode288fn)(unsigned v))
 {
 	uintptr_t vramsrc0 = src;
 	uintptr_t vramsrc1 = src + TVD_SIZE;
@@ -148,7 +155,7 @@ static void vdecode(uintptr_t dst, uintptr_t src)
 	unsigned row = 0;
 	for (row = 0; row < TVD_HEIGHT; row += 2)
 	{
-		const unsigned drow = 2 * recode288(row / 2);
+		const unsigned drow = 2 * recode288fn(row / 2);
 		// копирование области двух строк
 		memcpy((void *) (vramdst0 + drow * TVD_WIDTH), (void *) (vramsrc0 + row * TVD_WIDTH), TVD_WIDTH * 2);		// для двух строк
 		memcpy((void *) (vramdst1 + drow * TVD_WIDTH / 2), (void *) (vramsrc1 + row * TVD_WIDTH / 2), TVD_WIDTH);	// для двух строк
@@ -156,7 +163,8 @@ static void vdecode(uintptr_t dst, uintptr_t src)
 	//memcpy(dst, src, TVD_SIZE * 3 / 2);
 }
 
-#define EMASK (1u << 11)
+#define EMASK (1u << 11)	// PG11
+#define DMASK (1u << 4)		// PG4
 void TVD_Handler(void)
 {
 	//dbg_putchar('<');
@@ -174,16 +182,24 @@ void TVD_Handler(void)
 	uintptr_t old = tvd_set_wb_addr2(0, vram0, vram1);
 	if (old)
 	{
-		if (gpioX_getinputs(GPIOG) & EMASK)
+		if ((gpioX_getinputs(GPIOG) & EMASK) == 0)
+		{
+			uintptr_t vramout = allocate_dmabuffercolmain1fb();
+			vdecode(vramout, old, encode288);
+			save_dmabuffercolmain1fb(vramout);
+			release_dmabuffercolmain1fb(old);
+		}
+		else if ((gpioX_getinputs(GPIOG) & DMASK) == 0)
+		{
+			uintptr_t vramout = allocate_dmabuffercolmain1fb();
+			vdecode(vramout, old, decode288);
+			save_dmabuffercolmain1fb(vramout);
+			release_dmabuffercolmain1fb(old);
+		}
+		else
 		{
 			save_dmabuffercolmain1fb(old);
-			return;
 		}
-		//PRINTF("%08X ", old);
-		uintptr_t vramout = allocate_dmabuffercolmain1fb();
-		vdecode(vramout, old);
-		save_dmabuffercolmain1fb(vramout);
-		release_dmabuffercolmain1fb(old);
 		//return;
 		//запуск де-интерлейсера
 		//di_dev_apply(TVD_Shift+1, DI_Shift+1);
@@ -209,6 +225,8 @@ void TVD_Handler(void)
 void cap_test(void)
 {
 	arm_hardware_piog_inputs(EMASK);
+	arm_hardware_piog_inputs(DMASK);
+	PRINTF("ARRAY_SIZE(tbx)=%d\n", ARRAY_SIZE(tbx));
 	{
 		unsigned i;
 		ASSERT(288 == ARRAY_SIZE(tbx));
