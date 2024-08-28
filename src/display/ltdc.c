@@ -4486,6 +4486,7 @@ static void write32(uintptr_t addr, uint32_t value)
 
 #define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
 #define regmap_write(id,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
+#define regmap_read(id,y) (*(volatile uint32_t*) (T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))
 
 static const uint32_t bicubic8coefftab32_left[480] = {
 	0x40000000, 0x40ff0000, 0x3ffe0000, 0x3efe0000,
@@ -5424,39 +5425,29 @@ static void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, u
 		else
 			val = SUN50I_SCALER_VSU_SCALE_MODE_NORMAL;
 
-		regmap_write(rtmixid,
-			     SUN50I_SCALER_VSU_SCALE_MODE(base), val);
+		regmap_write(rtmixid, SUN50I_SCALER_VSU_SCALE_MODE(base), val);
+
+		ASSERT(regmap_read(rtmixid, SUN50I_SCALER_VSU_SCALE_MODE(base)) == val);
 	}
 
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_YINSIZE(base), insize);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_YHSTEP(base), hscale);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_YVSTEP(base), vscale);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_YHPHASE(base), hphase);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_YVPHASE(base), vphase);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_CINSIZE(base),
-		     SUN8I_VI_SCALER_SIZE(src_w / HSUB,
-					  src_h / VSUB));
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_CHSTEP(base),
-		     hscale / HSUB);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_CVSTEP(base),
-		     vscale / VSUB);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_CHPHASE(base), chphase);
-	regmap_write(rtmixid,
-		     SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
+	ASSERT(regmap_read(rtmixid, SUN8I_SCALER_VSU_OUTSIZE(base)) == outsize);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_YINSIZE(base), insize);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_YHSTEP(base), hscale);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_YVSTEP(base), vscale);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_YHPHASE(base), hphase);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_YVPHASE(base), vphase);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_CINSIZE(base), SUN8I_VI_SCALER_SIZE(src_w / HSUB, src_h / VSUB));
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_CHSTEP(base), hscale / HSUB);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_CVSTEP(base), vscale / VSUB);
 
-	sun8i_vi_scaler_set_coeff(rtmixid, base,
-				  hscale, vscale);
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_CHPHASE(base), chphase);
+	ASSERT(regmap_read(rtmixid, SUN8I_SCALER_VSU_CHPHASE(base)) == chphase);
+
+	regmap_write(rtmixid, SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
+	//ASSERT(regmap_read(rtmixid, SUN8I_SCALER_VSU_CVPHASE(base)) == cvphase);
+
+	sun8i_vi_scaler_set_coeff(rtmixid, base, hscale, vscale);
 }
 
 static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
@@ -5478,17 +5469,18 @@ static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 
 /* ********************************* */
 
-static void t113_vi_scaler_setup(int rtmixid, const videomode_t * vdmode)
+static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, const videomode_t * dstvdmode)
 {
-	uint32_t src_w = TVD_WIDTH;
-	uint32_t src_h = TVD_HEIGHT;
+	uint32_t src_w = srcvdmode->width;
+	uint32_t src_h = srcvdmode->height;
 
-	uint32_t dst_w = vdmode->width;//LCD_PIXEL_WIDTH;
-	uint32_t dst_h = vdmode->height;//LCD_PIXEL_HEIGHT;
+	uint32_t dst_w = dstvdmode->width;//LCD_PIXEL_WIDTH;
+	uint32_t dst_h = dstvdmode->height;//LCD_PIXEL_HEIGHT;
 
 	uint32_t hscale = (src_w << 16) / dst_w;
 	uint32_t vscale = (src_h << 16) / dst_h;
 
+	sun8i_vi_scaler_enable(rtmixid, 0);
 	sun8i_vi_scaler_setup(rtmixid, src_w, src_h, dst_w, dst_h, hscale, vscale, 0, 0);
 	sun8i_vi_scaler_enable(rtmixid, 1);
 }
@@ -5537,13 +5529,14 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 
 static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmode)
 {
+	PRINTF("t113_de_scaler_initialize: rtmixid=%d\n", rtmixid);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
     {
     	t113_vsu_setup(rtmixid, vdmode, vdmode);
     }
 #else
 	{
-		t113_vi_scaler_setup(rtmixid, vdmode);
+		t113_vi_scaler_setup(rtmixid, vdmode, vdmode);
 	}
 #endif
 }
@@ -7079,7 +7072,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		{
 			const int rtmixid = RTMIXIDTV;
 
-			/* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+			/* эта инициализация после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
 
@@ -7089,13 +7082,13 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 		{
 			const int rtmixid = RTMIXIDLCD;
-			const unsigned disp = rtmixid - 1;
-		    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+
+			/* эта инициализация после корректного соединния с работающим TCON */
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 			t113_de_update(rtmixid);	/* Update registers */
 
-			t113_de_scaler_initialize(rtmixid, vdmode);
-			sun8i_vi_scaler_enable(rtmixid, 0);
+			//t113_de_scaler_initialize(rtmixid, vdmode);
+			//sun8i_vi_scaler_enable(rtmixid, 0);
 		}
 	}
     //PRINTF("hardware_ltdc_initialize done.\n");
