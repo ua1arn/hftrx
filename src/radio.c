@@ -11547,11 +11547,7 @@ updateboardZZZ(
 			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#else /* WITHONEATTONEAMP */
 			board_set_att(attmodes [gatt].code);
-#if WITHFORCEPREAMP
-			board_set_preamp(1 || pampmodes [gpamp].code);
-#else /* WITHFORCEPREAMP */
 			board_set_preamp(pampmodes [gpamp].code);
-#endif /* WITHFORCEPREAMP */
 			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
 		#if ! WITHAGCMODENONE
