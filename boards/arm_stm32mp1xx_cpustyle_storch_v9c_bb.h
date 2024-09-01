@@ -541,17 +541,17 @@
 
 	#define HOSTBB_LED1_BIT  (UINT32_C(1) << 5)	// PB5 - led on host board
 	#define HOSTBB_LED2_BIT  (UINT32_C(1) << 7)	// PC7 - led/heartbeat from ethernet modula
-	#define HOSTBB_PTTIN_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN
-	#define HOSTBB_PTTOUT_BIT  (UINT32_C(1) << 10)	// PH10 - PTT_OUT
+	#define HOSTBB_PTTTOMODEM_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN to modem
+	#define HOSTBB_PTTFROMMODEM_BIT  (UINT32_C(1) << 10)	// PH10 - PTT_OUT from modem
 	#define HOSTBB_RESET_BIT  (UINT32_C(1) << 11)	// PH11 - RESET OUT
 	#define HOSTBB_RESET2_BIT  (UINT32_C(1) << 12)	// PH12 - RESET_OUT2
 
 	#define HOSTBB_INITIALIZE() do { \
-		/*arm_hardware_pioh_inputs(HOSTBB_PTTIN_BIT); *//* set as input with pull-up */ \
-		/*arm_hardware_pioh_updown(HOSTBB_PTTIN_BIT, HOSTBB_PTTIN_BIT, 0); */\
+		/*arm_hardware_pioh_inputs(HOSTBB_PTTFROMMODEM_BIT); *//* set as input with pull-up */ \
+		/*arm_hardware_pioh_updown(HOSTBB_PTTFROMMODEM_BIT, HOSTBB_PTTFROMMODEM_BIT, 0); */\
 		arm_hardware_pioc_inputs(HOSTBB_LED2_BIT); /* set as input with pull-up */ \
 		arm_hardware_pioc_updown(HOSTBB_LED2_BIT, 0, HOSTBB_LED2_BIT); \
-		arm_hardware_pioh_opendrain(HOSTBB_PTTOUT_BIT, HOSTBB_PTTOUT_BIT); /* open drain */ \
+		arm_hardware_pioh_opendrain(HOSTBB_PTTTOMODEM_BIT, HOSTBB_PTTTOMODEM_BIT); /* open drain */ \
 		arm_hardware_pioh_opendrain(HOSTBB_RESET_BIT, 0 * HOSTBB_RESET_BIT); /* open drain */ \
 		arm_hardware_pioh_opendrain(HOSTBB_RESET2_BIT, 0 * HOSTBB_RESET2_BIT); /* open drain */ \
 		local_delay_ms(10); \
@@ -602,7 +602,7 @@
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 15)		// PF15 - PTT3
 
 	#define PTT4_TARGET_PIN				(gpioX_getinputs(GPIOH))
-	#define PTT4_BIT_PTT				HOSTBB_PTTIN_BIT	// PH9 - PTT_IN
+	#define PTT4_BIT_PTT				HOSTBB_PTTFROMMODEM_BIT	// PH9 - PTT_IN
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 || (PTT4_TARGET_PIN & PTT4_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
