@@ -60,11 +60,7 @@ enum
 	PGunused
 };
 
-#if 1//TUNE_TOP > 100000000uL
-	#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
-#else
-	#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
-#endif
+#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 #define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
 // 480/5 = 96, 800/16=50
@@ -79,21 +75,27 @@ static const FLASHMEM struct dzone dzones [] =
 	{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
-	{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
+//	{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 	//{	0,	0, 	display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
 	{	10,	0,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
 	//{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-	{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-	{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+//	{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+//	{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 	{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 	{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 	{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-#if 0
-	{	0,	0,	display2_ENC1F_8,	REDRM_MODE, PGALL, },
-	{	9,	0,	display2_ENC2F_8,	REDRM_MODE, PGALL, },
-	{	18,	0,	display2_ENC3F_8,	REDRM_MODE, PGALL, },
-	{	27,	0,	display2_ENC4F_8,	REDRM_MODE, PGALL, },
+
+//	{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+//	{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+
+#if 1
+	{	0,	0,	display2_ENC1F_9,	REDRM_MODE, PGALL, },
+	{	10,	0,	display2_ENC2F_9,	REDRM_MODE, PGALL, },
+	{	20,	0,	display2_ENC3F_9,	REDRM_MODE, PGALL, },
+	{	41,	0,	display2_ENC4F_9,	REDRM_MODE, PGALL, },
 #endif
+
+
 #if WITHBARS
 	{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 	{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
@@ -107,8 +109,6 @@ static const FLASHMEM struct dzone dzones [] =
 	{	15,	6,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 	{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
-	{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-	{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 
 	{	37, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR

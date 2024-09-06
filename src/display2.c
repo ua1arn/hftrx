@@ -1666,13 +1666,13 @@ void display_1fmenu_P(
 //////////////
 
 // Отображение остояния ENC1F
-static void display2_ENC1F_8(
+static void display2_ENC1F_9(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-	char buf2 [9];
+	char buf2 [10];
 	const uint_fast8_t active = hamradio_get_bringENC1F();
 	(void) pctx;
 
@@ -1681,13 +1681,13 @@ static void display2_ENC1F_8(
 }
 
 // Отображение остояния ENC2F
-static void display2_ENC2F_8(
+static void display2_ENC2F_9(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-	char buf2 [9];
+	char buf2 [10];
 	const uint_fast8_t active = hamradio_get_bringENC2F();
 	(void) pctx;
 
@@ -1696,13 +1696,13 @@ static void display2_ENC2F_8(
 }
 
 // Отображение остояния ENC4F
-static void display2_ENC3F_8(
+static void display2_ENC3F_9(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-	char buf2 [9];
+	char buf2 [10];
 	const uint_fast8_t active = hamradio_get_bringENC3F();
 	(void) pctx;
 
@@ -1711,13 +1711,13 @@ static void display2_ENC3F_8(
 }
 
 // Отображение остояния ENC4F
-static void display2_ENC4F_8(
+static void display2_ENC4F_9(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-	char buf2 [9];
+	char buf2 [10];
 	const uint_fast8_t active = hamradio_get_bringENC4F();
 	(void) pctx;
 
