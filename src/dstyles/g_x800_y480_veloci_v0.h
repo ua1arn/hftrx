@@ -88,6 +88,12 @@ static const FLASHMEM struct dzone dzones [] =
 	{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 	{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 	{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+#if 0
+	{	0,	0,	display2_ENC1F_8,	REDRM_MODE, PGALL, },
+	{	9,	0,	display2_ENC2F_8,	REDRM_MODE, PGALL, },
+	{	18,	0,	display2_ENC3F_8,	REDRM_MODE, PGALL, },
+	{	27,	0,	display2_ENC4F_8,	REDRM_MODE, PGALL, },
+#endif
 #if WITHBARS
 	{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 	{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора

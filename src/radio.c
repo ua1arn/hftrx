@@ -4851,12 +4851,88 @@ static void bring_rfvolume(void)
 
 static uint_fast16_t actbring_swr;
 
-// Начать отображение текущего положения регулировки RF
+// Начать отображение перегруза по SWR
 static void bring_swr(void)
 {
 	actbring_swr = actbring_time;
 }
 
+///
+
+
+static uint_fast16_t actbring_enc3;
+static uint_fast16_t actbring_enc4;
+static uint_fast16_t actbring_enc5;
+static uint_fast16_t actbring_enc6;
+
+static void bring_enc3(void)
+{
+	actbring_enc3 = actbring_time;
+}
+
+static void bring_enc4(void)
+{
+	actbring_enc4 = actbring_time;
+}
+
+static void bring_enc5(void)
+{
+	actbring_enc5 = actbring_time;
+}
+
+static void bring_enc6(void)
+{
+	actbring_enc6 = actbring_time;
+}
+
+// Вращали 3-й валкодер (ENC1F)
+uint_fast8_t hamradio_get_bringENC1F(void)
+{
+	return actbring_enc3 != 0;
+}
+// Вращали 3-й валкодер (ENC2F)
+uint_fast8_t hamradio_get_bringENC2F(void)
+{
+	return actbring_enc4 != 0;
+}
+// Вращали 3-й валкодер (ENC3F)
+uint_fast8_t hamradio_get_bringENC3F(void)
+{
+	return actbring_enc5 != 0;
+}
+// Вращали 3-й валкодер (ENC4F)
+uint_fast8_t hamradio_get_bringENC4F(void)
+{
+	return actbring_enc6 != 0;
+}
+
+///
+
+/* получить надпись для отображения состояние ENC1F */
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "ENC1F");
+}
+
+/* получить надпись для отображения состояние ENC2F */
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "ENC2F");
+}
+
+/* получить надпись для отображения состояние ENC3F */
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "ENC3F");
+}
+
+/* получить надпись для отображения состояние ENC4F */
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "ENC4F");
+}
+
+///
 static uint_fast16_t actbring_tuneA;
 
 // Начать отображение текущей частоты на водопаде
@@ -4871,12 +4947,27 @@ uint_fast8_t hamradio_get_bringtuneA(void)
 	return actbring_tuneA != 0;
 }
 
+static uint_fast16_t actbring_tuneB;
+
+// Разрешить отображение текущей частоты на водопаде
+uint_fast8_t hamradio_get_bringtuneB(void)
+{
+	return actbring_tuneB != 0;
+}
+
 static void bringtimers(void)
 {
 	actbring_afvolume = actbring_afvolume ? (actbring_afvolume - 1) : 0;
 	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
 	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
+	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
 	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
+
+	actbring_enc3 = actbring_enc3 ? (actbring_enc3 - 1) : 0;	// енкодер ENC1F
+	actbring_enc4 = actbring_enc4 ? (actbring_enc4 - 1) : 0;	// енкодер ENC2F
+	actbring_enc5 = actbring_enc5 ? (actbring_enc5 - 1) : 0;	// енкодер ENC3F
+	actbring_enc6 = actbring_enc6 ? (actbring_enc6 - 1) : 0;	// енкодер ENC4F
+
 }
 
 #if WITHAUTOTUNER

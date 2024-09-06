@@ -1663,6 +1663,70 @@ void display_1fmenu_P(
 	display2_text_P(x, y, & label, colors_1fmenu, 0);
 }
 
+//////////////
+
+// Отображение остояния ENC1F
+static void display2_ENC1F_8(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	char buf2 [9];
+	const uint_fast8_t active = hamradio_get_bringENC1F();
+	(void) pctx;
+
+	hamradio_get_label_ENC1F(active, buf2, ARRAY_SIZE(buf2));
+	display_2states_P(x, y, active, buf2, buf2);
+}
+
+// Отображение остояния ENC2F
+static void display2_ENC2F_8(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	char buf2 [9];
+	const uint_fast8_t active = hamradio_get_bringENC2F();
+	(void) pctx;
+
+	hamradio_get_label_ENC2F(active, buf2, ARRAY_SIZE(buf2));
+	display_2states_P(x, y, active, buf2, buf2);
+}
+
+// Отображение остояния ENC4F
+static void display2_ENC3F_8(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	char buf2 [9];
+	const uint_fast8_t active = hamradio_get_bringENC3F();
+	(void) pctx;
+
+	hamradio_get_label_ENC3F(active, buf2, ARRAY_SIZE(buf2));
+	display_2states_P(x, y, active, buf2, buf2);
+}
+
+// Отображение остояния ENC4F
+static void display2_ENC4F_8(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	char buf2 [9];
+	const uint_fast8_t active = hamradio_get_bringENC4F();
+	(void) pctx;
+
+	hamradio_get_label_ENC4F(active, buf2, ARRAY_SIZE(buf2));
+	display_2states_P(x, y, active, buf2, buf2);
+}
+
+/////////////
+
 static const FLASHMEM char text_nul1_P [] = " ";
 static const FLASHMEM char text_nul2_P [] = "  ";
 static const FLASHMEM char text_nul3_P [] = "   ";
