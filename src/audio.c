@@ -1502,7 +1502,7 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 
 // Установка параметров АРУ приёмника
 
-static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
+static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
 {
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
@@ -1519,12 +1519,12 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
-	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Установка параметров S-метра приёмника
 
-static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
+static void smeter_parameters_update(volatile agcparams_t * const agcp)
 {
 	agcp->agcoff = 0;
 
@@ -1543,7 +1543,7 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 
-	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
@@ -3376,8 +3376,6 @@ static RAMFUNC FLOAT_t agc_getsigpower(
 
 //
 // постоянные времени системы АРУ
-// Инициализация сделана для того, чтобы поместить эти переменные в обюласть CCM памяти
-// Присвоение осмысленных значений производится в соответствующих функциях инициализации.
 
 static RAMDTCM agcstate_t rxsmeterstate [NTRX];	// На каждый приёмник
 static RAMDTCM agcstate_t rxagcstate [NTRX];	// На каждый приёмник
@@ -5484,12 +5482,12 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		
-		agc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// приёмник #0,#1
+		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// приёмник #0,#1
 	}
 
 	// Параметры S-метра приёмника
 	{
-		agc_smeter_parameters_update(& rxsmeterparams);
+		smeter_parameters_update(& rxsmeterparams);
 	}
 
 
@@ -6593,5 +6591,7 @@ board_set_dspagc(uint_fast8_t n)
 
 void audio_diagnostics(void)
 {
-
+#if 0 && WITHDEBUG
+	PRINTF("Mic level x 1k: %f %f (ovf=%d)\n", txagcstate.agcslowcap, txagcstate.agcfastcap, dsp_getmikeadcoverflow());
+#endif
 }
