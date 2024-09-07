@@ -470,6 +470,7 @@ void beginstamp3(void);
 void endstamp3(void);
 
 void buffers_diagnostics(void);
+void audio_diagnostics(void);
 void dtmftest(void);
 void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calculate full array of coefficients
 

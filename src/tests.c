@@ -5431,6 +5431,7 @@ void looptests(void)
 	{
 		// See buffers2.cpp - WITHBUFFERSDEBUG
 		buffers_diagnostics();
+		audio_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL

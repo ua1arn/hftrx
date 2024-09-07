@@ -1450,7 +1450,9 @@ uintptr_t getfilled_dmabuffer32rx(void)
 
 // Обработка сразу в прерывании
 #define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM)))
+#if ! TXSPOOLCOND
 #define TXSPOOLCORE 3
+#endif
 
 static void dsphftrxproc_spool_user(void * ctx)
 {
@@ -3038,9 +3040,6 @@ static uint_fast8_t isrts192(void)
 void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-	++ n4;
-#endif /* WITHBUFFERSDEBUG */
 	voice32rts192_t * const p = CONTAINING_RECORD(addr, voice32rts192_t, u.buff);
 
 	unsigned i;
@@ -3334,9 +3333,6 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 {
-#if WITHBUFFERSDEBUG
-//	++ n6;
-#endif /* WITHBUFFERSDEBUG */
 	switch (uacinalt)
 	{
 	case UACINALT_NONE:
@@ -3374,9 +3370,6 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 {
-#if WITHBUFFERSDEBUG
-//	++ n6;
-#endif /* WITHBUFFERSDEBUG */
 	switch (uacinrtsalt)
 	{
 	case UACINRTSALT_NONE:

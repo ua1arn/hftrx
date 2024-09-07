@@ -6590,3 +6590,8 @@ board_set_dspagc(uint_fast8_t n)
 		board_dsp1regchanged();
 	}
 }
+
+void audio_diagnostics(void)
+{
+
+}
