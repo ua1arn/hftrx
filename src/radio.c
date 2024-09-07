@@ -4069,7 +4069,11 @@ enum
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
+#if WITHNOAUDIPROC
+	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
+#else /* WITHNOAUDIPROC */
 	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
+#endif /* WITHNOAUDIPROC */
 
 	#if WITHCOMPRESSOR
 		static uint_fast8_t gcompressor_attack = 30;

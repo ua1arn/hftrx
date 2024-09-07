@@ -128,7 +128,7 @@ static uint_fast8_t		glob_lineinput;	/* используется line input вм
 static uint_fast8_t 	glob_mikeboost20db;	/* Включение усилителя 20 дБ за микрофоном */
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
-static uint_fast8_t		glob_mikehclip;			/* параметр ограничителя микрофона	*/
+static uint_fast8_t		glob_mikehclip;			/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
 #if defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS)
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
@@ -6158,7 +6158,7 @@ board_set_mikeagcgain(uint_fast8_t v)
 	}
 }
 
-/* Ограничитель в тракте микрофона */
+/* Ограничитель в тракте микрофона  (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
 void
 board_set_mikehclip(uint_fast8_t v)
 {

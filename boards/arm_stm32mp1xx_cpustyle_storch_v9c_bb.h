@@ -51,7 +51,7 @@
 		// Disable WITHCAT_CDC
 		#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 		#define WITHUART1HW_FIFO	1	/* использование FIFO */
-		#define WITHCAT_UART1		1
+		//#define WITHCAT_UART1		1
 		#define WITHCATSPEED 115200
 	#endif /* WITHCAT */
 
@@ -200,7 +200,7 @@
 	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
 	#define WITHUSBHW_OHCI_IX	0
 
-//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 //	#define WITHCAT_LWIP		1	/* использовать виртуальный последовательный порт на USB соединении */
 //	#define WITHMODEM_CDC	1
 
@@ -246,7 +246,7 @@
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	#else
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+		#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
