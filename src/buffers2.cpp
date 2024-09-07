@@ -1449,7 +1449,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 }
 
 // Обработка сразу в прерывании
-#define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 4) || ! WITHSMPSYSTEM)))
+#define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM)))
 #define TXSPOOLCORE 3
 
 static void dsphftrxproc_spool_user(void * ctx)
