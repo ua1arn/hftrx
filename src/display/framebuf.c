@@ -959,7 +959,6 @@ void arm_hardware_mdma_initialize(void)
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
 		CCU->G2D_BGR_REG &= ~ (UINT32_C(1) << 16);	/* G2D reset 0: Assert */
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);	/* G2D reset 1: De-assert */
-		(void) CCU->G2D_BGR_REG;
 		local_delay_us(10);
 
 		/* на Allwinner T597 модифицируемы только младшие 8 бит */
@@ -970,14 +969,25 @@ void arm_hardware_mdma_initialize(void)
 		(void) G2D_TOP->G2D_SCLK_DIV;
 		//local_delay_us(10);
 
-		G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_SCLK_GATE;
-		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_HCLK_GATE;
-		G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1) & ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_AHB_RST;
-		G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_AHB_RST;
+		if (1)
+		{
+#if defined (G2D_MIXER)
+			// MIXER
+			G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST &= ~ ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+#endif /* defined (G2D_MIXER) */
+		}
+
+		if (1)
+		{
+			// ROT
+			G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1);	// Assert reset: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1);	// De-assert reset: 0x02: rot, 0x01: mixer
+		}
 
 		local_delay_ms(10);
 
