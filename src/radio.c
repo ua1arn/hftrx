@@ -13648,6 +13648,11 @@ display_redrawfreqmodesbarsnow(
 	}
 }
 
+static uint_fast8_t enc1f_sel;
+static uint_fast8_t enc2f_sel;
+static uint_fast8_t enc3f_sel;
+static uint_fast8_t enc4f_sel;
+
 static void
 directctlupdate(
 	uint_fast8_t inmenu,
@@ -13715,8 +13720,8 @@ directctlupdate(
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHENCODER_1F
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
-			switch (0)
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+			switch (enc1f_sel)
 			{
 			case 0:
 				/* установка громкости */
@@ -18348,6 +18353,46 @@ process_key_menuset0(uint_fast8_t kbch)
 		/* переход на предыдущий (с меньшей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
 		return 1;	// требуется обновление индикатора
+
+#if WITHENCODER_1F
+	case KBD_ENC1F_PRESS:
+		enc1f_sel = calc_next(enc1f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC1F_HOLD:
+		enc1f_sel = 0;//calc_next(enc1f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_1F */
+
+#if WITHENCODER_2F
+	case KBD_ENC2F_PRESS:
+		enc2f_sel = calc_next(enc2f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC2F_HOLD:
+		enc2f_sel = 0;//calc_next(enc2f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_2F */
+
+#if WITHENCODER_3F
+	case KBD_ENC3F_PRESS:
+		enc3f_sel = calc_next(enc3f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC3F_HOLD:
+		enc3f_sel = 0;//calc_next(enc3f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_3F */
+
+#if WITHENCODER_4F
+	case KBD_ENC4F_PRESS:
+		enc4f_sel = calc_next(enc4f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC4F_HOLD:
+		enc4f_sel = 0;//calc_next(enc4f_sel, 0, 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_4F */
 
 #if WITHDIRECTBANDS
 
