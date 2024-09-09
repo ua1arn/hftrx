@@ -265,9 +265,9 @@ encoder_get_snapshotproportional(
 
 
 /* получение количества шагов и скорости вращения. */
-int_least16_t
+static int_least16_t
 encoder_get_snapshot(
-	encoder_t * e,
+	encoder_t * const e,
 	const uint_fast8_t derate
 	)
 {
@@ -287,7 +287,7 @@ encoder_get_snapshot(
 /* получение количества шагов, накопленного с момента предыдущего опроса */
 int_least16_t
 encoder_get_delta(
-	encoder_t * e,
+	encoder_t * const e,
 	const uint_fast8_t derate
 	)
 {
@@ -440,16 +440,18 @@ getRotateHiRes_A(
 int_least16_t 
 getRotateHiRes_B(
 	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-	uint_fast8_t derate
+	uint_fast8_t derateSUB,
+	uint_fast8_t derateFN
 	)
 {
 #if WITHENCODER2
-	int_least16_t nrotate = encoder_get_snapshot(& encoder2, derate);
+	int_least16_t nrotate = encoder_get_snapshot(& encoder2, derateFN);
 	* jumpsize = 1;
 	return nrotate;
 #elif WITHENCODER_SUB
-	return getRotateHiRes_X(& encoder_sub, jumpsize, derate);
+	return getRotateHiRes_X(& encoder_sub, jumpsize, derateSUB);
 #else /* WITHENCODER_SUB */
+	* jumpsize = 1;
 	return 0;
 #endif /* WITHENCODER_SUB */
 }
@@ -518,7 +520,7 @@ void encoders_initialize(void)
 
 void indev_enc2_spool(void)
 {
-	encspeed_spool(NULL);
+	encspeed_spool(& encoder2);
 }
 
 void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)

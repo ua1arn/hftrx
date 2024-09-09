@@ -44,11 +44,7 @@ typedef struct encoder_tag
 } encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
-int_least16_t
-encoder_get_snapshot(
-	encoder_t * e,
-	uint_fast8_t derate
-	);
+
 int_least16_t
 encoder_get_delta(
 	encoder_t * e,
@@ -62,7 +58,11 @@ encoder_get_snapshotproportional(
 	);
 
 int_least16_t getRotateHiRes_A(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
-int_least16_t getRotateHiRes_B(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes_B(
+		uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+		uint_fast8_t derate,
+		uint_fast8_t derateFN
+		);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
 
 void encoders_clear(void);	/* накопитель сбрасывается */
 

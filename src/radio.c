@@ -17463,7 +17463,7 @@ modifysettings(
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes_B(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes_B(& js, genc1div * gencderate, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -20033,7 +20033,7 @@ hamradio_main_step(void)
 				nrotate_sub = 0;	// ignore encoder
 			#else
 				nrotate_main = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
-				nrotate_sub = getRotateHiRes_B(& jumpsize_sub, genc2div);
+				nrotate_sub = getRotateHiRes_B(& jumpsize_sub, genc1div * gencderate, genc2div);
 			#endif
 
 #if WITHENCODER2
@@ -20126,7 +20126,7 @@ hamradio_main_step(void)
 			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
 
-			if (nrotate_main != 0 || nrotate_sub)
+			if (nrotate_main || nrotate_sub)
 			{
 				bring_tuneA();	// Начать отображение текущей частоты на водопаде
 				bring_tuneB();	// Начать отображение текущей частоты на водопаде
