@@ -308,14 +308,15 @@
 	#define ENCODER_INITIALIZE() do { \
 		static einthandler_t eh1; \
 		static einthandler_t eh2; \
-		static einthandler_t eh3; \
-		static einthandler_t eh4; \
-		static einthandler_t eh5; \
-		static einthandler_t eh6; \
+		static einthandler_t enc1fh; \
+		static einthandler_t enc2fh; \
+		static einthandler_t enc3fh; \
+		static einthandler_t enc4fh; \
 		static ticker_t th3; \
 		static ticker_t th4; \
 		static ticker_t th5; \
 		static ticker_t th6; \
+		/* Разным валкодерам на одном GPIO нельзя назначать разные приоритеты */ \
 		/* */ \
 		/* Main tuning knob */ \
 		arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
@@ -327,43 +328,44 @@
 		einthandler_initialize(& eh2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
 		/* */ \
-		/* ENC1F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		/* ENC1F - прерывания на обе фазы и опрос по таймеру */ \
 		ticker_initialize(& th3, 1, spool_encinterrupts, & encoder_ENC1F); \
 		ticker_add(& th3); \
 		arm_hardware_piod_altfn20(BOARD_ENC1F_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh3, BOARD_ENC1F_BITS, spool_encinterrupts, & encoder_ENC1F); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh3); \
+		einthandler_initialize(& enc1fh, BOARD_ENC1F_BITS, spool_encinterrupts, & encoder_ENC1F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & enc1fh); \
 		/* */ \
-		/* ENC2F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		/* ENC2F - прерывания на обе фазы и опрос по таймеру */ \
 		ticker_initialize(& th4, 1, spool_encinterrupts, & encoder_ENC2F); \
 		ticker_add(& th4); \
 		arm_hardware_piod_altfn20(BOARD_ENC2F_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh4, BOARD_ENC2F_BITS, spool_encinterrupts, & encoder_ENC2F); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh4); \
+		einthandler_initialize(& enc2fh, BOARD_ENC2F_BITS, spool_encinterrupts, & encoder_ENC2F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & enc2fh); \
 		/* */ \
-		/* ENC3F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		/* ENC3F - прерывания на обе фазы и опрос по таймеру */ \
 		ticker_initialize(& th5, 1, spool_encinterrupts, & encoder_ENC3F); \
 		ticker_add(& th5); \
 		arm_hardware_piod_altfn20(BOARD_ENC3F_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh5, BOARD_ENC3F_BITS, spool_encinterrupts, & encoder_ENC3F); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh5); \
+		einthandler_initialize(& enc3fh, BOARD_ENC3F_BITS, spool_encinterrupts, & encoder_ENC3F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & enc3fh); \
 		/* */ \
-		/* ENC4F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		/* ENC4F - прерывания на обе фазы и опрос по таймеру */ \
 		ticker_initialize(& th6, 1, spool_encinterrupts, & encoder_ENC4F); \
 		ticker_add(& th6); \
 		arm_hardware_piod_altfn20(BOARD_ENC4F_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh6, BOARD_ENC4F_BITS, spool_encinterrupts, & encoder_ENC4F); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh6); \
+		einthandler_initialize(& enc4fh, BOARD_ENC4F_BITS, spool_encinterrupts, & encoder_ENC4F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & enc4fh); \
 	} while (0)
 
-	#define ENCODER_INITIALIZE_new() do { \
-		enum { posedge = 1, negedge = 0 }; \
+	#define ENCODER_INITIALIZE_experemental() do { \
+		enum { posedge = 1, negedge = ! posedge }; \
 		static einthandler_t eh1; \
 		static einthandler_t eh2; \
 		static einthandler_t enc1fh; \
 		static einthandler_t enc2fh; \
 		static einthandler_t enc3fh; \
 		static einthandler_t enc4fh; \
+		/* Разным валкодерам на одном GPIO нельзя назначать разные приоритеты */ \
 		/* */ \
 		/* Main tuning knob */ \
 		arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
