@@ -4951,13 +4951,22 @@ uint_fast8_t hamradio_get_bringtuneA(void)
 	return actbring_tuneA != 0;
 }
 
+///
 static uint_fast16_t actbring_tuneB;
+
+// Начать отображение текущей частоты на водопаде
+static void bring_tuneB(void)
+{
+	actbring_tuneB = actbring_time;
+}
 
 // Разрешить отображение текущей частоты на водопаде
 uint_fast8_t hamradio_get_bringtuneB(void)
 {
 	return actbring_tuneB != 0;
 }
+
+static uint_fast16_t actbring_tuneB;
 
 static void bringtimers(void)
 {
@@ -8431,7 +8440,7 @@ void display2_fnlabel9(
 		display_2fmenus_P(x, y, 1, text, text);
 		break;
 	}
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // FUNC item value
@@ -8458,7 +8467,7 @@ void display2_fnvalue9(
 		display_2fmenus(x, y, 1, b, b);
 		break;
 	}
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // split, lock, s-meter display
@@ -8479,11 +8488,11 @@ loadsavedstate(void)
 	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
 #elif WITHNOTCHFREQ
 	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
+#endif /* WITHNOTCHONOFF */
 #if WITHENCODER2
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
 #endif /* WITHENCODER2 */
-#endif /* WITHNOTCHONOFF */
 	menuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), menuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 #if WITHSPLIT
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
@@ -17450,7 +17459,7 @@ modifysettings(
 
 #if WITHKEYBOARD
 
-#if WITHENCODER2 && ! WITHENCODER_1F
+#if WITHENCODER2
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
@@ -17467,7 +17476,7 @@ modifysettings(
 				kbready = 1;
 			}
 		}
-#endif /* WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHENCODER2 */
 
 		if (kbready != 0)
 		{
@@ -17558,13 +17567,13 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
-#if WITHENCODER2 && ! WITHENCODER_1F
+#if WITHENCODER2
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHENCODER2 */
 
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
@@ -17579,13 +17588,13 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
-#if WITHENCODER2 && ! WITHENCODER_1F
+#if WITHENCODER2
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHENCODER2 */
 
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
@@ -18546,7 +18555,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
 
-#if WITHENCODER2 && ! WITHENCODER_1F
+#if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			gui_put_keyb_code(KBD_ENC2_PRESS);
@@ -18566,7 +18575,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 			uif_encoder2_hold();
 			return 1;
 	#endif /* WITHTOUCHGUI */
-#endif /* WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHENCODER2 */
 
 #if WITHTX
 
@@ -19702,9 +19711,9 @@ application_initialize(void)
 #if WITHTOUCHGUI
 	gui_initialize();
 
-#if WITHENCODER2 && ! WITHENCODER_1F
+#if WITHENCODER2
 	hamradio_gui_enc2_update();
-#endif /* WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 #if WITHUSEUSBBT
 	bt_initialize();
@@ -20014,29 +20023,31 @@ hamradio_main_step(void)
 	#endif /* WITHUSEAUDIOREC */
 
 			uint_fast8_t jumpsize;
-			uint_fast8_t jumpsize2;
-			int_least16_t nrotate;
-			int_least16_t nrotate2;
+			uint_fast8_t jumpsize_sub;
+			int_least16_t nrotate_main;
+			int_least16_t nrotate_sub;
 
 			/* переход по частоте - шаг берется из gstep_ENC1 */
 			#if WITHBBOX && defined (WITHBBOXFREQ)
-				nrotate = 0;	// ignore encoder
-				nrotate2 = 0;	// ignore encoder
+				nrotate_main = 0;	// ignore encoder
+				nrotate_sub = 0;	// ignore encoder
 			#else
-				nrotate = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
-				nrotate2 = getRotateHiRes_B(& jumpsize2, genc2div);
+				nrotate_main = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
+				nrotate_sub = getRotateHiRes_B(& jumpsize_sub, genc2div);
 			#endif
 
-			if (uif_encoder2_rotate(nrotate2))
+#if WITHENCODER2
+			if (uif_encoder2_rotate(nrotate_sub))
 			{
-				nrotate2 = 0;
-#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER_1F
+				nrotate_sub = 0;
+#if WITHTOUCHGUI
 				hamradio_gui_enc2_update();
 				display2_mode_subset(0);
-#else
+#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHTOUCHGUI */
 			}
+#endif /*WITHENCODER2 */
 	#if WITHDEBUG && ! defined (HAVE_BTSTACK_STDIN)
 			{
 //				void zdataprint(void);
@@ -20115,51 +20126,52 @@ hamradio_main_step(void)
 			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
 
-			if (nrotate != 0)
+			if (nrotate_main != 0 || nrotate_sub)
+			{
 				bring_tuneA();	// Начать отображение текущей частоты на водопаде
+				bring_tuneB();	// Начать отображение текущей частоты на водопаде
+			}
 
 			if (lockmode == 0)
 			{
 				uint_fast8_t freqchanged = 0;
 
 				/* Обработка накопленного количества импульсов от валкодера */
-				if (nrotate < 0)
+				if (nrotate_main < 0)
 				{
 					/* Валкодер A: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep_ENC1 * jumpsize * - nrotate), gstep_ENC1, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate), gstep_ENC1, TUNE_BOTTOM);
+					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep_ENC1 * jumpsize * - nrotate_main), gstep_ENC1, tune_bottom(bi_main));
+					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate_main), gstep_ENC1, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
-				else if (nrotate > 0)
+				else if (nrotate_main > 0)
 				{
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep_ENC1 * jumpsize * nrotate), gstep_ENC1, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep_ENC1, TUNE_TOP);
+					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep_ENC1 * jumpsize * nrotate_main), gstep_ENC1, tune_top(bi_main));
+					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate_main), gstep_ENC1, TUNE_TOP);
 					freqchanged = 1;
 				}
-#if ! WITHTOUCHGUI
-				if (nrotate2 != 0)
-					bring_tuneA();	// Начать отображение текущей частоты на водопаде
 
-				if (nrotate2 < 0)
+#if ! WITHTOUCHGUI
+				/* Обработка накопленного количества импульсов от валкодера */
+				if (nrotate_sub < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep_ENC2 * jumpsize2 * - nrotate2), gstep_ENC2, tune_bottom(bi_sub));
-					//gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - (jumpsize2 * - nrotate2), gstep_ENC1, TUNE_BOTTOM);
+					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep_ENC2 * jumpsize_sub * - nrotate_sub), gstep_ENC2, tune_bottom(bi_sub));
 					freqchanged = 1;
 				}
-				else if (nrotate2 > 0)
+				else if (nrotate_sub > 0)
 				{
 					/* Валкодер B: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep_ENC2 * jumpsize2 * nrotate2), gstep_ENC2, tune_top(bi_sub));
-					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep_ENC2, TUNE_TOP);
+					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep_ENC2 * jumpsize_sub * nrotate_sub), gstep_ENC2, tune_top(bi_sub));
 					freqchanged = 1;
 				}
 #endif /* ! WITHTOUCHGUI */
+
 				if (freqchanged != 0)
 				{
 					// Ограничение по скорости обновления дисплея уже заложено в него
@@ -20167,9 +20179,10 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER_1F
-			gui_set_encoder2_rotate(nrotate2);
-#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER_1F */
+
+#if WITHTOUCHGUI && WITHENCODER2
+			gui_set_encoder2_rotate(nrotate_sub);
+#endif /* WITHTOUCHGUI && WITHENCODER2 */
 
 #if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
@@ -21494,7 +21507,7 @@ void hamradio_save_gui_settings(const void * ptrv)
 	}
 }
 
-#if WITHENCODER2 && ! WITHENCODER_1F
+#if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
@@ -21504,11 +21517,11 @@ void hamradio_gui_enc2_update(void)
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
 }
-#else /* WITHENCODER2 && ! WITHENCODER_1F */
+#else /* WITHENCODER2 */
 void hamradio_gui_enc2_update(void)
 {
 }
-#endif /* WITHENCODER2 && ! WITHENCODER_1F */
+#endif /* WITHENCODER2 */
 
 #if WITHTX
 

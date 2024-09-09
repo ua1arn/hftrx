@@ -15536,10 +15536,6 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 #include "lvgl/examples/lv_examples.h"
 #include <linux/kd.h>
 
-void board_tsc_initialize(void);
-void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
-void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
-void indev_enc2_spool(void);
 
 #define DISP_BUF_SIZE	(128 * DIM_X)
 

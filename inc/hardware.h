@@ -552,24 +552,6 @@ void stm32mp1_pll1_slow(uint_fast8_t slow);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
-void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts4(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
-void hardware_encoders_initialize(void);
-
-#define GETENCBIT_A 0x02
-#define GETENCBIT_B 0x01
-
-uint_fast8_t hardware_get_encoder_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder2_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder3_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder4_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder5_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder6_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-
-#define ENCODER_IRQL IRQL_OVERREALTIME
-#define ENCODER_PRIORITY ARM_OVERREALTIME_PRIORITY
-#define ENCODER_TARGETCPU TARGETCPU_OVRT
-
 void gt911_interrupt_handler(void * ctx);
 void stmpe811_interrupt_handler(void * ctx);
 

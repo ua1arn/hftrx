@@ -487,7 +487,7 @@ hardware_get_encoder_bits(void)
 	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Биты валкодера #1
 #elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
-	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Биты идут не подряд
+	return ((v & ENCODER_BITA) != 0) * GETENCBIT_A + ((v & ENCODER_BITB) != 0) * GETENCBIT_B;	// Биты идут не подряд
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
@@ -505,12 +505,25 @@ hardware_get_encoder2_bits(void)
 	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Биты валкодера #2
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
-	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
+	return ((v & ENCODER2_BITA) != 0) * GETENCBIT_A + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
 #elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-	return ((gpio_readpin(ENCODER2_BITA) != 0) * 2 + (gpio_readpin(ENCODER2_BITB) != 0));
+	return (gpio_readpin(ENCODER2_BITA) != 0) * GETENCBIT_A + (gpio_readpin(ENCODER2_BITB) != 0) * GETENCBIT_B;
 #else /* WITHENCODER2 */
 	return 0;
 #endif /* WITHENCODER2 */
+}
+
+/* Чтение состояния выходов валкодера #2 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder_sub_bits(void)
+{
+#if WITHENCODER_SUB && defined (ENCODER_SUB_BITS_GET)
+	return ENCODER_SUB_BITS_GET();
+#else /* WITHENCODER_SUB */
+	return 0;
+#endif /* WITHENCODER_SUB */
 }
 
 /* Чтение состояния выходов валкодера #3 - в два младших бита */
