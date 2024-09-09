@@ -4912,28 +4912,76 @@ uint_fast8_t hamradio_get_bringENC4F(void)
 
 ///
 
+
+typedef struct encfnitem_tag
+{
+	int v;
+	const char * label;
+} encfnitem_t;
+
+static const encfnitem_t enclabelsENC1FN [] =
+{
+		{
+			0,
+			"AF gain"
+		},
+		{
+			0,
+			"RF gain"
+		},
+};
+
+static const encfnitem_t enclabelsENC2FN [] =
+{
+		{
+			0,
+			"ENC3F"
+		},
+};
+
+static const encfnitem_t enclabelsENC3FN [] =
+{
+		{
+			0,
+			"ENC3F"
+		},
+};
+
+static const encfnitem_t enclabelsENC4FN [] =
+{
+		{
+			0,
+			"ENC4F"
+		},
+};
+
+static uint_fast8_t enc1f_sel;
+static uint_fast8_t enc2f_sel;
+static uint_fast8_t enc3f_sel;
+static uint_fast8_t enc4f_sel;
+
 /* получить надпись для отображения состояние ENC1F */
 void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len)
 {
-	local_snprintf_P(buff, len, "ENC1F");
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC1FN [enc1f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC2F */
 void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len)
 {
-	local_snprintf_P(buff, len, "ENC2F");
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC3F */
 void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t len)
 {
-	local_snprintf_P(buff, len, "ENC3F");
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC4F */
 void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t len)
 {
-	local_snprintf_P(buff, len, "ENC4F");
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC4FN [enc4f_sel].label);
 }
 
 ///
@@ -13657,11 +13705,6 @@ display_redrawfreqmodesbarsnow(
 	}
 }
 
-static uint_fast8_t enc1f_sel;
-static uint_fast8_t enc2f_sel;
-static uint_fast8_t enc3f_sel;
-static uint_fast8_t enc4f_sel;
-
 static void
 directctlupdate(
 	uint_fast8_t inmenu,
@@ -18406,48 +18449,48 @@ process_key_menuset0(uint_fast8_t kbch)
 #if WITHENCODER_1F
 	case KBD_ENC1F_PRESS:
 		bring_enc1f();
-		enc1f_sel = calc_next(enc1f_sel, 0, 1);
+		enc1f_sel = calc_next(enc1f_sel, 0, ARRAY_SIZE(enclabelsENC1FN) - 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC1F_HOLD:
 		bring_enc1f();
-		enc1f_sel = 0;//calc_next(enc1f_sel, 0, 1);
+		//enc1f_sel = calc_next(enc1f_sel, 0, ARRAY_SIZE(enclabelsENC1FN) - 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_1F */
 
 #if WITHENCODER_2F
 	case KBD_ENC2F_PRESS:
 		bring_enc2f();
-		enc2f_sel = calc_next(enc2f_sel, 0, 1);
+		enc2f_sel = calc_next(enc2f_sel, 0, ARRAY_SIZE(enclabelsENC2FN) - 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC2F_HOLD:
 		bring_enc2f();
-		enc2f_sel = 0;//calc_next(enc2f_sel, 0, 1);
+		//enc2f_sel = calc_next(enc2f_sel, 0, ARRAY_SIZE(enclabelsENC2FN) - 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_2F */
 
 #if WITHENCODER_3F
 	case KBD_ENC3F_PRESS:
 		bring_enc3f();
-		enc3f_sel = calc_next(enc3f_sel, 0, 1);
+		enc3f_sel = calc_next(enc3f_sel, 0, ARRAY_SIZE(enclabelsENC3FN) - 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC3F_HOLD:
 		bring_enc3f();
-		enc3f_sel = 0;//calc_next(enc3f_sel, 0, 1);
+		//enc3f_sel = calc_next(enc3f_sel, 0, ARRAY_SIZE(enclabelsENC3FN) - 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_3F */
 
 #if WITHENCODER_4F
 	case KBD_ENC4F_PRESS:
 		bring_enc4f();
-		enc4f_sel = calc_next(enc4f_sel, 0, 1);
+		enc4f_sel = calc_next(enc4f_sel, 0, ARRAY_SIZE(enclabelsENC4FN) - 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC4F_HOLD:
 		bring_enc4f();
-		enc4f_sel = 0;//calc_next(enc4f_sel, 0, 1);
+		//enc4f_sel = calc_next(enc4f_sel, 0, ARRAY_SIZE(enclabelsENC4FN) - 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_4F */
 

@@ -75,25 +75,21 @@ static const FLASHMEM struct dzone dzones [] =
 	{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
-//	{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
+	{	0,	0,	display2_ENC1F_9,	REDRM_MODE, PGALL, },
+	{	10,	0,	display2_ENC2F_9,	REDRM_MODE, PGALL, },
+
+	//	{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 	//{	0,	0, 	display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
-	{	10,	0,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
+	//{	10,	0,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
 	//{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-//	{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-//	{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-	{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
-	{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
-	{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+	{	20,	0,	display2_att4,		REDRM_MODE, PGALL, },
+	{	25,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 
 //	{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 //	{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 
-#if 1
-	{	0,	0,	display2_ENC1F_9,	REDRM_MODE, PGALL, },
-	{	10,	0,	display2_ENC2F_9,	REDRM_MODE, PGALL, },
-	{	20,	0,	display2_ENC3F_9,	REDRM_MODE, PGALL, },
+	{	31,	0,	display2_ENC3F_9,	REDRM_MODE, PGALL, },
 	{	41,	0,	display2_ENC4F_9,	REDRM_MODE, PGALL, },
-#endif
 
 
 #if WITHBARS
@@ -129,10 +125,11 @@ static const FLASHMEM struct dzone dzones [] =
 	{	1, 	25,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	{	7, 	25,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
 
-	//{	14, 25,
-	//{	19, 25,
-	//{	23, 25,
-	//{	27, 25,
+	{	14,	25,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
+	{	19,	25,	display2_ant5,		REDRM_MODE, PGALL, },
+	//{	26, 25,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+	{	25, 25,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+
 	{	33, 25,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 	{	37, 25,	display2_spk3,		REDRM_MODE, PGALL, },	// оьображение признака включения динамика
 	{	41, 25, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
