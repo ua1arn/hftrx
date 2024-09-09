@@ -4864,50 +4864,50 @@ static void bring_swr(void)
 ///
 
 
-static uint_fast16_t actbring_enc3;
-static uint_fast16_t actbring_enc4;
-static uint_fast16_t actbring_enc5;
-static uint_fast16_t actbring_enc6;
+static uint_fast16_t actbring_ENC1F;
+static uint_fast16_t actbring_ENC2F;
+static uint_fast16_t actbring_ENC3F;
+static uint_fast16_t actbring_ENC4F;
 
-static void bring_enc3(void)
+static void bring_enc1f(void)
 {
-	actbring_enc3 = actbring_time;
+	actbring_ENC1F = actbring_time;
 }
 
-static void bring_enc4(void)
+static void bring_enc2f(void)
 {
-	actbring_enc4 = actbring_time;
+	actbring_ENC2F = actbring_time;
 }
 
-static void bring_enc5(void)
+static void bring_enc3f(void)
 {
-	actbring_enc5 = actbring_time;
+	actbring_ENC3F = actbring_time;
 }
 
-static void bring_enc6(void)
+static void bring_enc4f(void)
 {
-	actbring_enc6 = actbring_time;
+	actbring_ENC4F = actbring_time;
 }
 
 // Вращали 3-й валкодер (ENC1F)
 uint_fast8_t hamradio_get_bringENC1F(void)
 {
-	return actbring_enc3 != 0;
+	return actbring_ENC1F != 0;
 }
 // Вращали 3-й валкодер (ENC2F)
 uint_fast8_t hamradio_get_bringENC2F(void)
 {
-	return actbring_enc4 != 0;
+	return actbring_ENC2F != 0;
 }
 // Вращали 3-й валкодер (ENC3F)
 uint_fast8_t hamradio_get_bringENC3F(void)
 {
-	return actbring_enc5 != 0;
+	return actbring_ENC3F != 0;
 }
 // Вращали 3-й валкодер (ENC4F)
 uint_fast8_t hamradio_get_bringENC4F(void)
 {
-	return actbring_enc6 != 0;
+	return actbring_ENC4F != 0;
 }
 
 ///
@@ -4976,10 +4976,10 @@ static void bringtimers(void)
 	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
 	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
 
-	actbring_enc3 = actbring_enc3 ? (actbring_enc3 - 1) : 0;	// енкодер ENC1F
-	actbring_enc4 = actbring_enc4 ? (actbring_enc4 - 1) : 0;	// енкодер ENC2F
-	actbring_enc5 = actbring_enc5 ? (actbring_enc5 - 1) : 0;	// енкодер ENC3F
-	actbring_enc6 = actbring_enc6 ? (actbring_enc6 - 1) : 0;	// енкодер ENC4F
+	actbring_ENC1F = actbring_ENC1F ? (actbring_ENC1F - 1) : 0;	// енкодер ENC1F
+	actbring_ENC2F = actbring_ENC2F ? (actbring_ENC2F - 1) : 0;	// енкодер ENC2F
+	actbring_ENC3F = actbring_ENC3F ? (actbring_ENC3F - 1) : 0;	// енкодер ENC3F
+	actbring_ENC4F = actbring_ENC4F ? (actbring_ENC4F - 1) : 0;	// енкодер ENC4F
 
 }
 
@@ -13730,8 +13730,12 @@ directctlupdate(
 	#if WITHENCODER_1F
 		{
 			const int_least16_t delta = encoder_get_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+			if (delta)
+				bring_enc1f();
 			switch (enc1f_sel)
 			{
+			default:
+				break;
 			case 0:
 				/* установка громкости */
 				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1), CAT_AG_INDEX, bring_afvolume);
@@ -13742,7 +13746,43 @@ directctlupdate(
 				break;
 			}
 		}
-	#endif /* 0 */
+	#endif /* WITHENCODER_1F */
+	#if WITHENCODER_2F
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
+			if (delta)
+				bring_enc2f();
+			switch (enc2f_sel)
+			{
+			default:
+				break;
+			}
+		}
+	#endif /* WITHENCODER_2F */
+	#if WITHENCODER_3F
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
+			if (delta)
+				bring_enc3f();
+			switch (enc3f_sel)
+			{
+			default:
+				break;
+			}
+		}
+	#endif /* WITHENCODER_3F */
+	#if WITHENCODER_4F
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+			if (delta)
+				bring_enc4f();
+			switch (enc4f_sel)
+			{
+			default:
+				break;
+			}
+		}
+	#endif /* WITHENCODER_4F */
 
 	#if CTLSTYLE_RA4YBO_V3
 		{
@@ -18365,40 +18405,48 @@ process_key_menuset0(uint_fast8_t kbch)
 
 #if WITHENCODER_1F
 	case KBD_ENC1F_PRESS:
+		bring_enc1f();
 		enc1f_sel = calc_next(enc1f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC1F_HOLD:
+		bring_enc1f();
 		enc1f_sel = 0;//calc_next(enc1f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_1F */
 
 #if WITHENCODER_2F
 	case KBD_ENC2F_PRESS:
+		bring_enc2f();
 		enc2f_sel = calc_next(enc2f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC2F_HOLD:
+		bring_enc2f();
 		enc2f_sel = 0;//calc_next(enc2f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_2F */
 
 #if WITHENCODER_3F
 	case KBD_ENC3F_PRESS:
+		bring_enc3f();
 		enc3f_sel = calc_next(enc3f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC3F_HOLD:
+		bring_enc3f();
 		enc3f_sel = 0;//calc_next(enc3f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_3F */
 
 #if WITHENCODER_4F
 	case KBD_ENC4F_PRESS:
+		bring_enc4f();
 		enc4f_sel = calc_next(enc4f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC4F_HOLD:
+		bring_enc4f();
 		enc4f_sel = 0;//calc_next(enc4f_sel, 0, 1);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_4F */
