@@ -6464,6 +6464,7 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
 static void audiocodechw_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 	// Установка усиления
 	if (0)
 	{
@@ -6476,6 +6477,7 @@ static void audiocodechw_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20
 	#endif
 			0;
 	}
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 }
 
 /* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
