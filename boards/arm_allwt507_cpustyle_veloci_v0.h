@@ -328,36 +328,32 @@
 		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
 		/* */ \
 		/* ENC1F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENC1F_BITS); \
 		ticker_initialize(& th3, 1, spool_encinterrupts, & encoder_ENC1F); \
 		ticker_add(& th3); \
 		arm_hardware_piod_altfn20(BOARD_ENC1F_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh3, BOARD_ENC1F_BITS, spool_encinterrupts, & encoder_ENC1F); \
-		arm_hardware_piod_onchangeinterrupt(0*BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh3); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh3); \
 		/* */ \
 		/* ENC2F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENC2F_BITS); \
 		ticker_initialize(& th4, 1, spool_encinterrupts, & encoder_ENC2F); \
 		ticker_add(& th4); \
 		arm_hardware_piod_altfn20(BOARD_ENC2F_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh4, BOARD_ENC2F_BITS, spool_encinterrupts, & encoder_ENC2F); \
-		arm_hardware_piod_onchangeinterrupt(0*BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh4); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh4); \
 		/* */ \
 		/* ENC3F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENC3F_BITS); \
 		ticker_initialize(& th5, 1, spool_encinterrupts, & encoder_ENC3F); \
 		ticker_add(& th5); \
 		arm_hardware_piod_altfn20(BOARD_ENC3F_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh5, BOARD_ENC3F_BITS, spool_encinterrupts, & encoder_ENC3F); \
-		arm_hardware_piod_onchangeinterrupt(0*BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh5); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh5); \
 		/* */ \
 		/* ENC4F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENC4F_BITS); \
 		ticker_initialize(& th6, 1, spool_encinterrupts, & encoder_ENC4F); \
 		ticker_add(& th6); \
 		arm_hardware_piod_altfn20(BOARD_ENC4F_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh6, BOARD_ENC4F_BITS, spool_encinterrupts, & encoder_ENC4F); \
-		arm_hardware_piod_onchangeinterrupt(0*BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh6); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & eh6); \
 	} while (0)
 
 	#define ENCODER_INITIALIZE_new() do { \
