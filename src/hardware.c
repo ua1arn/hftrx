@@ -519,11 +519,11 @@ hardware_get_encoder2_bits(void)
 uint_fast8_t
 hardware_get_encoder3_bits(void)
 {
-#if WITHENCODER3 && defined (ENCODER3_BITS_GET)
-	return ENCODER3_BITS_GET();
-#else /* WITHENCODER3 */
+#if WITHENCODER_1F && defined (ENC1F_BITS_GET)
+	return ENC1F_BITS_GET();
+#else /* WITHENCODER_1F */
 	return 0;
-#endif /* WITHENCODER3 */
+#endif /* WITHENCODER_1F */
 }
 
 /* Чтение состояния выходов валкодера #4 - в два младших бита */
@@ -532,11 +532,11 @@ hardware_get_encoder3_bits(void)
 uint_fast8_t 
 hardware_get_encoder4_bits(void)
 {
-#if WITHENCODER4 && defined (ENCODER4_BITS_GET)
-	return ENCODER4_BITS_GET();
-#else /* WITHENCODER4 */
+#if WITHENCODER_2F && defined (ENC2F_BITS_GET)
+	return ENC2F_BITS_GET();
+#else /* WITHENCODER_2F */
 	return 0;
-#endif /* WITHENCODER4 */
+#endif /* WITHENCODER_2F */
 }
 
 /* Чтение состояния выходов валкодера #5 - в два младших бита */
@@ -545,11 +545,11 @@ hardware_get_encoder4_bits(void)
 uint_fast8_t
 hardware_get_encoder5_bits(void)
 {
-#if WITHENCODER5 && defined (ENCODER5_BITS_GET)
-	return ENCODER5_BITS_GET();
-#else /* WITHENCODER5 */
+#if WITHENCODER_3F && defined (ENC3F_BITS_GET)
+	return ENC3F_BITS_GET();
+#else /* WITHENCODER_3F */
 	return 0;
-#endif /* WITHENCODER5 */
+#endif /* WITHENCODER_3F */
 }
 
 /* Чтение состояния выходов валкодера #6 - в два младших бита */
@@ -558,11 +558,11 @@ hardware_get_encoder5_bits(void)
 uint_fast8_t
 hardware_get_encoder6_bits(void)
 {
-#if WITHENCODER6 && defined (ENCODER6_BITS_GET)
-	return ENCODER6_BITS_GET();
-#else /* WITHENCODER6 */
+#if WITHENCODER_4F && defined (ENC4F_BITS_GET)
+	return ENC4F_BITS_GET();
+#else /* WITHENCODER_4F */
 	return 0;
-#endif /* WITHENCODER6 */
+#endif /* WITHENCODER_4F */
 }
 
 // ADC intgerface functions

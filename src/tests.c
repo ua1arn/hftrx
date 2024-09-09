@@ -5332,10 +5332,10 @@ void looptests(void)
 	{
 		// Encoder tests
 		PRINTF("e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d\n",
-				(int) encoder_get_delta(& encoder3, 1),
-				(int) encoder_get_delta(& encoder4, 1),
-				(int) encoder_get_delta(& encoder5, 1),
-				(int) encoder_get_delta(& encoder6, 1)
+				(int) encoder_get_delta(& encoder_ENC1F, 1),
+				(int) encoder_get_delta(& encoder_ENC2F, 1),
+				(int) encoder_get_delta(& encoder_ENC3F, 1),
+				(int) encoder_get_delta(& encoder_ENC4F, 1)
 				);
 	}
 #endif

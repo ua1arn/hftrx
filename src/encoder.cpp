@@ -221,10 +221,10 @@ void encoders_clear(void)
 {
 	encoder_clear(& encoder1);
 	encoder_clear(& encoder2);
-	encoder_clear(& encoder3);
-	encoder_clear(& encoder4);
-	encoder_clear(& encoder5);
-	encoder_clear(& encoder6);
+	encoder_clear(& encoder_ENC1F);
+	encoder_clear(& encoder_ENC2F);
+	encoder_clear(& encoder_ENC3F);
+	encoder_clear(& encoder_ENC4F);
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql, TICKER_IRQL);
@@ -340,10 +340,10 @@ void encoder_pushback(encoder_t * const e, int outsteps, uint_fast8_t hiresdiv)
 
 encoder_t encoder1;	// Main RX tuning knob
 encoder_t encoder2;	// Sub RX tuning knob
-encoder_t encoder3;
-encoder_t encoder4;
-encoder_t encoder5;
-encoder_t encoder6;
+encoder_t encoder_ENC1F;
+encoder_t encoder_ENC2F;
+encoder_t encoder_ENC3F;
+encoder_t encoder_ENC4F;
 encoder_t encoder_kbd;
 
 // вызывается из обработчика таймерного прерывания - клавиатура.
@@ -508,10 +508,10 @@ void encoders_initialize(void)
 	//enchist [enchistindex] = 0;
 	encoder_initialize(& encoder1, hardware_get_encoder_bits);
 	encoder_initialize(& encoder2, hardware_get_encoder2_bits);
-	encoder_initialize(& encoder3, hardware_get_encoder3_bits);
-	encoder_initialize(& encoder4, hardware_get_encoder4_bits);
-	encoder_initialize(& encoder5, hardware_get_encoder5_bits);
-	encoder_initialize(& encoder6, hardware_get_encoder6_bits);
+	encoder_initialize(& encoder_ENC1F, hardware_get_encoder3_bits);
+	encoder_initialize(& encoder_ENC2F, hardware_get_encoder4_bits);
+	encoder_initialize(& encoder_ENC3F, hardware_get_encoder5_bits);
+	encoder_initialize(& encoder_ENC4F, hardware_get_encoder6_bits);
 	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
 
 #if ENCODER_REVERSE

@@ -84,10 +84,10 @@ void encoderB_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// 
 
 extern encoder_t encoder1;	// Main RX tuning knob
 extern encoder_t encoder2;	// Sub RX tuning knob
-extern encoder_t encoder3;
-extern encoder_t encoder4;
-extern encoder_t encoder5;
-extern encoder_t encoder6;
+extern encoder_t encoder_ENC1F;
+extern encoder_t encoder_ENC2F;
+extern encoder_t encoder_ENC3F;
+extern encoder_t encoder_ENC4F;
 extern encoder_t encoder_kbd;
 
 #ifdef __cplusplus

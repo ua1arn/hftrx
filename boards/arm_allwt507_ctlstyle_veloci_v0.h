@@ -221,14 +221,14 @@
 	#define BOARD_ENCODER2_DIVIDE 2
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
-	#define WITHENCODER3	1
-	#define WITHENCODER4	1
-	#define WITHENCODER5	1
-	#define WITHENCODER6	1
-	#define BOARD_ENCODER3_DIVIDE 4		/* значение для валкодера с "трещёткой" */
-	#define BOARD_ENCODER4_DIVIDE 4		/* значение для валкодера с "трещёткой" */
-	#define BOARD_ENCODER5_DIVIDE 4		/* значение для валкодера с "трещёткой" */
-	#define BOARD_ENCODER6_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define WITHENCODER_1F	1
+	#define WITHENCODER_2F	1
+	#define WITHENCODER_3F	1
+	#define WITHENCODER_4F	1
+	#define BOARD_ENC1F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENC2F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENC3F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENC4F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
