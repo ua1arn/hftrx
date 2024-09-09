@@ -48,7 +48,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 void spool_encinterrupts4(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & 0x01) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
@@ -94,6 +94,7 @@ void spool_encinterrupts(void * ctx)
 			+0,		/* 11 -> 11 stopped				*/
 		},
 	};
+	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	IRQL_t oldIrql;
 
