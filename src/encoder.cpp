@@ -100,16 +100,15 @@ void spool_encinterrupts(void * ctx)
 	};
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int delta = graydecoder [e->old_val][new_val];
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	if (e->reverse)
-		e->position -= graydecoder [e->old_val][new_val];
+		e->position -= delta;
 	else
-		e->position += graydecoder [e->old_val][new_val];
+		e->position += delta;
 	e->old_val = new_val;
-
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
@@ -445,9 +444,8 @@ getRotateHiRes_B(
 	)
 {
 #if WITHENCODER2
-	int_least16_t nrotate = encoder_get_snapshot(& encoder2, derateFN);
 	* jumpsize = 1;
-	return nrotate;
+	return encoder_get_delta(& encoder2, derateFN);
 #elif WITHENCODER_SUB
 	return getRotateHiRes_X(& encoder_sub, jumpsize, derateSUB);
 #else /* WITHENCODER_SUB */
