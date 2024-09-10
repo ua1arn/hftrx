@@ -6,6 +6,7 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
+// rmainunit_sv9x1.pcb
 // rmainunit_sv9x2.pcb
 // rmainunit_sv9x3.pcb
 
@@ -249,7 +250,7 @@
 	#define TARGET_ENCODER_B		(UINT32_C(1) << TARGET_ENCODER_B_POS)
 	#define TARGET_ENCODER_BITS		(TARGET_ENCODER_A | TARGET_ENCODER_B)
 	#define ENCODER_BITS_GET()		((TARGET_ENCODER_PORT & TARGET_ENCODER_BITS) >> TARGET_ENCODER_B_POS)
-	//#define ENCODER_BITS_GET() 	(((TARGET_ENCODER_PORT & TARGET_ENCODER_A) != 0) * 2 + ((TARGET_ENCODER_PORT & TARGET_ENCODER_B) != 0))
+	//#define ENCODER_BITS_GET() 	(((TARGET_ENCODER_PORT & TARGET_ENCODER_A) != 0) * GETENCBIT_A + ((TARGET_ENCODER_PORT & TARGET_ENCODER_B) != 0) * GETENCBIT_B)
 
 	// Выводы подключения енкодера #2 - FUNC encoder
 	#define TARGET_ENCODER2_PORT	(gpioX_getinputs(GPIOE))
@@ -259,7 +260,7 @@
 	#define TARGET_ENCODER2_B		(UINT32_C(1) << TARGET_ENCODER2_B_POS)
 	#define TARGET_ENCODER2_BITS	(TARGET_ENCODER2_A | TARGET_ENCODER2_B)
 	#define ENCODER2_BITS_GET() 	((TARGET_ENCODER2_PORT & TARGET_ENCODER2_BITS) >> TARGET_ENCODER2_B_POS)
-	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * 2 + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0))
+	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * GETENCBIT_A + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0) * GETENCBIT_B)
 
 	#define ENCODER_INITIALIZE() do { \
 		static einthandler_t eh1; \
@@ -271,10 +272,10 @@
 		einthandler_initialize(& eh1, TARGET_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
 		/* FUNC encoder */ \
-		arm_hardware_pioe_inputs(TARGET_ENCODER2_BITS); \
+		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
 		ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
 		ticker_add(& th2); \
-		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh2, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh2); \
 	} while (0)

@@ -6,6 +6,7 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
+// rmainunit_sv9x1.pcb
 // rmainunit_sv9x2.pcb
 // rmainunit_sv9x3.pcb
 
