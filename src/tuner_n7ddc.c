@@ -170,7 +170,7 @@ static unsigned int get_reverse(void) {
 	return val;
 }
 
-void set_ind(unsigned char Ind) {
+static void set_ind(unsigned char Ind) {
 	if (L_invert == 0) {
 //		Ind_005 = Ind.B0;
 //		Ind_011 = Ind.B1;
@@ -420,7 +420,7 @@ static void coarse_cap(void) {
 	return;
 }
 
-void coarse_tune(void) {
+static void coarse_tune(void) {
 	char step = 3;
 	char count;
 	char mem_cap, mem_step_cap;
@@ -464,7 +464,7 @@ void coarse_tune(void) {
 	return;
 }
 
-void sub_tune(void) {
+static void sub_tune(void) {
 	int swr_mem, ind_mem, cap_mem;
 	//
 	swr_mem = globSWR;
@@ -557,7 +557,7 @@ void sub_tune(void) {
 	return;
 }
 
-void tune(void) {
+static void tune(void) {
 	p_cnt = 0;
 	P_max = 0;
 	//
