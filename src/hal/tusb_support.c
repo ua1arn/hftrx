@@ -146,6 +146,7 @@ static void process_kbd_report(uint8_t dev_addr, hid_keyboard_report_t const *re
         uint8_t colemak_key_code = colemak[keycode];
         if (colemak_key_code != 0) keycode = colemak_key_code;
         #endif
+        PRINTF("[%u] keycode=0x%02X\n", dev_addr, keycode);
 
 //        bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
 //        uint8_t ch = keycode2ascii[keycode][is_shift ? 1 : 0];
