@@ -816,6 +816,8 @@ void ohciehci_clk_init(void)
 	const unsigned ohci_src = 0x01u; 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
+		arm_hardware_disable_handler(USB0_EHCI_IRQn);
+		arm_hardware_disable_handler(USB0_OHCI_IRQn);
 		// Turn off USBOTG0
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG0_GATING
@@ -856,6 +858,8 @@ void ohciehci_clk_init(void)
 	else if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
 		// "правильный" канал
+		arm_hardware_disable_handler(USB1_EHCI_IRQn);
+		arm_hardware_disable_handler(USB1_OHCI_IRQn);
 
 #if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
