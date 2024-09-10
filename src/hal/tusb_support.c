@@ -820,6 +820,22 @@ void ohciehci_clk_init(void)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG0_GATING
 
+#if TUP_USBIP_EHCI
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 4);	// USBEHCI0_GATING
+#endif
+#if TUP_USBIP_OHCI
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
+#endif
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+#if TUP_USBIP_EHCI
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
+#endif
+#if TUP_USBIP_OHCI
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
+#endif
+
 		// Enable
 		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RSTN
@@ -829,17 +845,6 @@ void ohciehci_clk_init(void)
 			(ohci_src << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 			0;
 
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
-
-#if TUP_USBIP_EHCI
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 4);	// USBEHCI0_GATING
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
-#endif
-
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
-
 		USBOTG0->PHY_OTGCTL &= ~ (UINT32_C(1) << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 
 	#if WITHEHCIHWSOFTSPOLL == 0
@@ -848,9 +853,16 @@ void ohciehci_clk_init(void)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
-	else
+	else if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
 		// "правильный" канал
+
+#if TUP_USBIP_EHCI
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
+#endif
+#if TUP_USBIP_OHCI
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
+#endif
 
 		CCU->USB1_CLK_REG |= (UINT32_C(1) << 31);	// USB1_CLKEN Gating Special Clock For OHCI1
 		CCU->USB1_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY1_RSTN
@@ -862,14 +874,12 @@ void ohciehci_clk_init(void)
 
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 17);	// USBOHCI1_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 21);	// USBEHCI1_RST
-
 #if TUP_USBIP_EHCI
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
 #endif
-
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
+#if TUP_USBIP_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 17);	// USBOHCI1_RST
+#endif
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -877,10 +887,10 @@ void ohciehci_clk_init(void)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
-#if WITHTINYUSB
-	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
-	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
-#endif /* WITHTINYUSB */
+	else
+	{
+		ASSERT(0);
+	}
 
 	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
@@ -899,8 +909,9 @@ void ohciehci_clk_init(void)
 		USBPHY0->PHY_CTRL |= (UINT32_C(1) << 5);		// PHY_CTL_VBUSVLDEXT
 		USBPHY0->USB_CTRL |= (UINT32_C(1) << 0);		// 1: Enable UTMI interface, disable ULPI interface
 
+
 	}
-	else
+	else if ((void *) WITHUSBHW_EHCI == USBEHCI1)
 	{
 		// "правильный" канал
 		// USBPHY1
@@ -917,7 +928,17 @@ void ohciehci_clk_init(void)
 //		USBPHY1->USB_SPDCR = (USBPHY1->USB_SPDCR & ~ ((0x03u << 0) | 0) |
 //			(0x02u << 0) |
 //			0;
+
 	}
+	else
+	{
+		ASSERT(0);
+	}
+
+#if WITHTINYUSB
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
 
 #elif CPUSTYLE_STM32MP1
 
