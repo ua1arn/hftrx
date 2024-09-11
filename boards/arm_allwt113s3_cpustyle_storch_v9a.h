@@ -46,8 +46,7 @@
 
 //#define WITHCAT_UART1		1
 #define WITHDEBUG_UART0	1
-//#define WITHTINYUSB 1
-#define BOARD_TUH_RHPORT 1
+
 
 #if WITHISBOOTLOADER
 
@@ -98,8 +97,6 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
-	//#define WITHTINYUSB 1
 
 #else /* WITHISBOOTLOADER */
 
@@ -159,7 +156,13 @@
 	
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		#define TUP_USBIP_OHCI 1
+		//#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn

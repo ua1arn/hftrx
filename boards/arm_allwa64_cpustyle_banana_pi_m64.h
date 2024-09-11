@@ -75,13 +75,18 @@
 	#define WITHUSBHOST_DMAENABLE 1
 
 //	
-//	#define WITHTINYUSB 1
-//	#define BOARD_TUH_RHPORT 1
 //	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
 	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
 //	#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */
 //	#define WITHUSBHW_OHCI		USBOHCI0	/* host and usb-otg port */
+
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
@@ -164,7 +169,14 @@
 	
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
+
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
+
 
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USBEHCI1_IRQn

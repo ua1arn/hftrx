@@ -35,8 +35,7 @@
 
 //#define WITHCAT_UART0		1
 #define WITHDEBUG_UART0	1
-//#define WITHTINYUSB 1
-#define BOARD_TUH_RHPORT 1
+
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -146,7 +145,14 @@
 	
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
+	
+
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		#define TUP_USBIP_OHCI 1
+		//#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn

@@ -105,8 +105,14 @@ void user_uart5_ontxchar(void * ctx);
 	//#define WITHUSBDEV_DMAENABLE 1
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
 	
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
 	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
@@ -208,8 +214,14 @@ void user_uart5_ontxchar(void * ctx);
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
 	
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
 	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn

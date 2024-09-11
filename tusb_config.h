@@ -39,10 +39,10 @@
  // CDC Endpoint transfer buffer size, more is faster
  #define CFG_TUD_CDC_EP_BUFSIZE   64//(TUD_OPT_HIGH_SPEED ? 512 : 64)
 
-
-#define CFG_TUH_ENABLED 1
-#define TUP_USBIP_OHCI 1
-//#define TUP_USBIP_EHCI 1
+// Moved to board configd
+//#define CFG_TUH_ENABLED 1
+//#define TUP_USBIP_OHCI 1
+////#define TUP_USBIP_EHCI 1
 
 #define CFG_TUH_ENDPOINT_MAX 	16
 #define CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST

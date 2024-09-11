@@ -40,8 +40,7 @@
 
 //#define WITHCAT_UART0		1
 #define WITHDEBUG_UART0	1
-//#define WITHTINYUSB 1
-#define BOARD_TUH_RHPORT 1
+
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -124,6 +123,12 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHTINYUSB 1
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		#define TUP_USBIP_OHCI 1
+		//#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_DEVICE	USBOTG		/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -144,7 +149,7 @@
 
 //	
 //
-//	#define BOARD_TUH_RHPORT 1
+//	
 //
 	#define WITHUSBHW_EHCI		USBEHCI
 	#define WITHUSBHW_EHCI_IRQ	USB_EHCI_IRQn
