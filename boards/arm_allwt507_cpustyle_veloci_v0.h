@@ -73,7 +73,7 @@
 	//#define WITHUSBDEV_DMAENABLE 1
 
 	//#define WITHTINYUSB 1
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	//#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
 	//#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
 
@@ -179,7 +179,7 @@
 
 	#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	// USB3-DP & USB3-DM used
 	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI

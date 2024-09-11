@@ -69,7 +69,7 @@
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
@@ -85,7 +85,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
 
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	
 //	#define WITHUSBHW_EHCI		USB1_EHCI
 //	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 //	#define WITHOHCIHW_OHCIPORT 0
@@ -157,7 +157,7 @@
 
 	#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHOHCIHW_OHCIPORT 0

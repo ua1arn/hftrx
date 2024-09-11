@@ -74,7 +74,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	
 //	#define WITHTINYUSB 1
 //	#define BOARD_TUH_RHPORT 1
 //	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
@@ -161,7 +161,7 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
