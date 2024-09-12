@@ -2671,9 +2671,78 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
+
+static void t113_HDMI_CCU_configuration(void)
+{
+#if defined (TCONLCD_PTR)
+
+#if CPUSTYLE_A64
+//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
+////    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
+////    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+//
+//    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+
+    CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+
+    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11);	// HDMI_GATING
+    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 11);	// HDMI_RST
+    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11);	// HDMI_RST
+
+//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
+//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
+
+//    CCU->HDMI_HDCP_CLK_REG;
+//    CCU->HDMI_HDCP_BGR_REG;
+
+
+    local_delay_us(10);
+
+    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
+//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
+//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+
+    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
+//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+
+//    CCU->HDMI_HDCP_CLK_REG;
+//    CCU->HDMI_HDCP_BGR_REG;
+
+    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
+
+    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+    if (0)
+    {
+    	t507_hdmi_initialize();
+    }
+
+#endif
+
+#endif /* defined (TCONLCD_PTR) */
+}
+
+// Used for HV and LVDS outputs
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
-static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
+static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
 #if defined (TCONLCD_PTR)
 
@@ -2736,30 +2805,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #endif /* WITHLVDSHW */
 
-
-#if WITHHDMITVHW
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-////    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-////    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-//
-//    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
-
-    CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-
-    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11);	// HDMI_GATING
-    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 11);	// HDMI_RST
-    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11);	// HDMI_RST
-
-//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
-//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
-
-//    CCU->HDMI_HDCP_CLK_REG;
-//    CCU->HDMI_HDCP_BGR_REG;
-
-#endif /* WITHHDMITVHW */
-
     local_delay_us(10);
 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
@@ -2820,40 +2865,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #endif /* WITHLVDSHW */
 
-#if WITHHDMITVHW
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-
-    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
-
-    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-
-//    CCU->HDMI_HDCP_CLK_REG;
-//    CCU->HDMI_HDCP_BGR_REG;
-
-    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
-    if (0)
-    {
-    	t507_hdmi_initialize();
-    }
-
-#endif /* WITHHDMITVHW */
-
     local_delay_us(10);
 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
@@ -2906,7 +2917,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #endif /* defined (TCONLCD_PTR) */
 }
 
-static void t113_tcontv_CCU_configuration(const videomode_t * vdmode)
+static void t113_tcontv_CCU_configuration(void)
 {
 #if defined (TCONTV_PTR)
 	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
@@ -3601,7 +3612,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	unsigned prei = 0;
 	unsigned divider = 1;
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider, 0);
+	t113_tconlcd_CCU_configuration(prei, divider, 0);
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -5807,7 +5818,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	unsigned prei = 0;
 	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
+	t113_tconlcd_CCU_configuration(prei, divider, lvdsfreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -6270,7 +6281,7 @@ static void hardware_tcontv_initialize(const videomode_t * vdmode)
 {
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
-	t113_tcontv_CCU_configuration(vdmode);
+	t113_tcontv_CCU_configuration();
 	// step1 - same as step1 in HV mode: Select HV interface type
 	//t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -7064,9 +7075,15 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 		t113_tcon_PLL_configuration();
 		hardware_tcon_initialize(vdmode);
+
 #if defined (TCONTV_PTR)
 		t113_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
 		hardware_tcontv_initialize(vdmode_CRT);
+
+#if WITHHDMITVHW
+		t113_HDMI_CCU_configuration();
+#endif /* WITHHDMITVHW */
+
 #endif /* defined (TCONTV_PTR) */
 
 		// Set DE MODE if need, mapping GPIO pins
