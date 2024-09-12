@@ -123,7 +123,7 @@
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
-	#define WITHHDMITVHW 1	// HDMI hardware output */
+	#define WITHHDMITVHW 1	/* HDMI hardware output */
 
 #elif 1
 
