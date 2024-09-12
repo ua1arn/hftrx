@@ -2222,6 +2222,8 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	return 0;
 }
 
+// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
+
 static void t507_hdmi_initialize(void)
 {
 	const videomode_t * const vdmode = get_videomode_CRT();
