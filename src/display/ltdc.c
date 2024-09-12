@@ -2714,21 +2714,28 @@ enum {
 
 static void t507_hdmi_initialize(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-			HDMI_TX0->HDMI_DESIGN_ID,
-			HDMI_TX0->HDMI_REVISION_ID,
-			HDMI_TX0->HDMI_PRODUCT_ID0,
-			HDMI_TX0->HDMI_PRODUCT_ID1
+			hdmi->HDMI_DESIGN_ID,
+			hdmi->HDMI_REVISION_ID,
+			hdmi->HDMI_PRODUCT_ID0,
+			hdmi->HDMI_PRODUCT_ID1
 			);
 
 	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-			HDMI_TX0->HDMI_CONFIG0_ID,
-			HDMI_TX0->HDMI_CONFIG1_ID,
-			HDMI_TX0->HDMI_CONFIG2_ID,
-			HDMI_TX0->HDMI_CONFIG3_ID
+			hdmi->HDMI_CONFIG0_ID,
+			hdmi->HDMI_CONFIG1_ID,
+			hdmi->HDMI_CONFIG2_ID,
+			hdmi->HDMI_CONFIG3_ID
 			);
 
-	const videomode_t * const vdmode = get_videomode_CRT();
+	// I2C reset
+	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+		;
+
+	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
+
 	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
 	HDMI_PHY->CEC |= (UINT32_C(1) << 7);	// CEC CONTROL: register
@@ -2751,6 +2758,23 @@ static void t507_hdmi_initialize(void)
 //	HDMI_PHY->PLL_CFG2 = 0x800863C0;
 //	HDMI_PHY->PLL_CFG3 = 0x01;
 //	local_delay_ms(100);
+
+	if (1)
+	{
+		// HDMI_PHY
+		static const uint32_t hdmi_phy [] =
+		{
+			0x00000000, 0x80c00000, 0x00184210, 0x00000002,
+			0x00000000, 0x000f990b, 0x00000000, 0x00000000,
+			0x00000f80, 0x0c0040d8, 0x02700203, 0x000c6023,
+		};
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(hdmi_phy); ++ i)
+		{
+			* (volatile uint32_t *) (HDMI_PHY_BASE + i * 4) = hdmi_phy [i];
+		}
+
+	}
 
 	HDMI_PHY->ANA_CFG1 = 0;
 	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 0);	// ANA_CFG1_ENBI
@@ -2801,8 +2825,8 @@ static void t507_hdmi_initialize(void)
 		TP();
 	}
 
-	HDMI_PHY->ANA_CFG1 |= (0xf<<4);
-	HDMI_PHY->ANA_CFG1 |= (0xf<<8);
+	HDMI_PHY->ANA_CFG1 |= (0xf << 4);
+	HDMI_PHY->ANA_CFG1 |= (0xf << 8);
 	HDMI_PHY->ANA_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
 
 	HDMI_PHY->PLL_CFG1 &= ~ (UINT32_C(1) << 26);
@@ -2826,6 +2850,7 @@ static void t507_hdmi_initialize(void)
 	/* descramble register offsets */
 	HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 
+	const videomode_t * const vdmode = get_videomode_CRT();
 
 	struct lcd_timing timing;	// out parameters
 
@@ -2838,31 +2863,31 @@ static void t507_hdmi_initialize(void)
 
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-	HDMI_TX0->HDMI_FC_INHACTV0 = (timing.hp & 0xff);    // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHACTV1 = (timing.hp >> 8);      // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
-	HDMI_TX0->HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
+	hdmi->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
+	hdmi->HDMI_FC_INHACTV0 = (timing.hp & 0xff);    // Horizontal pixels
+	hdmi->HDMI_FC_INHACTV1 = (timing.hp >> 8);      // Horizontal pixels
+	hdmi->HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
+	hdmi->HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
 
-	HDMI_TX0->HDMI_FC_INVACTV0 = (timing.vp & 0xff);    // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVACTV1 = (timing.vp >> 8);      // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
+	hdmi->HDMI_FC_INVACTV0 = (timing.vp & 0xff);    // Vertical pixels
+	hdmi->HDMI_FC_INVACTV1 = (timing.vp >> 8);      // Vertical pixels
+	hdmi->HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
 
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
-	HDMI_TX0->HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
-	HDMI_TX0->HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
+	hdmi->HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
+	hdmi->HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
+	hdmi->HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
+	hdmi->HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
+	hdmi->HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
+	hdmi->HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
 
-	HDMI_TX0->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-	HDMI_TX0->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-	HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-	HDMI_TX0->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	HDMI_TX0->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	HDMI_TX0->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	HDMI_TX0->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-	HDMI_TX0->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+	hdmi->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+	hdmi->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+	hdmi->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+	hdmi->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	hdmi->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	hdmi->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	hdmi->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+	hdmi->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 }
 
@@ -6194,27 +6219,6 @@ static void lvds_t507_corrections(void)
 		* (volatile uint32_t *) (HDMI_PHY_BASE + i * 4) = hdmi_phy [i];
 	}
 #endif
-
-#if 0
-
-	// TCON_LCD0
-	* (volatile uint32_t *) 0x0000000006511004 = 0x80000002;
-	* (volatile uint32_t *) 0x0000000006511010 = 0x00000000;
-
-	* (volatile uint32_t *) 0x0000000006511040 = 0x800001f0;
-	* (volatile uint32_t *) 0x0000000006511044 = 0xf0000007;
-	* (volatile uint32_t *) 0x0000000006511050 = 0x05140022;
-	* (volatile uint32_t *) 0x0000000006511054 = 0x00450000;
-
-	* (volatile uint32_t *) 0x0000000006511084 = 0x80100000;
-	* (volatile uint32_t *) 0x000000000651108c = 0xe0000000;
-	* (volatile uint32_t *) 0x00000000065110fc = 0x219c4000;	// LCD Debug Register
-
-	* (volatile uint32_t *) 0x00000000065111f0 = 0x02fd0023;
-	* (volatile uint32_t *) 0x0000000006511220 = 0xc1f40320;
-	* (volatile uint32_t *) 0x000000000651123c = 0x0003e814;
-	* (volatile uint32_t *) 0x0000000006511240 = 0x01f401f4;
-#endif
 #if 0
 	// HDMI_TX0
 	* (volatile uint32_t *) 0x0000000006000000 = 0x00000021;
@@ -7042,9 +7046,6 @@ static void awxx_deoutmapping(unsigned disp)
 
 //#define VIDEO_RAM_BYTES 0x180000
 
-// T507-H:
-//	#define HDMI_TX0_BASE ((uintptr_t) 0x06000000)        /*!< HDMI_TX  Base */
-//	#define HDMI_PHY_BASE ((uintptr_t) 0x06010000)        /*!< HDMI_PHY  Base */
 
 // The HDMI registers base address.
 //#define HDMI_BASE     (HDMI_TX0_BASE - 0)//0x01EE0000
