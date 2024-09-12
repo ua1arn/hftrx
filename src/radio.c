@@ -19462,10 +19462,10 @@ void initialize2(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
-
+#if ! LCDMODE_DUMMY
 		display_at_P(0, 0, msg);
 		colmain_nextfb();
-
+#endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
 		for (;;)
 			;
