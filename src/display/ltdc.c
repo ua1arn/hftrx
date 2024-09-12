@@ -3243,17 +3243,15 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
 	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
-		(UINT32_C(2) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
+		0x02 * (UINT32_C(1) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
 		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
 		((UINT32_C(4) - 1) << 0) |
 		0;
 
 	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
-	(void) CCU->DSI_CLK_REG;
 
 	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
 	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
-	(void) CCU->DSI_BGR_REG;
 
 //	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
 //	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
@@ -3323,10 +3321,10 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 	// Step 6 LVDS controller configuration
 	// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
 	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] =
-		(UINT32_C(0x0F) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
-		(UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
-		(UINT32_C(0x04) << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
-		(UINT32_C(3) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
+		0x0F * (UINT32_C(1) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+		0x01 * (UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
+		0x04 * (UINT32_C(1) << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
+		0x03 * (UINT32_C(1) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
 		0;
 	// test
 	//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
@@ -3344,6 +3342,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 	local_delay_ms(1);
 	//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 
+	// так же инициализируется DSI_COMBO_PHY
 #else
 #endif
 #endif /* defined (TCONLCD_PTR) */
@@ -5807,10 +5806,6 @@ static void t113_tcontv_PLL_configuration(void)
 #endif
 }
 
-static void t113_tvout_initsteps(const videomode_t * vdmode)
-{
-}
-
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
@@ -5830,7 +5825,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step5 - set LVDS digital logic configuration
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
-	t113_DSI_controller_configuration(vdmode);
+	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
 	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
