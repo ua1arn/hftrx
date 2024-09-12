@@ -1143,16 +1143,16 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 
 	/* Configures the horizontal start and stop position */
 	whsppos = LTDC_Layer_InitStruct->LTDC_HorizontalStop << LTDC_LxWHPCR_WHSPPOS_Pos;
-	LTDC_Layerx->WHPCR &= ~(LTDC_LxWHPCR_WHSTPOS | LTDC_LxWHPCR_WHSPPOS);
+	LTDC_Layerx->WHPCR &= ~ (LTDC_LxWHPCR_WHSTPOS | LTDC_LxWHPCR_WHSPPOS);
 	LTDC_Layerx->WHPCR |= (LTDC_Layer_InitStruct->LTDC_HorizontalStart | whsppos);
 
 	/* Configures the vertical start and stop position */
 	wvsppos = LTDC_Layer_InitStruct->LTDC_VerticalStop << LTDC_LxWVPCR_WVSPPOS_Pos;
-	LTDC_Layerx->WVPCR &= ~(LTDC_LxWVPCR_WVSTPOS | LTDC_LxWVPCR_WVSPPOS);
+	LTDC_Layerx->WVPCR &= ~ (LTDC_LxWVPCR_WVSTPOS | LTDC_LxWVPCR_WVSPPOS);
 	LTDC_Layerx->WVPCR |= (LTDC_Layer_InitStruct->LTDC_VerticalStart | wvsppos);
 
 	/* Specifies the pixel format */
-	LTDC_Layerx->PFCR &= ~(LTDC_LxPFCR_PF);
+	LTDC_Layerx->PFCR &= ~ (LTDC_LxPFCR_PF);
 	LTDC_Layerx->PFCR |= (LTDC_Layer_InitStruct->LTDC_PixelFormat);
 
 	/* Configures the default color values */
@@ -1165,20 +1165,20 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
 		0;
 
 	/* Specifies the blending factors */
-	LTDC_Layerx->BFCR &= ~(LTDC_LxBFCR_BF2 | LTDC_LxBFCR_BF1);
+	LTDC_Layerx->BFCR &= ~ (LTDC_LxBFCR_BF2 | LTDC_LxBFCR_BF1);
 	LTDC_Layerx->BFCR |= (LTDC_Layer_InitStruct->LTDC_BlendingFactor_1 | LTDC_Layer_InitStruct->LTDC_BlendingFactor_2);
 
 	/* Configures the color frame buffer start address */
-//	LTDC_Layerx->CFBAR &= ~(LTDC_LxCFBAR_CFBADD);
+//	LTDC_Layerx->CFBAR &= ~ (LTDC_LxCFBAR_CFBADD);
 //	LTDC_Layerx->CFBAR |= (LTDC_Layer_InitStruct->LTDC_CFBStartAdress);
 
 	/* Configures the color frame buffer pitch in byte */
 	cfbp = (LTDC_Layer_InitStruct->LTDC_CFBPitch << LTDC_LxCFBLR_CFBP_Pos);
-	LTDC_Layerx->CFBLR  &= ~(LTDC_LxCFBLR_CFBLL | LTDC_LxCFBLR_CFBP);
+	LTDC_Layerx->CFBLR  &= ~ (LTDC_LxCFBLR_CFBLL | LTDC_LxCFBLR_CFBP);
 	LTDC_Layerx->CFBLR  |= (LTDC_Layer_InitStruct->LTDC_CFBLineLength | cfbp);
 
 	/* Configures the frame buffer line number */
-	LTDC_Layerx->CFBLNR  &= ~(LTDC_LxCFBLNR_CFBLNBR);
+	LTDC_Layerx->CFBLNR  &= ~ (LTDC_LxCFBLNR_CFBLNBR);
 	LTDC_Layerx->CFBLNR  |= (LTDC_Layer_InitStruct->LTDC_CFBLineNumber);
 
 }
@@ -1199,17 +1199,17 @@ static void LTDCx_Init(LTDCx_InitTypeDef* LTDC_InitStruct)
 	uint32_t totalwidth = 0;
 
 	/* Sets Synchronization size */
-	LTDC->SSCR &= ~(LTDC_SSCR_VSH | LTDC_SSCR_HSW);
+	LTDC->SSCR &= ~ (LTDC_SSCR_VSH | LTDC_SSCR_HSW);
 	horizontalsync = (LTDC_InitStruct->LTDC_HorizontalSync << LTDC_SSCR_HSW_Pos);
 	LTDC->SSCR |= (horizontalsync | LTDC_InitStruct->LTDC_VerticalSync);
 
 	/* Sets Accumulated Back porch */
-	LTDC->BPCR &= ~(LTDC_BPCR_AVBP | LTDC_BPCR_AHBP);
+	LTDC->BPCR &= ~ (LTDC_BPCR_AVBP | LTDC_BPCR_AHBP);
 	accumulatedHBP = (LTDC_InitStruct->LTDC_AccumulatedHBP << LTDC_BPCR_AHBP_Pos);
 	LTDC->BPCR |= (accumulatedHBP | LTDC_InitStruct->LTDC_AccumulatedVBP);
 
 	/* Sets Accumulated Active Width */
-	LTDC->AWCR &= ~(LTDC_AWCR_AAH | LTDC_AWCR_AAW);
+	LTDC->AWCR &= ~ (LTDC_AWCR_AAH | LTDC_AWCR_AAW);
 	accumulatedactiveW = (LTDC_InitStruct->LTDC_AccumulatedActiveW << LTDC_AWCR_AAW_Pos);
 	LTDC->AWCR |= (accumulatedactiveW | LTDC_InitStruct->LTDC_AccumulatedActiveH);
 
@@ -1883,7 +1883,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 #endif
 
 #ifndef CLRMASK
-#define CLRMASK(width, shift)   (~(SETMASK((width), (shift))))
+#define CLRMASK(width, shift)   (~ (SETMASK((width), (shift))))
 #endif
 
 #ifndef GET_BITS
@@ -2224,42 +2224,48 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 
 static void t507_hdmi_initialize(void)
 {
+	const videomode_t * const vdmode = get_videomode_CRT();
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
 	HDMI_PHY->ANA_CFG1 = 0;
 	HDMI_PHY->ANA_CFG1 = 1;
 	local_delay_ms(5);
-	HDMI_PHY->ANA_CFG1 |= (1<<16);
-	HDMI_PHY->ANA_CFG1 |= (1<<1);
+	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);
+	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);
 	local_delay_ms(10);
-	HDMI_PHY->ANA_CFG1 |= (1<<2);
+	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);
 	local_delay_ms(5);
-	HDMI_PHY->ANA_CFG1 |= (1<<3);
+	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);
 	local_delay_ms(40);
-	HDMI_PHY->ANA_CFG1 |= (1<<19);
+	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);
 	local_delay_ms(100);
-	HDMI_PHY->ANA_CFG1 |= (1<<18);
+	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);
 	HDMI_PHY->ANA_CFG1 |= (7<<4);
-	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-	TP();
-	while((HDMI_PHY->ANA_STS & 0x80) == 0)
-	  ;
-	local_delay_ms(100);
-	TP();
+
+	if (1)
+	{
+		TP();
+		while((HDMI_PHY->ANA_STS & 0x80) == 0)
+		  ;
+		local_delay_ms(100);
+		TP();
+	}
+
 	HDMI_PHY->ANA_CFG1 |= (0xf<<4);
 	HDMI_PHY->ANA_CFG1 |= (0xf<<8);
-	HDMI_PHY->ANA_CFG3 |= (1<<0) | (1<<2);
+	HDMI_PHY->ANA_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
 
-	HDMI_PHY->PLL_CFG1 &= ~(1<<26);
+	HDMI_PHY->PLL_CFG1 &= ~ (UINT32_C(1) << 26);
 	HDMI_PHY->CEC = 0;
 
 	HDMI_PHY->PLL_CFG1 = 0x39dc5040;
 	HDMI_PHY->PLL_CFG2 = 0x80084381;
 	local_delay_ms(100);
 	HDMI_PHY->PLL_CFG3 = 1;
-	HDMI_PHY->PLL_CFG1 |= (1<<25);
+	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 25);
 	local_delay_ms(100);
 	uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
-	HDMI_PHY->PLL_CFG1 |= (1<<31) | (1<<30) | tmp;
+	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
 
 	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
 	HDMI_PHY->ANA_CFG2 = 0x8063A800;
@@ -2273,8 +2279,8 @@ static void t507_hdmi_initialize(void)
 
 	struct lcd_timing timing;	// out parameters
 
-	timing.hp=1024;//LCDX_OUT;///
-	timing.vp=600;//LCDY_OUT;///
+	timing.hp=vdmode->width;//LCDX_OUT;///
+	timing.vp=vdmode->height;//LCDY_OUT;///
 	timing.hbp=300;///
 	timing.vbp=30;///
 	timing.hspw=20;///
@@ -2282,7 +2288,7 @@ static void t507_hdmi_initialize(void)
 
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-	HDMI_TX0->HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
 	HDMI_TX0->HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
 	HDMI_TX0->HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
 	HDMI_TX0->HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
@@ -2307,6 +2313,8 @@ static void t507_hdmi_initialize(void)
 	HDMI_TX0->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
 	HDMI_TX0->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
 	HDMI_TX0->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
 }
 
@@ -2730,7 +2738,7 @@ static void t113_HDMI_CCU_configuration(void)
 
     PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
-    if (0)
+    if (1)
     {
     	t507_hdmi_initialize();
     }
@@ -3744,17 +3752,17 @@ enum disp_tv_mode
 #define TVE_WUINT32(sel,offset,value)           (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) ))=(value))
 #define TVE_RUINT32(sel,offset)                 (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )))
 #define TVE_SET_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) |= (bit))
-#define TVE_CLR_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) &= (~(bit)))
+#define TVE_CLR_BIT(sel,offset,bit)             (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) &= (~ (bit)))
 #define TVE_INIT_BIT(sel,offset,c,s)            (*((volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) = \
-                                                (((*(volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) & (~(c))) | (s)))
+                                                (((*(volatile uint32_t *)( TVE_GET_REG_BASE(sel) + (offset) )) & (~ (c))) | (s)))
 
 #define TVE_TOP_GET_REG_BASE                    (TVE_TOP_BASE)
 #define TVE_TOP_WUINT32(offset,value)           (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) ))=(value))
 #define TVE_TOP_RUINT32(offset)                 (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )))
 #define TVE_TOP_SET_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) |= (bit))
-#define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) &= (~(bit)))
+#define TVE_TOP_CLR_BIT(offset,bit)             (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) &= (~ (bit)))
 #define TVE_TOP_INIT_BIT(offset,c,s)            (*((volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) = \
-                                               (((*(volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) & (~(c))) | (s)))
+                                               (((*(volatile uint32_t *)( TVE_TOP_GET_REG_BASE + (offset) )) & (~ (c))) | (s)))
 
 #ifdef TVENCODER_BASE
 
@@ -6837,7 +6845,7 @@ static void hdmi_init(void)
 	  HDMI_PHY_CFG1 |= (0xf<<8);
 	  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
 
-	  HDMI_PHY_PLL1 &= ~(1<<26);
+	  HDMI_PHY_PLL1 &= ~ (1<<26);
 	  HDMI_PHY_CEC = 0;
 
 	  HDMI_PHY_PLL1 = 0x39dc5040;
@@ -6923,7 +6931,7 @@ void de2_init(const uintptr_t * frames)
 	DE_AHB_RESET |= (1 << 0);
 	DE_SCLK_GATE |= (1 << 0);
 	DE_HCLK_GATE |= (1 << 0);
-	DE_DE2TCON_MUX &= ~(1 << 0);
+	DE_DE2TCON_MUX &= ~ (1 << 0);
 
 	// Erase the whole of MIXER0. This contains uninitialized data.
 	for (uintptr_t addr = DE_MIXER0_BASE + 0x0000; addr < DE_MIXER0_BASE + 0xC000; addr += 4)
