@@ -452,11 +452,6 @@ static void display2_waterfall(
 	uint_fast8_t y,
 	dctx_t * pctx
 	);
-static void display2_colorbuff(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
 	uint_fast8_t x,
@@ -5075,14 +5070,6 @@ static void wfsetupnew(void)
 	wfl_avg_clear(); // очищаем буфер усреднения водопада
 }
 
-// отрисовка вновь появившихся данных на водопаде (в случае использования аппаратного scroll видеопамяти).
-static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLORPIP_T * p)
-{
-	colpip_copy_to_draw(
-			(uintptr_t) p, GXSIZE(ALLDX, 1) * sizeof * p,
-			p, ALLDX, 1, x, y);
-}
-
 #if ! LINUX_SUBSYSTEM
 	#include "dsp/window_functions.h"
 #endif /* ! LINUX_SUBSYSTEM */
@@ -5360,12 +5347,6 @@ display_colorgrid_3dss(
 	colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, colorcenter);	// center frequency marker
 }
 
-// Спектр на монохромных дисплеях
-// или на цветных, где есть возможность раскраски растровой картинки.
-
-#define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
-
-
 #if WITHVIEW_3DSS
 
 static void init_depth_map_3dss(void)
@@ -5388,10 +5369,6 @@ static void init_depth_map_3dss(void)
 	}
 }
 #endif /* WITHVIEW_3DSS */
-
-#if HHWMG
-static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
-#endif /* HHWMG */
 
 uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
 {
@@ -5907,56 +5884,12 @@ static void display2_gcombo(
 	display2_waterfall(x0, y0, pctx);
 }
 
-static void display2_colorbuff(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	dctx_t * pctx
-	)
-{
-#if HHWMG
-	const GTG_t gtg = { spectmonoscr, ALLDX, SPDY, };
-	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскраски растровой картинки.
-	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
-
-#else /* */
-
-	#if (LCDMODE_LTDC)
-
-	#else /* LCDMODE_LTDC */
-	colpip_copy_to_draw(
-			(uintptr_t) getscratchwnd(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(BUFDIM_X, BUFDIM_Y),
-			getscratchwnd(), BUFDIM_X, BUFDIM_Y, GRID2X(x0), GRID2Y(y0));
-	#endif /* LCDMODE_LTDC */
-
-#endif /* LCDMODE_S1D13781 */
-}
-
 static
 PACKEDCOLORPIP_T * getscratchwnd(void)
 {
-#if HHWMG
-	// Спектр на монохромных дисплеях
-	// или на цветных, где есть возможность раскраски растровой картинки.
-
-	return NULL;	//spectmonoscr;
-
-#else /* */
-
-	#if (LCDMODE_LTDC)
-
-		pipparams_t pip;
-		display2_getpipparams(& pip);
-		return colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
-
-	#else /* LCDMODE_LTDC */
-
-		static PACKEDCOLORPIP_T tbuff0 [GXSIZE(BUFDIM_X, BUFDIM_Y)];
-		return tbuff0;
-
-	#endif /* LCDMODE_LTDC */
-
-#endif /* LCDMODE_S1D13781 */
+	pipparams_t pip;
+	display2_getpipparams(& pip);
+	return colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y);
 }
 
 
@@ -5993,16 +5926,6 @@ static void display2_waterfall(
 	dctx_t * pctx
 	)
 {
-}
-
-// Stub
-static void display2_colorbuff(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-
 }
 
 // Stub

@@ -832,54 +832,6 @@ display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM char * s)
 	} while (lowhalf --);
 }
 
-/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void display_showbuffer(
-	const GX_t * buffer,
-	unsigned dx,	// пиксели
-	unsigned dy,	// пиксели
-	uint_fast8_t xcell,	// сетка
-	uint_fast8_t ycell	// сетка
-	)
-{
-#if 1
-#if LCDMODE_S1D13781
-
-	s1d13781_showbuffer(buffer, dx, dy, xcell, ycell);
-
-#else /* LCDMODE_S1D13781 */
-
-	#if WITHSPIHWDMA && (LCDMODE_UC1608 | 0)
-		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		dcache_clean((uintptr_t) buffer, sizeof (* buffer) * MGSIZE(dx, dy));	// количество байтов
-	#endif
-
-	uint_fast8_t lowhalf = (dy) / 8 - 1;
-	if (lowhalf == 0)
-		return;
-	do
-	{
-		uint_fast8_t pos;
-		const GX_t * const p = buffer + lowhalf * MGADJ(dx);	// начало данных горизонтальной полосы в памяти
-		//PRINTF(PSTR("display_showbuffer: col=%d, row=%d, lowhalf=%d\n"), col, row, lowhalf);
-		display_plotfrom(GRID2X(ycell), GRID2Y(xcell) + lowhalf * 8);		// курсор в начало первой строки
-		// выдача горизонтальной полосы
-		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdatabar_begin(xcell, ycell, & ypix);
-	#if WITHSPIHWDMA && (0)
-		// на LCDMODE_S1D13781 почему-то DMA сбивает контроллер
-		// на LCDMODE_UC1608 портит мохранене теузей частоты и режима работы (STM32F746xx)
-		hardware_spi_master_send_frame(p, dx);
-	#else
-		for (pos = 0; pos < dx; ++ pos)
-			xpix = display_barcolumn(xpix, ypix, p [pos]);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	#endif
-		display_wrdatabar_end();
-	} while (lowhalf --);
-
-#endif /* LCDMODE_S1D13781 */
-#endif
-}
-
 #if LCDMODE_S1D13781
 
 	// младший бит левее
@@ -1385,72 +1337,6 @@ display_getbgcolor(void)
 	return COLOR_BLACK;
 #endif /* LCDMODE_COLORED */
 }
-
-
-#if LCDMODE_LTDC
-
-void colpip_copy_to_draw(
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * buffer,	// источник
-	uint_fast16_t dx,	// ширина буфера источника
-	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-	ASSERT(dx <= DIM_X);
-	ASSERT(dy <= DIM_Y);
-	ASSERT(((uintptr_t) buffer % DCACHEROWSIZE) == 0);
-#if LCDMODE_HORFILL
-	hwaccel_bitblt(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
-		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		buffer, dx, dy,
-		0, 0,
-		dx, dy
-		);
-#else /* LCDMODE_HORFILL */
-	hwaccel_bitblt(
-		(uintptr_t) colmain_fb_draw(), sizeof (PACKEDCOLORPIP_T) * GXSIZE(DIM_X, DIM_Y),	// target area invalidate parameters
-		colpip_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, col, row), DIM_X, DIM_Y,
-		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		buffer, dx, dy,
-		0, 0,
-		dx, dy,
-		);
-#endif /* LCDMODE_HORFILL */
-}
-
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-}
-
-#else
-
-// Выдать буфер на дисплей. Функции бывают только для не L8 режимов
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_copy_to_draw(
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * buffer,	// источник
-	uint_fast16_t dx,	// ширина буфера источника
-	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t xpix,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t ypix	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-#if LCDMODE_COLORED
-	display_plotfrom(xpix, ypix);
-	display_plotstart(dy);
-	display_plot(buffer, dx, dy, xpix, ypix);
-	display_plotstop();
-#endif
-}
-
-#endif /*  */
 
 #if WITHLTDCHW
 

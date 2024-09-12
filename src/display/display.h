@@ -427,12 +427,6 @@ void display_clear(void);
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
-/* работа с цветным буфером */
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
-void display_plotstart(uint_fast16_t dy);	// Высота окна источника в пикселях
-void display_plot(const PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t xpix, uint_fast16_t ypix);	// Размеры окна в пикселях и начальная точка рисования
-void display_plotstop(void);
-
 // самый маленький шрифт
 uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 void display_wrdata2_end(void);
@@ -466,23 +460,6 @@ typedef struct pipparams_tag
 } pipparams_t;
 
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
-
-/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void display_showbuffer(
-	const GX_t * __restrict buffer,
-	unsigned dx,	// пиксели
-	unsigned dy,	// пиксели
-	uint_fast8_t col,	// сетка
-	uint_fast8_t row	// сетка
-	);
-/* выдать на дисплей монохромный буфер с размерами dx * dy битов */
-void s1d13781_showbuffer(
-	const GX_t * __restrict buffer,
-	unsigned dx,	// пиксели
-	unsigned dy,	// пиксели
-	uint_fast8_t x,	// сетка
-	uint_fast8_t y	// сетка
-	);
 /* поставить точку в буфере кадра */
 void display_pixelbuffer(
 	GX_t * __restrict buffer,
@@ -537,18 +514,6 @@ void gtg_point(
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
-	);
-
-// Скопировать цветной буфр в drqw buffer
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-void colpip_copy_to_draw(
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const PACKEDCOLORPIP_T * __restrict buffer,	// источник
-	uint_fast16_t dx,	// ширина буфера источника
-	uint_fast16_t dy,	// высота буфера источника
-	uint_fast16_t col,	// целевая горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// целевая вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
 	);
 
 // Нарисовать закрашенный или пустой прямоугольник

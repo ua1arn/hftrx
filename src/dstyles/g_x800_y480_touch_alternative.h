@@ -136,7 +136,6 @@
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH | PGGUI, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE | PGGUI, },// подготовка изображения спектра
 		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL | PGGUI, },// подготовка изображения водопада
-		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE | PGGUI, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
