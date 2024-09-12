@@ -2229,20 +2229,65 @@ static void t507_hdmi_initialize(void)
 	const videomode_t * const vdmode = get_videomode_CRT();
 	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
-	HDMI_PHY->ANA_CFG1 = 0;
-	HDMI_PHY->ANA_CFG1 = 1;
-	local_delay_ms(5);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);
+	HDMI_PHY->CEC |= (UINT32_C(1) << 7);	// CEC CONTROL: register
+	HDMI_PHY->CEC |= (UINT32_C(1) << 3);	// CEC PAD INPUT ENABLE
+	HDMI_PHY->CEC |= (UINT32_C(1) << 0);	// CEC OUTPUT DATA
 	local_delay_ms(10);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);
-	local_delay_ms(5);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);
-	local_delay_ms(40);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	//return;
+
+	for (;0;)
+	{
+		int v = (HDMI_PHY->CEC >> 1) & 0x01;	// CEC INPUT DATA
+		PRINTF("cec=%d\n", v);
+		local_delay_ms(10);
+	}
+
+	// TMDS Character Rate - 297MHz
+	HDMI_PHY->PLL_CFG1 = 0x35dc5fc0;
+	HDMI_PHY->PLL_CFG2 = 0x800863C0;
+	HDMI_PHY->PLL_CFG3 = 0x01;
 	local_delay_ms(100);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);
-	HDMI_PHY->ANA_CFG1 |= (7<<4);
+//
+//	HDMI_PHY->ANA_CFG1 = 0;
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 0);	// ANA_CFG1_ENBI
+//	local_delay_ms(5);
+//	/* Enable TMDS clock */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);	// ANA_CFG1_TMDSCLK_EN
+//	/* Enable common voltage reference bias module */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);	// ANA_CFG1_ENVBS
+//	local_delay_ms(10);
+//	/* Enable internal LDO */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);	// ANA_CFG1_LDOEN
+//	local_delay_ms(5);
+//	/* Enable common clock module */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);	// ANA_CFG1_CKEN
+//	local_delay_ms(100);
+//
+//	/* Enable resistance calibration analog and digital modules */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);	// ANA_CFG1_ENRCAL
+//	local_delay_ms(100);
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);	// ANA_CFG1_ENCALOG
+//
+//	/* P2S module enable for TMDS data lane */
+//	HDMI_PHY->ANA_CFG1 |= 0x07 * (UINT32_C(1) << 4);
+
+	// 297 MHz
+	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
+	HDMI_PHY->ANA_CFG2 = 0x8063b000;
+	HDMI_PHY->ANA_CFG3 = 0x0F8246B5;
+
+	PRINTF("1st:\n");
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	local_delay_ms(10);
+	PRINTF("See:\n");
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	local_delay_ms(10);
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	local_delay_ms(10);
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	local_delay_ms(10);
+	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
 	if (1)
 	{
@@ -2720,30 +2765,35 @@ static void t113_HDMI_CCU_configuration(void)
 
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
+    PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
+
+    // CCU_32K select as CEC clock
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+    PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-
-//    CCU->HDMI_HDCP_CLK_REG;
-//    CCU->HDMI_HDCP_BGR_REG;
+    if (0)
+    {
+    	// HDCP: High-bandwidth Digital Content Protection
+        CCU->HDMI_HDCP_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+        CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+        CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+    }
 
     //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
 	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
     PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
-    if (1)
-    {
-    	t507_hdmi_initialize();
-    }
 
 #endif
 
@@ -7049,6 +7099,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 #if WITHHDMITVHW
 		t113_HDMI_CCU_configuration();
+	    if (1)
+	    {
+	    	t507_hdmi_initialize();
+	    }
 #endif /* WITHHDMITVHW */
 
 #endif /* defined (TCONTV_PTR) */
