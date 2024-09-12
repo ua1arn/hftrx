@@ -5542,6 +5542,7 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmode)
 }
 
 /* ********************************* */
+#if defined (TVENCODER_PTR)
 
 static void t113_tve_DAC_configuration(const videomode_t * vdmode)
 {
@@ -5626,6 +5627,7 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 #endif
 
 }
+#endif /* defined (TVENCODER_PTR) */
 
 /* ----- */
 
@@ -6287,8 +6289,10 @@ static void hardware_tcontv_initialize(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_tcontv_open_module_enable(vdmode);
 
+#if defined (TVENCODER_PTR)
 	t113_tve_CCU_configuration(vdmode);
 	t113_tve_DAC_configuration(vdmode);
+#endif /* defined (TVENCODER_PTR) */
 }
 #endif /* defined (TCONTV_PTR) */
 
@@ -7073,7 +7077,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const int rtmixid = RTMIXIDTV;
 
 			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 0, 0));	// RED
 			t113_de_update(rtmixid);	/* Update registers */
 
 			t113_de_scaler_initialize(rtmixid, vdmode_CRT);
@@ -7084,7 +7088,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const int rtmixid = RTMIXIDLCD;
 
 			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
 			t113_de_update(rtmixid);	/* Update registers */
 
 			//t113_de_scaler_initialize(rtmixid, vdmode);

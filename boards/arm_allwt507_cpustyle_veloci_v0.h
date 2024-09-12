@@ -1327,7 +1327,9 @@
 		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+	#endif
 
+	#if 0
 		#define	TVENCODER_IX 0	/* 0 -TVE0 */
 		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
