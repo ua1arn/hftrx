@@ -126,6 +126,8 @@
 	//#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
+	#define WITHHDMITVHW 1	/* Second display - HDMI hardware output */
+
 #elif 1
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
