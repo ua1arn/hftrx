@@ -424,7 +424,6 @@ void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
-void display_flush(void);	// для framebufer дисплеев - вытолкнуть кэш память
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 

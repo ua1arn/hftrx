@@ -813,7 +813,6 @@ void hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -1598,7 +1597,6 @@ void hardware_ltdc_L8_palette(void)
 
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
@@ -1664,7 +1662,6 @@ void hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	uint32_t size;
@@ -1723,7 +1720,6 @@ void hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
@@ -7774,7 +7770,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-/* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }

@@ -26,11 +26,6 @@ display_clear(void)
 {
 }
 
-// для framebufer дисплеев - вытолкнуть кэш память
-void display_flush(void)
-{
-}
-
 void
 colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
