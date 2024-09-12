@@ -809,7 +809,7 @@ void ohciehci_clk_init(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	//PRINTF("From boot: allwnrt113_get_peripll2x_freq=%" PRIuFAST32 "\n", allwnrt113_get_peripll2x_freq());
+	//PRINTF("From boot: allwnr_t113_get_peripll2x_freq=%" PRIuFAST32 "\n", allwnr_t113_get_peripll2x_freq());
 
 	// DCXO24M -> PLL_PERI
 	// 0, 1 - work. 2 - not work

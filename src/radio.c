@@ -18127,7 +18127,7 @@ static void menu_print(void)
         	#elif CPUSTYLE_R7S721
 					msg = PSTR("RENESAS");
 			#elif CPUSTYLE_T113 || CPUSTYLE_F133
-					switch (allwnrt113_get_chipid())
+					switch (allwnr_t113_get_chipid())
 					{
 					default:
 					case CHIPID_T113S3: 		msg = PSTR("Allw T113-S3"); break;

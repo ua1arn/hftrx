@@ -823,7 +823,7 @@ static void mctl_set_master_priority(void)
 
 static void mctl_sys_init(struct h616_dram_para *para)
 {
-	const unsigned reffreq = allwnrt113_get_hosc_freq() / 1000 / 1000;
+	const unsigned reffreq = allwnr_t113_get_hosc_freq() / 1000 / 1000;
 	struct sunxi_ccm_reg * const ccm =
 			(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
 	struct sunxi_mctl_com_reg * const mctl_com =

@@ -354,7 +354,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc0_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#if WITHSDHCHW4BIT
@@ -569,7 +569,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
@@ -689,7 +689,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
@@ -799,7 +799,7 @@
 		} while (0) 
 	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif // WITHTWISW || WITHTWIHW
 
@@ -1091,7 +1091,7 @@
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
-		#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_t113_get_tconlcd_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
@@ -1102,7 +1102,7 @@
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
-		#define BOARD_TCONTVFREQ (allwnrt113_get_tcontv_freq())
+		#define BOARD_TCONTVFREQ (allwnr_t113_get_tcontv_freq())
 	#endif
 
 	#if 0
@@ -1110,7 +1110,7 @@
 		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
-		#define BOARD_TVEFREQ (allwnrt113_get_tve_freq())
+		#define BOARD_TVEFREQ (allwnr_t113_get_tve_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

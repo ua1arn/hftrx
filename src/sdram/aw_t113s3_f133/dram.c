@@ -134,7 +134,7 @@ static dram_para_t t113s3_ddrp3 =
 
 int sys_dram_init(void)
 {
-	if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
+	if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0)
 	{
 		//ddrp3.dram_clk = (WITHCPUXTAL / 1000000) * PLL_DDR_N;
 		set_pll_cpux_axi(PLL_CPU_N);
@@ -231,8 +231,8 @@ void arm_hardware_sdram_initialize(void)
 	#endif /* WITHDEBUG */
 
 #else
-	PRINTF("default: allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
-	PRINTF("default: allwnrt113_get_dram_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dram_freq());
+	PRINTF("default: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
+	PRINTF("default: allwnr_t113_get_dram_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dram_freq());
 	if (sys_dram_init() == 0)
 	{
 		PRINTF("No external memory");
@@ -249,8 +249,8 @@ void arm_hardware_sdram_initialize(void)
 		for (;;)
 			;
 	}
-	PRINTF("settings: allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
-	PRINTF("settings: allwnrt113_get_dram_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dram_freq());
+	PRINTF("settings: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
+	PRINTF("settings: allwnr_t113_get_dram_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dram_freq());
 
 #endif
 	PRINTF("arm_hardware_sdram_initialize done\n");

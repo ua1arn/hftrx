@@ -493,7 +493,7 @@ void DI_Clock(void)
 
  CCU->DI_BGR_REG |= (UINT32_C(1) << 16);        //de-assert reset
 
- PRINTF("DI_Clock: %u MHz\n", (unsigned) (allwnrt113_get_di_freq() / 1000 / 1000));
+ PRINTF("DI_Clock: %u MHz\n", (unsigned) (allwnr_t113_get_di_freq() / 1000 / 1000));
 }
 
 void DI_INIT(void)

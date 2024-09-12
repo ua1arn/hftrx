@@ -15,7 +15,7 @@ static void TVD_Clock(void)                   //включает все нужн
 	TVD_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);      //assert TVD & TVD_TOP reset
 
 	{
-		const unsigned divider = calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq);
+		const unsigned divider = calcdivround2(allwnr_t113_get_video0_x1_freq(), needfreq);
 		//PRINTF("TVD_Clock: needfreq=%u Hz, divider=%u\n", (unsigned) needfreq, (unsigned) divider);
 		ASSERT(divider <= 32);
 		TVD_CCU_CLK_REG =
@@ -25,7 +25,7 @@ static void TVD_Clock(void)                   //включает все нужн
 		TVD_CCU_CLK_REG |= (UINT32_C(1) << 31);
 		local_delay_us(10);
 
-		//PRINTF("TVD_Clock: allwnrt113_get_tvd_freq()=%u Hz\n", (unsigned) allwnrt113_get_tvd_freq());
+		//PRINTF("TVD_Clock: allwnr_t113_get_tvd_freq()=%u Hz\n", (unsigned) allwnr_t113_get_tvd_freq());
 	}
 
 	TVD_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                //pass TVD & TVD_TOP clock

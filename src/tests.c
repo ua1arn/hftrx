@@ -11115,7 +11115,7 @@ void hightests(void)
 
 		// https://github.com/YuzukiHD/FreeRTOS-HIFI4-DSP/blob/164696d952116d20100daefd7a475d2ede828eb0/host/uboot-driver/dsp/sun8iw20/dsp_reg.h#L33C1-L39C65
 		//xtest();
-		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+		PRINTF("allwnr_t113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsp_freq());
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		//local_delay_ms(300);
@@ -11227,10 +11227,10 @@ void hightests(void)
 //		// T113M4: IIDR=0200143B, midr=410FC075 xfel sid: 934072002c0048140105061c54731853
 //		// T113S3: IIDR=0200143B, midr=410FC075 xfel sid: 934060000c00481401464015586213cc
 //		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
-		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
-		if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
+		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
+		if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0)
 		{
-			PRINTF("freq = %u MHz, PLL_CPU_CTRL_REG=%08X,CPU_AXI_CFG_REG=%08X\n", (unsigned) (allwnrt113_get_pll_cpu_freq() / 1000 / 1000), (unsigned) CCU->PLL_CPU_CTRL_REG, (unsigned) CCU->CPU_AXI_CFG_REG);
+			PRINTF("freq = %u MHz, PLL_CPU_CTRL_REG=%08X,CPU_AXI_CFG_REG=%08X\n", (unsigned) (allwnr_t113_get_pll_cpu_freq() / 1000 / 1000), (unsigned) CCU->PLL_CPU_CTRL_REG, (unsigned) CCU->CPU_AXI_CFG_REG);
 			dbg_flush();	/* for see rv64 running effects on UART0 */
 			//	la	a0, 0x02500000
 			//	la	a1, 0x23
@@ -11339,12 +11339,12 @@ void hightests(void)
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
-		PRINTF("allwnrt113_get_axi_freq()=%u MHz\n", (unsigned) (allwnrt113_get_axi_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_mbus_freq()=%u MHz\n", (unsigned) (allwnrt113_get_mbus_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_psi_freq()=%u MHz\n", (unsigned) (allwnrt113_get_psi_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnrt113_get_ahb0_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnrt113_get_apb1_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnrt113_get_apb0_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_mbus_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_psi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_psi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_ahb0_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb0_freq() / 1000 / 1000));
 	}
 #endif
 #if 0
@@ -11687,7 +11687,7 @@ void hightests(void)
 		drambase [3] = 0x80;
 		printhex(DSP0_DRAM_BASE, drambase, 64);
 		TP();
-		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+		PRINTF("allwnr_t113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsp_freq());
 
 //		CCU->DSP_BGR_REG |= UINT32_C(1) << 18;	// DSP_DBG_RST 1: De-assert
 //		CCU->DSP_BGR_REG |= UINT32_C(1) << 17;	// DSP_CFG_RST 1: De-assert
@@ -11697,13 +11697,13 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
-		PRINTF("allwnrt113_get_pll_cpu_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_cpu_freq());
-		PRINTF("allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
-		PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
-		PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
-		PRINTF("allwnrt113_get_ce_freq()=%" PRIuFAST32 "\n", allwnrt113_get_ce_freq());
-		PRINTF("allwnrt113_get_ve_freq()=%" PRIuFAST32 "\n", allwnrt113_get_ve_freq());
-		PRINTF("allwnrt113_get_di_freq()=%" PRIuFAST32 "\n", allwnrt113_get_di_freq());
+		PRINTF("allwnr_t113_get_pll_cpu_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_cpu_freq());
+		PRINTF("allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
+		PRINTF("allwnr_t113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_g2d_freq());
+		PRINTF("allwnr_t113_get_de_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_de_freq());
+		PRINTF("allwnr_t113_get_ce_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_ce_freq());
+		PRINTF("allwnr_t113_get_ve_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_ve_freq());
+		PRINTF("allwnr_t113_get_di_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_di_freq());
 	}
 #endif
 #if 0 && defined (CLINT) && CPUSTYLE_F133

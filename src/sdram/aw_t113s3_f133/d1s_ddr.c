@@ -885,7 +885,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
         cfg = ac_remapping_tables[3];
         break;
       case 10:
-    	  if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
+    	  if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0)
     	  {
     	        PRINTF("DDR Using MAP: 0 \n");
     	        cfg = ac_remapping_tables[0];

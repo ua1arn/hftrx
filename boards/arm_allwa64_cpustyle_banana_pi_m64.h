@@ -636,7 +636,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
@@ -745,7 +745,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0		/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR R_TWI	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 
@@ -783,7 +783,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -1034,7 +1034,7 @@
 	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define BOARD_TCONLCDFREQ (allwnrt113_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
+	#define BOARD_TCONLCDFREQ (allwnr_t113_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
 	#define TCONLCD_IRQ TCON0_IRQn
 	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 

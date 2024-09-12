@@ -2735,7 +2735,7 @@ static void t507_hdmi_initialize(void)
 	HDMI_PHY->CEC |= (UINT32_C(1) << 3);	// CEC PAD INPUT ENABLE
 	HDMI_PHY->CEC |= (UINT32_C(1) << 0);	// CEC OUTPUT DATA
 	local_delay_ms(10);
-	//return;
+
 
 	for (;0;)
 	{
@@ -2743,6 +2743,8 @@ static void t507_hdmi_initialize(void)
 		PRINTF("cec=%d\n", v);
 		local_delay_ms(10);
 	}
+
+	return;
 
 	// TMDS Character Rate - 297MHz
 //	HDMI_PHY->PLL_CFG1 = 0x35dc5fc0;
@@ -3331,7 +3333,7 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnrt113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
@@ -3393,7 +3395,7 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnrt113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
@@ -3443,7 +3445,7 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
     if (needfreq != 0)
     {
     	prei = 0;
-    	divider = calcdivround2(allwnrt113_get_video1pllx4_freq(), needfreq);
+    	divider = calcdivround2(allwnr_t113_get_video1pllx4_freq(), needfreq);
 		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
     	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
@@ -3503,7 +3505,7 @@ static void t113_tcontv_CCU_configuration(void)
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnrt113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
@@ -3566,7 +3568,7 @@ static void t113_tcontv_CCU_configuration(void)
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnrt113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
@@ -3603,7 +3605,7 @@ static void t113_tcontv_CCU_configuration(void)
 
 	{
 		unsigned divider;
-		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+		unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
 		//PRINTF("t113_tcontv_CCU_configuration: needfreq=%u Hz, prei=%u, divider=%u\n", (unsigned) needfreq, (unsigned) prei, (unsigned) divider);
 		ASSERT(divider < 16);
 	    TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
@@ -3782,7 +3784,7 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
 	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
 
-//	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
+//	PRINTF("allwnr_t113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsi_freq());
 //	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
 
 	{
@@ -6146,7 +6148,7 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 	//	101: PLL_AUDIO1(DIV2)
 
 	unsigned divider;
-	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
 	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
 	ASSERT(divider < 16);
 	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
@@ -6319,8 +6321,8 @@ static void t113_tcontv_PLL_configuration(void)
 	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
 
 
-//	PRINTF("allwnrt113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video0pllx4_freq() / 1000 / 1000));
-//	PRINTF("allwnrt113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnrt113_get_video1pllx4_freq() / 1000 / 1000));
+//	PRINTF("allwnr_t113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video0pllx4_freq() / 1000 / 1000));
+//	PRINTF("allwnr_t113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video1pllx4_freq() / 1000 / 1000));
 
     // DISPLAY_TOP access
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
@@ -6687,7 +6689,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
-	//PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnrt113_get_de_freq() / 1000 / 1000);
+	//PRINTF("allwnr_t113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t113_get_de_freq() / 1000 / 1000);
 
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset

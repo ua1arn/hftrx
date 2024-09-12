@@ -3946,7 +3946,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	CCU->BUS_CLK_GATING_REG2 |= UINT32_C(1) << (12 + ix);	// Gating Clock For I2S/PCM-2
 	CCU->BUS_SOFT_RST_REG3 |= UINT32_C(1) << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
 
-	//PRINTF("allwnrt113_get_i2s1_freq = %" PRIuFAST32 "\n", ix == 1 ? allwnrt113_get_i2s1_freq() : allwnrt113_get_i2s2_freq());
+	//PRINTF("allwnr_t113_get_i2s1_freq = %" PRIuFAST32 "\n", ix == 1 ? allwnr_t113_get_i2s1_freq() : allwnr_t113_get_i2s2_freq());
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
@@ -3964,16 +3964,16 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	{
 	default:
 	case 0x00:
-		clk = allwnrt113_get_audio0pll1x_freq();
+		clk = allwnr_t113_get_audio0pll1x_freq();
 		break;
 	case 0x01:
-		clk = allwnrt113_get_audio0pll4x_freq();
+		clk = allwnr_t113_get_audio0pll4x_freq();
 		break;
 	case 0x02:
-		clk = allwnrt113_get_audio1pll_div2_freq();
+		clk = allwnr_t113_get_audio1pll_div2_freq();
 		break;
 	case 0x03:
-		clk = allwnrt113_get_audio1pll_div5_freq();
+		clk = allwnr_t113_get_audio1pll_div5_freq();
 		break;
 	}
 	//TP();
@@ -3997,7 +3997,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 
 	CCU->I2S_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Gating Clock for I2S/PCMx
 	CCU->I2S_BGR_REG |= (UINT32_C(1) << (16 + ix));	// I2S/PCMx Reset
-	//PRINTF("allwnrt113_get_i2s1_freq = %" PRIuFAST32 "\n", ix == 1 ? allwnrt113_get_i2s1_freq() : allwnrt113_get_i2s2_freq());
+	//PRINTF("allwnr_t113_get_i2s1_freq = %" PRIuFAST32 "\n", ix == 1 ? allwnr_t113_get_i2s1_freq() : allwnr_t113_get_i2s2_freq());
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -5719,7 +5719,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	#warning Implement for CPUSTYLE_A64
 
 	// Default CCU settings:
-	//	AudioCodec: allwnrt113_get_audio0pllhs_freq()=1032000 kHz
+	//	AudioCodec: allwnr_t113_get_audio0pllhs_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
 
@@ -5752,16 +5752,16 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //	{
 //	default:
 //	case 0x00:
-//		clk = t507_get_pll_audio_1x_freq();
+//		clk = allwnr_t507_get_pll_audio_1x_freq();
 //		break;
 //	case 0x01:
-//		clk = t507_get_pll_audio_2x_freq();
+//		clk = allwnr_t507_get_pll_audio_2x_freq();
 //		break;
 //	case 0x02:
-//		clk = t507_get_pll_audio_4x_freq();
+//		clk = allwnr_t507_get_pll_audio_4x_freq();
 //		break;
 //	case 0x03:
-//		clk = t507_get_pll_audio_hs_freq();
+//		clk = allwnr_t507_get_pll_audio_hs_freq();
 //		break;
 //	}
 ////	//TP();
@@ -5811,14 +5811,14 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	CCU->AC_DIG_CLK_REG  |= (UINT32_C(1) << 30);	// SCLK_4X_GATING
 	//PRINTF("AC_DIG_CLK_REG=%08X\n", (unsigned) CCU->AC_DIG_CLK_REG);
 
-//	PRINTF("AudioCodec: t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
+//	PRINTF("AudioCodec: allwnr_t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_1x_freq() / 1000));
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Default CCU settings:
-	//	AudioCodec: allwnrt113_get_audio0pllhs_freq()=1032000 kHz
+	//	AudioCodec: allwnr_t113_get_audio0pllhs_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
 
@@ -5851,16 +5851,16 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //	{
 //	default:
 //	case 0x00:
-//		clk = t507_get_pll_audio_1x_freq();
+//		clk = allwnr_t507_get_pll_audio_1x_freq();
 //		break;
 //	case 0x01:
-//		clk = t507_get_pll_audio_2x_freq();
+//		clk = allwnr_t507_get_pll_audio_2x_freq();
 //		break;
 //	case 0x02:
-//		clk = t507_get_pll_audio_4x_freq();
+//		clk = allwnr_t507_get_pll_audio_4x_freq();
 //		break;
 //	case 0x03:
-//		clk = t507_get_pll_audio_hs_freq();
+//		clk = allwnr_t507_get_pll_audio_hs_freq();
 //		break;
 //	}
 ////	//TP();
@@ -5905,16 +5905,16 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
 
-//	PRINTF("AudioCodec: t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
+//	PRINTF("AudioCodec: allwnr_t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_1x_freq() / 1000));
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// Default CCU settings:
-	//	AudioCodec: allwnrt113_get_audio0pll1x_freq()=24571 kHz
-	//	AudioCodec: allwnrt113_get_audio1pll_div2_freq()=1536000 kHz
-	//	AudioCodec: allwnrt113_get_audio1pll_div5_freq()=614400 kHz
+	//	AudioCodec: allwnr_t113_get_audio0pll1x_freq()=24571 kHz
+	//	AudioCodec: allwnr_t113_get_audio1pll_div2_freq()=1536000 kHz
+	//	AudioCodec: allwnr_t113_get_audio1pll_div5_freq()=614400 kHz
 
 	{
 		unsigned N = 86;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
@@ -5939,13 +5939,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	{
 	default:
 	case 0x00:
-		clk = allwnrt113_get_audio0pll1x_freq();
+		clk = allwnr_t113_get_audio0pll1x_freq();
 		break;
 	case 0x01:
-		clk = allwnrt113_get_audio1pll_div2_freq();
+		clk = allwnr_t113_get_audio1pll_div2_freq();
 		break;
 	case 0x02:
-		clk = allwnrt113_get_audio1pll_div5_freq();
+		clk = allwnr_t113_get_audio1pll_div5_freq();
 		break;
 	}
 	//TP();
@@ -5974,8 +5974,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
 
-	PRINTF("AudioCodec: allwnrt113_get_audio_codec_adc_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_adc_freq() / 1000));
-	PRINTF("AudioCodec: allwnrt113_get_audio_codec_dac_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_dac_freq() / 1000));
+	PRINTF("AudioCodec: allwnr_t113_get_audio_codec_adc_freq()=%u kHz\n", (unsigned) (allwnr_t113_get_audio_codec_adc_freq() / 1000));
+	PRINTF("AudioCodec: allwnr_t113_get_audio_codec_dac_freq()=%u kHz\n", (unsigned) (allwnr_t113_get_audio_codec_dac_freq() / 1000));
 
 #else
 	#warning Unexpected CPUSTYLE_xxx

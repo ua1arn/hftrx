@@ -1017,7 +1017,7 @@ void arm_hardware_mdma_initialize(void)
 		0;
 	CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 	local_delay_us(10);
-	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000 / 1000));
+	//PRINTF("allwnr_t113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_g2d_freq() / 1000 / 1000));
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -1055,11 +1055,11 @@ void arm_hardware_mdma_initialize(void)
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif
-	// peri:   allwnrt113_get_g2d_freq()=600000000
-	// video0: allwnrt113_get_g2d_freq()=297000000
-	// video1: allwnrt113_get_g2d_freq()=297000000
-	// audio1: allwnrt113_get_g2d_freq()=768000000
-	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
+	// peri:   allwnr_t113_get_g2d_freq()=600000000
+	// video0: allwnr_t113_get_g2d_freq()=297000000
+	// video1: allwnr_t113_get_g2d_freq()=297000000
+	// audio1: allwnr_t113_get_g2d_freq()=768000000
+	//PRINTF("allwnr_t113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_g2d_freq());
 
 	aw_g2d_initialize();
 	 //mixer_set_reg_base(G2D_BASE);

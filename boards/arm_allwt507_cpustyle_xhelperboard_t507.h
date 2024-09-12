@@ -412,7 +412,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc0_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -458,7 +458,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define	SMHCHARD_PTR SMHC1	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC1_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC1_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc1_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc1_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	// Additional lines to module TL8189FQB2 (Realtek RTL8189FTV based) :
@@ -509,7 +509,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define	SMHCHARD_PTR SMHC2	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC2_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc2_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc2_freq())
 	#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
 	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface */
 
@@ -719,7 +719,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi1_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi1_freq())
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
@@ -890,7 +890,7 @@ void user_uart5_ontxchar(void * ctx);
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 	// I2C/TWI
@@ -928,7 +928,7 @@ void user_uart5_ontxchar(void * ctx);
 		} while (0) 
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
