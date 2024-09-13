@@ -2743,11 +2743,80 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned start, uint8_t 
 	return 1;
 }
 
+//	EDID Structure Version & Revision: 01 03
+//	00000000: 00 FF FF FF FF FF FF 00 12 E5 00 21 50 2D 31 01  ...........!P-1.
+//	00000010: 1C 13 01 03 81 2F 1A 78 2E 35 85 A6 56 48 9A 24  ...../.x.5..VH.$
+//	00000020: 12 50 54 AF EF 00 01 01 01 01 01 01 01 01 01 01  .PT.............
+//	00000030: 01 01 01 01 01 01 A1 13 00 40 41 58 19 20 2C 58  .........@AX. ,X
+//	00000040: 36 00 DC 0C 11 00 00 1A 00 00 00 FF 00 30 0A 0A  6............0..
+//	00000050: 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 00 00 00 FD 00 38  ...............8
+//	00000060: 4B 1E 53 15 00 0A 20 20 20 20 20 20 00 00 00 FC  K.S...      ....
+//	00000070: 00 48 44 4D 49 0A 0A 0A 0A 0A 0A 0A 0A 0A 01 F9  .HDMI...........
+//	00000080: 02 03 21 71 4E 06 07 02 03 15 96 11 12 13 04 14  ..!qN...........
+//	00000090: 05 1F 90 23 09 07 07 83 01 00 00 65 03 0C 00 10  ...#.......e....
+//	000000A0: 00 8C 0A D0 90 20 40 31 20 0C 40 55 00 B9 88 21  ..... @1 .@U...!
+//	000000B0: 00 00 18 01 1D 80 18 71 1C 16 20 58 2C 25 00 B9  .......q.. X,%..
+//	000000C0: 88 21 00 00 9E 01 1D 80 D0 72 1C 16 20 10 2C 25  .!.......r.. .,%
+//	000000D0: 80 B9 88 21 00 00 9E 01 1D 00 BC 52 D0 1E 20 B8  ...!.......R.. .
+//	000000E0: 28 55 40 B9 88 21 00 00 1E 02 3A 80 D0 72 38 2D  (U@..!....:..r8-
+//	000000F0: 40 10 2C 45 80 B9 88 21 00 00 1E 00 00 00 00 D0  @.,E...!........
+
+// See http://www.edidreader.com/
+// https://github.com/dgallegos/edidreader
+
 static void hdmi_edid_parse(const uint8_t * edid, unsigned len)
 {
-	PRINTF("EDID:\n");
+	static const uint8_t header [8] =
+	{
+		0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,
+	};
+	if (len <= sizeof header && memcmp(edid, header, sizeof header))
+	{
+		PRINTF("No EDID header\n");
+		return;
+	}
+	PRINTF("EDID Structure Version & Revision: %02X %02X\n", edid [0x12], edid [0x13]);
 	printhex(0, edid, len);
+	unsigned index = 0x80;
+	uint8_t detail_timing_offset, tag_code, data_payload;
+	int i;
 
+	if (edid[index++] != 0x2) /* only support cea ext block now */
+		return;
+	if (edid[index++] != 0x3) /* only support version 3 */
+		return;
+
+	detail_timing_offset = edid[index++];
+
+	PRINTF("cfg->cea_underscan = %d\n", (edid[index] >> 7) & 0x1);
+	PRINTF("cfg->cea_basicaudio = %d\n", (edid[index] >> 6) & 0x1);
+	PRINTF("cfg->cea_ycbcr444 = %d\n", (edid[index] >> 5) & 0x1);
+	PRINTF("cfg->cea_ycbcr422 = %d\n", (edid[index] >> 4) & 0x1);
+
+	/* Parse data block */
+	while (++index < detail_timing_offset) {
+		tag_code = (edid[index] >> 5) & 0x7;
+		data_payload = edid[index] & 0x1f;
+
+		if (tag_code == 0x2) {
+			for (i = 0; i < data_payload; i++)
+			{
+				PRINTF("cfg->video_cap[%d] = %d\n", i, edid[index + 1 + i]);
+			}
+		}
+
+		/* Find vendor block to check HDMI capable */
+		if (tag_code == 0x3) {
+			if ((edid[index + 1] == 0x03) &&
+			    (edid[index + 2] == 0x0c) &&
+			    (edid[index + 3] == 0x00))
+			{
+				PRINTF("cfg->hdmi_cap = 1 /* true */\n");
+			}
+		}
+
+		index += data_payload;
+	}
 }
 
 static void t507_hdmi_initialize(void)
