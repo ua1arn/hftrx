@@ -2755,22 +2755,32 @@ static void t507_hdmi_initialize(void)
 	static uint8_t data [256];
 	hdmi->HDMI_I2CM_SLAVE = 0x50;	// monitor address
 	unsigned i;
-	PRINTF("1 hdmi->HDMI_I2CM_INT=%02X\n", (unsigned) hdmi->HDMI_I2CM_INT);
-	hdmi->HDMI_I2CM_INT |= (UINT8_C(0x01) << 1);
-	PRINTF("2 hdmi->HDMI_I2CM_INT=%02X\n", (unsigned) hdmi->HDMI_I2CM_INT);
-//	printhex(0, HDMI_TX0_BASE + 0x7e00, 16);
+	hdmi->HDMI_IH_I2CM_STAT0 = 0x03;
 	for (i = 0; i < ARRAY_SIZE(data); ++ i)
 	{
 		hdmi->HDMI_I2CM_ADDRESS = i;
 		hdmi->HDMI_I2CM_OPERATION = 0x01;	// read operation start
-//		while ((hdmi->HDMI_I2CM_INT & 0x01) == 0)
-//		{
-//		}
-		local_delay_ms(1);
-		hdmi->HDMI_I2CM_INT &= ~ UINT8_C(0x01);
-		data [i] = hdmi->HDMI_I2CM_DATAI;
+		for (;;)
+		{
+			const uint_fast8_t sts = hdmi->HDMI_IH_I2CM_STAT0;
+			if (sts & 0x01)
+			{
+				// Error
+				hdmi->HDMI_IH_I2CM_STAT0 = 0x01;
+				goto err;
+			}
+			if (sts & 0x02)
+			{
+				// Done
+				hdmi->HDMI_IH_I2CM_STAT0 = 0x02;
+				data [i] = hdmi->HDMI_I2CM_DATAI;
+				break;
+			}
+		}
+		continue;
+		err:
+			break;
 	}
-	printhex(0, HDMI_TX0_BASE + 0x7e00, 32);
 	PRINTF("EDID:\n");
 	printhex(0, data, 256);
 	return;
