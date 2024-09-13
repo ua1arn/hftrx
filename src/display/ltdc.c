@@ -2729,12 +2729,51 @@ static void t507_hdmi_initialize(void)
 			hdmi->HDMI_CONFIG3_ID
 			);
 
+	// I2C speed
+	unsigned i2c_speed_divider = 0xFFFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR = 0xFF;
+
+	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR = 0xFF;
+
+	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
+
 	// I2C reset
 	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
 	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
 		;
 
 	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
+
+	// EDID ("Extended display identification data") read
+	// Test I2C bus read
+	static uint8_t data [256];
+	hdmi->HDMI_I2CM_SLAVE = 0x50;	// monitor address
+	unsigned i;
+	PRINTF("1 hdmi->HDMI_I2CM_INT=%02X\n", (unsigned) hdmi->HDMI_I2CM_INT);
+	hdmi->HDMI_I2CM_INT |= (UINT8_C(0x01) << 1);
+	PRINTF("2 hdmi->HDMI_I2CM_INT=%02X\n", (unsigned) hdmi->HDMI_I2CM_INT);
+//	printhex(0, HDMI_TX0_BASE + 0x7e00, 16);
+	for (i = 0; i < ARRAY_SIZE(data); ++ i)
+	{
+		hdmi->HDMI_I2CM_ADDRESS = i;
+		hdmi->HDMI_I2CM_OPERATION = 0x01;	// read operation start
+//		while ((hdmi->HDMI_I2CM_INT & 0x01) == 0)
+//		{
+//		}
+		local_delay_ms(1);
+		hdmi->HDMI_I2CM_INT &= ~ UINT8_C(0x01);
+		data [i] = hdmi->HDMI_I2CM_DATAI;
+	}
+	printhex(0, HDMI_TX0_BASE + 0x7e00, 32);
+	PRINTF("EDID:\n");
+	printhex(0, data, 256);
+	return;
 
 	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
