@@ -2870,75 +2870,58 @@ static void t507_hdmi_initialize(void)
 		}
 		hdmi_edid_parse(edid, edidlen);
 	}
-	return;
+	//return;
 
 	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
-	HDMI_PHY->CEC |= (UINT32_C(1) << 7);	// CEC CONTROL: register
-	HDMI_PHY->CEC |= (UINT32_C(1) << 3);	// CEC PAD INPUT ENABLE
-	HDMI_PHY->CEC |= (UINT32_C(1) << 0);	// CEC OUTPUT DATA
-	local_delay_ms(10);
+//	HDMI_PHY->CEC |= (UINT32_C(1) << 7);	// CEC CONTROL: register
+//	HDMI_PHY->CEC |= (UINT32_C(1) << 3);	// CEC PAD INPUT ENABLE
+//	HDMI_PHY->CEC |= (UINT32_C(1) << 0);	// CEC OUTPUT DATA
+//	local_delay_ms(10);
+//
+//
+//	for (;0;)
+//	{
+//		int v = (HDMI_PHY->CEC >> 1) & 0x01;	// CEC INPUT DATA
+//		PRINTF("cec=%d\n", v);
+//		local_delay_ms(10);
+//	}
 
-
-	for (;0;)
-	{
-		int v = (HDMI_PHY->CEC >> 1) & 0x01;	// CEC INPUT DATA
-		PRINTF("cec=%d\n", v);
-		local_delay_ms(10);
-	}
-
-	return;
+	//return;
 
 	// TMDS Character Rate - 297MHz
-//	HDMI_PHY->PLL_CFG1 = 0x35dc5fc0;
-//	HDMI_PHY->PLL_CFG2 = 0x800863C0;
-//	HDMI_PHY->PLL_CFG3 = 0x01;
+	HDMI_PHY->PLL_CFG1 = 0x35dc5fc0;
+	HDMI_PHY->PLL_CFG2 = 0x800863C0;
+	HDMI_PHY->PLL_CFG3 = 0x01;
+	local_delay_ms(100);
+//
+//	HDMI_PHY->ANA_CFG1 = 0;
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 0);	// ANA_CFG1_ENBI
+//	local_delay_ms(5);
+//	/* Enable TMDS clock */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);	// ANA_CFG1_TMDSCLK_EN
+//	/* Enable common voltage reference bias module */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);	// ANA_CFG1_ENVBS
+//	local_delay_ms(10);
+//	/* Enable internal LDO */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);	// ANA_CFG1_LDOEN
+//	local_delay_ms(5);
+//	/* Enable common clock module */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);	// ANA_CFG1_CKEN
 //	local_delay_ms(100);
-
-	if (1)
-	{
-		// HDMI_PHY
-		static const uint32_t hdmi_phy [] =
-		{
-			0x00000000, 0x80c00000, 0x00184210, 0x00000002,
-			0x00000000, 0x000f990b, 0x00000000, 0x00000000,
-			0x00000f80, 0x0c0040d8, 0x02700203, 0x000c6023,
-		};
-		unsigned i;
-		for (i = 0; i < ARRAY_SIZE(hdmi_phy); ++ i)
-		{
-			* (volatile uint32_t *) (HDMI_PHY_BASE + i * 4) = hdmi_phy [i];
-		}
-
-	}
-
-	HDMI_PHY->ANA_CFG1 = 0;
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 0);	// ANA_CFG1_ENBI
-	local_delay_ms(5);
-	/* Enable TMDS clock */
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);	// ANA_CFG1_TMDSCLK_EN
-	/* Enable common voltage reference bias module */
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);	// ANA_CFG1_ENVBS
-	local_delay_ms(10);
-	/* Enable internal LDO */
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);	// ANA_CFG1_LDOEN
-	local_delay_ms(5);
-	/* Enable common clock module */
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);	// ANA_CFG1_CKEN
-	local_delay_ms(100);
-
-	/* Enable resistance calibration analog and digital modules */
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);	// ANA_CFG1_ENRCAL
-	local_delay_ms(100);
-	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);	// ANA_CFG1_ENCALOG
-
-	/* P2S module enable for TMDS data lane */
-	HDMI_PHY->ANA_CFG1 |= 0x07 * (UINT32_C(1) << 4);
+//
+//	/* Enable resistance calibration analog and digital modules */
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);	// ANA_CFG1_ENRCAL
+//	local_delay_ms(100);
+//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);	// ANA_CFG1_ENCALOG
+//
+//	/* P2S module enable for TMDS data lane */
+//	HDMI_PHY->ANA_CFG1 |= 0x07 * (UINT32_C(1) << 4);
 
 	// 297 MHz
-//	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-//	HDMI_PHY->ANA_CFG2 = 0x8063b000;
-//	HDMI_PHY->ANA_CFG3 = 0x0F8246B5;
+	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
+	HDMI_PHY->ANA_CFG2 = 0x8063b000;
+	HDMI_PHY->ANA_CFG3 = 0x0F8246B5;
 
 //	PRINTF("1st:\n");
 //	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
@@ -2952,7 +2935,8 @@ static void t507_hdmi_initialize(void)
 //	local_delay_ms(10);
 //	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
 
-	if (1)
+	local_delay_ms(100);
+	if (0)
 	{
 		TP();
 		while((HDMI_PHY->ANA_STS & 0x80) == 0)
@@ -2961,30 +2945,32 @@ static void t507_hdmi_initialize(void)
 		TP();
 	}
 
-	HDMI_PHY->ANA_CFG1 |= (0xf << 4);
-	HDMI_PHY->ANA_CFG1 |= (0xf << 8);
-	HDMI_PHY->ANA_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
-
-	HDMI_PHY->PLL_CFG1 &= ~ (UINT32_C(1) << 26);
-	HDMI_PHY->CEC = 0;
-
-	HDMI_PHY->PLL_CFG1 = 0x39dc5040;
-	HDMI_PHY->PLL_CFG2 = 0x80084381;
-	local_delay_ms(100);
-	HDMI_PHY->PLL_CFG3 = 1;
-	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 25);
-	local_delay_ms(100);
-	uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
-	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
-
-	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-	HDMI_PHY->ANA_CFG2 = 0x8063A800;
-	HDMI_PHY->ANA_CFG3 = 0x0F81C485;
+//	HDMI_PHY->ANA_CFG1 |= (0xf << 4);
+//	HDMI_PHY->ANA_CFG1 |= (0xf << 8);
+//	HDMI_PHY->ANA_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
+//
+//	HDMI_PHY->PLL_CFG1 &= ~ (UINT32_C(1) << 26);
+//	HDMI_PHY->CEC = 0;
+//
+//	HDMI_PHY->PLL_CFG1 = 0x39dc5040;
+//	HDMI_PHY->PLL_CFG2 = 0x80084381;
+//	local_delay_ms(100);
+//	HDMI_PHY->PLL_CFG3 = 1;
+//	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 25);
+//	local_delay_ms(100);
+//	uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
+//	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+//
+//	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
+//	HDMI_PHY->ANA_CFG2 = 0x8063A800;
+//	HDMI_PHY->ANA_CFG3 = 0x0F81C485;
 
 	/* enable read access to HDMI controller */
 	HDMI_PHY->READ_EN = 0x54524545;
+	ASSERT(HDMI_PHY->READ_EN == 0x54524545);
 	/* descramble register offsets */
 	HDMI_PHY->UNSCRAMBLE = 0x42494E47;
+	ASSERT(HDMI_PHY->UNSCRAMBLE == 0x42494E47);
 
 	const videomode_t * const vdmode = get_videomode_CRT();
 
