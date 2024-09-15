@@ -47,7 +47,7 @@ static void atu_reset(void) {
 //измерение КСВ
 static void local_get_swr(void) {
 	SWR = n7ddc_get_swr();
-	PRINTF("local_get_swr: SWR=%d\n", SWR);
+	//PRINTF("local_get_swr: SWR=%d\n", SWR);
 	return;
 }
 
@@ -383,12 +383,10 @@ void n7ddc_tune(void) {
 	PRINTF("n7ddc_tune:\n");
 	atu_reset();
 
-	local_get_swr();
-	local_get_swr();
-	local_get_swr();
-	local_get_swr();
-	local_get_swr();
-	local_get_swr();
+	for (i = 0; i < 32; ++ i)
+	{
+		local_get_swr();
+	}
 
 	for (i = 0; i <= 5; i++) //на всякий случай 5 проходов
 			{

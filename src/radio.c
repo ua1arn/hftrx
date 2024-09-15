@@ -19547,6 +19547,13 @@ hamradio_main_step(void)
 		// работа с пользователем
 		{
 			processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
+			#if WITHAUTOTUNER
+			if (reqautotune != 0 && gtx != 0)
+			{
+				sthrl = STHRL_TUNE;
+				break;
+			}
+			#endif /* WITHAUTOTUNER */
 			#if 1//WITHSPLIT
 				const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
 				const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
@@ -19554,12 +19561,6 @@ hamradio_main_step(void)
 				const uint_fast8_t bi_main = getbankindex_ab(0);		/* состояние выбора банков может измениться */
 				const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
 			#endif /* WITHSPLIT, WITHSPLITEX */
-			#if WITHAUTOTUNER
-			if (reqautotune != 0)
-			{
-				sthrl = STHRL_TUNE;
-			}
-			#endif /* WITHAUTOTUNER */
 
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
