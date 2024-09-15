@@ -2713,11 +2713,13 @@ enum {
 // Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
 
 // 1 - ok, 0 - err
-static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned start, uint8_t * buff, unsigned len)
+static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t * buff)
 {
 	hdmi->HDMI_I2CM_SLAVE = 0x50;	// monitor address
 	unsigned i;
-	hdmi->HDMI_IH_I2CM_STAT0 = 0x03;
+	hdmi->HDMI_IH_I2CM_STAT0 = 0x03;	// Сброс флагов прерываний, если остались от предидущего обмена
+	unsigned len = 0x80;
+	unsigned start = page * len;
 	for (i = 0; i < len; ++ i, ++ start)
 	{
 		hdmi->HDMI_I2CM_ADDRESS = start;
@@ -2860,12 +2862,12 @@ static void t507_hdmi_initialize(void)
 	// EDID ("Extended display identification data") read
 	// Test I2C bus read
 	static uint8_t edid [256];
-	if (hdmi_edid_read(hdmi, 0x00, edid + 0x00, 0x80))
+	if (hdmi_edid_read(hdmi, 0, edid + 0x00))
 	{
 		unsigned edidlen = 0x80;
 		if (edid [0x7E]) // need read ext block?
 		{
-			if (hdmi_edid_read(hdmi, 0x80, edid + 0x80, 0x80))
+			if (hdmi_edid_read(hdmi, 1, edid + 0x80))
 				edidlen = 0x100;
 		}
 		hdmi_edid_parse(edid, edidlen);
