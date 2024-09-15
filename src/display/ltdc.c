@@ -2218,6 +2218,12 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	return 0;
 }
 
+#else
+	//#error Undefined CPUSTYLE_xxx
+#endif
+
+#if WITHHDMITVHW
+
 // Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
 
 enum {
@@ -3168,9 +3174,6 @@ static void t507_hdmi_initialize(void)
 	hdmi->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 }
-
-#else
-	//#error Undefined CPUSTYLE_xxx
 #endif
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
