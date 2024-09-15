@@ -5081,7 +5081,7 @@ static uint32_t SendBankSelect(uint8_t BankSel);
 
 void spidf_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spidflock);
 
 	PRINTF("%s:\n", __func__);
 
