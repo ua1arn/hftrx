@@ -2718,7 +2718,7 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t *
 	hdmi->HDMI_I2CM_SLAVE = 0x50;	// monitor address
 	unsigned i;
 	hdmi->HDMI_IH_I2CM_STAT0 = 0x03;	// Сброс флагов прерываний, если остались от предидущего обмена
-	unsigned len = 0x80;
+	const unsigned len = 0x80;
 	unsigned start = page * len;
 	for (i = 0; i < len; ++ i, ++ start)
 	{
@@ -2742,6 +2742,14 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t *
 			}
 		}
 	}
+	// Checksum verify
+	unsigned cks;
+	for (cks = 0, i = 0; i < len; ++ i)
+	{
+		cks += buff [i];
+	}
+	if ((cks & 0xFF) != 0)
+		return 0;
 	return 1;
 }
 
