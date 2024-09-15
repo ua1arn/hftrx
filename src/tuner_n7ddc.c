@@ -39,32 +39,36 @@ static unsigned int n7ddc_get_reverse(void) {
 
 static unsigned lastout_ind;
 static unsigned lastout_cap;
-static unsigned Cap_sw;
+static unsigned lastout_SW;
 
 static void set_ind(unsigned char Ind) {
 	lastout_ind = Ind;
+	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
+
 static unsigned lastout_cap;
 
 static void set_cap(unsigned char Cap) {
 	lastout_cap = Cap;
-	n7ddc_settuner(lastout_ind, lastout_cap, Cap_sw);
+	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
 static void set_sw(unsigned char SW) {  // 0 - IN,  1 - OUT
-	Cap_sw = SW;
-	n7ddc_settuner(lastout_ind, lastout_cap, Cap_sw);
+	lastout_SW = SW;
+	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
 static void atu_reset(void) {
-	Cap_sw = 0;
+	lastout_SW = 0;
+	lastout_cap = 0;
+	lastout_ind = 0;
 	ind = 0;
 	cap = 0;
-	n7ddc_settuner(lastout_ind, lastout_cap, Cap_sw);
+	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
 //измерение КСВ
-void n7ddc_get_swr(void) {
+static void n7ddc_get_swr(void) {
 	int_fast32_t Forward, Reverse;
 	Forward = n7ddc_get_forward();
 	Reverse = n7ddc_get_reverse();

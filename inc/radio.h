@@ -3535,8 +3535,6 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
 void n7ddc_tune(void);
 uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf);
 
-void n7ddc_get_swr(void);		// 100 - SWR=1
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
