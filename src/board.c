@@ -8049,13 +8049,13 @@ adcvalholder_t board_getswrpair_filtered(
 	unsigned f = 0;
 	unsigned r = 0;
 	unsigned i;
-	for (i = 0; i < 1; ++ i)
+	for (i = 0; i < SWRPWRHSLEN; ++ i)
 	{
 		f += fh [i];
 		r += rh [i];
 	}
 
-	* reflected = r * (unsigned long) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	* reflected = r * (uint_fast32_t) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
 	return f / SWRPWRHSLEN;
 }
 
