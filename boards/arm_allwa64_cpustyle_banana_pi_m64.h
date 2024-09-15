@@ -1031,12 +1031,24 @@
 	} while (0)
 
 
-	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define BOARD_TCONLCDFREQ (allwnr_t113_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
-	#define TCONLCD_IRQ TCON0_IRQn
-	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#if 1
+		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define BOARD_TCONLCDFREQ (allwnr_a64_get_tcon_lcd0_freq())	/* 0 - TCON0, 1: TCON1 */
+		#define TCONLCD_IRQ TCON0_IRQn
+		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#endif
+
+	#if 1
+		// Надо для HDMI и TVOUT
+		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
+		#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define TCONTV_IRQ TCON_TV0_IRQn
+		#define BOARD_TCONTVFREQ (allwnr_a64_get_tcon_tv0_freq())
+	#endif
 
 #endif /* WITHLTDCHW */
 
