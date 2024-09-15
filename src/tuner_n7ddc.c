@@ -383,6 +383,12 @@ void n7ddc_tune(void) {
 	PRINTF("n7ddc_tune:\n");
 	atu_reset();
 
+	local_get_swr();
+	local_get_swr();
+	local_get_swr();
+	local_get_swr();
+	local_get_swr();
+	local_get_swr();
 
 	for (i = 0; i <= 5; i++) //на всякий случай 5 проходов
 			{
