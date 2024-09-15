@@ -527,7 +527,6 @@
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#if 0
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_N7DDCEXT 1
 	#elif 1
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0

@@ -3640,11 +3640,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-	#if WITHAUTOTUNER_N7DDCEXT
-		const int n7ddcext = 1;
-	#else /* WITHAUTOTUNER_N7DDCEXT */
-		const int n7ddcext = 0;
-	#endif /* WITHAUTOTUNER_N7DDCEXT */
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3682,17 +3677,10 @@ prog_ctrlreg(uint_fast8_t plane)
 #elif WITHAUTOTUNER
 	#if WITHTPA100W_UA1CEI_V2
 
-		if (n7ddcext)
-		{
-
-		}
-		else
-		{
-			/* 7 indictors, 7 or 8 capacitors */
-			RBVAL8(0100, glob_tuner_C);
-			RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-			RBVAL(0070, glob_tuner_L, 7);
-		}
+		/* 7 indictors, 7 or 8 capacitors */
+		RBVAL8(0100, glob_tuner_C);
+		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0070, glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -3762,15 +3750,8 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER */
 
 		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
-		if (n7ddcext)
-		{
-			RBBIT(0040, glob_tuner_bypass);		/* pin 02 - tuner bypass */
-		}
-		else
-		{
-			RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
-			RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
-		}
+		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD42 SN74HC595PW
 		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE

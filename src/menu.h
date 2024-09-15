@@ -49,7 +49,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
-#if ! WITHAUTOTUNER_N7DDCEXT
+#if 1
 	{
 		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,

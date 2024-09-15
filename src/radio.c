@@ -2912,11 +2912,9 @@ struct oneant_tag {
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
 #if WITHAUTOTUNER
-#if ! WITHAUTOTUNER_N7DDCEXT
 	uint8_t tunercap;
 	uint8_t tunerind;
 	uint8_t tunertype;
-#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	uint8_t tunerwork;
 #endif /* WITHAUTOTUNER */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -5182,9 +5180,7 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
-#if WITHAUTOTUNER_N7DDCEXT
-
-#else
+#if 1
 
 static void scanminLk_init(void)
 {
@@ -5302,7 +5298,6 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 
 #if WITHAUTOTUNER_N7DDCALGO
 
-
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 {
 	tunerind = inductors;
@@ -5316,41 +5311,36 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 static uint_fast8_t tuner_bg;
 static uint_fast8_t tuner_ant;
 
-/* отсюда не возвращаемся пока не настроится тюнер */
-static void auto_tune(void)
+
+static void auto_tune0_init(void)
 {
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const uint_fast32_t freq = gfreqs [bi];
 	tuner_bg = getfreqbandgroup(freq);
 	tuner_ant = geteffantenna(freq);
+}
+
+static enum phases auto_tune0(void)
+{
 
 	n7ddc_tune();
 
 	storetuner(tuner_bg, tuner_ant);
-}
-
-
-static void auto_tune0_init(void)
-{
+	return PHASE_DONE;
 }
 
 static void auto_tune1_init(void)
 {
 }
 
-static void auto_tune2_init(void)
-{
-}
-
-static enum phases auto_tune0(void)
-{
-	return PHASE_DONE;
-}
-
 static enum phases auto_tune1(void)
 {
 	return PHASE_DONE;
+}
+
+static void auto_tune2_init(void)
+{
 }
 
 static enum phases auto_tune2(void)
@@ -5363,48 +5353,7 @@ static enum phases auto_tune3(void)
 	return PHASE_DONE;
 }
 
-#elif WITHAUTOTUNER_N7DDCEXT
-
-/* отсюда не возвращаемся пока не настроится тюнер */
-static void auto_tune(void)
-{
-	TP();
-}
-
-
-static void auto_tune0_init(void)
-{
-}
-
-static void auto_tune1_init(void)
-{
-}
-
-static void auto_tune2_init(void)
-{
-}
-
-static enum phases auto_tune0(void)
-{
-	return PHASE_DONE;
-}
-
-static enum phases auto_tune1(void)
-{
-	return PHASE_DONE;
-}
-
-static enum phases auto_tune2(void)
-{
-	return PHASE_DONE;
-}
-
-static enum phases auto_tune3(void)
-{
-	return PHASE_DONE;
-}
-
-#else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */
+#else /* WITHAUTOTUNER_N7DDCALGO */
 
 static uint_fast8_t tuner_bg;
 static uint_fast8_t tuner_ant;

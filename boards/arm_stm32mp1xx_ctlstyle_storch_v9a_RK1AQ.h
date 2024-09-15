@@ -523,7 +523,6 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 1
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		//#define WITHAUTOTUNER_N7DDCEXT 1
 		#define SHORTSET8	1
 		#define WITHAUTOTUNER_AVBELNN 1
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
