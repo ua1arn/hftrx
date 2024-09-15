@@ -13036,9 +13036,19 @@ display2_redrawbarstimed(
 		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHSWRMTR && WITHTX
-		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
-		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
-		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		if (FWD == PWRI)
+		{
+			const adcvalholder_t f = board_getadc_unfiltered_truevalue(FWD);
+			board_adc_store_data(PWRMRRIX, f);
+			board_adc_store_data(FWDMRRIX, f);
+			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		}
+		else
+		{
+			board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
+			board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
+			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		}
 	#elif WITHPWRMTR && WITHTX
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 	#endif /* WITHSWRMTR || WITHPWRMTR */
