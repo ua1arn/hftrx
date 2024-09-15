@@ -30,6 +30,12 @@ static void set_cap(unsigned char Cap) {
 	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
+static void set_indcap(unsigned char Ind, unsigned char Cap) {
+	lastout_ind = Ind;
+	lastout_cap = Cap;
+	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
+}
+
 static void set_sw(unsigned char SW) {  // 0 - IN,  1 - OUT
 	lastout_SW = SW;
 	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
@@ -222,10 +228,8 @@ static void coarse_tune(void) {
 			break;
 	}
 	cap = mem_cap;
-	set_ind(ind);
-	set_cap(cap);
+	set_indcap(ind, cap);
 	step_cap = mem_step_cap;
-	local_delay_ms(10);
 	return;
 }
 
@@ -238,6 +242,8 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
+
+	local_delay_ms(10);
 	local_get_swr();
 	if (SWR < 120)
 		return;
@@ -274,6 +280,7 @@ static void sub_tune(void) {
 
 	atu_reset();
 	set_sw(SW);
+
 	local_delay_ms(50);
 	local_get_swr();
 	if (SWR < 120)
@@ -284,6 +291,8 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
+
+	local_delay_ms(10);
 	local_get_swr();
 	if (SWR < 120)
 		return;
@@ -315,8 +324,7 @@ static void sub_tune(void) {
 		set_sw(SW);
 		ind = ind_mem;
 		cap = cap_mem;
-		set_ind(ind);
-		set_cap(cap);
+		set_indcap(ind, cap);
 		SWR = swr_mem;
 	}
 	return;
