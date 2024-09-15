@@ -449,7 +449,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHTPA100W_UA1CEI_V2 1
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -621,7 +621,7 @@
 
 	//#define WITHALTERNATIVEFONTS    1
 
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */

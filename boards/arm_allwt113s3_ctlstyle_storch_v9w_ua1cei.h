@@ -411,7 +411,37 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 1
-		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
+		#define WITHTPA100W_UA1CEI_V2 1	/* board style */
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+
+		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
+
+		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define FULLSET7 1		/* 7 indictors, 7 capacitors */
+	#elif 1
+		#define WITHTPA100W_UA1CEI_V2 1	/* board style */
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+
+		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
+
+		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -579,21 +609,8 @@
 
 	//#define WITHALTERNATIVEFONTS    1
 
-	#if WITHAUTOTUNER_UA1CEI_V2
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-		
-		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
-		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
-
-		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
-
+	#if WITHTPA100W_UA1CEI_V2
+		// board style
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
 		FWD = BOARD_ADCX2IN(0),

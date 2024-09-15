@@ -425,7 +425,7 @@ void bandf_calc_initialize(void)
 	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
-	WITHAUTOTUNER_UA1CEI_V2 || \
+	WITHTPA100W_UA1CEI_V2 || \
 	0
 	//	 2.000
 	//	 3.850

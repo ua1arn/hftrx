@@ -1,6 +1,7 @@
 #include "hardware.h"
 #include "formats.h"
 
+#if WITHAUTOTUNER_N7DDCALGO
 //#include "lcd.h"
 //#include "FM25L16.h"
 //#include "ADC_DMA.h"
@@ -133,11 +134,11 @@ static unsigned char ind = 0, cap = 0, gSW = 0, step_cap = 0, step_ind = 0,
 		L_invert = 1, L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32,
 		Overload = 0, Loss_ind = 0, Relay_off = 0;
 
-static int Rel_Del = 30, min_for_start, max_for_start, max_swr;
-int globSWR, globPWR, P_max, swr_a;
-unsigned char rready = 0, p_cnt = 0;
+static int min_for_start, max_for_start, max_swr;
+static int globSWR, globPWR, P_max, swr_a;
+static unsigned char rready = 0, p_cnt = 0;
 
-/*int get_forward()
+/*int n7ddc_get_forward()
  {
  return ADC_DATA[ADC_FWD];
  }
@@ -149,15 +150,21 @@ unsigned char rready = 0, p_cnt = 0;
 
 #define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
 
+#define TUS_SWRMIN (100)			// 1.0
+#define TUS_SWRMAX (TUS_SWRMIN * 9)			// 4.0
+#define TUS_SWR1p1 (TUS_SWRMIN * 11 / 10)	// SWR=1.1
 
-static unsigned int get_forward(void) {
-	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
-	unsigned int val = 0;
+//static unsigned int n7ddc_get_forward(void) {
+//	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
+//	unsigned int val = 100;
+//	adcvalholder_t r;
+//	adcvalholder_t f;
+//	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
+//
 //	val = (1 - k) * val_tmp_0 + k * ADC_DATA[ADC_FWD];
 //	val_tmp_0 = val;
-
-	return val;
-}
+//	return val;
+//}
 
 //k - коэффицент фильтра 0.0 - 1.0
 
@@ -190,7 +197,7 @@ static void set_ind(unsigned char Ind) {
 //		Ind_45 = ~Ind.B6;
 		//
 	}
-	local_delay_ms(Rel_Del);
+	n7ddc_settuner(Ind, cap, gSW);
 }
 
 static void set_cap(unsigned char Cap) {
@@ -202,20 +209,19 @@ static void set_cap(unsigned char Cap) {
 //	Cap_470 = Cap.B5;
 //	Cap_1000 = Cap.B6;
 	//
-	local_delay_ms(Rel_Del);
+	n7ddc_settuner(ind, Cap, gSW);
 }
 
 static void set_sw(unsigned char SW) {  // 0 - IN,  1 - OUT
 //	Cap_sw = SW;
-	local_delay_ms(Rel_Del);
+	n7ddc_settuner(ind, cap, SW);
 }
 
 static void atu_reset(void) {
 	ind = 0;
 	cap = 0;
-	set_ind(ind);
-	set_cap(cap);
-	local_delay_ms(Rel_Del);
+	gSW = 0;
+	n7ddc_settuner(ind, cap, gSW);
 }
 
 //коррекция нелинейности характеристики детектора датчика
@@ -253,36 +259,13 @@ static int correction(int input) {
 	return input;
 }
 
-//измерение мощности
-static void atu_get_pwr(void) {
-	long Forward, Reverse;
-	float p;
-
-	Forward = get_forward();
-
-	if (D_correction == 1)
-		p = correction(Forward * 3);
-	else
-		p = Forward * 3;
-
-	p = p * K_Mult / 1000.0;   // mV to Volts on Input
-	p = p / 1.414;
-	if (P_High == 1)
-		p = p * p / 50;     // 0 - 1500 ( 1500 Watts)
-	else
-		p = p * p / 5;                 // 0 - 1510 (151.0 Watts)
-	p = p + 0.5;    // rounding
-	//
-	globPWR = p;
-	return;
-}
-
 //измерение КСВ
-static void atu_get_swr(void) {
-	long Forward, Reverse;
-	Forward = get_forward();
-	Reverse = get_reverse();
-	globSWR = ((Forward + Reverse) * 100) / (Forward - Reverse);
+void n7ddc_get_swr(void)
+{
+	adcvalholder_t r;
+	adcvalholder_t f;
+	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f) + TUS_SWRMIN;
+	globSWR = swr;
 	return;
 }
 
@@ -300,24 +283,24 @@ static void sharp_cap(void) {
 		min_range = 0;
 	cap = min_range;
 	set_cap(cap);
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR == 0)
 		return;
 	min_SWR = globSWR;
 	for (count = min_range + C_mult; count <= max_range; count += C_mult) {
 		set_cap(count);
-		atu_get_swr();
+		n7ddc_get_swr();
 		if (globSWR == 0)
 			return;
 
 		if (globSWR >= min_SWR) {
 			local_delay_ms(10);
-			atu_get_swr();
+			n7ddc_get_swr();
 		}
 
 		if (globSWR >= min_SWR) {
 			local_delay_ms(10);
-			atu_get_swr();
+			n7ddc_get_swr();
 		}
 
 		if (globSWR < min_SWR) {
@@ -349,24 +332,24 @@ static void sharp_ind(void) {
 	ind = min_range;
 	set_ind(ind);
 
-	atu_get_swr();
+	n7ddc_get_swr();
 
 	if (globSWR == 0)
 		return;
 	min_SWR = globSWR;
 	for (count = min_range + L_mult; count <= max_range; count += L_mult) {
 		set_ind(count);
-		atu_get_swr();
+		n7ddc_get_swr();
 		if (globSWR == 0)
 			return;
 		if (globSWR >= min_SWR) {
 			local_delay_ms(10);
-			atu_get_swr();
+			n7ddc_get_swr();
 		}
 
 		if (globSWR >= min_SWR) {
 			local_delay_ms(10);
-			atu_get_swr();
+			n7ddc_get_swr();
 		}
 
 		if (globSWR < min_SWR) {
@@ -390,14 +373,14 @@ static void coarse_cap(void) {
 	cap = 0;
 	set_cap(cap);
 	step_cap = step;
-	atu_get_swr();
+	n7ddc_get_swr();
 
 	if (globSWR == 0)
 		return;
 	min_swr = globSWR + globSWR / 20;
 	for (count = step; count <= 31;) {
 		set_cap(count * C_mult);
-		atu_get_swr();
+		n7ddc_get_swr();
 		if (globSWR == 0)
 			return;
 		if (globSWR < min_swr) {
@@ -433,7 +416,7 @@ static void coarse_tune(void) {
 	for (count = 0; count <= 31;) {
 		set_ind(count * L_mult);
 		coarse_cap();
-		atu_get_swr();
+		n7ddc_get_swr();
 
 		if (globSWR == 0)
 			return;
@@ -473,7 +456,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 120)
 		return;
 
@@ -482,7 +465,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 120)
 		return;
 
@@ -491,7 +474,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	atu_get_swr();
+	n7ddc_get_swr();
 
 	if (globSWR < 120)
 		return;
@@ -510,7 +493,7 @@ static void sub_tune(void) {
 	atu_reset();
 	set_sw(gSW);
 	local_delay_ms(50);
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 120)
 		return;
 	//
@@ -519,7 +502,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 120)
 		return;
 	sharp_ind();
@@ -529,7 +512,7 @@ static void sub_tune(void) {
 		return;
 	}
 
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 120)
 		return;
 
@@ -538,7 +521,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 120)
 		return;
 	//
@@ -562,14 +545,14 @@ static void tune(void) {
 	P_max = 0;
 	//
 	rready = 0;
-	atu_get_swr();
+	n7ddc_get_swr();
 	if (globSWR < 110)
 		return;
 
 	atu_reset();
 
 	local_delay_ms(50);
-	atu_get_swr();
+	n7ddc_get_swr();
 	swr_a = globSWR;
 	if (globSWR < 110)
 		return;
@@ -624,8 +607,8 @@ void Print_Lcd(void) {
 
 void n7ddc_tune(void) {
 
-	unsigned i;
-	unsigned char key_code;                //код нажатой кнопки
+//	unsigned i;
+//	unsigned char key_code;                //код нажатой кнопки
 
 //	//настройка таймера временных отсчетов
 //	RCC_APB1ENR.TIM2EN = 1;       // Enable clock gating for timer module 2
@@ -685,35 +668,40 @@ void n7ddc_tune(void) {
 	TP();
 	atu_reset();
 
-	for (;;) {
-		atu_get_pwr();
-		atu_get_swr();
-		Print_Lcd();
-		local_delay_ms(100);
-
-		switch (key_code = keypressed(5)) {
-		case 0x00:
+	atu_reset();
+	unsigned i;
+	for (i = 0; i <= 5; i++) //на всякий случай 5 проходов
+			{
+		n7ddc_get_swr();
+		if (globSWR <= 120)
 			break;
-		case 0x01: {
-			lcd_out(2, 1, "TUNE");
-			atu_reset();
-
-			for (i = 0; i <= 5; i++) //на всякий случай 5 проходов
-					{
-				atu_get_swr();
-				if (globSWR <= 120)
-					break;
-				else
-					tune();
-			}
-			lcd_out(2, 1, "OK  ");
-		}
-			break;
-
-			//case 0x41: lcd_out(1, 1, "41"); break;
-			//case 0x81: lcd_out(1, 1, "81"); break;
-		}
-
+		else
+			tune();
 	}
+	TP();
+	return;
+
+//	for (;;) {
+//		n7ddc_get_pwr();
+//		n7ddc_get_swr();
+//		Print_Lcd();
+//		local_delay_ms(100);
+//
+//		switch (key_code = keypressed(5)) {
+//		case 0x00:
+//			break;
+//		case 0x01: {
+//			lcd_out(2, 1, "TUNE");
+//			lcd_out(2, 1, "OK  ");
+//		}
+//			break;
+//
+//			//case 0x41: lcd_out(1, 1, "41"); break;
+//			//case 0x81: lcd_out(1, 1, "81"); break;
+//		}
+//
+//	}
 
 }
+
+#endif /* WITHAUTOTUNER_N7DDCALGO */

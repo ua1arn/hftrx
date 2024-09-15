@@ -522,7 +522,7 @@
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#if 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHTPA100W_UA1CEI_V2 1
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -699,7 +699,7 @@
 
 	//#define WITHALTERNATIVEFONTS    1
 
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */

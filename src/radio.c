@@ -22,7 +22,6 @@
 #include "bootloader.h"
 
 #include "dspdefines.h"
-//#define WITHAUTOTUNER_N7DDCALGO  1  /* использование алгоритма N7DDC */
 
 #if WITHUSEUSBBT
 #include "btstack.h"
@@ -5040,571 +5039,6 @@ enum phases
 	PHASE_CONTINUE
 };
 
-#if WITHAUTOTUNER_N7DDCALGO
-
-// N7DDC code.
-// Taken from:
-// https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards/blob/master/ATU_100_EXT_board/FirmWare_PIC18F2520/2520_EXT_board_sources_V_3.2/main.h
-
-// Main.h
-// David Fainitski
-// ATU-100 project 2016
-
-//
-static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
-		C_linear = 0, L_q = 7, C_q = 7, D_correction = 1,
-		L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
-static unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
-static int Rel_Del, min_for_start, max_for_start, max_swr;
-static int SWR_n7ddc, PWR_n7ddc, P_max, swr_a;
-static unsigned char rready = 0, p_cnt = 0;
-//
-//void btn_push(void);
-//void lcd_prep(void);
-//void lcd_swr(int);
-//void lcd_pwr(void);
-void show_pwr(int pmax, int swr);
-void lcd_ind(void);
-//void crypto(void);
-//void show_reset(void);
-//void cells_init(void);
-//void test_init(void);
-//void button_proc(void);
-//void button_proc_test(void);
-//void button_delay(void);
-//void show_loss(void);
-//
-//void atu_reset(void);
-//int get_reverse(void);
-//int get_forward(void);
-//int correction(int);
-//void get_swr_n7ddc(void);
-//void get_pwr_n7ddc(void);
-//void set_sw(char);
-//void coarse_cap(void);
-//void sharp_cap(void);
-//void sharp_ind(void);
-//void coarse_tune(void);
-//void tune(void);
-//void sub_tune(void);
-//
-// Variables
-static int SWR_fixed_old = 0, work_int;
-static char work_char, work_str[7], work_str_2[7];
-static float Forward;
-static int Power =0, Power_old = 10000;
-static int SWR_old = 10000;
-static char type, Soft_tune = 0, Auto = 0, Track = 0;
-static char bypas = 0, cap_mem = 0, ind_mem = 0, SW_mem = 0, Auto_mem = 0;
-static int Auto_delta;
-static char Restart = 0, Test = 0, lcd_prep_short = 0;
-static char L = 1, but= 0;
-static int Cap1, Cap2, Cap3, Cap4, Cap5, Cap6, Cap7;
-static int Ind1, Ind2, Ind3, Ind4, Ind5, Ind6, Ind7;
-static char Dysp_delay = 0;
-static int dysp_cnt = 0;
-static float dysp_cnt_mult = 2.3;
-static char Loss_mode = 0, Fid_loss;
-static char dysp = 1;
-//bit tune_btn_release;
-
-// Заглушка
-void show_pwr(int pmax, int swr)
-{
-
-}
-
-// Заглушка
-void lcd_ind(void)
-{
-
-}
-
-static int correction(int input) {
-	if (input <= 80)
-		return 0;
-	if (input <= 171)
-		input += 244;
-	else if (input <= 328)
-		input += 254;
-	else if (input <= 582)
-		input += 280;
-	else if (input <= 820)
-		input += 297;
-	else if (input <= 1100)
-		input += 310;
-	else if (input <= 2181)
-		input += 430;
-	else if (input <= 3322)
-		input += 484;
-	else if (input <= 4623)
-		input += 530;
-	else if (input <= 5862)
-		input += 648;
-	else if (input <= 7146)
-		input += 743;
-	else if (input <= 8502)
-		input += 800;
-	else if (input <= 10500)
-		input += 840;
-	else
-		input += 860;
-	//
-	return input;
-}
-
-//
-
-static int get_reverse(void) {
-	return board_getadc_unfiltered_truevalue(REF) / 16 * 4.883;
-}
-//
-
-static int get_forward(void) {
-	int Forward;
-	Forward = board_getadc_unfiltered_truevalue(FWD) / 16;
-	if (Forward > 1000)
-		Overload = 1;
-	else
-		Overload = 0;
-	return Forward * 4.883;
-}
-
-static void get_pwr_n7ddc(void) {
-	long Forward, Reverse;
-	float p;
-	/* asm CLRWDT */;
-	//
-	Forward = get_forward();
-	Reverse = get_reverse();
-	if (D_correction == 1)
-		p = correction(Forward * 3);
-	else
-		p = Forward * 3;
-	//
-	if (Reverse >= Forward)
-		Forward = 999;
-	else {
-		Forward = ((Forward + Reverse) * 100) / (Forward - Reverse);
-		if (Forward > 999)
-			Forward = 999;
-	}
-	//
-	p = p * K_Mult / 1000.0;   // mV to Volts on Input
-	p = p / 1.414;
-	if (P_High == 1)
-		p = p * p / 50;     // 0 - 1500 ( 1500 Watts)
-	else
-		p = p * p / 5;               // 0 - 1510 (151.0 Watts)
-	p = p + 0.5;    // rounding
-	//
-	PWR_n7ddc = p;
-	if (Forward < 100)
-		SWR_n7ddc = 999;
-	else
-		SWR_n7ddc = Forward;
-	return;
-}
-
-static void get_swr_n7ddc(void) {
-	get_pwr_n7ddc();
-	if (p_cnt != 100) {
-		p_cnt += 1;
-		if (PWR_n7ddc > P_max)
-			P_max = PWR_n7ddc;
-	} else {
-		p_cnt = 0;
-		show_pwr(P_max, SWR_n7ddc);
-		P_max = 0;
-	}
-	while (PWR_n7ddc < min_for_start || (PWR_n7ddc > max_for_start && max_for_start > 0)) { // waiting for good power
-		/* asm CLRWDT */;
-		get_pwr_n7ddc();
-		if (p_cnt != 100) {
-			p_cnt += 1;
-			if (PWR_n7ddc > P_max)
-				P_max = PWR_n7ddc;
-		} else {
-			p_cnt = 0;
-			show_pwr(P_max, SWR_n7ddc);
-			P_max = 0;
-		}
-		//
-//		if (Button(&PORTB, 0, 5, 1))
-//			rready = 1;
-//		if (rready == 1 & Button(&PORTB, 0, 5, 0)) { //  press button  Tune
-//			show_reset();
-//			SWR_n7ddc = 0;
-//			return;
-//		}
-	} //  good power
-	return;
-}
-
-static void set_ind(char Ind) {  // 0 - 31
-//	if (L_invert == 0) {
-//		Ind_005 = Ind.B0;
-//		Ind_011 = Ind.B1;
-//		Ind_022 = Ind.B2;
-//		Ind_045 = Ind.B3;
-//		Ind_1 = Ind.B4;
-//		Ind_22 = Ind.B5;
-//		Ind_45 = Ind.B6;
-//		//
-//	} else {
-//		Ind_005 = ~Ind.B0;
-//		Ind_011 = ~Ind.B1;
-//		Ind_022 = ~Ind.B2;
-//		Ind_045 = ~Ind.B3;
-//		Ind_1 = ~Ind.B4;
-//		Ind_22 = ~Ind.B5;
-//		Ind_45 = ~Ind.B6;
-//		//
-//	}
-	local_delay_ms(Rel_Del);
-}
-
-static void set_cap(char Cap) { // 0 - 31
-//	Cap_10 = Cap.B0;
-//	Cap_22 = Cap.B1;
-//	Cap_47 = Cap.B2;
-//	Cap_100 = Cap.B3;
-//	Cap_220 = Cap.B4;
-//	Cap_470 = Cap.B5;
-//	Cap_1000 = Cap.B6;
-	//
-	local_delay_ms(Rel_Del);
-}
-
-static void set_sw(char SW) {  // 0 - IN,  1 - OUT
-//	Cap_sw = SW;
-	local_delay_ms(Rel_Del);
-}
-
-static void atu_reset(void) {
-	ind = 0;
-	cap = 0;
-	set_ind(ind);
-	set_cap(cap);
-	local_delay_ms(Rel_Del);
-}
-
-static void coarse_cap(void) {
-	char step = 3;
-	char count;
-	int min_swr;
-
-	cap = 0;
-	set_cap(cap);
-	step_cap = step;
-	get_swr_n7ddc();
-	if (SWR_n7ddc == 0)
-		return;
-	min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-	for (count = step; count <= 31;) {
-		set_cap(count * C_mult);
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc < min_swr) {
-			min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-			cap = count * C_mult;
-			step_cap = step;
-			if (SWR_n7ddc < 120)
-				break;
-			count += step;
-			if (C_linear == 0 && count == 9)
-				count = 8;
-			else if (C_linear == 0 && count == 17) {
-				count = 16;
-				step = 4;
-			}
-		} else
-			break;
-	}
-	set_cap(cap);
-	return;
-}
-
-static void coarse_tune(void) {
-	char step = 3;
-	char count;
-	char mem_cap, mem_step_cap;
-	int min_swr;
-
-	mem_cap = 0;
-	step_ind = step;
-	mem_step_cap = 3;
-	min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-	for (count = 0; count <= 31;) {
-		set_ind(count * L_mult);
-		coarse_cap();
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc < min_swr) {
-			min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-			ind = count * L_mult;
-			mem_cap = cap;
-			step_ind = step;
-			mem_step_cap = step_cap;
-			if (SWR_n7ddc < 120)
-				break;
-			count += step;
-			if (L_linear == 0 && count == 9)
-				count = 8;
-			else if (L_linear == 0 && count == 17) {
-				count = 16;
-				step = 4;
-			}
-		} else
-			break;
-	}
-	cap = mem_cap;
-	set_ind(ind);
-	set_cap(cap);
-	step_cap = mem_step_cap;
-	local_delay_ms(10);
-	return;
-}
-
-static void sharp_cap(void) {
-	char range, count, max_range, min_range;
-	int min_SWR;	/* mgs: renamed */
-	range = step_cap * C_mult;
-	//
-	max_range = cap + range;
-	if (max_range > 32 * C_mult - 1)
-		max_range = 32 * C_mult - 1;
-	if (cap > range)
-		min_range = cap - range;
-	else
-		min_range = 0;
-	cap = min_range;
-	set_cap(cap);
-	get_swr_n7ddc();
-	if (SWR_n7ddc == 0)
-		return;
-	min_SWR = SWR_n7ddc;
-	for (count = min_range + C_mult; count <= max_range; count += C_mult) {
-		set_cap(count);
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc < min_SWR) {
-			min_SWR = SWR_n7ddc;
-			cap = count;
-			if (SWR_n7ddc < 120)
-				break;
-		} else
-			break;
-	}
-	set_cap(cap);
-	return;
-}
-
-static void sharp_ind(void) {
-	char range, count, max_range, min_range;
-	int min_SWR;
-	range = step_ind * L_mult;
-	//
-	max_range = ind + range;
-	if (max_range > 32 * L_mult - 1)
-		max_range = 32 * L_mult - 1;
-	if (ind > range)
-		min_range = ind - range;
-	else
-		min_range = 0;
-	ind = min_range;
-	set_ind(ind);
-	get_swr_n7ddc();
-	if (SWR_n7ddc == 0)
-		return;
-	min_SWR = SWR_n7ddc;
-	for (count = min_range + L_mult; count <= max_range; count += L_mult) {
-		set_ind(count);
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc < min_SWR) {
-			min_SWR = SWR_n7ddc;
-			ind = count;
-			if (SWR_n7ddc < 120)
-				break;
-		} else
-			break;
-	}
-	set_ind(ind);
-	return;
-}
-
-static void sub_tune(void) {
-	int swr_mem, ind_mem, cap_mem;
-	//
-	swr_mem = SWR_n7ddc;
-	coarse_tune();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_ind();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_cap();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	//
-	if (SWR_n7ddc < 200 && SWR_n7ddc < swr_mem && (swr_mem - SWR_n7ddc) > 100)
-		return;
-	swr_mem = SWR_n7ddc;
-	ind_mem = ind;
-	cap_mem = cap;
-	//
-	if (SW == 1)
-		SW = 0;
-	else
-		SW = 1;
-	atu_reset();
-	set_sw(SW);
-	local_delay_ms(50);
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	//
-	coarse_tune();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_ind();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_cap();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	//
-	if (SWR_n7ddc > swr_mem) {
-		if (SW == 1)
-			SW = 0;
-		else
-			SW = 1;
-		set_sw(SW);
-		ind = ind_mem;
-		cap = cap_mem;
-		set_ind(ind);
-		set_cap(cap);
-		SWR_n7ddc = swr_mem;
-	}
-	//
-	/* asm CLRWDT */;
-	return;
-}
-
-static void auto_tune_n7ddc(void) {
-	//int swr_mem, ind_mem, cap_mem, sw_mem;
-	/* asm CLRWDT */;
-	//
-	p_cnt = 0;
-	P_max = 0;
-	//
-	rready = 0;
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 110)
-		return;
-	atu_reset();
-	if (Loss_ind == 0)
-		lcd_ind();
-	local_delay_ms(50);
-	get_swr_n7ddc();
-	swr_a = SWR_n7ddc;
-	if (SWR_n7ddc < 110)
-		return;
-	if (max_swr > 110 && SWR_n7ddc > max_swr)
-		return;
-	//
-
-	sub_tune();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	if (SWR_n7ddc < 120)
-		return;
-	if (C_q == 5 && L_q == 5)
-		return;
-
-	if (L_q > 5) {
-		step_ind = L_mult;
-		L_mult = 1;
-		sharp_ind();
-	}
-	if (SWR_n7ddc < 120)
-		return;
-	if (C_q > 5) {
-		step_cap = C_mult;  // = C_mult
-		C_mult = 1;
-		sharp_cap();
-	}
-	if (L_q == 5)
-		L_mult = 1;
-	else if (L_q == 6)
-		L_mult = 2;
-	else if (L_q == 7)
-		L_mult = 4;
-	if (C_q == 5)
-		C_mult = 1;
-	else if (C_q == 6)
-		C_mult = 2;
-	else if (C_q == 7)
-		C_mult = 4;
-	/* asm CLRWDT */;
-	return;
-}
-
-#endif /* WITHAUTOTUNER_N7DDCALGO */
-
 // что удалось достичь в результате перебора
 typedef struct tunerstate
 {
@@ -5650,7 +5084,8 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+// SWR=1 = озвращаем 0
+uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
@@ -5666,6 +5101,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * TUS_SWRMIN / (f - r) - TUS_SWRMIN;
 	return swr10 > fs ? fs : swr10;
 }
+
 
 void display2_swrsts22(
 	uint_fast8_t x,
@@ -5866,10 +5302,65 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 
 #if WITHAUTOTUNER_N7DDCALGO
 
+
+void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
+{
+	tunerind = inductors;
+	tunercap = capcitors;
+	tunertype = type;
+
+	updateboard_tuner();
+	local_delay_ms(gtunerdelay);
+}
+
+static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_ant;
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {
-	auto_tune_n7ddc();
+	const uint_fast8_t tx = 1;
+	const uint_fast8_t bi = getbankindex_tx(tx);
+	const uint_fast32_t freq = gfreqs [bi];
+	tuner_bg = getfreqbandgroup(freq);
+	tuner_ant = geteffantenna(freq);
+
+	n7ddc_tune();
+
+	storetuner(tuner_bg, tuner_ant);
+}
+
+
+static void auto_tune0_init(void)
+{
+}
+
+static void auto_tune1_init(void)
+{
+}
+
+static void auto_tune2_init(void)
+{
+}
+
+static enum phases auto_tune0(void)
+{
+	return PHASE_DONE;
+}
+
+static enum phases auto_tune1(void)
+{
+	return PHASE_DONE;
+}
+
+static enum phases auto_tune2(void)
+{
+	return PHASE_DONE;
+}
+
+static enum phases auto_tune3(void)
+{
+	return PHASE_DONE;
 }
 
 #elif WITHAUTOTUNER_N7DDCEXT

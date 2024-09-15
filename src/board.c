@@ -3560,7 +3560,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
 		RBVAL8(0060, glob_tuner_L);
 
-	#elif WITHAUTOTUNER_UA1CEI_V2
+	#elif WITHTPA100W_UA1CEI_V2
 		#warning Add code
 
 	#elif SHORTSET8 || FULLSET8
@@ -3680,18 +3680,15 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0050, 0x00);	// FOR
 
 #elif WITHAUTOTUNER
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
-		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
-			#error Wrong config
-		#endif /* ! SHORTSET_7L8C && ! FULLSET_7L8C */
 		if (n7ddcext)
 		{
 
 		}
 		else
 		{
-			/* 7 indictors, 8 capacitors */
+			/* 7 indictors, 7 or 8 capacitors */
 			RBVAL8(0100, glob_tuner_C);
 			RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
 			RBVAL(0070, glob_tuner_L, 7);
@@ -3945,7 +3942,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0050, 0x00);	// FOR
 
 #elif WITHAUTOTUNER
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
 		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
 			#error Wrong config
@@ -4118,7 +4115,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
 		RBVAL8(0100, glob_tuner_C);
 		RBVAL8(0070, glob_tuner_L);
