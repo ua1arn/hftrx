@@ -2829,23 +2829,9 @@ static void hdmi_edid_parse(const uint8_t * edid, unsigned len)
 	}
 }
 
-static void t507_hdmi_initialize(void)
+static void t507_hdmi_edid_test(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_DESIGN_ID,
-			hdmi->HDMI_REVISION_ID,
-			hdmi->HDMI_PRODUCT_ID0,
-			hdmi->HDMI_PRODUCT_ID1
-			);
-
-	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_CONFIG0_ID,
-			hdmi->HDMI_CONFIG1_ID,
-			hdmi->HDMI_CONFIG2_ID,
-			hdmi->HDMI_CONFIG3_ID
-			);
-
 	// I2C speed
 	unsigned i2c_speed_divider = 0xFFFF;
 	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR = 0xFF;
@@ -2880,6 +2866,26 @@ static void t507_hdmi_initialize(void)
 		}
 		hdmi_edid_parse(edid, edidlen);
 	}
+
+}
+
+static void t507_hdmi_initialize(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_DESIGN_ID,
+			hdmi->HDMI_REVISION_ID,
+			hdmi->HDMI_PRODUCT_ID0,
+			hdmi->HDMI_PRODUCT_ID1
+			);
+
+	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_CONFIG0_ID,
+			hdmi->HDMI_CONFIG1_ID,
+			hdmi->HDMI_CONFIG2_ID,
+			hdmi->HDMI_CONFIG3_ID
+			);
+
 	//return;
 
 	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
@@ -7744,6 +7750,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	    if (1)
 	    {
 	    	t507_hdmi_initialize();
+	    	t507_hdmi_edid_test();
 	    }
 #endif /* WITHHDMITVHW */
 
