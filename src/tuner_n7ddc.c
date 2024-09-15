@@ -18,9 +18,10 @@ static int SWR, PWR, P_max, swr_a;
 
 
 static unsigned int n7ddc_get_forward(void) {
+	unsigned f = board_getadc_unfiltered_truevalue(FWD);
 	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
-	unsigned int val = 0;
-	val = (1 - k) * val_tmp_0 + k * board_getadc_unfiltered_truevalue(FWD);
+	unsigned int val;
+	val = (1 - k) * val_tmp_0 + k * f;
 	val_tmp_0 = val;
 
 	return val;
@@ -29,9 +30,10 @@ static unsigned int n7ddc_get_forward(void) {
 //k - коэффицент фильтра 0.0 - 1.0
 
 static unsigned int n7ddc_get_reverse(void) {
+	unsigned r = board_getadc_unfiltered_truevalue(REF);
 	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
-	unsigned int val = 0;
-	val = (1 - k) * val_tmp_1 + k * board_getadc_unfiltered_truevalue(REF);
+	unsigned int val;
+	val = (1 - k) * val_tmp_1 + k * r;
 	val_tmp_1 = val;
 
 	return val;
@@ -72,10 +74,13 @@ static void n7ddc_get_swr(void) {
 	int_fast32_t Forward, Reverse;
 	Forward = n7ddc_get_forward();
 	Reverse = n7ddc_get_reverse();
-	if (Forward < Reverse)
-		SWR = 900;
-	else
+	if (Forward > Reverse)
 		SWR = ((Forward + Reverse) * 100) / (Forward - Reverse);
+	else
+		SWR = 900;
+
+	//PRINTF("n7ddc_get_swr: SWR=%d\n", SWR);
+
 	return;
 }
 
@@ -408,16 +413,20 @@ static void tune(void) {
 
 void n7ddc_tune(void) {
 	unsigned i;
+	PRINTF("n7ddc_tune:\n");
 	atu_reset();
+
 
 	for (i = 0; i <= 5; i++) //на всякий случай 5 проходов
 			{
+		PRINTF("n7ddc_tune: START LOOP\n");
 		n7ddc_get_swr();
 		if (SWR <= 120)
 			break;
 		else
 			tune();
 	}
+	PRINTF("n7ddc_tune: DONE\n");
 
 }
 
