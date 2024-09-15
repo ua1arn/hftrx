@@ -7305,7 +7305,7 @@ board_fpga_fir_connect(IRQL_t * oldIrql)
 #if defined (TARGET_FPGA_FIR_CS_BIT)
 	TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);	/* start sending data to target chip */
 
-#else /* defined (TARGET_FPGA_FIR_CS_BIT) */
+#elif defined (targetfir1)
 	prog_select(targetfir1);	/* start sending data to target chip */
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
@@ -7317,7 +7317,7 @@ board_fpga_fir_disconnect(IRQL_t irql)
 #if defined (TARGET_FPGA_FIR_CS_BIT)
 	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
 
-#else /* defined (TARGET_FPGA_FIR_CS_BIT) */
+#elif defined (targetfir1)
 	prog_unselect(targetfir1);			/* Disable SPI */
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */

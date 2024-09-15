@@ -711,11 +711,6 @@ static void gui_main_process(void)
 		local_snprintf_P(btn_ft8->text, ARRAY_SIZE(btn_ft8->text), PSTR("FT8"));
 #endif /* WITHFT8 */
 
-#if ! WITHWNB
-		button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
-		local_snprintf_P(btn_wnb->text, ARRAY_SIZE(btn_wnb->text), "");
-#endif /* ! WITHWNB */
-
 #if GUI_SHOW_INFOBAR
 
 		static const touch_area_t tas [] = {
@@ -957,7 +952,9 @@ static void gui_main_process(void)
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_txrx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 			button_t * btn_notch = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_notch");
+#if WITHWNB
 			button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
+#endif /* WITHWNB */
 #if WITHTX
 			if (bh == btn_txrx)
 			{
@@ -5205,7 +5202,9 @@ static void window_receive_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp", "", 			},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", 	},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_DNR",    "DNR", 		},
+#if WITHWNB
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_WNB",    "WNB", 		},
+#endif /* WITHWNB */
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
@@ -5248,7 +5247,9 @@ static void window_receive_process(void)
 			button_t * btn_AGC = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 			button_t * btn_mode = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mode");
 			button_t * btn_DNR = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
+#if WITHWNB
 			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
+#endif /* WITHWNB */
 
 			if (bh == btn_att)
 			{
@@ -5287,8 +5288,8 @@ static void window_receive_process(void)
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 #if WITHWNB
+			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 			if (bh == btn_WNB)
 			{
 				open_window(get_win(WINDOW_WNBCONFIG));
