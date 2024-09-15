@@ -2646,7 +2646,7 @@ uint_fast32_t allwnr_a64_get_hdmi_freq(void)
 }
 
 // A64
-uint_fast32_t allwnr_t113_get_tcon0_freq(void)
+uint_fast32_t allwnr_a64_get_tcon0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON0_CLK_REG;
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
@@ -2662,7 +2662,7 @@ uint_fast32_t allwnr_t113_get_tcon0_freq(void)
 }
 
 // A64
-uint_fast32_t allwnr_t113_get_tcon1_freq(void)
+uint_fast32_t allwnr_t113_a64_tcon1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON1_CLK_REG;
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
@@ -2679,7 +2679,7 @@ uint_fast32_t allwnr_t113_get_tcon1_freq(void)
 }
 
 // A64
-uint_fast32_t allwnr_t113_get_de_freq(void)
+uint_fast32_t allwnr_a64_get_de_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
@@ -2696,7 +2696,7 @@ uint_fast32_t allwnr_t113_get_de_freq(void)
 }
 
 // A64
-uint_fast32_t allwnr_t113_get_ce_freq(void)
+uint_fast32_t allwnr_a64_get_ce_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
@@ -2717,7 +2717,7 @@ uint_fast32_t allwnr_t113_get_ce_freq(void)
 }
 
 // A64
-uint_fast32_t allwnr_t113_get_ths_freq(void)
+uint_fast32_t allwnr_a64_get_ths_freq(void)
 {
 	static const unsigned dividers [4] = { 1, 2, 4, 6 };
 	const uint_fast32_t clkreg = CCU->THS_CLK_REG;
@@ -2732,7 +2732,7 @@ uint_fast32_t allwnr_t113_get_ths_freq(void)
 }
 
 // A64
-uint_fast32_t allwnr_t113_get_nand_freq(void)
+uint_fast32_t allwnr_a64_get_nand_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->NAND_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
