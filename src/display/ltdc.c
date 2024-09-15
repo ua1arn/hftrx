@@ -2869,6 +2869,248 @@ static void t507_hdmi_edid_test(void)
 
 }
 
+static void hdmi_writel(unsigned offs, uint32_t v)
+{
+	const uintptr_t addr = HDMI_TX0_BASE + offs;
+	* (volatile uint32_t *) addr = v;
+	__DSB();
+	local_delay_us(10);
+}
+
+static uint32_t hdmi_readl(unsigned offs)
+{
+	__DSB();
+	local_delay_us(10);
+	const uintptr_t addr = HDMI_TX0_BASE + offs;
+	return * (volatile uint32_t *) addr;
+}
+
+//static uintptr_t hdmi_base_addr;
+static unsigned int hdmi_version = 1;
+static unsigned int tmp_rcal_100, tmp_rcal_200;
+static unsigned int bias_source;
+
+// https://github.com/CrealityTech/sonic_pad_os/blob/7f37a7fbf4ad59907034715e3d967b9177de1cd4/lichee/brandy-2.0/u-boot-2018/drivers/video/sunxi/disp2/hdmi/hdmi_bsp_sun8iw11.c#L167
+
+static void t507_hdmi_phy_initialize(void)
+{
+
+	unsigned int to_cnt;
+	unsigned int tmp;
+
+	hdmi_writel(0x10020, 0);
+	hdmi_writel(0x10020, (1<<0));
+	local_delay_us(5);
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<16));
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<1));
+	local_delay_us(10);
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<2));
+	local_delay_us(5);
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<3));
+	local_delay_us(40);
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<19));
+	local_delay_us(100);
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<18));
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(7<<4));
+
+	to_cnt = 10000;
+	while (1) {
+		if ((hdmi_readl(0x10038)&0x80) == 0x80)
+			break;
+		local_delay_us(200);
+
+		to_cnt--;
+		if (to_cnt == 0) {
+			PRINTF("hdmi timeout\n");
+			/* pr_warn("%s, timeout\n", __func__); */
+			break;
+		}
+	}
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(0xf<<8));
+/* hdmi_writel(0x10020,hdmi_readl(0x10020)&(~(1<<19))); */
+	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<7));
+/* hdmi_writel(0x10020,hdmi_readl(0x10020)|(0xf<<12)); */
+
+	/* pll video1 */
+	hdmi_writel(0x1002c, 0x3ddc5040);
+	hdmi_writel(0x10030, 0x80084343);
+	local_delay_ms(10);
+	hdmi_writel(0x10034, 0x00000001);
+	hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
+	local_delay_ms(100);
+
+	tmp = hdmi_readl(0x10038);
+	tmp_rcal_100 = (tmp & 0x3f)>>1;
+	tmp_rcal_200 = (tmp & 0x3f)>>2;
+
+	//rcal_flag = 1;
+
+	hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
+	hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
+
+	hdmi_writel(0x10020, 0x01FF0F7F);	// ANA_CFG1
+	hdmi_writel(0x10024, 0x80639000);
+	hdmi_writel(0x10028, 0x0F81C405);
+
+	if (bias_source != 0)
+		hdmi_writel(0x10004, hdmi_readl(0x10004) | (0x1 << 17));
+
+}
+
+
+struct para_tab {
+	unsigned int para[19];
+};
+
+struct pcm_sf {
+	unsigned int	sf;
+	unsigned char	cs_sf;
+};
+
+static const struct para_tab ptbl[] = {
+{{6, 1, 1, 1, 5, 3, 0, 1, 4, 0, 0, 160, 20, 38, 124, 240, 22, 0, 0} },
+{{21, 11, 1, 1, 5, 3, 1, 1, 2, 0, 0, 160, 32, 24, 126, 32, 24, 0, 0} },
+{{2, 11, 0, 0, 2, 6, 1, 0, 9, 0, 0, 208, 138, 16, 62, 224, 45, 0, 0} },
+{{17, 11, 0, 0, 2, 5, 2, 0, 5, 0, 0, 208, 144, 12, 64, 64, 49, 0, 0} },
+{{19, 4, 0, 96, 5, 5, 2, 2, 5, 1, 0, 0, 188, 184, 40, 208, 30, 1, 1} },
+{{4, 4, 0, 96, 5, 5, 2, 1, 5, 0, 0, 0, 114, 110, 40, 208, 30, 1, 1} },
+{{20, 4, 0, 97, 7, 5, 4, 2, 2, 2, 0, 128, 208, 16, 44, 56, 22, 1, 1} },
+{{5, 4, 0, 97, 7, 5, 4, 1, 2, 0, 0, 128, 24, 88, 44, 56, 22, 1, 1} },
+{{31, 2, 0, 96, 7, 5, 4, 2, 4, 2, 0, 128, 208, 16, 44, 56, 45, 1, 1} },
+{{16, 2, 0, 96, 7, 5, 4, 1, 4, 0, 0, 128, 24, 88, 44, 56, 45, 1, 1} },
+{{32, 4, 0, 96, 7, 5, 4, 3, 4, 2, 0, 128, 62, 126, 44, 56, 45, 1, 1} },
+{{33, 4, 0, 0, 7, 5, 4, 2, 4, 2, 0, 128, 208, 16, 44, 56, 45, 1, 1} },
+{{34, 4, 0, 0, 7, 5, 4, 1, 4, 0, 0, 128, 24, 88, 44, 56, 45, 1, 1} },
+{{160, 2, 0, 96, 7, 5, 8, 3, 4, 2, 0, 128, 62, 126, 44, 157, 45, 1, 1} },
+{{147, 2, 0, 96, 5, 5, 5, 2, 5, 1, 0, 0, 188, 184, 40, 190, 30, 1, 1} },
+{{132, 2, 0, 96, 5, 5, 5, 1, 5, 0, 0, 0, 114, 110, 40, 160, 30, 1, 1} },
+{{257, 1, 0, 96, 15, 10, 8, 2, 8, 0, 0, 0, 48, 176, 88, 112, 90, 1, 1} },
+{{258, 1, 0, 96, 15, 10, 8, 5, 8, 4, 0, 0, 160, 32, 88, 112, 90, 1, 1} },
+{{259, 1, 0, 96, 15, 10, 8, 6, 8, 4, 0, 0, 124, 252, 88, 112, 90, 1, 1} },
+{{0,   0, 0,  0,  0,  0, 0, 0, 0, 0, 0,	0, 0,    0,  0,   0,  0, 0, 0} },
+};
+
+static const unsigned char ca_table[64] = {
+	0x00, 0x11, 0x01, 0x13, 0x02, 0x31, 0x03, 0x33,
+	0x04, 0x15, 0x05, 0x17, 0x06, 0x35, 0x07, 0x37,
+	0x08, 0x55, 0x09, 0x57, 0x0a, 0x75, 0x0b, 0x77,
+	0x0c, 0x5d, 0x0d, 0x5f, 0x0e, 0x7d, 0x0f, 0x7f,
+	0x10, 0xdd, 0x11, 0xdf, 0x12, 0xfd, 0x13, 0xff,
+	0x14, 0x99, 0x15, 0x9b, 0x16, 0xb9, 0x17, 0xbb,
+	0x18, 0x9d, 0x19, 0x9f, 0x1a, 0xbd, 0x1b, 0xbf,
+	0x1c, 0xdd, 0x1d, 0xdf, 0x1e, 0xfd, 0x1f, 0xff,
+};
+
+static const struct pcm_sf sf[10] = {
+	{22050,	0x04},
+	{44100,	0x00},
+	{88200,	0x08},
+	{176400, 0x0c},
+	{24000,	0x06},
+	{48000, 0x02},
+	{96000, 0x0a},
+	{192000, 0x0e},
+	{32000, 0x03},
+	{768000, 0x09},
+};
+
+static const unsigned int n_table[21] = {
+	32000,			3072,		4096,
+	44100,			4704,		6272,
+	88200,			4704*2,		6272*2,
+	176400,			4704*4,		6272*4,
+	48000,			5120,		6144,
+	96000,			5120*2,		6144*2,
+	192000,			5120*4,		6144*4,
+};
+
+static void t507_hdmi_phy_set(void)
+{
+	unsigned int id;
+	unsigned int count;
+	unsigned int tmp;
+	unsigned int div;
+
+	count = sizeof(ptbl) / sizeof(struct para_tab);
+
+
+	id = 0; //get_vid(video->vic);
+//	if (id == (count - 1))
+//		div = video->clk_div - 1;
+//	else
+		div = ptbl[id].para[1] - 1;
+
+	hdmi_writel(0x10020, hdmi_readl(0x10020)&(~0xf000));
+	switch (ptbl[id].para[1]) {
+	case 1:
+		if (hdmi_version == 0)
+			hdmi_writel(0x1002c, 0x35dc5fc0);
+		else
+			hdmi_writel(0x1002c, 0x34dc5fc0);
+		hdmi_writel(0x10030, 0x800863C0 | div);
+		local_delay_ms(10);
+		hdmi_writel(0x10034, 0x00000001);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
+		local_delay_ms(200);
+		tmp = hdmi_readl(0x10038);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
+		if (((tmp&0x1f800)>>11) < 0x3d)
+			hdmi_writel(0x1002c, hdmi_readl(0x1002c)|(((tmp&0x1f800)>>11)+2));
+		else
+			hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x3f);
+		local_delay_ms(100);
+		hdmi_writel(0x10020, 0x01FFFF7F);
+		hdmi_writel(0x10024, 0x8063b000);
+		hdmi_writel(0x10028, 0x0F8246B5);
+		break;
+	case 2:
+		hdmi_writel(0x1002c, 0x3ddc5040);
+		hdmi_writel(0x10030, 0x80084380 | div);
+		local_delay_ms(10);
+		hdmi_writel(0x10034, 0x00000001);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
+		local_delay_ms(100);
+		tmp = hdmi_readl(0x10038);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
+		hdmi_writel(0x10020, 0x01FFFF7F);
+		hdmi_writel(0x10024, 0x8063a800);
+		hdmi_writel(0x10028, 0x0F81C485);
+		break;
+	case 4:
+		hdmi_writel(0x1002c, 0x3ddc5040);
+		hdmi_writel(0x10030, 0x80084340 | div);
+		local_delay_ms(10);
+		hdmi_writel(0x10034, 0x00000001);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
+		local_delay_ms(100);
+		tmp = hdmi_readl(0x10038);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
+		hdmi_writel(0x10020, 0x11FFFF7F);
+		hdmi_writel(0x10024, 0x80623000 | tmp_rcal_200);
+		hdmi_writel(0x10028, 0x0F814385);
+		break;
+	case 11:
+		hdmi_writel(0x1002c, 0x3ddc5040);
+		hdmi_writel(0x10030, 0x80084300 | div);
+		local_delay_ms(10);
+		hdmi_writel(0x10034, 0x00000001);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
+		local_delay_ms(100);
+		tmp = hdmi_readl(0x10038);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
+		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
+		hdmi_writel(0x10020, 0x11FFFF7F);
+		hdmi_writel(0x10024, 0x80623000 | tmp_rcal_200);
+		hdmi_writel(0x10028, 0x0F80C285);
+		break;
+	default:
+		return;// -1;
+	}
+	return;// 0;
+}
+
 static void t507_hdmi_initialize(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -2885,108 +3127,6 @@ static void t507_hdmi_initialize(void)
 			hdmi->HDMI_CONFIG2_ID,
 			hdmi->HDMI_CONFIG3_ID
 			);
-
-	//return;
-
-	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-
-//	HDMI_PHY->CEC |= (UINT32_C(1) << 7);	// CEC CONTROL: register
-//	HDMI_PHY->CEC |= (UINT32_C(1) << 3);	// CEC PAD INPUT ENABLE
-//	HDMI_PHY->CEC |= (UINT32_C(1) << 0);	// CEC OUTPUT DATA
-//	local_delay_ms(10);
-//
-//
-//	for (;0;)
-//	{
-//		int v = (HDMI_PHY->CEC >> 1) & 0x01;	// CEC INPUT DATA
-//		PRINTF("cec=%d\n", v);
-//		local_delay_ms(10);
-//	}
-
-	//return;
-
-	// TMDS Character Rate - 297MHz
-	HDMI_PHY->PLL_CFG1 = 0x35dc5fc0;
-	HDMI_PHY->PLL_CFG2 = 0x800863C0;
-	HDMI_PHY->PLL_CFG3 = 0x01;
-	local_delay_ms(100);
-//
-//	HDMI_PHY->ANA_CFG1 = 0;
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 0);	// ANA_CFG1_ENBI
-//	local_delay_ms(5);
-//	/* Enable TMDS clock */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);	// ANA_CFG1_TMDSCLK_EN
-//	/* Enable common voltage reference bias module */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);	// ANA_CFG1_ENVBS
-//	local_delay_ms(10);
-//	/* Enable internal LDO */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);	// ANA_CFG1_LDOEN
-//	local_delay_ms(5);
-//	/* Enable common clock module */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);	// ANA_CFG1_CKEN
-//	local_delay_ms(100);
-//
-//	/* Enable resistance calibration analog and digital modules */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);	// ANA_CFG1_ENRCAL
-//	local_delay_ms(100);
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);	// ANA_CFG1_ENCALOG
-//
-//	/* P2S module enable for TMDS data lane */
-//	HDMI_PHY->ANA_CFG1 |= 0x07 * (UINT32_C(1) << 4);
-
-	// 297 MHz
-	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-	HDMI_PHY->ANA_CFG2 = 0x8063b000;
-	HDMI_PHY->ANA_CFG3 = 0x0F8246B5;
-
-//	PRINTF("1st:\n");
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	PRINTF("See:\n");
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-
-	local_delay_ms(100);
-	if (0)
-	{
-		TP();
-		while((HDMI_PHY->ANA_STS & 0x80) == 0)
-		  ;
-		local_delay_ms(100);
-		TP();
-	}
-
-//	HDMI_PHY->ANA_CFG1 |= (0xf << 4);
-//	HDMI_PHY->ANA_CFG1 |= (0xf << 8);
-//	HDMI_PHY->ANA_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
-//
-//	HDMI_PHY->PLL_CFG1 &= ~ (UINT32_C(1) << 26);
-//	HDMI_PHY->CEC = 0;
-//
-//	HDMI_PHY->PLL_CFG1 = 0x39dc5040;
-//	HDMI_PHY->PLL_CFG2 = 0x80084381;
-//	local_delay_ms(100);
-//	HDMI_PHY->PLL_CFG3 = 1;
-//	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 25);
-//	local_delay_ms(100);
-//	uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
-//	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
-//
-//	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-//	HDMI_PHY->ANA_CFG2 = 0x8063A800;
-//	HDMI_PHY->ANA_CFG3 = 0x0F81C485;
-
-	/* enable read access to HDMI controller */
-	HDMI_PHY->READ_EN = 0x54524545;
-	ASSERT(HDMI_PHY->READ_EN == 0x54524545);
-	/* descramble register offsets */
-	HDMI_PHY->UNSCRAMBLE = 0x42494E47;
-	ASSERT(HDMI_PHY->UNSCRAMBLE == 0x42494E47);
 
 	const videomode_t * const vdmode = get_videomode_CRT();
 
@@ -6337,60 +6477,6 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 
 #endif /* defined (TCONTV_PTR) */
 
-
-#if 0
-
-static void lvds_t507_corrections(void)
-{
-#if CPUSTYLE_T507
-	unsigned i;
-#if 0
-	// HDMI_PHY
-	static const uint32_t hdmi_phy [] =
-	{
-		0x00000000, 0x80c00000, 0x00184210, 0x00000002,
-		0x00000000, 0x000f990b, 0x00000000, 0x00000000,
-		0x00000f80, 0x0c0040d8, 0x02700203, 0x000c6023,
-	};
-	for (i = 0; i < ARRAY_SIZE(hdmi_phy); ++ i)
-	{
-		* (volatile uint32_t *) (HDMI_PHY_BASE + i * 4) = hdmi_phy [i];
-	}
-#endif
-#if 0
-	// HDMI_TX0
-	* (volatile uint32_t *) 0x0000000006000000 = 0x00000021;
-	* (volatile uint32_t *) 0x0000000006000004 = 0x0000009f;
-	* (volatile uint32_t *) 0x0000000006000170 = 0x00000002;	// !!!!
-	* (volatile uint32_t *) 0x0000000006000180 = 0x00000018;
-	* (volatile uint32_t *) 0x0000000006000200 = 0x00000001;
-#endif
-#endif /* CPUSTYLE_T507 */
-}
-
-
-void
-zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
-{
-	const volatile uint32_t * buff = (const volatile uint32_t *) vbuff;
-	enum { ROWSIZE = 4 };	/* elements in one row */
-	unsigned i, j;
-	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
-
-	for (i = 0; i < rows; ++ i)
-	{
-		const int remaining = (length + 3) / 4 - i * ROWSIZE;
-		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
-		debug_printf_P(PSTR("0x%016" PRIx32 ":"), (uint32_t) (voffs + i * ROWSIZE * 4));
-		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" 0x%08" PRIx32), buff [i * ROWSIZE + j]);
-
-		debug_printf_P(PSTR("\n"));
-	}
-}
-
-#endif
-
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
 static void t113_tcon_PLL_configuration(void)
@@ -7751,6 +7837,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	    {
 	    	t507_hdmi_initialize();
 	    	t507_hdmi_edid_test();
+	    	t507_hdmi_phy_initialize();
+	    	t507_hdmi_phy_set();
 	    }
 #endif /* WITHHDMITVHW */
 
