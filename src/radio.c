@@ -5083,7 +5083,7 @@ static void tuner_waitadc(void)
 }
 
 // SWR=1 = озвращаем 0
-uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
@@ -5100,6 +5100,46 @@ uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcva
 	return swr10 > fs ? fs : swr10;
 }
 
+
+
+#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
+
+// SWR=1: return 100
+unsigned n7ddc_get_swr_calman(void)
+{
+	adcvalholder_t f, r;
+
+	f = board_getswrpair_filtered(& r, swrcalibr);
+
+	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
+	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
+	val_tmp_0 = fval;
+
+	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
+	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
+	val_tmp_1 = rval;
+
+	if (fval > rval)
+		return ((fval + rval) * 100) / (fval - rval);
+	else
+		return 900;
+}
+
+// SWR=1: return 100
+unsigned n7ddc_get_swr(void)
+{
+	const uint_fast8_t fs = 900;
+	adcvalholder_t r;
+	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+
+	if (f < minforward)
+		return 100;	// SWR=1
+	else if (f <= r)
+		return fs;		// SWR is infinite
+
+	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
+	return swr10 > fs ? fs : swr10;
+}
 
 void display2_swrsts22(
 	uint_fast8_t x,

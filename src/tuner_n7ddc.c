@@ -12,32 +12,7 @@ unsigned char L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
 unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
 
 static int min_for_start, max_for_start, max_swr;
-static int SWR, PWR, P_max, swr_a;
-
-#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
-
-
-static unsigned int n7ddc_get_forward(void) {
-	unsigned f = board_getadc_unfiltered_truevalue(FWD);
-	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
-	unsigned int val;
-	val = (1 - k) * val_tmp_0 + k * f;
-	val_tmp_0 = val;
-
-	return val;
-}
-
-//k - коэффицент фильтра 0.0 - 1.0
-
-static unsigned int n7ddc_get_reverse(void) {
-	unsigned r = board_getadc_unfiltered_truevalue(REF);
-	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
-	unsigned int val;
-	val = (1 - k) * val_tmp_1 + k * r;
-	val_tmp_1 = val;
-
-	return val;
-}
+static int SWR, P_max, swr_a;
 
 static unsigned lastout_ind;
 static unsigned lastout_cap;
@@ -70,17 +45,9 @@ static void atu_reset(void) {
 }
 
 //измерение КСВ
-static void n7ddc_get_swr(void) {
-	int_fast32_t Forward, Reverse;
-	Forward = n7ddc_get_forward();
-	Reverse = n7ddc_get_reverse();
-	if (Forward > Reverse)
-		SWR = ((Forward + Reverse) * 100) / (Forward - Reverse);
-	else
-		SWR = 900;
-
-	//PRINTF("n7ddc_get_swr: SWR=%d\n", SWR);
-
+static void local_get_swr(void) {
+	SWR = n7ddc_get_swr();
+	PRINTF("local_get_swr: SWR=%d\n", SWR);
 	return;
 }
 
@@ -98,24 +65,24 @@ static void sharp_cap(void) {
 		min_range = 0;
 	cap = min_range;
 	set_cap(cap);
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR == 0)
 		return;
 	min_SWR = SWR;
 	for (count = min_range + C_mult; count <= max_range; count += C_mult) {
 		set_cap(count);
-		n7ddc_get_swr();
+		local_get_swr();
 		if (SWR == 0)
 			return;
 
 		if (SWR >= min_SWR) {
 			local_delay_ms(10);
-			n7ddc_get_swr();
+			local_get_swr();
 		}
 
 		if (SWR >= min_SWR) {
 			local_delay_ms(10);
-			n7ddc_get_swr();
+			local_get_swr();
 		}
 
 		if (SWR < min_SWR) {
@@ -147,24 +114,24 @@ static void sharp_ind(void) {
 	ind = min_range;
 	set_ind(ind);
 
-	n7ddc_get_swr();
+	local_get_swr();
 
 	if (SWR == 0)
 		return;
 	min_SWR = SWR;
 	for (count = min_range + L_mult; count <= max_range; count += L_mult) {
 		set_ind(count);
-		n7ddc_get_swr();
+		local_get_swr();
 		if (SWR == 0)
 			return;
 		if (SWR >= min_SWR) {
 			local_delay_ms(10);
-			n7ddc_get_swr();
+			local_get_swr();
 		}
 
 		if (SWR >= min_SWR) {
 			local_delay_ms(10);
-			n7ddc_get_swr();
+			local_get_swr();
 		}
 
 		if (SWR < min_SWR) {
@@ -188,14 +155,14 @@ static void coarse_cap(void) {
 	cap = 0;
 	set_cap(cap);
 	step_cap = step;
-	n7ddc_get_swr();
+	local_get_swr();
 
 	if (SWR == 0)
 		return;
 	min_swr = SWR + SWR / 20;
 	for (count = step; count <= 31;) {
 		set_cap(count * C_mult);
-		n7ddc_get_swr();
+		local_get_swr();
 		if (SWR == 0)
 			return;
 		if (SWR < min_swr) {
@@ -231,7 +198,7 @@ static void coarse_tune(void) {
 	for (count = 0; count <= 31;) {
 		set_ind(count * L_mult);
 		coarse_cap();
-		n7ddc_get_swr();
+		local_get_swr();
 
 		if (SWR == 0)
 			return;
@@ -271,7 +238,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 120)
 		return;
 
@@ -280,7 +247,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 120)
 		return;
 
@@ -289,7 +256,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	n7ddc_get_swr();
+	local_get_swr();
 
 	if (SWR < 120)
 		return;
@@ -308,7 +275,7 @@ static void sub_tune(void) {
 	atu_reset();
 	set_sw(SW);
 	local_delay_ms(50);
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 120)
 		return;
 	//
@@ -317,7 +284,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 120)
 		return;
 	sharp_ind();
@@ -327,7 +294,7 @@ static void sub_tune(void) {
 		return;
 	}
 
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 120)
 		return;
 
@@ -336,7 +303,7 @@ static void sub_tune(void) {
 		atu_reset();
 		return;
 	}
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 120)
 		return;
 	//
@@ -358,14 +325,14 @@ static void sub_tune(void) {
 static void tune(void) {
 	P_max = 0;
 	//
-	n7ddc_get_swr();
+	local_get_swr();
 	if (SWR < 110)
 		return;
 
 	atu_reset();
 
 	local_delay_ms(50);
-	n7ddc_get_swr();
+	local_get_swr();
 	swr_a = SWR;
 	if (SWR < 110)
 		return;
@@ -420,7 +387,7 @@ void n7ddc_tune(void) {
 	for (i = 0; i <= 5; i++) //на всякий случай 5 проходов
 			{
 		PRINTF("n7ddc_tune: START LOOP\n");
-		n7ddc_get_swr();
+		local_get_swr();
 		if (SWR <= 120)
 			break;
 		else
