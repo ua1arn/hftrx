@@ -10624,6 +10624,11 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 1 && WITHHDMITVHW
+	{
+		hardware_edid_test();
+	}
+#endif
 	//hmain();
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{

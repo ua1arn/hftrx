@@ -2897,6 +2897,7 @@ static unsigned int tmp_rcal_100, tmp_rcal_200;
 static unsigned int bias_source;
 
 // https://github.com/CrealityTech/sonic_pad_os/blob/7f37a7fbf4ad59907034715e3d967b9177de1cd4/lichee/brandy-2.0/u-boot-2018/drivers/video/sunxi/disp2/hdmi/hdmi_bsp_sun8iw11.c#L167
+// https://github.com/catphish/allwinner-bare-metal/blob/master/display.c#L26
 
 static void t507_hdmi_phy_initialize(void)
 {
@@ -7170,31 +7171,15 @@ static void awxx_deoutmapping(unsigned disp)
 }
 
 
+void hardware_edid_test(void)
+{
+	t507_hdmi_edid_test();
+
+}
+
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
-
-#if WITHHDMITVHW && 0
-	if (1)
-	{
-		uintptr_t frames [LCDMODE_MAIN_PAGES];
-		colmain_fb_list(frames);		// получение массива планирующихся для работы framebuffers
-		// See https://github.com/catphish/allwinner-bare-metal/blob/master/display.h#L1
-
-		// This function initializes the HDMI port and TCON.
-		// Almost everything here is resolution specific and
-		// currently hardcoded to 1920x1080@60Hz.
-		  display_clocks_init();
-		  TP();
-		  hdmi_init();
-		  TP();
-		  lcd_init();
-		  TP();
-		  de2_init(frames);
-		  TP();
-
-	}
-#endif /* WITHHDMITVHW */
 
 //	{
 //		uintptr_t p;
@@ -7205,6 +7190,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 //		PRINTF("VSU at 0x%08X\n", p);
 //		ASSERT(p == DE_MIXER1_VSU0_BASE);
 //	}
+
 	{
 #if defined (TCONTV_PTR)
 	const videomode_t * const vdmode_CRT = get_videomode_CRT();
@@ -7224,10 +7210,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		t113_HDMI_CCU_configuration();
 	    if (1)
 	    {
-	    	t507_hdmi_initialize();
-	    	t507_hdmi_edid_test();
 	    	t507_hdmi_phy_initialize();
 	    	t507_hdmi_phy_set();
+	    	t507_hdmi_initialize();
+	    	//t507_hdmi_edid_test();
 	    }
 #endif /* WITHHDMITVHW */
 
