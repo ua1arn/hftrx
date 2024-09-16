@@ -3042,6 +3042,11 @@ static void t507_hdmi_phy_set(void)
 
 
 	id = 0; //get_vid(video->vic);
+	if (id >= count)
+	{
+		ASSERT(0);
+		return;
+	}
 //	if (id == (count - 1))
 //		div = video->clk_div - 1;
 //	else
@@ -3050,15 +3055,18 @@ static void t507_hdmi_phy_set(void)
 	hdmi_writel(0x10020, hdmi_readl(0x10020)&(~0xf000));
 	switch (ptbl[id].para[1]) {
 	case 1:
+		TP();
 		if (hdmi_version == 0)
 			hdmi_writel(0x1002c, 0x35dc5fc0);
 		else
 			hdmi_writel(0x1002c, 0x34dc5fc0);
 		hdmi_writel(0x10030, 0x800863C0 | div);
 		local_delay_ms(10);
+
 		hdmi_writel(0x10034, 0x00000001);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
 		local_delay_ms(200);
+
 		tmp = hdmi_readl(0x10038);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
 		if (((tmp&0x1f800)>>11) < 0x3d)
@@ -3066,17 +3074,21 @@ static void t507_hdmi_phy_set(void)
 		else
 			hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x3f);
 		local_delay_ms(100);
+
 		hdmi_writel(0x10020, 0x01FFFF7F);
 		hdmi_writel(0x10024, 0x8063b000);
 		hdmi_writel(0x10028, 0x0F8246B5);
 		break;
+
 	case 2:
+		TP();
 		hdmi_writel(0x1002c, 0x3ddc5040);
 		hdmi_writel(0x10030, 0x80084380 | div);
 		local_delay_ms(10);
 		hdmi_writel(0x10034, 0x00000001);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
 		local_delay_ms(100);
+
 		tmp = hdmi_readl(0x10038);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
@@ -3084,13 +3096,16 @@ static void t507_hdmi_phy_set(void)
 		hdmi_writel(0x10024, 0x8063a800);
 		hdmi_writel(0x10028, 0x0F81C485);
 		break;
+
 	case 4:
+		TP();
 		hdmi_writel(0x1002c, 0x3ddc5040);
 		hdmi_writel(0x10030, 0x80084340 | div);
 		local_delay_ms(10);
 		hdmi_writel(0x10034, 0x00000001);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
 		local_delay_ms(100);
+
 		tmp = hdmi_readl(0x10038);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
@@ -3098,13 +3113,16 @@ static void t507_hdmi_phy_set(void)
 		hdmi_writel(0x10024, 0x80623000 | tmp_rcal_200);
 		hdmi_writel(0x10028, 0x0F814385);
 		break;
+
 	case 11:
+		TP();
 		hdmi_writel(0x1002c, 0x3ddc5040);
 		hdmi_writel(0x10030, 0x80084300 | div);
 		local_delay_ms(10);
 		hdmi_writel(0x10034, 0x00000001);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0x02000000);
 		local_delay_ms(100);
+
 		tmp = hdmi_readl(0x10038);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|0xC0000000);
 		hdmi_writel(0x1002c, hdmi_readl(0x1002c)|((tmp&0x1f800)>>11));
@@ -3112,6 +3130,7 @@ static void t507_hdmi_phy_set(void)
 		hdmi_writel(0x10024, 0x80623000 | tmp_rcal_200);
 		hdmi_writel(0x10028, 0x0F80C285);
 		break;
+
 	default:
 		return;// -1;
 	}
@@ -3537,8 +3556,6 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 
 static void t113_HDMI_CCU_configuration(void)
 {
-#if defined (TCONLCD_PTR)
-
 #if CPUSTYLE_A64
 //    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
 ////    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
@@ -3586,14 +3603,16 @@ static void t113_HDMI_CCU_configuration(void)
 
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-    //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+    PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-    //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
     if (0)
     {
@@ -3612,8 +3631,6 @@ static void t113_HDMI_CCU_configuration(void)
     //PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 
 #endif
-
-#endif /* defined (TCONLCD_PTR) */
 }
 
 // Used for HV and LVDS outputs
