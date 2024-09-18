@@ -5,9 +5,20 @@
 #include "formats.h"
 #include "board.h"
 
-static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0,
-		L_linear = 0;
-static unsigned char C_linear = 0, L_q = 7, C_q = 7;
+static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0;
+
+#if FULLSET7 || 1
+	static unsigned char L_q = 7, C_q = 7;
+	static unsigned char C_linear = 0, L_linear = 0;
+#elif FULLSET_7L8C
+	static unsigned char L_q = 7, C_q = 8;
+	static unsigned char C_linear = 0, L_linear = 0;
+#elif FULLSET8
+	static unsigned char L_q = 8, C_q = 8;
+	static unsigned char C_linear = 1, L_linear = 1;
+#endif
+
+
 unsigned char L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
 unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
 
