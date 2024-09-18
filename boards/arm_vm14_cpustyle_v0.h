@@ -55,7 +55,7 @@
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	////#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -69,7 +69,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	////#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	////#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 
@@ -122,7 +122,7 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	//#define WITHUSBHW_EHCI		USBEHCI1
 	//#define WITHUSBHW_OHCI		USBOHCI1
@@ -662,7 +662,7 @@
 		} while (0) 
 	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif // WITHTWISW || WITHTWIHW
 

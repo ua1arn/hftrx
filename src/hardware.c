@@ -487,7 +487,7 @@ hardware_get_encoder_bits(void)
 	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Биты валкодера #1
 #elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
-	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Биты идут не подряд
+	return ((v & ENCODER_BITA) != 0) * GETENCBIT_A + ((v & ENCODER_BITB) != 0) * GETENCBIT_B;	// Биты идут не подряд
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
@@ -505,12 +505,25 @@ hardware_get_encoder2_bits(void)
 	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Биты валкодера #2
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
-	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
+	return ((v & ENCODER2_BITA) != 0) * GETENCBIT_A + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
 #elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-	return ((gpio_readpin(ENCODER2_BITA) != 0) * 2 + (gpio_readpin(ENCODER2_BITB) != 0));
+	return (gpio_readpin(ENCODER2_BITA) != 0) * GETENCBIT_A + (gpio_readpin(ENCODER2_BITB) != 0) * GETENCBIT_B;
 #else /* WITHENCODER2 */
 	return 0;
 #endif /* WITHENCODER2 */
+}
+
+/* Чтение состояния выходов валкодера #2 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder_sub_bits(void)
+{
+#if WITHENCODER_SUB && defined (ENCODER_SUB_BITS_GET)
+	return ENCODER_SUB_BITS_GET();
+#else /* WITHENCODER_SUB */
+	return 0;
+#endif /* WITHENCODER_SUB */
 }
 
 /* Чтение состояния выходов валкодера #3 - в два младших бита */
@@ -519,11 +532,11 @@ hardware_get_encoder2_bits(void)
 uint_fast8_t
 hardware_get_encoder3_bits(void)
 {
-#if WITHENCODER3 && defined (ENCODER3_BITS_GET)
-	return ENCODER3_BITS_GET();
-#else /* WITHENCODER3 */
+#if WITHENCODER_1F && defined (ENC1F_BITS_GET)
+	return ENC1F_BITS_GET();
+#else /* WITHENCODER_1F */
 	return 0;
-#endif /* WITHENCODER3 */
+#endif /* WITHENCODER_1F */
 }
 
 /* Чтение состояния выходов валкодера #4 - в два младших бита */
@@ -532,11 +545,11 @@ hardware_get_encoder3_bits(void)
 uint_fast8_t 
 hardware_get_encoder4_bits(void)
 {
-#if WITHENCODER4 && defined (ENCODER4_BITS_GET)
-	return ENCODER4_BITS_GET();
-#else /* WITHENCODER4 */
+#if WITHENCODER_2F && defined (ENC2F_BITS_GET)
+	return ENC2F_BITS_GET();
+#else /* WITHENCODER_2F */
 	return 0;
-#endif /* WITHENCODER4 */
+#endif /* WITHENCODER_2F */
 }
 
 /* Чтение состояния выходов валкодера #5 - в два младших бита */
@@ -545,11 +558,11 @@ hardware_get_encoder4_bits(void)
 uint_fast8_t
 hardware_get_encoder5_bits(void)
 {
-#if WITHENCODER5 && defined (ENCODER5_BITS_GET)
-	return ENCODER5_BITS_GET();
-#else /* WITHENCODER5 */
+#if WITHENCODER_3F && defined (ENC3F_BITS_GET)
+	return ENC3F_BITS_GET();
+#else /* WITHENCODER_3F */
 	return 0;
-#endif /* WITHENCODER5 */
+#endif /* WITHENCODER_3F */
 }
 
 /* Чтение состояния выходов валкодера #6 - в два младших бита */
@@ -558,11 +571,11 @@ hardware_get_encoder5_bits(void)
 uint_fast8_t
 hardware_get_encoder6_bits(void)
 {
-#if WITHENCODER6 && defined (ENCODER6_BITS_GET)
-	return ENCODER6_BITS_GET();
-#else /* WITHENCODER6 */
+#if WITHENCODER_4F && defined (ENC4F_BITS_GET)
+	return ENC4F_BITS_GET();
+#else /* WITHENCODER_4F */
 	return 0;
-#endif /* WITHENCODER6 */
+#endif /* WITHENCODER_4F */
 }
 
 // ADC intgerface functions
@@ -1613,7 +1626,6 @@ void Undef_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
 
-	dbg_puts_impl_P(PSTR("Undef_Handler trapped.\n"));
 	PRINTF("UndefHandler trapped[%p]\n", Undef_Handler);
 	PRINTF("CPUID=%d\n", (int) (__get_MPIDR() & 0x03));
 	unsigned i;
@@ -1628,8 +1640,8 @@ void Undef_Handler(void)
 void SWI_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl_P(PSTR("SWIHandler trapped.\n"));
-	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	dbg_puts_impl_P("SWIHandler trapped.\n");
+	PRINTF("CPUID=%d\n", (int) (__get_MPIDR() & 0x03));
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
@@ -3700,7 +3712,7 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
 
 	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->delflag = 1;	/* удаление будет произведено про оработке списка */
+	dp->delflag = 1;	/* удаление будет произведено при обработке списка */
 	IRQLSPIN_UNLOCK(lock, oldIrql);
 
 	return 1;
@@ -3797,6 +3809,10 @@ void board_dpc_processing(void)
 		}
 		IRQLSPIN_UNLOCK(lock, oldIrql);
 	}
+#if WITHSMPSYSTEM
+	__DMB();
+	//__WFI();
+#endif /* WITHSMPSYSTEM */
 }
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -3805,7 +3821,7 @@ static void cortexa_cpuinfo(void)
 {
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%p, MPIDR=%08X\n"),
+	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%p, MPIDR=%08X\n",
 			(unsigned) (__get_MPIDR() & 0x03),
 			(void *) __get_VBAR(),
 			(void *) __get_TTBR0(),
@@ -4609,8 +4625,6 @@ void Reset_CPUn_Handler(void)
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		__DMB();
-		//__WFI();
 	}
 }
 

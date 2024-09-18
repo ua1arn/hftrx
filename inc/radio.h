@@ -3316,6 +3316,7 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// теку
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_usbh_active(void);
 unsigned hamradio_get_getsoffreq(void);
+void hamradio_tick_sof(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
@@ -3323,6 +3324,17 @@ uint_fast8_t hamradio_get_bkin_value(void);
 uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
 uint_fast8_t hamradio_get_blinkphase(void);	/* состояние для мерцающих индикаторов на диспле */
 uint_fast8_t hamradio_get_bringtuneA(void);	// Разрешить отображение текущей частоты на водопаде
+uint_fast8_t hamradio_get_bringtuneB(void);	// Разрешить отображение текущей частоты на водопаде
+
+uint_fast8_t hamradio_get_bringENC1F(void);	// Вращали 3-й валкодер (ENC1F)
+uint_fast8_t hamradio_get_bringENC2F(void);	// Вращали 4-й валкодер (ENC2F)
+uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкодер (ENC3F)
+uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
+
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC1F */
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояняя ENC2F */
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC3F */
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC4F */
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
@@ -3519,6 +3531,10 @@ void bt_initialize(void);
 void bt_enable(uint_fast8_t v);
 
 uint_fast8_t hamradio_get_ft8cn(void);
+
+void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
+void n7ddc_tune(void);
+unsigned n7ddc_get_swr(void);
 
 #ifdef __cplusplus
 }

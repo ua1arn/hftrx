@@ -26,11 +26,6 @@ display_clear(void)
 {
 }
 
-// для framebufer дисплеев - вытолкнуть кэш память
-void display_flush(void)
-{
-}
-
 void
 colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
@@ -94,33 +89,6 @@ display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast
 	return xpix + 1;
 }
 
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-}
-
-void display_plotstart(
-	uint_fast16_t dy	// Высота окна в пикселях
-	)
-{
-}
-
-void display_plotstop(void)
-{
-}
-
-void display_plot(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// Размеры окна в пикселях
-	uint_fast16_t dy,
-	uint_fast16_t xpix,	// начало области рисования
-	uint_fast16_t ypix
-	)
-{
-
-}
-
-
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void
@@ -130,10 +98,6 @@ display_reset(void)
 
 /* Разряжаем конденсаторы питания */
 void display_uninitialize(void)
-{
-}
-
-void colmain_nextfb(void)
 {
 }
 

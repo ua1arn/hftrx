@@ -808,6 +808,13 @@
 
 /*--END OF LV_CONF_H--*/
 
+
+
+void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+void indev_enc2_spool(void);
+void board_tsc_initialize(void);
+void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
+
 #endif /*LV_CONF_H*/
 
 #endif /*End of "Content enable"*/

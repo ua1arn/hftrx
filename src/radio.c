@@ -22,7 +22,6 @@
 #include "bootloader.h"
 
 #include "dspdefines.h"
-//#define WITHAUTOTUNER_N7DDCALGO  1  /* использование алгоритма N7DDC */
 
 #if WITHUSEUSBBT
 #include "btstack.h"
@@ -2917,11 +2916,9 @@ struct oneant_tag {
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
 #if WITHAUTOTUNER
-#if ! WITHAUTOTUNER_N7DDCEXT
 	uint8_t tunercap;
 	uint8_t tunerind;
 	uint8_t tunertype;
-#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	uint8_t tunerwork;
 #endif /* WITHAUTOTUNER */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
@@ -4073,7 +4070,11 @@ enum
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
+#if WITHNOAUDIPROC
+	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
+#else /* WITHNOAUDIPROC */
 	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
+#endif /* WITHNOAUDIPROC */
 
 	#if WITHCOMPRESSOR
 		static uint_fast8_t gcompressor_attack = 30;
@@ -4855,12 +4856,136 @@ static void bring_rfvolume(void)
 
 static uint_fast16_t actbring_swr;
 
-// Начать отображение текущего положения регулировки RF
+// Начать отображение перегруза по SWR
 static void bring_swr(void)
 {
 	actbring_swr = actbring_time;
 }
 
+///
+
+
+static uint_fast16_t actbring_ENC1F;
+static uint_fast16_t actbring_ENC2F;
+static uint_fast16_t actbring_ENC3F;
+static uint_fast16_t actbring_ENC4F;
+
+static void bring_enc1f(void)
+{
+	actbring_ENC1F = actbring_time;
+}
+
+static void bring_enc2f(void)
+{
+	actbring_ENC2F = actbring_time;
+}
+
+static void bring_enc3f(void)
+{
+	actbring_ENC3F = actbring_time;
+}
+
+static void bring_enc4f(void)
+{
+	actbring_ENC4F = actbring_time;
+}
+
+// Вращали 3-й валкодер (ENC1F)
+uint_fast8_t hamradio_get_bringENC1F(void)
+{
+	return actbring_ENC1F != 0;
+}
+// Вращали 3-й валкодер (ENC2F)
+uint_fast8_t hamradio_get_bringENC2F(void)
+{
+	return actbring_ENC2F != 0;
+}
+// Вращали 3-й валкодер (ENC3F)
+uint_fast8_t hamradio_get_bringENC3F(void)
+{
+	return actbring_ENC3F != 0;
+}
+// Вращали 3-й валкодер (ENC4F)
+uint_fast8_t hamradio_get_bringENC4F(void)
+{
+	return actbring_ENC4F != 0;
+}
+
+///
+
+
+typedef struct encfnitem_tag
+{
+	int v;
+	const char * label;
+} encfnitem_t;
+
+static const encfnitem_t enclabelsENC1FN [] =
+{
+		{
+			0,
+			"AF gain"
+		},
+		{
+			0,
+			"RF gain"
+		},
+};
+
+static const encfnitem_t enclabelsENC2FN [] =
+{
+		{
+			0,
+			"ENC3F"
+		},
+};
+
+static const encfnitem_t enclabelsENC3FN [] =
+{
+		{
+			0,
+			"ENC3F"
+		},
+};
+
+static const encfnitem_t enclabelsENC4FN [] =
+{
+		{
+			0,
+			"ENC4F"
+		},
+};
+
+static uint_fast8_t enc1f_sel;
+static uint_fast8_t enc2f_sel;
+static uint_fast8_t enc3f_sel;
+static uint_fast8_t enc4f_sel;
+
+/* получить надпись для отображения состояние ENC1F */
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC1FN [enc1f_sel].label);
+}
+
+/* получить надпись для отображения состояние ENC2F */
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
+}
+
+/* получить надпись для отображения состояние ENC3F */
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
+}
+
+/* получить надпись для отображения состояние ENC4F */
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t len)
+{
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC4FN [enc4f_sel].label);
+}
+
+///
 static uint_fast16_t actbring_tuneA;
 
 // Начать отображение текущей частоты на водопаде
@@ -4875,12 +5000,36 @@ uint_fast8_t hamradio_get_bringtuneA(void)
 	return actbring_tuneA != 0;
 }
 
+///
+static uint_fast16_t actbring_tuneB;
+
+// Начать отображение текущей частоты на водопаде
+static void bring_tuneB(void)
+{
+	actbring_tuneB = actbring_time;
+}
+
+// Разрешить отображение текущей частоты на водопаде
+uint_fast8_t hamradio_get_bringtuneB(void)
+{
+	return actbring_tuneB != 0;
+}
+
+static uint_fast16_t actbring_tuneB;
+
 static void bringtimers(void)
 {
 	actbring_afvolume = actbring_afvolume ? (actbring_afvolume - 1) : 0;
 	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
 	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
+	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
 	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
+
+	actbring_ENC1F = actbring_ENC1F ? (actbring_ENC1F - 1) : 0;	// енкодер ENC1F
+	actbring_ENC2F = actbring_ENC2F ? (actbring_ENC2F - 1) : 0;	// енкодер ENC2F
+	actbring_ENC3F = actbring_ENC3F ? (actbring_ENC3F - 1) : 0;	// енкодер ENC3F
+	actbring_ENC4F = actbring_ENC4F ? (actbring_ENC4F - 1) : 0;	// енкодер ENC4F
+
 }
 
 #if WITHAUTOTUNER
@@ -4891,571 +5040,6 @@ enum phases
 	PHASE_DONE,
 	PHASE_CONTINUE
 };
-
-#if WITHAUTOTUNER_N7DDCALGO
-
-// N7DDC code.
-// Taken from:
-// https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards/blob/master/ATU_100_EXT_board/FirmWare_PIC18F2520/2520_EXT_board_sources_V_3.2/main.h
-
-// Main.h
-// David Fainitski
-// ATU-100 project 2016
-
-//
-static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0, L_linear = 0,
-		C_linear = 0, L_q = 7, C_q = 7, D_correction = 1,
-		L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
-static unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
-static int Rel_Del, min_for_start, max_for_start, max_swr;
-static int SWR_n7ddc, PWR_n7ddc, P_max, swr_a;
-static unsigned char rready = 0, p_cnt = 0;
-//
-//void btn_push(void);
-//void lcd_prep(void);
-//void lcd_swr(int);
-//void lcd_pwr(void);
-void show_pwr(int pmax, int swr);
-void lcd_ind(void);
-//void crypto(void);
-//void show_reset(void);
-//void cells_init(void);
-//void test_init(void);
-//void button_proc(void);
-//void button_proc_test(void);
-//void button_delay(void);
-//void show_loss(void);
-//
-//void atu_reset(void);
-//int get_reverse(void);
-//int get_forward(void);
-//int correction(int);
-//void get_swr_n7ddc(void);
-//void get_pwr_n7ddc(void);
-//void set_sw(char);
-//void coarse_cap(void);
-//void sharp_cap(void);
-//void sharp_ind(void);
-//void coarse_tune(void);
-//void tune(void);
-//void sub_tune(void);
-//
-// Variables
-static int SWR_fixed_old = 0, work_int;
-static char work_char, work_str[7], work_str_2[7];
-static float Forward;
-static int Power =0, Power_old = 10000;
-static int SWR_old = 10000;
-static char type, Soft_tune = 0, Auto = 0, Track = 0;
-static char bypas = 0, cap_mem = 0, ind_mem = 0, SW_mem = 0, Auto_mem = 0;
-static int Auto_delta;
-static char Restart = 0, Test = 0, lcd_prep_short = 0;
-static char L = 1, but= 0;
-static int Cap1, Cap2, Cap3, Cap4, Cap5, Cap6, Cap7;
-static int Ind1, Ind2, Ind3, Ind4, Ind5, Ind6, Ind7;
-static char Dysp_delay = 0;
-static int dysp_cnt = 0;
-static float dysp_cnt_mult = 2.3;
-static char Loss_mode = 0, Fid_loss;
-static char dysp = 1;
-//bit tune_btn_release;
-
-// Заглушка
-void show_pwr(int pmax, int swr)
-{
-
-}
-
-// Заглушка
-void lcd_ind(void)
-{
-
-}
-
-static int correction(int input) {
-	if (input <= 80)
-		return 0;
-	if (input <= 171)
-		input += 244;
-	else if (input <= 328)
-		input += 254;
-	else if (input <= 582)
-		input += 280;
-	else if (input <= 820)
-		input += 297;
-	else if (input <= 1100)
-		input += 310;
-	else if (input <= 2181)
-		input += 430;
-	else if (input <= 3322)
-		input += 484;
-	else if (input <= 4623)
-		input += 530;
-	else if (input <= 5862)
-		input += 648;
-	else if (input <= 7146)
-		input += 743;
-	else if (input <= 8502)
-		input += 800;
-	else if (input <= 10500)
-		input += 840;
-	else
-		input += 860;
-	//
-	return input;
-}
-
-//
-
-static int get_reverse(void) {
-	return board_getadc_unfiltered_truevalue(REF) / 16 * 4.883;
-}
-//
-
-static int get_forward(void) {
-	int Forward;
-	Forward = board_getadc_unfiltered_truevalue(FWD) / 16;
-	if (Forward > 1000)
-		Overload = 1;
-	else
-		Overload = 0;
-	return Forward * 4.883;
-}
-
-static void get_pwr_n7ddc(void) {
-	long Forward, Reverse;
-	float p;
-	/* asm CLRWDT */;
-	//
-	Forward = get_forward();
-	Reverse = get_reverse();
-	if (D_correction == 1)
-		p = correction(Forward * 3);
-	else
-		p = Forward * 3;
-	//
-	if (Reverse >= Forward)
-		Forward = 999;
-	else {
-		Forward = ((Forward + Reverse) * 100) / (Forward - Reverse);
-		if (Forward > 999)
-			Forward = 999;
-	}
-	//
-	p = p * K_Mult / 1000.0;   // mV to Volts on Input
-	p = p / 1.414;
-	if (P_High == 1)
-		p = p * p / 50;     // 0 - 1500 ( 1500 Watts)
-	else
-		p = p * p / 5;               // 0 - 1510 (151.0 Watts)
-	p = p + 0.5;    // rounding
-	//
-	PWR_n7ddc = p;
-	if (Forward < 100)
-		SWR_n7ddc = 999;
-	else
-		SWR_n7ddc = Forward;
-	return;
-}
-
-static void get_swr_n7ddc(void) {
-	get_pwr_n7ddc();
-	if (p_cnt != 100) {
-		p_cnt += 1;
-		if (PWR_n7ddc > P_max)
-			P_max = PWR_n7ddc;
-	} else {
-		p_cnt = 0;
-		show_pwr(P_max, SWR_n7ddc);
-		P_max = 0;
-	}
-	while (PWR_n7ddc < min_for_start || (PWR_n7ddc > max_for_start && max_for_start > 0)) { // waiting for good power
-		/* asm CLRWDT */;
-		get_pwr_n7ddc();
-		if (p_cnt != 100) {
-			p_cnt += 1;
-			if (PWR_n7ddc > P_max)
-				P_max = PWR_n7ddc;
-		} else {
-			p_cnt = 0;
-			show_pwr(P_max, SWR_n7ddc);
-			P_max = 0;
-		}
-		//
-//		if (Button(&PORTB, 0, 5, 1))
-//			rready = 1;
-//		if (rready == 1 & Button(&PORTB, 0, 5, 0)) { //  press button  Tune
-//			show_reset();
-//			SWR_n7ddc = 0;
-//			return;
-//		}
-	} //  good power
-	return;
-}
-
-static void set_ind(char Ind) {  // 0 - 31
-//	if (L_invert == 0) {
-//		Ind_005 = Ind.B0;
-//		Ind_011 = Ind.B1;
-//		Ind_022 = Ind.B2;
-//		Ind_045 = Ind.B3;
-//		Ind_1 = Ind.B4;
-//		Ind_22 = Ind.B5;
-//		Ind_45 = Ind.B6;
-//		//
-//	} else {
-//		Ind_005 = ~Ind.B0;
-//		Ind_011 = ~Ind.B1;
-//		Ind_022 = ~Ind.B2;
-//		Ind_045 = ~Ind.B3;
-//		Ind_1 = ~Ind.B4;
-//		Ind_22 = ~Ind.B5;
-//		Ind_45 = ~Ind.B6;
-//		//
-//	}
-	local_delay_ms(Rel_Del);
-}
-
-static void set_cap(char Cap) { // 0 - 31
-//	Cap_10 = Cap.B0;
-//	Cap_22 = Cap.B1;
-//	Cap_47 = Cap.B2;
-//	Cap_100 = Cap.B3;
-//	Cap_220 = Cap.B4;
-//	Cap_470 = Cap.B5;
-//	Cap_1000 = Cap.B6;
-	//
-	local_delay_ms(Rel_Del);
-}
-
-static void set_sw(char SW) {  // 0 - IN,  1 - OUT
-//	Cap_sw = SW;
-	local_delay_ms(Rel_Del);
-}
-
-static void atu_reset(void) {
-	ind = 0;
-	cap = 0;
-	set_ind(ind);
-	set_cap(cap);
-	local_delay_ms(Rel_Del);
-}
-
-static void coarse_cap(void) {
-	char step = 3;
-	char count;
-	int min_swr;
-
-	cap = 0;
-	set_cap(cap);
-	step_cap = step;
-	get_swr_n7ddc();
-	if (SWR_n7ddc == 0)
-		return;
-	min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-	for (count = step; count <= 31;) {
-		set_cap(count * C_mult);
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc < min_swr) {
-			min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-			cap = count * C_mult;
-			step_cap = step;
-			if (SWR_n7ddc < 120)
-				break;
-			count += step;
-			if (C_linear == 0 && count == 9)
-				count = 8;
-			else if (C_linear == 0 && count == 17) {
-				count = 16;
-				step = 4;
-			}
-		} else
-			break;
-	}
-	set_cap(cap);
-	return;
-}
-
-static void coarse_tune(void) {
-	char step = 3;
-	char count;
-	char mem_cap, mem_step_cap;
-	int min_swr;
-
-	mem_cap = 0;
-	step_ind = step;
-	mem_step_cap = 3;
-	min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-	for (count = 0; count <= 31;) {
-		set_ind(count * L_mult);
-		coarse_cap();
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc < min_swr) {
-			min_swr = SWR_n7ddc + SWR_n7ddc / 20;
-			ind = count * L_mult;
-			mem_cap = cap;
-			step_ind = step;
-			mem_step_cap = step_cap;
-			if (SWR_n7ddc < 120)
-				break;
-			count += step;
-			if (L_linear == 0 && count == 9)
-				count = 8;
-			else if (L_linear == 0 && count == 17) {
-				count = 16;
-				step = 4;
-			}
-		} else
-			break;
-	}
-	cap = mem_cap;
-	set_ind(ind);
-	set_cap(cap);
-	step_cap = mem_step_cap;
-	local_delay_ms(10);
-	return;
-}
-
-static void sharp_cap(void) {
-	char range, count, max_range, min_range;
-	int min_SWR;	/* mgs: renamed */
-	range = step_cap * C_mult;
-	//
-	max_range = cap + range;
-	if (max_range > 32 * C_mult - 1)
-		max_range = 32 * C_mult - 1;
-	if (cap > range)
-		min_range = cap - range;
-	else
-		min_range = 0;
-	cap = min_range;
-	set_cap(cap);
-	get_swr_n7ddc();
-	if (SWR_n7ddc == 0)
-		return;
-	min_SWR = SWR_n7ddc;
-	for (count = min_range + C_mult; count <= max_range; count += C_mult) {
-		set_cap(count);
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc < min_SWR) {
-			min_SWR = SWR_n7ddc;
-			cap = count;
-			if (SWR_n7ddc < 120)
-				break;
-		} else
-			break;
-	}
-	set_cap(cap);
-	return;
-}
-
-static void sharp_ind(void) {
-	char range, count, max_range, min_range;
-	int min_SWR;
-	range = step_ind * L_mult;
-	//
-	max_range = ind + range;
-	if (max_range > 32 * L_mult - 1)
-		max_range = 32 * L_mult - 1;
-	if (ind > range)
-		min_range = ind - range;
-	else
-		min_range = 0;
-	ind = min_range;
-	set_ind(ind);
-	get_swr_n7ddc();
-	if (SWR_n7ddc == 0)
-		return;
-	min_SWR = SWR_n7ddc;
-	for (count = min_range + L_mult; count <= max_range; count += L_mult) {
-		set_ind(count);
-		get_swr_n7ddc();
-		if (SWR_n7ddc == 0)
-			return;
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc >= min_SWR) {
-			local_delay_ms(10);
-			get_swr_n7ddc();
-		}
-		if (SWR_n7ddc < min_SWR) {
-			min_SWR = SWR_n7ddc;
-			ind = count;
-			if (SWR_n7ddc < 120)
-				break;
-		} else
-			break;
-	}
-	set_ind(ind);
-	return;
-}
-
-static void sub_tune(void) {
-	int swr_mem, ind_mem, cap_mem;
-	//
-	swr_mem = SWR_n7ddc;
-	coarse_tune();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_ind();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_cap();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	//
-	if (SWR_n7ddc < 200 && SWR_n7ddc < swr_mem && (swr_mem - SWR_n7ddc) > 100)
-		return;
-	swr_mem = SWR_n7ddc;
-	ind_mem = ind;
-	cap_mem = cap;
-	//
-	if (SW == 1)
-		SW = 0;
-	else
-		SW = 1;
-	atu_reset();
-	set_sw(SW);
-	local_delay_ms(50);
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	//
-	coarse_tune();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_ind();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	sharp_cap();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 120)
-		return;
-	//
-	if (SWR_n7ddc > swr_mem) {
-		if (SW == 1)
-			SW = 0;
-		else
-			SW = 1;
-		set_sw(SW);
-		ind = ind_mem;
-		cap = cap_mem;
-		set_ind(ind);
-		set_cap(cap);
-		SWR_n7ddc = swr_mem;
-	}
-	//
-	/* asm CLRWDT */;
-	return;
-}
-
-static void auto_tune_n7ddc(void) {
-	//int swr_mem, ind_mem, cap_mem, sw_mem;
-	/* asm CLRWDT */;
-	//
-	p_cnt = 0;
-	P_max = 0;
-	//
-	rready = 0;
-	get_swr_n7ddc();
-	if (SWR_n7ddc < 110)
-		return;
-	atu_reset();
-	if (Loss_ind == 0)
-		lcd_ind();
-	local_delay_ms(50);
-	get_swr_n7ddc();
-	swr_a = SWR_n7ddc;
-	if (SWR_n7ddc < 110)
-		return;
-	if (max_swr > 110 && SWR_n7ddc > max_swr)
-		return;
-	//
-
-	sub_tune();
-	if (SWR_n7ddc == 0) {
-		atu_reset();
-		return;
-	}
-	if (SWR_n7ddc < 120)
-		return;
-	if (C_q == 5 && L_q == 5)
-		return;
-
-	if (L_q > 5) {
-		step_ind = L_mult;
-		L_mult = 1;
-		sharp_ind();
-	}
-	if (SWR_n7ddc < 120)
-		return;
-	if (C_q > 5) {
-		step_cap = C_mult;  // = C_mult
-		C_mult = 1;
-		sharp_cap();
-	}
-	if (L_q == 5)
-		L_mult = 1;
-	else if (L_q == 6)
-		L_mult = 2;
-	else if (L_q == 7)
-		L_mult = 4;
-	if (C_q == 5)
-		C_mult = 1;
-	else if (C_q == 6)
-		C_mult = 2;
-	else if (C_q == 7)
-		C_mult = 4;
-	/* asm CLRWDT */;
-	return;
-}
-
-#endif /* WITHAUTOTUNER_N7DDCALGO */
 
 // что удалось достичь в результате перебора
 typedef struct tunerstate
@@ -5502,6 +5086,7 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
+// SWR=1 = озвращаем 0
 static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
@@ -5516,6 +5101,47 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 		return fs;		// SWR is infinite
 
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * TUS_SWRMIN / (f - r) - TUS_SWRMIN;
+	return swr10 > fs ? fs : swr10;
+}
+
+
+
+#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
+
+// SWR=1: return 100
+unsigned n7ddc_get_swr_calman(void)
+{
+	adcvalholder_t f, r;
+
+	f = board_getswrpair_filtered(& r, swrcalibr);
+
+	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
+	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
+	val_tmp_0 = fval;
+
+	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
+	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
+	val_tmp_1 = rval;
+
+	if (fval > rval)
+		return ((fval + rval) * 100) / (fval - rval);
+	else
+		return 900;
+}
+
+// SWR=1: return 100
+unsigned n7ddc_get_swr(void)
+{
+	const uint_fast8_t fs = 900;
+	adcvalholder_t r;
+	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+
+	if (f < minforward)
+		return 100;	// SWR=1
+	else if (f <= r)
+		return fs;		// SWR is infinite
+
+	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
 	return swr10 > fs ? fs : swr10;
 }
 
@@ -5598,9 +5224,7 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
-#if WITHAUTOTUNER_N7DDCEXT
-
-#else
+#if 1
 
 static void scanminLk_init(void)
 {
@@ -5718,41 +5342,49 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 
 #if WITHAUTOTUNER_N7DDCALGO
 
-/* отсюда не возвращаемся пока не настроится тюнер */
-static void auto_tune(void)
+void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 {
-	auto_tune_n7ddc();
+	tunerind = inductors;
+	tunercap = capcitors;
+	tunertype = type;
+
+	updateboard_tuner();
+	local_delay_ms(gtunerdelay);
 }
 
-#elif WITHAUTOTUNER_N7DDCEXT
-
-/* отсюда не возвращаемся пока не настроится тюнер */
-static void auto_tune(void)
-{
-	TP();
-}
+static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_ant;
 
 
 static void auto_tune0_init(void)
 {
+	const uint_fast8_t tx = 1;
+	const uint_fast8_t bi = getbankindex_tx(tx);
+	const uint_fast32_t freq = gfreqs [bi];
+	tuner_bg = getfreqbandgroup(freq);
+	tuner_ant = geteffantenna(freq);
+}
+
+static enum phases auto_tune0(void)
+{
+
+	n7ddc_tune();
+
+	storetuner(tuner_bg, tuner_ant);
+	return PHASE_DONE;
 }
 
 static void auto_tune1_init(void)
 {
 }
 
-static void auto_tune2_init(void)
-{
-}
-
-static enum phases auto_tune0(void)
-{
-	return PHASE_DONE;
-}
-
 static enum phases auto_tune1(void)
 {
 	return PHASE_DONE;
+}
+
+static void auto_tune2_init(void)
+{
 }
 
 static enum phases auto_tune2(void)
@@ -5765,7 +5397,7 @@ static enum phases auto_tune3(void)
 	return PHASE_DONE;
 }
 
-#else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */
+#else /* WITHAUTOTUNER_N7DDCALGO */
 
 static uint_fast8_t tuner_bg;
 static uint_fast8_t tuner_ant;
@@ -8346,7 +7978,7 @@ void display2_fnlabel9(
 		display_2fmenus_P(x, y, 1, text, text);
 		break;
 	}
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // FUNC item value
@@ -8373,7 +8005,7 @@ void display2_fnvalue9(
 		display_2fmenus(x, y, 1, b, b);
 		break;
 	}
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // split, lock, s-meter display
@@ -8394,11 +8026,11 @@ loadsavedstate(void)
 	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
 #elif WITHNOTCHFREQ
 	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
+#endif /* WITHNOTCHONOFF */
 #if WITHENCODER2
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
 #endif /* WITHENCODER2 */
-#endif /* WITHNOTCHONOFF */
 	menuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), menuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 #if WITHSPLIT
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
@@ -13458,9 +13090,19 @@ display2_redrawbarstimed(
 		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHSWRMTR && WITHTX
-		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
-		board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
-		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		if (FWD == PWRI)
+		{
+			const adcvalholder_t f = board_getadc_unfiltered_truevalue(FWD);
+			board_adc_store_data(PWRMRRIX, f);
+			board_adc_store_data(FWDMRRIX, f);
+			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		}
+		else
+		{
+			board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
+			board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
+			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		}
 	#elif WITHPWRMTR && WITHTX
 		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
 	#endif /* WITHSWRMTR || WITHPWRMTR */
@@ -13632,11 +13274,15 @@ directctlupdate(
 			changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
 		}
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-	#if WITHENCODER3
+	#if WITHENCODER_1F
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder4, BOARD_ENCODER4_DIVIDE);
-			switch (0)
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+			if (delta)
+				bring_enc1f();
+			switch (enc1f_sel)
 			{
+			default:
+				break;
 			case 0:
 				/* установка громкости */
 				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1), CAT_AG_INDEX, bring_afvolume);
@@ -13647,7 +13293,43 @@ directctlupdate(
 				break;
 			}
 		}
-	#endif /* 0 */
+	#endif /* WITHENCODER_1F */
+	#if WITHENCODER_2F
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
+			if (delta)
+				bring_enc2f();
+			switch (enc2f_sel)
+			{
+			default:
+				break;
+			}
+		}
+	#endif /* WITHENCODER_2F */
+	#if WITHENCODER_3F
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
+			if (delta)
+				bring_enc3f();
+			switch (enc3f_sel)
+			{
+			default:
+				break;
+			}
+		}
+	#endif /* WITHENCODER_3F */
+	#if WITHENCODER_4F
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+			if (delta)
+				bring_enc4f();
+			switch (enc4f_sel)
+			{
+			default:
+				break;
+			}
+		}
+	#endif /* WITHENCODER_4F */
 
 	#if CTLSTYLE_RA4YBO_V3
 		{
@@ -17364,11 +17046,11 @@ modifysettings(
 
 #if WITHKEYBOARD
 
-#if WITHENCODER2 && ! WITHENCODER3
+#if WITHENCODER2
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes_B(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes_B(& js, genc1div * gencderate, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -17381,7 +17063,7 @@ modifysettings(
 				kbready = 1;
 			}
 		}
-#endif /* WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHENCODER2 */
 
 		if (kbready != 0)
 		{
@@ -17472,13 +17154,13 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
-#if WITHENCODER2 && ! WITHENCODER3
+#if WITHENCODER2
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHENCODER2 */
 
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
@@ -17493,13 +17175,13 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
-#if WITHENCODER2 && ! WITHENCODER3
+#if WITHENCODER2
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHENCODER2 */
 
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
@@ -17949,7 +17631,7 @@ static void menu_print(void)
         	#elif CPUSTYLE_R7S721
 					msg = PSTR("RENESAS");
 			#elif CPUSTYLE_T113 || CPUSTYLE_F133
-					switch (allwnrt113_get_chipid())
+					switch (allwnr_t113_get_chipid())
 					{
 					default:
 					case CHIPID_T113S3: 		msg = PSTR("Allw T113-S3"); break;
@@ -18268,6 +17950,54 @@ process_key_menuset0(uint_fast8_t kbch)
 		uif_key_click_banddown();
 		return 1;	// требуется обновление индикатора
 
+#if WITHENCODER_1F
+	case KBD_ENC1F_PRESS:
+		bring_enc1f();
+		enc1f_sel = calc_next(enc1f_sel, 0, ARRAY_SIZE(enclabelsENC1FN) - 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC1F_HOLD:
+		bring_enc1f();
+		//enc1f_sel = calc_next(enc1f_sel, 0, ARRAY_SIZE(enclabelsENC1FN) - 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_1F */
+
+#if WITHENCODER_2F
+	case KBD_ENC2F_PRESS:
+		bring_enc2f();
+		enc2f_sel = calc_next(enc2f_sel, 0, ARRAY_SIZE(enclabelsENC2FN) - 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC2F_HOLD:
+		bring_enc2f();
+		//enc2f_sel = calc_next(enc2f_sel, 0, ARRAY_SIZE(enclabelsENC2FN) - 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_2F */
+
+#if WITHENCODER_3F
+	case KBD_ENC3F_PRESS:
+		bring_enc3f();
+		enc3f_sel = calc_next(enc3f_sel, 0, ARRAY_SIZE(enclabelsENC3FN) - 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC3F_HOLD:
+		bring_enc3f();
+		//enc3f_sel = calc_next(enc3f_sel, 0, ARRAY_SIZE(enclabelsENC3FN) - 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_3F */
+
+#if WITHENCODER_4F
+	case KBD_ENC4F_PRESS:
+		bring_enc4f();
+		enc4f_sel = calc_next(enc4f_sel, 0, ARRAY_SIZE(enclabelsENC4FN) - 1);
+		return 1;	// требуется обновление индикатора
+
+	case KBD_ENC4F_HOLD:
+		bring_enc4f();
+		//enc4f_sel = calc_next(enc4f_sel, 0, ARRAY_SIZE(enclabelsENC4FN) - 1);
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER_4F */
+
 #if WITHDIRECTBANDS
 
 	case KBD_CODE_BAND_1M8:
@@ -18427,7 +18157,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
 
-#if WITHENCODER2 && ! WITHENCODER3
+#if WITHENCODER2
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			gui_put_keyb_code(KBD_ENC2_PRESS);
@@ -18447,7 +18177,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 			uif_encoder2_hold();
 			return 1;
 	#endif /* WITHTOUCHGUI */
-#endif /* WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHENCODER2 */
 
 #if WITHTX
 
@@ -19243,10 +18973,10 @@ void initialize2(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
-
+#if ! LCDMODE_DUMMY
 		display_at_P(0, 0, msg);
 		colmain_nextfb();
-
+#endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
 		for (;;)
 			;
@@ -19583,9 +19313,9 @@ application_initialize(void)
 #if WITHTOUCHGUI
 	gui_initialize();
 
-#if WITHENCODER2 && ! WITHENCODER3
+#if WITHENCODER2
 	hamradio_gui_enc2_update();
-#endif /* WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 #if WITHUSEUSBBT
 	bt_initialize();
@@ -19838,6 +19568,13 @@ hamradio_main_step(void)
 		// работа с пользователем
 		{
 			processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
+			#if WITHAUTOTUNER
+			if (reqautotune != 0 && gtx != 0)
+			{
+				sthrl = STHRL_TUNE;
+				break;
+			}
+			#endif /* WITHAUTOTUNER */
 			#if 1//WITHSPLIT
 				const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
 				const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
@@ -19845,12 +19582,6 @@ hamradio_main_step(void)
 				const uint_fast8_t bi_main = getbankindex_ab(0);		/* состояние выбора банков может измениться */
 				const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
 			#endif /* WITHSPLIT, WITHSPLITEX */
-			#if WITHAUTOTUNER
-			if (reqautotune != 0)
-			{
-				sthrl = STHRL_TUNE;
-			}
-			#endif /* WITHAUTOTUNER */
 
 			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
@@ -19895,29 +19626,31 @@ hamradio_main_step(void)
 	#endif /* WITHUSEAUDIOREC */
 
 			uint_fast8_t jumpsize;
-			uint_fast8_t jumpsize2;
-			int_least16_t nrotate;
-			int_least16_t nrotate2;
+			uint_fast8_t jumpsize_sub;
+			int_least16_t nrotate_main;
+			int_least16_t nrotate_sub;
 
 			/* переход по частоте - шаг берется из gstep_ENC1 */
 			#if WITHBBOX && defined (WITHBBOXFREQ)
-				nrotate = 0;	// ignore encoder
-				nrotate2 = 0;	// ignore encoder
+				nrotate_main = 0;	// ignore encoder
+				nrotate_sub = 0;	// ignore encoder
 			#else
-				nrotate = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
-				nrotate2 = getRotateHiRes_B(& jumpsize2, genc2div);
+				nrotate_main = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
+				nrotate_sub = getRotateHiRes_B(& jumpsize_sub, genc1div * gencderate, genc2div);
 			#endif
 
-			if (uif_encoder2_rotate(nrotate2))
+#if WITHENCODER2
+			if (uif_encoder2_rotate(nrotate_sub))
 			{
-				nrotate2 = 0;
-#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3
+				nrotate_sub = 0;
+#if WITHTOUCHGUI
 				hamradio_gui_enc2_update();
 				display2_mode_subset(0);
-#else
+#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHTOUCHGUI */
 			}
+#endif /*WITHENCODER2 */
 	#if WITHDEBUG && ! defined (HAVE_BTSTACK_STDIN)
 			{
 //				void zdataprint(void);
@@ -19996,51 +19729,52 @@ hamradio_main_step(void)
 			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
 
-			if (nrotate != 0)
+			if (nrotate_main || nrotate_sub)
+			{
 				bring_tuneA();	// Начать отображение текущей частоты на водопаде
+				bring_tuneB();	// Начать отображение текущей частоты на водопаде
+			}
 
 			if (lockmode == 0)
 			{
 				uint_fast8_t freqchanged = 0;
 
 				/* Обработка накопленного количества импульсов от валкодера */
-				if (nrotate < 0)
+				if (nrotate_main < 0)
 				{
 					/* Валкодер A: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep_ENC1 * jumpsize * - nrotate), gstep_ENC1, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate), gstep_ENC1, TUNE_BOTTOM);
+					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep_ENC1 * jumpsize * - nrotate_main), gstep_ENC1, tune_bottom(bi_main));
+					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate_main), gstep_ENC1, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
-				else if (nrotate > 0)
+				else if (nrotate_main > 0)
 				{
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep_ENC1 * jumpsize * nrotate), gstep_ENC1, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate), gstep_ENC1, TUNE_TOP);
+					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep_ENC1 * jumpsize * nrotate_main), gstep_ENC1, tune_top(bi_main));
+					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate_main), gstep_ENC1, TUNE_TOP);
 					freqchanged = 1;
 				}
-#if ! WITHTOUCHGUI
-				if (nrotate2 != 0)
-					bring_tuneA();	// Начать отображение текущей частоты на водопаде
 
-				if (nrotate2 < 0)
+#if ! WITHTOUCHGUI
+				/* Обработка накопленного количества импульсов от валкодера */
+				if (nrotate_sub < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep_ENC2 * jumpsize2 * - nrotate2), gstep_ENC2, tune_bottom(bi_sub));
-					//gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - (jumpsize2 * - nrotate2), gstep_ENC1, TUNE_BOTTOM);
+					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep_ENC2 * jumpsize_sub * - nrotate_sub), gstep_ENC2, tune_bottom(bi_sub));
 					freqchanged = 1;
 				}
-				else if (nrotate2 > 0)
+				else if (nrotate_sub > 0)
 				{
 					/* Валкодер B: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep_ENC2 * jumpsize2 * nrotate2), gstep_ENC2, tune_top(bi_sub));
-					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep_ENC2, TUNE_TOP);
+					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep_ENC2 * jumpsize_sub * nrotate_sub), gstep_ENC2, tune_top(bi_sub));
 					freqchanged = 1;
 				}
 #endif /* ! WITHTOUCHGUI */
+
 				if (freqchanged != 0)
 				{
 					// Ограничение по скорости обновления дисплея уже заложено в него
@@ -20048,9 +19782,10 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3
-			gui_set_encoder2_rotate(nrotate2);
-#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3 */
+
+#if WITHTOUCHGUI && WITHENCODER2
+			gui_set_encoder2_rotate(nrotate_sub);
+#endif /* WITHTOUCHGUI && WITHENCODER2 */
 
 #if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
@@ -21379,7 +21114,7 @@ void hamradio_save_gui_settings(const void * ptrv)
 	}
 }
 
-#if WITHENCODER2 && ! WITHENCODER3
+#if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
@@ -21389,11 +21124,11 @@ void hamradio_gui_enc2_update(void)
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
 }
-#else /* WITHENCODER2 && ! WITHENCODER3 */
+#else /* WITHENCODER2 */
 void hamradio_gui_enc2_update(void)
 {
 }
-#endif /* WITHENCODER2 && ! WITHENCODER3 */
+#endif /* WITHENCODER2 */
 
 #if WITHTX
 

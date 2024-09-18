@@ -1061,15 +1061,16 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_CWMSG3,		KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_MAX,			' ', },		// 9  F2
 	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_MAX,			' ', },		// 10 F1
-	{ KIF_NONE,		KBD_ENC4_PRESS,			KBD_ENC4_HOLD,			' ', },		// 11 2nd small encoder (encoder4 object) ENCF3
+	//{ KIF_NONE,		KBD_ENC2F_PRESS,		KBD_ENC2F_HOLD,			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// 12 DISPLAY/MENU
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 13 BAND UP
-	{ KIF_NONE,		KBD_ENC5_PRESS,			KBD_ENC5_HOLD,			' ', },		// 14 3rd small encoder (encoder5 object) ENCF3
-	{ KIF_NONE,		KBD_ENC6_PRESS,			KBD_ENC6_HOLD,			' ', },		// 15 4th small encoder (encoder6 object) ENCF4
+	{ KIF_NONE,		KBD_ENC3F_PRESS,		KBD_ENC3F_HOLD,			' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
+	{ KIF_NONE,		KBD_ENC4F_PRESS,		KBD_ENC4F_HOLD,			' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
 	{ KIF_NONE,		KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// 17 RIT
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_MAX,			' ', },		// 18 A/B
-	{ KIF_NONE,		KBD_ENC3_PRESS,			KBD_ENC3_HOLD,			' ', },		// 19 1st small encoder (encoder3 object) ENCF1
+	{ KIF_NONE,		KBD_ENC1F_PRESS,		KBD_ENC1F_HOLD,			' ', },		// 19 RF/SPD - 1st small encoder (encoder_ENC1F object)
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/IPO ATT/PRE
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// 21 ANT1/ANT2
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// 22 TUNER BYP/ATU START

@@ -82,6 +82,7 @@ typedef enum IRQn
     TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller */
     TCON0_IRQn = 118,                                 /*!< TCON0 TCON0 interrupt */
     TCON1_IRQn = 119,                                 /*!< TCON1 TCON1 interrupt */
+    HDMI_TX0_IRQn = 120,                              /*!< HDMI_TX  */
     DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top */
     GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 */
     GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 */
@@ -184,7 +185,8 @@ typedef enum IRQn
 #define MIPI_DSI_BASE ((uintptr_t) 0x01CA0000)        /*!< MIPI_DSI  Base */
 #define MIPI_DSI_PHY_BASE ((uintptr_t) 0x01CA1000)    /*!< MIPI_DSI_PHY  Base */
 #define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI De-interlaced Base */
-#define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI  Base */
+#define HDMI_TX0_BASE ((uintptr_t) 0x01EE0000)        /*!< HDMI_TX  Base */
+#define HDMI_PHY_BASE ((uintptr_t) 0x01EF0000)        /*!< HDMI_PHY  Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC  Base */
 #define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER  Base */
 #define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< R_INTC  Base */
@@ -1172,6 +1174,561 @@ typedef __PACKED_STRUCT GPU_Type
     __IO uint32_t MALI200_MGMT_PERFMON_BASE [0x00F];  /*!< Offset 0x10B4 MALI200_REG_ADDR_MGMT_PERFMON_BASE */
     __IO uint32_t MALI200_REG_SIZEOF_REGISTER_BANK;   /*!< Offset 0x10F0 MALI200_REG_SIZEOF_REGISTER_BANK */
 } GPU_TypeDef; /* size of structure = 0x10F4 */
+/*
+ * @brief HDMI_PHY
+ */
+/*!< HDMI_PHY  */
+typedef __PACKED_STRUCT HDMI_PHY_Type
+{
+    __IO uint32_t DBG_CTRL;                           /*!< Offset 0x000 DBG_CTRL */
+    __IO uint32_t REXT_CTRL;                          /*!< Offset 0x004 REXT_CTRL */
+         uint32_t reserved_0x008 [0x0002];
+    __IO uint32_t READ_EN;                            /*!< Offset 0x010 READ_EN */
+    __IO uint32_t UNSCRAMBLE;                         /*!< Offset 0x014 UNSCRAMBLE */
+         uint32_t reserved_0x018 [0x0002];
+    __IO uint32_t ANA_CFG1;                           /*!< Offset 0x020 ANA_CFG1 */
+    __IO uint32_t ANA_CFG2;                           /*!< Offset 0x024 ANA_CFG2 */
+    __IO uint32_t ANA_CFG3;                           /*!< Offset 0x028 ANA_CFG3 */
+    __IO uint32_t PLL_CFG1;                           /*!< Offset 0x02C ANA_CFG1 */
+    __IO uint32_t PLL_CFG2;                           /*!< Offset 0x030 PLL_CFG2 */
+    __IO uint32_t PLL_CFG3;                           /*!< Offset 0x034 PLL_CFG3 */
+    __IO uint32_t ANA_STS;                            /*!< Offset 0x038 ANA_STS */
+    __IO uint32_t CEC;                                /*!< Offset 0x03C CEC */
+         uint32_t reserved_0x040 [0x03EE];
+    __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
+    __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
+} HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief HDMI_TX
+ */
+/*!< HDMI_TX  */
+typedef __PACKED_STRUCT HDMI_TX_Type
+{
+    __IO uint8_t  HDMI_DESIGN_ID;                     /*!< Offset 0x000  */
+    __IO uint8_t  HDMI_REVISION_ID;                   /*!< Offset 0x001  */
+    __IO uint8_t  HDMI_PRODUCT_ID0;                   /*!< Offset 0x002  */
+    __IO uint8_t  HDMI_PRODUCT_ID1;                   /*!< Offset 0x003  */
+    __IO uint8_t  HDMI_CONFIG0_ID;                    /*!< Offset 0x004  */
+    __IO uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
+    __IO uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
+    __IO uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
+         uint32_t reserved_0x008 [0x003E];
+    __IO uint8_t  HDMI_IH_FC_STAT0;                   /*!< Offset 0x100  */
+    __IO uint8_t  HDMI_IH_FC_STAT1;                   /*!< Offset 0x101  */
+    __IO uint8_t  HDMI_IH_FC_STAT2;                   /*!< Offset 0x102  */
+    __IO uint8_t  HDMI_IH_AS_STAT0;                   /*!< Offset 0x103  */
+    __IO uint8_t  HDMI_IH_PHY_STAT0;                  /*!< Offset 0x104  */
+    __IO uint8_t  HDMI_IH_I2CM_STAT0;                 /*!< Offset 0x105  */
+    __IO uint8_t  HDMI_IH_CEC_STAT0;                  /*!< Offset 0x106  */
+    __IO uint8_t  HDMI_IH_VP_STAT0;                   /*!< Offset 0x107  */
+    __IO uint8_t  HDMI_IH_I2CMPHY_STAT0;              /*!< Offset 0x108  */
+    __IO uint8_t  HDMI_IH_AHBDMAAUD_STAT0;            /*!< Offset 0x109  */
+         uint8_t reserved_0x10A [0x0076];
+    __IO uint8_t  HDMI_IH_MUTE_FC_STAT0;              /*!< Offset 0x180  */
+    __IO uint8_t  HDMI_IH_MUTE_FC_STAT1;              /*!< Offset 0x181  */
+    __IO uint8_t  HDMI_IH_MUTE_FC_STAT2;              /*!< Offset 0x182  */
+    __IO uint8_t  HDMI_IH_MUTE_AS_STAT0;              /*!< Offset 0x183  */
+    __IO uint8_t  HDMI_IH_MUTE_PHY_STAT0;             /*!< Offset 0x184  */
+    __IO uint8_t  HDMI_IH_MUTE_I2CM_STAT0;            /*!< Offset 0x185  */
+    __IO uint8_t  HDMI_IH_MUTE_CEC_STAT0;             /*!< Offset 0x186  */
+    __IO uint8_t  HDMI_IH_MUTE_VP_STAT0;              /*!< Offset 0x187  */
+    __IO uint8_t  HDMI_IH_MUTE_I2CMPHY_STAT0;         /*!< Offset 0x188  */
+    __IO uint8_t  HDMI_IH_MUTE_AHBDMAAUD_STAT0;       /*!< Offset 0x189  */
+         uint8_t reserved_0x18A [0x0075];
+    __IO uint8_t  HDMI_IH_MUTE;                       /*!< Offset 0x1FF  */
+    __IO uint8_t  HDMI_TX_INVID0;                     /*!< Offset 0x200  */
+    __IO uint8_t  HDMI_TX_INSTUFFING;                 /*!< Offset 0x201  */
+    __IO uint8_t  HDMI_TX_GYDATA0;                    /*!< Offset 0x202  */
+    __IO uint8_t  HDMI_TX_GYDATA1;                    /*!< Offset 0x203  */
+    __IO uint8_t  HDMI_TX_RCRDATA0;                   /*!< Offset 0x204  */
+    __IO uint8_t  HDMI_TX_RCRDATA1;                   /*!< Offset 0x205  */
+    __IO uint8_t  HDMI_TX_BCBDATA0;                   /*!< Offset 0x206  */
+    __IO uint8_t  HDMI_TX_BCBDATA1;                   /*!< Offset 0x207  */
+         uint32_t reserved_0x208 [0x017E];
+    __IO uint8_t  HDMI_VP_STATUS;                     /*!< Offset 0x800  */
+    __IO uint8_t  HDMI_VP_PR_CD;                      /*!< Offset 0x801  */
+    __IO uint8_t  HDMI_VP_STUFF;                      /*!< Offset 0x802  */
+    __IO uint8_t  HDMI_VP_REMAP;                      /*!< Offset 0x803  */
+    __IO uint8_t  HDMI_VP_CONF;                       /*!< Offset 0x804  */
+    __IO uint8_t  HDMI_VP_STAT;                       /*!< Offset 0x805  */
+    __IO uint8_t  HDMI_VP_INT;                        /*!< Offset 0x806  */
+    __IO uint8_t  HDMI_VP_MASK;                       /*!< Offset 0x807  */
+    __IO uint8_t  HDMI_VP_POL;                        /*!< Offset 0x808  */
+         uint8_t reserved_0x809 [0x07F7];
+    __IO uint8_t  HDMI_FC_INVIDCONF;                  /*!< Offset 0x1000  */
+    __IO uint8_t  HDMI_FC_INHACTV0;                   /*!< Offset 0x1001  */
+    __IO uint8_t  HDMI_FC_INHACTV1;                   /*!< Offset 0x1002  */
+    __IO uint8_t  HDMI_FC_INHBLANK0;                  /*!< Offset 0x1003  */
+    __IO uint8_t  HDMI_FC_INHBLANK1;                  /*!< Offset 0x1004  */
+    __IO uint8_t  HDMI_FC_INVACTV0;                   /*!< Offset 0x1005  */
+    __IO uint8_t  HDMI_FC_INVACTV1;                   /*!< Offset 0x1006  */
+    __IO uint8_t  HDMI_FC_INVBLANK;                   /*!< Offset 0x1007  */
+    __IO uint8_t  HDMI_FC_HSYNCINDELAY0;              /*!< Offset 0x1008  */
+    __IO uint8_t  HDMI_FC_HSYNCINDELAY1;              /*!< Offset 0x1009  */
+    __IO uint8_t  HDMI_FC_HSYNCINWIDTH0;              /*!< Offset 0x100A  */
+    __IO uint8_t  HDMI_FC_HSYNCINWIDTH1;              /*!< Offset 0x100B  */
+    __IO uint8_t  HDMI_FC_VSYNCINDELAY;               /*!< Offset 0x100C  */
+    __IO uint8_t  HDMI_FC_VSYNCINWIDTH;               /*!< Offset 0x100D  */
+    __IO uint8_t  HDMI_FC_INFREQ0;                    /*!< Offset 0x100E  */
+    __IO uint8_t  HDMI_FC_INFREQ1;                    /*!< Offset 0x100F  */
+    __IO uint8_t  HDMI_FC_INFREQ2;                    /*!< Offset 0x1010  */
+    __IO uint8_t  HDMI_FC_CTRLDUR;                    /*!< Offset 0x1011  */
+    __IO uint8_t  HDMI_FC_EXCTRLDUR;                  /*!< Offset 0x1012  */
+    __IO uint8_t  HDMI_FC_EXCTRLSPAC;                 /*!< Offset 0x1013  */
+    __IO uint8_t  HDMI_FC_CH0PREAM;                   /*!< Offset 0x1014  */
+    __IO uint8_t  HDMI_FC_CH1PREAM;                   /*!< Offset 0x1015  */
+    __IO uint8_t  HDMI_FC_CH2PREAM;                   /*!< Offset 0x1016  */
+    __IO uint8_t  HDMI_FC_AVICONF3;                   /*!< Offset 0x1017  */
+    __IO uint8_t  HDMI_FC_GCP;                        /*!< Offset 0x1018  */
+    __IO uint8_t  HDMI_FC_AVICONF0;                   /*!< Offset 0x1019  */
+    __IO uint8_t  HDMI_FC_AVICONF1;                   /*!< Offset 0x101A  */
+    __IO uint8_t  HDMI_FC_AVICONF2;                   /*!< Offset 0x101B  */
+    __IO uint8_t  HDMI_FC_AVIVID;                     /*!< Offset 0x101C  */
+    __IO uint8_t  HDMI_FC_AVIETB0;                    /*!< Offset 0x101D  */
+    __IO uint8_t  HDMI_FC_AVIETB1;                    /*!< Offset 0x101E  */
+    __IO uint8_t  HDMI_FC_AVISBB0;                    /*!< Offset 0x101F  */
+    __IO uint8_t  HDMI_FC_AVISBB1;                    /*!< Offset 0x1020  */
+    __IO uint8_t  HDMI_FC_AVIELB0;                    /*!< Offset 0x1021  */
+    __IO uint8_t  HDMI_FC_AVIELB1;                    /*!< Offset 0x1022  */
+    __IO uint8_t  HDMI_FC_AVISRB0;                    /*!< Offset 0x1023  */
+    __IO uint8_t  HDMI_FC_AVISRB1;                    /*!< Offset 0x1024  */
+    __IO uint8_t  HDMI_FC_AUDICONF0;                  /*!< Offset 0x1025  */
+    __IO uint8_t  HDMI_FC_AUDICONF1;                  /*!< Offset 0x1026  */
+    __IO uint8_t  HDMI_FC_AUDICONF2;                  /*!< Offset 0x1027  */
+    __IO uint8_t  HDMI_FC_AUDICONF3;                  /*!< Offset 0x1028  */
+    __IO uint8_t  HDMI_FC_VSDIEEEID0;                 /*!< Offset 0x1029  */
+    __IO uint8_t  HDMI_FC_VSDSIZE;                    /*!< Offset 0x102A  */
+         uint8_t reserved_0x102B [0x0005];
+    __IO uint8_t  HDMI_FC_VSDIEEEID1;                 /*!< Offset 0x1030  */
+    __IO uint8_t  HDMI_FC_VSDIEEEID2;                 /*!< Offset 0x1031  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD0;                /*!< Offset 0x1032  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD1;                /*!< Offset 0x1033  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD2;                /*!< Offset 0x1034  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD3;                /*!< Offset 0x1035  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD4;                /*!< Offset 0x1036  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD5;                /*!< Offset 0x1037  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD6;                /*!< Offset 0x1038  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD7;                /*!< Offset 0x1039  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD8;                /*!< Offset 0x103A  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD9;                /*!< Offset 0x103B  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD10;               /*!< Offset 0x103C  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD11;               /*!< Offset 0x103D  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD12;               /*!< Offset 0x103E  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD13;               /*!< Offset 0x103F  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD14;               /*!< Offset 0x1040  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD15;               /*!< Offset 0x1041  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD16;               /*!< Offset 0x1042  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD17;               /*!< Offset 0x1043  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD18;               /*!< Offset 0x1044  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD19;               /*!< Offset 0x1045  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD20;               /*!< Offset 0x1046  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD21;               /*!< Offset 0x1047  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD22;               /*!< Offset 0x1048  */
+    __IO uint8_t  HDMI_FC_VSDPAYLOAD23;               /*!< Offset 0x1049  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME0;             /*!< Offset 0x104A  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME1;             /*!< Offset 0x104B  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME2;             /*!< Offset 0x104C  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME3;             /*!< Offset 0x104D  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME4;             /*!< Offset 0x104E  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME5;             /*!< Offset 0x104F  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME6;             /*!< Offset 0x1050  */
+    __IO uint8_t  HDMI_FC_SPDVENDORNAME7;             /*!< Offset 0x1051  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME0;            /*!< Offset 0x1052  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME1;            /*!< Offset 0x1053  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME2;            /*!< Offset 0x1054  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME3;            /*!< Offset 0x1055  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME4;            /*!< Offset 0x1056  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME5;            /*!< Offset 0x1057  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME6;            /*!< Offset 0x1058  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME7;            /*!< Offset 0x1059  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME8;            /*!< Offset 0x105A  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME9;            /*!< Offset 0x105B  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME10;           /*!< Offset 0x105C  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME11;           /*!< Offset 0x105D  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME12;           /*!< Offset 0x105E  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME13;           /*!< Offset 0x105F  */
+    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME14;           /*!< Offset 0x1060  */
+    __IO uint8_t  HDMI_FC_SPDPRODUCTNAME15;           /*!< Offset 0x1061  */
+    __IO uint8_t  HDMI_FC_SPDDEVICEINF;               /*!< Offset 0x1062  */
+    __IO uint8_t  HDMI_FC_AUDSCONF;                   /*!< Offset 0x1063  */
+    __IO uint8_t  HDMI_FC_AUDSSTAT;                   /*!< Offset 0x1064  */
+         uint8_t reserved_0x1065 [0x000B];
+    __IO uint8_t  HDMI_FC_DATACH0FILL;                /*!< Offset 0x1070  */
+    __IO uint8_t  HDMI_FC_DATACH1FILL;                /*!< Offset 0x1071  */
+    __IO uint8_t  HDMI_FC_DATACH2FILL;                /*!< Offset 0x1072  */
+    __IO uint8_t  HDMI_FC_CTRLQHIGH;                  /*!< Offset 0x1073  */
+    __IO uint8_t  HDMI_FC_CTRLQLOW;                   /*!< Offset 0x1074  */
+    __IO uint8_t  HDMI_FC_ACP0;                       /*!< Offset 0x1075  */
+    __IO uint8_t  HDMI_FC_ACP28;                      /*!< Offset 0x1076  */
+    __IO uint8_t  HDMI_FC_ACP27;                      /*!< Offset 0x1077  */
+    __IO uint8_t  HDMI_FC_ACP26;                      /*!< Offset 0x1078  */
+    __IO uint8_t  HDMI_FC_ACP25;                      /*!< Offset 0x1079  */
+    __IO uint8_t  HDMI_FC_ACP24;                      /*!< Offset 0x107A  */
+    __IO uint8_t  HDMI_FC_ACP23;                      /*!< Offset 0x107B  */
+    __IO uint8_t  HDMI_FC_ACP22;                      /*!< Offset 0x107C  */
+    __IO uint8_t  HDMI_FC_ACP21;                      /*!< Offset 0x107D  */
+    __IO uint8_t  HDMI_FC_ACP20;                      /*!< Offset 0x107E  */
+    __IO uint8_t  HDMI_FC_ACP19;                      /*!< Offset 0x107F  */
+    __IO uint8_t  HDMI_FC_ACP18;                      /*!< Offset 0x1080  */
+    __IO uint8_t  HDMI_FC_ACP17;                      /*!< Offset 0x1081  */
+    __IO uint8_t  HDMI_FC_ACP16;                      /*!< Offset 0x1082  */
+    __IO uint8_t  HDMI_FC_ACP15;                      /*!< Offset 0x1083  */
+    __IO uint8_t  HDMI_FC_ACP14;                      /*!< Offset 0x1084  */
+    __IO uint8_t  HDMI_FC_ACP13;                      /*!< Offset 0x1085  */
+    __IO uint8_t  HDMI_FC_ACP12;                      /*!< Offset 0x1086  */
+    __IO uint8_t  HDMI_FC_ACP11;                      /*!< Offset 0x1087  */
+    __IO uint8_t  HDMI_FC_ACP10;                      /*!< Offset 0x1088  */
+    __IO uint8_t  HDMI_FC_ACP9;                       /*!< Offset 0x1089  */
+    __IO uint8_t  HDMI_FC_ACP8;                       /*!< Offset 0x108A  */
+    __IO uint8_t  HDMI_FC_ACP7;                       /*!< Offset 0x108B  */
+    __IO uint8_t  HDMI_FC_ACP6;                       /*!< Offset 0x108C  */
+    __IO uint8_t  HDMI_FC_ACP5;                       /*!< Offset 0x108D  */
+    __IO uint8_t  HDMI_FC_ACP4;                       /*!< Offset 0x108E  */
+    __IO uint8_t  HDMI_FC_ACP3;                       /*!< Offset 0x108F  */
+    __IO uint8_t  HDMI_FC_ACP2;                       /*!< Offset 0x1090  */
+    __IO uint8_t  HDMI_FC_ACP1;                       /*!< Offset 0x1091  */
+    __IO uint8_t  HDMI_FC_ISCR1_0;                    /*!< Offset 0x1092  */
+    __IO uint8_t  HDMI_FC_ISCR1_16;                   /*!< Offset 0x1093  */
+    __IO uint8_t  HDMI_FC_ISCR1_15;                   /*!< Offset 0x1094  */
+    __IO uint8_t  HDMI_FC_ISCR1_14;                   /*!< Offset 0x1095  */
+    __IO uint8_t  HDMI_FC_ISCR1_13;                   /*!< Offset 0x1096  */
+    __IO uint8_t  HDMI_FC_ISCR1_12;                   /*!< Offset 0x1097  */
+    __IO uint8_t  HDMI_FC_ISCR1_11;                   /*!< Offset 0x1098  */
+    __IO uint8_t  HDMI_FC_ISCR1_10;                   /*!< Offset 0x1099  */
+    __IO uint8_t  HDMI_FC_ISCR1_9;                    /*!< Offset 0x109A  */
+    __IO uint8_t  HDMI_FC_ISCR1_8;                    /*!< Offset 0x109B  */
+    __IO uint8_t  HDMI_FC_ISCR1_7;                    /*!< Offset 0x109C  */
+    __IO uint8_t  HDMI_FC_ISCR1_6;                    /*!< Offset 0x109D  */
+    __IO uint8_t  HDMI_FC_ISCR1_5;                    /*!< Offset 0x109E  */
+    __IO uint8_t  HDMI_FC_ISCR1_4;                    /*!< Offset 0x109F  */
+    __IO uint8_t  HDMI_FC_ISCR1_3;                    /*!< Offset 0x10A0  */
+    __IO uint8_t  HDMI_FC_ISCR1_2;                    /*!< Offset 0x10A1  */
+    __IO uint8_t  HDMI_FC_ISCR1_1;                    /*!< Offset 0x10A2  */
+    __IO uint8_t  HDMI_FC_ISCR2_15;                   /*!< Offset 0x10A3  */
+    __IO uint8_t  HDMI_FC_ISCR2_14;                   /*!< Offset 0x10A4  */
+    __IO uint8_t  HDMI_FC_ISCR2_13;                   /*!< Offset 0x10A5  */
+    __IO uint8_t  HDMI_FC_ISCR2_12;                   /*!< Offset 0x10A6  */
+    __IO uint8_t  HDMI_FC_ISCR2_11;                   /*!< Offset 0x10A7  */
+    __IO uint8_t  HDMI_FC_ISCR2_10;                   /*!< Offset 0x10A8  */
+    __IO uint8_t  HDMI_FC_ISCR2_9;                    /*!< Offset 0x10A9  */
+    __IO uint8_t  HDMI_FC_ISCR2_8;                    /*!< Offset 0x10AA  */
+    __IO uint8_t  HDMI_FC_ISCR2_7;                    /*!< Offset 0x10AB  */
+    __IO uint8_t  HDMI_FC_ISCR2_6;                    /*!< Offset 0x10AC  */
+    __IO uint8_t  HDMI_FC_ISCR2_5;                    /*!< Offset 0x10AD  */
+    __IO uint8_t  HDMI_FC_ISCR2_4;                    /*!< Offset 0x10AE  */
+    __IO uint8_t  HDMI_FC_ISCR2_3;                    /*!< Offset 0x10AF  */
+    __IO uint8_t  HDMI_FC_ISCR2_2;                    /*!< Offset 0x10B0  */
+    __IO uint8_t  HDMI_FC_ISCR2_1;                    /*!< Offset 0x10B1  */
+    __IO uint8_t  HDMI_FC_ISCR2_0;                    /*!< Offset 0x10B2  */
+    __IO uint8_t  HDMI_FC_DATAUTO0;                   /*!< Offset 0x10B3  */
+    __IO uint8_t  HDMI_FC_DATAUTO1;                   /*!< Offset 0x10B4  */
+    __IO uint8_t  HDMI_FC_DATAUTO2;                   /*!< Offset 0x10B5  */
+    __IO uint8_t  HDMI_FC_DATMAN;                     /*!< Offset 0x10B6  */
+    __IO uint8_t  HDMI_FC_DATAUTO3;                   /*!< Offset 0x10B7  */
+    __IO uint8_t  HDMI_FC_RDRB0;                      /*!< Offset 0x10B8  */
+    __IO uint8_t  HDMI_FC_RDRB1;                      /*!< Offset 0x10B9  */
+    __IO uint8_t  HDMI_FC_RDRB2;                      /*!< Offset 0x10BA  */
+    __IO uint8_t  HDMI_FC_RDRB3;                      /*!< Offset 0x10BB  */
+    __IO uint8_t  HDMI_FC_RDRB4;                      /*!< Offset 0x10BC  */
+    __IO uint8_t  HDMI_FC_RDRB5;                      /*!< Offset 0x10BD  */
+    __IO uint8_t  HDMI_FC_RDRB6;                      /*!< Offset 0x10BE  */
+    __IO uint8_t  HDMI_FC_RDRB7;                      /*!< Offset 0x10BF  */
+         uint32_t reserved_0x10C0 [0x0004];
+    __IO uint8_t  HDMI_FC_STAT0;                      /*!< Offset 0x10D0  */
+    __IO uint8_t  HDMI_FC_INT0;                       /*!< Offset 0x10D1  */
+    __IO uint8_t  HDMI_FC_MASK0;                      /*!< Offset 0x10D2  */
+    __IO uint8_t  HDMI_FC_POL0;                       /*!< Offset 0x10D3  */
+    __IO uint8_t  HDMI_FC_STAT1;                      /*!< Offset 0x10D4  */
+    __IO uint8_t  HDMI_FC_INT1;                       /*!< Offset 0x10D5  */
+    __IO uint8_t  HDMI_FC_MASK1;                      /*!< Offset 0x10D6  */
+    __IO uint8_t  HDMI_FC_POL1;                       /*!< Offset 0x10D7  */
+    __IO uint8_t  HDMI_FC_STAT2;                      /*!< Offset 0x10D8  */
+    __IO uint8_t  HDMI_FC_INT2;                       /*!< Offset 0x10D9  */
+    __IO uint8_t  HDMI_FC_MASK2;                      /*!< Offset 0x10DA  */
+    __IO uint8_t  HDMI_FC_POL2;                       /*!< Offset 0x10DB  */
+         uint32_t reserved_0x10DC;
+    __IO uint8_t  HDMI_FC_PRCONF;                     /*!< Offset 0x10E0  */
+         uint8_t reserved_0x10E1 [0x001F];
+    __IO uint8_t  HDMI_FC_GMD_STAT;                   /*!< Offset 0x1100  */
+    __IO uint8_t  HDMI_FC_GMD_EN;                     /*!< Offset 0x1101  */
+    __IO uint8_t  HDMI_FC_GMD_UP;                     /*!< Offset 0x1102  */
+    __IO uint8_t  HDMI_FC_GMD_CONF;                   /*!< Offset 0x1103  */
+    __IO uint8_t  HDMI_FC_GMD_HB;                     /*!< Offset 0x1104  */
+    __IO uint8_t  HDMI_FC_GMD_PB0;                    /*!< Offset 0x1105  */
+    __IO uint8_t  HDMI_FC_GMD_PB1;                    /*!< Offset 0x1106  */
+    __IO uint8_t  HDMI_FC_GMD_PB2;                    /*!< Offset 0x1107  */
+    __IO uint8_t  HDMI_FC_GMD_PB3;                    /*!< Offset 0x1108  */
+    __IO uint8_t  HDMI_FC_GMD_PB4;                    /*!< Offset 0x1109  */
+    __IO uint8_t  HDMI_FC_GMD_PB5;                    /*!< Offset 0x110A  */
+    __IO uint8_t  HDMI_FC_GMD_PB6;                    /*!< Offset 0x110B  */
+    __IO uint8_t  HDMI_FC_GMD_PB7;                    /*!< Offset 0x110C  */
+    __IO uint8_t  HDMI_FC_GMD_PB8;                    /*!< Offset 0x110D  */
+    __IO uint8_t  HDMI_FC_GMD_PB9;                    /*!< Offset 0x110E  */
+    __IO uint8_t  HDMI_FC_GMD_PB10;                   /*!< Offset 0x110F  */
+    __IO uint8_t  HDMI_FC_GMD_PB11;                   /*!< Offset 0x1110  */
+    __IO uint8_t  HDMI_FC_GMD_PB12;                   /*!< Offset 0x1111  */
+    __IO uint8_t  HDMI_FC_GMD_PB13;                   /*!< Offset 0x1112  */
+    __IO uint8_t  HDMI_FC_GMD_PB14;                   /*!< Offset 0x1113  */
+    __IO uint8_t  HDMI_FC_GMD_PB15;                   /*!< Offset 0x1114  */
+    __IO uint8_t  HDMI_FC_GMD_PB16;                   /*!< Offset 0x1115  */
+    __IO uint8_t  HDMI_FC_GMD_PB17;                   /*!< Offset 0x1116  */
+    __IO uint8_t  HDMI_FC_GMD_PB18;                   /*!< Offset 0x1117  */
+    __IO uint8_t  HDMI_FC_GMD_PB19;                   /*!< Offset 0x1118  */
+    __IO uint8_t  HDMI_FC_GMD_PB20;                   /*!< Offset 0x1119  */
+    __IO uint8_t  HDMI_FC_GMD_PB21;                   /*!< Offset 0x111A  */
+    __IO uint8_t  HDMI_FC_GMD_PB22;                   /*!< Offset 0x111B  */
+    __IO uint8_t  HDMI_FC_GMD_PB23;                   /*!< Offset 0x111C  */
+    __IO uint8_t  HDMI_FC_GMD_PB24;                   /*!< Offset 0x111D  */
+    __IO uint8_t  HDMI_FC_GMD_PB25;                   /*!< Offset 0x111E  */
+    __IO uint8_t  HDMI_FC_GMD_PB26;                   /*!< Offset 0x111F  */
+    __IO uint8_t  HDMI_FC_GMD_PB27;                   /*!< Offset 0x1120  */
+         uint8_t reserved_0x1121 [0x00DF];
+    __IO uint8_t  HDMI_FC_DBGFORCE;                   /*!< Offset 0x1200  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH0;                 /*!< Offset 0x1201  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH0;                 /*!< Offset 0x1202  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH0;                 /*!< Offset 0x1203  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH1;                 /*!< Offset 0x1204  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH1;                 /*!< Offset 0x1205  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH1;                 /*!< Offset 0x1206  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH2;                 /*!< Offset 0x1207  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH2;                 /*!< Offset 0x1208  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH2;                 /*!< Offset 0x1209  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH3;                 /*!< Offset 0x120A  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH3;                 /*!< Offset 0x120B  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH3;                 /*!< Offset 0x120C  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH4;                 /*!< Offset 0x120D  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH4;                 /*!< Offset 0x120E  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH4;                 /*!< Offset 0x120F  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH5;                 /*!< Offset 0x1210  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH5;                 /*!< Offset 0x1211  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH5;                 /*!< Offset 0x1212  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH6;                 /*!< Offset 0x1213  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH6;                 /*!< Offset 0x1214  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH6;                 /*!< Offset 0x1215  */
+    __IO uint8_t  HDMI_FC_DBGAUD0CH7;                 /*!< Offset 0x1216  */
+    __IO uint8_t  HDMI_FC_DBGAUD1CH7;                 /*!< Offset 0x1217  */
+    __IO uint8_t  HDMI_FC_DBGAUD2CH7;                 /*!< Offset 0x1218  */
+    __IO uint8_t  HDMI_FC_DBGTMDS0;                   /*!< Offset 0x1219  */
+    __IO uint8_t  HDMI_FC_DBGTMDS1;                   /*!< Offset 0x121A  */
+    __IO uint8_t  HDMI_FC_DBGTMDS2;                   /*!< Offset 0x121B  */
+         uint32_t reserved_0x121C [0x0779];
+    __IO uint8_t  HDMI_PHY_CONF0;                     /*!< Offset 0x3000  */
+    __IO uint8_t  HDMI_PHY_TST0;                      /*!< Offset 0x3001  */
+    __IO uint8_t  HDMI_PHY_TST1;                      /*!< Offset 0x3002  */
+    __IO uint8_t  HDMI_PHY_TST2;                      /*!< Offset 0x3003  */
+    __IO uint8_t  HDMI_PHY_STAT0;                     /*!< Offset 0x3004  */
+    __IO uint8_t  HDMI_PHY_INT0;                      /*!< Offset 0x3005  */
+    __IO uint8_t  HDMI_PHY_MASK0;                     /*!< Offset 0x3006  */
+    __IO uint8_t  HDMI_PHY_POL0;                      /*!< Offset 0x3007  */
+         uint32_t reserved_0x3008 [0x0006];
+    __IO uint8_t  HDMI_PHY_I2CM_SLAVE_ADDR;           /*!< Offset 0x3020  */
+    __IO uint8_t  HDMI_PHY_I2CM_ADDRESS_ADDR;         /*!< Offset 0x3021  */
+    __IO uint8_t  HDMI_PHY_I2CM_DATAO_1_ADDR;         /*!< Offset 0x3022  */
+    __IO uint8_t  HDMI_PHY_I2CM_DATAO_0_ADDR;         /*!< Offset 0x3023  */
+    __IO uint8_t  HDMI_PHY_I2CM_DATAI_1_ADDR;         /*!< Offset 0x3024  */
+    __IO uint8_t  HDMI_PHY_I2CM_DATAI_0_ADDR;         /*!< Offset 0x3025  */
+    __IO uint8_t  HDMI_PHY_I2CM_OPERATION_ADDR;       /*!< Offset 0x3026  */
+    __IO uint8_t  HDMI_PHY_I2CM_INT_ADDR;             /*!< Offset 0x3027  */
+    __IO uint8_t  HDMI_PHY_I2CM_CTLINT_ADDR;          /*!< Offset 0x3028  */
+    __IO uint8_t  HDMI_PHY_I2CM_DIV_ADDR;             /*!< Offset 0x3029  */
+    __IO uint8_t  HDMI_PHY_I2CM_SOFTRSTZ_ADDR;        /*!< Offset 0x302A  */
+    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR;   /*!< Offset 0x302B  */
+    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR;   /*!< Offset 0x302C  */
+    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR;   /*!< Offset 0x302D  */
+    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR;   /*!< Offset 0x302E  */
+    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR;   /*!< Offset 0x302F  */
+    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR;   /*!< Offset 0x3030  */
+    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR;   /*!< Offset 0x3031  */
+    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR;   /*!< Offset 0x3032  */
+         uint8_t reserved_0x3033 [0x00CD];
+    __IO uint8_t  HDMI_AUD_CONF0;                     /*!< Offset 0x3100  */
+    __IO uint8_t  HDMI_AUD_CONF1;                     /*!< Offset 0x3101  */
+    __IO uint8_t  HDMI_AUD_INT;                       /*!< Offset 0x3102  */
+    __IO uint8_t  HDMI_AUD_CONF2;                     /*!< Offset 0x3103  */
+         uint32_t reserved_0x3104 [0x003F];
+    __IO uint8_t  HDMI_AUD_N1;                        /*!< Offset 0x3200  */
+    __IO uint8_t  HDMI_AUD_N2;                        /*!< Offset 0x3201  */
+    __IO uint8_t  HDMI_AUD_N3;                        /*!< Offset 0x3202  */
+    __IO uint8_t  HDMI_AUD_CTS1;                      /*!< Offset 0x3203  */
+    __IO uint8_t  HDMI_AUD_CTS2;                      /*!< Offset 0x3204  */
+    __IO uint8_t  HDMI_AUD_CTS3;                      /*!< Offset 0x3205  */
+    __IO uint8_t  HDMI_AUD_INPUTCLKFS;                /*!< Offset 0x3206  */
+         uint8_t reserved_0x3207 [0x00FB];
+    __IO uint8_t  HDMI_AUD_SPDIFINT;                  /*!< Offset 0x3302  */
+         uint8_t reserved_0x3303 [0x00FD];
+    __IO uint8_t  HDMI_AUD_CONF0_HBR;                 /*!< Offset 0x3400  */
+    __IO uint8_t  HDMI_AUD_HBR_STATUS;                /*!< Offset 0x3401  */
+    __IO uint8_t  HDMI_AUD_HBR_INT;                   /*!< Offset 0x3402  */
+    __IO uint8_t  HDMI_AUD_HBR_POL;                   /*!< Offset 0x3403  */
+    __IO uint8_t  HDMI_AUD_HBR_MASK;                  /*!< Offset 0x3404  */
+         uint8_t reserved_0x3405 [0x00FB];
+    __IO uint8_t  HDMI_GP_CONF0;                      /*!< Offset 0x3500  */
+    __IO uint8_t  HDMI_GP_CONF1;                      /*!< Offset 0x3501  */
+    __IO uint8_t  HDMI_GP_CONF2;                      /*!< Offset 0x3502  */
+    __IO uint8_t  HDMI_GP_STAT;                       /*!< Offset 0x3503  */
+    __IO uint8_t  HDMI_GP_INT;                        /*!< Offset 0x3504  */
+    __IO uint8_t  HDMI_GP_MASK;                       /*!< Offset 0x3505  */
+    __IO uint8_t  HDMI_GP_POL;                        /*!< Offset 0x3506  */
+         uint8_t reserved_0x3507 [0x00F9];
+    __IO uint8_t  HDMI_AHB_DMA_CONF0;                 /*!< Offset 0x3600  */
+    __IO uint8_t  HDMI_AHB_DMA_START;                 /*!< Offset 0x3601  */
+    __IO uint8_t  HDMI_AHB_DMA_STOP;                  /*!< Offset 0x3602  */
+    __IO uint8_t  HDMI_AHB_DMA_THRSLD;                /*!< Offset 0x3603  */
+    __IO uint8_t  HDMI_AHB_DMA_STRADDR0;              /*!< Offset 0x3604  */
+    __IO uint8_t  HDMI_AHB_DMA_STRADDR1;              /*!< Offset 0x3605  */
+    __IO uint8_t  HDMI_AHB_DMA_STRADDR2;              /*!< Offset 0x3606  */
+    __IO uint8_t  HDMI_AHB_DMA_STRADDR3;              /*!< Offset 0x3607  */
+    __IO uint8_t  HDMI_AHB_DMA_STPADDR0;              /*!< Offset 0x3608  */
+    __IO uint8_t  HDMI_AHB_DMA_STPADDR1;              /*!< Offset 0x3609  */
+    __IO uint8_t  HDMI_AHB_DMA_STPADDR2;              /*!< Offset 0x360A  */
+    __IO uint8_t  HDMI_AHB_DMA_STPADDR3;              /*!< Offset 0x360B  */
+    __IO uint8_t  HDMI_AHB_DMA_BSTADDR0;              /*!< Offset 0x360C  */
+    __IO uint8_t  HDMI_AHB_DMA_BSTADDR1;              /*!< Offset 0x360D  */
+    __IO uint8_t  HDMI_AHB_DMA_BSTADDR2;              /*!< Offset 0x360E  */
+    __IO uint8_t  HDMI_AHB_DMA_BSTADDR3;              /*!< Offset 0x360F  */
+    __IO uint8_t  HDMI_AHB_DMA_MBLENGTH0;             /*!< Offset 0x3610  */
+    __IO uint8_t  HDMI_AHB_DMA_MBLENGTH1;             /*!< Offset 0x3611  */
+    __IO uint8_t  HDMI_AHB_DMA_STAT;                  /*!< Offset 0x3612  */
+    __IO uint8_t  HDMI_AHB_DMA_INT;                   /*!< Offset 0x3613  */
+    __IO uint8_t  HDMI_AHB_DMA_MASK;                  /*!< Offset 0x3614  */
+    __IO uint8_t  HDMI_AHB_DMA_POL;                   /*!< Offset 0x3615  */
+    __IO uint8_t  HDMI_AHB_DMA_CONF1;                 /*!< Offset 0x3616  */
+    __IO uint8_t  HDMI_AHB_DMA_BUFFSTAT;              /*!< Offset 0x3617  */
+    __IO uint8_t  HDMI_AHB_DMA_BUFFINT;               /*!< Offset 0x3618  */
+    __IO uint8_t  HDMI_AHB_DMA_BUFFMASK;              /*!< Offset 0x3619  */
+    __IO uint8_t  HDMI_AHB_DMA_BUFFPOL;               /*!< Offset 0x361A  */
+         uint8_t reserved_0x361B [0x09E5];
+    __IO uint8_t  HDMI_MC_SFRDIV;                     /*!< Offset 0x4000  */
+    __IO uint8_t  HDMI_MC_CLKDIS;                     /*!< Offset 0x4001  */
+    __IO uint8_t  HDMI_MC_SWRSTZ;                     /*!< Offset 0x4002  */
+    __IO uint8_t  HDMI_MC_OPCTRL;                     /*!< Offset 0x4003  */
+    __IO uint8_t  HDMI_MC_FLOWCTRL;                   /*!< Offset 0x4004  */
+    __IO uint8_t  HDMI_MC_PHYRSTZ;                    /*!< Offset 0x4005  */
+    __IO uint8_t  HDMI_MC_LOCKONCLOCK;                /*!< Offset 0x4006  */
+    __IO uint8_t  HDMI_MC_HEACPHY_RST;                /*!< Offset 0x4007  */
+         uint32_t reserved_0x4008 [0x003E];
+    __IO uint8_t  HDMI_CSC_CFG;                       /*!< Offset 0x4100  */
+    __IO uint8_t  HDMI_CSC_SCALE;                     /*!< Offset 0x4101  */
+    __IO uint8_t  HDMI_CSC_COEF_A1_MSB;               /*!< Offset 0x4102  */
+    __IO uint8_t  HDMI_CSC_COEF_A1_LSB;               /*!< Offset 0x4103  */
+    __IO uint8_t  HDMI_CSC_COEF_A2_MSB;               /*!< Offset 0x4104  */
+    __IO uint8_t  HDMI_CSC_COEF_A2_LSB;               /*!< Offset 0x4105  */
+    __IO uint8_t  HDMI_CSC_COEF_A3_MSB;               /*!< Offset 0x4106  */
+    __IO uint8_t  HDMI_CSC_COEF_A3_LSB;               /*!< Offset 0x4107  */
+    __IO uint8_t  HDMI_CSC_COEF_A4_MSB;               /*!< Offset 0x4108  */
+    __IO uint8_t  HDMI_CSC_COEF_A4_LSB;               /*!< Offset 0x4109  */
+    __IO uint8_t  HDMI_CSC_COEF_B1_MSB;               /*!< Offset 0x410A  */
+    __IO uint8_t  HDMI_CSC_COEF_B1_LSB;               /*!< Offset 0x410B  */
+    __IO uint8_t  HDMI_CSC_COEF_B2_MSB;               /*!< Offset 0x410C  */
+    __IO uint8_t  HDMI_CSC_COEF_B2_LSB;               /*!< Offset 0x410D  */
+    __IO uint8_t  HDMI_CSC_COEF_B3_MSB;               /*!< Offset 0x410E  */
+    __IO uint8_t  HDMI_CSC_COEF_B3_LSB;               /*!< Offset 0x410F  */
+    __IO uint8_t  HDMI_CSC_COEF_B4_MSB;               /*!< Offset 0x4110  */
+    __IO uint8_t  HDMI_CSC_COEF_B4_LSB;               /*!< Offset 0x4111  */
+    __IO uint8_t  HDMI_CSC_COEF_C1_MSB;               /*!< Offset 0x4112  */
+    __IO uint8_t  HDMI_CSC_COEF_C1_LSB;               /*!< Offset 0x4113  */
+    __IO uint8_t  HDMI_CSC_COEF_C2_MSB;               /*!< Offset 0x4114  */
+    __IO uint8_t  HDMI_CSC_COEF_C2_LSB;               /*!< Offset 0x4115  */
+    __IO uint8_t  HDMI_CSC_COEF_C3_MSB;               /*!< Offset 0x4116  */
+    __IO uint8_t  HDMI_CSC_COEF_C3_LSB;               /*!< Offset 0x4117  */
+    __IO uint8_t  HDMI_CSC_COEF_C4_MSB;               /*!< Offset 0x4118  */
+    __IO uint8_t  HDMI_CSC_COEF_C4_LSB;               /*!< Offset 0x4119  */
+         uint8_t reserved_0x411A [0x0EE6];
+    __IO uint8_t  HDMI_A_HDCPCFG0;                    /*!< Offset 0x5000  */
+    __IO uint8_t  HDMI_A_HDCPCFG1;                    /*!< Offset 0x5001  */
+    __IO uint8_t  HDMI_A_HDCPOBS0;                    /*!< Offset 0x5002  */
+    __IO uint8_t  HDMI_A_HDCPOBS1;                    /*!< Offset 0x5003  */
+    __IO uint8_t  HDMI_A_HDCPOBS2;                    /*!< Offset 0x5004  */
+    __IO uint8_t  HDMI_A_HDCPOBS3;                    /*!< Offset 0x5005  */
+    __IO uint8_t  HDMI_A_APIINTCLR;                   /*!< Offset 0x5006  */
+    __IO uint8_t  HDMI_A_APIINTSTAT;                  /*!< Offset 0x5007  */
+    __IO uint8_t  HDMI_A_APIINTMSK;                   /*!< Offset 0x5008  */
+    __IO uint8_t  HDMI_A_VIDPOLCFG;                   /*!< Offset 0x5009  */
+    __IO uint8_t  HDMI_A_OESSWCFG;                    /*!< Offset 0x500A  */
+    __IO uint8_t  HDMI_A_TIMER1SETUP0;                /*!< Offset 0x500B  */
+    __IO uint8_t  HDMI_A_TIMER1SETUP1;                /*!< Offset 0x500C  */
+    __IO uint8_t  HDMI_A_TIMER2SETUP0;                /*!< Offset 0x500D  */
+    __IO uint8_t  HDMI_A_TIMER2SETUP1;                /*!< Offset 0x500E  */
+    __IO uint8_t  HDMI_A_100MSCFG;                    /*!< Offset 0x500F  */
+    __IO uint8_t  HDMI_A_2SCFG0;                      /*!< Offset 0x5010  */
+    __IO uint8_t  HDMI_A_2SCFG1;                      /*!< Offset 0x5011  */
+    __IO uint8_t  HDMI_A_5SCFG0;                      /*!< Offset 0x5012  */
+    __IO uint8_t  HDMI_A_5SCFG1;                      /*!< Offset 0x5013  */
+    __IO uint8_t  HDMI_A_SRMVERLSB;                   /*!< Offset 0x5014  */
+    __IO uint8_t  HDMI_A_SRMVERMSB;                   /*!< Offset 0x5015  */
+    __IO uint8_t  HDMI_A_SRMCTRL;                     /*!< Offset 0x5016  */
+    __IO uint8_t  HDMI_A_SFRSETUP;                    /*!< Offset 0x5017  */
+    __IO uint8_t  HDMI_A_I2CHSETUP;                   /*!< Offset 0x5018  */
+    __IO uint8_t  HDMI_A_INTSETUP;                    /*!< Offset 0x5019  */
+    __IO uint8_t  HDMI_A_PRESETUP;                    /*!< Offset 0x501A  */
+         uint8_t reserved_0x501B [0x0005];
+    __IO uint8_t  HDMI_A_SRM_BASE;                    /*!< Offset 0x5020  */
+         uint8_t reserved_0x5021 [0x2CDF];
+    __IO uint8_t  HDMI_CEC_CTRL;                      /*!< Offset 0x7D00  */
+    __IO uint8_t  HDMI_CEC_STAT;                      /*!< Offset 0x7D01  */
+    __IO uint8_t  HDMI_CEC_MASK;                      /*!< Offset 0x7D02  */
+    __IO uint8_t  HDMI_CEC_POLARITY;                  /*!< Offset 0x7D03  */
+    __IO uint8_t  HDMI_CEC_INT;                       /*!< Offset 0x7D04  */
+    __IO uint8_t  HDMI_CEC_ADDR_L;                    /*!< Offset 0x7D05  */
+    __IO uint8_t  HDMI_CEC_ADDR_H;                    /*!< Offset 0x7D06  */
+    __IO uint8_t  HDMI_CEC_TX_CNT;                    /*!< Offset 0x7D07  */
+    __IO uint8_t  HDMI_CEC_RX_CNT;                    /*!< Offset 0x7D08  */
+         uint8_t reserved_0x7D09 [0x0007];
+    __IO uint8_t  HDMI_CEC_TX_DATA0;                  /*!< Offset 0x7D10  */
+    __IO uint8_t  HDMI_CEC_TX_DATA1;                  /*!< Offset 0x7D11  */
+    __IO uint8_t  HDMI_CEC_TX_DATA2;                  /*!< Offset 0x7D12  */
+    __IO uint8_t  HDMI_CEC_TX_DATA3;                  /*!< Offset 0x7D13  */
+    __IO uint8_t  HDMI_CEC_TX_DATA4;                  /*!< Offset 0x7D14  */
+    __IO uint8_t  HDMI_CEC_TX_DATA5;                  /*!< Offset 0x7D15  */
+    __IO uint8_t  HDMI_CEC_TX_DATA6;                  /*!< Offset 0x7D16  */
+    __IO uint8_t  HDMI_CEC_TX_DATA7;                  /*!< Offset 0x7D17  */
+    __IO uint8_t  HDMI_CEC_TX_DATA8;                  /*!< Offset 0x7D18  */
+    __IO uint8_t  HDMI_CEC_TX_DATA9;                  /*!< Offset 0x7D19  */
+    __IO uint8_t  HDMI_CEC_TX_DATA10;                 /*!< Offset 0x7D1A  */
+    __IO uint8_t  HDMI_CEC_TX_DATA11;                 /*!< Offset 0x7D1B  */
+    __IO uint8_t  HDMI_CEC_TX_DATA12;                 /*!< Offset 0x7D1C  */
+    __IO uint8_t  HDMI_CEC_TX_DATA13;                 /*!< Offset 0x7D1D  */
+    __IO uint8_t  HDMI_CEC_TX_DATA14;                 /*!< Offset 0x7D1E  */
+    __IO uint8_t  HDMI_CEC_TX_DATA15;                 /*!< Offset 0x7D1F  */
+    __IO uint8_t  HDMI_CEC_RX_DATA0;                  /*!< Offset 0x7D20  */
+    __IO uint8_t  HDMI_CEC_RX_DATA1;                  /*!< Offset 0x7D21  */
+    __IO uint8_t  HDMI_CEC_RX_DATA2;                  /*!< Offset 0x7D22  */
+    __IO uint8_t  HDMI_CEC_RX_DATA3;                  /*!< Offset 0x7D23  */
+    __IO uint8_t  HDMI_CEC_RX_DATA4;                  /*!< Offset 0x7D24  */
+    __IO uint8_t  HDMI_CEC_RX_DATA5;                  /*!< Offset 0x7D25  */
+    __IO uint8_t  HDMI_CEC_RX_DATA6;                  /*!< Offset 0x7D26  */
+    __IO uint8_t  HDMI_CEC_RX_DATA7;                  /*!< Offset 0x7D27  */
+    __IO uint8_t  HDMI_CEC_RX_DATA8;                  /*!< Offset 0x7D28  */
+    __IO uint8_t  HDMI_CEC_RX_DATA9;                  /*!< Offset 0x7D29  */
+    __IO uint8_t  HDMI_CEC_RX_DATA10;                 /*!< Offset 0x7D2A  */
+    __IO uint8_t  HDMI_CEC_RX_DATA11;                 /*!< Offset 0x7D2B  */
+    __IO uint8_t  HDMI_CEC_RX_DATA12;                 /*!< Offset 0x7D2C  */
+    __IO uint8_t  HDMI_CEC_RX_DATA13;                 /*!< Offset 0x7D2D  */
+    __IO uint8_t  HDMI_CEC_RX_DATA14;                 /*!< Offset 0x7D2E  */
+    __IO uint8_t  HDMI_CEC_RX_DATA15;                 /*!< Offset 0x7D2F  */
+    __IO uint8_t  HDMI_CEC_LOCK;                      /*!< Offset 0x7D30  */
+    __IO uint8_t  HDMI_CEC_WKUPCTRL;                  /*!< Offset 0x7D31  */
+         uint8_t reserved_0x7D32 [0x00CE];
+    __IO uint8_t  HDMI_I2CM_SLAVE;                    /*!< Offset 0x7E00  */
+    __IO uint8_t  HDMI_I2CM_ADDRESS;                  /*!< Offset 0x7E01  */
+    __IO uint8_t  HDMI_I2CM_DATAO;                    /*!< Offset 0x7E02  */
+    __IO uint8_t  HDMI_I2CM_DATAI;                    /*!< Offset 0x7E03  */
+    __IO uint8_t  HDMI_I2CM_OPERATION;                /*!< Offset 0x7E04  */
+    __IO uint8_t  HDMI_I2CM_INT;                      /*!< Offset 0x7E05  */
+    __IO uint8_t  HDMI_I2CM_CTLINT;                   /*!< Offset 0x7E06  */
+    __IO uint8_t  HDMI_I2CM_DIV;                      /*!< Offset 0x7E07  */
+    __IO uint8_t  HDMI_I2CM_SEGADDR;                  /*!< Offset 0x7E08  */
+    __IO uint8_t  HDMI_I2CM_SOFTRSTZ;                 /*!< Offset 0x7E09  */
+    __IO uint8_t  HDMI_I2CM_SEGPTR;                   /*!< Offset 0x7E0A  */
+    __IO uint8_t  HDMI_I2CM_SS_SCL_HCNT_1_ADDR;       /*!< Offset 0x7E0B  */
+    __IO uint8_t  HDMI_I2CM_SS_SCL_HCNT_0_ADDR;       /*!< Offset 0x7E0C  */
+    __IO uint8_t  HDMI_I2CM_SS_SCL_LCNT_1_ADDR;       /*!< Offset 0x7E0D  */
+    __IO uint8_t  HDMI_I2CM_SS_SCL_LCNT_0_ADDR;       /*!< Offset 0x7E0E  */
+    __IO uint8_t  HDMI_I2CM_FS_SCL_HCNT_1_ADDR;       /*!< Offset 0x7E0F  */
+    __IO uint8_t  HDMI_I2CM_FS_SCL_HCNT_0_ADDR;       /*!< Offset 0x7E10  */
+    __IO uint8_t  HDMI_I2CM_FS_SCL_LCNT_1_ADDR;       /*!< Offset 0x7E11  */
+    __IO uint8_t  HDMI_I2CM_FS_SCL_LCNT_0_ADDR;       /*!< Offset 0x7E12  */
+} HDMI_TX_TypeDef; /* size of structure = 0x7E13 */
 /*
  * @brief HSTIMER
  */
@@ -2605,6 +3162,8 @@ typedef __PACKED_STRUCT VE_Type
 #define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU Mali-400MP2 register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
+#define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
 #define R_TIMER ((R_TIMER_TypeDef *) R_TIMER_BASE)    /*!< R_TIMER  register set access pointer */
 #define R_WDOG ((R_WDOG_TypeDef *) R_WDOG_BASE)       /*!< R_WDOG  register set access pointer */

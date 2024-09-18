@@ -732,8 +732,8 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
-	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
+	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -774,15 +774,15 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
-	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
+	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnrt113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnrt113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -814,16 +814,16 @@ extern "C" {
 	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
-	#define CPU_FREQ	(allwnrt113_get_arm_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
-	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
+	#define CPU_FREQ	(allwnr_t113_get_arm_freq())
+	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnrt113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnrt113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -865,15 +865,15 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ			(allwnr_v3s_get_cpu_freq())
-	#define BOARD_USART_FREQ 	(allwnrt113_get_uart_freq())
+	#define BOARD_USART_FREQ 	(allwnr_t113_get_uart_freq())
 	#define CPU_PL1_FREQ 		(allwnr_v3s_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnrt113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnrt113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -936,14 +936,14 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnrf133_get_riscv_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
+	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnrt113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnrt113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -963,6 +963,8 @@ extern "C" {
 		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
 		GPIO_CFG_IODISABLE = 0x0F,
 	} GPIOMode_TypeDef;
+
+	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw F133-A"
 
 #elif CPUSTYLE_XCZU

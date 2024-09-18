@@ -1279,6 +1279,9 @@ gpioX_onchangeinterrupt(
 {
 	unsigned pos;
 
+	if (ipins == 0)
+		return;
+
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
 

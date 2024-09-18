@@ -552,21 +552,6 @@ void stm32mp1_pll1_slow(uint_fast8_t slow);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
-void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts4(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
-void hardware_encoders_initialize(void);
-
-uint_fast8_t hardware_get_encoder_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder2_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder3_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder4_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder5_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder6_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-
-#define ENCODER_IRQL IRQL_OVERREALTIME
-#define ENCODER_PRIORITY ARM_OVERREALTIME_PRIORITY
-#define ENCODER_TARGETCPU TARGETCPU_OVRT
-
 void gt911_interrupt_handler(void * ctx);
 void stmpe811_interrupt_handler(void * ctx);
 
@@ -818,14 +803,20 @@ typedef struct videomode_tag
 	unsigned deneg; 		/* negative de polarity: (normal: de is 0 while sync) */
 	unsigned lq43reset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 	unsigned fps;	/* frames per second */
+	unsigned ntsc;
 
 } videomode_t;
 
-extern const videomode_t vdmode0;
-extern const videomode_t vdmode_NTSC0;	/* NTSC TV out parameters */
-extern const videomode_t vdmode_PAL0;	/* PAL TV out parameters */
+//extern const videomode_t vdmode0;
+//extern const videomode_t vdmode_NTSC0;	/* NTSC TV out parameters */
+//extern const videomode_t vdmode_PAL0;	/* PAL TV out parameters */
+
+const videomode_t * get_videomode(void);
+const videomode_t * get_videomode_CRT(void);
+
 void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
+void hardware_edid_test(void);
 
 void hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */

@@ -65,8 +65,14 @@
 	#define WITHUSBHOST_DMAENABLE 1
 
 //	#define WITHTINYUSB 1
-//	#define BOARD_TUH_RHPORT 1
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	
+//	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 //
 //	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
 //	#define WITHUSBHW_EHCI_IRQ	USB20_HOST1_EHCI_IRQn
@@ -145,8 +151,14 @@
 
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
 	#define WITHUSBHW_EHCI_IRQ	USB20_HOST1_EHCI_IRQn
@@ -378,7 +390,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc0_freq())
 
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -625,7 +637,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPIHARD_PTR
 
 	#if WITHSPIHW
@@ -741,7 +753,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 
@@ -778,7 +790,7 @@
 	} while (0)
 	#define	TWIHARD_IX 3	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -1003,6 +1015,7 @@
 	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 	#define TCONLCD_IRQ TCON_LCD0_IRQn
 	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */

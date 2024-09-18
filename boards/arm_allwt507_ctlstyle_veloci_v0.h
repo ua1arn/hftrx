@@ -84,7 +84,7 @@
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	#define WITHPREAMPATT2_6DB 1	// LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
+	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
@@ -126,6 +126,8 @@
 	//#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
+	#define WITHHDMITVHW 1	/* Second display - HDMI hardware output */
+
 #elif 1
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
@@ -134,7 +136,7 @@
 	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
-	#define WITHHDMITVHW 1	// HDMI hardware output */
+	#define WITHHDMITVHW 1	/* HDMI hardware output */
 
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -211,24 +213,24 @@
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	#define ENCRES_DEFAULT ENCRES_360
-	#define ENCRES2_DEFAULT ENCRES_360
+	#define ENCRES_SUB_DEFAULT ENCRES_360
 	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	#define WITHENCODER_SUB	1		/* есть второй валкодер */
 	#define BOARD_ENCODER_DIVIDE 2
-	#define BOARD_ENCODER2_DIVIDE 2
+	#define BOARD_ENCODER_SUB_DIVIDE 2
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
-	#define WITHENCODER3	1
-	#define WITHENCODER4	1
-	#define WITHENCODER5	1
-	#define WITHENCODER6	1
-	#define BOARD_ENCODER3_DIVIDE 4		/* значение для валкодера с "трещёткой" */
-	#define BOARD_ENCODER4_DIVIDE 4		/* значение для валкодера с "трещёткой" */
-	#define BOARD_ENCODER5_DIVIDE 4		/* значение для валкодера с "трещёткой" */
-	#define BOARD_ENCODER6_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define WITHENCODER_1F	1
+	#define WITHENCODER_2F	1
+	#define WITHENCODER_3F	1
+	#define WITHENCODER_4F	1
+	#define BOARD_ENC1F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENC2F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENC3F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENC4F_DIVIDE 4		/* значение для валкодера с "трещёткой" */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B

@@ -497,16 +497,11 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 
 	if (sdhci->instance == SMHC2)
 	{
-		if (clock > 5000000)
-			clock = 5000000;
+		if (clock > 1000000)
+			clock = 1000000;
+	}
 
-		//PRINTF("sdhci->instance->SMHC_SFC=%08X\n", sdhci->instance->SMHC_SFC);
-	    ratio = SMHCHARD_FREQ / (1 * clock);	// Для SMHC2 требует выяснения
-	}
-	else
-	{
-	    ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения показали, что деление на 4 а не на 2
-	}
+    ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения частоты сигнала CLK показали, что деление на 4 а не на 2
 
 
     if (ratio == 0)

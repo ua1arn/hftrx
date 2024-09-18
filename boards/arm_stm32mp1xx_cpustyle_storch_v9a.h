@@ -43,8 +43,7 @@
 
 //#define WITHCAT_UART1		1
 #define WITHDEBUG_UART2	1
-//#define WITHTINYUSB 1
-#define BOARD_TUH_RHPORT 1
+
 
 // OHCI at USB1HSFSP2_BASE
 //#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -61,7 +60,7 @@
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
@@ -77,7 +76,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
 
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	
 //	#define WITHUSBHW_EHCI		USB1_EHCI
 //	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 //	#define WITHOHCIHW_OHCIPORT 0
@@ -109,8 +108,8 @@
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
-	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
-	#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+	#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме идут квадратуры RTS192 */
 	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
 	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
@@ -145,8 +144,13 @@
 //	#define WITHUSBHOST_DMAENABLE 1
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHOHCIHW_OHCIPORT 0

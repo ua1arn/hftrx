@@ -6,6 +6,7 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
+// rmainunit_sv9x1.pcb
 // rmainunit_sv9x2.pcb
 // rmainunit_sv9x3.pcb
 
@@ -37,8 +38,7 @@
 
 //#define WITHCAT_UART1		1
 #define WITHDEBUG_UART0	1
-//#define WITHTINYUSB 1
-#define BOARD_TUH_RHPORT 1
+
 
 #if WITHISBOOTLOADER
 
@@ -47,7 +47,7 @@
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
@@ -63,7 +63,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	////#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	////#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
@@ -89,8 +89,6 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
-	//#define WITHTINYUSB 1
 
 #else /* WITHISBOOTLOADER */
 
@@ -147,10 +145,17 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
+	
+
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
@@ -249,7 +254,7 @@
 	#define TARGET_ENCODER_B		(UINT32_C(1) << TARGET_ENCODER_B_POS)
 	#define TARGET_ENCODER_BITS		(TARGET_ENCODER_A | TARGET_ENCODER_B)
 	#define ENCODER_BITS_GET()		((TARGET_ENCODER_PORT & TARGET_ENCODER_BITS) >> TARGET_ENCODER_B_POS)
-	//#define ENCODER_BITS_GET() 	(((TARGET_ENCODER_PORT & TARGET_ENCODER_A) != 0) * 2 + ((TARGET_ENCODER_PORT & TARGET_ENCODER_B) != 0))
+	//#define ENCODER_BITS_GET() 	(((TARGET_ENCODER_PORT & TARGET_ENCODER_A) != 0) * GETENCBIT_A + ((TARGET_ENCODER_PORT & TARGET_ENCODER_B) != 0) * GETENCBIT_B)
 
 	// Выводы подключения енкодера #2 - FUNC encoder
 	#define TARGET_ENCODER2_PORT	(gpioX_getinputs(GPIOE))
@@ -259,7 +264,7 @@
 	#define TARGET_ENCODER2_B		(UINT32_C(1) << TARGET_ENCODER2_B_POS)
 	#define TARGET_ENCODER2_BITS	(TARGET_ENCODER2_A | TARGET_ENCODER2_B)
 	#define ENCODER2_BITS_GET() 	((TARGET_ENCODER2_PORT & TARGET_ENCODER2_BITS) >> TARGET_ENCODER2_B_POS)
-	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * 2 + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0))
+	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * GETENCBIT_A + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0) * GETENCBIT_B)
 
 	#define ENCODER_INITIALIZE() do { \
 		static einthandler_t eh1; \
@@ -271,10 +276,10 @@
 		einthandler_initialize(& eh1, TARGET_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
 		/* FUNC encoder */ \
-		arm_hardware_pioe_inputs(TARGET_ENCODER2_BITS); \
+		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
 		ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
 		ticker_add(& th2); \
-		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh2, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh2); \
 	} while (0)
@@ -597,7 +602,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
@@ -721,7 +726,7 @@
 	} while (0)
 	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif // WITHTWISW || WITHTWIHW
 
@@ -1056,7 +1061,7 @@
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
-		#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_t113_get_tconlcd_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
@@ -1065,8 +1070,17 @@
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
-		#define BOARD_TCONTVFREQ (allwnrt113_get_tcontv_freq())
+		#define BOARD_TCONTVFREQ (allwnr_t113_get_tcontv_freq())
+	#endif
+
+	#if 0
+		#define	TVENCODER_IX 0	/* 0 -TVE0 */
+		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
+		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
+		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define BOARD_TVEFREQ (allwnr_t113_get_tve_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

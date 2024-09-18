@@ -67,11 +67,13 @@ static void softfill(
 
 #if LCDMODE_MAIN_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
+	#define ROT_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
 #elif LCDMODE_MAIN_RGB565
 	#define VI_ImageFormat 0x0A
+	#define ROT_ImageFormat 0x0A
 	#define UI_ImageFormat 0x0A
 	#define WB_ImageFormat 0x0A
 
@@ -79,12 +81,10 @@ static void softfill(
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if defined (G2D_MIXER)
 
-
-#else
 /* Отключаем все источники */
-static void awxx_g2d_reset(void)
+static void awxx_g2d_mixer_reset(void)
 {
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
@@ -163,7 +163,7 @@ static void awxx_g2d_rtmix_startandwait(void)
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
-#endif
+#endif /* defined (G2D_MIXER) */
 
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
@@ -227,7 +227,7 @@ hwaccel_rotcopy(
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 
 	G2D_ROT->ROT_CTL = 0;
-	G2D_ROT->ROT_IFMT = VI_ImageFormat;
+	G2D_ROT->ROT_IFMT = ROT_ImageFormat;
 
 	G2D_ROT->ROT_ISIZE = ssizehw;
 	G2D_ROT->ROT_IPITCH0 = sstride;	// Y/RGB/ARGB data memory. Should be 128bit aligned.
@@ -260,7 +260,7 @@ hwaccel_rotcopy(
 
 }
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if ! defined (G2D_MIXER)
 
 static COLORPIP_T bgcolor;
 static PACKEDCOLORPIP_T bgscreen [GXSIZE(DIM_X, DIM_Y)];
@@ -624,7 +624,7 @@ static void t113_fillrect(
 	)
 {
 
-	awxx_g2d_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
 	if (fillmask & FILL_FLAG_MIXBG)
@@ -934,7 +934,7 @@ void arm_hardware_mdma_initialize(void)
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	{
 		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-		unsigned M = 2;	/* M = 1..32 */
+		unsigned M = 5;	/* M = 1..32 */
 		unsigned divider = 0;
 
 		CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
@@ -943,8 +943,12 @@ void arm_hardware_mdma_initialize(void)
 
 		// PLL_VIDEO1 may be used for LVDS synchronization
 		// User manual say about 250 MHz default.
-		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-			0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
+		//	CLK_SRC_SEL.
+		//	Clock Source Select
+		//	0: PLL_DE
+		//	1: PLL_PERI0(2X)
+		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(0x01) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+			0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
 			(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
@@ -955,7 +959,6 @@ void arm_hardware_mdma_initialize(void)
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
 		CCU->G2D_BGR_REG &= ~ (UINT32_C(1) << 16);	/* G2D reset 0: Assert */
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);	/* G2D reset 1: De-assert */
-		(void) CCU->G2D_BGR_REG;
 		local_delay_us(10);
 
 		/* на Allwinner T597 модифицируемы только младшие 8 бит */
@@ -966,14 +969,25 @@ void arm_hardware_mdma_initialize(void)
 		(void) G2D_TOP->G2D_SCLK_DIV;
 		//local_delay_us(10);
 
-		G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_SCLK_GATE;
-		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_HCLK_GATE;
-		G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_AHB_RST;
-		G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_AHB_RST;
+		if (1)
+		{
+#if defined (G2D_MIXER)
+			// MIXER
+			G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST &= ~ ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+#endif /* defined (G2D_MIXER) */
+		}
+
+		if (1)
+		{
+			// ROT
+			G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1);	// Gate open: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1);	// Assert reset: 0x02: rot, 0x01: mixer
+			G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1);	// De-assert reset: 0x02: rot, 0x01: mixer
+		}
 
 		local_delay_ms(10);
 
@@ -996,15 +1010,14 @@ void arm_hardware_mdma_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
 	//local_delay_us(10);
 
-	// PLL_VIDEO1 may be used for LVDS synchronization
 	// User manual say about 250 MHz default.
-	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
+	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x1F) << 0)) |
 		0x00 * (UINT32_C(1) << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
 		(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
 		0;
 	CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 	local_delay_us(10);
-	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000 / 1000));
+	//PRINTF("allwnr_t113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_g2d_freq() / 1000 / 1000));
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -1025,7 +1038,7 @@ void arm_hardware_mdma_initialize(void)
 	(void) G2D_TOP->G2D_SCLK_GATE;
 	G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_HCLK_GATE;
-	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1) & ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
 	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
@@ -1042,11 +1055,11 @@ void arm_hardware_mdma_initialize(void)
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif
-	// peri:   allwnrt113_get_g2d_freq()=600000000
-	// video0: allwnrt113_get_g2d_freq()=297000000
-	// video1: allwnrt113_get_g2d_freq()=297000000
-	// audio1: allwnrt113_get_g2d_freq()=768000000
-	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
+	// peri:   allwnr_t113_get_g2d_freq()=600000000
+	// video0: allwnr_t113_get_g2d_freq()=297000000
+	// video1: allwnr_t113_get_g2d_freq()=297000000
+	// audio1: allwnr_t113_get_g2d_freq()=768000000
+	//PRINTF("allwnr_t113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_g2d_freq());
 
 	aw_g2d_initialize();
 	 //mixer_set_reg_base(G2D_BASE);
@@ -2242,7 +2255,7 @@ void hwaccel_bitblt(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
 
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
@@ -2257,7 +2270,7 @@ void hwaccel_bitblt(
 
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -2287,7 +2300,7 @@ void hwaccel_bitblt(
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
-	awxx_g2d_reset(); /* Отключаем все источники */
+	awxx_g2d_mixer_reset(); /* Отключаем все источники */
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
@@ -2480,7 +2493,7 @@ void hwaccel_stretchblt(
 	ASSERT(dx >= w);
 	ASSERT(dy >= h);
 
-#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
 
 	//#warning T507/H616 STRETCH BLT should be implemented
 
@@ -2499,7 +2512,7 @@ void hwaccel_stretchblt(
 
 	hwaccel_rotcopy(srclinear, sstride, ssizehw, dstlinear, tstride, tsizehw, 0);
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Использование G2D для формирования изображений */
 
 //	memset(G2D_V0, 0, sizeof * G2D_V0);
@@ -2527,7 +2540,7 @@ void hwaccel_stretchblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	awxx_g2d_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer

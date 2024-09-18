@@ -5331,11 +5331,11 @@ void looptests(void)
 #if 0
 	{
 		// Encoder tests
-		PRINTF("e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d\n",
-				(int) encoder_get_delta(& encoder3, 1),
-				(int) encoder_get_delta(& encoder4, 1),
-				(int) encoder_get_delta(& encoder5, 1),
-				(int) encoder_get_delta(& encoder6, 1)
+		PRINTF("ef1=%+3d, ef2=%+3d, ef3=%+3d, ef4=%+3d\n",
+				(int) encoder_get_delta(& encoder_ENC1F, 1),
+				(int) encoder_get_delta(& encoder_ENC2F, 1),
+				(int) encoder_get_delta(& encoder_ENC3F, 1),
+				(int) encoder_get_delta(& encoder_ENC4F, 1)
 				);
 	}
 #endif
@@ -5431,6 +5431,7 @@ void looptests(void)
 	{
 		// See buffers2.cpp - WITHBUFFERSDEBUG
 		buffers_diagnostics();
+		audio_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL
@@ -10623,6 +10624,11 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 1 && WITHHDMITVHW
+	{
+		hardware_edid_test();
+	}
+#endif
 	//hmain();
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
@@ -10765,7 +10771,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0
+#if 0 && LCDMODE_LTDC && WITHLTDCHW
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -10777,9 +10783,10 @@ void hightests(void)
 			{
 				#include "src/testdata/picture.h"
 			};
-			TP();
-			hardware_ltdc_tvout_set2(1*(uintptr_t) picture0, 0);
-			//LCD_SwitchAddress((uintptr_t) picture0, 0);
+			PACKEDTVBUFF_T * const fb = tvout_fb_draw();
+			memcpy(fb, picture0, sizeof picture0);
+			//memcpy(fb, picture0, datasize_dmabuffer1fb());
+			tvout_nextfb();
 			TP();
 			for (;0;)
 			{
@@ -10877,6 +10884,20 @@ void hightests(void)
 			posY += stepY;
 		}
 		PRINTF("Done squash test\n");
+	}
+#endif
+#if 0 && WITHTVDHW && LCDMODE_LTDC && WITHLTDCHW
+	{
+		cap_test();
+
+	}
+#endif
+#if 0
+	{
+		PRINTF("DE_MIXER0_VSU0_BASE:\n");
+		printhex32(DE_MIXER0_VSU0_BASE, DE_MIXER0_VSU0_BASE, 128);
+		PRINTF("DE_MIXER1_VSU0_BASE:\n");
+		printhex32(DE_MIXER1_VSU0_BASE, DE_MIXER1_VSU0_BASE, 128);
 	}
 #endif
 #if 0
@@ -11099,7 +11120,7 @@ void hightests(void)
 
 		// https://github.com/YuzukiHD/FreeRTOS-HIFI4-DSP/blob/164696d952116d20100daefd7a475d2ede828eb0/host/uboot-driver/dsp/sun8iw20/dsp_reg.h#L33C1-L39C65
 		//xtest();
-		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+		PRINTF("allwnr_t113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsp_freq());
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 		//PRINTF("DSP_STAT_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_STAT_REG);
 		//local_delay_ms(300);
@@ -11211,10 +11232,10 @@ void hightests(void)
 //		// T113M4: IIDR=0200143B, midr=410FC075 xfel sid: 934072002c0048140105061c54731853
 //		// T113S3: IIDR=0200143B, midr=410FC075 xfel sid: 934060000c00481401464015586213cc
 //		PRINTF("IIDR=%08X, midr=%08X\n", (unsigned) GICDistributor->IIDR, (unsigned) midr);
-		PRINTF("chipid=%08X\n", (unsigned) allwnrt113_get_chipid());
-		if (allwnrt113_get_chipid() == CHIPID_T113M4020DC0)
+		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
+		if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0)
 		{
-			PRINTF("freq = %u MHz, PLL_CPU_CTRL_REG=%08X,CPU_AXI_CFG_REG=%08X\n", (unsigned) (allwnrt113_get_pll_cpu_freq() / 1000 / 1000), (unsigned) CCU->PLL_CPU_CTRL_REG, (unsigned) CCU->CPU_AXI_CFG_REG);
+			PRINTF("freq = %u MHz, PLL_CPU_CTRL_REG=%08X,CPU_AXI_CFG_REG=%08X\n", (unsigned) (allwnr_t113_get_pll_cpu_freq() / 1000 / 1000), (unsigned) CCU->PLL_CPU_CTRL_REG, (unsigned) CCU->CPU_AXI_CFG_REG);
 			dbg_flush();	/* for see rv64 running effects on UART0 */
 			//	la	a0, 0x02500000
 			//	la	a1, 0x23
@@ -11323,12 +11344,12 @@ void hightests(void)
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
-		PRINTF("allwnrt113_get_axi_freq()=%u MHz\n", (unsigned) (allwnrt113_get_axi_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_mbus_freq()=%u MHz\n", (unsigned) (allwnrt113_get_mbus_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_psi_freq()=%u MHz\n", (unsigned) (allwnrt113_get_psi_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnrt113_get_ahb0_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnrt113_get_apb1_freq() / 1000 / 1000));
-		PRINTF("allwnrt113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnrt113_get_apb0_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_mbus_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_psi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_psi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_ahb0_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb0_freq() / 1000 / 1000));
 	}
 #endif
 #if 0
@@ -11671,7 +11692,7 @@ void hightests(void)
 		drambase [3] = 0x80;
 		printhex(DSP0_DRAM_BASE, drambase, 64);
 		TP();
-		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
+		PRINTF("allwnr_t113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsp_freq());
 
 //		CCU->DSP_BGR_REG |= UINT32_C(1) << 18;	// DSP_DBG_RST 1: De-assert
 //		CCU->DSP_BGR_REG |= UINT32_C(1) << 17;	// DSP_CFG_RST 1: De-assert
@@ -11681,13 +11702,13 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
-		PRINTF("allwnrt113_get_pll_cpu_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_cpu_freq());
-		PRINTF("allwnrt113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnrt113_get_pll_ddr_freq());
-		PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
-		PRINTF("allwnrt113_get_de_freq()=%" PRIuFAST32 "\n", allwnrt113_get_de_freq());
-		PRINTF("allwnrt113_get_ce_freq()=%" PRIuFAST32 "\n", allwnrt113_get_ce_freq());
-		PRINTF("allwnrt113_get_ve_freq()=%" PRIuFAST32 "\n", allwnrt113_get_ve_freq());
-		PRINTF("allwnrt113_get_di_freq()=%" PRIuFAST32 "\n", allwnrt113_get_di_freq());
+		PRINTF("allwnr_t113_get_pll_cpu_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_cpu_freq());
+		PRINTF("allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
+		PRINTF("allwnr_t113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_g2d_freq());
+		PRINTF("allwnr_t113_get_de_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_de_freq());
+		PRINTF("allwnr_t113_get_ce_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_ce_freq());
+		PRINTF("allwnr_t113_get_ve_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_ve_freq());
+		PRINTF("allwnr_t113_get_di_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_di_freq());
 	}
 #endif
 #if 0 && defined (CLINT) && CPUSTYLE_F133
@@ -12900,115 +12921,6 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0
-	{
-		// Движущиеся картинки
-		enum 
-		{ 
-			topreserved = 6,
-			bufY = DIM_Y - GRID2Y(ROWS2GRID(topreserved)), 
-			dx = DIM_X, dy = bufY, 
-			// куда выводить
-			DBX_0 = CHARS2GRID(0), 
-			DBY_1 = ROWS2GRID(topreserved)
-		};
-		PRINTF(PSTR("test: dx=%d, dy=%d\n"), dx, dy);
-
-
-		/* отображение надписей самым маленьким шрифтом (8 точек) */
-		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
-		uint_fast8_t lowhalf2 = HALFCOUNT_SMALL2 - 1;
-		do
-		{
-		
-			display_gotoxy(CHARS2GRID(0), ROWS2GRID(0) + lowhalf2);
-			display_string2_P(PSTR("PT-Electronics 2017"), lowhalf2);
-			//display_string2_P(PSTR("PT-Electronics 2015 RENESAS 2.7 inch TFT"), lowhalf2);
-
-			//display_gotoxy(CHARS2GRID(0), CHARS2GRID(1) + lowhalf2);
-			//display_string2_P(PSTR("PT-Electronics 2014"), lowhalf2);
-
-		} while (lowhalf2 --);
-	#if 1
-		/* отображение надписей маленьким шрифтом (16 точек) */
-		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
-		
-		display_at_P(CHARS2GRID(0), ROWS2GRID(1), PSTR("Start "));
-
-		display_at_P(CHARS2GRID(0), ROWS2GRID(2), PSTR("Stop "));
-
-	#endif
-
-	#if 0//LCDMODE_COLORED
-
-		static ALIGNX_BEGIN volatile PACKEDCOLOR565_T scr [GXSIZE(dx, dy)] ALIGNX_END;
-
-		colpip_fill(scr, dx, dy, COLOR_WHITE);
-		colpip_copy_to_draw(scr, dx, dy, 0, GRID2Y(topreserved));
-		//for (;;)
-		//	;
-		int phase = 0;
-		int count = 0;
-		const int top = (DIM_X - bufY);
-		unsigned loop;
-		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
-		{
-		
-			// рисование линии
-			unsigned i;
-			for (i = 0; i < bufY; ++ i)
-				colpip_point(scr, dx, dy, i + loop, i, COLOR_BLUE);		// поставить точку
-
-			colpip_copy_to_draw(scr, dx, dy, 0, GRID2Y(topreserved));
-			//local_delay_ms(25);
-			if (++ count > top)
-			{
-				count = 0;
-				phase = ! phase;
-				if (phase)
-					colpip_fill(scr, dx, dy, COLOR_YELLOW);
-				else
-					colpip_fill(scr, dx, dy, COLOR_RED);
-			}
-			
-		}
-	#else /* LCDMODE_COLORED */
-
-		static FATFSALIGN_BEGIN GX_t scr [MGSIZE(dx, dy)] FATFSALIGN_END;
-
-		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-		
-		memset(scr, 0xFF, sizeof scr);
-		display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
-		int phase = 0;
-		int count = 0;
-		const int top = (DIM_X - bufY);
-		unsigned loop;
-		for (loop = 0; ;loop = loop < top ? loop + 1 : 0)
-		{
-		
-			// рисование линии
-			unsigned i;
-			for (i = 0; i < bufY; ++ i)
-				display_pixelbuffer(scr, dx, dy, i + loop, i);		// погасить точку
-
-			display_showbuffer(scr, dx, dy, DBX_0, DBY_1);
-			//local_delay_ms(25);
-			if (++ count > top)
-			{
-				count = 0;
-				phase = ! phase;
-				if (phase)
-					colmain_setcolors(COLOR_YELLOW, COLOR_BLACK);
-				else
-					colmain_setcolors(COLOR_RED, COLOR_BLACK);
-				memset(scr, 0xFF, sizeof scr);
-			}
-			
-		}
-	#endif /* LCDMODE_COLORED */
-	}
-#endif
 #if 0 && WITHDEBUG
 	{
 		// тестирование приёма и передачи символов
@@ -13735,42 +13647,6 @@ void hightests(void)
 				display_at(8 * (i % 2), i / 2, buff);
 			}
 		}
-	}
-#endif
-#if 0
-	// отображение картинок
-	eink_lcd_backlight(1);
-
-	/* буфер размером x=64, y=112 точек */
-	enum { bufY = DIM_Y - 8, dx = DIM_X, dy = /*24 */ bufY, DBX_0 = 0, DBY_1 = 1};
-	static FATFSALIGN_BEGIN PACKEDCOLORPIP_T scr [GXSIZE(dx, dy)] FATFSALIGN_END;
-
-
-	/* отображение надписей самым маленьким шрифтом (8 точек) */
-	display_at_P(CHARS2GRID(0), ROWS2GRID(0), PSTR("PT-Electronics 2014"));
-
-#if 0
-	/* отображение надписей маленьким шрифтом (16 точек) */
-	display_at_P(CHARS2GRID(0), ROWS2GRID(2), PSTR("Start "));
-
-	display_at_P(CHARS2GRID(0), ROWS2GRID(3), PSTR("Stop "));
-#endif
-
-	colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-	unsigned loop;
-	for (loop = 0; ;loop = loop < (DIM_X - bufY) ? loop + 1 : 0)
-	{
-	
-		check_poweroff();
-		memset(scr, 0xFF, sizeof scr);
-		// рисование линии
-		unsigned i;
-		for (i = 0; i < bufY; ++ i)
-			display_pixelbuffer(scr [0], dx, dy, i + loop, i);		// погасить точку
-
-		display_showbuffer(scr [0], dx, dy, DBX_0, DBY_1);
-		local_delay_ms(25);
-		
 	}
 #endif
 #if 0 && WITHDEBUG
@@ -15520,10 +15396,6 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 #include "lvgl/examples/lv_examples.h"
 #include <linux/kd.h>
 
-void board_tsc_initialize(void);
-void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
-void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
-void indev_enc2_spool(void);
 
 #define DISP_BUF_SIZE	(128 * DIM_X)
 

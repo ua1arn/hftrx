@@ -40,8 +40,7 @@
 
 #define WITHDEBUG_UART1	1
 
-//#define WITHTINYUSB 1
-#define BOARD_TUH_RHPORT 1
+
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -71,7 +70,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	
 //	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
 	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
@@ -133,10 +132,16 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
@@ -586,7 +591,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
@@ -694,7 +699,7 @@
 		} while (0) 
 	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -939,14 +944,11 @@
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 	} while (0)
 
-
-#endif /* WITHLTDCHW */
-
 	#if 1
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
-		#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_t113_get_tconlcd_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
@@ -955,9 +957,21 @@
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
-		#define BOARD_TCONTVFREQ (allwnrt113_get_tcontv_freq())
+		#define BOARD_TCONTVFREQ (allwnr_t113_get_tcontv_freq())
 	#endif
+
+	#if 0
+		#define	TVENCODER_IX 0	/* 0 -TVE0 */
+		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
+		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
+		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define BOARD_TVEFREQ (allwnr_t113_get_tve_freq())
+	#endif
+
+
+#endif /* WITHLTDCHW */
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 

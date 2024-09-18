@@ -71,9 +71,7 @@
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
-
-	//#define WITHTINYUSB 1
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	//#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
 	//#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
 
@@ -129,8 +127,8 @@
 	#if WITHINTEGRATEDDSP
 
 		#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
-		#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
-		#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+		#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+		#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме идут квадратуры RTS192 */
 		#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
 		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
@@ -178,8 +176,14 @@
 
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	// USB3-DP & USB3-DM used
 	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
@@ -265,93 +269,94 @@
 	#define ENCODER_BITB		(UINT32_C(1) << 22)		// PD22
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER2_BITA		(UINT32_C(1) << 19)		// PD19
-	#define ENCODER2_BITB		(UINT32_C(1) << 20)		// PD20
+	#define ENCODER_SUB_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER_SUB_BITA		(UINT32_C(1) << 19)		// PD19
+	#define ENCODER_SUB_BITB		(UINT32_C(1) << 20)		// PD20
 
 	// Выводы подключения енкодера ENC1F
-	#define ENCODER3_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER3_BITA		(UINT32_C(1) << 17)		// PD17
-	#define ENCODER3_BITB		(UINT32_C(1) << 16)		// PD16
+	#define ENC1F_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENC1F_BITB_POS 	16
+	#define ENC1F_BITA		(UINT32_C(1) << 17)		// PD17
+	#define ENC1F_BITB		(UINT32_C(1) << 16)		// PD16
 
 	// Выводы подключения енкодера ENC2F
-	#define ENCODER4_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER4_BITA		(UINT32_C(1) << 15)		// PD15
-	#define ENCODER4_BITB		(UINT32_C(1) << 14)		// PD14
+	#define ENC2F_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENC2F_BITB_POS 	14
+	#define ENC2F_BITA		(UINT32_C(1) << 15)		// PD15
+	#define ENC2F_BITB		(UINT32_C(1) << 14)		// PD14
 
 	// Выводы подключения енкодера ENC3F
-	#define ENCODER5_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER5_BITA		(UINT32_C(1) << 13)		// PD13
-	#define ENCODER5_BITB		(UINT32_C(1) << 12)		// PD12
+	#define ENC3F_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENC3F_BITB_POS 	12
+	#define ENC3F_BITA		(UINT32_C(1) << 13)		// PD13
+	#define ENC3F_BITB		(UINT32_C(1) << 12)		// PD12
 
 	// Выводы подключения енкодера ENC4F
-	#define ENCODER6_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER6_BITA		(UINT32_C(1) << 11)		// PD11
-	#define ENCODER6_BITB		(UINT32_C(1) << 10)		// PD10
+	#define ENC4F_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENC4F_BITB_POS 	16
+	#define ENC4F_BITA		(UINT32_C(1) << 11)		// PD11
+	#define ENC4F_BITB		(UINT32_C(1) << 10)		// PD10
 
 	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
 	#define BOARD_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-	#define BOARD_ENCODER3_BITS		(ENCODER3_BITA | ENCODER3_BITB)
-	#define BOARD_ENCODER4_BITS		(ENCODER4_BITA | ENCODER4_BITB)
-	#define BOARD_ENCODER5_BITS		(ENCODER5_BITA | ENCODER5_BITB)
-	#define BOARD_ENCODER6_BITS		(ENCODER6_BITA | ENCODER6_BITB)
+	#define BOARD_ENCODER_SUB_BITS	(ENCODER_SUB_BITA | ENCODER_SUB_BITB)
+	#define BOARD_ENC1F_BITS		(ENC1F_BITA | ENC1F_BITB)
+	#define BOARD_ENC2F_BITS		(ENC2F_BITA | ENC2F_BITB)
+	#define BOARD_ENC3F_BITS		(ENC3F_BITA | ENC3F_BITB)
+	#define BOARD_ENC4F_BITS		(ENC4F_BITA | ENC4F_BITB)
 
-	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
-	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
-	#define ENCODER3_BITS_GET() (((ENCODER3_INPUT_PORT & ENCODER3_BITA) != 0) * 2 + ((ENCODER3_INPUT_PORT & ENCODER3_BITB) != 0))	// ENC1F
-	#define ENCODER4_BITS_GET() (((ENCODER4_INPUT_PORT & ENCODER4_BITA) != 0) * 2 + ((ENCODER4_INPUT_PORT & ENCODER4_BITB) != 0))	// ENC2F
-	#define ENCODER5_BITS_GET() (((ENCODER5_INPUT_PORT & ENCODER5_BITA) != 0) * 2 + ((ENCODER5_INPUT_PORT & ENCODER5_BITB) != 0))	// ENC3F
-	#define ENCODER6_BITS_GET() (((ENCODER6_INPUT_PORT & ENCODER6_BITA) != 0) * 2 + ((ENCODER6_INPUT_PORT & ENCODER6_BITB) != 0))	// ENC4F
+	#define ENCODER_BITS_GET() 		(((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * GETENCBIT_A + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0) * GETENCBIT_B)
+	#define ENCODER_SUB_BITS_GET() 	(((ENCODER_SUB_INPUT_PORT & ENCODER_SUB_BITA) != 0) * GETENCBIT_A + ((ENCODER_SUB_INPUT_PORT & ENCODER_SUB_BITB) != 0) * GETENCBIT_B)
 
-	#define ENCODER2_NOSPOOL 1
+	#define ENC1F_BITS_GET() 		((ENC1F_INPUT_PORT & BOARD_ENC1F_BITS) >> ENC1F_BITB_POS) //(((ENC1F_INPUT_PORT & ENC1F_BITA) != 0) * GETENCBIT_A + ((ENC1F_INPUT_PORT & ENC1F_BITB) != 0) * GETENCBIT_B)	// ENC1F
+	#define ENC2F_BITS_GET() 		((ENC2F_INPUT_PORT & BOARD_ENC2F_BITS) >> ENC2F_BITB_POS) //(((ENC2F_INPUT_PORT & ENC2F_BITA) != 0) * GETENCBIT_A + ((ENC2F_INPUT_PORT & ENC2F_BITB) != 0) * GETENCBIT_B)	// ENC2F
+	#define ENC3F_BITS_GET() 		((ENC3F_INPUT_PORT & BOARD_ENC3F_BITS) >> ENC3F_BITB_POS) //(((ENC3F_INPUT_PORT & ENC3F_BITA) != 0) * GETENCBIT_A + ((ENC3F_INPUT_PORT & ENC3F_BITB) != 0) * GETENCBIT_B)	// ENC3F
+	#define ENC4F_BITS_GET() 		((ENC4F_INPUT_PORT & BOARD_ENC4F_BITS) >> ENC4F_BITB_POS) //(((ENC4F_INPUT_PORT & ENC4F_BITA) != 0) * GETENCBIT_A + ((ENC4F_INPUT_PORT & ENC4F_BITB) != 0) * GETENCBIT_B)	// ENC4F
+
 	#define ENCODER_INITIALIZE() do { \
 		static einthandler_t eh1; \
 		static einthandler_t eh2; \
-		static einthandler_t eh3; \
-		static einthandler_t eh4; \
-		static einthandler_t eh5; \
-		static einthandler_t eh6; \
-		static ticker_t th3; \
-		static ticker_t th4; \
-		static ticker_t th5; \
-		static ticker_t th6; \
-		/* Main tuning knob */ \
+		static einthandler_t enc1fh; \
+		static einthandler_t enc2fh; \
+		static einthandler_t enc3fh; \
+		static einthandler_t enc4fh; \
+		/* Разным валкодерам на одном GPIO нельзя назначать разные приоритеты */ \
+		/* */ \
+		/* Main tuning knob - прерывания на обе фазы */ \
 		arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, 0); \
 		einthandler_initialize(& eh1, BOARD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh1); \
-		/* Second tuning knob */ \
-		arm_hardware_piod_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
-		/* ENC1F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENCODER3_BITS); \
-		ticker_initialize(& th3, 1, spool_encinterrupts, & encoder3); \
-		ticker_add(& th3); \
-		arm_hardware_piod_altfn20(BOARD_ENCODER3_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh3, BOARD_ENCODER3_BITS, spool_encinterrupts, & encoder3); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh3); \
-		/* ENC2F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENCODER4_BITS); \
-		ticker_initialize(& th4, 1, spool_encinterrupts, & encoder4); \
-		ticker_add(& th4); \
-		arm_hardware_piod_altfn20(BOARD_ENCODER4_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh4, BOARD_ENCODER4_BITS, spool_encinterrupts, & encoder4); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh4); \
-		/* ENC3F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENCODER5_BITS); \
-		ticker_initialize(& th5, 1, spool_encinterrupts, & encoder5); \
-		ticker_add(& th5); \
-		arm_hardware_piod_altfn20(BOARD_ENCODER5_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh5, BOARD_ENCODER5_BITS, spool_encinterrupts, & encoder5); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh5); \
-		/* ENC4F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-		arm_hardware_piod_inputs(BOARD_ENCODER6_BITS); \
-		ticker_initialize(& th6, 1, spool_encinterrupts, & encoder6); \
-		ticker_add(& th6); \
-		arm_hardware_piod_altfn20(BOARD_ENCODER6_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& eh6, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder6); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh6); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
+		/* */ \
+		/* Second tuning knob - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENCODER_SUB_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, 0); \
+		einthandler_initialize(& eh2, BOARD_ENCODER_SUB_BITS, spool_encinterrupts, & encoder_sub); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh2); \
+		/* */ \
+		/* ENC1F - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENC1F_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, 0); \
+		einthandler_initialize(& enc1fh, BOARD_ENC1F_BITS, spool_encinterrupts, & encoder_ENC1F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc1fh); \
+		/* */ \
+		/* ENC2F - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENC2F_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, 0); \
+		einthandler_initialize(& enc2fh, BOARD_ENC2F_BITS, spool_encinterrupts, & encoder_ENC2F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc2fh); \
+		/* */ \
+		/* ENC3F - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENC3F_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, 0); \
+		einthandler_initialize(& enc3fh, BOARD_ENC3F_BITS, spool_encinterrupts, & encoder_ENC3F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc3fh); \
+		/* */ \
+		/* ENC4F - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENC4F_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, 0); \
+		einthandler_initialize(& enc4fh, BOARD_ENC4F_BITS, spool_encinterrupts, & encoder_ENC4F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc4fh); \
 	} while (0)
 
 #endif /* WITHENCODER */
@@ -552,7 +557,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc0_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -610,7 +615,7 @@
 	#define	SMHCHARD_PTR SMHC1	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC1_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC1_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc1_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc1_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	// Additional lines to module TL8189FQB2 (Realtek RTL8189FTV based) :
@@ -661,7 +666,7 @@
 	#define	SMHCHARD_PTR SMHC2	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC2_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnrt113_get_smhc2_freq())
+	#define SMHCHARD_FREQ (allwnr_t113_get_smhc2_freq())
 	#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
 	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface */
 
@@ -836,6 +841,8 @@
 		switch (target) { \
 		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
+		case targettsc1: local_delay_us(1); break; /* XPT2046 SPI chip select signal */ \
+		case targetfpga1: local_delay_us(1); break; /* FPGA control registers CS1 */ \
 		default: local_delay_us(1); break; \
 		} \
 	} while (0)
@@ -878,7 +885,7 @@
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi1_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi1_freq())
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
@@ -997,7 +1004,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 	// I2C/TWI
@@ -1035,15 +1042,15 @@
 		} while (0) 
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHISBOOTLOADER */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(5); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(5); } while (0)
 	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 12)	/* PE12 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -1062,6 +1069,7 @@
 			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
 			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
 			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
+			local_delay_us(5); \
 		} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
@@ -1302,17 +1310,34 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
-	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
-	#define TCONLCD_IRQ TCON_LCD0_IRQn
-	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#if 1
+		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
+		#define TCONLCD_IRQ TCON_LCD0_IRQn
+		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#endif
 
-//	#define	TCONTV_IX 0	/* 0: TCON_TV0, 2: TCON_TV1 */
-//	#define TCONTV_PTR TCON_TV0
-//	#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
-//	#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+	#if 1
+		// Надо для HDMI и TVOUT
+		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
+		#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define TCONTV_IRQ TCON_TV0_IRQn
+		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+	#endif
+
+	#if 0
+		#define	TVENCODER_IX 0	/* 0 -TVE0 */
+		#define	TVENCODER_PTR TVE0	/* 0 - TVE0 */
+		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
+		#define	TVE_CCU_CLK_REG (CCU->TVE0_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define	TVE_CCU_BGR_REG (CCU->TVE_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
+		#define BOARD_TVEFREQ (allwnr_t507_get_tve0_freq())
+	#endif
 
 #endif /* WITHLTDCHW */
 

@@ -29,7 +29,7 @@ void hardwate_can0_initialize(void)
 
     CAN0->CAN_MSEL |= 1; /* Reset mode selected*/
 
-    unsigned divider = calcdivround2(allwnrt113_get_can_freq(), busfreq);
+    unsigned divider = calcdivround2(allwnr_t113_get_can_freq(), busfreq);
     CAN0->CAN_BUSTIME = (
 		((divider - 1)   << 0) |        /* apb_clk = 100Mz , 100/10 = 10MHz*/
 		(1 << 14) |   /* Synchronization Jump Width :2 Tq clock cycles *///(1 << 14)

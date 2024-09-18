@@ -1,4 +1,575 @@
-#type; HDMI
-#base; HDMI 0x01EE0000
+## https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
+
+#type; HDMI_TX 
+#base; HDMI_TX0 0x01EE0000
+#irq; HDMI_TX0 120
+
+## Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
+
+## Identification Registers 
+#regdef; HDMI_DESIGN_ID                          1 ; 0x0000 ; 
+#regdef; HDMI_REVISION_ID                        1 ; 0x0001 ;
+#regdef; HDMI_PRODUCT_ID0                        1 ; 0x0002 ;
+#regdef; HDMI_PRODUCT_ID1                        1 ; 0x0003 ;
+#regdef; HDMI_CONFIG0_ID                         1 ; 0x0004 ;
+#regdef; HDMI_CONFIG1_ID                         1 ; 0x0005 ;
+#regdef; HDMI_CONFIG2_ID                         1 ; 0x0006 ;
+#regdef; HDMI_CONFIG3_ID                         1 ; 0x0007 ;
+
+## Interrupt Registers 
+#regdef; HDMI_IH_FC_STAT0                        1 ; 0x0100 ;
+#regdef; HDMI_IH_FC_STAT1                        1 ; 0x0101 ;
+#regdef; HDMI_IH_FC_STAT2                        1 ; 0x0102 ;
+#regdef; HDMI_IH_AS_STAT0                        1 ; 0x0103 ;
+#regdef; HDMI_IH_PHY_STAT0                       1 ; 0x0104 ;
+#regdef; HDMI_IH_I2CM_STAT0                      1 ; 0x0105 ;
+#regdef; HDMI_IH_CEC_STAT0                       1 ; 0x0106 ;
+#regdef; HDMI_IH_VP_STAT0                        1 ; 0x0107 ;
+#regdef; HDMI_IH_I2CMPHY_STAT0                   1 ; 0x0108 ;
+#regdef; HDMI_IH_AHBDMAAUD_STAT0                 1 ; 0x0109 ;
+
+#regdef; HDMI_IH_MUTE_FC_STAT0                   1 ; 0x0180 ;
+#regdef; HDMI_IH_MUTE_FC_STAT1                   1 ; 0x0181 ;
+#regdef; HDMI_IH_MUTE_FC_STAT2                   1 ; 0x0182 ;
+#regdef; HDMI_IH_MUTE_AS_STAT0                   1 ; 0x0183 ;
+#regdef; HDMI_IH_MUTE_PHY_STAT0                  1 ; 0x0184 ;
+#regdef; HDMI_IH_MUTE_I2CM_STAT0                 1 ; 0x0185 ;
+#regdef; HDMI_IH_MUTE_CEC_STAT0                  1 ; 0x0186 ;
+#regdef; HDMI_IH_MUTE_VP_STAT0                   1 ; 0x0187 ;
+#regdef; HDMI_IH_MUTE_I2CMPHY_STAT0              1 ; 0x0188 ;
+#regdef; HDMI_IH_MUTE_AHBDMAAUD_STAT0            1 ; 0x0189 ;
+#regdef; HDMI_IH_MUTE                            1 ; 0x01FF ;
+
+## Video Sample Registers 
+#regdef; HDMI_TX_INVID0                          1 ; 0x0200 ;
+#regdef; HDMI_TX_INSTUFFING                      1 ; 0x0201 ;
+#regdef; HDMI_TX_GYDATA0                         1 ; 0x0202 ;
+#regdef; HDMI_TX_GYDATA1                         1 ; 0x0203 ;
+#regdef; HDMI_TX_RCRDATA0                        1 ; 0x0204 ;
+#regdef; HDMI_TX_RCRDATA1                        1 ; 0x0205 ;
+#regdef; HDMI_TX_BCBDATA0                        1 ; 0x0206 ;
+#regdef; HDMI_TX_BCBDATA1                        1 ; 0x0207 ;
+
+## Video Packetizer Registers 
+#regdef; HDMI_VP_STATUS                          1 ; 0x0800 ;
+#regdef; HDMI_VP_PR_CD                           1 ; 0x0801 ;
+#regdef; HDMI_VP_STUFF                           1 ; 0x0802 ;
+#regdef; HDMI_VP_REMAP                           1 ; 0x0803 ;
+#regdef; HDMI_VP_CONF                            1 ; 0x0804 ;
+#regdef; HDMI_VP_STAT                            1 ; 0x0805 ;
+#regdef; HDMI_VP_INT                             1 ; 0x0806 ;
+#regdef; HDMI_VP_MASK                            1 ; 0x0807 ;
+#regdef; HDMI_VP_POL                             1 ; 0x0808 ;
+
+## Frame Composer Registers 
+#regdef; HDMI_FC_INVIDCONF                       1 ; 0x1000 ; 
+#regdef; HDMI_FC_INHACTV0                        1 ; 0x1001 ; 
+#regdef; HDMI_FC_INHACTV1                        1 ; 0x1002 ; 
+#regdef; HDMI_FC_INHBLANK0                       1 ; 0x1003 ; 
+#regdef; HDMI_FC_INHBLANK1                       1 ; 0x1004 ; 
+#regdef; HDMI_FC_INVACTV0                        1 ; 0x1005 ; 
+#regdef; HDMI_FC_INVACTV1                        1 ; 0x1006 ; 
+#regdef; HDMI_FC_INVBLANK                        1 ; 0x1007 ; 
+#regdef; HDMI_FC_HSYNCINDELAY0                   1 ; 0x1008 ; 
+#regdef; HDMI_FC_HSYNCINDELAY1                   1 ; 0x1009 ; 
+#regdef; HDMI_FC_HSYNCINWIDTH0                   1 ; 0x100A ; 
+#regdef; HDMI_FC_HSYNCINWIDTH1                   1 ; 0x100B ; 
+#regdef; HDMI_FC_VSYNCINDELAY                    1 ; 0x100C ; 
+#regdef; HDMI_FC_VSYNCINWIDTH                    1 ; 0x100D ; 
+#regdef; HDMI_FC_INFREQ0                         1 ; 0x100E ; 
+#regdef; HDMI_FC_INFREQ1                         1 ; 0x100F ; 
+#regdef; HDMI_FC_INFREQ2                         1 ; 0x1010 ; 
+#regdef; HDMI_FC_CTRLDUR                         1 ; 0x1011 ; 
+#regdef; HDMI_FC_EXCTRLDUR                       1 ; 0x1012 ; 
+#regdef; HDMI_FC_EXCTRLSPAC                      1 ; 0x1013 ; 
+#regdef; HDMI_FC_CH0PREAM                        1 ; 0x1014 ; 
+#regdef; HDMI_FC_CH1PREAM                        1 ; 0x1015 ; 
+#regdef; HDMI_FC_CH2PREAM                        1 ; 0x1016 ; 
+#regdef; HDMI_FC_AVICONF3                        1 ; 0x1017 ; 
+#regdef; HDMI_FC_GCP                             1 ; 0x1018 ; 
+#regdef; HDMI_FC_AVICONF0                        1 ; 0x1019 ; 
+#regdef; HDMI_FC_AVICONF1                        1 ; 0x101A ; 
+#regdef; HDMI_FC_AVICONF2                        1 ; 0x101B ; 
+#regdef; HDMI_FC_AVIVID                          1 ; 0x101C ; 
+#regdef; HDMI_FC_AVIETB0                         1 ; 0x101D ; 
+#regdef; HDMI_FC_AVIETB1                         1 ; 0x101E ; 
+#regdef; HDMI_FC_AVISBB0                         1 ; 0x101F ; 
+#regdef; HDMI_FC_AVISBB1                         1 ; 0x1020 ; 
+#regdef; HDMI_FC_AVIELB0                         1 ; 0x1021 ; 
+#regdef; HDMI_FC_AVIELB1                         1 ; 0x1022 ; 
+#regdef; HDMI_FC_AVISRB0                         1 ; 0x1023 ; 
+#regdef; HDMI_FC_AVISRB1                         1 ; 0x1024 ; 
+#regdef; HDMI_FC_AUDICONF0                       1 ; 0x1025 ; 
+#regdef; HDMI_FC_AUDICONF1                       1 ; 0x1026 ; 
+#regdef; HDMI_FC_AUDICONF2                       1 ; 0x1027 ; 
+#regdef; HDMI_FC_AUDICONF3                       1 ; 0x1028 ; 
+#regdef; HDMI_FC_VSDIEEEID0                      1 ; 0x1029 ; 
+#regdef; HDMI_FC_VSDSIZE                         1 ; 0x102A ; 
+#regdef; HDMI_FC_VSDIEEEID1                      1 ; 0x1030 ; 
+#regdef; HDMI_FC_VSDIEEEID2                      1 ; 0x1031 ; 
+#regdef; HDMI_FC_VSDPAYLOAD0                     1 ; 0x1032 ; 
+#regdef; HDMI_FC_VSDPAYLOAD1                     1 ; 0x1033 ; 
+#regdef; HDMI_FC_VSDPAYLOAD2                     1 ; 0x1034 ; 
+#regdef; HDMI_FC_VSDPAYLOAD3                     1 ; 0x1035 ; 
+#regdef; HDMI_FC_VSDPAYLOAD4                     1 ; 0x1036 ; 
+#regdef; HDMI_FC_VSDPAYLOAD5                     1 ; 0x1037 ; 
+#regdef; HDMI_FC_VSDPAYLOAD6                     1 ; 0x1038 ; 
+#regdef; HDMI_FC_VSDPAYLOAD7                     1 ; 0x1039 ; 
+#regdef; HDMI_FC_VSDPAYLOAD8                     1 ; 0x103A ; 
+#regdef; HDMI_FC_VSDPAYLOAD9                     1 ; 0x103B ; 
+#regdef; HDMI_FC_VSDPAYLOAD10                    1 ; 0x103C ; 
+#regdef; HDMI_FC_VSDPAYLOAD11                    1 ; 0x103D ; 
+#regdef; HDMI_FC_VSDPAYLOAD12                    1 ; 0x103E ; 
+#regdef; HDMI_FC_VSDPAYLOAD13                    1 ; 0x103F ; 
+#regdef; HDMI_FC_VSDPAYLOAD14                    1 ; 0x1040 ; 
+#regdef; HDMI_FC_VSDPAYLOAD15                    1 ; 0x1041 ; 
+#regdef; HDMI_FC_VSDPAYLOAD16                    1 ; 0x1042 ; 
+#regdef; HDMI_FC_VSDPAYLOAD17                    1 ; 0x1043 ; 
+#regdef; HDMI_FC_VSDPAYLOAD18                    1 ; 0x1044 ; 
+#regdef; HDMI_FC_VSDPAYLOAD19                    1 ; 0x1045 ; 
+#regdef; HDMI_FC_VSDPAYLOAD20                    1 ; 0x1046 ; 
+#regdef; HDMI_FC_VSDPAYLOAD21                    1 ; 0x1047 ; 
+#regdef; HDMI_FC_VSDPAYLOAD22                    1 ; 0x1048 ; 
+#regdef; HDMI_FC_VSDPAYLOAD23                    1 ; 0x1049 ; 
+#regdef; HDMI_FC_SPDVENDORNAME0                  1 ; 0x104A ; 
+#regdef; HDMI_FC_SPDVENDORNAME1                  1 ; 0x104B ; 
+#regdef; HDMI_FC_SPDVENDORNAME2                  1 ; 0x104C ; 
+#regdef; HDMI_FC_SPDVENDORNAME3                  1 ; 0x104D ; 
+#regdef; HDMI_FC_SPDVENDORNAME4                  1 ; 0x104E ; 
+#regdef; HDMI_FC_SPDVENDORNAME5                  1 ; 0x104F ; 
+#regdef; HDMI_FC_SPDVENDORNAME6                  1 ; 0x1050 ; 
+#regdef; HDMI_FC_SPDVENDORNAME7                  1 ; 0x1051 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME0                 1 ; 0x1052 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME1                 1 ; 0x1053 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME2                 1 ; 0x1054 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME3                 1 ; 0x1055 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME4                 1 ; 0x1056 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME5                 1 ; 0x1057 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME6                 1 ; 0x1058 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME7                 1 ; 0x1059 ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME8                 1 ; 0x105A ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME9                 1 ; 0x105B ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME10                1 ; 0x105C ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME11                1 ; 0x105D ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME12                1 ; 0x105E ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME13                1 ; 0x105F ; 
+#regdef; HDMI_FC_SDPPRODUCTNAME14                1 ; 0x1060 ; 
+#regdef; HDMI_FC_SPDPRODUCTNAME15                1 ; 0x1061 ; 
+#regdef; HDMI_FC_SPDDEVICEINF                    1 ; 0x1062 ; 
+#regdef; HDMI_FC_AUDSCONF                        1 ; 0x1063 ; 
+#regdef; HDMI_FC_AUDSSTAT                        1 ; 0x1064 ; 
+#regdef; HDMI_FC_DATACH0FILL                     1 ; 0x1070 ; 
+#regdef; HDMI_FC_DATACH1FILL                     1 ; 0x1071 ; 
+#regdef; HDMI_FC_DATACH2FILL                     1 ; 0x1072 ; 
+#regdef; HDMI_FC_CTRLQHIGH                       1 ; 0x1073 ; 
+#regdef; HDMI_FC_CTRLQLOW                        1 ; 0x1074 ; 
+#regdef; HDMI_FC_ACP0                            1 ; 0x1075 ; 
+#regdef; HDMI_FC_ACP28                           1 ; 0x1076 ; 
+#regdef; HDMI_FC_ACP27                           1 ; 0x1077 ; 
+#regdef; HDMI_FC_ACP26                           1 ; 0x1078 ; 
+#regdef; HDMI_FC_ACP25                           1 ; 0x1079 ; 
+#regdef; HDMI_FC_ACP24                           1 ; 0x107A ; 
+#regdef; HDMI_FC_ACP23                           1 ; 0x107B ; 
+#regdef; HDMI_FC_ACP22                           1 ; 0x107C ; 
+#regdef; HDMI_FC_ACP21                           1 ; 0x107D ; 
+#regdef; HDMI_FC_ACP20                           1 ; 0x107E ; 
+#regdef; HDMI_FC_ACP19                           1 ; 0x107F ; 
+#regdef; HDMI_FC_ACP18                           1 ; 0x1080 ; 
+#regdef; HDMI_FC_ACP17                           1 ; 0x1081 ; 
+#regdef; HDMI_FC_ACP16                           1 ; 0x1082 ; 
+#regdef; HDMI_FC_ACP15                           1 ; 0x1083 ; 
+#regdef; HDMI_FC_ACP14                           1 ; 0x1084 ; 
+#regdef; HDMI_FC_ACP13                           1 ; 0x1085 ; 
+#regdef; HDMI_FC_ACP12                           1 ; 0x1086 ; 
+#regdef; HDMI_FC_ACP11                           1 ; 0x1087 ; 
+#regdef; HDMI_FC_ACP10                           1 ; 0x1088 ; 
+#regdef; HDMI_FC_ACP9                            1 ; 0x1089 ; 
+#regdef; HDMI_FC_ACP8                            1 ; 0x108A ; 
+#regdef; HDMI_FC_ACP7                            1 ; 0x108B ; 
+#regdef; HDMI_FC_ACP6                            1 ; 0x108C ; 
+#regdef; HDMI_FC_ACP5                            1 ; 0x108D ; 
+#regdef; HDMI_FC_ACP4                            1 ; 0x108E ; 
+#regdef; HDMI_FC_ACP3                            1 ; 0x108F ; 
+#regdef; HDMI_FC_ACP2                            1 ; 0x1090 ; 
+#regdef; HDMI_FC_ACP1                            1 ; 0x1091 ; 
+#regdef; HDMI_FC_ISCR1_0                         1 ; 0x1092 ; 
+#regdef; HDMI_FC_ISCR1_16                        1 ; 0x1093 ; 
+#regdef; HDMI_FC_ISCR1_15                        1 ; 0x1094 ; 
+#regdef; HDMI_FC_ISCR1_14                        1 ; 0x1095 ; 
+#regdef; HDMI_FC_ISCR1_13                        1 ; 0x1096 ; 
+#regdef; HDMI_FC_ISCR1_12                        1 ; 0x1097 ; 
+#regdef; HDMI_FC_ISCR1_11                        1 ; 0x1098 ; 
+#regdef; HDMI_FC_ISCR1_10                        1 ; 0x1099 ; 
+#regdef; HDMI_FC_ISCR1_9                         1 ; 0x109A ; 
+#regdef; HDMI_FC_ISCR1_8                         1 ; 0x109B ; 
+#regdef; HDMI_FC_ISCR1_7                         1 ; 0x109C ; 
+#regdef; HDMI_FC_ISCR1_6                         1 ; 0x109D ; 
+#regdef; HDMI_FC_ISCR1_5                         1 ; 0x109E ; 
+#regdef; HDMI_FC_ISCR1_4                         1 ; 0x109F ; 
+#regdef; HDMI_FC_ISCR1_3                         1 ; 0x10A0 ; 
+#regdef; HDMI_FC_ISCR1_2                         1 ; 0x10A1 ; 
+#regdef; HDMI_FC_ISCR1_1                         1 ; 0x10A2 ; 
+#regdef; HDMI_FC_ISCR2_15                        1 ; 0x10A3 ; 
+#regdef; HDMI_FC_ISCR2_14                        1 ; 0x10A4 ; 
+#regdef; HDMI_FC_ISCR2_13                        1 ; 0x10A5 ; 
+#regdef; HDMI_FC_ISCR2_12                        1 ; 0x10A6 ; 
+#regdef; HDMI_FC_ISCR2_11                        1 ; 0x10A7 ; 
+#regdef; HDMI_FC_ISCR2_10                        1 ; 0x10A8 ; 
+#regdef; HDMI_FC_ISCR2_9                         1 ; 0x10A9 ; 
+#regdef; HDMI_FC_ISCR2_8                         1 ; 0x10AA ; 
+#regdef; HDMI_FC_ISCR2_7                         1 ; 0x10AB ; 
+#regdef; HDMI_FC_ISCR2_6                         1 ; 0x10AC ; 
+#regdef; HDMI_FC_ISCR2_5                         1 ; 0x10AD ; 
+#regdef; HDMI_FC_ISCR2_4                         1 ; 0x10AE ; 
+#regdef; HDMI_FC_ISCR2_3                         1 ; 0x10AF ; 
+#regdef; HDMI_FC_ISCR2_2                         1 ; 0x10B0 ; 
+#regdef; HDMI_FC_ISCR2_1                         1 ; 0x10B1 ; 
+#regdef; HDMI_FC_ISCR2_0                         1 ; 0x10B2 ; 
+#regdef; HDMI_FC_DATAUTO0                        1 ; 0x10B3 ; 
+#regdef; HDMI_FC_DATAUTO1                        1 ; 0x10B4 ; 
+#regdef; HDMI_FC_DATAUTO2                        1 ; 0x10B5 ; 
+#regdef; HDMI_FC_DATMAN                          1 ; 0x10B6 ; 
+#regdef; HDMI_FC_DATAUTO3                        1 ; 0x10B7 ; 
+#regdef; HDMI_FC_RDRB0                           1 ; 0x10B8 ; 
+#regdef; HDMI_FC_RDRB1                           1 ; 0x10B9 ; 
+#regdef; HDMI_FC_RDRB2                           1 ; 0x10BA ; 
+#regdef; HDMI_FC_RDRB3                           1 ; 0x10BB ; 
+#regdef; HDMI_FC_RDRB4                           1 ; 0x10BC ; 
+#regdef; HDMI_FC_RDRB5                           1 ; 0x10BD ; 
+#regdef; HDMI_FC_RDRB6                           1 ; 0x10BE ; 
+#regdef; HDMI_FC_RDRB7                           1 ; 0x10BF ; 
+#regdef; HDMI_FC_STAT0                           1 ; 0x10D0 ; 
+#regdef; HDMI_FC_INT0                            1 ; 0x10D1 ; 
+#regdef; HDMI_FC_MASK0                           1 ; 0x10D2 ; 
+#regdef; HDMI_FC_POL0                            1 ; 0x10D3 ; 
+#regdef; HDMI_FC_STAT1                           1 ; 0x10D4 ; 
+#regdef; HDMI_FC_INT1                            1 ; 0x10D5 ; 
+#regdef; HDMI_FC_MASK1                           1 ; 0x10D6 ; 
+#regdef; HDMI_FC_POL1                            1 ; 0x10D7 ; 
+#regdef; HDMI_FC_STAT2                           1 ; 0x10D8 ; 
+#regdef; HDMI_FC_INT2                            1 ; 0x10D9 ; 
+#regdef; HDMI_FC_MASK2                           1 ; 0x10DA ; 
+#regdef; HDMI_FC_POL2                            1 ; 0x10DB ; 
+#regdef; HDMI_FC_PRCONF                          1 ; 0x10E0 ; 
+
+#regdef; HDMI_FC_GMD_STAT                        1 ; 0x1100 ; 
+#regdef; HDMI_FC_GMD_EN                          1 ; 0x1101 ; 
+#regdef; HDMI_FC_GMD_UP                          1 ; 0x1102 ; 
+#regdef; HDMI_FC_GMD_CONF                        1 ; 0x1103 ; 
+#regdef; HDMI_FC_GMD_HB                          1 ; 0x1104 ; 
+#regdef; HDMI_FC_GMD_PB0                         1 ; 0x1105 ; 
+#regdef; HDMI_FC_GMD_PB1                         1 ; 0x1106 ; 
+#regdef; HDMI_FC_GMD_PB2                         1 ; 0x1107 ; 
+#regdef; HDMI_FC_GMD_PB3                         1 ; 0x1108 ; 
+#regdef; HDMI_FC_GMD_PB4                         1 ; 0x1109 ; 
+#regdef; HDMI_FC_GMD_PB5                         1 ; 0x110A ; 
+#regdef; HDMI_FC_GMD_PB6                         1 ; 0x110B ; 
+#regdef; HDMI_FC_GMD_PB7                         1 ; 0x110C ; 
+#regdef; HDMI_FC_GMD_PB8                         1 ; 0x110D ; 
+#regdef; HDMI_FC_GMD_PB9                         1 ; 0x110E ; 
+#regdef; HDMI_FC_GMD_PB10                        1 ; 0x110F ; 
+#regdef; HDMI_FC_GMD_PB11                        1 ; 0x1110 ; 
+#regdef; HDMI_FC_GMD_PB12                        1 ; 0x1111 ; 
+#regdef; HDMI_FC_GMD_PB13                        1 ; 0x1112 ; 
+#regdef; HDMI_FC_GMD_PB14                        1 ; 0x1113 ; 
+#regdef; HDMI_FC_GMD_PB15                        1 ; 0x1114 ; 
+#regdef; HDMI_FC_GMD_PB16                        1 ; 0x1115 ; 
+#regdef; HDMI_FC_GMD_PB17                        1 ; 0x1116 ; 
+#regdef; HDMI_FC_GMD_PB18                        1 ; 0x1117 ; 
+#regdef; HDMI_FC_GMD_PB19                        1 ; 0x1118 ; 
+#regdef; HDMI_FC_GMD_PB20                        1 ; 0x1119 ; 
+#regdef; HDMI_FC_GMD_PB21                        1 ; 0x111A ; 
+#regdef; HDMI_FC_GMD_PB22                        1 ; 0x111B ; 
+#regdef; HDMI_FC_GMD_PB23                        1 ; 0x111C ; 
+#regdef; HDMI_FC_GMD_PB24                        1 ; 0x111D ; 
+#regdef; HDMI_FC_GMD_PB25                        1 ; 0x111E ; 
+#regdef; HDMI_FC_GMD_PB26                        1 ; 0x111F ; 
+#regdef; HDMI_FC_GMD_PB27                        1 ; 0x1120 ; 
+
+#regdef; HDMI_FC_DBGFORCE                        1 ; 0x1200 ; 
+#regdef; HDMI_FC_DBGAUD0CH0                      1 ; 0x1201 ; 
+#regdef; HDMI_FC_DBGAUD1CH0                      1 ; 0x1202 ; 
+#regdef; HDMI_FC_DBGAUD2CH0                      1 ; 0x1203 ; 
+#regdef; HDMI_FC_DBGAUD0CH1                      1 ; 0x1204 ; 
+#regdef; HDMI_FC_DBGAUD1CH1                      1 ; 0x1205 ; 
+#regdef; HDMI_FC_DBGAUD2CH1                      1 ; 0x1206 ; 
+#regdef; HDMI_FC_DBGAUD0CH2                      1 ; 0x1207 ; 
+#regdef; HDMI_FC_DBGAUD1CH2                      1 ; 0x1208 ; 
+#regdef; HDMI_FC_DBGAUD2CH2                      1 ; 0x1209 ; 
+#regdef; HDMI_FC_DBGAUD0CH3                      1 ; 0x120A ; 
+#regdef; HDMI_FC_DBGAUD1CH3                      1 ; 0x120B ; 
+#regdef; HDMI_FC_DBGAUD2CH3                      1 ; 0x120C ; 
+#regdef; HDMI_FC_DBGAUD0CH4                      1 ; 0x120D ; 
+#regdef; HDMI_FC_DBGAUD1CH4                      1 ; 0x120E ; 
+#regdef; HDMI_FC_DBGAUD2CH4                      1 ; 0x120F ; 
+#regdef; HDMI_FC_DBGAUD0CH5                      1 ; 0x1210 ; 
+#regdef; HDMI_FC_DBGAUD1CH5                      1 ; 0x1211 ; 
+#regdef; HDMI_FC_DBGAUD2CH5                      1 ; 0x1212 ; 
+#regdef; HDMI_FC_DBGAUD0CH6                      1 ; 0x1213 ; 
+#regdef; HDMI_FC_DBGAUD1CH6                      1 ; 0x1214 ; 
+#regdef; HDMI_FC_DBGAUD2CH6                      1 ; 0x1215 ; 
+#regdef; HDMI_FC_DBGAUD0CH7                      1 ; 0x1216 ; 
+#regdef; HDMI_FC_DBGAUD1CH7                      1 ; 0x1217 ; 
+#regdef; HDMI_FC_DBGAUD2CH7                      1 ; 0x1218 ; 
+#regdef; HDMI_FC_DBGTMDS0                        1 ; 0x1219 ; 
+#regdef; HDMI_FC_DBGTMDS1                        1 ; 0x121A ; 
+#regdef; HDMI_FC_DBGTMDS2                        1 ; 0x121B ; 
+
+## HDMI Source PHY Registers 
+#regdef; HDMI_PHY_CONF0                          1 ; 0x3000 ; 
+#regdef; HDMI_PHY_TST0                           1 ; 0x3001 ; 
+#regdef; HDMI_PHY_TST1                           1 ; 0x3002 ; 
+#regdef; HDMI_PHY_TST2                           1 ; 0x3003 ; 
+#regdef; HDMI_PHY_STAT0                          1 ; 0x3004 ; 
+#regdef; HDMI_PHY_INT0                           1 ; 0x3005 ; 
+#regdef; HDMI_PHY_MASK0                          1 ; 0x3006 ; 
+#regdef; HDMI_PHY_POL0                           1 ; 0x3007 ; 
+
+## HDMI Master PHY Registers 
+#regdef; HDMI_PHY_I2CM_SLAVE_ADDR                1 ; 0x3020 ; 
+#regdef; HDMI_PHY_I2CM_ADDRESS_ADDR              1 ; 0x3021 ; 
+#regdef; HDMI_PHY_I2CM_DATAO_1_ADDR              1 ; 0x3022 ; 
+#regdef; HDMI_PHY_I2CM_DATAO_0_ADDR              1 ; 0x3023 ; 
+#regdef; HDMI_PHY_I2CM_DATAI_1_ADDR              1 ; 0x3024 ; 
+#regdef; HDMI_PHY_I2CM_DATAI_0_ADDR              1 ; 0x3025 ; 
+#regdef; HDMI_PHY_I2CM_OPERATION_ADDR            1 ; 0x3026 ; 
+#regdef; HDMI_PHY_I2CM_INT_ADDR                  1 ; 0x3027 ; 
+#regdef; HDMI_PHY_I2CM_CTLINT_ADDR               1 ; 0x3028 ; 
+#regdef; HDMI_PHY_I2CM_DIV_ADDR                  1 ; 0x3029 ; 
+#regdef; HDMI_PHY_I2CM_SOFTRSTZ_ADDR             1 ; 0x302a ; 
+#regdef; HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR        1 ; 0x302b ; 
+#regdef; HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR        1 ; 0x302c ; 
+#regdef; HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR        1 ; 0x302d ; 
+#regdef; HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR        1 ; 0x302e ; 
+#regdef; HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR        1 ; 0x302f ; 
+#regdef; HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR        1 ; 0x3030 ; 
+#regdef; HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR        1 ; 0x3031 ; 
+#regdef; HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR        1 ; 0x3032 ; 
+
+## Audio Sampler Registers 
+#regdef; HDMI_AUD_CONF0                          1 ; 0x3100 ; 
+#regdef; HDMI_AUD_CONF1                          1 ; 0x3101 ; 
+#regdef; HDMI_AUD_INT                            1 ; 0x3102 ; 
+#regdef; HDMI_AUD_CONF2                          1 ; 0x3103 ; 
+#regdef; HDMI_AUD_N1                             1 ; 0x3200 ; 
+#regdef; HDMI_AUD_N2                             1 ; 0x3201 ; 
+#regdef; HDMI_AUD_N3                             1 ; 0x3202 ; 
+#regdef; HDMI_AUD_CTS1                           1 ; 0x3203 ; 
+#regdef; HDMI_AUD_CTS2                           1 ; 0x3204 ; 
+#regdef; HDMI_AUD_CTS3                           1 ; 0x3205 ; 
+#regdef; HDMI_AUD_INPUTCLKFS                     1 ; 0x3206 ; 
+#regdef; HDMI_AUD_SPDIFINT						 1 ; 0x3302 ; 
+#regdef; HDMI_AUD_CONF0_HBR                      1 ; 0x3400 ; 
+#regdef; HDMI_AUD_HBR_STATUS                     1 ; 0x3401 ; 
+#regdef; HDMI_AUD_HBR_INT                        1 ; 0x3402 ; 
+#regdef; HDMI_AUD_HBR_POL                        1 ; 0x3403 ; 
+#regdef; HDMI_AUD_HBR_MASK                       1 ; 0x3404 ; 
+
+## 
+## Generic Parallel Audio Interface Registers
+## Not used as GPAUD interface is not enabled in hw
+ 
+#regdef; HDMI_GP_CONF0                           1 ; 0x3500 ; 
+#regdef; HDMI_GP_CONF1                           1 ; 0x3501 ; 
+#regdef; HDMI_GP_CONF2                           1 ; 0x3502 ; 
+#regdef; HDMI_GP_STAT                            1 ; 0x3503 ; 
+#regdef; HDMI_GP_INT                             1 ; 0x3504 ; 
+#regdef; HDMI_GP_MASK                            1 ; 0x3505 ; 
+#regdef; HDMI_GP_POL                             1 ; 0x3506 ; 
+
+## Audio DMA Registers 
+#regdef; HDMI_AHB_DMA_CONF0                      1 ; 0x3600 ; 
+#regdef; HDMI_AHB_DMA_START                      1 ; 0x3601 ; 
+#regdef; HDMI_AHB_DMA_STOP                       1 ; 0x3602 ; 
+#regdef; HDMI_AHB_DMA_THRSLD                     1 ; 0x3603 ; 
+#regdef; HDMI_AHB_DMA_STRADDR0                   1 ; 0x3604 ; 
+#regdef; HDMI_AHB_DMA_STRADDR1                   1 ; 0x3605 ; 
+#regdef; HDMI_AHB_DMA_STRADDR2                   1 ; 0x3606 ; 
+#regdef; HDMI_AHB_DMA_STRADDR3                   1 ; 0x3607 ; 
+#regdef; HDMI_AHB_DMA_STPADDR0                   1 ; 0x3608 ; 
+#regdef; HDMI_AHB_DMA_STPADDR1                   1 ; 0x3609 ; 
+#regdef; HDMI_AHB_DMA_STPADDR2                   1 ; 0x360a ; 
+#regdef; HDMI_AHB_DMA_STPADDR3                   1 ; 0x360b ; 
+#regdef; HDMI_AHB_DMA_BSTADDR0                   1 ; 0x360c ; 
+#regdef; HDMI_AHB_DMA_BSTADDR1                   1 ; 0x360d ; 
+#regdef; HDMI_AHB_DMA_BSTADDR2                   1 ; 0x360e ; 
+#regdef; HDMI_AHB_DMA_BSTADDR3                   1 ; 0x360f ; 
+#regdef; HDMI_AHB_DMA_MBLENGTH0                  1 ; 0x3610 ; 
+#regdef; HDMI_AHB_DMA_MBLENGTH1                  1 ; 0x3611 ; 
+#regdef; HDMI_AHB_DMA_STAT                       1 ; 0x3612 ; 
+#regdef; HDMI_AHB_DMA_INT                        1 ; 0x3613 ; 
+#regdef; HDMI_AHB_DMA_MASK                       1 ; 0x3614 ; 
+#regdef; HDMI_AHB_DMA_POL                        1 ; 0x3615 ; 
+#regdef; HDMI_AHB_DMA_CONF1                      1 ; 0x3616 ; 
+#regdef; HDMI_AHB_DMA_BUFFSTAT                   1 ; 0x3617 ; 
+#regdef; HDMI_AHB_DMA_BUFFINT                    1 ; 0x3618 ; 
+#regdef; HDMI_AHB_DMA_BUFFMASK                   1 ; 0x3619 ; 
+#regdef; HDMI_AHB_DMA_BUFFPOL                    1 ; 0x361a ; 
+
+## Main Controller Registers 
+#regdef; HDMI_MC_SFRDIV                          1 ; 0x4000 ; 
+#regdef; HDMI_MC_CLKDIS                          1 ; 0x4001 ; 
+#regdef; HDMI_MC_SWRSTZ                          1 ; 0x4002 ; 
+#regdef; HDMI_MC_OPCTRL                          1 ; 0x4003 ; 
+#regdef; HDMI_MC_FLOWCTRL                        1 ; 0x4004 ; 
+#regdef; HDMI_MC_PHYRSTZ                         1 ; 0x4005 ; 
+#regdef; HDMI_MC_LOCKONCLOCK                     1 ; 0x4006 ; 
+#regdef; HDMI_MC_HEACPHY_RST                     1 ; 0x4007 ; 
+
+## Color Space  Converter Registers 
+#regdef; HDMI_CSC_CFG                            1 ; 0x4100 ; 
+#regdef; HDMI_CSC_SCALE                          1 ; 0x4101 ; 
+#regdef; HDMI_CSC_COEF_A1_MSB                    1 ; 0x4102 ; 
+#regdef; HDMI_CSC_COEF_A1_LSB                    1 ; 0x4103 ; 
+#regdef; HDMI_CSC_COEF_A2_MSB                    1 ; 0x4104 ; 
+#regdef; HDMI_CSC_COEF_A2_LSB                    1 ; 0x4105 ; 
+#regdef; HDMI_CSC_COEF_A3_MSB                    1 ; 0x4106 ; 
+#regdef; HDMI_CSC_COEF_A3_LSB                    1 ; 0x4107 ; 
+#regdef; HDMI_CSC_COEF_A4_MSB                    1 ; 0x4108 ; 
+#regdef; HDMI_CSC_COEF_A4_LSB                    1 ; 0x4109 ; 
+#regdef; HDMI_CSC_COEF_B1_MSB                    1 ; 0x410A ; 
+#regdef; HDMI_CSC_COEF_B1_LSB                    1 ; 0x410B ; 
+#regdef; HDMI_CSC_COEF_B2_MSB                    1 ; 0x410C ; 
+#regdef; HDMI_CSC_COEF_B2_LSB                    1 ; 0x410D ; 
+#regdef; HDMI_CSC_COEF_B3_MSB                    1 ; 0x410E ; 
+#regdef; HDMI_CSC_COEF_B3_LSB                    1 ; 0x410F ; 
+#regdef; HDMI_CSC_COEF_B4_MSB                    1 ; 0x4110 ; 
+#regdef; HDMI_CSC_COEF_B4_LSB                    1 ; 0x4111 ; 
+#regdef; HDMI_CSC_COEF_C1_MSB                    1 ; 0x4112 ; 
+#regdef; HDMI_CSC_COEF_C1_LSB                    1 ; 0x4113 ; 
+#regdef; HDMI_CSC_COEF_C2_MSB                    1 ; 0x4114 ; 
+#regdef; HDMI_CSC_COEF_C2_LSB                    1 ; 0x4115 ; 
+#regdef; HDMI_CSC_COEF_C3_MSB                    1 ; 0x4116 ; 
+#regdef; HDMI_CSC_COEF_C3_LSB                    1 ; 0x4117 ; 
+#regdef; HDMI_CSC_COEF_C4_MSB                    1 ; 0x4118 ; 
+#regdef; HDMI_CSC_COEF_C4_LSB                    1 ; 0x4119 ; 
+
+## HDCP Encryption Engine Registers 
+#regdef; HDMI_A_HDCPCFG0                         1 ; 0x5000 ; 
+#regdef; HDMI_A_HDCPCFG1                         1 ; 0x5001 ; 
+#regdef; HDMI_A_HDCPOBS0                         1 ; 0x5002 ; 
+#regdef; HDMI_A_HDCPOBS1                         1 ; 0x5003 ; 
+#regdef; HDMI_A_HDCPOBS2                         1 ; 0x5004 ; 
+#regdef; HDMI_A_HDCPOBS3                         1 ; 0x5005 ; 
+#regdef; HDMI_A_APIINTCLR                        1 ; 0x5006 ; 
+#regdef; HDMI_A_APIINTSTAT                       1 ; 0x5007 ; 
+#regdef; HDMI_A_APIINTMSK                        1 ; 0x5008 ; 
+#regdef; HDMI_A_VIDPOLCFG                        1 ; 0x5009 ; 
+#regdef; HDMI_A_OESSWCFG                         1 ; 0x500A ; 
+#regdef; HDMI_A_TIMER1SETUP0                     1 ; 0x500B ; 
+#regdef; HDMI_A_TIMER1SETUP1                     1 ; 0x500C ; 
+#regdef; HDMI_A_TIMER2SETUP0                     1 ; 0x500D ; 
+#regdef; HDMI_A_TIMER2SETUP1                     1 ; 0x500E ; 
+#regdef; HDMI_A_100MSCFG                         1 ; 0x500F ; 
+#regdef; HDMI_A_2SCFG0                           1 ; 0x5010 ; 
+#regdef; HDMI_A_2SCFG1                           1 ; 0x5011 ; 
+#regdef; HDMI_A_5SCFG0                           1 ; 0x5012 ; 
+#regdef; HDMI_A_5SCFG1                           1 ; 0x5013 ; 
+#regdef; HDMI_A_SRMVERLSB                        1 ; 0x5014 ; 
+#regdef; HDMI_A_SRMVERMSB                        1 ; 0x5015 ; 
+#regdef; HDMI_A_SRMCTRL                          1 ; 0x5016 ; 
+#regdef; HDMI_A_SFRSETUP                         1 ; 0x5017 ; 
+#regdef; HDMI_A_I2CHSETUP                        1 ; 0x5018 ; 
+#regdef; HDMI_A_INTSETUP                         1 ; 0x5019 ; 
+#regdef; HDMI_A_PRESETUP                         1 ; 0x501A ; 
+#regdef; HDMI_A_SRM_BASE                         1 ; 0x5020 ; 
+
+## CEC Engine Registers 
+#regdef; HDMI_CEC_CTRL                           1 ; 0x7D00 ; 
+#regdef; HDMI_CEC_STAT                           1 ; 0x7D01 ; 
+#regdef; HDMI_CEC_MASK                           1 ; 0x7D02 ; 
+#regdef; HDMI_CEC_POLARITY                       1 ; 0x7D03 ; 
+#regdef; HDMI_CEC_INT                            1 ; 0x7D04 ; 
+#regdef; HDMI_CEC_ADDR_L                         1 ; 0x7D05 ; 
+#regdef; HDMI_CEC_ADDR_H                         1 ; 0x7D06 ; 
+#regdef; HDMI_CEC_TX_CNT                         1 ; 0x7D07 ; 
+#regdef; HDMI_CEC_RX_CNT                         1 ; 0x7D08 ; 
+#regdef; HDMI_CEC_TX_DATA0                       1 ; 0x7D10 ; 
+#regdef; HDMI_CEC_TX_DATA1                       1 ; 0x7D11 ; 
+#regdef; HDMI_CEC_TX_DATA2                       1 ; 0x7D12 ; 
+#regdef; HDMI_CEC_TX_DATA3                       1 ; 0x7D13 ; 
+#regdef; HDMI_CEC_TX_DATA4                       1 ; 0x7D14 ; 
+#regdef; HDMI_CEC_TX_DATA5                       1 ; 0x7D15 ; 
+#regdef; HDMI_CEC_TX_DATA6                       1 ; 0x7D16 ; 
+#regdef; HDMI_CEC_TX_DATA7                       1 ; 0x7D17 ; 
+#regdef; HDMI_CEC_TX_DATA8                       1 ; 0x7D18 ; 
+#regdef; HDMI_CEC_TX_DATA9                       1 ; 0x7D19 ; 
+#regdef; HDMI_CEC_TX_DATA10                      1 ; 0x7D1a ; 
+#regdef; HDMI_CEC_TX_DATA11                      1 ; 0x7D1b ; 
+#regdef; HDMI_CEC_TX_DATA12                      1 ; 0x7D1c ; 
+#regdef; HDMI_CEC_TX_DATA13                      1 ; 0x7D1d ; 
+#regdef; HDMI_CEC_TX_DATA14                      1 ; 0x7D1e ; 
+#regdef; HDMI_CEC_TX_DATA15                      1 ; 0x7D1f ; 
+#regdef; HDMI_CEC_RX_DATA0                       1 ; 0x7D20 ; 
+#regdef; HDMI_CEC_RX_DATA1                       1 ; 0x7D21 ; 
+#regdef; HDMI_CEC_RX_DATA2                       1 ; 0x7D22 ; 
+#regdef; HDMI_CEC_RX_DATA3                       1 ; 0x7D23 ; 
+#regdef; HDMI_CEC_RX_DATA4                       1 ; 0x7D24 ; 
+#regdef; HDMI_CEC_RX_DATA5                       1 ; 0x7D25 ; 
+#regdef; HDMI_CEC_RX_DATA6                       1 ; 0x7D26 ; 
+#regdef; HDMI_CEC_RX_DATA7                       1 ; 0x7D27 ; 
+#regdef; HDMI_CEC_RX_DATA8                       1 ; 0x7D28 ; 
+#regdef; HDMI_CEC_RX_DATA9                       1 ; 0x7D29 ; 
+#regdef; HDMI_CEC_RX_DATA10                      1 ; 0x7D2a ; 
+#regdef; HDMI_CEC_RX_DATA11                      1 ; 0x7D2b ; 
+#regdef; HDMI_CEC_RX_DATA12                      1 ; 0x7D2c ; 
+#regdef; HDMI_CEC_RX_DATA13                      1 ; 0x7D2d ; 
+#regdef; HDMI_CEC_RX_DATA14                      1 ; 0x7D2e ; 
+#regdef; HDMI_CEC_RX_DATA15                      1 ; 0x7D2f ; 
+#regdef; HDMI_CEC_LOCK                           1 ; 0x7D30 ; 
+#regdef; HDMI_CEC_WKUPCTRL                       1 ; 0x7D31 ; 
+
+## I2C Master Registers (E-DDC) 
+#regdef; HDMI_I2CM_SLAVE                         1 ; 0x7E00 ; 
+#regdef; HDMI_I2CM_ADDRESS                       1 ; 0x7E01 ; 
+#regdef; HDMI_I2CM_DATAO                         1 ; 0x7E02 ; 
+#regdef; HDMI_I2CM_DATAI                         1 ; 0x7E03 ; 
+#regdef; HDMI_I2CM_OPERATION                     1 ; 0x7E04 ; 
+#regdef; HDMI_I2CM_INT                           1 ; 0x7E05 ; 
+#regdef; HDMI_I2CM_CTLINT                        1 ; 0x7E06 ; 
+#regdef; HDMI_I2CM_DIV                           1 ; 0x7E07 ; 
+#regdef; HDMI_I2CM_SEGADDR                       1 ; 0x7E08 ; 
+#regdef; HDMI_I2CM_SOFTRSTZ                      1 ; 0x7E09 ; 
+#regdef; HDMI_I2CM_SEGPTR                        1 ; 0x7E0A ; 
+#regdef; HDMI_I2CM_SS_SCL_HCNT_1_ADDR            1 ; 0x7E0B ; 
+#regdef; HDMI_I2CM_SS_SCL_HCNT_0_ADDR            1 ; 0x7E0C ; 
+#regdef; HDMI_I2CM_SS_SCL_LCNT_1_ADDR            1 ; 0x7E0D ; 
+#regdef; HDMI_I2CM_SS_SCL_LCNT_0_ADDR            1 ; 0x7E0E ; 
+#regdef; HDMI_I2CM_FS_SCL_HCNT_1_ADDR            1 ; 0x7E0F ; 
+#regdef; HDMI_I2CM_FS_SCL_HCNT_0_ADDR            1 ; 0x7E10 ; 
+#regdef; HDMI_I2CM_FS_SCL_LCNT_1_ADDR            1 ; 0x7E11 ; 
+#regdef; HDMI_I2CM_FS_SCL_LCNT_0_ADDR            1 ; 0x7E12 ; 
+
+#typeend;
+
+## D:\user\Allwinner-H616-develop\kernel\drivers\gpu\drm\sun4i\sun8i_dw_hdmi.h
+
+##	06010000: 00000000 FFFF0000 00184210 00000002 00000000 000F990B 00000004 00000000
+##	06010020: 00000F80 0C0040D8 02700203 000C6023 00000000 00000000 00000000 00000000
+##	06010040: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+##	06010060: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+##	06010080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+##	060100A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+##	060100C0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+##	060100E0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+
+#type; HDMI_PHY 
+#base; HDMI_PHY 0x01EF0000
+
+#regdef; DBG_CTRL; 0x0000; DBG_CTRL
+#regdef; REXT_CTRL; 0x0004; REXT_CTRL
+#regdef; READ_EN; 	0x0010; READ_EN
+#regdef; UNSCRAMBLE; 0x0014; UNSCRAMBLE
+#regdef; ANA_CFG1;  0x0020; ANA_CFG1
+#regdef; ANA_CFG2; 0x0024; ANA_CFG2
+#regdef; ANA_CFG3; 0x0028; ANA_CFG3
+#regdef; PLL_CFG1; 0x002C; ANA_CFG1
+#regdef; PLL_CFG2; 0x0030; PLL_CFG2
+#regdef; PLL_CFG3; 0x0034; PLL_CFG3
+#regdef; ANA_STS; 	0x0038; ANA_STS
+#regdef; CEC; 		0x003C; CEC
+
+#regdef; CEC_VERSION; 	0x0FF8; Controller Version Register(Default Value: 0x0100_0000)
+#regdef; VERSION; 		0x0FFC; PHY Version Register(Default Value: 0x0101_0000)
 
 #typeend;

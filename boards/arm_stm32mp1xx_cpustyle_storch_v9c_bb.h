@@ -51,7 +51,7 @@
 		// Disable WITHCAT_CDC
 		#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 		#define WITHUART1HW_FIFO	1	/* использование FIFO */
-		#define WITHCAT_UART1		1
+		//#define WITHCAT_UART1		1
 		#define WITHCATSPEED 115200
 	#endif /* WITHCAT */
 
@@ -85,7 +85,7 @@
 	#endif /* WITHCAT */
 #endif
 
-#define BOARD_TUH_RHPORT 1
+
 
 #if WITHISBOOTLOADER
 
@@ -99,7 +99,7 @@
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
@@ -115,7 +115,7 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
 
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	
 //	#define WITHUSBHW_EHCI		USB1_EHCI
 //	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 //	#define WITHOHCIHW_OHCIPORT 0
@@ -146,8 +146,8 @@
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
-	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
-	#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+	#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме идут квадратуры RTS192 */
 	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
 	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
@@ -186,8 +186,13 @@
 	//#define WITHUSBHOST_DMAENABLE 1
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHOHCIHW_OHCIPORT 0
@@ -200,7 +205,7 @@
 	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
 	#define WITHUSBHW_OHCI_IX	0
 
-//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 //	#define WITHCAT_LWIP		1	/* использовать виртуальный последовательный порт на USB соединении */
 //	#define WITHMODEM_CDC	1
 
@@ -246,7 +251,7 @@
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	#else
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+		#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
@@ -541,17 +546,17 @@
 
 	#define HOSTBB_LED1_BIT  (UINT32_C(1) << 5)	// PB5 - led on host board
 	#define HOSTBB_LED2_BIT  (UINT32_C(1) << 7)	// PC7 - led/heartbeat from ethernet modula
-	#define HOSTBB_PTTIN_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN
-	#define HOSTBB_PTTOUT_BIT  (UINT32_C(1) << 10)	// PH10 - PTT_OUT
+	#define HOSTBB_PTTTOMODEM_BIT  (UINT32_C(1) << 9)	// PH9 - PTT_IN to modem
+	#define HOSTBB_PTTFROMMODEM_BIT  (UINT32_C(1) << 10)	// PH10 - PTT_OUT from modem
 	#define HOSTBB_RESET_BIT  (UINT32_C(1) << 11)	// PH11 - RESET OUT
 	#define HOSTBB_RESET2_BIT  (UINT32_C(1) << 12)	// PH12 - RESET_OUT2
 
 	#define HOSTBB_INITIALIZE() do { \
-		/*arm_hardware_pioh_inputs(HOSTBB_PTTIN_BIT); *//* set as input with pull-up */ \
-		/*arm_hardware_pioh_updown(HOSTBB_PTTIN_BIT, HOSTBB_PTTIN_BIT, 0); */\
+		/*arm_hardware_pioh_inputs(HOSTBB_PTTFROMMODEM_BIT); *//* set as input with pull-up */ \
+		/*arm_hardware_pioh_updown(HOSTBB_PTTFROMMODEM_BIT, HOSTBB_PTTFROMMODEM_BIT, 0); */\
 		arm_hardware_pioc_inputs(HOSTBB_LED2_BIT); /* set as input with pull-up */ \
 		arm_hardware_pioc_updown(HOSTBB_LED2_BIT, 0, HOSTBB_LED2_BIT); \
-		arm_hardware_pioh_opendrain(HOSTBB_PTTOUT_BIT, HOSTBB_PTTOUT_BIT); /* open drain */ \
+		arm_hardware_pioh_opendrain(HOSTBB_PTTTOMODEM_BIT, HOSTBB_PTTTOMODEM_BIT); /* open drain */ \
 		arm_hardware_pioh_opendrain(HOSTBB_RESET_BIT, 0 * HOSTBB_RESET_BIT); /* open drain */ \
 		arm_hardware_pioh_opendrain(HOSTBB_RESET2_BIT, 0 * HOSTBB_RESET2_BIT); /* open drain */ \
 		local_delay_ms(10); \
@@ -602,7 +607,7 @@
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 15)		// PF15 - PTT3
 
 	#define PTT4_TARGET_PIN				(gpioX_getinputs(GPIOH))
-	#define PTT4_BIT_PTT				HOSTBB_PTTIN_BIT	// PH9 - PTT_IN
+	#define PTT4_BIT_PTT				HOSTBB_PTTFROMMODEM_BIT	// PH9 - PTT_IN
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 || (PTT4_TARGET_PIN & PTT4_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \

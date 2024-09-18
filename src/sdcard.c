@@ -5209,7 +5209,7 @@ void hardware_sdhost_initialize(void)
 		unsigned clksrc = 1;	// 001: PLL_PERI(1X)
 		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
 		unsigned dvalue;
-		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_peripll1x_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
+		unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
 		SMHCHARD_CCU_CLK_REG =
 			//(UINT32_C(1) << 31) |
 			clksrc * (UINT32_C(1) << 24) |

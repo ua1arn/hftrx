@@ -3560,7 +3560,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
 		RBVAL8(0060, glob_tuner_L);
 
-	#elif WITHAUTOTUNER_UA1CEI_V2
+	#elif WITHTPA100W_UA1CEI_V2
 		#warning Add code
 
 	#elif SHORTSET8 || FULLSET8
@@ -3640,11 +3640,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-	#if WITHAUTOTUNER_N7DDCEXT
-		const int n7ddcext = 1;
-	#else /* WITHAUTOTUNER_N7DDCEXT */
-		const int n7ddcext = 0;
-	#endif /* WITHAUTOTUNER_N7DDCEXT */
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3680,22 +3675,12 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0050, 0x00);	// FOR
 
 #elif WITHAUTOTUNER
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
-		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
-			#error Wrong config
-		#endif /* ! SHORTSET_7L8C && ! FULLSET_7L8C */
-		if (n7ddcext)
-		{
-
-		}
-		else
-		{
-			/* 7 indictors, 8 capacitors */
-			RBVAL8(0100, glob_tuner_C);
-			RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-			RBVAL(0070, glob_tuner_L, 7);
-		}
+		/* 7 indictors, 7 or 8 capacitors */
+		RBVAL8(0100, glob_tuner_C);
+		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0070, glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -3765,15 +3750,8 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER */
 
 		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
-		if (n7ddcext)
-		{
-			RBBIT(0040, glob_tuner_bypass);		/* pin 02 - tuner bypass */
-		}
-		else
-		{
-			RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
-			RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
-		}
+		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD42 SN74HC595PW
 		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
@@ -3945,7 +3923,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0050, 0x00);	// FOR
 
 #elif WITHAUTOTUNER
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
 		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
 			#error Wrong config
@@ -4118,7 +4096,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
-	#if WITHAUTOTUNER_UA1CEI_V2
+	#if WITHTPA100W_UA1CEI_V2
 
 		RBVAL8(0100, glob_tuner_C);
 		RBVAL8(0070, glob_tuner_L);
@@ -8071,13 +8049,13 @@ adcvalholder_t board_getswrpair_filtered(
 	unsigned f = 0;
 	unsigned r = 0;
 	unsigned i;
-	for (i = 0; i < 1; ++ i)
+	for (i = 0; i < SWRPWRHSLEN; ++ i)
 	{
 		f += fh [i];
 		r += rh [i];
 	}
 
-	* reflected = r * (unsigned long) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	* reflected = r * (uint_fast32_t) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
 	return f / SWRPWRHSLEN;
 }
 

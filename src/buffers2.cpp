@@ -665,7 +665,24 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
+		if (hasresample)
+		{
+			PRINTF("+%u,-%u", wbadded, wbdeleted);
+		}
+#endif /* WITHBUFFERSDEBUG */
+	}
+
+	void debugslow()
+	{
+#if WITHBUFFERSDEBUG
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		unsigned fin = fqin.getfreq();
+		unsigned fout = fqout.getfreq();
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, readycount, freecount, (unsigned) fin, (unsigned) fout);
 		if (hasresample)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
@@ -774,6 +791,7 @@ class dmahandle: public blists<element_t, hasresample, hacheckready>
 {
 	typedef blists<element_t, hasresample, hacheckready> parent_t;
 	typedef typeof (element_t::v) wel_t;
+	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
 	unsigned wbn;
 	wel_t * rb;
@@ -790,7 +808,24 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(typeof (wel_t::buff [0]) * b, sample_t ch0, sample_t ch1))
+	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1))
+	{
+		if (wb == NULL)
+		{
+			if (! parent_t::get_freebuffer(& wb))
+				return;
+			wbn = 0;
+		}
+		wbn += putcbf(wb->buff + wbn, ch0, ch1);
+		if (wbn >= ARRAY_SIZE(wb->buff))
+		{
+			parent_t::save_buffer(wb);
+			wb = NULL;
+		}
+	}
+
+	// поэлементное заполнение буферов
+	void savedata_raw(sample_t ch0, sample_t ch1, unsigned (* putcbf)(rawsample_t * b, rawsample_t ch0, rawsample_t ch1))
 	{
 		if (wb == NULL)
 		{
@@ -997,8 +1032,13 @@ uintptr_t allocate_dmabuffer16rx(void)
 static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 {
 	enum { L, R };
+#if (WITHCODEC1_WHBLOCK_LINEIN || WITHCODEC1_WHBLOCK_FMIN) && defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_AWHWCODEC)
+	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_LEFT]);
+	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_RIGHT]);
+#else
 	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
 	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
+#endif
 	return DMABUFFSTEP16RX;
 }
 
@@ -1011,10 +1051,18 @@ static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+//static unsigned putcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+//{
+//	b [DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, ch0);
+//	b [DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, ch1);
+//	return DMABUFFSTEP16RX;
+//}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabuffer16rx_raw(aubufv_t * b, aubufv_t ch0, aubufv_t ch1)
 {
-	b [DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, ch0);
-	b [DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, ch1);
+	b [DMABUFF16RX_LEFT] = ch0;
+	b [DMABUFF16RX_RIGHT] = ch1;
 	return DMABUFFSTEP16RX;
 }
 
@@ -1041,9 +1089,16 @@ void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 	codec16tx.savedata(ch0, ch1, putcbf_dmabuffer16tx);
 }
 
-void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1)
+/* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
+//static void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1)
+//{
+//	codec16rx.savedata(ch0, ch1, putcbf_dmabuffer16rx);
+//}
+
+/* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
+static void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1)
 {
-	codec16rx.savedata(ch0, ch1, putcbf_dmabuffer16rx);
+	codec16rx.savedata_raw(ch0, ch1, putcbf_dmabuffer16rx_raw);
 }
 
 // Поэлементное заполнение DMA буфера AF DAC
@@ -1394,8 +1449,10 @@ uintptr_t getfilled_dmabuffer32rx(void)
 }
 
 // Обработка сразу в прерывании
-#define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 4) || ! WITHSMPSYSTEM)))
+#define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM)))
+#if ! TXSPOOLCOND
 #define TXSPOOLCORE 3
+#endif
 
 static void dsphftrxproc_spool_user(void * ctx)
 {
@@ -2983,9 +3040,6 @@ static uint_fast8_t isrts192(void)
 void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-	++ n4;
-#endif /* WITHBUFFERSDEBUG */
 	voice32rts192_t * const p = CONTAINING_RECORD(addr, voice32rts192_t, u.buff);
 
 	unsigned i;
@@ -3231,7 +3285,8 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		savedemod_to_AF_proc(left, left);
 #endif /* WITHDSPEXTDDC */
 #if WITHFPGAPIPE_CODEC1
-		elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
+		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
+		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
 #endif /* WITHFPGAPIPE_CODEC1 */
 	}
 
@@ -3278,9 +3333,6 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 {
-#if WITHBUFFERSDEBUG
-//	++ n6;
-#endif /* WITHBUFFERSDEBUG */
 	switch (uacinalt)
 	{
 	case UACINALT_NONE:
@@ -3318,9 +3370,6 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 {
-#if WITHBUFFERSDEBUG
-//	++ n6;
-#endif /* WITHBUFFERSDEBUG */
 	switch (uacinrtsalt)
 	{
 	case UACINRTSALT_NONE:
@@ -3451,91 +3500,6 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 #endif /* WITHINTEGRATEDDSP */
 
 
-#if WITHBUFFERSDEBUG
-
-void buffers_diagnostics(void)
-{
-#if WITHUSEUSBBT
-	btout44p1k.debug();
-	btout32k.debug();
-	btout16k.debug();
-	btout8k.debug();
-#endif
-#if WITHINTEGRATEDDSP
-#if 1
-	denoise16list.debug();
-	codec16rx.debug();
-	codec16tx.debug();
-	moni16.debug();
-	voice32tx.debug();
-	voice32rx.debug();
-#endif
-#if 0
-	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
-	uacout48.debug();
-#endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
-#if WITHRTS192
-	uacinrts192.debug();
-#endif
-#if WITHRTS96
-	uacinrts96.debug();
-#endif
-	uacin48.debug();
-#endif
-#endif
-	//message8.debug();
-
-	PRINTF("\n");
-#endif /* WITHINTEGRATEDDSP */
-}
-
-
-/* вызывается из обработчика таймерного прерывания */
-static void buffers_spool(void * ctx)
-{
-#if WITHUSEUSBBT
-	btout44p1k.spool10ms();
-	btout32k.spool10ms();
-	btout16k.spool10ms();
-	btout8k.spool10ms();
-#endif
-#if WITHINTEGRATEDDSP
-	// internal sources/targets
-	//denoise16list.spool10ms();
-	codec16rx.spool10ms();
-	codec16tx.spool10ms();
-	moni16.spool10ms();
-	voice32tx.spool10ms();
-	voice32rx.spool10ms();
-	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	uacout48.spool10ms();
-#endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-#if WITHRTS192
-	uacinrts192.spool10ms();
-#endif
-#if WITHRTS96
-	uacinrts96.spool10ms();
-#endif
-#endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-	uacin48.spool10ms();
-#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
-	//message8.spool10ms();
-#endif /* WITHINTEGRATEDDSP */
-}
-
-#else /* WITHBUFFERSDEBUG */
-
-void buffers_diagnostics(void)
-{
-}
-
-#endif /* WITHBUFFERSDEBUG */
-
 #if LCDMODE_LTDC && WITHLTDCHW
 
 // работа с видеобуферами
@@ -3545,7 +3509,7 @@ typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T) };	// stub for resampling support
 } ALIGNX_END colmain0fb_t;
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
@@ -3602,27 +3566,34 @@ int_fast32_t datasize_dmabuffercolmain0fb(void) /* parameter for DMA Frame buffe
 /* Frame buffer for display 1 */
 typedef ALIGNX_BEGIN struct colmain1fb
 {
-	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
+	ALIGNX_BEGIN PACKEDTVBUFF_T buff [(TVD_SIZE * 3 + 1) / 2] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (PACKEDCOLORPIP_T), nch = GXSIZE(DIM_X, DIM_Y) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (uint8_t) };	// stub for resampling support
 } ALIGNX_END colmain1fb_t;
 
 typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
 
-static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_MAIN_PAGES];
+static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_TVOUT_PAGES];
 typedef blists<colmain1fbbuf_t, 0, 0> colmain1fblist_t;
-static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb0", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
+static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
 
-uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 0 */
+// can not be zero
+uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 1 */
 {
 	colmain1fb_t * dest;
+#if 0
+	while (! colmain1fblist.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+#else
 	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
 	while (! colmain1fblist.get_freebuffer_raw(& dest) && ! colmain1fblist.get_readybuffer_raw(& dest))
 		ASSERT(0);
+#endif
 	return (uintptr_t) dest->buff;
 }
 
-uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer for display 0 */
+uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer for display 1 */
 {
 	colmain1fb_t * dest;
 	if (! colmain1fblist.get_readybuffer_raw(& dest))
@@ -3630,13 +3601,13 @@ uintptr_t getfilled_dmabuffercolmain1fb(void) /* take from queue Frame buffer fo
 	return (uintptr_t) dest->buff;
 }
 
-void release_dmabuffercolmain1fb(uintptr_t addr)  /* release Frame buffer for display 0 */
+void release_dmabuffercolmain1fb(uintptr_t addr)  /* release Frame buffer for display 1 */
 {
 	colmain1fb_t * const p = CONTAINING_RECORD(addr, colmain1fb_t, buff);
 	colmain1fblist.release_buffer(p);
 }
 
-void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for display 0 */
+void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for display 1 */
 {
 	// поддерживаем один элемент в очереди готовых
 	colmain1fb_t * old;
@@ -3646,12 +3617,12 @@ void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for 
 	colmain1fblist.save_buffer(p);
 }
 
-int_fast32_t cachesize_dmabuffercolmain1fb(void) /* parameter for cache manipulation functions Frame buffer for display 0 */
+int_fast32_t cachesize_dmabuffercolmain1fb(void) /* parameter for cache manipulation functions Frame buffer for display 1 */
 {
 	return colmain1fblist.get_cachesize();
 }
 
-int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffer for display 0 */
+int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffer for display 1 */
 {
 	return colmain1fblist.get_datasize();
 }
@@ -3661,9 +3632,6 @@ int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffe
 
 static uintptr_t fb0;
 static uintptr_t lastset0fb;
-
-static uintptr_t fb1;
-static uintptr_t lastset1fb;
 
 PACKEDCOLORPIP_T *
 colmain_fb_draw(void)
@@ -3691,6 +3659,37 @@ void colmain_nextfb(void)
 	openvg_next(colmain_getindexbyaddr(fb0));
 #endif /* WITHOPENVG */
 }
+
+#if defined (TCONTV_PTR)
+
+static uintptr_t fb1;
+static uintptr_t lastset1fb;
+
+PACKEDTVBUFF_T *
+tvout_fb_draw(void)
+{
+	if (fb1 == 0)
+	{
+		fb1 = allocate_dmabuffercolmain1fb();
+	}
+	return (PACKEDTVBUFF_T *) fb1;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void tvout_nextfb(void)
+{
+	if (fb1 != 0)
+	{
+	//	char s [32];
+	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb1);
+	//	display_at(0, 0, s);
+		dcache_clean_invalidate(fb1, cachesize_dmabuffercolmain1fb());
+		save_dmabuffercolmain1fb(fb1);
+	}
+	fb1 = allocate_dmabuffercolmain1fb();
+}
+
+#endif	/* defined (TCONTV_PTR) */
 
 // Update framebuffer if needed
 void hardware_ltdc_vblank(unsigned ix)
@@ -3754,6 +3753,27 @@ void colmain_nextfb(void)
 #endif /* WITHOPENVG */
 }
 
+#if defined (TCONTV_PTR)
+
+static uint_fast8_t drawtvframe;
+
+PACKEDTVBUFF_T *
+tvout_fb_draw(void)
+{
+	return (PACKEDTVBUFF_T *) colmain1fbbuf [drawtvframe].v.buff;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void tvout_nextfb(void)
+{
+	const uintptr_t frame = (uintptr_t) tvout_fb_draw();
+	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain1fb());
+	hardware_ltdc_tvout_set2(frame, 0);
+	drawtvframe = (drawtvframe + 1) % LCDMODE_TVOUT_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
+}
+
+#endif	/* defined (TCONTV_PTR) */
+
 #endif /* WITHLTDCHWVBLANKIRQ */
 
 // Вспомогательная функция - для систем где видеоконтроллер работает со своим массивом видеобуферов
@@ -3783,12 +3803,113 @@ void colmain_fb_list(uintptr_t * frames)
 
 #endif /* LCDMODE_LTDC && WITHLTDCHW */
 
+#if WITHBUFFERSDEBUG
+
+void buffers_diagnostics(void)
+{
+#if WITHUSEUSBBT
+	btout44p1k.debug();
+	btout32k.debug();
+	btout16k.debug();
+	btout8k.debug();
+#endif
+#if WITHINTEGRATEDDSP
+#if 1
+	denoise16list.debug();
+	codec16rx.debug();
+	codec16tx.debug();
+	moni16.debug();
+	voice32tx.debug();
+	voice32rx.debug();
+#endif
+#if 1
+	// USB
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
+	uacout48.debug();
+#endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
+#if WITHRTS192
+	uacinrts192.debug();
+#endif
+#if WITHRTS96
+	uacinrts96.debug();
+#endif
+	uacin48.debug();
+#endif
+#endif
+	//message8.debug();
+
+#if LCDMODE_LTDC && WITHLTDCHW && 0
+	colmain0fblist.debugslow();
+#if defined (TCONTV_PTR)
+	colmain1fblist.debugslow();
+#endif /* defined (TCONTV_PTR) */
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
+
+	PRINTF("\n");
+#endif /* WITHINTEGRATEDDSP */
+}
+
+#if LCDMODE_LTDC && WITHLTDCHW
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
+
+/* вызывается из обработчика таймерного прерывания */
+static void buffers_spool(void * ctx)
+{
+#if WITHUSEUSBBT
+	btout44p1k.spool10ms();
+	btout32k.spool10ms();
+	btout16k.spool10ms();
+	btout8k.spool10ms();
+#endif
+#if WITHINTEGRATEDDSP
+	// internal sources/targets
+	//denoise16list.spool10ms();
+	codec16rx.spool10ms();
+	codec16tx.spool10ms();
+	moni16.spool10ms();
+	voice32tx.spool10ms();
+	voice32rx.spool10ms();
+	// USB
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
+	uacout48.spool10ms();
+#endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192.spool10ms();
+#endif
+#if WITHRTS96
+	uacinrts96.spool10ms();
+#endif
+#endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+	uacin48.spool10ms();
+#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
+#endif /* WITHINTEGRATEDDSP */
+	//message8.spool10ms();
+
+#if LCDMODE_LTDC && WITHLTDCHW
+	colmain0fblist.spool10ms();
+#if defined (TCONTV_PTR)
+	colmain1fblist.spool10ms();
+#endif /* defined (TCONTV_PTR) */
+#endif /* LCDMODE_LTDC && WITHLTDCHW */
+}
+
+#else /* WITHBUFFERSDEBUG */
+
+void buffers_diagnostics(void)
+{
+}
+
+#endif /* WITHBUFFERSDEBUG */
+
 // инициализация системы буферов
 void buffers_initialize(void)
 {
-	static ticker_t buffticker;
 
 #if WITHBUFFERSDEBUG
+	static ticker_t buffticker;
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */

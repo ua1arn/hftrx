@@ -74,14 +74,19 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
-//	#define WITHTINYUSB 1
-//	#define BOARD_TUH_RHPORT 1
+//	
 //	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
 	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
 //	#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */
 //	#define WITHUSBHW_OHCI		USBOHCI0	/* host and usb-otg port */
+
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
 
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
@@ -118,8 +123,8 @@
 	#if WITHINTEGRATEDDSP
 
 		//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
-		//#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
-		//#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+		//#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+		//#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме идут квадратуры RTS192 */
 		//#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
 		//#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		//#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
@@ -161,10 +166,17 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	
 
 	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
+
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
+
 
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USBEHCI1_IRQn
@@ -624,7 +636,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define BOARD_SPI_FREQ (allwnr_t113_get_spi0_freq())
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
@@ -733,7 +745,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0		/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR R_TWI	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 
@@ -771,7 +783,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -1019,12 +1031,24 @@
 	} while (0)
 
 
-	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define BOARD_TCONLCDFREQ (allwnrt113_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
-	#define TCONLCD_IRQ TCON0_IRQn
-	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#if 1
+		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define BOARD_TCONLCDFREQ (allwnr_a64_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
+		#define TCONLCD_IRQ TCON0_IRQn
+		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#endif
+
+	#if 0
+		// Надо для HDMI и TVOUT
+		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
+		#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define TCONTV_IRQ TCON_TV0_IRQn
+		#define BOARD_TCONTVFREQ (allwnr_a64_get_tcon_tv0_freq())
+	#endif
 
 #endif /* WITHLTDCHW */
 

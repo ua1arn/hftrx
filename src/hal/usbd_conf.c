@@ -807,29 +807,6 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep[epnum].xfer_buff);
 }
 
-
-static volatile unsigned sofcount;
-static uint32_t softicks;
-unsigned hamradio_get_getsoffreq(void)
-{
-#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	unsigned count = sofcount;
-	sofcount = 0;
-	LowerIrql(oldIrql);
-
-	uint32_t nowticks = sys_now();
-	uint32_t difftime = nowticks - softicks;
-	softicks = nowticks;
-	unsigned n = count * 1000 / difftime;
-	return n;
-#else
-	return  0;
-#endif /* WITHUSBHW && defined (WITHUSBHW_DEVICE) */
-}
-
 /**
   * @brief  SOF callback.
   * @param  hpcd: PCD handle
@@ -841,7 +818,7 @@ static void PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 {
-	++ sofcount;
+	hamradio_tick_sof();
   USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
 }
 
