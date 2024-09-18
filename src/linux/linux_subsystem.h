@@ -126,6 +126,10 @@ void cs_i2c_disable(void);
 float xczu_get_cpu_temperature(void);
 void hamradio_set_hw_vfo(uint_fast8_t v);
 
+void ad936x_set_freq(long long freq);
+uint8_t get_ad936x_stream_status(void);
+void ad936x_shutdown(void);
+
 void board_rtc_getdate(
 	uint_fast16_t * year,
 	uint_fast8_t * month,

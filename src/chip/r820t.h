@@ -403,22 +403,22 @@ __attribute__ ((always_inline)) static inline int r820t_is_power_enabled(void)
  */
 void airspy_r820t_write_init(const uint8_t* data)
 {
-  uint_fast8_t i;
-
-  if(r820t_is_power_enabled())
-  {
-    //i2c1_tx_start();
-    i2c_start(R820T_I2C_ADDR | I2C_WRITE);
-    i2c_write(REG_SHADOW_START); /* Start reg */
-
-    for (i = 0; i < R820T_INIT_NB_REGS; i++)
-      i2c_write(data [i]);
-
-    i2c_write(0); /* Set last reg to 0 (errata r820t) */
-
-	i2c_waitsend();
-	i2c_stop();
-  }
+//  uint_fast8_t i;
+//
+//  if(r820t_is_power_enabled())
+//  {
+//    //i2c1_tx_start();
+//    i2c_start(R820T_I2C_ADDR | I2C_WRITE);
+//    i2c_write(REG_SHADOW_START); /* Start reg */
+//
+//    for (i = 0; i < R820T_INIT_NB_REGS; i++)
+//      i2c_write(data [i]);
+//
+//    i2c_write(0); /* Set last reg to 0 (errata r820t) */
+//
+//	i2c_waitsend();
+//	i2c_stop();
+//  }
 }
 
 /*
@@ -435,62 +435,62 @@ static uint8_t r82xx_bitrev(uint8_t byte)
 
 void airspy_r820t_read(r820t_priv_t *priv, uint8_t* const data, const uint8_t data_count)
 {
-  int i;
-  uint8_t val;
+//  int i;
+//  uint8_t val;
+//
+//  if (r820t_is_power_enabled())
+//  {
+//    /* read the value */
+//    //i2c1_tx_start();
+//    i2c_start(R820T_I2C_ADDR | I2C_READ);
+//
+//    if(data_count > 1)
+//    {
+//      for(i = 0; i < (data_count-1); i++)
+//      {
+//		i2c_read(& val, i == 0 ? I2C_READ_ACK_1 : I2C_READ_ACK);	/* чтение промежуточного байта ответа */
+//		//val = i2c1_rx_byte(1); /* ACK each byte */
+//		data[i] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
+//      }
+//
+// 		i2c_read(& val, I2C_READ_NACK);	/* чтение последнего байта ответа */
+//     //val = i2c1_rx_byte(0); /* NACK last byte */
+//      data[i] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
+//
+//    }
+//	else
+//    {
+//		i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+//      //val = i2c1_rx_byte(0); /* NACK last byte */
+//      data[0] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
+//    }
+//
+//	//i2c_waitsend();
+//	i2c_stop();
+//  }else
+//  {
+//    /* Data cannot be read when R820T is OFF, just read cache */
+//    for(i=0; i<data_count; i++)
+//    {
+//      data[i] = r820t_read_cache_reg(priv, i);
+//    }
+//  }
 
-  if (r820t_is_power_enabled())
-  {
-    /* read the value */
-    //i2c1_tx_start();
-    i2c_start(R820T_I2C_ADDR | I2C_READ);
-
-    if(data_count > 1)
-    {
-      for(i = 0; i < (data_count-1); i++)
-      {
-		i2c_read(& val, i == 0 ? I2C_READ_ACK_1 : I2C_READ_ACK);	/* чтение промежуточного байта ответа */
-		//val = i2c1_rx_byte(1); /* ACK each byte */
-		data[i] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
-      }
-
- 		i2c_read(& val, I2C_READ_NACK);	/* чтение последнего байта ответа */
-     //val = i2c1_rx_byte(0); /* NACK last byte */
-      data[i] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
-
-    }
-	else
-    {
-		i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
-      //val = i2c1_rx_byte(0); /* NACK last byte */
-      data[0] = r82xx_bitrev(val); /* Swap data bits as they are received LSB to MSB */
-    }
-
-	//i2c_waitsend();
-	i2c_stop();
-  }else
-  {
-    /* Data cannot be read when R820T is OFF, just read cache */
-    for(i=0; i<data_count; i++)
-    {
-      data[i] = r820t_read_cache_reg(priv, i);
-    }
-  }
-  
 }
 
 /* write to single register (return 0 if success) */
 void airspy_r820t_write_single(r820t_priv_t *priv, uint8_t reg, uint8_t val)
 {
-  if(r820t_is_power_enabled())
-  {
-    //i2c1_tx_start();
-    i2c_start(R820T_I2C_ADDR | I2C_WRITE);
-    i2c_write(reg);
-    i2c_write(val);
-	i2c_waitsend();
-	i2c_stop();
-  }
-  priv->regs[reg - REG_SHADOW_START] = val;
+//  if(r820t_is_power_enabled())
+//  {
+//    //i2c1_tx_start();
+//    i2c_start(R820T_I2C_ADDR | I2C_WRITE);
+//    i2c_write(reg);
+//    i2c_write(val);
+//	i2c_waitsend();
+//	i2c_stop();
+//  }
+//  priv->regs[reg - REG_SHADOW_START] = val;
 }
 
 /* read single register */
@@ -1028,7 +1028,7 @@ r820t_setfreq(
 	uint_fast32_t f
 	)
 {
-
+/*
 	if (genable)
 	{
 		if (gcalibrated == 0)
@@ -1059,23 +1059,24 @@ r820t_setfreq(
 		//r820t_set_tf(& r820t0, f - R820T_IFFREQ);
 		r820t_set_freq(& r820t0, f - R820T_IFFREQ);
 	}
+	*/
 }
 
 static void 
 r820t_initialize(void)
 {
-	uint8_t val;
-
-    i2c_start(R820T_I2C_ADDR | I2C_READ);
-	i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
-	i2c_stop();
-
-	PRINTF(PSTR("r820t_initialize: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
-
-    //i2c_start(R820T_I2C_ADDR | I2C_READ);
-	//i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
-	//i2c_stop();
-	//PRINTF(PSTR("r820t_initialize2: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
+//	uint8_t val;
+//
+//    i2c_start(R820T_I2C_ADDR | I2C_READ);
+//	i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+//	i2c_stop();
+//
+//	PRINTF(PSTR("r820t_initialize: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
+//
+//    //i2c_start(R820T_I2C_ADDR | I2C_READ);
+//	//i2c_read(& val, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+//	//i2c_stop();
+//	//PRINTF(PSTR("r820t_initialize2: signature=0x%02X (0x96 expected)\n"), r82xx_bitrev(val));
 }
 
 

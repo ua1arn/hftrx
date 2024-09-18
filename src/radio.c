@@ -32,6 +32,10 @@
 	#include "ft8.h"
 #endif /* WITHFT8 */
 
+#if XVTR_R820T2
+	extern uint8_t ad936x_active;
+#endif /* XVTR_R820T2 */
+
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
@@ -7281,6 +7285,9 @@ tune_top(const uint_fast8_t bi)
 	if (withonlybands != 0)
 		return tune_top_active [bi];
 #endif /* WITHONLYBANDS */
+#if XVTR_R820T2
+	return NOXVRTUNE_TOP;
+#endif /* XVTR_R820T2 */
 	return TUNE_TOP;
 }
 
@@ -7292,6 +7299,9 @@ tune_bottom(const uint_fast8_t bi)
 	if (withonlybands != 0)
 		return tune_bottom_active [bi];
 #endif /* WITHONLYBANDS */
+#if XVTR_R820T2
+	return TUNE_BOTTOM;
+#endif /* XVTR_R820T2 */
 	return TUNE_BOTTOM;
 }
 
@@ -8938,14 +8948,17 @@ gethintlo0(
 	)
 {
 #if XVTR_R820T2
-	const uint_fast32_t lo0step = R820T_LOSTEP;
-	// дискретность перестройки гетеродина конвертора
-	if (lo0side == LOCODE_UPPER)		/* При преобразовании на этом гетеродине происходит инверсия спектра */
-		return ((freq + R820T_IFFREQ) + lo0step / 2) / lo0step * lo0step;
-	else if (lo0side == LOCODE_LOWER)	/* При преобразовании на этом гетеродине нет инверсии спектра */
-		return ((freq - R820T_IFFREQ) + lo0step / 2) / lo0step * lo0step;
+//	const uint_fast32_t lo0step = R820T_LOSTEP;
+//	// дискретность перестройки гетеродина конвертора
+//	if (lo0side == LOCODE_UPPER)		/* При преобразовании на этом гетеродине происходит инверсия спектра */
+//		return ((freq + R820T_IFFREQ) + lo0step / 2) / lo0step * lo0step;
+//	else if (lo0side == LOCODE_LOWER)	/* При преобразовании на этом гетеродине нет инверсии спектра */
+//		return ((freq - R820T_IFFREQ) + lo0step / 2) / lo0step * lo0step;
+	if (lo0side == LOCODE_UPPER || lo0side ==  LOCODE_LOWER)
+		return freq;
 	else
 		return 0;
+//	return freq;
 #elif 0
 	// используется конвертор с фиксировнным гетеродином
 	return 116000000uL;
@@ -11162,6 +11175,7 @@ updateboardZZZ(
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
 		full2 |= flagne_u8(& ant2hint, geteffantenna(freq));
+//		PRINTF("lo0hint %d lo0side %d\n", lo0hint, lo0side);
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
@@ -18315,7 +18329,14 @@ freqvalid(
 	uint_fast8_t tx
 	)
 {
+#if XVTR_R820T2
+	if (get_ad936x_stream_status())
+		return (freq >= XVRTUNE_BOTTOM && freq < TUNE_TOP);
+	else
+		return (freq >= TUNE_BOTTOM && freq < NOXVRTUNE_TOP);
+#else
 	return (freq >= TUNE_BOTTOM && freq < TUNE_TOP);	/* частота внутри допустимого диапазона */
+#endif /* XVTR_R820T2 */
 }
 
 #if WITHKEYBOARD
@@ -20474,6 +20495,10 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 		gfreqs [bi] = freq;
 		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard(0, 0);
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
+		if (get_ad936x_stream_status())
+			ad936x_set_freq(freq);
+#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
 		return 1;
 	}
 	return 0;

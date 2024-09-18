@@ -72,15 +72,22 @@ static int32_t buf96k_i[DMABUFFSIZE32RX / 2], buf96k_q[DMABUFFSIZE32RX / 2];
 static int32_t buf2304k_i[BLOCK_SIZE], buf2304k_q[BLOCK_SIZE];
 
 static uint32_t cnt96 = 0, cnt2304 = 0;
+static uint8_t ad936x_active = 0;
 
 arm_fir_decimate_instance_q31 firdec_x24_i, firdec_x24_q;
 q31_t fir_state_i[NUM_FIR_TAPS + BLOCK_SIZE - 1], fir_state_q[NUM_FIR_TAPS + BLOCK_SIZE - 1];
 
 void iq_mutex_unlock(void);
 
+uint8_t get_ad936x_stream_status(void)
+{
+	return ad936x_active;
+}
+
 void iio_stop_stream(void)
 {
 	stop = true;
+	ad936x_active = 0;
 }
 
 void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
@@ -90,15 +97,15 @@ void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
 
 	for (int i = 0; i < DMABUFFSIZE32RX; i += 8)
 	{
-		b[i + 0] = buf_i[* count];
-		b[i + 1] = buf_q[* count];
+		b[i + 1] = buf_i[* count];
+		b[i + 0] = buf_q[* count];
 
-		b[i + 4] = buf_i[* count];
-		b[i + 5] = buf_q[* count];
+		b[i + 5] = buf_i[* count];
+		b[i + 4] = buf_q[* count];
 		(* count) ++;
 
-		b[i + 6] = buf_i[* count];
-		b[i + 7] = buf_q[* count];
+		b[i + 7] = buf_i[* count];
+		b[i + 6] = buf_q[* count];
 		(* count) ++;
 	}
 
@@ -181,9 +188,10 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 		p_inc = tx_sample;
 		p_end = (int16_t *) iio_block_end(txblock);
 		for (p_dat = (int16_t *) iio_block_first(txblock, txchn); p_dat < p_end;
-		     p_dat += p_inc / sizeof(*p_dat)) {
-			* (int16_t *) (p_dat + 0) = 0; /* Real (I) */
-			* (int16_t *) (p_dat + 1) = 0; /* Imag (Q) */
+		     p_dat += p_inc / sizeof(*p_dat))
+		{
+			p_dat[0] = 0;
+			p_dat[1] = 0;
 		}
 	}
 }
@@ -191,19 +199,19 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 /* cleanup and exit */
 void ad936x_shutdown(void)
 {
-	printf("* Destroying streams\n");
+//	printf("* Destroying streams\n");
 	if (rxstream) {iio_stream_destroy(rxstream); }
 	if (txstream) { iio_stream_destroy(txstream); }
 
-	printf("* Destroying buffers\n");
+//	printf("* Destroying buffers\n");
 	if (rxbuf) { iio_buffer_destroy(rxbuf); }
 	if (txbuf) { iio_buffer_destroy(txbuf); }
 
-	printf("* Destroying channel masks\n");
+//	printf("* Destroying channel masks\n");
 	if (rxmask) { iio_channels_mask_destroy(rxmask); }
 	if (txmask) { iio_channels_mask_destroy(txmask); }
 
-	printf("* Destroying context\n");
+//	printf("* Destroying context\n");
 	if (ctx) { iio_context_destroy(ctx); }
 	// exit(0);
 }
@@ -341,6 +349,14 @@ uint8_t gui_ad936x_find(const char * uri)
 	return 1;
 }
 
+void ad936x_set_freq(long long freq)
+{
+	struct iio_channel * chn = NULL;
+	if (! ctx) return;
+	if (! get_lo_chan(RX, & chn)) return;
+	wr_ch_lli(chn, "frequency", freq + 0.5);
+}
+
 int ad9363_iio_start (const char * uri)
 {
 	// Streaming devices
@@ -372,19 +388,19 @@ int ad9363_iio_start (const char * uri)
 
 	if (ctx) { iio_context_destroy(ctx); }
 
-	printf("* Acquiring IIO context\n");
+//	printf("* Acquiring IIO context\n");
 	IIO_ENSURE((ctx = iio_create_context(NULL, uri)) && "No context");
 	IIO_ENSURE(iio_context_get_devices_count(ctx) > 0 && "No devices");
 
-	printf("* Acquiring AD9361 streaming devices\n");
+//	printf("* Acquiring AD9361 streaming devices\n");
 	IIO_ENSURE(get_ad9361_stream_dev(TX, &tx) && "No tx dev found");
 	IIO_ENSURE(get_ad9361_stream_dev(RX, &rx) && "No rx dev found");
 
-	printf("* Configuring AD9361 for streaming\n");
+//	printf("* Configuring AD9361 for streaming\n");
 	IIO_ENSURE(cfg_ad9361_streaming_ch(&rxcfg, RX, 0) && "RX port 0 not found");
 	IIO_ENSURE(cfg_ad9361_streaming_ch(&txcfg, TX, 0) && "TX port 0 not found");
 
-	printf("* Initializing AD9361 IIO streaming channels\n");
+//	printf("* Initializing AD9361 IIO streaming channels\n");
 	IIO_ENSURE(get_ad9361_stream_ch(RX, rx, 0, &rx0_i) && "RX chan i not found");
 	IIO_ENSURE(get_ad9361_stream_ch(RX, rx, 1, &rx0_q) && "RX chan q not found");
 	IIO_ENSURE(get_ad9361_stream_ch(TX, tx, 0, &tx0_i) && "TX chan i not found");
@@ -402,13 +418,13 @@ int ad9363_iio_start (const char * uri)
 		ad936x_shutdown();
 	}
 
-	printf("* Enabling IIO streaming channels\n");
+//	printf("* Enabling IIO streaming channels\n");
 	iio_channel_enable(rx0_i, rxmask);
 	iio_channel_enable(rx0_q, rxmask);
 	iio_channel_enable(tx0_i, txmask);
 	iio_channel_enable(tx0_q, txmask);
 
-	printf("* Creating non-cyclic IIO buffers with 2.304 MiS\n");
+//	printf("* Creating non-cyclic IIO buffers with 2.304 MiS\n");
 	rxbuf = iio_device_create_buffer(rx, 0, rxmask);
 	err = iio_err(rxbuf);
 	if (err) {
@@ -442,6 +458,8 @@ int ad9363_iio_start (const char * uri)
 
 	rx_sample_sz = iio_device_get_sample_size(rx, rxmask);
 	tx_sample_sz = iio_device_get_sample_size(tx, txmask);
+
+	ad936x_active = 1;
 
 	printf("* Starting IO streaming\n");
 	stream(rx_sample_sz, tx_sample_sz, BLOCK_SIZE,

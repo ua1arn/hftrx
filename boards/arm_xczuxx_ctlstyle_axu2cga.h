@@ -59,7 +59,7 @@
 	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	#define XVTR_R820T2			1	// ad936x
 
 	// --- вариации прошивки, специфические для разных частот
 
@@ -229,7 +229,7 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		(150 * BOARD_AFGAIN_MAX / 255)
+			#define WITHAFGAINDEFAULT		10
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1

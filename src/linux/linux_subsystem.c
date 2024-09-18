@@ -1482,14 +1482,18 @@ uint8_t gui_ad936x_start(void)
 {
 	linux_cancel_thread(iq_interrupt_t);
 	linux_create_thread(& iio_t, iio_stream_thread, 95, 1);
+	while(! get_ad936x_stream_status()) ;
+	hamradio_set_freq(433000000);
 
 	return 2;
 }
 
 uint8_t gui_ad936x_stop(void)
 {
+	iio_stop_stream();
 	linux_cancel_thread(iio_t);
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+	hamradio_set_freq(7012000);
 
 	return 0;
 }
