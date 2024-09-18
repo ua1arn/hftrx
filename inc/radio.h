@@ -3532,7 +3532,7 @@ void bt_enable(uint_fast8_t v);
 uint_fast8_t hamradio_get_ft8cn(void);
 
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
-void n7ddc_tune(void);
+void n7ddc_tune(int (* cb)(void * ctx), void * ctx);
 unsigned n7ddc_get_swr(void);
 
 #ifdef __cplusplus

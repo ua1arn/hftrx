@@ -5102,28 +5102,28 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 
 
 
-#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
-
-// SWR=1: return 100
-unsigned n7ddc_get_swr_calman(void)
-{
-	adcvalholder_t f, r;
-
-	f = board_getswrpair_filtered(& r, swrcalibr);
-
-	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
-	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
-	val_tmp_0 = fval;
-
-	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
-	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
-	val_tmp_1 = rval;
-
-	if (fval > rval)
-		return ((fval + rval) * 100) / (fval - rval);
-	else
-		return 900;
-}
+//#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
+//
+//// SWR=1: return 100
+//unsigned n7ddc_get_swr_calman(void)
+//{
+//	adcvalholder_t f, r;
+//
+//	f = board_getswrpair_filtered(& r, swrcalibr);
+//
+//	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
+//	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
+//	val_tmp_0 = fval;
+//
+//	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
+//	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
+//	val_tmp_1 = rval;
+//
+//	if (fval > rval)
+//		return ((fval + rval) * 100) / (fval - rval);
+//	else
+//		return 900;
+//}
 
 // SWR=1: return 100
 unsigned n7ddc_get_swr(void)
@@ -5131,6 +5131,19 @@ unsigned n7ddc_get_swr(void)
 	const uint_fast8_t fs = 900;
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+
+	// обновить кеш данныз для дисплея
+	if (FWD == PWRI)
+	{
+		board_adc_store_data(PWRMRRIX, f);
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+	else
+	{
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
 
 	if (f < minforward)
 		return 100;	// SWR=1
@@ -5361,10 +5374,17 @@ static void auto_tune0_init(void)
 	tuner_ant = geteffantenna(freq);
 }
 
+// Обновление изображения в процессе выполнения согласования
+static int ntddc_display(void * ctx)
+{
+	display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	return 0;	// non-zero for cancel tuning process
+}
+
 static enum phases auto_tune0(void)
 {
 
-	n7ddc_tune();
+	n7ddc_tune(ntddc_display, NULL);
 
 	storetuner(tuner_bg, tuner_ant);
 	return PHASE_DONE;
