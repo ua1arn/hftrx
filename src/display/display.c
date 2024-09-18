@@ -1734,8 +1734,8 @@ static const videomode_t vdmode_NTSC0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.ntsc = 1,
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 1
 };
 
 /* PAL TV out parameters */
@@ -1757,8 +1757,8 @@ static const videomode_t vdmode_PAL0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.ntsc = 0,
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0
 };
 
 const videomode_t * get_videomode(void)
