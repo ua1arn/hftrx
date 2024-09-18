@@ -57,7 +57,7 @@ static void local_get_swr(void) {
 	return;
 }
 
-static void sharp_cap(void) {
+static void sharp_cap(int (* cb)(void * ctx), void * ctx) {
 	unsigned char range, count, max_range, min_range;
 	int min_SWR;
 	range = step_cap * C_mult;
@@ -103,7 +103,7 @@ static void sharp_cap(void) {
 	return;
 }
 
-static void sharp_ind(void) {
+static void sharp_ind(int (* cb)(void * ctx), void * ctx) {
 	unsigned char range, count, max_range, min_range;
 	int min_SWR;
 	range = step_ind * L_mult;
@@ -153,7 +153,7 @@ static void sharp_ind(void) {
 	return;
 }
 
-static void coarse_cap(void) {
+static void coarse_cap(int (* cb)(void * ctx), void * ctx) {
 	unsigned char step = 3;
 	unsigned char count;
 	int min_swr;
@@ -191,7 +191,7 @@ static void coarse_cap(void) {
 	return;
 }
 
-static void coarse_tune(void) {
+static void coarse_tune(int (* cb)(void * ctx), void * ctx) {
 	unsigned char step = 3;
 	unsigned char count;
 	unsigned char mem_cap, mem_step_cap;
@@ -203,7 +203,7 @@ static void coarse_tune(void) {
 	min_swr = SWR + SWR / 20;
 	for (count = 0; count <= 31;) {
 		set_ind(count * L_mult);
-		coarse_cap();
+		coarse_cap(cb, ctx);
 		local_get_swr();
 
 		if (SWR == 0)
@@ -230,14 +230,15 @@ static void coarse_tune(void) {
 	cap = mem_cap;
 	set_indcap(ind, cap);
 	step_cap = mem_step_cap;
+	local_delay_ms(10);	// for safe
 	return;
 }
 
-static void sub_tune(void) {
+static void sub_tune(int (* cb)(void * ctx), void * ctx) {
 	int swr_mem, ind_mem, cap_mem;
 	//
 	swr_mem = SWR;
-	coarse_tune();
+	coarse_tune(cb, ctx);
 	if (SWR == 0) {
 		atu_reset();
 		return;
@@ -248,7 +249,7 @@ static void sub_tune(void) {
 	if (SWR < 120)
 		return;
 
-	sharp_ind();
+	sharp_ind(cb, ctx);
 	if (SWR == 0) {
 		atu_reset();
 		return;
@@ -257,7 +258,7 @@ static void sub_tune(void) {
 	if (SWR < 120)
 		return;
 
-	sharp_cap();
+	sharp_cap(cb, ctx);
 	if (SWR == 0) {
 		atu_reset();
 		return;
@@ -273,10 +274,7 @@ static void sub_tune(void) {
 	ind_mem = ind;
 	cap_mem = cap;
 	//
-	if (SW == 1)
-		SW = 0;
-	else
-		SW = 1;
+	SW = ! SW;
 
 	atu_reset();
 	set_sw(SW);
@@ -286,7 +284,7 @@ static void sub_tune(void) {
 	if (SWR < 120)
 		return;
 	//
-	coarse_tune();
+	coarse_tune(cb, ctx);
 	if (SWR == 0) {
 		atu_reset();
 		return;
@@ -296,7 +294,7 @@ static void sub_tune(void) {
 	local_get_swr();
 	if (SWR < 120)
 		return;
-	sharp_ind();
+	sharp_ind(cb, ctx);
 
 	if (SWR == 0) {
 		atu_reset();
@@ -307,7 +305,7 @@ static void sub_tune(void) {
 	if (SWR < 120)
 		return;
 
-	sharp_cap();
+	sharp_cap(cb, ctx);
 	if (SWR == 0) {
 		atu_reset();
 		return;
@@ -317,10 +315,8 @@ static void sub_tune(void) {
 		return;
 	//
 	if (SWR > swr_mem) {
-		if (SW == 1)
-			SW = 0;
-		else
-			SW = 1;
+		SW = ! SW;
+
 		set_sw(SW);
 		ind = ind_mem;
 		cap = cap_mem;
@@ -330,7 +326,7 @@ static void sub_tune(void) {
 	return;
 }
 
-static void tune(void) {
+static void tune(int (* cb)(void * ctx), void * ctx) {
 	P_max = 0;
 	//
 	local_get_swr();
@@ -347,7 +343,7 @@ static void tune(void) {
 	if (max_swr > 110 && SWR > max_swr)
 		return;
 
-	sub_tune();
+	sub_tune(cb, ctx);
 
 	if (SWR == 0) {
 		atu_reset();
@@ -362,14 +358,14 @@ static void tune(void) {
 	if (L_q > 5) {
 		step_ind = L_mult;
 		L_mult = 1;
-		sharp_ind();
+		sharp_ind(cb, ctx);
 	}
 	if (SWR < 120)
 		return;
 	if (C_q > 5) {
 		step_cap = C_mult;  // = C_mult
 		C_mult = 1;
-		sharp_cap();
+		sharp_cap(cb, ctx);
 	}
 	if (L_q == 5)
 		L_mult = 1;
@@ -403,7 +399,7 @@ void n7ddc_tune(int (* cb)(void * ctx), void * ctx) {
 		if (SWR <= 120)
 			break;
 		else
-			tune();
+			tune(cb, ctx);
 	}
 	PRINTF("n7ddc_tune: DONE\n");
 
