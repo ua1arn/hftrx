@@ -5159,7 +5159,7 @@ unsigned n7ddc_get_swr(void)
 	}
 
 	if (f < minforward)
-		return 100;	// SWR=1
+		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
 	else if (f <= r)
 		return fs;		// SWR is infinite
 
