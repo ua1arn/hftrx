@@ -1,6 +1,6 @@
 #include "hardware.h"
 
-#if WITHAUTOTUNER_N7DDCALGO
+#if WITHTX && AUTOTUNER && WITHAUTOTUNER_N7DDCALGO
 
 #include "formats.h"
 #include "board.h"
@@ -409,4 +409,4 @@ void n7ddc_tune(void) {
 
 }
 
-#endif /* WITHAUTOTUNER_N7DDCALGO */
+#endif /* WITHTX && AUTOTUNER && WITHAUTOTUNER_N7DDCALGO */
