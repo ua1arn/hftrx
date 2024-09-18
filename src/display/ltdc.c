@@ -7190,7 +7190,9 @@ static void awxx_deoutmapping(unsigned disp)
 
 void hardware_edid_test(void)
 {
+#if WITHHDMITVHW
 	t507_hdmi_edid_test();
+#endif /* WITHHDMITVHW */
 
 }
 

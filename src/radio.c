@@ -5092,6 +5092,19 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+	// обновить кеш данных для дисплея
+	if (FWD == PWRI)
+	{
+		board_adc_store_data(PWRMRRIX, f);
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+	else
+	{
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+
 	* pr = r;
 	* pf = f;
 
@@ -5106,28 +5119,28 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 
 
 
-#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
-
-// SWR=1: return 100
-unsigned n7ddc_get_swr_calman(void)
-{
-	adcvalholder_t f, r;
-
-	f = board_getswrpair_filtered(& r, swrcalibr);
-
-	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
-	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
-	val_tmp_0 = fval;
-
-	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
-	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
-	val_tmp_1 = rval;
-
-	if (fval > rval)
-		return ((fval + rval) * 100) / (fval - rval);
-	else
-		return 900;
-}
+//#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
+//
+//// SWR=1: return 100
+//unsigned n7ddc_get_swr_calman(void)
+//{
+//	adcvalholder_t f, r;
+//
+//	f = board_getswrpair_filtered(& r, swrcalibr);
+//
+//	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
+//	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
+//	val_tmp_0 = fval;
+//
+//	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
+//	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
+//	val_tmp_1 = rval;
+//
+//	if (fval > rval)
+//		return ((fval + rval) * 100) / (fval - rval);
+//	else
+//		return 900;
+//}
 
 // SWR=1: return 100
 unsigned n7ddc_get_swr(void)
@@ -5136,8 +5149,21 @@ unsigned n7ddc_get_swr(void)
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
 
+	// обновить кеш данных для дисплея
+	if (FWD == PWRI)
+	{
+		board_adc_store_data(PWRMRRIX, f);
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+	else
+	{
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+
 	if (f < minforward)
-		return 100;	// SWR=1
+		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
 	else if (f <= r)
 		return fs;		// SWR is infinite
 
@@ -5145,6 +5171,7 @@ unsigned n7ddc_get_swr(void)
 	return swr10 > fs ? fs : swr10;
 }
 
+// Отображение КСВ в меню
 void display2_swrsts22(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -5365,10 +5392,18 @@ static void auto_tune0_init(void)
 	tuner_ant = geteffantenna(freq);
 }
 
+// Обновление изображения в процессе выполнения согласования
+// non-zero for cancel tuning process
+static int ntddc_display(void * ctx)
+{
+	return tuneabort();
+}
+
 static enum phases auto_tune0(void)
 {
 
-	n7ddc_tune();
+	if (n7ddc_tune(ntddc_display, NULL))
+		return PHASE_ABORT;
 
 	storetuner(tuner_bg, tuner_ant);
 	return PHASE_DONE;

@@ -8036,6 +8036,7 @@ adcvalholder_t board_getswrpair_filtered(
 	// 1000 & 333 = swr=2, 1000 & 250 = swr=1,66, 1000 & 500 = swr=3
 	//* reflected = 333;
 	//return 1000;
+	enum { HALFLEN = SWRPWRHSLEN / 2 };
 	static adcvalholder_t fh [SWRPWRHSLEN];
 	static adcvalholder_t rh [SWRPWRHSLEN];
 	static unsigned lastix;
@@ -8055,8 +8056,8 @@ adcvalholder_t board_getswrpair_filtered(
 		r += rh [i];
 	}
 
-	* reflected = r * (uint_fast32_t) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
-	return f / SWRPWRHSLEN;
+	* reflected = (r + HALFLEN) * (uint_fast32_t) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	return (f + HALFLEN) / SWRPWRHSLEN;
 }
 
 // возврат считанных с АЦП значений forward и reflected
