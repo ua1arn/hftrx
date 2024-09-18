@@ -5088,6 +5088,19 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+	// обновить кеш данных для дисплея
+	if (FWD == PWRI)
+	{
+		board_adc_store_data(PWRMRRIX, f);
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+	else
+	{
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+
 	* pr = r;
 	* pf = f;
 
@@ -5132,7 +5145,7 @@ unsigned n7ddc_get_swr(void)
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
 
-	// обновить кеш данныз для дисплея
+	// обновить кеш данных для дисплея
 	if (FWD == PWRI)
 	{
 		board_adc_store_data(PWRMRRIX, f);
@@ -5154,6 +5167,7 @@ unsigned n7ddc_get_swr(void)
 	return swr10 > fs ? fs : swr10;
 }
 
+// Отображение КСВ в меню
 void display2_swrsts22(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -5375,16 +5389,17 @@ static void auto_tune0_init(void)
 }
 
 // Обновление изображения в процессе выполнения согласования
+// non-zero for cancel tuning process
 static int ntddc_display(void * ctx)
 {
-	display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-	return 0;	// non-zero for cancel tuning process
+	return tuneabort();
 }
 
 static enum phases auto_tune0(void)
 {
 
-	n7ddc_tune(ntddc_display, NULL);
+	if (n7ddc_tune(ntddc_display, NULL))
+		return PHASE_ABORT;
 
 	storetuner(tuner_bg, tuner_ant);
 	return PHASE_DONE;
