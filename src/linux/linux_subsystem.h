@@ -92,6 +92,8 @@ uint_fast8_t dummy_getchar(char * cp);
 #define HARDWARE_DEBUG_PUTCHAR(c)			(dummy_putchar(c))
 #define HARDWARE_DEBUG_GETCHAR(pc) 			(dummy_getchar(pc))
 
+#define __DMB()	do { } while (0)
+
 typedef pthread_mutex_t lclspinlock_t;
 
 void linux_exit(void);
@@ -110,10 +112,6 @@ void linux_wait_iq(void);
 int rpmsg_init(void);
 void evdev_initialize(void);
 
-int ad9363_iio_start (const char * uri);
-void ad936x_shutdown(void);
-void iio_stop_stream(void);
-
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
 uint_fast8_t gpio_readpin(uint8_t pin);
@@ -128,7 +126,9 @@ void hamradio_set_hw_vfo(uint_fast8_t v);
 
 void ad936x_set_freq(long long freq);
 uint8_t get_ad936x_stream_status(void);
-void ad936x_shutdown(void);
+int ad9363_iio_start (const char * uri);
+void iio_stop_stream(void);
+uint8_t get_status_iio(void);
 
 void board_rtc_getdate(
 	uint_fast16_t * year,
