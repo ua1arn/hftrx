@@ -5011,8 +5011,6 @@ uint_fast8_t hamradio_get_bringtuneB(void)
 	return actbring_tuneB != 0;
 }
 
-static uint_fast16_t actbring_tuneB;
-
 static void bringtimers(void)
 {
 	actbring_afvolume = actbring_afvolume ? (actbring_afvolume - 1) : 0;
