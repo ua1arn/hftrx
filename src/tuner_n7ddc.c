@@ -404,9 +404,10 @@ static int tune(int (* cb)(void * ctx), void * ctx) {
 }
 
 // return 1 for abort
-int n7ddc_tune(int (* cb)(void * ctx), void * ctx) {
+int n7ddc_tune(int linear, int (* cb)(void * ctx), void * ctx) {
 	unsigned i;
 	PRINTF("n7ddc_tune:\n");
+	C_linear = L_linear = linear;
 	atu_reset();
 
 	for (i = 0; i < 32; ++ i)
