@@ -2920,7 +2920,7 @@ static void t507_hdmi_phy_initialize(void)
 	hdmi_writel(0x10020, hdmi_readl(0x10020)|(1<<18));
 	hdmi_writel(0x10020, hdmi_readl(0x10020)|(7<<4));
 
-	to_cnt = 10000;
+	to_cnt = 100;
 	while (1) {
 		if ((hdmi_readl(0x10038)&0x80) == 0x80)
 			break;

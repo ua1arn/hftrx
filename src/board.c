@@ -3831,7 +3831,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
 		// TUNWER/PA
-		/* 7 indictors, 8 capacitors */
+		/* 7 indictors, 7/8 capacitors */
 		RBVAL8(0060, glob_tuner_C);
 
 		// TUNWER/PA

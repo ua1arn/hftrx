@@ -393,7 +393,8 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
 	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-	#define SHORTSET7	1
+	#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+	#define FULLSET7	1
 	#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
