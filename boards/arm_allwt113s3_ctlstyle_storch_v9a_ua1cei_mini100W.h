@@ -13,8 +13,6 @@
 #ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED
 #define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED 1
 
-	#define WITHMGLOOP 1
-	#define WITHMGLOOP_BAUDRATE 115200
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -232,6 +230,9 @@
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHMGLOOP 1
+	#define WITHMGLOOP_BAUDRATE 115200
 
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128

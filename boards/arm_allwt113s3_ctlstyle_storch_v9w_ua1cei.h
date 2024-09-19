@@ -228,6 +228,9 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHMGLOOP 1
+	#define WITHMGLOOP_BAUDRATE 115200
+
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24

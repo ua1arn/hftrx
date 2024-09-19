@@ -5186,6 +5186,36 @@ void display2_swrsts22(
 
 }
 
+// Used with WITHMGLOOP
+unsigned hamradio_get_swr(void)
+{
+	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
+	adcvalholder_t forward, reflected;
+
+	forward = board_getswrmeter_cached(& reflected, swrcalibr);
+
+								// рассчитанное  значение
+	if (forward < minforward)
+		swr10 = SWRMIN;				// SWR=1
+	else if (forward <= reflected)
+		swr10 = SWRMIN * 9;		// SWR is infinite
+	else
+		swr10 = (forward + reflected) * SWRMIN / (forward - reflected);
+	return swr10;
+}
+
+// Used with WITHMGLOOP
+unsigned hamradio_get_pwr(void)
+{
+	uint_fast8_t pwrtrace;
+	uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+
+	if (pwrtrace > maxpwrcali)
+		pwrtrace = maxpwrcali;
+
+	return pwrtrace * 100 / maxpwrcali;
+}
+
 static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_t r, adcvalholder_t f)
 {
 

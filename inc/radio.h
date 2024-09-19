@@ -3535,6 +3535,9 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
 int n7ddc_tune(int (* cb)(void * ctx), void * ctx);	// 1 if aborted
 unsigned n7ddc_get_swr(void);
 
+unsigned hamradio_get_swr(void);
+unsigned hamradio_get_pwr(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
