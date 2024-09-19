@@ -219,6 +219,8 @@ uint_fast32_t allwnr_t113_get_chipid(void);
 #define CHIPID_D1S 			0x5E00
 #define CHIPID_T113S3 		0x6000
 #define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
+#define CHIPID_H616			0x2300
+#define CHIPID_T507			0x2300
 
 uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void);
 uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void);

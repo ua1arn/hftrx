@@ -2818,6 +2818,18 @@ void allwnr_t507_pll_initialize(int forced)
 {
 }
 
+//	#define CHIPID_F133A 		0x5C00
+//	#define CHIPID_T113S3 		0x6000
+//	#define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
+//	#define CHIPID_H616			0x2300
+//	#define CHIPID_T507			0x2300
+// T507
+uint_fast32_t allwnr_t113_get_chipid(void)
+{
+	//printhex32(SID_BASE, SID, 1024 * 4);
+	return SID->SID_DATA [0] & 0xFFFF;
+}
+
 // T507
 uint_fast32_t allwnr_t113_get_hosc_freq(void)
 {
