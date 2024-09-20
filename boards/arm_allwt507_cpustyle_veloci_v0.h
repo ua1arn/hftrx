@@ -265,11 +265,13 @@
 
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER_BITB_POS 	21
 	#define ENCODER_BITA		(UINT32_C(1) << 21)		// PD21
 	#define ENCODER_BITB		(UINT32_C(1) << 22)		// PD22
 
 	// Выводы подключения енкодера #2
 	#define ENCODER_SUB_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER_SUB_BITB_POS 	19
 	#define ENCODER_SUB_BITA		(UINT32_C(1) << 19)		// PD19
 	#define ENCODER_SUB_BITB		(UINT32_C(1) << 20)		// PD20
 
