@@ -597,9 +597,9 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		#define FULLSET7 1		/* 7 indictors, 7 capacitors */
+		//#define FULLSET7 1		/* 7 indictors, 7 capacitors */
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
