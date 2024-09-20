@@ -190,6 +190,11 @@ void load_settings(void)
 	else
 		gui_nvram.micprofile = micprofile_default;
 #endif /* WITHAFCODEC1HAVEPROC */
+
+#if WITHAD936XIIO
+	if (hamradio_get_freq_rx() >= NOXVRTUNE_TOP && ! get_ad936x_stream_status())
+		hamradio_set_freq(7012000uL);
+#endif /* WITHAD936XIIO */
 }
 
 void save_settings(void)
@@ -296,7 +301,7 @@ static window_t windows [] = {
 	{ WINDOW_WNBCONFIG, 	 WINDOW_RECEIVE,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
 #endif /* WITHWNB */
 #if WITHAD936XIIO
-	{ WINDOW_IIOCONFIG,  	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
+	{ WINDOW_IIOCONFIG,  	 WINDOW_OPTIONS,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
 #endif /* WITHAD936XIIO */
 };
 
@@ -696,7 +701,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_iio",  	 	"AD936x", 			},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2",  	 	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8", 		"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
@@ -830,9 +835,6 @@ static void gui_main_process(void)
 #if WITHFT8
 			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 #endif
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-			button_t * btn_iio = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_iio");
-#endif
 
 			if (bh == btn_notch)
 			{
@@ -930,22 +932,6 @@ static void gui_main_process(void)
 				update = 1;
 			}
 #endif /* WITHTX */
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-			else if (bh == btn_iio)
-			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
-				{
-					close_window(OPEN_PARENT_WINDOW);
-					footer_buttons_state(CANCELLED);
-				}
-				else
-				{
-					window_t * const win = get_win(WINDOW_IIOCONFIG);
-					open_window(win);
-					footer_buttons_state(DISABLED, btn_iio);
-				}
-			}
-#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
 		}
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
@@ -1627,6 +1613,12 @@ static void window_bands_process(void)
 			if (hamradio_check_current_freq_by_band(bands [i].index))
 				bh->is_locked = BUTTON_LOCKED;
 
+#if WITHAD936XIIO
+			if ((get_ad936x_stream_status() && bh->payload < NOXVRTUNE_TOP) ||
+					(! get_ad936x_stream_status() && bh->payload > NOXVRTUNE_TOP))
+				bh->state = DISABLED;
+#endif /* WITHAD936XIIO */
+
 			x = x + interval + bh->w;
 			if (r >= row_count)
 			{
@@ -1662,6 +1654,12 @@ static void window_bands_process(void)
 
 			if (hamradio_check_current_freq_by_band(bands [i - 1].index))
 				bh->is_locked = BUTTON_LOCKED;
+
+#if WITHAD936XIIO
+			if ((get_ad936x_stream_status() && bh->payload < NOXVRTUNE_TOP) ||
+					(! get_ad936x_stream_status() && bh->payload > NOXVRTUNE_TOP))
+				bh->state = DISABLED;
+#endif /* WITHAD936XIIO */
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -1728,6 +1726,9 @@ static void window_options_process(void)
 		add_element("btn_Display", 100, 44, 0, 0, "Display|settings");
 		add_element("btn_gui", 	   100, 44, 0, 0, "GUI|settings");
 		add_element("btn_Utils",   100, 44, 0, 0, "Utils");
+#if WITHAD936XIIO
+		add_element("btn_936x",    100, 44, 0, 0, "AD936x|IIO");
+#endif /* WITHAD936XIIO */
 #if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
 #endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
@@ -1821,6 +1822,12 @@ static void window_options_process(void)
 				linux_exit();		// Terminate all
 			}
 #endif /* LINUX_SUBSYSTEM */
+#if WITHAD936XIIO
+			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_936x"))
+			{
+				open_window(get_win(WINDOW_IIOCONFIG));
+			}
+#endif /* WITHAD936XIIO */
 		}
 		break;
 

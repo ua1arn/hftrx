@@ -28,7 +28,7 @@
 
 #define IIO_ENSURE(expr) { \
 	if (!(expr)) { \
-		(void) fprintf(stderr, "assertion failed (%s:%d)\n", __FILE__, __LINE__); \
+		(void) printf("assertion failed (%s:%d)\n", __FILE__, __LINE__); \
 		(void) abort(); \
 	} \
 }
@@ -66,7 +66,6 @@ static struct iio_channels_mask * rxmask = NULL;
 static struct iio_channels_mask * txmask = NULL;
 struct iio_channel * lofreqchn = NULL;
 
-static bool stop = false;
 extern uint32_t * ph_fifo;
 
 static int32_t buf96k_i[DMABUFFSIZE32RX / 2], buf96k_q[DMABUFFSIZE32RX / 2];
@@ -88,13 +87,11 @@ uint8_t get_ad936x_stream_status(void)
 
 void iio_stop_stream(void)
 {
-	stop = true;
 	ad936x_active = 0;
 }
 
 void iio_start_stream(void)
 {
-	stop = false;
 	ad936x_active = 1;
 }
 
@@ -150,7 +147,6 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 	arm_fir_decimate_init_q31(& firdec_x24_i, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, fir_state_i, BLOCK_SIZE);
 	arm_fir_decimate_init_q31(& firdec_x24_q, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, fir_state_q, BLOCK_SIZE);
 
-//	while (!stop) {
 	while (1) {
 		int16_t *p_dat, *p_end;
 		ptrdiff_t p_inc;
@@ -186,7 +182,7 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 			{
 				cnt2304 = 0;
 
-				if (! stop)
+				if (ad936x_active)
 				{
 					arm_fir_decimate_q31(& firdec_x24_i, buf2304k_i, buf96k_i, BLOCK_SIZE);
 					arm_fir_decimate_q31(& firdec_x24_q, buf2304k_q, buf96k_q, BLOCK_SIZE);
@@ -488,7 +484,6 @@ int ad9363_iio_start (const char * uri)
 	}
 
 	ad936x_active = 1;
-	stop = 0;
 
 	printf("* Starting IO streaming\n");
 	stream(rx_sample_sz, tx_sample_sz, BLOCK_SIZE,
