@@ -5764,7 +5764,7 @@
    <register>
     <name>SEL_CFG</name>
     <displayName>SEL_CFG</displayName>
-    <description>? DE2TCON ? MUX register</description>
+    <description>? DE2TCON ? MUX register - lower bit swap DE outputs</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -6193,7 +6193,7 @@
    <register>
     <name>MODULE_GATING</name>
     <displayName>MODULE_GATING</displayName>
-    <description>TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister</description>
+    <description>TCON Output to LVDS/DSI/TVE/HDMI Gating Register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

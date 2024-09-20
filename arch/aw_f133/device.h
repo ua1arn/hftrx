@@ -985,7 +985,7 @@ typedef __PACKED_STRUCT DE_TOP_Type
     __IO uint32_t BUS_CFG;                            /*!< Offset 0x004 ? HCLK_GATE ? DE HCLK Gating Register */
     __IO uint32_t RST_CFG;                            /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
     __IO uint32_t DIV_CFG;                            /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
-    __IO uint32_t SEL_CFG;                            /*!< Offset 0x010 ? DE2TCON ? MUX register */
+    __IO uint32_t SEL_CFG;                            /*!< Offset 0x010 ? DE2TCON ? MUX register - lower bit swap DE outputs */
          uint32_t reserved_0x014 [0x0004];
     __IO uint32_t DE_IP_CFG;                          /*!< Offset 0x024 DE IP Configure Register */
 } DE_TOP_TypeDef; /* size of structure = 0x028 */
@@ -1081,7 +1081,7 @@ typedef __PACKED_STRUCT DISPLAY_TOP_Type
     __IO uint32_t TV_CLK_SRC_RGB_SRC;                 /*!< Offset 0x000 TCON_TV Clock Select and RGB Source Select Register */
          uint32_t reserved_0x004 [0x0006];
     __IO uint32_t DE_PORT_PERH_SEL;                   /*!< Offset 0x01C DE Source Select TCON R Register */
-    __IO uint32_t MODULE_GATING;                      /*!< Offset 0x020 TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister */
+    __IO uint32_t MODULE_GATING;                      /*!< Offset 0x020 TCON Output to LVDS/DSI/TVE/HDMI Gating Register */
 } DISPLAY_TOP_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief DMAC
