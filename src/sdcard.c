@@ -4994,12 +4994,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
 		;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
-	SMHCHARD_PTR->SMHC_CTRL;
-
-#elif CPUSTYLE_T507
-	#warning CPUSTYLE_T507 to be implemented
+#elif CPUSTYLE_ALLWINNER
+	// See sdhci_t113_setclock
 
 #else
 	#error Wrong CPUSTYLE_xxx
