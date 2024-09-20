@@ -212,15 +212,16 @@
 	//#define COLORSTYLE_RED	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
-	#define ENCRES_DEFAULT ENCRES_360
-	#define ENCRES_SUB_DEFAULT ENCRES_360
+	#define ENCRES_DEFAULT ENCRES_600
+	#define ENCRES_SUB_DEFAULT ENCRES_600
 	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
+	//#define ENCODER_SUB_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
-	#define BOARD_ENCODER_DIVIDE 2
-	#define BOARD_ENCODER_SUB_DIVIDE 2
+	#define BOARD_ENCODER_DIVIDE 5
+	#define BOARD_ENCODER_SUB_DIVIDE 5
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	#define WITHENCODER_1F	1

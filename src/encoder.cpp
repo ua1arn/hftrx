@@ -486,6 +486,9 @@ void encoders_initialize(void)
 #if ENCODER_REVERSE
 	encoder1.reverse = 1;
 #endif /* ENCODER_REVERSE */
+#if ENCODER_SUB_REVERSE
+	encoder_sub.reverse = 1;
+#endif /* ENCODER_SUB_REVERSE */
 #if ENCODER2_REVERSE
 	encoder2.reverse = 1;
 #endif /* ENCODER2_REVERSE */
