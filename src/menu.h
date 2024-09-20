@@ -91,7 +91,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if WITHAUTOTUNER_N7DDCALGO
 	{
-		QLABEL("N7DDC LN"), 7, 0, RJ_YES,	ISTEP1,
+		QLABEL("LC LNEAR"), 7, 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
 		OFFSETOF(struct nvmap, gn7ddclinear),
