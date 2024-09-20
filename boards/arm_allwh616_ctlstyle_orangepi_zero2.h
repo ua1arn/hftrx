@@ -100,7 +100,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISBOOTLOADER || 1
+#if WITHISBOOTLOADER
 
 	#define LCDMODE_DUMMY	1
 
