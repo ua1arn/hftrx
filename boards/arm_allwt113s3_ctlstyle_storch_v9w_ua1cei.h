@@ -428,8 +428,8 @@
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
 		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		#define FULLSET7 1		/* 7 indictors, 7 capacitors */
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		//#define FULLSET7 1		/* 7 indictors, 7 capacitors */
 	#elif 1
 		#define WITHTPA100W_UA1CEI_V2 1	/* board style */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
