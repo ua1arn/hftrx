@@ -7,15 +7,13 @@
 
 static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0;
 
+static unsigned char C_linear = 0, L_linear = 0;
 #if FULLSET7 || 1
 	static unsigned char L_q = 7, C_q = 7;
-	static unsigned char C_linear = 0, L_linear = 0;
 #elif FULLSET_7L8C
 	static unsigned char L_q = 7, C_q = 8;
-	static unsigned char C_linear = 0, L_linear = 0;
 #elif FULLSET8
 	static unsigned char L_q = 8, C_q = 8;
-	static unsigned char C_linear = 1, L_linear = 1;
 #endif
 
 
@@ -394,20 +392,26 @@ static int tune(int (* cb)(void * ctx), void * ctx) {
 		L_mult = 2;
 	else if (L_q == 7)
 		L_mult = 4;
+	else if (L_q == 8)
+		L_mult = 8;
+
 	if (C_q == 5)
 		C_mult = 1;
 	else if (C_q == 6)
 		C_mult = 2;
 	else if (C_q == 7)
 		C_mult = 4;
+	else if (C_q == 8)
+		C_mult = 8;
 	return 0;
 }
 
 // return 1 for abort
-int n7ddc_tune(int linear, int (* cb)(void * ctx), void * ctx) {
+int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx) {
 	unsigned i;
 	PRINTF("n7ddc_tune:\n");
-	C_linear = L_linear = linear;
+	C_linear = linearC;
+	L_linear = linearL;
 	atu_reset();
 
 	for (i = 0; i < 32; ++ i)

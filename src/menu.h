@@ -91,13 +91,23 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #if WITHAUTOTUNER_N7DDCALGO
 	{
-		QLABEL("LC LNEAR"), 7, 0, RJ_YES,	ISTEP1,
+		QLABEL("C LINEAR"), 7, 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
-		OFFSETOF(struct nvmap, gn7ddclinear),
+		OFFSETOF(struct nvmap, gn7ddclinearC),
 		nvramoffs0,
 		NULL,
-		& gn7ddclinear,
+		& gn7ddclinearC,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("L LINEAR"), 7, 0, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, KSCH_COUNT - 1,
+		OFFSETOF(struct nvmap, gn7ddclinearL),
+		nvramoffs0,
+		NULL,
+		& gn7ddclinearL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHAUTOTUNER_N7DDCALGOT */

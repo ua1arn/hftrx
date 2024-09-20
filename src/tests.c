@@ -11225,6 +11225,11 @@ void hightests(void)
 			;
 	}
 #endif
+#if 1
+	{
+		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
+	}
+#endif
 #if 0 && (CPUSTYLE_T113) && WITHDEBUG
 	{
 //		uint32_t midr;

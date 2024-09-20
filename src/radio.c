@@ -3365,7 +3365,8 @@ filter_t fi_2p0_455 =
 	uint8_t	ggrptuner; // последний посещённый пункт группы
 	uint8_t gtunerdelay;
 #if WITHAUTOTUNER_N7DDCALGO
-	uint8_t gn7ddclinear;
+	uint8_t gn7ddclinearC;
+	uint8_t gn7ddclinearL;
 #endif /* WITHAUTOTUNER_N7DDCALGO */
 #endif /* WITHAUTOTUNER */
 
@@ -4195,7 +4196,8 @@ enum
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
 	static uint_fast8_t gtunerdelay = 40;
 #if WITHAUTOTUNER_N7DDCALGO
-	static uint_fast8_t gn7ddclinear;
+	static uint_fast8_t gn7ddclinearC;
+	static uint_fast8_t gn7ddclinearL;
 #endif /* WITHAUTOTUNER_N7DDCALGO */
 
 #endif /* WITHAUTOTUNER */
@@ -5436,7 +5438,7 @@ static int ntddc_display(void * ctx)
 static enum phases auto_tune0(void)
 {
 
-	if (n7ddc_tune(gn7ddclinear, ntddc_display, NULL))
+	if (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, ntddc_display, NULL))
 		return PHASE_ABORT;
 
 	storetuner(tuner_bg, tuner_ant);
