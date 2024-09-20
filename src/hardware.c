@@ -3682,28 +3682,6 @@ static uint_fast8_t dpcobj_accure(dpcobj_t * dp)
 	return v;
 }
 
-// Запрос отложенного вызова user-mode функций
-/* добавить функцию для периодического вызова */
-uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
-{
-	IRQL_t oldIrql;
-	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
-	ASSERT(coreid < HARDWARE_NCORES);
-
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpcobj_accure(dp))
-		return 0;
-
-	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->coreid = coreid;
-	dp->delflag = 0;
-	InsertHeadList(& dpc->dpclistentries, & dp->item);
-	IRQLSPIN_UNLOCK(lock, oldIrql);
-
-	return 1;
-}
-
 /* Удалить функцию для периодического вызова */
 uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 {
@@ -3718,10 +3696,25 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 	return 1;
 }
 
+// получить core id текушего потока
+// 0..HARDWARE_NCORES-1
+uint_fast8_t board_dpc_coreid(void)
+{
+#if LINUX_SUBSYSTEM
+	return 0;
+#else /* LINUX_SUBSYSTEM */
+	return arm_hardware_cpuid();
+#endif /* LINUX_SUBSYSTEM */
+}
+
 // Запрос отложенного вызова user-mode функций
 /* добавить функцию для однократного вызова */
 uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
+//	if (coreid == 3)
+//	{
+//		PRINTF("board_dpc_call: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
+//	}
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
@@ -3739,15 +3732,30 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 	return 1;
 }
 
-// получить core id текушего потока
-// 0..HARDWARE_NCORES-1
-uint_fast8_t board_dpc_coreid(void)
+// Запрос отложенного вызова user-mode функций
+/* добавить функцию для периодического вызова */
+uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
-#if LINUX_SUBSYSTEM
-	return 0;
-#else /* LINUX_SUBSYSTEM */
-	return arm_hardware_cpuid();
-#endif /* LINUX_SUBSYSTEM */
+//	if (coreid == 3)
+//	{
+//		PRINTF("board_dpc_addentry: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
+//	}
+	IRQL_t oldIrql;
+	DPCDATA_t * const dpc = & dpcdatas [coreid];
+	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	ASSERT(coreid < HARDWARE_NCORES);
+
+	// предотвращение повторного включения в очередь того же запроса
+	if (dpcobj_accure(dp))
+		return 0;
+
+	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
+	dp->coreid = coreid;
+	dp->delflag = 0;
+	InsertHeadList(& dpc->dpclistentries, & dp->item);
+	IRQLSPIN_UNLOCK(lock, oldIrql);
+
+	return 1;
 }
 
 // user-mode функция обработки списков запросов dpc на текущем процессоре
