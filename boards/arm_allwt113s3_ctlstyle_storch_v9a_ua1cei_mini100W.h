@@ -13,8 +13,6 @@
 #ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED
 #define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED 1
 
-	#define WITHMGLOOP 1
-	#define WITHMGLOOP_BAUDRATE 115200
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -232,6 +230,9 @@
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHMGLOOP 1
+	#define WITHMGLOOP_BAUDRATE 115200
 
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
@@ -584,6 +585,7 @@
 	//#define WITHALTERNATIVEFONTS    1
 
 	#if WITHTPA100W_UA1CEI_V2
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
@@ -595,7 +597,8 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define FULLSET7 1		/* 7 indictors, 7 capacitors */
+		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
 		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip

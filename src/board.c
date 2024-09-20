@@ -3831,7 +3831,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
 		// TUNWER/PA
-		/* 7 indictors, 8 capacitors */
+		/* 7 indictors, 7/8 capacitors */
 		RBVAL8(0060, glob_tuner_C);
 
 		// TUNWER/PA
@@ -7546,11 +7546,13 @@ static void ua1cei_magloop_send(void)
 	// Буфер для формирования ответа в канал управления
 	static char state [1024];
 	unsigned len = local_snprintf_P(state, ARRAY_SIZE(state),
-			"TRX,%u,%u,%u,,,"
+			"TRX,%u,%u,%u,%u,%u"
 			"*",
 			(unsigned) glob_bandf3,
 			(unsigned) glob_bcdfreq1k,
-			(unsigned) glob_autotune ? 3 : glob_tx
+			(unsigned) glob_autotune ? 3 : glob_tx,
+			(unsigned) hamradio_get_swr(),
+			(unsigned) hamradio_get_pwr()
 		);
 	nmea_send(state, len);
 

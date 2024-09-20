@@ -49,7 +49,6 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
-#if 1
 	{
 		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
@@ -90,7 +89,18 @@ static const FLASHMEM struct menudef menutable [] =
 		& gtunerdelay,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* ! WITHAUTOTUNER_N7DDCEXT */
+#if WITHAUTOTUNER_N7DDCALGO
+	{
+		QLABEL("N7DDC LN"), 7, 0, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, KSCH_COUNT - 1,
+		OFFSETOF(struct nvmap, gn7ddclinear),
+		nvramoffs0,
+		NULL,
+		& gn7ddclinear,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHAUTOTUNER_N7DDCALGOT */
 #endif /* WITHAUTOTUNER */
 #if ! WITHFLATMENU
 	{

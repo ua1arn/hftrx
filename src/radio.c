@@ -3364,6 +3364,9 @@ filter_t fi_2p0_455 =
 #if WITHAUTOTUNER
 	uint8_t	ggrptuner; // последний посещённый пункт группы
 	uint8_t gtunerdelay;
+#if WITHAUTOTUNER_N7DDCALGO
+	uint8_t gn7ddclinear;
+#endif /* WITHAUTOTUNER_N7DDCALGO */
 #endif /* WITHAUTOTUNER */
 
 #if WITHTX
@@ -4191,6 +4194,9 @@ enum
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
 	static uint_fast8_t gtunerdelay = 40;
+#if WITHAUTOTUNER_N7DDCALGO
+	static uint_fast8_t gn7ddclinear;
+#endif /* WITHAUTOTUNER_N7DDCALGO */
 
 #endif /* WITHAUTOTUNER */
 
@@ -5190,6 +5196,36 @@ void display2_swrsts22(
 
 }
 
+// Used with WITHMGLOOP
+unsigned hamradio_get_swr(void)
+{
+	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
+	adcvalholder_t forward, reflected;
+
+	forward = board_getswrmeter_cached(& reflected, swrcalibr);
+
+								// рассчитанное  значение
+	if (forward < minforward)
+		swr10 = SWRMIN;				// SWR=1
+	else if (forward <= reflected)
+		swr10 = SWRMIN * 9;		// SWR is infinite
+	else
+		swr10 = (forward + reflected) * SWRMIN / (forward - reflected);
+	return swr10;
+}
+
+// Used with WITHMGLOOP
+unsigned hamradio_get_pwr(void)
+{
+	uint_fast8_t pwrtrace;
+	uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+
+	if (pwrtrace > maxpwrcali)
+		pwrtrace = maxpwrcali;
+
+	return pwrtrace * 100 / maxpwrcali;
+}
+
 static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_t r, adcvalholder_t f)
 {
 
@@ -5400,7 +5436,7 @@ static int ntddc_display(void * ctx)
 static enum phases auto_tune0(void)
 {
 
-	if (n7ddc_tune(ntddc_display, NULL))
+	if (n7ddc_tune(gn7ddclinear, ntddc_display, NULL))
 		return PHASE_ABORT;
 
 	storetuner(tuner_bg, tuner_ant);

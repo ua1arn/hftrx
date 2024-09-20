@@ -293,7 +293,7 @@
 
 	// Выводы подключения енкодера ENC4F
 	#define ENC4F_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENC4F_BITB_POS 	16
+	#define ENC4F_BITB_POS 	10
 	#define ENC4F_BITA		(UINT32_C(1) << 11)		// PD11
 	#define ENC4F_BITB		(UINT32_C(1) << 10)		// PD10
 
