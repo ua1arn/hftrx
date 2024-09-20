@@ -9,13 +9,13 @@
  */
 
 /dts-v1/;
+
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 #include <dt-bindings/clock/stm32mp1-clksrc.h>
 #include "stm32mp15-mx.dtsi"
 
 #include "stm32mp157.dtsi"
 #include "stm32mp15xa.dtsi"
-#include "stm32mp15-pinctrl.dtsi"
 #include "stm32mp15xxac-pinctrl.dtsi"
 #include "stm32mp15-ddr.dtsi"
 
@@ -23,7 +23,7 @@
 /* USER CODE END includes */
 
 / {
-	model = "STMicroelectronics custom STM32CubeMX board - openstlinux-6.1-yocto-mickledore-mp1-v23.06.21";
+	model = "STMicroelectronics custom STM32CubeMX board - openstlinux-6.1-yocto-mickledore-mpu-v24.06.26";
 	compatible = "st,stm32mp157a-stm32157aac_lpddr3_x1-mx", "st,stm32mp157";
 
 	memory@c0000000 {

@@ -9,10 +9,10 @@
  */
 
 /dts-v1/;
+
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 #include <dt-bindings/clock/stm32mp1-clksrc.h>
 #include <dt-bindings/soc/stm32mp15-etzpc.h>
-
 #include "stm32mp157.dtsi"
 #include "stm32mp15xa.dtsi"
 #include "stm32mp15xxac-pinctrl.dtsi"
@@ -21,7 +21,7 @@
 /* USER CODE END includes */
 
 / {
-	model = "STMicroelectronics custom STM32CubeMX board - openstlinux-6.1-yocto-mickledore-mp1-v23.06.21";
+	model = "STMicroelectronics custom STM32CubeMX board - openstlinux-6.1-yocto-mickledore-mpu-v24.06.26";
 	compatible = "st,stm32mp157a-stm32157aac_lpddr3_x1-mx", "st,stm32mp157";
 
 	memory@c0000000 {
@@ -72,6 +72,13 @@
 
 /*Warning: the configuration of the secured GPIOs should be added in (addons) User Section*/
 &pinctrl {
+	rcc_pins_mx: rcc_mx-0 {
+		pins {
+			pinmux = <STM32_PINMUX('H', 0, ANALOG)>, /* RCC_OSC_IN */
+					 <STM32_PINMUX('H', 1, ANALOG)>; /* RCC_OSC_OUT */
+		};
+	};
+
 	/* USER CODE BEGIN pinctrl */
 	/* USER CODE END pinctrl */
 };
@@ -117,6 +124,8 @@
 };
 
 &rcc{
+	pinctrl-names = "default";
+	pinctrl-0 = <&rcc_pins_mx>;
 	status = "okay";
 
 	/* USER CODE BEGIN rcc */
@@ -168,6 +177,8 @@
 		/* USER CODE END pll2 */
 	};
 
+	/* USER CODE BEGIN rcc */
+	/* USER CODE END rcc */
 };
 
 &rtc{

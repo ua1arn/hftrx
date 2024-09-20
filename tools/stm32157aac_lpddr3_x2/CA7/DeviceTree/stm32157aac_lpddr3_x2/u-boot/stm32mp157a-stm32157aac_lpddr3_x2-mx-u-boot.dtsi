@@ -8,6 +8,9 @@
  * https://wiki.st.com/stm32mpu/wiki/Category:Device_tree_configuration
  */
 
+/* !!! log : Internal error - unknown 'U-BOOT' dtsi  !!! */
+/*#include "???.dtsi"*/
+
 /* USER CODE BEGIN includes */
 /* USER CODE END includes */
 

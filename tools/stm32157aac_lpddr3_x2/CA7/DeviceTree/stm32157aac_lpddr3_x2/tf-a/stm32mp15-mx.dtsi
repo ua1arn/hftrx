@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015-2018, STMicroelectronics - All Rights Reserved
  *
- * SPDX-License-Identifier:	GPL-2.0+	BSD-3-Clause
+ * SPDX-License-Identifier:	GPL-2.0-or-later	BSD-3-Clause
  *
  */
 
@@ -14,12 +14,12 @@
  * Relaxed Timing Mode: false
  * Address mapping type: RBC
  *
- * Save Date: 2024.07.15, save Time: 17:52:38
+ * Save Date: 2024.09.20, save Time: 15:16:59
  */
 
-#define DDR_MEM_NAME	"DDR3-DDR3L 32bits 528000kHz"
-#define DDR_MEM_SPEED	528000
-#define DDR_MEM_SIZE	0x20000000
+#define DDR_MEM_NAME "DDR3-DDR3L 32bits 528000kHz"
+#define DDR_MEM_SPEED 528000
+#define DDR_MEM_SIZE 0x20000000
 
 #define DDR_MSTR 0x00040401
 #define DDR_MRCTRL0 0x00000010
