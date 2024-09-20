@@ -393,7 +393,8 @@
 	//#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
 	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-	#define FULLSET7	1
+	//#define FULLSET7	1
+	#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 	#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
