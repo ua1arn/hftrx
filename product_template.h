@@ -50,12 +50,6 @@
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5_progdfu.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5_progdfu.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#elif CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5_ua1cei.h"	// + tuner + PA Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_storch_v5_xwws.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_storch_v5.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
 #elif CPUSTYLE_STM32H7XX && CTLSTYLE_STORCH_V6	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_nikulski.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
