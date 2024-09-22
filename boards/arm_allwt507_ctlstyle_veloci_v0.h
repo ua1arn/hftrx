@@ -216,8 +216,7 @@
 	#define ENCRES_SUB_DEFAULT ENCRES_600
 	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	//#define ENCODER_SUB_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
+	
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
 	#define ENCDIV_DEFAULT 5
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */

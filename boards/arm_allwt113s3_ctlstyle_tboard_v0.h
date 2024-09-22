@@ -238,8 +238,8 @@
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	////#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
+	
+	
 	////#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */

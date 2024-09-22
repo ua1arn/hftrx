@@ -30,7 +30,6 @@ typedef struct encoder_tag
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 	IRQLSPINLOCK_t enclock;
-	int reverse;
 	/* locked by encspeedlock */
 	int_least16_t rotate;
 	int_least16_t backup_rotate;	// остаток после деления разрашения
@@ -101,6 +100,7 @@ extern encoder_t encoder_kbd;
 
 
 void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterruptsRev(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts4(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
 void hardware_encoders_initialize(void);
 

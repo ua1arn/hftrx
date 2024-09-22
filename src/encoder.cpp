@@ -36,7 +36,6 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->getpins = agetpins;
 	e->position = 0;
 	e->backup_position = 0;
-	e->reverse = 0;
 
 	e->backup_rotate = 0;
 	e->rotate = 0;
@@ -57,13 +56,38 @@ void spool_encinterrupts4(void * ctx)
 
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
 
-	if (e->reverse)
-		e->position -= step;
-	else
-		e->position += step;
+	e->position += step;
 
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
+
+static const int8_t graydecoder [4][4] =
+{
+	{
+		+0,		/* 00 -> 00 stopped				*/
+		-1,		/* 00 -> 01 rotate left			*/
+		+1,		/* 00 -> 10 rotate right		*/
+		+0,		/* 00 -> 11 invalid combination */
+	},
+	{
+		+1,		/* 01 -> 00 rotate right		*/
+		+0,		/* 01 -> 01 stopped				*/
+		+0,		/* 01 -> 10 invalid combination */
+		-1,		/* 01 -> 11 rotate left			*/
+	},
+	{
+		-1,		/* 10 -> 00 rotate left			*/
+		+0,		/* 10 -> 01 invalid combination */
+		+0,		/* 10 -> 10 stopped				*/
+		+1,		/* 10 -> 11 rotate right		*/
+	},
+	{
+		+0,		/* 11 -> 00 invalid combination */
+		+1,		/* 11 -> 01 rotate right		*/
+		-1,		/* 11 -> 10 rotate left			*/
+		+0,		/* 11 -> 11 stopped				*/
+	},
+};
 
 /* прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts(void * ctx)
@@ -71,43 +95,30 @@ void spool_encinterrupts(void * ctx)
 	encoder_t * const e = (encoder_t *) ctx;
 	// dimensions are:
 	// old_bits new_bits
-	static int8_t graydecoder [4][4] =
-	{
-		{
-			+0,		/* 00 -> 00 stopped				*/
-			-1,		/* 00 -> 01 rotate left			*/
-			+1,		/* 00 -> 10 rotate right		*/
-			+0,		/* 00 -> 11 invalid combination */
-		},
-		{
-			+1,		/* 01 -> 00 rotate right		*/
-			+0,		/* 01 -> 01 stopped				*/
-			+0,		/* 01 -> 10 invalid combination */
-			-1,		/* 01 -> 11 rotate left			*/
-		},
-		{
-			-1,		/* 10 -> 00 rotate left			*/
-			+0,		/* 10 -> 01 invalid combination */
-			+0,		/* 10 -> 10 stopped				*/
-			+1,		/* 10 -> 11 rotate right		*/
-		},
-		{
-			+0,		/* 11 -> 00 invalid combination */
-			+1,		/* 11 -> 01 rotate right		*/
-			-1,		/* 11 -> 10 rotate left			*/
-			+0,		/* 11 -> 11 stopped				*/
-		},
-	};
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = graydecoder [e->old_val][new_val];
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-	if (e->reverse)
-		e->position -= step;
-	else
-		e->position += step;
+	e->position += step;
+	e->old_val = new_val;
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+}
+
+/* прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterruptsRev(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	// dimensions are:
+	// old_bits new_bits
+	// GETENCBIT_A, GETENCBIT_B
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = graydecoder [e->old_val][new_val];
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
+	e->position -= step;
 	e->old_val = new_val;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
@@ -482,17 +493,6 @@ void encoders_initialize(void)
 	encoder_initialize(& encoder_ENC3F, hardware_get_encoder5_bits);
 	encoder_initialize(& encoder_ENC4F, hardware_get_encoder6_bits);
 	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
-
-#if ENCODER_REVERSE
-	encoder1.reverse = 1;
-#endif /* ENCODER_REVERSE */
-#if ENCODER_SUB_REVERSE
-	encoder_sub.reverse = 1;
-#endif /* ENCODER_SUB_REVERSE */
-#if ENCODER2_REVERSE
-	encoder2.reverse = 1;
-#endif /* ENCODER2_REVERSE */
-
 
 #if WITHENCODER
 	ticker_initialize(& encticker, 1, encspeed_spool, & encoder1);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
