@@ -3718,11 +3718,6 @@ static uint_fast8_t gagcmode;
 	static uint_fast8_t genc1dynamic = 1;
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
 
-	#if defined (ENCRES2_DEFAULT)
-		static uint_fast8_t genc2pulses = ENCRES2_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
-	#else
-		static uint_fast8_t genc2pulses = ENCRES_24;		/* 5: 128 индекс в таблице разрешений валкодера */
-	#endif
 	#if defined (BOARD_ENCODER2_DIVIDE)
 		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
 	#else /* defined (BOARD_ENCODER2_DIVIDE) */
@@ -9298,7 +9293,6 @@ updateboard2(void)
 {
 #if WITHENCODER
 	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
-	encoderB_set_resolution(encresols [genc2pulses], genc2dynamic);
 #endif /* WITHENCODER */
 	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
@@ -17121,7 +17115,7 @@ modifysettings(
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes_B(& js, genc1div * gencderate, genc2div);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes_SUB(& js, genc1div * gencderate, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -19696,18 +19690,34 @@ hamradio_main_step(void)
 			}
 	#endif /* WITHUSEAUDIOREC */
 
-			uint_fast8_t jumpsize;
+			uint_fast8_t jumpsize_main;
 			uint_fast8_t jumpsize_sub;
 			int_least16_t nrotate_main;
 			int_least16_t nrotate_sub;
+			uint_fast16_t step_main;
+			uint_fast16_t step_sub;
 
 			/* переход по частоте - шаг берется из gstep_ENC1 */
 			#if WITHBBOX && defined (WITHBBOXFREQ)
 				nrotate_main = 0;	// ignore encoder
 				nrotate_sub = 0;	// ignore encoder
+				step_main = gstep_ENC1;
+				step_sub = gstep_ENC2;
+			#elif WITHENCODER_SUB
+				nrotate_main = getRotateHiRes_MAIN(& jumpsize_main, genc1div * gencderate);
+				nrotate_sub = getRotateHiRes_SUB(& jumpsize_sub, genc1div * gencderate);
+				step_main = gstep_ENC1;
+				step_sub = gstep_ENC1;
+			#elif WITHENCODER2
+				nrotate_main = getRotateHiRes_MAIN(& jumpsize_main, genc1div * gencderate);
+				nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
+				step_main = gstep_ENC1;
+				step_sub = gstep_ENC2;
 			#else
-				nrotate_main = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
-				nrotate_sub = getRotateHiRes_B(& jumpsize_sub, genc1div * gencderate, genc2div);
+				nrotate_main = getRotateHiRes_MAIN(& jumpsize_main, genc1div * gencderate);
+				nrotate_sub = getRotateHiRes_SUB(& jumpsize_sub, genc1div * gencderate, genc2div);
+				step_main = gstep_ENC1;
+				step_sub = gstep_ENC2;
 			#endif
 
 #if WITHENCODER2
@@ -19815,16 +19825,16 @@ hamradio_main_step(void)
 				{
 					/* Валкодер A: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) gstep_ENC1 * jumpsize * - nrotate_main), gstep_ENC1, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize * - nrotate_main), gstep_ENC1, TUNE_BOTTOM);
+					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
+					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize_main * - nrotate_main), gstep_ENC1, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
 				else if (nrotate_main > 0)
 				{
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) gstep_ENC1 * jumpsize * nrotate_main), gstep_ENC1, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize * nrotate_main), gstep_ENC1, TUNE_TOP);
+					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
+					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize_main * nrotate_main), gstep_ENC1, TUNE_TOP);
 					freqchanged = 1;
 				}
 
@@ -19834,14 +19844,14 @@ hamradio_main_step(void)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep_ENC2 * jumpsize_sub * - nrotate_sub), gstep_ENC2, tune_bottom(bi_sub));
+					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
 					freqchanged = 1;
 				}
 				else if (nrotate_sub > 0)
 				{
 					/* Валкодер B: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep_ENC2 * jumpsize_sub * nrotate_sub), gstep_ENC2, tune_top(bi_sub));
+					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
 					freqchanged = 1;
 				}
 #endif /* ! WITHTOUCHGUI */

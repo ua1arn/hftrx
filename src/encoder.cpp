@@ -431,7 +431,7 @@ getRotateHiRes_X(
 }
 
 int_least16_t
-getRotateHiRes_A(
+getRotateHiRes_MAIN(
 	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	uint_fast8_t derate
 	)
@@ -439,25 +439,37 @@ getRotateHiRes_A(
 	return getRotateHiRes_X(& encoder1, jumpsize, derate);
 }
 
+#if WITHENCODER_SUB
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
 int_least16_t 
-getRotateHiRes_B(
+getRotateHiRes_SUB(
+		uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+		uint_fast8_t derate
+		)
+{
+	return getRotateHiRes_X(& encoder_sub, jumpsize, derate);
+}
+#endif /* WITHENCODER_SUB */
+
+
+/* получение накопленного значения прерываний от валкодера.
+		накопитель сбрасывается */
+int_least16_t
+getRotateHiRes_FN(
 	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-	uint_fast8_t derateSUB,
 	uint_fast8_t derateFN
 	)
 {
 #if WITHENCODER2
 	* jumpsize = 1;
 	return encoder_get_delta(& encoder2, derateFN);
-#elif WITHENCODER_SUB
-	return getRotateHiRes_X(& encoder_sub, jumpsize, derateSUB);
-#else /* WITHENCODER_SUB */
+#else /* WITHENCODER2 */
 	* jumpsize = 1;
 	return 0;
-#endif /* WITHENCODER_SUB */
+#endif /* WITHENCODER2 */
 }
+
 #if WITHENCODER2
 static void spool_encinterrupt2_local(void * ctx)
 {

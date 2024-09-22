@@ -56,10 +56,10 @@ encoder_get_snapshotproportional(
 	const uint_fast8_t derate
 	);
 
-int_least16_t getRotateHiRes_A(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
-int_least16_t getRotateHiRes_B(
+int_least16_t getRotateHiRes_MAIN(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes_SUB(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes_FN(
 		uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-		uint_fast8_t derate,
 		uint_fast8_t derateFN
 		);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
 
@@ -76,7 +76,6 @@ void encoder_kbdctl(
 	);
 
 void encoderA_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
-void encoderB_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 //#define ENCODER_NORMALIZED_RESOLUTION (144)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
