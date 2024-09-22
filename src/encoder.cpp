@@ -373,9 +373,8 @@ void encoderA_pushback(int outsteps, uint_fast8_t hiresdiv)
 }
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
-static
 int_least16_t 
-getRotateHiRes_X(
+getRotateHiRes(
 	encoder_t * const e,
 	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	uint_fast8_t hiresdiv
@@ -429,29 +428,6 @@ getRotateHiRes_X(
 	return nrotate;
 #endif
 }
-
-int_least16_t
-getRotateHiRes_MAIN(
-	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-	uint_fast8_t derate
-	)
-{
-	return getRotateHiRes_X(& encoder1, jumpsize, derate);
-}
-
-#if WITHENCODER_SUB
-/* получение накопленного значения прерываний от валкодера.
-		накопитель сбрасывается */
-int_least16_t 
-getRotateHiRes_SUB(
-		uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-		uint_fast8_t derate
-		)
-{
-	return getRotateHiRes_X(& encoder_sub, jumpsize, derate);
-}
-#endif /* WITHENCODER_SUB */
-
 
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */

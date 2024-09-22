@@ -14207,7 +14207,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
-			int_least16_t nrotate = getRotateHiRes_MAIN(& jumpsize, 1);
+			int_least16_t nrotate = getRotateHiRes(& encoder1, & jumpsize, 1);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);

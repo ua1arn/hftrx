@@ -17115,7 +17115,7 @@ modifysettings(
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes_SUB(& js, genc1div * gencderate, genc2div);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes_FN(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -19704,20 +19704,20 @@ hamradio_main_step(void)
 				step_main = gstep_ENC1;
 				step_sub = gstep_ENC2;
 			#elif WITHENCODER_SUB
-				nrotate_main = getRotateHiRes_MAIN(& jumpsize_main, genc1div * gencderate);
-				nrotate_sub = getRotateHiRes_SUB(& jumpsize_sub, genc1div * gencderate);
+				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+				nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
 				step_main = gstep_ENC1;
 				step_sub = gstep_ENC1;
 			#elif WITHENCODER2
-				nrotate_main = getRotateHiRes_MAIN(& jumpsize_main, genc1div * gencderate);
+				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
 				step_main = gstep_ENC1;
 				step_sub = gstep_ENC2;
 			#else
-				nrotate_main = getRotateHiRes_MAIN(& jumpsize_main, genc1div * gencderate);
-				nrotate_sub = getRotateHiRes_SUB(& jumpsize_sub, genc1div * gencderate, genc2div);
+				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+				nrotate_sub = 0;
 				step_main = gstep_ENC1;
-				step_sub = gstep_ENC2;
+				step_sub = 0;
 			#endif
 
 #if WITHENCODER2

@@ -56,8 +56,13 @@ encoder_get_snapshotproportional(
 	const uint_fast8_t derate
 	);
 
-int_least16_t getRotateHiRes_MAIN(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
-int_least16_t getRotateHiRes_SUB(uint_fast8_t * jumpsize, uint_fast8_t derate);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t
+getRotateHiRes(
+	encoder_t * const e,
+	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+	uint_fast8_t hiresdiv
+	);
+
 int_least16_t getRotateHiRes_FN(
 		uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 		uint_fast8_t derateFN
