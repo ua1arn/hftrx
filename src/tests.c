@@ -12359,6 +12359,7 @@ void hightests(void)
 			const time_t start = time(NULL);
 			uint_fast8_t kbch, repeat;
 
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 			if ((repeat = kbd_scan(& kbch)) != 0)
 			{
 				break;
