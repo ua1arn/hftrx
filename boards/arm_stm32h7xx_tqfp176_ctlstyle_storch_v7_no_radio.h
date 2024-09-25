@@ -324,7 +324,8 @@
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1	
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET8	1
 	#endif
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */

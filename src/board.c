@@ -1235,49 +1235,45 @@ prog_ctrlreg(uint_fast8_t plane)
 
 	#if WITHAUTOTUNER
 
-		#if SHORTSET7 || FULLSET7
-			static void 
-			prog_ctrlreg(uint_fast8_t plane)
-			{
-				const spitarget_t target = targetctl1;
-				//const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-				//const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
+		static void
+		prog_ctrlreg(uint_fast8_t plane)
+		{
+			const spitarget_t target = targetctl1;
+			//const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
+			//const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 
-				rbtype_t rbbuff [3] = { 0 };
+			rbtype_t rbbuff [3] = { 0 };
 
-			#if 1
-				/* +++ Управление согласующим устройством - версия схемы от pedchenk.lena@rambler.ru ы*/
-				/* регистр управления массивом конденсаторов */
-				RBBIT(027, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
-				RBVAL(020, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 6..1, 15: Capacitors tuner bank 	*/
-				/* регистр управления наборной индуктивностью. */
-				RBBIT(017, ! glob_tuner_bypass);		// pin 7: обход СУ
-				RBVAL(010, glob_tuner_bypass ? 0 : revbits8(glob_tuner_L) >> 1, 7);/* Inductors tuner bank 	*/
-				/* --- Управление согласующим устройством */
-			#else
-				/* +++ Управление согласующим устройством */
-				/* регистр управления массивом конденсаторов */
-				RBVAL(021, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 7..1: Capacitors tuner bank 	*/
-				RBBIT(020, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-				/* регистр управления наборной индуктивностью. */
-				RBBIT(017, glob_tuner_bypass);		// pin 01: обход СУ
-				RBVAL(010, glob_tuner_bypass ? 0 : glob_tuner_L, 7);			/* Inductors tuner bank 	*/
-				/* --- Управление согласующим устройством */
-			#endif
-				/* регистр управления (74HC595), расположенный на плате синтезатора */
-				RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
-				RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
-				RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
-				RBBIT(003, glob_att);				/* pin 03: d3: ATT */
-				RBBIT(002, glob_preamp);			/* pin 02: d2 - PRE */
-				RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
-				RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
-
-				board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-			}
-		#elif SHORTSET8 || FULLSET8
-			#error CTLREGSTYLE_SW2012CN && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
+		#if 1
+			/* +++ Управление согласующим устройством - версия схемы от pedchenk.lena@rambler.ru ы*/
+			/* регистр управления массивом конденсаторов */
+			RBBIT(027, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+			RBVAL(020, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 6..1, 15: Capacitors tuner bank 	*/
+			/* регистр управления наборной индуктивностью. */
+			RBBIT(017, ! glob_tuner_bypass);		// pin 7: обход СУ
+			RBVAL(010, glob_tuner_bypass ? 0 : revbits8(glob_tuner_L) >> 1, 7);/* Inductors tuner bank 	*/
+			/* --- Управление согласующим устройством */
+		#else
+			/* +++ Управление согласующим устройством */
+			/* регистр управления массивом конденсаторов */
+			RBVAL(021, glob_tuner_bypass ? 0 : revbits8(glob_tuner_C) >> 1, 7);/* pin 7..1: Capacitors tuner bank 	*/
+			RBBIT(020, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
+			/* регистр управления наборной индуктивностью. */
+			RBBIT(017, glob_tuner_bypass);		// pin 01: обход СУ
+			RBVAL(010, glob_tuner_bypass ? 0 : glob_tuner_L, 7);			/* Inductors tuner bank 	*/
+			/* --- Управление согласующим устройством */
 		#endif
+			/* регистр управления (74HC595), расположенный на плате синтезатора */
+			RBVAL(006, glob_opowerlevel - BOARDPOWERMIN, 2);								/* d6..d7: spare or power level */
+			RBBIT(005, glob_tx);				/* pin 05: d5: TX2 */
+			RBBIT(004, glob_tx ? glob_txcw : glob_filter);			/* pin 04: d4: CW - на приёме - НЧ фильтр. */
+			RBBIT(003, glob_att);				/* pin 03: d3: ATT */
+			RBBIT(002, glob_preamp);			/* pin 02: d2 - PRE */
+			RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
+			RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
+
+			board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		}
 	#else /* WITHAUTOTUNER */
 
 		static void 
@@ -1317,7 +1313,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	static void 
 	prog_ctrlreg(uint_fast8_t plane)
 	{
-	#if SHORTSET7 || FULLSET7
 		const spitarget_t target = targetctl1;
 		//const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
 		//const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
@@ -1343,11 +1338,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	#elif SHORTSET8 || FULLSET8
-		#error CTLREGSTYLE_SW2012CN_RN3ZOB && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
-	#else
-		#error CTLREGSTYLE_SW2012CN_RN3ZOB && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
-	#endif
 	}
 
 
@@ -1577,7 +1567,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #if WITHAUTOTUNER
 		/* +++ Управление согласующим устройством */
-	#if SHORTSET7 || FULLSET7
+	#if FULLSET7
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
@@ -1588,8 +1578,8 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
 		/* --- Управление согласующим устройством */
 
-	#elif SHORTSET8 || FULLSET8
-		#error CTLREGSTYLE_SW2013RDX && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
+	#elif FULLSET8
+		#error CTLREGSTYLE_SW2013RDX && WITHAUTOTUNER && (FULLSET8) not supported
 	#endif
 		/* --- Управление согласующим устройством */
 #endif /* WITHAUTOTUNER */
@@ -1626,22 +1616,16 @@ prog_ctrlreg(uint_fast8_t plane)
 	rbtype_t rbbuff [4] = { 0 };	// сделано с запасом и на тюнер
 
 #if WITHAUTOTUNER
-		/* +++ Управление согласующим устройством */
-	#if SHORTSET7 || FULLSET7
 
-		/* +++ Управление согласующим устройством */
-		/* регистр управления массивом конденсаторов */
-		RBBIT(037, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
-		RBVAL(030, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBBIT(027, ! glob_tuner_bypass);		// pin 7: обход СУ
-		RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
+	/* +++ Управление согласующим устройством */
+	/* регистр управления массивом конденсаторов */
+	RBBIT(037, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+	RBVAL(030, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+	/* регистр управления наборной индуктивностью. */
+	RBBIT(027, ! glob_tuner_bypass);		// pin 7: обход СУ
+	RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
+	/* --- Управление согласующим устройством */
 
-	#elif SHORTSET8 || FULLSET8
-		#error CTLREGSTYLE_SW2013RDX && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
-	#endif
-		/* --- Управление согласующим устройством */
 #endif /* WITHAUTOTUNER */
 
 	/* регистр управления (IC6 74HC595), расположенный на плате трансивера */
@@ -1677,23 +1661,18 @@ prog_ctrlreg(uint_fast8_t plane)
 	//const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 
 #if WITHAUTOTUNER
-		rbtype_t rbbuff [4] = { 0 };
-		/* +++ Управление согласующим устройством */
-	#if SHORTSET7 || FULLSET7
+	rbtype_t rbbuff [4] = { 0 };
+	/* +++ Управление согласующим устройством */
 
-		/* +++ Управление согласующим устройством */
-		/* регистр управления массивом конденсаторов */
-		RBBIT(037, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
-		RBVAL(030, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBBIT(027, ! glob_tuner_bypass);		// pin 7: обход СУ
-		RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
+	/* +++ Управление согласующим устройством */
+	/* регистр управления массивом конденсаторов */
+	RBBIT(037, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+	RBVAL(030, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+	/* регистр управления наборной индуктивностью. */
+	RBBIT(027, ! glob_tuner_bypass);		// pin 7: обход СУ
+	RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
+	/* --- Управление согласующим устройством */
 
-	#elif SHORTSET8 || FULLSET8
-		#error CTLREGSTYLE_SW2013RDX && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
-	#endif
-		/* --- Управление согласующим устройством */
 #else /* WITHAUTOTUNER */
 		rbtype_t rbbuff [2] = { 0 };
 #endif /* WITHAUTOTUNER */
@@ -1732,22 +1711,16 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #if WITHAUTOTUNER
 		rbtype_t rbbuff [4] = { 0 };
-		/* +++ Управление согласующим устройством */
-	#if SHORTSET7 || FULLSET7
 
-		/* +++ Управление согласующим устройством */
-		/* регистр управления массивом конденсаторов */
-		RBBIT(037, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
-		RBVAL(030, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBBIT(027, ! glob_tuner_bypass);		// pin 7: обход СУ
-		RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
+	/* +++ Управление согласующим устройством */
+	/* регистр управления массивом конденсаторов */
+	RBBIT(037, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+	RBVAL(030, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+	/* регистр управления наборной индуктивностью. */
+	RBBIT(027, ! glob_tuner_bypass);		// pin 7: обход СУ
+	RBVAL(020, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
+	/* --- Управление согласующим устройством */
 
-	#elif SHORTSET8 || FULLSET8
-		#error CTLREGSTYLE_SW2013RDX && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
-	#endif
-		/* --- Управление согласующим устройством */
 #else /* WITHAUTOTUNER */
 		rbtype_t rbbuff [2] = { 0 };
 #endif /* WITHAUTOTUNER */
@@ -3431,10 +3404,10 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
 		RBVAL8(0050, glob_tuner_L);
 
-	#elif SHORTSET8 || FULLSET8
+	#elif FULLSET8
 		#warning Add code
 
-	#elif SHORTSET7 || FULLSET7
+	#elif FULLSET7
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
@@ -3563,10 +3536,10 @@ prog_ctrlreg(uint_fast8_t plane)
 	#elif WITHTPA100W_UA1CEI_V2
 		#warning Add code
 
-	#elif SHORTSET8 || FULLSET8
+	#elif FULLSET8
 		#warning Add code
 
-	#elif SHORTSET7 || FULLSET7
+	#elif FULLSET7
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
@@ -3730,10 +3703,10 @@ prog_ctrlreg(uint_fast8_t plane)
 			RBVAL8(0050 + bs - 050, glob_tuner_L);
 		}
 
-	#elif SHORTSET8 || FULLSET8
+	#elif FULLSET8
 		#warning Add code
 
-	#elif SHORTSET7 || FULLSET7
+	#elif FULLSET7
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
@@ -3925,20 +3898,10 @@ prog_ctrlreg(uint_fast8_t plane)
 #elif WITHAUTOTUNER
 	#if WITHTPA100W_UA1CEI_V2
 
-		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
-			#error Wrong config
-		#endif /* ! SHORTSET_7L8C && ! FULLSET_7L8C */
-		if (n7ddcext)
-		{
-
-		}
-		else
-		{
-			/* 7 indictors, 8 capacitors */
-			RBVAL8(0100, glob_tuner_C);
-			RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-			RBVAL(0070, glob_tuner_L, 7);
-		}
+		/* 7 indictors, 8 capacitors */
+		RBVAL8(0100, glob_tuner_C);
+		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0070, glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -3988,10 +3951,10 @@ prog_ctrlreg(uint_fast8_t plane)
 			RBVAL8(0050 + bs - 050, glob_tuner_L);
 		}
 
-	#elif SHORTSET8 || FULLSET8
+	#elif FULLSET8
 		#warning Add code
 
-	#elif SHORTSET7 || FULLSET7
+	#elif FULLSET7
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
@@ -4138,10 +4101,10 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
 		RBVAL8(0050, glob_tuner_L);
 
-	#elif SHORTSET8 || FULLSET8
+	#elif FULLSET8
 		#warning Add code
 
-	#elif SHORTSET7 || FULLSET7
+	#elif FULLSET7
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления наборной индуктивностью. */

@@ -536,20 +536,20 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 
-	#if 0
-		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
-	#elif 1
+	#if 1
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET8	1
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#elif 0
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET7	1
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET7	1
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
@@ -706,6 +706,7 @@
 
 	#if WITHTPA100W_UA1CEI_V2
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -716,8 +717,7 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 

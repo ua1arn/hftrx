@@ -351,7 +351,8 @@
 		#define WITHNMEA		1	/* используется NMEA parser */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		//#define FULLSET8	1
-		#define SHORTSET8	1
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET8	1
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
@@ -361,7 +362,8 @@
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1	
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET8	1
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHTHERMOLEVEL	1	/* отображение температуры */

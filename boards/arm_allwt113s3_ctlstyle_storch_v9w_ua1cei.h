@@ -415,7 +415,6 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 1
 		#define WITHTPA100W_UA1CEI_V2 1	/* board style */
-		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
@@ -427,9 +426,9 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
 		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET7 1		/* 7 indictors, 7 capacitors */
+
 	#elif 1
 		#define WITHTPA100W_UA1CEI_V2 1	/* board style */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -443,18 +442,20 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET8	1
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#elif 0
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET7	1
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET7	1
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
