@@ -6444,8 +6444,8 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 	uint32_t dst_w = dstvdmode->width;//LCD_PIXEL_WIDTH;
 	uint32_t dst_h = dstvdmode->height;//LCD_PIXEL_HEIGHT;
 
-	uint32_t hscale = (src_w << 16) / dst_w;
-	uint32_t vscale = (src_h << 16) / dst_h;
+	uint32_t hscale = ((uint64_t) src_w << 16) / dst_w;	// почему не на 20 сдвиг?
+	uint32_t vscale = ((uint64_t) src_h << 16) / dst_h;	// почему не на 20 сдвиг?
 
 	sun8i_vi_scaler_enable(rtmixid, 0);
 	sun8i_vi_scaler_setup(rtmixid, src_w, src_h, dst_w, dst_h, hscale, vscale, 0, 0);
@@ -6456,8 +6456,8 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
-	const uint_fast32_t scale_x = (uint_fast64_t) vdmodein->width * 0x100000 / vdmodeout->width;
-	const uint_fast32_t scale_y = (uint_fast64_t) vdmodein->height * 0x100000 / vdmodeout->height;
+	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodein->width << 19) / vdmodeout->width) << 1;
+	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodein->height << 19) / vdmodeout->height) << 1;
 	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
 	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
