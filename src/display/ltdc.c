@@ -5445,7 +5445,13 @@ static void write32(uintptr_t addr, uint32_t value)
 #define SUN8I_SCALER_VSU_CTRL_EN		BIT(0)
 #define SUN8I_SCALER_VSU_CTRL_COEFF_RDY		BIT(4)
 
-#define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
+// TODO: fix addresses
+#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64*0
+	#define T113_DE_BASE_N(id) ((id==2?DE_VSU2_BASE: DE_VSU1_BASE)- 0x100000 - 0x20000)
+#else
+	#define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
+#endif
+
 #define regmap_write(id,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
 #define regmap_read(id,y) (*(volatile uint32_t*) (T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))
 
@@ -6485,7 +6491,7 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	}
 
 	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 4);	// COEF_SWITCH_EN
-	//vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
+	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
 }
 #endif
 
@@ -6501,6 +6507,9 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmode)
 		t113_vi_scaler_setup(rtmixid, vdmode, vdmode);
 	}
 #endif
+//	PRINTF("1 SUN8I_SCALER_VSU_CTRL(base) = %08X\n", (unsigned) (T113_DE_BASE_N(rtmixid) + T113_DE_MUX_VSU) );
+//	PRINTF("2 SUN8I_SCALER_VSU_CTRL(base) = %08X\n", (unsigned) (de3_getvsu(rtmixid)) );
+//	printhex32((uintptr_t) de3_getvsu(rtmixid), de3_getvsu(rtmixid), sizeof * de3_getvsu(rtmixid));
 }
 
 // T113: PLL_VIDEO1
@@ -7266,7 +7275,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_update(rtmixid);	/* Update registers */
 
 			t113_de_scaler_initialize(rtmixid, vdmode);
-			//sun8i_vi_scaler_enable(rtmixid, 0);
+			sun8i_vi_scaler_enable(rtmixid, 0);
 		}
 	}
     //PRINTF("hardware_ltdc_initialize done.\n");
