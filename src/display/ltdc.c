@@ -3369,7 +3369,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 
 }
 
-/* VI (VI0) */
+/* VI (VI0) - No UI format attr */
 static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_fast8_t vi_format)
 {
 	const videomode_t * const vdmode_CRT = get_videomode_CRT();
@@ -6444,8 +6444,8 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 	uint32_t dst_w = dstvdmode->width;//LCD_PIXEL_WIDTH;
 	uint32_t dst_h = dstvdmode->height;//LCD_PIXEL_HEIGHT;
 
-	uint32_t hscale = ((uint64_t) src_w << 16) / dst_w;	// почему не на 20 сдвиг?
-	uint32_t vscale = ((uint64_t) src_h << 16) / dst_h;	// почему не на 20 сдвиг?
+	uint32_t hscale = ((uint64_t) src_w << 16) / dst_w;	// расчет в 16 бит точности (далее будет сдвиг)
+	uint32_t vscale = ((uint64_t) src_h << 16) / dst_h;	// расчет в 16 бит точности (далее будет сдвиг)
 
 	sun8i_vi_scaler_enable(rtmixid, 0);
 	sun8i_vi_scaler_setup(rtmixid, src_w, src_h, dst_w, dst_h, hscale, vscale, 0, 0);
@@ -6454,11 +6454,14 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 
+// в rtmix0 - похоже не работает с форматом RGB565 или 8888
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
-	enum { FRAKTWIDTH = 19 };
-	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodein->width << FRAKTWIDTH) / vdmodeout->width) << 1;
-	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodein->height << FRAKTWIDTH) / vdmodeout->height) << 1;
+	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
+	// начения менее 1.0 - меньше исходных пикселей/строк становятся большим количеством
+	//const uint_fast32_t scale_x = (((uint_fast64_t) (vdmodeout->width * 15 / 10) << FRAСTWIDTH) / vdmodein->width) << 1;	// 1.0 приводит к исчезновению изображения
+	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodeout->width << FRAСTWIDTH) / vdmodein->width) << 1;	// 1.0 приводит к исчезновению изображения
+	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodeout->height << FRAСTWIDTH) / vdmodein->height) << 1;
 
 	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
 	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
@@ -6470,28 +6473,29 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
 	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
-	vsu->VSU_SCALE_MODE_REG = 0x00;	// 0x0:UI mode (for ARGB/YUV444 format)
+	vsu->VSU_SCALE_MODE_REG = 0x00;	// FIFO number and filter type for different scale mode 0x0: UI mode (for ARGB/YUV444 format)
 
 	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
 
 	vsu->VSU_Y_SIZE_REG   = ssize;
-	vsu->VSU_Y_HSTEP_REG  = scale_x;
+	vsu->VSU_Y_HSTEP_REG  = scale_x;	// 1.0 приводит к исчезновению изображения
 	vsu->VSU_Y_VSTEP_REG  = scale_y;
-	vsu->VSU_C_SIZE_REG   = ssize;	// input size
-	vsu->VSU_C_HSTEP_REG  = scale_x;
+	vsu->VSU_C_SIZE_REG   = ssize;		// input size
+	vsu->VSU_C_HSTEP_REG  = scale_x;	// 1.0 приводит к исчезновению изображения
 	vsu->VSU_C_VSTEP_REG  = scale_y;
 
-	for (int n=0; n < 32; n++)
-	{
-
-		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
-		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
-		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
-
-		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
-		vsu->VSU_C_HCOEF1_REGN [n] = 0;
-		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
-	}
+	// Загрущки значенией не происходит. Разобраться
+//	for (int n=0; n < 32; n++)
+//	{
+//
+//		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
+//		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
+//		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
+//
+//		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
+//		vsu->VSU_C_HCOEF1_REGN [n] = 0;
+//		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
+//	}
 
 	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 4);	// COEF_SWITCH_EN
 	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
