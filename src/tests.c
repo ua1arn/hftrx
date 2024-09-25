@@ -11225,7 +11225,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if 1
+#if 0
 	{
 		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
 	}
