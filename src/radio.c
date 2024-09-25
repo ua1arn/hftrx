@@ -5020,30 +5020,6 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 }
 
 
-
-//#define k 0.5  //k - коэффицент фильтра 0.0 - 1.0
-//
-//// SWR=1: return 100
-//unsigned n7ddc_get_swr_calman(void)
-//{
-//	adcvalholder_t f, r;
-//
-//	f = board_getswrpair_filtered(& r, swrcalibr);
-//
-//	static unsigned int val_tmp_0; //переменная для временного хранения результата измерения
-//	unsigned int fval = (1 - k) * val_tmp_0 + k * f;
-//	val_tmp_0 = fval;
-//
-//	static unsigned int val_tmp_1; //переменная для временного хранения результата измерения
-//	unsigned int rval = (1 - k) * val_tmp_1 + k * r;
-//	val_tmp_1 = rval;
-//
-//	if (fval > rval)
-//		return ((fval + rval) * 100) / (fval - rval);
-//	else
-//		return 900;
-//}
-
 // SWR=1: return 100
 unsigned n7ddc_get_swr(void)
 {
@@ -5321,9 +5297,8 @@ static enum phases auto_tune0(void)
 {
 
 	if (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, ntddc_display, NULL))
-		return PHASE_ABORT;
-
-	storetuner(tuner_bg, tuner_ant);
+		return PHASE_ABORT; // восстановление будет в auto_tune3
+	// сохранение будет в auto_tune2
 	return PHASE_DONE;
 }
 
@@ -5340,14 +5315,21 @@ static void auto_tune2_init(void)
 {
 }
 
+// save to nvram
 static enum phases auto_tune2(void)
 {
+	storetuner(tuner_bg, tuner_ant);
 	return PHASE_DONE;
 }
 
+// aborting
 static enum phases auto_tune3(void)
 {
-	return PHASE_DONE;
+	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
+	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunercap), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunerind), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	updateboard_tuner();
 }
 
 #else /* WITHAUTOTUNER_N7DDCALGO */
@@ -5445,6 +5427,7 @@ static void auto_tune2_init(void)
 }
 
 // 1 - aborted
+// save to nvram
 static enum phases auto_tune2(void)
 {
 	if (scanminCk(& tunerstatuses [tuner_cshindex]) != 0)
