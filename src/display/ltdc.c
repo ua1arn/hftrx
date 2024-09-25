@@ -5216,23 +5216,6 @@ static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 }
 
 #endif
-
-//#define T113_DE_BASE		DE_BASE //(0x05000000)
-
-#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
-#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
-#define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
-#define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
-#define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
-#define T113_DE_MUX_GSU2	(0x00100000 + 0x40000)
-#define T113_DE_MUX_GSU3	(0x00100000 + 0x50000)
-#define T113_DE_MUX_FCE		(0x00100000 + 0xa0000)
-#define T113_DE_MUX_BWS		(0x00100000 + 0xa2000)
-#define T113_DE_MUX_LTI		(0x00100000 + 0xa4000)
-#define T113_DE_MUX_PEAK	(0x00100000 + 0xa6000)
-#define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
-#define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
-#define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 //
 //__PACKED_STRUCT de_vi_t {
 //	struct {
@@ -5267,6 +5250,100 @@ static int32_t tve_low_enhance(uint32_t sel, uint32_t mode)
 //	uint32_t ovl_size;
 //};
 
+/* ********************************* */
+#if defined (TVENCODER_PTR)
+
+static void t113_tve_DAC_configuration(const videomode_t * vdmode)
+{
+	const unsigned sel = 0;
+	const unsigned mode = vdmode->ntsc ? DISP_TV_MOD_NTSC : DISP_TV_MOD_PAL;
+
+	tve_low_init(sel);
+	tve_low_dac_autocheck_disable(sel);
+	// tve_low_dac_autocheck_enable(sel);
+	tve_low_set_tv_mode(sel, mode, 0);
+	tve_low_dac_enable(sel);
+	tve_low_open(sel);
+	tve_low_enhance(sel, 0); //0,1,2
+
+	// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
+	// else                         PRINTF("DAC NOT connected!\n");
+}
+
+
+// 216 МГц тактирования на TVE
+static void t113_tve_CCU_configuration(const videomode_t * vdmode)
+{
+	const uint_fast32_t needfreq = 216000000;
+#if CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	Clock Source Select
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
+
+
+	unsigned divider;
+	unsigned prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	ASSERT(divider < 16);
+	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
+
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE0_GATING & TVE_TOP
+	TVE_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16); 	//                 //assert reset for TVE0_RST & TVE_TOP_RST
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE0_RST & TVE_TOP_RST
+
+	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+	local_delay_us(10);
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
+	//	100: PLL_PERI(2X)
+	//	101: PLL_AUDIO1(DIV2)
+
+	unsigned divider;
+	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	ASSERT(divider < 16);
+	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
+
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE & TVE_TOP
+	TVE_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);                 //assert reset for TVE & TVE_TOP
+	TVE_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE & TVE_TOP
+
+	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
+	local_delay_us(10);
+#else
+#endif
+
+}
+#endif /* defined (TVENCODER_PTR) */
+
+/* ----- */
+
+#endif /* defined (TCONTV_PTR) */
+
+
+
 #if 0
 struct de_csc_t {
 	uint32_t csc_ctl; //0x00
@@ -5290,6 +5367,24 @@ struct de_csc_t {
         uint32_t globalpha; //0x40
 };
 #endif
+
+
+//#define T113_DE_BASE		DE_BASE //(0x05000000)
+
+#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
+#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
+#define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
+#define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
+#define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
+#define T113_DE_MUX_GSU2	(0x00100000 + 0x40000)
+#define T113_DE_MUX_GSU3	(0x00100000 + 0x50000)
+#define T113_DE_MUX_FCE		(0x00100000 + 0xa0000)
+#define T113_DE_MUX_BWS		(0x00100000 + 0xa2000)
+#define T113_DE_MUX_LTI		(0x00100000 + 0xa4000)
+#define T113_DE_MUX_PEAK	(0x00100000 + 0xa6000)
+#define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
+#define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
+#define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
 
 static uint32_t read32(uintptr_t addr)
@@ -6389,7 +6484,8 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
 	}
 
-	//vsu->VSU_CTRL_REG = (UINT32_C(1) << 4) | (UINT32_C(1) << 0);	// COEF_SWITCH_EN EN
+	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 4);	// COEF_SWITCH_EN
+	//vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
 }
 #endif
 
@@ -6406,98 +6502,6 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmode)
 	}
 #endif
 }
-
-/* ********************************* */
-#if defined (TVENCODER_PTR)
-
-static void t113_tve_DAC_configuration(const videomode_t * vdmode)
-{
-	const unsigned sel = 0;
-	const unsigned mode = vdmode->ntsc ? DISP_TV_MOD_NTSC : DISP_TV_MOD_PAL;
-
-	tve_low_init(sel);
-	tve_low_dac_autocheck_disable(sel);
-	// tve_low_dac_autocheck_enable(sel);
-	tve_low_set_tv_mode(sel, mode, 0);
-	tve_low_dac_enable(sel);
-	tve_low_open(sel);
-	tve_low_enhance(sel, 0); //0,1,2
-
-	// if(tve_low_get_dac_status(0))PRINTF("DAC connected!\n");
-	// else                         PRINTF("DAC NOT connected!\n");
-}
-
-
-// 216 МГц тактирования на TVE
-static void t113_tve_CCU_configuration(const videomode_t * vdmode)
-{
-	const uint_fast32_t needfreq = 216000000;
-#if CPUSTYLE_A64
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-
-	//	CLK_SRC_SEL
-	//	Clock Source Select
-	//	Clock Source Select
-	//	000: PLL_VIDEO0(1X)
-	//	001: PLL_VIDEO0(4X)
-	//	010: PLL_VIDEO1(1X)
-	//	011: PLL_VIDEO1(4X)
-
-
-	unsigned divider;
-	unsigned prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-	ASSERT(divider < 16);
-	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
-		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
-
-	TVE_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE0_GATING & TVE_TOP
-	TVE_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16); 	//                 //assert reset for TVE0_RST & TVE_TOP_RST
-	TVE_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE0_RST & TVE_TOP_RST
-
-	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
-	local_delay_us(10);
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	//	CLK_SRC_SEL
-	//	Clock Source Select
-	//	000: PLL_VIDEO0(1X)
-	//	001: PLL_VIDEO0(4X)
-	//	010: PLL_VIDEO1(1X)
-	//	011: PLL_VIDEO1(4X)
-	//	100: PLL_PERI(2X)
-	//	101: PLL_AUDIO1(DIV2)
-
-	unsigned divider;
-	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_video0_x4_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
-	//PRINTF("t113_tve_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-	ASSERT(divider < 16);
-	TVE_CCU_CLK_REG = (TVE_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
-		divider * (UINT32_C(1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-	TVE_CCU_CLK_REG |= (UINT32_C(1) << 31);
-
-	TVE_CCU_BGR_REG |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);                     //gate pass for TVE & TVE_TOP
-	TVE_CCU_BGR_REG &= ~ (UINT32_C(1) << 17) & ~ (UINT32_C(1) << 16);                 //assert reset for TVE & TVE_TOP
-	TVE_CCU_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);                   // de-assert reset for TVE & TVE_TOP
-
-	//PRINTF("t113_tve_CCU_configuration: BOARD_TVEFREQ=%u MHz\n", (unsigned) (BOARD_TVEFREQ / 1000 / 1000));
-	local_delay_us(10);
-#else
-#endif
-
-}
-#endif /* defined (TVENCODER_PTR) */
-
-/* ----- */
-
-#endif /* defined (TCONTV_PTR) */
 
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
@@ -7261,7 +7265,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
 			t113_de_update(rtmixid);	/* Update registers */
 
-			//t113_de_scaler_initialize(rtmixid, vdmode);
+			t113_de_scaler_initialize(rtmixid, vdmode);
 			//sun8i_vi_scaler_enable(rtmixid, 0);
 		}
 	}
