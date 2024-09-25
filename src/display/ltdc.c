@@ -6502,16 +6502,16 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 }
 #endif
 
-static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmode)
+static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
 	PRINTF("t113_de_scaler_initialize: rtmixid=%d\n", rtmixid);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
     {
-    	t113_vsu_setup(rtmixid, vdmode, vdmode);
+    	t113_vsu_setup(rtmixid, vdmodein, vdmodeout);
     }
 #else
 	{
-		t113_vi_scaler_setup(rtmixid, vdmode, vdmode);
+		t113_vi_scaler_setup(rtmixid, vdmodein, vdmodeout);
 	}
 #endif
 //	PRINTF("1 SUN8I_SCALER_VSU_CTRL(base) = %08X\n", (unsigned) (T113_DE_BASE_N(rtmixid) + T113_DE_MUX_VSU) );
@@ -7270,7 +7270,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 0, 0));	// RED
 			t113_de_update(rtmixid);	/* Update registers */
 
-			t113_de_scaler_initialize(rtmixid, vdmode_CRT);
+			t113_de_scaler_initialize(rtmixid, vdmode, vdmode_CRT);
 		}
 #endif
 
@@ -7281,7 +7281,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
 			t113_de_update(rtmixid);	/* Update registers */
 
-			t113_de_scaler_initialize(rtmixid, vdmode);
+			t113_de_scaler_initialize(rtmixid, vdmode, vdmode);
 			sun8i_vi_scaler_enable(rtmixid, 0);
 		}
 	}
