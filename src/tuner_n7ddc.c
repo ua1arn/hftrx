@@ -9,15 +9,14 @@ static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0;
 
 static unsigned char C_linear = 0, L_linear = 0;
 #if FULLSET7
-	static unsigned char L_q = 7, C_q = 7;
+	static const unsigned char L_q = 7, C_q = 7;
 #elif FULLSET_7L8C
-static unsigned char L_q = 7, C_q = 8;
+	static const unsigned char L_q = 7, C_q = 8;
 #elif FULLSET8
-	static unsigned char L_q = 8, C_q = 8;
+	static const unsigned char L_q = 8, C_q = 8;
 #endif
 
-unsigned char L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
-unsigned char Overload = 0, Loss_ind = 0, Relay_off = 0;
+static unsigned L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
 
 static int min_for_start, max_for_start, max_swr;
 static int SWR, P_max, swr_a;
@@ -61,7 +60,7 @@ static void atu_reset(void) {
 // return 1 for abort
 //измерение КСВ
 static int local_get_swr(int (*cb)(void *ctx), void *ctx) {
-	SWR = n7ddc_get_swr();
+	SWR = n7ddc_get_swr();	// value 0 if no power
 	//PRINTF("local_get_swr: SWR=%d\n", SWR);
 	if (cb(ctx))
 		return 1;

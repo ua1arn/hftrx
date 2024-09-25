@@ -5323,7 +5323,7 @@ static enum phases auto_tune2(void)
 }
 
 // aborting
-static enum phases auto_tune3(void)
+static void auto_tune3(void)
 {
 	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
 	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunercap), CMIN, CMAX, tunercap);
