@@ -6456,8 +6456,10 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
-	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodein->width << 19) / vdmodeout->width) << 1;
-	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodein->height << 19) / vdmodeout->height) << 1;
+	enum { FRAKTWIDTH = 19 };
+	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodein->width << FRAKTWIDTH) / vdmodeout->width) << 1;
+	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodein->height << FRAKTWIDTH) / vdmodeout->height) << 1;
+
 	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
 	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
@@ -6471,6 +6473,7 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	vsu->VSU_SCALE_MODE_REG = 0x00;	// 0x0:UI mode (for ARGB/YUV444 format)
 
 	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
+
 	vsu->VSU_Y_SIZE_REG   = ssize;
 	vsu->VSU_Y_HSTEP_REG  = scale_x;
 	vsu->VSU_Y_VSTEP_REG  = scale_y;
