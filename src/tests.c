@@ -11201,32 +11201,6 @@ void hightests(void)
 #endif /* #if (CPUSTYLE_T113 || CPUSTYLE_F133) */
 #if 0
 	{
-//		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
-//		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
-//		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
-//		DE_UI1->OVL_SIZE = ~ 0u;
-//		//DE_UI2->OVL_SIZE = ~ 0u;
-//		//DE_UI3->OVL_SIZE = ~ 0u;
-//		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
-//		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
-//		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
-
-		PRINTF("G2D_UI0->UI_ATTR=%08" PRIX32 "\n", G2D_UI0->UI_ATTR);
-		PRINTF("G2D_UI1->UI_ATTR=%08" PRIX32 "\n", G2D_UI1->UI_ATTR);
-		PRINTF("G2D_UI2->UI_ATTR=%08" PRIX32 "\n", G2D_UI2->UI_ATTR);
-		G2D_UI0->UI_ATTR = ~ 0u;
-		G2D_UI1->UI_ATTR = ~ 0u;
-		G2D_UI2->UI_ATTR = ~ 0u;
-		PRINTF("G2D_UI0->UI_ATTR=%08" PRIX32 "\n", G2D_UI0->UI_ATTR);
-		PRINTF("G2D_UI1->UI_ATTR=%08" PRIX32 "\n", G2D_UI1->UI_ATTR);
-		PRINTF("G2D_UI2->UI_ATTR=%08" PRIX32 "\n", G2D_UI2->UI_ATTR);
-
-		for (;;)
-			;
-	}
-#endif
-#if 0
-	{
 		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
 	}
 #endif
