@@ -1322,7 +1322,7 @@
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
 
-	#if 1
+	#if 0
 		// Надо для HDMI и TVOUT
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */

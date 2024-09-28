@@ -126,7 +126,7 @@
 	//#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
-	#define WITHHDMITVHW 1	/* Second display - HDMI hardware output */
+	//#define WITHHDMITVHW 1	/* Second display - HDMI hardware output */
 
 #elif 1
 
