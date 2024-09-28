@@ -13255,12 +13255,24 @@ directctlupdate(
 	#endif /* WITHENCODER_3F */
 	#if WITHENCODER_4F
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+			int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
 			if (delta)
 				bring_enc4f();
 			switch (enc4f_sel)
 			{
 			default:
+				while (delta < 0)
+				{
+					uif_key_click_banddown();
+					++ delta;
+					changed = 1;
+				}
+				while (delta > 0)
+				{
+					uif_key_click_bandup();
+					-- delta;
+					changed = 1;
+				}
 				break;
 			}
 		}
@@ -16981,7 +16993,23 @@ modifysettings(
 
 #if WITHKEYBOARD
 
-#if WITHENCODER2
+#if WITHENCODER_4F
+		if (kbready == 0)
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
+
+			if (delta > 0)
+			{
+				kbch = KBD_CODE_MENU_DOWN;
+				kbready = 1;
+			}
+			else if (delta < 0)
+			{
+				kbch = KBD_CODE_MENU_UP;
+				kbready = 1;
+			}
+		}
+#elif WITHENCODER2
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
@@ -18820,38 +18848,6 @@ applowinitialize(void)
 
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));
-#endif
-
-#if 0
-	{
-		const spitarget_t cs = targetfpga1;
-		PRINTF(PSTR("targetfpga1=%04lX\n"), (unsigned long) cs);
-		dbg_puts_impl_P(PSTR("SPI send test started.\n"));
-		// Тестирование скорости передачи по SPI. На SCK должна быть частота SPISPEED
-		for (;;)
-		{
-			static uint_fast8_t v = 0x00;
-			v = ~ v;
-			IRQL_t irql
-			spi_operate_lock(& irql);
-			spi_select(cs, SPIC_MODE3);
-			spi_progval8_p1(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_progval8_p2(cs, v);
-			spi_complete(cs);
-			spi_unselect(cs);
-			spi_operate_unlock(irql);
-		}
-	}
 #endif
 	//for (;;) ;
 	//hardware_cw_diagnostics_noirq(1, 1, 0);	// 'S'
