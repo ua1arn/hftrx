@@ -218,7 +218,8 @@
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
-	#define ENCDIV_DEFAULT 5
+	#define ENCDIV_DEFAULT 2
+	#define ENCDYNAMIC_DEFAULT 0
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	#define WITHENCODER_1F	1

@@ -3715,7 +3715,11 @@ static uint_fast8_t gagcmode;
 	#else /* defined (ENCDIV_DEFAULT) */
 		static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#endif /* defined (ENCDIV_DEFAULT) */
-	static uint_fast8_t genc1dynamic = 1;
+	#if defined (ENCDYNAMIC_DEFAULT)
+		static uint_fast8_t genc1dynamic = ENCDYNAMIC_DEFAULT;
+	#else /* defined (ENCDYNAMIC_DEFAULT) */
+		static uint_fast8_t genc1dynamic = 1;
+	#endif /* defined (ENCDYNAMIC_DEFAULT) */
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
 
 	#if defined (BOARD_ENCODER2_DIVIDE)

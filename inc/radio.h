@@ -56,7 +56,7 @@ typedef uint_least64_t phase_t;
 #define WITHBOTTOMDBMAX 160
 
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
+#define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
 
 #define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
 #define	BOARD_AFGAIN_MAX	24		/* код управления усилением НЧ тракта */
