@@ -4103,7 +4103,7 @@ enum
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
 	static uint_fast8_t gtunerdelay = 40;
 #if WITHAUTOTUNER_N7DDCALGO
-	static uint_fast8_t gn7ddclinearC;
+	static uint_fast8_t gn7ddclinearC = 1;
 	static uint_fast8_t gn7ddclinearL;
 #endif /* WITHAUTOTUNER_N7DDCALGO */
 
