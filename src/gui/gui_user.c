@@ -938,9 +938,6 @@ static void gui_main_process(void)
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_txrx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 			button_t * btn_notch = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_notch");
-#if WITHWNB
-			button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
-#endif /* WITHWNB */
 #if WITHTX
 			if (bh == btn_txrx)
 			{
@@ -964,22 +961,6 @@ static void gui_main_process(void)
 					footer_buttons_state(CANCELLED);
 				}
 			}
-#if WITHWNB
-			else if (bh == btn_wnb)
-			{
-				window_t * const win = get_win(WINDOW_WNBCONFIG);
-				if (win->state == NON_VISIBLE)
-				{
-					open_window(win);
-					footer_buttons_state(DISABLED, btn_wnb);
-				}
-				else
-				{
-					close_window(OPEN_PARENT_WINDOW);
-					footer_buttons_state(CANCELLED);
-				}
-			}
-#endif /* WITHWNB */
 		}
 		break;
 
