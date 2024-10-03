@@ -64,19 +64,47 @@ static struct iio_stream  * rxstream = NULL;
 static struct iio_stream  * txstream = NULL;
 static struct iio_channels_mask * rxmask = NULL;
 static struct iio_channels_mask * txmask = NULL;
-struct iio_channel * lofreqchn = NULL;
 
 extern uint32_t * ph_fifo;
 
-static int32_t buf96k_i[DMABUFFSIZE32RX / 2], buf96k_q[DMABUFFSIZE32RX / 2];
-static int32_t buf2304k_i[BLOCK_SIZE], buf2304k_q[BLOCK_SIZE];
+static int32_t buf96k_i[DMABUFFSIZE32RX / 2] = { 0 }, buf96k_q[DMABUFFSIZE32RX / 2] = { 0 };
+static int32_t buf2304k_i[BLOCK_SIZE] = { 0 }, buf2304k_q[BLOCK_SIZE] = { 0 };
 
-static uint32_t cnt96 = 0, cnt2304 = 0;
+static int32_t buf48k_tx_i[DMABUFFSIZE32TX] = { 0 }, buf48k_tx_q[DMABUFFSIZE32TX] = { 0 };
+static int32_t buf2304k_tx_i[BLOCK_SIZE] = { 0 }, buf2304k_tx_q[BLOCK_SIZE] = { 0 };
+
+static uint32_t cnt96 = 0, cnt2304 = 0, cnt48tx = 0, cnt2304tx = 0;
 static uint8_t ad936x_active = 0;
 static uint8_t inited = 0;
 
 arm_fir_decimate_instance_q31 firdec_x24_i, firdec_x24_q;
-q31_t fir_state_i[NUM_FIR_TAPS + BLOCK_SIZE - 1], fir_state_q[NUM_FIR_TAPS + BLOCK_SIZE - 1];
+q31_t firdec_state_i[NUM_FIR_TAPS + BLOCK_SIZE - 1], firdec_state_q[NUM_FIR_TAPS + BLOCK_SIZE - 1];
+
+arm_fir_interpolate_instance_q31 firint_x24_i, firint_x24_q;
+q31_t firint_state_i[NUM_FIR_TAPS + BLOCK_SIZE - 1], firint_state_q[NUM_FIR_TAPS + BLOCK_SIZE - 1];
+
+#if 1
+
+const double time_per_sample = 1.0 / 1200000;  // OPV_RPC sample rate
+
+#define wiggle_freq (0.1)        // 10 second period sweeping tone back and forth
+#define wiggle_extent (20e3)     // plus-and-minus 20 kHz sweep
+#define wiggle_radians_per_sample (2.0 * M_PI * wiggle_freq * time_per_sample)
+
+void next_tx_sample(int16_t * const i_sample, int16_t * const q_sample)
+{
+    static double wiggle = 0.0;
+    static double signal = 0.0;
+
+    wiggle = fmod(wiggle + wiggle_radians_per_sample, 2 * M_PI);
+    double tone_freq = sin(wiggle) * wiggle_extent;
+    double tone_radians_per_sample = 2 * M_PI * tone_freq * time_per_sample;
+    signal = fmod(signal + tone_radians_per_sample, 2 * M_PI);
+    * i_sample = (int16_t) (cos(signal) * 32767);
+    * q_sample = (int16_t) (sin(signal) * 32767);
+}
+
+#endif
 
 void iq_mutex_unlock(void);
 
@@ -130,7 +158,7 @@ void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
 	release_dmabuffer16tx(addr_ph);
 }
 
-void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
+void stream(size_t rx_sample, size_t tx_sample,
 	    struct iio_stream *rxstream, struct iio_stream *txstream,
 	    const struct iio_channel *rxchn, const struct iio_channel *txchn)
 {
@@ -144,8 +172,17 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 	dev = iio_channel_get_device(rxchn);
 	ctx = iio_device_get_context(dev);
 
-	arm_fir_decimate_init_q31(& firdec_x24_i, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, fir_state_i, BLOCK_SIZE);
-	arm_fir_decimate_init_q31(& firdec_x24_q, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, fir_state_q, BLOCK_SIZE);
+	for (int i = 0; i < NUM_FIR_TAPS; i ++)
+		fir_coeffs[i] = fir_coeffs[i] << 16;
+
+	for (int i = 0; i < NUM_FIR_TAPS_TX; i ++)
+		fir_coeffs_tx[i] = fir_coeffs_tx[i] << 16;
+
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_q31(& firdec_x24_i, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, firdec_state_i, BLOCK_SIZE));
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_q31(& firdec_x24_q, NUM_FIR_TAPS, DECIM_COEFF, fir_coeffs, firdec_state_q, BLOCK_SIZE));
+
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_interpolate_init_q31(& firint_x24_i, DECIM_COEFF * 2, NUM_FIR_TAPS_TX, fir_coeffs_tx, firint_state_i, DMABUFFSIZE32TX));
+	VERIFY(ARM_MATH_SUCCESS == arm_fir_interpolate_init_q31(& firint_x24_q, DECIM_COEFF * 2, NUM_FIR_TAPS_TX, fir_coeffs_tx, firint_state_q, DMABUFFSIZE32TX));
 
 	while (1) {
 		int16_t *p_dat, *p_end;
@@ -203,8 +240,50 @@ void stream(size_t rx_sample, size_t tx_sample, size_t block_size,
 		for (p_dat = (int16_t *) iio_block_first(txblock, txchn); p_dat < p_end;
 		     p_dat += p_inc / sizeof(*p_dat))
 		{
+#if 0
 			p_dat[0] = 0;
 			p_dat[1] = 0;
+#elif 0
+			next_tx_sample((int16_t *) p_dat, (int16_t *) (p_dat + 2));
+#else
+			p_dat[0] = buf2304k_tx_i[cnt2304tx] >> 16;
+			p_dat[1] = buf2304k_tx_q[cnt2304tx] >> 16;
+
+			cnt2304tx ++;
+			if (cnt2304tx >= BLOCK_SIZE)
+			{
+				cnt2304tx = 0;
+
+				if (ad936x_active)
+				{
+					uint16_t i = 0;
+					uintptr_t addr = getfilled_dmabuffer32tx();
+					int16_t * t = (int16_t *) addr;
+
+					for (; i < DMABUFFSIZE32TX / 2; i ++)
+					{
+						buf48k_tx_i[i] = t[i * 2 + 0] << 16;
+						buf48k_tx_q[i] = t[i * 2 + 1] << 16;
+					}
+
+					release_dmabuffer32tx(addr);
+
+					addr = getfilled_dmabuffer32tx();
+					t = (int16_t *) addr;
+
+					for (int j = 0; i < DMABUFFSIZE32TX; i ++, j ++)
+					{
+						buf48k_tx_i[i] = t[j * 2 + 0] << 16;
+						buf48k_tx_q[i] = t[j * 2 + 1] << 16;
+					}
+
+					release_dmabuffer32tx(addr);
+
+					arm_fir_interpolate_q31(& firint_x24_i, buf48k_tx_i, buf2304k_tx_i, DMABUFFSIZE32TX);
+					arm_fir_interpolate_q31(& firint_x24_q, buf48k_tx_q, buf2304k_tx_q, DMABUFFSIZE32TX);
+				}
+			}
+#endif
 		}
 	}
 }
@@ -332,7 +411,6 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	//printf("* Acquiring AD9361 %s lo channel\n", type == TX ? "TX" : "RX");
 	if (!get_lo_chan(type, &chn)) { return false; }
 	wr_ch_lli(chn, "frequency", cfg->lo_hz);
-	lofreqchn = chn;
 
 	return true;
 }
@@ -368,11 +446,13 @@ uint8_t gui_ad936x_find(const char * uri)
 
 void ad936x_set_freq(long long freq)
 {
-//	struct iio_channel * chn = NULL;
-//	if (! ctx) return;
-//	if (! get_lo_chan(RX, & chn)) return;
-	if (! ad936x_active) return;
-	wr_ch_lli(lofreqchn, "frequency", freq + 0.5);
+	static struct iio_channel * chn = NULL;
+	if (! get_phy_chan(RX, 0, & chn)) {	return; }
+	if (! get_lo_chan(RX, & chn)) { return; }
+	wr_ch_lli(chn, "frequency", freq);
+	if (! get_phy_chan(TX, 0, & chn)) {	return; }
+	if (! get_lo_chan(TX, & chn)) { return; }
+	wr_ch_lli(chn, "frequency", freq);
 }
 
 int ad9363_iio_start (const char * uri)
@@ -391,7 +471,7 @@ int ad9363_iio_start (const char * uri)
 	int err;
 
 	// RX stream config
-	rxcfg.bw_hz = MHZ(2.0);   	// 2 MHz rf bandwidth
+	rxcfg.bw_hz = MHZ(0.1);   	// 2 MHz rf bandwidth
 	rxcfg.fs_hz = MHZ(2.304);   // for x24 decimation
 	rxcfg.lo_hz = MHZ(433.0); 	// todo: add freq change
 	rxcfg.rfport = "A_BALANCED"; // port A (select for rf freq.)
@@ -399,7 +479,7 @@ int ad9363_iio_start (const char * uri)
 	rxcfg.gain_val = 20;
 
 	// TX stream config
-	txcfg.bw_hz = MHZ(2.0); 	// 2.0 MHz rf bandwidth
+	txcfg.bw_hz = MHZ(0.1); 	// 2.0 MHz rf bandwidth
 	txcfg.fs_hz = MHZ(2.304);   // for x24 interpolation
 	txcfg.lo_hz = MHZ(433.0); 	// todo: add freq change
 	txcfg.rfport = "A"; // port A (select for rf freq.)
@@ -486,8 +566,7 @@ int ad9363_iio_start (const char * uri)
 	ad936x_active = 1;
 
 	printf("* Starting IO streaming\n");
-	stream(rx_sample_sz, tx_sample_sz, BLOCK_SIZE,
-	       rxstream, txstream, rx0_i, tx0_i);
+	stream(rx_sample_sz, tx_sample_sz, rxstream, txstream, rx0_i, tx0_i);
 	printf("* IO streaming stopped\n");
 
 	//ad936x_active = 0;
