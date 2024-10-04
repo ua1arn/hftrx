@@ -1471,17 +1471,20 @@ unsigned long xc7z_get_arm_freq(void)
 #if WITHAD936XIIO
 
 pthread_t iio_t;
+static char iio_uri[30];
 
 void * iio_stream_thread(void * args)
 {
-	ad9363_iio_start("usb:");
+	ad9363_iio_start(iio_uri);
 	return NULL;
 }
 
 void iio_start_stream(void);
 
-uint8_t gui_ad936x_start(void)
+uint8_t gui_ad936x_start(const char * uri)
 {
+	strncpy(iio_uri, uri, 30);
+
 	linux_cancel_thread(iq_interrupt_t);
 	if (! get_status_iio())
 	{

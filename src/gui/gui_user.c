@@ -6772,7 +6772,7 @@ static void window_iioconfig_process(void)
 			if (status == 10 || status == 1)
 				status = gui_ad936x_find(uri);
 			else if (status == 0)
-				status = gui_ad936x_start();
+				status = gui_ad936x_start(uri);
 			else if (status == 2)
 				status = gui_ad936x_stop();
 

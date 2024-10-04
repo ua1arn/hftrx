@@ -122,7 +122,7 @@ void wnb_set_threshold(uint16_t v);
 uint16_t wnb_get_threshold(void);
 
 uint8_t gui_ad936x_find(const char * uri);
-uint8_t gui_ad936x_start(void);
+uint8_t gui_ad936x_start(const char * uri);
 uint8_t gui_ad936x_stop(void);
 void gui_ad936x_set_gain(uint8_t type, int gain);
 
