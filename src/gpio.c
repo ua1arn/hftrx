@@ -10228,27 +10228,11 @@ RAMFUNC void spool_elkeybundle(void)
 #endif /* WITHELKEY */
 }
 
-/*
-	Машинно-независимый обработчик прерываний.
-	Вызывается при изменении состояния входов электронного ключа,
-    входа манипуляции от CAT (CAT_DTR).
-*/
-RAMFUNC void spool_elkeyinputsbundle(void)
-{
-	//key_spool_inputs();	// опрос состояния электронного ключа и запоминание факта нажатия
-}
-
 
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
 /* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
 RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 {
-#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-	if ((pr & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0)
-	{
-		spool_elkeyinputsbundle();
-	}
-#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
 #if WITHENCODER && defined (ENCODER_BITS)
 	if ((pr & ENCODER_BITS) != 0)
 	{
@@ -10635,12 +10619,6 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
-	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
-		{
-			spool_elkeyinputsbundle();
-		}
-	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
 	#if WITHNMEA
 		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
 		{
@@ -10674,12 +10652,6 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
-	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
-		{
-			spool_elkeyinputsbundle();
-		}
-	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
 	#if WITHNMEA
 		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
 		{
@@ -10711,29 +10683,6 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	{
 		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 	}
-
-
-	// Timer 1 output compare A interrupt service routine
-	ISR(TIMER1_COMPA_vect)
-	{
-		spool_elkeybundle();
-	}
-	// Обработчик по изменению состояния входов PTT и электронного ключа
-	#if CPUSTYLE_ATMEGA_XXX4
-		#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-			// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
-			ISR(PCIVECT)
-			{
-				spool_elkeyinputsbundle();
-			}
-		#endif /* (WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)) */
-		#if defined (FROMCAT_BIT_DTR) && defined (DTRPCICR_BIT) && (PCICR_BIT != DTRPCICR_BIT)
-			ISR(DTRPCIVECT)
-			{
-				spool_elkeyinputsbundle();	// по изменению PTT
-			}
-		#endif
-	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 

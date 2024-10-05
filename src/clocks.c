@@ -5700,6 +5700,12 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_ATMEGA
 
+	// Timer 1 output compare A interrupt service routine
+	ISR(TIMER1_COMPA_vect)
+	{
+		spool_elkeybundle();
+	}
+
 	// Обработчик вызывается с частотой TICKS_FREQUENCY герц.
 	#if CPUSTYLE_ATMEGA328
 		ISR(TIMER2_COMPA_vect)
@@ -5746,13 +5752,7 @@ void hardware_spi_io_delay(void)
 	{
 		spool_elkeybundle();
 	}
-	// Обработчик по изменению состояния входов PTT и электронного ключа
-	//#if CPUSTYLE_ATMEGA_XXX4
-	// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
-	//ISR(PCIVECT)
-	//{
-	//	spool_elkeyinputsbundle();
-	//}
+
 	#endif /* CPUSTYLE_ATXMEGAXXXA4 */
 
 #elif CPUSTYLE_VM14
