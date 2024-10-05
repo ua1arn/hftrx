@@ -3683,25 +3683,17 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
 		RBBIT(0101 + bs - 050, glob_fanflag || txgated);	// FAN
 		RBBIT(0100 + bs - 050, 0);	// unused
-		if (n7ddcext)
-		{
-			// 0100 is a bpf7
-			RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
-			RBBIT(0070 + bs - 050, 0);	// в обесточенном состоянии - режим BYPASS
-		}
-		else
-		{
-			// 0100 is a bpf7
-			RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
-			RBBIT(0071 + bs - 050, glob_tuner_type);		// TY
-			RBBIT(0070 + bs - 050, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
-		#if WITHAUTOTUNER_AVBELNN_REV8CAPS
-			RBVAL8(0060 + bs - 050, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
-		#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-			RBVAL8(0060 + bs - 050, glob_tuner_C);
-		#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-			RBVAL8(0050 + bs - 050, glob_tuner_L);
-		}
+
+		// 0100 is a bpf7
+		RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+		RBBIT(0071 + bs - 050, glob_tuner_type);		// TY
+		RBBIT(0070 + bs - 050, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+	#if WITHAUTOTUNER_AVBELNN_REV8CAPS
+		RBVAL8(0060 + bs - 050, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
+	#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
+		RBVAL8(0060 + bs - 050, glob_tuner_C);
+	#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
+		RBVAL8(0050 + bs - 050, glob_tuner_L);
 
 	#elif FULLSET8
 		#warning Add code
@@ -3856,11 +3848,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-	#if WITHAUTOTUNER_N7DDCEXT
-		const int n7ddcext = 1;
-	#else /* WITHAUTOTUNER_N7DDCEXT */
-		const int n7ddcext = 0;
-	#endif /* WITHAUTOTUNER_N7DDCEXT */
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -3931,25 +3918,17 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
 		RBBIT(0101 + bs - 050, glob_fanflag || txgated);	// FAN
 		RBBIT(0100 + bs - 050, 0);	// unused
-		if (n7ddcext)
-		{
-			// 0100 is a bpf7
-			RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
-			RBBIT(0070 + bs - 050, 0);	// в обесточенном состоянии - режим BYPASS
-		}
-		else
-		{
-			// 0100 is a bpf7
-			RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
-			RBBIT(0071 + bs - 050, glob_tuner_type);		// TY
-			RBBIT(0070 + bs - 050, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
-		#if WITHAUTOTUNER_AVBELNN_REV8CAPS
-			RBVAL8(0060 + bs - 050, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
-		#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-			RBVAL8(0060 + bs - 050, glob_tuner_C);
-		#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-			RBVAL8(0050 + bs - 050, glob_tuner_L);
-		}
+
+		// 0100 is a bpf7
+		RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+		RBBIT(0071 + bs - 050, glob_tuner_type);		// TY
+		RBBIT(0070 + bs - 050, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+	#if WITHAUTOTUNER_AVBELNN_REV8CAPS
+		RBVAL8(0060 + bs - 050, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
+	#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
+		RBVAL8(0060 + bs - 050, glob_tuner_C);
+	#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
+		RBVAL8(0050 + bs - 050, glob_tuner_L);
 
 	#elif FULLSET8
 		#warning Add code
@@ -3971,15 +3950,8 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHAUTOTUNER */
 
 		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
-		if (n7ddcext)
-		{
-			RBBIT(0040, glob_tuner_bypass);		/* pin 02 - tuner bypass */
-		}
-		else
-		{
-			RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
-			RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
-		}
+		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
 
 		// DD42 SN74HC595PW
 		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE

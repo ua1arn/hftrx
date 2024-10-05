@@ -2903,12 +2903,18 @@ struct modeprops
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
 	Информация, сохраняемая для каждого диапазона */
+
 struct bandinfo
 {
 	uint32_t freq;		/* рабочая частота */
 	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
 	uint8_t moderow;		/* номер режима работы в маске (номер тройки бит) */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+ 	 Информация, сохраняемая для каждой антенны */
 
 struct oneant_tag {
 #if 1//! WITHONEATTONEAMP
@@ -2927,6 +2933,7 @@ struct oneant_tag {
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
  	 Информация, сохраняемая для группы диапазонов */
+
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
@@ -5243,25 +5250,21 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
-#endif /* ! WITHAUTOTUNER_N7DDCEXT */
+#endif /* */
 
 static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
 {
-#if ! WITHAUTOTUNER_N7DDCEXT
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunercap), tunercap);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerind), tunerind);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunertype), tunertype);
-#endif /* ! WITHAUTOTUNER_N7DDCEXT */
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerwork), tunerwork);
 }
 
 static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 {
-#if ! WITHAUTOTUNER_N7DDCEXT
 	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunercap), CMIN, CMAX, tunercap);
 	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
-#endif
 	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerwork), 0, 1, tunerwork);
 }
 
@@ -5458,7 +5461,7 @@ static void auto_tune3(void)
 	updateboard_tuner();
 }
 
-#endif /* ! WITHAUTOTUNER_N7DDCEXT */
+#endif /* WITHAUTOTUNER_N7DDCALGO */
 #endif /* WITHAUTOTUNER */
 
 #if WITHAUTOTUNER
