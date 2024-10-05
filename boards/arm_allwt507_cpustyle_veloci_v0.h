@@ -1234,6 +1234,16 @@
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
 		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * 100 / WITHLCDBACKLIGHTMAX); \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 0, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD0 LVDS0_V0P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 1, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD1 LVDS0_V0N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 2, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD2 LVDS0_V1P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 3, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD3 LVDS0_V1N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 4, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD4 LVDS0_V2P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 5, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD5 LVDS0_V2N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 6, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD6 LVDS0_CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 7, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD7 LVDS0_CKN */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 8, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD8 LVDS0_V3P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 9, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
 #else /* WITHBLPWMCTL */
