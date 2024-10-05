@@ -2791,12 +2791,24 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 		0;
 }
 
-
-static void allwnr_t507_module_pll_enable(volatile uint32_t * reg)
+// Set Spread Frequency Mode
+void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat)
 {
+	* pat = 0x00;
+	* pat |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
+	* pat |= 1 * (UINT32_C(1) << 29); // SPR_FREQ_MODE
+	* pat |= 1 * (UINT32_C(1) << 20); // WAVE_STEP
+
+	* reg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+}
+
+void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N)
+{
+	* reg &= ~ (UINT32_C(1) << 31);	// PLL_ENABLE
 
 	if(!(* reg & (UINT32_C(1) << 31)))	// PLL_ENABLE
 	{
+		* reg = (* reg & ~ (UINT32_C(0xFF) << 8)) | (((N - 1) & 0xFF) << 8);
 		* reg |= (UINT32_C(1) << 31);	// PLL_ENABLE
 
 		/* Lock enable */
@@ -2888,7 +2900,7 @@ uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_PERI0(2X) = 24MHz*N/M0/M1
 	//	PLL_PERI0(1X) = 24MHz*N/M0/M1/2
-	//	The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recomme nded to modify the value
+	//	The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
 	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
 }
 
@@ -2900,7 +2912,7 @@ uint_fast64_t allwnr_t507_get_pll_peri1_x2_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_PERI1(2X) = 24MHz*N/M0/M1
 	//	PLL_PERI1(1X) = 24MHz*N/M0/M1/2
-	//	The default value of PLL_PERI1(2X) is 1.2 GHz. It is not recomme nded to modify the value
+	//	The default value of PLL_PERI1(2X) is 1.2 GHz. It is not recommended to modify the value
 	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
 }
 
@@ -3007,7 +3019,7 @@ uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void)
 	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M0 / M1 / P;
 }
 
-uint_fast32_t allwnr_t507_get_pll_peri0_x1_freq(void)
+uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
 {
 	return allwnr_t507_get_pll_peri0_x2_freq() / 2;
 }
@@ -9596,14 +9608,16 @@ sysinit_pll_initialize(int forced)
 
 	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
 
-	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
-//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG);
-//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
+	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
+	allwnr_t507_module_pll_spr(& CCU->PLL_PERI1_CTRL_REG, & CCU->PLL_PERI1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG, 50);
+//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
+//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
+	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 43);
 #if WITHGPUHW
-	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
 #endif /* WITHGPUHW */
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz

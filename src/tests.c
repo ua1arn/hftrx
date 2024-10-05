@@ -11318,6 +11318,8 @@ void hightests(void)
 		PRINTF("allwnr_t507_get_psi_ahb1_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_psi_ahb1_ahb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_pll_peri0_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_peri0_x1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_pll_peri1_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_peri1_x1_freq() / 1000 / 1000));
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)

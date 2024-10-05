@@ -247,6 +247,8 @@ uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void);
 uint_fast32_t allwnr_t507_get_ahb3_freq(void);
 uint_fast32_t allwnr_t507_get_apb1_freq(void);
 uint_fast32_t allwnr_t507_get_apb2_freq(void);
+uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
+uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
 uint_fast32_t allwnr_t507_get_mbus_freq(void);
 uint_fast32_t allwnr_t507_get_de_freq(void);
 uint_fast32_t allwnr_t507_get_di_freq(void);
@@ -268,6 +270,9 @@ uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void);
 uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void);
 uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void);
+
+void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
+void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);

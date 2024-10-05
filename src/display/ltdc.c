@@ -3724,6 +3724,8 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
+		allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+
 		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
 		CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
 		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
@@ -6558,6 +6560,8 @@ static void t113_tcontv_PLL_configuration(void)
 {
 #if CPUSTYLE_A64
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 
 	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
