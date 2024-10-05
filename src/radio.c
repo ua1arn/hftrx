@@ -5329,16 +5329,6 @@ static enum phases auto_tune2(void)
 	return PHASE_DONE;
 }
 
-// aborting
-static void auto_tune3(void)
-{
-	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
-	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunerind), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
-	updateboard_tuner();
-}
-
 #else /* WITHAUTOTUNER_N7DDCALGO */
 
 static uint_fast8_t tuner_bg;
@@ -5451,6 +5441,8 @@ static enum phases auto_tune2(void)
 	return PHASE_DONE;
 }
 
+#endif /* WITHAUTOTUNER_N7DDCALGO */
+
 // aborting
 static void auto_tune3(void)
 {
@@ -5461,7 +5453,6 @@ static void auto_tune3(void)
 	updateboard_tuner();
 }
 
-#endif /* WITHAUTOTUNER_N7DDCALGO */
 #endif /* WITHAUTOTUNER */
 
 #if WITHAUTOTUNER
