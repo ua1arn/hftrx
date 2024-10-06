@@ -3991,7 +3991,7 @@ void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * 
 void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg)
 {
 
-	//* ctrlreg &= ~ (UINT32_C(1) << 31);
+	* ctrlreg &= ~ (UINT32_C(1) << 31);
 	//if (!(* ctrlreg & (UINT32_C(1) << 31)))
 	{
 		uint32_t val;
@@ -4952,6 +4952,8 @@ void allwnrt113_pll_initialize(void)
 #elif CPUSTYLE_F133
 	set_riscv_axi(0x00);	// OSC24
 #endif
+
+	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 
 	allwnrt113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
