@@ -9685,9 +9685,11 @@ sysinit_pll_initialize(int forced)
 		(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
 		//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
 		0;
-	//CCU->PSI_AHB1_AHB2_CFG_REG = 0x03000102;	// allwnr_t507_get_psi_ahb1_ahb2_freq()=100 MHz
-	CCU->APB2_CFG_REG = 0x03000002;	// allwnr_t507_get_apb2_freq()=200 MHz
-	//CCU->APB2_CFG_REG = 0x03000001;	// allwnr_t507_get_apb2_freq()=300 MHz
+
+	CCU->APB2_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) |
+		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
+		0;
 
 	CCU->MBUS_CFG_REG =
 		(UINT32_C(1) << 31) |	// CLK_GATING
