@@ -3151,6 +3151,35 @@ uint_fast32_t allwnr_t507_get_ahb3_freq(void)
 	}
 }
 
+// Note: the AHBS Clock and CPUS Clock are at the same frequency
+uint_fast32_t allwnr_t507_get_ahbs_freq(void)
+{
+	const uint_fast32_t clkreg = PRCM->CPUS_CFG_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);	// FACTOR_M
+	//	CLK = Clock Source/N
+	//	00: OSC24M
+	//	01: RTC_32K
+	//	10: PSI
+	//	11: PLL_PERI0(1X)/M
+	switch ((clkreg >> 24) & 0x03)	/* CPUS_CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnr_t113_get_hosc_freq() / N;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / N;
+	case 0x02:
+		// 10: RC16M
+		return allwnr_t507_get_rc16m_freq() / N;
+	case 0x03:
+		// 11: PLL_PERI0(1X)/M
+		return allwnr_t507_get_pll_peri0_x1_freq() / (M * N);
+	}
+}
+
 uint_fast32_t allwnr_t507_get_apb1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB1_CFG_REG;
@@ -9605,8 +9634,8 @@ sysinit_pll_initialize(int forced)
 	}
 
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
-
-	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
+	PRCM->CPUS_CFG_REG = 0;
+	//PRCM->CPUS_CFG_REG = 0x03000000 | (10 - 1);
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
@@ -9615,6 +9644,7 @@ sysinit_pll_initialize(int forced)
 //	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
+	//allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 43);
 #if WITHGPUHW
 	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
@@ -9622,6 +9652,8 @@ sysinit_pll_initialize(int forced)
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 
+
+	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
 
 	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
 	// old default=0x03000102
