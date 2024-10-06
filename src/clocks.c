@@ -4027,19 +4027,31 @@ static void set_mbus(void)
 #endif /* (CPUSTYLE_F133 || CPUSTYLE_T113_S4) */
 }
 
-static void allwnrt113_module_pll_enable(volatile uint32_t * reg)
+// Set Spread Frequency Mode
+void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0)
+{
+	* pat0 = 0x00;
+	* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
+	* pat0 |= 1 * (UINT32_C(1) << 29); // SPR_FREQ_MODE
+	* pat0 |= 1 * (UINT32_C(1) << 20); // WAVE_STEP
+
+	* ctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+}
+
+void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg)
 {
 
-	if(!(* reg & (UINT32_C(1) << 31)))
+	* ctrlreg &= ~ (UINT32_C(1) << 31);
+	if(!(* ctrlreg & (UINT32_C(1) << 31)))
 	{
 		uint32_t val;
-		* reg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+		* ctrlreg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
 
 		/* Lock enable */
-		* reg |= (UINT32_C(1) << 29);
+		* ctrlreg |= (UINT32_C(1) << 29);
 
 		/* Wait pll stable */
-		while(!(* reg & (0x1u << 28)))
+		while(!(* ctrlreg & (0x1u << 28)))
 			;
 		//local_delay_ms(20);
 
@@ -5040,11 +5052,16 @@ void allwnrt113_pll_initialize(void)
 	set_mbus();
 	set_dma();
 
+	allwnrt113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
+
 //	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 //	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 //	allwnrt113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+
+	allwnrt113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
+	allwnrt113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
 	// APB1 frequency set

@@ -286,6 +286,9 @@ void allwnrt113_set_pll_ve(unsigned m, unsigned n);
 void allwnrt113_set_pll_audio0(unsigned m, unsigned n);
 void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
 
+void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
+void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg);
+
 void allwnrt113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
 void set_pll_riscv_axi(unsigned n);

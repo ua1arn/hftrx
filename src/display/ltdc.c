@@ -3899,6 +3899,8 @@ static void t113_tcontv_CCU_configuration(void)
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
+		allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+
 		CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
 		CCU->PLL_VIDEO0_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
 		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
@@ -6578,7 +6580,10 @@ static void t113_tcontv_PLL_configuration(void)
 	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
 	const uint_fast32_t M = 4;
 
-	CCU->PLL_VIDEO0_CTRL_REG =
+	CCU->PLL_VIDEO0_CTRL_REG = 0;
+	allwnrt113_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+
+	CCU->PLL_VIDEO0_CTRL_REG |=
 		1 * (UINT32_C(1) << 31) |	// PLL_EN
 		1 * (UINT32_C(1) << 30) |	// PLL_LDO_EN
 		1 * (UINT32_C(1) << 27) |	// PLL_OUTPUT_GATE

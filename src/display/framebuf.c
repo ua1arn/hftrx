@@ -3966,8 +3966,10 @@ void board_gpu_initialize(void)
 		const unsigned M1 = 1;
 		const unsigned M0 = 2;
 		// PLL_GPU0 = 24 MHz*N/M0/M1
+		CCU->PLL_GPU0_CTRL_REG = 0;
+		allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 		CCU->PLL_GPU0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 27);
-		CCU->PLL_GPU0_CTRL_REG =
+		CCU->PLL_GPU0_CTRL_REG |=
 			(N - 1) * (UINT32_C(1) << 8) |
 			(M1 - 1) * (UINT32_C(1) << 1) |
 			(M0 - 1) * (UINT32_C(1) << 0) |
