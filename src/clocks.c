@@ -9689,11 +9689,12 @@ sysinit_pll_initialize(int forced)
 	CCU->APB2_CFG_REG = 0x03000002;	// allwnr_t507_get_apb2_freq()=200 MHz
 	//CCU->APB2_CFG_REG = 0x03000001;	// allwnr_t507_get_apb2_freq()=300 MHz
 
-//	CCU->MBUS_CFG_REG = 0;
-//	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 31);	// CLK_GATING
-//	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);	// MBUS_RST
-	CCU->MBUS_CFG_REG = 0xC1000002;	// MBUS freq = 400 MHz (01: PLL_PERI0(2X) / 3)
-	//CCU->MBUS_CFG_REG = 0xC0000000;
+	CCU->MBUS_CFG_REG =
+		(UINT32_C(1) << 31) |	// CLK_GATING
+		(UINT32_C(1) << 30) |	// MBUS_RST
+		0x01 * (UINT32_C(1) << 24) |	// 01: PLL_PERI0(2X)
+		(3 - 1) * (UINT32_C(1) << 0) |	// MBUS freq = 400 MHz (01: PLL_PERI0(2X) / 3)
+		0;
 
 	CCU->APB1_CFG_REG =
 		0x02 * (UINT32_C(1) << 24) |	// 10: PSI
