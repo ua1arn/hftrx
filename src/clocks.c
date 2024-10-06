@@ -9687,7 +9687,8 @@ sysinit_pll_initialize(int forced)
 		0;
 
 	CCU->APB2_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) |
+		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
 		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
 		0;
 
@@ -9700,7 +9701,7 @@ sysinit_pll_initialize(int forced)
 
 	CCU->APB1_CFG_REG =
 		0x02 * (UINT32_C(1) << 24) |	// 10: PSI
-		//(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
 		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
 		0;
 
