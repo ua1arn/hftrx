@@ -201,36 +201,6 @@ int sys_dram_init(void)
 void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
-#if 0 && CPUSTYLE_T113
-	const uintptr_t ddr3init_base = 0x00028000;
-	/* вызывается до разрешения MMU */
-	bootloader_readimage(0x00040000, (void *) ddr3init_base, 0x8000);
-	memcpy((void *) (ddr3init_base + 0x0038), & ddrp, sizeof ddrp);
-	((void(*)(void))(ddr3init_base))();
-	set_pll_cpux_axi(PLL_CPU_N);
-	#if WITHDEBUG && 1
-		//HARDWARE_DEBUG_INITIALIZE();
-		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-	#endif /* WITHDEBUG */
-
-#elif 0 && CPUSTYLE_F133
-	const uintptr_t ddr3init_base = 0x00020000;
-	/* вызывается до разрешения MMU */
-	TP();
-	bootloader_readimage(0x00040000, (void *) ddr3init_base, 20 * 1024);
-	printhex(ddr3init_base, (void *) ddr3init_base, 256);
-	TP();
-	memcpy((void *) (ddr3init_base + 0x0018), & ddrp2, sizeof ddrp2);
-	TP();
-	((void(*)(void))(ddr3init_base))();
-	TP();
-	set_pll_riscv_axi(PLL_CPU_N);
-	#if WITHDEBUG && 1
-		//HARDWARE_DEBUG_INITIALIZE();
-		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-	#endif /* WITHDEBUG */
-
-#else
 	PRINTF("default: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
 	PRINTF("default: allwnr_t113_get_dram_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dram_freq());
 	if (sys_dram_init() == 0)
@@ -252,7 +222,6 @@ void arm_hardware_sdram_initialize(void)
 	PRINTF("settings: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
 	PRINTF("settings: allwnr_t113_get_dram_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dram_freq());
 
-#endif
 	PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
 }

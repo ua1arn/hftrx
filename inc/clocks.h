@@ -276,16 +276,6 @@ uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void);
 void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
 void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
-/* PLL initialization functions. Take care on glitches. */
-void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
-void allwnrt113_set_pll_ddr(unsigned m, unsigned n);
-void allwnrt113_set_pll_peri(unsigned m, unsigned n);
-void allwnrt113_set_pll_vieo0(unsigned m, unsigned n);
-void allwnrt113_set_pll_vieo1(unsigned m, unsigned n);
-void allwnrt113_set_pll_ve(unsigned m, unsigned n);
-void allwnrt113_set_pll_audio0(unsigned m, unsigned n);
-void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
-
 void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
 void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg);
 

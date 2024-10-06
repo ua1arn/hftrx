@@ -4012,63 +4012,6 @@ void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg)
 	}
 }
 
-void allwnrt113_set_pll_cpux(unsigned m, unsigned n)
-{
-	// PLL_CPU = InputFreq*N.
-	ASSERT(m == 2);
-	uint_fast32_t val = CCU->PLL_CPU_CTRL_REG;
-
-	/* Set default clk to 1008mhz */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ (UINT32_C(0xFF) << 8) & ~ (UINT32_C(0x03) << 0);
-	val |= ((n - 1) << 8);		//was: PLL_CPU_N
-	val |= ((m - 1) << 0);
-
-	CCU->PLL_CPU_CTRL_REG = val;
-}
-//
-//void allwnrt113_set_pll_ddr(unsigned m, unsigned n)
-//{
-//	// PLL_DDR = InputFreq*N/M1/M0.
-//	uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
-//
-//}
-//
-//void allwnrt113_set_pll_peri(unsigned m, unsigned n)
-//{
-//	uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
-//
-//}
-//
-//void allwnrt113_set_pll_vieo0(unsigned m, unsigned n)
-//{
-//	uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
-//
-//}
-//
-//void allwnrt113_set_pll_vieo1(unsigned m, unsigned n)
-//{
-//	uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
-//
-//}
-//
-//void allwnrt113_set_pll_ve(unsigned m, unsigned n)
-//{
-//	uint_fast32_t reg = CCU->PLL_VE_CTRL_REG;
-//
-//}
-//
-//void allwnrt113_set_pll_audio0(unsigned m, unsigned n)
-//{
-//	uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
-//
-//}
-//
-//void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
-//{
-//	uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
-//
-//}
 //	#define CHIPID_F133A 		0x5C00
 //	#define CHIPID_T113S3 		0x6000
 //	#define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
@@ -4993,6 +4936,13 @@ void set_pll_cpux_axi(unsigned N)
 	t113_set_axi(0x00, 1, 1);
 	set_pll_cpu(N);	// see sdram.c
 	t113_set_axi(0x03, 4, 2);
+}
+
+void set_pll_riscv_axi(unsigned N)
+{
+	set_riscv_axi(0x00);	// OSC24
+	set_pll_cpu(N);	// see sdram.c
+	set_riscv_axi(0x05);	// 101: PLL_CPU
 }
 
 void allwnrt113_pll_initialize(void)
