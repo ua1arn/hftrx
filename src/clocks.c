@@ -3833,7 +3833,7 @@ static void set_pll_cpu(unsigned n)
 }
 //#if CPUSTYLE_F133
 
-void set_pll_riscv_axi(unsigned n)
+void set_riscv_axi(unsigned sel)
 {
 	uint32_t val;
 
@@ -3845,74 +3845,24 @@ void set_pll_riscv_axi(unsigned n)
 
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->RISC_CLK_REG =
-			(0 << 24) | // 000: HOSC
+			(sel << 24) | // 000: HOSC or 191
 			(1 << 8) |	// RISC_AXI_DIV_CFG
 			(0 << 0) |	// RISC_DIV_CFG
 			0;
 	(void) CCU->RISC_CLK_REG;
-
-	set_pll_cpu(n);
-
-	/* Set and change cpu clk src */
-	val = CCU->RISC_CLK_REG;
-	val &= ~ ((0x07 << 24) | ( 0x3 << 8 ) | ( 0x1F << 0));
-	val |=
-		(0x05 << 24) |	// 101: PLL_CPU
-		(0x1 << 8) |	// RISC_AXI_DIV_CFG
-		(0x0 << 0) |	// RISC_DIV_CFG
-		0;
-	CCU->RISC_CLK_REG = val;
-
-	//local_delay_ms(1);
-	//sys_uart_puts("set_pll_cpux_axi Ok \n");
-//	TP();
-//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnr_t113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
 //#endif /* CPUSTYLE_F133 */
 
 //#if CPUSTYLE_T113
-void set_pll_cpux_axi(unsigned n)
+static void t113_set_axi(unsigned sel, unsigned divider2, unsigned divider1)
 {
-	uint32_t val;
-
-	// After ddr3_init
-	// PLL_CPU_CTRL_REG=CA002900
-	// CPU_AXI_CFG_REG=03000301
-	//TP();
-    //PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnr_t113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
-
-	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->CPU_AXI_CFG_REG =
-			(0 << 24) | // old 0x03, old 011: PLL_CPU/P, new 000: HOSC
-			(3 << 8) |	// old 0x03 old CPU_DIV2=4, new same
-			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
-			0;
-
-	set_pll_cpu(n);
-
-	/* Lock disable */
-//	val = CCU->PLL_CPU_CTRL_REG;
-//	val &= ~(1 << 29);
-//	CCU->PLL_CPU_CTRL_REG = val;
-	//local_delay_ms(1);
-
-	/* Set and change cpu clk src */
-	val = CCU->CPU_AXI_CFG_REG;
-	val &= ~ ((0x07 << 24) | (0x3 << 16 ) | ( 0x3 << 8 ) | ( 0xf << 0));
-	val |=
-		(0x03 << 24) |
-		(0x0 << 16) |	// PLL_CPU_OUT_EXT_DIVP
-		(0x3 << 8) |
-		(0x1 << 0) |
+		(sel << 24) | // old 0x03, old 011: PLL_CPU/P, new 000: HOSC
+		((divider2 - 1) << 8) |	// old 0x03 old CPU_DIV2=4, new same
+		((divider1 - 1) << 0) |	// old 0x01 old CPU_DIV1, new same
 		0;
-	CCU->CPU_AXI_CFG_REG = val;
-
-	//local_delay_ms(1);
-	//sys_uart_puts("set_pll_cpux_axi Ok \n");
-//	TP();
-//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnr_t113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
+	(void) CCU->CPU_AXI_CFG_REG;
 }
-//#endif /* CPUSTYLE_T113 */
 
 static void set_pll_periph0(void)
 {
@@ -4041,8 +3991,8 @@ void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * 
 void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg)
 {
 
-	* ctrlreg &= ~ (UINT32_C(1) << 31);
-	if(!(* ctrlreg & (UINT32_C(1) << 31)))
+	//* ctrlreg &= ~ (UINT32_C(1) << 31);
+	//if (!(* ctrlreg & (UINT32_C(1) << 31)))
 	{
 		uint32_t val;
 		* ctrlreg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
@@ -5038,19 +4988,20 @@ uint_fast32_t allwnr_t113_get_dsp_freq(void)
 	}
 }
 
+void set_pll_cpux_axi(unsigned N)
+{
+	t113_set_axi(0x00, 1, 1);
+	set_pll_cpu(N);	// see sdram.c
+	t113_set_axi(0x03, 4, 2);
+}
+
 void allwnrt113_pll_initialize(void)
 {
 #if CPUSTYLE_T113
-	set_pll_cpux_axi(PLL_CPU_N);	// see sdram.c
+	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
 #elif CPUSTYLE_F133
-	set_pll_riscv_axi(RV_PLL_CPU_N);	// see sdram.c
+	set_riscv_axi(0x00);	// OSC24
 #endif
-
-	//set_pll_periph0();
-	set_ahb();
-	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
-	set_mbus();
-	set_dma();
 
 	allwnrt113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
@@ -5063,6 +5014,12 @@ void allwnrt113_pll_initialize(void)
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
 	allwnrt113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
+
+	//set_pll_periph0();
+	set_ahb();
+	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
+	set_mbus();
+	set_dma();
 
 	// APB1 frequency set
 	{
@@ -5078,6 +5035,14 @@ void allwnrt113_pll_initialize(void)
 			dvalue * (UINT32_C(1) << 0) |
 			0;
 	}
+
+	set_pll_cpu(PLL_CPU_N);	// see sdram.c
+
+#if CPUSTYLE_T113
+	t113_set_axi(0x03, 4, 2);
+#elif CPUSTYLE_F133
+	set_riscv_axi(0x05);	// 101: PLL_CPU
+#endif
 
 }
 
