@@ -9661,7 +9661,7 @@ sysinit_pll_initialize(int forced)
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 
 #if 1
-	PRCM->CPUS_CFG_REG = 0x03000000 | (6 - 1);	// PLL_PERI0(X1), /10
+	PRCM->CPUS_CFG_REG = 0x03 * (UINT32_C(1) << 24) | (6 - 1);	// PLL_PERI0(X1), /6
 	PRCM->APBS1_CFG_REG = (4 - 1);
 #else
 	PRCM->CPUS_CFG_REG = 0;
