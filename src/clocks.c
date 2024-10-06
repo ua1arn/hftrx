@@ -9639,7 +9639,10 @@ sysinit_pll_initialize(int forced)
 	}
 
 	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
+
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+	PRCM->CPUS_CFG_REG = 0;
+	PRCM->APBS1_CFG_REG = 0;
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
