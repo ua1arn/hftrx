@@ -248,6 +248,7 @@ uint_fast32_t allwnr_t507_get_ahb3_freq(void);
 uint_fast32_t allwnr_t507_get_ahbs_freq(void);
 uint_fast32_t allwnr_t507_get_apb1_freq(void);
 uint_fast32_t allwnr_t507_get_apb2_freq(void);
+uint_fast32_t allwnr_t507_get_apbs1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
 uint_fast32_t allwnr_t507_get_mbus_freq(void);
