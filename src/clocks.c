@@ -3978,37 +3978,34 @@ static void set_mbus(void)
 }
 
 // Set Spread Frequency Mode
-void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0)
+void allwnrt113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_t * pat0)
 {
-	* pat0 = 0x00;
+	* pat0 =
+		1 * (UINT32_C(1) << 29) | // SPR_FREQ_MODE
+		1 * (UINT32_C(1) << 20) | // WAVE_STEP
+		0x00;
 	* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
-	* pat0 |= 1 * (UINT32_C(1) << 29); // SPR_FREQ_MODE
-	* pat0 |= 1 * (UINT32_C(1) << 20); // WAVE_STEP
 
-	* ctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+	* pllctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
 }
 
-void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg)
+void allwnrt113_module_pll_enable(volatile uint32_t * pllctrlreg)
 {
 
-	* ctrlreg &= ~ (UINT32_C(1) << 31);
-	//if (!(* ctrlreg & (UINT32_C(1) << 31)))
+	* pllctrlreg &= ~ (UINT32_C(1) << 31);
 	{
-		uint32_t val;
-		* ctrlreg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+		// Set PLL freq
+
+
+		// Enable PLL
+		* pllctrlreg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
 
 		/* Lock enable */
-		* ctrlreg |= (UINT32_C(1) << 29);
+		* pllctrlreg |= (UINT32_C(1) << 29);
 
 		/* Wait pll stable */
-		while(!(* ctrlreg & (0x1u << 28)))
+		while(!(* pllctrlreg & (UINT32_C(1) << 28)))
 			;
-		//local_delay_ms(20);
-
-		/* Lock disable */
-//		val = * reg;
-//		val &= ~(1 << 29);
-//		* reg = val;
 	}
 }
 
@@ -4967,9 +4964,7 @@ void allwnrt113_pll_initialize(void)
 	allwnrt113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
-	//set_pll_periph0();
 	set_ahb();
-	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
 	set_mbus();
 	set_dma();
 
