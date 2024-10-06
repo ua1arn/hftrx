@@ -2754,17 +2754,23 @@ uint_fast32_t allwnr_a64_get_nand_freq(void)
 
 #elif CPUSTYLE_T507
 
-static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
+static void set_t507_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
 {
-	const unsigned APBdiv = 4;
-	const unsigned AXIdiv = 2;//3;	// default - 2 = PSI to MEMORY interface
-
-	// switch CPU clock to OSC24M
+//	const unsigned APBdiv = 4;
+//	const unsigned AXIdiv = 2;//3;	// default - 2 = PSI to MEMORY interface
+	// switch CPU clock to sel
+	//	CPUX Clock = Clock Source
+	//	CPUX_AXI Clock = Clock Source/M
+	//	CPUX_APB Clock = Clock Source/N
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
-		0x00 * (UINT32_C(1) << 24) |	// OSC24
+		sel * (UINT32_C(1) << 24) |	// OSC24 or PLL_CPUX
 		(APBdiv - 1) * (UINT32_C(1) << 8) |		// CPUX_APB_FACTOR_N = APB divider
 		(AXIdiv - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider
 		0;
+}
+
+static void set_t507_pll_cpux(unsigned N, unsigned Ppow)
+{
 	// Programming PLL
 	// Stop PLL
 	CCU->PLL_CPUX_CTRL_REG &= ~ (UINT32_C(1) << 31);
@@ -2780,15 +2786,6 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 	// Waitig for PLL stable
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
-	// switch CPU clock to PLL_CPUX
-	//	CPUX Clock = Clock Source
-	//	CPUX_AXI Clock = Clock Source/M
-	//	CPUX_APB Clock = Clock Source/N
-	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
-		0x03 * (UINT32_C(1) << 24) |	// 011: PLL_CPUX
-		(APBdiv - 1) * (UINT32_C(1) << 8) |		// CPUX_APB_FACTOR_N = APB divider
-		(AXIdiv - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider
-		0;
 }
 
 // Set Spread Frequency Mode
@@ -9641,6 +9638,7 @@ sysinit_pll_initialize(int forced)
 		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
 	}
 
+	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
@@ -9670,7 +9668,9 @@ sysinit_pll_initialize(int forced)
 	PRCM->APBS1_CFG_REG = 0;
 #endif
 
-	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
+	set_t507_pll_cpux(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
+
+	set_t507_axi_sel(0x03, 4, 2);	// 011: PLL_CPUX
 
 	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
 	// old default=0x03000102
