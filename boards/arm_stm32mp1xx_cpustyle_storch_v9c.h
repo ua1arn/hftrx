@@ -38,7 +38,13 @@
 // OHCI at USB1HSFSP2_BASE
 //#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
-#if WITHDEBUG
+#if WITHDEBUG && 0
+	#define WITHUART4HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
+	#define WITHUART4HW_FIFO	1	/* использование FIFO */
+	#define WITHDEBUG_UART4		1
+#endif /* WITHDEBUG */
+
+#if WITHDEBUG && 1
 	#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 	#define WITHUART1HW_FIFO	1	/* использование FIFO */
 	#define WITHDEBUG_UART1		1
@@ -706,11 +712,22 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
+// UART1_TX PG11, UART1_RX PB2
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (UINT32_C(1) << 11); /* PG11: USART1_TX TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (UINT32_C(1) << 2); /* PB2: USART1_RX RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piog_altfn2(TXMASK, 4); /* PG11 AF4 */ \
 		arm_hardware_piob_altfn2(RXMASK, 4); /* PB2 AF4 */ \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+
+// WITHUART4HW
+// UART4_TX PG11, UART4_RX PB2
+#define HARDWARE_UART4_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 11); /* PG11: USART4_TX TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 2); /* PB2: USART4_RX RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_piog_altfn2(TXMASK, 6); /* PG11 AF6 */ \
+		arm_hardware_piob_altfn2(RXMASK, 8); /* PB2 AF8 */ \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
