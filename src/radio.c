@@ -5032,6 +5032,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 
 
 // SWR=1: return 100
+// no power: return 0
 unsigned n7ddc_get_swr(void)
 {
 	const uint_fast8_t fs = 900;
@@ -5052,12 +5053,17 @@ unsigned n7ddc_get_swr(void)
 	}
 
 	if (f < minforward)
+	{
+		PRINTF("n7ddc_get_swr: No forward power\n");
 		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
+	}
 	else if (f <= r)
 		return fs;		// SWR is infinite
 
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
-	return swr10 > fs ? fs : swr10;
+	unsigned result = swr10 > fs ? fs : swr10;
+	PRINTF("n7ddc_get_swr: result=%u (f=%u,r=%u)\n", result, f, r);
+	return result;
 }
 
 // Отображение КСВ в меню
@@ -5254,6 +5260,7 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 
 static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
 {
+	PRINTF("storetuner: L=%u,C=%u,T=%u\n", tunerind, tunercap, tunertype);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunercap), tunercap);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerind), tunerind);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunertype), tunertype);
@@ -5295,7 +5302,7 @@ static void auto_tune0_init(void)
 
 // Обновление изображения в процессе выполнения согласования
 // non-zero for cancel tuning process
-static int ntddc_display(void * ctx)
+static int n7ddc_display(void * ctx)
 {
 	return tuneabort();
 }
@@ -5303,7 +5310,7 @@ static int ntddc_display(void * ctx)
 static enum phases auto_tune0(void)
 {
 
-	if (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, ntddc_display, NULL))
+	if (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, n7ddc_display, NULL))
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	// сохранение будет в auto_tune2
 	return PHASE_DONE;
@@ -19274,10 +19281,10 @@ static enum tnrstate tunerstate = TUNERSTATE_0;
 static STTE_t hamradio_tune_step(void)
 {
 #if WITHAUTOTUNER
+	processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 	switch (tunerstate)
 	{
 	case TUNERSTATE_0:
-		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 		auto_tune0_init();
@@ -19339,6 +19346,16 @@ static STTE_t hamradio_tune_step(void)
 		reqautotune = 0;
 		updateboard(1, 0);
 		tunerstate = TUNERSTATE_0;
+		{
+			// прочистить очередь сообщений
+			for (;;)
+			{
+				uint_fast8_t kbch, kbready;
+				processmessages(& kbch, & kbready, 0, NULL);
+				if (kbready == 0)
+					break;
+			}
+		}
 		break;
 
 	case TUNERSTATE_DONE:
