@@ -6070,7 +6070,7 @@ display_walktroughsteps(
 		key = 0;
 	#endif /* LCDMODE_MAIN_PAGES > 1 */
 
-	display_walktrough(key, subset, display2_getcontext());
+	display_walktrough(key, subset, display2_getcontext());	// выполнение отрисовки всех элементов за раз.
 
 #endif /* STMD */
 }
@@ -6158,7 +6158,7 @@ void display2_bgreset(void)
 void display2_initialize(void)
 {
 	// параметр key игнорируеся обычно, но для случая старых дисплеев выделен особенный
-	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);
+	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
 }
 
 // Interface functions
@@ -6244,7 +6244,7 @@ void display2_dispfreq_a2(
 	ctx.type = DCTX_FREQ;
 	ctx.pv = & ef;
 
-	display_walktrough(REDRM_FREQ,  getsubset(menuset, 0), & ctx);
+	display_walktrough(REDRM_FREQ,  getsubset(menuset, 0), & ctx);// выполнение отрисовки всех элементов за раз.
 
 #else	/* WITHDIRECTFREQENER */
 
@@ -6274,19 +6274,19 @@ void display2_menu(
 
 #if LCDMODE_MAIN_PAGES > 1
 
-	display_walktrough(0, REDRSUBSET_MENU, & dctx);
+	display_walktrough(0, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
 
 #else /* LCDMODE_MAIN_PAGES > 1 */
 
-	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);
-	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);
-	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);
+	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);// выполнение отрисовки всех элементов за раз.
 	if (byname == 0)
 	{
-		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, & dctx);
+		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
 	}
-	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, & dctx);
-	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, & dctx);
+	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
 
 #endif /* LCDMODE_MAIN_PAGES > 1 */
 }
