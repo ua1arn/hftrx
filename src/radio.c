@@ -4784,6 +4784,7 @@ static uint_fast16_t actbring_swr;
 static void bring_swr(const char * label)
 {
 	ASSERT(strlen(label) == 3);
+	bring_swr_text = label;
 	actbring_swr = swrbring_time;
 	board_errbeep_enable(1);
 }
