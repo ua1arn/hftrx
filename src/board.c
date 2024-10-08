@@ -8270,11 +8270,18 @@ void board_errbeep_enable(uint_fast8_t state)
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_ERRBEEP };
 
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& gpreilock);
+
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+
+	LCLSPIN_UNLOCK(& gpreilock);
+	LowerIrql(oldIrql);
 }
 
 /* подзвучка клавиш (вызывается из обработчика перрываний) */

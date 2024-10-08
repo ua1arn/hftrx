@@ -4782,6 +4782,7 @@ static uint_fast16_t actbring_swr;
 static void bring_swr(void)
 {
 	actbring_swr = actbring_time;
+	board_errbeep_enable(1);
 }
 
 ///
@@ -4944,6 +4945,7 @@ static void bringtimers(void)
 	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
 	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
 	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
+	board_errbeep_enable(actbring_swr != 0);
 
 	actbring_ENC1F = actbring_ENC1F ? (actbring_ENC1F - 1) : 0;	// енкодер ENC1F
 	actbring_ENC2F = actbring_ENC2F ? (actbring_ENC2F - 1) : 0;	// енкодер ENC2F
@@ -18195,6 +18197,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_sendcw("UA1ATD/P UA1ATD/P");
 		return 1;
 #endif /* WITHELKEY */
+
+	case KBD_CODE_MAX:
+		bring_swr();
+		return 1;
 
 #if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 	case KBD_CODE_DATATOGGLE:
