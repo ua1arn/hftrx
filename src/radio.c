@@ -2887,11 +2887,6 @@ struct modeprops
 	uint8_t filter;	/* индекс фильтра в общей таблице фильтров */
 	//uint16_t step;	/* шаг валкодера в данном режиме */
 
-#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3
-	uint16_t txpower;		/* мощность */
-	uint16_t txcompr;		/* степень компрессии */
-#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2*/
-
 #if WITHIF4DSP
 	uint8_t txaudio;	/* источник звука для передачи */
 	uint8_t noisereduct;	/* включение NR для данного режима */
@@ -3239,7 +3234,7 @@ struct nvmap
 
 	uint8_t	ggrpfilters; // последний посещённый пункт группы
 
-#if CTLSTYLE_RA4YBO_V1 || (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
+#if (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
 
 	uint8_t dcrxmode;	/* settings menu option - RX acts as direct conversion */
 	uint8_t dctxmodessb, dctxmodecw;	/* settings menu option - TX acts as direct conversion */
@@ -3323,24 +3318,6 @@ struct nvmap
 #if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1)
 	uint8_t hascw3p1_tx;
 #endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
-
-#elif CTLSTYLE_RA4YBO_V3
-/*
-filter_t fi_0p5 =
-filter_t fi_3p1 =
-filter_t fi_3p0_455 =
-filter_t fi_10p0_455 =
-filter_t fi_6p0_455 =
-filter_t fi_2p0_455 =
-*/
-	uint16_t cfreq10k;
-	uint16_t cfreq2k;
-	uint16_t cfreq6k;
-	uint16_t usbe3p0;	/* settings menu option */
-	uint16_t lsbe3p0;	/* settings menu option */
-	uint16_t usbe3p1;	/* settings menu option */
-	uint16_t lsbe3p1;	/* settings menu option */
-	uint16_t carr0p5;
 
 #endif
 
@@ -3448,24 +3425,6 @@ filter_t fi_2p0_455 =
 	uint8_t gmutespkr;		/* выключение динамика */
 #endif /* WITHSPKMUTE */
 
-#if CTLSTYLE_RA4YBO
-	uint8_t gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || KEYBSTYLE_RA4YBO_AM0
-	uint8_t gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-	uint8_t guser1;
-	uint8_t guser2;
-	uint8_t guser3;
-	uint8_t guser4;
-	uint8_t guser5;
-#elif CTLSTYLE_RA4YBO_V3
-	uint8_t gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-	uint8_t guser1;
-	uint8_t guser2;
-	uint8_t guser3;
-	uint8_t guser4;
-	uint8_t guser5;
-#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
-
 #if LO1FDIV_ADJ
 	uint8_t lo1powrx;		/* на сколько раз по 2 делим выходную частоту синтезатора первого гетеродина */
 	uint8_t lo1powtx;		/* на сколько раз по 2 делим выходную частоту синтезатора первого гетеродина */
@@ -3541,7 +3500,6 @@ filter_t fi_2p0_455 =
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 #define RMT_LOCKMODE_BASE OFFSETOF(struct nvmap, lockmode)		/* признак блокировки валкодера */
 #define RMT_USEFAST_BASE OFFSETOF(struct nvmap, gusefast)		/* переключение в режим крупного шага */
-#define RMT_AFFILTER_BASE OFFSETOF(struct nvmap, gaffilter)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 #define RMT_MUTELOUDSP_BASE OFFSETOF(struct nvmap, gmutespkr)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 
 #define RMT_SPLITMODE_BASE OFFSETOF(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
@@ -3576,12 +3534,6 @@ filter_t fi_2p0_455 =
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
 #define RMT_NOTCHTYPE_BASE OFFSETOF(struct nvmap, gnotchtype)					/* NOTCH filter type */
 //#define RMT_NOTCHFREQ_BASE OFFSETOF(struct nvmap, gnotchfreq)					/* Manual NOTCH filter frequency */
-
-#define RMT_USER1_BASE OFFSETOF(struct nvmap, guser1)
-#define RMT_USER2_BASE OFFSETOF(struct nvmap, guser2)
-#define RMT_USER3_BASE OFFSETOF(struct nvmap, guser3)
-#define RMT_USER4_BASE OFFSETOF(struct nvmap, guser4)
-#define RMT_USER5_BASE OFFSETOF(struct nvmap, guser5)
 
 #define RMT_BWSETPOS_BASE(i) OFFSETOF(struct nvmap, bwsetpos [(i)])
 
@@ -4374,10 +4326,6 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		uint_fast8_t s9level = 120;			/* уровни калибровки S-метра */
 		uint_fast8_t s9delta = 120;
 		uint_fast8_t s9_60_delta = 120;
-	#elif CTLSTYLE_RA4YBO_V3
-		uint_fast8_t s9level = 73;			/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = 15;
-		uint_fast8_t s9_60_delta = 50;
 	#else
 		uint_fast8_t s9level = 88;			/* уровни калибровки S-метра */
 		uint_fast8_t s9delta = 34;
@@ -4452,17 +4400,6 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	static uint_fast8_t gmutespkr;		/*  выключение динамика */
 #endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
-#if CTLSTYLE_RA4YBO
-	static uint_fast8_t  gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 || KEYBSTYLE_RA4YBO_AM0
-	static uint_fast8_t  guser1;
-	static uint_fast8_t  guser2;
-	static uint_fast8_t  guser3;
-	static uint_fast8_t  guser4;
-	static uint_fast8_t  guser5;
-	static uint_fast8_t  gaffilter;		/* включение ФНЧ на приёме в аппарате RA4YBO */
-#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
-
 #if WITHTX
 #if WITHTHERMOLEVEL
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
@@ -7101,13 +7038,6 @@ getdefaultbandsubmode(
 }
 
 
-#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3
-
-	static uint_fast16_t gtxpower [MODE_COUNT];
-	static uint_fast16_t gtxcompr [MODE_COUNT];
-
-#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2*/
-
 #if WITHIF4DSP
 
 	static uint_fast8_t gtxaudio [MODE_COUNT];
@@ -7996,19 +7926,6 @@ loadsavedstate(void)
 #if WITHSPKMUTE
 	gmutespkr = loadvfy8up(RMT_MUTELOUDSP_BASE, 0, 1, gmutespkr);	/*  выключение динамика */
 #endif /* WITHSPKMUTE */
-#if CTLSTYLE_RA4YBO
-	gaffilter = loadvfy8up(RMT_AFFILTER_BASE, 0, 1, gaffilter);	/* включение ФНЧ на приёме в аппарате RA4YBO */
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || KEYBSTYLE_RA4YBO_AM0
-	guser1 = loadvfy8up(RMT_USER1_BASE, 0, 1, guser1);
-	guser2 = loadvfy8up(RMT_USER2_BASE, 0, 1, guser2);
-	guser3 = loadvfy8up(RMT_USER3_BASE, 0, 1, guser3);
-	guser4 = loadvfy8up(RMT_USER4_BASE, 0, 1, guser4);
-	guser5 = loadvfy8up(RMT_USER5_BASE, 0, 1, guser5);
-#elif CTLSTYLE_RA4YBO_V3
-	guser1 = loadvfy8up(RMT_USER1_BASE, 0, 1, guser1);
-	guser4 = loadvfy8up(RMT_USER4_BASE, 0, 1, guser4);
-	guser5 = loadvfy8up(RMT_USER5_BASE, 0, 1, guser5);
-#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
 	// тюнер запоминается подиапазонно
 //#if WITHAUTOTUNER
 //	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, tunerwork), 0, 1, tunerwork);
@@ -8034,11 +7951,6 @@ loadsavedstate(void)
 	uint_fast8_t mode;
 	for (mode = 0; mode < MODE_COUNT; ++ mode)
 	{
-	#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V3
-		// компрессия и выходная мощность по режимам работы.
-		gtxpower [mode] = loadvfy16up(RMT_TXPOWER_BASE(mode), 0, 255, 255);
-		gtxcompr [mode] = loadvfy16up(RMT_TXCOMPR_BASE(mode), 0, 255, 255);
-	#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V3 */
 	#if WITHIF4DSP
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
@@ -11052,57 +10964,6 @@ updateboardZZZ(
 			seq_set_cw_enable(getmodetempl(txsubmode)->wbkin || (getmodetempl(txsubmode)->abkin && gcwssbtx));	/* разрешение передачи CW */
 		#endif /* WITHTX */
 
-
-		#if CTLREGMODE_RA4YBO
-
-			prog_dac1_a_value(gtxpower [amode]);		// power level
-			prog_dac1_b_value(gtx ? gtxcompr [amode] : 0x00);		// compression level
-
-		#elif KEYBSTYLE_RA4YBO_AM0
-
-			board_set_user1(guser1);
-			board_set_user2(guser2);
-			board_set_user3(guser3);
-
-		#elif CTLREGMODE_RA4YBO_V1
-
-			prog_dac1_b_value(255 - gtxpower [amode]);		// power level
-			prog_dac1_a_value(gtx ? gtxcompr [amode] : 0x00);		// compression level
-			board_set_user1(guser1);
-			board_set_user2(guser2);
-			board_set_user3(guser3);
-			board_set_user4(guser4);
-
-		#elif CTLREGMODE_RA4YBO_V2
-
-			prog_dac1_b_value(255 - gtxpower [amode]);		// power level
-			prog_dac1_a_value(gtx ? gtxcompr [amode] : 0x00);		// compression level
-			board_set_user1(guser1);
-			board_set_user2(guser2);
-			board_set_user3(guser3);
-			board_set_user4(guser4);
-
-
-		#elif CTLREGMODE_RA4YBO_V3
-
-			prog_dac1_b_value(255 - gtxpower [amode]);		// power level
-			prog_dac1_a_value(gtx ? gtxcompr [amode] : 0x00);		// compression level
-			board_set_user1(guser1);
-			board_set_user4(guser4);
-			board_set_user5(guser5);
-
-		#elif CTLREGMODE_RA4YBO_V3A
-
-			prog_dac1_b_value(255 - gtxpower [amode]);		// power level
-			prog_dac1_a_value(gtx ? gtxcompr [amode] : 0x00);		// compression level
-			board_set_user1(guser1);
-			board_set_user2(guser2);
-			board_set_user3(guser3);
-			board_set_user4(guser4);
-			board_set_user5(guser5);
-
-		#endif /* CTLREGMODE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 */
-
 		/* Этот блок (установка опорной частоты DDS) вызывать до настроек частот */
 		#if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
 			synth_lo1_setreference(si570_get_xtall_base() + si570_xtall_offset);
@@ -11156,9 +11017,6 @@ updateboardZZZ(
 			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 		#endif /* ! WITHAGCMODENONE */
-		#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
-			board_set_affilter(gaffilter);
-		#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3 */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
@@ -11421,25 +11279,6 @@ updateboardZZZ(
 		board_update();		/* вывести забуферированные изменения в регистры */
 	} // full2 != 0
 
-#if CTLSTYLE_RA4YBO_AM0
-	{
-		const int pathi = 0;
-		const uint_fast8_t bi = getbankindex_pathi(pathi);
-		const int_fast32_t freq = gfreqs [bi];
-		const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);
-		if (gtx)
-		{
-			synth_lo1_setfreq(pathi, 0, getlo1div(gtx)); /* установка частоты первого гетеродина */
-			synth_lo4_setfreq(pathi, getlo0(lo0hint) - freq, getlo1div(gtx), 1);
-		}
-		else
-		{
-			synth_lo1_setfreq(pathi, lo1, getlo1div(gtx)); /* установка частоты первого гетеродина */
-			synth_lo4_setfreq(pathi, 0, getlo1div(gtx), 0);
-		}
-	}
-#else /* CTLSTYLE_RA4YBO_AM0 */
-
 	if (userfsg)
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
@@ -11461,7 +11300,7 @@ updateboardZZZ(
 			synth_rts1_setfreq(pathi, getlo0(lo0hint) - freq);	// Установка центральной частоты панорамного индикатора
 		}
 	}
-#endif /* CTLSTYLE_RA4YBO_AM0 */
+
 	if (full2 != 0 && (mute != 0 || gtx != 0))
 	{
 		for (pathi = 0; pathi < pathn; ++ pathi)
@@ -12193,71 +12032,6 @@ uint_fast8_t hamradio_get_spkon_value(void)
 
 #endif /* WITHSPKMUTE */
 
-#if CTLSTYLE_RA4YBO
-
-/* включение ФНЧ на приёме в аппарате RA4YBO */
-static void
-uif_key_affilter(void)
-{
-	gaffilter = calc_next(gaffilter, 0, 1);
-	save_i8(RMT_AFFILTER_BASE, gaffilter);
-	updateboard(1, 0);
-}
-
-///////////////////////////
-// обработчики кнопок клавиатуры
-//////////////////////////
-
-#elif CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 || KEYBSTYLE_RA4YBO_AM0
-
-static void
-uif_key_user1(void)
-{
-	guser1 = calc_next(guser1, 0, 1);
-	save_i8(RMT_USER1_BASE, guser1);
-	updateboard(1, 0);
-}
-
-static void
-uif_key_user2(void)
-{
-	guser2 = calc_next(guser2, 0, 1);
-	save_i8(RMT_USER2_BASE, guser2);
-	updateboard(1, 0);
-}
-static void
-uif_key_user3(void)
-{
-	guser3 = calc_next(guser3, 0, 1);
-	save_i8(RMT_USER3_BASE, guser3);
-	updateboard(1, 0);
-}
-
-static void
-uif_key_user4(void)
-{
-	guser4 = calc_next(guser4, 0, 1);
-	save_i8(RMT_USER4_BASE, guser4);
-	updateboard(1, 0);
-}
-static void
-uif_key_user5(void)
-{
-	guser5 = calc_next(guser5, 0, 1);
-	save_i8(RMT_USER5_BASE, guser5);
-	updateboard(1, 0);
-}
-
-/* включение ФНЧ на приёме в аппарате RA4YBO */
-static void
-uif_key_affilter(void)
-{
-	gaffilter = calc_next(gaffilter, 0, 1);
-	save_i8(RMT_AFFILTER_BASE, gaffilter);
-	updateboard(1, 0);
-}
-
-#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 */
 ///////////////////////////
 // обработчики кнопок клавиатуры
 //////////////////////////
@@ -12570,7 +12344,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 		sens = 185,			// millivolts / ampher
 		scale = 100			// результат - в сотых долях ампера
 	};
-#endif /* CTLSTYLE_RA4YBO_V3 */
+#endif /*  */
 
 #if WITHCURRLEVEL
 
@@ -13296,12 +13070,6 @@ directctlupdate(
 		}
 	#endif /* WITHENCODER_4F */
 
-	#if CTLSTYLE_RA4YBO_V3
-		{
-			changed |= flagne_u8(& guser2, kbd_get_ishold(KIF_USER2));
-			changed |= flagne_u8(& guser3, kbd_get_ishold(KIF_USER3));
-		}
-	#endif /* CTLSTYLE_RA4YBO_V3 */
 		// --- конец получения состояния органов управления */
 
 		// подтверждаем, что обновление выполнено
@@ -18266,52 +18034,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHSPKMUTE */
 
-#if CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3
-	case KBD_CODE_AFNARROW:
-		/*  - не вызывает сохранение состояния диапазона */
-		uif_key_affilter();
-		return 1;	/* клавиша уже обработана */
-
-#endif /* CTLSTYLE_RA4YBO || CTLSTYLE_RA4YBO_V3 */
-
-#if CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3
-	case KBD_CODE_USER1:
-		uif_key_user1();
-		return 1;	/* клавиша уже обработана */
-
-#if 0
-	case KBD_CODE_USER2: // rec
-		uif_key_user2();
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_USER3:	// play
-		uif_key_user3();
-		return 1;	/* клавиша уже обработана */
-#endif
-
-	case KBD_CODE_USER4:
-		uif_key_user4();
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_USER5:
-		uif_key_user5();
-		return 1;	/* клавиша уже обработана */
-
-#endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2*/
-
-#if KEYBSTYLE_RA4YBO_AM0
-
-	case KBD_CODE_USER1:
-		uif_key_user1();
-		return 1;	/* клавиша уже обработана */
-	case KBD_CODE_USER2:
-		uif_key_user2();
-		return 1;	/* клавиша уже обработана */
-	case KBD_CODE_USER3:
-		uif_key_user3();
-		return 1;	/* клавиша уже обработана */
-#endif /* KEYBSTYLE_RA4YBO_AM0 */
-
 	case KBD_CODE_ATT:
 		/* переключение режима аттенюатора  */
 		uif_key_click_attenuator();
@@ -18639,16 +18361,6 @@ processkeyboard(uint_fast8_t kbch)
 		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
 		return 1;	/* клавиша уже обработана */
 
-	case KBD_CODE_IFSHIFT:
-		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
-		return 1;	/* клавиша уже обработана */
-
-#elif KEYB_RA4YBO_V1
-	case KBD_CODE_IFSHIFT:
-		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
-		return 1;	/* клавиша уже обработана */
-
-#elif KEYB_RA4YBO_V3
 	case KBD_CODE_IFSHIFT:
 		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
 		return 1;	/* клавиша уже обработана */
@@ -19201,9 +18913,6 @@ application_initialize(void)
 	board_set_bandfonhpf(bandf_calc(nyquistadj(14000000L)));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
 	board_set_bandfonuhf(bandf_calc(nyquistadj(85000000L)));
 #endif /* CTLSTYLE_SW2011ALL */
-#if CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A
-	board_set_bandfonuhf(bandf_calc(nyquistadj(111000000L)));
-#endif /* CTLREGMODE_RA4YBO_V1 || CTLREGMODE_RA4YBO_V2 || CTLREGMODE_RA4YBO_V3 || CTLREGMODE_RA4YBO_V3A */
 #if XVTR_R820T2
 	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
 #endif /* XVTR_R820T2 */
