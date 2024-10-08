@@ -4950,9 +4950,10 @@ static void bringtimers(void)
 	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
 	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
 	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
+#if WITHTX
 	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
 	board_errbeep_enable(actbring_swr != 0);
-
+#endif /* WITHTX */
 	actbring_ENC1F = actbring_ENC1F ? (actbring_ENC1F - 1) : 0;	// енкодер ENC1F
 	actbring_ENC2F = actbring_ENC2F ? (actbring_ENC2F - 1) : 0;	// енкодер ENC2F
 	actbring_ENC3F = actbring_ENC3F ? (actbring_ENC3F - 1) : 0;	// енкодер ENC3F
