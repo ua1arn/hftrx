@@ -4760,6 +4760,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* WITHMODEM */
 
 static const uint_fast16_t actbring_time = 10;	// 1 second
+static const uint_fast16_t swrbring_time = BOARD_ERRBEEP_LENGTH / 100;	// 0.6 second
 
 static uint_fast16_t actbring_afvolume;
 // Начать отображение текущего положения регулировки AF
@@ -4781,7 +4782,7 @@ static uint_fast16_t actbring_swr;
 // Начать отображение перегруза по SWR
 static void bring_swr(void)
 {
-	actbring_swr = actbring_time;
+	actbring_swr = swrbring_time;
 	board_errbeep_enable(1);
 }
 
@@ -4832,6 +4833,11 @@ uint_fast8_t hamradio_get_bringENC3F(void)
 uint_fast8_t hamradio_get_bringENC4F(void)
 {
 	return actbring_ENC4F != 0;
+}
+// Была ошибка SWR
+uint_fast8_t hamradio_get_bringSWR(void)
+{
+	return actbring_swr != 0;
 }
 
 ///
@@ -15941,6 +15947,10 @@ processtxrequest(void)
 #endif /* WITHAUTOTUNER */
 	}
 
+	if ((txreq || tunreq) && error)
+	{
+		bring_swr();
+	}
 	seq_txrequest(! error && tunreq, ! error && (tunreq || txreq));
 #endif /* WITHTX */
 }

@@ -327,6 +327,12 @@ static const COLORPAIR_T colors_2rxtx [2] =
 	{	COLORPIP_RED,		COLORPIP_BLACK,	},	// TX
 };
 
+// Параметры отображения состояния прием/пеердача
+static const COLORPAIR_T colors_swrerr [1] =
+{
+		{	COLORPIP_RED,		COLORPIP_BLACK,	},	// SWR ERROR
+};
+
 // Параметры отображения состояний из трех вариантов
 static const COLORPAIR_T colors_4state [4] =
 {
@@ -2001,8 +2007,16 @@ static void display2_byp3(
 {
 #if WITHTX
 	#if WITHAUTOTUNER
-		const uint_fast8_t state = hamradio_get_bypvalue();
-		display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+		if (hamradio_get_bringSWR())
+		{
+			const char * labels [] = { "SWR", };
+			display2_text(x, y, labels, colors_swrerr, 0);
+		}
+		else
+		{
+			const uint_fast8_t state = hamradio_get_bypvalue();
+			display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+		}
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -2016,8 +2030,16 @@ static void display2_byp4alt(
 {
 #if WITHTX
 	#if WITHAUTOTUNER
+	if (hamradio_get_bringSWR())
+	{
+		const char * labels [] = { "SWR", };
+		display2_text(x, y, labels, colors_swrerr, 0);
+	}
+	else
+	{
 		const uint_fast8_t state = hamradio_get_bypvalue();
 		display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+	}
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
