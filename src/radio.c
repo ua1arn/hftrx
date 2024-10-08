@@ -4777,11 +4777,13 @@ static void bring_rfvolume(void)
 	actbring_rfvolume = actbring_time;
 }
 
+static const char * bring_swr_text = "---";
 static uint_fast16_t actbring_swr;
 
 // Начать отображение перегруза по SWR
-static void bring_swr(void)
+static void bring_swr(const char * label)
 {
+	ASSERT(strlen(label) == 3);
 	actbring_swr = swrbring_time;
 	board_errbeep_enable(1);
 }
@@ -4834,9 +4836,10 @@ uint_fast8_t hamradio_get_bringENC4F(void)
 {
 	return actbring_ENC4F != 0;
 }
-// Была ошибка SWR
-uint_fast8_t hamradio_get_bringSWR(void)
+// Была ошибка SWR ли что-то другое
+uint_fast8_t hamradio_get_bringSWR(const char * * label)
 {
+	* label = bring_swr_text;
 	return actbring_swr != 0;
 }
 
@@ -15864,24 +15867,40 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 }
 #endif /* WITHTX */
 
-uint_fast8_t hamradio_get_txdisable(void)
+static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 {
 #if defined (HARDWARE_GET_TXDISABLE)
 	if (HARDWARE_GET_TXDISABLE())
 	{
 		//PRINTF("tx disabled\n");
+		if (txreq)
+		{
+			bring_swr("DIS");
+		}
 		return 1;
 	}
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if WITHTHERMOLEVEL
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
 	if (gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
+	{
+		if (txreq)
+		{
+			bring_swr("OVH");
+		}
 		return 1;
+	}
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
 	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= (40 - SWRMIN))	// SWR >= 4.0
+	{
+		if (txreq)
+		{
+			bring_swr("SWR");
+		}
 		return 1;
+	}
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	//PRINTF("tx ok\n");
 	return 0;
@@ -15935,7 +15954,7 @@ processtxrequest(void)
 		tunreq = 1;
 	}
 
-	const uint_fast8_t error = hamradio_get_txdisable();
+	const uint_fast8_t error = get_txdisable(txreq || tunreq);
 	if (error)
 	{
 #if WITHCAT
@@ -15948,10 +15967,6 @@ processtxrequest(void)
 #endif /* WITHAUTOTUNER */
 	}
 
-	if ((txreq || tunreq) && error)
-	{
-		bring_swr();
-	}
 	seq_txrequest(! error && tunreq, ! error && (tunreq || txreq));
 #endif /* WITHTX */
 }

@@ -2007,9 +2007,9 @@ static void display2_byp3(
 {
 #if WITHTX
 	#if WITHAUTOTUNER
-		if (hamradio_get_bringSWR())
+		const char * labels [1];
+		if (hamradio_get_bringSWR(labels))
 		{
-			const char * labels [] = { "SWR", };
 			display2_text(x, y, labels, colors_swrerr, 0);
 		}
 		else
@@ -2030,9 +2030,9 @@ static void display2_byp4alt(
 {
 #if WITHTX
 	#if WITHAUTOTUNER
-	if (hamradio_get_bringSWR())
+	const char * labels [1];
+	if (hamradio_get_bringSWR(labels))
 	{
-		const char * labels [] = { "SWR", };
 		display2_text(x, y, labels, colors_swrerr, 0);
 	}
 	else

@@ -3330,7 +3330,7 @@ uint_fast8_t hamradio_get_bringENC1F(void);	// Вращали 3-й валкод�
 uint_fast8_t hamradio_get_bringENC2F(void);	// Вращали 4-й валкодер (ENC2F)
 uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкодер (ENC3F)
 uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
-uint_fast8_t hamradio_get_bringSWR(void);	// Была ошибка SWR
+uint_fast8_t hamradio_get_bringSWR(const char * * label);	// Была ошибка SWR или что-то другое
 
 void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC1F */
 void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояняя ENC2F */
