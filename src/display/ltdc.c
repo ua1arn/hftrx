@@ -3720,7 +3720,7 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t507_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
@@ -3895,7 +3895,7 @@ static void t113_tcontv_CCU_configuration(void)
     	// LVDS mode
        	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t507_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 

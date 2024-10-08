@@ -626,7 +626,7 @@
 
 	#define	SPIHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnr_v3s_get_apb2_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_v3s_get_apb2_freq())
 	#define	SPIDFHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
@@ -751,7 +751,7 @@
 		} while (0)
 	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_v3s_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 
 #elif WITHTWISW || WITHTWIHW
@@ -786,7 +786,7 @@
 		} while (0) 
 	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_v3s_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 

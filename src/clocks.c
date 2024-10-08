@@ -1774,7 +1774,7 @@ unsigned long hardware_get_spi_freq(void)
 
 // placeholders
 #define BOARD_USART1_FREQ (CPU_FREQ / 1)
-#define BOARD_SPI_FREQ (CPU_FREQ / 1)
+#define HARDWARE_SPI_FREQ (CPU_FREQ / 1)
 #define BOARD_I2C_FREQ (CPU_FREQ / 1)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
@@ -1783,7 +1783,7 @@ unsigned long hardware_get_spi_freq(void)
 
 // placeholders
 #define BOARD_USART1_FREQ (CPU_FREQ / 1)
-#define BOARD_SPI_FREQ (CPU_FREQ / 1)
+#define HARDWARE_SPI_FREQ (CPU_FREQ / 1)
 #define BOARD_I2C_FREQ (CPU_FREQ / 1)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
@@ -2616,14 +2616,14 @@ uint_fast32_t allwnr_t113_get_uart_freq(void)
 
 // A64
 // The clock of the TWI is from APB2
-uint_fast32_t allwnr_t113_get_twi_freq(void)
+uint_fast32_t allwnr_a64_get_twi_freq(void)
 {
 	return allwnr_a64_get_apb2_freq();
 }
 
 // A64
 // The clock of the TWI is from APB2
-uint_fast32_t allwnr_t113_get_s_twi_freq(void)
+uint_fast32_t allwnr_a64_get_s_twi_freq(void)
 {
 	return allwnr_a64_get_apbs2_freq();
 }
@@ -2752,7 +2752,7 @@ uint_fast32_t allwnr_a64_get_nand_freq(void)
 	}
 }
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 static void set_t507_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
 {
@@ -2833,14 +2833,14 @@ void allwnr_t507_pll_initialize(int forced)
 //	#define CHIPID_H616			0x2300
 //	#define CHIPID_T507			0x2300
 // T507
-uint_fast32_t allwnr_t113_get_chipid(void)
+uint_fast32_t allwnr_t507_get_chipid(void)
 {
 	//printhex32(SID_BASE, SID, 1024 * 4);
 	return SID->SID_DATA [0] & 0xFFFF;
 }
 
 // T507
-uint_fast32_t allwnr_t113_get_hosc_freq(void)
+uint_fast32_t allwnr_t507_get_hosc_freq(void)
 {
     return REFINFREQ;	// 24 MHz usually
 }
@@ -2864,7 +2864,7 @@ uint_fast64_t allwnr_t507_get_pll_cpux_freq(void)
 	const uint_fast32_t P = UINT32_C(1) << ((pllreg >> 16) & 0x03);
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);
 	// PLL_CPUX=24 MHz*N/P
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / P;
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / P;
 }
 
 uint_fast64_t allwnr_t507_get_pll_ddr0_x2_freq(void)
@@ -2875,7 +2875,7 @@ uint_fast64_t allwnr_t507_get_pll_ddr0_x2_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_DDR= 24MHz*N/M0/ M1
 	//	The default value of PLL_DDR0 is 432MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_ddr1_x2_freq(void)
@@ -2886,7 +2886,7 @@ uint_fast64_t allwnr_t507_get_pll_ddr1_x2_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_DDR= 24MHz*N/M0/ M1
 	//	The default value of PLL_DDR1 is 432MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void)
@@ -2898,7 +2898,7 @@ uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void)
 	//	PLL_PERI0(2X) = 24MHz*N/M0/M1
 	//	PLL_PERI0(1X) = 24MHz*N/M0/M1/2
 	//	The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri1_x2_freq(void)
@@ -2910,7 +2910,7 @@ uint_fast64_t allwnr_t507_get_pll_peri1_x2_freq(void)
 	//	PLL_PERI1(2X) = 24MHz*N/M0/M1
 	//	PLL_PERI1(1X) = 24MHz*N/M0/M1/2
 	//	The default value of PLL_PERI1(2X) is 1.2 GHz. It is not recommended to modify the value
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
@@ -2921,7 +2921,7 @@ uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_GPU0 = 24 MHz*N/M0/M1.
 	//	The default value of PLL_GPU0 is 432 MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
@@ -2932,7 +2932,7 @@ uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
 	//	PLL_VIDEO0(4X)= 24MHz*N/M.
 	//	PLL_VIDEO0(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO0(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M;
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
 uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void)
@@ -2943,7 +2943,7 @@ uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void)
 	//	PLL_VIDEO1(4X)= 24MHz*N/M.
 	//	PLL_VIDEO1(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO1(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M;
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
 uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
@@ -2955,7 +2955,7 @@ uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
 	//	PLL_VIDEO2(4X)= 24MHz*N/M.
 	//	PLL_VIDEO2(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO2(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
@@ -2976,7 +2976,7 @@ uint_fast64_t allwnr_t507_get_pll_ve_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	The	PLL_VE = 24 MHz*N/M0/M1.
 	//	The default value of PLL_VE is 432MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_de_freq(void)
@@ -2987,7 +2987,7 @@ uint_fast64_t allwnr_t507_get_pll_de_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	The	PLL_DE = 24 MHz*N/M0/M1.
 	//	The default value of PLL_DE is 432MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
@@ -2998,7 +2998,7 @@ uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	The	PLL_CSI = 24 MHz*N/M0/M1.
 	//	The default value of PLL_CSI is 432MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void)
@@ -3013,7 +3013,7 @@ uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void)
 	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
 	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
 	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M0 / M1 / P;
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M0 / M1 / P;
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
@@ -3050,7 +3050,7 @@ uint_fast32_t allwnr_t507_get_cpux_freq(void)
 	default:
 	case 0x00:
 		// 000: OSC24M
-		return allwnr_t113_get_hosc_freq();
+		return allwnr_t507_get_hosc_freq();
 	case 0x01:
 		// 001: RTC_32K
 		return allwnr_t507_get_rtc32k_freq();
@@ -3106,7 +3106,7 @@ uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnr_t113_get_hosc_freq() / divider;
+		return allwnr_t507_get_hosc_freq() / divider;
 	case 0x01:
 		// 001: RTC_32K
 		return allwnr_t507_get_rtc32k_freq() / divider;
@@ -3135,7 +3135,7 @@ uint_fast32_t allwnr_t507_get_ahb3_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnr_t113_get_hosc_freq() / divider;
+		return allwnr_t507_get_hosc_freq() / divider;
 	case 0x01:
 		// 001: RTC_32K
 		return allwnr_t507_get_rtc32k_freq() / divider;
@@ -3164,7 +3164,7 @@ uint_fast32_t allwnr_t507_get_ahbs_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnr_t113_get_hosc_freq() / N;
+		return allwnr_t507_get_hosc_freq() / N;
 	case 0x01:
 		// 001: RTC_32K
 		return allwnr_t507_get_rtc32k_freq() / N;
@@ -3193,7 +3193,7 @@ uint_fast32_t allwnr_t507_get_apb1_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnr_t113_get_hosc_freq() / divider;
+		return allwnr_t507_get_hosc_freq() / divider;
 	case 0x01:
 		// 001: RTC_32K
 		return allwnr_t507_get_rtc32k_freq() / divider;
@@ -3222,7 +3222,7 @@ uint_fast32_t allwnr_t507_get_apb2_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnr_t113_get_hosc_freq() / divider;
+		return allwnr_t507_get_hosc_freq() / divider;
 	case 0x01:
 		// 001: RTC_32K
 		return allwnr_t507_get_rtc32k_freq() / divider;
@@ -3259,7 +3259,7 @@ uint_fast32_t allwnr_t507_get_mbus_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnr_t113_get_hosc_freq() / divider;
+		return allwnr_t507_get_hosc_freq() / divider;
 	case 0x01:
 		// 01: PLL_PERI0(2X)
 		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
@@ -3347,7 +3347,7 @@ uint_fast32_t allwnr_t507_get_ce_freq(void)
 	default:
 	case 0x00:
 		// 0:	OSC24M
-		return allwnr_t113_get_hosc_freq() / divider;
+		return allwnr_t507_get_hosc_freq() / divider;
 	case 0x01:
 		// 1: 	PLL_PERI0(2X)
 		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
@@ -3372,7 +3372,7 @@ uint_fast32_t allwnr_t507_get_ve_freq(void)
 
 uint_fast32_t allwnr_t507_get_avs_freq(void)
 {
-	return allwnr_t113_get_hosc_freq();
+	return allwnr_t507_get_hosc_freq();
 }
 
 uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void)
@@ -3385,7 +3385,7 @@ uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void)
     //    PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
     //    PLL_AUDIO(1X) =    24 MHz*N/ M0/M1/P/4
     //    The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-    return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M1;
+    return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M1;
 }
 
 uint_fast32_t allwnr_t507_get_pll_audio_2x_freq(void)
@@ -3634,7 +3634,7 @@ uint_fast32_t allwnr_t507_get_gpu_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t113_get_spi0_freq(void)
+uint_fast32_t allwnr_t507_get_spi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
@@ -3646,7 +3646,7 @@ uint_fast32_t allwnr_t113_get_spi0_freq(void)
 	default:
 	case 0x00:
 		/* 000: HOSC */
-		return allwnr_t113_get_hosc_freq() / pgdiv;
+		return allwnr_t507_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 001: PLL_PERI0(1X) */
 		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
@@ -3663,7 +3663,7 @@ uint_fast32_t allwnr_t113_get_spi0_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t113_get_spi1_freq(void)
+uint_fast32_t allwnr_t507_get_spi1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
@@ -3675,7 +3675,7 @@ uint_fast32_t allwnr_t113_get_spi1_freq(void)
 	default:
 	case 0x00:
 		/* 000: HOSC */
-		return allwnr_t113_get_hosc_freq() / pgdiv;
+		return allwnr_t507_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 001: PLL_PERI0(1X) */
 		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
@@ -3692,25 +3692,25 @@ uint_fast32_t allwnr_t113_get_spi1_freq(void)
 }
 
 // The working clock of UART is APB2
-uint_fast32_t allwnr_t113_get_uart_freq(void)
+uint_fast32_t allwnr_t507_get_uart_freq(void)
 {
      return allwnr_t507_get_apb2_freq();
 }
 
 // The working clock of TWI is APB2.
-uint_fast32_t allwnr_t113_get_twi_freq(void)
+uint_fast32_t allwnr_t507_get_twi_freq(void)
 {
 	return allwnr_t507_get_apb2_freq();
 }
 
 // The working clock of S_TWI is APBS2.
-uint_fast32_t allwnr_t113_get_s_twi_freq(void)
+uint_fast32_t allwnr_t507_get_s_twi_freq(void)
 {
 	return allwnr_t507_get_apbs1_freq();
 }
 
 // T507
-uint_fast32_t allwnr_t113_get_smhc0_freq(void)
+uint_fast32_t allwnr_t507_get_smhc0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SMHC0_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
@@ -3722,7 +3722,7 @@ uint_fast32_t allwnr_t113_get_smhc0_freq(void)
 	default:
 	case 0x00:
 		/* 00: HOSC */
-		return allwnr_t113_get_hosc_freq() / pgdiv;
+		return allwnr_t507_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 01: PLL_PERI0(2X) */
 		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
@@ -3733,7 +3733,7 @@ uint_fast32_t allwnr_t113_get_smhc0_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t113_get_smhc1_freq(void)
+uint_fast32_t allwnr_t507_get_smhc1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SMHC1_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
@@ -3745,7 +3745,7 @@ uint_fast32_t allwnr_t113_get_smhc1_freq(void)
 	default:
 	case 0x00:
 		/* 00: HOSC */
-		return allwnr_t113_get_hosc_freq() / pgdiv;
+		return allwnr_t507_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 01: PLL_PERI0(2X) */
 		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
@@ -3756,7 +3756,7 @@ uint_fast32_t allwnr_t113_get_smhc1_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t113_get_smhc2_freq(void)
+uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SMHC2_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
@@ -3768,7 +3768,7 @@ uint_fast32_t allwnr_t113_get_smhc2_freq(void)
 	default:
 	case 0x00:
 		/* 00: HOSC */
-		return allwnr_t113_get_hosc_freq() / pgdiv;
+		return allwnr_t507_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 01: PLL_PERI0(2X) */
 		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
@@ -5909,7 +5909,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	const unsigned ix = 1;
 	TIMER->TMR [ix].CTRL_REG = 0;
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnr_t113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_HOSC_FREQ, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
 	TIMER->TMR [ix].INTV_VALUE_REG = value;
 	TIMER->TMR [ix].CTRL_REG =
@@ -11781,7 +11781,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	const unsigned ix = 0;
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnr_t113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_HOSC_FREQ, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
 	TIMER->TMR [ix].INTV_VALUE_REG = value;
 	TIMER->TMR [ix].CTRL_REG =

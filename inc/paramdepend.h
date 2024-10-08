@@ -256,7 +256,7 @@ extern "C" {
 
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
-			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+			#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 
 			#define HARDWARE_NCORES 1
 			#define WITHCPUNAME "STM32H7xx"
@@ -276,7 +276,7 @@ extern "C" {
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
 			#define CPU_FREQ (stm32f7xx_get_sys_freq())	// 172032000uL
-			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+			#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 
 			#define HSIFREQ 16000000u
 
@@ -288,7 +288,7 @@ extern "C" {
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
 			#define CPU_FREQ (stm32f4xx_get_sysclk_freq())	// 172032000uL
-			#define BOARD_SPI_FREQ (stm32f4xx_get_spi1_freq())
+			#define HARDWARE_SPI_FREQ (stm32f4xx_get_spi1_freq())
 
 			#define HSIFREQ 16000000u	// 16 MHz
 
@@ -331,7 +331,7 @@ extern "C" {
 
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (HARDWARE_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000u//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -653,7 +653,7 @@ extern "C" {
 	#define AXISS_FREQ	(stm32mp1_get_axiss_freq())
 	#define CPU_PL1_FREQ (stm32mp1_get_hsi_freq())	/* PL1 times source frequency */
 
-	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 	#define BOARD_USART1_FREQ  (stm32mp1_uart1_get_freq())
 
@@ -662,7 +662,7 @@ extern "C" {
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
 
-	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (HARDWARE_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 24000000u			/* 2требуемая скорость передачи по SPI */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -704,7 +704,7 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(xc7z_get_arm_freq())
-	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
+	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -732,8 +732,9 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
-	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
-	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_UART_FREQ (allwnr_a64_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_a64_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_a64_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -774,15 +775,16 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
-	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
-	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(allwnr_t507_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(allwnr_t507_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -815,8 +817,9 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnr_t113_get_arm_freq())
-	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
+	#define HARDWARE_UART_FREQ (allwnr_t113_get_uart_freq())
 	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -865,8 +868,9 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ			(allwnr_v3s_get_cpu_freq())
-	#define BOARD_USART_FREQ 	(allwnr_t113_get_uart_freq())
+	#define HARDWARE_UART_FREQ 	(allwnr_v3s_get_uart_freq())
 	#define CPU_PL1_FREQ 		(allwnr_v3s_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ 	(allwnr_v3s_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -906,8 +910,8 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(elveesvm14_get_arm_freq())
-	#define BOARD_SPI_FREQ (elveesvm14_get_spi_freq())
-	#define BOARD_USART_FREQ (elveesvm14_get_usart_freq())
+	#define HARDWARE_SPI_FREQ (elveesvm14_get_spi_freq())
+	#define HARDWARE_UART_FREQ (elveesvm14_get_usart_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -935,8 +939,9 @@ extern "C" {
 	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
-	#define CPU_FREQ	(allwnrf133_get_riscv_freq())
-	#define BOARD_USART_FREQ (allwnr_t113_get_uart_freq())
+	#define CPU_FREQ	(allwnr_f133_get_riscv_freq())
+	#define HARDWARE_UART_FREQ (allwnr_t113_get_uart_freq())
+	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -983,7 +988,7 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
-	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
+	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt

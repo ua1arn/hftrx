@@ -605,7 +605,7 @@ xxxx!;
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART0_RST
 
 	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = allwnr_t113_get_uart_freq() / ((defbaudrate) * 16);
+	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART2->UART_DLH_IER = 0;
 	UART2->UART_IIR_FCR = 0xf7;
@@ -641,7 +641,7 @@ xxxx!;
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
 	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = allwnr_t113_get_uart_freq() / ((defbaudrate) * 16);
+	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART2->UART_DLH_IER = 0;
 	UART2->UART_IIR_FCR = 0xf7;
@@ -678,7 +678,7 @@ xxxx!;
 	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
 	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = allwnr_t113_get_uart_freq() / ((defbaudrate) * 16);
+	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART2->UART_DLH_IER = 0;
 	UART2->UART_IIR_FCR = 0xf7;
@@ -788,7 +788,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
 
-	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
+	unsigned divisor = calcdivround2(HARDWARE_UART_FREQ, baudrate * 16);
 
 	UART2->UART_LCR |= (1 << 7);
 	UART2->UART_RBR_THR_DLL = divisor & 0xff;

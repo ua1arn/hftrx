@@ -150,12 +150,20 @@ unsigned long hardware_get_apb1_tim_freq(void);
 unsigned long hardware_get_apb2_freq(void);
 unsigned long hardware_get_apb2_tim_freq(void);
 
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 // Allwinner t113-s3
+void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
+void allwnr_t113_module_pll_enable(volatile uint32_t * ctrlreg);
+
+void allwnr_t113_pll_initialize(void);
+void set_pll_cpux_axi(unsigned n);
+void set_pll_riscv_axi(unsigned n);
+
+
 uint_fast32_t allwnr_t113_get_hosc_freq(void);
 uint_fast32_t allwnr_t113_get_uart_freq(void);
 uint_fast32_t allwnr_t113_get_can_freq(void);
 uint_fast32_t allwnr_t113_get_twi_freq(void);
-uint_fast32_t allwnr_t113_get_s_twi_freq(void);
 uint_fast32_t allwnr_t113_get_spi0_freq(void);
 uint_fast32_t allwnr_t113_get_spi1_freq(void);
 uint_fast32_t allwnr_t113_get_arm_freq(void);
@@ -214,6 +222,8 @@ uint_fast32_t allwnr_t113_get_mbus_freq(void);
 uint_fast32_t allwnr_t113_get_ahb0_freq(void);	// ???
 uint_fast32_t allwnr_t113_get_axi_freq(void);	// ???
 
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+
 uint_fast32_t allwnr_t113_get_chipid(void);
 #define CHIPID_F133A 		0x5C00
 #define CHIPID_D1S 			0x5E00
@@ -222,23 +232,36 @@ uint_fast32_t allwnr_t113_get_chipid(void);
 #define CHIPID_H616			0x2300
 #define CHIPID_T507			0x2300
 
-uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void);
-uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void);
-uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
-
 // Allwinner A64
-uint_fast32_t allwnr_a64_get_cpux_freq(void);
-uint_fast32_t allwnr_a64_get_audiopll8x_freq(void);
-uint_fast32_t allwnr_a64_get_audiopll_freq(void);
+#if CPUSTYLE_A64
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
-uint_fast32_t allwnr_a64_get_mbus_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void);
+uint_fast32_t allwnr_a64_get_audiopll8x_freq(void);
+uint_fast32_t allwnr_a64_get_audiopll_freq(void);
+
+uint_fast32_t allwnr_a64_get_cpux_freq(void);
+uint_fast32_t allwnr_a64_get_mbus_freq(void);
 uint_fast32_t allwnr_a64_get_hdmi_freq(void);
 uint_fast32_t allwnr_a64_get_tcon0_freq(void);
 uint_fast32_t allwnr_a64_get_tcon1_freq(void);
+uint_fast32_t allwnr_a64_get_twi_freq(void);
+uint_fast32_t allwnr_a64_get_s_twi_freq(void);
+#endif /* CPUSTYLE_A64 */
 
 // Allwinner T507/T507-H/H616
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
+uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
+uint_fast32_t allwnr_t507_get_pll_audio_1x_freq(void);
+uint_fast32_t allwnr_t507_get_pll_audio_2x_freq(void);
+uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void);
+uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void);
+uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void);
+uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void);
+uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
+
+uint_fast32_t allwnr_t507_get_hosc_freq(void);
 uint_fast32_t allwnr_t507_get_cpux_freq(void);
 uint_fast32_t allwnr_t507_get_avs_freq(void);
 uint_fast32_t allwnr_t507_get_axi_freq(void);
@@ -249,9 +272,9 @@ uint_fast32_t allwnr_t507_get_ahbs_freq(void);
 uint_fast32_t allwnr_t507_get_apb1_freq(void);
 uint_fast32_t allwnr_t507_get_apb2_freq(void);
 uint_fast32_t allwnr_t507_get_apbs1_freq(void);
-uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
-uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
 uint_fast32_t allwnr_t507_get_mbus_freq(void);
+uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void);
+uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void);
 uint_fast32_t allwnr_t507_get_de_freq(void);
 uint_fast32_t allwnr_t507_get_di_freq(void);
 uint_fast32_t allwnr_t507_get_g2d_freq(void);
@@ -266,23 +289,19 @@ uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void);
 uint_fast32_t allwnr_t507_get_tve0_freq(void);
 uint_fast32_t allwnr_t507_get_ahub_freq(void);
 uint_fast32_t allwnr_t507_get_gpu_freq(void);
-uint_fast32_t allwnr_t507_get_pll_audio_1x_freq(void);
-uint_fast32_t allwnr_t507_get_pll_audio_2x_freq(void);
-uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void);
-uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void);
-uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void);
-uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void);
+uint_fast32_t allwnr_t507_get_twi_freq(void);
+uint_fast32_t allwnr_t507_get_s_twi_freq(void);
+uint_fast32_t allwnr_t507_get_uart_freq(void);
+uint_fast32_t allwnr_t507_get_spi0_freq(void);
+uint_fast32_t allwnr_t507_get_spi1_freq(void);
 
 void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
 void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
-void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
-void allwnr_t113_module_pll_enable(volatile uint32_t * ctrlreg);
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
-void allwnr_t113_pll_initialize(void);
-void set_pll_cpux_axi(unsigned n);
-void set_pll_riscv_axi(unsigned n);
-
+#if CPUSTYLE_V3S
+// Allwinner v3s
 void allwnr_v3s_pll_initialize(void);
 uint_fast32_t allwnr_v3s_get_cpu_freq(void);
 uint_fast32_t allwnr_v3s_get_axi_freq(void);
@@ -291,6 +310,8 @@ uint_fast32_t allwnr_v3s_get_ahb2_freq(void);
 uint_fast32_t allwnr_v3s_get_ahb1_freq(void);
 uint_fast32_t allwnr_v3s_get_apb2_freq(void);
 uint_fast32_t allwnr_v3s_get_apb1_freq(void);
+
+#endif /* CPUSTYLE_V3S */
 
 uint_fast32_t elveesvm14_get_arm_freq(void);
 uint_fast32_t elveesvm14_get_usart_freq(void);

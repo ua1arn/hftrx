@@ -4832,25 +4832,25 @@ static uint_fast8_t enc3f_sel;
 static uint_fast8_t enc4f_sel;
 
 /* получить надпись для отображения состояние ENC1F */
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len)
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, int len)
 {
 	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC1FN [enc1f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC2F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len)
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, int len)
 {
 	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC3F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t len)
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, int len)
 {
 	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC4F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t len)
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, int len)
 {
 	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC4FN [enc4f_sel].label);
 }

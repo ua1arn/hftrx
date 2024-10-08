@@ -3332,10 +3332,10 @@ uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкод�
 uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
 uint_fast8_t hamradio_get_bringSWR(const char * * label);	// Была ошибка SWR или что-то другое
 
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC1F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояняя ENC2F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC3F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t len);	/* получить надпись для отображения состояния ENC4F */
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC1F */
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояняя ENC2F */
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC3F */
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC4F */
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
