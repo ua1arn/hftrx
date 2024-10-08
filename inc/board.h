@@ -181,14 +181,19 @@ uint_fast8_t board_get_catmux(void);
 void board_beep_initialize(void);
 
 void board_sidetone_setfreq(uint_least16_t freq);	/* freq - частота в герцах. Минимум - 400 герц (определено набором команд CAT).*/
+void board_errbeep_setfreq(uint_least16_t freq);	/* сигнал об ошибке - установка тона. freq - частота в герцах. */
 void board_keybeep_setfreq(uint_least16_t freq);	/* freq - частота в герцах. */
 void board_rgrbeep_setfreq(uint_least16_t freq);	/* roger beep - установка тона */
+
+#define BOARD_ERRBEEP_TONE 500
+#define BOARD_ERRBEEP_LENGTH 600	/* длительность сообщения об ошибке в милисекундах */
 
 /* функции разрешения выдачи звукового сигнала - могут перекрываться. */
 void board_sidetone_enable(uint_fast8_t state);
 /* вызывается при запрещённых прерываниях. */
 void board_keybeep_enable(uint_fast8_t state);
-void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep (вызывается из обработчика перрываний sequencer) */
+void board_errbeep_enable(uint_fast8_t state);	/* сигнал об ошибке */
+void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep */
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
 void board_subtone_enable_user(uint_fast8_t state);

@@ -8103,8 +8103,9 @@ enum
 	SNDI_KEYBEEP,		// меньшие номера - более приоритетные звуки
 	SNDI_SIDETONE,
 #if WITHIF4DSP
-	SNDI_RGRBRRP,	/* roger beep */
+	SNDI_RGRBEEP,	/* roger beep */
 #endif /* WITHIF4DSP */
+	SNDI_ERRBEEP,	/* swr/tx error beep */
 #if WITHSIDETONEDEBUG
 	SNDI_DEBUG,
 #endif /* WITHSIDETONEDEBUG */
@@ -8185,6 +8186,25 @@ board_keybeep_setfreq(
 	}
 }
 
+/* сигнал об ошибке - установка тона */
+/* вызывается из update hardware (user mode).	*/
+void
+board_errbeep_setfreq(
+	uint_least16_t tonefreq)	/* tonefreq - частота в герцах. Минимум - 400 герц (определено набором команд CAT). */
+{
+	enum { sndi = SNDI_ERRBEEP };
+	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
+	{
+		IRQL_t oldIrql;
+
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		LCLSPIN_LOCK(& gpreilock);
+		board_sounds_resched();
+		LCLSPIN_UNLOCK(& gpreilock);
+		LowerIrql(oldIrql);
+	}
+}
+
 /* самоконтроль - установка тона */
 /* вызывается из update hardware (user mode).	*/
 void 
@@ -8216,7 +8236,7 @@ void
 board_rgrbeep_setfreq(
 	uint_least16_t tonefreq)	/* tonefreq - частота в герцах. Минимум - 400 герц (определено набором команд CAT). */
 {
-	enum { sndi = SNDI_RGRBRRP };
+	enum { sndi = SNDI_RGRBEEP };
 	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		IRQL_t oldIrql;
@@ -8233,7 +8253,7 @@ board_rgrbeep_setfreq(
 void board_rgrbeep_enable(uint_fast8_t state)
 {
 	const uint_fast8_t v = state != 0;
-	enum { sndi = SNDI_RGRBRRP };
+	enum { sndi = SNDI_RGRBEEP };
 
 	if (gstate [sndi] != v)
 	{
@@ -8243,6 +8263,19 @@ void board_rgrbeep_enable(uint_fast8_t state)
 }
 
 #endif /* WITHIF4DSP */
+
+/* сигнал об ошибке (вызывается из обработчика перрываний) */
+void board_errbeep_enable(uint_fast8_t state)
+{
+	const uint_fast8_t v = state != 0;
+	enum { sndi = SNDI_ERRBEEP };
+
+	if (gstate [sndi] != v)
+	{
+		gstate [sndi] = v;
+		board_sounds_resched();
+	}
+}
 
 /* подзвучка клавиш (вызывается из обработчика перрываний) */
 void board_keybeep_enable(uint_fast8_t state)
@@ -8343,6 +8376,7 @@ void board_beep_initialize(void)
 		}
 	}
 #endif /* WITHSIDETONEDEBUG */
+	board_errbeep_setfreq(BOARD_ERRBEEP_TONE);	// Частота сигнала об ошибке (герц)
 }
 
 

@@ -11309,7 +11309,7 @@ updateboardZZZ(
 		board_set_bandf2(bandf2hint);	/* включение нужного полосового фильтра (ФНЧ) передатчика */
 		board_set_bandf3(bandf3hint);	/* управление через разъем ACC */
 	#endif /* CTLSTYLE_IGOR */
-		board_keybeep_setfreq(gkeybeep10 * 10);	// Частота озвучивания нажатий клавиш
+		board_keybeep_setfreq(gkeybeep10 * 10);	// Частота озвучивания нажатий клавиш (герц)
 
 	#if defined (DEFAULT_LCD_CONTRAST)
 		display_set_contrast(gcontrast);
