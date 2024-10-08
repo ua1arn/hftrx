@@ -18208,9 +18208,9 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;
 #endif /* WITHELKEY */
 
-	case KBD_CODE_MAX:
-		bring_swr();
-		return 1;
+//	case KBD_CODE_MAX:
+//		bring_swr();
+//		return 1;
 
 #if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 	case KBD_CODE_DATATOGGLE:
