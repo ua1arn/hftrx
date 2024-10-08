@@ -276,10 +276,10 @@ uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void);
 void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
 void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
-void allwnrt113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
-void allwnrt113_module_pll_enable(volatile uint32_t * ctrlreg);
+void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
+void allwnr_t113_module_pll_enable(volatile uint32_t * ctrlreg);
 
-void allwnrt113_pll_initialize(void);
+void allwnr_t113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
 void set_pll_riscv_axi(unsigned n);
 

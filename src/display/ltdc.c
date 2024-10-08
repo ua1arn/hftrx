@@ -6581,7 +6581,7 @@ static void t113_tcontv_PLL_configuration(void)
 	const uint_fast32_t M = 4;
 
 	CCU->PLL_VIDEO0_CTRL_REG = 0;
-	allwnrt113_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 
 	CCU->PLL_VIDEO0_CTRL_REG |=
 		1 * (UINT32_C(1) << 31) |	// PLL_EN

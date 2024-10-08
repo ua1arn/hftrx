@@ -3978,7 +3978,7 @@ static void set_mbus(void)
 }
 
 // Set Spread Frequency Mode
-void allwnrt113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_t * pat0)
+void allwnr_t113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_t * pat0)
 {
 	* pat0 =
 		1 * (UINT32_C(1) << 29) | // SPR_FREQ_MODE
@@ -3989,7 +3989,7 @@ void allwnrt113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_t
 	* pllctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
 }
 
-void allwnrt113_module_pll_enable(volatile uint32_t * pllctrlreg)
+void allwnr_t113_module_pll_enable(volatile uint32_t * pllctrlreg)
 {
 
 	* pllctrlreg &= ~ (UINT32_C(1) << 31);
@@ -4942,7 +4942,7 @@ void set_pll_riscv_axi(unsigned N)
 	set_riscv_axi(0x05);	// 101: PLL_CPU
 }
 
-void allwnrt113_pll_initialize(void)
+void allwnr_t113_pll_initialize(void)
 {
 #if CPUSTYLE_T113
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
@@ -4952,17 +4952,17 @@ void allwnrt113_pll_initialize(void)
 
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 
-	allwnrt113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
+	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 
-//	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-//	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-//	allwnrt113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
+//	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+//	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+//	allwnr_t113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
 
-	allwnrt113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
-	allwnrt113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
+	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
+	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
 	set_ahb();
 	set_mbus();
@@ -9502,7 +9502,7 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
-	allwnrt113_pll_initialize();
+	allwnr_t113_pll_initialize();
 
 #elif CPUSTYLE_F133
 
@@ -9518,7 +9518,7 @@ sysinit_pll_initialize(int forced)
 	}
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
-	allwnrt113_pll_initialize();
+	allwnr_t113_pll_initialize();
 //
 	set_pll_riscv_axi(RV_PLL_CPU_N);
 
