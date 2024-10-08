@@ -5285,7 +5285,7 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunercap), CMIN, CMAX, tunercap);
 	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
-	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerwork), 0, 1, tunerwork);
+	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerwork), 0, 1, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
 }
 
 #if WITHAUTOTUNER_N7DDCALGO
