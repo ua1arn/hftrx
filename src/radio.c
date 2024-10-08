@@ -5259,11 +5259,18 @@ static int n7ddc_display(void * ctx)
 
 static enum phases auto_tune0(void)
 {
-
-	if (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, n7ddc_display, NULL))
+	switch (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, n7ddc_display, NULL))
+	{
+	default:
+	case N7DDCTUNE_ABORT:
+		bring_swr("ABT");
 		return PHASE_ABORT; // восстановление будет в auto_tune3
-	// сохранение будет в auto_tune2
-	return PHASE_DONE;
+	case N7DDCTUNE_ERROR:
+		bring_swr("ERR");
+		return PHASE_ABORT; // восстановление будет в auto_tune3
+	case N7DDCTUNE_OK:
+		return PHASE_DONE; // сохранение будет в auto_tune2
+	}
 }
 
 static void auto_tune1_init(void)

@@ -3533,8 +3533,12 @@ void bt_enable(uint_fast8_t v);
 
 uint_fast8_t hamradio_get_ft8cn(void);
 
+#define N7DDCTUNE_OK 0
+#define N7DDCTUNE_ERROR 1	// Not enough power
+#define N7DDCTUNE_ABORT 2	// Aborted by keyboard
+int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx);	// 1 if no power, 2 if aborted
+
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
-int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx);	// 1 if aborted
 unsigned n7ddc_get_swr(void);
 
 unsigned hamradio_get_swr(void);
