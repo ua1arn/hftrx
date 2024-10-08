@@ -130,7 +130,7 @@ void xpt2046_initialize(void)
 {
 	//BOARD_XPT2046_INT_CONNECT();
 	const spitarget_t target = targettsc1;
-	PRINTF("xpt2046_initialize:n");
+	//PRINTF("xpt2046_initialize:\n");
 #if 0
 	for (;;)
 	{
