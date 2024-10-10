@@ -41,12 +41,12 @@
 		{
 			if (isr & USART_ISR_RXNE_RXFNE)
 			{
-				const uint_fast8_t c = UART2->RDR;
+				const uint_fast8_t c = USART2->RDR;
 				HARDWARE_UART2_ONRXCHAR(c);
 			}
 			if (isr & USART_ISR_ORE)
 			{
-				USART3->ICR = USART_ICR_ORECF;
+				USART2->ICR = USART_ICR_ORECF;
 				HARDWARE_UART2_ONOVERFLOW();
 			}
 			if (isr & USART_ISR_FE)
@@ -55,7 +55,7 @@
 		if (cr1 & USART_CR1_TXEIE)
 		{
 			if (isr & USART_ISR_TXE_TXFNF)
-				HARDWARE_UART2_ONTXCHAR(USART3);
+				HARDWARE_UART2_ONTXCHAR(USART2);
 		}
 	}
 
@@ -538,7 +538,7 @@ xxxx!;
 		serial_set_handler(USART2_IRQn, USART2_IRQHandler);
 	}
 
-	USART2->CR1 |= USART_CR1_UE; // Включение USART1.
+	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
 
 #elif CPUSTYLE_A64
 
