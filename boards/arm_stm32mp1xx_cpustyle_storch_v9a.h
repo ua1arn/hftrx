@@ -697,8 +697,8 @@
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1u << 5); /* PD5: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (1u << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piod_altfn50(TXMASK, AF_USART2); \
-		arm_hardware_piod_altfn50(RXMASK, AF_USART2); \
+		arm_hardware_piod_altfn50(TXMASK, AF_USART2); /* AF7 */ \
+		arm_hardware_piod_altfn50(RXMASK, AF_USART2); /* AF7 */ \
 		arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -836,21 +836,6 @@
 				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
 			} while (0)
 #endif
-
-#if WITHCPUDACHW
-	/* включить нужные каналы */
-	#define HARDWARE_DAC_INITIALIZE() do { \
-			DAC1->CR = DAC_CR_EN1; /* DAC1 enable */ \
-		} while (0)
-	#define HARDWARE_DAC_ALC(v) do { /* вывод 12-битного значения на ЦАП - канал 1 */ \
-			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
-		} while (0)
-
-#else /* WITHCPUDACHW */
-	#define HARDWARE_DAC_INITIALIZE() do { \
-		} while (0)
-
-#endif /* WITHCPUDACHW */
 
 #if WITHCPUADCHW
 	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
@@ -1178,7 +1163,6 @@
 			I2S2HW_POOLDOWN(); \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_DAC_INITIALIZE(); \
 			HARDWARE_BL_INITIALIZE(); \
 			HARDWARE_DCDC_INITIALIZE(); \
 			TXDISABLE_INITIALIZE(); \

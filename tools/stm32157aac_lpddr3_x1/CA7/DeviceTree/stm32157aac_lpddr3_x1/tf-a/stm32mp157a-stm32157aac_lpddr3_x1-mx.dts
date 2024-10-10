@@ -28,7 +28,7 @@
 
 	memory@c0000000 {
 		device_type = "memory";
-		reg = <0xc0000000 0x10000000>;
+		reg = <0xc0000000 0x8000000>;
 
 		/* USER CODE BEGIN memory */
 		/* USER CODE END memory */

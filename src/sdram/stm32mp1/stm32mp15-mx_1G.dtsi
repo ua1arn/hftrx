@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015-2018, STMicroelectronics - All Rights Reserved
  *
- * SPDX-License-Identifier:	GPL-2.0+	BSD-3-Clause
+ * SPDX-License-Identifier:	GPL-2.0-or-later	BSD-3-Clause
  *
  */
 
@@ -14,12 +14,12 @@
  * Relaxed Timing Mode: false
  * Address mapping type: RBC
  *
- * Save Date: 2021.04.01, save Time: 23:32:26
+ * Save Date: 2024.10.10, save Time: 16:26:21
  */
 
-#define DDR_MEM_NAME	"DDR3-DDR3L 16bits 528000kHz"
-#define DDR_MEM_SPEED	528000
-#define DDR_MEM_SIZE	0x8000000
+#define DDR_MEM_NAME "DDR3-DDR3L 16bits 528000kHz"
+#define DDR_MEM_SPEED 528000
+#define DDR_MEM_SIZE 0x8000000
 
 #define DDR_MSTR 0x00041401
 #define DDR_MRCTRL0 0x00000010
@@ -102,18 +102,6 @@
 #define DDR_ODTCR 0x00010000
 #define DDR_ZQ0CR1 0x00000038
 #define DDR_DX0GCR 0x0000CE81
-#define DDR_DX0DLLCR 0x40000000
-#define DDR_DX0DQTR 0xFFFFFFFF
-#define DDR_DX0DQSTR 0x3DB02000
 #define DDR_DX1GCR 0x0000CE81
-#define DDR_DX1DLLCR 0x40000000
-#define DDR_DX1DQTR 0xFFFFFFFF
-#define DDR_DX1DQSTR 0x3DB02000
 #define DDR_DX2GCR 0x0000CE80
-#define DDR_DX2DLLCR 0x40000000
-#define DDR_DX2DQTR 0xFFFFFFFF
-#define DDR_DX2DQSTR 0x3DB02000
 #define DDR_DX3GCR 0x0000CE80
-#define DDR_DX3DLLCR 0x40000000
-#define DDR_DX3DQTR 0xFFFFFFFF
-#define DDR_DX3DQSTR 0x3DB02000
