@@ -1287,7 +1287,7 @@ uint32_t hardware_get_random(void)
 }
 
 
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_TMS320F2833X
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 // количество циклов на микросекунду
 static unsigned long
@@ -1341,13 +1341,6 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_TMS320F2833X && 1 // RAM code0
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 760uL / cpufreq_MHz;	// tested @ 100 MHz Execute from RAM
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_TMS320F2833X	&& 0	// FLASH code
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_A64
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
@@ -1420,7 +1413,7 @@ void local_delay_initialize(void)
 	cpufreqMHz = CPU_FREQ / 1000000;
 }
 
-#endif /* CPUSTYLE_ARM || CPUSTYLE_TMS320F2833X */
+#endif /* */
 
 
 #if CPUSTYLE_STM32H7XX
@@ -4878,91 +4871,6 @@ static void cpu_atxmega_switchto32MHz()
 }
 
 #endif /* CPUSTYLE_ATXMEGA */
-
-#if CPUSTYLE_TMS320F2833X
-
-void cpu_tms320f2833x_pll_initialize(
-		uint_fast8_t pllcrDIV, 		// PLL multiplier
-		uint_fast8_t pllstsDIVSEL)	// PLL divider (from PLL to CPU)
-{
-    /* check if running in Limp mode; if yes, abort */
-    if (PLLSTS & PLLSTS_MCLKSTS_BIT) {
-        //Boot_limpAbort();
-    	for (;;)
-    		;
-    }
-
-    /* set max divide select (DIVSEL = 0) */
-    PLLSTS &= ~PLLSTS_DIVSEL_BITS;
-
-    /* temporarily disable failed oscillator detect */
-    PLLSTS |= PLLSTS_MCLKOFF_BIT;
-
-    /* set the new PLL multiplier value */
-    PLLCR = pllcrDIV;
-
-    /* wait for the PLL to relock */
-    while (!(PLLSTS & PLLSTS_PLLLOCKS_BIT)) {
-    };
-
-    /* re-enable failed oscillator detection */
-    PLLSTS &= ~PLLSTS_MCLKOFF_BIT;
-
-    /* set divide select bits (DIVSEL) */
-    PLLSTS |= pllstsDIVSEL << PLLSTS_DIVSEL_SHIFTBITS;
-}
-
-
-#pragma CODE_SECTION(cpu_tms320f2833x_flash_waitstates, "ramfuncs")
-
-static void
-cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
-{
-	// To ensure the FLASH in high power mode
-	FPWR = 0x003;
-	asm(" RPT #8 || NOP");
-
-	//Enable Flash Pipeline mode to improve performance
-	//of code executed from Flash.
-	//FlashRegs.FOPT.bit.ENPIPE = 1;
-	FOPT |= 0x0001;
-	asm(" RPT #8 || NOP");
-
-	//                CAUTION
-	//Minimum waitstates required for the flash operating
-	//at a given CPU rate must be characterized by TI.
-	//Refer to the datasheet for the latest information.
-
-	//Set the Paged Waitstate for the Flash.
-	//FlashRegs.FBANKWAIT.bit.PAGEWAIT = 3;
-	FBANKWAIT = (FBANKWAIT & ~ 0x0f00) | (flashws << 8);
-	asm(" RPT #8 || NOP");
-
-	//Set the Random Waitstate for the Flash.
-	//FlashRegs.FBANKWAIT.bit.RANDWAIT = 3;
-	FBANKWAIT = (FBANKWAIT & ~ 0x000f) | (flashws << 0);
-	asm(" RPT #8 || NOP");
-
-	//Set the Waitstate for the OTP.
-	//FlashRegs.FOTPWAIT.bit.OTPWAIT = 5;
-	FOTPWAIT = (FOTPWAIT & ~ 0x000f) | (otpws << 0);
-	asm(" RPT #8 || NOP");
-
-	//                CAUTION
-	//ONLY THE DEFAULT VALUE FOR THESE 2 REGISTERS SHOULD BE USED
-	//FlashRegs.FSTDBYWAIT.bit.STDBYWAIT = 0x01FF;
-	FSTDBYWAIT = (FSTDBYWAIT & ~ 0x01FF) | 0x01FF;
-	asm(" RPT #8 || NOP");
-	//FlashRegs.FACTIVEWAIT.bit.ACTIVEWAIT = 0x01FF;
-	FACTIVEWAIT = (FACTIVEWAIT & ~ 0x01FF) | 0x01FF;
-	asm(" RPT #8 || NOP");
-
-	//Force a pipeline flush to ensure that the write to
-	//the last register configured occurs before returning.
-
-	asm(" RPT #8 || NOP");
-}
-#endif /* CPUSTYLE_TMS320F2833X */
 
 // секция init больше не нужна
 void cpu_initdone(void)

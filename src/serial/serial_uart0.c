@@ -270,13 +270,6 @@ void hardware_uart0_enabletx(uint_fast8_t state)
 	else
 		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if (state)
-		SCIACTL2 |= (1U << 0);	// TX INT ENA
-	else
-		SCIACTL2 &= ~ (1U << 0); // TX INT ENA
-
 #elif CPUSTYLE_R7S721
 
 	if (state)
@@ -376,13 +369,6 @@ void hardware_uart0_enablerx(uint_fast8_t state)
 	else
 		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if (state)
-		SCIACTL2 |= (1U << 1);	// RX/BK INT ENA
-	else
-		SCIACTL2 &= ~ (1U << 1); // RX/BK INT ENA
-
 #elif CPUSTYLE_R7S721
 
 	if (state)
@@ -455,10 +441,6 @@ void hardware_uart0_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_ATXMEGAXXXA4
 
 	USARTE0.DATA = c;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	SCIATXBUF = c;
 
 #elif CPUSTYLE_R7S721
 
@@ -559,12 +541,6 @@ hardware_uart0_getchar(char * cp)
 			return 0;
 	* cp = UDR;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if ((SCIARXST & (1U << 6)) == 0)	// Wait for RXRDY bit
-		return 0;
-	* cp = SCIARXBUF;
-
 #elif CPUSTYLE_R7S721
 
 	if ((SCIF0.SCFSR & (1U << 1)) == 0)	// RDF
@@ -644,12 +620,6 @@ hardware_uart0_putchar(uint_fast8_t c)
 	if ((UCSRA & (1 << UDRE)) == 0)
 		return 0;
 	UDR = c;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	if ((SCIACTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
-		return 0;
-	SCIATXBUF = c;
 
 #elif CPUSTYLE_R7S721
 
@@ -813,30 +783,6 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	USARTE0.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
 	USARTE0.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	// Enable SCI-A clock
-	PCLKCR0 |= (1U << 10);	// SCIAENCLK
-
-	//SCIACTL1 &= ~ (1U << 5);	// SW RESET on
-	SCIACTL1 |= (1U << 5);	// SW RESET off
-
-	SCIACCR =
-			(7U << 0) |	// Data length = 8 bit
-			(0U << 5) | // Parity enable
-			(0U << 6) | // Evan/Odd parity
-			(0U << 7);	// 0 - one stop bit, 1 - to stop bits
-
-
-	tms320_hardware_piob_periph(
-			(1u << (35 % 32)) |	// SCITXDA
-			(1u << (36 % 32)),	// SCIRXDA
-			1	// mux = 1
-			);
-
-	SCIACTL1 |= (1U << 0) |	// RX enable
-				(1U << 1);	// TX enable
 
 #elif CPUSTYLE_R7S721
 
@@ -1176,14 +1122,6 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 	// todo: проверить требование к порядку обращения к портам
 	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
 	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIAHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIALBAUD = (brr - 1) >> 0;
 
 #elif CPUSTYLE_R7S721
 

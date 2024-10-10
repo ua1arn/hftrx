@@ -172,13 +172,6 @@ void hardware_uart3_enablerx(uint_fast8_t state)
 	else
 		USART3->CR1 &= ~ USART_CR1_RXNEIE;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if (state)
-		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
-	else
-		SCIBCTL2 &= ~ (1U << 1); // RX/BK INT ENA
-
 #elif CPUSTYLE_R7S721
 
 	if (state)
@@ -209,10 +202,6 @@ void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
 	USART3->TDR = c;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	SCIBTXBUF = c;
 
 #elif CPUSTYLE_R7S721
 
@@ -276,12 +265,6 @@ hardware_uart3_getchar(char * cp)
 		return 0;
 	* cp = USART3->RDR;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
-		return 0;
-	* cp = SCIBRXBUF;
-
 #elif CPUSTYLE_R7S721
 
 	if ((SCIF3.SCFSR & (1U << 1)) == 0)	// RDF
@@ -323,12 +306,6 @@ hardware_uart3_putchar(uint_fast8_t c)
 	if ((USART3->ISR & USART_ISR_TXE) == 0)
 		return 0;
 	USART3->TDR = c;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
-		return 0;
-	SCIBTXBUF = c;
 
 #elif CPUSTYLE_R7S721
 
@@ -623,14 +600,6 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 	// uart3 on apb1
 
 	USART3->BRR = calcdivround2(BOARD_USART3_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIBLBAUD = (brr - 1) >> 0;
 
 #elif CPUSTYLE_R7S721
 

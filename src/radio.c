@@ -2402,7 +2402,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 #else
 #endif
 
-#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_TMS320F2833X || (TUNE_TOP >= 65535000L)
+#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYLE_RISCV || (TUNE_TOP >= 65535000L)
 
 	/* частоты хранятся с точностью до герца в 32-х битных переменных */
 	struct bandrange {

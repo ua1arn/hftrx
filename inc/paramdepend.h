@@ -513,15 +513,6 @@ extern "C" {
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 	#define HARDWARE_NCORES 1
 
-#elif CPUSTYLE_TMS320F2833X
-
-	#define TICKS_FREQUENCY	 (200U * 2)	// 400 Hz - use compare/match interrupt
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#define HARDWARE_NCORES 1
-
 #elif CPUSTYLE_R7S721
 
 	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
@@ -1000,32 +991,6 @@ extern "C" {
 	#define HARDWARE_NCORES 4
 	#define WITHCPUNAME "Zynq XCZU"
 
-#elif defined(_WIN32)
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-
-	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-
-	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define TICKS_FREQUENCY 200
-
-
-#elif CPUSTYLE_UBLAZE
-
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-
-	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-
-	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define TICKS_FREQUENCY 200
-	#define HARDWARE_NCORES 1
-	#define WITHCPUNAME "MicroBlaze"
-
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1344,13 +1309,6 @@ extern "C" {
 	#endif // ATMEGA
 
 #endif	// Heavy eeprom size optimization
-
-#if defined (PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_MC145170)
-	//#define WITHSPISW 	1	/* Использование программного контроллера SPI */
-#endif
-#if defined (PLL2_TYPE) && (PLL2_TYPE == PLL_TYPE_MC145170)
-	//#define WITHSPISW 	1	/* Использование программного контроллера SPI */
-#endif
 
 #if LCDMODE_LQ043T3DX02K		/* PSP-1000 with S1D113780, or attached to LTDC hardware controller */
 	//#define LCDMODE_HARD_SPI	1	/* SPI interface */

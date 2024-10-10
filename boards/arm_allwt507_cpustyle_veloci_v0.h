@@ -559,7 +559,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t113_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_t507_get_smhc0_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -617,7 +617,7 @@
 	#define	SMHCHARD_PTR SMHC1	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC1_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC1_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t113_get_smhc1_freq())
+	#define SMHCHARD_FREQ (allwnr_t507_get_smhc1_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	// Additional lines to module TL8189FQB2 (Realtek RTL8189FTV based) :
@@ -668,7 +668,7 @@
 	#define	SMHCHARD_PTR SMHC2	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC2_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t113_get_smhc2_freq())
+	#define SMHCHARD_FREQ (allwnr_t507_get_smhc2_freq())
 	#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
 	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface */
 

@@ -201,13 +201,6 @@ void hardware_uart4_enabletx(uint_fast8_t state)
 	else
 		USARTE4.CTRLA = (USARTE4.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if (state)
-		SCIBCTL2 |= (1U << 0);	// TX INT ENA
-	else
-		SCIBCTL2 &= ~ (1U << 0); // TX INT ENA
-
 #elif CPUSTYLE_R7S721
 
 	if (state)
@@ -237,13 +230,6 @@ void hardware_uart4_enablerx(uint_fast8_t state)
 		UART4->CR1 |= USART_CR1_RXNEIE;
 	else
 		UART4->CR1 &= ~ USART_CR1_RXNEIE;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	if (state)
-		SCIBCTL2 |= (1U << 1);	// RX/BK INT ENA
-	else
-		SCIBCTL2 &= ~ (1U << 1); // RX/BK INT ENA
 
 #elif CPUSTYLE_R7S721
 
@@ -275,10 +261,6 @@ void hardware_uart4_tx(void * ctx, uint_fast8_t c)
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
 	UART4->TDR = c;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	SCIBTXBUF = c;
 
 #elif CPUSTYLE_R7S721
 
@@ -342,12 +324,6 @@ hardware_uart4_getchar(char * cp)
 		return 0;
 	* cp = UART4->RDR;
 
-#elif CPUSTYLE_TMS320F2833X
-
-	if ((SCIBRXST & (1U << 6)) == 0)	// Wait for RXRDY bit
-		return 0;
-	* cp = SCIBRXBUF;
-
 #elif CPUSTYLE_R7S721
 
 	if ((SCIF4.SCFSR & (1U << 1)) == 0)	// RDF
@@ -407,12 +383,6 @@ hardware_uart4_putchar(uint_fast8_t c)
 	if ((UART4->ISR & USART_ISR_TXE) == 0)
 		return 0;
 	UART4->TDR = c;
-
-#elif CPUSTYLE_TMS320F2833X
-
-	if ((SCIBCTL2 & (1U << 7)) == 0)	// wait for TXRDY bit
-		return 0;
-	SCIBTXBUF = c;
 
 #elif CPUSTYLE_R7S721
 
@@ -518,30 +488,6 @@ xxxx!;
 #elif CPUSTYLE_ATMEGA32
 
 	#error WITHUART2HW with CPUSTYLE_ATMEGA not supported
-
-#elif CPUSTYLE_TMS320F2833X
-xxxx!;
-	// Enable SCI-B clock
-	PCLKCR0 |= (1U << 10);	// SCIBENCLK
-
-	//SCIBCTL1 &= ~ (1U << 5);	// SW RESET on
-	SCIBCTL1 |= (1U << 5);	// SW RESET off
-
-	SCIBCCR =
-			(7U << 0) |	// Data length = 8 bit
-			(0U << 5) | // Parity enable
-			(0U << 6) | // Evan/Odd parity
-			(0U << 7);	// 0 - one stop bit, 1 - to stop bits
-
-
-	tms320_hardware_piob_periph(
-			(1u << (35 % 32)) |	// SCITXDA
-			(1u << (36 % 32)),	// SCIRXDA
-			1	// mux = 1
-			);
-
-	SCIBCTL1 |= (1U << 0) |	// RX enable
-				(1U << 1);	// TX enable
 
 #elif CPUSTYLE_R7S721
 
@@ -752,14 +698,6 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	// uart4 on apb1
 	UART4->BRR = calcdivround2(BOARD_UART4_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIBLBAUD = (brr - 1) >> 0;
 
 #elif CPUSTYLE_R7S721
 

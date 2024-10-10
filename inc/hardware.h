@@ -498,21 +498,6 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_END /* nothing */
 
 #elif \
-	defined (CPUSTYLE_UBLAZE) || \
-	0
-
-	#include "u_blaze.h"
-
-	#define DCACHEROWSIZE 64
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
-	//#define CPU_FREQ 150000000uL
-	#define CPU_FREQ 100000000uL
-	//#define CPU_FREQ 5000000uL		// Частота без инициализаwии PLL - xtal / 4
-
-#elif \
 	defined (__TMS320C28X__) || \
 	0
 
@@ -637,40 +622,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	#define IRQL_SYSTEM 			1
 	#define IRQL_REALTIME 			1
 	#define IRQL_OVERREALTIME 		1
-
-#elif CPUSTYLE_TMS320F2833X
-	/* тип для передачи параметра "адрес устройства на SPI шине" */
-	/* это может быть битовая маска в порту ввода-вывода */
-	typedef uint_fast32_t spitarget_t;
-	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
-	typedef uint_fast32_t portholder_t;		
-
-	#define global_enableIRQ() do { asm(" NOP"); } while (0)
-	#define global_disableIRQ() do { asm(" NOP"); } while (0)
-
-	#define ATTRWEAK __attribute__ ((weak))
-
-#elif CPUSTYLE_UBLAZE
-	/* тип для передачи параметра "адрес устройства на SPI шине" */
-	/* это может быть битовая маска в порту ввода-вывода */
-	typedef uint_fast32_t spitarget_t;
-	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
-	typedef uint_fast32_t portholder_t;
-
-	typedef uint_fast32_t adcvalholder_t;
-	typedef int_fast32_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#define FLASHMEM //__flash
-	#define NOINLINEAT // __attribute__((noinline))
-	#define strlen_P(s) strlen(s)
-	#define PSTR(s) s
-
-	#define ATTRWEAK __WEAK
-	#define __NO_RETURN
-
-	// Use __attribute__ ((weak, alias("Default_Handler")))
-	void local_delay_us(int timeUS);
-	void local_delay_ms(int timeMS);
 
 #else
 	#error Undefined CPUSTYLE_xxxx

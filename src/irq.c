@@ -2318,39 +2318,6 @@ void cpu_initialize(void)
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 1: Channel 1 of the USB 2.0 host/function module halts.
 #endif
 
-#if CPUSTYLE_TMS320F2833X
-
-	EALLOW;
-	WDCR = 0x0068;
-	//
-	/* Copy the ramfuncs section */
-	if (1)
-	{
-		extern unsigned int RamfuncsLoadStart;
-		extern unsigned int RamfuncsLoadEnd;
-		extern unsigned int RamfuncsRunStart;
-
-		memcpy(& RamfuncsRunStart, & RamfuncsLoadStart, (uint32_t) & RamfuncsLoadEnd - (uint32_t) & RamfuncsLoadStart);
-	}
-	/* Setup PLL and FLASH */
-	#if (CPU_FREQ > 120000000UL)
-		enum { FLASHWS = 5, OTPWS = 8 };
-	#elif (CPU_FREQ > 100000000UL)
-		enum { FLASHWS = 4, OTPWS = 7 };
-	#else
-		enum { FLASHWS = 3, OTPWS = 5 };
-	#endif
-	cpu_tms320f2833x_pll_initialize(1, 1);		// 20 MHz / 4 = 5 MHz
-	#if (CPU_FREQ == 150000000UL)
-		cpu_tms320f2833x_pll_initialize(15, 2);		// 20 MHz * 15 / 2 = 150 MHz	- 15 is illegal value
-		cpu_tms320f2833x_flash_waitstates(5, 8);		// commented in RAM configuration
-	#elif (CPU_FREQ == 100000000UL)
-		cpu_tms320f2833x_pll_initialize(10, 2);		// 20 MHz * 10 / 2 = 100 MHz
-		cpu_tms320f2833x_flash_waitstates(3, 5);		// commented in RAM configuration
-	#endif
-
-#endif /*  */
-
 #if defined (__CORTEX_M)
 
 	// Таблица находится в области вне Data Cache
