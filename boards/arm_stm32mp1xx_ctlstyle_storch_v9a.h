@@ -56,8 +56,8 @@
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				#define BOARD_DDR_CONFIG "stm32mp15-mx_1G.dtsi"	// 64k*16
-				//#define BOARD_DDR_CONFIG "stm32mp15-mx_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_1G.dtsi"	// 64k*16
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_2G.dtsi"	// 128k*16
 				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G.dtsi"		// 256k*16
 				//#define BOARD_DDR_CONFIG "stm32mp15-mx_8G.dtsi"	// 512k*16
 			#else
