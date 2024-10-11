@@ -50,7 +50,7 @@
 			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 			// PLL2_1600
-			#if 0
+			#if 1
 				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
