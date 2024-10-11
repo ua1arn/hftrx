@@ -6428,14 +6428,15 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 // Allwinner embedded audio codec
 
 /* Установка громкости на наушники */
-static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+static void audiocodechw_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 #if WITHUSBHEADSET
 	gain = BOARD_AFGAIN_MAX;
 #endif /* WITHUSBHEADSET */
 	PRINTF("audiocodechw_setvolume: gain=%u, mute=%u, mutespk=%u\n", (unsigned) gain, (unsigned) mute, (unsigned) mutespk);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
+	uint_fast8_t levelL = (gainL - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
+	uint_fast8_t levelR = (gainR - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
 		1 * (UINT32_C(1) << 9) | 	// RSWITCH - use 1: VRA1
@@ -6445,7 +6446,7 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
 		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
 		//(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
-		level * (UINT32_C(1) << 0) | // LINEOUT volume control
+		levelL * (UINT32_C(1) << 0) | // LINEOUT volume control
 		0;
 
 	// Offset 0x314 MIXER Analog Control Register

@@ -516,7 +516,7 @@ typedef struct codec1if_tag
 	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* stop) (void);
 	void (* initialize) (void (* io_control)(uint_fast8_t on), uint_fast8_t master);
-	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
+	void (* setvolume) (uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
 	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 	void (* setprocparams) (uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 	const char * label;									/* Название кодека (всегда последний элемент в структуре) */

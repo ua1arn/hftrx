@@ -188,12 +188,13 @@ static void tlv320aic23_initialize_fullduplex(void (* io_control)(uint_fast8_t o
 }
 
 /* Установка громкости на наушники */
-static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+static void tlv320aic23_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
-	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * (TLV320AIC23_OUT_VOL_MAX - TLV320AIC23_OUT_VOL_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + TLV320AIC23_OUT_VOL_MIN;
+	uint_fast8_t levelL = (gainL - BOARD_AFGAIN_MIN) * (TLV320AIC23_OUT_VOL_MAX - TLV320AIC23_OUT_VOL_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + TLV320AIC23_OUT_VOL_MIN;
+	uint_fast8_t levelR = (gainR - BOARD_AFGAIN_MIN) * (TLV320AIC23_OUT_VOL_MAX - TLV320AIC23_OUT_VOL_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + TLV320AIC23_OUT_VOL_MIN;
 	uint_fast8_t mute_all = mute != 0 || mutespk != 0;
 	tlv320aic23_setreg(TLV320AIC23_LCHNVOL, 
-		(mute_all == 0) * (level & TLV320AIC23_OUT_VOL_MASK) |
+		(mute_all == 0) * (levelL & TLV320AIC23_OUT_VOL_MASK) |
 		TLV320AIC23_LRS_ENABLED |	/* левый и правый одновременно */
 		0 * TLV320AIC23_LZC_ON |	/* синхронизация с переходом через "0" */
 		0

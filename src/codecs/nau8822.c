@@ -91,7 +91,7 @@ static void nau8822_input_config(void)
 }
 
 /* Установка громкости на наушники */
-static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+static void nau8822_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	//PRINTF("nau8822_setvolume: gain=%d, mute=%d, mutespk=%d\n", (int) gain, (int) mute, (int) mutespk);
 	uint_fast16_t vmutehp = 0;
@@ -99,8 +99,10 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	uint_fast16_t vmuteaux12 = 0x01;	// default value
 	// 0x3F: +6 dB
 	// 0x39: 0 dB: 2.7..2.8 volt p-p at each SPK output
-	uint_fast16_t levelhp = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_HP_MAX - NAU8822L_OUT_HP_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_HP_MIN;
-	uint_fast16_t levelspk = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_SPK_MAX - NAU8822L_OUT_SPK_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_SPK_MIN;
+	uint_fast16_t levelhpL = (gainL - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_HP_MAX - NAU8822L_OUT_HP_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_HP_MIN;
+	uint_fast16_t levelhpR = (gainR - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_HP_MAX - NAU8822L_OUT_HP_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_HP_MIN;
+	uint_fast16_t levelspkL = (gainL - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_SPK_MAX - NAU8822L_OUT_SPK_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_SPK_MIN;
+	uint_fast16_t levelspkR = (gainR - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_SPK_MAX - NAU8822L_OUT_SPK_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_SPK_MIN;
 	if (mute)
 	{
 		vmutehp = 0x40;
@@ -114,12 +116,12 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	//debug_printf_P(PSTR("nau8822_setvolume: level=%02x start\n"), level);
 
 	// Установка уровня вывода на наушники
-	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0);
-	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0x100);
+	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhpL & 0x3F) | 0);
+	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhpR & 0x3F) | 0x100);
 
 	// Установка уровня вывода на динамик
-	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0);
-	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0x100);
+	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspkL & 0x3F) | 0);
+	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspkR & 0x3F) | 0x100);
 
 	nau8822_setreg(NAU8822_AUX2_MIXER_CONTROL, vmuteaux12);		// aux2
 	nau8822_setreg(NAU8822_AUX1_MIXER_CONTROL, vmuteaux12);		// aux1

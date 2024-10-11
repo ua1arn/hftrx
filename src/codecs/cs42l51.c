@@ -75,7 +75,7 @@ static void cs42l51_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 }
 
 /* Установка громкости на наушники */
-static void cs42l51_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+static void cs42l51_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 }
 

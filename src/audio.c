@@ -5733,9 +5733,11 @@ prog_codec1reg(void)
 {
 #if defined(CODEC1_TYPE)
 	const codec1if_t * const ifc1 = board_getaudiocodecif();
+	const uint_fast16_t gainL = glob_afgain;
+	const uint_fast16_t gainR = glob_afgain;
 
 	// also use glob_mik1level
-	ifc1->setvolume(glob_afgain, glob_afmute, glob_dsploudspeaker_off);
+	ifc1->setvolume(gainL, gainR, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikeboost20db, glob_mik1level, glob_lineamp);
 #if defined (HARDWARE_CODEC1_NPROCPARAMS)
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */

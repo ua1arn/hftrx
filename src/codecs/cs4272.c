@@ -288,7 +288,7 @@ static void cs4272_stop(void)
 
 
 /* Установка громкости на наушники */
-static void cs4272_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+static void cs4272_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 }
 
