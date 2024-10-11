@@ -7415,19 +7415,20 @@ restart:
 
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+		if (0)
 		{
 
 			FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-			local_delay_ms(1);
+			local_delay_ms(10);
 			/* 1) Выставить "1" на nCONFIG */
 			//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 			FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-			local_delay_ms(1);
+			local_delay_ms(10);
 			/* x) Дождаться "0" на nSTATUS */
 			//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 			while (board_fpga_get_NSTATUS() != 0)
 			{
-				local_delay_ms(1);
+				local_delay_ms(10);
 				if (-- w == 0)
 				{
 					FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -7439,16 +7440,16 @@ restart:
 		{
 
 			FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-			local_delay_ms(1);
+			local_delay_ms(10);
 			/* 1) Выставить "1" на nCONFIG */
 			//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 			FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-			local_delay_ms(1);
+			local_delay_ms(10);
 			/* x) Дождаться "0" на nSTATUS */
 			//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 			while (board_fpga_get_NSTATUS() != 0)
 			{
-				local_delay_ms(1);
+				local_delay_ms(10);
 				if (-- w == 0)
 				{
 					FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -7464,12 +7465,12 @@ restart:
 			goto restart;
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(1);
+		local_delay_ms(10);
 		/* 2) Дождаться "1" на nSTATUS */
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1\n");
 		while (board_fpga_get_NSTATUS() == 0)
 		{
-			local_delay_ms(1);
+			local_delay_ms(10);
 			if (-- w == 0)
 				goto restart;
 		}
