@@ -119,7 +119,7 @@ static const FLASHMEM struct dzone dzones [] =
 	{	24,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 	{	37, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-	{	45,	20,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+	//{	45,	20,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 	// размещены под S-метром (15 ячеек)
 	{	1, 	25,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
@@ -127,13 +127,13 @@ static const FLASHMEM struct dzone dzones [] =
 
 	{	14,	25,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
 	{	19,	25,	display2_ant5,		REDRM_MODE, PGALL, },
-	//{	26, 25,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 	{	25, 25,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 
 	{	33, 25,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-	{	37, 25,	display2_spk3,		REDRM_MODE, PGALL, },	// оьображение признака включения динамика
+	{	37, 25,	display2_spk3,		REDRM_MODE, PGALL, },	// отображение признака включения динамика
 	{	41, 25, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
-	{	45,	25,	display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
+	//{	45,	25,	display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
+	{	45,	25,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 	//{	24, 30,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 	{	37, 30,	display2_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора

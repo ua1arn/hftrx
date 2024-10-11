@@ -128,7 +128,7 @@
 		//{	23, 25,
 		//{	27, 25,
 		{	33, 25,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	37, 25,	display2_spk3,		REDRM_MODE, PGALL, },	// оьображение признака включения динамика
+		{	37, 25,	display2_spk3,		REDRM_MODE, PGALL, },	// отображение признака включения динамика
 		{	41, 25, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
 		{	45,	25,	display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
 
