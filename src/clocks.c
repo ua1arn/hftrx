@@ -2791,12 +2791,20 @@ static void set_t507_pll_cpux(unsigned N, unsigned Ppow)
 // Set Spread Frequency Mode
 void allwnr_t507_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0)
 {
-	* pat0 = 0x00;
-	* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
-	* pat0 |= 1 * (UINT32_C(1) << 29); // SPR_FREQ_MODE
-	* pat0 |= 1 * (UINT32_C(1) << 20); // WAVE_STEP
+	if (1)
+	{
+		* pat0 = 0x00;
+		* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
+		* pat0 |= 1 * (UINT32_C(1) << 29); // SPR_FREQ_MODE
+		* pat0 |= 1 * (UINT32_C(1) << 20); // WAVE_STEP
+		* ctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+	}
+	else
+	{
+		* pat0 = 0x00;
+		* ctrlreg &= ~ (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+	}
 
-	* ctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
 }
 
 void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
