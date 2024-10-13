@@ -5963,6 +5963,21 @@ board_wakeup(void)
 	return r;
 }
 
+/* получить перемещение валкодера. Если есть - включить экран */
+static int_least16_t
+encoder_delta(
+	encoder_t * e,
+	const uint_fast8_t derate
+	)
+{
+	const int_least16_t delta = encoder_get_delta(e, derate);
+	if (delta)
+	{
+		board_wakeup();
+	}
+	return delta;
+}
+
 /* получаем PBT offset для текущего режима работы */
 /* TODO: сделать зависимым от текущего фильтра */
 static int_fast16_t
@@ -13010,7 +13025,7 @@ directctlupdate(
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHENCODER_1F
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+			const int_least16_t delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
 			if (delta)
 				bring_enc1f();
 			switch (enc1f_sel)
@@ -13030,7 +13045,7 @@ directctlupdate(
 	#endif /* WITHENCODER_1F */
 	#if WITHENCODER_2F
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
+			const int_least16_t delta = encoder_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
 			if (delta)
 				bring_enc2f();
 			switch (enc2f_sel)
@@ -13042,7 +13057,7 @@ directctlupdate(
 	#endif /* WITHENCODER_2F */
 	#if WITHENCODER_3F
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
+			const int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
 			if (delta)
 				bring_enc3f();
 			switch (enc3f_sel)
@@ -13054,7 +13069,7 @@ directctlupdate(
 	#endif /* WITHENCODER_3F */
 	#if WITHENCODER_4F
 		{
-			int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+			int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
 			if (delta)
 				bring_enc4f();
 			switch (enc4f_sel)
@@ -13082,6 +13097,8 @@ directctlupdate(
 		// подтверждаем, что обновление выполнено
 		display_refreshperformed_pot();
 	}
+
+	/* произошло изменение реима прием/передача */
 	if (changedtx != 0)
 	{
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
@@ -16805,7 +16822,7 @@ modifysettings(
 #if WITHENCODER_4F
 		if (kbready == 0)
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
 
 			if (delta > 0)
 			{
