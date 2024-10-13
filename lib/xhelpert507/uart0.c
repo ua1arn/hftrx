@@ -114,16 +114,6 @@ static void uart0_dpc_spool(void * ctx)
 	//TP();
 }
 
-static ticker_t uart0_ticker;
-static dpcobj_t uart0_dpc_timed;
-
-/* system-mode function */
-static void uart0_timer_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	board_dpc_call(& uart0_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
-}
 
 static int state;	// состояния разбора (соответствует номеру байта в принятом пакете).
 static int valuet;
@@ -232,8 +222,10 @@ void user_uart0_initialize(void)
 	hardware_uart0_enablerx(1);
 	hardware_uart0_enabletx(0);
 
+	static ticker_t uart0_ticker;
+	static dpcobj_t uart0_dpc_timed;
 	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
-	ticker_initialize(& uart0_ticker, NTICKS(PERIODSPOOL), uart0_timer_event, NULL);
+	ticker_initialize_user(& uart0_ticker, NTICKS(PERIODSPOOL), & uart0_dpc_timed);
 	ticker_add(& uart0_ticker);
 
 	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);

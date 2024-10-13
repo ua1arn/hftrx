@@ -817,9 +817,7 @@ static int parsepacket(const uint8_t * p, unsigned sz)
 }
 
 
-static ticker_t uart3_ticker;
 static ticker_t uart3_pkg_ticker;
-static dpcobj_t uart3_dpc_timed;
 
 static dpcobj_t uart3_dpc_entry;
 /* Функционирование USER MODE обработчиков */
@@ -914,16 +912,6 @@ static void uart3_dpc_spool(void * ctx)
 	//TP();
 }
 
-static ticker_t uart3_ticker;
-static dpcobj_t uart3_dpc_timed;
-
-/* system-mode function */
-static void uart3_timer_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	board_dpc_call(& uart3_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
-}
 
 void user_uart3_initialize(void)
 {
@@ -940,8 +928,10 @@ void user_uart3_initialize(void)
 	ticker_initialize(& uart3_pkg_ticker, 1, uart3_timer_pkg_event, NULL);
 	ticker_add(& uart3_pkg_ticker);
 
+	static ticker_t uart3_ticker;
+	static dpcobj_t uart3_dpc_timed;
 	dpcobj_initialize(& uart3_dpc_timed, uart3_dpc_spool, NULL);
-	ticker_initialize(& uart3_ticker, NTICKS(PERIODSPOOL), uart3_timer_event, NULL);
+	ticker_initialize_user(& uart3_ticker, NTICKS(PERIODSPOOL), & uart3_dpc_timed);
 	ticker_add(& uart3_ticker);
 
 	dpcobj_initialize(& uart3_dpc_entry, uart3_spool, NULL);

@@ -647,14 +647,6 @@ ua1ceituner_send(void)
 static dpcobj_t uart2_dpc_timed;
 static ticker_t uart2_ticker;
 
-/* system-mode function */
-static void uart2_timer_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	board_dpc_call(& uart2_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
-}
-
 /* Функционирование USER MODE обработчиков */
 static void uart2_dpc_spool(void * ctx)
 {
@@ -677,7 +669,7 @@ void nmeatuner_initialize(void)
 
 	dpcobj_initialize(& dpc_ua1ceituner, uart2_dpc_spool, NULL);
 	dpcobj_initialize(& uart2_dpc_timed, uart2_dpc_spool, NULL);
-	ticker_initialize(& uart2_ticker, NTICKS(1000), uart2_timer_event, NULL);
+	ticker_initialize_user(& uart2_ticker, NTICKS(1000), & uart2_dpc_timed);
 	ticker_add(& uart2_ticker);
 
 	nmeaparser_state = NMEAST_INITIALIZED;
@@ -7126,11 +7118,6 @@ static void board_rtc_cache_update(void * ctx)
 			);
 }
 
-static void board_rtc_cache_spool(void * ctx)
-{
-	board_dpc_call((dpcobj_t *) ctx, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
-}
-
 /* вызывается при разрешённых прерываниях. */
 static void board_rtc_initialize(void)
 {
@@ -7167,12 +7154,14 @@ static void board_rtc_initialize(void)
 
 	board_rtc_cache_update(NULL);
 
-	static dpcobj_t board_rtc_timed;
-	static ticker_t board_rtc_ticker;
+	{
+		static dpcobj_t dpcobj;
+		static ticker_t ticker;
 
-	dpcobj_initialize(& board_rtc_timed, board_rtc_cache_update, NULL);
-	ticker_initialize(& board_rtc_ticker, NTICKS(500), board_rtc_cache_spool, & board_rtc_timed);
-	ticker_add(& board_rtc_ticker);
+		dpcobj_initialize(& dpcobj, board_rtc_cache_update, NULL);
+		ticker_initialize_user(& ticker, NTICKS(500), & dpcobj);
+		ticker_add(& ticker);
+	}
 }
 
 #else /* defined (RTC1_TYPE) */
@@ -7502,13 +7491,6 @@ static void uart0_dpc_spool(void * ctx)
 static dpcobj_t uart0_dpc_timed;
 static ticker_t uart0_ticker;
 
-/* system-mode function */
-static void uart0_timer_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	board_dpc_call(& uart0_dpc_timed, board_dpc_coreid());	// Запрос отложенногог выполнения USER-MODE функции
-}
 
 static void ua1cei_magloop_initialize(void)
 {
@@ -7525,7 +7507,7 @@ static void ua1cei_magloop_initialize(void)
 	hardware_uart0_enabletx(0);
 
 	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
-	ticker_initialize(& uart0_ticker, NTICKS(1000), uart0_timer_event, NULL);
+	ticker_initialize_user(& uart0_ticker, NTICKS(1000), & uart0_dpc_timed);
 	ticker_add(& uart0_ticker);
 }
 

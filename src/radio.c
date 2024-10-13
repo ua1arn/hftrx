@@ -192,8 +192,6 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t bottom);
 
-static dpcobj_t dpcobj_1stimer;
-static dpcobj_t dpcobj_01_s_timer;
 static void tuner_eventrestart(void);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
@@ -5421,21 +5419,11 @@ static void auto_tune3(void)
 
 #if WITHAUTOTUNER
 
-static dpcobj_t dpcobj_tunertimer;
 static ticker_t ticker_tuner;
 
 /* user-mode function */
-static void dpc_tunertimer(void * arg)
+static void dpc_tunertimer_fn(void * arg)
 {
-}
-
-/* system-mode function */
-static void tuner_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	//VERIFY(board_dpc_call(& dpcobj_tunertimer, board_dpc_coreid()));
-	board_dpc_call(& dpcobj_tunertimer, board_dpc_coreid());
 }
 
 /* закончили установку нового состояния тюнера - запускаем новый период таймера */
@@ -15412,7 +15400,7 @@ uint_fast8_t elkey_getnextcw(void)
 
 // User-mode function.
 // Called every secound
-static void dpc_1stimer(void * arg)
+static void dpc_1s_timer_fn(void * arg)
 {
 #if WITHWAVPLAYER || WITHSENDWAV
 		if (gloopmsg > 0)
@@ -15503,7 +15491,7 @@ static void dpc_1stimer(void * arg)
 #endif
 }
 
-static void dpc_01_s_timer(void * ctx)
+static void dpc_01_s_timer_fn(void * ctx)
 {
 	bringtimers();
 }
@@ -15516,25 +15504,6 @@ int board_islfmmode(void)
 	return 0;
 #endif /* WITHLFM */
 }
-
-/* Вызывается из обработчика прерываний раз в секунду */
-static void second_1_s_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	//VERIFY(board_dpc_call(& dpcobj_1stimer, board_dpc_coreid()));
-	board_dpc_call(& dpcobj_1stimer, board_dpc_coreid());
-}
-
-/* Вызывается из обработчика прерываний десять раз в секунду */
-static void second_01_s_event(void * ctx)
-{
-	(void) ctx;	// приходит NULL
-
-	//VERIFY(board_dpc_call(& dpcobj_1stimer, board_dpc_coreid()));
-	board_dpc_call(& dpcobj_01_s_timer, board_dpc_coreid());
-}
-
 
 // TODO: перенести эти функции на выполнение по board_dpc_addentry
 void app_processing(
@@ -18581,25 +18550,39 @@ applowinitialize(void)
 #if WITHWATCHDOG
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
 #endif /* WITHWATCHDOG */
-	static ticker_t displayticker;
-	static ticker_t ticker_1S;
-	static ticker_t ticker_01_S;
 
-	ticker_initialize(& displayticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	ticker_add(& displayticker);
+	{
+		static ticker_t ticker;
 
-	dpcobj_initialize(& dpcobj_1stimer, dpc_1stimer, NULL);
-	ticker_initialize(& ticker_1S, NTICKS(1000), second_1_s_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	ticker_add(& ticker_1S);
+		ticker_initialize(& ticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& ticker);
+	}
 
-	dpcobj_initialize(& dpcobj_01_s_timer, dpc_01_s_timer, NULL);
-	ticker_initialize(& ticker_01_S, NTICKS(100), second_01_s_event, NULL);	// вызывается с частотой 10 Гц с запрещенными прерываниями.
-	ticker_add(& ticker_01_S);
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_01_s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
+		ticker_add(& ticker);
+	}
 
 #if WITHAUTOTUNER
-	dpcobj_initialize(& dpcobj_tunertimer, dpc_tunertimer, NULL);
-	ticker_initialize(& ticker_tuner, NTICKS(gtunerdelay), tuner_event, NULL);
-	ticker_add(& ticker_tuner);
+	{
+		static dpcobj_t dpcobj;
+		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
+		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
+		ticker_add(& ticker_tuner);
+	}
 #endif /* WITHAUTOTUNER */
 
 	buffers_initialize();
