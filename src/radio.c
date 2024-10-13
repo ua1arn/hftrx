@@ -13052,6 +13052,8 @@ directctlupdate(
 			{
 			default:
 				break;
+			case 0:
+				break;
 			}
 		}
 	#endif /* WITHENCODER_2F */
@@ -13064,6 +13066,8 @@ directctlupdate(
 			{
 			default:
 				break;
+			case 0:
+				break;
 			}
 		}
 	#endif /* WITHENCODER_3F */
@@ -13075,6 +13079,8 @@ directctlupdate(
 			switch (enc4f_sel)
 			{
 			default:
+				break;
+			case 0:
 				while (delta < 0)
 				{
 					uif_key_click_banddown();
@@ -13098,7 +13104,7 @@ directctlupdate(
 		display_refreshperformed_pot();
 	}
 
-	/* произошло изменение реима прием/передача */
+	/* произошло изменение режима прием/передача */
 	if (changedtx != 0)
 	{
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
