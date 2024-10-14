@@ -10200,11 +10200,18 @@ static void speex_update_rx(void)
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
-		ASSERT(st != NULL);
+		if (st != NULL)
+		{
+			ASSERT(st != NULL);
 
-		//PRINTF("speex_update_rx: amode=%d, pathi=%d, denoise=%d, supress=%d\n", (int) amode, (int) pathi, (int) denoise, (int) supress);
-		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
-		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
+			//PRINTF("speex_update_rx: amode=%d, pathi=%d, denoise=%d, supress=%d\n", (int) amode, (int) pathi, (int) denoise, (int) supress);
+			speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
+			speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
+		}
+		else
+		{
+			PRINTF("speex_update_rx: nrp->st_handle==NULL\n");
+		}
 
 #endif /* WITHNOSPEEX */
 	}
