@@ -201,8 +201,8 @@ int sys_dram_init(void)
 void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
-	PRINTF("default: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
-	PRINTF("default: allwnr_t113_get_dram_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dram_freq());
+	PRINTF("default: allwnr_t113_get_pll_ddr_freq()=%ukHz\n", (unsigned) (allwnr_t113_get_pll_ddr_freq() / 1000));
+	PRINTF("default: allwnr_t113_get_dram_freq()=%ukHz\n", (unsigned) (allwnr_t113_get_dram_freq() / 1000));
 	if (sys_dram_init() == 0)
 	{
 		PRINTF("No external memory");
@@ -219,8 +219,8 @@ void arm_hardware_sdram_initialize(void)
 		for (;;)
 			;
 	}
-	PRINTF("settings: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());
-	PRINTF("settings: allwnr_t113_get_dram_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dram_freq());
+	PRINTF("settings: allwnr_t113_get_pll_ddr_freq()=%ukHz\n", (unsigned) (allwnr_t113_get_pll_ddr_freq() / 1000));
+	PRINTF("settings: allwnr_t113_get_dram_freq()=%ukHz\n", (unsigned) (allwnr_t113_get_dram_freq() / 1000));
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
 	//local_delay_ms(1000);
