@@ -6431,7 +6431,7 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 static void audiocodechw_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 #if WITHUSBHEADSET
-	gain = BOARD_AFGAIN_MAX;
+	gainL = gainR = BOARD_AFGAIN_MAX;
 #endif /* WITHUSBHEADSET */
 	PRINTF("audiocodechw_setvolume: gain=%u, mute=%u, mutespk=%u\n", (unsigned) gain, (unsigned) mute, (unsigned) mutespk);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
