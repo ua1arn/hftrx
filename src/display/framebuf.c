@@ -3570,7 +3570,7 @@ static uint_fast8_t scalecolor(
 	uint_fast8_t rmaxv	// resulting maximal color component value
 	)
 {
-	return (cv * rmaxv) / maxv;
+	return (uint_fast16_t) cv * rmaxv / maxv;
 }
 
 /* модифицировать цвет в RGB24 */
