@@ -50,193 +50,7 @@ enum gradient_style
 
 COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
-
-#if LCDMODE_UC1601
-
-	#include "uc1601s.h"
-
-#endif /* LCDMODE_UC1601 */
-
-#if LCDMODE_RDX0120 || LCDMODE_G1203H
-	// Маленькие дисплеи с 32 точками по вертикали
-	#include "pcf8535.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-	#define DEFAULT_LCD_CONTRAST	100
-
-#elif LCDMODE_RDX0077
-
-	#define HALFCOUNT_BIG 2		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-	#define DEFAULT_LCD_CONTRAST	100 	//  на SW2011RDX питание 8 вольт
-
-#elif LCDMODE_RDX0154 || LCDMODE_RDT065
-
-	#define HALFCOUNT_BIG 2		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-	#define DEFAULT_LCD_CONTRAST	100 	//  на SW2011RDX питание 8 вольт
-
-#elif LCDMODE_UC1608
-	// 240*128
-
-	#include "uc1608.h"
-
-	#define HALFCOUNT_BIG 5		// big and half sizes
-	#define HALFCOUNT_SMALL 2	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define DEFAULT_LCD_CONTRAST	20
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_LS020 || LCDMODE_LPH88 || LCDMODE_L2F50
-
-	#if LCDMODE_L2F50
-		#include "l2f50.h"
-	#elif LCDMODE_LS020
-		#include "ls020.h"
-	#elif LCDMODE_LPH88
-		#include "lph88.h"
-	#else
-		#error Wrong LCDMODE_xxx
-	#endif
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-	#define DEFAULT_LCD_CONTRAST	255
-
-#elif LCDMODE_S1D13781 || LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_TCG104XGLPAPNN || LCDMODE_H497TLB01P4 || LCDMODE_LQ123K3LG01
-
-	#include "s1d13781.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_WH2002 || LCDMODE_WH2004 || LCDMODE_WH2002_IGOR
-
-	#include "hd44780.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_WH1602 || LCDMODE_WH1604
-
-	#include "hd44780.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_ILI9320
-	/* Индикатор 248*320 с контроллером ILI9320 */
-
-	#include "ILI9320.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1 // 2	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-	#define DEFAULT_LCD_CONTRAST	255
-
-#elif LCDMODE_ILI9225 || LCDMODE_ST7781
-	/* Индикатор 178*220 с контроллером ILI9320 */
-	// 320*240 ST7781
-
-	#include "ILI9225.h"
-
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
-	/* Индикатор 160*128 с контроллером Sitronix ST7735 */
-	/* Индикатор 176*132 с контроллером ILITEK ILI9163 */
-	/* Индикатор 320*240 с контроллером ILITEK ILI9341 */
-
-	#include "st7735.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_ILI8961
-	/* Индикатор 320*240 с контроллером ILITEK ILI8961 */
-
-	#include "ili8961.h"
-
-	#define HALFCOUNT_BIG 1		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_ST7565S || LCDMODE_PTE1206
-	/* Индикатор WO12864C2-TFH# 128*64 с контроллером Sitronix ST7565S */
-
-	#include "st7565s.h"
-
-
-	#define HALFCOUNT_BIG 2		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-	#define HALFCOUNT_BAR 1		// small size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_PCF8535 || LCDMODE_PCF8531
-
-	#include "pcf8535.h"
-
-	#define DEFAULT_LCD_CONTRAST	55 // 100
-
-	#define HALFCOUNT_BIG 2		// big and half sizes
-	#define HALFCOUNT_SMALL 1	// small size
-	#define HALFCOUNT_SMALL2 1	// small2 size
-
-	#define HALFCOUNT_FREQA HALFCOUNT_BIG
-
-#elif LCDMODE_DUMMY
+#if LCDMODE_DUMMY
 	/* При использовании frame buffer цвета восьмибитные */
 	typedef uint_fast8_t COLORPIP_T;
 	typedef uint8_t PACKEDCOLORPIP_T;
@@ -246,8 +60,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 	#define TFTRGB(red, green, blue) 0
 	#define TFTALPHA(alpha, color) 0	/* No alpha channel supported in this mode */
 
-#else
-	#error Undefined display type
 #endif
 
 
@@ -335,8 +147,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
 
-	#else /* LCDMODE_MAIN_L8 */
-		//#define LCDMODE_RGB565 1
+	#elif LCDMODE_MAIN_RGB565
+
 		typedef uint_fast16_t COLORPIP_T;
 		typedef uint16_t PACKEDCOLORPIP_T;
 

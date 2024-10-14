@@ -1358,16 +1358,6 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_H497TLB01P4 */
 
-#if LCDMODE_ILI9341
-	#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	#define LCDMODE_SPI_RA	1	/* SPI only, with Reset, with Address */
-	#define DIM_X 320
-	#define DIM_Y 240
-	#define LCDMODE_COLORED	1
-	#define LCDMODE_RGB565 1
-	#define LCDMODE_PIXELSIZE 2
-#endif /* LCDMODE_ILI9341 */
-
 /*
  * Выбор описателя расположения элементов, отбражаемых на дисплее.
  */
