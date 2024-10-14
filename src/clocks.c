@@ -9453,7 +9453,7 @@ sysinit_pll_initialize(int forced)
 
 	#endif /* WITHISBOOTLOADER */
 
-#elif CPUSTYLE_A64 && ! WITHISBOOTLOADER_DDR
+#elif CPUSTYLE_A64
 
 	/* Off bootloader USB */
 	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 29);	// USB-OHCI0_RST.
@@ -9498,7 +9498,7 @@ sysinit_pll_initialize(int forced)
 	CCU->APB2_CFG_REG = 0x02000304;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
 	allwnr_a64_mbus_initialize();
 
-#elif CPUSTYLE_T113 && ! WITHISBOOTLOADER_DDR
+#elif CPUSTYLE_T113
 
 	/* Off bootloader USB */
 	if (1)
@@ -9549,7 +9549,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_v3s_pll_initialize();
 
 
-#elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
+#elif CPUSTYLE_T507
 
 	{
 		// Disable SD hosts

@@ -3604,7 +3604,9 @@ SystemInit(void)
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 #endif
+#if ! WITHISBOOTLOADER_DDR
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
+#endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_gpio_initialize();
 	local_delay_initialize();
 	sysinit_debug_initialize();
@@ -3613,7 +3615,9 @@ SystemInit(void)
 //	PRINTF("csr_read_mhcr=0x%lx\n", (long unsigned) csr_read_mhcr());
 //	PRINTF("csr_read_mcor=0x%lx\n", (long unsigned) csr_read_mcor());
 	sysinit_pmic_initialize();
+#if ! WITHISBOOTLOADER_DDR
 	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
+#endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
