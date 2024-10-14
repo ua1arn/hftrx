@@ -99,7 +99,7 @@
 	#endif /* WITHAFSPECTRE */
 
 		{	15,	6,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value

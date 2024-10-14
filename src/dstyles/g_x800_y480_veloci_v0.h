@@ -103,7 +103,7 @@ static const FLASHMEM struct dzone dzones [] =
 #endif /* WITHAFSPECTRE */
 
 	{	15,	6,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
-	{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+	{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
 	{	37, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
