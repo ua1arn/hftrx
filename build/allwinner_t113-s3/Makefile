@@ -291,7 +291,7 @@ ddr_init_s3:
 # Load image and exec to SystemInit address
 ddr_init_s4:
 	$(XFEL) write 0x00028000 fsbl_frz_s4.alw32
-	$(XFEL) exec 0x000286c0 
+	$(XFEL) exec 0x00029570 
 	busybox sleep 0.5s
 
 app_run: $(PROJECT)_app.alw32 $(DDR_INIT)

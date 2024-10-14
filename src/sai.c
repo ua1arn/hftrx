@@ -6433,7 +6433,7 @@ static void audiocodechw_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uin
 #if WITHUSBHEADSET
 	gainL = gainR = BOARD_AFGAIN_MAX;
 #endif /* WITHUSBHEADSET */
-	PRINTF("audiocodechw_setvolume: gain=%u, mute=%u, mutespk=%u\n", (unsigned) gain, (unsigned) mute, (unsigned) mutespk);
+	PRINTF("audiocodechw_setvolume: gain=%u/%u, mute=%u, mutespk=%u\n", (unsigned) gainL, (unsigned) gainR, (unsigned) mute, (unsigned) mutespk);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	uint_fast8_t levelL = (gainL - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	uint_fast8_t levelR = (gainR - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;

@@ -155,10 +155,7 @@ unsigned long hardware_get_apb2_tim_freq(void);
 void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
 void allwnr_t113_module_pll_enable(volatile uint32_t * ctrlreg);
 
-void allwnr_t113_pll_initialize(void);
-void set_pll_cpux_axi(unsigned n);
-void set_pll_riscv_axi(unsigned n);
-
+void allwnr_t113_pll_initialize(int forced);
 
 uint_fast32_t allwnr_t113_get_hosc_freq(void);
 uint_fast32_t allwnr_t113_get_uart_freq(void);

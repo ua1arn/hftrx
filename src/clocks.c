@@ -3789,55 +3789,36 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-static void set_pll_cpu(unsigned n)
+static void t113_set_pll_cpu(unsigned n)
 {
 	uint32_t val;
-
-	/* Disable pll gating */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ (UINT32_C(1) << 27);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Enable pll ldo */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (UINT32_C(1) << 30);
-	CCU->PLL_CPU_CTRL_REG = val;
+	CCU->PLL_CPU_CTRL_REG = 0x4A001000;
+	(void) CCU->PLL_CPU_CTRL_REG;
+	local_delay_ms(10);
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ ((0x3u << 16) | (0xffu << 8) | (0x3u << 0));
+	val &= ~ (UINT32_C(0xFF) << 8);
 	val |= ((n - 1) << 8);
 	CCU->PLL_CPU_CTRL_REG = val;
+	(void) CCU->PLL_CPU_CTRL_REG;
+//
+//	CCU->PLL_CPU_CTRL_REG &= ~ (UINT32_C(1) << 29);	// PLL Lock Enable
+//	(void) CCU->PLL_CPU_CTRL_REG;
 
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~ (UINT32_C(1) << 29);	// PLL Lock Enable
-	CCU->PLL_CPU_CTRL_REG = val;
 	/* Lock enable */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (UINT32_C(1) << 29);
-	CCU->PLL_CPU_CTRL_REG = val;
+	CCU->PLL_CPU_CTRL_REG |= (UINT32_C(1) << 29);
+	(void) CCU->PLL_CPU_CTRL_REG;
 
 	/* Enable pll */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (UINT32_C(1) << 31);
-	CCU->PLL_CPU_CTRL_REG = val;
+	CCU->PLL_CPU_CTRL_REG |= (UINT32_C(1) << 31);
+	(void) CCU->PLL_CPU_CTRL_REG;
 
-	//TP();
 	/* Wait pll stable */
+	//local_delay_ms(100);
 	while((CCU->PLL_CPU_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 		;
-	//TP();
 
-	/* Enable pll gating */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (UINT32_C(1) << 27);
-	CCU->PLL_CPU_CTRL_REG = val;
-
-	/* Lock disable */
-//	val = CCU->PLL_CPU_CTRL_REG;
-//	val &= ~ (UINT32_C(1) << 29);
-//	CCU->PLL_CPU_CTRL_REG = val;
-//	//local_delay_ms(1);
 }
 //#if CPUSTYLE_F133
 
@@ -3872,56 +3853,10 @@ static void t113_set_axi(unsigned sel, unsigned divider2, unsigned divider1)
 	(void) CCU->CPU_AXI_CFG_REG;
 }
 
-static void set_pll_periph0(void)
+// T113
+static void t113_set_psi_ahb(void)
 {
-	uint32_t val;
-
-	/* Periph0 has been enabled */
-	if (CCU->PLL_PERI_CTRL_REG & (UINT32_C(1) << 31))
-	{
-		//sys_uart_puts("PLL_PERI_REG = ");
-		//sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_PLL_PERI_CTRL_REG));
-		//sys_uart_puts("\n");
-		return;
-	}
-
-	/* Change psi src to osc24m */
-	val = CCU->PSI_CLK_REG;
-	val &= (~(0x3 << 24));
-	CCU->PSI_CLK_REG = val;
-
-	/* Set default val */
-	CCU->PLL_PERI_CTRL_REG = 0x63 << 8;
-
-	/* Lock enable */
-	val = CCU->PLL_PERI_CTRL_REG;
-	val |= (1 << 29);
-	CCU->PLL_PERI_CTRL_REG = val;
-
-	/* Enabe pll 600m(1x) 1200m(2x) */
-	val = CCU->PLL_PERI_CTRL_REG;
-	val |= (UINT32_C(1) << 31);
-	CCU->PLL_PERI_CTRL_REG = val;
-
-	/* Wait pll stable */
-	while(!(CCU->PLL_PERI_CTRL_REG & (0x1 << 28)))
-		;
-	local_delay_ms(20);
-
-	/* Lock disable */
-	val = CCU->PLL_PERI_CTRL_REG;
-	val &= ~(1 << 29);
-	CCU->PLL_PERI_CTRL_REG = val;
-
-	//sys_uart_puts("set_pll_periph0 Ok\n");
-	//sys_uart_puts("PLL_PERI_REG = ");
-	//sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_PLL_PERI_CTRL_REG));
-	//sys_uart_puts("\n");
-}
-
-static void set_ahb(void)
-{
-#if 1
+#if 0
 	// 300 MHz
 	CCU->PSI_CLK_REG =
 		(0x03 << 24) |
@@ -3929,7 +3864,7 @@ static void set_ahb(void)
 		((1 - 1) << 0) |	// M (1..4)
 		0;
 	(void) CCU->PSI_CLK_REG;
-#else
+#elif 1
 	// 200 MHz
 	CCU->PSI_CLK_REG =
 		(0x03 << 24) |
@@ -3937,41 +3872,36 @@ static void set_ahb(void)
 		((3 - 1) << 0) |	// M (1..4)
 		0;
 	(void) CCU->PSI_CLK_REG;
+#else
+	// 100 MHz
+	CCU->PSI_CLK_REG =
+		(0x03 << 24) |
+		(1 << 8) |			// N = 1
+		((3 - 1) << 0) |	// M (1..4)
+		0;
+	(void) CCU->PSI_CLK_REG;
 #endif
 }
 
-static void set_apb(void)
+// T113
+// APB1 frequency set
+static void t113_set_apb1(void)
 {
-	CCU->APB0_CLK_REG = (2 << 0) | (1 << 8);
-	CCU->APB0_CLK_REG |= (0x03 << 24);
-	(void) CCU->APB0_CLK_REG;
-
-	// UARTx
-	CCU->APB1_CLK_REG = (2 << 0) | (1 << 8);
-	CCU->APB1_CLK_REG |= (0x03 << 24);	/* 11: PLL_PERI(1X) */
-	//CCU->APB1_CLK_REG |= (0x02 << 24);	/* 10: PSI_CLK */
-	(void) CCU->APB1_CLK_REG;
-
-/*
-	sys_uart_puts("APB0_CLK_REG = ");
-	sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_APB0_CLK_REG));
-	sys_uart_puts("\n");
-
-	sys_uart_puts("APB1_CLK_REG = ");
-	sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_APB1_CLK_REG));
-	sys_uart_puts("\n");*/
-}
-
-static void set_dma(void)
-{
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
-
-	CCU->DMA_BGR_REG &= ~ (UINT32_C(1) << 16);
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);
+	// Automatic divisors calculation
+	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
+	uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+	unsigned dvalue;
+	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 1 | 2), & dvalue, 1);
+	CCU->APB1_CLK_REG =
+		(UINT32_C(1) << 31) |
+		clksrc * (UINT32_C(1) << 24) |
+		prei * (UINT32_C(1) << 8) |
+		dvalue * (UINT32_C(1) << 0) |
+		0;
 }
 
 // T113
-static void set_mbus(void)
+static void t113_set_mbus(void)
 {
 	/* Reset mbus domain */
 //	CCU->MBUS_CLK_REG &= ~ (UINT32_C(1) << 30);				// MBUS Reset 1: Assert reset
@@ -3999,7 +3929,6 @@ void allwnr_t113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_
 
 void allwnr_t113_module_pll_enable(volatile uint32_t * pllctrlreg)
 {
-
 	* pllctrlreg &= ~ (UINT32_C(1) << 31);
 	{
 		// Set PLL freq
@@ -4070,7 +3999,7 @@ uint_fast64_t allwnr_t113_get_pll_ddr_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
 	const uint_fast32_t M1 = UINT32_C(1) + ((reg >> 1) & 0x01);	// PLL input divider
 	const uint_fast32_t M0 = UINT32_C(1) + ((reg >> 0) & 0x01);	// PLL outpur divider
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M1 / M0;
+	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / (M1 * M0);
 }
 
 // T113-s3
@@ -4936,69 +4865,37 @@ uint_fast32_t allwnr_t113_get_dsp_freq(void)
 	}
 }
 
-void set_pll_cpux_axi(unsigned N)
-{
-	t113_set_axi(0x00, 1, 1);
-	set_pll_cpu(N);	// see sdram.c
-	t113_set_axi(0x03, 4, 2);
-}
-
-void set_pll_riscv_axi(unsigned N)
-{
-	set_riscv_axi(0x00);	// OSC24
-	set_pll_cpu(N);	// see sdram.c
-	set_riscv_axi(0x05);	// 101: PLL_CPU
-}
-
-void allwnr_t113_pll_initialize(void)
+void allwnr_t113_pll_initialize(int forced)
 {
 #if CPUSTYLE_T113
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
 #elif CPUSTYLE_F133
 	set_riscv_axi(0x00);	// OSC24
 #endif
+	local_delay_initialize();
 
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 
-//	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-//	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-//	allwnr_t113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
-
 	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
 	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
-	set_ahb();
-	set_mbus();
-	set_dma();
-
-	// APB1 frequency set
-	{
-		// Automatic divisors calculation
-		unsigned clksrc = 3;	// 11: PLL_PERI(1X)
-		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
-		unsigned dvalue;
-		unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 1 | 2), & dvalue, 1);
-		CCU->APB1_CLK_REG =
-			(UINT32_C(1) << 31) |
-			clksrc * (UINT32_C(1) << 24) |
-			prei * (UINT32_C(1) << 8) |
-			dvalue * (UINT32_C(1) << 0) |
-			0;
-	}
-
-	set_pll_cpu(PLL_CPU_N);	// see sdram.c
+	t113_set_pll_cpu(forced ? PLL_CPU_N : 17);	// see sdram.c
 
 #if CPUSTYLE_T113
 	t113_set_axi(0x03, 4, 2);
 #elif CPUSTYLE_F133
 	set_riscv_axi(0x05);	// 101: PLL_CPU
 #endif
+	local_delay_initialize();
 
+	t113_set_mbus();
+	t113_set_psi_ahb();
+	t113_set_apb1();
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
@@ -9510,7 +9407,7 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
-	allwnr_t113_pll_initialize();
+	allwnr_t113_pll_initialize(forced);
 
 #elif CPUSTYLE_F133
 
@@ -9526,7 +9423,7 @@ sysinit_pll_initialize(int forced)
 	}
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
-	allwnr_t113_pll_initialize();
+	allwnr_t113_pll_initialize(forced);
 //
 	set_pll_riscv_axi(RV_PLL_CPU_N);
 
