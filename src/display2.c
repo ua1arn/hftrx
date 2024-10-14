@@ -17,6 +17,65 @@
 
 #include "dspdefines.h"
 
+
+struct dzone
+{
+	uint8_t x; // левый верхний угол
+	uint8_t y;
+	void (* redraw)(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);	// функция отображения элемента
+	uint16_t key;		// при каких обновлениях перерисовывается этот элемент
+	uint16_t subset;	// битовая маска страниц
+};
+
+/* struct dzone subset field values */
+
+#define PAGELATCH 12
+#define PAGEINIT 13
+#define PAGESLEEP 14
+#define PAGEMENU 15
+
+#define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
+
+#define REDRSUBSET_ALL ( \
+		REDRSUBSET(0) | \
+		REDRSUBSET(1) | \
+		REDRSUBSET(2) | \
+		REDRSUBSET(3) | \
+		0)
+
+#define REDRSUBSET_MENU		REDRSUBSET(PAGEMENU)
+#define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
+#define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
+
+#if LINUX_SUBSYSTEM
+	enum
+	{
+		REDRM_ALL,
+		REDRM_FREQ = REDRM_ALL,
+		REDRM_KEYB = REDRM_ALL,
+		REDRM_MODE = REDRM_ALL,
+		REDRM_INIS,
+		REDRM_count
+	};
+#else
+	enum
+	{
+		REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
+		REDRM_FREQ,		// индикаторы частоты
+		REDRM_FRQB,	// индикаторы частоты
+		REDRM_BARS,		// S-meter, SWR-meter, voltmeter
+		REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
+
+		REDRM_MFXX,		// код редактируемого параметра
+		REDRM_MLBL,		// название редактируемого параметра
+		REDRM_MVAL,		// значение параметра меню
+		REDRM_BUTTONS,  // область отображения экранных кнопок
+		REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
+		REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
+		REDRM_count
+	};
+#endif /* LINUX_SUBSYSTEM */
+
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
 #endif /* WITHALTERNATIVEFONTS */
@@ -3174,63 +3233,6 @@ static void display2_dummy(
 {
 
 }
-
-struct dzone
-{
-	uint8_t x; // левый верхний угол
-	uint8_t y;
-	void (* redraw)(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);	// функция отображения элемента
-	uint8_t key;		// при каких обновлениях перерисовывается этот элемент
-	uint8_t subset;
-};
-
-/* struct dzone subset field values */
-
-#define PAGEINIT 6
-#define PAGESLEEP 7
-
-#define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
-
-#define REDRSUBSET_ALL ( \
-		REDRSUBSET(0) | \
-		REDRSUBSET(1) | \
-		REDRSUBSET(2) | \
-		REDRSUBSET(3) | \
-		0)
-
-#define REDRSUBSET_MENU		REDRSUBSET(4)
-#define REDRSUBSET_MENU2	REDRSUBSET(5)
-#define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
-#define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
-
-#if LINUX_SUBSYSTEM
-	enum
-	{
-		REDRM_ALL,
-		REDRM_FREQ = REDRM_ALL,
-		REDRM_KEYB = REDRM_ALL,
-		REDRM_MODE = REDRM_ALL,
-		REDRM_INIS,
-		REDRM_count
-	};
-#else
-	enum
-	{
-		REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
-		REDRM_FREQ,		// индикаторы частоты
-		REDRM_FRQB,	// индикаторы частоты
-		REDRM_BARS,		// S-meter, SWR-meter, voltmeter
-		REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
-
-		REDRM_MFXX,		// код редактируемого параметра
-		REDRM_MLBL,		// название редактируемого параметра
-		REDRM_MVAL,		// значение параметра меню
-		REDRM_BUTTONS,  // область отображения экранных кнопок
-		REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
-		REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
-		REDRM_count
-	};
-#endif /* LINUX_SUBSYSTEM */
 
 void
 //NOINLINEAT
