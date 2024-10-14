@@ -7419,11 +7419,11 @@ restart:
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(10);
 		/* 1) Выставить "1" на nCONFIG */
-		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+		PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
 		local_delay_ms(10);
 		/* x) Дождаться "0" на nSTATUS */
-		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
+		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 		while (board_fpga_get_NSTATUS() != 0)
 		{
 			local_delay_ms(10);
@@ -7434,7 +7434,7 @@ restart:
 			}
 		}
 
-		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
+		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
 			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1\n");
@@ -7443,14 +7443,14 @@ restart:
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(10);
 		/* 2) Дождаться "1" на nSTATUS */
-		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1\n");
+		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1\n");
 		while (board_fpga_get_NSTATUS() == 0)
 		{
 			local_delay_ms(10);
 			if (-- w == 0)
 				goto restart;
 		}
-		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done\n");
+		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
 			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1\n");
@@ -7463,17 +7463,18 @@ restart:
 			prog_spi_io(targetnone, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE, rbfbase, rbflength, NULL, 0, NULL, 0);
 			//size_t n = rbflength - 1;
 
-			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
+			PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
 			unsigned wcd = 0;
-			while (wcd < 10000 && board_fpga_get_CONF_DONE() == 0)
+			while (wcd < 100 && board_fpga_get_CONF_DONE() == 0)
 			{
 				static const uint8_t fill [16];
 				++ wcd;
 				prog_spi_io(targetnone, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE, fill, ARRAY_SIZE(fill), NULL, 0, NULL, 0);
+				local_delay_ms(10);
 			}
 
-			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
+			PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
 			if (board_fpga_get_CONF_DONE() == 0)
 				goto restart;
 			/*
@@ -7483,7 +7484,7 @@ restart:
 			*/
 		}
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
-	//PRINTF("fpga: board_fpga_loader_PS done\n");
+	PRINTF("fpga: board_fpga_loader_PS done\n");
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
 	{
