@@ -10200,18 +10200,11 @@ static void speex_update_rx(void)
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
-		if (st != NULL)
-		{
-			ASSERT(st != NULL);
+		ASSERT(st != NULL);
 
-			//PRINTF("speex_update_rx: amode=%d, pathi=%d, denoise=%d, supress=%d\n", (int) amode, (int) pathi, (int) denoise, (int) supress);
-			speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
-			speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
-		}
-		else
-		{
-			PRINTF("speex_update_rx: nrp->st_handle==NULL\n");
-		}
+		//PRINTF("speex_update_rx: amode=%d, pathi=%d, denoise=%d, supress=%d\n", (int) amode, (int) pathi, (int) denoise, (int) supress);
+		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
+		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
 
 #endif /* WITHNOSPEEX */
 	}
@@ -18473,40 +18466,6 @@ applowinitialize(void)
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
 #endif /* WITHWATCHDOG */
 
-	{
-		static ticker_t ticker;
-
-		ticker_initialize(& ticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-		ticker_add(& ticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_01_s_timer_fn, NULL);
-		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-#if WITHAUTOTUNER
-	{
-		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
-		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
-		ticker_add(& ticker_tuner);
-	}
-#endif /* WITHAUTOTUNER */
-
 	buffers_initialize();
 
 	edgepins_initialize();
@@ -18825,114 +18784,6 @@ void initialize2(void)
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2: finished.\n"));
 #endif
-}
-
-/* вызывается при разрешённых прерываниях. */
-void
-application_initialize(void)
-{
-	/* NVRAM уже можно пользоваться */
-#if WITHMENU && ! HARDWARE_IGNORENONVRAM
-	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */
-#endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
-	//extmenu = extmenu || alignmode;
-	loadsavedstate();	// split, lock, s-meter display, see also loadsettings().
-	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
-	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
-
-	synthcalc_init();
-	bandf_calc_initialize();
-	bandf2_calc_initialize();
-	bandf3_calc_initialize();
-#if CTLSTYLE_SW2011ALL
-	board_set_bandfonhpf(bandf_calc(nyquistadj(14000000L)));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
-	board_set_bandfonuhf(bandf_calc(nyquistadj(85000000L)));
-#endif /* CTLSTYLE_SW2011ALL */
-#if XVTR_R820T2
-	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
-#endif /* XVTR_R820T2 */
-	board_init_chips();	// программирование всех микросхем синтезатора.
-
-#if WITHUSESDCARD
-	sdcardhw_initialize();
-#endif /* WITHUSESDCARD */
-#if WITHCAT
-	cat_initialize();
-#endif /* WITHCAT */
-#if WITHUSERAMDISK
-	{
-		ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
-		FRESULT rc;
-		PRINTF(PSTR("ramdisk: start formatting\n"));
-		rc = f_mkfs("0:", NULL, work, sizeof (work));
-		if (rc != FR_OK)
-		{
-			PRINTF(PSTR("ramdisk: f_mkfs failure\n"));
-		}
-		else
-		{
-			PRINTF(PSTR("ramdisk: f_mkfs okay\n"));
-		}
-	}
-#endif
-#if WITHUSEAUDIOREC
-	sdcardinitialize();			// перевод state machine в начальное состояние
-#endif /* WITHUSEAUDIOREC */
-
-#if WITHMODEM
-	modem_initialze();
-#endif /* WITHMODEM */
-
-#if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
-	dsp_initialize();		// цифровая обработка подготавливается
-	InitNoiseReduction();
-#if WITHRTTY
-	RTTYDecoder_Init();
-#endif /* WITHRTTY */
-#if WITHFT8
-	ft8_initialize();
-#endif /* WITHFT8 */
-#endif /* WITHINTEGRATEDDSP */
-
-#if WITHUSBHW
-	if (bootloader_withusb())
-		board_usb_activate();		// USB device and host start
-#endif /* WITHUSBHW */
-
-	// TODO: у аудио кодека и IF кодека могут быть раные требования
-#if defined(CODEC1_TYPE)
-	/* требуется ли подача тактирования для инициадизации кодека */
-	const int reqclk = board_getaudiocodecif()->clocksneed();
-#else /* defined(CODEC1_TYPE) */
-	const int reqclk = 1;
-#endif /* defined(CODEC1_TYPE) */
-
-	if (reqclk != 0)
-	{
-		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
-		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-		board_update();
-	}
-
-	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
-
-	if (reqclk == 0)
-	{
-		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
-		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-		board_update();
-	}
-
-#if WITHTOUCHGUI
-	gui_initialize();
-
-#if WITHENCODER2
-	hamradio_gui_enc2_update();
-#endif /* WITHENCODER2 */
-#endif /* WITHTOUCHGUI */
-#if WITHUSEUSBBT
-	bt_initialize();
-#endif /* WITHUSEUSBBT */
 }
 
 #if WITHAUTOTUNER
@@ -21001,3 +20852,145 @@ static void siggen_mainloop(void)
 	}
 }
 #endif
+
+/* вызывается при разрешённых прерываниях. */
+void
+application_initialize(void)
+{
+	/* NVRAM уже можно пользоваться */
+#if WITHMENU && ! HARDWARE_IGNORENONVRAM
+	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */
+#endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
+	//extmenu = extmenu || alignmode;
+	loadsavedstate();	// split, lock, s-meter display, see also loadsettings().
+	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
+	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
+
+	synthcalc_init();
+	bandf_calc_initialize();
+	bandf2_calc_initialize();
+	bandf3_calc_initialize();
+#if CTLSTYLE_SW2011ALL
+	board_set_bandfonhpf(bandf_calc(nyquistadj(14000000L)));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
+	board_set_bandfonuhf(bandf_calc(nyquistadj(85000000L)));
+#endif /* CTLSTYLE_SW2011ALL */
+#if XVTR_R820T2
+	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
+#endif /* XVTR_R820T2 */
+	board_init_chips();	// программирование всех микросхем синтезатора.
+
+#if WITHUSESDCARD
+	sdcardhw_initialize();
+#endif /* WITHUSESDCARD */
+#if WITHCAT
+	cat_initialize();
+#endif /* WITHCAT */
+#if WITHUSERAMDISK
+	{
+		ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+		FRESULT rc;
+		PRINTF(PSTR("ramdisk: start formatting\n"));
+		rc = f_mkfs("0:", NULL, work, sizeof (work));
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("ramdisk: f_mkfs failure\n"));
+		}
+		else
+		{
+			PRINTF(PSTR("ramdisk: f_mkfs okay\n"));
+		}
+	}
+#endif
+#if WITHUSEAUDIOREC
+	sdcardinitialize();			// перевод state machine в начальное состояние
+#endif /* WITHUSEAUDIOREC */
+
+#if WITHMODEM
+	modem_initialze();
+#endif /* WITHMODEM */
+
+#if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
+	dsp_initialize();		// цифровая обработка подготавливается
+	InitNoiseReduction();
+#if WITHRTTY
+	RTTYDecoder_Init();
+#endif /* WITHRTTY */
+#if WITHFT8
+	ft8_initialize();
+#endif /* WITHFT8 */
+#endif /* WITHINTEGRATEDDSP */
+
+#if WITHUSBHW
+	if (bootloader_withusb())
+		board_usb_activate();		// USB device and host start
+#endif /* WITHUSBHW */
+
+	// TODO: у аудио кодека и IF кодека могут быть раные требования
+#if defined(CODEC1_TYPE)
+	/* требуется ли подача тактирования для инициадизации кодека */
+	const int reqclk = board_getaudiocodecif()->clocksneed();
+#else /* defined(CODEC1_TYPE) */
+	const int reqclk = 1;
+#endif /* defined(CODEC1_TYPE) */
+
+	if (reqclk != 0)
+	{
+		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+		board_update();
+	}
+
+	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
+
+	if (reqclk == 0)
+	{
+		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+		board_update();
+	}
+
+#if WITHTOUCHGUI
+	gui_initialize();
+
+#if WITHENCODER2
+	hamradio_gui_enc2_update();
+#endif /* WITHENCODER2 */
+#endif /* WITHTOUCHGUI */
+#if WITHUSEUSBBT
+	bt_initialize();
+#endif /* WITHUSEUSBBT */
+
+	{
+		static ticker_t ticker;
+
+		ticker_initialize(& ticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& ticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_01_s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+#if WITHAUTOTUNER
+	{
+		static dpcobj_t dpcobj;
+		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
+		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
+		ticker_add(& ticker_tuner);
+	}
+#endif /* WITHAUTOTUNER */
+}
