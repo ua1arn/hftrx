@@ -66,7 +66,47 @@ void osal_task_delay(uint32_t msec) {
 //--------------------------------------------------------------------+
 // Host HID
 //--------------------------------------------------------------------+
+//	0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+//	0x09, 0x02,        // Usage (Mouse)
+//	0xA1, 0x01,        // Collection (Application)
+//	0x09, 0x01,        //   Usage (Pointer)
+//	0xA1, 0x00,        //   Collection (Physical)
+//	0x05, 0x09,        //     Usage Page (Button)
+//	0x19, 0x01,        //     Usage Minimum (0x01)
+//	0x29, 0x03,        //     Usage Maximum (0x03)
+//	0x15, 0x00,        //     Logical Minimum (0)
+//	0x25, 0x01,        //     Logical Maximum (1)
+//	0x95, 0x08,        //     Report Count (8)
+//	0x75, 0x01,        //     Report Size (1)
+//	0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//	0x05, 0x01,        //     Usage Page (Generic Desktop Ctrls)
+//	0x09, 0x30,        //     Usage (X)
+//	0x09, 0x31,        //     Usage (Y)
+//	0x09, 0x38,        //     Usage (Wheel)
+//	0x15, 0x81,        //     Logical Minimum (-127)
+//	0x25, 0x7F,        //     Logical Maximum (127)
+//	0x75, 0x08,        //     Report Size (8)
+//	0x95, 0x03,        //     Report Count (3)
+//	0x81, 0x06,        //     Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+//	0xC0,              //   End Collection
+//	0xC0,              // End Collection
 
+static const uint8_t demoreport [] =
+{
+	0x05, 0x01, 0x09, 0x02, 0xA1, 0x01, 0x09, 0x01, 0xA1, 0x00, 0x05, 0x09, 0x19, 0x01, 0x29, 0x03,
+	0x15, 0x00, 0x25, 0x01, 0x95, 0x08, 0x75, 0x01, 0x81, 0x02, 0x05, 0x01, 0x09, 0x30, 0x09, 0x31,
+	0x09, 0x38, 0x15, 0x81, 0x25, 0x7F, 0x75, 0x08, 0x95, 0x03, 0x81, 0x06, 0xC0, 0xC0,
+};
+
+void hidreportparser(uint8_t const* desc_report, uint16_t desc_len)
+{
+	printhex(0, desc_report, desc_len);
+}
+
+void hidparsertest(void)
+{
+	hidreportparser(demoreport, sizeof demoreport);
+}
 // Invoked when device with hid interface is mounted
 // Report descriptor is also available for use. tuh_hid_parse_report_descriptor()
 // can be used to parse common/simple enough descriptor.
@@ -85,7 +125,7 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
   tuh_vid_pid_get(dev_addr, &vid, &pid);
 
   PRINTF("HID report descriptor (dev_addr=%u, instance=%u):\n", dev_addr, instance);
-  printhex(0, desc_report, desc_len);
+  hidreportparser(desc_report, desc_len);
 //  char tempbuf[256];
 //  int count = sprintf(tempbuf, "[%04x:%04x][%u] HID Interface%u, Protocol = %s\r\n", vid, pid, dev_addr, instance, protocol_str[itf_protocol]);
 //

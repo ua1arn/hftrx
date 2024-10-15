@@ -26,6 +26,9 @@
 #if WITHUSEFATFS
 	#include "sdcard.h"
 #endif /* WITHUSEFATFS */
+#if WITHTINYUSB
+#include "tusb.h"
+#endif /* WITHTINYUSB */
 
 #include <math.h>
 #include <stdio.h>
@@ -10613,10 +10616,6 @@ static void lidar_parse(unsigned char c)
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
 {
-#if LINUX_SUBSYSTEM && WITHAD9363IIO && 0
-	int ad9363_iio_test (const char * uri);
-	ad9363_iio_test("usb:");
-#endif
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		display_fillrect(0, 0, DIM_X, DIM_Y, display_getbgcolor());
@@ -10624,6 +10623,16 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if LINUX_SUBSYSTEM && WITHAD9363IIO && 0
+	int ad9363_iio_test (const char * uri);
+	ad9363_iio_test("usb:");
+#endif
+#if 0 && (CFG_TUH_ENABLED && CFG_TUH_HID)
+	{
+		void hidparsertest(void);
+		hidparsertest();
+	}
+#endif
 #if 1 && WITHHDMITVHW
 	{
 		hardware_edid_test();
