@@ -84,6 +84,8 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
   uint16_t vid, pid;
   tuh_vid_pid_get(dev_addr, &vid, &pid);
 
+  PRINTF("HID report descriptor (dev_addr=%u, instance=%u):\n", dev_addr, instance);
+  printhex(0, desc_report, desc_len);
 //  char tempbuf[256];
 //  int count = sprintf(tempbuf, "[%04x:%04x][%u] HID Interface%u, Protocol = %s\r\n", vid, pid, dev_addr, instance, protocol_str[itf_protocol]);
 //

@@ -195,6 +195,9 @@ void MX_USB_HOST_Init(void)
 	board_set_usbhostvbuson(1);
 	local_delay_ms(100);
 	ohciehci_clk_init();
+#if CFG_TUH_HID
+	tuh_hid_set_default_protocol(HID_PROTOCOL_REPORT);
+#endif /* CFG_TUH_HID */
 	tuh_init(BOARD_TUH_RHPORT);
 #else /* WITHTINYUSB && CFG_TUH_ENABLED */
 	/* Init Host Library, Add Supported Class and Start the library*/
