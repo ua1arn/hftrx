@@ -168,8 +168,10 @@ static void process_kbd_report(uint8_t dev_addr, hid_keyboard_report_t const *re
 }
 
 // send mouse report to usb device CDC
-static void process_mouse_report(uint8_t dev_addr, hid_mouse_report_t const * report)
+static void process_mouse_report(uint8_t dev_addr, hid_mouse_report_t const * report, uint16_t len)
 {
+	if (len < 3)
+		return;
   //------------- button state  -------------//
   //uint8_t button_changed_mask = report->buttons ^ prev_report.buttons;
   char l = report->buttons & MOUSE_BUTTON_LEFT   ? 'L' : '-';
@@ -181,7 +183,7 @@ static void process_mouse_report(uint8_t dev_addr, hid_mouse_report_t const * re
 //
 //  tud_cdc_write(tempbuf, (uint32_t) count);
 //  tud_cdc_write_flush();
-  PRINTF("[%u] %c%c%c %d %d %d\n", dev_addr, l, m, r, report->x, report->y, report->wheel);
+  PRINTF("[%u] %c%c%c %d %d %d (%u bytes)\n", dev_addr, l, m, r, report->x, report->y, report->wheel, (unsigned) len);
 }
 
 // Invoked when received report from device via interrupt endpoint
@@ -197,7 +199,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
     break;
 
     case HID_ITF_PROTOCOL_MOUSE:
-      process_mouse_report(dev_addr, (hid_mouse_report_t const*) report );
+      process_mouse_report(dev_addr, (hid_mouse_report_t const*) report , len);
     break;
 
     default: break;
