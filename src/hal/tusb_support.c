@@ -98,9 +98,202 @@ static const uint8_t demoreport [] =
 	0x09, 0x38, 0x15, 0x81, 0x25, 0x7F, 0x75, 0x08, 0x95, 0x03, 0x81, 0x06, 0xC0, 0xC0,
 };
 
+// Taken from https://eleccelerator.com/usbdescreqparser
+
 void hidreportparser(uint8_t const* desc_report, uint16_t desc_len)
 {
-	printhex(0, desc_report, desc_len);
+//	unsigned possible_errors = 0;
+//	unsigned i;
+//	printhex(0, desc_report, desc_len);
+//	for (i = 0; i < desc_len; )
+//	{
+//		unsigned b0 = desc_report [i ++];
+//		unsigned bSize = b0 & 0x03;
+//		bSize = bSize == 3 ? 4 : bSize; // size is 4 when bSize is 3
+//		unsigned bType = (b0 >> 2) & 0x03;
+//		unsigned bTag = (b0 >> 4) & 0x0F;
+//
+//		if (bType == 0x03 && bTag == 0x0F && bSize == 2 && i + 2 < desc_len)
+//		{
+//			unsigned bDataSize = desc_report [i ++];
+//			unsigned bLongItemTag = desc_report [i ++];
+//			outTxt += pHexC(b0) + pHexC(bDataSize) + pHexC(bLongItemTag) + pIndentComment("Long Item (" + pHex(bLongItemTag) + ")", 2);
+//			for (unsigned j = 0; j < bDataSize && i < desc_len; j++) {
+//				outTxt += pHexC(desc_report [i ++]);
+//				possible_errors++; // there are no devices that use long item data right now
+//			}
+//			indent++;
+//			PRINTF("Long Item Data (" + bDataSize.toString(10) + " bytes)", 2);
+//			indent--;
+//
+//			possible_errors++; // there are no devices that use long item data right now
+//		}
+//		else
+//		{
+//			unsigned bSizeActual = 0;
+//			unsigned itemVal = 0;
+//			outTxt += pHexC(b0);
+//			for (unsigned j = 0; j < bSize; j++)
+//			{
+//				if (i + j < desc_len) {
+//					outTxt += pHexC(desc_report [i + j]);
+//					itemVal += desc_report [i + j] << (8 * j);
+//					bSizeActual++;
+//				}
+//			}
+//
+//			if (bType == 0x00)
+//			{
+//				if (bTag == 0x08)
+//				{
+//					PRINTF("Input" + pInputOutputFeature(bSize, itemVal, bTag), bSizeActual);
+//				}
+//				else if (bTag == 0x09)
+//				{
+//					PRINTF("Output" + pInputOutputFeature(bSize, itemVal, bTag), bSizeActual);
+//				}
+//				else if (bTag == 0x0B)
+//				{
+//					PRINTF("Feature" + pInputOutputFeature(bSize, itemVal, bTag), bSizeActual);
+//				}
+//				else if (bTag == 0x0A)
+//				{
+//					collection[stackPtr] = itemVal;
+//					PRINTF("Collection" + pCollection(bSize, itemVal), bSizeActual);
+//					indent++;
+//				}
+//				else if (bTag == 0x0C)
+//				{
+//					indent--;
+//					PRINTF("End Collection", bSizeActual);
+//				}
+//				else
+//				{
+//					PRINTF("Unknown (bTag: " + pHex(bTag) + ", bType: " + pHex(bType) + ")", bSizeActual);
+//					possible_errors++;
+//				}
+//			}
+//			else if (bType == 0x01)
+//			{
+//				if (bTag == 0x00)
+//				{
+//					usagePage[stackPtr] = itemVal;
+//					PRINTF("Usage Page" + pUsagePage(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x01)
+//				{
+//					PRINTF("Logical Minimum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x02)
+//				{
+//					PRINTF("Logical Maximum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x03)
+//				{
+//					PRINTF("Physical Minimum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x04)
+//				{
+//					PRINTF("Physical Maximum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x05)
+//				{
+//					PRINTF("Unit Exponent" + pUnitExp(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x06)
+//				{
+//					PRINTF("Unit" + pUnit(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x07)
+//				{
+//					PRINTF("Report Size" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x08)
+//				{
+//					PRINTF("Report ID" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x09)
+//				{
+//					PRINTF("Report Count" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x0A)
+//				{
+//					PRINTF("Push", bSizeActual);
+//					indent++;
+//					stackPtr++;
+//					usagePage[stackPtr] = usagePage[stackPtr - 1];
+//					collection[stackPtr] = collection[stackPtr - 1];
+//				}
+//				else if (bTag == 0x0B)
+//				{
+//					indent--;
+//					stackPtr--;
+//					PRINTF("Pop", bSizeActual);
+//				}
+//				else
+//				{
+//					PRINTF("Unknown (bTag: " + pHex(bTag) + ", bType: " + pHex(bType) + ")", bSizeActual);
+//					possible_errors++;
+//				}
+//			}
+//			else if (bType == 0x02)
+//			{
+//				if (bTag == 0x00)
+//				{
+//					PRINTF("Usage" + pUsage(bSize, itemVal, usagePage[stackPtr]), bSizeActual);
+//				}
+//				else if (bTag == 0x01)
+//				{
+//					PRINTF("Usage Minimum" + pUsage(bSize, itemVal, usagePage[stackPtr]), bSizeActual);
+//				}
+//				else if (bTag == 0x02)
+//				{
+//					PRINTF("Usage Maximum" + pUsage(bSize, itemVal, usagePage[stackPtr]), bSizeActual);
+//				}
+//				else if (bTag == 0x03)
+//				{
+//					PRINTF("Designator Index" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x04)
+//				{
+//					PRINTF("Designator Minimum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x05)
+//				{
+//					PRINTF("Designator Maximum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x07)
+//				{
+//					PRINTF("String Index" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x08)
+//				{
+//					PRINTF("String Minimum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x09)
+//				{
+//					PRINTF("String Maximum" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else if (bTag == 0x0A)
+//				{
+//					PRINTF("Delimiter" + pItemVal(bSize, itemVal), bSizeActual);
+//				}
+//				else
+//				{
+//					PRINTF("Unknown (bTag: " + pHex(bTag) + ", bType: " + pHex(bType) + ")", bSizeActual);
+//					possible_errors++;
+//				}
+//			}
+//			else
+//			{
+//				PRINTF("Unknown (bTag: " + pHex(bTag) + ", bType: " + pHex(bType) + ")", bSizeActual);
+//				possible_errors++;
+//			}
+//
+//			i += bSize;
+//		}
+//	}
+//
 }
 
 void hidparsertest(void)
