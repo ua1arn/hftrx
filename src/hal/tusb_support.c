@@ -78,7 +78,7 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
   (void)desc_len;
 
   // Interface protocol (hid_interface_protocol_enum_t)
-  const char* protocol_str[] = { "None", "Keyboard", "Mouse" };
+  static const char* const protocol_str[] = { "None", "Keyboard", "Mouse" };
   uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
 
   uint16_t vid, pid;
