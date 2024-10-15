@@ -4168,6 +4168,30 @@ static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
 	restart_self_aarch64();
 }
 
+#elif CPUSTYLE_H3
+// H3: CPUCFG_BASE @ 0x01F01C00
+
+/*
+ *
+ * Read 0x01F01C00+0x1A4 register Get soft_entry_address
+ */
+
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << (0);
+
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	CPUCFG->CPU [targetcore].CPU_RST_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
+
+	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	CPUCFG->CPU [targetcore].CPU_RST_CTRL_REG  |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
+}
+
 #elif CPUSTYLE_H616
 // AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
 // H616 version
