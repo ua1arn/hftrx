@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// banana-pi board - Allwinner A64-H
+// board - Orange Pi PC
 
 #ifndef ARM_H3_ORANGE_PI_PC_H_INCLUDED
 #define ARM_H3_ORANGE_PI_PC_H_INCLUDED 1
