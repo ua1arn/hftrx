@@ -136,7 +136,7 @@
 		//#define WITHCODEC1_I2S0_DUPLEX_MASTER	1		/* Используемые каналы AHUB_APBIFм через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аИспользуемые каналы AHUB_APBIF
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-		#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
@@ -153,7 +153,7 @@
 		//#define WITHGPUHW	1	/* Graphic processor unit */
 		//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 	#endif
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	//#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -646,11 +646,11 @@
 // WITHUART0HW
 // tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
 #define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = (1u << 8); /* PB8 UART0-TX */ \
-		const portholder_t RXMASK = (1u << 9); /* PB9 UART0-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF4); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF4); \
-		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
+		const portholder_t TXMASK = (1u << 4); /* PA4 UART0-TX */ \
+		const portholder_t RXMASK = (1u << 5); /* PA5 UART0-RX - pull-up RX data */  \
+		arm_hardware_pioa_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioa_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioa_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 
@@ -726,7 +726,7 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	////#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	// PH0 - TWI0-SCK

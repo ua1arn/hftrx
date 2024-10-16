@@ -37,6 +37,8 @@ typedef enum IRQn
     UART3_IRQn = 35,                                  /*!< UART  */
     PA_EINT_IRQn = 43,                                /*!< GPIOINT PA_EINT interrupt  */
     PG_EINT_IRQn = 49,                                /*!< GPIOINT PG_EINT interrupt */
+    TIMER0_IRQn = 50,                                 /*!< TIMER  */
+    TIMER1_IRQn = 51,                                 /*!< TIMER  */
     R_UART_IRQn = 70,                                 /*!< UART  */
     R_PL_EINT_IRQn = 77,                              /*!< GPIOINT R_PL_EINT interrupt */
     USB20_OTG_DEVICE_IRQn = 103,                      /*!< USBOTG USB OTG Dual-Role Device controller */
@@ -93,6 +95,7 @@ typedef enum IRQn
 #define GPIOG_BASE ((uintptr_t) 0x01C208D8)           /*!< GPIO  Base */
 #define GPIOINTA_BASE ((uintptr_t) 0x01C20A00)        /*!< GPIOINT  Base */
 #define GPIOINTG_BASE ((uintptr_t) 0x01C20A20)        /*!< GPIOINT  Base */
+#define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER  Base */
 #define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
@@ -312,6 +315,35 @@ typedef __PACKED_STRUCT SYSCTRL_Type
     __IO uint32_t EMAC_EPHY_CLK_REG;                  /*!< Offset 0x030 EMAC-EPHY Clock Register */
 } SYSCTRL_TypeDef; /* size of structure = 0x034 */
 /*
+ * @brief TIMER
+ */
+/*!< TIMER  */
+typedef __PACKED_STRUCT TIMER_Type
+{
+    __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
+    __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
+         uint32_t reserved_0x008 [0x0002];
+    __PACKED_STRUCT
+    {
+        __IO uint32_t CTRL_REG;                       /*!< Offset 0x010 Timer n Control Register */
+        __IO uint32_t INTV_VALUE_REG;                 /*!< Offset 0x014 Timer n Interval Value Register */
+        __IO uint32_t CUR_VALUE_REG;                  /*!< Offset 0x018 Timer n Current Value Register */
+             uint32_t reserved_0x00C;
+    } TMR [0x002];                                    /*!< Offset 0x010 Timer */
+         uint32_t reserved_0x030 [0x0014];
+    __IO uint32_t AVS_CNT_CTL_REG;                    /*!< Offset 0x080 AVS Control Register */
+    __IO uint32_t AVS_CNT0_REG;                       /*!< Offset 0x084 AVS Counter 0 Register */
+    __IO uint32_t AVS_CNT1_REG;                       /*!< Offset 0x088 AVS Counter 1 Register */
+         uint32_t reserved_0x08C [0x0005];
+    __IO uint32_t WDOG_IRQ_EN_REG;                    /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
+    __IO uint32_t WDOG_IRQ_STA_REG;                   /*!< Offset 0x0A4 Watchdog Status Register */
+         uint32_t reserved_0x0A8 [0x0002];
+    __IO uint32_t WDOG_CTRL_REG;                      /*!< Offset 0x0B0 Watchdog Control Register */
+    __IO uint32_t WDOG_CFG_REG;                       /*!< Offset 0x0B4 Watchdog Configuration Register */
+    __IO uint32_t WDOG_MODE_REG;                      /*!< Offset 0x0B8 Watchdog Mode Register */
+         uint32_t reserved_0x0BC [0x00D1];
+} TIMER_TypeDef; /* size of structure = 0x400 */
+/*
  * @brief UART
  */
 /*!< UART  */
@@ -469,6 +501,7 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
 #define GPIOINTA ((GPIOINT_TypeDef *) GPIOINTA_BASE)  /*!< GPIOINTA  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
+#define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
