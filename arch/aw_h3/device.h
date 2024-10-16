@@ -240,11 +240,11 @@ typedef __PACKED_STRUCT CPUCFG_Type
          uint32_t reserved_0x004 [0x000F];
     __PACKED_STRUCT
     {
-        __IO uint32_t CPU_RST_CTRL;                   /*!< Offset 0x040 CPU0 reset control */
+        __IO uint32_t CPU_RST_CTRL_REG;               /*!< Offset 0x040 CPU0 reset control */
         __IO uint32_t CPU_CTRL_REG;                   /*!< Offset 0x044 CPU0 control register */
         __IO uint32_t CPU_STATUS_REG;                 /*!< Offset 0x048 CPU0 status register */
+             uint32_t reserved_0x00C [0x000D];
     } CPU [0x004];                                    /*!< Offset 0x040 CPU control [0..3] */
-         uint32_t reserved_0x070 [0x0034];
     __IO uint32_t CPU_SYS_RST_REG;                    /*!< Offset 0x140 CPU System Reset Register */
     __IO uint32_t CPU_CLK_GATING_REG;                 /*!< Offset 0x144 CPU clock gating Register */
          uint32_t reserved_0x148 [0x000F];

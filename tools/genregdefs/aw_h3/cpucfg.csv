@@ -22,9 +22,10 @@
 #regdef; CPUS_RST_CTRL_REG; 0x0000; CPUS reset control register
 
 #aggreg; CPU; 0x0040 4; CPU control [0..3]
-#regdef; CPU_RST_CTRL; 0x000; CPU0 reset control
+#regdef; CPU_RST_CTRL_REG; 0x000; CPU0 reset control
 #regdef; CPU_CTRL_REG; 0x004; CPU0 control register
 #regdef; CPU_STATUS_REG; 0x008; CPU0 status register
+#regdef; padding 0; 0x040; fill space up to 0x040 bytes
 #aggregend;
 
 #regdef; CPU_SYS_RST_REG; 0x0140; CPU System Reset Register

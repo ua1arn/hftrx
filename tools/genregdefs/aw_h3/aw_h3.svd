@@ -795,8 +795,8 @@
     <addressOffset>0x00000040</addressOffset>
     <registers>
      <register>
-      <name>CPU_RST_CTRL</name>
-      <displayName>CPU_RST_CTRL</displayName>
+      <name>CPU_RST_CTRL_REG</name>
+      <displayName>CPU_RST_CTRL_REG</displayName>
       <description>CPU0 reset control</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -822,7 +822,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <register>
     <name>CPU_SYS_RST_REG</name>

@@ -4,8 +4,8 @@
 
 MEMORY
 {
-  SRAM_A1 (rwx)	: ORIGIN = 0x00020000, 				LENGTH = 32k	/*  */
-  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 128M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
+  SRAM_A1 (rwx)	: ORIGIN = 0x00000000, 				LENGTH = 64k	/*  */
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 1024M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
 }
 
 /* Library configurations */

@@ -28,7 +28,7 @@
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
-#regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#regdef; padding 0; 0x020; fill space up to 0x20 bytes
 #aggregend;
 #typeend;
 
@@ -51,5 +51,5 @@
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
-#regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#regdef; padding 0; 0x020; fill space up to 0x20 bytes
 #typeend;
