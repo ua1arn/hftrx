@@ -36,7 +36,7 @@
 
 #include "system_allwnr_h3.h"
 
-//typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
+typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
 enum DMAC_SrcReqType
 {

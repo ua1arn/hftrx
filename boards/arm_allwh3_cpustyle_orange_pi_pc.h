@@ -115,7 +115,7 @@
 #else /* WITHISBOOTLOADER */
 
 	#define BOARD_PMIC_INITIALIZE() do { \
-		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
+		/*arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); *//* PH5 VCC-5V-ON */ \
 	} while (0)
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
@@ -155,7 +155,7 @@
 	#endif
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -168,7 +168,7 @@
 
 	
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 
 	#if WITHTINYUSB
 		#define BOARD_TUH_RHPORT 1
@@ -178,11 +178,11 @@
 	#endif /* WITHTINYUSB */
 
 
-	#define WITHUSBHW_EHCI		USBEHCI1
+	//#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_EHCI_IRQ	USBEHCI1_IRQn
 	#define WITHUSBHW_EHCI_IX	1
 
-	#define WITHUSBHW_OHCI		USBOHCI1
+	//#define WITHUSBHW_OHCI		USBOHCI1
 	#define WITHUSBHW_OHCI_IRQ	USBOHCI1_IRQn
 	#define WITHUSBHW_OHCI_IX	1
 

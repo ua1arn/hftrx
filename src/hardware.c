@@ -1360,6 +1360,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_H3
+	// калибровано для 1200 МГц процессора
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_V3S
 	// калибровано для 1200 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -2601,6 +2604,28 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
 //		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
+#elif CPUSTYLE_H3
+
+	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
+	if (a < 0x01000000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
+
+	if (a >= 0xC0000000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);	// N-BROM, S-BROM
+
+	if (a >= 0x40000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
@@ -4184,12 +4209,12 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	CPUCFG->CPU [targetcore].CPU_RST_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
+	CPUCFG->CPU [targetcore].CPU_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	CPUCFG->CPU [targetcore].CPU_RST_CTRL_REG  |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
+	CPUCFG->CPU [targetcore].CPU_RST_CTRL  |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
 
 #elif CPUSTYLE_H616

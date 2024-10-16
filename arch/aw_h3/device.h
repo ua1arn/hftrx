@@ -35,11 +35,19 @@ typedef enum IRQn
     UART1_IRQn = 33,                                  /*!< UART  */
     UART2_IRQn = 34,                                  /*!< UART  */
     UART3_IRQn = 35,                                  /*!< UART  */
-    PB_EINT_IRQn = 43,                                /*!< GPIOINT PB_EINT interrupt  */
+    PA_EINT_IRQn = 43,                                /*!< GPIOINT PA_EINT interrupt  */
     PG_EINT_IRQn = 49,                                /*!< GPIOINT PG_EINT interrupt */
-    PH_EINT_IRQn = 53,                                /*!< GPIOINT PH_EINT interrupt */
     R_UART_IRQn = 70,                                 /*!< UART  */
     R_PL_EINT_IRQn = 77,                              /*!< GPIOINT R_PL_EINT interrupt */
+    USB20_OTG_DEVICE_IRQn = 103,                      /*!< USBOTG USB OTG Dual-Role Device controller */
+    USB20_HOST0_EHCI_IRQn = 104,                      /*!< USB_EHCI_Capability  */
+    USB20_HOST0_OHCI_IRQn = 105,                      /*!< USB_OHCI_Capability  */
+    USB20_HOST1_EHCI_IRQn = 106,                      /*!< USB_EHCI_Capability  */
+    USB20_HOST1_OHCI_IRQn = 107,                      /*!< USB_OHCI_Capability  */
+    USB20_HOST2_EHCI_IRQn = 108,                      /*!< USB_EHCI_Capability  */
+    USB20_HOST2_OHCI_IRQn = 109,                      /*!< USB_OHCI_Capability  */
+    USB20_HOST3_EHCI_IRQn = 110,                      /*!< USB_EHCI_Capability  */
+    USB20_HOST3_OHCI_IRQn = 111,                      /*!< USB_OHCI_Capability  */
     CTI0_IRQn = 140,                                  /*!< CPUCFG CTI0 Interrupt */
     CTI1_IRQn = 141,                                  /*!< CPUCFG CTI1 Interrupt */
     CTI2_IRQn = 142,                                  /*!< CPUCFG CTI2 Interrupt */
@@ -66,6 +74,15 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define SYSCTRL_BASE ((uintptr_t) 0x01C00000)         /*!< SYSCTRL  Base */
+#define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x01C19000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USB20_HOST0_EHCI_BASE ((uintptr_t) 0x01C1A000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST0_OHCI_BASE ((uintptr_t) 0x01C1A400)/*!< USB_OHCI_Capability  Base */
+#define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x01C1B000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x01C1B400)/*!< USB_OHCI_Capability  Base */
+#define USB20_HOST2_EHCI_BASE ((uintptr_t) 0x01C1C000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST2_OHCI_BASE ((uintptr_t) 0x01C1C400)/*!< USB_OHCI_Capability  Base */
+#define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x01C1D000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x01C1D400)/*!< USB_OHCI_Capability  Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define GPIOA_BASE ((uintptr_t) 0x01C20800)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x01C20800)       /*!< GPIOBLOCK  Base */
@@ -318,6 +335,112 @@ typedef __PACKED_STRUCT UART_Type
     __IO uint32_t UART_HALT;                          /*!< Offset 0x0A4 UART Halt TX Register */
          uint32_t reserved_0x0A8 [0x00D6];
 } UART_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief USBOTG
+ */
+/*!< USBOTG USB OTG Dual-Role Device controller */
+typedef __PACKED_STRUCT USBOTG_Type
+{
+    __IO uint32_t USB_EPFIFO [0x006];                 /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
+         uint32_t reserved_0x018 [0x000A];
+    __IO uint32_t USB_GCS;                            /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
+    __IO uint16_t USB_INTTX;                          /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
+    __IO uint16_t USB_INTRX;                          /*!< Offset 0x046 USB_INTRX USB_EPINTF */
+    __IO uint16_t USB_INTTXE;                         /*!< Offset 0x048 USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register */
+    __IO uint16_t USB_INTRXE;                         /*!< Offset 0x04A USB_INTRXE USB_EPINTE */
+    __IO uint32_t USB_INTUSB;                         /*!< Offset 0x04C USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register */
+    __IO uint32_t USB_INTUSBE;                        /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register */
+    __IO uint32_t USB_FNUM;                           /*!< Offset 0x054 USB Frame Number Register */
+         uint32_t reserved_0x058 [0x0009];
+    __IO uint32_t USB_TESTC;                          /*!< Offset 0x07C USB_TESTC USB Test Control Register */
+    __IO uint16_t USB_TXMAXP;                         /*!< Offset 0x080 USB_TXMAXP USB EP1~5 Tx Control and Status Register */
+    __IO uint16_t USB_TXCSRHI;                        /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
+    __IO uint16_t USB_RXMAXP;                         /*!< Offset 0x084 USB_RXMAXP USB EP1~5 Rx Control and Status Register */
+    __IO uint16_t USB_RXCSRHI;                        /*!< Offset 0x086 USB_RXCSR */
+    __IO uint16_t USB_RXCOUNT;                        /*!< Offset 0x088 USB_RXCOUNT */
+    __IO uint16_t USB_RXPKTCNT;                       /*!< Offset 0x08A USB_RXPKTCNT */
+    __IO uint32_t USB_EPATTR;                         /*!< Offset 0x08C USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register */
+    __IO uint32_t USB_TXFIFO;                         /*!< Offset 0x090 USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
+    __IO uint32_t USB_RXFIFO;                         /*!< Offset 0x094 USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
+    __PACKED_STRUCT
+    {
+        __IO uint16_t USB_TXFADDR;                    /*!< Offset 0x098 USB_TXFADDR */
+        __IO uint8_t  USB_TXHADDR;                    /*!< Offset 0x09A USB_TXHADDR */
+        __IO uint8_t  USB_TXHUBPORT;                  /*!< Offset 0x09B USB_TXHUBPORT */
+        __IO uint8_t  USB_RXFADDR;                    /*!< Offset 0x09C USB_RXFADDR */
+             uint8_t reserved_0x005 [0x0001];
+        __IO uint8_t  USB_RXHADDR;                    /*!< Offset 0x09E USB_RXHADDR */
+        __IO uint8_t  USB_RXHUBPORT;                  /*!< Offset 0x09F USB_RXHUBPORT */
+    } FIFO [0x010];                                   /*!< Offset 0x098 FIFOs [0..5] */
+         uint32_t reserved_0x118 [0x00BA];
+    __IO uint32_t USB_ISCR;                           /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
+    __IO uint32_t USBPHY_PHYCTL;                      /*!< Offset 0x404 USBPHY_PHYCTL */
+    __IO uint32_t HCI_CTRL3;                          /*!< Offset 0x408 HCI Control 3 Register (bist) */
+         uint32_t reserved_0x40C;
+    __IO uint32_t PHY_CTRL;                           /*!< Offset 0x410 PHY Control Register (PHY_Control) */
+         uint32_t reserved_0x414 [0x0003];
+    __IO uint32_t PHY_OTGCTL;                         /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
+    __IO uint32_t PHY_STATUS;                         /*!< Offset 0x424 PHY Status Register */
+    __IO uint32_t USB_SPDCR;                          /*!< Offset 0x428 HCI SIE Port Disable Control Register */
+         uint32_t reserved_0x42C [0x0035];
+    __IO uint32_t USB_DMA_INTE;                       /*!< Offset 0x500 USB DMA Interrupt Enable Register */
+    __IO uint32_t USB_DMA_INTS;                       /*!< Offset 0x504 USB DMA Interrupt Status Register */
+         uint32_t reserved_0x508 [0x000E];
+    __PACKED_STRUCT
+    {
+        __IO uint32_t CHAN_CFG;                       /*!< Offset 0x540 USB DMA Channel Configuration Register */
+        __IO uint32_t SDRAM_ADD;                      /*!< Offset 0x544 USB DMA Channel Configuration Register */
+        __IO uint32_t BC;                             /*!< Offset 0x548 USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register */
+             uint32_t reserved_0x00C;
+    } USB_DMA [0x008];                                /*!< Offset 0x540  */
+} USBOTG_TypeDef; /* size of structure = 0x5C0 */
+/*
+ * @brief USB_EHCI_Capability
+ */
+/*!< USB_EHCI_Capability  */
+typedef __PACKED_STRUCT USB_EHCI_Capability_Type
+{
+    __I  uint32_t HCCAPBASE;                          /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
+    __I  uint32_t HCSPARAMS;                          /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
+    __I  uint32_t HCCPARAMS;                          /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
+    __IO uint32_t HCSPPORTROUTE;                      /*!< Offset 0x00C EHCI Companion Port Route Description */
+    __IO uint32_t USBCMD;                             /*!< Offset 0x010 EHCI USB Command Register */
+    __IO uint32_t USBSTS;                             /*!< Offset 0x014 EHCI USB Status Register */
+    __IO uint32_t USBINTR;                            /*!< Offset 0x018 EHCI USB Interrupt Enable Register */
+    __IO uint32_t FRINDEX;                            /*!< Offset 0x01C EHCI USB Frame Index Register */
+    __IO uint32_t CTRLDSSEGMENT;                      /*!< Offset 0x020 EHCI 4G Segment Selector Register */
+    __IO uint32_t PERIODICLISTBASE;                   /*!< Offset 0x024 EHCI Frame List Base Address Register */
+    __IO uint32_t ASYNCLISTADDR;                      /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
+} USB_EHCI_Capability_TypeDef; /* size of structure = 0x02C */
+/*
+ * @brief USB_OHCI_Capability
+ */
+/*!< USB_OHCI_Capability  */
+typedef __PACKED_STRUCT USB_OHCI_Capability_Type
+{
+    __IO uint32_t O_HcRevision;                       /*!< Offset 0x000 OHCI Revision Register (not documented) */
+    __IO uint32_t O_HcControl;                        /*!< Offset 0x004 OHCI Control Register */
+    __IO uint32_t O_HcCommandStatus;                  /*!< Offset 0x008 OHCI Command Status Register */
+    __IO uint32_t O_HcInterruptStatus;                /*!< Offset 0x00C OHCI Interrupt Status Register */
+    __IO uint32_t O_HcInterruptEnable;                /*!< Offset 0x010 OHCI Interrupt Enable Register */
+    __IO uint32_t O_HcInterruptDisable;               /*!< Offset 0x014 OHCI Interrupt Disable Register */
+    __IO uint32_t O_HcHCCA;                           /*!< Offset 0x018 OHCI HCCA Base */
+    __IO uint32_t O_HcPeriodCurrentED;                /*!< Offset 0x01C OHCI Period Current ED Base */
+    __IO uint32_t O_HcControlHeadED;                  /*!< Offset 0x020 OHCI Control Head ED Base */
+    __IO uint32_t O_HcControlCurrentED;               /*!< Offset 0x024 OHCI Control Current ED Base */
+    __IO uint32_t O_HcBulkHeadED;                     /*!< Offset 0x028 OHCI Bulk Head ED Base */
+    __IO uint32_t O_HcBulkCurrentED;                  /*!< Offset 0x02C OHCI Bulk Current ED Base */
+    __IO uint32_t O_HcDoneHead;                       /*!< Offset 0x030 OHCI Done Head Base */
+    __IO uint32_t O_HcFmInterval;                     /*!< Offset 0x034 OHCI Frame Interval Register */
+    __IO uint32_t O_HcFmRemaining;                    /*!< Offset 0x038 OHCI Frame Remaining Register */
+    __IO uint32_t O_HcFmNumber;                       /*!< Offset 0x03C OHCI Frame Number Register */
+    __IO uint32_t O_HcPerioddicStart;                 /*!< Offset 0x040 OHCI Periodic Start Register */
+    __IO uint32_t O_HcLSThreshold;                    /*!< Offset 0x044 OHCI LS Threshold Register */
+    __IO uint32_t O_HcRhDescriptorA;                  /*!< Offset 0x048 OHCI Root Hub Descriptor Register A */
+    __IO uint32_t O_HcRhDesriptorB;                   /*!< Offset 0x04C OHCI Root Hub Descriptor Register B */
+    __IO uint32_t O_HcRhStatus;                       /*!< Offset 0x050 OHCI Root Hub Status Register */
+    __IO uint32_t O_HcRhPortStatus [0x001];           /*!< Offset 0x054 OHCI Root Hub Port Status Register */
+} USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
 
 
 /* Defines */
@@ -327,6 +450,15 @@ typedef __PACKED_STRUCT UART_Type
 /* Access pointers */
 
 #define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL  register set access pointer */
+#define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
+#define USB20_HOST0_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST0_EHCI_BASE)/*!< USB20_HOST0_EHCI  register set access pointer */
+#define USB20_HOST0_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST0_OHCI_BASE)/*!< USB20_HOST0_OHCI  register set access pointer */
+#define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
+#define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
+#define USB20_HOST2_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST2_EHCI_BASE)/*!< USB20_HOST2_EHCI  register set access pointer */
+#define USB20_HOST2_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST2_OHCI_BASE)/*!< USB20_HOST2_OHCI  register set access pointer */
+#define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
+#define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */

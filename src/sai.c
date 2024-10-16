@@ -3346,7 +3346,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYLE_ALLWINNER
+#elif CPUSTYLE_ALLWINNER && defined (DMAC)
 
 #define DMACRINGSTAGES 2
 

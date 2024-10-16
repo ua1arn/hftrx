@@ -1102,18 +1102,13 @@
   <description></description>
   <baseAddress>0x01C20A00</baseAddress>
   <interrupt>
-   <name>PB_EINT</name>
+   <name>PA_EINT</name>
    <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>PG_EINT</name>
    <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -1169,18 +1164,13 @@
   <name>GPIOINTG</name>
   <baseAddress>0x01C20A20</baseAddress>
   <interrupt>
-   <name>PB_EINT</name>
+   <name>PA_EINT</name>
    <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>PG_EINT</name>
    <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -1208,6 +1198,147 @@
     <displayName>EMAC_EPHY_CLK_REG</displayName>
     <description>EMAC-EPHY Clock Register</description>
     <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TIMER</name>
+  <description></description>
+  <baseAddress>0x01C20C00</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>50</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>51</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TMR_IRQ_EN_REG</name>
+    <displayName>TMR_IRQ_EN_REG</displayName>
+    <description>Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR_IRQ_STA_REG</name>
+    <displayName>TMR_IRQ_STA_REG</displayName>
+    <description>Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000010</addressOffset>
+    <registers>
+     <register>
+      <name>CTRL_REG</name>
+      <displayName>CTRL_REG</displayName>
+      <description>Timer n Control Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>INTV_VALUE_REG</name>
+      <displayName>INTV_VALUE_REG</displayName>
+      <description>Timer n Interval Value Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CUR_VALUE_REG</name>
+      <displayName>CUR_VALUE_REG</displayName>
+      <description>Timer n Current Value Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>AVS_CNT_CTL_REG</name>
+    <displayName>AVS_CNT_CTL_REG</displayName>
+    <description>AVS Control Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT0_REG</name>
+    <displayName>AVS_CNT0_REG</displayName>
+    <description>AVS Counter 0 Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT1_REG</name>
+    <displayName>AVS_CNT1_REG</displayName>
+    <description>AVS Counter 1 Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_IRQ_EN_REG</name>
+    <displayName>WDOG_IRQ_EN_REG</displayName>
+    <description>Watchdog IRQ Enable Register</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_IRQ_STA_REG</name>
+    <displayName>WDOG_IRQ_STA_REG</displayName>
+    <description>Watchdog Status Register</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CTRL_REG</name>
+    <displayName>WDOG_CTRL_REG</displayName>
+    <description>Watchdog Control Register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CFG_REG</name>
+    <displayName>WDOG_CFG_REG</displayName>
+    <description>Watchdog Configuration Register</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_MODE_REG</name>
+    <displayName>WDOG_MODE_REG</displayName>
+    <description>Watchdog Mode Register</description>
+    <addressOffset>0x0B8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -1505,6 +1636,870 @@
   <interrupt>
    <name>R_UART</name>
    <value>70</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>USB20_OTG_DEVICE</name>
+  <description>USB OTG Dual-Role Device controller</description>
+  <baseAddress>0x01C19000</baseAddress>
+  <interrupt>
+   <name>USB20_OTG_DEVICE</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <cluster>
+    <dim>6</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <register>
+     <name>USB_EPFIFO</name>
+     <displayName>USB_EPFIFO</displayName>
+     <description>USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x018</dimIncrement>
+   </cluster>
+   <register>
+    <name>USB_GCS</name>
+    <displayName>USB_GCS</displayName>
+    <description>USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_INTTX</name>
+    <displayName>USB_INTTX</displayName>
+    <description>USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_INTRX</name>
+    <displayName>USB_INTRX</displayName>
+    <description>USB_INTRX USB_EPINTF</description>
+    <addressOffset>0x046</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_INTTXE</name>
+    <displayName>USB_INTTXE</displayName>
+    <description>USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_INTRXE</name>
+    <displayName>USB_INTRXE</displayName>
+    <description>USB_INTRXE USB_EPINTE</description>
+    <addressOffset>0x04A</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_INTUSB</name>
+    <displayName>USB_INTUSB</displayName>
+    <description>USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_INTUSBE</name>
+    <displayName>USB_INTUSBE</displayName>
+    <description>USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_FNUM</name>
+    <displayName>USB_FNUM</displayName>
+    <description>USB Frame Number Register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_TESTC</name>
+    <displayName>USB_TESTC</displayName>
+    <description>USB_TESTC USB Test Control Register</description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_TXMAXP</name>
+    <displayName>USB_TXMAXP</displayName>
+    <description>USB_TXMAXP USB EP1~5 Tx Control and Status Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_TXCSRHI</name>
+    <displayName>USB_TXCSRHI</displayName>
+    <description>[15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL</description>
+    <addressOffset>0x082</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_RXMAXP</name>
+    <displayName>USB_RXMAXP</displayName>
+    <description>USB_RXMAXP USB EP1~5 Rx Control and Status Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_RXCSRHI</name>
+    <displayName>USB_RXCSRHI</displayName>
+    <description>USB_RXCSR</description>
+    <addressOffset>0x086</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_RXCOUNT</name>
+    <displayName>USB_RXCOUNT</displayName>
+    <description>USB_RXCOUNT</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_RXPKTCNT</name>
+    <displayName>USB_RXPKTCNT</displayName>
+    <description>USB_RXPKTCNT</description>
+    <addressOffset>0x08A</addressOffset>
+    <size>0x10</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_EPATTR</name>
+    <displayName>USB_EPATTR</displayName>
+    <description>USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_TXFIFO</name>
+    <displayName>USB_TXFIFO</displayName>
+    <description>USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_RXFIFO</name>
+    <displayName>USB_RXFIFO</displayName>
+    <description>USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000098</addressOffset>
+    <registers>
+     <register>
+      <name>USB_TXFADDR</name>
+      <displayName>USB_TXFADDR</displayName>
+      <description>USB_TXFADDR</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x10</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>USB_TXHADDR</name>
+      <displayName>USB_TXHADDR</displayName>
+      <description>USB_TXHADDR</description>
+      <addressOffset>0x002</addressOffset>
+      <size>0x08</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>USB_TXHUBPORT</name>
+      <displayName>USB_TXHUBPORT</displayName>
+      <description>USB_TXHUBPORT</description>
+      <addressOffset>0x003</addressOffset>
+      <size>0x08</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>USB_RXFADDR</name>
+      <displayName>USB_RXFADDR</displayName>
+      <description>USB_RXFADDR</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x08</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>USB_RXHADDR</name>
+      <displayName>USB_RXHADDR</displayName>
+      <description>USB_RXHADDR</description>
+      <addressOffset>0x006</addressOffset>
+      <size>0x08</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>USB_RXHUBPORT</name>
+      <displayName>USB_RXHUBPORT</displayName>
+      <description>USB_RXHUBPORT</description>
+      <addressOffset>0x007</addressOffset>
+      <size>0x08</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x070</dimIncrement>
+   </cluster>
+   <register>
+    <name>USB_ISCR</name>
+    <displayName>USB_ISCR</displayName>
+    <description>HCI Interface Register (HCI_Interface)</description>
+    <addressOffset>0x400</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBPHY_PHYCTL</name>
+    <displayName>USBPHY_PHYCTL</displayName>
+    <description>USBPHY_PHYCTL</description>
+    <addressOffset>0x404</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCI_CTRL3</name>
+    <displayName>HCI_CTRL3</displayName>
+    <description>HCI Control 3 Register (bist)</description>
+    <addressOffset>0x408</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PHY_CTRL</name>
+    <displayName>PHY_CTRL</displayName>
+    <description>PHY Control Register (PHY_Control)</description>
+    <addressOffset>0x410</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PHY_OTGCTL</name>
+    <displayName>PHY_OTGCTL</displayName>
+    <description>Control PHY routing to EHCI or OTG</description>
+    <addressOffset>0x420</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PHY_STATUS</name>
+    <displayName>PHY_STATUS</displayName>
+    <description>PHY Status Register</description>
+    <addressOffset>0x424</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_SPDCR</name>
+    <displayName>USB_SPDCR</displayName>
+    <description>HCI SIE Port Disable Control Register</description>
+    <addressOffset>0x428</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_DMA_INTE</name>
+    <displayName>USB_DMA_INTE</displayName>
+    <description>USB DMA Interrupt Enable Register</description>
+    <addressOffset>0x500</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_DMA_INTS</name>
+    <displayName>USB_DMA_INTS</displayName>
+    <description>USB DMA Interrupt Status Register</description>
+    <addressOffset>0x504</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000540</addressOffset>
+    <registers>
+     <register>
+      <name>CHAN_CFG</name>
+      <displayName>CHAN_CFG</displayName>
+      <description>USB DMA Channel Configuration Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>SDRAM_ADD</name>
+      <displayName>SDRAM_ADD</displayName>
+      <description>USB DMA Channel Configuration Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>BC</name>
+      <displayName>BC</displayName>
+      <description>USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>USB20_HOST0_EHCI</name>
+  <description></description>
+  <baseAddress>0x01C1A000</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_EHCI</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_EHCI</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_EHCI</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_EHCI</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>HCCAPBASE</name>
+    <displayName>HCCAPBASE</displayName>
+    <description>EHCI Capability Register (HCIVERSION and CAPLENGTH) register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCSPARAMS</name>
+    <displayName>HCSPARAMS</displayName>
+    <description>EHCI Host Control Structural Parameter Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCCPARAMS</name>
+    <displayName>HCCPARAMS</displayName>
+    <description>EHCI Host Control Capability Parameter Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCSPPORTROUTE</name>
+    <displayName>HCSPPORTROUTE</displayName>
+    <description>EHCI Companion Port Route Description</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBCMD</name>
+    <displayName>USBCMD</displayName>
+    <description>EHCI USB Command Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBSTS</name>
+    <displayName>USBSTS</displayName>
+    <description>EHCI USB Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USBINTR</name>
+    <displayName>USBINTR</displayName>
+    <description>EHCI USB Interrupt Enable Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FRINDEX</name>
+    <displayName>FRINDEX</displayName>
+    <description>EHCI USB Frame Index Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CTRLDSSEGMENT</name>
+    <displayName>CTRLDSSEGMENT</displayName>
+    <description>EHCI 4G Segment Selector Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PERIODICLISTBASE</name>
+    <displayName>PERIODICLISTBASE</displayName>
+    <description>EHCI Frame List Base Address Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ASYNCLISTADDR</name>
+    <displayName>ASYNCLISTADDR</displayName>
+    <description>EHCI Next Asynchronous List Address Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="USB20_HOST0_EHCI">
+  <name>USB20_HOST1_EHCI</name>
+  <baseAddress>0x01C1B000</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_EHCI</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_EHCI</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_EHCI</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_EHCI</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="USB20_HOST0_EHCI">
+  <name>USB20_HOST2_EHCI</name>
+  <baseAddress>0x01C1C000</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_EHCI</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_EHCI</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_EHCI</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_EHCI</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="USB20_HOST0_EHCI">
+  <name>USB20_HOST3_EHCI</name>
+  <baseAddress>0x01C1D000</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_EHCI</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_EHCI</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_EHCI</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_EHCI</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>USB20_HOST0_OHCI</name>
+  <description></description>
+  <baseAddress>0x01C1A400</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_OHCI</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_OHCI</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_OHCI</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_OHCI</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>O_HcRevision</name>
+    <displayName>O_HcRevision</displayName>
+    <description>OHCI Revision Register (not documented)</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcControl</name>
+    <displayName>O_HcControl</displayName>
+    <description>OHCI Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcCommandStatus</name>
+    <displayName>O_HcCommandStatus</displayName>
+    <description>OHCI Command Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcInterruptStatus</name>
+    <displayName>O_HcInterruptStatus</displayName>
+    <description>OHCI Interrupt Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcInterruptEnable</name>
+    <displayName>O_HcInterruptEnable</displayName>
+    <description>OHCI Interrupt Enable Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcInterruptDisable</name>
+    <displayName>O_HcInterruptDisable</displayName>
+    <description>OHCI Interrupt Disable Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcHCCA</name>
+    <displayName>O_HcHCCA</displayName>
+    <description>OHCI HCCA Base</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcPeriodCurrentED</name>
+    <displayName>O_HcPeriodCurrentED</displayName>
+    <description>OHCI Period Current ED Base</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcControlHeadED</name>
+    <displayName>O_HcControlHeadED</displayName>
+    <description>OHCI Control Head ED Base</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcControlCurrentED</name>
+    <displayName>O_HcControlCurrentED</displayName>
+    <description>OHCI Control Current ED Base</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcBulkHeadED</name>
+    <displayName>O_HcBulkHeadED</displayName>
+    <description>OHCI Bulk Head ED Base</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcBulkCurrentED</name>
+    <displayName>O_HcBulkCurrentED</displayName>
+    <description>OHCI Bulk Current ED Base</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcDoneHead</name>
+    <displayName>O_HcDoneHead</displayName>
+    <description>OHCI Done Head Base</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcFmInterval</name>
+    <displayName>O_HcFmInterval</displayName>
+    <description>OHCI Frame Interval Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcFmRemaining</name>
+    <displayName>O_HcFmRemaining</displayName>
+    <description>OHCI Frame Remaining Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcFmNumber</name>
+    <displayName>O_HcFmNumber</displayName>
+    <description>OHCI Frame Number Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcPerioddicStart</name>
+    <displayName>O_HcPerioddicStart</displayName>
+    <description>OHCI Periodic Start Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcLSThreshold</name>
+    <displayName>O_HcLSThreshold</displayName>
+    <description>OHCI LS Threshold Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcRhDescriptorA</name>
+    <displayName>O_HcRhDescriptorA</displayName>
+    <description>OHCI Root Hub Descriptor Register A</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcRhDesriptorB</name>
+    <displayName>O_HcRhDesriptorB</displayName>
+    <description>OHCI Root Hub Descriptor Register B</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>O_HcRhStatus</name>
+    <displayName>O_HcRhStatus</displayName>
+    <description>OHCI Root Hub Status Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00000054</addressOffset>
+    <register>
+     <name>O_HcRhPortStatus</name>
+     <displayName>O_HcRhPortStatus</displayName>
+     <description>OHCI Root Hub Port Status Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x004</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="USB20_HOST0_OHCI">
+  <name>USB20_HOST1_OHCI</name>
+  <baseAddress>0x01C1B400</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_OHCI</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_OHCI</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_OHCI</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_OHCI</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="USB20_HOST0_OHCI">
+  <name>USB20_HOST2_OHCI</name>
+  <baseAddress>0x01C1C400</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_OHCI</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_OHCI</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_OHCI</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_OHCI</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="USB20_HOST0_OHCI">
+  <name>USB20_HOST3_OHCI</name>
+  <baseAddress>0x01C1D400</baseAddress>
+  <interrupt>
+   <name>USB20_HOST0_OHCI</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST1_OHCI</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST2_OHCI</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>USB20_HOST3_OHCI</name>
+   <value>111</value>
    <description></description>
   </interrupt>
   </peripheral>

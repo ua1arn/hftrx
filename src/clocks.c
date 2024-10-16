@@ -1791,18 +1791,18 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYLE_V3S
 
 // V3s
-uint_fast32_t allwnr_t113_get_hosc_freq(void)
+uint_fast32_t allwnr_v3s_get_hosc_freq(void)
 {
     return REFINFREQ;	// 24 MHz usually
 }
 
 // V3s
-uint_fast32_t allwnr_t113_get_losc_freq(void)
+uint_fast32_t allwnr_v3s_get_losc_freq(void)
 {
 	const uint_fast32_t reg = RTC->LOSC_CTRL_REG;
 
 	// LOSC_SRC_SEL 0: Internal 32KHz, 1: External 32.768KHz OSC.
-	return (reg & 0x01) ? LSEFREQ : allwnr_t113_get_hosc_freq() / 750;
+	return (reg & 0x01) ? LSEFREQ : allwnr_v3s_get_hosc_freq() / 750;
 }
 
 //	The PLL Output = 24MHz*N*K/2.
@@ -1820,7 +1820,7 @@ uint_fast32_t allwnr_v3s_get_pll_periph0_x2_freq(void)
 	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
 	//const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);	// PLL_FACTOR_M = PLL Factor M (M = Factor + 1) is only valid in plltest debug.
 
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N  * K;
+	return (uint_fast64_t) allwnr_v3s_get_hosc_freq() * N  * K;
 }
 
 // V3s
@@ -1840,7 +1840,7 @@ uint_fast32_t allwnr_v3s_get_pllcpu_freq(void)
 //	The PLL Output= (24MHz*N*K)/(M*P).
 //	The PLL output is for the CPUX Clock.
 //	Note: The PLL output clock must be in the range of 200MHz~2.6GHz. Its default is 408MHz.
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N * K / (M * P);
+	return (uint_fast64_t) allwnr_v3s_get_hosc_freq() * N * K / (M * P);
 }
 
 // V3s
@@ -1855,9 +1855,9 @@ uint_fast32_t allwnr_v3s_get_cpu_freq(void)
 	{
 	case 0x00:
 	default:
-		return allwnr_t113_get_losc_freq();
+		return allwnr_v3s_get_losc_freq();
 	case 0x01:
-		return allwnr_t113_get_hosc_freq();
+		return allwnr_v3s_get_hosc_freq();
 	case 0x02:
 	case 0x03:
 		return allwnr_v3s_get_pllcpu_freq();
@@ -1926,9 +1926,9 @@ uint_fast32_t allwnr_v3s_get_ahb1_freq(void)
 	{
 	default:
 	case 0x00:
-		return allwnr_t113_get_losc_freq();
+		return allwnr_v3s_get_losc_freq();
 	case 0x01:
-		return allwnr_t113_get_hosc_freq();
+		return allwnr_v3s_get_hosc_freq();
 	case 0x02:
 		return allwnr_v3s_get_axi_freq();
 	case 0x03:
@@ -1953,10 +1953,10 @@ uint_fast32_t allwnr_v3s_get_apb2_freq(void)
 	default:
 	case 0x00:
 		// 00: LOSC
-		return allwnr_t113_get_losc_freq() / (M * N);
+		return allwnr_v3s_get_losc_freq() / (M * N);
 	case 0x01:
 		// 01: OSC24M
-		return allwnr_t113_get_hosc_freq() / (M * N);
+		return allwnr_v3s_get_hosc_freq() / (M * N);
 	case 0x02:
 	case 0x03:
 		// 1X: PLL_PERIPH0
@@ -1972,14 +1972,14 @@ uint_fast32_t allwnr_v3s_get_apb2_freq(void)
 
 // V3s
 // apbclk
-uint_fast32_t allwnr_t113_get_uart_freq(void)
+uint_fast32_t allwnr_v3s_get_uart_freq(void)
 {
     return allwnr_v3s_get_apb2_freq();
 }
 
 // V3s
 // apbclk
-uint_fast32_t allwnr_t113_get_twi_freq(void)
+uint_fast32_t allwnr_v3s_get_twi_freq(void)
 {
     return allwnr_v3s_get_apb2_freq();
 }
@@ -2012,7 +2012,7 @@ static void clock_set_pll_cpu(uint32_t clk)
 	/* cpu pll rate = ((24000000 * n * k) >> p) / m */
 	val = (0x1 << 31);
 	val |= ((p & 0x3) << 16);
-	val |= ((((clk / (allwnr_t113_get_hosc_freq() * k / m)) - 1) & 0x1f) << 8);
+	val |= ((((clk / (allwnr_v3s_get_hosc_freq() * k / m)) - 1) & 0x1f) << 8);
 	val |= (((k - 1) & 0x3) << 4);
 	val |= (((m - 1) & 0x3) << 0);
 	CCU->PLL_CPU_CTRL_REG = val;
@@ -2029,7 +2029,7 @@ static void clock_set_pll_cpu(uint32_t clk)
 // V3s
 void allwnr_v3s_pll_initialize(void)
 {
-	clock_set_pll_cpu(50 * allwnr_t113_get_hosc_freq());
+	clock_set_pll_cpu(50 * allwnr_v3s_get_hosc_freq());
 
 	/* pll video - 396MHZ */
 	CCU->PLL_VIDEO_CTRL_REG = 0x91004107;
@@ -2066,6 +2066,33 @@ void allwnr_v3s_pll_initialize(void)
 	CCU->MBUS_CLK_REG = 0x81000003;
 	(void) CCU->MBUS_CLK_REG;
 	local_delay_us(10);
+}
+
+#elif CPUSTYLE_H3
+
+// H3
+void allwnr_h3_pll_initialize(void)
+{
+
+
+}
+
+// H3
+uint_fast32_t allwnr_h3_get_hosc_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
+// H3
+uint_fast32_t allwnr_h3_get_arm_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
+// H3
+uint_fast32_t allwnr_h3_get_uart_freq(void)
+{
+	return WITHCPUXTAL;
 }
 
 #elif CPUSTYLE_A64
@@ -5400,7 +5427,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -5808,7 +5835,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif defined (TIMER) && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
 
 	// timebase timer
 	const unsigned ix = 1;
@@ -9431,6 +9458,10 @@ sysinit_pll_initialize(int forced)
 
 	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
 
+#elif CPUSTYLE_H3
+
+	allwnr_h3_pll_initialize();
+
 #elif CPUSTYLE_V3S
 
 	/* Off bootloader USB */
@@ -11051,6 +11082,9 @@ void hardware_adc_initialize(void)
 #elif CPUSTYLE_V3S
 	//#warning Undefined CPUSTYLE_V3S
 
+#elif CPUSTYLE_H3
+	//#warning Undefined CPUSTYLE_H3
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
@@ -11682,7 +11716,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_H3
 
 	const unsigned ix = 0;
 	unsigned value;
