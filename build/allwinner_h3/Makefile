@@ -291,8 +291,8 @@ app_run: $(PROJECT)_app.alw32 ddr_init
 	
 # bootloader debug - check allwnr_h3_boot.ld
 _app_run: fsbl.alw32
-	$(XFEL) write 0x00028000 fsbl.alw32
-	$(XFEL) exec 0x00028000 
+	$(XFEL) write 0x00008000 fsbl.alw32
+	$(XFEL) exec 0x00008000 
 
 flash:
 	-$(XFEL) spinor write 0x00000000 fsbl.alw32

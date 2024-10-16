@@ -41,29 +41,27 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 
 
-	#define WITHSDRAM_AXP803	1	/* power management chip */
+	//#define WITHSDRAM_AXP803	1	/* power management chip */
 
-	#define PMIC_I2C_W 0x68
-	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+//	#define PMIC_I2C_W 0x68
+//	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int axp803_initialize(void);
+//	int axp803_initialize(void);
 
 	/* Контроллер питания AXP803 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
-		axp803_initialize(); \
 	} while (0)
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
-	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -688,7 +686,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	// PL0 - S_TWI_SCK

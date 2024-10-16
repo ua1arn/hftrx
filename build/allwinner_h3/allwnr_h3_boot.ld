@@ -4,9 +4,10 @@
 
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 	LENGTH = 160k - 256		/*  */
-  debugRAM (rwx) : ORIGIN = 0x00028000 + 256,   LENGTH = 160k - 32k - 256     /* version of parameters for bootloader tests */
-  DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 128M - 32M		/*  */
+  RAM (rwx)	 : ORIGIN = 0x00000000 + 256, 	LENGTH = 64k - 256		/*  */
+  debugRAM (rwx)	 : ORIGIN = 0x00000000 + 32k + 256, 	LENGTH = 64k - 32k - 256		/*  */
+  SRAM_A2 (rwx)	 : ORIGIN = 0x00044000, 	LENGTH = 32k		/*  */
+  DDR3 (rwx) :ORIGIN = 0x40000000 + 32M + 256, 			LENGTH = 1024M - 32M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
 }
 
 /* Library configurations */
@@ -169,14 +170,14 @@ SECTIONS
 		*(COMMON)
 
 		__bss_end__ = .;
-	} > RAM
+	} > SRAM_A2
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 
-	} > RAM
+	} > SRAM_A2
 
 	.vram (NOLOAD):
 	{
@@ -217,11 +218,11 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > RAM
+	} > SRAM_A2
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(SRAM_A2) + LENGTH(SRAM_A2);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

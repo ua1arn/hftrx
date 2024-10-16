@@ -5,6 +5,7 @@
 MEMORY
 {
   SRAM_A1 (rwx)	: ORIGIN = 0x00000000, 				LENGTH = 64k	/*  */
+  SRAM_A2 (rwx)	 : ORIGIN = 0x00044000, 	LENGTH = 32k		/*  */
   RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 1024M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
 }
 
