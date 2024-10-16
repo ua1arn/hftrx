@@ -11319,6 +11319,20 @@ void hightests(void)
 			;
 	}
 #endif
+#if 0 && (CPUSTYLE_H3)
+	{
+		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_axi_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_mbus_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_psi_ahb1_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_psi_ahb1_ahb2_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_apb2_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_apb1_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_pll_peri0_x1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_pll_peri0_x1_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_pll_peri1_x1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_pll_peri1_x1_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_ahbs_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_ahbs_freq() / 1000 / 1000));
+//		PRINTF("allwnr_h3_get_apbs1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_apbs1_freq() / 1000 / 1000));
+	}
+#endif
 #if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616)
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));

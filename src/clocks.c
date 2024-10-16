@@ -2078,15 +2078,61 @@ void allwnr_h3_pll_initialize(void)
 }
 
 // H3
+uint_fast32_t allwnr_h3_get_losc_freq(void)
+{
+	return 32000;
+}
+
+// H3
 uint_fast32_t allwnr_h3_get_hosc_freq(void)
 {
 	return WITHCPUXTAL;
 }
 
 // H3
+uint_fast32_t allwnr_h3_get_pll_cpux_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_CPUX_CTRL_REG;
+	const uint_fast32_t P = UINT32_C(1) << ((reg >> 16) & 0x03);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x1F);
+	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);
+	//	The PLL Output= (24MHz*N*K)/(M*P).
+	//	The PLL output is for the CPUX Clock.
+	//	Note: The PLL output clock must be in the range of 200MHz~2.6GHz.
+	//	Its default is 408MHz.
+	//  (24MHz*N*K)/(M*P)
+	return (uint_fast64_t) allwnr_h3_get_hosc_freq() * N * K / (M * P);
+}
+
+// H3
+uint_fast32_t allwnr_h3_get_cpux_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t CPU_APB_CLK_DIV = UINT32_C(1) << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t AXI_CLK_DIV_RATIO = UINT32_C(1) + ((clkreg >> 0) & 0x03);
+	//	CPUX Clock Source Select.
+	//	CPUX Clock = Clock Source
+	//	00: LOSC
+	//	01: OSC24M
+	//	1X: PLL_CPUX
+	switch ((clkreg >> 16) & 0x03)
+	{
+	default:
+	case 0x00:	// 00: LOSC
+		return allwnr_h3_get_losc_freq();
+	case 0x01:	// 01: OSC24M
+		return allwnr_h3_get_hosc_freq();
+	case 0x02:	// 010: CLK16M_RC
+	case 0x03:	// 011: PLL_CPU/P
+		return allwnr_h3_get_pll_cpux_freq();
+	}
+}
+
+// H3
 uint_fast32_t allwnr_h3_get_arm_freq(void)
 {
-	return WITHCPUXTAL;
+	return allwnr_h3_get_cpux_freq();
 }
 
 // H3
