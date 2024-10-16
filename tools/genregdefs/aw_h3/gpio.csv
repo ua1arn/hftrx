@@ -1,0 +1,53 @@
+#type; GPIO
+#base; GPIOA 0x01C20800
+#base; GPIOC 0x01C20848
+#base; GPIOD 0x01C2086C
+#base; GPIOE 0x01C20890
+#base; GPIOF 0x01C208B4
+#base; GPIOG 0x01C208D8
+#base; GPIOL 0x01F02C00
+
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 2; Multi_Driving Register
+#regdef; PULL; 0x01C 2; Pull Register
+
+#typeend;
+
+#type; GPIOBLOCK
+#base; GPIOBLOCK 0x01C20800
+#base; GPIOBLOCK_L 0x01F02C00
+
+#aggreg; GPIO_PINS; 0x0000 8; GPIO pin control
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 2; Multi_Driving Register
+#regdef; PULL; 0x01C 2; Pull Register
+#regdef; padding 0; 0x024; fill space up to 0x024 bytes
+#aggregend;
+
+#aggreg; GPIO_INTS; 0x0200 2; GPIOA & GPIOG interrupt control
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; fill space up to 0x020 bytes
+#aggregend;
+
+#typeend;
+
+##
+#type; GPIOINT
+#base; GPIOINTA 0x01C20A00
+#base; GPIOINTG 0x01C20A20
+
+#irq; PA_EINT 43; PA_EINT interrupt 
+#irq; PG_EINT 49; PG_EINT interrupt
+#irq; R_PL_EINT 77; R_PL_EINT interrupt
+
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; fill space up to 0x020 bytes
+#typeend;
