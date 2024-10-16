@@ -12609,7 +12609,7 @@ display2_bars(
 }
 
 
-static void processencoders(void)
+static uint_fast8_t processpots(void)
 {
 	uint_fast8_t changed = 0;
 	// +++ получение состояния органов управления */
@@ -12663,6 +12663,16 @@ static void processencoders(void)
 		changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
 	}
 #endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
+	// --- конец получения состояния органов управления */
+	if (changed != 0)
+		updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
+	return changed;
+}
+
+static uint_fast8_t processencoders(void)
+{
+	uint_fast8_t changed = 0;
+	// +++ получение состояния органов управления */
 #if WITHENCODER_1F
 	{
 		const int_least16_t delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
@@ -12725,11 +12735,13 @@ static void processencoders(void)
 			{
 				uif_key_click_banddown();
 				++ delta;
+				changed = 1;
 			}
 			while (delta > 0)
 			{
 				uif_key_click_bandup();
 				-- delta;
+				changed = 1;
 			}
 			break;
 		}
@@ -12739,6 +12751,7 @@ static void processencoders(void)
 	// --- конец получения состояния органов управления */
 	if (changed != 0)
 		updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
+	return changed;
 }
 
 static volatile uint_fast8_t counterupdatedfreqs;
@@ -18323,17 +18336,17 @@ processkeyboard(uint_fast8_t kbch)
 
 	uint_fast8_t processed = 0;
 #if 1
-	processed = process_key_menuset0(kbch);
+	processed |= process_key_menuset0(kbch);
 #else
 	switch (menuset)
 	{
 	default:
 	case DISPMODE_MAIN:
-		processed = process_key_menuset0(kbch);
+		processed |= process_key_menuset0(kbch);
 		break;
 #if DSTYLE_SWITCHMODES2		// по кнопке управления переключается набор отображаемой информации
 	case DISPMODE_ALT:
-		processed = process_key_menuset0(kbch);
+		processed |= process_key_menuset0(kbch);
 		break;
 #endif /* DSTYLE_SWITCHMODES2 */
 	}
@@ -18425,8 +18438,6 @@ uint_fast8_t edgepins_get_ptt(void)
 static void dpc_01_s_timer_fn(void * ctx)
 {
 	bringtimers();
-	processencoders();
-
 }
 
 /* вызывается при запрещённых прерываниях. */
@@ -19202,6 +19213,19 @@ hamradio_main_step(void)
 				}
 			}
 	#endif /* WITHDEBUG */
+			if (processpots() || processencoders())
+			{
+				/* обновление индикатора без сохранения состояния диапазона */
+		#if WITHTOUCHGUI
+				display_redrawfreqstimed(1);
+				display2_mode_subset(amenuset());
+
+		#else /* WITHTOUCHGUI */
+				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+
+		#endif /* WITHTOUCHGUI */
+
+			} // end keyboard processing
 	#if WITHKEYBOARD
 			if (kbready != 0 && processkeyboard(kbch))
 			{
