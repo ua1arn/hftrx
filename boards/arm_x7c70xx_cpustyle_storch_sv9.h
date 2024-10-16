@@ -293,10 +293,6 @@
 	#define LS020_RESET_PORT_C(v)		do { /* GPIOD->BSRR = BSRR_C(v);  */__DSB(); } while (0)
 	#define LS020_RESET			(1u << 2)			// PD4 signal
 
-#elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-
-	#error Unsupported LCDMODE_HD44780
-
 #endif
 
 #if WITHENCODER

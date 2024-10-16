@@ -1311,8 +1311,6 @@ extern "C" {
 #endif	// Heavy eeprom size optimization
 
 #if LCDMODE_LQ043T3DX02K		/* PSP-1000 with S1D113780, or attached to LTDC hardware controller */
-	//#define LCDMODE_HARD_SPI	1	/* SPI interface */
-	//#define LCDMODE_SPI_RN	1	/* SPI only, with Reset, no Address need */
 	#define DIM_X 480
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
@@ -1351,7 +1349,6 @@ extern "C" {
 #endif /* LCDMODE_TCG104XGLPAPNN */
 
 #if LCDMODE_H497TLB01P4	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
-	//#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 720
 	#define DIM_Y 1280
 	#define LCDMODE_COLORED	1
@@ -1520,22 +1517,7 @@ extern "C" {
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif LCDMODE_HD44780 && LCDMODE_WH2002
-	#define DSTYLE_T_X20_Y2	1	
-
-#elif LCDMODE_HD44780 && LCDMODE_WH2002_IGOR
-	#define DSTYLE_T_X20_Y2_IGOR	1	
-
-#elif LCDMODE_HD44780 && LCDMODE_WH2004
-	#define DSTYLE_T_X20_Y4	1	
-
-#elif LCDMODE_HD44780 && LCDMODE_WH1602
-	#define DSTYLE_T_X16_Y2	1	
-
-#elif LCDMODE_HD44780 && LCDMODE_WH1604
-	#define DSTYLE_T_X16_Y4	1	
-
+s
 #elif LCDMODE_DUMMY
 
 	#define DSTYLE_G_DUMMY	1	// пустой список отображения
@@ -1555,8 +1537,6 @@ extern "C" {
 	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
-
-	#define DISPLAY_BUS_INITIALIZE() do {} while (0)
 
 #else
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)
@@ -1596,7 +1576,7 @@ extern "C" {
 #define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
 #define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
 
-#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY)
+#define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_DUMMY)
 
 /* Сброс мощности при запросе TUNE от автотюнера или извне */
 #define WITHLOWPOWEREXTTUNE	(defined (HARDWARE_GET_TUNE) || WITHAUTOTUNER)

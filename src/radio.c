@@ -11111,7 +11111,7 @@ updateboardZZZ(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
 		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
-		#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
 			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbspe);		/* нижний предел FFT */
@@ -11128,7 +11128,7 @@ updateboardZZZ(
 			display2_set_rxbwsatu(grxbwsatu);	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
-		#endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
+		#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 	#if WITHAFEQUALIZER

@@ -1068,7 +1068,7 @@ void arm_hardware_mdma_initialize(void)
 
 #endif /* WITHMDMAHW */
 
-#if ! (LCDMODE_DUMMY || LCDMODE_HD44780)
+#if ! (LCDMODE_DUMMY)
 
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
@@ -3799,7 +3799,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #endif /* */
 }
 
-#endif /* ! (LCDMODE_DUMMY || LCDMODE_HD44780) */
+#endif /* ! (LCDMODE_DUMMY) */
 
 #if WITHDMA2DHW
 

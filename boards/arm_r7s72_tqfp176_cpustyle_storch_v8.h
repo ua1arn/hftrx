@@ -185,36 +185,6 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#if LCDMODE_SPI_NA
-	// эти контроллеры требуют только RS
-
-	#define LS020_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
-	#define LS020_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RS			(1u << 0)			// P7_0 D7 signal in HD44780 socket
-
-#elif LCDMODE_SPI_RN
-	// эти контроллеры требуют только RESET
-
-	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
-	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RESET			(1u << 1)			// * P7_1 D6 signal in HD44780 socket
-
-#elif LCDMODE_SPI_RA
-	// Эти контроллеры требуют RESET и RS
-
-	#define LS020_RS_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
-	#define LS020_RS_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RS			(1u << 0)			// P7_0 D7 signal in HD44780 socket
-
-	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
-	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
-	#define LS020_RESET			(1u << 1)			// P7_1 D6 signal in HD44780 socket
-
-#elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-
-
-#endif
-
 #if WITHENCODER
 	// Выводы подключения енкодера
 	// Encoder #1 inputs: P5_9 - PHASE A, P5_8 = PHASE B

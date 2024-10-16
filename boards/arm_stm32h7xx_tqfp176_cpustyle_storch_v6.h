@@ -160,63 +160,6 @@
 	#define LS020_RESET_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define LS020_RESET			(UINT32_C(1) << 2)			// PF2 D6 signal in HD44780 socket
 
-#elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-
-	// E (enable) bit
-	#define LCD_STROBE_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_STROBE_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LCD_STROBE_BIT			(UINT32_C(1) << 6)	// PF6
-
-	// RS (address, register select) bit
-	#define LCD_RS_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_RS_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define ADDRES_BIT				(UINT32_C(1) << 4)	// PF4 - bit in RS port
-
-	// WE (write enable) bit
-	#define LCD_WE_PORT_S(v)		do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define LCD_WE_PORT_C(v)		do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define WRITEE_BIT				(UINT32_C(1) << 5)	// PF5 - bit in
-	
-	// Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
-	#define LCD_DATA_INPUT			(GPIOF->IDR)
-	#define LCD_DATAS_BITS			((UINT32_C(1) << 3) | (UINT32_C(1) << 2) | (UINT32_C(1) << 1) | (UINT32_C(1) << 0))	// PF3..PF0
-	#define LCD_DATAS_BIT_LOW		0		// какой бит данных младший в слове считанном с порта
-
-	#define DISPLAY_BUS_DATA_GET() ((LCD_DATA_INPUT & LCD_DATAS_BITS) >> LCD_DATAS_BIT_LOW) /* получить данные с шины LCD */
-	#define DISPLAY_BUS_DATA_SET(v) do { /* выдача данных (не сдвинуьых) */ \
-			const portholder_t t = (portholder_t) (v) << LCD_DATAS_BIT_LOW; \
-			GPIOF->BSRR = BSRR_S(t & LCD_DATAS_BITS) | BSRR_C(~ t & LCD_DATAS_BITS); \
-			__DSB(); \
-		} while (0)
-
-
-	/* инициализация управляющих выходов процессора для управления HD44780 - полный набор выходов */
-	#define LCD_CONTROL_INITIALIZE() \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT | ADDRES_BIT, 0); \
-			arm_hardware_pioe_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* PE0 - enable backlight */ \
-		} while (0)
-	/* инициализация управляющих выходов процессора для управления HD44780 - WE=0 */
-	#define LCD_CONTROL_INITIALIZE_WEEZERO() \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | WRITEE_BIT_ZERO | ADDRES_BIT, 0); \
-		} while (0)
-	/* инициализация управляющих выходов процессора для управления HD44780 - WE отсутствует - сигнал к индикатору заземлён */
-	#define LCD_CONTROL_INITIALIZE_WEENONE() \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_STROBE_BIT | ADDRES_BIT, 0); \
-		} while (0)
-
-	#define LCD_DATA_INITIALIZE_READ() \
-		do { \
-			arm_hardware_piof_inputs(LCD_DATAS_BITS);	/* переключить порт на чтение с выводов */ \
-		} while (0)
-
-	#define LCD_DATA_INITIALIZE_WRITE(v) \
-		do { \
-			arm_hardware_piof_outputs2m(LCD_DATAS_BITS, (v) << LCD_DATAS_BIT_LOW);	/* открыть выходы порта */ \
-		} while (0)
-
 #endif
 
 #if WITHDIRECTBANDOUT

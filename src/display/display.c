@@ -1824,16 +1824,6 @@ void display_hardware_initialize(void)
 	sii9022x_initialize(vdmode);
 #endif /* LCDMODEX_SII9022A */
 
-#if LCDMODE_HARD_SPI
-#elif LCDMODE_HARD_I2C
-#elif LCDMODE_LTDC
-#else
-	#if LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-		hd44780_io_initialize();
-	#else /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
-		DISPLAY_BUS_INITIALIZE();	// see LCD_CONTROL_INITIALIZE, LCD_DATA_INITIALIZE_WRITE
-	#endif /* LCDMODE_HD44780 && (LCDMODE_SPI == 0) */
-#endif
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
@@ -2167,14 +2157,12 @@ smallfont_decode(char cc)
 	return c - ' ';
 }
 
-//#if ! (LCDMODE_HD44780 || LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341)
 #if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
 uint_fast8_t bigfont_width(char cc)
 {
 	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
 }
 #endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
-//#endif /* ! (LCDMODE_HD44780 || LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341) */
 
 #if defined (HALFCHARW)
 uint_fast8_t halffont_width(char cc)

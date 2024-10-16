@@ -473,7 +473,7 @@ static const COLORPAIR_T colors_1mode [1] =
 	{	DSGN_BIGCOLOR,	DSGN_LABELBACK,	},
 };
 
-#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
+#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
 
 // Тестовая функция - прототип для элементов отображения
 static void
@@ -492,7 +492,7 @@ display2_testvidget(
 	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORPIP_WHITE);
 
 }
-#endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
+#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 
 // todo: switch off -Wunused-function
 
@@ -3280,76 +3280,6 @@ static uint_fast16_t display_getpwrfullwidth(void)
 	return GRID2X(CHARS2GRID(BDTH_ALLPWR));
 }
 
-#if LCDMODE_LTDC
-	// Используеся frame buffer - свои оптимизированные функции рисования
-
-#elif LCDMODE_HD44780
-	// На HD44780 используется псевдографика
-
-#elif LCDMODE_S1D13781 && ! LCDMODE_LTDC
-
-
-#else /* LCDMODE_HD44780 */
-
-// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
-// display_wrdatabar_begin() и display_wrdatabar_end().
-//
-void
-//NOINLINEAT
-display_bar(
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
-	uint_fast8_t value,		/* значение, которое надо отобразить */
-	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
-	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
-	uint_fast8_t vpattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
-	uint_fast8_t vpatternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
-	uint_fast8_t vemptyp			/* паттерн для заполнения между штрихами */
-	)
-{
-	//enum { DISPLAY_BAR_LEVELS = 6 };	// количество градаций в одном знакоместе
-
-	//value = value < 0 ? 0 : value;
-	const uint_fast16_t wfull = GRID2X(width);
-	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
-	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
-	uint_fast8_t i = 0;
-
-	for (; i < wpart; ++ i)
-	{
-		if (i == wmark)
-		{
-			xpix = display_barcolumn(xpix, ypix, vpatternmax);
-			continue;
-		}
-#if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		xpix = display_barcolumn(xpix, ypix, vpattern);
-#elif DSTYLE_G_X64_Y32
-		xpix = display_barcolumn(xpix, ypix, (i % 6) != 5 ? vpattern : vemptyp);
-#else
-		xpix = display_barcolumn(xpix, ypix, (i % 2) == 0 ? vpattern : PATTERN_SPACE);
-#endif
-	}
-
-	for (; i < wfull; ++ i)
-	{
-		if (i == wmark)
-		{
-			xpix = display_barcolumn(xpix, ypix, vpatternmax);
-			continue;
-		}
-#if (DSTYLE_G_X132_Y64 || DSTYLE_G_X128_Y64) && DSTYLE_UR3LMZMOD
-		xpix = display_barcolumn(xpix, ypix, vemptyp);
-#elif DSTYLE_G_X64_Y32
-		xpix = display_barcolumn(xpix, ypix, (i % 6) == 5 ? vpattern : vemptyp);
-#else
-		xpix = display_barcolumn(xpix, ypix, (i % 2) == 0 ? vemptyp : PATTERN_SPACE);
-#endif
-	}
-}
-#endif /* LCDMODE_HD44780 */
-
 #endif /* WITHBARS */
 
 // Адресация для s-meter
@@ -3570,7 +3500,7 @@ static void display2_legend(
 }
 
 
-#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
 static const uint_fast8_t BDCO_WFLRX = BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
 #if WITHTOUCHGUI
@@ -3780,7 +3710,7 @@ static COLORPIP_T display2_bgcolorwfl(void)
 }
 
 
-#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
 static void printsigwnd(void)
 {
@@ -3796,7 +3726,7 @@ static void printsigwnd(void)
 	PRINTF(PSTR("};\n"));
 }
 
-#endif /*  (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
+#endif /*  (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 
 #if WITHAFSPECTRE
 
@@ -5918,7 +5848,7 @@ PACKEDCOLORPIP_T * getscratchwnd(void)
 }
 
 
-#else /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
+#else /* WITHSPECTRUMWF && ! LCDMODE_DUMMY */
 
 static
 PACKEDCOLORPIP_T * getscratchwnd(void)
@@ -5963,7 +5893,7 @@ static void display2_wfl_init(
 
 }
 
-#endif /* WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY */
+#endif /* WITHSPECTRUMWF && ! LCDMODE_DUMMY */
 
 #if WITHSHOWSWRPWR
 uint_fast8_t display2_getswrmax(void)
