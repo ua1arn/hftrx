@@ -1,0 +1,40 @@
+#type; CPUCFG; CPU Configuration
+#base; CPUCFG 0x01F01C00
+
+#irq; CTI0 140; CTI0 Interrupt
+#irq; CTI1 141; CTI1 Interrupt
+#irq; CTI2 142; CTI2 Interrupt
+#irq; CTI3 143; CTI3 Interrupt
+#irq; COMMTX0 144; COMMTX0 Interrupt
+#irq; COMMTX1 145; COMMTX1 Interrupt
+#irq; COMMTX2 146; COMMTX2 Interrupt
+#irq; COMMTX3 147; COMMTX3 Interrupt
+#irq; COMMRX0 148; COMMRX0 Interrupt
+#irq; COMMRX1 149; COMMRX1 Interrupt
+#irq; COMMRX2 150; COMMRX2 Interrupt
+#irq; COMMRX3 151; COMMRX3 Interrupt
+#irq; PMU0 152; PMU0 Interrupt
+#irq; PMU1 153; PMU1 Interrupt
+#irq; PMU2 154; PMU2 Interrupt
+#irq; PMU3 155; PMU3 Interrupt
+#irq; AXI_ERROR 156; AXI_ERROR Interrupt
+
+#regdef; CPUS_RST_CTRL_REG; 0x0000; CPUS reset control register
+
+#aggreg; CPU; 0x0040 4; CPU control [0..3]
+#regdef; CPU_RST_CTRL; 0x000; CPU0 reset control
+#regdef; CPU_CTRL_REG; 0x004; CPU0 control register
+#regdef; CPU_STATUS_REG; 0x008; CPU0 status register
+#aggregend;
+
+#regdef; CPU_SYS_RST_REG; 0x0140; CPU System Reset Register
+#regdef; CPU_CLK_GATING_REG; 0x0144; CPU clock gating Register
+#regdef; GENER_CTRL_REG; 0x0184; General Control Register
+#regdef; SUP_STAN_FLAG_REG; 0x01A0; Super Standby Flag Register
+#regdef; RVADDR; 0x01A4; Hot plugin start address
+
+#regdef; CNT64_CTRL_REG; 0x0280; 64-bit Counter Control Register
+#regdef; CNT64_LOW_REG; 0x0284; 64-bit Counter Low Register
+#regdef; CNT64_HIGH_REG; 0x0288; 64-bit Counter High Register
+
+#typeend;

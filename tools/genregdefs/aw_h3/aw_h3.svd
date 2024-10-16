@@ -692,9 +692,216 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>GPIOB</name>
+  <name>CPUCFG</name>
+  <description>CPU Configuration</description>
+  <baseAddress>0x01F01C00</baseAddress>
+  <interrupt>
+   <name>CTI0</name>
+   <value>140</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CTI1</name>
+   <value>141</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CTI2</name>
+   <value>142</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CTI3</name>
+   <value>143</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMTX0</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMTX1</name>
+   <value>145</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMTX2</name>
+   <value>146</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMTX3</name>
+   <value>147</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMRX0</name>
+   <value>148</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMRX1</name>
+   <value>149</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMRX2</name>
+   <value>150</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>COMMRX3</name>
+   <value>151</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PMU0</name>
+   <value>152</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PMU1</name>
+   <value>153</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PMU2</name>
+   <value>154</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PMU3</name>
+   <value>155</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>AXI_ERROR</name>
+   <value>156</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>CPUS_RST_CTRL_REG</name>
+    <displayName>CPUS_RST_CTRL_REG</displayName>
+    <description>CPUS reset control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <registers>
+     <register>
+      <name>CPU_RST_CTRL</name>
+      <displayName>CPU_RST_CTRL</displayName>
+      <description>CPU0 reset control</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CPU_CTRL_REG</name>
+      <displayName>CPU_CTRL_REG</displayName>
+      <description>CPU0 control register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CPU_STATUS_REG</name>
+      <displayName>CPU_STATUS_REG</displayName>
+      <description>CPU0 status register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x030</dimIncrement>
+   </cluster>
+   <register>
+    <name>CPU_SYS_RST_REG</name>
+    <displayName>CPU_SYS_RST_REG</displayName>
+    <description>CPU System Reset Register</description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU_CLK_GATING_REG</name>
+    <displayName>CPU_CLK_GATING_REG</displayName>
+    <description>CPU clock gating Register</description>
+    <addressOffset>0x144</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG</name>
+    <displayName>GENER_CTRL_REG</displayName>
+    <description>General Control Register</description>
+    <addressOffset>0x184</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SUP_STAN_FLAG_REG</name>
+    <displayName>SUP_STAN_FLAG_REG</displayName>
+    <description>Super Standby Flag Register</description>
+    <addressOffset>0x1A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RVADDR</name>
+    <displayName>RVADDR</displayName>
+    <description>Hot plugin start address</description>
+    <addressOffset>0x1A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_CTRL_REG</name>
+    <displayName>CNT64_CTRL_REG</displayName>
+    <description>64-bit Counter Control Register</description>
+    <addressOffset>0x280</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_LOW_REG</name>
+    <displayName>CNT64_LOW_REG</displayName>
+    <description>64-bit Counter Low Register</description>
+    <addressOffset>0x284</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_HIGH_REG</name>
+    <displayName>CNT64_HIGH_REG</displayName>
+    <description>64-bit Counter High Register</description>
+    <addressOffset>0x288</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>GPIOA</name>
   <description></description>
-  <baseAddress>0x01C20824</baseAddress>
+  <baseAddress>0x01C20800</baseAddress>
   <registers>
    <cluster>
     <dim>4</dim>
@@ -749,31 +956,27 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="GPIOB">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOC</name>
   <baseAddress>0x01C20848</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOB">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOD</name>
   <baseAddress>0x01C2086C</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOB">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOE</name>
   <baseAddress>0x01C20890</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOB">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOF</name>
   <baseAddress>0x01C208B4</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOB">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOG</name>
   <baseAddress>0x01C208D8</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOB">
-  <name>GPIOH</name>
-  <baseAddress>0x01C208FC</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GPIOB">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOL</name>
   <baseAddress>0x01F02C00</baseAddress>
   </peripheral>
@@ -841,7 +1044,7 @@
     <dimIncrement>0x120</dimIncrement>
    </cluster>
    <cluster>
-    <dim>8</dim>
+    <dim>2</dim>
     <addressOffset>0x00000200</addressOffset>
     <registers>
      <cluster>
@@ -886,7 +1089,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x100</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -895,7 +1098,7 @@
   <baseAddress>0x01F02C00</baseAddress>
   </peripheral>
   <peripheral>
-  <name>GPIOINTB</name>
+  <name>GPIOINTA</name>
   <description></description>
   <baseAddress>0x01C20A00</baseAddress>
   <interrupt>
@@ -962,8 +1165,8 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="GPIOINTB">
-  <name>GPIOINTC</name>
+  <peripheral derivedFrom="GPIOINTA">
+  <name>GPIOINTG</name>
   <baseAddress>0x01C20A20</baseAddress>
   <interrupt>
    <name>PB_EINT</name>
@@ -986,125 +1189,30 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="GPIOINTB">
-  <name>GPIOINTD</name>
-  <baseAddress>0x01C20A40</baseAddress>
-  <interrupt>
-   <name>PB_EINT</name>
-   <value>43</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PG_EINT</name>
-   <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>R_PL_EINT</name>
-   <value>77</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="GPIOINTB">
-  <name>GPIOINTE</name>
-  <baseAddress>0x01C20A60</baseAddress>
-  <interrupt>
-   <name>PB_EINT</name>
-   <value>43</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PG_EINT</name>
-   <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>R_PL_EINT</name>
-   <value>77</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="GPIOINTB">
-  <name>GPIOINTF</name>
-  <baseAddress>0x01C20A80</baseAddress>
-  <interrupt>
-   <name>PB_EINT</name>
-   <value>43</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PG_EINT</name>
-   <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>R_PL_EINT</name>
-   <value>77</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="GPIOINTB">
-  <name>GPIOINTG</name>
-  <baseAddress>0x01C20AA0</baseAddress>
-  <interrupt>
-   <name>PB_EINT</name>
-   <value>43</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PG_EINT</name>
-   <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>R_PL_EINT</name>
-   <value>77</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="GPIOINTB">
-  <name>GPIOINTH</name>
-  <baseAddress>0x01C20AC0</baseAddress>
-  <interrupt>
-   <name>PB_EINT</name>
-   <value>43</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PG_EINT</name>
-   <value>49</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PH_EINT</name>
-   <value>53</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>R_PL_EINT</name>
-   <value>77</value>
-   <description></description>
-  </interrupt>
+  <peripheral>
+  <name>SYSCTRL</name>
+  <description></description>
+  <baseAddress>0x01C00000</baseAddress>
+  <registers>
+   <register>
+    <name>VER_REG</name>
+    <displayName>VER_REG</displayName>
+    <description>Version Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_EPHY_CLK_REG</name>
+    <displayName>EMAC_EPHY_CLK_REG</displayName>
+    <description>EMAC-EPHY Clock Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
   </peripheral>
   <peripheral>
   <name>UART0</name>

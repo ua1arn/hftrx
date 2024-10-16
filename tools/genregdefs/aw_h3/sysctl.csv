@@ -1,0 +1,7 @@
+#type; SYSCTRL
+#base; SYSCTRL 0x01C00000
+
+#regdefr; VER_REG; 0x0024; Version Register
+#regdef; EMAC_EPHY_CLK_REG; 0x0030; EMAC-EPHY Clock Register
+
+#typeend;

@@ -1,7 +1,7 @@
 SET CONVERTER=..\Debug\genregdefs.exe
 SET OUTFILE=..\..\..\arch\aw_h3\device.h
 SET FILELIST= ^
-	ccu.csv gic.csv ^
+	ccu.csv gic.csv cpucfg.csv sysctl.csv ^
 	uart.csv gpio.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%

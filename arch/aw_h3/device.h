@@ -40,6 +40,23 @@ typedef enum IRQn
     PH_EINT_IRQn = 53,                                /*!< GPIOINT PH_EINT interrupt */
     R_UART_IRQn = 70,                                 /*!< UART  */
     R_PL_EINT_IRQn = 77,                              /*!< GPIOINT R_PL_EINT interrupt */
+    CTI0_IRQn = 140,                                  /*!< CPUCFG CTI0 Interrupt */
+    CTI1_IRQn = 141,                                  /*!< CPUCFG CTI1 Interrupt */
+    CTI2_IRQn = 142,                                  /*!< CPUCFG CTI2 Interrupt */
+    CTI3_IRQn = 143,                                  /*!< CPUCFG CTI3 Interrupt */
+    COMMTX0_IRQn = 144,                               /*!< CPUCFG COMMTX0 Interrupt */
+    COMMTX1_IRQn = 145,                               /*!< CPUCFG COMMTX1 Interrupt */
+    COMMTX2_IRQn = 146,                               /*!< CPUCFG COMMTX2 Interrupt */
+    COMMTX3_IRQn = 147,                               /*!< CPUCFG COMMTX3 Interrupt */
+    COMMRX0_IRQn = 148,                               /*!< CPUCFG COMMRX0 Interrupt */
+    COMMRX1_IRQn = 149,                               /*!< CPUCFG COMMRX1 Interrupt */
+    COMMRX2_IRQn = 150,                               /*!< CPUCFG COMMRX2 Interrupt */
+    COMMRX3_IRQn = 151,                               /*!< CPUCFG COMMRX3 Interrupt */
+    PMU0_IRQn = 152,                                  /*!< CPUCFG PMU0 Interrupt */
+    PMU1_IRQn = 153,                                  /*!< CPUCFG PMU1 Interrupt */
+    PMU2_IRQn = 154,                                  /*!< CPUCFG PMU2 Interrupt */
+    PMU3_IRQn = 155,                                  /*!< CPUCFG PMU3 Interrupt */
+    AXI_ERROR_IRQn = 156,                             /*!< CPUCFG AXI_ERROR Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -48,22 +65,17 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define SYSCTRL_BASE ((uintptr_t) 0x01C00000)         /*!< SYSCTRL  Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Clock Controller Unit (CCU) Base */
+#define GPIOA_BASE ((uintptr_t) 0x01C20800)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x01C20800)       /*!< GPIOBLOCK  Base */
-#define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO  Base */
 #define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO  Base */
 #define GPIOD_BASE ((uintptr_t) 0x01C2086C)           /*!< GPIO  Base */
 #define GPIOE_BASE ((uintptr_t) 0x01C20890)           /*!< GPIO  Base */
 #define GPIOF_BASE ((uintptr_t) 0x01C208B4)           /*!< GPIO  Base */
 #define GPIOG_BASE ((uintptr_t) 0x01C208D8)           /*!< GPIO  Base */
-#define GPIOH_BASE ((uintptr_t) 0x01C208FC)           /*!< GPIO  Base */
-#define GPIOINTB_BASE ((uintptr_t) 0x01C20A00)        /*!< GPIOINT  Base */
-#define GPIOINTC_BASE ((uintptr_t) 0x01C20A20)        /*!< GPIOINT  Base */
-#define GPIOINTD_BASE ((uintptr_t) 0x01C20A40)        /*!< GPIOINT  Base */
-#define GPIOINTE_BASE ((uintptr_t) 0x01C20A60)        /*!< GPIOINT  Base */
-#define GPIOINTF_BASE ((uintptr_t) 0x01C20A80)        /*!< GPIOINT  Base */
-#define GPIOINTG_BASE ((uintptr_t) 0x01C20AA0)        /*!< GPIOINT  Base */
-#define GPIOINTH_BASE ((uintptr_t) 0x01C20AC0)        /*!< GPIOINT  Base */
+#define GPIOINTA_BASE ((uintptr_t) 0x01C20A00)        /*!< GPIOINT  Base */
+#define GPIOINTG_BASE ((uintptr_t) 0x01C20A20)        /*!< GPIOINT  Base */
 #define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
@@ -71,6 +83,7 @@ typedef enum IRQn
 #define UART4_BASE ((uintptr_t) 0x01C29000)           /*!< UART  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define CPUCFG_BASE ((uintptr_t) 0x01F01C00)          /*!< CPUCFG CPU Configuration Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO  Base */
@@ -198,6 +211,33 @@ typedef __PACKED_STRUCT CCU_Type
          uint32_t reserved_0x308 [0x003E];
 } CCU_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief CPUCFG
+ */
+/*!< CPUCFG CPU Configuration */
+typedef __PACKED_STRUCT CPUCFG_Type
+{
+    __IO uint32_t CPUS_RST_CTRL_REG;                  /*!< Offset 0x000 CPUS reset control register */
+         uint32_t reserved_0x004 [0x000F];
+    __PACKED_STRUCT
+    {
+        __IO uint32_t CPU_RST_CTRL;                   /*!< Offset 0x040 CPU0 reset control */
+        __IO uint32_t CPU_CTRL_REG;                   /*!< Offset 0x044 CPU0 control register */
+        __IO uint32_t CPU_STATUS_REG;                 /*!< Offset 0x048 CPU0 status register */
+    } CPU [0x004];                                    /*!< Offset 0x040 CPU control [0..3] */
+         uint32_t reserved_0x070 [0x0034];
+    __IO uint32_t CPU_SYS_RST_REG;                    /*!< Offset 0x140 CPU System Reset Register */
+    __IO uint32_t CPU_CLK_GATING_REG;                 /*!< Offset 0x144 CPU clock gating Register */
+         uint32_t reserved_0x148 [0x000F];
+    __IO uint32_t GENER_CTRL_REG;                     /*!< Offset 0x184 General Control Register */
+         uint32_t reserved_0x188 [0x0006];
+    __IO uint32_t SUP_STAN_FLAG_REG;                  /*!< Offset 0x1A0 Super Standby Flag Register */
+    __IO uint32_t RVADDR;                             /*!< Offset 0x1A4 Hot plugin start address */
+         uint32_t reserved_0x1A8 [0x0036];
+    __IO uint32_t CNT64_CTRL_REG;                     /*!< Offset 0x280 64-bit Counter Control Register */
+    __IO uint32_t CNT64_LOW_REG;                      /*!< Offset 0x284 64-bit Counter Low Register */
+    __IO uint32_t CNT64_HIGH_REG;                     /*!< Offset 0x288 64-bit Counter High Register */
+} CPUCFG_TypeDef; /* size of structure = 0x28C */
+/*
  * @brief GPIO
  */
 /*!< GPIO  */
@@ -229,8 +269,8 @@ typedef __PACKED_STRUCT GPIOBLOCK_Type
         __IO uint32_t EINT_STATUS;                    /*!< Offset 0x214 External Interrupt Status Register */
         __IO uint32_t EINT_DEB;                       /*!< Offset 0x218 External Interrupt Debounce Register */
              uint32_t reserved_0x01C;
-    } GPIO_INTS [0x008];                              /*!< Offset 0x200 GPIO interrupt control */
-} GPIOBLOCK_TypeDef; /* size of structure = 0x300 */
+    } GPIO_INTS [0x002];                              /*!< Offset 0x200 GPIOA & GPIOG interrupt control */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x240 */
 /*
  * @brief GPIOINT
  */
@@ -243,6 +283,17 @@ typedef __PACKED_STRUCT GPIOINT_Type
     __IO uint32_t EINT_DEB;                           /*!< Offset 0x018 External Interrupt Debounce Register */
          uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief SYSCTRL
+ */
+/*!< SYSCTRL  */
+typedef __PACKED_STRUCT SYSCTRL_Type
+{
+         uint32_t reserved_0x000 [0x0009];
+    __I  uint32_t VER_REG;                            /*!< Offset 0x024 Version Register */
+         uint32_t reserved_0x028 [0x0002];
+    __IO uint32_t EMAC_EPHY_CLK_REG;                  /*!< Offset 0x030 EMAC-EPHY Clock Register */
+} SYSCTRL_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief UART
  */
@@ -275,27 +326,23 @@ typedef __PACKED_STRUCT UART_Type
 
 /* Access pointers */
 
+#define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
-#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD  register set access pointer */
 #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)           /*!< GPIOE  register set access pointer */
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
-#define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)           /*!< GPIOH  register set access pointer */
-#define GPIOINTB ((GPIOINT_TypeDef *) GPIOINTB_BASE)  /*!< GPIOINTB  register set access pointer */
-#define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)  /*!< GPIOINTC  register set access pointer */
-#define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
-#define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)  /*!< GPIOINTE  register set access pointer */
-#define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
+#define GPIOINTA ((GPIOINT_TypeDef *) GPIOINTA_BASE)  /*!< GPIOINTA  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
-#define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
 #define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
+#define CPUCFG ((CPUCFG_TypeDef *) CPUCFG_BASE)       /*!< CPUCFG CPU Configuration register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
