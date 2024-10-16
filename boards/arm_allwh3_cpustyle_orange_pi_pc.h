@@ -1080,8 +1080,8 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 10)	// PL10 - PWR-LED - active "1" GREEN D7
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 15)	// PA15 - STATUS-LED - active "1" RED D8
+	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 10)	// PL10 - PWR-LED - active "1" RED (на моём экземпляре GREEN) D7
+	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 15)	// PA15 - STATUS-LED - active "1" GREEN (на моём экземпляре RED) D8
 
 #if 1
 	#define BOARD_BLINK_INITIALIZE() do { \

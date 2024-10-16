@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Allwinner t113-s3 layout */
+/* Allwinner H3 layout */
 /* Linker script to configure memory regions. */
 
 MEMORY

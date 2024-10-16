@@ -19,8 +19,8 @@
 TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
-#XFEL = ../../tools/xfel-windows-v1.3.2/xfel
-XFEL = ./xfel_fixed_t113-s3
+XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+#XFEL = ./xfel_fixed_t113-s3
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
