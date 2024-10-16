@@ -1,0 +1,81 @@
+#type; CCU; Clock Controller Unit (CCU)
+#base; CCU 0x01C20000
+
+#regdef; PLL_CPUX_CTRL_REG; 0x0000; PLL_CPUX Control Register
+#regdef; PLL_AUDIO_CTRL_REG; 0x0008; PLL_AUDIO Control Register
+#regdef; PLL_VIDEO_CTRL_REG; 0x0010; PLL_VIDEO Control Register
+#regdef; PLL_VE_CTRL_REG; 0x0018; PLL_VE Control Register
+#regdef; PLL_DDR_CTRL_REG; 0x0020; PLL_DDR Control Register
+#regdef; PLL_PERIPH0_CTRL_REG; 0x0028; PLL_PERIPH0 Control Register
+#regdef; PLL_GPU_CTRL_REG; 0x0038; PLL_GPU Control Register
+#regdef; PLL_PERIPH1_CTRL_REG; 0x0044; PLL_PERIPH1_CTRL_REG
+#regdef; PLL_DE_CTRL_REG; 0x0048; PLL_DE Control Register
+#regdef; CPUX_AXI_CFG_REG; 0x0050; CPUX/AXI Configuration Register
+#regdef; AHB1_APB1_CFG_REG; 0x0054; AHB1/APB1 Configuration Register
+#regdef; APB2_CFG_REG; 0x0058; APB2 Configuration Register
+#regdef; AHB2_CFG_REG; 0x005C; AHB2 Configuration Register
+#regdef; BUS_CLK_GATING_REG0; 0x0060; Bus Clock Gating Register 0
+#regdef; BUS_CLK_GATING_REG1; 0x0064; Bus Clock Gating Register 1
+#regdef; BUS_CLK_GATING_REG2; 0x0068; Bus Clock Gating Register 2
+#regdef; BUS_CLK_GATING_REG3; 0x006C; Bus Clock Gating Register 3
+#regdef; BUS_CLK_GATING_REG4; 0x0070; Bus Clock Gating Register4
+#regdef; THS_CLK_REG; 0x0074; THS Clock Register
+#regdef; NAND_CLK_REG; 0x0080; NAND Clock Register
+#regdef; SDMMC0_CLK_REG; 0x0088; SDMMC0 Clock Register
+#regdef; SDMMC1_CLK_REG; 0x008C; SDMMC1 Clock Register
+#regdef; SDMMC2_CLK_REG; 0x0090; SDMMC2 Clock Register
+#regdef; CE_CLK_REG; 0x009C; CE Clock Register
+#regdef; SPI0_CLK_REG; 0x00A0; SPI0 Clock Register
+#regdef; SPI1_CLK_REG; 0x00A4; SPI1 Clock Register
+#regdef; I2S/PCM0_CLK_REG; 0x00B0; I2S/PCM0 Clock Register
+#regdef; I2S/PCM1_CLK_REG; 0x00B4; I2S/PCM1 Clock Register
+#regdef; I2S/PCM2_CLK_REG; 0x00B8; I2S/PCM2 Clock Register
+#regdef; OWA_CLK_REG; 0x00C0; OWA Clock Register
+#regdef; USBPHY_CFG_REG; 0x00CC; USBPHY Configuration Register
+#regdef; DRAM_CFG_REG; 0x00F4; DRAM Configuration Register
+#regdef; MBUS_RST_REG; 0x00FC; MBUS Reset Register
+#regdef; DRAM_CLK_GATING_REG; 0x0100; DRAM Clock Gating Register
+#regdef; TCON0_CLK_REG; 0x0118; TCON0 Clock Register
+#regdef; TVE_CLK_REG; 0x0120; TVE Clock Register
+#regdef; DEINTERLACE_CLK_REG; 0x0124; DEINTERLACE Clock Register
+#regdef; CSI_MISC_CLK_REG; 0x0130; CSI_MISC Clock Register
+#regdef; CSI_CLK_REG; 0x0134; CSI Clock Register
+#regdef; VE_CLK_REG; 0x013C; VE Clock Register
+#regdef; AC_DIG_CLK_REG; 0x0140; AC Digital Clock Register
+#regdef; AVS_CLK_REG; 0x0144; AVS Clock Register
+#regdef; HDMI_CLK_REG; 0x0150; HDMI Clock Register
+#regdef; HDMI_SLOW_CLK_REG; 0x0154; HDMI Slow Clock Register
+#regdef; MBUS_CLK_REG; 0x015C; MBUS Clock Register
+#regdef; GPU_CLK_REG; 0x01A0; GPU Clock Register
+#regdef; PLL_STABLE_TIME_REG0; 0x0200; PLL Stable Time Register 0
+#regdef; PLL_STABLE_TIME_REG1; 0x0204; PLL Stable Time Register 1
+#regdef; PLL_CPUX_BIAS_REG; 0x0220; PLL_CPUX Bias Register
+#regdef; PLL_AUDIO_BIAS_REG; 0x0224; PLL_AUDIO Bias Register
+#regdef; PLL_VIDEO_BIAS_REG; 0x0228; PLL_VIDEO Bias Register
+#regdef; PLL_VE_BIAS_REG; 0x022C; PLL_VE Bias Register
+#regdef; PLL_DDR_BIAS_REG; 0x0230; PLL_DDR Bias Register
+#regdef; PLL_PERIPH0_BIAS_REG; 0x0234; PLL_PERIPH0 Bias Register
+#regdef; PLL_GPU_BIAS_REG; 0x023C; PLL_GPU Bias Register
+#regdef; PLL_PERIPH1_BIAS_REG; 0x0244; PLL_PERIPH1 Bias Register
+#regdef; PLL_DE_BIAS_REG; 0x0248; PLL_DE Bias Register
+#regdef; PLL_CPUX_TUN_REG; 0x0250; PLL_CPUX Tuning Register
+#regdef; PLL_DDR_TUN_REG; 0x0260; PLL_DDR Tuning Register
+#regdef; PLL_CPUX_PAT_CTRL_REG; 0x0280; PLL_CPUX Pattern Control Register
+#regdef; PLL_AUDIO_PAT_CTRL_REG0; 0x0284; PLL_AUDIO Pattern Control Register
+#regdef; PLL_VIDEO_PAT_CTRL_REG0; 0x0288; PLL_VIDEO Pattern Control Register
+#regdef; PLL_VE_PAT_CTRL_REG; 0x028C; PLL_VE Pattern Control Register
+#regdef; PLL_DDR_PAT_CTRL_REG0; 0x0290; PLL_DDR Pattern Control Register
+#regdef; PLL_GPU_PAT_CTRL_REG; 0x029C; PLL_GPU Pattern Control Register
+#regdef; PLL_PERIPH1_PAT_CTRL_REG1; 0x02A4; PLL_PERIPH1 Pattern Control Register
+#regdef; PLL_DE_PAT_CTRL_REG; 0x02A8; PLL_DE Pattern Control Register
+#regdef; BUS_SOFT_RST_REG0; 0x02C0; Bus Software Reset Register 0
+#regdef; BUS_SOFT_RST_REG1; 0x02C4; Bus Software Reset Register 1
+#regdef; BUS_SOFT_RST_REG2; 0x02C8; Bus Software Reset Register 2
+#regdef; BUS_SOFT_RST_REG3; 0x02D0; Bus Software Reset Register 3
+#regdef; BUS_SOFT_RST_REG4; 0x02D8; Bus Software Reset Register 4
+#regdef; CCU_SEC_SWITCH_REG; 0x02F0; CCU Security Switch Register
+#regdef; PS_CTRL_REG; 0x0300; PS Control Register
+#regdef; PS_CNT_REG; 0x0304; PS Counter Register
+
+#regdef; padding 0; 1024; set size
+#typeend;

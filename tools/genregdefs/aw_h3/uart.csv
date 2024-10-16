@@ -1,0 +1,31 @@
+#type; UART
+
+#base; UART0 0x01C28000
+#base; UART1 0x01C28400
+#base; UART2 0x01C28800
+#base; UART3 0x01C28C00
+#base; UART4 0x01C29000
+#base; R_UART 0x01F02800
+
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+#irq; UART3 35
+#irq; R_UART 70
+
+#regdef; UART_RBR_THR_DLL; 0x0000; UART Receive Buffer Register/Transmit Holding Register
+#regdef; UART_DLH_IER; 0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register
+#regdef; UART_IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register
+#regdef; UART_LCR; 0x000C; UART Line Control Register
+#regdef; UART_MCR; 0x0010; UART Modem Control Register
+#regdef; UART_LSR; 0x0014; UART Line Status Register
+#regdef; UART_MSR; 0x0018; UART Modem Status Register
+#regdef; UART_SCH; 0x001C; UART Scratch Register
+#regdef; UART_USR; 0x007C; UART Status Register
+#regdef; UART_TFL; 0x0080; UART Transmit FIFO Level Register
+#regdef; UART_RFL; 0x0084; UART Receive FIFO Level Register
+#regdef; UART_DMA_REQ_EN; 0x008C; UART DMA Request Enable Register
+#regdef; UART_HALT; 0x00A4; UART Halt TX Register
+
+#regdef; padding 0; 0x400; set size
+#typeend;

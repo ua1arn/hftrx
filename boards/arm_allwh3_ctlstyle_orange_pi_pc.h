@@ -7,8 +7,8 @@
 //
 // banana-pi board - Allwinner A64-H
 
-#ifndef ARM_ALWA64_BANANA_PI_V9A_H_INCLUDED
-#define ARM_ALWA64_BANANA_PI_V9A_H_INCLUDED 1
+#ifndef ARM_ALWH3_ORANGE_PI_PC_H_INCLUDED
+#define ARM_ALWH3_ORANGE_PI_PC_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -101,7 +101,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER || 1
 
 	#define LCDMODE_DUMMY	1
 
@@ -685,4 +685,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALWA64_BANANA_PI_V9A_H_INCLUDED */
+#endif /* ARM_ALWH3_ORANGE_PI_PC_H_INCLUDED */

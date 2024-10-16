@@ -8,8 +8,8 @@
 
 // banana-pi board - Allwinner A64-H
 
-#ifndef ARM_ALWA64_BANANA_PI_H_INCLUDED
-#define ARM_ALWA64_BANANA_PI_H_INCLUDED 1
+#ifndef ARM_H3_ORANGE_PI_PC_H_INCLUDED
+#define ARM_H3_ORANGE_PI_PC_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1086,7 +1086,7 @@
 	#define BOARD_BLINK_BIT1 (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
 	#define BOARD_BLINK_BIT2 (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
 
-#if 1
+#if 0
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
@@ -1111,7 +1111,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-		BOARD_BLINK_INITIALIZE(); \
+		/*BOARD_BLINK_INITIALIZE(); */\
 		/*HARDWARE_KBD_INITIALIZE(); */\
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		/*HARDWARE_BL_INITIALIZE(); */\
@@ -1125,4 +1125,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALWA64_BANANA_PI_H_INCLUDED */
+#endif /* ARM_H3_ORANGE_PI_PC_H_INCLUDED */

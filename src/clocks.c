@@ -5808,7 +5808,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S
+#elif defined (TIMER) && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
 
 	// timebase timer
 	const unsigned ix = 1;

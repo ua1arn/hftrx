@@ -120,6 +120,10 @@
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
+#elif (CPUSTYLE_H3) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwh3_ctlstyle_orange_pi_pc.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwh3_cpustyle_orange_pi_pc.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
