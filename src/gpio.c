@@ -906,7 +906,7 @@ void sysinit_gpio_initialize(void)
 	{
 		InitializeListHead(& einthead [i]);
 	}
-#if CPUSTYLE_A64
+#if CPUSTYLE_A64 || CPUSTYLE_H3
 
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;

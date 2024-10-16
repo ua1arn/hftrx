@@ -103,6 +103,8 @@ typedef enum IRQn
 #define UART4_BASE ((uintptr_t) 0x01C29000)           /*!< UART  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC  Base */
+#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM  Base */
 #define CPUCFG_BASE ((uintptr_t) 0x01F01C00)          /*!< CPUCFG CPU Configuration Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
@@ -303,6 +305,80 @@ typedef __PACKED_STRUCT GPIOINT_Type
     __IO uint32_t EINT_DEB;                           /*!< Offset 0x018 External Interrupt Debounce Register */
          uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief RTC
+ */
+/*!< RTC  */
+typedef __PACKED_STRUCT RTC_Type
+{
+    __IO uint32_t LOSC_CTRL_REG;                      /*!< Offset 0x000 Low Oscillator Control Register */
+    __IO uint32_t LOSC_AUTO_SWT_STA_REG;              /*!< Offset 0x004 LOSC Auto Switch Status Register */
+    __IO uint32_t INTOSC_CLK_PRESCAL_REG;             /*!< Offset 0x008 Internal OSC Clock Prescalar Register */
+         uint32_t reserved_0x00C;
+    __IO uint32_t RTC_YY_MM_DD_REG;                   /*!< Offset 0x010 RTC Year-Month-Day Register */
+    __IO uint32_t RTC_HH_MM_SS_REG;                   /*!< Offset 0x014 RTC Hour-Minute-Second Register */
+         uint32_t reserved_0x018 [0x0002];
+    __IO uint32_t ALARM0_COUNTER_REG;                 /*!< Offset 0x020 Alarm 0 Counter Register  */
+    __IO uint32_t ALARM0_CUR_VLU_REG;                 /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
+    __IO uint32_t ALARM0_ENABLE_REG;                  /*!< Offset 0x028 Alarm 0 Enable Register */
+    __IO uint32_t ALARM0_IRQ_EN;                      /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
+    __IO uint32_t ALARM0_IRQ_STA_REG;                 /*!< Offset 0x030 Alarm 0 IRQ Status Register */
+         uint32_t reserved_0x034 [0x0003];
+    __IO uint32_t ALARM1_WK_HH_MM_SS;                 /*!< Offset 0x040 Alarm 1 Week HMS Register  */
+    __IO uint32_t ALARM1_ENABLE_REG;                  /*!< Offset 0x044 Alarm 1 Enable Register */
+    __IO uint32_t ALARM1_IRQ_EN;                      /*!< Offset 0x048 Alarm 1 IRQ Enable Register */
+    __IO uint32_t ALARM1_IRQ_STA_REG;                 /*!< Offset 0x04C (null) */
+    __IO uint32_t ALARM_CONFIG_REG;                   /*!< Offset 0x050 Alarm Config Register */
+         uint32_t reserved_0x054 [0x0003];
+    __IO uint32_t LOSC_OUT_GATING_REG;                /*!< Offset 0x060 LOSC output gating register */
+         uint32_t reserved_0x064 [0x0027];
+    __IO uint32_t GP_DATA_REG [0x008];                /*!< Offset 0x100 General Purpose Register (N=0~3) */
+         uint32_t reserved_0x120 [0x0018];
+    __IO uint32_t GPL_HOLD_OUTPUT_REG;                /*!< Offset 0x180 GPL Hold Output Register */
+         uint32_t reserved_0x184 [0x0003];
+    __IO uint32_t VDD_RTC_REG;                        /*!< Offset 0x190 VDD RTC Regulate Register */
+         uint32_t reserved_0x194 [0x0017];
+    __IO uint32_t IC_CHARA_REG;                       /*!< Offset 0x1F0 IC Characteristic Register */
+} RTC_TypeDef; /* size of structure = 0x1F4 */
+/*
+ * @brief R_PRCM
+ */
+/*!< R_PRCM  */
+typedef __PACKED_STRUCT R_PRCM_Type
+{
+    __IO uint32_t CPUS_CLK_REG;                       /*!< Offset 0x000 CPUS Clock Register */
+         uint32_t reserved_0x004 [0x0002];
+    __IO uint32_t APB0_CFG_REG;                       /*!< Offset 0x00C APB0 Configuration Register */
+         uint32_t reserved_0x010 [0x0006];
+    __IO uint32_t APB0_CLK_GATING_REG;                /*!< Offset 0x028 APB0 Clock Gating Register */
+         uint32_t reserved_0x02C [0x0006];
+    __IO uint32_t PLL_CTRL_REG1;                      /*!< Offset 0x044 PLL Control Register 1 */
+         uint32_t reserved_0x048 [0x0003];
+    __IO uint32_t R_CIR_RX_CLK_REG;                   /*!< Offset 0x054 R_CIR_RX Clock Register */
+         uint32_t reserved_0x058 [0x0016];
+    __IO uint32_t APB0_SOFT_RST_REG;                  /*!< Offset 0x0B0 APB0 Software Reset Register */
+         uint32_t reserved_0x0B4 [0x0013];
+    __IO uint32_t C0CPUX_PWROFF_GATING_REG;           /*!< Offset 0x100 Cluster0 CPUX Power Off Gating Register */
+    __IO uint32_t C1CPUX_PWROFF_GATING_REG;           /*!< Offset 0x104 Cluster1 CPUX Power Off Gating Register */
+         uint32_t reserved_0x108 [0x0002];
+    __IO uint32_t VDD_SYS_PWROFF_GATING_REG;          /*!< Offset 0x110 VDD_SYS Power Off Gating Register */
+         uint32_t reserved_0x114;
+    __IO uint32_t GPU_PWROFF_GATING_REG;              /*!< Offset 0x118 GPU Power Off Gating Register */
+         uint32_t reserved_0x11C;
+    __IO uint32_t VDD_SYS_PWROFF_RST_REG;             /*!< Offset 0x120 VDD_SYS Power Domain Reset Register */
+         uint32_t reserved_0x124 [0x0007];
+    __IO uint32_t C0_CPU0_PWR_SWITCH_CTRL;            /*!< Offset 0x140 C0_CPU0 Power Switch Control Register */
+    __IO uint32_t C0_CPU1_PWR_SWITCH_CTRL;            /*!< Offset 0x144 C0_CPU1 Power Switch Control Register */
+    __IO uint32_t C0_CPU2_PWR_SWITCH_CTRL;            /*!< Offset 0x148 C0_CPU2 Power Switch Control Register */
+    __IO uint32_t C0_CPU3_PWR_SWITCH_CTRL;            /*!< Offset 0x14C C0_CPU3 Power Switch Control Register */
+    __IO uint32_t C1_CPU0_PWR_SWITCH_CTRL;            /*!< Offset 0x150 C1_CPU0 Power Switch Control Register */
+    __IO uint32_t C1_CPU1_PWR_SWITCH_CTRL;            /*!< Offset 0x154 C1_CPU1 Power Switch Control Register */
+    __IO uint32_t C1_CPU2_PWR_SWITCH_CTRL;            /*!< Offset 0x158 C1_CPU2 Power Switch Control Register */
+    __IO uint32_t C1_CPU3_PWR_SWITCH_CTRL;            /*!< Offset 0x15C C1_CPU3 Power Switch Control Register */
+         uint32_t reserved_0x160 [0x0024];
+    __IO uint32_t RPIO_HOLD_CTRL_REG;                 /*!< Offset 0x1F0 R_PIO Hold Control Register */
+    __IO uint32_t OSC24M_CTRL_REG;                    /*!< Offset 0x1F4 OSC24M Control Register */
+} R_PRCM_TypeDef; /* size of structure = 0x1F8 */
 /*
  * @brief SYSCTRL
  */
@@ -507,6 +583,8 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
 #define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
+#define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
+#define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CPUCFG ((CPUCFG_TypeDef *) CPUCFG_BASE)       /*!< CPUCFG CPU Configuration register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
