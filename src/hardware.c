@@ -1730,10 +1730,10 @@ void DAbort_Handler(void)
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08lX, DFAR=%08lX, pc=%08lX, sp~%08lx\n"), __get_DFSR(), __get_DFAR(), (& marker) [2], (unsigned long) & marker);
+	PRINTF(PSTR("DFSR=%08X, DFAR=%08X, pc=%08X, sp~%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_DFAR(), (unsigned) (& marker) [2], (unsigned) & marker);
 #pragma GCC diagnostic pop
-	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
-	const int Status = (__get_DFSR() & (0x0FuL << 0));
+	const unsigned WnR = (__get_DFSR() & (UINT32_C(1) << 11)) != 0;
+	const unsigned Status = (__get_DFSR() & (UINT32_C(0x0F) << 0));
 	/*
 		1. 0b000001 alignment fault
 		2. 0b000100 instruction cache maintenance fault
