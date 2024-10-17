@@ -3295,23 +3295,13 @@ sysinit_mmu_initialize(void)
 	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
-#if (__CORTEX_A == 53U)
-static void setactlr(void)
-{
-	uint64_t v = __get_CPUACTLR();
-
-	//v |= UINT64_C(1) << 44;	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-	__set_CPUACTLR(v);
-}
-#endif /* (__CORTEX_A == 53U) */
-
-// sysinit_cache_core0_initialize
+// sysinit_cache_core0_initialize (on Core #0)
 static void cpusmp_init1(void)
 {
 #if (__CORTEX_A == 9U)
 	// not set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U)
@@ -3321,7 +3311,7 @@ static void cpusmp_init1(void)
 	 */
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
-	setactlr();
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	// 4.5.28 Auxiliary Control Register
@@ -3337,19 +3327,19 @@ static void cpusmp_init1(void)
 #endif /* (__CORTEX_A == 9U) */
 }
 
-// Reset_CPUn_Handler
+// Reset_CPUn_Handler ((on Core #1..)
 static void cpusmp_init2(void)
 {
 #if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U)
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
-	setactlr();
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	// 4.5.28 Auxiliary Control Register
@@ -3365,21 +3355,26 @@ static void cpusmp_init2(void)
 #endif /* (__CORTEX_A == 9U) */
 }
 
-// cpump_initialize
+// cpump_initialize (on Core #0)
 static void cpusmp_init3(void)
 {
 #if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U)
-//	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
-//	// set the CPUECTLR.SMPEN
-//	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-//	__ISB();
-//	__DSB();
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
+	__ISB();
+	__DSB();
 #elif (__CORTEX_A == 7U)
 	// set the ACTLR.SMP
 	// STM32MP1: already set
