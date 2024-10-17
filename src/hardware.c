@@ -3295,10 +3295,9 @@ sysinit_mmu_initialize(void)
 	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
-// sysinit_cache_core0_initialize (on Core #0)
+// SystemInit (on Core #0)
 // Reset_CPUn_Handler ((on Core #1..)
-// cpump_initialize (on Core #0)
-static void cpusmp_init(void)
+static void sysinit_smp_initialize(void)
 {
 #if (__CORTEX_A == 9U)
 	// not set the ACTLR.SMP
@@ -3372,7 +3371,6 @@ sysinit_cache_core0_initialize(void)
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		cpusmp_init();
 		L1C_InvalidateDCacheAll();
 		L1C_InvalidateICacheAll();
 		L1C_InvalidateBTAC();
@@ -3543,8 +3541,6 @@ sysinit_hwprepare_initialize(void)
 	* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
 	* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
 #endif /* (__L2C_PRESENT == 1) */
-	L1C_DisableCaches();
-	MMU_Disable();
 #endif /* (__CORTEX_A != 0) */
 #if CPUSTYLE_F133
 	/* disable interrupts*/
@@ -3559,21 +3555,18 @@ static void
 sysinit_cache_L2_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
 
-		#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
-			L2C_Disable();
-			* (volatile uint32_t *) (L2C_310_BASE + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
-			* (volatile uint32_t *) (L2C_310_BASE + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
-		#endif /* (__L2C_PRESENT == 1) */
-		#if (__L2C_PRESENT == 1)
-			// Enable Level 2 Cache
-			L2C_InvAllByWay();
-			L2C_Enable();
-		#endif
-	//dcache_clean_all();
-	#endif
+#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+	L2C_Disable();
+	* (volatile uint32_t *) (L2C_310_BASE + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+	* (volatile uint32_t *) (L2C_310_BASE + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+#endif /* (__L2C_PRESENT == 1) */
+#if (__L2C_PRESENT == 1)
+	// Enable Level 2 Cache
+	L2C_InvAllByWay();
+	L2C_Enable();
+#endif
+
 #endif /* (__CORTEX_A != 0) */
 }
 
@@ -3638,6 +3631,7 @@ SystemInit(void)
 #endif /* CPUSTYLE_VM14 */
 	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
+	sysinit_smp_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 #endif
@@ -4623,8 +4617,8 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
 {
-	cpusmp_init();
 	sysinit_fpu_initialize();
+	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
@@ -4690,7 +4684,6 @@ void cpump_initialize(void)
 	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
-	cpusmp_init();
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
