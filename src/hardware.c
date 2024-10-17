@@ -3107,19 +3107,19 @@ sysinit_perfmeter_initialize(void)
 
 		enum { do_reset = 0, enable_divider = 0 };
 		// in general enable all counters (including cycle counter)
-		uint32_t value = (1u << 0);	// ENABLE bit
+		uint32_t value = (UINT32_C(1) << 0);	// ENABLE bit
 
 		// peform reset:
 		if (do_reset)
 		{
-			value |= (1u << 1);     // reset all counters to zero.
-			value |= (1u << 2);     // reset cycle counter to zero.
+			value |= (UINT32_C(1) << 1);     // reset all counters to zero.
+			value |= (UINT32_C(1) << 2);     // reset cycle counter to zero.
 		}
 
 		if (enable_divider)
-			value |= (1u << 3);     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
+			value |= (UINT32_C(1) << 3);     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
 
-		value |= (1u << 4);		// Export Enable, bit [4]
+		value |= (UINT32_C(1) << 4);		// Export Enable, bit [4]
 
 		// program the performance-counter control-register PMNC:
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
@@ -3305,6 +3305,90 @@ static void setactlr(void)
 }
 #endif /* (__CORTEX_A == 53U) */
 
+// sysinit_cache_core0_initialize
+static void cpusmp_init1(void)
+{
+#if (__CORTEX_A == 9U)
+	// not set the ACTLR.SMP
+	// 0x02: L2 Prefetch hint enable
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 53U)
+	/**
+	 * DDI0500J_cortex_a53_r0p4_trm.pdf
+	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
+	 */
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
+	setactlr();
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 7U)
+	// set the ACTLR.SMP
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	__ISB();
+	__DSB();
+#endif /* (__CORTEX_A == 9U) */
+}
+
+// Reset_CPUn_Handler
+static void cpusmp_init2(void)
+{
+#if (__CORTEX_A == 9U)
+	// set the ACTLR.SMP
+	// 0x02: L2 Prefetch hint enable
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 53U)
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
+	setactlr();
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 7U)
+	// set the ACTLR.SMP
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	__ISB();
+	__DSB();
+#endif /* (__CORTEX_A == 9U) */
+}
+
+// cpump_initialize
+static void cpusmp_init3(void)
+{
+#if (__CORTEX_A == 9U)
+	// set the ACTLR.SMP
+	// 0x02: L2 Prefetch hint enable
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 53U)
+//	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+//	// set the CPUECTLR.SMPEN
+//	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+//	__ISB();
+//	__DSB();
+#elif (__CORTEX_A == 7U)
+	// set the ACTLR.SMP
+	// STM32MP1: already set
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	__ISB();
+	__DSB();
+#endif /* (__CORTEX_A == 9U) */
+}
+
 // ОБщая для всех процессоров инициализация
 static void
 sysinit_cache_core0_initialize(void)
@@ -3334,33 +3418,7 @@ sysinit_cache_core0_initialize(void)
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		#if (__CORTEX_A == 9U)
-			// not set the ACTLR.SMP
-			// 0x02: L2 Prefetch hint enable
-			__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
-			__ISB();
-			__DSB();
-		#elif (__CORTEX_A == 53U)
-			/**
-			 * DDI0500J_cortex_a53_r0p4_trm.pdf
-			 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
-			 */
-			__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
-			__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUACTLR write access control. The possible
-			setactlr();
-			// set the CPUECTLR.SMPEN
-			__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-			// 4.5.28 Auxiliary Control Register
-			// bit6: L2ACTLR write access control
-			__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
-			__ISB();
-			__DSB();
-		#elif (__CORTEX_A == 7U)
-			// set the ACTLR.SMP
-			__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-			__ISB();
-			__DSB();
-		#endif /* (__CORTEX_A == 9U) */
+		cpusmp_init1();
 		L1C_InvalidateDCacheAll();
 		L1C_InvalidateICacheAll();
 		L1C_InvalidateBTAC();
@@ -4036,7 +4094,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void halt32(void)
 {
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+	while ((UART0->UART_USR & (UINT8_C(1) << 1)) == 0)	// TX FIFO Not Full
 		;
 	UART0->UART_RBR_THR_DLL = '#';
 	for (;;)
@@ -4120,7 +4178,7 @@ static const uint32_t halt64_a [] =
 //	#include "../../arch/aw_a64/cmsis_a64.h"
 //	void _start(void)
 //	{
-//		while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+//		while ((UART0->UART_USR & (UINT8_C(1) << 1)) == 0)	// TX FIFO Not Full
 //			;
 //		UART0->UART_RBR_THR_DLL = '#';
 //		for (;;)
@@ -4189,7 +4247,7 @@ static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
 //#pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 	restart_self_aarch64();
 }
 
@@ -4611,30 +4669,7 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
 {
-#if (__CORTEX_A == 9U)
-	// set the ACTLR.SMP
-	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 53U)
-	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
-	__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUACTLR write access control. The possible
-	setactlr();
-	// set the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-	// 4.5.28 Auxiliary Control Register
-	// bit6: L2ACTLR write access control
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 7U)
-	// set the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-	__ISB();
-	__DSB();
-#endif /* (__CORTEX_A == 9U) */
-
+	cpusmp_init2();
 	sysinit_fpu_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
@@ -4693,6 +4728,7 @@ void Reset_CPUn_Handler(void)
 }
 
 // Вызывается из main
+// Запуск остальных процессоров
 void cpump_initialize(void)
 {
 #if 1
@@ -4700,27 +4736,7 @@ void cpump_initialize(void)
 	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
-
-#if (__CORTEX_A == 9U)
-	// set the ACTLR.SMP
-	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 53U)
-//	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
-//	// set the CPUECTLR.SMPEN
-//	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-//	__ISB();
-//	__DSB();
-#elif (__CORTEX_A == 7U)
-	// set the ACTLR.SMP
-	// STM32MP1: already set
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-	__ISB();
-	__DSB();
-#endif /* (__CORTEX_A == 9U) */
-
+	cpusmp_init3();
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
@@ -4946,7 +4962,7 @@ void cpu_initdone(void)
 	{
 #if 0
 		// Когда загрузочный образ FPGA будт оставаться в SERIAL FLASH, запретить отключение.
-		while ((SPIBSC0.CMNSR & (1u << 0)) == 0)	// TEND bit
+		while ((SPIBSC0.CMNSR & (UINT32_C(1) << 0)) == 0)	// TEND bit
 			;
 
 		SPIBSC0.CMNCR = (SPIBSC0.CMNCR & ~ ((1 << SPIBSC_CMNCR_BSZ))) |	// BSZ
@@ -4955,7 +4971,7 @@ void cpu_initdone(void)
 		(void) SPIBSC0.CMNCR;	/* Dummy read */
 
 		// SPI multi-io Read Cache Flush
-		SPIBSC0.DRCR |= (1u << SPIBSC_DRCR_RCF_SHIFT);	// RCF bit
+		SPIBSC0.DRCR |= (UINT32_C(1) << SPIBSC_DRCR_RCF_SHIFT);	// RCF bit
 		(void) SPIBSC0.DRCR;		/* Dummy read */
 
 		local_delay_ms(50);

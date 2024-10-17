@@ -1137,7 +1137,7 @@ __STATIC_FORCEINLINE void __set_CPUACTLR(uint64_t cpuactlr)
 
 // 4.5.77 CPU Extended Control Register
 
-#define CPUECTLR_SMPEN_Msk (1u << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
+#define CPUECTLR_SMPEN_Msk (UINT64_C(1) << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
 
 /** \brief  Get CPUECTLR
     \return               CPU Extended Control Register
