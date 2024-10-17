@@ -16,8 +16,6 @@
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
-#define CMSIS_device_header "hardware.h"
-
 #ifndef NIGHTBUILD
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
