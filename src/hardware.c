@@ -3296,12 +3296,18 @@ sysinit_mmu_initialize(void)
 }
 
 // sysinit_cache_core0_initialize (on Core #0)
-static void cpusmp_init1(void)
+// Reset_CPUn_Handler ((on Core #1..)
+// cpump_initialize (on Core #0)
+static void cpusmp_init(void)
 {
 #if (__CORTEX_A == 9U)
 	// not set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
+#if WITHSMPSYSTEM
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1) | ACTLR_SMP_Msk);
+#else /* WITHSMPSYSTEM */
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
+#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U)
@@ -3312,73 +3318,26 @@ static void cpusmp_init1(void)
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
 	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+#if WITHSMPSYSTEM
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+#else /* WITHSMPSYSTEM */
+	// clear the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() & ~ CPUECTLR_SMPEN_Msk);
+#endif /* WITHSMPSYSTEM */
 	// 4.5.28 Auxiliary Control Register
 	// bit6: L2ACTLR write access control
 	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
+#if WITHSMPSYSTEM
 	// set the ACTLR.SMP
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-	__ISB();
-	__DSB();
-#endif /* (__CORTEX_A == 9U) */
-}
-
-// Reset_CPUn_Handler ((on Core #1..)
-static void cpusmp_init2(void)
-{
-#if (__CORTEX_A == 9U)
-	// set the ACTLR.SMP
-	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 53U)
-	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
-	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
-	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-	// set the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-	// 4.5.28 Auxiliary Control Register
-	// bit6: L2ACTLR write access control
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 7U)
-	// set the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-	__ISB();
-	__DSB();
-#endif /* (__CORTEX_A == 9U) */
-}
-
-// cpump_initialize (on Core #0)
-static void cpusmp_init3(void)
-{
-#if (__CORTEX_A == 9U)
-	// set the ACTLR.SMP
-	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 53U)
-	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
-	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
-	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-	// set the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-	// 4.5.28 Auxiliary Control Register
-	// bit6: L2ACTLR write access control
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
-	__ISB();
-	__DSB();
-#elif (__CORTEX_A == 7U)
-	// set the ACTLR.SMP
-	// STM32MP1: already set
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+#else /* WITHSMPSYSTEM */
+	// clear the ACTLR.SMP
+	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
 #endif /* (__CORTEX_A == 9U) */
@@ -3413,7 +3372,7 @@ sysinit_cache_core0_initialize(void)
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		cpusmp_init1();
+		cpusmp_init();
 		L1C_InvalidateDCacheAll();
 		L1C_InvalidateICacheAll();
 		L1C_InvalidateBTAC();
@@ -4664,7 +4623,7 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
 {
-	cpusmp_init2();
+	cpusmp_init();
 	sysinit_fpu_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
@@ -4731,7 +4690,7 @@ void cpump_initialize(void)
 	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
-	cpusmp_init3();
+	cpusmp_init();
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
