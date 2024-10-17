@@ -1732,9 +1732,6 @@ void IRQ15_Handler(void)
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 {
-//	PRINTF("lclspin_lock: p=%p\n", p);
-//	TP();
-//	local_delay_ms(200);
 #if (__CORTEX_A == 53U)
 	if ((__get_CPUECTLR() & CPUECTLR_SMPEN_Msk) == 0)
 		return;
