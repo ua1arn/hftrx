@@ -3302,11 +3302,12 @@ static void sysinit_smp_initialize(void)
 #if (__CORTEX_A == 9U)
 	// not set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
-#if WITHSMPSYSTEM
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1) | ACTLR_SMP_Msk);
-#else /* WITHSMPSYSTEM */
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
-#endif /* WITHSMPSYSTEM */
+	#if WITHSMPSYSTEM
+		__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	#else /* WITHSMPSYSTEM */
+		__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U)
@@ -3314,29 +3315,30 @@ static void sysinit_smp_initialize(void)
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
 	 */
-	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
 	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-#if WITHSMPSYSTEM
-	// set the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-#else /* WITHSMPSYSTEM */
-	// clear the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() & ~ CPUECTLR_SMPEN_Msk);
-#endif /* WITHSMPSYSTEM */
+
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	#if WITHSMPSYSTEM
+		// set the CPUECTLR.SMPEN
+		__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	#else /* WITHSMPSYSTEM */
+		// clear the CPUECTLR.SMPEN
+		__set_CPUECTLR(__get_CPUECTLR() & ~ CPUECTLR_SMPEN_Msk);
+	#endif /* WITHSMPSYSTEM */
 	// 4.5.28 Auxiliary Control Register
 	// bit6: L2ACTLR write access control
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
+	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
-#if WITHSMPSYSTEM
-	// set the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-#else /* WITHSMPSYSTEM */
-	// clear the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
-#endif /* WITHSMPSYSTEM */
+	#if WITHSMPSYSTEM
+		// set the ACTLR.SMP
+		__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	#else /* WITHSMPSYSTEM */
+		// clear the ACTLR.SMP
+		__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
 #endif /* (__CORTEX_A == 9U) */
