@@ -3614,28 +3614,27 @@ SystemInit(void)
 #endif /* CPUSTYLE_VM14 */
 	sysinit_fpu_initialize();
 	sysinit_smp_initialize();
+	sysinit_perfmeter_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-#endif
-#if ! WITHISBOOTLOADER_DDR
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
+	local_delay_initialize();
+	sysinit_mmu_initialize();
+	sysinit_ttbr_initialize();	/* Allwinner H3 - требуется до первого обращения к LOCK. Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 #endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_gpio_initialize();
-	local_delay_initialize();
 	sysinit_debug_initialize();
 //	PRINTF("csr_read_mhint=0x%lx\n", (long unsigned) csr_read_mhint());
 //	PRINTF("csr_read_mxstatus=0x%lx\n", (long unsigned) csr_read_mxstatus());
 //	PRINTF("csr_read_mhcr=0x%lx\n", (long unsigned) csr_read_mhcr());
 //	PRINTF("csr_read_mcor=0x%lx\n", (long unsigned) csr_read_mcor());
-	sysinit_pmic_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
+	local_delay_initialize();
 #endif /* ! WITHISBOOTLOADER_DDR */
-	sysinit_perfmeter_initialize();
+	sysinit_pmic_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
-	sysinit_mmu_initialize();
-	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
