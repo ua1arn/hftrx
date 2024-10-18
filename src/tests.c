@@ -11331,6 +11331,8 @@ void hightests(void)
 //		PRINTF("allwnr_h3_get_pll_peri1_x1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_pll_peri1_x1_freq() / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_ahbs_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_ahbs_freq() / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_apbs1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_apbs1_freq() / 1000 / 1000));
+		void h3_hdmi_test(void);
+		h3_hdmi_test();
 	}
 #endif
 #if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616)
