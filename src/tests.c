@@ -11319,7 +11319,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0 && (CPUSTYLE_H3)
+#if 1 && (CPUSTYLE_H3)
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_axi_freq() / 1000 / 1000));

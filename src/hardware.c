@@ -3619,8 +3619,8 @@ SystemInit(void)
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	local_delay_initialize();
-	sysinit_mmu_initialize();
-	sysinit_ttbr_initialize();	/* Allwinner H3 - требуется до первого обращения к LOCK. Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+//	sysinit_mmu_initialize();
+//	sysinit_ttbr_initialize();	/* Allwinner H3 - требуется до первого обращения к LOCK. Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 #endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
@@ -3635,6 +3635,8 @@ SystemInit(void)
 	sysinit_pmic_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
+	sysinit_mmu_initialize();
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif

@@ -231,6 +231,7 @@ uint_fast32_t allwnr_t113_get_chipid(void);
 
 // Allwinner A64
 #if CPUSTYLE_A64
+uint_fast32_t allwnr_a64_get_hosc_freq(void);
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void);
@@ -242,6 +243,7 @@ uint_fast32_t allwnr_a64_get_mbus_freq(void);
 uint_fast32_t allwnr_a64_get_hdmi_freq(void);
 uint_fast32_t allwnr_a64_get_tcon0_freq(void);
 uint_fast32_t allwnr_a64_get_tcon1_freq(void);
+uint_fast32_t allwnr_a64_get_uart_freq(void);
 uint_fast32_t allwnr_a64_get_twi_freq(void);
 uint_fast32_t allwnr_a64_get_s_twi_freq(void);
 #endif /* CPUSTYLE_A64 */
@@ -253,7 +255,7 @@ uint_fast32_t allwnr_h3_get_can_freq(void);
 uint_fast32_t allwnr_h3_get_twi_freq(void);
 uint_fast32_t allwnr_h3_get_spi0_freq(void);
 uint_fast32_t allwnr_h3_get_spi1_freq(void);
-uint_fast32_t allwnr_h3_get_arm_freq(void);
+uint_fast32_t allwnr_h3_get_cpux_freq(void);
 #endif /* CPUSTYLE_H3 */
 
 // Allwinner T507/T507-H/H616
