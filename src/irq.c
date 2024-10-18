@@ -1730,15 +1730,8 @@ void IRQ15_Handler(void)
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
+static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
 {
-//#if (__CORTEX_A == 53U)
-//	if ((__get_CPUECTLR() & CPUECTLR_SMPEN_Msk) == 0)
-//		return;
-//#elif (__CORTEX_A == 7U)
-//	if ((__get_ACTLR() & ACTLR_SMP_Msk) == 0)
-//		return;
-//#endif /* (__CORTEX_A == 53U)  */
 #if WITHDEBUG
 	unsigned v = 0xFFFFFFFF;
 #endif /* WITHDEBUG */
@@ -1804,7 +1797,7 @@ void spin_lock2(volatile lclspinlock_t * p, const char * file, int line)
 }
 */
 
-void lclspin_unlock(lclspinlock_t * __restrict p)
+static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before
@@ -1813,6 +1806,34 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 	return;
 }
 
+
+static void lclspin_lock_dummy(lclspinlock_t * __restrict p, const char * file, int line)
+{
+}
+
+void lclspin_unlock_dummy(lclspinlock_t * __restrict p)
+{
+}
+
+static void (* lclspin_lock_p)(lclspinlock_t * __restrict p, const char * file, int line) = & lclspin_lock_dummy;
+static void (* lclspin_unlock_p)(lclspinlock_t * __restrict p) = & lclspin_unlock_dummy;
+
+void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
+{
+	lclspin_lock_p(p, file, line);
+}
+
+void lclspin_unlock(lclspinlock_t * __restrict p)
+{
+	lclspin_unlock_p(p);
+}
+
+// Allwinner H3 - может работать с блокировками только после включения MMU
+void lclspin_enable(void)
+{
+	lclspin_lock_p = & lclspin_lock_work;
+	lclspin_unlock_p = & lclspin_unlock_work;
+}
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 

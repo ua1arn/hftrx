@@ -178,6 +178,7 @@ void LowerIrql(IRQL_t newIRQL);
 
 	void lclspin_lock(lclspinlock_t * __restrict lock, const char * file, int line);
 	void lclspin_unlock(lclspinlock_t * __restrict lock);
+	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */

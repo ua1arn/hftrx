@@ -2785,6 +2785,7 @@ sysinit_ttbr_initialize(void)
 #endif
 
 	MMU_Enable();
+	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 #elif CPUSTYLE_RISCV
 
@@ -3619,8 +3620,6 @@ SystemInit(void)
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	local_delay_initialize();
-//	sysinit_mmu_initialize();
-//	sysinit_ttbr_initialize();	/* Allwinner H3 - требуется до первого обращения к LOCK. Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 #endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
