@@ -41,7 +41,6 @@ typedef enum IRQn
     TIMER1_IRQn = 51,                                 /*!< TIMER  */
     R_UART_IRQn = 70,                                 /*!< UART  */
     R_PL_EINT_IRQn = 77,                              /*!< GPIOINT R_PL_EINT interrupt */
-    HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     USB20_OTG_DEVICE_IRQn = 103,                      /*!< USBOTG USB OTG Dual-Role Device controller */
     USB20_HOST0_EHCI_IRQn = 104,                      /*!< USB_EHCI_Capability  */
     USB20_HOST0_OHCI_IRQn = 105,                      /*!< USB_OHCI_Capability  */
@@ -51,6 +50,7 @@ typedef enum IRQn
     USB20_HOST2_OHCI_IRQn = 109,                      /*!< USB_OHCI_Capability  */
     USB20_HOST3_EHCI_IRQn = 110,                      /*!< USB_EHCI_Capability  */
     USB20_HOST3_OHCI_IRQn = 111,                      /*!< USB_OHCI_Capability  */
+    HDMI_TX0_IRQn = 120,                              /*!< HDMI_TX  */
     CTI0_IRQn = 140,                                  /*!< CPUCFG CTI0 Interrupt */
     CTI1_IRQn = 141,                                  /*!< CPUCFG CTI1 Interrupt */
     CTI2_IRQn = 142,                                  /*!< CPUCFG CTI2 Interrupt */
@@ -104,7 +104,6 @@ typedef enum IRQn
 #define UART4_BASE ((uintptr_t) 0x01C29000)           /*!< UART  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
-#define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI_TX  Base */
 #define HDMI_TX0_BASE ((uintptr_t) 0x01EE0000)        /*!< HDMI_TX  Base */
 #define HDMI_PHY_BASE ((uintptr_t) 0x01EF0000)        /*!< HDMI_PHY  Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC  Base */
@@ -1142,7 +1141,6 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
 #define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
-#define HDMI ((HDMI_TX_TypeDef *) HDMI_BASE)          /*!< HDMI  register set access pointer */
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */

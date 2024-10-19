@@ -2,8 +2,7 @@
 
 #type; HDMI_TX 
 #base; HDMI_TX0 0x01EE0000
-#base; HDMI 0x01EE0000
-#irq; HDMI_TX0 95
+#irq; HDMI_TX0 120
 
 ## Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
 

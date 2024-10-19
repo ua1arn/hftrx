@@ -1318,7 +1318,7 @@
   <baseAddress>0x01EE0000</baseAddress>
   <interrupt>
    <name>HDMI_TX0</name>
-   <value>95</value>
+   <value>120</value>
    <description></description>
   </interrupt>
   <registers>
@@ -5805,15 +5805,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral derivedFrom="HDMI_TX0">
-  <name>HDMI</name>
-  <baseAddress>0x01EE0000</baseAddress>
-  <interrupt>
-   <name>HDMI_TX0</name>
-   <value>95</value>
-   <description></description>
-  </interrupt>
   </peripheral>
   <peripheral>
   <name>RTC</name>

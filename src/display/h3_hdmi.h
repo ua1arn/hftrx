@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 
+#if 0
 // The HDMI registers base address.
 //#define HDMI_BASE     0x01EE0000
 //#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
@@ -100,6 +101,7 @@ extern "C" {
 #define HDMI_AUD_CTS3		HDMI_REG8(0x3205)
 #define HDMI_AUD_INPUTCLKFS	HDMI_REG8(0x3206)
 
+#endif
 
 // LCD/TCON
 #define LCD0_BASE 0x01C0C000
