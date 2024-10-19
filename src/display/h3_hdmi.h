@@ -104,17 +104,17 @@ extern "C" {
 #endif
 
 // LCD/TCON
-#define LCD0_BASE 0x01C0C000
-#define LCD0_GCTL             (*(volatile uint32_t*)(LCD0_BASE + 0x000))
-#define LCD0_GINT0            (*(volatile uint32_t*)(LCD0_BASE + 0x004))
-#define LCD0_GINT1            (*(volatile uint32_t*)(LCD0_BASE + 0x008))
-#define LCD0_TCON1_CTL        (*(volatile uint32_t*)(LCD0_BASE + 0x090))
-#define LCD0_TCON1_BASIC0     (*(volatile uint32_t*)(LCD0_BASE + 0x094))
-#define LCD0_TCON1_BASIC1     (*(volatile uint32_t*)(LCD0_BASE + 0x098))
-#define LCD0_TCON1_BASIC2     (*(volatile uint32_t*)(LCD0_BASE + 0x09C))
-#define LCD0_TCON1_BASIC3     (*(volatile uint32_t*)(LCD0_BASE + 0x0A0))
-#define LCD0_TCON1_BASIC4     (*(volatile uint32_t*)(LCD0_BASE + 0x0A4))
-#define LCD0_TCON1_BASIC5     (*(volatile uint32_t*)(LCD0_BASE + 0x0A8))
+//#define LCD0_BASE 0x01C0C000
+//#define LCD0_GCTL             (*(volatile uint32_t*)(LCD0_BASE + 0x000))
+//#define LCD0_GINT0            (*(volatile uint32_t*)(LCD0_BASE + 0x004))
+//#define LCD0_GINT1            (*(volatile uint32_t*)(LCD0_BASE + 0x008))
+//#define LCD0_TCON1_CTL        (*(volatile uint32_t*)(LCD0_BASE + 0x090))
+//#define LCD0_TCON1_BASIC0     (*(volatile uint32_t*)(LCD0_BASE + 0x094))
+//#define LCD0_TCON1_BASIC1     (*(volatile uint32_t*)(LCD0_BASE + 0x098))
+//#define LCD0_TCON1_BASIC2     (*(volatile uint32_t*)(LCD0_BASE + 0x09C))
+//#define LCD0_TCON1_BASIC3     (*(volatile uint32_t*)(LCD0_BASE + 0x0A0))
+//#define LCD0_TCON1_BASIC4     (*(volatile uint32_t*)(LCD0_BASE + 0x0A4))
+//#define LCD0_TCON1_BASIC5     (*(volatile uint32_t*)(LCD0_BASE + 0x0A8))
 
 #define LCD1_BASE 0x01C0D000
 #define LCD1_GCTL             (*(volatile uint32_t*)(LCD1_BASE + 0x000))

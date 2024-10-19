@@ -50,6 +50,8 @@ typedef enum IRQn
     USB20_HOST2_OHCI_IRQn = 109,                      /*!< USB_OHCI_Capability  */
     USB20_HOST3_EHCI_IRQn = 110,                      /*!< USB_EHCI_Capability  */
     USB20_HOST3_OHCI_IRQn = 111,                      /*!< USB_OHCI_Capability  */
+    TCON0_IRQn = 118,                                 /*!< TCON0 TCON0 interrupt */
+    TCON1_IRQn = 119,                                 /*!< TCON1 TCON1 interrupt */
     HDMI_TX0_IRQn = 120,                              /*!< HDMI_TX  */
     CTI0_IRQn = 140,                                  /*!< CPUCFG CTI0 Interrupt */
     CTI1_IRQn = 141,                                  /*!< CPUCFG CTI1 Interrupt */
@@ -77,6 +79,8 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define SYSCTRL_BASE ((uintptr_t) 0x01C00000)         /*!< SYSCTRL  Base */
+#define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 TCON0 Base */
+#define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1  Base */
 #define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x01C19000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB20_HOST0_EHCI_BASE ((uintptr_t) 0x01C1A000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST0_OHCI_BASE ((uintptr_t) 0x01C1A400)/*!< USB_OHCI_Capability  Base */
@@ -949,6 +953,99 @@ typedef __PACKED_STRUCT SYSCTRL_Type
     __IO uint32_t EMAC_EPHY_CLK_REG;                  /*!< Offset 0x030 EMAC-EPHY Clock Register */
 } SYSCTRL_TypeDef; /* size of structure = 0x034 */
 /*
+ * @brief TCON0
+ */
+/*!< TCON0 TCON0 */
+typedef __PACKED_STRUCT TCON0_Type
+{
+    __IO uint32_t TCON_GCTL_REG;                      /*!< Offset 0x000 TCON global control register */
+    __IO uint32_t TCON_GINT0_REG;                     /*!< Offset 0x004 TCON global interrupt register0 */
+    __IO uint32_t TCON_GINT1_REG;                     /*!< Offset 0x008 TCON global interrupt register1 */
+         uint32_t reserved_0x00C [0x0021];
+    __IO uint32_t TCON1_CTL_REG;                      /*!< Offset 0x090 TCON1 control register */
+    __IO uint32_t TCON1_BASIC0_REG;                   /*!< Offset 0x094 TCON1 basic timing register0 */
+    __IO uint32_t TCON1_BASIC1_REG;                   /*!< Offset 0x098 TCON1 basic timing register1 */
+    __IO uint32_t TCON1_BASIC2_REG;                   /*!< Offset 0x09C TCON1 basic timing register2 */
+    __IO uint32_t TCON1_BASIC3_REG;                   /*!< Offset 0x0A0 TCON1 basic timing register3 */
+    __IO uint32_t TCON1_BASIC4_REG;                   /*!< Offset 0x0A4 TCON1 basic timing register4 */
+    __IO uint32_t TCON1_BASIC5_REG;                   /*!< Offset 0x0A8 TCON1 basic timing register5 */
+         uint32_t reserved_0x0AC;
+    __IO uint32_t TCON1_PS_SYNC_REG;                  /*!< Offset 0x0B0 TCON1 sync register */
+         uint32_t reserved_0x0B4 [0x000F];
+    __IO uint32_t TCON1_IO_POL_REG;                   /*!< Offset 0x0F0 TCON1 IO polarity register */
+    __IO uint32_t TCON1_IO_TRI_REG;                   /*!< Offset 0x0F4 TCON1 IO control register */
+    __IO uint32_t TCON_ECC_FIFO_REG;                  /*!< Offset 0x0F8 TCON ECC FIFO register */
+         uint32_t reserved_0x0FC;
+    __IO uint32_t TCON_CEU_CTL_REG;                   /*!< Offset 0x100 TCON CEU control register */
+         uint32_t reserved_0x104 [0x0003];
+    __IO uint32_t TCON_CEU_COEF_MUL_REG [0x001];      /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
+    __PACKED_STRUCT
+    {
+             uint32_t reserved_0x000 [0x0002];
+        __IO uint32_t TCON_CEU_COEF_ADD_REG;          /*!< Offset 0x11C TCON CEU coefficient register1 (N=0,1,2) */
+             uint32_t reserved_0x00C;
+    } TCON_CEU_COEF [0x001];                          /*!< Offset 0x114  */
+         uint32_t reserved_0x124 [0x0007];
+    __IO uint32_t TCON_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 TCON CEU coefficient register2 (N=0,1,2) */
+         uint32_t reserved_0x14C [0x0029];
+    __IO uint32_t TCON_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 TCON safe period register */
+         uint32_t reserved_0x1F4 [0x0043];
+    __IO uint32_t TCON1_FILL_CTL_REG;                 /*!< Offset 0x300 TCON1 fill data control register */
+    __PACKED_STRUCT
+    {
+        __IO uint32_t TCON1_FILL_BEGIN_REG;           /*!< Offset 0x304 TCON1 fill data begin register (N=0,1,2) */
+        __IO uint32_t TCON1_FILL_END_REG;             /*!< Offset 0x308 TCON1 fill data end register (N=0,1,2) */
+        __IO uint32_t TCON1_FILL_DATA0_REG;           /*!< Offset 0x30C TCON1 fill data value register (N=0,1,2) */
+    } TCON1_FILL [0x003];                             /*!< Offset 0x304 TCON1 fill data (N=0,1,2) */
+         uint32_t reserved_0x328 [0x0036];
+    __IO uint32_t TCON1_GAMMA_TABLE_REG [0x100];      /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
+         uint32_t reserved_0x800 [0x01FF];
+    __IO uint32_t TCON_ECC_FIFO_BIST_REG;             /*!< Offset 0xFFC tbd */
+} TCON0_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief TCON1
+ */
+/*!< TCON1  */
+typedef __PACKED_STRUCT TCON1_Type
+{
+    __IO uint32_t TCON_GCTL_REG;                      /*!< Offset 0x000 TCON global control register */
+    __IO uint32_t TCON_GINT0_REG;                     /*!< Offset 0x004 TCON global interrupt register0 */
+    __IO uint32_t TCON_GINT1_REG;                     /*!< Offset 0x008 TCON global interrupt register1 */
+         uint32_t reserved_0x00C [0x0021];
+    __IO uint32_t TCON1_CTL_REG;                      /*!< Offset 0x090 TCON1 control register */
+    __IO uint32_t TCON1_BASIC0_REG;                   /*!< Offset 0x094 TCON1 basic timing register0 */
+    __IO uint32_t TCON1_BASIC1_REG;                   /*!< Offset 0x098 TCON1 basic timing register1 */
+    __IO uint32_t TCON1_BASIC2_REG;                   /*!< Offset 0x09C TCON1 basic timing register2 */
+    __IO uint32_t TCON1_BASIC3_REG;                   /*!< Offset 0x0A0 TCON1 basic timing register3 */
+    __IO uint32_t TCON1_BASIC4_REG;                   /*!< Offset 0x0A4 TCON1 basic timing register4 */
+    __IO uint32_t TCON1_BASIC5_REG;                   /*!< Offset 0x0A8 TCON1 basic timing register5 */
+         uint32_t reserved_0x0AC;
+    __IO uint32_t TCON1_PS_SYNC_REG;                  /*!< Offset 0x0B0 TCON1 sync register */
+         uint32_t reserved_0x0B4 [0x000F];
+    __IO uint32_t TCON1_IO_POL_REG;                   /*!< Offset 0x0F0 TCON1 IO polarity register */
+    __IO uint32_t TCON1_IO_TRI_REG;                   /*!< Offset 0x0F4 TCON1 IO trigger register */
+         uint32_t reserved_0x0F8 [0x0002];
+    __IO uint32_t TCON_CEU_CTL_REG;                   /*!< Offset 0x100 TCON CEU control register */
+         uint32_t reserved_0x104 [0x0003];
+    __IO uint32_t TCON_CEU_COEF_MUL_REG [0x001];      /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
+         uint32_t reserved_0x114 [0x000B];
+    __IO uint32_t TCON_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 TCON CEU coefficient register2 (N=0,1,2) */
+         uint32_t reserved_0x14C [0x0029];
+    __IO uint32_t TCON_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 TCON safe period register */
+         uint32_t reserved_0x1F4 [0x0043];
+    __IO uint32_t TCON1_FILL_CTL_REG;                 /*!< Offset 0x300 TCON1 fill data control register */
+    __PACKED_STRUCT
+    {
+        __IO uint32_t TCON1_FILL_BEGIN_REG;           /*!< Offset 0x304 TCON1 fill data begin register (N=0,1,2) */
+        __IO uint32_t TCON1_FILL_END_REG;             /*!< Offset 0x308 TCON1 fill data end register (N=0,1,2) */
+        __IO uint32_t TCON1_FILL_DATA0_REG;           /*!< Offset 0x30C TCON1 fill data value register (N=0,1,2) */
+    } TCON1_FILL [0x001];                             /*!< Offset 0x304 TCON1 fill data (N=0,1,2) */
+         uint32_t reserved_0x310 [0x003C];
+    __IO uint32_t TCON1_GAMMA_TABLE_REG [0x100];      /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
+         uint32_t reserved_0x800 [0x01FF];
+    __IO uint32_t TCON_ECC_FIFO_BIST_REG;             /*!< Offset 0xFFC  */
+} TCON1_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief TIMER
  */
 /*!< TIMER  */
@@ -1116,6 +1213,8 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL  register set access pointer */
+#define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 register set access pointer */
+#define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1  register set access pointer */
 #define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
 #define USB20_HOST0_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST0_EHCI_BASE)/*!< USB20_HOST0_EHCI  register set access pointer */
 #define USB20_HOST0_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST0_OHCI_BASE)/*!< USB20_HOST0_OHCI  register set access pointer */
