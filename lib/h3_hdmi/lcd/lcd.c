@@ -7,7 +7,7 @@
 
 RAMNC uint8_t xxfb1 [512 * 512 * 4];
 RAMNC uint8_t xxfb2 [512 * 512 * 4];
-RAMNC uint8_t xxfb3 [512 * 512 * 4];
+//RAMNC uint8_t xxfb3 [512 * 512 * 4];
 
 
 void DrawCircleCorner(int16_t x0, int16_t y0, int16_t r, uint8_t corner, uint32_t color);
@@ -251,6 +251,7 @@ void display_init_ex(void) {
   de2_init();
 }
 
+#if 0
 void buffer_swap(void) {
   DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(active_buffer + 512*16+16);
   if(active_buffer == framebuffer1) {
@@ -265,6 +266,9 @@ void buffer_swap(void) {
    /// active_buffer[n] = 0;
   DE_MIXER0_GLB_DBUFFER = 1;
 }
+
+#endif
+
 void UB_LCD_FillLayer(uint32_t color)
 {
     uint32_t index = 0;

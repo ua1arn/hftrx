@@ -10,6 +10,8 @@
 //#include "mmu.h"
 //#include "system.h"
 #include "tve.h"
+
+#if 0
 //#include "uart.h"
 //#include "util.h"
 #define TVBIT(pos) (UINT32_C(1) << (pos))
@@ -100,6 +102,7 @@ int h3_de2_init(struct display_timing *timing, uint32_t fbbase);
 
 struct display_timing default_timing;
 
+#if 0
 int display_init(const struct display_phys_mode_t *mode)
 {
   if (mode != NULL && !display_is_digital)
@@ -209,7 +212,6 @@ Whole frame	1250	16.666666666667
   }
   return 0;
 }
-
 // Allocates frame buffers and configures the display engine
 // to scale from the given resolution to the HDMI resolution.
 void display_set_mode(int x, int y, int ovx, int ovy)
@@ -240,7 +242,6 @@ int display_single_buffer = 0;
 
 void display_swap_buffers()
 {
-#if 0
   // Make sure whatever is in the active buffer is committed to memory.
   // XXX: using a clean (c10) instead of a flush (c14) does not seem to do
   // anything on the H3 (in fact, the data seems to be lost altogether). Not
@@ -271,12 +272,13 @@ void display_swap_buffers()
     DE_MIXER0_GLB_DBUFFER = 1;
   else
     tve_update_buffer();  // XXX: refactor
-#endif
 }
 
 void display_clear_active_buffer(void)
 {
-#if 0
   memset((void *)display_active_buffer, 0x00FF00, dsp.fb_bytes);
-#endif
 }
+
+#endif
+
+#endif
