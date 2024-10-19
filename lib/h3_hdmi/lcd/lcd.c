@@ -729,8 +729,6 @@ void hdmi_dump(void) {
 void h3_hdmi_test(void)
 {
 	TP();
-	//fb_init();
-	TP();
 	display_init_ex();
 	TP();
 

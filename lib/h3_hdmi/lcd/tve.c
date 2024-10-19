@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#if 0
 #define TVE_BASE 0x01e00000
 
 #include "ccu.h"
@@ -402,3 +403,5 @@ void tve_set_visible_buffer(volatile uint32_t *buf)
   DE_MIXER1_OVL_UI_TOP_LADD(0) = (uint32_t)buf;
   DE_MIXER1_OVL_UI_BOT_LADD(0) = (uint32_t)buf;  // XXX: necessary?
 }
+
+#endif
