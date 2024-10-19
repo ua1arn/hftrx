@@ -7,8 +7,6 @@
 
 #include "h3_hdmi.h"
 
-#include <stdint.h>
-
 static RAMNC uint8_t xxfb1 [512 * 512 * 4];
 static RAMNC uint8_t xxfb2 [512 * 512 * 4];
 
@@ -293,10 +291,13 @@ void hdmi_dump(void) {
 	PRINTF(" UNK3       %08X\n", H3_HDMI_PHY->UNK3);*/
 
 	PRINTF(" STATUS  %08X\n",(unsigned) HDMI_PHY_STS);
+	PRINTF(" STATUS  %08X\n",(unsigned) HDMI_PHY->ANA_STS);
 
-    PRINTF(" CEC  %08X\n",(unsigned) CEC);
-    PRINTF(" VER  %08X\n",(unsigned) VERSION);
+    PRINTF(" CEC  %08X\n",(unsigned) vCEC);
+    PRINTF(" VER  %08X\n",(unsigned) vVERSION);
 
+	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+	PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 }
 
 

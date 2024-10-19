@@ -6,35 +6,16 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-//
-//struct virt_mode_t {
-//  int fb_width, fb_height, fb_bytes;
-//  int x, y, ovx, ovy;
-//};
-
-//#include "display_timing.h"
-//extern struct display_timing default_timing;
-
-//extern int display_is_digital;
-//extern int display_is_pal;
-//
-//// HDMI controller output resolution
-//// NB: Any change in resolution requires additional changes in the HDMI
-//// controller register settings below.
-//#define DISPLAY_PHYS_RES_X	(display_is_digital ? default_timing.hactive.typ : 720)
-//#define DISPLAY_PHYS_RES_Y	(display_is_digital ? default_timing.vactive.typ : (display_is_pal ? 576 : 480))
-//
-//#define VIDEO_RAM_BYTES 0x180000
 
 // The HDMI registers base address.
-#define HDMI_BASE     0x01EE0000
-#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
+//#define HDMI_BASE     0x01EE0000
+//#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
 
 #define HDMI_REG8(off)  (*(volatile uint8_t *)(HDMI_BASE + (off)))
 #define HDMI_REG32(off) (*(volatile uint32_t *)(HDMI_BASE + (off)))
 
-#define CEC          (*(volatile uint32_t*)(HDMI_BASE + 0x10FF8))
-#define VERSION      (*(volatile uint32_t*)(HDMI_BASE + 0x10FFC))
+#define vCEC          (*(volatile uint32_t*)(HDMI_BASE + 0x10FF8))
+#define vVERSION      (*(volatile uint32_t*)(HDMI_BASE + 0x10FFC))
 
 // HDMI register helpers.
 #define HDMI_PHY_POL          (*(volatile uint32_t*)(HDMI_BASE + 0x10000))
@@ -329,9 +310,6 @@ extern "C" {
 #define DE_MIXER1_UIS_VPHASE0(n)      (*(volatile uint32_t*)(DE_MIXER1_UIS_BASE(n) + 0x98))
 #define DE_MIXER1_UIS_VPHASE1(n)      (*(volatile uint32_t*)(DE_MIXER1_UIS_BASE(n) + 0x9C))
 #define DE_MIXER1_UIS_HCOEF(n, x)     (*(volatile uint32_t*)(DE_MIXER1_UIS_BASE(n) + 0x200 + x * 4))
-
-#define DE_SIZE(x, y) ((((y)-1) << 16) | ((x)-1))
-#define DE_SIZE_PHYS  DE_SIZE(DISPLAY_PHYS_RES_X, DISPLAY_PHYS_RES_Y)
 
 #ifdef __cplusplus
 }

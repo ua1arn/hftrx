@@ -4,6 +4,7 @@ SET FILELIST= ^
 	ccu.csv gic.csv cpucfg.csv sysctl.csv ^
 	r_prcm.csv rtc.csv ^
 	uart.csv gpio.csv timer.csv ^
+	hdmi.csv ^
 	usb_ehci_capability.csv usb_ohci_capability.csv usbotg.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%
