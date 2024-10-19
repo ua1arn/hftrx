@@ -7,24 +7,31 @@ extern "C" {
 
 #include <stdint.h>
 
-struct virt_mode_t {
-  int fb_width, fb_height, fb_bytes;
-  int x, y, ovx, ovy;
-};
 
-#include "display_timing.h"
-extern struct display_timing default_timing;
+extern RAMNC uint8_t xxfb1 [512 * 512 * 4];
+extern RAMNC uint8_t xxfb2 [512 * 512 * 4];
 
-extern int display_is_digital;
-extern int display_is_pal;
+#define  framebuffer1 ((uintptr_t) xxfb1) // 0x43000000
+#define  framebuffer2 ((uintptr_t) xxfb2) // (0x45000000+(512*512))
+//
+//struct virt_mode_t {
+//  int fb_width, fb_height, fb_bytes;
+//  int x, y, ovx, ovy;
+//};
 
-// HDMI controller output resolution
-// NB: Any change in resolution requires additional changes in the HDMI
-// controller register settings below.
-#define DISPLAY_PHYS_RES_X	(display_is_digital ? default_timing.hactive.typ : 720)
-#define DISPLAY_PHYS_RES_Y	(display_is_digital ? default_timing.vactive.typ : (display_is_pal ? 576 : 480))
+//#include "display_timing.h"
+//extern struct display_timing default_timing;
 
-#define VIDEO_RAM_BYTES 0x180000
+//extern int display_is_digital;
+//extern int display_is_pal;
+//
+//// HDMI controller output resolution
+//// NB: Any change in resolution requires additional changes in the HDMI
+//// controller register settings below.
+//#define DISPLAY_PHYS_RES_X	(display_is_digital ? default_timing.hactive.typ : 720)
+//#define DISPLAY_PHYS_RES_Y	(display_is_digital ? default_timing.vactive.typ : (display_is_pal ? 576 : 480))
+//
+//#define VIDEO_RAM_BYTES 0x180000
 
 // The HDMI registers base address.
 #define HDMI_BASE     0x01EE0000
