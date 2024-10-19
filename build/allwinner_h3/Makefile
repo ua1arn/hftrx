@@ -207,16 +207,6 @@ ifeq (1, 0)
 include ../btstack.mak
 endif
 
-ifeq (1, 1)
-# LWIP
-H3HDMIDIR = $(PRJROOT)/lib/h3_hdmi
-DINCDIR += \
-	$(H3HDMIDIR)/lcd \
-	$(H3HDMIDIR)/fb \
-	$(H3HDMIDIR)/include
-SRCDIRS += $(H3HDMIDIR)
-endif
-
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
