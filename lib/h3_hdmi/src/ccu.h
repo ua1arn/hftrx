@@ -2,6 +2,7 @@
 extern "C" {
 #endif
 
+#if 0
 // The CCU registers base address.
 //#define CCU_BASE 0x01C20000
 
@@ -91,6 +92,8 @@ extern "C" {
 
 #define PLL_CPUX_FACTOR_K_MASK	0x00000030UL
 #define PLL_CPUX_FACTOR_N_MASK  0x00001f00UL
+
+#endif
 
 #ifdef __cplusplus
 }

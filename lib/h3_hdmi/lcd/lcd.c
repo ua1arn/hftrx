@@ -16,54 +16,52 @@ void hdmi_dump(void);
 
 void display_clocks_init(void) {
   // Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-  PLL_DE_CTRL      = (1<<31) | (1<<24) | (17<<8) | (0<<0); // 432MHz
-  PLL_VIDEO_CTRL   = (1<<31) | (1<<25) | (1<<24) | (98<<8) | (7<<0); // 297MHz
-  BUS_CLK_GATING1 |= (1<<12) | (1<<11) | (1<<3); // Enable DE, HDMI, TCON0
-  BUS_SOFT_RST1   |= (1<<12) | (3<<10) | (1<<3); // De-assert reset of DE, HDMI0/1, TCON0
-  DE_CLK           = (1<<31) | (1<<24); // Enable DE clock, set source to PLL_DE
-  HDMI_CLK         = (1<<31); // Enable HDMI clk (use PLL3)
-  HDMI_SLOW_CLK    = (1<<31); // Enable HDMI slow clk
-  TCON0_CLK        = (1<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
+  CCU->PLL_DE_CTRL_REG      = (UINT32_C(1)<<31) | (UINT32_C(1)<<24) | (17<<8) | (0<<0); // 432MHz
+  CCU->PLL_VIDEO_CTRL_REG   = (UINT32_C(1)<<31) | (UINT32_C(1)<<25) | (UINT32_C(1)<<24) | (98<<8) | (7<<0); // 297MHz
+  CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1)<<12) | (UINT32_C(1)<<11) | (UINT32_C(1)<<3); // Enable DE, HDMI, TCON0
+  CCU->BUS_SOFT_RST_REG1   |= (UINT32_C(1)<<12) | (3<<10) | (UINT32_C(1)<<3); // De-assert reset of DE, HDMI0/1, TCON0
+  CCU->DE_CLK_REG           = (UINT32_C(1)<<31) | (UINT32_C(1)<<24); // Enable DE clock, set source to PLL_DE
+  CCU->HDMI_CLK_REG         = (UINT32_C(1)<<31); // Enable HDMI clk (use PLL3)
+  CCU->HDMI_SLOW_CLK_REG    = (UINT32_C(1)<<31); // Enable HDMI slow clk
+  CCU->TCON0_CLK_REG        = (UINT32_C(1)<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 }
 
 void hdmi_init(void) {
-	TP();
   // HDMI PHY init, the following black magic is based on the procedure documented at:
   // http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
   HDMI_PHY_CFG1 = 0;
   HDMI_PHY_CFG1 = 1;
   local_delay_us(5);
-  HDMI_PHY_CFG1 |= (1<<16);
-  HDMI_PHY_CFG1 |= (1<<1);
+  HDMI_PHY_CFG1 |= (UINT32_C(1)<<16);
+  HDMI_PHY_CFG1 |= (UINT32_C(1)<<1);
   local_delay_us(10);
-  HDMI_PHY_CFG1 |= (1<<2);
+  HDMI_PHY_CFG1 |= (UINT32_C(1)<<2);
   local_delay_us(5);
-  HDMI_PHY_CFG1 |= (1<<3);
+  HDMI_PHY_CFG1 |= (UINT32_C(1)<<3);
   local_delay_us(40);
-  HDMI_PHY_CFG1 |= (1<<19);
+  HDMI_PHY_CFG1 |= (UINT32_C(1)<<19);
   local_delay_us(100);
-  HDMI_PHY_CFG1 |= (1<<18);
+  HDMI_PHY_CFG1 |= (UINT32_C(1)<<18);
   HDMI_PHY_CFG1 |= (7<<4);
-	TP();
+
  while((HDMI_PHY_STS & 0x80) == 0)
 	 ;
-	TP();
 
   HDMI_PHY_CFG1 |= (0xf<<4);
   HDMI_PHY_CFG1 |= (0xf<<8);
-  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
+  HDMI_PHY_CFG3 |= (UINT32_C(1)<<0) | (UINT32_C(1)<<2);
 
-  HDMI_PHY_PLL1 &= ~(1<<26);
+  HDMI_PHY_PLL1 &= ~(UINT32_C(1)<<26);
   HDMI_PHY_CEC = 0;
 
   HDMI_PHY_PLL1 = 0x39dc5040;
   HDMI_PHY_PLL2 = 0x80084381;
   local_delay_us(10000);
   HDMI_PHY_PLL3 = 1;
-  HDMI_PHY_PLL1 |= (1<<25);
+  HDMI_PHY_PLL1 |= (UINT32_C(1)<<25);
   local_delay_us(10000);
   uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
-  HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
+  HDMI_PHY_PLL1 |= (UINT32_C(1)<<31) | (UINT32_C(1)<<30) | tmp;
 
   HDMI_PHY_CFG1 = 0x01FFFF7F;
   HDMI_PHY_CFG2 = 0x8063A800;
@@ -76,7 +74,7 @@ void hdmi_init(void) {
 
   // HDMI Config, based on the documentation at:
   // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-  HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+  HDMI_FC_INVIDCONF = (UINT32_C(1)<<6) | (UINT32_C(1)<<5) | (UINT32_C(1)<<4) | (UINT32_C(1)<<3); // Polarity etc
   HDMI_FC_INHACTIV0 = (1920 & 0xff);    // Horizontal pixels
   HDMI_FC_INHACTIV1 = (1920 >> 8);      // Horizontal pixels
   HDMI_FC_INHBLANK0 = (280 & 0xff);     // Horizontal blanking
@@ -103,7 +101,7 @@ void hdmi_init(void) {
   HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 
-/*  HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+/*  HDMI_FC_INVIDCONF = (UINT32_C(1)<<6) | (UINT32_C(1)<<5) | (UINT32_C(1)<<4) | (UINT32_C(1)<<3); // Polarity etc
   HDMI_FC_INHACTIV0 = (800 & 0xff);    // Horizontal pixels
   HDMI_FC_INHACTIV1 = (800 >> 8);      // Horizontal pixels
   HDMI_FC_INHBLANK0 = (256 & 0xff);     // Horizontal blanking
@@ -144,9 +142,9 @@ void hdmi_init(void) {
 }
 void lcd_init(void) {
   // LCD0 feeds mixer0 to HDMI
-  LCD0_GCTL         = (1<<31);
+  LCD0_GCTL         = (UINT32_C(1)<<31);
   LCD0_GINT0        = 0;
-  LCD0_TCON1_CTL    = (1<<31) | (30<<4);
+  LCD0_TCON1_CTL    = (UINT32_C(1)<<31) | (30<<4);
   LCD0_TCON1_BASIC0 = (1919<<16) | 1079;
   LCD0_TCON1_BASIC1 = (1919<<16) | 1079;
   LCD0_TCON1_BASIC2 = (1919<<16) | 1079;
@@ -161,7 +159,7 @@ void lcd_init(void) {
   LCD0_TCON1_BASIC5 = (127<<16) | 40;*/
 
   LCD0_GINT1 = 1;
-  LCD0_GINT0 = (1<<30);//28
+  LCD0_GINT0 = (UINT32_C(1)<<30);//28
   ///irq_enable(118);  // LCD0
 }
 
@@ -174,10 +172,10 @@ void de2_init(void)
   xsize=480-1;
   ysize=270-1;
 
-  DE_AHB_RESET |= (1<<0)|(1<<1);///core 0,1
-  DE_SCLK_GATE |= (1<<0)|(1<<1);///core 0,1
-  DE_HCLK_GATE |= (1<<0)|(1<<1);///core 0,1
-  DE_DE2TCON_MUX &= ~(1<<0);
+  DE_AHB_RESET |= (UINT32_C(1)<<0)|(UINT32_C(1)<<1);///core 0,1
+  DE_SCLK_GATE |= (UINT32_C(1)<<0)|(UINT32_C(1)<<1);///core 0,1
+  DE_HCLK_GATE |= (UINT32_C(1)<<0)|(UINT32_C(1)<<1);///core 0,1
+  DE_DE2TCON_MUX &= ~(UINT32_C(1)<<0);
 
   // Erase the whole of MIXER0. This contains uninitialized data.
   for(uint32_t addr = DE_MIXER0 + 0x0000; addr < DE_MIXER0 + 0xC000; addr += 4)
@@ -195,7 +193,7 @@ void de2_init(void)
  /// DE_MIXER0_BLD_CH_ISIZE(0) = (489<<16) | 799;
   // The output takes a 480x270 area from a total 512x302
   // buffer leaving a 16px overscan on all 4 sides.
-  DE_MIXER0_OVL_V_ATTCTL(0) = (1<<15) | (1<<0);
+  DE_MIXER0_OVL_V_ATTCTL(0) = (UINT32_C(1)<<15) | (UINT32_C(1)<<0);
   DE_MIXER0_OVL_V_MBSIZE(0) = (ysize<<16) | xsize;
 
   DE_MIXER0_OVL_V_COOR(0) = 0;
@@ -213,6 +211,7 @@ void de2_init(void)
   DE_MIXER0_VS_C_SIZE = (ysize<<16) | xsize;
   DE_MIXER0_VS_C_HSTEP = 0x40000;
   DE_MIXER0_VS_C_VSTEP = 0x40000;
+
   for(int n=0;n<32;n++) {
     DE_MIXER0_VS_Y_HCOEF0(n) = 0x40000000;
     DE_MIXER0_VS_Y_HCOEF1(n) = 0;
@@ -223,20 +222,20 @@ void de2_init(void)
   }
 
 
-  DE_MIXER0_VS_CTRL = 1 | (1<<4);
+  DE_MIXER0_VS_CTRL = 1 | (UINT32_C(1)<<4);
   DE_MIXER0_GLB_DBUFFER = 1;
 }
 
 void st_clock(void) {
   // Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
- // PLL_DE_CTRL      = (1<<31) | (1<<24) | (17<<8) | (0<<0); // 432MHz
- /// PLL_VIDEO_CTRL   = (1<<31) | (1<<25) | (1<<24) | (98<<8) | (7<<0); // 297MHz
-  BUS_CLK_GATING1 |= /*(1<<12) | */(1<<11) /*| (1<<3)*/; // Enable DE, HDMI, TCON0
-  BUS_SOFT_RST1   |= /*(1<<12) | */(3<<10)/* | (1<<3)*/; // De-assert reset of DE, HDMI0/1, TCON0
-  //DE_CLK           = (1<<31) | (1<<24); // Enable DE clock, set source to PLL_DE
- // HDMI_CLK         = (1<<31); // Enable HDMI clk (use PLL3)
-  HDMI_SLOW_CLK    = (1<<31); // Enable HDMI slow clk
- // TCON0_CLK        = (1<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
+ // PLL_DE_CTRL      = (UINT32_C(1)<<31) | (UINT32_C(1)<<24) | (17<<8) | (0<<0); // 432MHz
+ /// PLL_VIDEO_CTRL   = (UINT32_C(1)<<31) | (UINT32_C(1)<<25) | (UINT32_C(1)<<24) | (98<<8) | (7<<0); // 297MHz
+  CCU->BUS_CLK_GATING_REG1 |= /*(UINT32_C(1)<<12) | */(UINT32_C(1)<<11) /*| (UINT32_C(1)<<3)*/; // Enable DE, HDMI, TCON0
+  CCU->BUS_SOFT_RST_REG1   |= /*(UINT32_C(1)<<12) | */(3<<10)/* | (UINT32_C(1)<<3)*/; // De-assert reset of DE, HDMI0/1, TCON0
+  //DE_CLK           = (UINT32_C(1)<<31) | (UINT32_C(1)<<24); // Enable DE clock, set source to PLL_DE
+ // HDMI_CLK         = (UINT32_C(1)<<31); // Enable HDMI clk (use PLL3)
+  CCU->HDMI_SLOW_CLK_REG    = (UINT32_C(1)<<31); // Enable HDMI slow clk
+ // TCON0_CLK        = (UINT32_C(1)<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 }
 // This function initializes the HDMI port and TCON.
 // Almost everything here is resolution specific and
@@ -728,11 +727,7 @@ void hdmi_dump(void) {
 
 void h3_hdmi_test(void)
 {
-	TP();
 	display_init_ex();
-	TP();
-
 	UB_LCD_FillLayer(GREEN);
-	TP();
 }
 

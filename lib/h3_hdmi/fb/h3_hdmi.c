@@ -1,3 +1,4 @@
+#if 0
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
 /**
@@ -430,3 +431,5 @@ int  h3_hdmi_probe(void) {
 
 	return 0;
 }
+
+#endif
