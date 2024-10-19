@@ -155,7 +155,7 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
 SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
@@ -205,6 +205,17 @@ ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
+endif
+
+ifeq (1, 1)
+# LWIP
+H3HDMIDIR = $(PRJROOT)/lib/h3_hdmi
+DINCDIR += \
+	$(H3HDMIDIR)/src \
+	$(H3HDMIDIR)/lcd \
+	$(H3HDMIDIR)/fb \
+	$(H3HDMIDIR)/include
+SRCDIRS += $(H3HDMIDIR)
 endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
