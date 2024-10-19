@@ -321,6 +321,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>DE_CLK_REG</name>
+    <displayName>DE_CLK_REG</displayName>
+    <description>DE Clock Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>TCON0_CLK_REG</name>
     <displayName>TCON0_CLK_REG</displayName>
     <description>TCON0 Clock Register</description>

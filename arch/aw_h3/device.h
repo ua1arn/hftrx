@@ -168,7 +168,8 @@ typedef __PACKED_STRUCT CCU_Type
          uint32_t reserved_0x0F8;
     __IO uint32_t MBUS_RST_REG;                       /*!< Offset 0x0FC MBUS Reset Register */
     __IO uint32_t DRAM_CLK_GATING_REG;                /*!< Offset 0x100 DRAM Clock Gating Register */
-         uint32_t reserved_0x104 [0x0005];
+    __IO uint32_t DE_CLK_REG;                         /*!< Offset 0x104 DE Clock Register */
+         uint32_t reserved_0x108 [0x0004];
     __IO uint32_t TCON0_CLK_REG;                      /*!< Offset 0x118 TCON0 Clock Register */
          uint32_t reserved_0x11C;
     __IO uint32_t TVE_CLK_REG;                        /*!< Offset 0x120 TVE Clock Register */
