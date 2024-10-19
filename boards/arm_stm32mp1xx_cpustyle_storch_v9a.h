@@ -957,12 +957,11 @@
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
 		const uint32_t GPIO_AF_LTDC14 = 14; /* LCD-TFT Alternate Function mapping */ \
 		const uint32_t GPIO_AF_LTDC9 = 9; /* LCD-TFT Alternate Function mapping */ \
-		const uint32_t GPIO_AF_LTDC3 = 3; /* LCD-TFT Alternate Function mapping */ \
 		const uint32_t MODEmask = (UINT32_C(1) << 3); /* PD3 - FPLCD_CD */ \
 		const uint32_t RESETmask = (UINT32_C(1) << 4); /* PD4 - FPLCD_RESET */ \
 		const uint32_t DEmask = (UINT32_C(1) << 13); /* PE13 - DE */ \
 		const uint32_t HSmask = (UINT32_C(1) << 6); /* PC6 - HSYNC */ \
-		const uint32_t VSmask = (UINT32_C(1) << 4); 	/* PA4 - VSYNC */ \
+		const uint32_t VSmask = (UINT32_C(1) << 4); /* PA4 - VSYNC */ \
 		/* LCD RESET */ \
 		arm_hardware_piod_outputs2m(RESETmask, RESETmask); /* PD4 - FPLCD_RESET */ \
 		/* Bit clock */ \
