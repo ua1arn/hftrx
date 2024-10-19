@@ -2785,7 +2785,6 @@ sysinit_ttbr_initialize(void)
 #endif
 
 	MMU_Enable();
-	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 #elif CPUSTYLE_RISCV
 
@@ -4656,6 +4655,7 @@ void cpump_initialize(void)
 
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
+	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
