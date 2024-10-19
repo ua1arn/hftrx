@@ -211,7 +211,6 @@ ifeq (1, 1)
 # LWIP
 H3HDMIDIR = $(PRJROOT)/lib/h3_hdmi
 DINCDIR += \
-	$(H3HDMIDIR)/src \
 	$(H3HDMIDIR)/lcd \
 	$(H3HDMIDIR)/fb \
 	$(H3HDMIDIR)/include

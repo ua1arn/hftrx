@@ -33,6 +33,8 @@
 #include <reg-ccu.h>
 #include <reg-dram.h>
 
+typedef uintptr_t virtual_addr_t;
+
 #define CONFIG_DRAM_BASE	(0x40000000)
 #define CONFIG_DRAM_CLK		533///(408)///750
 #define CONFIG_DRAM_ZQ 		(3881979)
