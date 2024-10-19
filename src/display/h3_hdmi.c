@@ -31,117 +31,117 @@ void display_clocks_init(void) {
 }
 
 void hdmi_init(void) {
-  // HDMI PHY init, the following black magic is based on the procedure documented at:
-  // http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
-  HDMI_PHY_CFG1 = 0;
-  HDMI_PHY_CFG1 = 1;
-  local_delay_us(5);
-  HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
-  HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
-  local_delay_us(10);
-  HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
-  local_delay_us(5);
-  HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
-  local_delay_us(40);
-  HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
-  local_delay_us(100);
-  HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
-  HDMI_PHY_CFG1 |= (7 << 4);
+	// HDMI PHY init, the following black magic is based on the procedure documented at:
+	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
+	HDMI_PHY->HDMI_PHY_CFG1 = 0;
+	HDMI_PHY->HDMI_PHY_CFG1 = 1;
+	local_delay_us(5);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
+	local_delay_us(10);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
+	local_delay_us(5);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
+	local_delay_us(40);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
+	local_delay_us(100);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (7 << 4);
 
- while((HDMI_PHY_STS & 0x80) == 0)
-	 ;
+	while((HDMI_PHY->HDMI_PHY_STS & 0x80) == 0)
+		;
 
-  HDMI_PHY_CFG1 |= (0xf << 4);
-  HDMI_PHY_CFG1 |= (0xf << 8);
-  HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 4);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 8);
+	HDMI_PHY->HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
 
-  HDMI_PHY_PLL1 &= ~(UINT32_C(1) << 26);
-  HDMI_PHY_CEC = 0;
+	HDMI_PHY->HDMI_PHY_PLL1 &= ~(UINT32_C(1) << 26);
+	HDMI_PHY->HDMI_PHY_CEC = 0;
 
-  HDMI_PHY_PLL1 = 0x39dc5040;
-  HDMI_PHY_PLL2 = 0x80084381;
-  local_delay_us(10000);
-  HDMI_PHY_PLL3 = 1;
-  HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
-  local_delay_us(10000);
-  uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
-  HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+	HDMI_PHY->HDMI_PHY_PLL1 = 0x39dc5040;
+	HDMI_PHY->HDMI_PHY_PLL2 = 0x80084381;
+	local_delay_us(10000);
+	HDMI_PHY->HDMI_PHY_PLL3 = 1;
+	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
+	local_delay_us(10000);
+	uint32_t tmp = (HDMI_PHY->HDMI_PHY_STS & 0x1f800) >> 11;
+	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
 
-  HDMI_PHY_CFG1 = 0x01FFFF7F;
-  HDMI_PHY_CFG2 = 0x8063A800;
-  HDMI_PHY_CFG3 = 0x0F81C485;
+	HDMI_PHY->HDMI_PHY_CFG1 = 0x01FFFF7F;
+	HDMI_PHY->HDMI_PHY_CFG2 = 0x8063A800;
+	HDMI_PHY->HDMI_PHY_CFG3 = 0x0F81C485;
 
-  /* enable read access to HDMI controller */
-  HDMI_PHY_READ_EN = 0x54524545;
-  /* descramble register offsets */
-  HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	/* enable read access to HDMI controller */
+	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 
-  // HDMI Config, based on the documentation at:
-  // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-  HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-  HDMI_FC_INHACTIV0 = (1920 & 0xff);    // Horizontal pixels
-  HDMI_FC_INHACTIV1 = (1920 >> 8);      // Horizontal pixels
-  HDMI_FC_INHBLANK0 = (280 & 0xff);     // Horizontal blanking
-  HDMI_FC_INHBLANK1 = (280 >> 8);       // Horizontal blanking
+	// HDMI Config, based on the documentation at:
+	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+	HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
+	HDMI_FC_INHACTIV0 = (1920 & 0xff);    // Horizontal pixels
+	HDMI_FC_INHACTIV1 = (1920 >> 8);      // Horizontal pixels
+	HDMI_FC_INHBLANK0 = (280 & 0xff);     // Horizontal blanking
+	HDMI_FC_INHBLANK1 = (280 >> 8);       // Horizontal blanking
 
-  HDMI_FC_INVACTIV0 = (1080 & 0xff);    // Vertical pixels
-  HDMI_FC_INVACTIV1 = (1080 >> 8);      // Vertical pixels
-  HDMI_FC_INVBLANK  = 45;               // Vertical blanking
+	HDMI_FC_INVACTIV0 = (1080 & 0xff);    // Vertical pixels
+	HDMI_FC_INVACTIV1 = (1080 >> 8);      // Vertical pixels
+	HDMI_FC_INVBLANK  = 45;               // Vertical blanking
 
-  HDMI_FC_HSYNCINDELAY0 = (88 & 0xff);  // Horizontal Front porch
-  HDMI_FC_HSYNCINDELAY1 = (88 >> 8);    // Horizontal Front porch
-  HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-  HDMI_FC_HSYNCINWIDTH0 = (44 & 0xff);  // Horizontal sync pulse
-  HDMI_FC_HSYNCINWIDTH1 = (44 >> 8);    // Horizontal sync pulse
-  HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
+	HDMI_FC_HSYNCINDELAY0 = (88 & 0xff);  // Horizontal Front porch
+	HDMI_FC_HSYNCINDELAY1 = (88 >> 8);    // Horizontal Front porch
+	HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
+	HDMI_FC_HSYNCINWIDTH0 = (44 & 0xff);  // Horizontal sync pulse
+	HDMI_FC_HSYNCINWIDTH1 = (44 >> 8);    // Horizontal sync pulse
+	HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
 
-  HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-  HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-  HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-  HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-  HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-  HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-  HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-  HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+	HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+	HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+	HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+	HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+	HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 
-/*  HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-  HDMI_FC_INHACTIV0 = (800 & 0xff);    // Horizontal pixels
-  HDMI_FC_INHACTIV1 = (800 >> 8);      // Horizontal pixels
-  HDMI_FC_INHBLANK0 = (256 & 0xff);     // Horizontal blanking
-  HDMI_FC_INHBLANK1 = (256 >> 8);       // Horizontal blanking
+	/*  HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
+	HDMI_FC_INHACTIV0 = (800 & 0xff);    // Horizontal pixels
+	HDMI_FC_INHACTIV1 = (800 >> 8);      // Horizontal pixels
+	HDMI_FC_INHBLANK0 = (256 & 0xff);     // Horizontal blanking
+	HDMI_FC_INHBLANK1 = (256 >> 8);       // Horizontal blanking
 
-  HDMI_FC_INVACTIV0 = (480 & 0xff);    // Vertical pixels
-  HDMI_FC_INVACTIV1 = (480 >> 8);      // Vertical pixels
-  HDMI_FC_INVBLANK  = 28;               // Vertical blanking
+	HDMI_FC_INVACTIV0 = (480 & 0xff);    // Vertical pixels
+	HDMI_FC_INVACTIV1 = (480 >> 8);      // Vertical pixels
+	HDMI_FC_INVBLANK  = 28;               // Vertical blanking
 
-  HDMI_FC_HSYNCINDELAY0 = (40 & 0xff);  // Horizontal Front porch
-  HDMI_FC_HSYNCINDELAY1 = (40 >> 8);    // Horizontal Front porch
-  HDMI_FC_VSYNCINDELAY  = 1;            // Vertical front porch
-  HDMI_FC_HSYNCINWIDTH0 = (128 & 0xff);  // Horizontal sync pulse
-  HDMI_FC_HSYNCINWIDTH1 = (128 >> 8);    // Horizontal sync pulse
-  HDMI_FC_VSYNCINWIDTH  = 4;            // Vertical sync pulse
+	HDMI_FC_HSYNCINDELAY0 = (40 & 0xff);  // Horizontal Front porch
+	HDMI_FC_HSYNCINDELAY1 = (40 >> 8);    // Horizontal Front porch
+	HDMI_FC_VSYNCINDELAY  = 1;            // Vertical front porch
+	HDMI_FC_HSYNCINWIDTH0 = (128 & 0xff);  // Horizontal sync pulse
+	HDMI_FC_HSYNCINWIDTH1 = (128 >> 8);    // Horizontal sync pulse
+	HDMI_FC_VSYNCINWIDTH  = 4;            // Vertical sync pulse
 
-  HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-  HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-  HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-  HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-  HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-  HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-  HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-  HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
-*/
-  /*800x480p hfp:40 hs:48 hbp:40 vfp:13 vs:3 vbp:29 pixel clock:32 MHz
+	HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+	HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+	HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+	HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+	HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+	*/
+	/*800x480p hfp:40 hs:48 hbp:40 vfp:13 vs:3 vbp:29 pixel clock:32 MHz
 
-      hltdc.Init.HorizontalSync = 19;
-    hltdc.Init.VerticalSync = 2;
-    hltdc.Init.AccumulatedHBP = 159;
-    hltdc.Init.AccumulatedVBP = 22;
-    hltdc.Init.AccumulatedActiveW = 1183;
-    hltdc.Init.AccumulatedActiveH = 622;
-    hltdc.Init.TotalWidth = 1343;
-    hltdc.Init.TotalHeigh = 634;
-    */
+	hltdc.Init.HorizontalSync = 19;
+	hltdc.Init.VerticalSync = 2;
+	hltdc.Init.AccumulatedHBP = 159;
+	hltdc.Init.AccumulatedVBP = 22;
+	hltdc.Init.AccumulatedActiveW = 1183;
+	hltdc.Init.AccumulatedActiveH = 622;
+	hltdc.Init.TotalWidth = 1343;
+	hltdc.Init.TotalHeigh = 634;
+	*/
 
 }
 void lcd_init(void) {
@@ -275,9 +275,9 @@ void UB_LCD_FillLayer(uint32_t color)
 
 void hdmi_dump(void) {
 	/* enable read access to HDMI controller */
-	HDMI_PHY_READ_EN = 0x54524545;
+	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
-	HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 
 	/*PRINTF("HDMI_PHY\n");
 	PRINTF(" POL        %08X\n", H3_HDMI_PHY->POL);
@@ -290,11 +290,8 @@ void hdmi_dump(void) {
 	PRINTF(" CLK        %08X\n", H3_HDMI_PHY->CLK);
 	PRINTF(" UNK3       %08X\n", H3_HDMI_PHY->UNK3);*/
 
-	PRINTF(" STATUS  %08X\n",(unsigned) HDMI_PHY_STS);
-	PRINTF(" STATUS  %08X\n",(unsigned) HDMI_PHY->ANA_STS);
+	PRINTF(" STATUS  %08X\n",(unsigned) HDMI_PHY->HDMI_PHY_STS);
 
-    PRINTF(" CEC  %08X\n",(unsigned) vCEC);
-    PRINTF(" VER  %08X\n",(unsigned) vVERSION);
 
 	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
 	PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);

@@ -1194,108 +1194,99 @@
   <baseAddress>0x01EF0000</baseAddress>
   <registers>
    <register>
-    <name>DBG_CTRL</name>
-    <displayName>DBG_CTRL</displayName>
-    <description>DBG_CTRL</description>
+    <name>HDMI_PHY_POL</name>
+    <displayName>HDMI_PHY_POL</displayName>
+    <description>tbd</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>REXT_CTRL</name>
-    <displayName>REXT_CTRL</displayName>
-    <description>REXT_CTRL</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>READ_EN</name>
-    <displayName>READ_EN</displayName>
-    <description>READ_EN</description>
+    <name>HDMI_PHY_READ_EN</name>
+    <displayName>HDMI_PHY_READ_EN</displayName>
+    <description>tbd</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UNSCRAMBLE</name>
-    <displayName>UNSCRAMBLE</displayName>
-    <description>UNSCRAMBLE</description>
+    <name>HDMI_PHY_UNSCRAMBLE</name>
+    <displayName>HDMI_PHY_UNSCRAMBLE</displayName>
+    <description>tbd</description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ANA_CFG1</name>
-    <displayName>ANA_CFG1</displayName>
-    <description>ANA_CFG1</description>
+    <name>HDMI_PHY_CFG1</name>
+    <displayName>HDMI_PHY_CFG1</displayName>
+    <description>tbd</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ANA_CFG2</name>
-    <displayName>ANA_CFG2</displayName>
-    <description>ANA_CFG2</description>
+    <name>HDMI_PHY_CFG2</name>
+    <displayName>HDMI_PHY_CFG2</displayName>
+    <description>tbd</description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ANA_CFG3</name>
-    <displayName>ANA_CFG3</displayName>
-    <description>ANA_CFG3</description>
+    <name>HDMI_PHY_CFG3</name>
+    <displayName>HDMI_PHY_CFG3</displayName>
+    <description>tbd</description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_CFG1</name>
-    <displayName>PLL_CFG1</displayName>
-    <description>ANA_CFG1</description>
+    <name>HDMI_PHY_PLL1</name>
+    <displayName>HDMI_PHY_PLL1</displayName>
+    <description>tbd</description>
     <addressOffset>0x02C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_CFG2</name>
-    <displayName>PLL_CFG2</displayName>
-    <description>PLL_CFG2</description>
+    <name>HDMI_PHY_PLL2</name>
+    <displayName>HDMI_PHY_PLL2</displayName>
+    <description>tbd</description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_CFG3</name>
-    <displayName>PLL_CFG3</displayName>
-    <description>PLL_CFG3</description>
+    <name>HDMI_PHY_PLL3</name>
+    <displayName>HDMI_PHY_PLL3</displayName>
+    <description>tbd</description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ANA_STS</name>
-    <displayName>ANA_STS</displayName>
-    <description>ANA_STS</description>
+    <name>HDMI_PHY_STS</name>
+    <displayName>HDMI_PHY_STS</displayName>
+    <description>tbd</description>
     <addressOffset>0x038</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CEC</name>
-    <displayName>CEC</displayName>
-    <description>CEC</description>
+    <name>HDMI_PHY_CEC</name>
+    <displayName>HDMI_PHY_CEC</displayName>
+    <description>tbd</description>
     <addressOffset>0x03C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

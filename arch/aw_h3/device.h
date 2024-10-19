@@ -316,20 +316,19 @@ typedef __PACKED_STRUCT GPIOINT_Type
 /*!< HDMI_PHY  */
 typedef __PACKED_STRUCT HDMI_PHY_Type
 {
-    __IO uint32_t DBG_CTRL;                           /*!< Offset 0x000 DBG_CTRL */
-    __IO uint32_t REXT_CTRL;                          /*!< Offset 0x004 REXT_CTRL */
-         uint32_t reserved_0x008 [0x0002];
-    __IO uint32_t READ_EN;                            /*!< Offset 0x010 READ_EN */
-    __IO uint32_t UNSCRAMBLE;                         /*!< Offset 0x014 UNSCRAMBLE */
+    __IO uint32_t HDMI_PHY_POL;                       /*!< Offset 0x000 tbd */
+         uint32_t reserved_0x004 [0x0003];
+    __IO uint32_t HDMI_PHY_READ_EN;                   /*!< Offset 0x010 tbd */
+    __IO uint32_t HDMI_PHY_UNSCRAMBLE;                /*!< Offset 0x014 tbd */
          uint32_t reserved_0x018 [0x0002];
-    __IO uint32_t ANA_CFG1;                           /*!< Offset 0x020 ANA_CFG1 */
-    __IO uint32_t ANA_CFG2;                           /*!< Offset 0x024 ANA_CFG2 */
-    __IO uint32_t ANA_CFG3;                           /*!< Offset 0x028 ANA_CFG3 */
-    __IO uint32_t PLL_CFG1;                           /*!< Offset 0x02C ANA_CFG1 */
-    __IO uint32_t PLL_CFG2;                           /*!< Offset 0x030 PLL_CFG2 */
-    __IO uint32_t PLL_CFG3;                           /*!< Offset 0x034 PLL_CFG3 */
-    __IO uint32_t ANA_STS;                            /*!< Offset 0x038 ANA_STS */
-    __IO uint32_t CEC;                                /*!< Offset 0x03C CEC */
+    __IO uint32_t HDMI_PHY_CFG1;                      /*!< Offset 0x020 tbd */
+    __IO uint32_t HDMI_PHY_CFG2;                      /*!< Offset 0x024 tbd */
+    __IO uint32_t HDMI_PHY_CFG3;                      /*!< Offset 0x028 tbd */
+    __IO uint32_t HDMI_PHY_PLL1;                      /*!< Offset 0x02C tbd */
+    __IO uint32_t HDMI_PHY_PLL2;                      /*!< Offset 0x030 tbd */
+    __IO uint32_t HDMI_PHY_PLL3;                      /*!< Offset 0x034 tbd */
+    __IO uint32_t HDMI_PHY_STS;                       /*!< Offset 0x038 tbd */
+    __IO uint32_t HDMI_PHY_CEC;                       /*!< Offset 0x03C tbd */
          uint32_t reserved_0x040 [0x03EE];
     __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
     __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */

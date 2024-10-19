@@ -18,17 +18,17 @@ extern "C" {
 #define vVERSION      (*(volatile uint32_t*)(HDMI_BASE + 0x10FFC))
 
 // HDMI register helpers.
-#define HDMI_PHY_POL          (*(volatile uint32_t*)(HDMI_BASE + 0x10000))
-#define HDMI_PHY_READ_EN      (*(volatile uint32_t*)(HDMI_BASE + 0x10010))
-#define HDMI_PHY_UNSCRAMBLE   (*(volatile uint32_t*)(HDMI_BASE + 0x10014))
-#define HDMI_PHY_CFG1         (*(volatile uint32_t*)(HDMI_BASE + 0x10020))
-#define HDMI_PHY_CFG2         (*(volatile uint32_t*)(HDMI_BASE + 0x10024))
-#define HDMI_PHY_CFG3         (*(volatile uint32_t*)(HDMI_BASE + 0x10028))
-#define HDMI_PHY_PLL1         (*(volatile uint32_t*)(HDMI_BASE + 0x1002C))
-#define HDMI_PHY_PLL2         (*(volatile uint32_t*)(HDMI_BASE + 0x10030))
-#define HDMI_PHY_PLL3         (*(volatile uint32_t*)(HDMI_BASE + 0x10034))
-#define HDMI_PHY_STS          (*(volatile uint32_t*)(HDMI_BASE + 0x10038))
-#define HDMI_PHY_CEC          (*(volatile uint32_t*)(HDMI_BASE + 0x1003C))
+//#define HDMI_PHY_POL          (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0000))
+//#define HDMI_PHY_READ_EN      (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0010))
+//#define HDMI_PHY_UNSCRAMBLE   (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0014))
+//#define HDMI_PHY_CFG1         (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0020))
+//#define HDMI_PHY_CFG2         (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0024))
+//#define HDMI_PHY_CFG3         (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0028))
+//#define HDMI_PHY_PLL1         (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x002C))
+//#define HDMI_PHY_PLL2         (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0030))
+//#define HDMI_PHY_PLL3         (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0034))
+//#define HDMI_PHY_STS          (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x0038))
+//#define HDMI_PHY_CEC          (*(volatile uint32_t*)(HDMI_PHY_BASE + 0x003C))
 
 #define HDMI_FC_INVIDCONF     (*(volatile uint8_t*)(HDMI_BASE + 0x1000))
 
