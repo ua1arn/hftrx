@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 ///extern int uart0_printf(const char* fmt, ...);
-///#define printf uart0_printf
+///#define PRINTF uart0_printf
 
 #include "h3.h"
 
@@ -35,15 +35,15 @@
  */
 
 void h3_lcdc_dump(void) {
-	printf("LCD0\n");
-	printf(" GCTL         %p\n", H3_LCD0->GCTL);
-	printf(" GINT0        %p\n", H3_LCD0->GINT0);
-	printf(" GINT1        %p\n", H3_LCD0->GINT1);
-	printf(" TCON1_CTL    %p\n", H3_LCD0->TCON1_CTL);
-	printf(" TCON1_BASIC0 %p\n", H3_LCD0->TCON1_BASIC0);
-	printf(" TCON1_BASIC1 %p\n", H3_LCD0->TCON1_BASIC1);
-	printf(" TCON1_BASIC2 %p\n", H3_LCD0->TCON1_BASIC2);
-	printf(" TCON1_BASIC3 %p\n", H3_LCD0->TCON1_BASIC3);
-	printf(" TCON1_BASIC4 %p\n", H3_LCD0->TCON1_BASIC4);
-	printf(" TCON1_BASIC5 %p\n", H3_LCD0->TCON1_BASIC5);
+	PRINTF("LCD0 [%p]:\n", H3_LCD0);
+	PRINTF(" GCTL         %08X\n", (unsigned) H3_LCD0->GCTL);
+	PRINTF(" GINT0        %08X\n", (unsigned) H3_LCD0->GINT0);
+	PRINTF(" GINT1        %08X\n", (unsigned) H3_LCD0->GINT1);
+	PRINTF(" TCON1_CTL    %08X\n", (unsigned) H3_LCD0->TCON1_CTL);
+	PRINTF(" TCON1_BASIC0 %08X\n", (unsigned) H3_LCD0->TCON1_BASIC0);
+	PRINTF(" TCON1_BASIC1 %08X\n", (unsigned) H3_LCD0->TCON1_BASIC1);
+	PRINTF(" TCON1_BASIC2 %08X\n", (unsigned) H3_LCD0->TCON1_BASIC2);
+	PRINTF(" TCON1_BASIC3 %08X\n", (unsigned) H3_LCD0->TCON1_BASIC3);
+	PRINTF(" TCON1_BASIC4 %08X\n", (unsigned) H3_LCD0->TCON1_BASIC4);
+	PRINTF(" TCON1_BASIC5 %08X\n", (unsigned) H3_LCD0->TCON1_BASIC5);
 }

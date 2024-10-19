@@ -5,18 +5,10 @@
 #include "lcd.h"
 #include "main.h"
 
-#if 1
-	static RAMNC uint8_t fb1 [512 * 512 * 4];
-	static RAMNC uint8_t fb2 [512 * 512 * 4];
-	static RAMNC uint8_t fb3 [512 * 512 * 4];
-	#define  framebuffer1 ((uintptr_t) fb1) // 0x43000000
-	#define  framebuffer2 ((uintptr_t) fb2) // (0x45000000+(512*512))
-	#define  framebuffer3 ((uintptr_t) fb3) // (0x47000000+2*(512*512))
-#else
-	#define  framebuffer1 0x43000000
-	#define  framebuffer2 (0x45000000+(512*512))
-	#define  framebuffer3 (0x47000000+2*(512*512))
-#endif
+RAMNC uint8_t xxfb1 [512 * 512 * 4];
+RAMNC uint8_t xxfb2 [512 * 512 * 4];
+RAMNC uint8_t xxfb3 [512 * 512 * 4];
+
 
 void DrawCircleCorner(int16_t x0, int16_t y0, int16_t r, uint8_t corner, uint32_t color);
 void FillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta,  uint32_t color);
@@ -35,6 +27,7 @@ void display_clocks_init(void) {
 }
 
 void hdmi_init(void) {
+	TP();
   // HDMI PHY init, the following black magic is based on the procedure documented at:
   // http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
   HDMI_PHY_CFG1 = 0;
@@ -51,7 +44,10 @@ void hdmi_init(void) {
   local_delay_us(100);
   HDMI_PHY_CFG1 |= (1<<18);
   HDMI_PHY_CFG1 |= (7<<4);
-  while((HDMI_PHY_STS & 0x80) == 0);
+	TP();
+ while((HDMI_PHY_STS & 0x80) == 0)
+	 ;
+	TP();
 
   HDMI_PHY_CFG1 |= (0xf<<4);
   HDMI_PHY_CFG1 |= (0xf<<8);
@@ -246,7 +242,7 @@ void st_clock(void) {
 // Almost everything here is resolution specific and
 // currently hardcoded to 1920x1080@60Hz.
 void display_init_ex(void) {
-  //active_buffer = lcdframebuffer1;
+  //active_buffer = framebuffer1;
   display_clocks_init();
   ///st_clock();
   hdmi_init();
@@ -257,12 +253,12 @@ void display_init_ex(void) {
 
 void buffer_swap(void) {
   DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(active_buffer + 512*16+16);
-  if(active_buffer == lcdframebuffer1) {
-      active_buffer = lcdframebuffer2;
-  } else if(active_buffer == lcdframebuffer2) {
-      active_buffer = lcdframebuffer3;
+  if(active_buffer == framebuffer1) {
+      active_buffer = framebuffer2;
+  } else if(active_buffer == framebuffer2) {
+      active_buffer = framebuffer3;
   } else {
-      active_buffer = lcdframebuffer1;
+      active_buffer = framebuffer1;
   }
   // Blank visible area
   for(int n=512*16; n<512*(270+16); n++)
@@ -728,6 +724,8 @@ void hdmi_dump(void) {
 
 void h3_hdmi_test(void)
 {
+	TP();
+	//fb_init();
 	TP();
 	display_init_ex();
 	TP();

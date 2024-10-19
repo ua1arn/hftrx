@@ -44,7 +44,7 @@ volatile uint32_t fb_height;
 volatile uint32_t fb_pitch;
 volatile uint32_t fb_addr;
 
-int __attribute__((cold)) fb_init(void) {
+int  fb_init(void) {
 #if !defined(USE_UBOOT_HDMI)
 	struct display_timing default_timing;
 	memset(&default_timing, 0, sizeof(struct display_timing));

@@ -318,7 +318,7 @@ static void hdmi_pll_set(uint32_t clk_khz) {
 
 	clock_set_pll_video_factors(best_m, best_n);
 
-    sprintf(bufh,"dotclock: %dkHz = %dkHz: (24MHz * %d) / %d / %d\n", clk_khz, (clock_get_pll_video() / 1000) / div, best_n, best_m, div);
+    sprintf(bufh,"dotclock: %dkHz = %dkHz: (24MHz * %d) / %d / %d\n", (int) clk_khz, (int) ((clock_get_pll_video() / 1000) / div), (int) best_n, (int) best_m, (int) div);
 	PRINTF(bufh);
 
 }
@@ -351,7 +351,7 @@ static int hdmi_phy_cfg(__attribute__((unused)) struct dw_hdmi *hdmi, uint32_t m
 	return 0;
 }
 
-__attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing *edid) {
+ int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing *edid) {
 	struct sunxi_dw_hdmi_priv *priv = &_sunxi_dw_hdmi_priv;
 	int ret;
 
@@ -403,7 +403,7 @@ static void clock_set_pll_video(uint32_t clk) {
  * The MUX0 module is used for HDMI
  */
 //#include "ccu.h"
-int __attribute__((cold)) h3_hdmi_probe(void) {
+int  h3_hdmi_probe(void) {
 	struct sunxi_dw_hdmi_priv *priv = &_sunxi_dw_hdmi_priv;
 	int ret;
 

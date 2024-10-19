@@ -65,8 +65,8 @@ void v3s_de_set_address(void)
 {
 	//struct de_ui_t * ui = (struct de_ui_t *)(V3S_DE_BASE + V3S_DE_MUX_CHAN + 0x1000 * 2);
 	struct de_ui_t * vi = (struct de_ui_t *)(V3S_DE_BASE + V3S_DE_MUX_CHAN + 0x1000 );
-	//write32((virtual_addr_t)&ui->cfg[0].top_laddr, (u32_t)lcdframebuffer2);
-    write32((virtual_addr_t)&vi->cfg[0].top_laddr, (u32_t)lcdframebuffer2);
+	//write32((virtual_addr_t)&ui->cfg[0].top_laddr, (u32_t)framebuffer2);
+    write32((virtual_addr_t)&vi->cfg[0].top_laddr, (u32_t)framebuffer2);
 
 }
 
@@ -136,11 +136,11 @@ void v3s_de_set_mode(void)
 	///-------------p0-----------
 	write32((virtual_addr_t)&bld->attr[0].fcolor, 0xff000000);
     write32((virtual_addr_t)&ui->cfg[0].attr,(1 << 0)  |(10 << 8) | (1 << 1) | (0xff << 24));/*10<<8-RGB_565*/
-	write32((virtual_addr_t)&ui->cfg[0].top_laddr, (u32_t)lcdframebuffer1);
+	write32((virtual_addr_t)&ui->cfg[0].top_laddr, (u32_t)framebuffer1);
 	///-------------p1-----------activ---
     write32((virtual_addr_t)&bld->attr[1].fcolor, 0xff000000);
     write32((virtual_addr_t)&ui->cfg[1].attr,(1 << 0)  |(10 << 8) | (1 << 1) | (0xff << 24));/*10<<8-RGB_565*/
-    write32((virtual_addr_t)&ui->cfg[1].top_laddr, (u32_t)lcdframebuffer1);
+    write32((virtual_addr_t)&ui->cfg[1].top_laddr, (u32_t)framebuffer1);
 
 	write32(V3S_DE_BASE + V3S_DE_MUX_VSU, 0);
 	write32(V3S_DE_BASE + V3S_DE_MUX_GSU1, 0);
@@ -157,7 +157,7 @@ void v3s_de_set_mode(void)
 
 	///write32((virtual_addr_t)&ui->cfg[0].bot_laddr, (u32_t)framebuffer1);
 ///	write32((virtual_addr_t)&ui->top_haddr, (u32_t)framebuffer1>>29);
-	write32((virtual_addr_t)&ui->cfg[0].top_laddr, (u32_t)lcdframebuffer2);
+	write32((virtual_addr_t)&ui->cfg[0].top_laddr, (u32_t)framebuffer2);
 	///write32((virtual_addr_t)&ui->cfg[0].bot_laddr, (u32_t)framebuffer2);
 	///write32(V3S_DE_BASE+V3S_DE_MUX_GSU1+UI_TOP_LADDR,(u32_t)framebuffer1);
 	write32((virtual_addr_t)&ui->ovl_size, size);
@@ -172,7 +172,7 @@ void v3s_de_set_mode(void)
 	write32((virtual_addr_t)&vi->cfg[0].pitch[0], 2 * LCDX);
 	///write32((virtual_addr_t)&vi->cfg[0].pitch[1], 2 * LCDX);
 	///write32((virtual_addr_t)&vi->cfg[0].pitch[2], 2 * LCDX);
-	write32((virtual_addr_t)&vi->cfg[0].top_laddr[0], (u32_t)lcdframebuffer2);
+	write32((virtual_addr_t)&vi->cfg[0].top_laddr[0], (u32_t)framebuffer2);
 	///write32((virtual_addr_t)&vi->cfg[0].top_laddr[1], (u32_t)framebuffer2);
 	///write32((virtual_addr_t)&vi->cfg[0].top_laddr[2], (u32_t)framebuffer3);
 

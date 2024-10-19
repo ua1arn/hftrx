@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "main.h"
+
 #include "ccu.h"
 #include "display.h"
 //#include "interrupts.h"
@@ -10,14 +12,15 @@
 #include "tve.h"
 //#include "uart.h"
 //#include "util.h"
+#define TVBIT(pos) (UINT32_C(1) << (pos))
 
 int display_is_digital;
 
-static uint32_t *framebuffer1 = 0;
-static uint32_t *framebuffer2 = 0;
-
-volatile uint32_t *display_active_buffer;
-volatile uint32_t *display_visible_buffer;
+//static uint32_t *framebuffer1 = 0;
+//static uint32_t *framebuffer2 = 0;
+//
+//volatile uint32_t *display_active_buffer;
+//volatile uint32_t *display_visible_buffer;
 
 struct virt_mode_t dsp;
 
@@ -30,7 +33,7 @@ static void de2_update_filter(int sub)
   else
     display_scaler_set_coeff(DE_MIXER0_VS_C_HSTEP, sub);
 
-  DE_MIXER0_VS_CTRL = 1 | BIT(4);
+  DE_MIXER0_VS_CTRL = 1 | TVBIT(4);
 }
 
 void display_enable_filter(int onoff)
@@ -49,10 +52,10 @@ void display_enable_filter(int onoff)
 // MIXER0 -> WB -> MIXER1 -> HDMI
 /*static void de2_initt()
 {
-  DE_AHB_RESET |= BIT(0);
-  DE_SCLK_GATE |= BIT(0);
-  DE_HCLK_GATE |= BIT(0);
-  DE_DE2TCON_MUX &= ~BIT(0);
+  DE_AHB_RESET |= TVBIT(0);
+  DE_SCLK_GATE |= TVBIT(0);
+  DE_HCLK_GATE |= TVBIT(0);
+  DE_DE2TCON_MUX &= ~TVBIT(0);
 
   // Erase the whole of MIXER0. This contains uninitialized data.
   for (uint32_t addr = DE_MIXER0 + 0x0000; addr < DE_MIXER0 + 0xC000; addr += 4)
@@ -67,7 +70,7 @@ void display_enable_filter(int onoff)
   DE_MIXER0_BLD_CH_ISIZE(0)    = ((DISPLAY_PHYS_RES_Y - 1) << 16) | (DISPLAY_PHYS_RES_X - 1);
 
   // The output takes a dsp.x*dsp.y area from a total (dsp.x+dsp.ovx)*(dsp.y+dsp.ovy) buffer
-  DE_MIXER0_OVL_V_ATTCTL(0)    = (DE2_UI_CFG_ATTR_EN | DE2_UI_CFG_ATTR_FMT(DE2_UI_FORMAT_XRGB_8888));////BIT(15) | BIT(0);
+  DE_MIXER0_OVL_V_ATTCTL(0)    = (DE2_UI_CFG_ATTR_EN | DE2_UI_CFG_ATTR_FMT(DE2_UI_FORMAT_XRGB_8888));////TVBIT(15) | TVBIT(0);
   DE_MIXER0_OVL_V_MBSIZE(0)    = ((dsp.y - 1) << 16) | (dsp.x - 1);
   DE_MIXER0_OVL_V_COOR(0)      = 0;
   DE_MIXER0_OVL_V_PITCH0(0)    = dsp.fb_width * 4;  // Scan line in bytes including overscan
@@ -193,17 +196,18 @@ Whole frame	1250	16.666666666667
     default_timing.vsync_len.typ    = 3;
     default_timing.flags            = (DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
   };
-  if (h3_de2_init(&default_timing, (uint32_t)0x43000000) == 0)
+  if (h3_de2_init(&default_timing, framebuffer1) == 0)
    {
     display_is_digital = 1;
     LCD0_GINT1         = 1;
-    LCD0_GINT0         = BIT(30);
+    LCD0_GINT0         = TVBIT(30);
     irq_enable(118);  // LCD0
     return 0;
   } else {
     display_is_digital = 0;
     return -1;
   }
+  return 0;
 }
 
 // Allocates frame buffers and configures the display engine
@@ -236,6 +240,7 @@ int display_single_buffer = 0;
 
 void display_swap_buffers()
 {
+#if 0
   // Make sure whatever is in the active buffer is committed to memory.
   // XXX: using a clean (c10) instead of a flush (c14) does not seem to do
   // anything on the H3 (in fact, the data seems to be lost altogether). Not
@@ -266,9 +271,12 @@ void display_swap_buffers()
     DE_MIXER0_GLB_DBUFFER = 1;
   else
     tve_update_buffer();  // XXX: refactor
+#endif
 }
 
 void display_clear_active_buffer(void)
 {
+#if 0
   memset((void *)display_active_buffer, 0x00FF00, dsp.fb_bytes);
+#endif
 }

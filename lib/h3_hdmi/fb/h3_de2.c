@@ -170,7 +170,7 @@ extern int h3_hdmi_probe(void);
 extern int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing *edid);
 
 
-int __attribute__((cold)) h3_de2_init(struct display_timing *timing, uint32_t fbbase) {
+int  h3_de2_init(struct display_timing *timing, uint32_t fbbase) {
 
 
 	if (h3_hdmi_probe() != 0)

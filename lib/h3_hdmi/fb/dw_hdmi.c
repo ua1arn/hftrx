@@ -26,9 +26,7 @@
 #include "dw_hdmi.h"
 #include "media_bus_format.h"
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
-char bufhd[100];
+static char bufhd[100];
 
 static const u16 csc_coeff_default[3][4] = {
 	{ 0x2000, 0x0000, 0x0000, 0x0000 },
@@ -520,7 +518,7 @@ int dw_hdmi_enable(struct dw_hdmi *hdmi, const struct display_timing *edid) {
 	return 0;
 }
 
-void __attribute__((cold)) dw_hdmi_init(struct dw_hdmi *hdmi) {
+void  dw_hdmi_init(struct dw_hdmi *hdmi) {
 	uint ih_mute;
 
 	/*

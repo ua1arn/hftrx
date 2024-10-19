@@ -117,7 +117,7 @@ void h3_lcdc_tcon1_mode_set(const struct display_timing *mode) {
 	H3_LCD0->TCON1_BASIC5 = LCDC_X(mode->hsync_len.typ) | LCDC_Y(mode->vsync_len.typ);
 }
 
-void __attribute__((cold)) h3_lcdc_init(void) {
+void  h3_lcdc_init(void) {
 	H3_LCD0->GCTL = 0;
 	H3_LCD0->GINT0 = 0;
 	H3_LCD0->TCON0_DCLK &= (~LCDC_TCON0_DCLK_ENABLE);
