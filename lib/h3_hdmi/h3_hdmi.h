@@ -6,13 +6,6 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-
-
-extern RAMNC uint8_t xxfb1 [512 * 512 * 4];
-extern RAMNC uint8_t xxfb2 [512 * 512 * 4];
-
-#define  framebuffer1 ((uintptr_t) xxfb1) // 0x43000000
-#define  framebuffer2 ((uintptr_t) xxfb2) // (0x45000000+(512*512))
 //
 //struct virt_mode_t {
 //  int fb_width, fb_height, fb_bytes;

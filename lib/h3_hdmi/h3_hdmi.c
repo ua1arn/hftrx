@@ -5,14 +5,15 @@
 
 #include "formats.h"
 
-#include "h3_display.h"
+#include "h3_hdmi.h"
 
 #include <stdint.h>
 
-RAMNC uint8_t xxfb1 [512 * 512 * 4];
-RAMNC uint8_t xxfb2 [512 * 512 * 4];
-//RAMNC uint8_t xxfb3 [512 * 512 * 4];
+static RAMNC uint8_t xxfb1 [512 * 512 * 4];
+static RAMNC uint8_t xxfb2 [512 * 512 * 4];
 
+#define  framebuffer1 ((uintptr_t) xxfb1) // 0x43000000
+#define  framebuffer2 ((uintptr_t) xxfb2) // (0x45000000+(512*512))
 
 void DrawCircleCorner(int16_t x0, int16_t y0, int16_t r, uint8_t corner, uint32_t color);
 void FillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta,  uint32_t color);
@@ -185,7 +186,9 @@ void de2_init(void)
 
   // Erase the whole of MIXER0. This contains uninitialized data.
   for(uint32_t addr = DE_MIXER0 + 0x0000; addr < DE_MIXER0 + 0xC000; addr += 4)
-   *(volatile uint32_t*)(addr) = 0;
+  {
+	   *(volatile uint32_t*)(addr) = 0;
+  }
 
   DE_MIXER0_GLB_CTL = 1;
   DE_MIXER0_GLB_SIZE = (1079 << 16) | 1919;
@@ -258,24 +261,6 @@ void display_init_ex(void)
   de2_init();
 }
 
-#if 0
-void buffer_swap(void) {
-  DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(active_buffer + 512*16+16);
-  if(active_buffer == framebuffer1) {
-      active_buffer = framebuffer2;
-  } else if(active_buffer == framebuffer2) {
-      active_buffer = framebuffer3;
-  } else {
-      active_buffer = framebuffer1;
-  }
-  // Blank visible area
-  for(int n=512*16; n<512*(270+16); n++)
-   /// active_buffer[n] = 0;
-  DE_MIXER0_GLB_DBUFFER = 1;
-}
-
-#endif
-
 void UB_LCD_FillLayer(uint32_t color)
 {
     uint32_t index = 0;
@@ -291,7 +276,6 @@ void UB_LCD_FillLayer(uint32_t color)
 ///-------------
 
 void hdmi_dump(void) {
-	char bufdb[100];
 	/* enable read access to HDMI controller */
 	HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
@@ -308,13 +292,11 @@ void hdmi_dump(void) {
 	PRINTF(" CLK        %08X\n", H3_HDMI_PHY->CLK);
 	PRINTF(" UNK3       %08X\n", H3_HDMI_PHY->UNK3);*/
 
-	sprintf(bufdb," STATUS  %08X\n",(unsigned) HDMI_PHY_STS);
-    PRINTF(bufdb);
+	PRINTF(" STATUS  %08X\n",(unsigned) HDMI_PHY_STS);
 
-	sprintf(bufdb," CEC  %08X\n",(unsigned) CEC);
-    PRINTF(bufdb);
-    sprintf(bufdb," VER  %08X\n",(unsigned) VERSION);
-    PRINTF(bufdb);
+    PRINTF(" CEC  %08X\n",(unsigned) CEC);
+    PRINTF(" VER  %08X\n",(unsigned) VERSION);
+
 }
 
 
