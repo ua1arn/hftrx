@@ -37,7 +37,7 @@ void h3_de2_init(struct display_timing *timing, uint32_t fbbase);
 #endif
 
 extern int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+#define printf PRINTF
 
 volatile uint32_t fb_width;
 volatile uint32_t fb_height;

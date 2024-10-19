@@ -697,9 +697,9 @@ void draw_smetr_slow(void)
 
 
 ///-------------
-char bufdb[100];
 
 void hdmi_dump(void) {
+	char bufdb[100];
 	/* enable read access to HDMI controller */
 	HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */

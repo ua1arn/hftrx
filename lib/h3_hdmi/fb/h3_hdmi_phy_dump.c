@@ -25,9 +25,6 @@
 
 #include <stdio.h>
 
-///extern int uart0_printf(const char* fmt, ...);
-///#define printf uart0_printf
-
 #include "h3.h"
 
 void h3_hdmi_phy_dump(void) {
@@ -36,15 +33,15 @@ void h3_hdmi_phy_dump(void) {
 //	/* descramble register offsets */
 //	H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 //
-//	printf("HDMI_PHY\n");
-//	printf(" POL        %p\n", H3_HDMI_PHY->POL);
-//	printf(" READ_EN    %p\n", H3_HDMI_PHY->READ_EN);
-//	printf(" UNSCRAMBLE %p\n", H3_HDMI_PHY->UNSCRAMBLE);
-//	printf(" CTRL       %p\n", H3_HDMI_PHY->CTRL);
-//	printf(" UNK1       %p\n", H3_HDMI_PHY->UNK1);
-//	printf(" UNK2       %p\n", H3_HDMI_PHY->UNK2);
-//	printf(" PLL        %p\n", H3_HDMI_PHY->PLL);
-//	printf(" CLK        %p\n", H3_HDMI_PHY->CLK);
-//	printf(" UNK3       %p\n", H3_HDMI_PHY->UNK3);
-//	printf(" STATUS     %p\n", H3_HDMI_PHY->STATUS);
+//	PRINTF("HDMI_PHY\n");
+//	PRINTF(" POL        %p\n", H3_HDMI_PHY->POL);
+//	PRINTF(" READ_EN    %p\n", H3_HDMI_PHY->READ_EN);
+//	PRINTF(" UNSCRAMBLE %p\n", H3_HDMI_PHY->UNSCRAMBLE);
+//	PRINTF(" CTRL       %p\n", H3_HDMI_PHY->CTRL);
+//	PRINTF(" UNK1       %p\n", H3_HDMI_PHY->UNK1);
+//	PRINTF(" UNK2       %p\n", H3_HDMI_PHY->UNK2);
+//	PRINTF(" PLL        %p\n", H3_HDMI_PHY->PLL);
+//	PRINTF(" CLK        %p\n", H3_HDMI_PHY->CLK);
+//	PRINTF(" UNK3       %p\n", H3_HDMI_PHY->UNK3);
+//	PRINTF(" STATUS     %p\n", H3_HDMI_PHY->STATUS);
 }
