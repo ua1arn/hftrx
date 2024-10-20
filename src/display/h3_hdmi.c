@@ -206,9 +206,9 @@ static void h3_hdmi_tcon_init(const videomode_t * vdmode)
 //	PRINTF("VBP=%u\n", VBP);
 
 	// LCD0 feeds mixer0 to HDMI
-	TCON0->TCON_GCTL_REG = 0;
-	TCON0->TCON_GINT0_REG = 0;
-	TCON0->TCON1_CTL_REG =
+	TCON0->LCD_GCTL_REG = 0;
+	TCON0->LCD_GINT0_REG = 0;
+	TCON0->LCD_CTL_REG =
 		(UINT32_C(1) << 31) |	// TCON1_En
 		30 * (UINT32_C(1) << 5) |	// Start_Delay - AT bit 4, not 5
 		0;
@@ -220,7 +220,7 @@ static void h3_hdmi_tcon_init(const videomode_t * vdmode)
 	TCON0->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
 	TCON0->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	TCON0->TCON_GCTL_REG = (UINT32_C(1) << 31);
+	TCON0->LCD_GCTL_REG = (UINT32_C(1) << 31);
 }
 
 // This function configured DE2 as follows:

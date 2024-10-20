@@ -611,7 +611,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define HARDWARE_SPI_FREQ (allwnr_a64_get_spi0_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_h3_get_spi0_freq())
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
@@ -720,7 +720,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0		/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR R_TWI	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_a64_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_h3_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 
@@ -758,7 +758,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_a64_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_h3_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -989,18 +989,6 @@
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
 	} while (0)
 
-	#define LCD_LVDS_IF_REG_VALUE ( \
-		(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */ \
-		(0u << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
-		(! UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */ \
-		(0u << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
-		(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */ \
-		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */ \
-		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */ \
-		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */ \
-		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
-		0)
-
 	// PD12..PD21
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 	} while (0)
@@ -1010,7 +998,7 @@
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define BOARD_TCONLCDFREQ (allwnr_a64_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
+		#define BOARD_TCONLCDFREQ (allwnr_h3_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
 		#define TCONLCD_IRQ TCON0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
@@ -1022,7 +1010,7 @@
 		#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
 		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
-		#define BOARD_TCONTVFREQ (allwnr_a64_get_tcon_tv0_freq())
+		#define BOARD_TCONTVFREQ (allwnr_h3_get_tcon_tv0_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

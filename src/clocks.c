@@ -2106,6 +2106,20 @@ uint_fast32_t allwnr_h3_get_pll_cpux_freq(void)
 }
 
 // H3
+uint_fast32_t allwnr_h3_get_pll_video_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VIDEO_CTRL_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);
+	//	In the integer mode,the PLL Output = (24MHz*N)/M.
+	//	In the fractional mode, the PLL Output is select by bit 25.
+	//	Note: In the Clock Control Module, PLL(1X) Output=PLL while PLL(2X) Output=PLL * 2.
+	//	The PLL output clock must be in the range of 30MHz~600MHz.
+	//	Its default is 297MHz.
+return (uint_fast64_t) allwnr_h3_get_hosc_freq() * N / M;
+}
+
+// H3
 uint_fast32_t allwnr_h3_get_cpux_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
@@ -2132,6 +2146,19 @@ uint_fast32_t allwnr_h3_get_cpux_freq(void)
 uint_fast32_t allwnr_h3_get_uart_freq(void)
 {
 	return WITHCPUXTAL;
+}
+
+uint_fast32_t allwnr_h3_get_tcon0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO
+		return allwnr_h3_get_pll_video_freq() / M;
+	}
 }
 
 #elif CPUSTYLE_A64

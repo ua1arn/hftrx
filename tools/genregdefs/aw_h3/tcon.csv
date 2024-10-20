@@ -6,10 +6,10 @@
 #irq; TCON0 118; TCON0 interrupt
 #irq; TCON1 119; TCON1 interrupt
 
-#regdef; TCON_GCTL_REG; 0x000; TCON global control register
-#regdef; TCON_GINT0_REG; 0x004; TCON global interrupt register0
-#regdef; TCON_GINT1_REG; 0x008; TCON global interrupt register1
-#regdef; TCON1_CTL_REG; 0x090; TCON1 control register
+#regdef; LCD_GCTL_REG; 0x000; TCON global control register
+#regdef; LCD_GINT0_REG; 0x004; TCON global interrupt register0
+#regdef; LCD_GINT1_REG; 0x008; TCON global interrupt register1
+#regdef; LCD_CTL_REG; 0x090; TCON1 control register
 #regdef; TCON1_BASIC0_REG; 0x094; TCON1 basic timing register0
 #regdef; TCON1_BASIC1_REG; 0x098; TCON1 basic timing register1
 #regdef; TCON1_BASIC2_REG; 0x09C; TCON1 basic timing register2

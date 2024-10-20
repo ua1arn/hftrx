@@ -256,6 +256,7 @@ uint_fast32_t allwnr_h3_get_twi_freq(void);
 uint_fast32_t allwnr_h3_get_spi0_freq(void);
 uint_fast32_t allwnr_h3_get_spi1_freq(void);
 uint_fast32_t allwnr_h3_get_cpux_freq(void);
+uint_fast32_t allwnr_h3_get_tcon0_freq(void);
 #endif /* CPUSTYLE_H3 */
 
 // Allwinner T507/T507-H/H616
