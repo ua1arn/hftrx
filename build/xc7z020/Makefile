@@ -65,8 +65,8 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
+#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
 #ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
 # full qualified name
@@ -290,7 +290,7 @@ bitstream_ebaz7020.h: bitstream_ebaz7020.bit
 	
 bootloader: bitstreams BOOT2
  
-ifeq (1, 0) 
+ifeq (1, 1) 
 app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
 	xsct.bat app_run_myir7020.tcl 
 else  
