@@ -2,13 +2,13 @@
 
 #if CPUSTYLE_H3
 
+#include <string.h>
 #include "formats.h"
+#include "display.h"
 
-#define APPDIM_X 800
-#define APPDIM_Y 480
 #define APPDPIXELWIDTH 4
 
-static RAMNC uint8_t xxfb1 [APPDIM_Y * APPDIM_X * APPDPIXELWIDTH];
+static RAMNC uint8_t xxfb1 [DIM_Y * DIM_X * APPDPIXELWIDTH];
 
 #define  framebuffer1 ((uintptr_t) xxfb1)
 
@@ -262,7 +262,7 @@ void de2_vsu_init(const videomode_t * vdmode)
 {
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
-	const uint32_t APPDIMS_SIZE = ((APPDIM_Y - 1) << 16) | (APPDIM_X - 1);
+	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);
 
 	const uint32_t HSTEP = 0x40000;
 	const uint32_t VSTEP = 0x40000;
@@ -293,7 +293,7 @@ void de2_vsu_init(const videomode_t * vdmode)
 
 void de2_vi_init(const videomode_t * vdmode, uintptr_t fb)
 {
-	const uint32_t APPDIMS_SIZE = ((APPDIM_Y - 1) << 16) | (APPDIM_X - 1);
+	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);
 
 	// The output takes a 480x270 area from a total 512x302
 	// buffer leaving a 16px overscan on all 4 sides.
@@ -301,8 +301,8 @@ void de2_vi_init(const videomode_t * vdmode, uintptr_t fb)
 	DE_MIXER0_VI1->CFG [0].SIZE = APPDIMS_SIZE;
 
 	DE_MIXER0_VI1->CFG [0].COORD = 0;
-	DE_MIXER0_VI1->CFG [0].PITCH [0] = APPDIM_X * APPDPIXELWIDTH; // Scan line in bytes including overscan
-	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = framebuffer1;
+	DE_MIXER0_VI1->CFG [0].PITCH [0] = DIM_X * APPDPIXELWIDTH; // Scan line in bytes including overscan
+	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = fb;
 
 	DE_MIXER0_VI1->OVL_SIZE [0] = APPDIMS_SIZE;	// OVL_V_SIZE
 }
@@ -311,7 +311,7 @@ void h3_de2_init(const videomode_t * vdmode)
 {
 	de2_top_init();
 	de2_bld_init(vdmode);
-	de2_vi_init(vdmode, framebuffer1);
+	de2_vi_init(vdmode, (uintptr_t) xxfb1);
 	de2_vsu_init(vdmode);
 }
 
@@ -375,7 +375,7 @@ static void UB_LCD_FillLayer(uint32_t color)
 	uint32_t index = 0;
 
 	// Bildschirm loeschen
-	for (index = 0x00; index < APPDIM_X * APPDIM_Y; ++ index)
+	for (index = 0x00; index < DIM_X * DIM_Y; ++ index)
 	{
 		* (volatile uint32_t*) (framebuffer1 + index * APPDPIXELWIDTH) = color;
 	}
@@ -387,6 +387,12 @@ void h3_hdmi_test(void)
 {
 	h3_display_init_ex();
 	UB_LCD_FillLayer(0x00FF00);	// GREEN
+}
+
+void h3_stamp_fb(uintptr_t fb)
+{
+	memcpy(xxfb1, (void *) fb, sizeof xxfb1);
+	dcache_clean((uintptr_t) xxfb1, sizeof xxfb1);
 }
 
 #endif /* CPUSTYLE_H3 */
