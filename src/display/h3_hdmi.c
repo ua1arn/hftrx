@@ -8,14 +8,16 @@
 
 static void h3_hdmi_dump(void);
 
-static void h3_display_clocks_init(const videomode_t * vdmode)
+static void h3_display_plls_init(void)
 {
-	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
 	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	local_delay_ms(50);
+}
 
+static void h3_display_clocks_init(void)
+{
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
 	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
@@ -170,7 +172,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 #endif
 }
 
-static void h3_hdmi_tcon_init(const videomode_t * vdmode)
+static void h3_tcon_init(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -202,9 +204,9 @@ static void h3_hdmi_tcon_init(const videomode_t * vdmode)
 	// LCD0 feeds mixer0 to HDMI
 	TCON0->LCD_GCTL_REG = 0;
 	TCON0->LCD_GINT0_REG = 0;
-	TCON0->LCD_CTL_REG =
+	TCON0->TCON1_CTL_REG =
 		(UINT32_C(1) << 31) |	// TCON1_En
-		30 * (UINT32_C(1) << 5) |	// Start_Delay - AT bit 4, not 5
+		60 * (UINT32_C(1) << 4) |	// Start_Delay
 		0;
 
 	TCON0->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
@@ -242,7 +244,7 @@ void de2_bld_init(const videomode_t * vdmode)
 
 	DE_MIXER0_GLB->GLB_CTL = 1;
 	DE_MIXER0_GLB->GLB_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	//DE_MIXER0_GLB_SIZE = ((480 - 1) << 16) | (800 - 1);
+	ASSERT(DE_MIXER0_GLB->GLB_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
 
 	DE_MIXER0_BLD->BLD_EN_COLOR_CTL = 0x100;
 	DE_MIXER0_BLD->ROUTE = 0;
@@ -287,72 +289,13 @@ void de2_vsu_init(const videomode_t * vdmode)
 	DE_MIXER0_GLB->GLB_DBUFFER = (UINT32_C(1) << 0);
 }
 
-void de2_vi_init(const videomode_t * vdmode, uintptr_t fb)
-{
-	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);
-
-	// The output takes a 480x270 area from a total 512x302
-	// buffer leaving a 16px overscan on all 4 sides.
-	DE_MIXER0_VI1->CFG [0].ATTR = (UINT32_C(1) << 15) | (UINT32_C(1) << 0);
-	DE_MIXER0_VI1->CFG [0].SIZE = APPDIMS_SIZE;
-
-	DE_MIXER0_VI1->CFG [0].COORD = 0;
-	DE_MIXER0_VI1->CFG [0].PITCH [0] = GXADJ(DIM_X) * LCDMODE_PIXELSIZE; // Scan line in bytes including overscan
-	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = fb;
-
-	DE_MIXER0_VI1->OVL_SIZE [0] = APPDIMS_SIZE;	// OVL_V_SIZE
-}
-
-
-static RAMFRAMEBUFF PACKEDCOLORPIP_T xxfb1 [GXSIZE(DIM_X, DIM_Y)];
-
 void h3_de2_init(const videomode_t * vdmode)
 {
 	de2_top_init();
 	de2_bld_init(vdmode);
-	de2_vi_init(vdmode, (uintptr_t) xxfb1);
 	de2_vsu_init(vdmode);
 }
 
-void st_clock(void)
-{
-	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-	// PLL_DE_CTRL      = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | (17 << 8) | (0 << 0); // 432MHz
-	/// PLL_VIDEO_CTRL   = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | (98 << 8) | (7 << 0); // 297MHz
-	CCU->BUS_CLK_GATING_REG1 |=
-	/*(UINT32_C(1) << 12) | */(UINT32_C(1) << 11) /*| (UINT32_C(1) << 3)*/; // Enable DE, HDMI, TCON0
-	CCU->BUS_SOFT_RST_REG1 |=
-	/*(UINT32_C(1) << 12) | */(3 << 10)/* | (UINT32_C(1) << 3)*/; // De-assert reset of DE, HDMI0/1, TCON0
-	//DE_CLK           = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-	// HDMI_CLK         = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-	// TCON0_CLK        = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
-}
-
-
-static void h3_hdmi_dump(void)
-{
-	/* enable read access to HDMI controller */
-	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-
-	/*PRINTF("HDMI_PHY\n");
-	 PRINTF(" POL        %08X\n", H3_HDMI_PHY->POL);
-	 PRINTF(" READ_EN    %08X\n", H3_HDMI_PHY->READ_EN);
-	 PRINTF(" UNSCRAMBLE %08X\n", H3_HDMI_PHY->UNSCRAMBLE);
-	 PRINTF(" CTRL       %08X\n", H3_HDMI_PHY->CTRL);
-	 PRINTF(" UNK1       %08X\n", H3_HDMI_PHY->UNK1);
-	 PRINTF(" UNK2       %08X\n", H3_HDMI_PHY->UNK2);
-	 PRINTF(" PLL        %08X\n", HHDMI_WT_2200Y->PLL);
-	 PRINTF(" CLK        %08X\n", H3_HDMI_PHY->CLK);
-	 PRINTF(" UNK3       %08X\n", H3_HDMI_PHY->UNK3);*/
-
-	PRINTF(" STATUS  %08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
-
-	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-	PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
-}
 
 // This function initializes the HDMI port and TCON.
 // Almost everything here is resolution specific and
@@ -360,24 +303,18 @@ static void h3_hdmi_dump(void)
 static void h3_display_init_ex(void)
 {
 	const videomode_t * vdmode_HDMI = get_videomode_HDMI();
-	//active_buffer = framebuffer1;
-	h3_display_clocks_init(vdmode_HDMI);
-	///st_clock();
+
+	h3_display_plls_init();
+	h3_display_clocks_init();
+
 	h3_hdmi_init(vdmode_HDMI);
-	h3_hdmi_dump();
-	h3_hdmi_tcon_init(vdmode_HDMI);
+	h3_tcon_init(vdmode_HDMI);
 	h3_de2_init(vdmode_HDMI);
 }
 
 void h3_hdmi_test(void)
 {
 	h3_display_init_ex();
-}
-
-void h3_stamp_fb(uintptr_t fb)
-{
-	memcpy(xxfb1, (void *) fb, sizeof xxfb1);
-	dcache_clean((uintptr_t) xxfb1, sizeof xxfb1);
 }
 
 #endif /* CPUSTYLE_H3 */

@@ -7789,8 +7789,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>LCD_CTL_REG</name>
-    <displayName>LCD_CTL_REG</displayName>
+    <name>TCON1_CTL_REG</name>
+    <displayName>TCON1_CTL_REG</displayName>
     <description>TCON1 control register</description>
     <addressOffset>0x090</addressOffset>
     <size>0x20</size>
