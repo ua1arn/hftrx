@@ -41,6 +41,31 @@ static void display_clocks_init(const videomode_t * vdmode)
 
 static void hdmi_init(const videomode_t * vdmode)
 {
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
+	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+	const unsigned HBLANKING = vdmode->hbp +  vdmode->hsync +  vdmode->hfp;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = vdmode->vbp +  vdmode->vsync +  vdmode->vfp;	/* Vertical Blanking = vsync + vbp + vfp */
+
+//	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
+//	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
+	PRINTF("HTOTAL=%u\n", HTOTAL);
+	PRINTF("VTOTAL=%u\n", VTOTAL);
+	PRINTF("HBLANKING=%u\n", HBLANKING);
+	PRINTF("VBLANKING=%u\n", VBLANKING);
+	PRINTF("HSYNC=%u\n", HSYNC);
+	PRINTF("VSYNC=%u\n", VSYNC);
+
 	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
 	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
@@ -173,30 +198,36 @@ static void tcon_init(const videomode_t * vdmode)
 	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
 	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
 	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+	const unsigned HBLANKING = vdmode->hbp +  vdmode->hsync +  vdmode->hfp;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = vdmode->vbp +  vdmode->vsync +  vdmode->vfp;	/* Vertical Blanking = vsync + vbp + vfp */
 
-	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
-	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
+//	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
+//	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
 	PRINTF("HTOTAL=%u\n", HTOTAL);
 	PRINTF("VTOTAL=%u\n", VTOTAL);
+	PRINTF("HBLANKING=%u\n", HBLANKING);
+	PRINTF("VBLANKING=%u\n", VBLANKING);
+	PRINTF("HSYNC=%u\n", HSYNC);
+	PRINTF("VSYNC=%u\n", VSYNC);
 
 	// LCD0 feeds mixer0 to HDMI
 	TCON0->TCON_GCTL_REG = (UINT32_C(1) << 31);
 	TCON0->TCON_GINT0_REG = 0;
 	TCON0->TCON1_CTL_REG =
 		(UINT32_C(1) << 31) |	// TCON1_En
-		30 * (UINT32_C(1) << 5) |	// Start_Delay - AT bit 4
+		30 * (UINT32_C(1) << 5) |	// Start_Delay - AT bit 4, not 5
 		0;
 
-	TCON0->TCON1_BASIC0_REG = ((HDMI_WIDTH_1920 - 1) << 16) | (HDMI_HEIGHT_1080 - 1);	// TCON1_XI TCON1_YI
-	TCON0->TCON1_BASIC1_REG = ((HDMI_WIDTH_1920 - 1) << 16) | (HDMI_HEIGHT_1080 - 1);	// LS_XO LS_YO
-	TCON0->TCON1_BASIC2_REG = ((HDMI_WIDTH_1920 - 1) << 16) | (HDMI_HEIGHT_1080 - 1);	// TCON1_XO TCON1_YO
+	TCON0->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
+	TCON0->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	TCON0->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
 	TCON0->TCON1_BASIC3_REG = ((2200 - 1) << 16) | ((192 - 1) << 0);	// HT HBP
 	TCON0->TCON1_BASIC4_REG = (2250 << 16) | ((41 - 1) << 0);			// VT VBP
 	TCON0->TCON1_BASIC5_REG = ((44 - 1) << 16) | ((5 - 1) << 0);			// HSPW VSPW
 #if 0
-	TCON0->TCON1_BASIC0_REG = ((800 - 1) << 16) | (480 - 1);		// TCON1_XI TCON1_YI
-	TCON0->TCON1_BASIC1_REG = ((800 - 1) << 16) | (480 - 1);		// LS_XO LS_YO
-	TCON0->TCON1_BASIC2_REG = ((800 - 1) << 16) | (480 - 1);		// TCON1_XO TCON1_YO
+	TCON0->TCON1_BASIC0_REG = ((800 - 1) << 16) | (HEIGHT - 1);		// TCON1_XI TCON1_YI
+	TCON0->TCON1_BASIC1_REG = ((800 - 1) << 16) | (HEIGHT - 1);		// LS_XO LS_YO
+	TCON0->TCON1_BASIC2_REG = ((800 - 1) << 16) | (HEIGHT - 1);		// TCON1_XO TCON1_YO
 	TCON0->TCON1_BASIC3_REG = (1055 << 16) | ((192 - 1) << 0);		// HT HBP
 	TCON0->TCON1_BASIC4_REG = (850 << 16) | (140 << 0);				// VT VBP
 	TCON0->TCON1_BASIC5_REG = ((128 - 1) << 16) | ((41 - 1) << 0);	// HSPW VSPW
