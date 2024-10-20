@@ -21,12 +21,12 @@
 #regdef; TCON1_IO_TRI_REG; 0x0F4; TCON1 IO control register
 #regdef; TCON_ECC_FIFO_REG; 0x0F8; TCON ECC FIFO register
 #regdef; TCON_CEU_CTL_REG; 0x100; TCON CEU control register
+#regdef; TCON_CEU_COEF_MUL_REG; 0x110 11; TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)
 
-#aggreg; TCON_CEU_COEF; 0x110 3; 
-#regdef; TCON_CEU_COEF_MUL_REG; 0x00; TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)
-#regdef; TCON_CEU_COEF_ADD_REG; 0x0C; TCON CEU coefficient register1 (N=0,1,2)
-#regdef; pad 0; 0x10
-#aggregend;
+##aggreg; TCON_CEU_COEF; 0x110 3; 
+##regdef; TCON_CEU_COEF_ADD_REG; 0x0C; TCON CEU coefficient register1 (N=0,1,2)
+##regdef; pad 0; 0x10
+##aggregend;
 
 #regdef; TCON_CEU_COEF_RANG_REG; 0x140 3; TCON CEU coefficient register2 (N=0,1,2)
 #regdef; TCON_SAFE_PERIOD_REG; 0x1F0; TCON safe period register

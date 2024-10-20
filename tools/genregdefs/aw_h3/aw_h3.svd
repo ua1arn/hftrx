@@ -6370,29 +6370,18 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>3</dim>
+    <dim>11</dim>
     <addressOffset>0x00000110</addressOffset>
-    <registers>
-     <register>
-      <name>TCON_CEU_COEF_MUL_REG</name>
-      <displayName>TCON_CEU_COEF_MUL_REG</displayName>
-      <description>TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)</description>
-      <addressOffset>0x000</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>TCON_CEU_COEF_ADD_REG</name>
-      <displayName>TCON_CEU_COEF_ADD_REG</displayName>
-      <description>TCON CEU coefficient register1 (N=0,1,2)</description>
-      <addressOffset>0x00C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-    </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <register>
+     <name>TCON_CEU_COEF_MUL_REG</name>
+     <displayName>TCON_CEU_COEF_MUL_REG</displayName>
+     <description>TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x02C</dimIncrement>
    </cluster>
    <cluster>
     <dim>3</dim>

@@ -978,12 +978,8 @@ typedef __PACKED_STRUCT TCON_Type
          uint32_t reserved_0x0FC;
     __IO uint32_t TCON_CEU_CTL_REG;                   /*!< Offset 0x100 TCON CEU control register */
          uint32_t reserved_0x104 [0x0003];
-    __PACKED_STRUCT
-    {
-        __IO uint32_t TCON_CEU_COEF_MUL_REG;          /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
-             uint32_t reserved_0x004 [0x0002];
-        __IO uint32_t TCON_CEU_COEF_ADD_REG;          /*!< Offset 0x11C TCON CEU coefficient register1 (N=0,1,2) */
-    } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110  */
+    __IO uint32_t TCON_CEU_COEF_MUL_REG [0x00B];      /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
+         uint32_t reserved_0x13C;
     __IO uint32_t TCON_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 TCON CEU coefficient register2 (N=0,1,2) */
          uint32_t reserved_0x14C [0x0029];
     __IO uint32_t TCON_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 TCON safe period register */

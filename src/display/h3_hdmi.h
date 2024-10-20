@@ -116,28 +116,28 @@ extern "C" {
 //#define LCD0_TCON1_BASIC4     (*(volatile uint32_t*)(LCD0_BASE + 0x0A4))
 //#define LCD0_TCON1_BASIC5     (*(volatile uint32_t*)(LCD0_BASE + 0x0A8))
 
-#define LCD1_BASE 0x01C0D000
-#define LCD1_GCTL             (*(volatile uint32_t*)(LCD1_BASE + 0x000))
-#define LCD1_GINT0            (*(volatile uint32_t*)(LCD1_BASE + 0x004))
-#define LCD1_GINT1            (*(volatile uint32_t*)(LCD1_BASE + 0x008))
-#define LCD1_TCON1_CTL        (*(volatile uint32_t*)(LCD1_BASE + 0x090))
-#define LCD1_TCON1_BASIC0     (*(volatile uint32_t*)(LCD1_BASE + 0x094))
-#define LCD1_TCON1_BASIC1     (*(volatile uint32_t*)(LCD1_BASE + 0x098))
-#define LCD1_TCON1_BASIC2     (*(volatile uint32_t*)(LCD1_BASE + 0x09C))
-#define LCD1_TCON1_BASIC3     (*(volatile uint32_t*)(LCD1_BASE + 0x0A0))
-#define LCD1_TCON1_BASIC4     (*(volatile uint32_t*)(LCD1_BASE + 0x0A4))
-#define LCD1_TCON1_BASIC5     (*(volatile uint32_t*)(LCD1_BASE + 0x0A8))
-
-#define LCD1_TCON1_PS_SYNC    (*(volatile uint32_t*)(LCD1_BASE + 0x0B0))
-
-#define LCD1_TCON1_IO_POL     (*(volatile uint32_t*)(LCD1_BASE + 0x0F0))
-#define LCD1_TCON1_IO_TRI     (*(volatile uint32_t*)(LCD1_BASE + 0x0F4))
-
-#define LCD1_TCON_CEU_CTL          (*(volatile uint32_t*)(LCD1_BASE + 0x100))
-#define LCD1_TCON_CEU_COEF_MUL(n)  (*(volatile uint32_t*)(LCD1_BASE + 0x110 + (n) * 4))
-#define LCD1_TCON_CEU_COEF_RANG(n) (*(volatile uint32_t*)(LCD1_BASE + 0x140 + (n) * 4))
-
-#define LCD1_TCON1_GAMMA_TABLE(n)  (*(volatile uint32_t*)(LCD1_BASE + 0x400 + (n) * 4))
+//#define LCD1_BASE 0x01C0D000
+//#define LCD1_GCTL             (*(volatile uint32_t*)(LCD1_BASE + 0x000))
+//#define LCD1_GINT0            (*(volatile uint32_t*)(LCD1_BASE + 0x004))
+//#define LCD1_GINT1            (*(volatile uint32_t*)(LCD1_BASE + 0x008))
+//#define LCD1_TCON1_CTL        (*(volatile uint32_t*)(LCD1_BASE + 0x090))
+//#define LCD1_TCON1_BASIC0     (*(volatile uint32_t*)(LCD1_BASE + 0x094))
+//#define LCD1_TCON1_BASIC1     (*(volatile uint32_t*)(LCD1_BASE + 0x098))
+//#define LCD1_TCON1_BASIC2     (*(volatile uint32_t*)(LCD1_BASE + 0x09C))
+//#define LCD1_TCON1_BASIC3     (*(volatile uint32_t*)(LCD1_BASE + 0x0A0))
+//#define LCD1_TCON1_BASIC4     (*(volatile uint32_t*)(LCD1_BASE + 0x0A4))
+//#define LCD1_TCON1_BASIC5     (*(volatile uint32_t*)(LCD1_BASE + 0x0A8))
+//
+//#define LCD1_TCON1_PS_SYNC    (*(volatile uint32_t*)(LCD1_BASE + 0x0B0))
+//
+//#define LCD1_TCON1_IO_POL     (*(volatile uint32_t*)(LCD1_BASE + 0x0F0))
+//#define LCD1_TCON1_IO_TRI     (*(volatile uint32_t*)(LCD1_BASE + 0x0F4))
+//
+//#define LCD1_TCON_CEU_CTL          (*(volatile uint32_t*)(LCD1_BASE + 0x100))
+//#define LCD1_TCON_CEU_COEF_MUL(n)  (*(volatile uint32_t*)(LCD1_BASE + 0x110 + (n) * 4))
+//#define LCD1_TCON_CEU_COEF_RANG(n) (*(volatile uint32_t*)(LCD1_BASE + 0x140 + (n) * 4))
+//
+//#define LCD1_TCON1_GAMMA_TABLE(n)  (*(volatile uint32_t*)(LCD1_BASE + 0x400 + (n) * 4))
 
 // DE2
 #define DE_BASE 0x01000000
