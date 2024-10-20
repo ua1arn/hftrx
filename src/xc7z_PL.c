@@ -147,9 +147,6 @@ void xcz_ah_preinit(void)
 	Xil_Out32(XPAR_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK | RX_ENABLE_MASK);
 #endif /* defined (XPAR_AXI_I2S_ADI_0_BASEADDR) */
 
-	xcz_rxtx_state(1);
-	xcz_rxtx_state(0);
-
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
