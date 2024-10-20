@@ -7177,20 +7177,19 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	local_delay_ms(50);
 
     // clocks
-//	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
-//	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
-//	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-//	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-//	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-//	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
-//
-//	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-//	DE_TOP->SCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-//	DE_TOP->HCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
 
-	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 
-	if (0)
+	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+	DE_TOP->SCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+	DE_TOP->HCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+
+	if (1)
 	{
 		const int rtmixid = 1;
 
@@ -7355,6 +7354,8 @@ static void awxx_deoutmapping(unsigned disp)
 	}
 
 #elif CPUSTYLE_H3
+	// This function configured DE2 as follows:
+	// MIXER0 -> WB -> MIXER1 -> HDMI
 	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
 
 #else
@@ -7568,19 +7569,7 @@ static void h3_tcon_init(const videomode_t * vdmode)
 	TCON0->LCD_GCTL_REG = (UINT32_C(1) << 31);
 }
 
-// This function configured DE2 as follows:
-// MIXER0 -> WB -> MIXER1 -> HDMI
-
-void de2_top_init(void)
-{
-	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-	DE_TOP->SCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-	DE_TOP->HCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-
-	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
-}
-
-void de2_bld_init(const videomode_t * vdmode)
+static void h3_de2_bld_init(const videomode_t * vdmode)
 {
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
@@ -7601,7 +7590,7 @@ void de2_bld_init(const videomode_t * vdmode)
 	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 }
 
-void de2_vsu_init(const videomode_t * vdmode)
+static void h3_de2_vsu_init(const videomode_t * vdmode)
 {
 	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -7638,12 +7627,6 @@ void de2_vsu_init(const videomode_t * vdmode)
 	DE_MIXER0_GLB->GLB_DBUFFER = (UINT32_C(1) << 0);
 }
 
-void h3_de2_init(const videomode_t * vdmode)
-{
-	de2_top_init();
-	de2_bld_init(vdmode);
-	de2_vsu_init(vdmode);
-}
 #endif
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
@@ -7706,15 +7689,19 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 
 #if WITHHDMITVHW
-			{
-				const int rtmixid = RTMIXIDLCD;
-				const videomode_t * vdmode_HDMI = get_videomode_HDMI();
+		{
+			const int rtmixid = RTMIXIDLCD;
+			const videomode_t * vdmode_HDMI = get_videomode_HDMI();
 
-				h3_hdmi_init(vdmode_HDMI);
-				h3_tcon_init(vdmode_HDMI);
-				h3_de2_init(vdmode_HDMI);
-			}
-	return;
+			h3_hdmi_init(vdmode_HDMI);
+			h3_tcon_init(vdmode_HDMI);
+
+			h3_de2_bld_init(vdmode_HDMI);
+			//t113_de_scaler_initialize(rtmixid, vdmode, vdmode_HDMI);
+			h3_de2_vsu_init(vdmode_HDMI);
+
+			return;
+		}
 #endif
 		{
 			const int rtmixid = RTMIXIDLCD;
