@@ -1851,9 +1851,13 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
+#if CPUSTYLE_H3
+#define RTMIXIDLCD 1	/* 1 or 2 */
+#else
 #define RTMIXIDLCD 2	/* 1 or 2 */
 #if defined (TCONTV_PTR)
 #define RTMIXIDTV 1	/* 1 or 2 */
+#endif
 #endif
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133

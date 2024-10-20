@@ -6,8 +6,6 @@
 #include "formats.h"
 #include "display.h"
 
-#define APPDPIXELWIDTH 4
-
 static void h3_hdmi_dump(void);
 
 static void h3_display_clocks_init(const videomode_t * vdmode)
@@ -250,18 +248,20 @@ void de2_bld_init(const videomode_t * vdmode)
 	DE_MIXER0_BLD->ROUTE = 0;
 	DE_MIXER0_BLD->OUTPUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	//DE_MIXER0_BLD->BLD_SIZE = ((480 - 1) << 16) | (800 - 1);
-	//DE_MIXER0_BLD->CH[0].BLD_CH_ISIZE = (489 << 16) | (800 - 1);
 }
 
 void de2_vsu_init(const videomode_t * vdmode)
 {
+	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
-	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);
+	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);	// source size
 
-	const uint32_t HSTEP = 0x40000;
-	const uint32_t VSTEP = 0x40000;
+	const uint_fast32_t HSTEP = (((uint_fast64_t) DIM_X << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) DIM_Y << FRAСTWIDTH) / HEIGHT) << 1;
+
+	DE_MIXER0_VSU1->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	DE_MIXER0_VSU1->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
 	DE_MIXER0_VSU1->VSU_CTRL_REG = (UINT32_C(1) << 0);
 	DE_MIXER0_VSU1->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
@@ -297,14 +297,14 @@ void de2_vi_init(const videomode_t * vdmode, uintptr_t fb)
 	DE_MIXER0_VI1->CFG [0].SIZE = APPDIMS_SIZE;
 
 	DE_MIXER0_VI1->CFG [0].COORD = 0;
-	DE_MIXER0_VI1->CFG [0].PITCH [0] = DIM_X * APPDPIXELWIDTH; // Scan line in bytes including overscan
+	DE_MIXER0_VI1->CFG [0].PITCH [0] = GXADJ(DIM_X) * LCDMODE_PIXELSIZE; // Scan line in bytes including overscan
 	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = fb;
 
 	DE_MIXER0_VI1->OVL_SIZE [0] = APPDIMS_SIZE;	// OVL_V_SIZE
 }
 
 
-static RAMNC uint8_t xxfb1 [DIM_Y * DIM_X * APPDPIXELWIDTH];
+static RAMFRAMEBUFF PACKEDCOLORPIP_T xxfb1 [GXSIZE(DIM_X, DIM_Y)];
 
 void h3_de2_init(const videomode_t * vdmode)
 {
