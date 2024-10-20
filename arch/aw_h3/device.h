@@ -53,6 +53,7 @@ typedef enum IRQn
     TCON0_IRQn = 118,                                 /*!< TCON TCON0 interrupt */
     TCON1_IRQn = 119,                                 /*!< TCON TCON1 interrupt */
     HDMI_TX0_IRQn = 120,                              /*!< HDMI_TX  */
+    DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top */
     CTI0_IRQn = 140,                                  /*!< CPUCFG CTI0 Interrupt */
     CTI1_IRQn = 141,                                  /*!< CPUCFG CTI1 Interrupt */
     CTI2_IRQn = 142,                                  /*!< CPUCFG CTI2 Interrupt */
@@ -78,6 +79,32 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Display Engine Top Base */
+#define DE_WB_BASE ((uintptr_t) 0x01010000)           /*!< DE_WB Real-time write-back controller (RT-WB) Base */
+#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR Copy & Rotation Base */
+#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01100000)   /*!< DE_GLB  Base */
+#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01101000)   /*!< DE_BLD  Base */
+#define DE_MIXER0_VI1_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
+#define DE_MIXER0_UI1_BASE ((uintptr_t) 0x01103000)   /*!< DE_UI  Base */
+#define DE_MIXER0_VI2_BASE ((uintptr_t) 0x01103000)   /*!< DE_VI  Base */
+#define DE_MIXER0_UI2_BASE ((uintptr_t) 0x01104000)   /*!< DE_UI  Base */
+#define DE_MIXER0_VI3_BASE ((uintptr_t) 0x01104000)   /*!< DE_VI  Base */
+#define DE_MIXER0_VSU1_BASE ((uintptr_t) 0x01104000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
+#define DE_MIXER0_UI3_BASE ((uintptr_t) 0x01105000)   /*!< DE_UI  Base */
+#define DE_MIXER1_VSU1_BASE ((uintptr_t) 0x01124000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
+#define DE_MIXER0_UIS1_BASE ((uintptr_t) 0x01140000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_MIXER0_UIS2_BASE ((uintptr_t) 0x01150000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_MIXER0_UIS3_BASE ((uintptr_t) 0x01160000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x01200000)   /*!< DE_GLB  Base */
+#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x01201000)   /*!< DE_BLD  Base */
+#define DE_MIXER1_VI1_BASE ((uintptr_t) 0x01202000)   /*!< DE_VI  Base */
+#define DE_MIXER1_UI1_BASE ((uintptr_t) 0x01203000)   /*!< DE_UI  Base */
+#define DE_MIXER1_VI2_BASE ((uintptr_t) 0x01203000)   /*!< DE_VI  Base */
+#define DE_MIXER1_UI2_BASE ((uintptr_t) 0x01204000)   /*!< DE_UI  Base */
+#define DE_MIXER1_VI3_BASE ((uintptr_t) 0x01204000)   /*!< DE_VI  Base */
+#define DE_MIXER1_UI3_BASE ((uintptr_t) 0x01205000)   /*!< DE_UI  Base */
+#define DE_MIXER1_UIS1_BASE ((uintptr_t) 0x01240000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define SYSCTRL_BASE ((uintptr_t) 0x01C00000)         /*!< SYSCTRL  Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON TCON0, TCON1 Base */
 #define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON TCON0, TCON1 Base */
@@ -267,6 +294,259 @@ typedef __PACKED_STRUCT CPUCFG_Type
     __IO uint32_t CNT64_LOW_REG;                      /*!< Offset 0x284 64-bit Counter Low Register */
     __IO uint32_t CNT64_HIGH_REG;                     /*!< Offset 0x288 64-bit Counter High Register */
 } CPUCFG_TypeDef; /* size of structure = 0x28C */
+/*
+ * @brief DE_BLD
+ */
+/*!< DE_BLD  */
+typedef __PACKED_STRUCT DE_BLD_Type
+{
+    __IO uint32_t BLD_EN_COLOR_CTL;                   /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    __PACKED_STRUCT
+    {
+        __IO uint32_t BLD_FILL_COLOR;                 /*!< Offset 0x004 BLD fill color register */
+        __IO uint32_t BLD_CH_ISIZE;                   /*!< Offset 0x008 BLD input memory size register */
+        __IO uint32_t BLD_CH_OFFSET;                  /*!< Offset 0x00C BLD input memory offset register */
+             uint32_t reserved_0x00C;
+    } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..5] */
+         uint32_t reserved_0x064 [0x0007];
+    __IO uint32_t ROUTE;                              /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
+    __IO uint32_t PREMULTIPLY;                        /*!< Offset 0x084 BLD pre-multiply control register */
+    __IO uint32_t BKCOLOR;                            /*!< Offset 0x088  */
+    __IO uint32_t OUTPUT_SIZE;                        /*!< Offset 0x08C  */
+    __IO uint32_t BLD_MODE [0x006];                   /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more) */
+         uint32_t reserved_0x0A8 [0x0002];
+    __IO uint32_t CK_CTL;                             /*!< Offset 0x0B0  */
+    __IO uint32_t CK_CFG;                             /*!< Offset 0x0B4  */
+         uint32_t reserved_0x0B8 [0x0002];
+    __IO uint32_t CK_MAX [0x004];                     /*!< Offset 0x0C0  */
+         uint32_t reserved_0x0D0 [0x0004];
+    __IO uint32_t CK_MIN [0x004];                     /*!< Offset 0x0E0  */
+         uint32_t reserved_0x0F0 [0x0003];
+    __IO uint32_t OUT_CTL;                            /*!< Offset 0x0FC  */
+} DE_BLD_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DE_CSR
+ */
+/*!< DE_CSR Copy & Rotation */
+typedef __PACKED_STRUCT DE_CSR_Type
+{
+    __IO uint32_t CSR_CTL;                            /*!< Offset 0x000 (null) */
+    __IO uint32_t INT;                                /*!< Offset 0x004 Interrupt register */
+         uint32_t reserved_0x008 [0x0006];
+    __IO uint32_t IFMT;                               /*!< Offset 0x020 Input data attribute register */
+    __IO uint32_t IDATA_SIZE;                         /*!< Offset 0x024 Input data size register */
+         uint32_t reserved_0x028 [0x0002];
+    __IO uint32_t IDATA_MEN_PITCH0;                   /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
+    __IO uint32_t IDATA_MEN_PITCH1;                   /*!< Offset 0x034 Input U/UV memory pitch register */
+    __IO uint32_t IDATA_MEN_PITCH2;                   /*!< Offset 0x038 Input V memory pitch register */
+         uint32_t reserved_0x03C;
+    __IO uint32_t IMEN_LADD0;                         /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
+    __IO uint32_t IMEN_HADD0;                         /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
+    __IO uint32_t IMEN_LADD1;                         /*!< Offset 0x048 Input U/UV memory address register0 */
+    __IO uint32_t IMEN_HADD1;                         /*!< Offset 0x04C Input U/UV memory address register1 */
+    __IO uint32_t IMEN_LADD2;                         /*!< Offset 0x050 Input V memory address register0 */
+    __IO uint32_t IMEN_HADD2;                         /*!< Offset 0x054 Input V memory address register1 */
+         uint32_t reserved_0x058 [0x000B];
+    __IO uint32_t ODATA_SIZE;                         /*!< Offset 0x084 Output data size register */
+         uint32_t reserved_0x088 [0x0002];
+    __IO uint32_t ODATA_MEN_PITCH0;                   /*!< Offset 0x090 (null) */
+    __IO uint32_t ODATA_MEN_PITCH1;                   /*!< Offset 0x094 (null) */
+    __IO uint32_t ODATA_MEN_PITCH2;                   /*!< Offset 0x098 (null) */
+         uint32_t reserved_0x09C;
+    __IO uint32_t OMEN_LADD0;                         /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
+    __IO uint32_t OMEN_HADD0;                         /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
+    __IO uint32_t OMEN_LADD1;                         /*!< Offset 0x0A8 Output U/UV memory address register0 */
+    __IO uint32_t OMEN_HADD1;                         /*!< Offset 0x0AC Output U/UV memory address register1 */
+    __IO uint32_t OMEN_LADD2;                         /*!< Offset 0x0B0 Output V memory address register0 */
+    __IO uint32_t OMEN_HADD2;                         /*!< Offset 0x0B4 Output V memory address register1 */
+} DE_CSR_TypeDef; /* size of structure = 0x0B8 */
+/*
+ * @brief DE_GLB
+ */
+/*!< DE_GLB  */
+typedef __PACKED_STRUCT DE_GLB_Type
+{
+    __IO uint32_t GLB_CTL;                            /*!< Offset 0x000 Global control register */
+    __IO uint32_t GLB_STS;                            /*!< Offset 0x004 Global status register */
+    __IO uint32_t GLB_DBUFFER;                        /*!< Offset 0x008 Global double buffer control register */
+    __IO uint32_t GLB_SIZE;                           /*!< Offset 0x00C Global size register */
+} DE_GLB_TypeDef; /* size of structure = 0x010 */
+/*
+ * @brief DE_TOP
+ */
+/*!< DE_TOP Display Engine Top */
+typedef __PACKED_STRUCT DE_TOP_Type
+{
+    __IO uint32_t SCLK_GATE;                          /*!< Offset 0x000 DE SCLK Gating Register */
+    __IO uint32_t HCLK_GATE;                          /*!< Offset 0x004 DE HCLK Gating Register */
+    __IO uint32_t AHB_RESET;                          /*!< Offset 0x008 DE AHB Reset register */
+    __IO uint32_t SCLK_DIV;                           /*!< Offset 0x00C DE SCLK Division register */
+    __IO uint32_t DE2TCON_MUX;                        /*!< Offset 0x010 MUX register */
+    __IO uint32_t CMD_CTL;                            /*!< Offset 0x014  */
+} DE_TOP_TypeDef; /* size of structure = 0x018 */
+/*
+ * @brief DE_UI
+ */
+/*!< DE_UI  */
+typedef __PACKED_STRUCT DE_UI_Type
+{
+    __PACKED_STRUCT
+    {
+        __IO uint32_t ATTR;                           /*!< Offset 0x000  */
+        __IO uint32_t SIZE;                           /*!< Offset 0x004  */
+        __IO uint32_t COORD;                          /*!< Offset 0x008  */
+        __IO uint32_t PITCH;                          /*!< Offset 0x00C  */
+        __IO uint32_t TOP_LADDR;                      /*!< Offset 0x010  */
+        __IO uint32_t BOT_LADDR;                      /*!< Offset 0x014  */
+        __IO uint32_t FCOLOR;                         /*!< Offset 0x018  */
+             uint32_t reserved_0x01C;
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    __IO uint32_t TOP_HADDR;                          /*!< Offset 0x080  */
+    __IO uint32_t BOT_HADDR;                          /*!< Offset 0x084  */
+    __IO uint32_t OVL_SIZE;                           /*!< Offset 0x088  */
+} DE_UI_TypeDef; /* size of structure = 0x08C */
+/*
+ * @brief DE_UIS
+ */
+/*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function */
+typedef __PACKED_STRUCT DE_UIS_Type
+{
+    __IO uint32_t UIS_CTRL_REG;                       /*!< Offset 0x000 Control register */
+         uint32_t reserved_0x004;
+    __IO uint32_t UIS_STATUS_REG;                     /*!< Offset 0x008 Status register */
+    __IO uint32_t UIS_FIELD_CTRL_REG;                 /*!< Offset 0x00C Field control register */
+    __IO uint32_t UIS_BIST_REG;                       /*!< Offset 0x010 BIST control register */
+         uint32_t reserved_0x014 [0x000B];
+    __IO uint32_t UIS_OUTSIZE_REG;                    /*!< Offset 0x040 Output size register */
+         uint32_t reserved_0x044 [0x000F];
+    __IO uint32_t UIS_INSIZE_REG;                     /*!< Offset 0x080 Input size register */
+         uint32_t reserved_0x084;
+    __IO uint32_t UIS_HSTEP_REG;                      /*!< Offset 0x088 Horizontal step register */
+    __IO uint32_t UIS_VSTEP_REG;                      /*!< Offset 0x08C Vertical step register */
+    __IO uint32_t UIS_HPHASE_REG;                     /*!< Offset 0x090 Horizontal initial phase register */
+         uint32_t reserved_0x094;
+    __IO uint32_t UIS_VPHASE0_REG;                    /*!< Offset 0x098 Vertical initial phase 0 register */
+    __IO uint32_t UIS_VPHASE1_REG;                    /*!< Offset 0x09C Vertical initial phase 1 register */
+         uint32_t reserved_0x0A0 [0x0058];
+    __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15)#typeend */
+} DE_UIS_TypeDef; /* size of structure = 0x240 */
+/*
+ * @brief DE_VI
+ */
+/*!< DE_VI  */
+typedef __PACKED_STRUCT DE_VI_Type
+{
+    __PACKED_STRUCT
+    {
+        __IO uint32_t ATTR;                           /*!< Offset 0x000  */
+        __IO uint32_t SIZE;                           /*!< Offset 0x004  */
+        __IO uint32_t COORD;                          /*!< Offset 0x008  */
+        __IO uint32_t PITCH [0x003];                  /*!< Offset 0x00C ix=0: Y, ix=1: U/UV channel, ix=3: V channel  */
+        __IO uint32_t TOP_LADDR [0x003];              /*!< Offset 0x018  */
+        __IO uint32_t BOT_LADDR [0x003];              /*!< Offset 0x024  */
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    __IO uint32_t FCOLOR [0x004];                     /*!< Offset 0x0C0  */
+    __IO uint32_t TOP_HADDR [0x003];                  /*!< Offset 0x0D0  */
+    __IO uint32_t BOT_HADDR [0x003];                  /*!< Offset 0x0DC  */
+    __IO uint32_t OVL_SIZE [0x002];                   /*!< Offset 0x0E8 OVL_Y, OVL_UV overlay window size register */
+    __IO uint32_t HORI [0x002];                       /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
+    __IO uint32_t VERT [0x002];                       /*!< Offset 0x0F8 OVL_V vertical down sample control register */
+} DE_VI_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DE_VSU
+ */
+/*!< DE_VSU Video Scaler Unit (VSU), VS */
+typedef __PACKED_STRUCT DE_VSU_Type
+{
+    __IO uint32_t VSU_CTRL_REG;                       /*!< Offset 0x000 VSU Module Control Register */
+         uint32_t reserved_0x004;
+    __IO uint32_t VSU_STATUS_REG;                     /*!< Offset 0x008 VSU Status Register */
+    __IO uint32_t VSU_FIELD_CTRL_REG;                 /*!< Offset 0x00C VSU Field Control Register */
+    __IO uint32_t VSU_SCALE_MODE_REG;                 /*!< Offset 0x010 VSU Scale Mode Setting Register */
+         uint32_t reserved_0x014 [0x0003];
+    __IO uint32_t VSU_DIRECTION_THR_REG;              /*!< Offset 0x020 VSU Direction Detection Threshold Register */
+    __IO uint32_t VSU_EDGE_THR_REG;                   /*!< Offset 0x024 VSU Edge Detection Setting Register */
+    __IO uint32_t VSU_EDSCALER_CTRL_REG;              /*!< Offset 0x028 VSU Edge-Direction Scaler Control Register */
+    __IO uint32_t VSU_ANGLE_THR_REG;                  /*!< Offset 0x02C VSU Angle Reliability Setting Register */
+    __IO uint32_t VSU_SHARP_EN_REG;                   /*!< Offset 0x030 VSU Sharpness Control Enable Register */
+    __IO uint32_t VSU_SHARP_CORING_REG;               /*!< Offset 0x034 VSU Sharpness Control Coring Setting Register */
+    __IO uint32_t VSU_SHARP_GAIN0_REG;                /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
+    __IO uint32_t VSU_SHARP_GAIN1_REG;                /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
+    __IO uint32_t VSU_OUT_SIZE_REG;                   /*!< Offset 0x040 VSU Output Size Register */
+    __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 (null) */
+         uint32_t reserved_0x048 [0x000E];
+    __IO uint32_t VSU_Y_SIZE_REG;                     /*!< Offset 0x080 VSU Y Channel Size Register */
+         uint32_t reserved_0x084;
+    __IO uint32_t VSU_Y_HSTEP_REG;                    /*!< Offset 0x088 VSU Y Channel Horizontal Step Register */
+    __IO uint32_t VSU_Y_VSTEP_REG;                    /*!< Offset 0x08C VSU Y Channel Vertical Step Register */
+    __IO uint32_t VSU_Y_HPHASE_REG;                   /*!< Offset 0x090 VSU Y Channel Horizontal Initial Phase Register */
+         uint32_t reserved_0x094;
+    __IO uint32_t VSU_Y_VPHASE0_REG;                  /*!< Offset 0x098 VSU Y Channel Vertical Initial Phase 0 Register */
+    __IO uint32_t VSU_Y_VPHASE1_REG;                  /*!< Offset 0x09C VSU Y Channel Vertical Initial Phase 1 Register */
+         uint32_t reserved_0x0A0 [0x0008];
+    __IO uint32_t VSU_C_SIZE_REG;                     /*!< Offset 0x0C0 VSU C Channel Size Register */
+         uint32_t reserved_0x0C4;
+    __IO uint32_t VSU_C_HSTEP_REG;                    /*!< Offset 0x0C8 VSU C Channel Horizontal Step Register */
+    __IO uint32_t VSU_C_VSTEP_REG;                    /*!< Offset 0x0CC VSU C Channel Vertical Step Register */
+    __IO uint32_t VSU_C_HPHASE_REG;                   /*!< Offset 0x0D0 VSU C Channel Horizontal Initial Phase Register */
+         uint32_t reserved_0x0D4;
+    __IO uint32_t VSU_C_VPHASE0_REG;                  /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
+    __IO uint32_t VSU_C_VPHASE1_REG;                  /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
+         uint32_t reserved_0x0E0 [0x0048];
+    __IO uint32_t VSU_Y_HCOEF0_REGN [0x020];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         uint32_t reserved_0x280 [0x0020];
+    __IO uint32_t VSU_Y_HCOEF1_REGN [0x020];          /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
+         uint32_t reserved_0x380 [0x0020];
+    __IO uint32_t VSU_Y_VCOEF_REGN [0x020];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         uint32_t reserved_0x480 [0x0060];
+    __IO uint32_t VSU_C_HCOEF0_REGN [0x020];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         uint32_t reserved_0x680 [0x0020];
+    __IO uint32_t VSU_C_HCOEF1_REGN [0x020];          /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
+         uint32_t reserved_0x780 [0x0020];
+    __IO uint32_t VSU_C_VCOEF_REGN [0x020];           /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
+} DE_VSU_TypeDef; /* size of structure = 0x880 */
+/*
+ * @brief DE_WB
+ */
+/*!< DE_WB Real-time write-back controller (RT-WB) */
+typedef __PACKED_STRUCT DE_WB_Type
+{
+    __IO uint32_t WB_GCTRL_REG;                       /*!< Offset 0x000 Module general control register */
+    __IO uint32_t WB_SIZE_REG;                        /*!< Offset 0x004 Input size register */
+    __IO uint32_t WB_CROP_COORD_REG;                  /*!< Offset 0x008 Cropping coordinate register */
+    __IO uint32_t WB_CROP_SIZE_REG;                   /*!< Offset 0x00C Cropping size register */
+    __IO uint32_t WB_A_CH0_ADDR_REG;                  /*!< Offset 0x010 Write-back Group A channel 0 address register */
+    __IO uint32_t WB_A_CH1_ADDR_REG;                  /*!< Offset 0x014 Write-back Group A channel 1 address register */
+    __IO uint32_t WB_A_CH2_ADDR_REG;                  /*!< Offset 0x018 Write-back Group A channel 2 address register */
+    __IO uint32_t WB_A_HIGH_ADDR_REG;                 /*!< Offset 0x01C Write-back Group A address high bit register */
+    __IO uint32_t WB_B_CH0_ADDR_REG;                  /*!< Offset 0x020 Write-back Group B channel 0 address register */
+    __IO uint32_t WB_B_CH1_ADDR_REG;                  /*!< Offset 0x024 Write-back Group B channel 1 address register */
+    __IO uint32_t WB_B_CH2_ADDR_REG;                  /*!< Offset 0x028 Write-back Group B channel 2 address register */
+    __IO uint32_t WB_B_HIGH_ADDR_REG;                 /*!< Offset 0x02C Write-back Group B address high bit register */
+    __IO uint32_t WB_CH0_PITCH_REG;                   /*!< Offset 0x030 Write-back channel 0 pitch register */
+    __IO uint32_t WB_CH12_PITCH_REG;                  /*!< Offset 0x034 Write-back channel 1/2 pitch register */
+         uint32_t reserved_0x038 [0x0002];
+    __IO uint32_t WB_ADDR_SWITCH_REG;                 /*!< Offset 0x040 Write-back address switch setting register */
+    __IO uint32_t WB_FORMAT_REG;                      /*!< Offset 0x044 Output format register */
+    __IO uint32_t WB_INT_REG;                         /*!< Offset 0x048 Interrupt control register */
+    __IO uint32_t WB_STATUS_REG;                      /*!< Offset 0x04C Module status register */
+         uint32_t reserved_0x050;
+    __IO uint32_t WB_BYPASS_REG;                      /*!< Offset 0x054 Bypass control register */
+         uint32_t reserved_0x058 [0x0006];
+    __IO uint32_t WB_CS_HORZ_REG;                     /*!< Offset 0x070 Coarse scaling horizontal setting register */
+    __IO uint32_t WB_CS_VERT_REG;                     /*!< Offset 0x074 Coarse scaling vertical setting register */
+         uint32_t reserved_0x078 [0x0002];
+    __IO uint32_t WB_FS_INSIZE_REG;                   /*!< Offset 0x080 Fine scaling input size register */
+    __IO uint32_t WB_FS_OUTSIZE_REG;                  /*!< Offset 0x084 Fine scaling output size register */
+    __IO uint32_t WB_FS_HSTEP_REG;                    /*!< Offset 0x088 Fine scaling horizontal step registe */
+    __IO uint32_t WB_FS_VSTEP_REG;                    /*!< Offset 0x08C Fine scaling vertical step register */
+         uint32_t reserved_0x090 [0x001B];
+    __IO uint32_t WB_DEBUG_REG;                       /*!< Offset 0x0FC Debug register */
+         uint32_t reserved_0x100 [0x0040];
+    __IO uint32_t WB_CH0_HCOEF_REGN [0x010];          /*!< Offset 0x200 0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15) */
+         uint32_t reserved_0x240 [0x0010];
+    __IO uint32_t WB_CH1_HCOEF_REGN [0x010];          /*!< Offset 0x280 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15) */
+} DE_WB_TypeDef; /* size of structure = 0x2C0 */
 /*
  * @brief GPIO
  */
@@ -1163,6 +1443,31 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 
 /* Access pointers */
 
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine Top register set access pointer */
+#define DE_WB ((DE_WB_TypeDef *) DE_WB_BASE)          /*!< DE_WB Real-time write-back controller (RT-WB) register set access pointer */
+#define DE_CSR ((DE_CSR_TypeDef *) DE_CSR_BASE)       /*!< DE_CSR Copy & Rotation register set access pointer */
+#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB  register set access pointer */
+#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD  register set access pointer */
+#define DE_MIXER0_VI1 ((DE_VI_TypeDef *) DE_MIXER0_VI1_BASE)/*!< DE_MIXER0_VI1  register set access pointer */
+#define DE_MIXER0_UI1 ((DE_UI_TypeDef *) DE_MIXER0_UI1_BASE)/*!< DE_MIXER0_UI1  register set access pointer */
+#define DE_MIXER0_VI2 ((DE_VI_TypeDef *) DE_MIXER0_VI2_BASE)/*!< DE_MIXER0_VI2  register set access pointer */
+#define DE_MIXER0_UI2 ((DE_UI_TypeDef *) DE_MIXER0_UI2_BASE)/*!< DE_MIXER0_UI2  register set access pointer */
+#define DE_MIXER0_VI3 ((DE_VI_TypeDef *) DE_MIXER0_VI3_BASE)/*!< DE_MIXER0_VI3  register set access pointer */
+#define DE_MIXER0_VSU1 ((DE_VSU_TypeDef *) DE_MIXER0_VSU1_BASE)/*!< DE_MIXER0_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
+#define DE_MIXER0_UI3 ((DE_UI_TypeDef *) DE_MIXER0_UI3_BASE)/*!< DE_MIXER0_UI3  register set access pointer */
+#define DE_MIXER1_VSU1 ((DE_VSU_TypeDef *) DE_MIXER1_VSU1_BASE)/*!< DE_MIXER1_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
+#define DE_MIXER0_UIS1 ((DE_UIS_TypeDef *) DE_MIXER0_UIS1_BASE)/*!< DE_MIXER0_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_MIXER0_UIS2 ((DE_UIS_TypeDef *) DE_MIXER0_UIS2_BASE)/*!< DE_MIXER0_UIS2 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_MIXER0_UIS3 ((DE_UIS_TypeDef *) DE_MIXER0_UIS3_BASE)/*!< DE_MIXER0_UIS3 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB  register set access pointer */
+#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD  register set access pointer */
+#define DE_MIXER1_VI1 ((DE_VI_TypeDef *) DE_MIXER1_VI1_BASE)/*!< DE_MIXER1_VI1  register set access pointer */
+#define DE_MIXER1_UI1 ((DE_UI_TypeDef *) DE_MIXER1_UI1_BASE)/*!< DE_MIXER1_UI1  register set access pointer */
+#define DE_MIXER1_VI2 ((DE_VI_TypeDef *) DE_MIXER1_VI2_BASE)/*!< DE_MIXER1_VI2  register set access pointer */
+#define DE_MIXER1_UI2 ((DE_UI_TypeDef *) DE_MIXER1_UI2_BASE)/*!< DE_MIXER1_UI2  register set access pointer */
+#define DE_MIXER1_VI3 ((DE_VI_TypeDef *) DE_MIXER1_VI3_BASE)/*!< DE_MIXER1_VI3  register set access pointer */
+#define DE_MIXER1_UI3 ((DE_UI_TypeDef *) DE_MIXER1_UI3_BASE)/*!< DE_MIXER1_UI3  register set access pointer */
+#define DE_MIXER1_UIS1 ((DE_UIS_TypeDef *) DE_MIXER1_UIS1_BASE)/*!< DE_MIXER1_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL  register set access pointer */
 #define TCON0 ((TCON_TypeDef *) TCON0_BASE)           /*!< TCON0 TCON0, TCON1 register set access pointer */
 #define TCON1 ((TCON_TypeDef *) TCON1_BASE)           /*!< TCON1 TCON0, TCON1 register set access pointer */
