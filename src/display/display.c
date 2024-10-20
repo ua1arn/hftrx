@@ -1766,8 +1766,8 @@ static const videomode_t vdmode_PAL0 =
 //		Blanking Total        45
 //		Total Lines         1125
 
-/* HDMI TV out parameters HD 1920x1080 30 Hz*/
-/* Aspect ratio 1.7(7) */
+/* HDMI TV out parameters HD 1920x1080 60 Hz*/
+/* Aspect ratio 1.7(7), dit clock = 148.5 MHz */
 // https://edid.tv/edid/2253/
 static const videomode_t vdmode_HDMI =
 {
@@ -1788,7 +1788,7 @@ static const videomode_t vdmode_HDMI =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.fps = 30,	/* frames per second */
+	.fps = 60,	/* frames per second */
 	.ntsc = 0
 };
 
@@ -2225,3 +2225,20 @@ uint_fast8_t smallfont3_width(char cc)
 }
 #endif /* defined (SMALLCHARH3) */
 #endif /* ! LCDMODE_DUMMY */
+
+/* Получить желаемую частоту pixel clock для данного видеорежима. */
+uint_fast32_t display_getdotclock(const videomode_t * vdmode)
+{
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
+	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
+	//return vdmode->ltdc_dotclk;
+}

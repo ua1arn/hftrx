@@ -4,18 +4,17 @@
 
 #include "formats.h"
 
-#define APPDIM_X 512
-#define APPDIM_Y 512
+#define APPDIM_X 800
+#define APPDIM_Y 480
+#define APPDPIXELWIDTH 4
 
-static RAMNC uint8_t xxfb1 [APPDIM_Y * APPDIM_X * 4];
-static RAMNC uint8_t xxfb2 [APPDIM_Y * APPDIM_X * 4];
+static RAMNC uint8_t xxfb1 [APPDIM_Y * APPDIM_X * APPDPIXELWIDTH];
 
-#define  framebuffer1 ((uintptr_t) xxfb1) // 0x43000000
-#define  framebuffer2 ((uintptr_t) xxfb2) // (0x45000000+(512*512))
+#define  framebuffer1 ((uintptr_t) xxfb1)
 
-static void hdmi_dump(void);
+static void h3_hdmi_dump(void);
 
-static void display_clocks_init(const videomode_t * vdmode)
+static void h3_display_clocks_init(const videomode_t * vdmode)
 {
 	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
@@ -31,7 +30,7 @@ static void display_clocks_init(const videomode_t * vdmode)
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 }
 
-static void hdmi_init(const videomode_t * vdmode)
+static void h3_hdmi_init(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -177,7 +176,7 @@ static void hdmi_init(const videomode_t * vdmode)
 #endif
 }
 
-static void tcon_init(const videomode_t * vdmode)
+static void h3_hdmi_tcon_init(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -207,7 +206,7 @@ static void tcon_init(const videomode_t * vdmode)
 //	PRINTF("VBP=%u\n", VBP);
 
 	// LCD0 feeds mixer0 to HDMI
-	TCON0->TCON_GCTL_REG = (UINT32_C(1) << 31);
+	TCON0->TCON_GCTL_REG = 0;
 	TCON0->TCON_GINT0_REG = 0;
 	TCON0->TCON1_CTL_REG =
 		(UINT32_C(1) << 31) |	// TCON1_En
@@ -221,36 +220,25 @@ static void tcon_init(const videomode_t * vdmode)
 	TCON0->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
 	TCON0->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	//TCON0->TCON_GINT0_REG = (UINT32_C(1) << 30); // TCON1_Vb_Int_En
+	TCON0->TCON_GCTL_REG = (UINT32_C(1) << 31);
 }
 
 // This function configured DE2 as follows:
 // MIXER0 -> WB -> MIXER1 -> HDMI
 
-void de2_init(const videomode_t * vdmode)
+void de2_top_init(void)
 {
-	/* Accumulated parameters for this display */
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
-	const unsigned HSYNC = vdmode->hsync;	/*  */
-	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
-	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
-	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
-	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
-	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
-	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
-	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
-	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
-	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
-	const uint32_t SRC_SIZE = ((270 - 1) << 16) | (480 - 1);
-
 	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
 	DE_TOP->SCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
 	DE_TOP->HCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
 
 	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
+}
+
+void de2_bld_init(const videomode_t * vdmode)
+{
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
 
 	// Erase the whole of MIXER0. This contains uninitialized data.
 	for (uint32_t addr = DE_MIXER0_GLB_BASE + 0x0000; addr < DE_MIXER0_GLB_BASE + 0xC000; addr += 4)
@@ -268,53 +256,23 @@ void de2_init(const videomode_t * vdmode)
 	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 	//DE_MIXER0_BLD->BLD_SIZE = ((480 - 1) << 16) | (800 - 1);
 	//DE_MIXER0_BLD->CH[0].BLD_CH_ISIZE = (489 << 16) | (800 - 1);
+}
 
-	// The output takes a 480x270 area from a total 512x302
-	// buffer leaving a 16px overscan on all 4 sides.
-	DE_MIXER0_VI1->CFG [0].ATTR = (UINT32_C(1) << 15) | (UINT32_C(1) << 0);
-	DE_MIXER0_VI1->CFG [0].SIZE = SRC_SIZE;
-
-	DE_MIXER0_VI1->CFG [0].COORD = 0;
-	DE_MIXER0_VI1->CFG [0].PITCH [0] = APPDIM_X * 4; // Scan line in bytes including overscan
-	/// DE_MIXER0_VI1->CFG [0].PITCH [0] = 512*2; // Scan line in bytes including overscan
-	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = (uint32_t) (framebuffer1 + APPDIM_X * 16 + 16); ///[512*16+16]; // Start at y=16
-
-	DE_MIXER0_VI1->OVL_SIZE [0] = SRC_SIZE;	// OVL_V_SIZE
-
-//	PRINTF("DE_MIXER0_VS_BASE=%08X\n", (uintptr_t) DE_MIXER0_VS_BASE);
-//	PRINTF("DE_MIXER1_VS_BASE=%08X\n", (uintptr_t) DE_MIXER1_VS_BASE);
-//	PRINTF("DE_MIXER0_VSU0_BASE=%08X\n", (uintptr_t) DE_MIXER0_VSU1_BASE);
-//	PRINTF("DE_MIXER0_VSU1_BASE=%08X\n", (uintptr_t) DE_MIXER1_VSU1_BASE);
-//	ASSERT(DE_MIXER0_VS_BASE == DE_MIXER0_VSU1_BASE);
+void de2_vsu_init(const videomode_t * vdmode)
+{
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const uint32_t APPDIMS_SIZE = ((APPDIM_Y - 1) << 16) | (APPDIM_X - 1);
 
 	const uint32_t HSTEP = 0x40000;
 	const uint32_t VSTEP = 0x40000;
-//
-//	DE_MIXER0_VS_CTRL = (UINT32_C(1) << 0);
-//	DE_MIXER0_VS_OUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-//	DE_MIXER0_VS_Y_SIZE = SRC_SIZE;
-//	DE_MIXER0_VS_Y_HSTEP = HSTEP;
-//	DE_MIXER0_VS_Y_VSTEP = VSTEP;
-//	DE_MIXER0_VS_C_SIZE = SRC_SIZE;
-//	DE_MIXER0_VS_C_HSTEP = HSTEP;
-//	DE_MIXER0_VS_C_VSTEP = VSTEP;
-//	for (int n = 0; n < 32; n ++)
-//	{
-//		DE_MIXER0_VS_Y_HCOEF0(n) = 0x40000000;	// 0x200
-//		DE_MIXER0_VS_Y_HCOEF1(n) = 0;			// 0x300
-//		DE_MIXER0_VS_Y_VCOEF(n) = 0x00004000;	// 0x400
-//		DE_MIXER0_VS_C_HCOEF0(n) = 0x40000000;	// 0x600
-//		DE_MIXER0_VS_C_HCOEF1(n) = 0;			// 0x700
-//		DE_MIXER0_VS_C_VCOEF(n) = 0x00004000;	// 0x800
-//	}
-//	DE_MIXER0_VS_CTRL = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 
 	DE_MIXER0_VSU1->VSU_CTRL_REG = (UINT32_C(1) << 0);
 	DE_MIXER0_VSU1->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	DE_MIXER0_VSU1->VSU_Y_SIZE_REG = SRC_SIZE;
+	DE_MIXER0_VSU1->VSU_Y_SIZE_REG = APPDIMS_SIZE;
 	DE_MIXER0_VSU1->VSU_Y_HSTEP_REG = HSTEP;
 	DE_MIXER0_VSU1->VSU_Y_VSTEP_REG = VSTEP;
-	DE_MIXER0_VSU1->VSU_C_SIZE_REG = SRC_SIZE;
+	DE_MIXER0_VSU1->VSU_C_SIZE_REG = APPDIMS_SIZE;
 	DE_MIXER0_VSU1->VSU_C_HSTEP_REG = HSTEP;
 	DE_MIXER0_VSU1->VSU_C_VSTEP_REG = VSTEP;
 
@@ -333,6 +291,30 @@ void de2_init(const videomode_t * vdmode)
 	DE_MIXER0_GLB->GLB_DBUFFER = (UINT32_C(1) << 0);
 }
 
+void de2_vi_init(const videomode_t * vdmode, uintptr_t fb)
+{
+	const uint32_t APPDIMS_SIZE = ((APPDIM_Y - 1) << 16) | (APPDIM_X - 1);
+
+	// The output takes a 480x270 area from a total 512x302
+	// buffer leaving a 16px overscan on all 4 sides.
+	DE_MIXER0_VI1->CFG [0].ATTR = (UINT32_C(1) << 15) | (UINT32_C(1) << 0);
+	DE_MIXER0_VI1->CFG [0].SIZE = APPDIMS_SIZE;
+
+	DE_MIXER0_VI1->CFG [0].COORD = 0;
+	DE_MIXER0_VI1->CFG [0].PITCH [0] = APPDIM_X * APPDPIXELWIDTH; // Scan line in bytes including overscan
+	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = framebuffer1;
+
+	DE_MIXER0_VI1->OVL_SIZE [0] = APPDIMS_SIZE;	// OVL_V_SIZE
+}
+
+void h3_de2_init(const videomode_t * vdmode)
+{
+	de2_top_init();
+	de2_bld_init(vdmode);
+	de2_vi_init(vdmode, framebuffer1);
+	de2_vsu_init(vdmode);
+}
+
 void st_clock(void)
 {
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
@@ -349,7 +331,7 @@ void st_clock(void)
 }
 
 
-static void hdmi_dump(void)
+static void h3_hdmi_dump(void)
 {
 	/* enable read access to HDMI controller */
 	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
@@ -376,26 +358,26 @@ static void hdmi_dump(void)
 // This function initializes the HDMI port and TCON.
 // Almost everything here is resolution specific and
 // currently hardcoded to 1920x1080@60Hz.
-void display_init_ex(void)
+static void h3_display_init_ex(void)
 {
 	const videomode_t * vdmode_HDMI = get_videomode_HDMI();
 	//active_buffer = framebuffer1;
-	display_clocks_init(vdmode_HDMI);
+	h3_display_clocks_init(vdmode_HDMI);
 	///st_clock();
-	hdmi_init(vdmode_HDMI);
-	hdmi_dump();
-	tcon_init(vdmode_HDMI);
-	de2_init(vdmode_HDMI);
+	h3_hdmi_init(vdmode_HDMI);
+	h3_hdmi_dump();
+	h3_hdmi_tcon_init(vdmode_HDMI);
+	h3_de2_init(vdmode_HDMI);
 }
 
-void UB_LCD_FillLayer(uint32_t color)
+static void UB_LCD_FillLayer(uint32_t color)
 {
 	uint32_t index = 0;
 
 	// Bildschirm loeschen
-	for (index = 0x00; index < 4 * APPDIM_X * 270; index += 4)
+	for (index = 0x00; index < APPDIM_X * APPDIM_Y; ++ index)
 	{
-		* (volatile uint32_t*) (framebuffer1 + APPDIM_X * 16 + 16 + index) = color;
+		* (volatile uint32_t*) (framebuffer1 + index * APPDPIXELWIDTH) = color;
 	}
 
 }
@@ -403,7 +385,7 @@ void UB_LCD_FillLayer(uint32_t color)
 
 void h3_hdmi_test(void)
 {
-	display_init_ex();
+	h3_display_init_ex();
 	UB_LCD_FillLayer(0x00FF00);	// GREEN
 }
 

@@ -7450,28 +7450,6 @@ void hardware_ltdc_L8_palette(void)
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
-/* Получить желаемую частоту pixel clock для данного видеорежима. */
-uint_fast32_t display_getdotclock(const videomode_t * vdmode)
-{
-	/* Accumulated parameters for this display */
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
-	const unsigned HSYNC = vdmode->hsync;	/*  */
-	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
-
-	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
-	//return vdmode->ltdc_dotclk;
-}
-
 #else /* WITHLTDCHW */
-
-uint_fast32_t display_getdotclock(const videomode_t * vdmode)
-{
-	return UINT32_C(1000000);
-}
 
 #endif /* WITHLTDCHW */
