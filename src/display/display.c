@@ -1768,15 +1768,18 @@ static const videomode_t vdmode_PAL0 =
 
 /* HDMI TV out parameters HD 1920x1080 30 Hz*/
 /* Aspect ratio 1.7(7) */
+// https://edid.tv/edid/2253/
 static const videomode_t vdmode_HDMI =
 {
 	.width = 1920,			/* LCD PIXEL WIDTH            */
 	.height = 1080,			/* LCD PIXEL HEIGHT           */
 
+	// Horizontal Blanking = hsync + hbp + hfp = 280
 	.hsync = 44,			/* Horizontal synchronization */
 	.hbp = 148,				/* Horizontal back porch      */
 	.hfp = 88,				/* Horizontal front porch  */
 
+	// Vertical Blanking = vsync + vbp + vfp = 45
 	.vsync = 5,				/* Vertical synchronization */
 	.vbp = 36,				/* Vertical back porch      */
 	.vfp = 4,				/* Vertical front porch */
