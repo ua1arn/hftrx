@@ -46,16 +46,16 @@ static void hdmi_init(const videomode_t * vdmode)
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned HSYNC = vdmode->hsync;	/*  */
 	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
 	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
 	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
 	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
-	const unsigned HBLANKING = vdmode->hbp +  vdmode->hsync +  vdmode->hfp;	/* Horizontal Blanking = hsync + hbp + hfp */
-	const unsigned VBLANKING = vdmode->vbp +  vdmode->vsync +  vdmode->vfp;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
+	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
+	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
 
 //	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
 //	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
@@ -190,16 +190,16 @@ static void tcon_init(const videomode_t * vdmode)
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned HSYNC = vdmode->hsync;	/*  */
 	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
 	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
 	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
 	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
-	const unsigned HBLANKING = vdmode->hbp +  vdmode->hsync +  vdmode->hfp;	/* Horizontal Blanking = hsync + hbp + hfp */
-	const unsigned VBLANKING = vdmode->vbp +  vdmode->vsync +  vdmode->vfp;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
+	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
+	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
 
 //	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
 //	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
