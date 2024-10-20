@@ -23,8 +23,9 @@ static RAMNC uint8_t xxfb2 [512 * 512 * 4];
 
 static void hdmi_dump(void);
 
-static void display_clocks_init(void)
+static void display_clocks_init(const videomode_t * vdmode)
 {
+	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
 	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
@@ -38,8 +39,9 @@ static void display_clocks_init(void)
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 }
 
-static void hdmi_init(void)
+static void hdmi_init(const videomode_t * vdmode)
 {
+	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
 	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
 	HDMI_PHY->HDMI_PHY_CFG1 = 0;
@@ -342,9 +344,9 @@ void display_init_ex(void)
 {
 	const videomode_t * vdmode_HDMI = get_videomode_HDMI();
 	//active_buffer = framebuffer1;
-	display_clocks_init();
+	display_clocks_init(vdmode_HDMI);
 	///st_clock();
-	hdmi_init();
+	hdmi_init(vdmode_HDMI);
 	hdmi_dump();
 	tcon_init(vdmode_HDMI);
 	de2_init();
