@@ -180,11 +180,10 @@
 #regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)#typeend;
 #typeend;
 
-
 #type; DE_VSU; Video Scaler Unit (VSU), VS
 
-#base; DE_MIXER0_VSU1 0x01104000; DE_MIXER0_VI1 Scaler TBD
-#base; DE_MIXER1_VSU1 0x01124000; DE_MIXER1_VI1 Scaler TBD
+#base; DE_MIXER0_VSU1 0x01120000; DE_MIXER0_VI1 Scaler
+#base; DE_MIXER1_VSU1 0x01220000; DE_MIXER1_VI1 Scaler
 
 #regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
 #regdef; VSU_STATUS_REG; 0x0008; VSU Status Register

@@ -90,9 +90,8 @@ typedef enum IRQn
 #define DE_MIXER0_VI2_BASE ((uintptr_t) 0x01103000)   /*!< DE_VI  Base */
 #define DE_MIXER0_UI2_BASE ((uintptr_t) 0x01104000)   /*!< DE_UI  Base */
 #define DE_MIXER0_VI3_BASE ((uintptr_t) 0x01104000)   /*!< DE_VI  Base */
-#define DE_MIXER0_VSU1_BASE ((uintptr_t) 0x01104000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
 #define DE_MIXER0_UI3_BASE ((uintptr_t) 0x01105000)   /*!< DE_UI  Base */
-#define DE_MIXER1_VSU1_BASE ((uintptr_t) 0x01124000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
+#define DE_MIXER0_VSU1_BASE ((uintptr_t) 0x01120000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
 #define DE_MIXER0_UIS1_BASE ((uintptr_t) 0x01140000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define DE_MIXER0_UIS2_BASE ((uintptr_t) 0x01150000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define DE_MIXER0_UIS3_BASE ((uintptr_t) 0x01160000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
@@ -104,6 +103,7 @@ typedef enum IRQn
 #define DE_MIXER1_UI2_BASE ((uintptr_t) 0x01204000)   /*!< DE_UI  Base */
 #define DE_MIXER1_VI3_BASE ((uintptr_t) 0x01204000)   /*!< DE_VI  Base */
 #define DE_MIXER1_UI3_BASE ((uintptr_t) 0x01205000)   /*!< DE_UI  Base */
+#define DE_MIXER1_VSU1_BASE ((uintptr_t) 0x01220000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
 #define DE_MIXER1_UIS1_BASE ((uintptr_t) 0x01240000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define SYSCTRL_BASE ((uintptr_t) 0x01C00000)         /*!< SYSCTRL  Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON TCON0, TCON1 Base */
@@ -1453,9 +1453,8 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 #define DE_MIXER0_VI2 ((DE_VI_TypeDef *) DE_MIXER0_VI2_BASE)/*!< DE_MIXER0_VI2  register set access pointer */
 #define DE_MIXER0_UI2 ((DE_UI_TypeDef *) DE_MIXER0_UI2_BASE)/*!< DE_MIXER0_UI2  register set access pointer */
 #define DE_MIXER0_VI3 ((DE_VI_TypeDef *) DE_MIXER0_VI3_BASE)/*!< DE_MIXER0_VI3  register set access pointer */
-#define DE_MIXER0_VSU1 ((DE_VSU_TypeDef *) DE_MIXER0_VSU1_BASE)/*!< DE_MIXER0_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
 #define DE_MIXER0_UI3 ((DE_UI_TypeDef *) DE_MIXER0_UI3_BASE)/*!< DE_MIXER0_UI3  register set access pointer */
-#define DE_MIXER1_VSU1 ((DE_VSU_TypeDef *) DE_MIXER1_VSU1_BASE)/*!< DE_MIXER1_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
+#define DE_MIXER0_VSU1 ((DE_VSU_TypeDef *) DE_MIXER0_VSU1_BASE)/*!< DE_MIXER0_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
 #define DE_MIXER0_UIS1 ((DE_UIS_TypeDef *) DE_MIXER0_UIS1_BASE)/*!< DE_MIXER0_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define DE_MIXER0_UIS2 ((DE_UIS_TypeDef *) DE_MIXER0_UIS2_BASE)/*!< DE_MIXER0_UIS2 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define DE_MIXER0_UIS3 ((DE_UIS_TypeDef *) DE_MIXER0_UIS3_BASE)/*!< DE_MIXER0_UIS3 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
@@ -1467,6 +1466,7 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 #define DE_MIXER1_UI2 ((DE_UI_TypeDef *) DE_MIXER1_UI2_BASE)/*!< DE_MIXER1_UI2  register set access pointer */
 #define DE_MIXER1_VI3 ((DE_VI_TypeDef *) DE_MIXER1_VI3_BASE)/*!< DE_MIXER1_VI3  register set access pointer */
 #define DE_MIXER1_UI3 ((DE_UI_TypeDef *) DE_MIXER1_UI3_BASE)/*!< DE_MIXER1_UI3  register set access pointer */
+#define DE_MIXER1_VSU1 ((DE_VSU_TypeDef *) DE_MIXER1_VSU1_BASE)/*!< DE_MIXER1_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
 #define DE_MIXER1_UIS1 ((DE_UIS_TypeDef *) DE_MIXER1_UIS1_BASE)/*!< DE_MIXER1_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL  register set access pointer */
 #define TCON0 ((TCON_TypeDef *) TCON0_BASE)           /*!< TCON0 TCON0, TCON1 register set access pointer */

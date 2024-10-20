@@ -4,22 +4,14 @@
 
 #include "formats.h"
 
-#include "h3_hdmi.h"
+#define APPDIM_X 512
+#define APPDIM_Y 512
 
-static RAMNC uint8_t xxfb1 [512 * 512 * 4];
-static RAMNC uint8_t xxfb2 [512 * 512 * 4];
+static RAMNC uint8_t xxfb1 [APPDIM_Y * APPDIM_X * 4];
+static RAMNC uint8_t xxfb2 [APPDIM_Y * APPDIM_X * 4];
 
 #define  framebuffer1 ((uintptr_t) xxfb1) // 0x43000000
 #define  framebuffer2 ((uintptr_t) xxfb2) // (0x45000000+(512*512))
-
-#define HDMI_WIDTH_1920 1920	// Horizontal pixels
-#define HDMI_HEIGHT_1080 1080	// Vertical pixels
-#define HDMI_HFP_88 88	// Horizontal Front porch
-#define HDMI_HSW_44 44	// Horizontal sync pulse
-#define HDMI_HBP_280 280	// Horizontal blanking
-#define HDMI_VBP_45 45		// Vertical blanking
-#define HDMI_VFP_4 4	// Vertical front porch
-#define HDMI_VSW_5 5	// Vertical sync pulse
 
 static void hdmi_dump(void);
 
@@ -65,6 +57,8 @@ static void hdmi_init(const videomode_t * vdmode)
 	PRINTF("VBLANKING=%u\n", VBLANKING);
 	PRINTF("HSYNC=%u\n", HSYNC);
 	PRINTF("VSYNC=%u\n", VSYNC);
+	PRINTF("HFP=%u\n", HFP);
+	PRINTF("VFP=%u\n", VFP);
 
 	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
@@ -114,22 +108,22 @@ static void hdmi_init(const videomode_t * vdmode)
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
 	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-	HDMI_TX0->HDMI_FC_INHACTV0 = (HDMI_WIDTH_1920 & 0xff);    // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHACTV1 = (HDMI_WIDTH_1920 >> 8);      // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHBLANK0 = (HDMI_HBP_280 & 0xff);     // Horizontal blanking
-	HDMI_TX0->HDMI_FC_INHBLANK1 = (HDMI_HBP_280 >> 8);       // Horizontal blanking
+	HDMI_TX0->HDMI_FC_INHACTV0 = (WIDTH & 0xff);    // Horizontal pixels
+	HDMI_TX0->HDMI_FC_INHACTV1 = (WIDTH >> 8);      // Horizontal pixels
+	HDMI_TX0->HDMI_FC_INHBLANK0 = (HBLANKING & 0xff);     // Horizontal blanking
+	HDMI_TX0->HDMI_FC_INHBLANK1 = (HBLANKING >> 8);       // Horizontal blanking
 
-	HDMI_TX0->HDMI_FC_INVACTV0 = (HDMI_HEIGHT_1080 & 0xff);    // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVACTV1 = (HDMI_HEIGHT_1080 >> 8);      // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVBLANK = HDMI_VBP_45;               // Vertical blanking
+	HDMI_TX0->HDMI_FC_INVACTV0 = (HEIGHT & 0xff);    // Vertical pixels
+	HDMI_TX0->HDMI_FC_INVACTV1 = (HEIGHT >> 8);      // Vertical pixels
+	HDMI_TX0->HDMI_FC_INVBLANK = VBLANKING;               // Vertical blanking
 
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (HDMI_HFP_88 & 0xff);
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (HDMI_HFP_88 >> 8);    // Horizontal Front porch
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (HDMI_HSW_44 & 0xff);  // Horizontal sync pulse
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (HDMI_HSW_44 >> 8);    // Horizontal sync pulse
+	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (HFP & 0xff);
+	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (HFP >> 8);    // Horizontal Front porch
+	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (HSYNC & 0xff);  // Horizontal sync pulse
+	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (HSYNC >> 8);    // Horizontal sync pulse
 
-	HDMI_TX0->HDMI_FC_VSYNCINDELAY = HDMI_VFP_4;
-	HDMI_TX0->HDMI_FC_VSYNCINWIDTH = HDMI_VSW_5;            // Vertical sync pulse
+	HDMI_TX0->HDMI_FC_VSYNCINDELAY = VFP;
+	HDMI_TX0->HDMI_FC_VSYNCINWIDTH = VSYNC;            // Vertical sync pulse
 
 	HDMI_TX0->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
 	HDMI_TX0->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
@@ -203,12 +197,14 @@ static void tcon_init(const videomode_t * vdmode)
 
 //	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
 //	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
-	PRINTF("HTOTAL=%u\n", HTOTAL);
-	PRINTF("VTOTAL=%u\n", VTOTAL);
-	PRINTF("HBLANKING=%u\n", HBLANKING);
-	PRINTF("VBLANKING=%u\n", VBLANKING);
-	PRINTF("HSYNC=%u\n", HSYNC);
-	PRINTF("VSYNC=%u\n", VSYNC);
+//	PRINTF("HTOTAL=%u\n", HTOTAL);
+//	PRINTF("VTOTAL=%u\n", VTOTAL);
+//	PRINTF("HBLANKING=%u\n", HBLANKING);
+//	PRINTF("VBLANKING=%u\n", VBLANKING);
+//	PRINTF("HSYNC=%u\n", HSYNC);
+//	PRINTF("VSYNC=%u\n", VSYNC);
+//	PRINTF("HBP=%u\n", HBP);
+//	PRINTF("VBP=%u\n", VBP);
 
 	// LCD0 feeds mixer0 to HDMI
 	TCON0->TCON_GCTL_REG = (UINT32_C(1) << 31);
@@ -221,17 +217,9 @@ static void tcon_init(const videomode_t * vdmode)
 	TCON0->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
 	TCON0->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
 	TCON0->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
-	TCON0->TCON1_BASIC3_REG = ((2200 - 1) << 16) | ((192 - 1) << 0);	// HT HBP
-	TCON0->TCON1_BASIC4_REG = (2250 << 16) | ((41 - 1) << 0);			// VT VBP
-	TCON0->TCON1_BASIC5_REG = ((44 - 1) << 16) | ((5 - 1) << 0);			// HSPW VSPW
-#if 0
-	TCON0->TCON1_BASIC0_REG = ((800 - 1) << 16) | (HEIGHT - 1);		// TCON1_XI TCON1_YI
-	TCON0->TCON1_BASIC1_REG = ((800 - 1) << 16) | (HEIGHT - 1);		// LS_XO LS_YO
-	TCON0->TCON1_BASIC2_REG = ((800 - 1) << 16) | (HEIGHT - 1);		// TCON1_XO TCON1_YO
-	TCON0->TCON1_BASIC3_REG = (1055 << 16) | ((192 - 1) << 0);		// HT HBP
-	TCON0->TCON1_BASIC4_REG = (850 << 16) | (140 << 0);				// VT VBP
-	TCON0->TCON1_BASIC5_REG = ((128 - 1) << 16) | ((41 - 1) << 0);	// HSPW VSPW
-#endif
+	TCON0->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
+	TCON0->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
+	TCON0->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
 	//TCON0->TCON_GINT0_REG = (UINT32_C(1) << 30); // TCON1_Vb_Int_En
 }
@@ -239,8 +227,23 @@ static void tcon_init(const videomode_t * vdmode)
 // This function configured DE2 as follows:
 // MIXER0 -> WB -> MIXER1 -> HDMI
 
-void de2_init(void)
+void de2_init(const videomode_t * vdmode)
 {
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
+	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
+	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
+	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
 	const uint32_t SRC_SIZE = ((270 - 1) << 16) | (480 - 1);
 
 	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
@@ -256,13 +259,13 @@ void de2_init(void)
 	}
 
 	DE_MIXER0_GLB->GLB_CTL = 1;
-	DE_MIXER0_GLB->GLB_SIZE = ((HDMI_HEIGHT_1080 - 1) << 16) | (HDMI_WIDTH_1920 - 1);
+	DE_MIXER0_GLB->GLB_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 	//DE_MIXER0_GLB_SIZE = ((480 - 1) << 16) | (800 - 1);
 
 	DE_MIXER0_BLD->BLD_EN_COLOR_CTL = 0x100;
 	DE_MIXER0_BLD->ROUTE = 0;
-	DE_MIXER0_BLD->OUTPUT_SIZE = ((HDMI_HEIGHT_1080 - 1) << 16) | (HDMI_WIDTH_1920 - 1);
-	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HDMI_HEIGHT_1080 - 1) << 16) | (HDMI_WIDTH_1920 - 1);
+	DE_MIXER0_BLD->OUTPUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 	//DE_MIXER0_BLD->BLD_SIZE = ((480 - 1) << 16) | (800 - 1);
 	//DE_MIXER0_BLD->CH[0].BLD_CH_ISIZE = (489 << 16) | (800 - 1);
 
@@ -272,40 +275,42 @@ void de2_init(void)
 	DE_MIXER0_VI1->CFG [0].SIZE = SRC_SIZE;
 
 	DE_MIXER0_VI1->CFG [0].COORD = 0;
-	DE_MIXER0_VI1->CFG [0].PITCH [0] = 512 * 4; // Scan line in bytes including overscan
+	DE_MIXER0_VI1->CFG [0].PITCH [0] = APPDIM_X * 4; // Scan line in bytes including overscan
 	/// DE_MIXER0_VI1->CFG [0].PITCH [0] = 512*2; // Scan line in bytes including overscan
-	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = (uint32_t) (framebuffer1 + 512 * 16 + 16); ///[512*16+16]; // Start at y=16
+	DE_MIXER0_VI1->CFG [0].TOP_LADDR [0] = (uint32_t) (framebuffer1 + APPDIM_X * 16 + 16); ///[512*16+16]; // Start at y=16
 
 	DE_MIXER0_VI1->OVL_SIZE [0] = SRC_SIZE;	// OVL_V_SIZE
 
-	PRINTF("DE_MIXER0_VS_BASE=%08X\n", (uintptr_t) DE_MIXER0_VS_BASE);
-	PRINTF("DE_MIXER0_VSU1_BASE=%08X\n", (uintptr_t) DE_MIXER0_VSU1_BASE);
-	ASSERT(DE_MIXER0_VS_BASE == DE_MIXER0_VSU1_BASE);
+//	PRINTF("DE_MIXER0_VS_BASE=%08X\n", (uintptr_t) DE_MIXER0_VS_BASE);
+//	PRINTF("DE_MIXER1_VS_BASE=%08X\n", (uintptr_t) DE_MIXER1_VS_BASE);
+//	PRINTF("DE_MIXER0_VSU0_BASE=%08X\n", (uintptr_t) DE_MIXER0_VSU1_BASE);
+//	PRINTF("DE_MIXER0_VSU1_BASE=%08X\n", (uintptr_t) DE_MIXER1_VSU1_BASE);
+//	ASSERT(DE_MIXER0_VS_BASE == DE_MIXER0_VSU1_BASE);
 
 	const uint32_t HSTEP = 0x40000;
 	const uint32_t VSTEP = 0x40000;
-
-	DE_MIXER0_VS_CTRL = (UINT32_C(1) << 0);
-	DE_MIXER0_VS_OUT_SIZE = ((HDMI_HEIGHT_1080 - 1) << 16) | (HDMI_WIDTH_1920 - 1);
-	DE_MIXER0_VS_Y_SIZE = SRC_SIZE;
-	DE_MIXER0_VS_Y_HSTEP = HSTEP;
-	DE_MIXER0_VS_Y_VSTEP = VSTEP;
-	DE_MIXER0_VS_C_SIZE = SRC_SIZE;
-	DE_MIXER0_VS_C_HSTEP = HSTEP;
-	DE_MIXER0_VS_C_VSTEP = VSTEP;
-	for (int n = 0; n < 32; n ++)
-	{
-		DE_MIXER0_VS_Y_HCOEF0(n) = 0x40000000;	// 0x200
-		DE_MIXER0_VS_Y_HCOEF1(n) = 0;			// 0x300
-		DE_MIXER0_VS_Y_VCOEF(n) = 0x00004000;	// 0x400
-		DE_MIXER0_VS_C_HCOEF0(n) = 0x40000000;	// 0x600
-		DE_MIXER0_VS_C_HCOEF1(n) = 0;			// 0x700
-		DE_MIXER0_VS_C_VCOEF(n) = 0x00004000;	// 0x800
-	}
-	DE_MIXER0_VS_CTRL = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+//
+//	DE_MIXER0_VS_CTRL = (UINT32_C(1) << 0);
+//	DE_MIXER0_VS_OUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+//	DE_MIXER0_VS_Y_SIZE = SRC_SIZE;
+//	DE_MIXER0_VS_Y_HSTEP = HSTEP;
+//	DE_MIXER0_VS_Y_VSTEP = VSTEP;
+//	DE_MIXER0_VS_C_SIZE = SRC_SIZE;
+//	DE_MIXER0_VS_C_HSTEP = HSTEP;
+//	DE_MIXER0_VS_C_VSTEP = VSTEP;
+//	for (int n = 0; n < 32; n ++)
+//	{
+//		DE_MIXER0_VS_Y_HCOEF0(n) = 0x40000000;	// 0x200
+//		DE_MIXER0_VS_Y_HCOEF1(n) = 0;			// 0x300
+//		DE_MIXER0_VS_Y_VCOEF(n) = 0x00004000;	// 0x400
+//		DE_MIXER0_VS_C_HCOEF0(n) = 0x40000000;	// 0x600
+//		DE_MIXER0_VS_C_HCOEF1(n) = 0;			// 0x700
+//		DE_MIXER0_VS_C_VCOEF(n) = 0x00004000;	// 0x800
+//	}
+//	DE_MIXER0_VS_CTRL = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 
 	DE_MIXER0_VSU1->VSU_CTRL_REG = (UINT32_C(1) << 0);
-	DE_MIXER0_VSU1->VSU_OUT_SIZE_REG = ((HDMI_HEIGHT_1080 - 1) << 16) | (HDMI_WIDTH_1920 - 1);
+	DE_MIXER0_VSU1->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 	DE_MIXER0_VSU1->VSU_Y_SIZE_REG = SRC_SIZE;
 	DE_MIXER0_VSU1->VSU_Y_HSTEP_REG = HSTEP;
 	DE_MIXER0_VSU1->VSU_Y_VSTEP_REG = VSTEP;
@@ -380,7 +385,7 @@ void display_init_ex(void)
 	hdmi_init(vdmode_HDMI);
 	hdmi_dump();
 	tcon_init(vdmode_HDMI);
-	de2_init();
+	de2_init(vdmode_HDMI);
 }
 
 void UB_LCD_FillLayer(uint32_t color)
@@ -388,9 +393,9 @@ void UB_LCD_FillLayer(uint32_t color)
 	uint32_t index = 0;
 
 	// Bildschirm loeschen
-	for (index = 0x00; index < 4 * 512 * 270; index += 4)
+	for (index = 0x00; index < 4 * APPDIM_X * 270; index += 4)
 	{
-		* (volatile uint32_t*) (framebuffer1 + 512 * 16 + 16 + index) = color;
+		* (volatile uint32_t*) (framebuffer1 + APPDIM_X * 16 + 16 + index) = color;
 	}
 
 }

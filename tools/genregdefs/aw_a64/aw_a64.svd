@@ -4302,7 +4302,7 @@
   <peripheral>
   <name>DE_MIXER0_VSU1</name>
   <description>Video Scaler Unit (VSU), VS</description>
-  <baseAddress>0x01104000</baseAddress>
+  <baseAddress>0x01120000</baseAddress>
   <registers>
    <register>
     <name>VSU_CTRL_REG</name>
@@ -4626,7 +4626,7 @@
   </peripheral>
   <peripheral derivedFrom="DE_MIXER0_VSU1">
   <name>DE_MIXER1_VSU1</name>
-  <baseAddress>0x01124000</baseAddress>
+  <baseAddress>0x01220000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DE_WB</name>
