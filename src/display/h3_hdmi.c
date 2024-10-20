@@ -8,10 +8,6 @@
 
 #define APPDPIXELWIDTH 4
 
-static RAMNC uint8_t xxfb1 [DIM_Y * DIM_X * APPDPIXELWIDTH];
-
-#define  framebuffer1 ((uintptr_t) xxfb1)
-
 static void h3_hdmi_dump(void);
 
 static void h3_display_clocks_init(const videomode_t * vdmode)
@@ -307,6 +303,9 @@ void de2_vi_init(const videomode_t * vdmode, uintptr_t fb)
 	DE_MIXER0_VI1->OVL_SIZE [0] = APPDIMS_SIZE;	// OVL_V_SIZE
 }
 
+
+static RAMNC uint8_t xxfb1 [DIM_Y * DIM_X * APPDPIXELWIDTH];
+
 void h3_de2_init(const videomode_t * vdmode)
 {
 	de2_top_init();
@@ -370,23 +369,9 @@ static void h3_display_init_ex(void)
 	h3_de2_init(vdmode_HDMI);
 }
 
-static void UB_LCD_FillLayer(uint32_t color)
-{
-	uint32_t index = 0;
-
-	// Bildschirm loeschen
-	for (index = 0x00; index < DIM_X * DIM_Y; ++ index)
-	{
-		* (volatile uint32_t*) (framebuffer1 + index * APPDPIXELWIDTH) = color;
-	}
-
-}
-///-------------
-
 void h3_hdmi_test(void)
 {
 	h3_display_init_ex();
-	UB_LCD_FillLayer(0x00FF00);	// GREEN
 }
 
 void h3_stamp_fb(uintptr_t fb)
