@@ -7400,16 +7400,16 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 
 //	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
 //	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
-	PRINTF("HTOTAL=%u\n", HTOTAL);
-	PRINTF("VTOTAL=%u\n", VTOTAL);
-	PRINTF("HBLANKING=%u\n", HBLANKING);
-	PRINTF("VBLANKING=%u\n", VBLANKING);
-	PRINTF("HSYNC=%u\n", HSYNC);
-	PRINTF("VSYNC=%u\n", VSYNC);
-	PRINTF("HFP=%u\n", HFP);
-	PRINTF("VFP=%u\n", VFP);
-
-	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
+//	PRINTF("HTOTAL=%u\n", HTOTAL);
+//	PRINTF("VTOTAL=%u\n", VTOTAL);
+//	PRINTF("HBLANKING=%u\n", HBLANKING);
+//	PRINTF("VBLANKING=%u\n", VBLANKING);
+//	PRINTF("HSYNC=%u\n", HSYNC);
+//	PRINTF("VSYNC=%u\n", VSYNC);
+//	PRINTF("HFP=%u\n", HFP);
+//	PRINTF("VFP=%u\n", VFP);
+//
+//	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
 	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
 	HDMI_PHY->HDMI_PHY_CFG1 = 0;
@@ -7708,12 +7708,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #endif
 
-		{
-			const int rtmixid = RTMIXIDLCD;
-
-			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
-			t113_de_update(rtmixid);	/* Update registers */
 #if CPUSTYLE_H3
 			{
 				const videomode_t * vdmode_HDMI = get_videomode_HDMI();
@@ -7724,6 +7718,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			}
 	return;
 #endif
+		{
+			const int rtmixid = RTMIXIDLCD;
+
+			/* эта инициализация после корректного соединния с работающим TCON */
+			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
+			t113_de_update(rtmixid);	/* Update registers */
 
 			t113_de_scaler_initialize(rtmixid, vdmode, vdmode);
 			sun8i_vi_scaler_enable(rtmixid, 0);
