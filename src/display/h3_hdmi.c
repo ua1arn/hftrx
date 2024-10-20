@@ -12,10 +12,14 @@ static RAMNC uint8_t xxfb2 [512 * 512 * 4];
 #define  framebuffer1 ((uintptr_t) xxfb1) // 0x43000000
 #define  framebuffer2 ((uintptr_t) xxfb2) // (0x45000000+(512*512))
 
-#define HDMI_WIDTH_1920 1920
-#define HDMI_HEIGHT_1080 1080
-#define HDMI_HFP_88 88// Horizontal Front porch
+#define HDMI_WIDTH_1920 1920	// Horizontal pixels
+#define HDMI_HEIGHT_1080 1080	// Vertical pixels
+#define HDMI_HFP_88 88	// Horizontal Front porch
 #define HDMI_HSW_44 44	// Horizontal sync pulse
+#define HDMI_HBP_280 280	// Horizontal blanking
+#define HDMI_VBP_45 45		// Vertical blanking
+#define HDMI_VFP_4 4	// Vertical front porch
+#define HDMI_VSW_5 5	// Vertical sync pulse
 
 static void hdmi_dump(void);
 
@@ -24,13 +28,14 @@ static void display_clocks_init(void)
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
 	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	local_delay_ms(50);
+
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
 	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
 	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
-	local_delay_ms(50);
 }
 
 static void hdmi_init(void)
@@ -79,26 +84,25 @@ static void hdmi_init(void)
 	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
 	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
 	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
 	HDMI_TX0->HDMI_FC_INHACTV0 = (HDMI_WIDTH_1920 & 0xff);    // Horizontal pixels
 	HDMI_TX0->HDMI_FC_INHACTV1 = (HDMI_WIDTH_1920 >> 8);      // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHBLANK0 = (280 & 0xff);     // Horizontal blanking
-	HDMI_TX0->HDMI_FC_INHBLANK1 = (280 >> 8);       // Horizontal blanking
+	HDMI_TX0->HDMI_FC_INHBLANK0 = (HDMI_HBP_280 & 0xff);     // Horizontal blanking
+	HDMI_TX0->HDMI_FC_INHBLANK1 = (HDMI_HBP_280 >> 8);       // Horizontal blanking
 
 	HDMI_TX0->HDMI_FC_INVACTV0 = (HDMI_HEIGHT_1080 & 0xff);    // Vertical pixels
 	HDMI_TX0->HDMI_FC_INVACTV1 = (HDMI_HEIGHT_1080 >> 8);      // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVBLANK = 45;               // Vertical blanking
+	HDMI_TX0->HDMI_FC_INVBLANK = HDMI_VBP_45;               // Vertical blanking
 
 	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (HDMI_HFP_88 & 0xff);
 	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (HDMI_HFP_88 >> 8);    // Horizontal Front porch
 	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (HDMI_HSW_44 & 0xff);  // Horizontal sync pulse
 	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (HDMI_HSW_44 >> 8);    // Horizontal sync pulse
 
-	HDMI_TX0->HDMI_FC_VSYNCINDELAY = 4;            // Vertical front porch
-	HDMI_TX0->HDMI_FC_VSYNCINWIDTH = 5;            // Vertical sync pulse
+	HDMI_TX0->HDMI_FC_VSYNCINDELAY = HDMI_VFP_4;
+	HDMI_TX0->HDMI_FC_VSYNCINWIDTH = HDMI_VSW_5;            // Vertical sync pulse
 
 	HDMI_TX0->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
 	HDMI_TX0->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
@@ -152,8 +156,27 @@ static void hdmi_init(void)
 #endif
 }
 
-static void tcon_init(void)
+static void tcon_init(const videomode_t * vdmode)
 {
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
+	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+
+	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
+	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
+	PRINTF("HTOTAL=%u\n", HTOTAL);
+	PRINTF("VTOTAL=%u\n", VTOTAL);
+
 	// LCD0 feeds mixer0 to HDMI
 	TCON0->TCON_GCTL_REG = (UINT32_C(1) << 31);
 	TCON0->TCON_GINT0_REG = 0;
@@ -317,12 +340,13 @@ static void hdmi_dump(void)
 // currently hardcoded to 1920x1080@60Hz.
 void display_init_ex(void)
 {
+	const videomode_t * vdmode_HDMI = get_videomode_HDMI();
 	//active_buffer = framebuffer1;
 	display_clocks_init();
 	///st_clock();
 	hdmi_init();
 	hdmi_dump();
-	tcon_init();
+	tcon_init(vdmode_HDMI);
 	de2_init();
 }
 

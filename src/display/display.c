@@ -1348,7 +1348,7 @@ display_getbgcolor(void)
 #endif /* LCDMODE_COLORED */
 }
 
-#if WITHLTDCHW
+#if WITHLTDCHW || 1
 
 #if LCDMODE_LQ043T3DX02K
 	// Sony PSP-1000 display panel
@@ -1408,10 +1408,6 @@ static const videomode_t vdmode0 =
 	.vbp = 3,				/* Vertical back porch      */
 	.vfp = 22,				/* Vertical front porch  7..147     */
 
-	/* Accumulated parameters for this display */
-	//LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
-	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
 	// SYNC MODE: MODE="0". DE must be grounded
@@ -1448,10 +1444,6 @@ static const videomode_t vdmode0 =
 	.vsync = 3,				/* Vertical synchronization 1..20 */
 	.vbp = 20,				/* Vertical back porch */
 	.vfp = 12,				/* Vertical front porch  1..127  (r6dan: 2-12-22) */
-
-	/* Accumulated parameters for this display */
-	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
-	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
@@ -1505,10 +1497,6 @@ static const videomode_t vdmode0 =
 	.vbp = xx,				/* Vertical back porch  xxx   */
 	.vfp = 5,				/* Vertical front porch  1..127     */
 
-	/* Accumulated parameters for this display */
-	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
-	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
 	// SYNC MODE: MODE="0". DE must be grounded
@@ -1542,11 +1530,6 @@ static const videomode_t vdmode0 =
 	.vbp = 24,			/* Vertical back porch      */
 	.vfp = 15,				/* Vertical front porch  7..147     */
 
-
-	/* Accumulated parameters for this display */
-	//LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
-	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
 	// SYNC MODE: MODE="0". DE must be grounded
@@ -1577,10 +1560,6 @@ static const videomode_t vdmode0 =
 	.vsync = 20,				/* Vertical synchronization 1..20  */
 	.vbp = 9,				/* Vertical back porch  xxx   */
 	.vfp = 9,				/* Vertical front porch  1..127     */
-
-	/* Accumulated parameters for this display */
-	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
-	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
 	// Synchronization method should be DE mode
 	// MODE: DE/SYNC mode select.
@@ -1721,7 +1700,7 @@ static const videomode_t vdmode0 =
 };
 
 #else
-	#error Unsupported LCDMODE_xxx
+	//#error Unsupported LCDMODE_xxx
 
 #endif
 
@@ -1771,17 +1750,64 @@ static const videomode_t vdmode_PAL0 =
 	.ntsc = 0
 };
 
-const videomode_t * get_videomode(void)
+//	Horizontal Timings
+//		Active Pixels       1920
+//		Front Porch           88
+//		Sync Width            44
+//		Back Porch           148
+//		Blanking Total       280
+//		Total Pixels        2200
+//
+//	Vertical Timings
+//		Active Lines        1080
+//		Front Porch            4
+//		Sync Width             5
+//		Back Porch            36
+//		Blanking Total        45
+//		Total Lines         1125
+
+/* HDMI TV out parameters HD 1920x1080 30 Hz*/
+/* Aspect ratio 1.7(7) */
+static const videomode_t vdmode_HDMI =
 {
-	return & vdmode0;
-}
+	.width = 1920,			/* LCD PIXEL WIDTH            */
+	.height = 1080,			/* LCD PIXEL HEIGHT           */
+
+	.hsync = 44,			/* Horizontal synchronization */
+	.hbp = 148,				/* Horizontal back porch      */
+	.hfp = 88,				/* Horizontal front porch  */
+
+	.vsync = 5,				/* Vertical synchronization */
+	.vbp = 36,				/* Vertical back porch      */
+	.vfp = 4,				/* Vertical front porch */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
+	.fps = 30,	/* frames per second */
+	.ntsc = 0
+};
 
 const videomode_t * get_videomode_CRT(void)
 {
 	return & vdmode_PAL0;
 }
 
+const videomode_t * get_videomode_HDMI(void)
+{
+	return & vdmode_HDMI;
+}
+
 #endif /* WITHLTDCHW */
+
+#if WITHLTDCHW
+const videomode_t * get_videomode(void)
+{
+	return & vdmode0;
+}
+#endif /* WITHLTDCHW */
+
 /*
  * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
  * сигналами дисплея.
