@@ -5,7 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре Allwinner T507
+// Трансивер с DSP обработкой "Веорсираптор" на процессоре Allwinner T507
 // Rrfboard_v0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 // HelperBoard T507 Core Board
 
