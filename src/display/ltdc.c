@@ -3245,19 +3245,26 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64*0
 
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 {
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	switch (rtmixid)
 	{
 	default: return NULL;
 	case 1: return DE_VSU1;	// VI1
 	case 2: return DE_VSU2;	// VI2
 	}
+#elif CPUSTYLE_H3 || CPUSTYLE_A64
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_MIXER0_VSU1;	// VI1
+	case 2: return DE_MIXER1_VSU1;	// VI1
+	}
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 }
 
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 
 //static void write32(uintptr_t a, uint32_t v)
 //{
@@ -7596,41 +7603,43 @@ static void h3_de2_bld_init(const videomode_t * vdmode)
 	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 }
 
-static void h3_de2_vsu_init(const videomode_t * vdmode)
+static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
+	if (vsu == NULL)
+		return;
+
 	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
 	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);	// source size
 
 	const uint_fast32_t HSTEP = (((uint_fast64_t) DIM_X << FRAСTWIDTH) / WIDTH) << 1;
 	const uint_fast32_t VSTEP = (((uint_fast64_t) DIM_Y << FRAСTWIDTH) / HEIGHT) << 1;
 
-	DE_MIXER0_VSU1->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
-	DE_MIXER0_VSU1->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
-	DE_MIXER0_VSU1->VSU_CTRL_REG = (UINT32_C(1) << 0);
-	DE_MIXER0_VSU1->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	DE_MIXER0_VSU1->VSU_Y_SIZE_REG = APPDIMS_SIZE;
-	DE_MIXER0_VSU1->VSU_Y_HSTEP_REG = HSTEP;
-	DE_MIXER0_VSU1->VSU_Y_VSTEP_REG = VSTEP;
-	DE_MIXER0_VSU1->VSU_C_SIZE_REG = APPDIMS_SIZE;
-	DE_MIXER0_VSU1->VSU_C_HSTEP_REG = HSTEP;
-	DE_MIXER0_VSU1->VSU_C_VSTEP_REG = VSTEP;
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0);
+	vsu->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	vsu->VSU_Y_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_Y_HSTEP_REG = HSTEP;
+	vsu->VSU_Y_VSTEP_REG = VSTEP;
+	vsu->VSU_C_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_C_HSTEP_REG = HSTEP;
+	vsu->VSU_C_VSTEP_REG = VSTEP;
 
 	for (int n = 0; n < 32; n ++)
 	{
-		DE_MIXER0_VSU1->VSU_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
-		DE_MIXER0_VSU1->VSU_Y_HCOEF1_REGN [n] = 0;			// 0x300
-		DE_MIXER0_VSU1->VSU_Y_VCOEF_REGN [n] = 0x00004000;	// 0x400
-		DE_MIXER0_VSU1->VSU_C_HCOEF0_REGN [n] = 0x40000000;	// 0x600
-		DE_MIXER0_VSU1->VSU_C_HCOEF1_REGN [n] = 0;			// 0x700
-		DE_MIXER0_VSU1->VSU_C_VCOEF_REGN [n] = 0x00004000;	// 0x800
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
+		vsu->VSU_Y_HCOEF1_REGN [n] = 0;			// 0x300
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;	// 0x400
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;	// 0x600
+		vsu->VSU_C_HCOEF1_REGN [n] = 0;			// 0x700
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;	// 0x800
 	}
 
-	DE_MIXER0_VSU1->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-
-	DE_MIXER0_GLB->GLB_DBUFFER = (UINT32_C(1) << 0);
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 }
 
 #endif
@@ -7704,7 +7713,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 			h3_de2_bld_init(vdmode_HDMI);
 			//t113_de_scaler_initialize(rtmixid, vdmode, vdmode_HDMI);
-			h3_de2_vsu_init(vdmode_HDMI);
+			h3_de2_vsu_init(rtmixid, vdmode, vdmode_HDMI);
+			t113_de_update(rtmixid);	/* Update registers */
 
 			return;
 		}
