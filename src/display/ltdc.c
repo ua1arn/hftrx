@@ -3262,6 +3262,13 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 	case 1: return DE_MIXER0_VSU1;	// VI1
 	case 2: return DE_MIXER1_VSU1;	// VI1
 	}
+#elif CPUSTYLE_T113 || CPUSTYLE_F113
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_MIXER0_VSU1;	// VI1
+	case 2: return DE_MIXER1_VSU1;	// VI1
+	}
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 }
 
@@ -3573,8 +3580,8 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
-	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 #if CPUSTYLE_H3
+	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->TCON1_CTL_REG =
 		start_dly * (UINT32_C(1) << 4) |	// Start_Delay (was: 60)
 		0;

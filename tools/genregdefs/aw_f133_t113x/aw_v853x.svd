@@ -6168,6 +6168,339 @@
   <baseAddress>0x05202000</baseAddress>
   </peripheral>
   <peripheral>
+  <name>DE_MIXER0_VSU1</name>
+  <description>Video Scaler Unit (VSU), VS</description>
+  <baseAddress>0x05120000</baseAddress>
+  <registers>
+   <register>
+    <name>VSU_CTRL_REG</name>
+    <displayName>VSU_CTRL_REG</displayName>
+    <description>VSU Module Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_STATUS_REG</name>
+    <displayName>VSU_STATUS_REG</displayName>
+    <description>VSU Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_FIELD_CTRL_REG</name>
+    <displayName>VSU_FIELD_CTRL_REG</displayName>
+    <description>VSU Field Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SCALE_MODE_REG</name>
+    <displayName>VSU_SCALE_MODE_REG</displayName>
+    <description>VSU Scale Mode Setting Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_DIRECTION_THR_REG</name>
+    <displayName>VSU_DIRECTION_THR_REG</displayName>
+    <description>VSU Direction Detection Threshold Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_EDGE_THR_REG</name>
+    <displayName>VSU_EDGE_THR_REG</displayName>
+    <description>VSU Edge Detection Setting Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_EDSCALER_CTRL_REG</name>
+    <displayName>VSU_EDSCALER_CTRL_REG</displayName>
+    <description>VSU Edge-Direction Scaler Control Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_ANGLE_THR_REG</name>
+    <displayName>VSU_ANGLE_THR_REG</displayName>
+    <description>VSU Angle Reliability Setting Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_EN_REG</name>
+    <displayName>VSU_SHARP_EN_REG</displayName>
+    <description>VSU Sharpness Control Enable Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_CORING_REG</name>
+    <displayName>VSU_SHARP_CORING_REG</displayName>
+    <description>VSU Sharpness Control Coring Setting Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_GAIN0_REG</name>
+    <displayName>VSU_SHARP_GAIN0_REG</displayName>
+    <description>VSU Sharpness Control Gain Setting 0 Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_GAIN1_REG</name>
+    <displayName>VSU_SHARP_GAIN1_REG</displayName>
+    <description>VSU Sharpness Control Gain Setting 1 Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_OUT_SIZE_REG</name>
+    <displayName>VSU_OUT_SIZE_REG</displayName>
+    <description>VSU Output Size Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_GLOBAL_ALPHA_REG</name>
+    <displayName>VSU_GLOBAL_ALPHA_REG</displayName>
+    <description></description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_SIZE_REG</name>
+    <displayName>VSU_Y_SIZE_REG</displayName>
+    <description>VSU Y Channel Size Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_HSTEP_REG</name>
+    <displayName>VSU_Y_HSTEP_REG</displayName>
+    <description>VSU Y Channel Horizontal Step Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_VSTEP_REG</name>
+    <displayName>VSU_Y_VSTEP_REG</displayName>
+    <description>VSU Y Channel Vertical Step Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_HPHASE_REG</name>
+    <displayName>VSU_Y_HPHASE_REG</displayName>
+    <description>VSU Y Channel Horizontal Initial Phase Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_VPHASE0_REG</name>
+    <displayName>VSU_Y_VPHASE0_REG</displayName>
+    <description>VSU Y Channel Vertical Initial Phase 0 Register</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_VPHASE1_REG</name>
+    <displayName>VSU_Y_VPHASE1_REG</displayName>
+    <description>VSU Y Channel Vertical Initial Phase 1 Register</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_SIZE_REG</name>
+    <displayName>VSU_C_SIZE_REG</displayName>
+    <description>VSU C Channel Size Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_HSTEP_REG</name>
+    <displayName>VSU_C_HSTEP_REG</displayName>
+    <description>VSU C Channel Horizontal Step Register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_VSTEP_REG</name>
+    <displayName>VSU_C_VSTEP_REG</displayName>
+    <description>VSU C Channel Vertical Step Register</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_HPHASE_REG</name>
+    <displayName>VSU_C_HPHASE_REG</displayName>
+    <description>VSU C Channel Horizontal Initial Phase Register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_VPHASE0_REG</name>
+    <displayName>VSU_C_VPHASE0_REG</displayName>
+    <description>VSU C Channel Vertical Initial Phase 0 Register</description>
+    <addressOffset>0x0D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_VPHASE1_REG</name>
+    <displayName>VSU_C_VPHASE1_REG</displayName>
+    <description>VSU C Channel Vertical Initial Phase 1 Register</description>
+    <addressOffset>0x0DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>VSU_Y_HCOEF0_REGN</name>
+     <displayName>VSU_Y_HCOEF0_REGN</displayName>
+     <description>0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000300</addressOffset>
+    <register>
+     <name>VSU_Y_HCOEF1_REGN</name>
+     <displayName>VSU_Y_HCOEF1_REGN</displayName>
+     <description>0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>VSU_Y_VCOEF_REGN</name>
+     <displayName>VSU_Y_VCOEF_REGN</displayName>
+     <description>0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000600</addressOffset>
+    <register>
+     <name>VSU_C_HCOEF0_REGN</name>
+     <displayName>VSU_C_HCOEF0_REGN</displayName>
+     <description>0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000700</addressOffset>
+    <register>
+     <name>VSU_C_HCOEF1_REGN</name>
+     <displayName>VSU_C_HCOEF1_REGN</displayName>
+     <description>0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000800</addressOffset>
+    <register>
+     <name>VSU_C_VCOEF_REGN</name>
+     <displayName>VSU_C_VCOEF_REGN</displayName>
+     <description>0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_VSU1">
+  <name>DE_MIXER0_VSU2</name>
+  <baseAddress>0x05140000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_VSU1">
+  <name>DE_MIXER1_VSU1</name>
+  <baseAddress>0x05220000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>DISPLAY_TOP</name>
   <description>display interface top (DISPLAY_TOP)</description>
   <baseAddress>0x05460000</baseAddress>

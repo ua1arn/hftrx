@@ -146,10 +146,63 @@
 #aggregend;
 #typeend;
 
-#type; DE_VSU
 
-#base; DE_MIXER0_VSU0 0x05120000
-#base; DE_MIXER0_VSU1 0x05140000
-#base; DE_MIXER1_VSU0 0x05220000
+#type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+##base; DE_MIXER0_UIS1 0x01140000; DE_MIXER0_UI1 Scaler TBD
+##base; DE_MIXER0_UIS2 0x01150000; DE_MIXER0_UI2 Scaler TBD
+##base; DE_MIXER0_UIS3 0x01160000; DE_MIXER0_UI3 Scaler TBD
+##base; DE_MIXER1_UIS1 0x01240000; DE_MIXER1_UI1 Scaler TBD
 
+#regdef; UIS_CTRL_REG; 0x000; Control register
+#regdef; UIS_STATUS_REG; 0x008; Status register
+#regdef; UIS_FIELD_CTRL_REG; 0x00C; Field control register
+#regdef; UIS_BIST_REG; 0x010; BIST control register
+#regdef; UIS_OUTSIZE_REG; 0x040; Output size register
+#regdef; UIS_INSIZE_REG; 0x080; Input size register
+#regdef; UIS_HSTEP_REG; 0x088; Horizontal step register
+#regdef; UIS_VSTEP_REG; 0x08C; Vertical step register
+#regdef; UIS_HPHASE_REG; 0x090; Horizontal initial phase register
+#regdef; UIS_VPHASE0_REG; 0x098; Vertical initial phase 0 register
+#regdef; UIS_VPHASE1_REG; 0x09C; Vertical initial phase 1 register
+#regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)#typeend;
+#typeend;
+
+#type; DE_VSU; Video Scaler Unit (VSU), VS
+
+#base; DE_MIXER0_VSU1 0x05120000; DE_MIXER0_VI1 Scaler
+#base; DE_MIXER0_VSU2 0x05140000
+#base; DE_MIXER1_VSU1 0x05220000; DE_MIXER1_VI1 Scaler
+
+#regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
+#regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
+#regdef; VSU_FIELD_CTRL_REG; 0x000C; VSU Field Control Register
+#regdef; VSU_SCALE_MODE_REG; 0x0010; VSU Scale Mode Setting Register
+#regdef; VSU_DIRECTION_THR_REG; 0x0020; VSU Direction Detection Threshold Register
+#regdef; VSU_EDGE_THR_REG; 0x0024; VSU Edge Detection Setting Register
+#regdef; VSU_EDSCALER_CTRL_REG; 0x0028; VSU Edge-Direction Scaler Control Register
+#regdef; VSU_ANGLE_THR_REG; 0x002C; VSU Angle Reliability Setting Register
+#regdef; VSU_SHARP_EN_REG; 0x0030; VSU Sharpness Control Enable Register
+#regdef; VSU_SHARP_CORING_REG; 0x0034; VSU Sharpness Control Coring Setting Register
+#regdef; VSU_SHARP_GAIN0_REG; 0x0038; VSU Sharpness Control Gain Setting 0 Register
+#regdef; VSU_SHARP_GAIN1_REG; 0x003C; VSU Sharpness Control Gain Setting 1 Register
+#regdef; VSU_OUT_SIZE_REG; 0x0040; VSU Output Size Register
+#regdef; VSU_GLOBAL_ALPHA_REG; 0x0044 VSU Output Global Alpha Register
+#regdef; VSU_Y_SIZE_REG; 0x0080; VSU Y Channel Size Register
+#regdef; VSU_Y_HSTEP_REG; 0x0088; VSU Y Channel Horizontal Step Register
+#regdef; VSU_Y_VSTEP_REG; 0x008C; VSU Y Channel Vertical Step Register
+#regdef; VSU_Y_HPHASE_REG; 0x0090; VSU Y Channel Horizontal Initial Phase Register
+#regdef; VSU_Y_VPHASE0_REG; 0x0098; VSU Y Channel Vertical Initial Phase 0 Register
+#regdef; VSU_Y_VPHASE1_REG; 0x009C; VSU Y Channel Vertical Initial Phase 1 Register
+#regdef; VSU_C_SIZE_REG; 0x00C0; VSU C Channel Size Register
+#regdef; VSU_C_HSTEP_REG; 0x00C8; VSU C Channel Horizontal Step Register
+#regdef; VSU_C_VSTEP_REG; 0x00CC; VSU C Channel Vertical Step Register
+#regdef; VSU_C_HPHASE_REG; 0x00D0; VSU C Channel Horizontal Initial Phase Register
+#regdef; VSU_C_VPHASE0_REG; 0x00D8; VSU C Channel Vertical Initial Phase 0 Register
+#regdef; VSU_C_VPHASE1_REG; 0x00DC; VSU C Channel Vertical Initial Phase 1 Register
+#regdef; VSU_Y_HCOEF0_REGN; 0x200 32; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_Y_HCOEF1_REGN; 0x300 32; 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1
+#regdef; VSU_Y_VCOEF_REGN; 0x400 32; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; VSU_C_HCOEF0_REGN; 0x600 32; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
+#regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
 #typeend;
