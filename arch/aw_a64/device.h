@@ -1264,20 +1264,19 @@ typedef __PACKED_STRUCT GPU_Type
 /*!< HDMI_PHY  */
 typedef __PACKED_STRUCT HDMI_PHY_Type
 {
-    __IO uint32_t DBG_CTRL;                           /*!< Offset 0x000 DBG_CTRL */
-    __IO uint32_t REXT_CTRL;                          /*!< Offset 0x004 REXT_CTRL */
-         uint32_t reserved_0x008 [0x0002];
-    __IO uint32_t READ_EN;                            /*!< Offset 0x010 READ_EN */
-    __IO uint32_t UNSCRAMBLE;                         /*!< Offset 0x014 UNSCRAMBLE */
+    __IO uint32_t HDMI_PHY_POL;                       /*!< Offset 0x000 tbd */
+         uint32_t reserved_0x004 [0x0003];
+    __IO uint32_t HDMI_PHY_READ_EN;                   /*!< Offset 0x010 tbd */
+    __IO uint32_t HDMI_PHY_UNSCRAMBLE;                /*!< Offset 0x014 tbd */
          uint32_t reserved_0x018 [0x0002];
-    __IO uint32_t ANA_CFG1;                           /*!< Offset 0x020 ANA_CFG1 */
-    __IO uint32_t ANA_CFG2;                           /*!< Offset 0x024 ANA_CFG2 */
-    __IO uint32_t ANA_CFG3;                           /*!< Offset 0x028 ANA_CFG3 */
-    __IO uint32_t PLL_CFG1;                           /*!< Offset 0x02C ANA_CFG1 */
-    __IO uint32_t PLL_CFG2;                           /*!< Offset 0x030 PLL_CFG2 */
-    __IO uint32_t PLL_CFG3;                           /*!< Offset 0x034 PLL_CFG3 */
-    __IO uint32_t ANA_STS;                            /*!< Offset 0x038 ANA_STS */
-    __IO uint32_t CEC;                                /*!< Offset 0x03C CEC */
+    __IO uint32_t HDMI_PHY_CFG1;                      /*!< Offset 0x020 tbd */
+    __IO uint32_t HDMI_PHY_CFG2;                      /*!< Offset 0x024 tbd */
+    __IO uint32_t HDMI_PHY_CFG3;                      /*!< Offset 0x028 tbd */
+    __IO uint32_t HDMI_PHY_PLL1;                      /*!< Offset 0x02C tbd */
+    __IO uint32_t HDMI_PHY_PLL2;                      /*!< Offset 0x030 tbd */
+    __IO uint32_t HDMI_PHY_PLL3;                      /*!< Offset 0x034 tbd */
+    __IO uint32_t HDMI_PHY_STS;                       /*!< Offset 0x038 tbd */
+    __IO uint32_t HDMI_PHY_CEC;                       /*!< Offset 0x03C tbd */
          uint32_t reserved_0x040 [0x03EE];
     __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
     __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
@@ -2401,30 +2400,30 @@ typedef __PACKED_STRUCT SYS_CFG_Type
 /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface */
 typedef __PACKED_STRUCT TCON0_Type
 {
-    __IO uint32_t LCD_GCTL_REG;                       /*!< Offset 0x000 TCON global control register */
-    __IO uint32_t LCD_GINT0_REG;                      /*!< Offset 0x004 TCON global interrupt register0 */
-    __IO uint32_t LCD_GINT1_REG;                      /*!< Offset 0x008 TCON global interrupt register1 */
+    __IO uint32_t TCON_GCTL_REG;                      /*!< Offset 0x000 TCON global control register */
+    __IO uint32_t TCON_GINT0_REG;                     /*!< Offset 0x004 TCON global interrupt register0 */
+    __IO uint32_t TCON_GINT1_REG;                     /*!< Offset 0x008 TCON global interrupt register1 */
          uint32_t reserved_0x00C;
-    __IO uint32_t LCD_FRM_CTL_REG;                    /*!< Offset 0x010 TCON FRM control register */
-    __IO uint32_t LCD_FRM_SEED_REG [0x006];           /*!< Offset 0x014 TCON FRM seed register (N=0,1,2,3,4,5) */
-    __IO uint32_t LCD_FRM_TAB_REG [0x004];            /*!< Offset 0x02C TCON FRM table register (N=0,1,2,3) */
-    __IO uint32_t LCD_3D_FIFO_REG;                    /*!< Offset 0x03C TCON0 3D fifo register */
-    __IO uint32_t LCD_CTL_REG;                        /*!< Offset 0x040 TCON0 control register */
-    __IO uint32_t LCD_DCLK_REG;                       /*!< Offset 0x044 TCON0 data clock register */
-    __IO uint32_t LCD_BASIC0_REG;                     /*!< Offset 0x048 TCON0 basic timing register0 */
-    __IO uint32_t LCD_BASIC1_REG;                     /*!< Offset 0x04C TCON0 basic timing register */
-    __IO uint32_t LCD_BASIC2_REG;                     /*!< Offset 0x050 TCON0 basic timing register2 */
-    __IO uint32_t LCD_BASIC3_REG;                     /*!< Offset 0x054 TCON0 basic timing register3 */
-    __IO uint32_t LCD_HV_IF_REG;                      /*!< Offset 0x058 TCON0 hv panel interface register */
+    __IO uint32_t TCON0_FRM_CTL_REG;                  /*!< Offset 0x010 TCON FRM control register */
+    __IO uint32_t TCON0_FRM_SEED_REG [0x006];         /*!< Offset 0x014 TCON FRM seed register (N=0,1,2,3,4,5) */
+    __IO uint32_t TCON0_FRM_TAB_REG [0x004];          /*!< Offset 0x02C TCON FRM table register (N=0,1,2,3) */
+    __IO uint32_t TCON0_3D_FIFO_REG;                  /*!< Offset 0x03C TCON0 3D fifo register */
+    __IO uint32_t TCON0_CTL_REG;                      /*!< Offset 0x040 TCON0 control register */
+    __IO uint32_t TCON0_DCLK_REG;                     /*!< Offset 0x044 TCON0 data clock register */
+    __IO uint32_t TCON0_BASIC0_REG;                   /*!< Offset 0x048 TCON0 basic timing register0 */
+    __IO uint32_t TCON0_BASIC1_REG;                   /*!< Offset 0x04C TCON0 basic timing register */
+    __IO uint32_t TCON0_BASIC2_REG;                   /*!< Offset 0x050 TCON0 basic timing register2 */
+    __IO uint32_t TCON0_BASIC3_REG;                   /*!< Offset 0x054 TCON0 basic timing register3 */
+    __IO uint32_t TCON0_HV_IF_REG;                    /*!< Offset 0x058 TCON0 hv panel interface register */
          uint32_t reserved_0x05C;
-    __IO uint32_t LCD_CPU_IF_REG;                     /*!< Offset 0x060 TCON0 cpu panel interface register */
-    __IO uint32_t LCD_CPU_WR_REG;                     /*!< Offset 0x064 TCON0 cpu panel write data register */
-    __IO uint32_t LCD_CPU_RD0_REG;                    /*!< Offset 0x068 TCON0 cpu panel read data register0 */
-    __IO uint32_t LCD_CPU_RD1_REG;                    /*!< Offset 0x06C TCON0 cpu panel read data register1 */
+    __IO uint32_t TCON0_CPU_IF_REG;                   /*!< Offset 0x060 TCON0 cpu panel interface register */
+    __IO uint32_t TCON0_CPU_WR_REG;                   /*!< Offset 0x064 TCON0 cpu panel write data register */
+    __IO uint32_t TCON0_CPU_RD0_REG;                  /*!< Offset 0x068 TCON0 cpu panel read data register0 */
+    __IO uint32_t TCON0_CPU_RD1_REG;                  /*!< Offset 0x06C TCON0 cpu panel read data register1 */
          uint32_t reserved_0x070 [0x0005];
-    __IO uint32_t LCD_LVDS_IF_REG;                    /*!< Offset 0x084 TCON0 lvds panel interface register */
-    __IO uint32_t LCD_IO_POL_REG;                     /*!< Offset 0x088 TCON0 IO polarity register */
-    __IO uint32_t LCD_IO_TRI_REG;                     /*!< Offset 0x08C TCON0 IO trigger register */
+    __IO uint32_t TCON0_LVDS_IF_REG;                  /*!< Offset 0x084 TCON0 lvds panel interface register */
+    __IO uint32_t TCON0_IO_POL_REG;                   /*!< Offset 0x088 TCON0 IO polarity register */
+    __IO uint32_t TCON0_IO_TRI_REG;                   /*!< Offset 0x08C TCON0 IO trigger register */
          uint32_t reserved_0x090 [0x001C];
     __IO uint32_t TCON_CEU_CTL_REG;                   /*!< Offset 0x100 TCON CEU control register */
          uint32_t reserved_0x104 [0x0003];
@@ -2437,11 +2436,11 @@ typedef __PACKED_STRUCT TCON0_Type
          uint32_t reserved_0x16C [0x0021];
     __IO uint32_t TCON_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 TCON safe period register */
          uint32_t reserved_0x1F4 [0x000B];
-    __IO uint32_t LCD_LVDS_ANA0_REG;                  /*!< Offset 0x220 TCON LVDS analog register0 */
+    __IO uint32_t TCON0_LVDS_ANA0_REG;                /*!< Offset 0x220 TCON LVDS analog register0 */
          uint32_t reserved_0x224 [0x0077];
-    __IO uint32_t LCD_GAMMA_TABLE_REG [0x100];        /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
+    __IO uint32_t TCON0_GAMMA_TABLE_REG [0x100];      /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
          uint32_t reserved_0x800 [0x01FD];
-    __IO uint32_t LCD_3D_FIFO_BIST_REG;               /*!< Offset 0xFF4  */
+    __IO uint32_t TCON0_3D_FIFO_BIST_REG;             /*!< Offset 0xFF4  */
     __IO uint32_t TCON_TRI_FIFO_BIST_REG;             /*!< Offset 0xFF8  */
 } TCON0_TypeDef; /* size of structure = 0xFFC */
 /*
