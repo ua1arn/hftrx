@@ -5910,7 +5910,7 @@ static uint_fast8_t
 validforredraw(
 	const FLASHMEM struct dzone * const p,
 	uint_fast8_t key,
-	uint_fast8_t subset
+	uint_fast16_t subset
 	)
 {
 #if LCDMODE_MAIN_PAGES > 1
@@ -5928,13 +5928,13 @@ validforredraw(
 
 // Параметры state machine отображения
 static uint8_t reqs [REDRM_count];		// запросы на отображение
-static uint8_t subsets [REDRM_count];	// параметр прохода по списку отображения.
+static uint16_t subsets [REDRM_count];	// параметр прохода по списку отображения.
 static uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
 static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
 
 #endif /* STMD */
 
-static uint_fast8_t
+static uint_fast16_t
 getsubset(
 	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
@@ -5948,7 +5948,7 @@ getsubset(
 static void 
 display_walktrough(
 	uint_fast8_t key,
-	uint_fast8_t subset,
+	uint_fast16_t subset,
 	dctx_t * pctx
 	)
 {
@@ -5979,7 +5979,7 @@ display_walktrough(
 static void 
 display_walktroughsteps(
 	uint_fast8_t key,
-	uint_fast8_t subset
+	uint_fast16_t subset
 	)
 {
 #if LINUX_SUBSYSTEM || WITHLVGL
