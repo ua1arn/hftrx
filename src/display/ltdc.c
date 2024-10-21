@@ -1851,7 +1851,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
-#if CPUSTYLE_H3
+#if CPUSTYLE_H3 || CPUSTYLE_A64
 #define RTMIXIDLCD 1	/* 1 or 2 */
 #else
 #define RTMIXIDLCD 2	/* 1 or 2 */
