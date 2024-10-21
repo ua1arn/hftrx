@@ -303,6 +303,9 @@ static window_t windows [] = {
 #if WITHAD936XIIO
 	{ WINDOW_IIOCONFIG,  	 WINDOW_OPTIONS,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
 #endif /* WITHAD936XIIO */
+#if WITHAUDIOSAMPLESREC
+	{ WINDOW_AS,  	 		NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "Samples record/play",	 1, window_as_process, },
+#endif /* WITHAUDIOSAMPLESREC */
 };
 
 /* Возврат ссылки на окно */
@@ -832,6 +835,7 @@ static void gui_main_process(void)
 			button_t * btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
+			button_t * btn_2 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_2");
 #if WITHFT8
 			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 #endif
@@ -924,6 +928,22 @@ static void gui_main_process(void)
 					footer_buttons_state(DISABLED, btn_Receive);
 				}
 			}
+#if WITHAUDIOSAMPLESREC
+			else if (bh == btn_2)
+			{
+				window_t * const win = get_win(WINDOW_AS);
+				if (win->state == NON_VISIBLE)
+				{
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_2);
+				}
+				else
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+			}
+#endif /* WITHAUDIOSAMPLESREC */
 #if WITHTX
 			else if (bh == btn_txrx)
 			{
@@ -6840,5 +6860,92 @@ static void window_iioconfig_process(void)
 }
 
 #endif /* WITHAD936XIIO */
+
+#if WITHAUDIOSAMPLESREC
+
+void gui_as_update(void)
+{
+	if (check_for_parent_window() == WINDOW_AS)
+		put_to_wm_queue(get_win(WINDOW_AS), WM_MESSAGE_UPDATE);
+}
+
+static void window_as_process(void)
+{
+	window_t * const win = get_win(WINDOW_AS);
+	static unsigned update = 0;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		unsigned x = 0, y = 0, interval = 10;
+
+		add_element("btn_rec", 100, 40, 0, 0, "Record");
+		add_element("btn_play", 100, 40, 0, 0, "Play");
+
+		button_t * btn_rec = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_rec");
+		btn_rec->x1 = x;
+		btn_rec->y1 = y;
+		btn_rec->visible = VISIBLE;
+
+		x += btn_rec->w + interval;
+
+		button_t * btn_play = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_play");
+		btn_play->x1 = x;
+		btn_play->y1 = y;
+		btn_play->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		update = 1;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_rec = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_rec");
+			button_t * btn_play = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_play");
+
+			if (bh == btn_rec)
+			{
+				as_start_record();
+				update = 1;
+			}
+			else if (bh == btn_play)
+			{
+				as_start_play();
+				update = 1;
+			}
+		}
+
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
+		break;
+
+	default:
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		button_t * btn_rec = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_rec");
+		button_t * btn_play = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_play");
+		uint8_t s = as_get_state();
+
+		btn_rec->state = s == AS_PLAYING ? DISABLED : CANCELLED;
+		btn_play->state = (s == AS_RECORD_DONE || s == AS_PLAY_DONE) ? CANCELLED : DISABLED;
+
+		local_snprintf_P(btn_rec->text, ARRAY_SIZE(btn_rec->text), s == AS_RECORDING ? "Recording..." : "Record");
+		local_snprintf_P(btn_play->text, ARRAY_SIZE(btn_play->text), s == AS_PLAYING ? "Playing..." : "Play");
+
+	}
+}
+
+#endif /* WITHAUDIOSAMPLESREC */
 
 #endif /* WITHTOUCHGUI */

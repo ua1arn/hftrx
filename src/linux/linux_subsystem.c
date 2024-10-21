@@ -13,6 +13,7 @@
 #include "buffers.h"
 #include "audio.h"
 #include "ft8.h"
+#include "gui/gui.h"
 #include "display2.h"
 
 #include <pthread.h>
@@ -51,6 +52,74 @@ enum {
 	iq_test_pos			= 28,
 	wnb_pos				= 29,
 };
+
+#if WITHAUDIOSAMPLESREC
+
+enum {
+	as_max_length = 10,
+	as_sample_rate = ARMI2SRATE,
+	as_buf_size = as_max_length * as_sample_rate,
+	as_buf_step = DMABUFFSIZE16TX,
+};
+
+uint32_t as_buf [as_buf_size];
+uint32_t as_idx = 0, as_idx_stop = 0;
+uint8_t as_state = AS_IDLE;
+
+void as_proccessing(uint32_t * buf)
+{
+	if (as_state == AS_RECORDING)
+	{
+		ASSERT(as_idx < as_buf_size);
+		memcpy(& as_buf [as_idx], buf, as_buf_step * 4);
+		as_idx += as_buf_step;
+
+		if (as_idx >= as_buf_size)
+		{
+			as_idx = 0;
+			as_state = AS_RECORD_DONE;
+			gui_as_update();
+		}
+	}
+
+	if (as_state == AS_PLAYING)
+	{
+		ASSERT(as_idx < as_buf_size);
+		memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
+		as_idx += as_buf_step;
+
+		if (as_idx >= as_buf_size)
+		{
+			as_idx = 0;
+			as_state = AS_PLAY_DONE;
+			gui_as_update();
+		}
+	}
+}
+
+uint8_t as_get_state(void)
+{
+	return as_state;
+}
+
+uint8_t as_get_progress(void)	// %
+{
+	return (int) (as_idx * 100 / as_buf_size);
+}
+
+void as_start_record(void)
+{
+	if (as_state == AS_IDLE || as_state == AS_RECORD_DONE || as_state == AS_PLAY_DONE || as_state == AS_TX_DONE)
+		as_state = AS_RECORDING;
+}
+
+void as_start_play(void)
+{
+	if (as_state == AS_RECORD_DONE || as_state == AS_PLAY_DONE || as_state == AS_TX_DONE)
+		as_state = AS_PLAYING;
+}
+
+#endif /* WITHAUDIOSAMPLESREC */
 
 #if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
 #include "../sysmon/xsysmonpsu.h"
@@ -520,6 +589,10 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 #if DMABUFSCALE == 1
 		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
 		uint32_t * b = (uint32_t *) addr_ph;
+
+#if WITHAUDIOSAMPLESREC
+		as_proccessing(b);
+#endif /* WITHAUDIOSAMPLESREC */
 
 		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 			* ph_fifo = b[i];
@@ -1065,7 +1138,7 @@ void linux_user_init(void)
 	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
-#if WITHCPUFANPWM
+#if 0 //WITHCPUFANPWM
 	{
 		const float FS = powf(2, 32);
 		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;

@@ -48,6 +48,7 @@ static void window_lfm_spectre_process(void);
 static void window_stream_process(void);
 static void window_wnbconfig_process(void);
 static void window_iioconfig_process(void);
+static void window_as_process(void);
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -108,6 +109,9 @@ enum {
 #if LINUX_SUBSYSTEM && WITHAD936XIIO
 	WINDOW_IIOCONFIG,
 #endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
+#if WITHAUDIOSAMPLESREC
+	WINDOW_AS,
+#endif /* WITHAUDIOSAMPLESREC */
 
 	WINDOWS_COUNT
 };
