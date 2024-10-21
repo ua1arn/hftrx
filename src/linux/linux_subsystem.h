@@ -73,6 +73,27 @@ uint8_t stream_get_state(void);
 
 #endif /* WITHEXTIO_LAN */
 
+#if WITHAUDIOSAMPLESREC
+
+enum {
+	AS_IDLE,
+	AS_RECORDING,
+	AS_RECORD_DONE,
+	AS_PLAYING,
+	AS_PLAY_DONE,
+	AS_TX,
+	AS_TX_DONE,
+
+	AS_COUNT,
+};
+
+uint8_t as_get_state(void);
+uint8_t as_get_progress(void);
+void as_start_record(void);
+void as_start_play(void);
+
+#endif /* WITHAUDIOSAMPLESREC */
+
 extern pthread_mutex_t linux_md;
 
 #define LCLSPINLOCK_t		pthread_mutex_t
@@ -101,7 +122,7 @@ void linux_subsystem_init(void);
 void linux_user_init(void);
 int linux_framebuffer_init(void);
 uint32_t * linux_get_fb(uint32_t * size);
-void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid);
+void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
 void linux_run_shell_cmd(const char * argv []);
 void safe_cond_signal(struct cond_thread * ct);

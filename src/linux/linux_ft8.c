@@ -10,6 +10,7 @@
 
 #if LINUX_SUBSYSTEM && WITHFT8
 
+#include "linux_subsystem.h"
 #include <sys\time.h>
 
 void ft8_decode_buf(float * signal, timestamp_t ts);
@@ -27,7 +28,7 @@ static float rx_buf[2][ft8_sample_rate * ft8_length];
 static uint8_t buf_num = 0;	// current filling buffer
 static uint32_t idx = 0;
 
-void ft8_processing_thread(void)
+void * ft8_processing_thread(void * args)
 {
 	while(1)
 	{
@@ -38,9 +39,11 @@ void ft8_processing_thread(void)
 		ft8_decode_buf(rx_buf[prev_idx], ts);
 		hamradio_gui_parse_ft8buf();
 	}
+
+	return NULL;
 }
 
-void ft8_sync_thread(void)
+void * ft8_sync_thread(void * args)
 {
 	struct timeval lTime;
 	gettimeofday(&lTime, NULL);
@@ -62,6 +65,8 @@ void ft8_sync_thread(void)
 		pthread_mutex_unlock(& mutex_ft8);
 		safe_cond_signal(& ct_ft8);
 	}
+
+	return NULL;
 }
 
 void ft8_txfill(float * sample)
