@@ -7444,8 +7444,29 @@ void hardware_edid_test(void)
 }
 
 
-#if defined (HDMI_PHY) && defined (HDMI_TX0)
+#if defined (HDMI_PHY) && defined (HDMI_TX0) && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 
+
+//static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
+//{
+//    /* enable read access to HDMI controller */
+//    regmap_write(phy->regs, SUN8I_HDMI_PHY_READ_EN_REG,
+//                 SUN8I_HDMI_PHY_READ_EN_MAGIC);
+//
+//    /* unscramble register offsets */
+//    regmap_write(phy->regs, SUN8I_HDMI_PHY_UNSCRAMBLE_REG,
+//                 SUN8I_HDMI_PHY_UNSCRAMBLE_MAGIC);
+//}
+//
+//static void sun50i_hdmi_phy_init_h616(struct sun8i_hdmi_phy *phy)
+//{
+//    regmap_update_bits(phy->regs, SUN8I_HDMI_PHY_REXT_CTRL_REG,
+//                       SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN,
+//                       SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN);
+//
+//    regmap_update_bits(phy->regs, SUN8I_HDMI_PHY_REXT_CTRL_REG,
+//                       0xffff0000, 0x80c00000);
+//}
 
 static void h3_hdmi_init(const videomode_t * vdmode)
 {
@@ -7478,6 +7499,21 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 //
 //	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
 
+
+//	/* enable read access to HDMI controller */
+//	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
+//	/* descramble register offsets */
+//	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	PRINTF("HDMI_PHY->REXT_CTRL=%08X\n", (unsigned) HDMI_PHY->REXT_CTRL);
+	local_delay_ms(10);
+	HDMI_PHY->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
+	local_delay_ms(10);
+	HDMI_PHY->REXT_CTRL = (HDMI_PHY->REXT_CTRL & 0xFFFF0000) | 0x80C00000;
+	local_delay_ms(10);
+	PRINTF("HDMI_PHY->REXT_CTRL=%08X\n", (unsigned) HDMI_PHY->REXT_CTRL);
+#endif
+
 	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
 	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
@@ -7495,9 +7531,9 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	local_delay_us(100);
 	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
 	HDMI_PHY->HDMI_PHY_CFG1 |= (7 << 4);
-
-	while ((HDMI_PHY->HDMI_PHY_STS & 0x80) == 0)
-		;
+	int z = 0;
+	while (z ++ < 10 && (HDMI_PHY->HDMI_PHY_STS & 0x80) == 0)
+		local_delay_ms(10);
 	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
 
 	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 4);
@@ -7633,35 +7669,72 @@ static void h3_tcon_init(const videomode_t * vdmode)
 
 	TCONLCD_PTR->TCON_GCTL_REG = (UINT32_C(1) << 31);
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+
+	TCONLCD_PTR->LCD_GCTL_REG = 0;
+
+	TCONLCD_PTR->LCD_GINT0_REG = 0;
+	TCONLCD_PTR->LCD_CTL_REG =
+		(UINT32_C(1) << 31) |	// LCD_EN
+		60 * (UINT32_C(1) << 4) |	// Start_Delay
+		0;
+	TCONLCD_PTR->LCD_DCLK_REG = 0xF0000007;
+
+	// timing0 (window)
+	TCONLCD_PTR->LCD_BASIC0_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+	// timing1
+	TCONLCD_PTR->LCD_BASIC1_REG =
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((LEFTMARGIN - 1) << 0) |	// HBP
+		0;
+	// timing2
+	TCONLCD_PTR->LCD_BASIC2_REG =
+		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		0;
+	// timing3
+	TCONLCD_PTR->LCD_BASIC3_REG =
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
+
+	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);
 
 #else
-#error CPUSTYLE_xxx error
+	//#error CPUSTYLE_xxx error
 #endif
 }
 
 #endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
 
-static void h3_de2_bld_init(const videomode_t * vdmode)
+static void h3_de2_bld_init(int rtmixid, const videomode_t * vdmode)
 {
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+	if (glb == NULL)
+		return;
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
 
 	// Erase the whole of MIXER0. This contains uninitialized data.
-	for (uint32_t addr = DE_MIXER0_GLB_BASE + 0x0000; addr < DE_MIXER0_GLB_BASE + 0xC000; addr += 4)
+	for (uintptr_t addr = (uintptr_t) glb + 0x0000; addr < (uintptr_t) glb + 0xC000; addr += 4)
 	{
 		* (volatile uint32_t*) (addr) = 0;
 	}
 
-	DE_MIXER0_GLB->GLB_CTL = 1;
-	DE_MIXER0_GLB->GLB_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	ASSERT(DE_MIXER0_GLB->GLB_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+	glb->GLB_CTL = 1;
+	glb->GLB_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	ASSERT(glb->GLB_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
 
-	DE_MIXER0_BLD->BLD_EN_COLOR_CTL = 0x100;
-	DE_MIXER0_BLD->ROUTE = 0;
-	DE_MIXER0_BLD->OUTPUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	ASSERT(DE_MIXER0_BLD->OUTPUT_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+	bld->BLD_EN_COLOR_CTL = 0x100;
+	bld->ROUTE = 0;
+	bld->OUTPUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	bld->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	ASSERT(bld->OUTPUT_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
 }
 
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
@@ -7777,7 +7850,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			h3_hdmi_init(vdmode_HDMI);
 			h3_tcon_init(vdmode_HDMI);
 
-			h3_de2_bld_init(vdmode_HDMI);
+			h3_de2_bld_init(rtmixid, vdmode_HDMI);
 			//t113_de_scaler_initialize(rtmixid, vdmode, vdmode_HDMI);
 			h3_de2_vsu_init(rtmixid, vdmode, vdmode_HDMI);
 			t113_de_update(rtmixid);	/* Update registers */
