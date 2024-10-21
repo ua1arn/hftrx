@@ -21,6 +21,7 @@ extern "C" {
 
 typedef enum
 {
+	SPIC_SPEED100k,	/* 100 kHz  */
 	SPIC_SPEED400k,	/* 400 kHz для MCP3208, DS1305 */
 	SPIC_SPEED1M,	/* 1 MHz для XPT2046 */
 	SPIC_SPEED4M,	/* 4 MHz для CS4272 */
@@ -178,6 +179,7 @@ void LowerIrql(IRQL_t newIRQL);
 
 	void lclspin_lock(lclspinlock_t * __restrict lock, const char * file, int line);
 	void lclspin_unlock(lclspinlock_t * __restrict lock);
+	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */

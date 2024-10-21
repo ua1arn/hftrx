@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_A64
+#if WITHSDRAMHW && CPUSTYLE_A64
 
 #include "formats.h"
 #include "reg-ccu.h"
@@ -300,10 +300,10 @@ static void clock_set_pll_ddr0(uint32_t clk)
 	clrsetbits_le32(& CCU->PLL_DDR0_TUN_REG, (0x7 << 24) | (0x7f << 16), ((2 & 0x7) << 24) | ((16 & 0x7f) << 16));
 
 	/* ddr pll rate = 24000000 * n * k / m */
-	if(clk > allwnr_t113_get_hosc_freq() * k * n / m)
+	if (clk > allwnr_a64_get_hosc_freq() * k * n / m)
 	{
 		m = 1;
-		if(clk > allwnr_t113_get_hosc_freq() * k * n / m)
+		if(clk > allwnr_a64_get_hosc_freq() * k * n / m)
 		{
 			k = 2;
 		}
@@ -312,7 +312,7 @@ static void clock_set_pll_ddr0(uint32_t clk)
 	val = (0x1u << 31);
 	val |= (0x0u << 24);
 	val |= (0x1u << 20);
-	val |= ((((clk / (allwnr_t113_get_hosc_freq() * k / m)) - 1) & 0x1f) << 8);
+	val |= ((((clk / (allwnr_a64_get_hosc_freq() * k / m)) - 1) & 0x1f) << 8);
 	val |= (((k - 1) & 0x3) << 4);
 	val |= (((m - 1) & 0x3) << 0);
 
@@ -838,6 +838,4 @@ void arm_hardware_sdram_initialize(void)
 
 }
 
-#endif
-
-
+#endif /* WITHSDRAMHW && CPUSTYLE_A64 */

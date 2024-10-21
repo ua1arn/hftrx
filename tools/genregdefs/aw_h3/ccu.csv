@@ -35,6 +35,7 @@
 #regdef; DRAM_CFG_REG; 0x00F4; DRAM Configuration Register
 #regdef; MBUS_RST_REG; 0x00FC; MBUS Reset Register
 #regdef; DRAM_CLK_GATING_REG; 0x0100; DRAM Clock Gating Register
+#regdef; DE_CLK_REG; 0x0104; DE Clock Register
 #regdef; TCON0_CLK_REG; 0x0118; TCON0 Clock Register
 #regdef; TVE_CLK_REG; 0x0120; TVE Clock Register
 #regdef; DEINTERLACE_CLK_REG; 0x0124; DEINTERLACE Clock Register

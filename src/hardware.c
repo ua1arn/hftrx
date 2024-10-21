@@ -2966,6 +2966,9 @@ sysinit_fpu_initialize(void)
 
 #elif CPUSTYLE_RISCV
 
+	/* disable interrupts*/
+	csr_clr_bits_mie(MIE_MSI_BIT_MASK | MIE_MTI_BIT_MASK | MIE_MEI_BIT_MASK);	// MSI MTI MEI
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
 	// See:
 	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
 	// 3.1.8 Extension Context Status in mstatus Register
@@ -3265,18 +3268,15 @@ sysinit_mmu_initialize(void)
 
 	// MMU iniitialize
 	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
 	// MMU iniitialize
 	ttb_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
-	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #else
 	// MMU iniitialize
 	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #endif
 
@@ -3287,7 +3287,6 @@ sysinit_mmu_initialize(void)
 
 
 	//ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 
 #endif
@@ -3295,19 +3294,19 @@ sysinit_mmu_initialize(void)
 	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
-// sysinit_cache_core0_initialize (on Core #0)
+// SystemInit (on Core #0)
 // Reset_CPUn_Handler ((on Core #1..)
-// cpump_initialize (on Core #0)
-static void cpusmp_init(void)
+static void sysinit_smp_initialize(void)
 {
 #if (__CORTEX_A == 9U)
 	// not set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
-#if WITHSMPSYSTEM
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1) | ACTLR_SMP_Msk);
-#else /* WITHSMPSYSTEM */
 	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
-#endif /* WITHSMPSYSTEM */
+	#if WITHSMPSYSTEM
+		__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	#else /* WITHSMPSYSTEM */
+		__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U)
@@ -3315,29 +3314,30 @@ static void cpusmp_init(void)
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
 	 */
-	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
 	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-#if WITHSMPSYSTEM
-	// set the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-#else /* WITHSMPSYSTEM */
-	// clear the CPUECTLR.SMPEN
-	__set_CPUECTLR(__get_CPUECTLR() & ~ CPUECTLR_SMPEN_Msk);
-#endif /* WITHSMPSYSTEM */
+
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	#if WITHSMPSYSTEM
+		// set the CPUECTLR.SMPEN
+		__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	#else /* WITHSMPSYSTEM */
+		// clear the CPUECTLR.SMPEN
+		__set_CPUECTLR(__get_CPUECTLR() & ~ CPUECTLR_SMPEN_Msk);
+	#endif /* WITHSMPSYSTEM */
 	// 4.5.28 Auxiliary Control Register
 	// bit6: L2ACTLR write access control
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
+	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
-#if WITHSMPSYSTEM
-	// set the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-#else /* WITHSMPSYSTEM */
-	// clear the ACTLR.SMP
-	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
-#endif /* WITHSMPSYSTEM */
+	#if WITHSMPSYSTEM
+		// set the ACTLR.SMP
+		__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	#else /* WITHSMPSYSTEM */
+		// clear the ACTLR.SMP
+		__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
 #endif /* (__CORTEX_A == 9U) */
@@ -3345,7 +3345,7 @@ static void cpusmp_init(void)
 
 // ОБщая для всех процессоров инициализация
 static void
-sysinit_cache_core0_initialize(void)
+sysinit_cache_initialize(void)
 {
 	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
@@ -3372,7 +3372,6 @@ sysinit_cache_core0_initialize(void)
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		cpusmp_init();
 		L1C_InvalidateDCacheAll();
 		L1C_InvalidateICacheAll();
 		L1C_InvalidateBTAC();
@@ -3534,46 +3533,23 @@ sysinit_cache_core0_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
-static void
-sysinit_hwprepare_initialize(void)
-{
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
-	L2C_Disable();
-	* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
-	* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
-#endif /* (__L2C_PRESENT == 1) */
-	L1C_DisableCaches();
-	MMU_Disable();
-#endif /* (__CORTEX_A != 0) */
-#if CPUSTYLE_F133
-	/* disable interrupts*/
-	csr_clr_bits_mie(MIE_MSI_BIT_MASK | MIE_MTI_BIT_MASK | MIE_MEI_BIT_MASK);	// MSI MTI MEI
-	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
-
-#endif /* CPUSTYLE_F133 */
-}
-
-/* инициадихации кеш-памяти, спцифические для CORE0 */
+/* инициадизации кеш-памяти, специфические для CORE0 */
 static void
 sysinit_cache_L2_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
 
-		#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
-			L2C_Disable();
-			* (volatile uint32_t *) (L2C_310_BASE + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
-			* (volatile uint32_t *) (L2C_310_BASE + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
-		#endif /* (__L2C_PRESENT == 1) */
-		#if (__L2C_PRESENT == 1)
-			// Enable Level 2 Cache
-			L2C_InvAllByWay();
-			L2C_Enable();
-		#endif
-	//dcache_clean_all();
+	#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+		L2C_Disable();
+		* (volatile uint32_t *) (L2C_310_BASE + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+		* (volatile uint32_t *) (L2C_310_BASE + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+	#endif /* (__L2C_PRESENT == 1) */
+	#if (__L2C_PRESENT == 1)
+		// Enable Level 2 Cache
+		L2C_InvAllByWay();
+		L2C_Enable();
 	#endif
+
 #endif /* (__CORTEX_A != 0) */
 }
 
@@ -3636,30 +3612,30 @@ SystemInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
-	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
+	sysinit_smp_initialize();
+	sysinit_perfmeter_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-#endif
-#if ! WITHISBOOTLOADER_DDR
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
+	local_delay_initialize();
 #endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_gpio_initialize();
-	local_delay_initialize();
 	sysinit_debug_initialize();
 //	PRINTF("csr_read_mhint=0x%lx\n", (long unsigned) csr_read_mhint());
 //	PRINTF("csr_read_mxstatus=0x%lx\n", (long unsigned) csr_read_mxstatus());
 //	PRINTF("csr_read_mhcr=0x%lx\n", (long unsigned) csr_read_mhcr());
 //	PRINTF("csr_read_mcor=0x%lx\n", (long unsigned) csr_read_mcor());
-	sysinit_pmic_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
+	local_delay_initialize();
 #endif /* ! WITHISBOOTLOADER_DDR */
-	sysinit_perfmeter_initialize();
+	sysinit_pmic_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_mmu_initialize();
-	sysinit_cache_core0_initialize();	// caches iniitialize
+	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
 }
@@ -3886,17 +3862,6 @@ static void cortexa_cpuinfo(void)
 }
 
 #if WITHSMPSYSTEM && ! WITHRTOS
-
-static void
-sysinit_cache_coreN_initialize(void)
-{
-#if (__CORTEX_A != 0)
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
-		//dcache_clean_all();
-	#endif
-#endif /* (__CORTEX_A != 0) */
-}
 
 #if CPUSTYLE_STM32MP1
 
@@ -4623,13 +4588,12 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 void Reset_CPUn_Handler(void)
 {
-	cpusmp_init();
 	sysinit_fpu_initialize();
+	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
-	sysinit_cache_core0_initialize();	// caches iniitialize
-	sysinit_cache_coreN_initialize();
+	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
+	sysinit_cache_initialize();	// caches iniitialize
 
 	{
 		GIC_Enable();
@@ -4690,8 +4654,8 @@ void cpump_initialize(void)
 	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
-	cpusmp_init();
 	cortexa_cpuinfo();
+	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{

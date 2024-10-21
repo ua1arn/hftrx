@@ -1817,7 +1817,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 };
 
 
-#elif CPUSTYLE_A64
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
 
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
@@ -1851,16 +1851,20 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
+#if CPUSTYLE_H3 || CPUSTYLE_A64
+#define RTMIXIDLCD 1	/* 1 or 2 */
+#else
 #define RTMIXIDLCD 2	/* 1 or 2 */
 #if defined (TCONTV_PTR)
 #define RTMIXIDTV 1	/* 1 or 2 */
+#endif
 #endif
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
-#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_H3
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
@@ -3241,19 +3245,26 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64*0
 
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 {
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	switch (rtmixid)
 	{
 	default: return NULL;
 	case 1: return DE_VSU1;	// VI1
 	case 2: return DE_VSU2;	// VI2
 	}
+#elif CPUSTYLE_H3 || CPUSTYLE_A64
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_MIXER0_VSU1;	// VI1
+	case 2: return DE_MIXER1_VSU1;	// VI1
+	}
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 }
 
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 
 //static void write32(uintptr_t a, uint32_t v)
 //{
@@ -3289,8 +3300,19 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 #endif
 
 
-#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
-#define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+#if CPUSTYLE_H3
+	#define TCON_VB_INT_EN  	(UINT32_C(1) << 30)	// Enable the Vb interrupt
+	#define TCON_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
+
+#elif CPUSTYLE_A64
+	#define TCON_VB_INT_EN  	(UINT32_C(1) << 31)	// TCON0_Vb_Int_En Enable the Vb interrupt
+	#define TCON_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+
+#else
+	#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
+	#define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+
+#endif
 
 #define TV_VB_INT_EN  		(UINT32_C(1) << 30)	// Enable the Vb interrupt
 #define TV_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
@@ -3299,9 +3321,19 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 static void hardware_ltdc_vsync(void)
 {
 #if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+    TCONLCD_PTR->TCON_GINT0_REG &= ~ TCON_VB_INT_FLAG;         //clear TCON_VB_INT_FLAG
+    while ((TCONLCD_PTR->TCON_GINT0_REG & TCON_VB_INT_FLAG) == 0) //wait  TCON_VB_INT_FLAG
+        ;
+#elif CPUSTYLE_A64
+    TCONLCD_PTR->TCON_GINT0_REG &= ~ TCON_VB_INT_FLAG;         //clear TCON_VB_INT_FLAG
+    while ((TCONLCD_PTR->TCON_GINT0_REG & TCON_VB_INT_FLAG) == 0) //wait  TCON_VB_INT_FLAG
+        ;
+#else
     TCONLCD_PTR->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
     while ((TCONLCD_PTR->LCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
         ;
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -3541,6 +3573,15 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
+	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
+#if CPUSTYLE_H3
+	TCONLCD_PTR->TCON1_CTL_REG =
+		start_dly * (UINT32_C(1) << 4) |	// Start_Delay (was: 60)
+		0;
+#elif CPUSTYLE_A64
+	TCONLCD_PTR->TCON0_CTL_REG =
+		0;
+#else
 	//uint32_t start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
 	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->LCD_CTL_REG =
@@ -3551,6 +3592,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		(start_dly & 0x1F) * (UINT32_C(1) << 4) |	// LCD_START_DLY
 		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -3558,30 +3600,34 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 static void t113_HDMI_CCU_configuration(void)
 {
 #if CPUSTYLE_A64
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-////    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-////    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-//
-//    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
 
-    CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+	{
+//		CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+//		CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+//		local_delay_ms(50);
 
-    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11);	// HDMI_GATING
-    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 11);	// HDMI_RST
-    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11);	// HDMI_RST
+		CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
+		CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+		CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+		CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+		CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+		CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
+	}
 
-//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
-//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
+#elif CPUSTYLE_H3
 
-//    CCU->HDMI_HDCP_CLK_REG;
-//    CCU->HDMI_HDCP_BGR_REG;
+	{
+//		CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+//		CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+//		local_delay_ms(50);
 
-
-    local_delay_us(10);
-
-    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+		CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
+		CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+		CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+		CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+		CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+		CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
+	}
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -3642,43 +3688,58 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
 #if defined (TCONLCD_PTR)
 
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
-#if CPUSTYLE_A64
+#if CPUSTYLE_H3
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+    CCU->PLL_DE_CTRL_REG = 0;
+    CCU->PLL_VIDEO_CTRL_REG = 0;
+	local_delay_ms(50);
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	local_delay_ms(50);
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
+#elif CPUSTYLE_A64
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + ix));	// TCON0_GATING
-	CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << (3 + ix));	// TCON0_RST Assert
+	//CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << (3 + ix));	// TCON0_RST Assert
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + ix));	// TCON0_RST De-assert
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-    if (needfreq != 0)
+    if (1) //(needfreq != 0)
     {
     	// LVDS mode
-       	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+       	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t113_get_hosc_freq());
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_a64_get_hosc_freq());
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
-		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
-		CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
-		while ((CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
+		CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
+		CCU->PLL_VIDEO0_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
+		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
+		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
+		while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
+		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
 
 		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+			0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
     		0;
     }
     else
     {
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+			0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
     		0;
     }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
@@ -3702,7 +3763,7 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
 
     local_delay_us(10);
 
-    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+    TCONLCD_PTR->TCON0_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -3962,6 +4023,11 @@ static void t113_tcontv_CCU_configuration(void)
 static void t113_HV_clock_configuration(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	// No HV outpit
+#elif CPUSTYLE_A64
+	// No HV outpit
+#else
 	unsigned val;
 	// dclk
 	// 31..28: TCON0_Dclk_En
@@ -3974,6 +4040,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 		val * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -3990,11 +4057,17 @@ unsigned long hardware_get_dotclock(unsigned long dotfreq)
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	// No LVDS outpit
+#elif CPUSTYLE_A64
+	// No LVDS outpit
+#else
     TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
 		7 * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -4004,11 +4077,17 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigned onepixelcloks)
 {
 #if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	// No MIPIDSI outpit
+#elif CPUSTYLE_A64
+	// TODO: init MIPIDSI outpit
+#else
     TCONLCD_PTR->LCD_DCLK_REG =
 		(UINT32_C(0x0F) << 28) |	// LCD_DCLK_EN
 		onepixelcloks * (UINT32_C(1) << 0) |	// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -4019,6 +4098,12 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 #if defined (LCD_LVDS_IF_REG_VALUE)
 
 	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+
+#elif CPUSTYLE_H3
+	// No LVDS outpit
+
+#elif CPUSTYLE_A64
+	// No LVDS outpit
 
 #else /* defined (LCD_LVDS_IF_REG_VALUE) */
 
@@ -4304,7 +4389,38 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
 
+#if CPUSTYLE_H3
+	TCONLCD_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
+	TCONLCD_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	TCONLCD_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
+	TCONLCD_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
+	TCONLCD_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
+	TCONLCD_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+#elif CPUSTYLE_A64
+	// timing0 (window)
+	TCONLCD_PTR->TCON0_BASIC0_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+	// timing1
+	TCONLCD_PTR->TCON0_BASIC1_REG =
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((LEFTMARGIN - 1) << 0) |	// HBP
+		0;
+	// timing2
+	TCONLCD_PTR->TCON0_BASIC2_REG =
+		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		0;
+	// timing3
+	TCONLCD_PTR->TCON0_BASIC3_REG =
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
+
+#else
 	// timing0 (window)
 	TCONLCD_PTR->LCD_BASIC0_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
@@ -4324,6 +4440,8 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
+
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -4331,6 +4449,10 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 static void t113_open_IO_output(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
+
+#if CPUSTYLE_H3
+#elif CPUSTYLE_A64
+#else
 	// io_tristate
 	//write32((uintptr_t) & tcon->io_tristate, 0);
 	TCONLCD_PTR->LCD_IO_TRI_REG = 0;
@@ -4372,6 +4494,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 
 	}
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -4451,8 +4574,16 @@ static void t113_tcontv_set_and_open_interrupt_function(const videomode_t * vdmo
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#elif CPUSTYLE_A64
+	TCONLCD_PTR->TCON0_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#else
 	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#endif
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -4465,7 +4596,7 @@ static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 }
 
-// Paraleal RGB mode
+// Paraleal RGB mode, HDMI mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
@@ -6527,7 +6658,38 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein,
 // T507: PLL_VIDEO1
 static void t113_tcon_PLL_configuration(void)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_H3
+	CCU->PLL_DE_CTRL_REG = 0;
+	CCU->PLL_VIDEO_CTRL_REG = 0;
+	local_delay_ms(50);
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	local_delay_ms(50);
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
+#elif CPUSTYLE_A64
+	CCU->PLL_DE_CTRL_REG = 0;
+	CCU->PLL_VIDEO0_CTRL_REG = 0;
+	local_delay_ms(50);
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	//CCU->PLL_VIDEO1_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	local_delay_ms(50);
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | 1; // Enable DE clock, set source to PLL_DE
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // PLL_VIDEO0(2X)
+	CCU->TCON1_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // PLL_VIDEO0(2X)
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
@@ -6764,7 +6926,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
 			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
 
-			//ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
 
 			//glb->GLB_STS = 0;
@@ -7027,7 +7189,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
 
     	/* перенаправление выхода DE */
-    	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+    	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCONLCD_PTR; MIXER1->TCON1 */
     	// DISPLAY_TOP->DE_PORT_PERH_SEL; // see also
 
     	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
@@ -7065,6 +7227,46 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     }
 #endif
 
+#elif CPUSTYLE_H3
+
+    // PLLs
+	CCU->PLL_DE_CTRL_REG = 0;
+	CCU->PLL_VIDEO_CTRL_REG = 0;
+	local_delay_ms(50);
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	local_delay_ms(50);
+
+    // clocks
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
+
+	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+	DE_TOP->SCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+	DE_TOP->HCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+
+	if (1)
+	{
+		const int rtmixid = 1;
+
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb != NULL)
+		{
+			glb->GLB_CTL =
+					0x01 * (UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+					(UINT32_C(1) << 0) |		// EN RT enable/disable Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer
+					0;
+
+			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+		}
+	}
+
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -7077,7 +7279,7 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #elif WITHMIPIDSISHW
 	t113_tcon_dsi_initsteps(vdmode);
 #else /* WITHLVDSHW */
-	t113_tcon_hw_initsteps(vdmode);
+	t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
 #endif /* WITHLVDSHW */
 }
 
@@ -7197,7 +7399,7 @@ static void awxx_deoutmapping(unsigned disp)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* перенаправление выхода DE */
-	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCONLCD_PTR */
 	DE_TOP->SEL_CFG=0x00000001;
 
 	//PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
@@ -7212,6 +7414,12 @@ static void awxx_deoutmapping(unsigned disp)
 		//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
 		//PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 	}
+
+#elif CPUSTYLE_H3
+	// This function configured DE2 as follows:
+	// MIXER0 -> WB -> MIXER1 -> HDMI
+	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
+
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
@@ -7225,6 +7433,310 @@ void hardware_edid_test(void)
 #endif /* WITHHDMITVHW */
 
 }
+
+
+#if CPUSTYLE_H3 || CPUSTYLE_A64
+
+
+static void h3_hdmi_init(const videomode_t * vdmode)
+{
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
+	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
+	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
+	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
+
+//	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
+//	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
+//	PRINTF("HTOTAL=%u\n", HTOTAL);
+//	PRINTF("VTOTAL=%u\n", VTOTAL);
+//	PRINTF("HBLANKING=%u\n", HBLANKING);
+//	PRINTF("VBLANKING=%u\n", VBLANKING);
+//	PRINTF("HSYNC=%u\n", HSYNC);
+//	PRINTF("VSYNC=%u\n", VSYNC);
+//	PRINTF("HFP=%u\n", HFP);
+//	PRINTF("VFP=%u\n", VFP);
+//
+//	PRINTF("dot clock = %u\n", display_getdotclock(vdmode));
+
+	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
+	// HDMI PHY init, the following black magic is based on the procedure documented at:
+	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
+	HDMI_PHY->HDMI_PHY_CFG1 = 0;
+	HDMI_PHY->HDMI_PHY_CFG1 = 1;
+	local_delay_us(5);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
+	local_delay_us(10);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
+	local_delay_us(5);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
+	local_delay_us(40);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
+	local_delay_us(100);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (7 << 4);
+
+	while ((HDMI_PHY->HDMI_PHY_STS & 0x80) == 0)
+		;
+	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
+
+	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 4);
+	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 8);
+	HDMI_PHY->HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
+
+	HDMI_PHY->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
+	HDMI_PHY->HDMI_PHY_CEC = 0;
+
+	HDMI_PHY->HDMI_PHY_PLL1 = 0x39dc5040;
+	HDMI_PHY->HDMI_PHY_PLL2 = 0x80084381;
+	local_delay_us(10000);
+	HDMI_PHY->HDMI_PHY_PLL3 = 1;
+	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
+	local_delay_us(10000);
+	uint32_t tmp = (HDMI_PHY->HDMI_PHY_STS & 0x1f800) >> 11;
+	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+
+	HDMI_PHY->HDMI_PHY_CFG1 = 0x01FFFF7F;
+	HDMI_PHY->HDMI_PHY_CFG2 = 0x8063A800;
+	HDMI_PHY->HDMI_PHY_CFG3 = 0x0F81C485;
+
+	/* enable read access to HDMI controller */
+	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	// HDMI Config, based on the documentation at:
+	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
+	HDMI_TX0->HDMI_FC_INHACTV0 = (WIDTH & 0xff);    // Horizontal pixels
+	HDMI_TX0->HDMI_FC_INHACTV1 = (WIDTH >> 8);      // Horizontal pixels
+	HDMI_TX0->HDMI_FC_INHBLANK0 = (HBLANKING & 0xff);     // Horizontal blanking
+	HDMI_TX0->HDMI_FC_INHBLANK1 = (HBLANKING >> 8);       // Horizontal blanking
+
+	HDMI_TX0->HDMI_FC_INVACTV0 = (HEIGHT & 0xff);    // Vertical pixels
+	HDMI_TX0->HDMI_FC_INVACTV1 = (HEIGHT >> 8);      // Vertical pixels
+	HDMI_TX0->HDMI_FC_INVBLANK = VBLANKING;               // Vertical blanking
+
+	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (HFP & 0xff);
+	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (HFP >> 8);    // Horizontal Front porch
+	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (HSYNC & 0xff);  // Horizontal sync pulse
+	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (HSYNC >> 8);    // Horizontal sync pulse
+
+	HDMI_TX0->HDMI_FC_VSYNCINDELAY = VFP;
+	HDMI_TX0->HDMI_FC_VSYNCINWIDTH = VSYNC;            // Vertical sync pulse
+
+	HDMI_TX0->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
+	HDMI_TX0->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
+	HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
+	HDMI_TX0->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	HDMI_TX0->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	HDMI_TX0->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	HDMI_TX0->HDMI_MC_FLOWCTRL = 0;    // Main Controller Feed Through Control
+	HDMI_TX0->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
+
+#if 0
+	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
+
+	HDMI_TX0->HDMI_FC_INHACTIV0 = (800 & 0xff);    // Horizontal pixels
+	HDMI_TX0->HDMI_FC_INHACTIV1 = (800 >> 8);      // Horizontal pixels
+	HDMI_TX0->HDMI_FC_INHBLANK0 = (256 & 0xff);     // Horizontal blanking
+	HDMI_TX0->HDMI_FC_INHBLANK1 = (256 >> 8);       // Horizontal blanking
+
+	HDMI_TX0->HDMI_FC_INVACTIV0 = (480 & 0xff);    // Vertical pixels
+	HDMI_TX0->HDMI_FC_INVACTIV1 = (480 >> 8);      // Vertical pixels
+	HDMI_TX0->HDMI_FC_INVBLANK  = 28;               // Vertical blanking
+
+	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (40 & 0xff);  // Horizontal Front porch
+	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (40 >> 8);    // Horizontal Front porch
+	HDMI_TX0->HDMI_FC_VSYNCINDELAY  = 1;            // Vertical front porch
+	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (128 & 0xff);  // Horizontal sync pulse
+	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (128 >> 8);    // Horizontal sync pulse
+	HDMI_TX0->HDMI_FC_VSYNCINWIDTH  = 4;            // Vertical sync pulse
+
+	HDMI_TX0->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+	HDMI_TX0->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+	HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+	HDMI_TX0->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	HDMI_TX0->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	HDMI_TX0->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	HDMI_TX0->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+	HDMI_TX0->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+#endif
+
+#if 0
+	/*800x480p hfp:40 hs:48 hbp:40 vfp:13 vs:3 vbp:29 pixel clock:32 MHz */
+
+	hltdc.Init.HorizontalSync = 19;
+	hltdc.Init.VerticalSync = 2;
+	hltdc.Init.AccumulatedHBP = 159;
+	hltdc.Init.AccumulatedVBP = 22;
+	hltdc.Init.AccumulatedActiveW = 1183;
+	hltdc.Init.AccumulatedActiveH = 622;
+	hltdc.Init.TotalWidth = 1343;
+	hltdc.Init.TotalHeigh = 634;
+#endif
+}
+
+static void h3_tcon_init(const videomode_t * vdmode)
+{
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
+	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
+	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
+	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
+	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
+
+//	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
+//	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
+//	PRINTF("HTOTAL=%u\n", HTOTAL);
+//	PRINTF("VTOTAL=%u\n", VTOTAL);
+//	PRINTF("HBLANKING=%u\n", HBLANKING);
+//	PRINTF("VBLANKING=%u\n", VBLANKING);
+//	PRINTF("HSYNC=%u\n", HSYNC);
+//	PRINTF("VSYNC=%u\n", VSYNC);
+//	PRINTF("HBP=%u\n", HBP);
+//	PRINTF("VBP=%u\n", VBP);
+
+
+#if CPUSTYLE_A64
+	// LCD0 feeds mixer0 to HDMI
+	TCONLCD_PTR->TCON_GCTL_REG = 0;
+	TCONLCD_PTR->TCON_GINT0_REG = 0;
+	TCONLCD_PTR->TCON0_CTL_REG =
+			(UINT32_C(1) << 31) |	// TCON1_En
+		0;
+	TCONLCD_PTR->TCON0_BASIC0_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+	// timing1
+	TCONLCD_PTR->TCON0_BASIC1_REG =
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((LEFTMARGIN - 1) << 0) |	// HBP
+		0;
+	// timing2
+	TCONLCD_PTR->TCON0_BASIC2_REG =
+		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		0;
+	// timing3
+	TCONLCD_PTR->TCON0_BASIC3_REG =
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
+
+	TCONLCD_PTR->TCON_GCTL_REG = (UINT32_C(1) << 31);
+	TCONLCD_PTR->TCON0_DCLK_REG = 0xF0000006;
+	ASSERT(TCONLCD_PTR->TCON_GCTL_REG == (UINT32_C(1) << 31));
+
+#else
+	// H3
+	// LCD0 feeds mixer0 to HDMI
+	TCONLCD_PTR->TCON_GCTL_REG = 0;
+	TCONLCD_PTR->TCON_GINT0_REG = 0;
+	TCONLCD_PTR->TCON1_CTL_REG =
+		(UINT32_C(1) << 31) |	// TCON1_En
+		60 * (UINT32_C(1) << 4) |	// Start_Delay
+		0;
+	TCONLCD_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
+	TCONLCD_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	TCONLCD_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
+	TCONLCD_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
+	TCONLCD_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
+	TCONLCD_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+
+	TCONLCD_PTR->TCON_GCTL_REG = (UINT32_C(1) << 31);
+
+#endif
+}
+
+static void h3_de2_bld_init(const videomode_t * vdmode)
+{
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+
+	// Erase the whole of MIXER0. This contains uninitialized data.
+	for (uint32_t addr = DE_MIXER0_GLB_BASE + 0x0000; addr < DE_MIXER0_GLB_BASE + 0xC000; addr += 4)
+	{
+		* (volatile uint32_t*) (addr) = 0;
+	}
+
+	DE_MIXER0_GLB->GLB_CTL = 1;
+	DE_MIXER0_GLB->GLB_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	ASSERT(DE_MIXER0_GLB->GLB_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+
+	DE_MIXER0_BLD->BLD_EN_COLOR_CTL = 0x100;
+	DE_MIXER0_BLD->ROUTE = 0;
+	DE_MIXER0_BLD->OUTPUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	DE_MIXER0_BLD->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	ASSERT(DE_MIXER0_BLD->OUTPUT_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+}
+
+static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+{
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
+	if (vsu == NULL)
+		return;
+
+//	ASSERT(DIM_X == vdmodeDESIGN->width);
+//	ASSERT(DIM_Y == vdmodeDESIGN->height);
+	if (vdmodeDESIGN == vdmodeHDMI)
+	{
+		vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+		return;
+	}
+	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+
+	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
+
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0);
+	vsu->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	vsu->VSU_Y_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_Y_HSTEP_REG = HSTEP;
+	vsu->VSU_Y_VSTEP_REG = VSTEP;
+	vsu->VSU_C_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_C_HSTEP_REG = HSTEP;
+	vsu->VSU_C_VSTEP_REG = VSTEP;
+
+	for (int n = 0; n < 32; n ++)
+	{
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
+		vsu->VSU_Y_HCOEF1_REGN [n] = 0;			// 0x300
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;	// 0x400
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;	// 0x600
+		vsu->VSU_C_HCOEF1_REGN [n] = 0;			// 0x700
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;	// 0x800
+	}
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+}
+
+#endif
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
@@ -7241,7 +7753,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 //	}
 
 	{
-#if defined (TCONTV_PTR)
+#if WITHHDMITVHW
+#elif defined (TCONTV_PTR)
 	const videomode_t * const vdmode_CRT = get_videomode_CRT();
 #endif
 
@@ -7255,18 +7768,19 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		t113_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
 		hardware_tcontv_initialize(vdmode_CRT);
 
+#endif /* defined (TCONTV_PTR) */
+
 #if WITHHDMITVHW
 		t113_HDMI_CCU_configuration();
-	    if (1)
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
 	    {
 	    	t507_hdmi_phy_initialize();
 	    	t507_hdmi_phy_set();
 	    	t507_hdmi_initialize();
 	    	//t507_hdmi_edid_test();
 	    }
+#endif
 #endif /* WITHHDMITVHW */
-
-#endif /* defined (TCONTV_PTR) */
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -7283,6 +7797,22 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #endif
 
+#if WITHHDMITVHW
+		{
+			const int rtmixid = RTMIXIDLCD;
+			const videomode_t * vdmode_HDMI = get_videomode_HDMI();
+
+			h3_hdmi_init(vdmode_HDMI);
+			h3_tcon_init(vdmode_HDMI);
+
+			h3_de2_bld_init(vdmode_HDMI);
+			//t113_de_scaler_initialize(rtmixid, vdmode, vdmode_HDMI);
+			h3_de2_vsu_init(rtmixid, vdmode, vdmode_HDMI);
+			t113_de_update(rtmixid);	/* Update registers */
+
+			return;
+		}
+#endif
 		{
 			const int rtmixid = RTMIXIDLCD;
 
@@ -7450,28 +7980,6 @@ void hardware_ltdc_L8_palette(void)
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
-/* Получить желаемую частоту pixel clock для данного видеорежима. */
-uint_fast32_t display_getdotclock(const videomode_t * vdmode)
-{
-	/* Accumulated parameters for this display */
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
-	const unsigned HSYNC = vdmode->hsync;	/*  */
-	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
-
-	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
-	//return vdmode->ltdc_dotclk;
-}
-
 #else /* WITHLTDCHW */
-
-uint_fast32_t display_getdotclock(const videomode_t * vdmode)
-{
-	return UINT32_C(1000000);
-}
 
 #endif /* WITHLTDCHW */

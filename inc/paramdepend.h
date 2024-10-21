@@ -857,7 +857,7 @@ extern "C" {
 	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
-	#define CPU_FREQ	(allwnr_h3_get_arm_freq())
+	#define CPU_FREQ	(allwnr_h3_get_cpux_freq())
 	#define HARDWARE_UART_FREQ (allwnr_h3_get_uart_freq())
 	#define CPU_PL1_FREQ (allwnr_h3_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_h3_get_hosc_freq())	/* PL1 times source frequency */

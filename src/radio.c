@@ -174,7 +174,7 @@ static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * fi
 /* на плату/dsp идут значения в диапазоне BOARDPOWERMIN..BOARDPOWERMAX */
 #define WITHPOWERTRIMMIN    5    	// Нижний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMMAX    100    	// Верхний предел регулировки (показываемый на дисплее)
-#define WITHPOWERTRIMATU    30    	// Значение для работы автотюнера
+#define WITHPOWERTRIMATU    10    	// Значение для работы автотюнера
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
@@ -4052,7 +4052,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-	static uint_fast8_t gtunerdelay = 40;
+	static uint_fast8_t gtunerdelay = 25;
 #if WITHAUTOTUNER_N7DDCALGO
 	static uint_fast8_t gn7ddclinearC = 1;
 	static uint_fast8_t gn7ddclinearL;
@@ -4996,7 +4996,7 @@ unsigned n7ddc_get_swr(void)
 
 	if (f < minforward)
 	{
-		PRINTF("n7ddc_get_swr: No forward power\n");
+		PRINTF("n7ddc_get_swr: No forward power (f=%u,r=%u,mf=%d),L=%u,C=%u,T=%u\n", f, r, minforward, tunerind, tunercap, tunertype);
 		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
 	}
 	else if (f <= r)
@@ -5004,7 +5004,7 @@ unsigned n7ddc_get_swr(void)
 
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
 	unsigned result = swr10 > fs ? fs : swr10;
-	PRINTF("n7ddc_get_swr: result=%u (f=%u,r=%u)\n", result, f, r);
+	PRINTF("n7ddc_get_swr: swr=%u (f=%u,r=%u),L=%u,C=%u,T=%u\n", result, f, r, tunerind, tunercap, tunertype);
 	return result;
 }
 
