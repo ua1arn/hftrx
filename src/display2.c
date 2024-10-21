@@ -34,7 +34,7 @@ struct dzone
 #define PAGESLEEP 14
 #define PAGEMENU 15
 
-#define REDRSUBSET(page)		(1U << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
+#define REDRSUBSET(page)		(UINT16_C(1) << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
 
 #define REDRSUBSET_ALL ( \
 		REDRSUBSET(0) | \
