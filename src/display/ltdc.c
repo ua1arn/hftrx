@@ -7609,13 +7609,20 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	if (vsu == NULL)
 		return;
 
+//	ASSERT(DIM_X == vdmodeDESIGN->width);
+//	ASSERT(DIM_Y == vdmodeDESIGN->height);
+	if (vdmodeDESIGN == vdmodeHDMI)
+	{
+		vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+		return;
+	}
 	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
 	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
 	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
-	const uint32_t APPDIMS_SIZE = ((DIM_Y - 1) << 16) | (DIM_X - 1);	// source size
+	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
 
-	const uint_fast32_t HSTEP = (((uint_fast64_t) DIM_X << FRAСTWIDTH) / WIDTH) << 1;
-	const uint_fast32_t VSTEP = (((uint_fast64_t) DIM_Y << FRAСTWIDTH) / HEIGHT) << 1;
+	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
 
 	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
 	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
