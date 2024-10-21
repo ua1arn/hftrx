@@ -1809,6 +1809,11 @@ const videomode_t * get_videomode(void)
 {
 	return & vdmode0;
 }
+
+const videomode_t * get_videomode_DESIGN(void)
+{
+	return & vdmode0;
+}
 #endif /* WITHLTDCHW */
 
 /*

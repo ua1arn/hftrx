@@ -7762,8 +7762,8 @@
   </interrupt>
   <registers>
    <register>
-    <name>LCD_GCTL_REG</name>
-    <displayName>LCD_GCTL_REG</displayName>
+    <name>TCON_GCTL_REG</name>
+    <displayName>TCON_GCTL_REG</displayName>
     <description>TCON global control register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -7771,8 +7771,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>LCD_GINT0_REG</name>
-    <displayName>LCD_GINT0_REG</displayName>
+    <name>TCON_GINT0_REG</name>
+    <displayName>TCON_GINT0_REG</displayName>
     <description>TCON global interrupt register0</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -7780,8 +7780,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>LCD_GINT1_REG</name>
-    <displayName>LCD_GINT1_REG</displayName>
+    <name>TCON_GINT1_REG</name>
+    <displayName>TCON_GINT1_REG</displayName>
     <description>TCON global interrupt register1</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>

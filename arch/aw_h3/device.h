@@ -1238,9 +1238,9 @@ typedef __PACKED_STRUCT SYSCTRL_Type
 /*!< TCON TCON0, TCON1 */
 typedef __PACKED_STRUCT TCON_Type
 {
-    __IO uint32_t LCD_GCTL_REG;                       /*!< Offset 0x000 TCON global control register */
-    __IO uint32_t LCD_GINT0_REG;                      /*!< Offset 0x004 TCON global interrupt register0 */
-    __IO uint32_t LCD_GINT1_REG;                      /*!< Offset 0x008 TCON global interrupt register1 */
+    __IO uint32_t TCON_GCTL_REG;                      /*!< Offset 0x000 TCON global control register */
+    __IO uint32_t TCON_GINT0_REG;                     /*!< Offset 0x004 TCON global interrupt register0 */
+    __IO uint32_t TCON_GINT1_REG;                     /*!< Offset 0x008 TCON global interrupt register1 */
          uint32_t reserved_0x00C [0x0021];
     __IO uint32_t TCON1_CTL_REG;                      /*!< Offset 0x090 TCON1 control register */
     __IO uint32_t TCON1_BASIC0_REG;                   /*!< Offset 0x094 TCON1 basic timing register0 */

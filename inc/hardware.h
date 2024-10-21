@@ -780,6 +780,7 @@ typedef struct videomode_tag
 const videomode_t * get_videomode(void);
 const videomode_t * get_videomode_CRT(void);
 const videomode_t * get_videomode_HDMI(void);
+const videomode_t * get_videomode_DESIGN(void);
 
 void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
