@@ -6594,22 +6594,25 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 	sun8i_vi_scaler_enable(rtmixid, 1);
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-
 // в rtmix0 - похоже не работает с форматом RGB565 или 8888
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
 	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
 	// начения менее 1.0 - меньше исходных пикселей/строк становятся большим количеством
 	//const uint_fast32_t scale_x = (((uint_fast64_t) (vdmodeout->width * 15 / 10) << FRAСTWIDTH) / vdmodein->width) << 1;	// 1.0 приводит к исчезновению изображения
-	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodeout->width << FRAСTWIDTH) / vdmodein->width) << 1;	// 1.0 приводит к исчезновению изображения
-	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodeout->height << FRAСTWIDTH) / vdmodein->height) << 1;
+	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodein->width << FRAСTWIDTH) / vdmodeout->width) << 1;	// 1.0 приводит к исчезновению изображения
+	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodein->height << FRAСTWIDTH) / vdmodeout->height) << 1;
 
 	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
 	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
 	if (vsu == NULL)
 		return;
+	if (vdmodein == vdmodeout)
+	{
+		vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+		return;
+	}
 
 	//memset(vsu, 0, sizeof * vsu);
 	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
@@ -6627,22 +6630,21 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	vsu->VSU_C_VSTEP_REG  = scale_y;
 
 	// Загрущки значенией не происходит. Разобраться
-//	for (int n=0; n < 32; n++)
-//	{
-//
-//		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
-//		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
-//		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
-//
-//		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
-//		vsu->VSU_C_HCOEF1_REGN [n] = 0;
-//		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
-//	}
+	for (int n=0; n < 32; n++)
+	{
+
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
+		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
+
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
+		vsu->VSU_C_HCOEF1_REGN [n] = 0;
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
+	}
 
 	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 4);	// COEF_SWITCH_EN
 	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
 }
-#endif
 
 static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
@@ -7442,7 +7444,7 @@ void hardware_edid_test(void)
 }
 
 
-#if CPUSTYLE_H3 || CPUSTYLE_A64
+#if defined (HDMI_PHY) && defined (HDMI_TX0)
 
 
 static void h3_hdmi_init(const videomode_t * vdmode)
@@ -7511,7 +7513,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	HDMI_PHY->HDMI_PHY_PLL3 = 1;
 	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
 	local_delay_us(10000);
-	uint32_t tmp = (HDMI_PHY->HDMI_PHY_STS & 0x1f800) >> 11;
+	uint32_t tmp = (HDMI_PHY->HDMI_PHY_STS & 0x1F800) >> 11;
 	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
 
 	HDMI_PHY->HDMI_PHY_CFG1 = 0x01FFFF7F;
@@ -7551,47 +7553,6 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	HDMI_TX0->HDMI_MC_FLOWCTRL = 0;    // Main Controller Feed Through Control
 	HDMI_TX0->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
-#if 0
-	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-
-	HDMI_TX0->HDMI_FC_INHACTIV0 = (800 & 0xff);    // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHACTIV1 = (800 >> 8);      // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHBLANK0 = (256 & 0xff);     // Horizontal blanking
-	HDMI_TX0->HDMI_FC_INHBLANK1 = (256 >> 8);       // Horizontal blanking
-
-	HDMI_TX0->HDMI_FC_INVACTIV0 = (480 & 0xff);    // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVACTIV1 = (480 >> 8);      // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVBLANK  = 28;               // Vertical blanking
-
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (40 & 0xff);  // Horizontal Front porch
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (40 >> 8);    // Horizontal Front porch
-	HDMI_TX0->HDMI_FC_VSYNCINDELAY  = 1;            // Vertical front porch
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (128 & 0xff);  // Horizontal sync pulse
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (128 >> 8);    // Horizontal sync pulse
-	HDMI_TX0->HDMI_FC_VSYNCINWIDTH  = 4;            // Vertical sync pulse
-
-	HDMI_TX0->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-	HDMI_TX0->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-	HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-	HDMI_TX0->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	HDMI_TX0->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	HDMI_TX0->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	HDMI_TX0->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-	HDMI_TX0->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
-#endif
-
-#if 0
-	/*800x480p hfp:40 hs:48 hbp:40 vfp:13 vs:3 vbp:29 pixel clock:32 MHz */
-
-	hltdc.Init.HorizontalSync = 19;
-	hltdc.Init.VerticalSync = 2;
-	hltdc.Init.AccumulatedHBP = 159;
-	hltdc.Init.AccumulatedVBP = 22;
-	hltdc.Init.AccumulatedActiveW = 1183;
-	hltdc.Init.AccumulatedActiveH = 622;
-	hltdc.Init.TotalWidth = 1343;
-	hltdc.Init.TotalHeigh = 634;
-#endif
 }
 
 static void h3_tcon_init(const videomode_t * vdmode)
@@ -7654,7 +7615,7 @@ static void h3_tcon_init(const videomode_t * vdmode)
 	TCONLCD_PTR->TCON0_DCLK_REG = 0xF0000006;
 	ASSERT(TCONLCD_PTR->TCON_GCTL_REG == (UINT32_C(1) << 31));
 
-#else
+#elif CPUSTYLE_H3
 	// H3
 	// LCD0 feeds mixer0 to HDMI
 	TCONLCD_PTR->TCON_GCTL_REG = 0;
@@ -7672,10 +7633,14 @@ static void h3_tcon_init(const videomode_t * vdmode)
 
 	TCONLCD_PTR->TCON_GCTL_REG = (UINT32_C(1) << 31);
 
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+#else
+#error CPUSTYLE_xxx error
 #endif
 }
 
-#endif
+#endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
 
 static void h3_de2_bld_init(const videomode_t * vdmode)
 {
@@ -7827,9 +7792,15 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
 			t113_de_update(rtmixid);	/* Update registers */
 
+			// проверка различных scalers
 //			t113_de_scaler_initialize(rtmixid, vdmode, vdmode);
 //			sun8i_vi_scaler_enable(rtmixid, 0);
+
 			h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+
+//			t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
+
+			// save settings
 			t113_de_update(rtmixid);	/* Update registers */
 		}
 	}
