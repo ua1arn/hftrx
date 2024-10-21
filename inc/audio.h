@@ -141,7 +141,6 @@ enum
 
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
@@ -158,8 +157,7 @@ enum
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_Р616)  && WITHDSPLOCALFIR
-
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_Р616) && WITHDSPLOCALFIR
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
@@ -176,7 +174,7 @@ enum
 	typedef int32_t IFADCvalue_t;
 	typedef int32_t IFDACvalue_t;
 
-#elif defined (DDS1_TYPE) && DDS1_TYPE == DDS_TYPE_FPGAV1
+#elif defined (DDS1_TYPE) && DDS1_TYPE == DDS_TYPE_FPGAV1 && WITHDSPEXTDDC
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	28		// 1 бит знак и 27 бит значащих
@@ -213,6 +211,86 @@ enum
 
 #endif /* CPUSTYLE_XC7Z */
 
+// DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
+#if (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_122M88_X1
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+	//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+	#define FPGADECIMATION 2560uL	// должно быть кратно 256
+
+	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_61M440_X1
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+	//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+	#define FPGADECIMATION 1280uL	// должно быть кратно 256
+
+	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_96M_X1
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+	//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+	#define FPGADECIMATION 2000uL	// должно быть кратно 256
+
+	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+	//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+	#define FPGADECIMATION 1024uL	// должно быть кратно 256
+
+	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (! defined (ARMI2SMCLK) && ! defined (ARMSAIMCLK))
+
+#endif /* CPUSTYLE_XC7Z */
+
+#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
+	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
+#else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
+	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
+#endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
+
+#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
+
+#if WITHDTMFPROCESSING
+	#define ARMI2SRATE			((int32_t) 8000)	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
+#else /* WITHDTMFPROCESSING */
+	#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
+#endif /* WITHDTMFPROCESSING */
+
+#define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
+
+/////////////////
 typedef struct adapter_tag
 {
 	FLOAT_t inputK;
@@ -260,91 +338,6 @@ extern transform_t if2rts96out;	// преобразование из выход�
 extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 
 unsigned audiorec_getwidth(void);
-
-// DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
-#if WITHDSPEXTFIR || WITHDSPEXTDDC
-	#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_122M88_X1
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 2560uL	// должно быть кратно 256
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_61M440_X1
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 1280uL	// должно быть кратно 256
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_96M_X1
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 2000uL	// должно быть кратно 256
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 1024uL	// должно быть кратно 256
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif ! defined (ARMI2SMCLK) && ! defined (ARMSAIMCLK)
-
-	#endif /* CPUSTYLE_XC7Z */
-#else
-	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-	#define HARDWARE_DACSCALE	(1)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-#endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
-
-#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
-	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
-#else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
-#endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-
-#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
-
-#if WITHDTMFPROCESSING
-	#define ARMI2SRATE			((int32_t) 8000)	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
-#else /* WITHDTMFPROCESSING */
-	#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
-#endif /* WITHDTMFPROCESSING */
-
-#define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
 
 uint_fast8_t modem_getnextbit(
 	uint_fast8_t suspend	// передавать модему ещё рано - не полностью завершено формирование огибающей
