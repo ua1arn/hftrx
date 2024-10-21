@@ -1388,35 +1388,35 @@ static const videomode_t vdmode0 =
 
 #elif LCDMODE_AT070TN90
 
-	/* AT070TN90 panel (800*480) - 7" display HV mode */
+/* AT070TN90 panel (800*480) - 7" display HV mode */
 static const videomode_t vdmode0 =
 {
-	.width = 800,			/* LCD PIXEL WIDTH            */
-	.height = 480,			/* LCD PIXEL HEIGHT           */
-	/**
-	  * @brief  AT070TN90 Timing
-	  * MODE=0 (DE)
-	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
-	  * MODE=1 (SYNC)
-	  * When selected sync mode, de must be grounded.
-	  */
-	.hsync = 40,				/* Horizontal synchronization 1..40 */
-	.hbp = 6,				/* Horizontal back porch      */
-	.hfp = 210,				/* Horizontal front porch  16..354   */
+.width = 800,			/* LCD PIXEL WIDTH            */
+.height = 480,			/* LCD PIXEL HEIGHT           */
+/**
+  * @brief  AT070TN90 Timing
+  * MODE=0 (DE)
+  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+  * MODE=1 (SYNC)
+  * When selected sync mode, de must be grounded.
+  */
+.hsync = 40,				/* Horizontal synchronization 1..40 */
+.hbp = 6,				/* Horizontal back porch      */
+.hfp = 210,				/* Horizontal front porch  16..354   */
 
-	.vsync = 20,				/* Vertical synchronization 1..20  */
-	.vbp = 3,				/* Vertical back porch      */
-	.vfp = 22,				/* Vertical front porch  7..147     */
+.vsync = 20,				/* Vertical synchronization 1..20  */
+.vbp = 3,				/* Vertical back porch      */
+.vfp = 22,				/* Vertical front porch  7..147     */
 
-	// MODE: DE/SYNC mode select.
-	// DE MODE: MODE="1", VS and HS must pull high.
-	// SYNC MODE: MODE="0". DE must be grounded
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
-	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+// MODE: DE/SYNC mode select.
+// DE MODE: MODE="1", VS and HS must pull high.
+// SYNC MODE: MODE="0". DE must be grounded
+.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+.lq43reset = 0,	// LQ043T3DX02K require DE reset
+//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
+.fps = 60	/* frames per second */
 };
 
 #elif 1 && LCDMODE_AT070TNA2
@@ -1453,6 +1453,37 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+	.fps = 60	/* frames per second */
+};
+
+/* AT070TN90 panel (800*480) - 7" display HV mode */
+static const videomode_t vdmode_800x480 =
+{
+	.width = 800,			/* LCD PIXEL WIDTH            */
+	.height = 480,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 40,				/* Horizontal synchronization 1..40 */
+	.hbp = 6,				/* Horizontal back porch      */
+	.hfp = 210,				/* Horizontal front porch  16..354   */
+
+	.vsync = 20,				/* Vertical synchronization 1..20  */
+	.vbp = 3,				/* Vertical back porch      */
+	.vfp = 22,				/* Vertical front porch  7..147     */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per second */
 };
 
@@ -1769,7 +1800,7 @@ static const videomode_t vdmode_PAL0 =
 /* HDMI TV out parameters HD 1920x1080 60 Hz*/
 /* Aspect ratio 1.7(7), dit clock = 148.5 MHz */
 // https://edid.tv/edid/2253/
-static const videomode_t vdmode_HDMI =
+static const videomode_t vdmode_HDMI_1920x1080 =
 {
 	.width = 1920,			/* LCD PIXEL WIDTH            */
 	.height = 1080,			/* LCD PIXEL HEIGHT           */
@@ -1799,14 +1830,17 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	return & vdmode_HDMI;
+	return & vdmode_HDMI_1920x1080;
 }
 
 #endif /* WITHLTDCHW */
 
 #if WITHLTDCHW
-const videomode_t * get_videomode(void)
+
+/* для эесперементов с масштабиованием в DE - когда DIM_X & DIM_Y не соответствуют подключённому дисплею */
+const videomode_t * get_videomode_LCD(void)
 {
+	//return & vdmode_800x480;
 	return & vdmode0;
 }
 
@@ -1814,6 +1848,7 @@ const videomode_t * get_videomode_DESIGN(void)
 {
 	return & vdmode0;
 }
+
 #endif /* WITHLTDCHW */
 
 /*
@@ -1840,7 +1875,7 @@ void display_hardware_initialize(void)
 
 #if WITHLTDCHW
 	{
-		hardware_ltdc_initialize(get_videomode());
+		hardware_ltdc_initialize(get_videomode_LCD());
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 
@@ -1849,7 +1884,7 @@ void display_hardware_initialize(void)
 #endif /* WITHLTDCHW */
 
 #if LCDMODETX_TC358778XBG
-	const videomode_t * const vdmode = get_videomode();
+	const videomode_t * const vdmode = get_videomode_LCD();
 	tc358768_initialize(vdmode);
 	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
@@ -1863,7 +1898,7 @@ void display_hardware_initialize(void)
 
 void display_hdmi_initialize(void)
 {
-	const videomode_t * const vdmode = get_videomode();
+	const videomode_t * const vdmode = get_videomode_LCD();
 //#if LCDMODETX_TC358778XBG
 //	tc358768_initialize(vdmode);
 //	panel_initialize(vdmode);
@@ -1878,12 +1913,12 @@ void display_wakeup(void)
 {
 #if WITHLTDCHW
 	{
-		hardware_ltdc_initialize(get_videomode());
+		hardware_ltdc_initialize(get_videomode_LCD());
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
-	const videomode_t * const vdmode = get_videomode();
+	const videomode_t * const vdmode = get_videomode_LCD();
   tc358768_wakeup(vdmode);
     panel_wakeup();
 #endif /* LCDMODETX_TC358778XBG */

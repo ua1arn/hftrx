@@ -7406,8 +7406,8 @@ static void awxx_deoutmapping(unsigned disp)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* перенаправление выхода DE */
-	//DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCONLCD_PTR */
-	DE_TOP->SEL_CFG=0x00000001;
+	DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+	//DE_TOP->SEL_CFG=0x00000001;
 
 	//PRINTF("DE_TOP->SEL_CFG=%08X\n", (unsigned) DE_TOP->SEL_CFG);
 	{
@@ -7675,6 +7675,8 @@ static void h3_tcon_init(const videomode_t * vdmode)
 #endif
 }
 
+#endif
+
 static void h3_de2_bld_init(const videomode_t * vdmode)
 {
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -7742,8 +7744,6 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 }
-
-#endif
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
@@ -7827,8 +7827,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
 			t113_de_update(rtmixid);	/* Update registers */
 
-			t113_de_scaler_initialize(rtmixid, vdmode, vdmode);
-			sun8i_vi_scaler_enable(rtmixid, 0);
+//			t113_de_scaler_initialize(rtmixid, vdmode, vdmode);
+//			sun8i_vi_scaler_enable(rtmixid, 0);
+			h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+			t113_de_update(rtmixid);	/* Update registers */
 		}
 	}
     //PRINTF("hardware_ltdc_initialize done.\n");
