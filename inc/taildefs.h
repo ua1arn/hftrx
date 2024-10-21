@@ -21,6 +21,7 @@ extern "C" {
 
 typedef enum
 {
+	SPIC_SPEED100k,	/* 100 kHz  */
 	SPIC_SPEED400k,	/* 400 kHz для MCP3208, DS1305 */
 	SPIC_SPEED1M,	/* 1 MHz для XPT2046 */
 	SPIC_SPEED4M,	/* 4 MHz для CS4272 */

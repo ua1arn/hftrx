@@ -64,6 +64,8 @@ static int local_get_swr(int (*cb)(void *ctx), void *ctx) {
 	//PRINTF("local_get_swr: SWR=%d\n", SWR);
 	if (cb(ctx))
 		return N7DDCTUNE_ABORT;
+	if (SWR == 0)
+		return N7DDCTUNE_ERROR;
 	return N7DDCTUNE_OK;
 }
 
@@ -467,7 +469,7 @@ int n7ddc_tune(int linearC, int linearL, int (*cb)(void *ctx), void *ctx) {
 	atu_reset();
 
 	for (i = 0; i < 32; ++i) {
-		if (local_get_swr(cb, ctx))
+		if (local_get_swr(cb, ctx) == N7DDCTUNE_ABORT)
 			return N7DDCTUNE_ABORT;
 //		if (SWR == 0) {
 //			//atu_reset();
