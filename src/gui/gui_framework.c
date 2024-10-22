@@ -198,7 +198,7 @@ void dump_queue(window_t * win)
 	if (! win->queue.size)
 		return;
 
-	PRINTF("dump WM queue window '%s'\n", win->name);
+	PRINTF("dump WM queue window '%s'\n", win->title);
 
 	if (win->queue.size == WM_MAX_QUEUE_SIZE)
 		PRINTF("WM stack full!\n");
@@ -365,7 +365,7 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 	* action = win->queue.data [win->queue.size].action;
 
 //	if (win->window_id != WINDOW_MAIN)
-//		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->name, win->queue.data [win->queue.size].message, win->queue.size);
+//		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->title, win->queue.data [win->queue.size].message, win->queue.size);
 
 	wm_message_t m = win->queue.data [win->queue.size].message;
 
@@ -710,7 +710,7 @@ void elements_state (window_t * win)
 			ASSERT(gui_element_count >= gui.footer_buttons_count);
 		}
 	}
-//	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
+//	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->tite, gui_element_count, debug_num);
 	clean_wm_queue(win);
 }
 
@@ -750,7 +750,7 @@ static void free_win_ptr (window_t * win)
 	win->sh_ptr = NULL;
 	win->ta_ptr = NULL;
 	win->tf_ptr = NULL;
-//	PRINTF("free: %d %s\n", win->window_id, win->name);
+//	PRINTF("free: %d %s\n", win->window_id, win->title);
 }
 
 /* Установка признака видимости окна */

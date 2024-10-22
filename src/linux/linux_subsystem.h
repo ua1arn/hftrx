@@ -89,8 +89,8 @@ enum {
 
 uint8_t as_get_state(void);
 uint8_t as_get_progress(void);
-void as_start_record(void);
-void as_start_play(void);
+void as_toggle_record(void);
+void as_toggle_play(void);
 
 #endif /* WITHAUDIOSAMPLESREC */
 

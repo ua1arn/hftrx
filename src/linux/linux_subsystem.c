@@ -60,23 +60,30 @@ enum {
 	as_sample_rate = ARMI2SRATE,
 	as_buf_size = as_max_length * as_sample_rate,
 	as_buf_step = DMABUFFSIZE16TX,
+	as_gui_upd_pr = as_buf_size / 50,
 };
 
+static pthread_mutex_t mutex_as;
 uint32_t as_buf [as_buf_size];
 uint32_t as_idx = 0, as_idx_stop = 0;
-uint8_t as_state = AS_IDLE;
+uint8_t as_state = AS_IDLE, stop = 0;
 
 void as_proccessing(uint32_t * buf)
 {
+	pthread_mutex_lock(& mutex_as);
+
 	if (as_state == AS_RECORDING)
 	{
 		ASSERT(as_idx < as_buf_size);
 		memcpy(& as_buf [as_idx], buf, as_buf_step * 4);
 		as_idx += as_buf_step;
+		if (as_idx % as_gui_upd_pr == 0) gui_as_update();
 
-		if (as_idx >= as_buf_size)
+		if (as_idx >= as_buf_size || stop)
 		{
+			as_idx_stop = as_idx;
 			as_idx = 0;
+			stop = 0;
 			as_state = AS_RECORD_DONE;
 			gui_as_update();
 		}
@@ -87,14 +94,18 @@ void as_proccessing(uint32_t * buf)
 		ASSERT(as_idx < as_buf_size);
 		memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
 		as_idx += as_buf_step;
+		if (as_idx % as_gui_upd_pr == 0) gui_as_update();
 
-		if (as_idx >= as_buf_size)
+		if (as_idx >= as_idx_stop || stop)
 		{
 			as_idx = 0;
+			stop = 0;
 			as_state = AS_PLAY_DONE;
 			gui_as_update();
 		}
 	}
+
+	pthread_mutex_unlock(& mutex_as);
 }
 
 uint8_t as_get_state(void)
@@ -104,19 +115,34 @@ uint8_t as_get_state(void)
 
 uint8_t as_get_progress(void)	// %
 {
-	return (int) (as_idx * 100 / as_buf_size);
+	if (as_state == AS_PLAYING || as_state == AS_TX)
+		return (int) (as_idx * 100 / as_idx_stop);
+	else
+		return (int) (as_idx * 100 / as_buf_size);
 }
 
-void as_start_record(void)
+void as_toggle_record(void)
 {
+	pthread_mutex_lock(& mutex_as);
+
 	if (as_state == AS_IDLE || as_state == AS_RECORD_DONE || as_state == AS_PLAY_DONE || as_state == AS_TX_DONE)
 		as_state = AS_RECORDING;
+	else if (as_state == AS_RECORDING)
+		stop = 1;
+
+	pthread_mutex_unlock(& mutex_as);
 }
 
-void as_start_play(void)
+void as_toggle_play(void)
 {
+	pthread_mutex_lock(& mutex_as);
+
 	if (as_state == AS_RECORD_DONE || as_state == AS_PLAY_DONE || as_state == AS_TX_DONE)
 		as_state = AS_PLAYING;
+	else if (as_state == AS_PLAYING)
+		stop = 1;
+
+	pthread_mutex_unlock(& mutex_as);
 }
 
 #endif /* WITHAUDIOSAMPLESREC */
@@ -1124,6 +1150,10 @@ void linux_user_init(void)
 {
 	xcz_resetn_modem(0);
 
+#if WITHAUDIOSAMPLESREC
+	pthread_mutex_init(& mutex_as, NULL);
+#endif /* WITHAUDIOSAMPLESREC */
+
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 //	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
@@ -1138,13 +1168,13 @@ void linux_user_init(void)
 	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
-#if 0 //WITHCPUFANPWM
+#if WITHCPUFANPWM
 	{
 		const float FS = powf(2, 32);
 		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
 		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 0, fan_pwm_period);
 
-		uint32_t fan_pwm_duty = FS * (1.0f - 0.1f) - 1;
+		uint32_t fan_pwm_duty = FS * (1.0f - 0.6f) - 1;
 		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
 	}
 #endif /* WITHCPUFANPWM */

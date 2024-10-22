@@ -304,7 +304,7 @@ static window_t windows [] = {
 	{ WINDOW_IIOCONFIG,  	 WINDOW_OPTIONS,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
 #endif /* WITHAD936XIIO */
 #if WITHAUDIOSAMPLESREC
-	{ WINDOW_AS,  	 		NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "Samples record/play",	 1, window_as_process, },
+	{ WINDOW_AS,  	 		NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "AF samples",			 1, window_as_process, },
 #endif /* WITHAUDIOSAMPLESREC */
 };
 
@@ -4339,7 +4339,7 @@ static void window_uif_process(void)
 		lbl_uif_val->y = button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
 		lbl_uif_val->visible = VISIBLE;
 
-		strcpy(win->name, menu_uif.name);
+		strcpy(win->title, menu_uif.name);
 
 		hamradio_enable_keyboard_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -4376,7 +4376,7 @@ static void window_uif_process(void)
 	if (reinit)
 	{
 		reinit = 0;
-		strcpy(win->name, menu_uif.name);
+		strcpy(win->title, menu_uif.name);
 
 		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 		strcpy(lbl_uif_val->text, v);
@@ -6881,6 +6881,7 @@ static void window_as_process(void)
 
 		add_element("btn_rec", 100, 40, 0, 0, "Record");
 		add_element("btn_play", 100, 40, 0, 0, "Play");
+		add_element("btn_tx", 100, 40, 0, 0, "Transmit");
 
 		button_t * btn_rec = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_rec");
 		btn_rec->x1 = x;
@@ -6894,6 +6895,13 @@ static void window_as_process(void)
 		btn_play->y1 = y;
 		btn_play->visible = VISIBLE;
 
+		x += btn_play->w + interval;
+
+		button_t * btn_tx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx");
+		btn_tx->x1 = x;
+		btn_tx->y1 = y;
+		btn_tx->visible = VISIBLE;
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		update = 1;
 	}
@@ -6905,18 +6913,23 @@ static void window_as_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_rec = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_rec");
-			button_t * btn_play = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_play");
+			button_t * btn_rec = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_rec");
+			button_t * btn_play = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_play");
+			button_t * btn_tx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx");
 
 			if (bh == btn_rec)
 			{
-				as_start_record();
+				as_toggle_record();
 				update = 1;
 			}
 			else if (bh == btn_play)
 			{
-				as_start_play();
+				as_toggle_play();
 				update = 1;
+			}
+			else if (bh == btn_tx)
+			{
+
 			}
 		}
 
@@ -6936,13 +6949,24 @@ static void window_as_process(void)
 		button_t * btn_rec = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_rec");
 		button_t * btn_play = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_play");
 		uint8_t s = as_get_state();
+		char buf[20];
 
 		btn_rec->state = s == AS_PLAYING ? DISABLED : CANCELLED;
-		btn_play->state = (s == AS_RECORD_DONE || s == AS_PLAY_DONE) ? CANCELLED : DISABLED;
+		btn_play->state = (s == AS_PLAYING || s == AS_RECORD_DONE || s == AS_PLAY_DONE) ? CANCELLED : DISABLED;
 
-		local_snprintf_P(btn_rec->text, ARRAY_SIZE(btn_rec->text), s == AS_RECORDING ? "Recording..." : "Record");
-		local_snprintf_P(btn_play->text, ARRAY_SIZE(btn_play->text), s == AS_PLAYING ? "Playing..." : "Play");
+		if (s == AS_PLAYING)
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "Playing...|%d%%", as_get_progress());
+		else
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "Play");
 
+		local_snprintf_P(btn_play->text, ARRAY_SIZE(btn_play->text), "%s", buf);
+
+		if (s == AS_RECORDING)
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "Recording...|%d%%", as_get_progress());
+		else
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "Record");
+
+		local_snprintf_P(btn_rec->text, ARRAY_SIZE(btn_rec->text), "%s", buf);
 	}
 }
 
