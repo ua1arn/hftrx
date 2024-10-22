@@ -563,6 +563,7 @@ typedef struct deliverylist_tag
 	IRQL_t irql;
 } deliverylist_t;
 
+#if WITHIF4DSP
 /* irqlv - на каком уровне IRQL_t будут вызываться фуекции подписавшихся */
 void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv);
 
@@ -595,6 +596,7 @@ enum {
 	AF_EQUALIZER_MID = 1500,	// частота средней полосы
 	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
 };
+#endif /* WITHIF4DSP */
 
 int_fast32_t hamradio_get_af_equalizer_base(void);
 int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);

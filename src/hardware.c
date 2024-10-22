@@ -216,11 +216,8 @@ void xc7z_gpio_output(uint8_t pin)
 
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
-
 static IRQLSPINLOCK_t tickerslock = IRQLSPINLOCK_INIT;
-#define TICKERSLOCK_IRQL TICKER_IRQL
 static IRQLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
-#define ADCDONESLOCK_IRQL TICKER_IRQL
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
