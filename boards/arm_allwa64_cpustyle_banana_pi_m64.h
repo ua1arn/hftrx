@@ -996,12 +996,22 @@
 	} while (0)
 
 
-	#if 1
+	#if 0
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define BOARD_TCONLCDFREQ (allwnr_a64_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
 		#define TCONLCD_IRQ TCON0_IRQn
+		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+	#endif
+
+	#if 1
+		/* TCON1 connected to HDMI */
+		#define	TCONLCD_IX 1	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_PTR TCON1	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCON1_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define BOARD_TCONLCDFREQ (allwnr_a64_get_tcon1_freq())	/* 0 - TCON0, 1: TCON1 */
+		#define TCONLCD_IRQ TCON1_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
 
