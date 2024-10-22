@@ -249,6 +249,7 @@ uint_fast32_t allwnr_a64_get_s_twi_freq(void);
 #endif /* CPUSTYLE_A64 */
 
 #if (CPUSTYLE_H3)
+uint_fast32_t allwnr_h3_get_pll_video_freq(void);
 uint_fast32_t allwnr_h3_get_hosc_freq(void);
 uint_fast32_t allwnr_h3_get_uart_freq(void);
 uint_fast32_t allwnr_h3_get_can_freq(void);
