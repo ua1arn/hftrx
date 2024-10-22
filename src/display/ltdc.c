@@ -2879,7 +2879,6 @@ static void t507_hdmi_edid_test(void)
 		}
 		hdmi_edid_parse(edid, edidlen);
 	}
-
 }
 
 static void hdmi_writel(unsigned offs, uint32_t v)
@@ -7488,21 +7487,8 @@ void hardware_edid_test(void)
 static void h3_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_DESIGN_ID,
-			hdmi->HDMI_REVISION_ID,
-			hdmi->HDMI_PRODUCT_ID0,
-			hdmi->HDMI_PRODUCT_ID1
-			);
 
-	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_CONFIG0_ID,
-			hdmi->HDMI_CONFIG1_ID,
-			hdmi->HDMI_CONFIG2_ID,
-			hdmi->HDMI_CONFIG3_ID
-			);
-
-	/* Accumulated parameters for this display */
+	/* Accuhdmithis display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned HSYNC = vdmode->hsync;	/*  */
@@ -7594,33 +7580,46 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-	HDMI_TX0->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-	HDMI_TX0->HDMI_FC_INHACTV0 = (WIDTH & 0xff);    // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHACTV1 = (WIDTH >> 8);      // Horizontal pixels
-	HDMI_TX0->HDMI_FC_INHBLANK0 = (HBLANKING & 0xff);     // Horizontal blanking
-	HDMI_TX0->HDMI_FC_INHBLANK1 = (HBLANKING >> 8);       // Horizontal blanking
+	hdmi->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
+	hdmi->HDMI_FC_INHACTV0 = (WIDTH & 0xff);    // Horizontal pixels
+	hdmi->HDMI_FC_INHACTV1 = (WIDTH >> 8);      // Horizontal pixels
+	hdmi->HDMI_FC_INHBLANK0 = (HBLANKING & 0xff);     // Horizontal blanking
+	hdmi->HDMI_FC_INHBLANK1 = (HBLANKING >> 8);       // Horizontal blanking
 
-	HDMI_TX0->HDMI_FC_INVACTV0 = (HEIGHT & 0xff);    // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVACTV1 = (HEIGHT >> 8);      // Vertical pixels
-	HDMI_TX0->HDMI_FC_INVBLANK = VBLANKING;               // Vertical blanking
+	hdmi->HDMI_FC_INVACTV0 = (HEIGHT & 0xff);    // Vertical pixels
+	hdmi->HDMI_FC_INVACTV1 = (HEIGHT >> 8);      // Vertical pixels
+	hdmi->HDMI_FC_INVBLANK = VBLANKING;               // Vertical blanking
 
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (HFP & 0xff);
-	HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (HFP >> 8);    // Horizontal Front porch
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (HSYNC & 0xff);  // Horizontal sync pulse
-	HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (HSYNC >> 8);    // Horizontal sync pulse
+	hdmi->HDMI_FC_HSYNCINDELAY0 = (HFP & 0xff);
+	hdmi->HDMI_FC_HSYNCINDELAY1 = (HFP >> 8);    // Horizontal Front porch
+	hdmi->HDMI_FC_HSYNCINWIDTH0 = (HSYNC & 0xff);  // Horizontal sync pulse
+	hdmi->HDMI_FC_HSYNCINWIDTH1 = (HSYNC >> 8);    // Horizontal sync pulse
 
-	HDMI_TX0->HDMI_FC_VSYNCINDELAY = VFP;
-	HDMI_TX0->HDMI_FC_VSYNCINWIDTH = VSYNC;            // Vertical sync pulse
+	hdmi->HDMI_FC_VSYNCINDELAY = VFP;
+	hdmi->HDMI_FC_VSYNCINWIDTH = VSYNC;            // Vertical sync pulse
 
-	HDMI_TX0->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
-	HDMI_TX0->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
-	HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
-	HDMI_TX0->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	HDMI_TX0->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	HDMI_TX0->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	HDMI_TX0->HDMI_MC_FLOWCTRL = 0;    // Main Controller Feed Through Control
-	HDMI_TX0->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
+	hdmi->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
+	hdmi->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
+	hdmi->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
+	hdmi->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	hdmi->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	hdmi->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	hdmi->HDMI_MC_FLOWCTRL = 0;    // Main Controller Feed Through Control
+	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
+	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_DESIGN_ID,
+			hdmi->HDMI_REVISION_ID,
+			hdmi->HDMI_PRODUCT_ID0,
+			hdmi->HDMI_PRODUCT_ID1
+			);
+
+	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_CONFIG0_ID,
+			hdmi->HDMI_CONFIG1_ID,
+			hdmi->HDMI_CONFIG2_ID,
+			hdmi->HDMI_CONFIG3_ID
+			);
 }
 
 static void h3_tcon_init(const videomode_t * vdmode)

@@ -114,7 +114,7 @@
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
@@ -133,7 +133,8 @@
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
-	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	#define WITHHDMITVHW 1	/* HDMI hardware output */
 
 #elif 1
 
