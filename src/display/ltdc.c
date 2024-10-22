@@ -3516,7 +3516,42 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 //	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
-static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned color24)
+static void h3_de2_bld_init(int rtmixid, const videomode_t * vdmode, unsigned color24)
+{
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+	if (glb == NULL)
+		return;
+	const uint32_t ovl_ui_mbsize = (((vdmode->height - 1) << 16) | (vdmode->width - 1));
+
+	// Erase the whole of MIXER0. This contains uninitialized data.
+	for (uintptr_t addr = (uintptr_t) glb + 0x1000; addr < (uintptr_t) glb + 0xC000; addr += 4)
+	{
+		* (volatile uint32_t*) (addr) = 0;
+	}
+
+	{
+		// Зачем ставится тут размер?
+
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb == NULL)
+			return;
+
+		glb->GLB_SIZE = ovl_ui_mbsize;
+		ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
+	}
+
+	bld->BKCOLOR = color24; /* 24 bit. Отображается, когда нет данных от входного pipe */
+	bld->BLD_EN_COLOR_CTL = 0;
+	bld->ROUTE = 0;
+	bld->OUTPUT_SIZE = ovl_ui_mbsize;
+	bld->CH [0].BLD_CH_ISIZE = ovl_ui_mbsize;
+	ASSERT(bld->OUTPUT_SIZE == ovl_ui_mbsize);
+}
+
+static void t113_de_set_mode(int rtmixid, const videomode_t * vdmode, unsigned color24)
 {
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
@@ -7761,32 +7796,6 @@ static void h3_hdmi_tcon_init(const videomode_t * vdmode)
 
 #endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
 
-static void h3_de2_bld_init(int rtmixid, const videomode_t * vdmode)
-{
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
-	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-	if (glb == NULL)
-		return;
-	const uint32_t ovl_ui_mbsize = (((vdmode->height - 1) << 16) | (vdmode->width - 1));
-
-	// Erase the whole of MIXER0. This contains uninitialized data.
-	for (uintptr_t addr = (uintptr_t) glb + 0x1000; addr < (uintptr_t) glb + 0xC000; addr += 4)
-	{
-		* (volatile uint32_t*) (addr) = 0;
-	}
-
-	glb->GLB_SIZE = ovl_ui_mbsize;
-	ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
-
-	bld->BLD_EN_COLOR_CTL = 0x100;
-	bld->ROUTE = 0;
-	bld->OUTPUT_SIZE = ovl_ui_mbsize;
-	bld->CH [0].BLD_CH_ISIZE = ovl_ui_mbsize;
-	ASSERT(bld->OUTPUT_SIZE == ovl_ui_mbsize);
-}
-
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
@@ -7887,7 +7896,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const int rtmixid = RTMIXIDTV;
 
 			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode_CRT, rtmixid, COLOR24(255, 0, 0));	// RED
+			t113_de_set_mode(rtmixid, vdmode_CRT, COLOR24(255, 0, 0));	// RED
 			t113_de_update(rtmixid);	/* Update registers */
 
 			t113_de_scaler_initialize(rtmixid, vdmode, vdmode_CRT);
@@ -7895,13 +7904,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 
 #if WITHHDMITVHW
+		h3_hdmi_init(vdmode_HDMI);
+		h3_hdmi_tcon_init(vdmode_HDMI);
+#endif
+#if WITHHDMITVHW
 		{
 			const int rtmixid = RTMIXIDLCD;
 
-			h3_hdmi_init(vdmode_HDMI);
-			h3_hdmi_tcon_init(vdmode_HDMI);
 
-			h3_de2_bld_init(rtmixid, vdmode_HDMI);
+			h3_de2_bld_init(rtmixid, vdmode_HDMI, COLOR24(255, 0, 0));	// RED
+			t113_de_set_mode(rtmixid, vdmode_HDMI, COLOR24(255, 0, 0));	// RED
 			//t113_de_scaler_initialize(rtmixid, vdmode, vdmode_HDMI);
 			h3_de2_vsu_init(rtmixid, vdmode, vdmode_HDMI);
 #if ! CPUSTYLE_A64
@@ -7915,7 +7927,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const int rtmixid = RTMIXIDLCD;
 
 			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(vdmode, rtmixid, COLOR24(0, 255, 0));	// GREEN
+			t113_de_set_mode(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
 			t113_de_update(rtmixid);	/* Update registers */
 
 			// проверка различных scalers
