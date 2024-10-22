@@ -3732,13 +3732,13 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
 
 #elif CPUSTYLE_A64
 
+	needfreq = 297000000;
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0/TCON_LCD1
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + ix));	// TCONx_GATING
 	//CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << (3 + ix));	// TCONx_RST Assert
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + ix));	// TCONx_RST De-assert
 
-	PRINTF("t113_tconlcd_CCU_configuration: allwnr_a64_get_pll_video0_x2_freq=%" PRIuFAST32 " MHz\n", (uint_fast32_t) (allwnr_a64_get_pll_video0_x2_freq() / 1000 / 1000));
     if (1) //(needfreq != 0)
     {
     	// LVDS mode
@@ -3755,15 +3755,15 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
 		while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
 		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
-		PRINTF("t113_tconlcd_CCU_configuration: allwnr_a64_get_pll_video0_x2_freq=%" PRIuFAST32 " MHz\n", (uint_fast32_t) (allwnr_a64_get_pll_video0_x2_freq() / 1000 / 1000));
+		PRINTF("t113_tconlcd_CCU_configuration: allwnr_a64_get_pll_video0_x2_freq=%" PRIuFAST32 " kHz\n", (uint_fast32_t) (allwnr_a64_get_pll_video0_x2_freq() / 1000));
 
 
-		PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ);
+		PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " kHz\n", (uint_fast32_t) (BOARD_TCONLCDFREQ / 1000));
 
 		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
-			0 * (UINT32_C(1) << 0) | // dicider
+			1 * (UINT32_C(1) << 0) | // dvcider / 2
     		0;
     }
     else
@@ -3773,8 +3773,6 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
     		0;
     }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
-	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ);
 
 #if WITHLVDSHW
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
@@ -7906,7 +7904,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			h3_de2_bld_init(rtmixid, vdmode_HDMI);
 			//t113_de_scaler_initialize(rtmixid, vdmode, vdmode_HDMI);
 			h3_de2_vsu_init(rtmixid, vdmode, vdmode_HDMI);
-			//t113_de_update(rtmixid);	/* Update registers */
+#if ! CPUSTYLE_A64
+			t113_de_update(rtmixid);	/* Update registers */
+#endif
 
 			return;
 		}
