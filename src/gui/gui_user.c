@@ -704,7 +704,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2",  	 	"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_var",  	 	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8", 		"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
@@ -718,6 +718,10 @@ static void gui_main_process(void)
 		button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 		local_snprintf_P(btn_ft8->text, ARRAY_SIZE(btn_ft8->text), PSTR("FT8"));
 #endif /* WITHFT8 */
+#if WITHAUDIOSAMPLESREC
+		button_t * btn_var = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_var");
+		local_snprintf_P(btn_var->text, ARRAY_SIZE(btn_var->text), "AF|samples");
+#endif /* WITHAUDIOSAMPLESREC */
 
 #if GUI_SHOW_INFOBAR
 
@@ -835,7 +839,7 @@ static void gui_main_process(void)
 			button_t * btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
-			button_t * btn_2 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_2");
+			button_t * btn_var = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_var");
 #if WITHFT8
 			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 #endif
@@ -929,13 +933,13 @@ static void gui_main_process(void)
 				}
 			}
 #if WITHAUDIOSAMPLESREC
-			else if (bh == btn_2)
+			else if (bh == btn_var)
 			{
 				window_t * const win = get_win(WINDOW_AS);
 				if (win->state == NON_VISIBLE)
 				{
 					open_window(win);
-					footer_buttons_state(DISABLED, btn_2);
+					footer_buttons_state(DISABLED, btn_var);
 				}
 				else
 				{
@@ -6873,11 +6877,13 @@ static void window_as_process(void)
 {
 	window_t * const win = get_win(WINDOW_AS);
 	static unsigned update = 0;
+	const uint16_t len = 320, lim = 25;
+	static COLORPIP_T d [len];
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		unsigned x = 0, y = 0, interval = 10;
+		unsigned x = 0, y = 65, interval = 10;
 
 		add_element("btn_rec", 100, 40, 0, 0, "Record");
 		add_element("btn_play", 100, 40, 0, 0, "Play");
@@ -6902,9 +6908,22 @@ static void window_as_process(void)
 		btn_tx->y1 = y;
 		btn_tx->visible = VISIBLE;
 
+		if (as_get_state() == AS_IDLE)
+			memset(d, 0, ARRAY_SIZE(d));
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		update = 1;
 	}
+
+	for (int x = 0; x < len; x ++)
+		gui_drawline(x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
+
+	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
+	{
+		uint16_t pos = len * as_get_progress() * 0.01;
+		gui_drawline(pos, 0, pos, lim *2, COLORPIP_GREEN);
+	}
+
 
 	GET_FROM_WM_QUEUE
 	{
@@ -6967,6 +6986,9 @@ static void window_as_process(void)
 			local_snprintf_P(buf, ARRAY_SIZE(buf), "Record");
 
 		local_snprintf_P(btn_rec->text, ARRAY_SIZE(btn_rec->text), "%s", buf);
+
+		if (s == AS_RECORD_DONE)
+			as_draw_spectrogram(d, len, lim);
 	}
 }
 

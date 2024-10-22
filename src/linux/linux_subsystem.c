@@ -145,6 +145,16 @@ void as_toggle_play(void)
 	pthread_mutex_unlock(& mutex_as);
 }
 
+void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
+{
+	const uint16_t step = as_idx_stop / len;
+	int32_t d_max = 0, mean = 0;
+	arm_max_no_idx_q31((q31_t *) as_buf, as_idx_stop, & d_max);
+
+	for (int i = 0; i < len; i ++)
+		d [i] = normalize(abs(as_buf [i * step]), 0, d_max, lim);
+}
+
 #endif /* WITHAUDIOSAMPLESREC */
 
 #if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU

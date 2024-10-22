@@ -2,6 +2,7 @@
 #define LINUX_SUBSYSTEM_H
 
 #include "hardware.h"
+#include "src/display/display.h"
 
 #if LINUX_SUBSYSTEM
 
@@ -91,6 +92,7 @@ uint8_t as_get_state(void);
 uint8_t as_get_progress(void);
 void as_toggle_record(void);
 void as_toggle_play(void);
+void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim);
 
 #endif /* WITHAUDIOSAMPLESREC */
 
