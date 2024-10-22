@@ -6939,7 +6939,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_HCLK_GATE
  	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_HCLK_GATE
 
- 	//DE_TOP->AHB_RESET = 0;	// All cores reset
+ 	DE_TOP->AHB_RESET = 0;	// All cores reset
 	DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
 	DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 1);		// CORE1_AHB_RESET
 
@@ -7221,9 +7221,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		const int rtmixid = 1;
         // Enable RT-Mixer 0
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
     	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
-    	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
 
     	/* перенаправление выхода DE */
     	//DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCONLCD_PTR; MIXER1->TCON1 */
@@ -7247,9 +7247,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	const int rtmixid = 2;
        // Enable RT-Mixer 1
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
     	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
-    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
@@ -7290,15 +7290,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	if (RTMIXIDLCD)
 	{
 		const int pos = dispid * 2;
-		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
 		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
 		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
+		DE_TOP->AHB_RESET &= ~ (UINT32_C(3) << pos);
+		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
 	}
 	{
 		const int pos = 0 * 2;
-		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
 		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
 		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
+		DE_TOP->AHB_RESET &= ~ (UINT32_C(3) << pos);
+		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
 	}
 
 //	PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
@@ -7518,6 +7520,7 @@ void hardware_edid_test(void)
 static void h3_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
 
 	/* Accuhdmithis display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -7566,49 +7569,49 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
 	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
-	HDMI_PHY->HDMI_PHY_CFG1 = 0;
+	phy->HDMI_PHY_CFG1 = 0;
 	HDMI_PHY->HDMI_PHY_CFG1 = 1;
 	local_delay_us(5);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
 	local_delay_us(10);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
 	local_delay_us(5);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
 	local_delay_us(40);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
 	local_delay_us(100);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (7 << 4);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
+	phy->HDMI_PHY_CFG1 |= (7 << 4);
 	int z = 0;
-	while (z ++ < 10 && (HDMI_PHY->HDMI_PHY_STS & 0x80) == 0)
+	while (z ++ < 10 && (phy->HDMI_PHY_STS & 0x80) == 0)
 		local_delay_ms(10);
-	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
+	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 
-	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 4);
-	HDMI_PHY->HDMI_PHY_CFG1 |= (0xf << 8);
-	HDMI_PHY->HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
+	phy->HDMI_PHY_CFG1 |= (0xf << 4);
+	phy->HDMI_PHY_CFG1 |= (0xf << 8);
+	phy->HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
 
-	HDMI_PHY->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
-	HDMI_PHY->HDMI_PHY_CEC = 0;
+	phy->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
+	phy->HDMI_PHY_CEC = 0;
 
-	HDMI_PHY->HDMI_PHY_PLL1 = 0x39dc5040;
-	HDMI_PHY->HDMI_PHY_PLL2 = 0x80084381;
+	phy->HDMI_PHY_PLL1 = 0x39dc5040;
+	phy->HDMI_PHY_PLL2 = 0x80084381;
 	local_delay_us(10000);
-	HDMI_PHY->HDMI_PHY_PLL3 = 1;
-	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
+	phy->HDMI_PHY_PLL3 = 1;
+	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
 	local_delay_us(10000);
-	uint32_t tmp = (HDMI_PHY->HDMI_PHY_STS & 0x1F800) >> 11;
-	HDMI_PHY->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+	uint32_t tmp = (phy->HDMI_PHY_STS & 0x1F800) >> 11;
+	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
 
-	HDMI_PHY->HDMI_PHY_CFG1 = 0x01FFFF7F;
-	HDMI_PHY->HDMI_PHY_CFG2 = 0x8063A800;
-	HDMI_PHY->HDMI_PHY_CFG3 = 0x0F81C485;
+	phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
+	phy->HDMI_PHY_CFG2 = 0x8063A800;
+	phy->HDMI_PHY_CFG3 = 0x0F81C485;
 
 	/* enable read access to HDMI controller */
-	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
+	phy->HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
-	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
 	hdmi->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
@@ -7769,12 +7772,11 @@ static void h3_de2_bld_init(int rtmixid, const videomode_t * vdmode)
 	const uint32_t ovl_ui_mbsize = (((vdmode->height - 1) << 16) | (vdmode->width - 1));
 
 	// Erase the whole of MIXER0. This contains uninitialized data.
-	for (uintptr_t addr = (uintptr_t) glb + 0x0000; addr < (uintptr_t) glb + 0xC000; addr += 4)
+	for (uintptr_t addr = (uintptr_t) glb + 0x1000; addr < (uintptr_t) glb + 0xC000; addr += 4)
 	{
 		* (volatile uint32_t*) (addr) = 0;
 	}
 
-	glb->GLB_CTL = 1;
 	glb->GLB_SIZE = ovl_ui_mbsize;
 	ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
 
