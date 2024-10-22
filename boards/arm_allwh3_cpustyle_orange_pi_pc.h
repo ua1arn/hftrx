@@ -143,7 +143,7 @@
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
+	//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
 	#if ! LCDMODE_DUMMY
 		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */

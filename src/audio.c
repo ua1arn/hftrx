@@ -171,6 +171,7 @@ static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTC
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 #if WITHIF4DSP
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
+static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 #endif /* WITHIF4DSP */
 static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
@@ -190,7 +191,6 @@ static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/п�
 
 static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальная девиация в NFM
 
-static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -6571,22 +6571,26 @@ void board_set_mainsubrxmode(uint_fast8_t v)
 void
 board_set_dsploudspeaker(uint_fast8_t v)
 {
+#if WITHIF4DSP
 	const uint_fast8_t n = v != 0;
 	if (glob_dsploudspeaker_off != n)
 	{
 		glob_dsploudspeaker_off = n;
 		board_codec1regchanged();
 	}
+#endif /* WITHIF4DSP */
 }
 
 void
 board_set_dspagc(uint_fast8_t n)
 {
+#if WITHIF4DSP
 	if (glob_dspagc != n)
 	{
 		glob_dspagc = n;
 		board_dsp1regchanged();
 	}
+#endif /* WITHIF4DSP */
 }
 
 void audio_diagnostics(void)

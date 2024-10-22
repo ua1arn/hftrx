@@ -2908,11 +2908,11 @@ static unsigned int bias_source;
 
 static void t507_hdmi_phy_initialize(void)
 {
-	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-	/* enable read access to HDMI controller */
-	HDMI_PHY->READ_EN = 0x54524545;
-	/* descramble register offsets */
-	HDMI_PHY->UNSCRAMBLE = 0x42494E47;
+//	printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+//	/* enable read access to HDMI controller */
+//	HDMI_PHY->READ_EN = 0x54524545;
+//	/* descramble register offsets */
+//	HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	PRINTF("HDMI_PHY->REXT_CTRL=%08X\n", (unsigned) HDMI_PHY->REXT_CTRL);
 	local_delay_ms(10);
@@ -3159,7 +3159,7 @@ static void t507_hdmi_phy_set(void)
 	}
 	return;// 0;
 }
-//
+
 //static void t507_hdmi_initialize(void)
 //{
 //	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -3216,7 +3216,7 @@ static void t507_hdmi_phy_set(void)
 //	hdmi->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
 //	hdmi->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 //
-}
+//}
 #endif
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
@@ -7834,8 +7834,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #elif defined (TCONTV_PTR)
 	const videomode_t * const vdmode_CRT = get_videomode_CRT();
 #endif
-//	const videomode_t * vdmode_CRT = get_videomode_HDMI();
-//	const videomode_t * vdmode_HDMI = get_videomode_HDMI();
+//	const videomode_t * const vdmode_CRT = get_videomode_HDMI();
+	const videomode_t * const vdmode_HDMI = get_videomode_HDMI();
 
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXIDLCD - 1);	// Какой RTMIX использовать для вывода на TCONLCD
