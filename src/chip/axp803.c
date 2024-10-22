@@ -1249,7 +1249,11 @@ int axp853_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	axp858_set_sw(1);
-	//local_delay_ms(100);
+	PRINTF("PMIC: AXP853T/AXP858 ON\n");
+
+	local_delay_initialize();
+	local_delay_ms(2);	// TODO: не работает - слишком долго выполняется задержка
+	PRINTF("PMIC: AXP853T/AXP858 done\n");
 
 	return 0;
 }
