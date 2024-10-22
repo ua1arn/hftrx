@@ -3546,12 +3546,15 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, unsi
 	// BLD_CH_RTCTL
 	// 0x03020100 - default state
 
-//	DE_BLD->ROUTE =
-//			(UINT32_C(0) << 0) |		// pipe 0 from ch 0
-//			(UINT32_C(1) << 4) |		// pipe 1 from ch 1
-//			(UINT32_C(2) << 8) |		// pipe 2 from ch 2
-//			(UINT32_C(3) << 12) |		// pipe 3 from ch 3
-//			0;
+#if WITHHDMITVHW
+	//bld->ROUTE = 0;	// need for HDMI
+#endif
+	bld->ROUTE =
+			(UINT32_C(0) << 0) |		// pipe 0 from ch 0
+			(UINT32_C(1) << 4) |		// pipe 1 from ch 1
+			(UINT32_C(2) << 8) |		// pipe 2 from ch 2
+			(UINT32_C(3) << 12) |		// pipe 3 from ch 3
+			0;
 	bld->PREMULTIPLY = 0;
 	bld->BKCOLOR = color24; /* 24 bit. Отображается, когда нет данных от входного pipe */
 
@@ -7884,12 +7887,13 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 #if WITHHDMITVHW
 			vdmode = vdmode_HDMI;
-			memset(de3_getbld(rtmixid), 0, sizeof * de3_getbld(rtmixid));
 			memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));
 #endif
 			/* эта инициализация после корректного соединния с работающим TCON */
 			t113_de_bld_initialize(rtmixid, vdmode_HDMI, COLOR24(255, 0, 0));	// RED
-			t113_de_update(rtmixid);	/* Update registers */
+			//PRINTF("VI0:\n");
+			//printhex32(de3_getvi(rtmixid, 1), de3_getvi(rtmixid, 1), sizeof * de3_getvi(rtmixid, 1));
+			//t113_de_update(rtmixid);	/* Update registers */
 
 			// проверка различных scalers
 //			t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
