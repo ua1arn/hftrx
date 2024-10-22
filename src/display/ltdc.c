@@ -3516,7 +3516,7 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 //	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
-static void t113_de_set_mode(int rtmixid, const videomode_t * vdmode, unsigned color24)
+static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, unsigned color24)
 {
 	int i;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -7804,10 +7804,10 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 }
 
-static void fill4k(uintptr_t addr)
+static void fill256b(uintptr_t addr)
 {
 	PRINTF("Fill 4k at 0x%08X\n", (unsigned) addr);
-	unsigned n = 4096 / 4;
+	unsigned n = 256 / 4;
 	for (; n --; addr += 4)
 	{
 		* (volatile uint32_t*) (addr) = 0;
@@ -7868,7 +7868,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 			const int rtmixid = RTMIXIDTV;
 
 			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(rtmixid, vdmode_CRT, COLOR24(255, 0, 0));	// RED
+			t113_de_bld_initialize(rtmixid, vdmode_CRT, COLOR24(255, 0, 0));	// RED
 			t113_de_update(rtmixid);	/* Update registers */
 
 			t113_de_scaler_initialize(rtmixid, vdmode, vdmode_CRT);
@@ -7879,25 +7879,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		h3_hdmi_init(vdmode_HDMI);
 		h3_hdmi_tcon_init(vdmode_HDMI);
 #endif
+		{
+			const int rtmixid = RTMIXIDLCD;
+
 #if WITHHDMITVHW
-		{
-			const int rtmixid = RTMIXIDLCD;
 			vdmode = vdmode_HDMI;
-			if (1)
-			{
-				DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-				uintptr_t a = (uintptr_t) glb;
-
-				fill4k(a + 0x1000);
-				fill4k(a + 0x2000);
-			}
-		}
+			memset(de3_getbld(rtmixid), 0, sizeof * de3_getbld(rtmixid));
+			memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));
 #endif
-		{
-			const int rtmixid = RTMIXIDLCD;
-
 			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_set_mode(rtmixid, vdmode_HDMI, COLOR24(255, 0, 0));	// RED
+			t113_de_bld_initialize(rtmixid, vdmode_HDMI, COLOR24(255, 0, 0));	// RED
 			t113_de_update(rtmixid);	/* Update registers */
 
 			// проверка различных scalers
