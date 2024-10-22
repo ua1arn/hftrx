@@ -1853,7 +1853,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
-#if CPUSTYLE_H3 || CPUSTYLE_A64
+#if CPUSTYLE_A64
 #define RTMIXIDLCD 1	/* 1 or 2 */
 #else
 #define RTMIXIDLCD 2	/* 1 or 2 */
@@ -7272,9 +7272,26 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
 
-	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-	DE_TOP->SCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
-	DE_TOP->HCLK_GATE |= (UINT32_C(1) << 0) | (UINT32_C(1) << 1);  ///core 0,1
+	// надо разбираться с битами включения. В регистрах задействованы 8 младших бит.
+	// Вероятно без 0-го канала DE не работает 1-й
+	const int dispid = RTMIXIDLCD - 1;
+	if (RTMIXIDLCD)
+	{
+		const int pos = dispid * 2;
+		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
+		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
+		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
+	}
+	{
+		const int pos = 0 * 2;
+		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
+		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
+		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
+	}
+
+//	PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
+//	PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
+//	PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
 
 	if (1)
 	{
@@ -7287,7 +7304,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 					0x01 * (UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 					(UINT32_C(1) << 0) |		// EN RT enable/disable Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer
 					0;
-
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
 	}
