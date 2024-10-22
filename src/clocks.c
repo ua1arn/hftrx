@@ -1812,7 +1812,7 @@ uint_fast32_t allwnr_v3s_get_losc_freq(void)
 //	The PLL output clock must be in the range of 200MHz~1.8GHz.
 //	Its default is 600MHz.
 // V3s
-uint_fast32_t allwnr_v3s_get_pll_periph0_x2_freq(void)
+uint_fast64_t allwnr_v3s_get_pll_periph0_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
 	//const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x0F);	// PLL_24M_POST_DIV
@@ -2453,6 +2453,7 @@ uint_fast64_t allwnr_a64_get_pll_periph0_x2_freq(void)
 	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
 	//const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);	// PLL_FACTOR_M = PLL Factor M (M = Factor + 1) is only valid in plltest debug.
 
+	//PRINTF("allwnr_a64_get_pll_periph0_x2_freq: allwnr_a64_get_hosc_freq()=%u kHz, N=%u,K=%u\n", (unsigned) (allwnr_a64_get_hosc_freq() / 1000), (unsigned) N, (unsigned) K);
 	return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  * K;
 }
 
@@ -2795,12 +2796,16 @@ uint_fast32_t allwnr_a64_get_de_freq(void)
 	{
 	case 0x00:
 		// 000: PLL_PERIPH0(2X)
+//		TP();
+//		PRINTF("allwnr_a64_get_pll_periph0_x2_freq()=%u  kHz\n", (unsigned) (allwnr_a64_get_pll_periph0_x2_freq() / 1000));
 		return allwnr_a64_get_pll_periph0_x2_freq() / M;
 	case 0x01:
 		// 010: PLL_DE
+//		TP();
 		return allwnr_a64_get_pll_de_freq() / M;
 	default:
 		// Wrong case
+//		TP();
 		return allwnr_a64_get_hosc_freq();
 	}
 }

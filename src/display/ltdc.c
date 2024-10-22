@@ -3526,7 +3526,6 @@ static void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned c
 	// 28..16: LAY_HEIGHT
 	// 12..0: LAY_WIDTH
 	const uint32_t ovl_ui_mbsize = (((vdmode->height - 1) << 16) | (vdmode->width - 1));
-	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(vdmode->width);
 
 	int i;
 
@@ -6922,8 +6921,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 12);	// DE_RST
     CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
 
-//	PRINTF("allwnr_a64_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
-//	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
+	PRINTF("allwnr_a64_get_de_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_de_freq() / 1000);
+//	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_mbus_freq() / 1000);
     local_delay_us(10);
  	/* Global DE settings */
 
@@ -7767,8 +7766,7 @@ static void h3_de2_bld_init(int rtmixid, const videomode_t * vdmode)
 	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 	if (glb == NULL)
 		return;
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
+	const uint32_t ovl_ui_mbsize = (((vdmode->height - 1) << 16) | (vdmode->width - 1));
 
 	// Erase the whole of MIXER0. This contains uninitialized data.
 	for (uintptr_t addr = (uintptr_t) glb + 0x0000; addr < (uintptr_t) glb + 0xC000; addr += 4)
@@ -7777,14 +7775,14 @@ static void h3_de2_bld_init(int rtmixid, const videomode_t * vdmode)
 	}
 
 	glb->GLB_CTL = 1;
-	glb->GLB_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	ASSERT(glb->GLB_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+	glb->GLB_SIZE = ovl_ui_mbsize;
+	ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
 
 	bld->BLD_EN_COLOR_CTL = 0x100;
 	bld->ROUTE = 0;
-	bld->OUTPUT_SIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	bld->CH [0].BLD_CH_ISIZE = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	ASSERT(bld->OUTPUT_SIZE == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+	bld->OUTPUT_SIZE = ovl_ui_mbsize;
+	bld->CH [0].BLD_CH_ISIZE = ovl_ui_mbsize;
+	ASSERT(bld->OUTPUT_SIZE == ovl_ui_mbsize);
 }
 
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
