@@ -7278,7 +7278,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	if (1)
 	{
-		const int rtmixid = 1;
+		const int rtmixid = RTMIXIDLCD;
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
@@ -7343,8 +7343,15 @@ static void awxx_deoutmapping(unsigned disp)
 {
 #if CPUSTYLE_A64
 	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-	//DE_TOP->DE2TCON_MUX |= 1;
-	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	DE_TOP->DE2TCON_MUX |= (UINT32_C(1) << 0);
+	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
+	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+
+#elif CPUSTYLE_H3
+	// This function configured DE2 as follows:
+	// MIXER0 -> WB -> MIXER1 -> HDMI
+	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(1) << 0)) | !! disp * (UINT32_C(1) << 0);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -7439,11 +7446,6 @@ static void awxx_deoutmapping(unsigned disp)
 		//DISPLAY_TOP->DE_PORT_PERH_SEL = v;
 		//PRINTF("After: DISPLAY_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISPLAY_TOP->DE_PORT_PERH_SEL);
 	}
-
-#elif CPUSTYLE_H3
-	// This function configured DE2 as follows:
-	// MIXER0 -> WB -> MIXER1 -> HDMI
-	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
 
 #else
 	#error Undefined CPUSTYLE_xxx
