@@ -6705,25 +6705,24 @@ static void t113_tcon_PLL_configuration(void)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
 #elif CPUSTYLE_A64
-//	CCU->PLL_DE_CTRL_REG = 0;
-//	CCU->PLL_VIDEO0_CTRL_REG = 0;
-//	CCU->PLL_VIDEO1_CTRL_REG = 0;
-//	local_delay_ms(50);
+
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	//CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
 	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	//CCU->PLL_VIDEO1_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	local_delay_ms(50);
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0/1
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0/1
-
-	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | 1; // Enable DE clock, set source to PLL_DE
+//	const unsigned DE_CLK_DIV_RATIO_M = 2;
+//	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | (DE_CLK_DIV_RATIO_M - 1) * (UINT32_C(1) << 0); // Enable DE clock, set source to PLL_DE
 	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | 1; // Enable HDMI clk (use PLL3)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31) | 1; // Enable HDMI slow clk
 
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // 010: PLL_VIDEO0(2X)
 	CCU->TCON1_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(0) << 24); // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+
+	PRINTF("1 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -6905,25 +6904,27 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
 	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
-	//#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
-	/* Set ahb gating to pass */
-//	setbits_le32(&ccm->ahb_reset1_cfg, UINT32_C(1) << AHB_RESET_OFFSET_DE);
-//	setbits_le32(&ccm->ahb_gate1, UINT32_C(1) << AHB_GATE_OFFSET_DE);
-	// PLL_VIDEO1 may be used for LVDS synchronization
-	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
-	unsigned divider = 8;
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_PERIPH0(2X)
-		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
-		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    local_delay_us(10);
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+//	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	//CCU->PLL_VIDEO1_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	local_delay_ms(50);
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0/1
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0/1
+	const unsigned DE_CLK_DIV_RATIO_M = 2;
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | (DE_CLK_DIV_RATIO_M - 1) * (UINT32_C(1) << 0); // Enable DE clock, set source to PLL_DE
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | 1; // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31) | 1; // Enable HDMI slow clk
+
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // 010: PLL_VIDEO0(2X)
+	CCU->TCON1_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(0) << 24); // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 
     CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12);	// DE_GATING
     CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 12);	// DE_RST
     CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
 
-	PRINTF("allwnr_a64_get_de_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_de_freq() / 1000);
+	PRINTF("2 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
 //	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_mbus_freq() / 1000);
     local_delay_us(10);
  	/* Global DE settings */

@@ -2796,16 +2796,13 @@ uint_fast32_t allwnr_a64_get_de_freq(void)
 	{
 	case 0x00:
 		// 000: PLL_PERIPH0(2X)
-//		TP();
-//		PRINTF("allwnr_a64_get_pll_periph0_x2_freq()=%u  kHz\n", (unsigned) (allwnr_a64_get_pll_periph0_x2_freq() / 1000));
 		return allwnr_a64_get_pll_periph0_x2_freq() / M;
 	case 0x01:
 		// 010: PLL_DE
-//		TP();
 		return allwnr_a64_get_pll_de_freq() / M;
 	default:
 		// Wrong case
-//		TP();
+		TP();
 		return allwnr_a64_get_hosc_freq();
 	}
 }
@@ -9503,7 +9500,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	//CCU->APB2_CFG_REG = 0x02000303;	// PLL_PERIPH0(2X) / 8 / 4 - allwnr_a64_get_apb2_freq()=300 MHz
-	CCU->APB2_CFG_REG = 0x02000304;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
+	CCU->APB2_CFG_REG = 0x02000307;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
 	allwnr_a64_mbus_initialize();
 
 #elif CPUSTYLE_T113

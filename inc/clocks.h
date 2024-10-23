@@ -246,6 +246,7 @@ uint_fast32_t allwnr_a64_get_cpux_freq(void);
 uint_fast32_t allwnr_a64_get_mbus_freq(void);
 uint_fast32_t allwnr_a64_get_hdmi_freq(void);
 uint_fast32_t allwnr_a64_get_de_freq(void);
+uint_fast32_t allwnr_a64_get_ce_freq(void);
 uint_fast32_t allwnr_a64_get_tcon0_freq(void);
 uint_fast32_t allwnr_a64_get_tcon1_freq(void);
 uint_fast32_t allwnr_a64_get_uart_freq(void);
