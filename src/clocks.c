@@ -9497,10 +9497,6 @@ sysinit_pll_initialize(int forced)
 	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
 
-	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
-
 	//allwnr_a64_module_pllaudio_enable();
 	allwnr_a64_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 

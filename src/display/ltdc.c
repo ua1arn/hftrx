@@ -6705,14 +6705,14 @@ static void t113_tcon_PLL_configuration(void)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
 #elif CPUSTYLE_A64
-	CCU->PLL_DE_CTRL_REG = 0;
-	CCU->PLL_VIDEO0_CTRL_REG = 0;
-	CCU->PLL_VIDEO1_CTRL_REG = 0;
-	local_delay_ms(50);
+//	CCU->PLL_DE_CTRL_REG = 0;
+//	CCU->PLL_VIDEO0_CTRL_REG = 0;
+//	CCU->PLL_VIDEO1_CTRL_REG = 0;
+//	local_delay_ms(50);
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
 	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
-	CCU->PLL_VIDEO1_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	//CCU->PLL_VIDEO1_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	local_delay_ms(50);
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0/1
@@ -6722,8 +6722,8 @@ static void t113_tcon_PLL_configuration(void)
 	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | 1; // Enable HDMI clk (use PLL3)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31) | 1; // Enable HDMI slow clk
 
-	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // PLL_VIDEO0(2X)
-	CCU->TCON1_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // PLL_VIDEO0(2X)
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // 010: PLL_VIDEO0(2X)
+	CCU->TCON1_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(0) << 24); // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
