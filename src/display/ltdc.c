@@ -7492,7 +7492,7 @@ void hardware_edid_test(void)
 }
 
 
-#if defined (HDMI_PHY) && defined (HDMI_TX0) && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if defined (HDMI_PHY) && defined (HDMI_TX0) && ! (CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133)
 
 
 //static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
