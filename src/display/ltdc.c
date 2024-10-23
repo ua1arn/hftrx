@@ -3618,89 +3618,6 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 }
 
 
-static void t113_HDMI_CCU_configuration(void)
-{
-#if CPUSTYLE_A64
-
-	{
-//		CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-//		CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
-//		local_delay_ms(50);
-
-		CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
-		CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
-		CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-		CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-		CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-		CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
-	}
-
-#elif CPUSTYLE_H3
-
-	{
-//		CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-//		CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
-//		local_delay_ms(50);
-
-		CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
-		CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
-		CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-		CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-		CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-		CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
-	}
-
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-
-    //PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
-    //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
-
-    // CCU_32K select as CEC clock as default
-    // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
-	/*
-	 * First clock parent (osc32K) is unusable for CEC. But since there
-	 * is no good way to force parent switch (both run with same frequency),
-	 * just set second clock parent here.
-	 */
-	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
-
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-    PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
-
-    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
-    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-    PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
-
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
-    if (0)
-    {
-    	// HDCP: High-bandwidth Digital Content Protection
-        CCU->HDMI_HDCP_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-        CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
-        CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
-    }
-
-    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
-	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-    //PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    //PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
-
-#endif
-}
-
 // Used for HV and LVDS outputs
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
@@ -6685,44 +6602,25 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein,
 //	printhex32((uintptr_t) de3_getvsu(rtmixid), de3_getvsu(rtmixid), sizeof * de3_getvsu(rtmixid));
 }
 
+// H3: PLL_VIDEO
+// A64: PLL_VIDEO0
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
 static void t113_tcon_PLL_configuration(void)
 {
 #if CPUSTYLE_H3
-	CCU->PLL_DE_CTRL_REG = 0;
-	CCU->PLL_VIDEO_CTRL_REG = 0;
-	local_delay_ms(50);
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
 	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	while ((CCU->PLL_VIDEO_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
+		;
 	local_delay_ms(50);
 
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
-	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
-	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
 #elif CPUSTYLE_A64
 
 	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
 		;
 	local_delay_ms(50);
-
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << (TCONLCD_IX + 3)); // Enable HDMI, TCON0/1
-	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << (TCONLCD_IX + 3)); // De-assert reset of HDMI0/1, TCON0/1
-
-	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (2 - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
-	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-
-	if (TCONLCD_IX == 0)
-		CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // 010: PLL_VIDEO0(2X)
-	else if (TCONLCD_IX == 1)
-		CCU->TCON1_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(0) << 24); // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
-
-	PRINTF("1 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -6749,6 +6647,85 @@ static void t113_tcon_PLL_configuration(void)
 		;
 
 #else
+#endif
+}
+
+static void t113_HDMI_CCU_configuration(void)
+{
+#if CPUSTYLE_H3
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
+	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
+
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
+
+#elif CPUSTYLE_A64
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << (TCONLCD_IX + 3)); // Enable HDMI, TCON0/1
+	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << (TCONLCD_IX + 3)); // De-assert reset of HDMI0/1, TCON0/1
+
+	const unsigned HDMI_CLK_REG_M = 1;
+	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
+
+	if (TCONLCD_IX == 0)
+		CCU->TCON0_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // 010: PLL_VIDEO0(2X)
+	else if (TCONLCD_IX == 1)
+		CCU->TCON1_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (UINT32_C(0) << 24); // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+
+	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));
+	PRINTF(" BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
+//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
+//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+
+    //PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+    //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
+
+    // CCU_32K select as CEC clock as default
+    // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+	/*
+	 * First clock parent (osc32K) is unusable for CEC. But since there
+	 * is no good way to force parent switch (both run with same frequency),
+	 * just set second clock parent here.
+	 */
+	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
+
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+    PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
+    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
+
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
+    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+    if (0)
+    {
+    	// HDCP: High-bandwidth Digital Content Protection
+        CCU->HDMI_HDCP_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+        CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+        CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+    }
+
+    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
+	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
+
+    //PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+    //PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+
 #endif
 }
 
@@ -6906,8 +6883,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-//	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
-	//CCU->PLL_VIDEO1_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	local_delay_ms(50);
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12); // Enable DE, HDMI, TCON0/1
@@ -7264,23 +7239,15 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 #elif CPUSTYLE_H3
 
-    // PLLs
-	CCU->PLL_DE_CTRL_REG = 0;
-	CCU->PLL_VIDEO_CTRL_REG = 0;
-	local_delay_ms(50);
-	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+ 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
 	local_delay_ms(50);
 
     // clocks
 
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
-	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12); // Enable DE
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12); // De-assert reset of DE
 	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
 
 	// надо разбираться с битами включения. В регистрах задействованы 8 младших бит.
 	// Вероятно без 0-го канала DE не работает 1-й
@@ -7370,6 +7337,7 @@ static void hardware_tcontv_initialize(const videomode_t * vdmode)
 static void awxx_deoutmapping(unsigned disp)
 {
 #if CPUSTYLE_A64
+	// Only bit 0 valid
 	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	DE_TOP->DE2TCON_MUX |= (UINT32_C(1) << 0);
 //	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
@@ -7843,6 +7811,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		awxx_deoutmapping(RTMIXIDLCD - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
 		t113_tcon_PLL_configuration();
+#if WITHHDMITVHW
+		t113_HDMI_CCU_configuration();
+#endif /* WITHHDMITVHW */
 		hardware_tcon_initialize(vdmode);
 
 #if defined (TCONTV_PTR)
@@ -7852,7 +7823,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 
 #if WITHHDMITVHW
-		t113_HDMI_CCU_configuration();
 #if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 	    {
 	    	t507_hdmi_phy_initialize();
