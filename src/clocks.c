@@ -2161,6 +2161,24 @@ uint_fast32_t allwnr_h3_get_tcon0_freq(void)
 	}
 }
 
+uint_fast32_t allwnr_h3_get_hdmi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO
+		return allwnr_h3_get_pll_video_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void)
+{
+	return allwnr_h3_get_hosc_freq();
+}
+
 #elif CPUSTYLE_A64
 
 // A64
