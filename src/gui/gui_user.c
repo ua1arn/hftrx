@@ -6948,7 +6948,8 @@ static void window_as_process(void)
 			}
 			else if (bh == btn_tx)
 			{
-
+				as_toggle_trx();
+				update = 1;
 			}
 		}
 
@@ -6967,11 +6968,13 @@ static void window_as_process(void)
 
 		button_t * btn_rec = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_rec");
 		button_t * btn_play = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_play");
+		button_t * btn_tx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx");
 		uint8_t s = as_get_state();
 		char buf[20];
 
-		btn_rec->state = s == AS_PLAYING ? DISABLED : CANCELLED;
-		btn_play->state = (s == AS_PLAYING || s == AS_RECORD_DONE || s == AS_PLAY_DONE) ? CANCELLED : DISABLED;
+		btn_rec->state = (s == AS_PLAYING || s == AS_TX) ? DISABLED : CANCELLED;
+		btn_play->state = (s == AS_PLAYING || s == AS_READY) ? CANCELLED : DISABLED;
+		btn_tx->state = (s == AS_PLAYING || s == AS_RECORDING || s == AS_IDLE) ? DISABLED : CANCELLED;
 
 		if (s == AS_PLAYING)
 			local_snprintf_P(buf, ARRAY_SIZE(buf), "Playing...|%d%%", as_get_progress());
@@ -6987,7 +6990,14 @@ static void window_as_process(void)
 
 		local_snprintf_P(btn_rec->text, ARRAY_SIZE(btn_rec->text), "%s", buf);
 
-		if (s == AS_RECORD_DONE)
+		if (s == AS_TX)
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "Transmit...|%d%%", as_get_progress());
+		else
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "Transmit");
+
+		local_snprintf_P(btn_tx->text, ARRAY_SIZE(btn_tx->text), "%s", buf);
+
+		if (s == AS_READY)
 			as_draw_spectrogram(d, len, lim);
 	}
 }

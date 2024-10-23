@@ -84,12 +84,11 @@ void as_proccessing(uint32_t * buf)
 			as_idx_stop = as_idx;
 			as_idx = 0;
 			stop = 0;
-			as_state = AS_RECORD_DONE;
+			as_state = AS_READY;
 			gui_as_update();
 		}
 	}
-
-	if (as_state == AS_PLAYING)
+	else if (as_state == AS_PLAYING)
 	{
 		ASSERT(as_idx < as_buf_size);
 		memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
@@ -100,9 +99,33 @@ void as_proccessing(uint32_t * buf)
 		{
 			as_idx = 0;
 			stop = 0;
-			as_state = AS_PLAY_DONE;
+			as_state = AS_READY;
 			gui_as_update();
 		}
+	}
+
+	pthread_mutex_unlock(& mutex_as);
+}
+
+void as_tx(uint32_t * buf)
+{
+	if (as_state != AS_TX)
+		return;
+
+	pthread_mutex_lock(& mutex_as);
+
+	ASSERT(as_idx < as_buf_size);
+	memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
+	as_idx += as_buf_step;
+	if (as_idx % as_gui_upd_pr == 0) gui_as_update();
+
+	if (as_idx >= as_idx_stop || stop)
+	{
+		as_idx = 0;
+		stop = 0;
+		as_state = AS_READY;
+		hamradio_set_moxmode(0);
+		gui_as_update();
 	}
 
 	pthread_mutex_unlock(& mutex_as);
@@ -113,7 +136,7 @@ uint8_t as_get_state(void)
 	return as_state;
 }
 
-uint8_t as_get_progress(void)	// %
+uint8_t as_get_progress(void)	// 1 ... 100
 {
 	if (as_state == AS_PLAYING || as_state == AS_TX)
 		return (int) (as_idx * 100 / as_idx_stop);
@@ -125,7 +148,7 @@ void as_toggle_record(void)
 {
 	pthread_mutex_lock(& mutex_as);
 
-	if (as_state == AS_IDLE || as_state == AS_RECORD_DONE || as_state == AS_PLAY_DONE || as_state == AS_TX_DONE)
+	if (as_state == AS_IDLE || as_state == AS_READY)
 		as_state = AS_RECORDING;
 	else if (as_state == AS_RECORDING)
 		stop = 1;
@@ -137,9 +160,24 @@ void as_toggle_play(void)
 {
 	pthread_mutex_lock(& mutex_as);
 
-	if (as_state == AS_RECORD_DONE || as_state == AS_PLAY_DONE || as_state == AS_TX_DONE)
+	if (as_state == AS_READY)
 		as_state = AS_PLAYING;
 	else if (as_state == AS_PLAYING)
+		stop = 1;
+
+	pthread_mutex_unlock(& mutex_as);
+}
+
+void as_toggle_trx(void)
+{
+	pthread_mutex_lock(& mutex_as);
+
+	if (as_state == AS_READY)
+	{
+		as_state = AS_TX;
+		hamradio_set_moxmode(1);
+	}
+	else if (as_state == AS_TX)
 		stop = 1;
 
 	pthread_mutex_unlock(& mutex_as);
@@ -148,7 +186,7 @@ void as_toggle_play(void)
 void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 {
 	const uint16_t step = as_idx_stop / len;
-	int32_t d_max = 0, mean = 0;
+	int32_t d_max = 0;
 	arm_max_no_idx_q31((q31_t *) as_buf, as_idx_stop, & d_max);
 
 	for (int i = 0; i < len; i ++)
@@ -588,7 +626,6 @@ void iq_mutex_unlock(void)
 static void iq_proccessing(uint8_t * buf, uint32_t len)
 {
 	static int rx_stage = 0;
-
 	uintptr_t addr32rx = allocate_dmabuffer32rx();
 	memcpy((uint8_t *) addr32rx, buf, len);
 	save_dmabuffer32rx(addr32rx);
@@ -641,6 +678,10 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 
 		for (int i = 0; i < DMABUFFSIZE16RX; i ++)
 			mic[i] = * mic_fifo;
+
+#if WITHAUDIOSAMPLESREC
+		as_tx(mic);
+#endif /* WITHAUDIOSAMPLESREC */
 
 		save_dmabuffer16rx(addr_mic);
 	}

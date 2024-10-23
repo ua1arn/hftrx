@@ -20554,6 +20554,12 @@ void hamradio_change_preamp(void)
 
 #if WITHTX
 
+void hamradio_set_moxmode(uint_fast8_t mode)
+{
+	moxmode = !! mode;
+	updateboard(1, 1);
+}
+
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
 {
 	if (v)

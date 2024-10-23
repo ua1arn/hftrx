@@ -79,11 +79,9 @@ uint8_t stream_get_state(void);
 enum {
 	AS_IDLE,
 	AS_RECORDING,
-	AS_RECORD_DONE,
 	AS_PLAYING,
-	AS_PLAY_DONE,
 	AS_TX,
-	AS_TX_DONE,
+	AS_READY,
 
 	AS_COUNT,
 };
@@ -92,6 +90,7 @@ uint8_t as_get_state(void);
 uint8_t as_get_progress(void);
 void as_toggle_record(void);
 void as_toggle_play(void);
+void as_toggle_trx(void);
 void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim);
 
 #endif /* WITHAUDIOSAMPLESREC */
