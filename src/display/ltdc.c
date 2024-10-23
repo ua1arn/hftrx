@@ -3546,14 +3546,13 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, unsi
 	// BLD_CH_RTCTL
 	// 0x03020100 - default state
 
-#if WITHHDMITVHW
-	//bld->ROUTE = 0;	// need for HDMI
-#endif
 	bld->ROUTE =
 			(UINT32_C(0) << 0) |		// pipe 0 from ch 0
 			(UINT32_C(1) << 4) |		// pipe 1 from ch 1
 			(UINT32_C(2) << 8) |		// pipe 2 from ch 2
 			(UINT32_C(3) << 12) |		// pipe 3 from ch 3
+			(UINT32_C(4) << 16) |		// pipe 4 from ch 4
+			(UINT32_C(5) << 18) |		// pipe 5 from ch 5
 			0;
 	bld->PREMULTIPLY = 0;
 	bld->BKCOLOR = color24; /* 24 bit. Отображается, когда нет данных от входного pipe */
