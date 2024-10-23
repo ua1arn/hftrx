@@ -3325,8 +3325,11 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 	#define TCON_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
 
 #elif CPUSTYLE_A64
-	#define TCON_VB_INT_EN  	(UINT32_C(1) << 31)	// TCON0_Vb_Int_En Enable the Vb interrupt
-	#define TCON_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+	#define TCON0_VB_INT_EN  	(UINT32_C(1) << 31)	// TCON0_Vb_Int_En Enable the Vb interrupt
+	#define TCON0_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+
+	#define TCON1_VB_INT_EN  	(UINT32_C(1) << 30)	// TCON1_Vb_Int_En Enable the Vb interrupt
+	#define TCON1_VB_INT_FLAG  	(UINT32_C(1) << 11)	// Asserted during vertical no-display period every frame
 
 #else
 	#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
@@ -3346,8 +3349,8 @@ static void hardware_ltdc_vsync(void)
     while ((TCONLCD_PTR->TCON_GINT0_REG & TCON_VB_INT_FLAG) == 0) //wait  TCON_VB_INT_FLAG
         ;
 #elif CPUSTYLE_A64
-    TCONLCD_PTR->TCON_GINT0_REG &= ~ TCON_VB_INT_FLAG;         //clear TCON_VB_INT_FLAG
-    while ((TCONLCD_PTR->TCON_GINT0_REG & TCON_VB_INT_FLAG) == 0) //wait  TCON_VB_INT_FLAG
+    TCONLCD_PTR->TCON_GINT0_REG &= ~ TCON1_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
+    while ((TCONLCD_PTR->TCON_GINT0_REG & TCON1_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
         ;
 #else
     TCONLCD_PTR->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
@@ -7688,19 +7691,21 @@ static void h3_hdmi_tcon_init(const videomode_t * vdmode)
 #if CPUSTYLE_A64
 	// LCD0 feeds mixer0 to HDMI
 	TCONLCD_PTR->TCON_GCTL_REG = 0;
+	//TCONLCD_PTR->TCON_GCTL_REG |= !! TCONLCD_IX;	// IO_Map_Sel - in TCON0 only
 	TCONLCD_PTR->TCON_GINT0_REG = 0;
 	TCONLCD_PTR->TCON1_CTL_REG =
 			(UINT32_C(1) << 31) |	// TCON1_En
+			//(UINT32_C(1) << 0) |	// TCON1_Src_Sel 01: BLUE data(FIFO2 disable,RGB = 0000FF)
 		0;
-	TCONLCD_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
-	TCONLCD_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
-	TCONLCD_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
+	TCONLCD_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XI TCON1_YI
+	TCONLCD_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// LS_XO LS_YO
+	TCONLCD_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XO TCON1_YO
 	TCONLCD_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONLCD_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
-	TCONLCD_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+	TCONLCD_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);	// VT VBP
+	TCONLCD_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
 
-	TCONLCD_PTR->TCON_GCTL_REG = (UINT32_C(1) << 31);
-	ASSERT(TCONLCD_PTR->TCON_GCTL_REG == (UINT32_C(1) << 31));
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);
+	ASSERT(TCONLCD_PTR->TCON_GCTL_REG & (UINT32_C(1) << 31));
 
 #elif CPUSTYLE_H3
 	// H3
