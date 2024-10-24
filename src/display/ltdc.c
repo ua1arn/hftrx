@@ -3623,7 +3623,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 // T507: PLL_VIDEO1
 static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
-#if defined (TCONLCD_PTR)
+#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
 
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 #if CPUSTYLE_H3
@@ -6650,6 +6650,7 @@ static void t113_tcon_PLL_configuration(void)
 
 static void t113_HDMI_CCU_configuration(void)
 {
+#if WITHHDMITVHW
 #if CPUSTYLE_H3
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
@@ -6731,6 +6732,7 @@ static void t113_HDMI_CCU_configuration(void)
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));
 
 #endif
+#endif /* WITHHDMITVHW */
 }
 
 // T113: PLL_VIDEO0
