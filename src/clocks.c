@@ -2161,6 +2161,24 @@ uint_fast32_t allwnr_h3_get_tcon0_freq(void)
 	}
 }
 
+uint_fast32_t allwnr_h3_get_hdmi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO
+		return allwnr_h3_get_pll_video_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void)
+{
+	return allwnr_h3_get_hosc_freq();
+}
+
 #elif CPUSTYLE_A64
 
 // A64
@@ -2796,16 +2814,13 @@ uint_fast32_t allwnr_a64_get_de_freq(void)
 	{
 	case 0x00:
 		// 000: PLL_PERIPH0(2X)
-//		TP();
-//		PRINTF("allwnr_a64_get_pll_periph0_x2_freq()=%u  kHz\n", (unsigned) (allwnr_a64_get_pll_periph0_x2_freq() / 1000));
 		return allwnr_a64_get_pll_periph0_x2_freq() / M;
 	case 0x01:
 		// 010: PLL_DE
-//		TP();
 		return allwnr_a64_get_pll_de_freq() / M;
 	default:
 		// Wrong case
-//		TP();
+		TP();
 		return allwnr_a64_get_hosc_freq();
 	}
 }
@@ -3089,6 +3104,11 @@ uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
 uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video1_x4_freq() / 4;
+}
+
+uint_fast64_t allwnr_t507_get_pll_video2_x1_freq(void)
+{
+	return allwnr_t507_get_pll_video2_x4_freq() / 4;
 }
 
 uint_fast64_t allwnr_t507_get_pll_ve_freq(void)
@@ -3655,6 +3675,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
 	}
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV0_CLK_REG;
@@ -3680,6 +3701,7 @@ uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 	}
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV1_CLK_REG;
@@ -3702,6 +3724,31 @@ uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 	case 0x03:
 		// 011: PLL_VIDEO1(4X)
 		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	}
+}
+
+// T507
+uint_fast32_t allwnr_t507_get_hdmi0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t pgdiv = M;
+	// SCLK = Clock Source/M
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 01: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq() / pgdiv;
+	case 0x02:
+		// 10: PLL_VIDEO2(1X)
+		return allwnr_t507_get_pll_video2_x1_freq() / pgdiv;
+	case 0x03:
+		// 11: PLL_VIDEO2(4X)
+		return allwnr_t507_get_pll_video2_x4_freq() / pgdiv;
 	}
 }
 
@@ -9497,17 +9544,13 @@ sysinit_pll_initialize(int forced)
 	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
 
-	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
-
 	//allwnr_a64_module_pllaudio_enable();
 	allwnr_a64_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 
 	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	//CCU->APB2_CFG_REG = 0x02000303;	// PLL_PERIPH0(2X) / 8 / 4 - allwnr_a64_get_apb2_freq()=300 MHz
-	CCU->APB2_CFG_REG = 0x02000304;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
+	CCU->APB2_CFG_REG = 0x02000307;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
 	allwnr_a64_mbus_initialize();
 
 #elif CPUSTYLE_T113

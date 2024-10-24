@@ -246,6 +246,7 @@ uint_fast32_t allwnr_a64_get_cpux_freq(void);
 uint_fast32_t allwnr_a64_get_mbus_freq(void);
 uint_fast32_t allwnr_a64_get_hdmi_freq(void);
 uint_fast32_t allwnr_a64_get_de_freq(void);
+uint_fast32_t allwnr_a64_get_ce_freq(void);
 uint_fast32_t allwnr_a64_get_tcon0_freq(void);
 uint_fast32_t allwnr_a64_get_tcon1_freq(void);
 uint_fast32_t allwnr_a64_get_uart_freq(void);
@@ -263,6 +264,8 @@ uint_fast32_t allwnr_h3_get_spi0_freq(void);
 uint_fast32_t allwnr_h3_get_spi1_freq(void);
 uint_fast32_t allwnr_h3_get_cpux_freq(void);
 uint_fast32_t allwnr_h3_get_tcon0_freq(void);
+uint_fast32_t allwnr_h3_get_hdmi_freq(void);
+uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 #endif /* CPUSTYLE_H3 */
 
 // Allwinner T507/T507-H/H616
@@ -302,6 +305,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void);
 uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void);
 uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void);
 uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void);
+uint_fast32_t allwnr_t507_get_hdmi0_freq(void);
 uint_fast32_t allwnr_t507_get_tve0_freq(void);
 uint_fast32_t allwnr_t507_get_ahub_freq(void);
 uint_fast32_t allwnr_t507_get_gpu_freq(void);
