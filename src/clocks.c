@@ -3106,6 +3106,11 @@ uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void)
 	return allwnr_t507_get_pll_video1_x4_freq() / 4;
 }
 
+uint_fast64_t allwnr_t507_get_pll_video2_x1_freq(void)
+{
+	return allwnr_t507_get_pll_video2_x4_freq() / 4;
+}
+
 uint_fast64_t allwnr_t507_get_pll_ve_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VE_CTRL_REG;
@@ -3670,6 +3675,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
 	}
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV0_CLK_REG;
@@ -3695,6 +3701,7 @@ uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 	}
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV1_CLK_REG;
@@ -3717,6 +3724,31 @@ uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 	case 0x03:
 		// 011: PLL_VIDEO1(4X)
 		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	}
+}
+
+// T507
+uint_fast32_t allwnr_t507_get_hdmi0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t pgdiv = M;
+	// SCLK = Clock Source/M
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 01: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq() / pgdiv;
+	case 0x02:
+		// 10: PLL_VIDEO2(1X)
+		return allwnr_t507_get_pll_video2_x1_freq() / pgdiv;
+	case 0x03:
+		// 11: PLL_VIDEO2(4X)
+		return allwnr_t507_get_pll_video2_x4_freq() / pgdiv;
 	}
 }
 
