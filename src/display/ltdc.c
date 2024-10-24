@@ -7848,18 +7848,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 
 #if WITHHDMITVHW
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
+    	t507_hdmi_phy_initialize();
+    	t507_hdmi_phy_set();
+#endif
 		h3_hdmi_init(vdmode_HDMI);
 		h3_hdmi_tcon_init(vdmode_HDMI);
-#endif
-#if WITHHDMITVHW
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
-	    {
-	    	t507_hdmi_phy_initialize();
-	    	t507_hdmi_phy_set();
-	    	//t507_hdmi_initialize();
-	    	//t507_hdmi_edid_test();
-	    }
-#endif
 #endif /* WITHHDMITVHW */
 		{
 			const int rtmixid = RTMIXIDLCD;
