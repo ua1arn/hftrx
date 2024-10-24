@@ -6708,8 +6708,9 @@ static void t113_HDMI_CCU_configuration(void)
 	TCONLCD_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (TV_CLK_REG_M - 1);
 	const unsigned HDMI_CLK_REG_M = 2;
 	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (HDMI_CLK_REG_M - 1);
-    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
     PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
@@ -6727,10 +6728,11 @@ static void t113_HDMI_CCU_configuration(void)
     //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 21);	// TV0_GATE ???? may be not need
 	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-    //PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    //PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));
@@ -7406,6 +7408,8 @@ static void awxx_deoutmapping(unsigned disp)
 		TG_DE2TCONTV1 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
 #else
+
+#if ! WITHHDMITVHW
 	// Documented
 //    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
 //		TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
@@ -7433,7 +7437,8 @@ static void awxx_deoutmapping(unsigned disp)
 		break;
 	}
 #endif
-	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+#endif
+	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -7541,53 +7546,53 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	local_delay_ms(10);
 	PRINTF("HDMI_PHY->REXT_CTRL=%08X\n", (unsigned) HDMI_PHY->REXT_CTRL);
 #endif
-//
-//	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
-//	// HDMI PHY init, the following black magic is based on the procedure documented at:
-//	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
-//	phy->HDMI_PHY_CFG1 = 0;
-//	HDMI_PHY->HDMI_PHY_CFG1 = 1;
-//	local_delay_us(5);
-//	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
-//	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
-//	local_delay_us(10);
-//	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
-//	local_delay_us(5);
-//	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
-//	local_delay_us(40);
-//	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
-//	local_delay_us(100);
-//	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
-//	phy->HDMI_PHY_CFG1 |= (7 << 4);
-//	int z = 0;
-//	while (z ++ < 10 && (phy->HDMI_PHY_STS & 0x80) == 0)
-//		local_delay_ms(10);
-//	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
-//
-//	phy->HDMI_PHY_CFG1 |= (0xf << 4);
-//	phy->HDMI_PHY_CFG1 |= (0xf << 8);
-//	phy->HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
-//
-//	phy->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
-//	phy->HDMI_PHY_CEC = 0;
-//
-//	phy->HDMI_PHY_PLL1 = 0x39dc5040;
-//	phy->HDMI_PHY_PLL2 = 0x80084381;
-//	local_delay_us(10000);
-//	phy->HDMI_PHY_PLL3 = 1;
-//	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
-//	local_delay_us(10000);
-//	uint32_t tmp = (phy->HDMI_PHY_STS & 0x1F800) >> 11;
-//	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
-//
-//	phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
-//	phy->HDMI_PHY_CFG2 = 0x8063A800;
-//	phy->HDMI_PHY_CFG3 = 0x0F81C485;
-//
-//	/* enable read access to HDMI controller */
-//	phy->HDMI_PHY_READ_EN = 0x54524545;
-//	/* descramble register offsets */
-//	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+
+	PRINTF("HDMI_PHY->HDMI_PHY_STS=%08X\n", (unsigned) HDMI_PHY->HDMI_PHY_STS);
+	// HDMI PHY init, the following black magic is based on the procedure documented at:
+	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
+	phy->HDMI_PHY_CFG1 = 0;
+	HDMI_PHY->HDMI_PHY_CFG1 = 1;
+	local_delay_us(5);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 16);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 1);
+	local_delay_us(10);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 2);
+	local_delay_us(5);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 3);
+	local_delay_us(40);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 19);
+	local_delay_us(100);
+	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
+	phy->HDMI_PHY_CFG1 |= (7 << 4);
+	int z = 0;
+	while (z ++ < 10 && (phy->HDMI_PHY_STS & 0x80) == 0)
+		local_delay_ms(10);
+	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
+
+	phy->HDMI_PHY_CFG1 |= (0xf << 4);
+	phy->HDMI_PHY_CFG1 |= (0xf << 8);
+	phy->HDMI_PHY_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
+
+	phy->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
+	phy->HDMI_PHY_CEC = 0;
+
+	phy->HDMI_PHY_PLL1 = 0x39dc5040;
+	phy->HDMI_PHY_PLL2 = 0x80084381;
+	local_delay_us(10000);
+	phy->HDMI_PHY_PLL3 = 1;
+	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
+	local_delay_us(10000);
+	uint32_t tmp = (phy->HDMI_PHY_STS & 0x1F800) >> 11;
+	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+
+	phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
+	phy->HDMI_PHY_CFG2 = 0x8063A800;
+	phy->HDMI_PHY_CFG3 = 0x0F81C485;
+
+	/* enable read access to HDMI controller */
+	phy->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 	// HDMI Config, based on the documentation at:
 	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
 	hdmi->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
@@ -7817,16 +7822,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 #endif /* defined (TCONTV_PTR) */
 
-#if WITHHDMITVHW
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
-	    {
-	    	t507_hdmi_phy_initialize();
-	    	t507_hdmi_phy_set();
-	    	//t507_hdmi_initialize();
-	    	//t507_hdmi_edid_test();
-	    }
-#endif
-#endif /* WITHHDMITVHW */
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -7847,6 +7842,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		h3_hdmi_init(vdmode_HDMI);
 		h3_hdmi_tcon_init(vdmode_HDMI);
 #endif
+#if WITHHDMITVHW
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
+	    {
+	    	t507_hdmi_phy_initialize();
+	    	t507_hdmi_phy_set();
+	    	//t507_hdmi_initialize();
+	    	//t507_hdmi_edid_test();
+	    }
+#endif
+#endif /* WITHHDMITVHW */
 		{
 			const int rtmixid = RTMIXIDLCD;
 
