@@ -6740,6 +6740,9 @@ static void t113_HDMI_CCU_configuration(void)
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 21);	// TV0_GATE ???? may be not need
 	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
+	TCONLCD_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+
     PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 
