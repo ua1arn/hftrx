@@ -2841,7 +2841,6 @@ static void hdmi_edid_parse(const uint8_t * edid, unsigned len)
 static void t507_hdmi_edid_test(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
 	// I2C speed
 	unsigned i2c_speed_divider = 0xFFFF;
 	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR = 0xFF;
@@ -2855,7 +2854,6 @@ static void t507_hdmi_edid_test(void)
 	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR = 0xFF;
 
 	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
-	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
 
 	PRINTF("t507_hdmi_edid_test before reset\n");
 	// I2C reset
@@ -3633,7 +3631,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 // T507: PLL_VIDEO1
 static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
-#if defined (TCONLCD_PTR)// && ! WITHHDMITVHW
+#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
 
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 #if CPUSTYLE_H3
@@ -3780,7 +3778,7 @@ static void t113_tconlcd_CCU_configuration(unsigned prei, unsigned divider, uint
 
     local_delay_us(10);
 
-    TCONLCD_PTR->TV_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -6890,7 +6888,7 @@ static void t113_tcontv_PLL_configuration(void)
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
-#if defined (TCONLCD_PTR)// && ! WITHHDMITVHW
+#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
 	unsigned prei = 0;
 	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
@@ -6908,7 +6906,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
-	t113_LVDS_controller_configuration(vdmode, 0);
+	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
@@ -7561,211 +7559,7 @@ void hardware_edid_test(void)
 }
 
 
-#if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW && CPUSTYLE_T507
-
-
-static void xt507_hdmi_phy_initialize(void)
-{
-
-	// EDID ("Extended display identification data") read
-	// Test I2C bus read
-//	static uint8_t edid [256];
-//	if (hdmi_edid_read(hdmi, 0x00, edid + 0x00, 0x80))
-//	{
-//		unsigned edidlen = 0x80;
-//		if (edid [0x7E]) // need read ext block?
-//		{
-//			if (hdmi_edid_read(hdmi, 0x80, edid + 0x80, 0x80))
-//				edidlen = 0x100;
-//		}
-//		hdmi_edid_parse(edid, edidlen);
-//	}
-	//return;
-
-	//printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-
-//	HDMI_PHY->CEC |= (UINT32_C(1) << 7);	// CEC CONTROL: register
-//	HDMI_PHY->CEC |= (UINT32_C(1) << 3);	// CEC PAD INPUT ENABLE
-//	HDMI_PHY->CEC |= (UINT32_C(1) << 0);	// CEC OUTPUT DATA
-//	local_delay_ms(10);
-//
-//
-//	for (;0;)
-//	{
-//		int v = (HDMI_PHY->CEC >> 1) & 0x01;	// CEC INPUT DATA
-//		PRINTF("cec=%d\n", v);
-//		local_delay_ms(10);
-//	}
-
-	//return;
-
-	// TMDS Character Rate - 297MHz
-	T507_HDMI_PHY->PLL_CFG1 = 0x35dc5fc0;
-	T507_HDMI_PHY->PLL_CFG2 = 0x800863C0;
-	T507_HDMI_PHY->PLL_CFG3 = 0x01;
-	local_delay_ms(100);
-//
-//	HDMI_PHY->ANA_CFG1 = 0;
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 0);	// ANA_CFG1_ENBI
-//	local_delay_ms(5);
-//	/* Enable TMDS clock */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 16);	// ANA_CFG1_TMDSCLK_EN
-//	/* Enable common voltage reference bias module */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 1);	// ANA_CFG1_ENVBS
-//	local_delay_ms(10);
-//	/* Enable internal LDO */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 2);	// ANA_CFG1_LDOEN
-//	local_delay_ms(5);
-//	/* Enable common clock module */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 3);	// ANA_CFG1_CKEN
-//	local_delay_ms(100);
-//
-//	/* Enable resistance calibration analog and digital modules */
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 19);	// ANA_CFG1_ENRCAL
-//	local_delay_ms(100);
-//	HDMI_PHY->ANA_CFG1 |= (UINT32_C(1) << 18);	// ANA_CFG1_ENCALOG
-//
-//	/* P2S module enable for TMDS data lane */
-//	HDMI_PHY->ANA_CFG1 |= 0x07 * (UINT32_C(1) << 4);
-
-	// 297 MHz
-	T507_HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-	T507_HDMI_PHY->ANA_CFG2 = 0x8063b000;
-	T507_HDMI_PHY->ANA_CFG3 = 0x0F8246B5;
-
-//	PRINTF("1st:\n");
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	PRINTF("See:\n");
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-//	local_delay_ms(10);
-//	printhex(HDMI_PHY_BASE, HDMI_PHY, 256);
-
-	local_delay_ms(100);
-	if (0)
-	{
-		TP();
-		while((T507_HDMI_PHY->ANA_STS & 0x80) == 0)
-		  ;
-		local_delay_ms(100);
-		TP();
-	}
-
-//	HDMI_PHY->ANA_CFG1 |= (0xf << 4);
-//	HDMI_PHY->ANA_CFG1 |= (0xf << 8);
-//	HDMI_PHY->ANA_CFG3 |= (UINT32_C(1) << 0) | (UINT32_C(1) << 2);
-//
-//	HDMI_PHY->PLL_CFG1 &= ~ (UINT32_C(1) << 26);
-//	HDMI_PHY->CEC = 0;
-//
-//	HDMI_PHY->PLL_CFG1 = 0x39dc5040;
-//	HDMI_PHY->PLL_CFG2 = 0x80084381;
-//	local_delay_ms(100);
-//	HDMI_PHY->PLL_CFG3 = 1;
-//	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 25);
-//	local_delay_ms(100);
-//	uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
-//	HDMI_PHY->PLL_CFG1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
-//
-//	HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-//	HDMI_PHY->ANA_CFG2 = 0x8063A800;
-//	HDMI_PHY->ANA_CFG3 = 0x0F81C485;
-
-	/* enable read access to HDMI controller */
-	T507_HDMI_PHY->READ_EN = 0x54524545;
-	ASSERT(T507_HDMI_PHY->READ_EN == 0x54524545);
-	/* descramble register offsets */
-	T507_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
-	ASSERT(T507_HDMI_PHY->UNSCRAMBLE == 0x42494E47);
-
-}
-
-static void xt507_hdmi_initialize(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_DESIGN_ID,
-			hdmi->HDMI_REVISION_ID,
-			hdmi->HDMI_PRODUCT_ID0,
-			hdmi->HDMI_PRODUCT_ID1
-			);
-
-	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_CONFIG0_ID,
-			hdmi->HDMI_CONFIG1_ID,
-			hdmi->HDMI_CONFIG2_ID,
-			hdmi->HDMI_CONFIG3_ID
-			);
-
-	// I2C speed
-	unsigned i2c_speed_divider = 0xFFFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR = 0xFF;
-
-	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR = 0xFF;
-
-	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
-
-	// I2C reset
-	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
-	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
-		;
-
-	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
-#if 1
-	const videomode_t * const vdmode = get_videomode_CRT();
-
-	struct lcd_timing timing;	// out parameters
-
-	timing.hp=vdmode->width;//LCDX_OUT;///
-	timing.vp=vdmode->height;//LCDY_OUT;///
-	timing.hbp=300;///
-	timing.vbp=30;///
-	timing.hspw=20;///
-	timing.vspw=8;///
-
-	// HDMI Config, based on the documentation at:
-	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-	hdmi->HDMI_FC_INVIDCONF = (UINT32_C(1) << 6) | (UINT32_C(1) << 5) | (UINT32_C(1) << 4) | (UINT32_C(1) << 3); // Polarity etc
-	hdmi->HDMI_FC_INHACTV0 = (timing.hp & 0xff);    // Horizontal pixels
-	hdmi->HDMI_FC_INHACTV1 = (timing.hp >> 8);      // Horizontal pixels
-	hdmi->HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
-	hdmi->HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
-
-	hdmi->HDMI_FC_INVACTV0 = (timing.vp & 0xff);    // Vertical pixels
-	hdmi->HDMI_FC_INVACTV1 = (timing.vp >> 8);      // Vertical pixels
-	hdmi->HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
-
-	hdmi->HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
-	hdmi->HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
-	hdmi->HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-	hdmi->HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
-	hdmi->HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
-	hdmi->HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
-
-	hdmi->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-	hdmi->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-	hdmi->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-	hdmi->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	hdmi->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	hdmi->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	hdmi->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-	hdmi->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
-#endif
-}
-
-#endif
-
-#if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW //&& (CPUSTYLE_H3 || CPUSTYLE_A64)
+#if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW
 
 
 //static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
@@ -8502,32 +8296,11 @@ static void xt507_hdmi_CCU_configuration(void)
     //PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 }
 
-static void xt507(const videomode_t * vdmode)
-{
-	xt507_de_initialize(vdmode);
-	xt507_tcon_PLL_configuration();	// VIDEO & VIDEO1
-	xt507_hdmi_tcon_initialize(vdmode);
-	xt507_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
-	xt507_tcontv_initialize(vdmode);
-	xt507_hdmi_CCU_configuration();
-
-	xt507_hdmi_phy_initialize();
-	xt507_hdmi_initialize();
-//	h3_hdmi_phy_init();
-//	h3_hdmi_init(vdmode);
-
-	t507_hdmi_edid_test();
-	t507_hdmi_edid_test();
-}
-
 #endif /* CPUSTYLE_T507 */
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
-#if CPUSTYLE_T507 && WITHHDMITVHW && 0
-	xt507(vdmode);
-#endif /* CPUSTYLE_T507 */
 
 //	{
 //		uintptr_t p;
@@ -8566,6 +8339,24 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
 
+#if CPUSTYLE_T507
+	//xt507_de_initialize(vdmode);
+	xt507_tcon_PLL_configuration();	// VIDEO & VIDEO1
+	xt507_hdmi_tcon_initialize(vdmode);
+	xt507_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
+	xt507_tcontv_initialize(vdmode);
+	xt507_hdmi_CCU_configuration();
+
+	t507_hdmi_phy_initialize();
+//	xt507_hdmi_phy_initialize();
+//	xt507_hdmi_initialize();
+//	h3_hdmi_phy_init();
+//	h3_hdmi_init(vdmode);
+
+	t507_hdmi_edid_test();
+	t507_hdmi_edid_test();
+#endif
+
 #if defined (TCONTV_PTR)
 		{
 			const int rtmixid = RTMIXIDTV;
@@ -8583,15 +8374,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
     	t507_hdmi_phy_initialize();
     	t507_hdmi_phy_set();
 #endif
-
-#if CPUSTYLE_T507
-		//xt507_hdmi_initialize();
-#else
 		h3_hdmi_phy_init();
 		h3_hdmi_init(vdmode_HDMI);
-#endif
-		//t507_hdmi_edid_test();
-
 		h3_hdmi_tcon_init(vdmode_HDMI);
 #endif /* WITHHDMITVHW */
 		{
