@@ -7784,21 +7784,59 @@ static void h3_hdmi_tcon_seq_init(const videomode_t * vdmode)
 
 #elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	TCONLCD_PTR->TV_GCTL_REG = 0;
-	TCONLCD_PTR->TV_GINT0_REG = 0;
-	TCONLCD_PTR->TV_SRC_CTL_REG = 0;
-	TCONLCD_PTR->TV_CTL_REG =
-		(UINT32_C(1) << 31) |	// TCON1_En
-		60 * (UINT32_C(1) << 4) |	// Start_Delay
-		0;
-	TCONLCD_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
-	TCONLCD_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
-	TCONLCD_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
-	TCONLCD_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONLCD_PTR->TV_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
-	TCONLCD_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	TCONLCD_PTR->TV_GCTL_REG = (UINT32_C(1) << 31);
+	TCONLCD_PTR->TV_CTL_REG =
+		(VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
+		0;
+
+	// XI YI
+	TCONLCD_PTR->TV_BASIC0_REG =
+		((WIDTH - 1) << 16) |
+		((HEIGHT - 1) << 0) |
+		0;
+	// LS_XO LS_YO NOTE: LS_YO = TV_YI
+	TCONLCD_PTR->TV_BASIC1_REG =
+		((WIDTH - 1) << 16) |
+		((HEIGHT - 1) << 0) |
+		0;
+	// TV_XO TV_YO
+	TCONLCD_PTR->TV_BASIC2_REG =
+		((WIDTH - 1) << 16) |
+		((HEIGHT - 1) << 0) |
+		0;
+	// HT HBP
+	TCONLCD_PTR->TV_BASIC3_REG =
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((HBP - 1) << 0) |			// HBP
+		0;
+	// VT VBP
+	TCONLCD_PTR->TV_BASIC4_REG =
+		((VTOTAL * 2) << 16) | 		// VT Tvt = (VT)/2 * Thsync
+		((VBP - 1) << 0) |			// VBP Tvbp = (VBP+1) * Thsync
+		0;
+	// HSPW VSPW
+	TCONLCD_PTR->TV_BASIC5_REG =
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
+
+	TCONLCD_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);
+
+	TCONLCD_PTR->TV_IO_POL_REG = 0;
+	TCONLCD_PTR->TV_IO_TRI_REG = 0;//0x0FFFFFFF;
+
+	//	 TV_SRC_SEL
+	//	 TV Source Select
+	//	 000: DE
+	//	 001: Color Check
+	//	 010: Grayscale Check
+	//	 011: Black by White Check
+	//	 100: Reserved
+	//	 101: Reserved
+	//	 111: Gridding Check
+
+	TCONLCD_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
+	TCONLCD_PTR->TV_GCTL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 1); //enable TCONTV
 
 #else
 	//#error CPUSTYLE_xxx error
@@ -8126,6 +8164,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 
 #if WITHHDMITVHW
+#if CPUSTYLE_T507
+	t507_hdmi_tcon_init(vdmode_HDMI);
+#endif
 #if (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
     	t507_hdmi_phy_initialize();
     	t507_hdmi_phy_set();
@@ -8133,9 +8174,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		h3_hdmi_phy_init();
 		h3_hdmi_init(vdmode_HDMI);
 		h3_hdmi_tcon_seq_init(vdmode_HDMI);
-#if CPUSTYLE_T507
-	t507_hdmi_tcon_init(vdmode_HDMI);
-#endif
 #endif /* WITHHDMITVHW */
 		t507_hdmi_edid_test();
 		t507_hdmi_edid_test();
