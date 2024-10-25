@@ -6605,7 +6605,7 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein,
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
-static void t113_tcon_PLL_configuration(void)
+static void t113_tcontv_PLL_configuration(void)
 {
 #if CPUSTYLE_H3
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
@@ -6646,16 +6646,40 @@ static void t113_tcon_PLL_configuration(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
+	const uint_fast32_t M = 4;
 
-	/* Lock enable */
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
+	CCU->PLL_VIDEO0_CTRL_REG = 0;
+	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
+	CCU->PLL_VIDEO0_CTRL_REG |=
+		1 * (UINT32_C(1) << 31) |	// PLL_EN
+		1 * (UINT32_C(1) << 30) |	// PLL_LDO_EN
+		1 * (UINT32_C(1) << 27) |	// PLL_OUTPUT_GATE
+		(N - 1) * (UINT32_C(1) << 8) |
+		(M - 1) * (UINT32_C(1) << 0) |
+		0;
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
+
+	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
+
+	while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
 		;
 
+	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
+
+
+//	PRINTF("allwnr_t113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video0pllx4_freq() / 1000 / 1000));
+//	PRINTF("allwnr_t113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video1pllx4_freq() / 1000 / 1000));
+
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+
+#if defined (TCONTV_PTR)
+	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
+	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
+#endif /* defined (TCONTV_PTR) */
 #else
 #endif
 }
@@ -6822,112 +6846,7 @@ static void t113_HDMI_CCU_configuration(void)
 #endif
 }
 
-// T113: PLL_VIDEO0
-// T507: PLL_VIDEO0
-static void t113_tcontv_PLL_configuration(void)
-{
-#if CPUSTYLE_A64
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-
-	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-
-	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-
-	/* Lock enable */
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);
-
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))
-		;
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	const uint_fast32_t N = 72;     // N=72 => PLL_VIDEO0(4x) = 24*N/M = 24*72/2 = 864 MHz
-	const uint_fast32_t M = 4;
-
-	CCU->PLL_VIDEO0_CTRL_REG = 0;
-	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-
-	CCU->PLL_VIDEO0_CTRL_REG |=
-		1 * (UINT32_C(1) << 31) |	// PLL_EN
-		1 * (UINT32_C(1) << 30) |	// PLL_LDO_EN
-		1 * (UINT32_C(1) << 27) |	// PLL_OUTPUT_GATE
-		(N - 1) * (UINT32_C(1) << 8) |
-		(M - 1) * (UINT32_C(1) << 0) |
-		0;
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
-
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
-
-	while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
-		;
-
-	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
-
-
-//	PRINTF("allwnr_t113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video0pllx4_freq() / 1000 / 1000));
-//	PRINTF("allwnr_t113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video1pllx4_freq() / 1000 / 1000));
-
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
-
-#if defined (TCONTV_PTR)
-	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
-	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
-#endif /* defined (TCONTV_PTR) */
-
-#else
-#endif
-}
-
 #if WITHDSIHW
-
-//	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
-//	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
-
-// What is DPSS_TOP_BGR_REG ?
-static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
-{
-	unsigned pixdepth = 24;
-	const unsigned nlanes = WITHMIPIDSISHW_LANES;
-	const unsigned onepixelclocks = pixdepth / nlanes;
-	const uint_fast32_t dsifreq = display_getdotclock(vdmode) * pixdepth / nlanes;
-	unsigned prei = 0;
-	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, dsifreq);
-	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz, lanes=%u, depth=%u, pixelclock=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000, nlanes, pixdepth, display_getdotclock(vdmode) / 1000 / 1000);
-	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider, dsifreq);
-	// step1 - same as step1 in HV mode: Select HV interface type
-	t113_select_HV_interface_type(vdmode);
-	// step2 - Clock configuration
-	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
-	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
-	// step4 - same as step4 in HV mode: Open volatile output
-	t113_open_IO_output(vdmode);
-	// step5 - set LVDS digital logic configuration
-	t113_set_LVDS_digital_logic(vdmode);
-	// step6 - LVDS controller configuration
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	// These CPUs not support DSI at all
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	(void) DSI0->DSI_CTL;
-
-#else
-
-#endif
-	t113_DSI_controller_configuration(vdmode);
-	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
-	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
-	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_module_enable(vdmode);
-
-}
 
 #endif /* WITHDSIHW */
 
@@ -7862,7 +7781,7 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 
 static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
-	t113_tcon_PLL_configuration();
+	t113_tcontv_PLL_configuration();
 	t113_HDMI_CCU_configuration();
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
@@ -7929,7 +7848,51 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 #elif WITHMIPIDSISHW
-t113_tcon_dsi_initsteps(vdmode);
+
+//	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
+//	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
+
+// What is DPSS_TOP_BGR_REG ?
+static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
+{
+	unsigned pixdepth = 24;
+	const unsigned nlanes = WITHMIPIDSISHW_LANES;
+	const unsigned onepixelclocks = pixdepth / nlanes;
+	const uint_fast32_t dsifreq = display_getdotclock(vdmode) * pixdepth / nlanes;
+	unsigned prei = 0;
+	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, dsifreq);
+	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz, lanes=%u, depth=%u, pixelclock=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000, nlanes, pixdepth, display_getdotclock(vdmode) / 1000 / 1000);
+	// step0 - CCU configuration
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider, dsifreq);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open volatile output
+	t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	// These CPUs not support DSI at all
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	(void) DSI0->DSI_CTL;
+
+#else
+
+#endif
+	t113_DSI_controller_configuration(vdmode);
+	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	t113_open_module_enable(vdmode);
+
+}
 
 #else // HW
 
@@ -7982,12 +7945,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	hardware_tcon_initialize(vdmode);
 
-#if defined (TCONTV_PTR) && 0
-	t113_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
-	hardware_tcontv_initialize(vdmode);
-
-#endif /* defined (TCONTV_PTR) */
-
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
 
@@ -8007,17 +7964,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 	/* эта инициализация после корректного соединния с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
-	//PRINTF("VI0:\n");
-	//printhex32(de3_getvi(rtmixid, 1), de3_getvi(rtmixid, 1), sizeof * de3_getvi(rtmixid, 1));
-	//t113_de_update(rtmixid);	/* Update registers */
 
 	// проверка различных scalers
-//			t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
-//			sun8i_vi_scaler_enable(rtmixid, 0);
-
+//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
+//	sun8i_vi_scaler_enable(rtmixid, 0);
 	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-
-//			t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
+//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
 
 	// save settings
 	t113_de_update(rtmixid);	/* Update registers */
