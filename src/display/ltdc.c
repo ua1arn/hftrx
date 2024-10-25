@@ -6602,7 +6602,7 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein,
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
-static void t113_tcontv_PLL_configuration(void)
+static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 {
 #if CPUSTYLE_H3
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
@@ -6681,7 +6681,7 @@ static void t113_tcontv_PLL_configuration(void)
 #endif
 }
 
-static void t113_HDMI_CCU_configuration(void)
+static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 {
 #if CPUSTYLE_H3
 
@@ -7511,13 +7511,31 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	phy->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
 	phy->HDMI_PHY_CEC = 0;
 
-	#define PHY_PLL1_VAL (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)))
-	#define PHY_PLL2_VAL 0x80084381
-	#define PHY_PLL3_VAL 0x00000001
+#if 1
+	// 158.5 MHz
+	const uint_fast32_t PHY_PLL1_VAL = (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)));
+	const uint_fast32_t PHY_PLL2_VAL = 0x80084381;
+	const uint_fast32_t PHY_PLL3_VAL = 0x00000001;
+
+	const uint_fast32_t PHY_CFG1_VAL = 0x01FFFF7F;
+	const uint_fast32_t PHY_CFG2_VAL = 0x8063A800;
+	const uint_fast32_t PHY_CFG3_VAL = 0x0F81C485;
+#else
+	// 74.25 MHz
+	const uint_fast32_t PHY_PLL1_VAL = 0x3ddc5040;
+	const uint_fast32_t PHY_PLL2_VAL = 0x80084343;
+	const uint_fast32_t PHY_PLL3_VAL = 0x00000001;
+
+	const uint_fast32_t tmp_rcal_200 = 0;
+	const uint_fast32_t PHY_CFG1_VAL = 0x01FFFF7F;
+	const uint_fast32_t PHY_CFG2_VAL = 0x80623000 | tmp_rcal_200;
+	const uint_fast32_t PHY_CFG3_VAL = 0x0F814385;
+#endif
 
 	PRINTF("x=%08x\n", (unsigned) (PHY_PLL1_VAL ^ 0x39dc5040));
 	switch (dotclock)
 	{
+	case 74250000:
 	case 148500000:
 		phy->HDMI_PHY_PLL1 = PHY_PLL1_VAL;
 		phy->HDMI_PHY_PLL2 = PHY_PLL2_VAL;
@@ -7531,9 +7549,9 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 			phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
 		}
 
-		phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
-		phy->HDMI_PHY_CFG2 = 0x8063A800;
-		phy->HDMI_PHY_CFG3 = 0x0F81C485;
+		phy->HDMI_PHY_CFG1 = PHY_CFG1_VAL;
+		phy->HDMI_PHY_CFG2 = PHY_CFG2_VAL;
+		phy->HDMI_PHY_CFG3 = PHY_CFG3_VAL;
 		break;
 
 //	case 297000000:
@@ -7821,8 +7839,8 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
-	t113_tcontv_PLL_configuration();
-	t113_HDMI_CCU_configuration();
+	t113_tcontv_PLL_configuration(dotclock);
+	t113_HDMI_CCU_configuration(dotclock);
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
 	//xt507_tcontv_CCU_configuration();
