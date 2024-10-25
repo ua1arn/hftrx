@@ -6714,7 +6714,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
 		CCU->TCON0_CLK_REG = 0;
 		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			0 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
+			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
 			(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
@@ -6724,7 +6724,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			0 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 			(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING

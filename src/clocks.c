@@ -2506,7 +2506,15 @@ uint_fast64_t allwnr_a64_get_pll_video0_x2_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	if (reg & (UINT32_C(1) << 25))	// FRAC_CLK_OUT
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
+	else
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
+
 }
 
 // A64
@@ -2516,7 +2524,14 @@ uint_fast64_t allwnr_a64_get_pll_video1_x2_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	if (reg & (UINT32_C(1) << 25))	// FRAC_CLK_OUT
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
+	else
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
 }
 
 // A64
