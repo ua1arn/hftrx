@@ -7715,7 +7715,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 			);
 }
 
-static void h3_hdmi_tcon_seq_init(const videomode_t * vdmode)
+static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -7891,10 +7891,6 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 }
 
-///////////////////////////////
-///
-
-#if CPUSTYLE_T507 && WITHHDMITVHW
 
 
 static void xt507_tcontv_sequence_parameters(const videomode_t * vdmode)
@@ -7980,39 +7976,6 @@ static void xt507_tcontv_sequence_parameters(const videomode_t * vdmode)
 
 }
 
-static void xt507_tcon_hdmi_initsteps(const videomode_t * vdmode)
-{
-#if defined (TCONLCD_PTR)
-	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
-	unsigned prei = 0;
-	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
-	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(prei, divider, lvdsfreq);
-	// step1 - same as step1 in HV mode: Select HV interface type
-	t113_select_HV_interface_type(vdmode);
-	// step2 - Clock configuration
-	t113_LVDS_clock_configuration(vdmode);
-	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
-	// step4 - same as step4 in HV mode: Open volatile output
-	t113_open_IO_output(vdmode);
-	// step5 - set LVDS digital logic configuration
-	t113_set_LVDS_digital_logic(vdmode);
-	// step6 - LVDS controller configuration
-	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
-	t113_LVDS_controller_configuration(vdmode, 0);
-	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
-	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_module_enable(vdmode);
-
-#endif /* defined (TCONLCD_PTR) */
-}
-
-static void xt507_hdmi_tcon_initialize(const videomode_t * vdmode)
-{
-	xt507_tcon_hdmi_initsteps(vdmode);
-}
 
 static void xt507_tcontv_CCU_configuration(void)
 {
@@ -8065,11 +8028,13 @@ static void xt507_tcontv_CCU_configuration(void)
     //TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 }
 
-static void t507_hdmi_tcon_init(const videomode_t * vdmode)
+static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
+	t113_tcon_PLL_configuration();
+	t113_HDMI_CCU_configuration();
 	// step0 - CCU configuration
 	//t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
-	xt507_tcontv_CCU_configuration();
+	//xt507_tcontv_CCU_configuration();
 	// step1 - same as step1 in HV mode: Select HV interface type
 	//t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -8092,15 +8057,42 @@ static void t507_hdmi_tcon_init(const videomode_t * vdmode)
 	t113_tve_CCU_configuration(vdmode);
 	t113_tve_DAC_configuration(vdmode);
 #endif /* defined (TVENCODER_PTR) */
-}
+	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
+	unsigned prei = 0;
+	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
+	// step0 - CCU configuration
+	t113_tconlcd_CCU_configuration(prei, divider, lvdsfreq);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	//t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_LVDS_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_set_tvout_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open volatile output
+	//t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	//t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	//t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
+	//t113_LVDS_controller_configuration(vdmode, 0);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	t113_open_module_enable(vdmode);
 
-#endif /* CPUSTYLE_T507 */
+	h3_hdmi_phy_init();
+	h3_hdmi_init(vdmode);
+
+	t507_hdmi_edid_test();
+	t507_hdmi_edid_test();
+
+}
 
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
 #if WITHHDMITVHW
-	xt507_tcon_hdmi_initsteps(vdmode);
+	t113_tcon_hdmi_initsteps(vdmode);
 #elif WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
 #elif WITHMIPIDSISHW
@@ -8135,10 +8127,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		hardware_de_initialize(vdmode);
 		awxx_deoutmapping(RTMIXIDLCD - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
-		t113_tcon_PLL_configuration();
-#if WITHHDMITVHW
-		t113_HDMI_CCU_configuration();
-#endif /* WITHHDMITVHW */
 		hardware_tcon_initialize(vdmode);
 
 #if defined (TCONTV_PTR)
@@ -8146,7 +8134,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		hardware_tcontv_initialize(vdmode);
 
 #endif /* defined (TCONTV_PTR) */
-
 
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
@@ -8163,20 +8150,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		}
 #endif
 
-#if WITHHDMITVHW
-#if CPUSTYLE_T507
-	t507_hdmi_tcon_init(vdmode_HDMI);
-#endif
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
-    	t507_hdmi_phy_initialize();
-    	t507_hdmi_phy_set();
-#endif
-		h3_hdmi_phy_init();
-		h3_hdmi_init(vdmode_HDMI);
-		h3_hdmi_tcon_seq_init(vdmode_HDMI);
-#endif /* WITHHDMITVHW */
-		t507_hdmi_edid_test();
-		t507_hdmi_edid_test();
 		{
 			const int rtmixid = RTMIXIDLCD;
 
