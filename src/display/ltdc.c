@@ -8339,24 +8339,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		// Set DE MODE if need, mapping GPIO pins
 		ltdc_tfcon_cfg(vdmode);
 
-#if CPUSTYLE_T507
-	//xt507_de_initialize(vdmode);
-	xt507_tcon_PLL_configuration();	// VIDEO & VIDEO1
-	xt507_hdmi_tcon_initialize(vdmode);
-	xt507_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
-	xt507_tcontv_initialize(vdmode);
-	xt507_hdmi_CCU_configuration();
-
-	t507_hdmi_phy_initialize();
-//	xt507_hdmi_phy_initialize();
-//	xt507_hdmi_initialize();
-//	h3_hdmi_phy_init();
-//	h3_hdmi_init(vdmode);
-
-	t507_hdmi_edid_test();
-	t507_hdmi_edid_test();
-#endif
-
 #if defined (TCONTV_PTR)
 		{
 			const int rtmixid = RTMIXIDTV;
@@ -8378,6 +8360,25 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		h3_hdmi_init(vdmode_HDMI);
 		h3_hdmi_tcon_init(vdmode_HDMI);
 #endif /* WITHHDMITVHW */
+
+
+#if CPUSTYLE_T507
+	//xt507_de_initialize(vdmode);
+	//xt507_tcon_PLL_configuration();	// VIDEO & VIDEO1
+	xt507_hdmi_tcon_initialize(vdmode);
+	xt507_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
+	xt507_tcontv_initialize(vdmode);
+	xt507_hdmi_CCU_configuration();
+
+	t507_hdmi_phy_initialize();
+//	xt507_hdmi_phy_initialize();
+//	xt507_hdmi_initialize();
+//	h3_hdmi_phy_init();
+//	h3_hdmi_init(vdmode);
+
+	t507_hdmi_edid_test();
+	t507_hdmi_edid_test();
+#endif
 		{
 			const int rtmixid = RTMIXIDLCD;
 
