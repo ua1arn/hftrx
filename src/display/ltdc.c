@@ -7389,17 +7389,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 #endif
 }
 
-static void hardware_tcon_initialize(const videomode_t * vdmode)
-{
-#if WITHLVDSHW
-	t113_tcon_lvds_initsteps(vdmode);
-#elif WITHMIPIDSISHW
-	t113_tcon_dsi_initsteps(vdmode);
-#else /* WITHLVDSHW */
-	t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
-#endif /* WITHLVDSHW */
-}
-
 #if defined (TCONTV_PTR)
 static void hardware_tcontv_initialize(const videomode_t * vdmode)
 {
@@ -7726,7 +7715,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 			);
 }
 
-static void h3_hdmi_tcon_init(const videomode_t * vdmode)
+static void h3_hdmi_tcon_seq_init(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -8066,24 +8055,22 @@ static void t507_hdmi_tcon_init(const videomode_t * vdmode)
 	t113_tve_DAC_configuration(vdmode);
 #endif /* defined (TVENCODER_PTR) */
 }
-static void xt507_tcontv_PLL_configuration(void)
-{
-
-	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-
-	/* Lock enable */
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);
-
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))
-		;
-
-}
-
-
 
 #endif /* CPUSTYLE_T507 */
+
+
+static void hardware_tcon_initialize(const videomode_t * vdmode)
+{
+#if WITHHDMITVHW
+	xt507_tcon_hdmi_initsteps(vdmode);
+#elif WITHLVDSHW
+	t113_tcon_lvds_initsteps(vdmode);
+#elif WITHMIPIDSISHW
+	t113_tcon_dsi_initsteps(vdmode);
+#else /* WITHLVDSHW */
+	t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
+#endif /* WITHLVDSHW */
+}
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
@@ -8145,7 +8132,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 		h3_hdmi_phy_init();
 		h3_hdmi_init(vdmode_HDMI);
-		h3_hdmi_tcon_init(vdmode_HDMI);
+		h3_hdmi_tcon_seq_init(vdmode_HDMI);
 #if CPUSTYLE_T507
 	t507_hdmi_tcon_init(vdmode_HDMI);
 #endif
