@@ -4517,7 +4517,25 @@ static void t113_tcontv_set_and_open_interrupt_function(const videomode_t * vdmo
 
 #endif /* defined (TCONTV_PTR) */
 
+#if WITHHDMITVHW
 
+// Open module enable
+static void t113_open_tvout_module_enable(const videomode_t * vdmode)
+{
+#if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#elif CPUSTYLE_A64
+	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#else
+	TCONLCD_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#endif
+#endif /* defined (TCONLCD_PTR) */
+}
+#else /* WITHHDMITVHW */
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
@@ -4534,6 +4552,7 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 #endif
 #endif /* defined (TCONLCD_PTR) */
 }
+#endif /* WITHHDMITVHW */
 
 // Open module enable
 static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
@@ -4542,27 +4561,6 @@ static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
 	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
 #endif /* defined (TCONTV_PTR) */
-}
-
-// Paraleal RGB mode, HDMI mode
-static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
-{
-	unsigned prei = 0;
-	unsigned divider = 1;
-	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(prei, divider, 0);
-	// step1 - Select HV interface type
-	t113_select_HV_interface_type(vdmode);
-	// step2 - Clock configuration
-	t113_HV_clock_configuration(vdmode);
-	// step3 - Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
-	// step4 - Open volatile output
-	t113_open_IO_output(vdmode);
-	// step5 - Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
-	// step6 - Open module enable
-	t113_open_module_enable(vdmode);
 }
 
 #if defined (TCONTV_PTR)
@@ -6812,8 +6810,8 @@ static void t113_HDMI_CCU_configuration(void)
 
     local_delay_us(10);
 
-	TCONLCD_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+//	TCON_TV0->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+//	TCON_TV0->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 
     PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
@@ -6882,35 +6880,6 @@ static void t113_tcontv_PLL_configuration(void)
 
 #else
 #endif
-}
-
-static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
-{
-#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
-	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
-	unsigned prei = 0;
-	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
-	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(prei, divider, lvdsfreq);
-	// step1 - same as step1 in HV mode: Select HV interface type
-	t113_select_HV_interface_type(vdmode);
-	// step2 - Clock configuration
-	t113_LVDS_clock_configuration(vdmode);
-	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
-	// step4 - same as step4 in HV mode: Open volatile output
-	t113_open_IO_output(vdmode);
-	// step5 - set LVDS digital logic configuration
-	t113_set_LVDS_digital_logic(vdmode);
-	// step6 - LVDS controller configuration
-	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
-	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
-	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
-	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_module_enable(vdmode);
-
-#endif /* defined (TCONLCD_PTR) */
 }
 
 #if WITHDSIHW
@@ -7889,7 +7858,7 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 }
 
-
+#if WITHHDMITVHW
 
 static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
@@ -7914,7 +7883,7 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_module_enable(vdmode);
+	t113_open_tvout_module_enable(vdmode);
 
 	h3_hdmi_phy_init();
 	h3_hdmi_init(vdmode);
@@ -7929,6 +7898,62 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	t507_hdmi_edid_test();
 
 }
+#elif WITHLVDSHW
+
+static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
+{
+#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
+	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
+	unsigned prei = 0;
+	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
+	// step0 - CCU configuration
+	t113_tconlcd_CCU_configuration(prei, divider, lvdsfreq);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_LVDS_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open volatile output
+	t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
+	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	t113_open_module_enable(vdmode);
+
+#endif /* defined (TCONLCD_PTR) */
+}
+#elif WITHMIPIDSISHW
+t113_tcon_dsi_initsteps(vdmode);
+
+#else // HW
+
+// Paraleal RGB mode, HDMI mode
+static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
+{
+	unsigned prei = 0;
+	unsigned divider = 1;
+	// step0 - CCU configuration
+	t113_tconlcd_CCU_configuration(prei, divider, 0);
+	// step1 - Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_HV_clock_configuration(vdmode);
+	// step3 - Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - Open volatile output
+	t113_open_IO_output(vdmode);
+	// step5 - Set and open interrupt function
+	t113_set_and_open_interrupt_function(vdmode);
+	// step6 - Open module enable
+	t113_open_module_enable(vdmode);
+}
+#endif
 
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
@@ -7948,75 +7973,54 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
 
-//	{
-//		uintptr_t p;
-//		p = T113_DE_BASE_N((1))+T113_DE_MUX_VSU;
-//		PRINTF("VSU at 0x%08X\n", p);
-//		ASSERT(p == DE_MIXER0_VSU0_BASE);
-//		p = T113_DE_BASE_N((2))+T113_DE_MUX_VSU;
-//		PRINTF("VSU at 0x%08X\n", p);
-//		ASSERT(p == DE_MIXER1_VSU0_BASE);
-//	}
-
-	{
+	const int rtmixid = RTMIXIDLCD;
 #if WITHHDMITVHW
-#elif defined (TCONTV_PTR)
-	const videomode_t * const vdmode_CRT = get_videomode_CRT();
+	vdmode = get_videomode_HDMI();
 #endif
-//	const videomode_t * const vdmode_CRT = get_videomode_HDMI();
-	const videomode_t * const vdmode_HDMI = get_videomode_HDMI();
+	hardware_de_initialize(vdmode);
+	awxx_deoutmapping(rtmixid - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
-		hardware_de_initialize(vdmode);
-		awxx_deoutmapping(RTMIXIDLCD - 1);	// Какой RTMIX использовать для вывода на TCONLCD
+	hardware_tcon_initialize(vdmode);
 
-		hardware_tcon_initialize(vdmode);
-
-#if defined (TCONTV_PTR)
-		t113_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
-		hardware_tcontv_initialize(vdmode);
+#if defined (TCONTV_PTR) && 0
+	t113_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
+	hardware_tcontv_initialize(vdmode);
 
 #endif /* defined (TCONTV_PTR) */
 
-		// Set DE MODE if need, mapping GPIO pins
-		ltdc_tfcon_cfg(vdmode);
+	// Set DE MODE if need, mapping GPIO pins
+	ltdc_tfcon_cfg(vdmode);
 
 #if defined (TCONTV_PTR)
-		{
-			const int rtmixid = RTMIXIDTV;
+	{
 
-			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_bld_initialize(rtmixid, vdmode_CRT, COLOR24(255, 0, 0));	// RED
-			t113_de_update(rtmixid);	/* Update registers */
+		/* эта инициализация после корректного соединния с работающим TCON */
+		t113_de_bld_initialize(rtmixid, vdmode_CRT, COLOR24(255, 0, 0));	// RED
+		t113_de_update(rtmixid);	/* Update registers */
 
-			t113_de_scaler_initialize(rtmixid, vdmode, vdmode_CRT);
-		}
+		t113_de_scaler_initialize(rtmixid, vdmode, vdmode_CRT);
+	}
 #endif
-
-		{
-			const int rtmixid = RTMIXIDLCD;
 
 #if WITHHDMITVHW
-			vdmode = vdmode_HDMI;
-			memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));
+	memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));
 #endif
-			/* эта инициализация после корректного соединния с работающим TCON */
-			t113_de_bld_initialize(rtmixid, vdmode_HDMI, COLOR24(255, 0, 0));	// RED
-			//PRINTF("VI0:\n");
-			//printhex32(de3_getvi(rtmixid, 1), de3_getvi(rtmixid, 1), sizeof * de3_getvi(rtmixid, 1));
-			//t113_de_update(rtmixid);	/* Update registers */
+	/* эта инициализация после корректного соединния с работающим TCON */
+	t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
+	//PRINTF("VI0:\n");
+	//printhex32(de3_getvi(rtmixid, 1), de3_getvi(rtmixid, 1), sizeof * de3_getvi(rtmixid, 1));
+	//t113_de_update(rtmixid);	/* Update registers */
 
-			// проверка различных scalers
+	// проверка различных scalers
 //			t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
 //			sun8i_vi_scaler_enable(rtmixid, 0);
 
-			h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
 
 //			t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
 
-			// save settings
-			t113_de_update(rtmixid);	/* Update registers */
-		}
-	}
+	// save settings
+	t113_de_update(rtmixid);	/* Update registers */
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
