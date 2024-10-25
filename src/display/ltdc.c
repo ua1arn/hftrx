@@ -4493,10 +4493,8 @@ static void TCONTV_IRQHandler(void)
 #endif /* WITHLTDCHWVBLANKIRQ */
 
 // Set and open interrupt function
-static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
+static void t113_set_and_open_interrupt_function(void)
 {
-	TP();
-	(void) vdmode;
 	// enabling the irq after io settings
 #if WITHLTDCHWVBLANKIRQ
 	TCONLCD_GINT0_REG = LCD_VB_INT_EN;
@@ -4506,9 +4504,8 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 }
 
 // Set and open interrupt function
-static void t113_set_and_open_tvout_interrupt_function(const videomode_t * vdmode)
+static void t113_set_and_open_tvout_interrupt_function(void)
 {
-	(void) vdmode;
 	// enabling the irq after io settings
 #if WITHLTDCHWVBLANKIRQ
 	TCONLCD_GINT0_REG = TVOUT_VB_INT_EN;
@@ -4520,7 +4517,7 @@ static void t113_set_and_open_tvout_interrupt_function(const videomode_t * vdmod
 #if WITHHDMITVHW
 
 // Open module enable
-static void t113_open_tvout_module_enable(const videomode_t * vdmode)
+static void t113_open_tvout_module_enable(void)
 {
 #if defined (TCONLCD_PTR)
 #if CPUSTYLE_H3
@@ -7466,7 +7463,7 @@ void hardware_edid_test(void)
 //##	060100C0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 //##	060100E0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 
-static void h3_hdmi_phy_init(void)
+static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 {
 	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
 
@@ -7514,18 +7511,52 @@ static void h3_hdmi_phy_init(void)
 	phy->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
 	phy->HDMI_PHY_CEC = 0;
 
-	phy->HDMI_PHY_PLL1 = 0x39dc5040;
-	phy->HDMI_PHY_PLL2 = 0x80084381;
-	local_delay_us(10000);
-	phy->HDMI_PHY_PLL3 = 1;
-	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
-	local_delay_us(10000);
-	uint32_t tmp = (phy->HDMI_PHY_STS & 0x1F800) >> 11;
-	phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+	#define PHY_PLL1_VAL (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)))
+	#define PHY_PLL2_VAL 0x80084381
+	#define PHY_PLL3_VAL 0x00000001
 
-	phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
-	phy->HDMI_PHY_CFG2 = 0x8063A800;
-	phy->HDMI_PHY_CFG3 = 0x0F81C485;
+	PRINTF("x=%08x\n", (unsigned) (PHY_PLL1_VAL ^ 0x39dc5040));
+	switch (dotclock)
+	{
+	case 148500000:
+		phy->HDMI_PHY_PLL1 = PHY_PLL1_VAL;
+		phy->HDMI_PHY_PLL2 = PHY_PLL2_VAL;
+		local_delay_us(10000);
+		phy->HDMI_PHY_PLL3 = PHY_PLL3_VAL;
+		phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 25);
+
+		local_delay_us(10000);
+		{
+			uint32_t tmp = (phy->HDMI_PHY_STS & 0x1F800) >> 11;
+			phy->HDMI_PHY_PLL1 |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30) | tmp;
+		}
+
+		phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
+		phy->HDMI_PHY_CFG2 = 0x8063A800;
+		phy->HDMI_PHY_CFG3 = 0x0F81C485;
+		break;
+
+//	case 297000000:
+//
+//		phy->HDMI_PHY_PLL1 = 0x3ddc5040;
+//		phy->HDMI_PHY_PLL2 = 0x80084381;
+//		phy->HDMI_PHY_PLL3 = 1;
+//
+//		phy->HDMI_PHY_CFG1 = 0x01FFFF7F;
+//		phy->HDMI_PHY_CFG2 = 0x8063A800;
+//		phy->HDMI_PHY_CFG3 = 0x0F81C485;
+//		break;
+//
+//	case 74250000:
+//		break;
+//
+//	case 27000000:
+//		break;
+
+	default:
+		PRINTF("Unspecified dot clock %u Hz\n", (unsigned) dotclock);
+		break;
+	}
 
 	/* enable read access to HDMI controller */
 	phy->HDMI_PHY_READ_EN = 0x54524545;
@@ -7789,6 +7820,7 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 
 static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
+	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 	t113_tcontv_PLL_configuration();
 	t113_HDMI_CCU_configuration();
 	// step0 - CCU configuration
@@ -7808,11 +7840,11 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_tvout_interrupt_function(vdmode);
+	t113_set_and_open_tvout_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_tvout_module_enable(vdmode);
+	t113_open_tvout_module_enable();
 
-	h3_hdmi_phy_init();
+	h3_hdmi_phy_init(dotclock);
 	h3_hdmi_init(vdmode);
 
 
@@ -7849,7 +7881,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
 	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
+	t113_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 
@@ -7896,7 +7928,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_DSI_controller_configuration(vdmode);
 	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
+	t113_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 
@@ -7920,7 +7952,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step4 - Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
+	t113_set_and_open_interrupt_function();
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
 }
