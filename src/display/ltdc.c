@@ -4521,7 +4521,7 @@ static void t113_tcontv_set_and_open_interrupt_function(const videomode_t * vdmo
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
-#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
+#if defined (TCONLCD_PTR)
 #if CPUSTYLE_H3
 	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
@@ -6664,7 +6664,6 @@ static void t113_tcon_PLL_configuration(void)
 
 static void t113_HDMI_CCU_configuration(void)
 {
-#if WITHHDMITVHW
 #if CPUSTYLE_H3
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
@@ -6823,7 +6822,6 @@ static void t113_HDMI_CCU_configuration(void)
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));
 
 #endif
-#endif /* WITHHDMITVHW */
 }
 
 // T113: PLL_VIDEO0
@@ -7893,141 +7891,6 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 
 
 
-static void xt507_tcontv_sequence_parameters(const videomode_t * vdmode)
-{
-#if 1 /* TCONTV_PTR */
-
-	/* Accumulated parameters for this display */
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
-	const unsigned HSYNC = vdmode->hsync;	/*  */
-	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
-	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
-	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
-	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
-	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
-
-	// out parameters
-	//	LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
-	//	LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
-	//	LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
-	//	LCD0_TCON1_BASIC3 = (2199 << 16) | 191;
-	//	LCD0_TCON1_BASIC4 = (2250 << 16) | 40;
-	//	LCD0_TCON1_BASIC5 = (43 << 16) | 4;
-
-	TCONLCD_PTR->TV_CTL_REG =
-		(VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
-		0;
-
-	// XI YI
-	TCONLCD_PTR->TV_BASIC0_REG =
-		((WIDTH - 1) << 16) |
-		((HEIGHT - 1) << 0) |
-		0;
-	// LS_XO LS_YO NOTE: LS_YO = TV_YI
-	TCONLCD_PTR->TV_BASIC1_REG =
-		((WIDTH - 1) << 16) |
-		((HEIGHT - 1) << 0) |
-		0;
-	// TV_XO TV_YO
-	TCONLCD_PTR->TV_BASIC2_REG =
-		((WIDTH - 1) << 16) |
-		((HEIGHT - 1) << 0) |
-		0;
-	// HT HBP
-	TCONLCD_PTR->TV_BASIC3_REG =
-		((HTOTAL - 1) << 16) |		// TOTAL
-		((HBP - 1) << 0) |			// HBP
-		0;
-	// VT VBP
-	TCONLCD_PTR->TV_BASIC4_REG =
-		((VTOTAL * 2) << 16) | 		// VT Tvt = (VT)/2 * Thsync
-		((VBP - 1) << 0) |			// VBP Tvbp = (VBP+1) * Thsync
-		0;
-	// HSPW VSPW
-	TCONLCD_PTR->TV_BASIC5_REG =
-		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
-		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
-		0;
-
-	TCONLCD_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);
-
-	TCONLCD_PTR->TV_IO_POL_REG = 0;
-	TCONLCD_PTR->TV_IO_TRI_REG = 0;//0x0FFFFFFF;
-
-	//	 TV_SRC_SEL
-	//	 TV Source Select
-	//	 000: DE
-	//	 001: Color Check
-	//	 010: Grayscale Check
-	//	 011: Black by White Check
-	//	 100: Reserved
-	//	 101: Reserved
-	//	 111: Gridding Check
-
-	TCONLCD_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
-	TCONLCD_PTR->TV_GCTL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 1); //enable TCONTV
-
-#endif /* 1 TCONTV_PTR */
-
-}
-
-
-static void xt507_tcontv_CCU_configuration(void)
-{
-	const uint_fast32_t needfreq = 27000000; //display_getdotclock(vdmode);
-
-	const unsigned ix = TCONLCD_IX;	// TCONLCD_PTR
-
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
-
-    DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-    //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-    {
-    	// LVDS mode
-       	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
-		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t507_get_hosc_freq());
-		N = ulmin16(N, 256);
-		N = ulmax16(N, 1);
-
-		CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
-		CCU->PLL_VIDEO0_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
-		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
-		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
-		while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
-			;
-		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
-
-		PRINTF("xt507_tcontv_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
-    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
-    		0;
-    }
-
-    TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
-
-	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
-	CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
-	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
-
-//    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-//    local_delay_ms(10);
-
-
-    local_delay_us(10);
-
-    //TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
-}
-
 static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
 	t113_tcon_PLL_configuration();
@@ -8040,7 +7903,7 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	// step2 - Clock configuration
 	//t113_LVDS_clock_configuration(vdmode);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
-	xt507_tcontv_sequence_parameters(vdmode);
+	t113_set_tvout_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	//t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -8049,39 +7912,18 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	//xt507_tcontv_set_and_open_interrupt_function(vdmode);
-	// step8 - same as step6 in HV mode: Open module enable
-	//xt507_tcontv_open_module_enable(vdmode);
-
-#if defined (TVENCODER_PTR)
-	t113_tve_CCU_configuration(vdmode);
-	t113_tve_DAC_configuration(vdmode);
-#endif /* defined (TVENCODER_PTR) */
-	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
-	unsigned prei = 0;
-	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
-	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(prei, divider, lvdsfreq);
-	// step1 - same as step1 in HV mode: Select HV interface type
-	//t113_select_HV_interface_type(vdmode);
-	// step2 - Clock configuration
-	t113_LVDS_clock_configuration(vdmode);
-	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_tvout_sequence_parameters(vdmode);
-	// step4 - same as step4 in HV mode: Open volatile output
-	//t113_open_IO_output(vdmode);
-	// step5 - set LVDS digital logic configuration
-	//t113_set_LVDS_digital_logic(vdmode);
-	// step6 - LVDS controller configuration
-	//t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
-	//t113_LVDS_controller_configuration(vdmode, 0);
-	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 
 	h3_hdmi_phy_init();
 	h3_hdmi_init(vdmode);
+
+
+#if defined (TVENCODER_PTR)
+	t113_tve_CCU_configuration(vdmode);
+	t113_tve_DAC_configuration(vdmode);
+#endif /* defined (TVENCODER_PTR) */
 
 	t507_hdmi_edid_test();
 	t507_hdmi_edid_test();
