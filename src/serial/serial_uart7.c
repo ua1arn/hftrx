@@ -15,6 +15,7 @@
 #include "gpio.h"
 #include <string.h>
 #include <math.h>
+#include "clocks.h"
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 

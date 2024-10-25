@@ -12,7 +12,6 @@
 #include "gpio.h"
 #include "clocks.h"
 
-
 uint_fast32_t
 calcdivround2(
 	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
@@ -3077,7 +3076,7 @@ uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
-uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
+uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
@@ -3088,7 +3087,7 @@ uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
-uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void)
+uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N

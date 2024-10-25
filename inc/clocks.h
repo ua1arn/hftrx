@@ -276,8 +276,10 @@ uint_fast32_t allwnr_t507_get_pll_audio_1x_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_2x_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void);
-uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void);
-uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void);
+uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void);
+uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void);
+uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void);
+uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
 
 uint_fast32_t allwnr_t507_get_hosc_freq(void);

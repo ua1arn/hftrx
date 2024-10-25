@@ -29,6 +29,7 @@
 
 #include "utils.h"
 #include "gpio.h"
+#include "clocks.h"
 #include "src/touch/touch.h"
 
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
@@ -6742,8 +6743,11 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	unsigned M = calcdivround2(allwnr_a64_get_pll_video0_x2_freq(), dotclock * 2);
-	PRINTF("M=%u\n", M);
+	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
+	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
+	PRINTF("M_1=%u\n", M_1);
+	PRINTF("M_4=%u\n", M_4);
+
 	unsigned ix = TCONLCD_IX;
 
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
@@ -6772,7 +6776,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
     TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
 	const unsigned HDMI_CLK_REG_M = 2;
-	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (HDMI_CLK_REG_M - 1);
+	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
 
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
