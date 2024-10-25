@@ -6702,27 +6702,40 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 	unsigned M_X1 = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock);
 	PRINTF("MX2=%u\n", M_X2);
 	PRINTF("MX1=%u\n", M_X1);
+
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11); // Enable HDMI
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 10); // De-assert reset of HDMI0/1 - требуюия оба
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_GATING
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
 
-	const unsigned HDMI_CLK_REG_M = 1;
-	const unsigned TCONLCD_CCU_CLK_REG_M = 2;
-	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
-	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-
 	if (TCONLCD_IX == 0)
-		CCU->TCON0_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (UINT32_C(2) << 24); // 010: PLL_VIDEO0(2X)
+	{
+		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
+		CCU->TCON0_CLK_REG = 0;
+		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			0 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
+			(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
+			0;
+		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
 	else if (TCONLCD_IX == 1)
-		CCU->TCON1_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (UINT32_C(0) << 24); // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+	{
+		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
+		CCU->TCON1_CLK_REG = 0;
+		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			0 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+			(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
+			0;
+		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
 
-	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-		0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
-		(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
-		0;
-	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+	const unsigned HDMI_CLK_REG_M = 1;
+	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
+	CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31); // Enable HDMI slow clk
+
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 
 	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));	// 148.5 MHz
@@ -7540,7 +7553,6 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	const uint_fast32_t PHY_CFG3_VAL = 0x0F814385;
 #endif
 
-	PRINTF("x=%08x\n", (unsigned) (PHY_PLL1_VAL ^ 0x39dc5040));
 	switch (dotclock)
 	{
 	case 74250000:
