@@ -6688,15 +6688,20 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
 	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
 
-	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (1 - 0); // Enable HDMI clk (use PLL3)
+	unsigned M = calcdivround2(allwnr_h3_get_pll_video_freq(), dotclock);
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // Enable HDMI clk (use PLL3)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (2 - 1); // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 2
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 2
 
 	PRINTF("7 allwnr_h3_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_h3_get_hdmi_freq() / 1000));	// 148.5 MHz
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));	// 148.5 MHz
 
 #elif CPUSTYLE_A64
 
+	unsigned M_X2 = calcdivround2(allwnr_a64_get_pll_video0_x2_freq(), dotclock);
+	unsigned M_X1 = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock);
+	PRINTF("MX2=%u\n", M_X2);
+	PRINTF("MX1=%u\n", M_X1);
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11); // Enable HDMI
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 10); // De-assert reset of HDMI0/1 - требуюия оба
 
@@ -6704,6 +6709,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
 
 	const unsigned HDMI_CLK_REG_M = 1;
+	const unsigned TCONLCD_CCU_CLK_REG_M = 2;
 	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 
@@ -6714,7 +6720,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
-		1 * (UINT32_C(1) << 0) | // dvcider / 2
+		(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
@@ -6723,6 +6729,8 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	unsigned M = calcdivround2(allwnr_a64_get_pll_video0_x2_freq(), dotclock * 2);
+	PRINTF("M=%u\n", M);
 	unsigned ix = TCONLCD_IX;
 
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
