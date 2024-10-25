@@ -7564,43 +7564,8 @@ void hardware_edid_test(void)
 #if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW && CPUSTYLE_T507
 
 
-static void xt507_hdmi_initialize(void)
+static void xt507_hdmi_phy_initialize(void)
 {
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_DESIGN_ID,
-			hdmi->HDMI_REVISION_ID,
-			hdmi->HDMI_PRODUCT_ID0,
-			hdmi->HDMI_PRODUCT_ID1
-			);
-
-	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_CONFIG0_ID,
-			hdmi->HDMI_CONFIG1_ID,
-			hdmi->HDMI_CONFIG2_ID,
-			hdmi->HDMI_CONFIG3_ID
-			);
-
-	// I2C speed
-	unsigned i2c_speed_divider = 0xFFFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR = 0xFF;
-
-	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR = 0xFF;
-	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR = 0xFF;
-
-	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
-
-	// I2C reset
-	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
-	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
-		;
-
-	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
 
 	// EDID ("Extended display identification data") read
 	// Test I2C bus read
@@ -7716,6 +7681,46 @@ static void xt507_hdmi_initialize(void)
 	/* descramble register offsets */
 	T507_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 	ASSERT(T507_HDMI_PHY->UNSCRAMBLE == 0x42494E47);
+
+}
+
+static void xt507_hdmi_initialize(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_DESIGN_ID,
+			hdmi->HDMI_REVISION_ID,
+			hdmi->HDMI_PRODUCT_ID0,
+			hdmi->HDMI_PRODUCT_ID1
+			);
+
+	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_CONFIG0_ID,
+			hdmi->HDMI_CONFIG1_ID,
+			hdmi->HDMI_CONFIG2_ID,
+			hdmi->HDMI_CONFIG3_ID
+			);
+
+	// I2C speed
+	unsigned i2c_speed_divider = 0xFFFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR = 0xFF;
+
+	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR = 0xFF;
+	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR = 0xFF;
+
+	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
+
+	// I2C reset
+	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+		;
+
+	PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
 #if 1
 	const videomode_t * const vdmode = get_videomode_CRT();
 
@@ -8505,7 +8510,13 @@ static void xt507(const videomode_t * vdmode)
 	xt507_tcontv_PLL_configuration();	// перенастройка для получения точных 216 и 27 МГц
 	xt507_tcontv_initialize(vdmode);
 	xt507_hdmi_CCU_configuration();
+
+	xt507_hdmi_phy_initialize();
 	xt507_hdmi_initialize();
+//	h3_hdmi_phy_init();
+//	h3_hdmi_init(vdmode);
+
+	t507_hdmi_edid_test();
 	t507_hdmi_edid_test();
 }
 
@@ -8514,7 +8525,7 @@ static void xt507(const videomode_t * vdmode)
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
-#if CPUSTYLE_T507 && WITHHDMITVHW
+#if CPUSTYLE_T507 && WITHHDMITVHW && 0
 	xt507(vdmode);
 #endif /* CPUSTYLE_T507 */
 
@@ -8574,7 +8585,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 
 #if CPUSTYLE_T507
-		xt507_hdmi_initialize();
+		//xt507_hdmi_initialize();
 #else
 		h3_hdmi_phy_init();
 		h3_hdmi_init(vdmode_HDMI);
