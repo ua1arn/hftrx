@@ -3323,57 +3323,50 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 
 
 #if CPUSTYLE_H3
-	#define TCON_VB_INT_EN  	(UINT32_C(1) << 30)	// Enable the Vb interrupt
-	#define TCON_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
+	#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
+	#define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+
+	#define TVOUT_VB_INT_EN  		(UINT32_C(1) << 30)	// Enable the Vb interrupt
+	#define TVOUT_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
 
 #elif CPUSTYLE_A64
-	#define TCON0_VB_INT_EN  	(UINT32_C(1) << 31)	// TCON0_Vb_Int_En Enable the Vb interrupt
-	#define TCON0_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
+	#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// TCON0 Enable the Vb interrupt
+	#define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
 
-	#define TCON1_VB_INT_EN  	(UINT32_C(1) << 30)	// TCON1_Vb_Int_En Enable the Vb interrupt
-	#define TCON1_VB_INT_FLAG  	(UINT32_C(1) << 11)	// Asserted during vertical no-display period every frame
+	#define TVOUT_VB_INT_EN  		(UINT32_C(1) << 30)	// TCON1 Enable the Vb interrupt
+	#define TVOUT_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
 
 #else
 	#define LCD_VB_INT_EN  		(UINT32_C(1) << 31)	// Enable the Vb interrupt
 	#define LCD_VB_INT_FLAG  	(UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
 
-#endif
+	#define TVOUT_VB_INT_EN  		(UINT32_C(1) << 30)	// Enable the Vb interrupt
+	#define TVOUT_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
 
-#define TV_VB_INT_EN  		(UINT32_C(1) << 30)	// Enable the Vb interrupt
-#define TV_VB_INT_FLAG  	(UINT32_C(1) << 14)	// Asserted during vertical no-display period every frame
+#endif
 
 /* ожидаем начало кадра - используется если не по прерываниям*/
 static void hardware_ltdc_vsync(void)
 {
-#if defined (TCONLCD_PTR)
 #if WITHHDMITVHW
-#if CPUSTYLE_H3
-    TCONLCD_PTR->TCON_GINT0_REG &= ~ TCON_VB_INT_FLAG;         //clear TCON_VB_INT_FLAG
-    while ((TCONLCD_PTR->TCON_GINT0_REG & TCON_VB_INT_FLAG) == 0) //wait  TCON_VB_INT_FLAG
+
+    TCONLCD_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
+    while ((TCONLCD_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
         ;
-#elif CPUSTYLE_A64
-    TCONLCD_PTR->TCON_GINT0_REG &= ~ TCON1_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
-    while ((TCONLCD_PTR->TCON_GINT0_REG & TCON1_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
-        ;
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-    TCONLCD_PTR->TV_GINT0_REG &= ~ TV_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
-    while ((TCONLCD_PTR->TV_GINT0_REG & TV_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
-        ;
-#endif
 #else /* WITHHDMITVHW */
-    TCONLCD_PTR->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
-    while ((TCONLCD_PTR->LCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
+
+    TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
+    while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
         ;
 #endif /* WITHHDMITVHW */
-#endif /* defined (TCONLCD_PTR) */
 }
 
 /* ожидаем начало кадра - используется если не по прерываниям*/
 static void hardware_tvout_ltdc_vsync(void)
 {
 #if defined (TCONTV_PTR)
-    TCONTV_PTR->TV_GINT0_REG &= ~ TV_VB_INT_FLAG;         //clear TV_VB_INT_FLAG
-    while ((TCONTV_PTR->TV_GINT0_REG & TV_VB_INT_FLAG) == 0) //wait  TV_VB_INT_FLAG
+	TCONLCD_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TVOUT_VB_INT_FLAG
+    while ((TCONLCD_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TVOUT_VB_INT_FLAG
         ;
 #endif /* defined (TCONLCD_PTR) */
 }
@@ -4452,11 +4445,25 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 static void TCON_LCD_IRQHandler(void)
 {
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
-	const uint_fast32_t reg = TCONLCD_PTR->LCD_GINT0_REG;
+	const uint_fast32_t reg = TCONLCD_GINT0_REG;
 
 	if (reg & LCD_VB_INT_FLAG)
 	{
-		TCONLCD_PTR->LCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
+		TCONLCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
+		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
+		hardware_ltdc_vblank(0);	// Update framebuffer if needed
+	}
+}
+
+// overrealtime priority handler
+static void TCONTV_LCD_IRQHandler(void)
+{
+	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
+	const uint_fast32_t reg = TCONLCD_GINT0_REG;
+
+	if (reg & TVOUT_VB_INT_FLAG)
+	{
+		TCONLCD_GINT0_REG = reg & ~ TVOUT_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(0);	// Update framebuffer if needed
 	}
@@ -4471,9 +4478,9 @@ static void TCONTV_IRQHandler(void)
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
 	const uint_fast32_t reg = TCONTV_PTR->TV_GINT0_REG;
 
-	if (reg & TV_VB_INT_FLAG)
+	if (reg & TVOUT_VB_INT_FLAG)
 	{
-		TCONTV_PTR->TV_GINT0_REG = reg & ~ TV_VB_INT_FLAG;
+		TCONTV_PTR->TV_GINT0_REG = reg & ~ TVOUT_VB_INT_FLAG;
 		if ((TCONTV_PTR->TV_DEBUG_REG & (UINT32_C(1) << 28)) == 0) // TV_FIELD_POL: 0: Second field, 1: First field
 		{
 			hardware_ltdc_vblank(1);	// Update framebuffer if needed
@@ -4485,37 +4492,30 @@ static void TCONTV_IRQHandler(void)
 
 #endif /* WITHLTDCHWVBLANKIRQ */
 
-#if defined (TCONLCD_PTR)
-
 // Set and open interrupt function
 static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
+	TP();
 	(void) vdmode;
 	// enabling the irq after io settings
 #if WITHLTDCHWVBLANKIRQ
-	TCONLCD_PTR->LCD_GINT0_REG = LCD_VB_INT_EN;
+	TCONLCD_GINT0_REG = LCD_VB_INT_EN;
 	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCON_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
 }
 
-#endif /* defined (TCONLCD_PTR) */
-
-#if defined (TCONTV_PTR)
-
 // Set and open interrupt function
-static void t113_tcontv_set_and_open_interrupt_function(const videomode_t * vdmode)
+static void t113_set_and_open_tvout_interrupt_function(const videomode_t * vdmode)
 {
 	(void) vdmode;
 	// enabling the irq after io settings
 #if WITHLTDCHWVBLANKIRQ
-	TCONTV_PTR->TV_GINT0_REG = TV_VB_INT_EN;
-	arm_hardware_set_handler_overrealtime(TCONTV_IRQ, TCONTV_IRQHandler);
+	TCONLCD_GINT0_REG = TVOUT_VB_INT_EN;
+	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCONTV_LCD_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
 }
-
-#endif /* defined (TCONTV_PTR) */
 
 #if WITHHDMITVHW
 
@@ -7800,7 +7800,7 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_interrupt_function(vdmode);
+	t113_set_and_open_tvout_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_tvout_module_enable(vdmode);
 
@@ -8065,11 +8065,18 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 		return;
 
 	t113_de_set_address_vi(rtmixid, p1, 1);
-	// 5.10.9.1 BLD fill color control register
-	// BLD_FILL_COLOR_CTL
-	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+	const uint_fast32_t mask =
+		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 		0;
+	if (mask != bld->BLD_EN_COLOR_CTL)
+	{
+		// 5.10.9.1 BLD fill color control register
+		// BLD_FILL_COLOR_CTL
+		bld->BLD_EN_COLOR_CTL =
+			mask	| // pipe0 enable - from VI1
+			0;
+		t113_de_update(rtmixid);	/* Update registers */
+	}
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
@@ -8082,11 +8089,18 @@ void hardware_ltdc_tvout_set_no_vsync(uintptr_t p1)
 		return;
 
 	t113_de_set_address_vi2(rtmixid, p1, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-	// 5.10.9.1 BLD fill color control register
-	// BLD_FILL_COLOR_CTL
-	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+	const uint_fast32_t mask =
+		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 		0;
+	if (mask != bld->BLD_EN_COLOR_CTL)
+	{
+		// 5.10.9.1 BLD fill color control register
+		// BLD_FILL_COLOR_CTL
+		bld->BLD_EN_COLOR_CTL =
+			mask	| // pipe0 enable - from VI1
+			0;
+		t113_de_update(rtmixid);	/* Update registers */
+	}
 #endif
 }
 

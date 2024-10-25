@@ -149,7 +149,7 @@
 		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 		//#define WITHGPUHW	1	/* Graphic processor unit */
-		//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 	#endif
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -997,6 +997,7 @@
 	#if 1
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define TCONLCD_GINT0_REG (TCON0->TCON_GINT0_REG)
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define BOARD_TCONLCDFREQ (allwnr_h3_get_tcon0_freq())	/* 0 - TCON0, 1: TCON1 */
 		#define TCONLCD_IRQ TCON0_IRQn
