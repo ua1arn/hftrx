@@ -6,6 +6,7 @@
 #include "gpio.h"
 #include "src/display/display.h"
 #include "bsp_tvd.h"
+#include "clocks.h"
 
 #include <string.h>
 

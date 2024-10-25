@@ -22,6 +22,7 @@
 #if WITHTVDHW
 
 #include "bsp_tvd.h"
+#include "clocks.h"
 
 static volatile __tvd_top_dev_t *tvd_top_dev;
 static volatile __tvd_dev_t 	 *tvd_device[4];
