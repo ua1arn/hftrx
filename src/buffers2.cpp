@@ -3711,23 +3711,23 @@ void hardware_ltdc_vblank(unsigned ix)
 			}
 		}
 		break;
-#if defined (TCONTV_PTR)
-	case 1:
-		/* TVOUT / HDMI display */
-		{
-			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
-			if (fb != 0)
-			{
-				hardware_ltdc_tvout_set_no_vsync(fb);
-				if (lastset1fb != 0)
-				{
-					release_dmabuffercolmain1fb(lastset1fb);
-				}
-				lastset1fb = fb;
-			}
-		}
-		break;
-#endif
+//#if defined (TCONTV_PTR)
+//	case 1:
+//		/* TVOUT / HDMI display */
+//		{
+//			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
+//			if (fb != 0)
+//			{
+//				hardware_ltdc_tvout_set_no_vsync(fb);
+//				if (lastset1fb != 0)
+//				{
+//					release_dmabuffercolmain1fb(lastset1fb);
+//				}
+//				lastset1fb = fb;
+//			}
+//		}
+//		break;
+//#endif
 	}
 }
 
