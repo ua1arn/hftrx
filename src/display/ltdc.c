@@ -3783,6 +3783,7 @@ static void TCONLCD_IRQHandler(void)
 
 	if (reg & LCD_VB_INT_FLAG)
 	{
+		//dbg_putchar('v');
 		TCONLCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(0);	// Update framebuffer if needed
@@ -3800,6 +3801,7 @@ static void TCONTV_IRQHandler(void)
 
 	if (reg & TVOUT_VB_INT_FLAG)
 	{
+		//dbg_putchar('l');
 		TCONTV_GINT0_REG = reg & ~ TVOUT_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(0);	// Update framebuffer if needed
@@ -6592,18 +6594,21 @@ static void awxx_deoutmapping(unsigned disp)
 //	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
 //	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(1) << 0)) | !! disp * (UINT32_C(1) << 0);
+	DE_TOP->DE2TCON_MUX = 0x01;
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_H3
 	// This function configured DE2 as follows:
 	// MIXER0 -> WB -> MIXER1 -> HDMI
-	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(1) << 0)) | !! disp * (UINT32_C(1) << 0);
+	//DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(1) << 0)) | !! disp * (UINT32_C(1) << 0);
+	DE_TOP->DE2TCON_MUX = 0x01;
+	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	/* перенаправление выхода DE */
 	// 0x000000E4 initial value
-	//PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 	// На один TCON может быть направлен только один DE даже если второй выключен)
 //	DE_TOP->DE2TCON_MUX = SET_BITS(0 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
 //	DE_TOP->DE2TCON_MUX = SET_BITS(1 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
@@ -6641,14 +6646,14 @@ static void awxx_deoutmapping(unsigned disp)
 	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x0020;
 
 	// Undocumented
-	DE_TOP->DE2TCON_MUX =
-		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-		TG_DE2TCONTV0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
-		0;
-	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-	PRINTF("2 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
+//	DE_TOP->DE2TCON_MUX =
+//		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+//		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+//		TG_DE2TCONTV0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+//		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+//		0;
+	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
