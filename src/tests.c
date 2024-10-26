@@ -19,6 +19,7 @@
 #include "spi.h"
 #include "gpio.h"
 #include "utils.h"
+#include "clocks.h"
 
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"

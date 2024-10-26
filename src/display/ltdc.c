@@ -3899,8 +3899,16 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
+#if CPUSTYLE_H3
+	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+#elif CPUSTYLE_A64
+	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+#else /* CPUSTYLE_H3 */
 	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+#endif
 #endif /* defined (TCONTV_PTR) */
 }
 
@@ -6039,7 +6047,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 2
 
 	PRINTF("7 allwnr_h3_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_h3_get_hdmi_freq() / 1000));	// 148.5 MHz
-	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));	// 148.5 MHz
+	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 148.5 MHz
 
 #elif CPUSTYLE_A64
 
@@ -6051,10 +6059,10 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11); // Enable HDMI
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 10); // De-assert reset of HDMI0/1 - требуюия оба
 
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_GATING
-	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONTV_IX));	// TCONx_GATING
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONTV_IX));	// TCONx_RST De-assert
 
-	if (TCONLCD_IX == 0)
+	if (TCONTV_IX == 0)
 	{
 		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
 		CCU->TCON0_CLK_REG = 0;
@@ -6064,7 +6072,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 			0;
 		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	}
-	else if (TCONLCD_IX == 1)
+	else if (TCONTV_IX == 1)
 	{
 		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
 		CCU->TCON1_CLK_REG = 0;
@@ -6083,7 +6091,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 
 	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz
-	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000));	// 148.5 MHz
+	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 148.5 MHz
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 

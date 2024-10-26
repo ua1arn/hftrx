@@ -28,6 +28,7 @@
 #if WITHTINYUSB
 #include "formats.h"
 #include "gpio.h"
+#include "clocks.h"
 
 #include "buffers.h"
 
