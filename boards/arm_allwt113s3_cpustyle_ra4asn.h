@@ -1092,6 +1092,7 @@
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define BOARD_TCONLCDFREQ (allwnr_t113_get_tconlcd_freq())
+		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif

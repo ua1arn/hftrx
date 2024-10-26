@@ -21,6 +21,7 @@
 #include "di110.h"
 
 #include "sunxi_di.h"
+#include "clocks.h"
 
 static struct di_reg *di_reg_base;
 

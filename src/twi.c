@@ -8,9 +8,11 @@
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
-#include "gpio.h"
 
 #if WITHTWIHW || WITHTWISW
+
+#include "gpio.h"
+#include "clocks.h"
 
 void i2c_writeX(const i2cp_t * p, uint_fast8_t d);
 

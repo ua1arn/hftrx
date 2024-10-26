@@ -13,6 +13,7 @@
 #include "keyboard.h"
 #include "encoder.h"
 #include "display2.h"
+#include "clocks.h"
 
 #include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
