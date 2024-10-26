@@ -4,6 +4,7 @@
 
 #include "formats.h"
 #include "gpio.h"
+#include "clocks.h"
 
 /*
  * driver/sdhci-t113.c

@@ -7551,9 +7551,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	}
 #endif
 
-#if WITHHDMITVHW
-	memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));
-#endif
+//#if WITHHDMITVHW
+	memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
+//#endif
 	/* эта инициализация после корректного соединния с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
 

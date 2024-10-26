@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	/* sprintf() replacement */
 #include "gpio.h"
+#include "clocks.h"
 #include <ctype.h>
 #include <string.h>
 

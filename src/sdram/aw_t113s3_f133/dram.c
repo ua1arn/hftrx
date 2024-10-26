@@ -15,8 +15,8 @@
 #include "formats.h"
 #include "t113_dram.h"
 
-
-#include "spi.h"
+//#include "spi.h"
+#include "clocks.h"
 
 /**
  *
