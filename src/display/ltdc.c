@@ -3783,7 +3783,7 @@ static void TCONLCD_IRQHandler(void)
 
 	if (reg & LCD_VB_INT_FLAG)
 	{
-		//dbg_putchar('v');
+		//dbg_putchar('l');
 		TCONLCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(0);	// Update framebuffer if needed
@@ -3801,7 +3801,7 @@ static void TCONTV_IRQHandler(void)
 
 	if (reg & TVOUT_VB_INT_FLAG)
 	{
-		//dbg_putchar('l');
+		//dbg_putchar('t');
 		TCONTV_GINT0_REG = reg & ~ TVOUT_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 		hardware_ltdc_vblank(0);	// Update framebuffer if needed
@@ -6642,8 +6642,13 @@ static void awxx_deoutmapping(unsigned disp)
 //		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
 //		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
 //		0;
+
+	// +++++++++++++++++ ПРОВЕРЕНО ++++++++++++++++
 	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
-	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x0020;
+	// Для работы LVDS на RTMIX0 и TV0->HDMI на RTMIX1
+	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
+	DE_TOP->DE2TCON_MUX = 0x000000E4;
+	// ----------------- ПРОВЕРЕНО ----------------
 
 	// Undocumented
 //	DE_TOP->DE2TCON_MUX =
