@@ -7438,12 +7438,62 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 #else // HW
 
+
+// H3: PLL_VIDEO
+// A64: PLL_VIDEO0
+// T113: PLL_VIDEO1
+// T507: PLL_VIDEO1
+static void t113_tcon_PLL_configuration(void)
+{
+#if CPUSTYLE_H3
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	while ((CCU->PLL_VIDEO_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
+		;
+	local_delay_ms(50);
+
+#elif CPUSTYLE_A64
+
+	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
+		;
+	local_delay_ms(50);
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+
+	/* Lock enable */
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
+
+	/* Wait pll stable */
+	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
+		;
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+
+	/* Lock enable */
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
+
+	/* Wait pll stable */
+	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
+		;
+
+#else
+#endif
+}
+
 // Paraleal RGB mode, HDMI mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
 	unsigned divider = 1;
 	// step0 - CCU configuration
+	t113_tcon_PLL_configuration();
 	t113_tconlcd_CCU_configuration(prei, divider, 0);
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
