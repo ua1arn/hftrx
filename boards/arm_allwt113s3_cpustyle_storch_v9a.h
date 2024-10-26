@@ -1061,6 +1061,7 @@
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1 */
 	#endif
 
 	#if 0
@@ -1069,7 +1070,9 @@
 		#define	TCONTV_CCU_CLK_REG (CCU->TCONTV_CLK_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
+		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
 		#define BOARD_TCONTVFREQ (allwnr_t113_get_tcontv_freq())
+		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1 */
 	#endif
 
 	#if 0

@@ -1060,19 +1060,27 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
-	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
-	#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
-	#define TCONLCD_IRQ TCON_LCD0_IRQn
-	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
-
-	//	#define	TCONTV_IX 0	/* 0: TCON_TV0, 2: TCON_TV1 */
-	//	#define TCONTV_PTR TCON_TV0
-	//	#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
-	//	#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tvd0_freq())
+	#if WITHHDMITVHW
+		// Надо для HDMI и TVOUT
+		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
+		#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define TCONTV_IRQ TCON_TV0_IRQn
+		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
+		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1 */
+	#else
+		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
+		#define TCONLCD_IRQ TCON_LCD0_IRQn
+		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
+		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1 */
+	#endif
 
 #endif /* WITHLTDCHW */
 
