@@ -6611,7 +6611,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 #endif
 }
 
-static void awxx_deoutmapping(unsigned disp)
+static void awxx_deoutmapping(void)
 {
 #if CPUSTYLE_A64
 	// Only bit 0 valid
@@ -7343,11 +7343,11 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	const int rtmixid = RTMIXIDTV;
 #endif
 #if WITHHDMITVHW
-	vdmode = get_videomode_HDMI();
-#endif
+	vdmode = get_videomode_HDMI();	// test
+#endif /* WITHHDMITVHW */
 	hardware_de_initialize(vdmode);
 	hardware_tcon_initialize(vdmode);
-	awxx_deoutmapping(rtmixid - 1);	// Какой RTMIX использовать для вывода на TCONLCD
+	awxx_deoutmapping();				// после инициализации и TCON и DE
 
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
@@ -7364,6 +7364,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	// save settings
 	t113_de_update(rtmixid);	/* Update registers */
+
+
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
