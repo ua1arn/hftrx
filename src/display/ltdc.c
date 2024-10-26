@@ -6289,7 +6289,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
-
+#if defined (RTMIXIDLCD)
     {
     	const unsigned disp = RTMIXIDLCD - 1;
 
@@ -6299,7 +6299,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
      	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
 
     }
-#if defined (TCONTV_PTR)
+#endif
+#if defined (RTMIXIDTV)
     {
     	const unsigned disp = RTMIXIDTV - 1;
 
@@ -6350,6 +6351,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //		PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
 	}
 
+#if defined (RTMIXIDLCD)
 	{
 		const int rtmixid = RTMIXIDLCD;
 
@@ -6370,7 +6372,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
 	}
-#if defined (TCONTV_PTR)
+#endif
+#if defined (RTMIXIDTV)
 	{
 		const int rtmixid = RTMIXIDTV;
 
@@ -7350,7 +7353,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
 
+#if defined RTMIXIDLCD
 	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
 #if WITHHDMITVHW
 	vdmode = get_videomode_HDMI();
 #endif
@@ -7409,7 +7417,12 @@ hardware_ltdc_deinitialize(void)
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
+#if defined RTMIXIDLCD
 	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7436,7 +7449,12 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 /* set visible buffer start. Wait VSYNC. */
 void hardware_ltdc_main_set(uintptr_t p1)
 {
+#if defined RTMIXIDLCD
 	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7455,7 +7473,12 @@ void hardware_ltdc_main_set(uintptr_t p1)
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
+#if defined RTMIXIDLCD
 	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
