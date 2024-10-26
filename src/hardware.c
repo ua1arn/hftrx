@@ -17,7 +17,7 @@
 #include "gpio.h"
 #include "spi.h"
 #include "encoder.h"
-//#include "buffers.h"
+#include "clocks.h"
 
 #if WITHRTOS
 #include "FreeRTOS.h"

@@ -15,6 +15,7 @@
 #include "gpio.h"
 #include <string.h>
 #include <math.h>
+#include "clocks.h"
 
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 

@@ -13,6 +13,7 @@
 #include "spi.h"
 #include "synthcalcs.h"
 #include "keyboard.h"
+#include "clocks.h"
 #include "touch/touch.h"
 #include "display/display.h"
 #include "gui/gui.h"

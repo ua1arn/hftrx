@@ -12,7 +12,6 @@
 #include "gpio.h"
 #include "clocks.h"
 
-
 uint_fast32_t
 calcdivround2(
 	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
@@ -2506,7 +2505,15 @@ uint_fast64_t allwnr_a64_get_pll_video0_x2_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	if (reg & (UINT32_C(1) << 25))	// FRAC_CLK_OUT
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
+	else
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
+
 }
 
 // A64
@@ -2516,7 +2523,14 @@ uint_fast64_t allwnr_a64_get_pll_video1_x2_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	if (reg & (UINT32_C(1) << 25))	// FRAC_CLK_OUT
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
+	else
+	{
+		return (uint_fast64_t) allwnr_a64_get_hosc_freq() * N  / M;
+	}
 }
 
 // A64
@@ -3062,7 +3076,7 @@ uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
-uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
+uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
@@ -3073,7 +3087,7 @@ uint_fast32_t allwnr_t507_get_pll_video0_x4_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
-uint_fast32_t allwnr_t507_get_pll_video1_x4_freq(void)
+uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N

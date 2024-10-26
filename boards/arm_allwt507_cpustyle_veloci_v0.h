@@ -1330,6 +1330,7 @@
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONLCD_IRQ TCON_TV0_IRQn
+		#define TCONLCD_GINT0_REG (TCON_TV0->TV_GINT0_REG)
 		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_tv0_freq())
 	#else
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
@@ -1338,6 +1339,7 @@
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
+		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 	#endif
 

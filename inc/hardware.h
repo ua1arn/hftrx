@@ -1076,7 +1076,6 @@ void xcz_dds_rts(const uint_least64_t * value);// Установка центр�
 
 #include "taildefs.h"
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
-#include "clocks.h"
 uint32_t sys_now(void);
 uint32_t board_millis(void);	// tinyusb
 int  sys_dram_init(void);	// 0 - error

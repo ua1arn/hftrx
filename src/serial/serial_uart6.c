@@ -15,5 +15,6 @@
 #include "gpio.h"
 #include <string.h>
 #include <math.h>
+#include "clocks.h"
 
 #endif /* WITHUART6HW */
