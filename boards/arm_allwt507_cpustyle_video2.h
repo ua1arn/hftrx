@@ -1129,7 +1129,7 @@
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
 		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
-		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1 */
+		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#else
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
@@ -1139,7 +1139,7 @@
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
-		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1 */
+		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 
 #endif /* WITHLTDCHW */

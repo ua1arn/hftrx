@@ -2138,7 +2138,7 @@ struct lcd_timing
 
 #define SUN8I_HDMI_PHY_CEC_REG 0x003c
 
-
+#if 0
 static int32_t de_top_set_chn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
@@ -2220,7 +2220,7 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 
 	return 0;
 }
-
+#endif
 #else
 	//#error Undefined CPUSTYLE_xxx
 #endif
@@ -6289,28 +6289,21 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
-#if defined (RTMIXIDLCD)
     {
-    	const unsigned disp = RTMIXIDLCD - 1;
+	#if defined RTMIXIDLCD
+		const int rtmixid = RTMIXIDLCD;
+	#endif
+	#if defined RTMIXIDTV
+		const int rtmixid = RTMIXIDTV;
+	#endif
+		const int disp = rtmixid - 1;
 
     	// CORE0..CORE3 bits valid
 
-     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
-     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
+     	DE_TOP->DE_SCLK_GATE |= 0x0F; // UINT32_C(1) << disp;	// COREx_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= 0x0F; // UINT32_C(1) << disp;	// COREx_HCLK_GATE
 
     }
-#endif
-#if defined (RTMIXIDTV)
-    {
-    	const unsigned disp = RTMIXIDTV - 1;
-
-    	// CORE0..CORE3 bits valid
-
-     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
-     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
-
-    }
-#endif
  	// Only one bit writable
  	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
@@ -6340,10 +6333,10 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			0;
 
 		DE_TOP->DE_CHN2CORE_MUX =
-				0x00 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CIRE0
-				0x00 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CIRE0
-				0x01 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CIRE1
-				0x01 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CIRE1
+				0x00 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
+				0x00 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
+				0x01 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
+				0x01 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
 				0;
 
 //		PRINTF("DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
@@ -6351,31 +6344,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //		PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
 	}
 
-#if defined (RTMIXIDLCD)
 	{
+	#if defined RTMIXIDLCD
 		const int rtmixid = RTMIXIDLCD;
-
-		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-		if (glb != NULL)
-		{
-			glb->GLB_CTL =
-					(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
-					(UINT32_C(1) << 0) |		// EN RT enable/disable
-					0;
-
-			glb->GLB_CLK |= (UINT32_C(1) << 0);
-
-			//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
-			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
-			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
-
-			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
-		}
-	}
-#endif
-#if defined (RTMIXIDTV)
-	{
+	#endif
+	#if defined RTMIXIDTV
 		const int rtmixid = RTMIXIDTV;
+	#endif
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
@@ -6394,7 +6369,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 		}
 	}
-#endif
 
 #if 0
 	unsigned chn;
@@ -6657,51 +6631,24 @@ static void awxx_deoutmapping(unsigned disp)
 		TG_DE_PORT_PERH_TCONTV0,
 		TG_DE_PORT_PERH_TCONTV1,
 	};
-#if defined (TCONTV_PTR)
+
 	// Documented
 //    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
 //		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
 //		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
 //		0;
+	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
+	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x0020;
+
 	// Undocumented
 	DE_TOP->DE2TCON_MUX =
-		TG_DE2TCONTV0 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
 		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-		TG_DE2TCONLCD0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-		TG_DE2TCONTV1 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+		TG_DE2TCONTV0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
-#else
-
-#if 0 && ! WITHHDMITVHW
-	// Documented
-//    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
-//		TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
-//		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
-//		0;
-	switch (disp)
-	{
-	case 0:
-		// Undocumented
-		DE_TOP->DE2TCON_MUX =
-			TG_DE2TCONLCD1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-			TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-			TG_DE2TCONTV1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-			TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
-			0;
-		break;
-	case 1:
-		// Undocumented
-		DE_TOP->DE2TCON_MUX =
-			TG_DE2TCONLCD1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-			TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-			TG_DE2TCONLCD0 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-			TG_DE2TCONTV1 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
-			0;
-		break;
-	}
-#endif
-#endif
 	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	PRINTF("2 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -7363,9 +7310,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	vdmode = get_videomode_HDMI();
 #endif
 	hardware_de_initialize(vdmode);
-	awxx_deoutmapping(rtmixid - 1);	// Какой RTMIX использовать для вывода на TCONLCD
-
 	hardware_tcon_initialize(vdmode);
+	awxx_deoutmapping(rtmixid - 1);	// Какой RTMIX использовать для вывода на TCONLCD
 
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
