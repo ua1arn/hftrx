@@ -13,6 +13,7 @@
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
+#include "clocks.h"
 
 typedef struct codechw
 {
