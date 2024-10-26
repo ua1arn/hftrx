@@ -6223,21 +6223,36 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //		7 * (UINT32_C(1) << 0) |	// mixer0-div
 //		0;
 
- 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_SCLK_GATE
- 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_SCLK_GATE
- 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_HCLK_GATE
- 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_HCLK_GATE
+    {
+	#if defined RTMIXIDLCD
+		const int rtmixid = RTMIXIDLCD;
+	#endif
+	#if defined RTMIXIDTV
+		const int rtmixid = RTMIXIDTV;
+	#endif
+		const int disp = rtmixid - 1;
 
- 	DE_TOP->AHB_RESET = 0;	// All cores reset
-	DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
-	DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 1);		// CORE1_AHB_RESET
+	 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+	 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_SCLK_GATE
+	 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+	 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_HCLK_GATE
 
-	PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
-	PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
-	PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
+	 	DE_TOP->AHB_RESET = 0;	// All cores reset
+		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
+		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 1);		// CORE1_AHB_RESET
+
+		PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
+		PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
+		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
+    }
 
 	{
-		const int rtmixid = RTMIXIDLCD;
+#if defined RTMIXIDLCD
+	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
 		{
@@ -6300,10 +6315,10 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	#endif
 		const int disp = rtmixid - 1;
 
-    	// CORE0..CORE3 bits valid
+    	// CORE0..CORE3 bits valid - valid bits 0x01F
 
-     	DE_TOP->DE_SCLK_GATE |= 0x0F; // UINT32_C(1) << disp;	// COREx_SCLK_GATE
-     	DE_TOP->DE_HCLK_GATE |= 0x0F; // UINT32_C(1) << disp;	// COREx_HCLK_GATE
+     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
 
     }
  	// Only one bit writable
@@ -6544,8 +6559,14 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// надо разбираться с битами включения. В регистрах задействованы 8 младших бит.
 	// Вероятно без 0-го канала DE не работает 1-й
-	const int dispid = RTMIXIDLCD - 1;
-	if (RTMIXIDLCD)
+#if defined RTMIXIDLCD
+	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
+	const int dispid = rtmixid - 1;
+	if (dispid)
 	{
 		const int pos = dispid * 2;
 		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
@@ -6567,7 +6588,12 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	if (1)
 	{
+	#if defined RTMIXIDLCD
 		const int rtmixid = RTMIXIDLCD;
+	#endif
+	#if defined RTMIXIDTV
+		const int rtmixid = RTMIXIDTV;
+	#endif
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
