@@ -5937,6 +5937,7 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein,
 // T507: PLL_VIDEO0
 static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 {
+#if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
@@ -5952,6 +5953,8 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 	local_delay_ms(50);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 
 	// не меняем параметры по умолчанию
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
@@ -5990,16 +5993,10 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 //	PRINTF("allwnr_t113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video0pllx4_freq() / 1000 / 1000));
 //	PRINTF("allwnr_t113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video1pllx4_freq() / 1000 / 1000));
 
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
-
-#if defined (TCONTV_PTR)
-	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
-	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
-#endif /* defined (TCONTV_PTR) */
 #else
+
 #endif
+#endif /* defined (TCONTV_PTR) */
 }
 
 static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
@@ -6152,6 +6149,15 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+
+	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
+	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
 
 #endif
 #endif /* defined (TCONTV_PTR) */
