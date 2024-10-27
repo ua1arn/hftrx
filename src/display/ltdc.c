@@ -3893,40 +3893,6 @@ static void t113_set_and_open_tvout_interrupt_function(void)
 #endif /* defined (TCONTV_PTR) */
 }
 
-// Open module enable
-static void t113_open_tvout_module_enable(void)
-{
-#if defined (TCONTV_PTR)
-#if CPUSTYLE_H3
-	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#elif CPUSTYLE_A64
-	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#else
-	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#endif
-#endif /* defined (TCONTV_PTR) */
-}
-
-// Open module enable
-static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
-{
-#if defined (TCONTV_PTR)
-#if CPUSTYLE_H3
-	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
-	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
-#elif CPUSTYLE_A64
-	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
-	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
-#else /* CPUSTYLE_H3 */
-	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
-	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
-#endif
-#endif /* defined (TCONTV_PTR) */
-}
-
 #if defined (TCONTV_PTR)
 
 
@@ -6840,12 +6806,9 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 #if CPUSTYLE_A64
 	// LCD0 feeds mixer0 to HDMI
 	TCONTV_PTR->TCON_GCTL_REG = 0;
-	//TCONTV_PTR->TCON_GCTL_REG |= !! TCONLCD_IX;	// IO_Map_Sel - in TCON0 only
-	TCONTV_PTR->TCON_GINT0_REG = 0;
-	TCONTV_PTR->TCON1_CTL_REG =
-			(UINT32_C(1) << 31) |	// TCON1_En
-			//(UINT32_C(1) << 0) |	// TCON1_Src_Sel 01: BLUE data(FIFO2 disable,RGB = 0000FF)
-		0;
+	TCONTV_GINT0_REG = 0;
+	TCONTV_PTR->TCON1_CTL_REG = 0;
+
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XI TCON1_YI
 	TCONTV_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// LS_XO LS_YO
 	TCONTV_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XO TCON1_YO
@@ -6853,14 +6816,11 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
 
-	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);
-	ASSERT(TCONTV_PTR->TCON_GCTL_REG & (UINT32_C(1) << 31));
-
 #elif CPUSTYLE_H3
 	// H3
 	// LCD0 feeds mixer0 to HDMI
 	TCONTV_PTR->TCON_GCTL_REG = 0;
-	TCONTV_PTR->TCON_GINT0_REG = 0;
+	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TCON1_CTL_REG =
 		(UINT32_C(1) << 31) |	// TCON1_En
 		60 * (UINT32_C(1) << 4) |	// Start_Delay
@@ -6872,50 +6832,23 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	TCONTV_PTR->TCON_GCTL_REG = (UINT32_C(1) << 31);
-
 #elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
-
+	TCONTV_PTR->TV_GCTL_REG = 0;
+	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TV_CTL_REG =
 		(VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
 		0;
 
-	// XI YI
-	TCONTV_PTR->TV_BASIC0_REG =
-		((WIDTH - 1) << 16) |
-		((HEIGHT - 1) << 0) |
-		0;
-	// LS_XO LS_YO NOTE: LS_YO = TV_YI
-	TCONTV_PTR->TV_BASIC1_REG =
-		((WIDTH - 1) << 16) |
-		((HEIGHT - 1) << 0) |
-		0;
-	// TV_XO TV_YO
-	TCONTV_PTR->TV_BASIC2_REG =
-		((WIDTH - 1) << 16) |
-		((HEIGHT - 1) << 0) |
-		0;
-	// HT HBP
-	TCONTV_PTR->TV_BASIC3_REG =
-		((HTOTAL - 1) << 16) |		// TOTAL
-		((HBP - 1) << 0) |			// HBP
-		0;
-	// VT VBP
-	TCONTV_PTR->TV_BASIC4_REG =
-		((VTOTAL * 2) << 16) | 		// VT Tvt = (VT)/2 * Thsync
-		((VBP - 1) << 0) |			// VBP Tvbp = (VBP+1) * Thsync
-		0;
-	// HSPW VSPW
-	TCONTV_PTR->TV_BASIC5_REG =
-		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
-		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
-		0;
-
-	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);
+	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
+	TCONTV_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	TCONTV_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XO TV_YO
+	TCONTV_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
+	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
+	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
 	TCONTV_PTR->TV_IO_POL_REG = 0;
-	TCONTV_PTR->TV_IO_TRI_REG = 0;//0x0FFFFFFF;
+	TCONTV_PTR->TV_IO_TRI_REG = 0;
 
 	//	 TV_SRC_SEL
 	//	 TV Source Select
@@ -6928,13 +6861,34 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 	//	 111: Gridding Check
 
 	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
-	TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 1); //enable TCONTV
+	TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 
 #else
 	//#error CPUSTYLE_xxx error
 #endif
 #endif /* defined (TCONTV_PTR) */
 }
+
+// Open module enable
+static void t113_open_tvout_module_enable(void)
+{
+#if defined (TCONTV_PTR)
+#if CPUSTYLE_H3
+	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	ASSERT(TCONTV_PTR->TCON_GCTL_REG & (UINT32_C(1) << 31));
+#elif CPUSTYLE_A64
+	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	ASSERT(TCONTV_PTR->TCON_GCTL_REG & (UINT32_C(1) << 31));
+#else
+	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	ASSERT(TCONTV_PTR->TV_GCTL_REG & (UINT32_C(1) << 31));
+#endif
+#endif /* defined (TCONTV_PTR) */
+}
+
 
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
