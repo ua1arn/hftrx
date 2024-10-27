@@ -5933,8 +5933,8 @@ static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein,
 
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
-// T113: PLL_VIDEO1
-// T507: PLL_VIDEO1
+// T113: PLL_VIDEO0
+// T507: PLL_VIDEO0
 static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 {
 #if CPUSTYLE_H3
@@ -5953,7 +5953,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+	// не меняем параметры по умолчанию
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
 
 	/* Lock enable */
@@ -5961,17 +5961,6 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 
 	/* Wait pll stable */
 	while (! (CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))
-		;
-
-
-	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-
-	/* Lock enable */
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
-
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
 		;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -5997,7 +5986,6 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 		;
 
 	CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 29);         //Lock disable
-
 
 //	PRINTF("allwnr_t113_get_video0pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video0pllx4_freq() / 1000 / 1000));
 //	PRINTF("allwnr_t113_get_video1pllx4_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_video1pllx4_freq() / 1000 / 1000));
@@ -6076,6 +6064,7 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	// PLL_VIDEO0 as source
 	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
 	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
 	PRINTF("M_1=%u\n", M_1);
@@ -6108,11 +6097,11 @@ static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
     PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
 	const unsigned TV_CLK_REG_M = 2;
-	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 31) | (TV_CLK_REG_M - 1);
+	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
 	const unsigned HDMI_CLK_REG_M = 2;
-	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);
+	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
 
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
