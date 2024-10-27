@@ -3220,126 +3220,67 @@ static void t113_tconlcd_CCU_configuration(void)
 // Used for LVDS outputs
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
+static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
+{
+#if defined (TCONLCD_PTR)
+
+#if CPUSTYLE_H3
+
+#elif CPUSTYLE_A64
+
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	// LVDS mode
+	// The default value of PLL_VIDEO1(4X) is 1188 MHz
+   	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
+	uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t507_get_hosc_freq());
+	N = ulmin16(N, 256);
+	N = ulmax16(N, 1);
+
+	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+
+	CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
+	CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
+	CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
+	CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
+	while ((CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
+		;
+	CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+
+#else
+
+#endif
+#endif /* defined (TCONLCD_PTR) */
+}
+
+// Used for LVDS outputs
+// T113: PLL_VIDEO1
+// T507: PLL_VIDEO1
 static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 {
 #if defined (TCONLCD_PTR)
 
 #if CPUSTYLE_H3
 
-//    CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-//	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
-//	local_delay_ms(50);
-
-//	// 297 MHz
-//	PRINTF("t113_tconlvds_CCU_configuration: allwnr_h3_get_pll_video_freq()=%" PRIuFAST32 " kHz\n", (uint_fast32_t) (allwnr_h3_get_pll_video_freq() / 1000));
-//
-//	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12) | (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCONLCD_PTR
-//	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12) | ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCONLCD_PTR
-//	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-//	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI clk (use PLL3)
-//	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-//	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 4
-//
-//	// 148.5 MHz
-//	PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " kHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000);
 
 #elif CPUSTYLE_A64
-
-	needfreq = 297000000;
-	const unsigned ix = TCONLCD_IX;	// TCON_LCD0/TCON_LCD1
-
-    if (1) //(needfreq != 0)
-    {
-    	// LVDS mode
-//       	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
-//		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-//		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_a64_get_hosc_freq());
-//		N = ulmin16(N, 256);
-//		N = ulmax16(N, 1);
-//
-//		CCU->PLL_VIDEO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
-//		CCU->PLL_VIDEO0_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
-//		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
-//		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
-//		while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
-//			;
-//		CCU->PLL_VIDEO0_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
-//		PRINTF("t113_tconlvds_CCU_configuration: allwnr_a64_get_pll_video0_x2_freq=%" PRIuFAST32 " kHz\n", (uint_fast32_t) (allwnr_a64_get_pll_video0_x2_freq() / 1000));
-//
-//
-//		PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " kHz\n", (uint_fast32_t) (BOARD_TCONLCDFREQ / 1000));
-
-		//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
-    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
-			1 * (UINT32_C(1) << 0) | // dvcider / 2
-    		0;
-    }
-    else
-    {
-    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			0 * (UINT32_C(1) << 24) | // 000: PLL_VIDEO0(1X)
-    		0;
-    }
-
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + ix));	// TCONx_GATING
-	//CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << (3 + ix));	// TCONx_RST Assert
-	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + ix));	// TCONx_RST De-assert
-
-	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-
-    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
-
-//    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-//    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-//
-//    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
-//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
-
-    local_delay_us(10);
-
-    TCONLCD_PTR->TCON1_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
-    //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
-    //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-    {
-    	// LVDS mode
-       	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
-		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
-		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnr_t507_get_hosc_freq());
-		N = ulmin16(N, 256);
-		N = ulmax16(N, 1);
-
-		allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-
-		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
-		CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
-		while ((CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
-			;
-		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
-
-		//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
-    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
-    		0;
-    }
+	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
+	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+		2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+		0;
  	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	//PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
 
@@ -6982,6 +6923,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 #if defined (TCONLCD_PTR)
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
 	// step0 - CCU configuration
+	t113_tconlvds_PLL_configuration(lvdsfreq);
 	t113_tconlvds_CCU_configuration(lvdsfreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
