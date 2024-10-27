@@ -6822,7 +6822,7 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TCON1_CTL_REG =
-		(UINT32_C(1) << 31) |	// TCON1_En
+		//(UINT32_C(1) << 31) |	// TCON1_En
 		60 * (UINT32_C(1) << 4) |	// Start_Delay
 		0;
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
