@@ -7193,6 +7193,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
 	awxx_deoutmapping();				// после инициализации и TCON и DE
 
+	//for (int rtmixid = 1; rtmixid <= 2; ++ rtmixid)
 	{
 	#if defined RTMIXIDLCD
 		const int rtmixid = RTMIXIDLCD;
@@ -7204,9 +7205,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		vdmode = get_videomode_HDMI();    // test
 	#endif /* WITHHDMITVHW */
 
+		PRINTF("Init rtmixid=%d\n", rtmixid);
 		t113_de_rtmix_initialize(rtmixid);
+		//TP();
 		/* эта инициализация после корректного соединения с работающим TCON */
 		t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
+		//TP();
 
 		// проверка различных scalers
 	//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
@@ -7214,8 +7218,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
 	//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
 
+		//TP();
 		// save settings
 		t113_de_update(rtmixid);	/* Update registers */
+		PRINTF("Init rtmixid=%d done\n", rtmixid);
 	}
 
 
