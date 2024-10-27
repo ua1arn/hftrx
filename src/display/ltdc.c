@@ -3736,6 +3736,24 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
+
+// Open module enable
+static void t113_open_module_enable(const videomode_t * vdmode)
+{
+#if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#elif CPUSTYLE_A64
+	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#else
+	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#endif
+#endif /* defined (TCONLCD_PTR) */
+}
+
 // Step4 - Open volatile output
 static void t113_open_IO_output(const videomode_t * vdmode)
 {
@@ -3875,8 +3893,6 @@ static void t113_set_and_open_tvout_interrupt_function(void)
 #endif /* defined (TCONTV_PTR) */
 }
 
-#if WITHHDMITVHW
-
 // Open module enable
 static void t113_open_tvout_module_enable(void)
 {
@@ -3893,24 +3909,6 @@ static void t113_open_tvout_module_enable(void)
 #endif
 #endif /* defined (TCONTV_PTR) */
 }
-#else /* WITHHDMITVHW */
-// Open module enable
-static void t113_open_module_enable(const videomode_t * vdmode)
-{
-#if defined (TCONLCD_PTR)
-#if CPUSTYLE_H3
-	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#elif CPUSTYLE_A64
-	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#else
-	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#endif
-#endif /* defined (TCONLCD_PTR) */
-}
-#endif /* WITHHDMITVHW */
 
 // Open module enable
 static void t113_tcontv_open_module_enable(const videomode_t * vdmode)
@@ -6806,6 +6804,8 @@ static int hdmi_connector_detect(void)
 
 }
 
+#endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
+
 static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
@@ -6936,8 +6936,6 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 }
 
-#endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
-
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
@@ -6988,6 +6986,7 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 
 static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 {
+#if defined (TCONTV_PTR)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 	// step0 - CCU configuration
 	t113_tcontv_PLL_configuration(dotclock);
@@ -7024,12 +7023,14 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 //	t507_hdmi_edid_test();
 //	t507_hdmi_edid_test();
 
+#endif /* defined (TCONTV_PTR) */
 }
-#elif WITHLVDSHW
+
+#endif /* WITHHDMITVHW */
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
-#if defined (TCONLCD_PTR) && ! WITHHDMITVHW
+#if defined (TCONLCD_PTR)
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
 	// step0 - CCU configuration
 	t113_tconlvds_CCU_configuration(lvdsfreq);
@@ -7053,7 +7054,8 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 
 #endif /* defined (TCONLCD_PTR) */
 }
-#elif WITHMIPIDSISHW
+
+#if WITHMIPIDSISHW
 
 //	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
 //	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
@@ -7175,7 +7177,8 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
 #if WITHHDMITVHW
 	t113_tcon_hdmi_initsteps(vdmode);
-#elif WITHLVDSHW
+#endif /* WITHHDMITVHW */
+#if WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
 #elif WITHMIPIDSISHW
 	t113_tcon_dsi_initsteps(vdmode);
