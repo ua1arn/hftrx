@@ -7033,26 +7033,26 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
     //PRINTF("hardware_ltdc_initialize\n");
+#if defined RTMIXIDLCD
+	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
+#if WITHHDMITVHW
+	vdmode = get_videomode_HDMI();    // test
+#endif /* WITHHDMITVHW */
 
  	hardware_de_initialize(vdmode);
 	hardware_tcon_initialize(vdmode);
 	ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
+	t113_de_rtmix_initialize(rtmixid);
 	awxx_deoutmapping();				// после инициализации и TCON и DE
 
 	//for (int rtmixid = 1; rtmixid <= 2; ++ rtmixid)
 	{
-	#if defined RTMIXIDLCD
-		const int rtmixid = RTMIXIDLCD;
-	#endif
-	#if defined RTMIXIDTV
-		const int rtmixid = RTMIXIDTV;
-	#endif
-	#if WITHHDMITVHW
-		vdmode = get_videomode_HDMI();    // test
-	#endif /* WITHHDMITVHW */
 
 		PRINTF("Init rtmixid=%d\n", rtmixid);
-		t113_de_rtmix_initialize(rtmixid);
 		//TP();
 		/* эта инициализация после корректного соединения с работающим TCON */
 		t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
