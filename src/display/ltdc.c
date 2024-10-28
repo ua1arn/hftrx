@@ -2347,6 +2347,15 @@ static void hdmi_edid_parse(const uint8_t * edid, unsigned len)
 	}
 }
 
+
+static int hdmi_connector_detect(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return hdmi->HDMI_PHY_STAT0 & 0x02 ?	// HDMI_PHY_HPD
+		1 : 0;
+
+}
+
 static void t507_hdmi_edid_test(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -2364,6 +2373,11 @@ static void t507_hdmi_edid_test(void)
 
 	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
 
+	if (hdmi_connector_detect() == 0)
+	{
+		PRINTF("No HDMI device");
+		return;
+	}
 	PRINTF("t507_hdmi_edid_test before reset\n");
 	// I2C reset
 	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
@@ -6647,14 +6661,6 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 			hdmi->HDMI_CONFIG2_ID,
 			hdmi->HDMI_CONFIG3_ID
 			);
-}
-
-static int hdmi_connector_detect(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return hdmi->HDMI_PHY_STAT0 & 0x02 ?	// HDMI_PHY_HPD
-		1 : 0;
-
 }
 
 #endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
