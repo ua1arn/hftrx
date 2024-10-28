@@ -1004,7 +1004,7 @@
 		#define BOARD_TCONTVFREQ (allwnr_a64_get_tcon1_freq())	/* TCON0 or TCON1 */
 		#define TCONTV_IRQ TCON1_IRQn
 		#define TCONTV_GINT0_REG (TCON1->TCON_GINT0_REG)
-		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define RTMIXIDTV 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 
 #endif /* WITHLTDCHW */

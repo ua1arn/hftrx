@@ -6288,7 +6288,7 @@ static void awxx_deoutmapping(void)
 //	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
 //	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(1) << 0)) | !! disp * (UINT32_C(1) << 0);
-	DE_TOP->DE2TCON_MUX = 0x01;
+	DE_TOP->DE2TCON_MUX = 0x00;
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_H3
@@ -6702,6 +6702,7 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
 	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
+	//TCONTV_PTR->TCON1_CTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 
 #elif CPUSTYLE_H3
 	// H3
