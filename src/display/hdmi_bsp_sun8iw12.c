@@ -130,16 +130,17 @@ static void hdmi_phy_init(unsigned int vic)
 	hdmi_write(0x2240, 100 + 5);
 	hdmi_write(0x0241, 0x00);
 }
-static unsigned int get_vid(unsigned int id)
+
+static int get_vid(unsigned int vic)
 {
 	unsigned int i, count;
 
 	count = sizeof(ptbl) / sizeof(struct para_tab);
 	for (i = 0; i < count; i++) {
-		if (id == ptbl[i].para[0])
+		if (vic == ptbl[i].para[0])
 			return i;
 	}
-	PRINTF("get_vid: ID%u not found\n", id);
+	PRINTF("get_vid: vic=%u not found\n", vic);
 	return -1;
 }
 
@@ -533,7 +534,7 @@ int bsp_hdmi_video(unsigned int vic)
 		return -1;
 	}
 	hdmi_write(0x0840, 0x00);
-	if (1 /*video->is_hcts */) {
+	if (0 /*video->is_hcts */) {
 		bsp_hdcp_enable(1, vic);
 	} else {
 		bsp_hdcp_enable(0, vic);
