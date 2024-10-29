@@ -2375,7 +2375,7 @@ static void t507_hdmi_edid_test(void)
 
 	if (hdmi_connector_detect() == 0)
 	{
-		PRINTF("No HDMI device");
+		PRINTF("No HDMI device\n");
 		return;
 	}
 	PRINTF("t507_hdmi_edid_test before reset\n");
@@ -6601,7 +6601,7 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_tvout_module_enable();
 
-#if 0
+#if 1
 	h3_hdmi_phy_init(dotclock);
 #else
 	t507_hdmi_phy_init(dotclock);

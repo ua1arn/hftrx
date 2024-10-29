@@ -1798,7 +1798,7 @@ static const videomode_t vdmode_PAL0 =
 //		Total Lines         1125
 
 /* HDMI TV out parameters HD 1920x1080 60 Hz*/
-/* Aspect ratio 1.7(7), dit clock = 148.5 MHz */
+/* Aspect ratio 16:9 (1.7(7)), dot clock = 148.5 MHz */
 // https://edid.tv/edid/2253/
 static const videomode_t vdmode_HDMI_1920x1080 =
 {
