@@ -155,14 +155,16 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 {
 	struct sunxi_hdmi_phy * const phy =
 		(struct sunxi_hdmi_phy *)(SUNXI_HDMI_BASE + HDMI_PHY_OFFS);
-	int div = sunxi_dw_hdmi_get_divider(clock);
+//	int divval = sunxi_dw_hdmi_get_divider(clock);
+//	PRINTF("sunxi_dw_hdmi_get_divider: divval=%u\n", divval);
+	int divval = 1;
 	uint32_t tmp;
 
 	/*
 	 * Unfortunately, we don't know much about those magic
 	 * numbers. They are taken from Allwinner BSP driver.
 	 */
-	switch (div) {
+	switch (divval) {
 	case 1:
 		writel(0x30dc5fc0, &phy->pll);
 		writel(0x800863C0 | (phy_div - 1), &phy->clk);
@@ -228,7 +230,7 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 
 //static void sunxi_dw_hdmi_pll_set(unsigned clk_khz, int *phy_div)
 //{
-//	int value, n, m, div, diff;
+//	int value, n, m, divval, diff;
 //	int best_n = 0, best_m = 0, best_div = 0, best_diff = 0x0FFFFFFF;
 //
 //	/*
@@ -236,8 +238,8 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 //	 * is no match, pick the closest lower clock, as monitors tend to
 //	 * not sync to higher frequencies.
 //	 */
-//	for (div = 1; div <= 16; div++) {
-//		int target = clk_khz * div;
+//	for (divval = 1; divval <= 16; divval++) {
+//		int target = clk_khz * divval;
 //
 //		if (target < 192000)
 //			continue;
@@ -248,13 +250,13 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 //			n = (m * target) / 24000;
 //
 //			if (n >= 1 && n <= 128) {
-//				value = (24000 * n) / m / div;
+//				value = (24000 * n) / m / divval;
 //				diff = clk_khz - value;
 //				if (diff < best_diff) {
 //					best_diff = diff;
 //					best_m = m;
 //					best_n = n;
-//					best_div = div;
+//					best_div = divval;
 //				}
 //			}
 //		}
@@ -273,7 +275,7 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 //{
 //	struct sunxi_ccm_reg * const ccm =
 //		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
-//	int div = DIV_ROUND_UP(clock_get_pll3(), edid->pixelclock.typ);
+//	int divval = DIV_ROUND_UP(clock_get_pll3(), edid->pixelclock.typ);
 //	struct sunxi_lcdc_reg *lcdc;
 //
 //	if (mux == 0) {
@@ -284,7 +286,7 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 //
 //		/* Clock on */
 //		setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_LCD0);
-//		writel(CCM_LCD0_CTRL_GATE | CCM_LCD0_CTRL_M(div),
+//		writel(CCM_LCD0_CTRL_GATE | CCM_LCD0_CTRL_M(divval),
 //		       &ccm->lcd0_clk_cfg);
 //	} else {
 //		lcdc = (struct sunxi_lcdc_reg *)SUNXI_LCD1_BASE;
@@ -294,7 +296,7 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 //
 //		/* Clock on */
 //		setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_LCD1);
-//		writel(CCM_LCD1_CTRL_GATE | CCM_LCD1_CTRL_M(div),
+//		writel(CCM_LCD1_CTRL_GATE | CCM_LCD1_CTRL_M(divval),
 //		       &ccm->lcd1_clk_cfg);
 //	}
 //
