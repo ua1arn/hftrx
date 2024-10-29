@@ -152,10 +152,40 @@ void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
 	uintptr_t addr_ph = getfilled_dmabuffer16tx();
 	b = (uint32_t *) addr_ph;
 
+#if WITHAUDIOSAMPLESREC
+	as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC */
+
 	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 		* ph_fifo = b[i];
 
 	release_dmabuffer16tx(addr_ph);
+}
+
+uint16_t iq_proc_tx(int32_t * buf_i, int32_t * buf_q, uint16_t idx, uint16_t lim)
+{
+	uintptr_t addr_mic = allocate_dmabuffer16rx();
+	uint32_t * mic = (uint32_t *) addr_mic;
+
+	memset(mic, 0, DMABUFFSIZE16RX * 4);
+
+#if WITHAUDIOSAMPLESREC
+	as_tx(mic);
+#endif /* WITHAUDIOSAMPLESREC */
+
+	save_dmabuffer16rx(addr_mic);
+
+	uintptr_t addr = getfilled_dmabuffer32tx();
+	int16_t * t = (int16_t *) addr;
+
+	for (; idx < lim; idx ++)
+	{
+		buf_i[idx] = t[idx * 2 + 0] << 16;
+		buf_q[idx] = t[idx * 2 + 1] << 16;
+	}
+
+	release_dmabuffer32tx(addr);
+	return idx;
 }
 
 void stream(size_t rx_sample, size_t tx_sample,
@@ -257,27 +287,9 @@ void stream(size_t rx_sample, size_t tx_sample,
 				if (ad936x_active)
 				{
 					uint16_t i = 0;
-					uintptr_t addr = getfilled_dmabuffer32tx();
-					int16_t * t = (int16_t *) addr;
 
-					for (; i < DMABUFFSIZE32TX / 2; i ++)
-					{
-						buf48k_tx_i[i] = t[i * 2 + 0] << 16;
-						buf48k_tx_q[i] = t[i * 2 + 1] << 16;
-					}
-
-					release_dmabuffer32tx(addr);
-
-					addr = getfilled_dmabuffer32tx();
-					t = (int16_t *) addr;
-
-					for (int j = 0; i < DMABUFFSIZE32TX; i ++, j ++)
-					{
-						buf48k_tx_i[i] = t[j * 2 + 0] << 16;
-						buf48k_tx_q[i] = t[j * 2 + 1] << 16;
-					}
-
-					release_dmabuffer32tx(addr);
+					i = iq_proc_tx(buf48k_tx_i, buf48k_tx_q, i, DMABUFFSIZE32TX / 2);
+					i = iq_proc_tx(buf48k_tx_i, buf48k_tx_q, i, DMABUFFSIZE32TX);
 
 					arm_fir_interpolate_q31(& firint_x24_i, buf48k_tx_i, buf2304k_tx_i, DMABUFFSIZE32TX);
 					arm_fir_interpolate_q31(& firint_x24_q, buf48k_tx_q, buf2304k_tx_q, DMABUFFSIZE32TX);

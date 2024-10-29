@@ -68,7 +68,7 @@ uint32_t as_buf [as_buf_size];
 uint32_t as_idx = 0, as_idx_stop = 0;
 uint8_t as_state = AS_IDLE, stop = 0;
 
-void as_proccessing(uint32_t * buf)
+void as_rx(uint32_t * buf)
 {
 	pthread_mutex_lock(& mutex_as);
 
@@ -674,7 +674,10 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 		uint32_t * b = (uint32_t *) addr_ph;
 
 #if WITHAUDIOSAMPLESREC
-		as_proccessing(b);
+#if WITHAD936XIIO
+		if (! get_ad936x_stream_status())
+#endif /* WITHAD936XIIO */
+			as_rx(b);
 #endif /* WITHAUDIOSAMPLESREC */
 
 		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
