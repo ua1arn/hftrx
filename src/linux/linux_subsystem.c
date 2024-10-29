@@ -170,15 +170,25 @@ void as_toggle_play(void)
 
 void as_toggle_trx(void)
 {
+	static uint8_t agc_backup = 0, agc_gain_backup = 0;
+
 	pthread_mutex_lock(& mutex_as);
 
 	if (as_state == AS_READY)
 	{
+		agc_backup = hamradio_get_gmikeagc();
+		agc_gain_backup = hamradio_get_gmikeagcgain();
+		hamradio_set_gmikeagc(0);
+		hamradio_set_gmikeagcgain(50);
 		as_state = AS_TX;
 		hamradio_set_moxmode(1);
 	}
 	else if (as_state == AS_TX)
+	{
 		stop = 1;
+		hamradio_set_gmikeagc(agc_backup);
+		hamradio_set_gmikeagcgain(agc_gain_backup);
+	}
 
 	pthread_mutex_unlock(& mutex_as);
 }

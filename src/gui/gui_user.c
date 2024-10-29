@@ -184,12 +184,10 @@ void load_settings(void)
 		gui_nvram.ft8_txfreq_equal = ft8_txfreq_equal_default;
 #endif /* WITHFT8 */
 
-#if WITHAFCODEC1HAVEPROC
 	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
 		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
 	else
 		gui_nvram.micprofile = micprofile_default;
-#endif /* WITHAFCODEC1HAVEPROC */
 
 #if WITHAD936XIIO
 	if (hamradio_get_freq_rx() >= NOXVRTUNE_TOP && ! get_ad936x_stream_status())
@@ -2908,6 +2906,13 @@ static void window_audiosettings_process(void)
 			}
 		}
 
+#if ! WITHAFCODEC1HAVEPROC
+		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
+		bh->state = DISABLED;
+		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
+		bh->state = DISABLED;
+#endif /* ! WITHAFCODEC1HAVEPROC */
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -2953,6 +2958,7 @@ static void window_audiosettings_process(void)
 				open_window(winEQ);
 				return;
 			}
+#endif /* WITHAFCODEC1HAVEPROC */
 			else if (bh == btn_mic_settings)
 			{
 				open_window(winMIC);
@@ -2963,7 +2969,6 @@ static void window_audiosettings_process(void)
 				open_window(winMICpr);
 				return;
 			}
-#endif /* WITHAFCODEC1HAVEPROC */
 #if WITHREVERB
 			else if (bh == btn_reverb)
 			{
@@ -3000,31 +3005,6 @@ static void window_audiosettings_process(void)
 		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
 		bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
-
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
-#if WITHAFCODEC1HAVEPROC
-		bh->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("MIC EQ|%s"), bh->is_locked ? "ON" : "OFF");
-#else
-		bh->state = DISABLED;
-#endif /* WITHAFCODEC1HAVEPROC */
-
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
-#if WITHAFCODEC1HAVEPROC
-		bh->state = hamradio_get_gmikeequalizer() ? CANCELLED : DISABLED;
-#else
-		bh->state = DISABLED;
-#endif /* WITHAFCODEC1HAVEPROC */
-
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_profiles");				// MIC profiles
-#if ! WITHAFCODEC1HAVEPROC
-		bh->state = DISABLED;
-#endif /* ! WITHAFCODEC1HAVEPROC */
-
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_settings");				// MIC settings
-#if ! WITHAFCODEC1HAVEPROC
-		bh->state = DISABLED;
-#endif /* ! WITHAFCODEC1HAVEPROC */
 	}
 }
 
@@ -3508,12 +3488,11 @@ static void window_af_eq_process(void)
 
 static void window_ap_mic_process(void)
 {
-#if WITHAFCODEC1HAVEPROC
 	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
 
 	static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
 	static label_t * lbl_micLevel = NULL, * lbl_micClip = NULL, * lbl_micAGC = NULL;
-	static uint_fast16_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
+	static uint_fast8_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
 
 	if (win->first_call)
 	{
@@ -3609,7 +3588,11 @@ static void window_ap_mic_process(void)
 		button_t * bh2 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
 		bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
 		bh2->y1 = lbl_micAGC->y + interval;
+#if WITHAFCODEC1HAVEPROC
 		bh2->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+#else
+		bh2->state = DISABLED;
+#endif /* WITHAFCODEC1HAVEPROC */
 		local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
 		bh2->visible = VISIBLE;
 
@@ -3677,9 +3660,11 @@ static void window_ap_mic_process(void)
 
 			if (bh == btn_mic_boost)
 			{
+#if WITHAFCODEC1HAVEPROC
 				btn_mic_boost->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 				local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
 				hamradio_set_gmikeboost20db(btn_mic_boost->is_locked);
+#endif /* WITHAFCODEC1HAVEPROC */
 			}
 			else if (bh == btn_mic_agc)
 			{
@@ -3721,14 +3706,12 @@ static void window_ap_mic_process(void)
 
 		break;
 	}
-#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_ap_mic_prof_process(void)
 {
-#if WITHAFCODEC1HAVEPROC
 	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
 
 	if (win->first_call)
@@ -3823,7 +3806,6 @@ static void window_ap_mic_prof_process(void)
 
 		break;
 	}
-#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
@@ -6997,8 +6979,12 @@ static void window_as_process(void)
 
 		local_snprintf_P(btn_tx->text, ARRAY_SIZE(btn_tx->text), "%s", buf);
 
-		if (s == AS_READY)
+		static uint8_t olds = AS_IDLE;
+
+		if (s == AS_READY && olds == AS_RECORDING)
 			as_draw_spectrogram(d, len, lim);
+
+		olds = s;
 	}
 }
 

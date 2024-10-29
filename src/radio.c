@@ -1165,23 +1165,23 @@ struct micproc
 	uint8_t complevel;
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
-#if WITHAFCODEC1HAVEPROC
 struct micprof_cell
 {
 	uint_fast8_t level;
 	uint_fast8_t clip;
 	uint_fast8_t agc;
 	uint_fast8_t agcgain;
+#if WITHAFCODEC1HAVEPROC
 	uint_fast8_t mikeboost20db;
 	uint_fast8_t eq_enable;
 	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
+#endif /* WITHAFCODEC1HAVEPROC */
 	uint_fast8_t cell_saved;
 };
 
 typedef struct micprof_cell	micprof_t;
 
 static micprof_t micprof_cells [NMICPROFCELLS];
-#endif /* WITHAFCODEC1HAVEPROC */
 
 static mikproc_t micprofiles [] =
 {
@@ -3473,10 +3473,7 @@ struct nvmap
 
 #if WITHTOUCHGUI
 	struct gui_nvram_t gui_nvram;
-
-	#if WITHAFCODEC1HAVEPROC
-		struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
-	#endif /* WITHAFCODEC1HAVEPROC */
+	struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
 #endif /*  WITHTOUCHGUI */
 
 #if 1//WITHDEBUG
@@ -3539,9 +3536,11 @@ struct nvmap
 #define RMT_MICCLIP_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].clip)
 #define RMT_MICAGC_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].agc)
 #define RMT_MICAGCGAIN_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].agcgain)
-#define RMT_MICBOOST_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].mikeboost20db)
-#define RMT_MICEQ_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_enable)
-#define RMT_MICEQPARAMS_BASE(i, j) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_params[(j)])
+#if WITHAFCODEC1HAVEPROC
+	#define RMT_MICBOOST_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].mikeboost20db)
+	#define RMT_MICEQ_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_enable)
+	#define RMT_MICEQPARAMS_BASE(i, j) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_params[(j)])
+#endif /* WITHAFCODEC1HAVEPROC */
 #define RMT_MICPSAVE_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].cell_saved)
 
 #if WITHUSEUSBBT
@@ -7126,7 +7125,7 @@ static void micproc_load(void)
 		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
 	}
 
-#if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
+#if WITHTOUCHGUI
 	for (i = 0; i < NMICPROFCELLS; i++)
 	{
 		micprof_t * const mp = & micprof_cells[i];
@@ -7135,12 +7134,14 @@ static void micproc_load(void)
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
 		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
 		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
+#if WITHAFCODEC1HAVEPROC
 		mp->mikeboost20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
 		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
+#endif /* WITHAFCODEC1HAVEPROC */
 	}
-#endif /* WITHTOUCHGUI && WITHAFCODEC1HAVEPROC */
+#endif /* WITHTOUCHGUI */
 }
 
 #endif /* WITHIF4DSP */
@@ -19577,8 +19578,6 @@ uint_fast8_t hamradio_get_gmoniflag(void)
 
 #endif /* WITHIF4DSP */
 
-#if WITHAFCODEC1HAVEPROC
-
 void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
 	* min = WITHMIKECLIPMIN;
@@ -19650,6 +19649,8 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 	save_i8(OFFSETOF(struct nvmap, gmikeagcgain), gmikeagcgain);
 	updateboard(1, 0);
 }
+
+#if WITHAFCODEC1HAVEPROC
 
 uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
@@ -20194,7 +20195,7 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 		return 0;
 }
 
-#if WITHAFCODEC1HAVEPROC
+
 
 void hamradio_clean_mic_profile(uint_fast8_t cell)
 {
@@ -20202,13 +20203,15 @@ void hamradio_clean_mic_profile(uint_fast8_t cell)
 
 	micprof_t * mp = & micprof_cells [cell];
 
+#if WITHAFCODEC1HAVEPROC
 	mp->mikeboost20db = 0;
+	mp->eq_enable = 0;
+#endif /* WITHAFCODEC1HAVEPROC */
 	mp->level = 0;
 	mp->agc = 0;
 	mp->agcgain = 0;
 	mp->clip = 0;
 	mp->cell_saved = 0;
-	mp->eq_enable = 0;
 
 	save_i8(RMT_MICPSAVE_BASE(cell), mp->cell_saved);
 }
@@ -20220,11 +20223,13 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	micprof_t * mp = & micprof_cells [cell];
 
 	mp->cell_saved = 1;
-	mp->mikeboost20db = gmikeboost20db;
 	mp->level = gmik1level;
 	mp->agc = gmikeagc;
 	mp->agcgain = gmikeagcgain;
 	mp->clip = gmikehclip;
+
+#if WITHAFCODEC1HAVEPROC
+	mp->mikeboost20db = gmikeboost20db;
 	mp->eq_enable = gmikeequalizer;
 
 	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
@@ -20235,6 +20240,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
 	save_i8(RMT_MICBOOST_BASE(cell), mp->mikeboost20db);
+#endif /* WITHAFCODEC1HAVEPROC */
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
 	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);
@@ -20250,22 +20256,22 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 	if (mp->cell_saved && set)
 	{
+#if WITHAFCODEC1HAVEPROC
 		gmikeboost20db = mp->mikeboost20db;
-		gmik1level = mp->level;
-		gmikeagc = mp->agc;
-		gmikeagcgain = mp->agcgain;
-		gmikehclip = mp->clip;
 		gmikeequalizer = mp->eq_enable;
 
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 			gmikeequalizerparams [j] = mp->eq_params [j];
+#endif /* WITHAFCODEC1HAVEPROC */
+		gmik1level = mp->level;
+		gmikeagc = mp->agc;
+		gmikeagcgain = mp->agcgain;
+		gmikehclip = mp->clip;
 
 		updateboard(1, 0);
 	}
 	return mp->cell_saved;
 }
-
-#endif /* WITHAFCODEC1HAVEPROC */
 
 uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need)
 {
