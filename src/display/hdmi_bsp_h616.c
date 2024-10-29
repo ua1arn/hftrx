@@ -11,7 +11,7 @@
 #include "hardware.h"
 #include "formats.h"	// for PRINTF prints
 
-#if WITHLTDCHW && WITHHDMITVHW
+#if WITHLTDCHW && WITHHDMITVHW && 0
 
 #define SUNXI_HDMI_BASE HDMI_TX0_BASE
 #define BIT32(pos) (UINT32_C(1) << (pos))
