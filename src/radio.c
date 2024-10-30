@@ -11195,7 +11195,7 @@ updateboardZZZ(
 	#if WITHFANTIMER
 		board_setfanflag(! fanpaflag);	// fanpaflag - сигнал выключения вентилятора
 		#if WITHFANPWM
-				board_setfanpwm(! fanpaflag ? gfanpapwm : 0);
+				board_setfanpwm(gfanpapwm);
 		#endif /* WITHFANPWM */
 	#endif /* WITHFANTIMER */
 	#if WITHDCDCFREQCTL
