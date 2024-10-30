@@ -91,8 +91,12 @@ static uint_fast8_t 	glob_kblight = 1;
 static uint_fast8_t 	glob_poweron = 1;
 //#endif /* WITHKEYBOARD */
 
-static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
-static uint_fast8_t		glob_fanpwm = 255;	/* скорость вентилятора 0..255 */
+#if WITHFANTIMER
+	static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
+	#if WITHFANPWM
+	static uint_fast8_t		glob_fanpwm = WITHFANPWMMAX;	/* скорость вентилятора 0..255 */
+	#endif /* WITHFANPWM */
+#endif /* WITHFANTIMER */
 #if WITHDCDCFREQCTL
 	static uint_fast32_t 	glob_blfreq = UINT32_MAX;	/* DC-DC frequency divider */
 #endif /* WITHDCDCFREQCTL */
@@ -3770,6 +3774,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
 		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
 
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
 		enum
 		{
 			HARDWARE_OPA2674I_FULLPOWER = 0x03,
@@ -3783,38 +3788,54 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_POWERCUTBACK,
 			HARDWARE_OPA2674I_FULLPOWER,
 		};
+		static const FLASHMEM uint8_t fanspeedcodes [5][4] =
+		{
+				{ 0, 0, 0, 0 },	// off
+				{ 0, 0, 0, 1 },	// minimal speed
+				{ 0, 0, 1, 1 },
+				{ 0, 1, 1, 1 },
+				{ 1, 1, 1, 1 },	// maximal speed
+		};
+		enum { FANSPEED_OFF = 0, FANSPEED_MIN = 1, FANSPEED_MAX = ARRAY_SIZE(fanspeedcodes)  - 1 };
+		ASSERT(WITHFANPWMMIN == FANSPEED_MIN);
+		ASSERT(WITHFANPWMMAX == FANSPEED_MAX);
+#if WITHFANTIMER
+		const unsigned fanspeed = (glob_fanflag || txgated) ? glob_fanpwm : FANSPEED_OFF;
+#else /* WITHFANTIMER */
+		const unsigned fanspeed = FANSPEED_OFF;
+#endif /* WITHFANTIMER */
+
 		const spitarget_t target = targetctl1;
 
 		rbtype_t rbbuff [8] = { 0 };
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
 
-		// TUNWER/PA
+		// TUNWER
 		/* 7 indictors, 7/8 capacitors */
-		RBVAL8(0060, glob_tuner_C);
+		RBVAL8(0060, glob_tuner_C);		// D0..D7: capacitors
 
-		// TUNWER/PA
+		// TUNWER
 		RBBIT(0057, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0050, glob_tuner_L, 7);
+		RBVAL(0050, glob_tuner_L, 7);	// D0..D6: Inductors
 
-		// TUNWER/PA
-		//RBBIT(0067, 0);	// UNUSED
-		RBBIT(0046, 0);	// undefined
-		RBBIT(0045, glob_classamode);	// class A
-		RBBIT(0044, glob_rxantenna);	// RX ANT
-		RBBIT(0043, ! glob_tuner_bypass);	// Energized - tuner on
-		RBBIT(0042, ! glob_classamode);	// hi power out
-		RBBIT(0041, txgated);	//
-		RBBIT(0040, glob_fanflag || txgated);	// fan
+		// POWERAMP DD2 SN74HC595PW
+		RBBIT(0047, glob_rxantenna);			// RX ANT
+		RBBIT(0046, ! glob_tuner_bypass);		// Energized - tuner on
+		RBBIT(0045, txgated);					// TX
+		RBBIT(0044, glob_classamode);			// class A
+		RBBIT(0043, fanspeedcodes [fanspeed][0]);	// fan0 - 2.2 OMm in series
+		RBBIT(0042, fanspeedcodes [fanspeed][1]);	// fan1 - 2.2 OMm in series
+		RBBIT(0041, fanspeedcodes [fanspeed][2]);	// fan2 - 2.2 OMm in series
+		RBBIT(0040, fanspeedcodes [fanspeed][3]);	// fan3 - 2.2 OMm in series
 
-		// TUNWER/PA
+		// POWERAMP DD1 SN74HC595PW
 		RBBIT(0037, glob_antenna);	// Ant A/B
 		RBVAL(0030, 1U << glob_bandf2, 7);	// LPF6..LPF0
 
-		// DD22 SN74HC595PW
+		// RF BOARD DD22 SN74HC595PW
 		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
 		RBBIT(0020, glob_poweron);		// power_hold
 
-		// DD21 SN74HC595PW
+		// RF BOARD DD21 SN74HC595PW
 		RBVAL(0016, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
 		RBVAL(0014, glob_att, 2);			/* D5:D4: 12 dB and 6 dB attenuator control */
 		//RBBIT(0013, 0);			/* D3: unused */
@@ -3822,7 +3843,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0011, (glob_bandf == 0));		// D1: средневолновый ФНЧ - управление реле на входе фильтров
 		RBBIT(0010, ! glob_loudspeaker_off);		// D0: 1 - снять SHUTDOWN с усилителя PAM8406
 
-		// DD20 SN74HC595PW
+		// RF BOARD DD20 SN74HC595PW
 		RBBIT(0005, glob_tx);		// PTT_OUT
 		RBBIT(0004, glob_catmux == BOARD_CATMUX_DIN8);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
 		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
@@ -4981,7 +5002,6 @@ void board_lcd_reset(uint_fast8_t v)
 	}
 }
 
-
 /* включение на передачу */
 void
 board_set_tx(uint_fast8_t v)
@@ -5017,6 +5037,7 @@ void board_set_sleep(uint_fast8_t v)
 	}
 }
 
+#if WITHFANTIMER
 /* включить вентилятор */
 void
 board_setfanflag(uint_fast8_t v)
@@ -5028,6 +5049,8 @@ board_setfanflag(uint_fast8_t v)
 		board_ctlreg1changed();
 	}
 }
+
+#if WITHFANPWM
 /* скорость вентилятора */
 void
 board_setfanpwm(uint_fast8_t n)
@@ -5035,9 +5058,12 @@ board_setfanpwm(uint_fast8_t n)
 	if (glob_fanpwm != n)
 	{
 		glob_fanpwm = n;
-		//board_ctlreg1changed();
+		board_ctlreg1changed();
 	}
 }
+#endif /* WITHFANPWM */
+
+#endif /* WITHFANTIMER */
 
 
 /* отключить микрофонный усилитель */

@@ -3234,9 +3234,9 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	#if WITHFANPWM
 	{
-		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
+		QLABEL("FAN FLOW"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
-		0, 255,
+		WITHFANPWMMIN, WITHFANPWMMAX,
 		OFFSETOF(struct nvmap, gfanpapwm),
 		nvramoffs0,
 		& gfanpapwm,

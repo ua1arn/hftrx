@@ -5900,7 +5900,7 @@ static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
 	#if WITHFANPWM
-		static uint_fast16_t gfanpapwm = 255;
+		static uint_fast16_t gfanpapwm = WITHFANPWMMAX;
 	#endif /* WITHFANPWM */
 
 #endif /* WITHFANTIMER */
@@ -19576,7 +19576,6 @@ uint_fast8_t hamradio_get_gmoniflag(void)
 	return gmoniflag;
 }
 
-#endif /* WITHIF4DSP */
 
 void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
@@ -19649,6 +19648,8 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 	save_i8(OFFSETOF(struct nvmap, gmikeagcgain), gmikeagcgain);
 	updateboard(1, 0);
 }
+
+#endif /* WITHIF4DSP */
 
 #if WITHAFCODEC1HAVEPROC
 
