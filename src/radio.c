@@ -16712,6 +16712,7 @@ modifysettings(
 		int nrotate;
 		uint_fast8_t kbch, kbready;
 
+		processpots();
 		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
