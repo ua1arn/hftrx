@@ -112,7 +112,7 @@
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 
 #elif 0
 
@@ -121,7 +121,7 @@
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
+	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	#define WITHHDMITVHW 1	/* HDMI hardware output */
 
@@ -132,10 +132,10 @@
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	#define WITHHDMITVHW 1	/* HDMI hardware output */
-	//#define WITHHDMITVHW 1	/* Second display - HDMI hardware output */
+	
 
 #elif 1
 
@@ -152,14 +152,14 @@
 	#define BOARD_DSTYLE "g_x800_y480.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
-	//#define WITHHDMITVHW 1	/* Second display - HDMI hardware output */
+	
 
 
 #elif 1
 
 	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 0

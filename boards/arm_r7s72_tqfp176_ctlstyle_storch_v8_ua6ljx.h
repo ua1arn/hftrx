@@ -88,7 +88,7 @@
 
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 
 #elif 1
 
@@ -105,7 +105,7 @@
 
 	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1

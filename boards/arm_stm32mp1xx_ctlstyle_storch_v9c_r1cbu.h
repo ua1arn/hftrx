@@ -250,7 +250,7 @@
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 
 #elif 1
 
@@ -260,7 +260,7 @@
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	//#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
+	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
@@ -269,14 +269,14 @@
 
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
 
 	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 0
