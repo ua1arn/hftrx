@@ -6095,8 +6095,7 @@ void display2_bgreset(void)
 
 	uint_fast8_t i;
 
-	// очистить дисплей.
-	display_clear();	
+	display_clear();		// Заполниить цветом фона
 
 #if STMD
 	// сброс state machine отображения дисплея

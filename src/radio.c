@@ -2986,9 +2986,6 @@ struct nvmap
 	uint8_t genc1dynamic;	/* включение динамического енкодера */
 #endif /* WITHENCODER */
 
-#if defined (DEFAULT_LCD_CONTRAST)
-	uint8_t gcontrast;		/* Контрастность LCD */
-#endif /* defined (DEFAULT_LCD_CONTRAST) */
 #if WITHLCDBACKLIGHT
 	uint8_t gbglight;
 #endif /* WITHLCDBACKLIGHT */
@@ -3774,12 +3771,6 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 #if WITHLO1LEVELADJ
 	static uint_fast8_t lo1level = WITHLO1LEVELADJINITIAL; //100;	/* уровень (амплитуда) LO1 в процентах */
 #endif /* WITHLO1LEVELADJ */
-
-#if defined (DEFAULT_LCD_CONTRAST)
-	static uint_fast8_t gcontrast = DEFAULT_LCD_CONTRAST;
-#else
-	enum { gcontrast = 0 };
-#endif
 
 static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDISPLAY_FPS)
@@ -11187,10 +11178,6 @@ updateboardZZZ(
 		board_set_bandf3(bandf3hint);	/* управление через разъем ACC */
 	#endif /* CTLSTYLE_IGOR */
 		board_keybeep_setfreq(gkeybeep10 * 10);	// Частота озвучивания нажатий клавиш (герц)
-
-	#if defined (DEFAULT_LCD_CONTRAST)
-		display_set_contrast(gcontrast);
-	#endif /* defined (DEFAULT_LCD_CONTRAST) */
 
 	#if WITHFANTIMER
 		board_setfanflag(! fanpaflag);	// fanpaflag - сигнал выключения вентилятора

@@ -217,8 +217,6 @@ void display_hardware_initialize(void);	/* вызывается при запр�
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
 void display_uninitialize(void);			/* вызывается при разрешённых прерываниях. */
-void display_set_contrast(uint_fast8_t v);
-void display_palette(void);				// Palette reload
 
 void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_wakeup(const videomode_t * vdmode);
@@ -234,7 +232,7 @@ void panel_wakeup(void);
 void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
-void display_clear(void);
+void display_clear(void);	// Заполниить цветом фона
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 

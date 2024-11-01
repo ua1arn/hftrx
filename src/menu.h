@@ -124,40 +124,6 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
-#if defined (DEFAULT_LCD_CONTRAST)
-	{
-		QLABEL("LCD CONT"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-#if LCDMODE_PCF8535
-		42, 70, 				// для TIC218 @ 3.3 volt - 45..60
-#elif LCDMODE_RDX0120
-		70, 120, 				// для amator - 110..220
-#elif LCDMODE_UC1601
-		75, 220, 				// для amator - 110..220
-#elif LCDMODE_LS020 || LCDMODE_ILI9320
-		0, 255, 				// LS020 - 0..255
-#elif LCDMODE_UC1608
-		0, 63, 					// UC1608 - 0..63
-#endif /* LCDMODE_UC1601 */
-		OFFSETOF(struct nvmap, gcontrast),
-		nvramoffs0,
-		NULL,
-		& gcontrast,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* defined (DEFAULT_LCD_CONTRAST) */
-#if 0//WITHDCDCFREQCTL
-	{
-		QLABEL("DCDC DIV"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		4, UINT16_MAX, 
-		OFFSETOF(struct nvmap, dcdcrefdiv),
-		nvramoffs0,
-		& dcdcrefdiv,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHDCDCFREQCTL */
 #if WITHLCDBACKLIGHT
 	{
 		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,

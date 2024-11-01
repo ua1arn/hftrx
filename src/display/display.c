@@ -251,6 +251,7 @@ void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 }
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
+// Заполниить цветом фона
 void display_clear(void)
 {
 	const COLORPIP_T bg = display_getbgcolor();
@@ -731,10 +732,6 @@ display_reset(void)
 	board_lcd_reset(1); 	// Pull RST pin up
 	board_update();
 	local_delay_ms(50); // Delay 50 ms
-}
-
-void display_set_contrast(uint_fast8_t v)
-{
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -1916,13 +1913,7 @@ void display_wakeup(void)
 #endif /* LCDMODEX_SII9022A */
 }
 
-// Palette reload
-void display_palette(void)
-{
-#if WITHLTDCHW
-	hardware_ltdc_L8_palette();
-#endif /* WITHLTDCHW */
-}
+
 // https://habr.com/ru/post/166317/
 
 //	Hue - тон, цикличная угловая координата.

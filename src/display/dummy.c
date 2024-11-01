@@ -17,10 +17,7 @@ void display_initialize(void)
 {
 }
 
-void display_set_contrast(uint_fast8_t v)
-{
-}
-
+// Заполниить цветом фона
 void
 display_clear(void)
 {
