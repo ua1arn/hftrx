@@ -273,6 +273,7 @@ int hdmi_phy_set(unsigned int vic)
 			hdmi_writel(0x10028,0x0F81C405);
 			break;
 		default:
+			TP();
 			return -1;
 	}
 	return 0;
@@ -483,18 +484,42 @@ int bsp_hdmi_video(unsigned int vic)
 	return 0;
 }
 
-#if 0
-int bsp_hdmi_audio(struct audio_para *audio)
+enum audio_type
+{
+	PCM = 1,
+	AC3,
+	MPEG1,
+	MP3,
+	MPEG2,
+	AAC,
+	DTS,
+	ATRAC,
+	OBA,
+	DDP,
+	DTS_HD,
+	MAT,
+	DST,
+	WMA_PRO,
+};
+
+static unsigned audio_ca;	// ????????
+static unsigned audio_ch_num = 2;
+static unsigned audio_sample_rate = 48000;
+static unsigned audio_sample_bit = 24;
+static unsigned audio_type = PCM;
+
+
+int bsp_hdmi_audio(unsigned vic)
 {
 	unsigned int i;
 	unsigned int n;
-	unsigned id = get_vid(glb_video.vic);
+	unsigned id = get_vid(vic);
 
-	hdmi_write(0xA049, (audio->ch_num > 2) ? 0xf1 : 0xf0);
+	hdmi_write(0xA049, (audio_ch_num > 2) ? 0xf1 : 0xf0);
 
 	for(i = 0; i < 64; i += 2)
 	{
-		if(audio->ca == ca_table[i])
+		if(audio_ca == ca_table[i])
 		{
 			hdmi_write(0x204B, ~ca_table[i+1]);
 			break;
@@ -511,17 +536,17 @@ int bsp_hdmi_audio(struct audio_para *audio)
 	hdmi_write(0xE04A, 0x00 | 0x01);
 	for(i = 0; i < 10; i += 1)
 	{
-		if(audio->sample_rate == sf[i].sf)
+		if(audio_sample_rate == sf[i].sf)
 		{
 			hdmi_write(0xE04A, 0x00 | sf[i].cs_sf);
 			break;
 		}
 	}
 	hdmi_write(0xE04B, 0x00 |
-						(audio->sample_bit == 16) ? 0x02 : ((audio->sample_bit == 24) ? 0xb : 0x0) );
+						(audio_sample_bit == 16) ? 0x02 : ((audio_sample_bit == 24) ? 0xb : 0x0) );
 
 
-	hdmi_write(0x0251, audio->sample_bit);
+	hdmi_write(0x0251, audio_sample_bit);
 
 
 
@@ -529,14 +554,14 @@ int bsp_hdmi_audio(struct audio_para *audio)
 	//cts = 0;
 	for(i = 0; i < 21; i += 3)
 	{
-		if(audio->sample_rate == n_table[i])
+		if(audio_sample_rate == n_table[i])
 		{
 			if(ptbl[id].para[1] == 1)
 				n = n_table[i+1];
 			else
 				n = n_table[i+2];
 
-			//cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio->sample_rate / 100);
+			//cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio_sample_rate / 100);
 			break;
 		}
 	}
@@ -546,17 +571,17 @@ int bsp_hdmi_audio(struct audio_para *audio)
 	hdmi_write(0x8A40, n >> 16);
 	hdmi_write(0x0A43, 0x00);
 	hdmi_write(0x8A42, 0x04);
-	hdmi_write(0xA049, (audio->ch_num > 2) ? 0x01 : 0x00);
-	hdmi_write(0x2043, audio->ch_num * 16);
+	hdmi_write(0xA049, (audio_ch_num > 2) ? 0x01 : 0x00);
+	hdmi_write(0x2043, audio_ch_num * 16);
 	hdmi_write(0xA042, 0x00);
-	hdmi_write(0xA043, audio->ca);
+	hdmi_write(0xA043, audio_ca);
 	hdmi_write(0x6040, 0x00);
 
-	if(audio->type == PCM)
+	if(audio_type == PCM)
 	{
 		hdmi_write(0x8251, 0x00);
 	}
-	else if((audio->type == DTS_HD) || (audio->type == DDP))
+	else if((audio_type == DTS_HD) || (audio_type == DDP))
 	{
 		hdmi_write(0x8251, 0x03);
 		hdmi_write(0x0251, 0x15);
@@ -579,8 +604,6 @@ int bsp_hdmi_audio(struct audio_para *audio)
 
 	return 0;
 }
-
-#endif
 
 int bsp_hdmi_ddc_read(char cmd,char pointer,char offset,int nbyte,char * pbuf)
 {

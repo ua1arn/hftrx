@@ -2395,7 +2395,7 @@ static void t507_hdmi_edid_test(void)
 	if (hdmi_connector_detect() == 0)
 	{
 		PRINTF("No HDMI device\n");
-		return;
+		//return;
 	}
 	PRINTF("t507_hdmi_edid_test before reset\n");
 	// I2C reset
