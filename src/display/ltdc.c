@@ -6281,7 +6281,7 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	phy->HDMI_PHY_CEC = 0;
 
 #if 1
-	// 158.5 MHz
+	// 148.5 MHz
 	const uint_fast32_t PHY_PLL1_VAL = (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)));
 	const uint_fast32_t PHY_PLL2_VAL = 0x80084381;
 	const uint_fast32_t PHY_PLL3_VAL = 0x00000001;
