@@ -152,6 +152,7 @@
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 		//#define WITHGPUHW	1	/* Graphic processor unit */
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+		#define WITHHDMITVHW 1	/* HDMI hardware output */
 	#endif
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 

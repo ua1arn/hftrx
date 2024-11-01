@@ -123,7 +123,6 @@
 
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
-	#define WITHHDMITVHW 1	/* HDMI hardware output */
 
 #elif 1
 
@@ -134,7 +133,6 @@
 
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
-	#define WITHHDMITVHW 1	/* HDMI hardware output */
 	
 
 #elif 1
