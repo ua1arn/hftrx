@@ -207,6 +207,7 @@ int hdmi_phy_set(unsigned int vic)
 
 	id = get_vid(vic);
 	hdmi_writel(0x10020,hdmi_readl(0x10020)&(~0xf000));
+	PRINTF("ptbl[%u].para[1]=%u\n", id, ptbl[id].para[1]);
 	switch(ptbl[id].para[1])
 	{
 		case 1:
