@@ -1797,20 +1797,21 @@ static const videomode_t vdmode_PAL0 =
 //		Blanking Total        45
 //		Total Lines         1125
 
+// https://github.com/akatrevorjay/edid-generator/tree/master
 /* HDMI TV out parameters HD 1920x1080 60 Hz*/
 /* Aspect ratio 16:9 (1.7(7)), dot clock = 148.5 MHz */
 // https://edid.tv/edid/2253/
-static const videomode_t vdmode_HDMI_1920x1080 =
+static const videomode_t vdmode_HDMI_1920x1080at60 =
 {
 	.width = 1920,			/* LCD PIXEL WIDTH            */
 	.height = 1080,			/* LCD PIXEL HEIGHT           */
 
-	// Horizontal Blanking = hsync + hbp + hfp = 280
-	.hsync = 44,			/* Horizontal synchronization */
-	.hbp = 148,				/* Horizontal back porch      */
-	.hfp = 88,				/* Horizontal front porch  */
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 280
+	.hsync = 44,			/* Horizontal synchronization XPULSE  */
+	.hbp = 148,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 88,				/* Horizontal front porch  XOFFSET */
 
-	// Vertical Blanking = vsync + vbp + vfp = 45
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 45
 	.vsync = 5,				/* Vertical synchronization */
 	.vbp = 36,				/* Vertical back porch      */
 	.vfp = 4,				/* Vertical front porch */
@@ -1830,7 +1831,7 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	return & vdmode_HDMI_1920x1080;
+	return & vdmode_HDMI_1920x1080at60;
 }
 
 #endif /* WITHLTDCHW */
