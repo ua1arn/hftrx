@@ -3797,9 +3797,9 @@ prog_ctrlreg(uint_fast8_t plane)
 				{ 1, 1, 1, 1 },	// maximal speed
 		};
 		enum { FANSPEED_OFF = 0, FANSPEED_MIN = 1, FANSPEED_MAX = ARRAY_SIZE(fanspeedcodes)  - 1 };
+#if WITHFANTIMER
 		ASSERT(WITHFANPWMMIN == FANSPEED_MIN);
 		ASSERT(WITHFANPWMMAX == FANSPEED_MAX);
-#if WITHFANTIMER
 		const unsigned fanspeed = (glob_fanflag || txgated) ? glob_fanpwm : FANSPEED_OFF;
 #else /* WITHFANTIMER */
 		const unsigned fanspeed = FANSPEED_OFF;
