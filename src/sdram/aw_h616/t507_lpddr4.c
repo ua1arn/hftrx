@@ -13,6 +13,7 @@
 #if WITHSDRAMHW && CPUSTYLE_T507 && ! CPUSTYLE_H616
 
 #include "formats.h"
+#include "clocks.h"
 #include <string.h>
 
 #define TPR10_CA_BIT_DELAY	BIT_U32(16)

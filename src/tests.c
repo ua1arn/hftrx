@@ -3984,6 +3984,8 @@ static void diskio_test(BYTE drv)
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x55, 0xAA,
 
 	};
+
+	memset(sectbuffw, 0, sizeof sectbuffw);
 	for (;;)
 	{
 		static int testdataval;
@@ -4153,7 +4155,7 @@ static void diskio_test(BYTE drv)
 
 			case 'W':
 				{
-					unsigned nsect = 10 * 1024 * 2;	// 10M
+					unsigned nsect = 256 * 1024 * 2;	// 10M
 					// Wipe SD
 					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
 					char c = 0;
@@ -4186,7 +4188,7 @@ static void diskio_test(BYTE drv)
 									break;
 							}
 							// работа
-							if (mmcWriteSector(drv, sector, sectbuffr) != MMC_SUCCESS2)
+							if (mmcWriteSector(drv, sector, sectbuffw) != MMC_SUCCESS2)
 							{
 								PRINTF(PSTR("Write error ar sector %u\n"), sector);
 								break;
@@ -4194,6 +4196,9 @@ static void diskio_test(BYTE drv)
 							else
 							{
 								++ sector;
+								//sector += 8;
+								if ((sector % 1024) == 0)
+									dbg_putchar('.');
 							}
 						}
 						PRINTF(PSTR("Done erasing.\n"));
