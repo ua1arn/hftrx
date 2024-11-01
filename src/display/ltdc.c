@@ -6623,6 +6623,7 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 #if 1
 	h3_hdmi_phy_init(dotclock);
 #else
+	bsp_hdmi_set_addr(HDMI_TX0_BASE);
 	t507_hdmi_phy_init(dotclock);
 #endif
 	h3_hdmi_init(vdmode);

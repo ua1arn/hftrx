@@ -11,7 +11,7 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 
-#if WITHLTDCHW && WITHHDMITVHW && 1
+#if WITHLTDCHW && WITHHDMITVHW && 0
 
 //#include "hdmi_bsp.h"
 //#include "hdmi_core.h"
