@@ -43,23 +43,23 @@ static unsigned audio_type = PCM;
 //-------------------------------------------------------------------------
 // Function declarations
 
-static void hdmi_write(uintptr_t addr, uint8_t data);
-static void hdmi_writel(uintptr_t addr, unsigned int data);
+static void hdmi_write(unsigned addr, uint8_t data);
+static void hdmi_writel(unsigned addr, unsigned int data);
 static unsigned int get_vid(unsigned int id);
 static void hdmi_udelay(uint64_t us);
 static void hdmi_mdelay(uint64_t ms);
 static void hdmi_phy_init(void); // idb
-static int64_t hdmi_read(uint64_t addr);
+static int64_t hdmi_read(unsigned addr);
 static void bsp_hdmi_inner_init(void);
 static int bsp_hdmi_set_func(struct hdmi_bsp_func *func);
-static int bsp_hdmi_set_bias_source(unsigned int src);
+int bsp_hdmi_set_bias_source(unsigned int src);
 static void bsp_hdmi_set_version(unsigned int version);
 void bsp_hdmi_set_addr(uintptr_t base_addr);
 static void bsp_hdmi_init(void);
 static void bsp_hdmi_set_video_en(uint8_t enable);
 static int bsp_hdmi_video_get_div(unsigned int pixel_clk);
 static int bsp_hdmi_video(unsigned vic);
-static int bsp_hdmi_audio(struct audio_para *audio);
+static int bsp_hdmi_audio(unsigned vic);
 static int bsp_hdmi_ddc_read(char cmd, char pointer, char offset, int nbyte, char *pbuf);
 static unsigned int bsp_hdmi_get_hpd(void);
 static void bsp_hdmi_standby(void);
@@ -160,14 +160,14 @@ static const unsigned int n_table [21] =
 { 32000u, 3072u, 4096u, 44100u, 4704u, 6272u, 88200u, 9408u, 12544u, 176400u, 18816u, 25088u, 48000u, 5120u, 6144u, 96000u, 10240u, 12288u, 192000u, 20480u, 24576u }; // idb
 
 //----- (0000000000000000) ----------------------------------------------------
-static void hdmi_write(uintptr_t addr, uint8_t data)
+static void hdmi_write(unsigned addr, uint8_t data)
 {
 	__DSB();
 	* (volatile uint8_t*) (addr + hdmi_base_addr) = data;
 }
 
 //----- (0000000000000020) ----------------------------------------------------
-static void hdmi_writel(uintptr_t addr, unsigned int data)
+static void hdmi_writel(unsigned addr, unsigned int data)
 {
 	__DSB();
 	* (volatile uint32_t*) (addr + hdmi_base_addr) = data;
@@ -259,19 +259,19 @@ static void hdmi_phy_init(void)
 	v8 = * (volatile uint32_t*) (hdmi_base_addr + 65580);
 	rcal_flag = 1;
 	hdmi_writel(0x1002Cu, v8 | 0xC0000000);
-	hdmi_writel(0x1002Cu, (v7 >> 11) & 0x3F | * (volatile uint32_t*) (v6 + 44));
+	hdmi_writel(0x1002Cu, ((v7 >> 11) & 0x3F) | (* (volatile uint32_t*) (v6 + 44)));
 	hdmi_writel(0x10020u, 0x1FF0F7Fu);
 	hdmi_writel(0x10024u, 0x80639000);
 	hdmi_writel(0x10028u, 0xF81C405u);
 	if (bias_source)
-		hdmi_writel(0x10004u, * (volatile uint32_t*) (v6 + 4) | 0x20000);
+		hdmi_writel(0x10004u, * (volatile uint32_t*) (hdmi_base_addr + 0x10004u) | 0x20000);
 }
 // 18: using guessed type int64_t *off_18;
 
 //----- (00000000000003C0) ----------------------------------------------------
-static int64_t hdmi_read(uint64_t addr)
+static int64_t hdmi_read(unsigned addr)
 {
-	return * (volatile uint8_t*) hdmi_base_addr;
+	return * (volatile uint8_t*) (hdmi_base_addr + addr);
 }
 
 //----- (00000000000003D8) ----------------------------------------------------
@@ -279,7 +279,7 @@ static void bsp_hdmi_inner_init(void)
 {
 	uint64_t v0; // x0
 
-	hdmi_read(v0);
+	hdmi_read(0);
 	hdmi_write(0x10010u, 0x45u);
 	hdmi_write(0x10011u, 0x45u);
 	hdmi_write(0x10012u, 0x52u);
@@ -338,7 +338,7 @@ static int bsp_hdmi_set_func(struct hdmi_bsp_func *func)
 #endif
 
 //----- (00000000000005C0) ----------------------------------------------------
-static int bsp_hdmi_set_bias_source(unsigned int src)
+int bsp_hdmi_set_bias_source(unsigned int src)
 {
 	bias_source = src;
 	return 0;
@@ -401,6 +401,7 @@ static unsigned video_csc;
 static unsigned video_is_yuv;
 static unsigned video_is_hcts;
 static unsigned video_is_hdmi = 1;
+static unsigned video_clk_div = 1;
 
 //----- (00000000000006C0) ----------------------------------------------------
 static int bsp_hdmi_video(unsigned vic)
@@ -435,8 +436,8 @@ static int bsp_hdmi_video(unsigned vic)
 	uint8_t v29; // w1
 	int v30; // w24
 	uint8_t v31; // w1
-	uint64_t v32; // x0
-	uint64_t v33; // x0
+//	uint64_t v32; // x0
+//	uint64_t v33; // x0
 	uint8_t v34; // w1
 	enum color_space csc; // w1
 	unsigned int v36; // w0
@@ -457,6 +458,7 @@ static int bsp_hdmi_video(unsigned vic)
 		video_csc = /* color_space:: */BT601;
 	else
 		video_csc = /* color_space:: */BT709;
+#if 0
 	if ((uint32_t) vid == 19)
 	{
 		ptbl [19].para [1] = bsp_hdmi_video_get_div(video_pixel_clk);
@@ -479,9 +481,11 @@ static int bsp_hdmi_video(unsigned vic)
 		ptbl [19].para [17] = 1;
 		ptbl [19].para [18] = 1;
 		if ( video_x_res > 0x2E0 || video_y_res > 0x240 )
-		v4 = /* color_space:: */BT709;
+			v4 = /* color_space:: */BT709;
 		video_csc = v4;
 	}
+#endif
+
 	if (! rcal_flag)
 		hdmi_phy_init();
 	v5 = get_vid(vic);
@@ -491,7 +495,7 @@ static int bsp_hdmi_video(unsigned vic)
 	else
 		clk_div = ptbl [v5].para [1];
 	v8 = (clk_div - 1) & 0xF;
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) & 0xFFFF0FFF);
+	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 0x10020u) & 0xFFFF0FFF);
 	switch (ptbl [v6].para [1])
 	{
 	case 1u:
@@ -639,15 +643,16 @@ static int bsp_hdmi_video(unsigned vic)
 			hdmi_write(0x3046u, 1u);
 			hdmi_write(0x3047u, 0x11u);
 			hdmi_write(0x4044u, 0);
-			hdmi_write(0x52u, 0);
+			hdmi_write(0x0052u, 0);
 			hdmi_write(0x8051u, 0x11u);
-			hdmi_read(v32);
+
+			hdmi_read(0);
 			hdmi_write(0x10010u, 0x45u);
 			hdmi_write(0x10011u, 0x45u);
 			hdmi_write(0x10012u, 0x52u);
 			hdmi_write(0x10013u, 0x54u);
-			hdmi_write(0x40u, * (volatile uint8_t*) (hdmi_base_addr + 64) | 8);
-			hdmi_read(v33);
+			hdmi_write(0x40u, * (volatile uint8_t*) (hdmi_base_addr + 0x40u) | 8);
+			hdmi_read(0);
 			hdmi_write(0x10010u, 0x52u);
 			hdmi_write(0x10011u, 0x54u);
 			hdmi_write(0x10012u, 0x41u);
@@ -734,8 +739,9 @@ static int bsp_hdmi_video(unsigned vic)
 // 1100: variable 'v45' is possibly undefined
 // 18: using guessed type int64_t *off_18;
 
+#if 0
 //----- (00000000000011A8) ----------------------------------------------------
-static int bsp_hdmi_audio(struct audio_para *audio)
+static int bsp_hdmi_audio(unsigned vic)
 {
 	unsigned int vid; // w21
 	uint8_t v3; // w1
@@ -760,7 +766,7 @@ static int bsp_hdmi_audio(struct audio_para *audio)
 	v4 = 0;
 	while (ca_table [v4] != audio_ca)
 	{
-		v4 += 2LL;
+		v4 += 2;
 		if (v4 == 64)
 			goto LABEL_8;
 	}
@@ -791,7 +797,7 @@ static int bsp_hdmi_audio(struct audio_para *audio)
 			v7 = 0;
 	}
 	hdmi_write(0xE04Bu, v7);
-	hdmi_write(0x251u, audio_sample_bit);
+	hdmi_write(0x0251u, audio_sample_bit);
 	v8 = n_table;
 	v9 = 0;
 	while (audio_sample_rate != * v8)
@@ -809,16 +815,20 @@ static int bsp_hdmi_audio(struct audio_para *audio)
 	else
 		v10 = v9 + 1;
 	v11 = n_table [v10];
-	LABEL_25: hdmi_write(0xA40u, v11);
-	hdmi_write(0xA41u, BYTE1(v11));
+
+	LABEL_25:
+	hdmi_write(0x0A40u, v11);
+	hdmi_write(0x0A41u, BYTE1(v11));
 	hdmi_write(0x8A40u, BYTE2(v11));
-	hdmi_write(0xA43u, 0);
+	hdmi_write(0x0A43u, 0);
 	hdmi_write(0x8A42u, 4u);
 	hdmi_write(0xA049u, audio_ch_num > 2);
-	LOBYTE (v12) = 0;
+	v12 &= ~ 0xFFu;
 	if ( audio_type == PCM)
 		v12 = 16 * (audio_ch_num + 0xFFFFFFF);
 	hdmi_write(0x2043u, v12);
+	//hdmi_write(0x2043u, audio_ch_num * 16);
+
 	hdmi_write(0xA042u, 0);
 	hdmi_write(0xA043u, audio_ca);
 	hdmi_write(0x6040u, 0);
@@ -845,7 +855,9 @@ static int bsp_hdmi_audio(struct audio_para *audio)
 	hdmi_write(0x81u, 0);
 	return 0;
 }
+#endif
 
+#if 0
 //----- (00000000000014C0) ----------------------------------------------------
 // local variable allocation has failed, the output may be wrong!
 static int bsp_hdmi_ddc_read(char cmd, char pointer, char offset, int nbyte, char *pbuf)
@@ -914,7 +926,9 @@ static int bsp_hdmi_ddc_read(char cmd, char pointer, char offset, int nbyte, cha
 	return v10;
 }
 // 14C0: variables would overlap: w0.1 and x0.8
+#endif
 
+#if 0
 //----- (00000000000016C8) ----------------------------------------------------
 static unsigned int bsp_hdmi_get_hpd(void)
 {
@@ -935,6 +949,7 @@ static unsigned int bsp_hdmi_get_hpd(void)
 	return (v1 >> 19) & 1;
 }
 // 16E4: variable 'v0' is possibly undefined
+#endif
 
 //----- (0000000000001798) ----------------------------------------------------
 static void bsp_hdmi_standby(void)
@@ -949,6 +964,8 @@ static void bsp_hdmi_hrst(void)
 	hdmi_write(0xC1u, 4u);
 	hdmi_write(0x81u, 0x40u);
 }
+
+#if 0
 
 //----- (00000000000017F4) ----------------------------------------------------
 static int bsp_hdmi_hdcp_err_check(void)
@@ -978,7 +995,9 @@ static int bsp_hdmi_hdcp_err_check(void)
 }
 // 1804: variable 'v0' is possibly undefined
 // 1878: variable 'v2' is possibly undefined
+#endif
 
+#if 0
 //----- (00000000000018D8) ----------------------------------------------------
 static int bsp_hdmi_cec_get_simple_msg(uint8_t *msg)
 {
@@ -1091,7 +1110,7 @@ static void bsp_hdmi_cec_free_time_set(uint8_t value)
 	hdmi_write(0x10012u, 0x52u);
 	hdmi_write(0x10013u, 0x54u);
 	hdmi_read(v2);
-	hdmi_write(0x6F0u, * (volatile uint8_t*) (hdmi_base_addr + 1776) & 0xF9 | (2 * value));
+	hdmi_write(0x6F0u, (* (volatile uint8_t*) (hdmi_base_addr + 1776) & 0xF9) | (2 * value));
 	hdmi_read(v3);
 	hdmi_write(0x10010u, 0x52u);
 	hdmi_write(0x10011u, 0x54u);
@@ -1117,6 +1136,7 @@ static int bsp_hdmi_cec_sta_check(void)
 	hdmi_write(0x10013u, 0x57u);
 	return -!(v0 & 1);
 }
+#endif
 
 // nfuncs=27 queued=26 decompiled=26 lumina nreq=0 worse=0 better=0
 //

@@ -6717,6 +6717,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	h3_hdmi_phy_init(dotclock);
 #else
 	bsp_hdmi_set_addr(HDMI_TX0_BASE);
+	bsp_hdmi_set_bias_source(1);
 	t507_hdmi_phy_init(dotclock);
 #endif
 
