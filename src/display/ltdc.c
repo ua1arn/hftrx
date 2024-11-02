@@ -6509,10 +6509,10 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
 	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
 	/* Accumulated parameters for this display */
-	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
-	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
-	const unsigned VBLANKING = VBP + VSYNC +  VFP;	/* Vertical Blanking = vsync + vbp + vfp */
+//	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
+//	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
+	const unsigned HBLANKING = HBP + HSYNC + HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
+	const unsigned VBLANKING = VBP + VSYNC + VFP;	/* Vertical Blanking = vsync + vbp + vfp */
 	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
 	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
 
@@ -6546,10 +6546,14 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
 
+	TCONTV_PTR->TCON_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 	TCONTV_PTR->TCON1_IO_POL_REG = 0;
 	TCONTV_PTR->TCON1_IO_TRI_REG = 0;
 
 	//TCONTV_PTR->TCON1_CTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+//	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
+//	TCONTV_PTR->TCON_GCTL_REG &= ~ (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
+
 
 #elif CPUSTYLE_H3
 	// H3
@@ -6560,12 +6564,15 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
 		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
+
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
 	TCONTV_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
 	TCONTV_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
 	TCONTV_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
 	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+
+	TCONTV_PTR->TCON_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 
 #elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
@@ -6596,6 +6603,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	//	 101: Reserved
 	//	 111: Gridding Check
 
+	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
 	TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 
