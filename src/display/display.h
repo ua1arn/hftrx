@@ -181,33 +181,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 #endif
 
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
-#define MGADJ(dx) (((dx) + (MGALIGN - 1)) / MGALIGN * MGALIGN)
-
-#if LCDMODE_S1D13781
-	// биты слова буфера располагаются на экране горизонтально
-	// старший бит левее
-	#define MGALIGN 16
-	typedef uint16_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
-#elif LCDMODE_COLORED
-	// биты слова буфера располагаются на экране вертикально
-	#define MGALIGN 8
-	typedef uint8_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
-#else	/* LCDMODE_S1D13781 */
-	// биты слова буфера располагаются на экране вертикально
-	#define MGALIGN 8
-	typedef uint8_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
-#endif	/* */
-
-#define MGSIZE(dx, dy)	((uint_fast32_t) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
 #define GXSIZE(dx, dy)	((uint_fast32_t) GXADJ(dx) * (dy))	// размер буфера для цветного растра
-
-// Хранение описания буфера для функций построения изображений
-typedef struct gtg_tag
-{
-	PACKEDCOLORPIP_T * __restrict buffer;	// Буфер в памяти
-	uint16_t dx;	// ширина буфера
-	uint16_t dy;	// высота буфера
-} GTG_t;
 
 COLORPIP_T display_getbgcolor(void);
 void display_setbgcolor(COLORPIP_T c);
@@ -264,42 +238,9 @@ void render_wrdatabig_end(void);
 typedef struct pipparams_tag
 {
 	uint16_t x, y, w, h;	// в пикселях
-	//uintptr_t frame;	// default framebufer
-
 } pipparams_t;
 
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
-/* поставить точку в буфере кадра */
-void display_pixelbuffer(
-	GX_t * __restrict buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	);
-
-/* поставить точку в буфере кадра */
-void display_pixelbuffer_xor(
-	GX_t * __restrict buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	);
-void display_pixelbuffer_line(
-	GX_t * __restrict buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x0,	
-	uint_fast16_t y0,
-	uint_fast16_t x1,	
-	uint_fast16_t y1
-	);
-void display_pixelbuffer_clear(
-	GX_t * __restrict buffer,
-	uint_fast16_t dx,	
-	uint_fast16_t dy
-	);
 
 // Заполнение буфера сполшным цветом
 // Формат RGB565
@@ -308,20 +249,6 @@ void colpip_fill(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
-	COLORPIP_T color
-	);
-
-// Заполнение буфера сполшным цветом
-void gtg_fill(
-		const GTG_t * gtg,
-		COLORPIP_T color
-		);
-
-// поставить цветную точку.
-void gtg_point(
-	const GTG_t * gtg,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
 	);
 
