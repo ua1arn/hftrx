@@ -6480,6 +6480,10 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
 	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
+
+	TCONTV_PTR->TCON1_IO_POL_REG = 0;
+	TCONTV_PTR->TCON1_IO_TRI_REG = 0;
+
 	//TCONTV_PTR->TCON1_CTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 
 #elif CPUSTYLE_H3
