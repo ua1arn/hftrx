@@ -6437,10 +6437,69 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 
 #endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
 
+#if 0
+// A64
+// See https://groups.google.com/g/linux-sunxi/c/96vcJ1kdXXw
+static void de2_tcon_enable(struct lcd *lcd)
+{
+	struct drm_crtc *crtc = &lcd->crtc;
+	const struct drm_display_mode *mode = &crtc->mode;
+	int interlace = mode->flags & DRM_MODE_FLAG_INTERLACE ? 2 : 1;
+	int start_delay;
+	u32 data;
+
+	orl_relaxed(lcd->mmio + TCON_GCTL_REG, TCON_GCTL_TCON_ENABLE);
+
+	data = XY(mode->hdisplay - 1, mode->vdisplay / interlace - 1);
+	writel_relaxed(data, lcd->mmio + TCON1_BASIC0_REG);
+	writel_relaxed(data, lcd->mmio + TCON1_BASIC1_REG);
+	writel_relaxed(data, lcd->mmio + TCON1_BASIC2_REG);
+	writel_relaxed(XY(mode->htotal - 1, mode->htotal - mode->hsync_start - 1), lcd->mmio + TCON1_BASIC3_REG);
+	writel_relaxed(
+			XY(mode->vtotal * (3 - interlace),
+					mode->vtotal - mode->vsync_start - 1),
+			lcd->mmio + TCON1_BASIC4_REG);
+	writel_relaxed(
+			XY(mode->hsync_end - mode->hsync_start - 1,
+					mode->vsync_end - mode->vsync_start - 1),
+			lcd->mmio + TCON1_BASIC5_REG);
+
+	data = TCON1_IO_POL_IO2_inv;
+	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
+		data |= TCON1_IO_POL_IO0_inv;
+	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
+		data |= TCON1_IO_POL_IO1_inv;
+	writel_relaxed(data, lcd->mmio + TCON1_IO_POL_REG);
+
+	andl_relaxed(lcd->mmio + TCON_CEU_CTL_REG, ~TCON_CEU_CTL_ceu_en);
+
+	if (interlace == 2)
+		orl_relaxed(lcd->mmio + TCON1_CTL_REG, TCON1_CTL_INTERLACE_ENABLE);
+	else
+		andl_relaxed(lcd->mmio + TCON1_CTL_REG, ~TCON1_CTL_INTERLACE_ENABLE);
+
+	writel_relaxed(0, lcd->mmio + TCON1_FILL_CTL_REG);
+	writel_relaxed(mode->vtotal + 1, lcd->mmio + TCON1_FILL_START0_REG);
+	writel_relaxed(mode->vtotal, lcd->mmio + TCON1_FILL_END0_REG);
+	writel_relaxed(0, lcd->mmio + TCON1_FILL_DATA0_REG);
+
+	start_delay = (mode->vtotal - mode->vdisplay) / interlace - 5;
+	if (start_delay > 31)
+		start_delay = 31;
+	data = readl_relaxed(lcd->mmio + TCON1_CTL_REG);
+	data &= ~TCON1_CTL_Start_Delay_MASK;
+	data |= start_delay << TCON1_CTL_Start_Delay_SHIFT;
+	writel_relaxed(data, lcd->mmio + TCON1_CTL_REG);
+
+	orl_relaxed(lcd->mmio + TCON1_CTL_REG, TCON1_CTL_TCON_ENABLE);
+}
+#endif
+
 static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 	/* Accumulated parameters for this display */
+	const int interlace = 1 ? 2 : 1;	// TODO: get from vdmode
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned HSYNC = vdmode->hsync;	/*  */
@@ -6469,16 +6528,21 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 
 
 #if CPUSTYLE_A64
-	// LCD0 feeds mixer0 to HDMI
+	// A64
+	// See https://groups.google.com/g/linux-sunxi/c/96vcJ1kdXXw
 	TCONTV_PTR->TCON_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
-	TCONTV_PTR->TCON1_CTL_REG = 0;
+	TCONTV_PTR->TCON1_CTL_REG =
+		//(UINT32_C(1) << 31) |	// TCON1_En
+		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
+		ulmin16(0x1F, VTOTAL - HEIGHT) * (UINT32_C(1) << 4) | // Start_Delay
+		0;
 
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XI TCON1_YI
 	TCONTV_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// LS_XO LS_YO
 	TCONTV_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XO TCON1_YO
 	TCONTV_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);	// VT VBP
+	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
 
 	TCONTV_PTR->TCON1_IO_POL_REG = 0;
@@ -6488,18 +6552,18 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 
 #elif CPUSTYLE_H3
 	// H3
-	// LCD0 feeds mixer0 to HDMI
 	TCONTV_PTR->TCON_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
-		60 * (UINT32_C(1) << 4) |	// Start_Delay
+		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
+		ulmin16(0x1F, VTOTAL - HEIGHT) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
 	TCONTV_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
 	TCONTV_PTR->TCON1_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XO TCON1_YO
 	TCONTV_PTR->TCON1_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
+	TCONTV_PTR->TCON1_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
 #elif (CPUSTYLE_T507 || CPUSTYLE_H616)
@@ -6507,14 +6571,15 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TV_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TV_CTL_REG =
-		(VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
+		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
+		ulmin16(0x1F, VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
 		0;
 
 	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
 	TCONTV_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
 	TCONTV_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XO TV_YO
 	TCONTV_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * 2) << 16) | ((VBP - 1) << 0);			// VT VBP
+	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
 	TCONTV_PTR->TV_IO_POL_REG = 0;
