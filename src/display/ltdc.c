@@ -6498,8 +6498,8 @@ static void de2_tcon_enable(struct lcd *lcd)
 static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
-	/* Accumulated parameters for this display */
-	const int interlace = vdmode->interlaced ? 2 : 1;
+
+	const unsigned interlace = vdmode->interlaced ? 2 : 1;
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned HSYNC = vdmode->hsync;	/*  */
@@ -6508,6 +6508,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
 	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
 	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
+	/* Accumulated parameters for this display */
 	const unsigned LEFTMARGIN = HSYNC + HBP;	/* horizontal delay before DE start */
 	const unsigned TOPMARGIN = VSYNC + VBP;	/* vertical delay before DE start */
 	const unsigned HBLANKING = HBP + HSYNC +  HFP;	/* Horizontal Blanking = hsync + hbp + hfp */
@@ -6535,7 +6536,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, VTOTAL - HEIGHT) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XI TCON1_YI
@@ -6557,7 +6558,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, VTOTAL - HEIGHT) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
 	TCONTV_PTR->TCON1_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
@@ -6572,7 +6573,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TV_CTL_REG =
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, VTOTAL - HEIGHT) * (UINT32_C(1) << 4) |   //VT-V START_DELAY
+		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
