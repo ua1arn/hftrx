@@ -4416,6 +4416,15 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 #endif
 
 }
+
+
+
+static void t113_tvout_init(const videomode_t * vdmode)
+{
+	t113_tve_CCU_configuration(vdmode);
+	t113_tve_DAC_configuration(vdmode);
+}
+
 #endif /* defined (TVENCODER_PTR) */
 
 /* ----- */
@@ -6593,9 +6602,8 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 }
 
-#if WITHHDMITVHW
 
-static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
+static void t113_tcontv_initsteps(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
@@ -6619,6 +6627,13 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	t113_set_and_open_tvout_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_tvout_module_enable();
+#endif /* defined (TCONTV_PTR) */
+}
+
+static void t113_hdmi_init(const videomode_t * vdmode)
+{
+#if WITHHDMITVHW
+	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 
 #if 1
 	h3_hdmi_phy_init(dotclock);
@@ -6626,21 +6641,15 @@ static void t113_tcon_hdmi_initsteps(const videomode_t * vdmode)
 	bsp_hdmi_set_addr(HDMI_TX0_BASE);
 	t507_hdmi_phy_init(dotclock);
 #endif
+
 	h3_hdmi_init(vdmode);
 
-
-#if defined (TVENCODER_PTR)
-	t113_tve_CCU_configuration(vdmode);
-	t113_tve_DAC_configuration(vdmode);
-#endif /* defined (TVENCODER_PTR) */
-
 //	t507_hdmi_edid_test();
 //	t507_hdmi_edid_test();
-
-#endif /* defined (TCONTV_PTR) */
-}
 
 #endif /* WITHHDMITVHW */
+}
+
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
@@ -6791,8 +6800,15 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
 #if WITHHDMITVHW
-	t113_tcon_hdmi_initsteps(vdmode);
+	t113_tcontv_initsteps(vdmode);
+	t113_hdmi_init(vdmode);
 #endif /* WITHHDMITVHW */
+
+#if defined (TVENCODER_PTR)
+	t113_tcontv_initsteps(vdmode);
+	t113_tvout_init(vdmode);
+#endif /* defined (TVENCODER_PTR) */
+
 #if WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
 #elif WITHMIPIDSISHW
