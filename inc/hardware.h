@@ -770,6 +770,7 @@ typedef struct videomode_tag
 	unsigned lq43reset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 	unsigned fps;	/* frames per second */
 	unsigned ntsc;
+	unsigned interlaced;
 
 } videomode_t;
 

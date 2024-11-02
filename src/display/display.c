@@ -1242,7 +1242,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 1,		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 	//.ltdc_dotclk = 9000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 	/* SONY PSP-1000 display (4.3") required. */
 	/* Используется при BOARD_DEMODE = 0 */
@@ -1253,32 +1255,34 @@ static const videomode_t vdmode0 =
 /* AT070TN90 panel (800*480) - 7" display HV mode */
 static const videomode_t vdmode0 =
 {
-.width = 800,			/* LCD PIXEL WIDTH            */
-.height = 480,			/* LCD PIXEL HEIGHT           */
-/**
-  * @brief  AT070TN90 Timing
-  * MODE=0 (DE)
-  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
-  * MODE=1 (SYNC)
-  * When selected sync mode, de must be grounded.
-  */
-.hsync = 40,				/* Horizontal synchronization 1..40 */
-.hbp = 6,				/* Horizontal back porch      */
-.hfp = 210,				/* Horizontal front porch  16..354   */
+	.width = 800,			/* LCD PIXEL WIDTH            */
+	.height = 480,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 40,				/* Horizontal synchronization 1..40 */
+	.hbp = 6,				/* Horizontal back porch      */
+	.hfp = 210,				/* Horizontal front porch  16..354   */
 
-.vsync = 20,				/* Vertical synchronization 1..20  */
-.vbp = 3,				/* Vertical back porch      */
-.vfp = 22,				/* Vertical front porch  7..147     */
+	.vsync = 20,				/* Vertical synchronization 1..20  */
+	.vbp = 3,				/* Vertical back porch      */
+	.vfp = 22,				/* Vertical front porch  7..147     */
 
-// MODE: DE/SYNC mode select.
-// DE MODE: MODE="1", VS and HS must pull high.
-// SYNC MODE: MODE="0". DE must be grounded
-.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
-.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-.lq43reset = 0,	// LQ043T3DX02K require DE reset
-//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
-.fps = 60	/* frames per second */
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif 1 && LCDMODE_AT070TNA2
@@ -1315,7 +1319,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 /* AT070TN90 panel (800*480) - 7" display HV mode */
@@ -1346,59 +1352,9 @@ static const videomode_t vdmode_800x480 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
-};
-
-
-#elif 0 && LCDMODE_AT070TNA2
-	// 1280 * 720
-	/* AT070TNA2 panel (1024*600) - 7" display HV mode */
-	// HX8282-A01.pdf, page 38
-	//	pinfo.xres = 1280;
-	//	pinfo.yres = 720;
-	//	pinfo.type = HDMI_PANEL;
-	//	pinfo.pdest = DISPLAY_1;
-	//	pinfo.wait_cycle = 0;
-	//	pinfo.bpp = 24;
-	//	pinfo.fb_num = 2;
-	//	pinfo.clk_rate = 74250000;
-	//	pinfo.lcdc.h_back_porch = 124;
-	//	pinfo.lcdc.h_front_porch = 110;
-	//	pinfo.lcdc.h_pulse_width = 136;
-	//	pinfo.lcdc.v_back_porch = 19;
-	//	pinfo.lcdc.v_front_porch = 5;
-	//	pinfo.lcdc.v_pulse_width = 6;
-	//	pinfo.lcdc.border_clr = 0;
-	//	pinfo.lcdc.underflow_clr = 0xff;
-	//	pinfo.lcdc.hsync_skew = 0;
-static const videomode_t vdmode0 =
-{
-	.width = 1280,			/* LCD PIXEL WIDTH            */
-	.height = 720,			/* LCD PIXEL HEIGHT           */
-	/**
-	  * @brief  AT070TN90 Timing
-	  * MODE=0 (DE)
-	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
-	  * MODE=1 (SYNC)
-	  * When selected sync mode, de must be grounded.
-	  */
-	.hsync = 136,			/* Horizontal synchronization 1..140 */
-	.hbp = xxx,				/* Horizontal back porch  xxx   */
-	.hfp = 110,				/* Horizontal front porch  16..216   */
-
-	.vsync = 6,				/* Vertical synchronization 1..20  */
-	.vbp = xx,				/* Vertical back porch  xxx   */
-	.vfp = 5,				/* Vertical front porch  1..127     */
-
-	// MODE: DE/SYNC mode select.
-	// DE MODE: MODE="1", VS and HS must pull high.
-	// SYNC MODE: MODE="0". DE must be grounded
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
-	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 74250000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif LCDMODE_LQ123K3LG01
@@ -1431,7 +1387,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	///.ltdc_dotclk = 54835000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif LCDMODE_TCG104XGLPAPNN
@@ -1462,7 +1420,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
-	.fps = 60	/* frames per second 50 60 70 */
+	.fps = 60,	/* frames per second 50 60 70 */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif LCDMODE_ILI8961
@@ -1488,7 +1448,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 24000000u,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif LCDMODE_ILI9341
@@ -1515,7 +1477,9 @@ static static const const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 3000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif LCDMODE_H497TLB01P4
@@ -1552,7 +1516,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #elif LCDMODE_TV101WXM
@@ -1589,7 +1555,9 @@ static const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60	/* frames per second */
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 #else
@@ -1617,7 +1585,8 @@ static const videomode_t vdmode_NTSC0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
 	.fps = 60,	/* frames per second */
-	.ntsc = 1
+	.ntsc = 1,
+	.interlaced = 1
 };
 
 /* PAL TV out parameters */
@@ -1640,7 +1609,8 @@ static const videomode_t vdmode_PAL0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
 	.fps = 60,	/* frames per second */
-	.ntsc = 0
+	.ntsc = 0,
+	.interlaced = 1
 };
 
 //	Horizontal Timings
@@ -1683,7 +1653,8 @@ static const videomode_t vdmode_HDMI_1920x1080at60 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
 	.fps = 60,	/* frames per second */
-	.ntsc = 0
+	.ntsc = 0,
+	.interlaced = 0
 };
 
 const videomode_t * get_videomode_CRT(void)

@@ -6499,7 +6499,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 	/* Accumulated parameters for this display */
-	const int interlace = 1 ? 2 : 1;	// TODO: get from vdmode
+	const int interlace = vdmode->interlaced ? 2 : 1;
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
 	const unsigned HSYNC = vdmode->hsync;	/*  */
