@@ -3,7 +3,7 @@
 #include "hardware.h"
 #include "formats.h"	// for PRINTF prints
 
-#if WITHLTDCHW && WITHHDMITVHW && 1
+#if WITHLTDCHW && WITHHDMITVHW && 0
 
 //#include "hdmi_bsp_i.h"
 //#include "hdmi_core.h"
