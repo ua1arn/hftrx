@@ -53,7 +53,7 @@ static int64_t hdmi_read(unsigned addr);
 static void bsp_hdmi_inner_init(void);
 static int bsp_hdmi_set_func(struct hdmi_bsp_func *func);
 int bsp_hdmi_set_bias_source(unsigned int src);
-static void bsp_hdmi_set_version(unsigned int version);
+void bsp_hdmi_set_version(unsigned int version);
 void bsp_hdmi_set_addr(uintptr_t base_addr);
 static void bsp_hdmi_init(void);
 static void bsp_hdmi_set_video_en(uint8_t enable);
@@ -93,46 +93,28 @@ struct pcm_sf
 
 static struct para_tab ptbl [20] =
 {
-{
-{ 6u, 1u, 1u, 1u, 5u, 3u, 0u, 1u, 4u, 0u, 0u, 160u, 20u, 38u, 124u, 240u, 22u, 0u, 0u } },
-{
-{ 21u, 11u, 1u, 1u, 5u, 3u, 1u, 1u, 2u, 0u, 0u, 160u, 32u, 24u, 126u, 32u, 24u, 0u, 0u } },
-{
-{ 2u, 11u, 0u, 0u, 2u, 6u, 1u, 0u, 9u, 0u, 0u, 208u, 138u, 16u, 62u, 224u, 45u, 0u, 0u } },
-{
-{ 17u, 11u, 0u, 0u, 2u, 5u, 2u, 0u, 5u, 0u, 0u, 208u, 144u, 12u, 64u, 64u, 49u, 0u, 0u } },
-{
-{ 19u, 4u, 0u, 96u, 5u, 5u, 2u, 2u, 5u, 1u, 0u, 0u, 188u, 184u, 40u, 208u, 30u, 1u, 1u } },
-{
-{ 4u, 4u, 0u, 96u, 5u, 5u, 2u, 1u, 5u, 0u, 0u, 0u, 114u, 110u, 40u, 208u, 30u, 1u, 1u } },
-{
-{ 20u, 4u, 0u, 97u, 7u, 5u, 4u, 2u, 2u, 2u, 0u, 128u, 208u, 16u, 44u, 56u, 22u, 1u, 1u } },
-{
-{ 5u, 4u, 0u, 97u, 7u, 5u, 4u, 1u, 2u, 0u, 0u, 128u, 24u, 88u, 44u, 56u, 22u, 1u, 1u } },
-{
-{ 31u, 2u, 0u, 96u, 7u, 5u, 4u, 2u, 4u, 2u, 0u, 128u, 208u, 16u, 44u, 56u, 45u, 1u, 1u } },
-{
-{ 16u, 2u, 0u, 96u, 7u, 5u, 4u, 1u, 4u, 0u, 0u, 128u, 24u, 88u, 44u, 56u, 45u, 1u, 1u } },
-{
-{ 32u, 4u, 0u, 96u, 7u, 5u, 4u, 3u, 4u, 2u, 0u, 128u, 62u, 126u, 44u, 56u, 45u, 1u, 1u } },
-{
-{ 33u, 4u, 0u, 0u, 7u, 5u, 4u, 2u, 4u, 2u, 0u, 128u, 208u, 16u, 44u, 56u, 45u, 1u, 1u } },
-{
-{ 34u, 4u, 0u, 0u, 7u, 5u, 4u, 1u, 4u, 0u, 0u, 128u, 24u, 88u, 44u, 56u, 45u, 1u, 1u } },
-{
-{ 160u, 2u, 0u, 96u, 7u, 5u, 8u, 3u, 4u, 2u, 0u, 128u, 62u, 126u, 44u, 157u, 45u, 1u, 1u } },
-{
-{ 147u, 2u, 0u, 96u, 5u, 5u, 5u, 2u, 5u, 1u, 0u, 0u, 188u, 184u, 40u, 190u, 30u, 1u, 1u } },
-{
-{ 132u, 2u, 0u, 96u, 5u, 5u, 5u, 1u, 5u, 0u, 0u, 0u, 114u, 110u, 40u, 160u, 30u, 1u, 1u } },
-{
-{ 257u, 1u, 0u, 96u, 15u, 10u, 8u, 2u, 8u, 0u, 0u, 0u, 48u, 176u, 88u, 112u, 90u, 1u, 1u } },
-{
-{ 258u, 1u, 0u, 96u, 15u, 10u, 8u, 5u, 8u, 4u, 0u, 0u, 160u, 32u, 88u, 112u, 90u, 1u, 1u } },
-{
-{ 259u, 1u, 0u, 96u, 15u, 10u, 8u, 6u, 8u, 4u, 0u, 0u, 124u, 252u, 88u, 112u, 90u, 1u, 1u } },
-{
-{ 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u } } }; // idb
+	{ { 6, 1, 1, 1, 5, 3, 0, 1, 4, 0, 0, 160, 20, 38, 124, 240, 22, 0, 0u } },
+	{ { 21, 11, 1, 1, 5, 3, 1, 1, 2, 0, 0, 160, 32, 24, 126, 32, 24, 0, 0u } },
+	{ { 2, 11, 0, 0, 2, 6, 1, 0, 9, 0, 0, 208, 138, 16, 62, 224, 45, 0, 0u } },
+	{ { 17, 11, 0, 0, 2, 5, 2, 0, 5, 0, 0, 208, 144, 12, 64, 64, 49, 0, 0u } },
+	{ { 19, 4, 0, 96, 5, 5, 2, 2, 5, 1, 0, 0, 188, 184, 40, 208, 30, 1, 1u } },
+	{ { 4, 4, 0, 96, 5, 5, 2, 1, 5, 0, 0, 0, 114, 110, 40, 208, 30, 1, 1u } },
+	{ { 20, 4, 0, 97, 7, 5, 4, 2, 2, 2, 0, 128, 208, 16, 44, 56, 22, 1, 1u } },
+	{ { 5, 4, 0, 97, 7, 5, 4, 1, 2, 0, 0, 128, 24, 88, 44, 56, 22, 1, 1u } },
+	{ { 31, 2, 0, 96, 7, 5, 4, 2, 4, 2, 0, 128, 208, 16, 44, 56, 45, 1, 1u } },
+	{ { 16, 2, 0, 96, 7, 5, 4, 1, 4, 0, 0, 128, 24, 88, 44, 56, 45, 1, 1u } },
+	{ { 32, 4, 0, 96, 7, 5, 4, 3, 4, 2, 0, 128, 62, 126, 44, 56, 45, 1, 1u } },
+	{ { 33, 4, 0, 0, 7, 5, 4, 2, 4, 2, 0, 128, 208, 16, 44, 56, 45, 1, 1u } },
+	{ { 34, 4, 0, 0, 7, 5, 4, 1, 4, 0, 0, 128, 24, 88, 44, 56, 45, 1, 1u } },
+	{ { 160, 2, 0, 96, 7, 5, 8, 3, 4, 2, 0, 128, 62, 126, 44, 157, 45, 1, 1u } },
+	{ { 147, 2, 0, 96, 5, 5, 5, 2, 5, 1, 0, 0, 188, 184, 40, 190, 30, 1, 1u } },
+	{ { 132, 2, 0, 96, 5, 5, 5, 1, 5, 0, 0, 0, 114, 110, 40, 160, 30, 1, 1u } },
+	{ { 257, 1, 0, 96, 15, 10, 8, 2, 8, 0, 0, 0, 48, 176, 88, 112, 90, 1, 1u } },
+	{ { 258, 1, 0, 96, 15, 10, 8, 5, 8, 4, 0, 0, 160, 32, 88, 112, 90, 1, 1u } },
+	{ { 259, 1, 0, 96, 15, 10, 8, 6, 8, 4, 0, 0, 124, 252, 88, 112, 90, 1, 1u } },
+	{ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0u } },
+}; // idb
+
 static uintptr_t hdmi_base_addr; // idb
 //static struct hdmi_bsp_func hdmi_func; // idb
 static unsigned int tmp_rcal_100; // idb
@@ -141,23 +123,23 @@ static unsigned int rcal_flag; // idb
 static unsigned int bias_source; // idb
 static unsigned int hdmi_version; // idb
 static const uint8_t ca_table [64] =
-{ 0u, 17u, 1u, 19u, 2u, 49u, 3u, 51u, 4u, 21u, 5u, 23u, 6u, 53u, 7u, 55u, 8u, 85u, 9u, 87u, 10u, 117u, 11u, 119u, 12u, 93u, 13u, 95u, 14u, 125u, 15u, 127u, 16u, 221u, 17u, 223u, 18u, 253u, 19u, 255u, 20u, 153u, 21u, 155u, 22u, 185u, 23u, 187u, 24u, 157u,
-		25u, 159u, 26u, 189u, 27u, 191u, 28u, 221u, 29u, 223u, 30u, 253u, 31u, 255u }; // idb
+{ 0, 17, 1, 19, 2, 49, 3, 51, 4, 21, 5, 23, 6, 53, 7, 55, 8, 85, 9, 87, 10, 117, 11, 119, 12, 93, 13, 95, 14, 125, 15, 127, 16, 221, 17, 223, 18, 253, 19, 255, 20, 153, 21, 155, 22, 185, 23, 187, 24, 157,
+		25, 159, 26, 189, 27, 191, 28, 221, 29, 223, 30, 253, 31, 255u }; // idb
 static const struct pcm_sf sf [10] =
 {
-{ 22050u, 4u },
-{ 44100u, 0u },
-{ 88200u, 8u },
-{ 176400u, 12u },
-{ 24000u, 6u },
-{ 48000u, 2u },
-{ 96000u, 10u },
-{ 192000u, 14u },
-{ 32000u, 3u },
-{ 768000u, 9u } }; // idb
+{ 22050, 4u },
+{ 44100, 0u },
+{ 88200, 8u },
+{ 176400, 12u },
+{ 24000, 6u },
+{ 48000, 2u },
+{ 96000, 10u },
+{ 192000, 14u },
+{ 32000, 3u },
+{ 768000, 9u } }; // idb
 
 static const unsigned int n_table [21] =
-{ 32000u, 3072u, 4096u, 44100u, 4704u, 6272u, 88200u, 9408u, 12544u, 176400u, 18816u, 25088u, 48000u, 5120u, 6144u, 96000u, 10240u, 12288u, 192000u, 20480u, 24576u }; // idb
+{ 32000, 3072, 4096, 44100, 4704, 6272, 88200, 9408, 12544, 176400, 18816, 25088, 48000, 5120, 6144, 96000, 10240, 12288, 192000, 20480, 24576u }; // idb
 
 //----- (0000000000000000) ----------------------------------------------------
 static void hdmi_write(unsigned addr, uint8_t data)
@@ -218,53 +200,54 @@ static void hdmi_phy_init(void)
 	uint64_t v7; // x21
 	int v8; // w1
 
-	hdmi_writel(0x10020u, 0);
-	hdmi_writel(0x10020u, 1u);
-	hdmi_udelay(5u);
+	hdmi_writel(0x10020, 0);
+	hdmi_writel(0x10020, 1);
+	hdmi_udelay(5);
 	v1 = hdmi_base_addr + 0x10000;
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0x10000);
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (v1 + 32) | 2);
-	hdmi_udelay(0xAu);
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 4);
-	hdmi_udelay(5u);
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 8);
-	hdmi_udelay(0x28u);
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0x80000);
-	hdmi_udelay(0x64u);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0x10000);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (v1 + 32) | 2);
+	hdmi_udelay(0xA);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 4);
+	hdmi_udelay(5);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 8);
+	hdmi_udelay(0x28);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0x80000);
+	hdmi_udelay(0x64);
 	v2 = hdmi_base_addr + 0x10000;
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0x40000);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0x40000);
 	v3 = * (volatile uint32_t*) (v2 + 32);
 	v4 = 10;
-	hdmi_writel(0x10020u, v3 | 0x70);
+	hdmi_writel(0x10020, v3 | 0x70);
 	do
 	{
 		if ((* (volatile uint32_t*) (hdmi_base_addr + 65592) & 0x80) != 0)
 			break;
-		hdmi_udelay(0xC8u);
+		hdmi_udelay(0xC8);
 		-- v4;
 	} while (v4);
 	v5 = hdmi_base_addr + 0x10000;
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0xF00);
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (v5 + 32) | 0x80);
-	hdmi_writel(0x1002Cu, 0x39DC5040u);
-	hdmi_writel(0x10030u, 0x80084343);
-	hdmi_mdelay(0xAu);
-	hdmi_writel(0x10034u, 1u);
-	hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
-	hdmi_mdelay(0x64u);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0xF00);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (v5 + 32) | 0x80);
+	hdmi_writel(0x1002C, 0x39DC5040);
+	hdmi_writel(0x10030, 0x80084343);
+	hdmi_mdelay(0xA);
+	hdmi_writel(0x10034, 1);
+	hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
+	hdmi_mdelay(100);
+
 	v6 = hdmi_base_addr + 0x10000;
 	v7 = * (volatile uint32_t*) (hdmi_base_addr + 65592);
-	tmp_rcal_100 = (* (volatile uint32_t*) (hdmi_base_addr + 65592) & 0x3Fu) >> 1;
+	tmp_rcal_100 = (* (volatile uint32_t*) (hdmi_base_addr + 65592) & 0x3F) >> 1;
 	tmp_rcal_200 = (uint8_t) (v7 & 0x3F) >> 2;
 	v8 = * (volatile uint32_t*) (hdmi_base_addr + 65580);
 	rcal_flag = 1;
-	hdmi_writel(0x1002Cu, v8 | 0xC0000000);
-	hdmi_writel(0x1002Cu, ((v7 >> 11) & 0x3F) | (* (volatile uint32_t*) (v6 + 44)));
-	hdmi_writel(0x10020u, 0x1FF0F7Fu);
-	hdmi_writel(0x10024u, 0x80639000);
-	hdmi_writel(0x10028u, 0xF81C405u);
+	hdmi_writel(0x1002C, v8 | 0xC0000000);
+	hdmi_writel(0x1002C, ((v7 >> 11) & 0x3F) | (* (volatile uint32_t*) (v6 + 44)));
+	hdmi_writel(0x10020, 0x1FF0F7F);
+	hdmi_writel(0x10024, 0x80639000);
+	hdmi_writel(0x10028, 0xF81C405);
 	if (bias_source)
-		hdmi_writel(0x10004u, * (volatile uint32_t*) (hdmi_base_addr + 0x10004u) | 0x20000);
+		hdmi_writel(0x10004, * (volatile uint32_t*) (hdmi_base_addr + 0x10004) | 0x20000);
 }
 // 18: using guessed type int64_t *off_18;
 
@@ -280,40 +263,40 @@ static void bsp_hdmi_inner_init(void)
 	uint64_t v0; // x0
 
 	hdmi_read(0);
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
-	hdmi_write(0x8080u, 0);
-	hdmi_udelay(1u);
-	hdmi_write(0xF01Fu, 0);
-	hdmi_write(0x8403u, 0xFFu);
-	hdmi_write(0x904Cu, 0xFFu);
-	hdmi_write(0x904Eu, 0xFFu);
-	hdmi_write(0xD04Cu, 0xFFu);
-	hdmi_write(0x8250u, 0xFFu);
-	hdmi_write(0x8A50u, 0xFFu);
-	hdmi_write(0x8272u, 0xFFu);
-	hdmi_write(0x40C0u, 0xFFu);
-	hdmi_write(0x86F0u, 0xFFu);
-	hdmi_write(0xEE3u, 0xFFu);
-	hdmi_write(0x8EE2u, 0xFFu);
-	hdmi_write(0xA049u, 0xF0u);
-	hdmi_write(0xB045u, 0x1Eu);
-	hdmi_write(0xC1u, 0);
-	hdmi_write(0xC1u, 3u);
-	hdmi_write(0xC0u, 0);
-	hdmi_write(0x40C1u, 0x10u);
-	hdmi_write(0x81u, 0xFDu);
-	hdmi_write(0x81u, 0);
-	hdmi_write(0x81u, 0xDDu);
-	hdmi_write(0x10u, 0xFFu);
-	hdmi_write(0x11u, 0xFFu);
-	hdmi_write(0x8010u, 0xFFu);
-	hdmi_write(0x8011u, 0xFFu);
-	hdmi_write(0x13u, 0xFFu);
-	hdmi_write(0x8012u, 0xFFu);
-	hdmi_write(0x8013u, 0xFFu);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
+	hdmi_write(0x8080, 0);
+	hdmi_udelay(1);
+	hdmi_write(0xF01F, 0);
+	hdmi_write(0x8403, 0xFF);
+	hdmi_write(0x904C, 0xFF);
+	hdmi_write(0x904E, 0xFF);
+	hdmi_write(0xD04C, 0xFF);
+	hdmi_write(0x8250, 0xFF);
+	hdmi_write(0x8A50, 0xFF);
+	hdmi_write(0x8272, 0xFF);
+	hdmi_write(0x40C0, 0xFF);
+	hdmi_write(0x86F0, 0xFF);
+	hdmi_write(0x0EE3, 0xFF);
+	hdmi_write(0x8EE2, 0xFF);
+	hdmi_write(0xA049, 0xF0);
+	hdmi_write(0xB045, 0x1E);
+	hdmi_write(0x00C1, 0);
+	hdmi_write(0x00C1, 3);
+	hdmi_write(0x00C0, 0);
+	hdmi_write(0x40C1, 0x10);
+	hdmi_write(0x0081, 0xFD);
+	hdmi_write(0x0081, 0);
+	hdmi_write(0x0081, 0xDD);
+	hdmi_write(0x0010, 0xFF);
+	hdmi_write(0x0011, 0xFF);
+	hdmi_write(0x8010, 0xFF);
+	hdmi_write(0x8011, 0xFF);
+	hdmi_write(0x13, 0xFF);
+	hdmi_write(0x8012, 0xFF);
+	hdmi_write(0x8013, 0xFF);
 }
 // 3E0: variable 'v0' is possibly undefined
 
@@ -345,7 +328,7 @@ int bsp_hdmi_set_bias_source(unsigned int src)
 }
 
 //----- (00000000000005D8) ----------------------------------------------------
-static void bsp_hdmi_set_version(unsigned int version)
+void bsp_hdmi_set_version(unsigned int version)
 {
 	hdmi_version = version;
 }
@@ -374,7 +357,7 @@ static void bsp_hdmi_set_video_en(uint8_t enable)
 		v1 = * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0xF000;
 	else
 		v1 = * (volatile uint32_t*) (hdmi_base_addr + 65568) & 0xFFFF0FFF;
-	hdmi_writel(0x10020u, v1);
+	hdmi_writel(0x10020, v1);
 }
 
 //----- (0000000000000678) ----------------------------------------------------
@@ -495,7 +478,7 @@ static int bsp_hdmi_video(unsigned vic)
 	else
 		clk_div = ptbl [v5].para [1];
 	v8 = (clk_div - 1) & 0xF;
-	hdmi_writel(0x10020u, * (volatile uint32_t*) (hdmi_base_addr + 0x10020u) & 0xFFFF0FFF);
+	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 0x10020) & 0xFFFF0FFF);
 	switch (ptbl [v6].para [1])
 	{
 	case 1u:
@@ -503,127 +486,127 @@ static int bsp_hdmi_video(unsigned vic)
 			v9 = 819748800;
 		else
 			v9 = 836526016;
-		hdmi_writel(0x1002Cu, v9);
-		hdmi_writel(0x10030u, v8 | 0x800863C0);
-		hdmi_mdelay(0xAu);
-		hdmi_writel(0x10034u, 1u);
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
-		hdmi_mdelay(0xC8u);
+		hdmi_writel(0x1002C, v9);
+		hdmi_writel(0x10030, v8 | 0x800863C0);
+		hdmi_mdelay(0xA);
+		hdmi_writel(0x10034, 1);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
+		hdmi_mdelay(0xC8);
 		v10 = hdmi_base_addr + 0x10000;
 		v11 = * (volatile uint32_t*) (hdmi_base_addr + 65592);
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
 		v12 = (v11 >> 11) & 0x3F;
 		v13 = * (volatile uint32_t*) (v10 + 44);
 		if ((unsigned int) v12 > 0x3C)
 			v14 = v13 | 0x3F;
 		else
 			v14 = (v12 + 2) | v13;
-		hdmi_writel(0x1002Cu, v14);
-		hdmi_mdelay(0x64u);
-		hdmi_writel(0x10020u, 0x1FFFF7Fu);
-		hdmi_writel(0x10024u, 0x8063B000);
+		hdmi_writel(0x1002C, v14);
+		hdmi_mdelay(0x64);
+		hdmi_writel(0x10020, 0x1FFFF7F);
+		hdmi_writel(0x10024, 0x8063B000);
 		v15 = 260196021;
 		goto LABEL_27;
 	case 2u:
-		hdmi_writel(0x1002Cu, 0x39DC5040u);
-		hdmi_writel(0x10030u, v8 | 0x80084380);
-		hdmi_mdelay(0xAu);
-		hdmi_writel(0x10034u, 1u);
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
-		hdmi_mdelay(0x64u);
+		hdmi_writel(0x1002C, 0x39DC5040);
+		hdmi_writel(0x10030, v8 | 0x80084380);
+		hdmi_mdelay(0xA);
+		hdmi_writel(0x10034, 1);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
+		hdmi_mdelay(0x64);
 		v16 = hdmi_base_addr + 0x10000;
 		v17 = ((uint64_t) * (volatile uint32_t*) (hdmi_base_addr + 65592) >> 11) & 0x3F;
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
-		hdmi_writel(0x1002Cu, v17 | * (volatile uint32_t*) (v16 + 44));
-		hdmi_writel(0x10020u, 0x1FFFF7Fu);
-		hdmi_writel(0x10024u, 0x8063A800);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
+		hdmi_writel(0x1002C, v17 | * (volatile uint32_t*) (v16 + 44));
+		hdmi_writel(0x10020, 0x1FFFF7F);
+		hdmi_writel(0x10024, 0x8063A800);
 		v18 = - 15227;
 		goto LABEL_25;
 	case 4u:
-		hdmi_writel(0x1002Cu, 0x39DC5040u);
-		hdmi_writel(0x10030u, v8 | 0x80084340);
-		hdmi_mdelay(0xAu);
-		hdmi_writel(0x10034u, 1u);
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
-		hdmi_mdelay(0x64u);
+		hdmi_writel(0x1002C, 0x39DC5040);
+		hdmi_writel(0x10030, v8 | 0x80084340);
+		hdmi_mdelay(0xA);
+		hdmi_writel(0x10034, 1);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
+		hdmi_mdelay(0x64);
 		v19 = hdmi_base_addr + 0x10000;
 		v20 = ((uint64_t) * (volatile uint32_t*) (hdmi_base_addr + 65592) >> 11) & 0x3F;
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
-		hdmi_writel(0x1002Cu, v20 | * (volatile uint32_t*) (v19 + 44));
-		hdmi_writel(0x10020u, 0x11FFFF7Fu);
-		hdmi_writel(0x10024u, tmp_rcal_200 | 0x80623000);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
+		hdmi_writel(0x1002C, v20 | * (volatile uint32_t*) (v19 + 44));
+		hdmi_writel(0x10020, 0x11FFFF7F);
+		hdmi_writel(0x10024, tmp_rcal_200 | 0x80623000);
 		v18 = 17285;
 		LABEL_25: v15 = v18 | 0xF810000;
 		goto LABEL_27;
 	case 0xBu:
-		hdmi_writel(0x1002Cu, 0x39DC5040u);
-		hdmi_writel(0x10030u, v8 | 0x80084300);
-		hdmi_mdelay(0xAu);
-		hdmi_writel(0x10034u, 1u);
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
-		hdmi_mdelay(0x64u);
+		hdmi_writel(0x1002C, 0x39DC5040);
+		hdmi_writel(0x10030, v8 | 0x80084300);
+		hdmi_mdelay(0xA);
+		hdmi_writel(0x10034, 1);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0x2000000);
+		hdmi_mdelay(0x64);
 		v21 = hdmi_base_addr + 0x10000;
 		v22 = ((uint64_t) * (volatile uint32_t*) (hdmi_base_addr + 65592) >> 11) & 0x3F;
-		hdmi_writel(0x1002Cu, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
-		hdmi_writel(0x1002Cu, v22 | * (volatile uint32_t*) (v21 + 44));
-		hdmi_writel(0x10020u, 0x11FFFF7Fu);
-		hdmi_writel(0x10024u, tmp_rcal_200 | 0x80623000);
+		hdmi_writel(0x1002C, * (volatile uint32_t*) (hdmi_base_addr + 65580) | 0xC0000000);
+		hdmi_writel(0x1002C, v22 | * (volatile uint32_t*) (v21 + 44));
+		hdmi_writel(0x10020, 0x11FFFF7F);
+		hdmi_writel(0x10024, tmp_rcal_200 | 0x80623000);
 		v15 = 260096645;
-		LABEL_27: hdmi_writel(0x10028u, v15);
+		LABEL_27: hdmi_writel(0x10028, v15);
 		bsp_hdmi_inner_init();
-		hdmi_write(0x840u, 1u);
-		hdmi_write(0x4845u, 0);
+		hdmi_write(0x840, 1);
+		hdmi_write(0x4845, 0);
 		v23 = & ptbl [(unsigned int) vid];
 		v24 = v23->para [3];
-		hdmi_write(0x40u, v24 | 0x10);
+		hdmi_write(0x40, v24 | 0x10);
 		if (v24 >= 0x60)
 			v25 = 0;
 		else
 			v25 = 3;
-		hdmi_write(0x10001u, v25);
-		hdmi_write(0x8040u, v23->para [4]);
-		hdmi_write(0x4043u, v23->para [5]);
-		hdmi_write(0x8042u, v23->para [6]);
-		hdmi_write(0x42u, v23->para [7]);
-		hdmi_write(0x4042u, v23->para [8]);
-		hdmi_write(0x4041u, v23->para [9]);
-		hdmi_write(0xC041u, v23->para [10]);
-		hdmi_write(0x41u, v23->para [11]);
-		hdmi_write(0x8041u, v23->para [12]);
-		hdmi_write(0x4040u, v23->para [13]);
-		hdmi_write(0xC040u, v23->para [14]);
-		hdmi_write(0x43u, v23->para [15]);
-		hdmi_write(0x8043u, v23->para [16]);
-		hdmi_write(0x45u, 0xCu);
-		hdmi_write(0x8044u, 0x20u);
-		hdmi_write(0x8045u, 1u);
-		hdmi_write(0x46u, 0xBu);
-		hdmi_write(0x47u, 0x16u);
-		hdmi_write(0x8046u, 0x21u);
+		hdmi_write(0x10001, v25);
+		hdmi_write(0x8040, v23->para [4]);
+		hdmi_write(0x4043, v23->para [5]);
+		hdmi_write(0x8042, v23->para [6]);
+		hdmi_write(0x42, v23->para [7]);
+		hdmi_write(0x4042, v23->para [8]);
+		hdmi_write(0x4041, v23->para [9]);
+		hdmi_write(0xC041, v23->para [10]);
+		hdmi_write(0x41, v23->para [11]);
+		hdmi_write(0x8041, v23->para [12]);
+		hdmi_write(0x4040, v23->para [13]);
+		hdmi_write(0xC040, v23->para [14]);
+		hdmi_write(0x43, v23->para [15]);
+		hdmi_write(0x8043, v23->para [16]);
+		hdmi_write(0x45, 0xC);
+		hdmi_write(0x8044, 0x20);
+		hdmi_write(0x8045, 1);
+		hdmi_write(0x46, 0xB);
+		hdmi_write(0x47, 0x16);
+		hdmi_write(0x8046, 0x21);
 		v26 = v23->para [2];
 		if (v26)
 			v27 = 33;
 		else
 			v27 = 16;
-		hdmi_write(0x3048u, v27);
-		hdmi_write(0x401u, v26 != 0);
-		hdmi_write(0x8400u, 7u);
-		hdmi_write(0x8401u, 0);
-		hdmi_write(0x402u, 0x47u);
-		hdmi_write(0x800u, 1u);
-		hdmi_write(0x801u, 7u);
-		hdmi_write(0x8800u, 0);
-		hdmi_write(0x8801u, 0);
-		hdmi_write(0x802u, 0);
-		hdmi_write(0x803u, 0);
-		hdmi_write(0x8802u, 0);
-		hdmi_write(0x8803u, 0);
+		hdmi_write(0x3048, v27);
+		hdmi_write(0x401, v26 != 0);
+		hdmi_write(0x8400, 7);
+		hdmi_write(0x8401, 0);
+		hdmi_write(0x402, 0x47);
+		hdmi_write(0x800, 1);
+		hdmi_write(0x801, 7);
+		hdmi_write(0x8800, 0);
+		hdmi_write(0x8801, 0);
+		hdmi_write(0x802, 0);
+		hdmi_write(0x803, 0);
+		hdmi_write(0x8802, 0);
+		hdmi_write(0x8803, 0);
 		if (video_is_hdmi)
 		{
-			hdmi_write(0xB045u, 8u);
-			hdmi_write(0x2045u, 0);
-			hdmi_write(0x2044u, 0xCu);
-			hdmi_write(0x6041u, 3u);
+			hdmi_write(0xB045, 8);
+			hdmi_write(0x2045, 0);
+			hdmi_write(0x2044, 0xC);
+			hdmi_write(0x6041, 3);
 			v28 = ptbl [(unsigned int) vid].para [0];
 			v29 = 32;
 			v30 = v28 & 0x100;
@@ -634,34 +617,34 @@ static int bsp_hdmi_video(unsigned vic)
 				else
 					v29 = 0;
 			}
-			hdmi_write(0xA044u, v29);
+			hdmi_write(0xA044, v29);
 			v31 = v28 & 0x7F;
 			if ((v28 & 0x100) == 0)
 				v31 = 0;
-			hdmi_write(0xA045u, v31);
-			hdmi_write(0x2046u, 0);
-			hdmi_write(0x3046u, 1u);
-			hdmi_write(0x3047u, 0x11u);
-			hdmi_write(0x4044u, 0);
-			hdmi_write(0x0052u, 0);
-			hdmi_write(0x8051u, 0x11u);
+			hdmi_write(0xA045, v31);
+			hdmi_write(0x2046, 0);
+			hdmi_write(0x3046, 1);
+			hdmi_write(0x3047, 0x11);
+			hdmi_write(0x4044, 0);
+			hdmi_write(0x0052, 0);
+			hdmi_write(0x8051, 0x11);
 
 			hdmi_read(0);
-			hdmi_write(0x10010u, 0x45u);
-			hdmi_write(0x10011u, 0x45u);
-			hdmi_write(0x10012u, 0x52u);
-			hdmi_write(0x10013u, 0x54u);
-			hdmi_write(0x40u, * (volatile uint8_t*) (hdmi_base_addr + 0x40u) | 8);
+			hdmi_write(0x10010, 0x45);
+			hdmi_write(0x10011, 0x45);
+			hdmi_write(0x10012, 0x52);
+			hdmi_write(0x10013, 0x54);
+			hdmi_write(0x40, * (volatile uint8_t*) (hdmi_base_addr + 0x40) | 8);
 			hdmi_read(0);
-			hdmi_write(0x10010u, 0x52u);
-			hdmi_write(0x10011u, 0x54u);
-			hdmi_write(0x10012u, 0x41u);
-			hdmi_write(0x10013u, 0x57u);
+			hdmi_write(0x10010, 0x52);
+			hdmi_write(0x10011, 0x54);
+			hdmi_write(0x10012, 0x41);
+			hdmi_write(0x10013, 0x57);
 			if (video_is_yuv)
 				v34 = 2;
 			else
 				v34 = 0;
-			hdmi_write(0x4045u, v34);
+			hdmi_write(0x4045, v34);
 			csc = video_csc;
 			v36 = ptbl [vid].para [17];
 			if (v36)
@@ -676,17 +659,17 @@ static int bsp_hdmi_video(unsigned vic)
 				v37 = ((uint8_t) csc << 6) | 0x18;
 			}
 			v38 = v28 & 0x7F;
-			hdmi_write(0xC044u, v37);
+			hdmi_write(0xC044, v37);
 			if (video_is_yuv)
 				v39 = 0;
 			else
 				v39 = 4;
-			hdmi_write(0xC045u, v39);
+			hdmi_write(0xC045, v39);
 			if (v30)
 				v40 = 0;
 			else
 				v40 = v38;
-			hdmi_write(0x4046u, v40);
+			hdmi_write(0x4046, v40);
 		}
 		if (video_is_hcts)
 		{
@@ -694,37 +677,37 @@ static int bsp_hdmi_video(unsigned vic)
 				v41 = - 111;
 			else
 				v41 = - 112;
-			hdmi_write(0xC0u, v41);
-			hdmi_write(0xC1u, 5u);
+			hdmi_write(0xC0, v41);
+			hdmi_write(0xC1, 5);
 			if (v24 >= 0x60)
 				v42 = 26;
 			else
 				v42 = 16;
-			hdmi_write(0x40C1u, v42);
-			hdmi_write(0x80C2u, 0xFFu);
-			hdmi_write(0x40C0u, 0xFDu);
-			hdmi_write(0xC0C0u, 0x40u);
-			hdmi_write(0xC1u, 4u);
+			hdmi_write(0x40C1, v42);
+			hdmi_write(0x80C2, 0xFF);
+			hdmi_write(0x40C0, 0xFD);
+			hdmi_write(0xC0C0, 0x40);
+			hdmi_write(0xC1, 4);
 			hdmi_read(v43);
-			hdmi_write(0x10010u, 0x45u);
-			hdmi_write(0x10011u, 0x45u);
-			hdmi_write(0x10012u, 0x52u);
-			hdmi_write(0x10013u, 0x54u);
-			hdmi_write(0x40u, * (volatile uint8_t*) (hdmi_base_addr + 64) | 0x80);
+			hdmi_write(0x10010, 0x45);
+			hdmi_write(0x10011, 0x45);
+			hdmi_write(0x10012, 0x52);
+			hdmi_write(0x10013, 0x54);
+			hdmi_write(0x40, * (volatile uint8_t*) (hdmi_base_addr + 64) | 0x80);
 			if (video_is_hdmi)
 				v44 = - 107;
 			else
 				v44 = - 108;
-			hdmi_write(0xC0u, v44);
+			hdmi_write(0xC0, v44);
 			hdmi_read(v45);
-			hdmi_write(0x10010u, 0x52u);
-			hdmi_write(0x10011u, 0x54u);
-			hdmi_write(0x10012u, 0x41u);
-			hdmi_write(0x10013u, 0x57u);
+			hdmi_write(0x10010, 0x52);
+			hdmi_write(0x10011, 0x54);
+			hdmi_write(0x10012, 0x41);
+			hdmi_write(0x10013, 0x57);
 		}
-		hdmi_write(0x82u, 0);
-		hdmi_write(0x81u, 0);
-		hdmi_write(0x840u, 0);
+		hdmi_write(0x82, 0);
+		hdmi_write(0x81, 0);
+		hdmi_write(0x840, 0);
 		result = 0;
 		break;
 	default:
@@ -762,7 +745,7 @@ static int bsp_hdmi_audio(unsigned vic)
 		v3 = - 16;
 	else
 		v3 = - 15;
-	hdmi_write(0xA049u, v3);
+	hdmi_write(0xA049, v3);
 	v4 = 0;
 	while (ca_table [v4] != audio_ca)
 	{
@@ -770,23 +753,23 @@ static int bsp_hdmi_audio(unsigned vic)
 		if (v4 == 64)
 			goto LABEL_8;
 	}
-	hdmi_write(0x204Bu, ~ ca_table [(unsigned int) (v4 + 1)]);
-	LABEL_8: hdmi_write(0xA04Au, 0);
-	hdmi_write(0xA04Bu, 0x30u);
-	hdmi_write(0x6048u, 0);
-	hdmi_write(0x6049u, 1u);
-	hdmi_write(0xE048u, 0x42u);
-	hdmi_write(0xE049u, 0x86u);
-	hdmi_write(0x604Au, 0x31u);
-	hdmi_write(0x604Bu, 0x75u);
-	hdmi_write(0xE04Au, 1u);
+	hdmi_write(0x204B, ~ ca_table [(unsigned int) (v4 + 1)]);
+	LABEL_8: hdmi_write(0xA04A, 0);
+	hdmi_write(0xA04B, 0x30);
+	hdmi_write(0x6048, 0);
+	hdmi_write(0x6049, 1);
+	hdmi_write(0xE048, 0x42);
+	hdmi_write(0xE049, 0x86);
+	hdmi_write(0x604A, 0x31);
+	hdmi_write(0x604B, 0x75);
+	hdmi_write(0xE04A, 1);
 	v5 = 0;
 	while (audio_sample_rate != sf [v5].sf)
 	{
 		if (++ v5 == 10)
 			goto LABEL_12;
 	}
-	hdmi_write(0xE04Au, sf [(unsigned int) v5].cs_sf);
+	hdmi_write(0xE04A, sf [(unsigned int) v5].cs_sf);
 	LABEL_12: sample_bit = audio_sample_bit;
 	v7 = 2;
 	if (sample_bit != 16)
@@ -796,8 +779,8 @@ static int bsp_hdmi_audio(unsigned vic)
 		else
 			v7 = 0;
 	}
-	hdmi_write(0xE04Bu, v7);
-	hdmi_write(0x0251u, audio_sample_bit);
+	hdmi_write(0xE04B, v7);
+	hdmi_write(0x0251, audio_sample_bit);
 	v8 = n_table;
 	v9 = 0;
 	while (audio_sample_rate != * v8)
@@ -817,21 +800,21 @@ static int bsp_hdmi_audio(unsigned vic)
 	v11 = n_table [v10];
 
 	LABEL_25:
-	hdmi_write(0x0A40u, v11);
-	hdmi_write(0x0A41u, BYTE1(v11));
-	hdmi_write(0x8A40u, BYTE2(v11));
-	hdmi_write(0x0A43u, 0);
-	hdmi_write(0x8A42u, 4u);
-	hdmi_write(0xA049u, audio_ch_num > 2);
+	hdmi_write(0x0A40, v11);
+	hdmi_write(0x0A41, BYTE1(v11));
+	hdmi_write(0x8A40, BYTE2(v11));
+	hdmi_write(0x0A43, 0);
+	hdmi_write(0x8A42, 4);
+	hdmi_write(0xA049, audio_ch_num > 2);
 	v12 &= ~ 0xFFu;
 	if ( audio_type == PCM)
 		v12 = 16 * (audio_ch_num + 0xFFFFFFF);
-	hdmi_write(0x2043u, v12);
-	//hdmi_write(0x2043u, audio_ch_num * 16);
+	hdmi_write(0x2043, v12);
+	//hdmi_write(0x2043, audio_ch_num * 16);
 
-	hdmi_write(0xA042u, 0);
-	hdmi_write(0xA043u, audio_ca);
-	hdmi_write(0x6040u, 0);
+	hdmi_write(0xA042, 0);
+	hdmi_write(0xA043, audio_ca);
+	hdmi_write(0x6040, 0);
 	if ( audio_type == PCM)
 	{
 		v13 = 33361LL;
@@ -841,18 +824,18 @@ static int bsp_hdmi_audio(unsigned vic)
 		v14 = 3;
 		if ((unsigned int) (audio_type - 11) > 1)
 			v14 = 2;
-		hdmi_write(0x8251u, v14);
-		hdmi_write(0x251u, 0x15u);
+		hdmi_write(0x8251, v14);
+		hdmi_write(0x251, 0x15);
 		v13 = 41027LL;
 	}
 	hdmi_write(v13, 0);
-	hdmi_write(0x250u, 0);
-	hdmi_write(0x81u, 8u);
-	hdmi_write(0x8080u, 0xF7u);
-	hdmi_udelay(0x64u);
-	hdmi_write(0x250u, 0xAFu);
-	hdmi_udelay(0x64u);
-	hdmi_write(0x81u, 0);
+	hdmi_write(0x250, 0);
+	hdmi_write(0x81, 8);
+	hdmi_write(0x8080, 0xF7);
+	hdmi_udelay(0x64);
+	hdmi_write(0x250, 0xAF);
+	hdmi_udelay(0x64);
+	hdmi_write(0x81, 0);
 	return 0;
 }
 #endif
@@ -869,13 +852,13 @@ static int bsp_hdmi_ddc_read(char cmd, char pointer, char offset, int nbyte, cha
 	int v13; // w20
 	volatile uint8_t *v14; // x1
 
-	hdmi_read(cmd);
+	hdmi_read(0);
 	v9 = 50;
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
-	hdmi_write(0x4EE1u, 0);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
+	hdmi_write(0x4EE1, 0);
 	do
 	{
 		if ((* (volatile uint8_t*) (hdmi_base_addr + 20193) & 1) != 0)
@@ -885,25 +868,25 @@ static int bsp_hdmi_ddc_read(char cmd, char pointer, char offset, int nbyte, cha
 	} while (v9);
 	v10 = 0;
 	v11 = offset + nbyte;
-	hdmi_write(0x8EE3u, 5u);
-	hdmi_write(0xEE3u, 8u);
-	hdmi_write(0x4EE2u, 0xD8u);
-	hdmi_write(0xCEE2u, 0xFEu);
+	hdmi_write(0x8EE3, 5);
+	hdmi_write(0xEE3, 8);
+	hdmi_write(0x4EE2, 0xD8);
+	hdmi_write(0xCEE2, 0xFE);
 	while (nbyte > 0)
 	{
-		hdmi_write(0xEE0u, 0x50u);
+		hdmi_write(0xEE0, 0x50);
 		v13 = 10;
-		hdmi_write(0xEE1u, v11 - nbyte);
-		hdmi_write(0x4EE0u, 0x30u);
-		hdmi_write(0xCEE0u, pointer);
-		hdmi_write(0xEE2u, 2u);
+		hdmi_write(0xEE1, v11 - nbyte);
+		hdmi_write(0x4EE0, 0x30);
+		hdmi_write(0xCEE0, pointer);
+		hdmi_write(0xEE2, 2);
 		while (-- v13)
 		{
 			v14 = (volatile uint8_t*) (hdmi_base_addr + 19);
 			if ((* (volatile uint8_t*) (hdmi_base_addr + 19) & 2) != 0)
 			{
 				++ pbuf;
-				hdmi_write(0x13u, * v14 & 2);
+				hdmi_write(0x13, * v14 & 2);
 				v12 = * (volatile uint8_t*) (hdmi_base_addr + 36577);
 				* (pbuf - 1) = v12;
 				break;
@@ -911,18 +894,18 @@ static int bsp_hdmi_ddc_read(char cmd, char pointer, char offset, int nbyte, cha
 			if ((* (volatile uint8_t*) (hdmi_base_addr + 19) & 1) != 0)
 			{
 				v10 = - 1;
-				hdmi_write(0x13u, * v14 & 1);
+				hdmi_write(0x13, * v14 & 1);
 				break;
 			}
-			hdmi_udelay(0x3E8u);
+			hdmi_udelay(0x3E8);
 		}
 		-- nbyte;
 	}
-	hdmi_read(v12);
-	hdmi_write(0x10010u, 0x52u);
-	hdmi_write(0x10011u, 0x54u);
-	hdmi_write(0x10012u, 0x41u);
-	hdmi_write(0x10013u, 0x57u);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x52);
+	hdmi_write(0x10011, 0x54);
+	hdmi_write(0x10012, 0x41);
+	hdmi_write(0x10013, 0x57);
 	return v10;
 }
 // 14C0: variables would overlap: w0.1 and x0.8
@@ -935,17 +918,17 @@ static unsigned int bsp_hdmi_get_hpd(void)
 	uint64_t v0; // x0
 	uint64_t v1;// x23
 
-	hdmi_read(v0);
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
 	v1 = *(volatile uint32_t*)(hdmi_base_addr + 65592);
-	hdmi_read(hdmi_base_addr + 0x10000);
-	hdmi_write(0x10010u, 0x52u);
-	hdmi_write(0x10011u, 0x54u);
-	hdmi_write(0x10012u, 0x41u);
-	hdmi_write(0x10013u, 0x57u);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x52);
+	hdmi_write(0x10011, 0x54);
+	hdmi_write(0x10012, 0x41);
+	hdmi_write(0x10013, 0x57);
 	return (v1 >> 19) & 1;
 }
 // 16E4: variable 'v0' is possibly undefined
@@ -954,15 +937,15 @@ static unsigned int bsp_hdmi_get_hpd(void)
 //----- (0000000000001798) ----------------------------------------------------
 static void bsp_hdmi_standby(void)
 {
-	hdmi_write(0x10020u, 7u);
-	hdmi_write(0x1002Cu, 0);
+	hdmi_write(0x10020, 7);
+	hdmi_write(0x1002C, 0);
 }
 
 //----- (00000000000017C8) ----------------------------------------------------
 static void bsp_hdmi_hrst(void)
 {
-	hdmi_write(0xC1u, 4u);
-	hdmi_write(0x81u, 0x40u);
+	hdmi_write(0xC1, 4);
+	hdmi_write(0x81, 0x40);
 }
 
 #if 0
@@ -970,27 +953,25 @@ static void bsp_hdmi_hrst(void)
 //----- (00000000000017F4) ----------------------------------------------------
 static int bsp_hdmi_hdcp_err_check(void)
 {
-	uint64_t v0; // x0
 	int v1;// w19
-	uint64_t v2;// x0
 
 	v1 = 0;
-	hdmi_read(v0);
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
 	v2 = *(uint8_t *)(hdmi_base_addr + 32960) & 0xFE;
 	if ( (uint32_t)v2 != 64 )
 	{
 		v1 = -1;
-		hdmi_write(0xC1u, *(uint8_t *)(hdmi_base_addr + 193) & 0xFE);
+		hdmi_write(0xC1, *(uint8_t *)(hdmi_base_addr + 193) & 0xFE);
 	}
-	hdmi_read(v2);
-	hdmi_write(0x10010u, 0x52u);
-	hdmi_write(0x10011u, 0x54u);
-	hdmi_write(0x10012u, 0x41u);
-	hdmi_write(0x10013u, 0x57u);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x52);
+	hdmi_write(0x10011, 0x54);
+	hdmi_write(0x10012, 0x41);
+	hdmi_write(0x10013, 0x57);
 	return v1;
 }
 // 1804: variable 'v0' is possibly undefined
@@ -1002,30 +983,29 @@ static int bsp_hdmi_hdcp_err_check(void)
 static int bsp_hdmi_cec_get_simple_msg(uint8_t *msg)
 {
 	int v2; // w19
-	uint64_t v3; // x0
-	uint64_t v4; // x0
+	uintptr_t v4; // x0
 
 	v2 = - 1;
-	hdmi_write(0x1003Cu, 4u);
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
-	hdmi_write(0x6F3u, 0xFFu);
-	hdmi_write(0x86F2u, 0xFFu);
-	hdmi_read(v3);
+	hdmi_write(0x1003C, 4);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
+	hdmi_write(0x6F3, 0xFF);
+	hdmi_write(0x86F2, 0xFF);
+	hdmi_read(0);
 	v4 = hdmi_base_addr + 0x2000;
 	if ((* (volatile uint8_t*) (hdmi_base_addr + 9972) & 1) != 0)
 	{
 		* msg = * (volatile uint8_t*) (hdmi_base_addr + 9969);
 		v2 = 0;
-		hdmi_write(0x26F4u, 0);
+		hdmi_write(0x26F4, 0);
 	}
-	hdmi_read(v4);
-	hdmi_write(0x10010u, 0x52u);
-	hdmi_write(0x10011u, 0x54u);
-	hdmi_write(0x10012u, 0x41u);
-	hdmi_write(0x10013u, 0x57u);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x52);
+	hdmi_write(0x10011, 0x54);
+	hdmi_write(0x10012, 0x41);
+	hdmi_write(0x10013, 0x57);
 	return v2;
 }
 // 1954: variable 'v3' is possibly undefined
@@ -1053,19 +1033,19 @@ static int bsp_hdmi_cec_send(char *buf, uint8_t bytes)
 	v5 = (uint8_t) (bytes - 1);
 	if (v5 <= 0xF)
 	{
-		hdmi_read(0xFFFFFFFFu);
+		hdmi_read(0);
 		v6 = (uint8_t) v5 + 32017LL;
-		hdmi_write(0x10010u, 0x45u);
-		hdmi_write(0x10011u, 0x45u);
-		hdmi_write(0x10012u, 0x52u);
-		hdmi_write(0x10013u, 0x54u);
-		hdmi_read(v7);
+		hdmi_write(0x10010, 0x45);
+		hdmi_write(0x10011, 0x45);
+		hdmi_write(0x10012, 0x52);
+		hdmi_write(0x10013, 0x54);
+		hdmi_read(0);
 		v8 = bytes;
 		v9 = 32016LL;
-		hdmi_write(0x86F3u, v8);
-		hdmi_read(v10);
-		hdmi_writel(0x10014u, 0x42494E47u);
-		hdmi_read(v11);
+		hdmi_write(0x86F3, v8);
+		hdmi_read(0);
+		hdmi_writel(0x10014, 0x42494E47);
+		hdmi_read(0);
 		do
 		{
 			v12 = v9;
@@ -1073,17 +1053,17 @@ static int bsp_hdmi_cec_send(char *buf, uint8_t bytes)
 			++ v9;
 			hdmi_write(v12, buf [v13]);
 		} while (v9 != v6);
-		hdmi_read(v14);
-		hdmi_writel(0x10014u, 0);
-		hdmi_read(v15);
-		hdmi_udelay(0x14u);
-		hdmi_write(0x6F0u, * (volatile uint8_t*) (hdmi_base_addr + 1776) | 1);
-		hdmi_read(v16);
-		hdmi_write(0x10010u, 0x52u);
-		hdmi_write(0x10011u, 0x54u);
-		hdmi_write(0x10012u, 0x41u);
-		hdmi_write(0x10013u, 0x57u);
-		hdmi_read(v17);
+		hdmi_read(0);
+		hdmi_writel(0x10014, 0);
+		hdmi_read(0);
+		hdmi_udelay(0x14);
+		hdmi_write(0x6F0, * (volatile uint8_t*) (hdmi_base_addr + 1776) | 1);
+		hdmi_read(0);
+		hdmi_write(0x10010, 0x52);
+		hdmi_write(0x10011, 0x54);
+		hdmi_write(0x10012, 0x41);
+		hdmi_write(0x10013, 0x57);
+		hdmi_read(0);
 		return 0;
 	}
 	return result;
@@ -1100,23 +1080,19 @@ static int bsp_hdmi_cec_send(char *buf, uint8_t bytes)
 // local variable allocation has failed, the output may be wrong!
 static void bsp_hdmi_cec_free_time_set(uint8_t value)
 {
-	uint64_t v2; // x0
-	uint64_t v3; // x0
-	uint64_t v4; // x0
-
-	hdmi_read(value);
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
-	hdmi_read(v2);
-	hdmi_write(0x6F0u, (* (volatile uint8_t*) (hdmi_base_addr + 1776) & 0xF9) | (2 * value));
-	hdmi_read(v3);
-	hdmi_write(0x10010u, 0x52u);
-	hdmi_write(0x10011u, 0x54u);
-	hdmi_write(0x10012u, 0x41u);
-	hdmi_write(0x10013u, 0x57u);
-	hdmi_read(v4);
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
+	hdmi_read(0);
+	hdmi_write(0x6F0, (* (volatile uint8_t*) (hdmi_base_addr + 1776) & 0xF9) | (2 * value));
+	hdmi_read(0);
+	hdmi_write(0x10010, 0x52);
+	hdmi_write(0x10011, 0x54);
+	hdmi_write(0x10012, 0x41);
+	hdmi_write(0x10013, 0x57);
+	hdmi_read(0);
 }
 // 1B50: variables would overlap: w0.1 and x0.8
 
@@ -1125,15 +1101,15 @@ static int bsp_hdmi_cec_sta_check(void)
 {
 	char v0; // w19
 
-	hdmi_write(0x10010u, 0x45u);
-	hdmi_write(0x10011u, 0x45u);
-	hdmi_write(0x10012u, 0x52u);
-	hdmi_write(0x10013u, 0x54u);
+	hdmi_write(0x10010, 0x45);
+	hdmi_write(0x10011, 0x45);
+	hdmi_write(0x10012, 0x52);
+	hdmi_write(0x10013, 0x54);
 	v0 = *(uint8_t *)(hdmi_base_addr + 32786);
-	hdmi_write(0x10010u, 0x52u);
-	hdmi_write(0x10011u, 0x54u);
-	hdmi_write(0x10012u, 0x41u);
-	hdmi_write(0x10013u, 0x57u);
+	hdmi_write(0x10010, 0x52);
+	hdmi_write(0x10011, 0x54);
+	hdmi_write(0x10012, 0x41);
+	hdmi_write(0x10013, 0x57);
 	return -!(v0 & 1);
 }
 #endif
