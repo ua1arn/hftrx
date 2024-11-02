@@ -3550,7 +3550,7 @@ static void t113_set_and_open_interrupt_function(void)
 }
 
 // Set and open interrupt function
-static void t113_set_and_open_tvout_interrupt_function(void)
+static void t113_set_and_open_tcontv_interrupt_function(void)
 {
 #if defined (TCONTV_PTR)
 	// enabling the irq after io settings
@@ -5677,7 +5677,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 #endif /* defined (TCONTV_PTR) */
 }
 
-static void t113_HDMI_CCU_configuration(uint_fast32_t dotclock)
+static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 {
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
@@ -6437,7 +6437,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 
 #endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
 
-static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
+static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 	/* Accumulated parameters for this display */
@@ -6536,7 +6536,7 @@ static void t113_set_tvout_sequence_parameters(const videomode_t * vdmode)
 }
 
 // Open module enable
-static void t113_open_tvout_module_enable(void)
+static void t113_open_tcontv_module_enable(void)
 {
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
@@ -6609,13 +6609,13 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 	// step0 - CCU configuration
 	t113_tcontv_PLL_configuration(dotclock);
-	t113_HDMI_CCU_configuration(dotclock);
+	t113_TCONTV_CCU_configuration(dotclock);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	//t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
 	//t113_LVDS_clock_configuration(vdmode);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_tvout_sequence_parameters(vdmode);
+	t113_set_tcontv_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	//t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -6624,9 +6624,9 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_tvout_interrupt_function();
+	t113_set_and_open_tcontv_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_tvout_module_enable();
+	t113_open_tcontv_module_enable();
 #endif /* defined (TCONTV_PTR) */
 }
 
