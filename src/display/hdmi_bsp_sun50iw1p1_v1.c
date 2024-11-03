@@ -1120,7 +1120,7 @@ static int bsp_hdmi_cec_sta_check(void)
 
 void t507_hdmi_phy_init(uint_fast32_t dotclock)
 {
-	unsigned int vic = 31;
+	unsigned int vic = 16;
 	bsp_hdmi_init();
 	bsp_hdmi_video(vic);
 }
