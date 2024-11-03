@@ -2115,7 +2115,7 @@ uint_fast32_t allwnr_h3_get_pll_video_freq(void)
 	//	Note: In the Clock Control Module, PLL(1X) Output=PLL while PLL(2X) Output=PLL * 2.
 	//	The PLL output clock must be in the range of 30MHz~600MHz.
 	//	Its default is 297MHz.
-return (uint_fast64_t) allwnr_h3_get_hosc_freq() * N / M;
+	return (uint_fast64_t) allwnr_h3_get_hosc_freq() * N / M;
 }
 
 // H3

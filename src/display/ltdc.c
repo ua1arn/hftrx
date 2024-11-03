@@ -5618,7 +5618,14 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-	CCU->PLL_VIDEO_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	// 297MHz
+	CCU->PLL_VIDEO_CTRL_REG =
+		(UINT32_C(1) << 31) |	// PLL_ENABLE
+		//(UINT32_C(1) << 25) |	// FRAC_CLK_OUT
+		(UINT32_C(1) << 24) |	// PLL_MODE_SEL 1: integer mode
+		((99 - 1) * (UINT32_C(1) << 8)) |
+		((8 - 1) * (UINT32_C(1) << 0)) |
+		0;
 	while ((CCU->PLL_VIDEO_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
 		;
 	local_delay_ms(50);
@@ -5692,12 +5699,12 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
 	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
 
-	unsigned M = calcdivround2(allwnr_h3_get_pll_video_freq(), dotclock);
-	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // Enable HDMI clk (use PLL3)
+	unsigned M = 2;//calcdivround2(allwnr_h3_get_pll_video_freq(), dotclock);
+	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // Enable HDMI clk (use PLL_VIDEO)
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
-	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // 1-1980,2-2080 3-3080,3 Enable TCONLCD_PTR clk, divide by 2
+	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // (use PLL_VIDEO) Enable TCONLCD_PTR clk, divide by 2
 
-	PRINTF("7 allwnr_h3_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_h3_get_hdmi_freq() / 1000));	// 148.5 MHz
+	PRINTF("7 allwnr_h3_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_h3_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
 	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 148.5 MHz
 
 #elif CPUSTYLE_A64
