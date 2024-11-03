@@ -6070,11 +6070,11 @@ static void awxx_deoutmapping(void)
 #if CPUSTYLE_A64
 	// Only bit 0 valid
 	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-//	DE_TOP->DE2TCON_MUX |= (UINT32_C(1) << 0);
 //	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	DE_TOP->DE2TCON_MUX &= ~ (UINT32_C(1) << 0);
 //	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(1) << 0)) | !! disp * (UINT32_C(1) << 0);
 	DE_TOP->DE2TCON_MUX = 0x00;
+	//DE_TOP->DE2TCON_MUX |= (UINT32_C(1) << 0);
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_H3
@@ -6527,6 +6527,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 //	PRINTF("HBP=%u\n", HBP);
 //	PRINTF("VBP=%u\n", VBP);
 
+	PRINTF("start delay=%u\n", (VTOTAL - HEIGHT) / interlace - 5);
 
 #if CPUSTYLE_A64
 	// A64
@@ -6547,8 +6548,8 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);	// HSPW VSPW
 
 	TCONTV_PTR->TCON_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
-	TCONTV_PTR->TCON1_IO_POL_REG = 0;
-	TCONTV_PTR->TCON1_IO_TRI_REG = 0;
+	TCONTV_PTR->TCON1_IO_POL_REG = 0;	// не влияет
+	TCONTV_PTR->TCON1_IO_TRI_REG = 0;	// вличет
 
 	//TCONTV_PTR->TCON1_CTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
@@ -6717,14 +6718,22 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	h3_hdmi_phy_init(dotclock);
 #else
 	bsp_hdmi_set_addr(HDMI_TX0_BASE);
-	bsp_hdmi_set_version(0);	// 0 or 1
-	bsp_hdmi_set_bias_source(1);
+	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
+	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
 	t507_hdmi_phy_init(dotclock);
+
+	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
+	(void) HDMI_TX0->HDMI_DESIGN_ID;
+	/* enable read access to HDMI controller */
+	phy->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	(void) HDMI_TX0->HDMI_DESIGN_ID;
 #endif
 
 	h3_hdmi_init(vdmode);
 
-//	t507_hdmi_edid_test();
+	t507_hdmi_edid_test();
 //	t507_hdmi_edid_test();
 
 #endif /* WITHHDMITVHW */
