@@ -2600,7 +2600,6 @@ uint_fast64_t allwnr_a64_get_pll_mipi_freq(void)
 uint_fast32_t allwnr_a64_get_tcon0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON0_CLK_REG;
-	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
 	//	SCLK_SEL.
 	//	Special Clock Source Select
@@ -2625,7 +2624,7 @@ uint_fast32_t allwnr_a64_get_tcon1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON1_CLK_REG;
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
-
+	// CLK = Clock Source/ Divider M.
 	//	SCLK_SEL.
 	//	Special Clock Source Select
 	//	00: PLL_VIDEO0(1X)
@@ -2635,9 +2634,9 @@ uint_fast32_t allwnr_a64_get_tcon1_freq(void)
 	switch ((clkreg >> 24) & 0x03)	/* SCLK_SEL */
 	{
 	case 0x00:
-		return allwnr_a64_get_pll_video0_x1_freq();
+		return allwnr_a64_get_pll_video0_x1_freq() / M;
 	case 0x02:
-		return allwnr_a64_get_pll_video1_x1_freq();
+		return allwnr_a64_get_pll_video1_x1_freq() / M;
 	default:
 		// Wrong case
 		return allwnr_a64_get_hosc_freq();

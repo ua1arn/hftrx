@@ -1657,6 +1657,32 @@ static const videomode_t vdmode_HDMI_1920x1080at60 =
 	.interlaced = 0
 };
 
+// https://projectf.io/posts/video-timings-vga-720p-1080p/
+// Aspect Ratio 4:3
+static const videomode_t vdmode_HDMI_800x600at60 =
+{
+	.width = 800,			/* LCD PIXEL WIDTH            */
+	.height = 600,			/* LCD PIXEL HEIGHT           */
+
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 256
+	.hsync = 128,			/* Horizontal synchronization XPULSE  */
+	.hbp = 88,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 40,				/* Horizontal front porch  XOFFSET */
+
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 28
+	.vsync = 4,				/* Vertical synchronization */
+	.vbp = 23,				/* Vertical back porch      */
+	.vfp = 1,				/* Vertical front porch */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
 const videomode_t * get_videomode_CRT(void)
 {
 	return & vdmode_PAL0;
@@ -1664,6 +1690,7 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
+	//return & vdmode_HDMI_800x600at60;
 	return & vdmode_HDMI_1920x1080at60;
 }
 

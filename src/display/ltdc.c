@@ -5708,11 +5708,10 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	if (TCONTV_IX == 0)
 	{
-		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
+		// Делителя нет
 		CCU->TCON0_CLK_REG = 0;
 		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
-			(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	}
@@ -6915,6 +6914,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 #endif
 #if WITHHDMITVHW
 	vdmode = get_videomode_HDMI();    // test
+	PRINTF("HDMI clock freq=%u kHz\n", (unsigned) (display_getdotclock(vdmode) / 1000));
 #endif /* WITHHDMITVHW */
 
  	hardware_de_initialize(vdmode);
