@@ -1,5 +1,8 @@
 // https://dogbolt.org/
 
+
+// H3, A64 video out work, no EDID read
+
 #include "hardware.h"
 #include "formats.h"	// for PRINTF prints
 
@@ -225,7 +228,7 @@ static void hdmi_phy_init(void)
 		hdmi_udelay(0xC8);
 		-- v4;
 	} while (v4);
-	PRINTF("PLL status=%02X\n", * (volatile uint32_t*) (hdmi_base_addr + 65592));
+	PRINTF("PLL status=%02X\n", (unsigned) * (volatile uint32_t*) (hdmi_base_addr + 65592));
 	v5 = hdmi_base_addr + 0x10000;
 	hdmi_writel(0x10020, * (volatile uint32_t*) (hdmi_base_addr + 65568) | 0xF00);
 	hdmi_writel(0x10020, * (volatile uint32_t*) (v5 + 32) | 0x80);
