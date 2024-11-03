@@ -59,7 +59,7 @@ int bsp_hdmi_set_bias_source(unsigned int src);
 void bsp_hdmi_set_version(unsigned int version);
 void bsp_hdmi_set_addr(uintptr_t base_addr);
 static void bsp_hdmi_init(void);
-static void bsp_hdmi_set_video_en(uint8_t enable);
+void bsp_hdmi_set_video_en(uint8_t enable);
 static int bsp_hdmi_video_get_div(unsigned int pixel_clk);
 static int bsp_hdmi_video(unsigned vic);
 static int bsp_hdmi_audio(unsigned vic);
@@ -353,7 +353,7 @@ static void bsp_hdmi_init(void)
 // 610: variable 'v0' is possibly undefined
 
 //----- (0000000000000620) ----------------------------------------------------
-static void bsp_hdmi_set_video_en(uint8_t enable)
+void bsp_hdmi_set_video_en(uint8_t enable)
 {
 	unsigned int v1; // w1
 

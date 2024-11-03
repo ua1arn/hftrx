@@ -5760,7 +5760,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	unsigned ix = TCONTV_IX;
 
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
+    //CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
 //    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
 
@@ -5773,6 +5773,36 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+
+	const unsigned TV_CLK_REG_M = 4;
+	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
+	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+	const unsigned HDMI_CLK_REG_M = 2;
+	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
+    //CCU->HDMI_BGR_REG |= ~0;
+    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    //CCU->HDMI0_SLOW_CLK_REG |= ~0;
+    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
+    PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
+
+	// HDCP: High-bandwidth Digital Content Protection
+    CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 7;	// SCLK_GATING
+    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+    //CCU->HDMI_HDCP_BGR_REG |= ~0;
+    PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
+
+	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+	//CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
+
 	/*
 	 * First clock parent (osc32K) is unusable for CEC. But since there
 	 * is no good way to force parent switch (both run with same frequency),
@@ -5784,33 +5814,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
     PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
-	const unsigned TV_CLK_REG_M = 2;
-	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
-	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-
-	const unsigned HDMI_CLK_REG_M = 2;
-	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
-    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-
-    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
-    PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
-
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
-	// HDCP: High-bandwidth Digital Content Protection
-    CCU->HDMI_HDCP_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
-    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
-
-    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 21);	// TV0_GATE ???? may be not need
-	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -5819,15 +5822,13 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
-	CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
-	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
+    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
+//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 21);	// TV0_GATE ???? may be not need
+	//DISP_IF_TOP->MODULE_GATING |= ~0;
+	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
-	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
-	//	configured as 1
-    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
 
 
     local_delay_us(10);
@@ -5835,7 +5836,11 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 //	TCON_TV0->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 //	TCON_TV0->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 
-    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+	/* enable read access to HDMI controller */
+    HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+    HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));

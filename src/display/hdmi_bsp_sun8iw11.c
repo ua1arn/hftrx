@@ -322,7 +322,7 @@ void hdmi_phy_init()
 		v14 = hdmi_readl(0x10004u);
 		hdmi_writel(0x10004u, v14 | 0x20000);
 	}
-	printhex32(hdmi_base_addr + 0x10000, hdmi_base_addr + 0x10000, 256);
+	//printhex32(hdmi_base_addr + 0x10000, hdmi_base_addr + 0x10000, 256);
 }
 //
 ////----- (00000508) --------------------------------------------------------
