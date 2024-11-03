@@ -6550,7 +6550,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_IO_POL_REG = 0;	// не влияет
 	TCONTV_PTR->TCON1_IO_TRI_REG = 0;	// вличет
 
-	//TCONTV_PTR->TCON1_CTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+//	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
 //	TCONTV_PTR->TCON_GCTL_REG &= ~ (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
 
