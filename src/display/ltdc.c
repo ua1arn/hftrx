@@ -6309,6 +6309,9 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 
 	switch (dotclock)
 	{
+	default:
+		PRINTF("Unspecified dot clock %u Hz\n", (unsigned) dotclock);
+		//break;
 	case 74250000:
 	case 148500000:
 		phy->HDMI_PHY_PLL1 = PHY_PLL1_VAL;
@@ -6345,9 +6348,6 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //	case 27000000:
 //		break;
 
-	default:
-		PRINTF("Unspecified dot clock %u Hz\n", (unsigned) dotclock);
-		break;
 	}
 
 	/* enable read access to HDMI controller */
