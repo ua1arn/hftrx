@@ -33,8 +33,8 @@
 
 #regdef; TV_DATA_IO_POL0_REG; 0x0330; TV Data IO Polarity0 Register
 #regdef; TV_DATA_IO_POL1_REG; 0x0334; TV Data IO Polarity1 Register
-#regdef; TV_DATA_TRI0_REG; 0x0338; TV Data IO Trigger0 Register
-#regdef; TV_DATA_TRI1_REG; 0x033C; TV Data IO Trigger1 Register
+#regdef; TV_DATA_IO_TRI0_REG; 0x0338; TV Data IO Trigger0 Register
+#regdef; TV_DATA_IO_TRI1_REG; 0x033C; TV Data IO Trigger1 Register
 #regdef; TV_PIXELDEPTH_MODE_REG; 0x0340; TV Pixel; depth Mode Register
 
 #regdef; padding 0; 0x01000; set size

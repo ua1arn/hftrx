@@ -2627,8 +2627,8 @@ typedef __PACKED_STRUCT TCON_TV_Type
          uint32_t reserved_0x328 [0x0002];
     __IO uint32_t TV_DATA_IO_POL0_REG;                /*!< Offset 0x330 TV Data IO Polarity0 Register */
     __IO uint32_t TV_DATA_IO_POL1_REG;                /*!< Offset 0x334 TV Data IO Polarity1 Register */
-    __IO uint32_t TV_DATA_TRI0_REG;                   /*!< Offset 0x338 TV Data IO Trigger0 Register */
-    __IO uint32_t TV_DATA_TRI1_REG;                   /*!< Offset 0x33C TV Data IO Trigger1 Register */
+    __IO uint32_t TV_DATA_IO_TRI0_REG;                /*!< Offset 0x338 TV Data IO Trigger0 Register */
+    __IO uint32_t TV_DATA_IO_TRI1_REG;                /*!< Offset 0x33C TV Data IO Trigger1 Register */
     __IO uint32_t TV_PIXELDEPTH_MODE_REG;             /*!< Offset 0x340 TV Pixel */
          uint32_t reserved_0x344 [0x032F];
 } TCON_TV_TypeDef; /* size of structure = 0x1000 */

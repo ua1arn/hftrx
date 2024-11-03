@@ -15550,8 +15550,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TV_DATA_TRI0_REG</name>
-    <displayName>TV_DATA_TRI0_REG</displayName>
+    <name>TV_DATA_IO_TRI0_REG</name>
+    <displayName>TV_DATA_IO_TRI0_REG</displayName>
     <description>TV Data IO Trigger0 Register</description>
     <addressOffset>0x338</addressOffset>
     <size>0x20</size>
@@ -15559,8 +15559,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TV_DATA_TRI1_REG</name>
-    <displayName>TV_DATA_TRI1_REG</displayName>
+    <name>TV_DATA_IO_TRI1_REG</name>
+    <displayName>TV_DATA_IO_TRI1_REG</displayName>
     <description>TV Data IO Trigger1 Register</description>
     <addressOffset>0x33C</addressOffset>
     <size>0x20</size>
