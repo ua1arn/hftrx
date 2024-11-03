@@ -723,7 +723,7 @@ int bsp_hdmi_cec_get_simple_msg(unsigned char *msg)
 
 void t507_hdmi_phy_init(uint_fast32_t dotclock)
 {
-	unsigned int vic = 31;
+	unsigned int vic = 16;
 	bsp_hdmi_init();
 	bsp_hdmi_video(vic);
 }
