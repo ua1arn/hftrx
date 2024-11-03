@@ -5625,7 +5625,14 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_A64
 
-	CCU->PLL_VIDEO0_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 25) | (UINT32_C(1) << 24) | ((99 - 1) * (UINT32_C(1) << 8)) | ((8 - 1) * (UINT32_C(1) << 0)); // 297MHz
+	// 297MHz
+	CCU->PLL_VIDEO0_CTRL_REG =
+		(UINT32_C(1) << 31) |	// PLL_ENABLE
+		//(UINT32_C(1) << 25) |	// FRAC_CLK_OUT
+		(UINT32_C(1) << 24) |	// PLL_MODE_SEL = integer
+		((99 - 1) * (UINT32_C(1) << 8)) |
+		((8 - 1) * (UINT32_C(1) << 0)) |
+		0;
 	while ((CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)	 //Wait pll stable
 		;
 	local_delay_ms(50);
@@ -5729,12 +5736,12 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	const unsigned HDMI_CLK_REG_M = 1;
 	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
-	CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31); // Enable HDMI slow clk
+	CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31); // Enable HDMI clk
 
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 
-	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz
-	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 148.5 MHz
+	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
+	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
