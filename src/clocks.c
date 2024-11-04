@@ -3766,6 +3766,24 @@ uint_fast32_t allwnr_t507_get_hdmi0_freq(void)
 }
 
 // T507
+uint_fast32_t allwnr_t507_get_hdmi_hdcp_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI_HDCP_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	// SCLK = Clock Source/M
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / M;
+	case 0x01:
+		// 01: PLL_PERI1(1X)
+		return allwnr_t507_get_pll_peri1_x1_freq() / M;
+	}
+}
+
+// T507
 uint_fast32_t allwnr_t507_get_tve0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TVE0_CLK_REG;

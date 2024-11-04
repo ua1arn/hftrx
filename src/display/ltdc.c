@@ -5793,7 +5793,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
 	// HDCP: High-bandwidth Digital Content Protection
-    CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 7;	// SCLK_GATING
+    CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
     //CCU->HDMI_HDCP_BGR_REG |= ~0;
@@ -5841,6 +5841,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+
+	PRINTF("7 allwnr_t507_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi_hdcp_freq() / 1000));
 
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
@@ -6620,7 +6622,9 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 
 	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
-	TCONTV_PTR->TV_GCTL_REG = (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+//	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
+//	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
 
 #else
 	//#error CPUSTYLE_xxx error
@@ -6731,6 +6735,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 #if 1
 	h3_hdmi_phy_init(dotclock);
 #else
+	// https://github.com/qiaoweibiao/T507_Kernel
+
 	bsp_hdmi_set_addr(HDMI_TX0_BASE);
 	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
 	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
