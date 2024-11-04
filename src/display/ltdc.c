@@ -6772,8 +6772,6 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	(void) HDMI_TX0->HDMI_DESIGN_ID;
 #endif
 
-	h3_hdmi_init(vdmode);
-
 #if 0
 	/* PHY_I2CM_SLAVE_ADDR field values */
 //		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
@@ -6813,9 +6811,12 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 			//PRINTF("No PHY I2C\n");
 		}
 	}
+#endif
+
+	h3_hdmi_init(vdmode);
+
 	t507_hdmi_edid_test();
 //	t507_hdmi_edid_test();
-#endif
 
 #endif /* WITHHDMITVHW */
 }
