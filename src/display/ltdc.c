@@ -6791,14 +6791,15 @@ static void hdmi_phy_enable_spare(HDMI_TX_TypeDef *hdmi, unsigned enable)
 
 static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
 {
-	//local_delay_ms(msec);
+//	local_delay_ms(msec);
+//	return 0;
 	for (;;)
 	{
 		const uint32_t val = hdmi->HDMI_IH_I2CMPHY_STAT0;
 		if (val & 0x03)
 		{
 			 hdmi->HDMI_IH_I2CMPHY_STAT0 = val;
-			 return 0;
+			 return (val & 0x01) ? 1 : 0;	// i2cmphyerror chack
 		}
 	}
 	// timeout
@@ -6842,7 +6843,7 @@ static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned a
 {
 	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
 	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
-	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_WRITE;
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_READ;
 
 //	hdmi_write(hdmi, 0xff, HDMI_IH_I2CMPHY_STAT0);
 //	hdmi_write(hdmi, addr, HDMI_PHY_I2CM_ADDRESS_ADDR);
@@ -6851,11 +6852,86 @@ static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned a
 //	hdmi_write(hdmi, HDMI_PHY_I2CM_OPERATION_ADDR_WRITE,
 //		   HDMI_PHY_I2CM_OPERATION_ADDR);
 
+	* data = 0xDEADBEEF;
 	if (0 == hdmi_phy_wait_i2c_done(hdmi, 1000))
 	{
-		* data = hdmi->HDMI_PHY_I2CM_DATAO_1_ADDR * 256 + hdmi->HDMI_PHY_I2CM_DATAO_0_ADDR;
+		* data = hdmi->HDMI_PHY_I2CM_DATAI_1_ADDR * 256 + hdmi->HDMI_PHY_I2CM_DATAI_0_ADDR;
 	}
 }
+
+enum {
+	DW_HDMI_RES_8,
+	DW_HDMI_RES_10,
+	DW_HDMI_RES_12,
+	DW_HDMI_RES_MAX,
+};
+
+struct dw_hdmi_mpll_config {
+	unsigned long mpixelclock;
+	struct {
+		uint16_t cpce;
+		uint16_t gmp;
+	} res[DW_HDMI_RES_MAX];
+};
+
+struct dw_hdmi_curr_ctrl {
+	unsigned long mpixelclock;
+	uint16_t curr[DW_HDMI_RES_MAX];
+};
+
+
+static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
+	{
+		45250000, {
+			{ 0x01e0, 0x0000 },
+			{ 0x21e1, 0x0000 },
+			{ 0x41e2, 0x0000 }
+		},
+	}, {
+		92500000, {
+			{ 0x0140, 0x0005 },
+			{ 0x2141, 0x0005 },
+			{ 0x4142, 0x0005 },
+	},
+	}, {
+		148500000, {
+			{ 0x00a0, 0x000a },
+			{ 0x20a1, 0x000a },
+			{ 0x40a2, 0x000a },
+		},
+	}, {
+		216000000, {
+			{ 0x00a0, 0x000a },
+			{ 0x2001, 0x000f },
+			{ 0x4002, 0x000f },
+		},
+	}, {
+		~0UL, {
+			{ 0x0000, 0x0000 },
+			{ 0x0000, 0x0000 },
+			{ 0x0000, 0x0000 },
+		},
+	}
+};
+
+static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
+	/*      pixelclk     bpp8    bpp10   bpp12 */
+	{
+		54000000, { 0x091c, 0x091c, 0x06dc },
+	}, {
+		58400000, { 0x091c, 0x06dc, 0x06dc },
+	}, {
+		72000000, { 0x06dc, 0x06dc, 0x091c },
+	}, {
+		74250000, { 0x06dc, 0x0b5c, 0x091c },
+	}, {
+		118800000, { 0x091c, 0x091c, 0x06dc },
+	}, {
+		216000000, { 0x06dc, 0x0b5c, 0x091c },
+	}, {
+		~0UL, { 0x0000, 0x0000, 0x0000 },
+	},
+};
 
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
@@ -6909,9 +6985,14 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //	hdmi_phy_i2c_read(hdmi, & v1, PHY_OPMODE_PLLCFG);
 //	PRINTF("hdmi phy test: v1=%08X\n", v1);
 
-//	hdmi_phy_i2c_write(hdmi, hdmi->mpll_cfg[i].cpce, PHY_OPMODE_PLLCFG);
-//	hdmi_phy_i2c_write(hdmi, hdmi->mpll_cfg[i].gmp, PHY_PLLGMPCTRL);
-//	hdmi_phy_i2c_write(hdmi, hdmi->mpll_cfg[i].curr, PHY_PLLCURRCTRL);
+	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_write(hdmi, 0x06dc /*imx_mpll_cfg [2].res[DW_HDMI_RES_8].curr */, PHY_PLLCURRCTRL);
+	unsigned cpce, gmp, curr;
+	hdmi_phy_i2c_read(hdmi, & cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_read(hdmi, & gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_read(hdmi, & curr, PHY_PLLCURRCTRL);
+	PRINTF("cpce=%04X, gmp=%04X, curr=%04X\n", cpce, gmp, curr);
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
@@ -6928,7 +7009,11 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //	hdmi_phy_i2c_write(hdmi, hdmi->phy_cfg[i].term, PHY_TXTERM);
 //	hdmi_phy_i2c_write(hdmi, hdmi->phy_cfg[i].sym_ctr, PHY_CKSYMTXCTRL);
 //	hdmi_phy_i2c_write(hdmi, hdmi->phy_cfg[i].vlev_ctr, PHY_VLEVCTRL);
-
+	unsigned term, sym_ctr, vlev_ctr;
+	hdmi_phy_i2c_read(hdmi, & term, PHY_TXTERM);
+	hdmi_phy_i2c_read(hdmi, & sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_read(hdmi, & vlev_ctr, PHY_VLEVCTRL);
+	PRINTF("term=%04X, sym_ctr=%04X, vlev_ctr=%04X\n", term, sym_ctr, vlev_ctr);
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
 
@@ -6959,30 +7044,6 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //		udelay(100);
 //	} while (get_timer(start) < 5);
 
-
-//	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_DEASSERT;
-//	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
-
-	// addr HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2
-	// I2C reset
-//	HDMI_TX0->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
-//	while ((HDMI_TX0->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
-//		;
-
-	unsigned i2caddr;
-	for (i2caddr = 0; i2caddr < 126; ++ i2caddr)
-	{
-		uint8_t buff [16];
-		if (hdmi_i2c_read(HDMI_TX0, i2caddr, 0, buff, sizeof buff))
-		{
-			PRINTF("PHY I2C at %02X\n", i2caddr);
-			printhex(0, buff, sizeof buff);
-		}
-		else
-		{
-			//PRINTF("No PHY I2C at %02X\n", i2caddr);
-		}
-	}
 #endif
 
 	h3_hdmi_init(vdmode);
