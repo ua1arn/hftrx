@@ -6988,7 +6988,39 @@ static const struct hdmi_phy_config rockchip_phy_config[] = {
 	}
 };
 
-static void phy_configure(void)
+
+/* hdmi initialization step b.4 */
+static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
+{
+	unsigned clkdis;
+
+	/* control period minimum duration */
+	hdmi->HDMI_FC_CTRLDUR = 12;
+	hdmi->HDMI_FC_EXCTRLDUR = 32;
+	hdmi->HDMI_FC_EXCTRLSPAC = 1;
+
+	/* set to fill tmds data channels */
+	hdmi->HDMI_FC_CH0PREAM = 0x0b;
+	hdmi->HDMI_FC_CH1PREAM = 0x16;
+	hdmi->HDMI_FC_CH2PREAM = 0x21;
+
+	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
+
+	/* enable pixel clock and tmds data path */
+	clkdis = 0x7f;
+	clkdis &= ~HDMI_MC_CLKDIS_PIXELCLK_DISABLE;
+	hdmi->HDMI_MC_CLKDIS = clkdis;
+
+	clkdis &= ~HDMI_MC_CLKDIS_TMDSCLK_DISABLE;
+	hdmi->HDMI_MC_CLKDIS = clkdis;
+
+	if (audio) {
+		clkdis &= ~HDMI_MC_CLKDIS_AUDCLK_DISABLE;
+		hdmi->HDMI_MC_CLKDIS = clkdis;
+	}
+}
+
+static void hdmi_phy_configure(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 
@@ -7122,12 +7154,13 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		hdmi_phy_enable_tmds(hdmi, 0);
 		hdmi_phy_enable_power(hdmi, 0);
 
-		/*ret = */phy_configure();
+		/*ret = */hdmi_phy_configure();
 //		if (ret) {
 //			debug("hdmi phy config failure %d\n", ret);
 //			return ret;
 //		}
 	}
+	hdmi_enable_video_path(hdmi, 0);
 	//bsp_hdmi_set_video_en(1);
 #endif
 
