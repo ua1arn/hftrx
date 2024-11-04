@@ -2227,17 +2227,13 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 
 #if WITHHDMITVHW
 
-// https://v2020e.ru/blog/emulyatsiya-edid-informatsii-hdmi-interfejsa-na-fpga
-// Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
-
 // 1 - ok, 0 - err
-static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t * buff)
+static int hdmi_i2c_read(HDMI_TX_TypeDef * const hdmi, unsigned slave, unsigned start, uint8_t * buff, unsigned len)
 {
-	hdmi->HDMI_I2CM_SLAVE = 0x50;	// monitor address
+	hdmi->HDMI_I2CM_SLAVE = slave;	// monitor address
 	unsigned i;
 	hdmi->HDMI_IH_I2CM_STAT0 = 0x03;	// Сброс флагов прерываний, если остались от предидущего обмена
-	const unsigned len = 0x80;
-	unsigned start = page * len;
+	//const unsigned len = 0x80;
 	for (i = 0; i < len; ++ i, ++ start)
 	{
 		hdmi->HDMI_I2CM_ADDRESS = start;
@@ -2269,6 +2265,29 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t *
 	if ((cks & 0xFF) != 0)
 		return 0;
 	return 1;
+}
+// https://v2020e.ru/blog/emulyatsiya-edid-informatsii-hdmi-interfejsa-na-fpga
+// Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
+
+// 1 - ok, 0 - err
+static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t * buff)
+{
+	unsigned i;
+	const unsigned len = 0x80;
+	if (hdmi_i2c_read(hdmi, 0x50, page * len, buff, len))
+	{
+		// Checksum verify
+		unsigned cks;
+		for (cks = 0, i = 0; i < len; ++ i)
+		{
+			cks += buff [i];
+		}
+		if ((cks & 0xFF) != 0)
+			return 0;
+		return 1;
+
+	}
+	return 0;
 }
 
 //	EDID Structure Version & Revision: 01 03
@@ -2391,12 +2410,6 @@ static void t507_hdmi_edid_test(void)
 	hdmi->HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR = 0xFF;
 
 	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
-
-	if (hdmi_connector_detect() == 0)
-	{
-		PRINTF("No HDMI device\n");
-		//return;
-	}
 	PRINTF("t507_hdmi_edid_test before reset\n");
 	// I2C reset
 	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
@@ -2405,6 +2418,12 @@ static void t507_hdmi_edid_test(void)
 
 	PRINTF("t507_hdmi_edid_test after reset\n");
 	//PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
+
+	if (hdmi_connector_detect() == 0)
+	{
+		PRINTF("No HDMI device\n");
+		//return;
+	}
 
 	// EDID ("Extended display identification data") read
 	// Test I2C bus read
@@ -6727,6 +6746,8 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 }
 
+#include "dw-hdmi.h"
+
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
 #if WITHHDMITVHW
@@ -6753,8 +6774,48 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 
 	h3_hdmi_init(vdmode);
 
+#if 0
+	/* PHY_I2CM_SLAVE_ADDR field values */
+//		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
+//		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
+
+	/* gen2 tx power off */
+//	hdmi_phy_gen2_txpwron(hdmi, 0);
+//
+//	/* gen2 pddq */
+//	hdmi_phy_gen2_pddq(hdmi, 1);
+
+	/* phy reset */
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_ASSERT;
+	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_ASSERT;
+
+
+	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_DEASSERT;
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+
+	// addr HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2
+	// I2C reset
+	HDMI_TX0->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+	while ((HDMI_TX0->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+		;
+	unsigned i2caddr;
+	for (i2caddr = 0; i2caddr < 126; ++ i2caddr)
+	{
+		uint8_t buff [16];
+		if (hdmi_i2c_read(HDMI_TX0, i2caddr, 0, buff, sizeof buff))
+		{
+			PRINTF("PHY I2C at %02X\n", i2caddr);
+			printhex(0, buff, sizeof buff);
+		}
+		else
+		{
+			//PRINTF("No PHY I2C\n");
+		}
+	}
 	t507_hdmi_edid_test();
 //	t507_hdmi_edid_test();
+#endif
 
 #endif /* WITHHDMITVHW */
 }

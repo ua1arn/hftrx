@@ -250,13 +250,6 @@ void bsp_hdmi_inner_init()
 void hdmi_phy_init()
 {
 	int v0; // r4
-	unsigned int v1; // r0
-	unsigned int v2; // r0
-	unsigned int v3; // r0
-	unsigned int v4; // r0
-	unsigned int v5; // r0
-	unsigned int v6; // r0
-	unsigned int v7; // r0
 	unsigned int v8; // r0
 	unsigned int v9; // r0
 	unsigned int v10; // r0
@@ -269,24 +262,23 @@ void hdmi_phy_init()
 	hdmi_writel(0x10020u, 0);
 	hdmi_writel(0x10020u, 1u);
 	hdmi_udelay(5u);
-	v1 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v1 | 0x10000);
-	v2 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v2 | 2);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 0x10000);	// 	TDNSCLKEB=N
+	ASSERT(hdmi_readl(0x10020u) & 0x10000);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 2);	// ENVBS
+	ASSERT(hdmi_readl(0x10020u) & 2);
 	hdmi_udelay(0xAu);
-	v3 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v3 | 4);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 4);	// LDOEN
+	ASSERT(hdmi_readl(0x10020u) & 4);
 	hdmi_udelay(5u);
-	v4 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v4 | 8);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 8);	// CKEN
+	ASSERT(hdmi_readl(0x10020u) & 8);
 	hdmi_udelay(0x28u);
-	v5 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v5 | 0x80000);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 0x80000);
+	ASSERT(hdmi_readl(0x10020u) & 0x80000);
 	hdmi_udelay(0x64u);
-	v6 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v6 | 0x40000);
-	v7 = hdmi_readl(0x10020u);
-	hdmi_writel(0x10020u, v7 | 0x70);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 0x40000);
+	ASSERT(hdmi_readl(0x10020u) & 0x40000);
+	hdmi_writel(0x10020u, hdmi_readl(0x10020u) | 0x70);
 	do
 	{
 		if ((hdmi_readl(0x10038u) & 0x80) != 0)
