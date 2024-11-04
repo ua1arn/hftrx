@@ -6765,6 +6765,23 @@ static void hdmi_phy_gen2_txpwron(HDMI_TX_TypeDef *hdmi, unsigned enable)
 //		 enable << HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET);
 }
 
+static void hdmi_phy_sel_data_en_pol(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SELDATAENPOL_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0,
+//		 HDMI_PHY_CONF0_SELDATAENPOL_MASK,
+//		 enable << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
+}
+
+static void hdmi_phy_sel_interface_control(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SELDIPIF_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_SELDIPIF_MASK,
+//		 enable << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
+}
+
 static void hdmi_phy_enable_power(HDMI_TX_TypeDef *hdmi, unsigned enable)
 {
 	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_PDZ_MASK) |
@@ -6971,35 +6988,9 @@ static const struct hdmi_phy_config rockchip_phy_config[] = {
 	}
 };
 
-static void t113_hdmi_init(const videomode_t * vdmode)
+static void phy_configure(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-#if WITHHDMITVHW
-	const uint_fast32_t dotclock = display_getdotclock(vdmode);
-
-#if 1
-	h3_hdmi_phy_init(dotclock);
-#else
-	// https://github.com/qiaoweibiao/T507_Kernel
-
-	bsp_hdmi_set_addr(HDMI_TX0_BASE);
-	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
-	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
-	t507_hdmi_phy_init(dotclock);
-
-	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
-	(void) hdmi->HDMI_DESIGN_ID;
-	/* enable read access to HDMI controller */
-	phy->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-	(void) hdmi->HDMI_DESIGN_ID;
-#endif
-
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	/* PHY_I2CM_SLAVE_ADDR field values */
-//		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
-//		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
 
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 	/* gen2 tx power off */
@@ -7092,6 +7083,50 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //		udelay(100);
 //	} while (get_timer(start) < 5);
 
+}
+static void t113_hdmi_init(const videomode_t * vdmode)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+#if WITHHDMITVHW
+	const uint_fast32_t dotclock = display_getdotclock(vdmode);
+
+#if 1
+	h3_hdmi_phy_init(dotclock);
+#else
+	// https://github.com/qiaoweibiao/T507_Kernel
+
+	bsp_hdmi_set_addr(HDMI_TX0_BASE);
+	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
+	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
+	t507_hdmi_phy_init(dotclock);
+
+	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
+	(void) hdmi->HDMI_DESIGN_ID;
+	/* enable read access to HDMI controller */
+	phy->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	(void) hdmi->HDMI_DESIGN_ID;
+#endif
+
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	/* PHY_I2CM_SLAVE_ADDR field values */
+//		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
+//		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
+	/* hdmi phy spec says to do the phy initialization sequence twice */
+	int i;
+	for (i = 0; i < 2; i++) {
+		hdmi_phy_sel_data_en_pol(hdmi, 1);
+		hdmi_phy_sel_interface_control(hdmi, 0);
+		hdmi_phy_enable_tmds(hdmi, 0);
+		hdmi_phy_enable_power(hdmi, 0);
+
+		/*ret = */phy_configure();
+//		if (ret) {
+//			debug("hdmi phy config failure %d\n", ret);
+//			return ret;
+//		}
+	}
 	//bsp_hdmi_set_video_en(1);
 #endif
 
