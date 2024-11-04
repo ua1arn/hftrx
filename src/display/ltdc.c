@@ -6986,12 +6986,12 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	t507_hdmi_phy_init(dotclock);
 
 	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
-	(void) HDMI_TX0->HDMI_DESIGN_ID;
+	(void) hdmi->HDMI_DESIGN_ID;
 	/* enable read access to HDMI controller */
 	phy->HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
 	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-	(void) HDMI_TX0->HDMI_DESIGN_ID;
+	(void) hdmi->HDMI_DESIGN_ID;
 #endif
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
@@ -7089,6 +7089,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //		udelay(100);
 //	} while (get_timer(start) < 5);
 
+	//bsp_hdmi_set_video_en(1);
 #endif
 
 	h3_hdmi_init(vdmode);
