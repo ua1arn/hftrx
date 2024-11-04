@@ -6889,6 +6889,13 @@ struct dw_hdmi_curr_ctrl {
 	uint16_t curr[DW_HDMI_RES_MAX];
 };
 
+struct hdmi_phy_config {
+	uint64_t mpixelclock;
+	uint32_t sym_ctr;    /* clock symbol and transmitter control */
+	uint32_t term;       /* transmission termination value */
+	uint32_t vlev_ctr;   /* voltage level control */
+};
+
 
 static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
 	{
@@ -6941,6 +6948,25 @@ static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
 	}, {
 		~0UL, { 0x0000, 0x0000, 0x0000 },
 	},
+};
+
+static const struct hdmi_phy_config rockchip_phy_config[] = {
+	{
+		.mpixelclock = 74250000,
+		.sym_ctr = 0x8009, .term = 0x0004, .vlev_ctr = 0x0272,
+	}, {
+		.mpixelclock = 148500000,
+		.sym_ctr = 0x802b, .term = 0x0004, .vlev_ctr = 0x028d,
+	}, {
+		.mpixelclock = 297000000,
+		.sym_ctr = 0x8039, .term = 0x0005, .vlev_ctr = 0x028d,
+	}, {
+		.mpixelclock = 584000000,
+		.sym_ctr = 0x8039, .term = 0x0000, .vlev_ctr = 0x019d,
+	}, {
+		.mpixelclock = ~0ul,
+		.sym_ctr = 0x0000, .term = 0x0000, .vlev_ctr = 0x0000,
+	}
 };
 
 static void t113_hdmi_init(const videomode_t * vdmode)
@@ -7010,6 +7036,10 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
+	unsigned v1, v2;
+	hdmi_phy_i2c_read(hdmi, & v1, PHY_PLLCURRCTRL);
+	hdmi_phy_i2c_read(hdmi, & v2, PHY_PLLCLKBISTPHASE);
+	PRINTF("v1=%04X, v2=%04X\n", v1, v2);
 
 //	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
 //		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
@@ -7020,9 +7050,9 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	 * preemp cgf 0.00
 	 * tx/ck lvl 10
 	 */
-//	hdmi_phy_i2c_write(hdmi, hdmi->phy_cfg[i].term, PHY_TXTERM);
-//	hdmi_phy_i2c_write(hdmi, hdmi->phy_cfg[i].sym_ctr, PHY_CKSYMTXCTRL);
-//	hdmi_phy_i2c_write(hdmi, hdmi->phy_cfg[i].vlev_ctr, PHY_VLEVCTRL);
+	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].term, PHY_TXTERM);
+	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].vlev_ctr, PHY_VLEVCTRL);
 	unsigned term, sym_ctr, vlev_ctr;
 	hdmi_phy_i2c_read(hdmi, & term, PHY_TXTERM);
 	hdmi_phy_i2c_read(hdmi, & sym_ctr, PHY_CKSYMTXCTRL);
