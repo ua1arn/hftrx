@@ -6823,6 +6823,10 @@ static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
 
 static void hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
 {
+	// I2C reset
+//	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+//		;
 	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
 	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
 	hdmi->HDMI_PHY_I2CM_DATAO_1_ADDR = (data >> 8);
@@ -6837,10 +6841,15 @@ static void hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned ad
 //		   HDMI_PHY_I2CM_OPERATION_ADDR);
 
 	hdmi_phy_wait_i2c_done(hdmi, 1000);
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
 }
 
 static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned addr)
 {
+	// I2C reset
+//	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+//		;
 	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
 	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
 	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_READ;
@@ -6857,6 +6866,7 @@ static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned a
 	{
 		* data = hdmi->HDMI_PHY_I2CM_DATAI_1_ADDR * 256 + hdmi->HDMI_PHY_I2CM_DATAI_0_ADDR;
 	}
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
 }
 
 enum {
@@ -6958,11 +6968,12 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	(void) HDMI_TX0->HDMI_DESIGN_ID;
 #endif
 
-#if 0
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	/* PHY_I2CM_SLAVE_ADDR field values */
 //		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
 //		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
 
+	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 	/* gen2 tx power off */
 	hdmi_phy_gen2_txpwron(hdmi, 0);
 //
@@ -6973,6 +6984,9 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
 	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_ASSERT;
 	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_ASSERT;
+
+//	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+//	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_DEASSERT;
 
 	hdmi_phy_test_clear(hdmi, 1);
 	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
@@ -7034,6 +7048,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) != 0)
 		;
 	TP();
+	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 //	start = get_timer(0);
 //	do {
