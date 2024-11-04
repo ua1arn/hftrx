@@ -7069,8 +7069,9 @@ static void phy_configure(void)
 
 	/* wait for phy pll lock */
 	TP();
-	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) != 0)
-		;
+	local_delay_ms(100);
+//	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) != 0)
+//		;
 	TP();
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
