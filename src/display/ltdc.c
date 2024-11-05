@@ -6908,13 +6908,16 @@ struct dw_hdmi_curr_ctrl {
 	uint16_t curr[DW_HDMI_RES_MAX];
 };
 
-struct hdmi_phy_config {
+struct dw_hdmi_phy_config {
 	uint64_t mpixelclock;
 	uint32_t sym_ctr;    /* clock symbol and transmitter control */
 	uint32_t term;       /* transmission termination value */
 	uint32_t vlev_ctr;   /* voltage level control */
 };
 
+#if 1
+
+// See https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/imx/dw_hdmi-imx.c#L36
 
 static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
 	{
@@ -6950,26 +6953,38 @@ static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
 	}
 };
 
-//static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
-//	/*      pixelclk     bpp8    bpp10   bpp12 */
-//	{
-//		54000000, { 0x091c, 0x091c, 0x06dc },
-//	}, {
-//		58400000, { 0x091c, 0x06dc, 0x06dc },
-//	}, {
-//		72000000, { 0x06dc, 0x06dc, 0x091c },
-//	}, {
-//		74250000, { 0x06dc, 0x0b5c, 0x091c },
-//	}, {
-//		118800000, { 0x091c, 0x091c, 0x06dc },
-//	}, {
-//		216000000, { 0x06dc, 0x0b5c, 0x091c },
-//	}, {
-//		~0UL, { 0x0000, 0x0000, 0x0000 },
-//	},
-//};
+static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
+	/*      pixelclk     bpp8    bpp10   bpp12 */
+	{
+		54000000, { 0x091c, 0x091c, 0x06dc },
+	}, {
+		58400000, { 0x091c, 0x06dc, 0x06dc },
+	}, {
+		72000000, { 0x06dc, 0x06dc, 0x091c },
+	}, {
+		74250000, { 0x06dc, 0x0b5c, 0x091c },
+	}, {
+		118800000, { 0x091c, 0x091c, 0x06dc },
+	}, {
+		216000000, { 0x06dc, 0x0b5c, 0x091c },
+	}, {
+		~0UL, { 0x0000, 0x0000, 0x0000 },
+	},
+};
 
-static const struct hdmi_phy_config rockchip_phy_config[] = {
+/*
+ * Resistance term 133Ohm Cfg
+ * PREEMP config 0.00
+ * TX/CK level 10
+ */
+static const struct dw_hdmi_phy_config imx_phy_config[] = {
+	/*pixelclk   symbol   term   vlev */
+	{ 216000000, 0x800d, 0x0005, 0x01ad},
+	{ ~0UL,      0x0000, 0x0000, 0x0000}
+};
+
+
+static const struct dw_hdmi_phy_config rockchip_phy_config[] = {
 	{
 		.mpixelclock = 74250000,
 		.sym_ctr = 0x8009, .term = 0x0004, .vlev_ctr = 0x0272,
@@ -6988,6 +7003,7 @@ static const struct hdmi_phy_config rockchip_phy_config[] = {
 	}
 };
 
+#endif
 
 /* hdmi initialization step b.4 */
 static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
@@ -7020,6 +7036,8 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 	}
 }
 
+// See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
+
 static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotclock, unsigned res, int cscon)
 {
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
@@ -7045,9 +7063,12 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
 	hdmi_phy_test_clear(hdmi, 0);
 
-	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].cpce, PHY_OPMODE_PLLCFG);
-	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].gmp, PHY_PLLGMPCTRL);
-	hdmi_phy_i2c_write(hdmi, 0x06dc /*imx_mpll_cfg [2].res[DW_HDMI_RES_8].curr */, PHY_PLLCURRCTRL);
+	const int resix = DW_HDMI_RES_8;
+	const int mpllix = 2;
+	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [mpllix].res[resix].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [mpllix].res[resix].gmp, PHY_PLLGMPCTRL);
+	const int currix = 2;
+	hdmi_phy_i2c_write(hdmi, imx_cur_ctr [currix].curr[resix], PHY_PLLCURRCTRL);
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
@@ -7061,9 +7082,10 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	 * preemp cgf 0.00
 	 * tx/ck lvl 10
 	 */
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].term, PHY_TXTERM);
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].sym_ctr, PHY_CKSYMTXCTRL);
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].vlev_ctr, PHY_VLEVCTRL);
+	const int phyix = 1;
+	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[phyix].term, PHY_TXTERM);
+	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[phyix].sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[phyix].vlev_ctr, PHY_VLEVCTRL);
 
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
