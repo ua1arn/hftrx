@@ -6746,6 +6746,43 @@ void testpng(const void * pngbuffer)
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
+	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
+	hardware_ltdc_main_set4((uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+
+	luImageRelease(png, NULL);
+	for (;;)
+		;
+}
+
+void testpng_no_stretch(const void * pngbuffer)
+{
+	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+	LuImage * png = luPngReadMemory((char *) pngbuffer);
+
+	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
+	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	const unsigned picdx = png->width;//GXADJ(png->width);
+	const unsigned picw = png->width;
+	const unsigned pich = png->height;
+
+	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
+
+	//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
+
+	colpip_bitblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		0, 0,			/* позиция прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
+		0, 0, picdx, pich,
+		//BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+		);
+
+	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
+	hardware_ltdc_main_set4((uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+
 	luImageRelease(png, NULL);
 	for (;;)
 		;
@@ -11318,9 +11355,26 @@ void hightests(void)
 		board_update();
 		TP();
 
-		#include "Cobra.png.h"
+		#include "testdata/Cobra.png.h"
 
 		testpng(Cobra_png);
+		for (;;)
+			;
+	}
+#endif
+#if 0 && LCDMODE_LTDC
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+
+		static const unsigned char png [] =
+		{
+			#include "testdata/1920x1080.h"
+
+		};
+
+		testpng_no_stretch(png);
 		for (;;)
 			;
 	}
