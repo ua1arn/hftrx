@@ -5837,7 +5837,17 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	//DISP_IF_TOP->MODULE_GATING |= ~0;
 	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
-
+// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
+//  0x200
+//	union tcon_mux_ctl_reg_t {
+//		u32 dwval;
+//		struct {
+//			u32 dsi_src:2;
+//			u32 res0:6;
+//			u32 hdmi_src:2;
+//			u32 res1:22;
+//		} bits;
+//	};
 
     local_delay_us(10);
 
@@ -6183,12 +6193,16 @@ static void awxx_deoutmapping(void)
 //		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
 //		0;
 
+//	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 	// +++++++++++++++++ ПРОВЕРЕНО ++++++++++++++++
 	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
 	// Для работы LVDS на RTMIX0 и TV0->HDMI на RTMIX1
 	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
 	DE_TOP->DE2TCON_MUX = 0x000000E4;
 	// ----------------- ПРОВЕРЕНО ----------------
+//	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 	// Undocumented
 //	DE_TOP->DE2TCON_MUX =
@@ -6199,6 +6213,24 @@ static void awxx_deoutmapping(void)
 //		0;
 //	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
+
+// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
+//  0x200
+//	union tcon_mux_ctl_reg_t {
+//		u32 dwval;
+//		struct {
+//			u32 dsi_src:2;
+//			u32 res0:6;
+//			u32 hdmi_src:2;
+//			u32 res1:22;
+//		} bits;
+//	};
+
+//	TCONTV_PTR->tcon_mul_ctl = (TCONTV_PTR->tcon_mul_ctl & ~ 0x300) |
+//			0x01 * (UINT32_C(1) << 8);
+//	PRINTF("3 TCONTV_PTR->tcon_mul_ctl=%08X\n", (unsigned) TCONTV_PTR->tcon_mul_ctl);
+//	memset(TCONTV_PTR, 0xFF, sizeof * TCONTV_PTR);
+//	printhex(TCONTV_PTR, TCONTV_PTR, sizeof * TCONTV_PTR);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
