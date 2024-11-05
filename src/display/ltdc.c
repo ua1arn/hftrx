@@ -7020,10 +7020,8 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 	}
 }
 
-static void hdmi_phy_configure(void)
+static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotclock)
 {
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 	/* gen2 tx power off */
 	hdmi_phy_gen2_txpwron(hdmi, 0);
@@ -7123,6 +7121,10 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 #if WITHHDMITVHW
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+#else
+#endif
+
 #if 1
 	h3_hdmi_phy_init(dotclock);
 #else
@@ -7154,7 +7156,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		hdmi_phy_enable_tmds(hdmi, 0);
 		hdmi_phy_enable_power(hdmi, 0);
 
-		/*ret = */hdmi_phy_configure();
+		/*ret = */hdmi_phy_configure(hdmi, dotclock);
 //		if (ret) {
 //			debug("hdmi phy config failure %d\n", ret);
 //			return ret;
