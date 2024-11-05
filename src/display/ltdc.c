@@ -7207,8 +7207,50 @@ static void hdmi_tx_hdcp_config(HDMI_TX_TypeDef * const hdmi)
 //	hdmi_modb(hdmi, HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE,
 //		  HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK, HDMI_A_HDCPCFG1);
 }
-#endif
 
+static void hdmi_video_sample(HDMI_TX_TypeDef * const hdmi)
+{
+	uint32_t val;
+	// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L366
+	unsigned color_format = 0x01;	// RGB, 8 bit
+
+	val = HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE |
+		((color_format << HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET) &
+		HDMI_TX_INVID0_VIDEO_MAPPING_MASK);
+	hdmi->HDMI_TX_INVID0 = val;
+
+	/* Enable TX stuffing: When DE is inactive, fix the output data to 0 */
+	val = HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE |
+		HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE |
+		HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE;
+	hdmi->HDMI_TX_INSTUFFING = val;
+	hdmi->HDMI_TX_GYDATA0 = 0x00;
+	hdmi->HDMI_TX_GYDATA1 = 0x00;
+	hdmi->HDMI_TX_RCRDATA0 = 0x00;
+	hdmi->HDMI_TX_RCRDATA1 = 0x00;
+	hdmi->HDMI_TX_BCBDATA0 = 0x00;
+	hdmi->HDMI_TX_BCBDATA1 = 0x00;
+}
+
+
+static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
+{
+	int count;
+	uint8_t val;
+
+	/* TMDS software reset */
+	hdmi->HDMI_MC_SWRSTZ = (uint8_t) ~ HDMI_MC_SWRSTZ_TMDSSWRST_REQ;
+
+	val = hdmi->HDMI_FC_INVIDCONF;
+//	if (hdmi->dev_type == IMX6DL_HDMI) {
+//		hdmi->HDMI_FC_INVIDCONF = val;
+//		return;
+//	}
+
+	for (count = 0; count < 4; count++)
+		hdmi->HDMI_FC_INVIDCONF = val;
+}
+#endif
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -7259,32 +7301,9 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 
 	h3_hdmi_init(vdmode);
 	hdmi_enable_video_path(hdmi, 1);
+	hdmi_video_sample(hdmi);
 	hdmi_tx_hdcp_config(hdmi);
-
-#if 1//CPUSTYLE_T507 || CPUSTYLE_H616
-	{
-		uint32_t val;
-		// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L366
-		unsigned color_format = 0x01;	// RGB, 8 bit
-
-		val = HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE |
-			((color_format << HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET) &
-			HDMI_TX_INVID0_VIDEO_MAPPING_MASK);
-		hdmi->HDMI_TX_INVID0 = val;
-
-		/* Enable TX stuffing: When DE is inactive, fix the output data to 0 */
-		val = HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE |
-			HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE |
-			HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE;
-		hdmi->HDMI_TX_INSTUFFING = val;
-		hdmi->HDMI_TX_GYDATA0 = 0x00;
-		hdmi->HDMI_TX_GYDATA1 = 0x00;
-		hdmi->HDMI_TX_RCRDATA0 = 0x00;
-		hdmi->HDMI_TX_RCRDATA1 = 0x00;
-		hdmi->HDMI_TX_BCBDATA0 = 0x00;
-		hdmi->HDMI_TX_BCBDATA1 = 0x00;
-	}
-#endif
+	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
 #endif /* WITHHDMITVHW */
