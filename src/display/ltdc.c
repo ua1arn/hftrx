@@ -7038,7 +7038,7 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 
 // See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
 
-static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
+static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
 {
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
@@ -7088,7 +7088,7 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixe
 	    phy_config->mpixelclock == ~0UL) {
 		PRINTF("Pixel clock %u - unsupported by HDMI\n",
 			(unsigned) mpixelclock);
-		return;
+		return -1;
 	}
 
 
@@ -7116,7 +7116,7 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixe
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
 
-	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 	hdmi_phy_enable_power(hdmi, 1);
 
@@ -7132,10 +7132,8 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixe
 
 	/* wait for phy pll lock */
 	TP();
-	local_delay_ms(100);
-//	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) != 0)
-//		;
-	TP();
+	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
+		;
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 //	start = get_timer(0);
@@ -7146,8 +7144,9 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixe
 //
 //		udelay(100);
 //	} while (get_timer(start) < 5);
-
+	return 0;	// OK
 }
+
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -7191,7 +7190,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		hdmi_phy_enable_tmds(hdmi, 0);
 		hdmi_phy_enable_power(hdmi, 0);
 
-		/*ret = */hdmi_phy_configure(hdmi, dotclock, 8, cscon);
+		int ret = hdmi_phy_configure(hdmi, dotclock, 8, cscon);
 //		if (ret) {
 //			debug("hdmi phy config failure %d\n", ret);
 //			return ret;
@@ -7204,7 +7203,6 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 
 	h3_hdmi_init(vdmode);
 
-//	t507_hdmi_edid_test();
 //	t507_hdmi_edid_test();
 
 #endif /* WITHHDMITVHW */
