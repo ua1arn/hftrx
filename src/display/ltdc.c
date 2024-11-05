@@ -7153,29 +7153,6 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-#else
-#endif
-
-#if 1
-	h3_hdmi_phy_init(dotclock);
-#else
-	// https://github.com/qiaoweibiao/T507_Kernel
-
-	bsp_hdmi_set_addr(HDMI_TX0_BASE);
-	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
-	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
-	t507_hdmi_phy_init(dotclock);
-
-	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
-	(void) hdmi->HDMI_DESIGN_ID;
-	/* enable read access to HDMI controller */
-	phy->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-	(void) hdmi->HDMI_DESIGN_ID;
-#endif
-
-#if CPUSTYLE_T507 || CPUSTYLE_H616
 	/* PHY_I2CM_SLAVE_ADDR field values */
 //		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
 //		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
@@ -7196,7 +7173,25 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //		}
 	}
 
+#elif 1
+	h3_hdmi_phy_init(dotclock);
+
+#elif 0
+	// https://github.com/qiaoweibiao/T507_Kernel
+
+	bsp_hdmi_set_addr(HDMI_TX0_BASE);
+	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
+	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
+	t507_hdmi_phy_init(dotclock);
 	//bsp_hdmi_set_video_en(1);
+
+	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
+	(void) hdmi->HDMI_DESIGN_ID;
+	/* enable read access to HDMI controller */
+	phy->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	(void) hdmi->HDMI_DESIGN_ID;
 #endif
 
 	h3_hdmi_init(vdmode);
