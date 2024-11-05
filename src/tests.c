@@ -11560,14 +11560,15 @@ void hightests(void)
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
 		int phase = 0;
-		unsigned c = 0;
+		unsigned c = 0;	// cycle
 		while(1)
 		{
+			int cycles = 1024;
 			int y = 50;
 			int x0 = 270;
 			int h = 120;
-			int w = 500;
-			int xpos = (c * (w - 1)) / 255;	/* позиция маркера */
+			int w = DIM_X - x0;
+			int xpos = (c * (w - 1)) / (cycles - 1);	/* позиция маркера */
 
 			PACKEDCOLORPIP_T * const drawlayer = phase ? layer0_a : layer0_b;
 
@@ -11581,7 +11582,7 @@ void hightests(void)
 			hardware_ltdc_main_set4((uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
 
 			phase = ! phase;
-			c = (c + 1) % 256;
+			c = (c + 1) % cycles;
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
