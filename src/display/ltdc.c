@@ -7183,6 +7183,30 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	return 0;	// OK
 }
 
+static void hdmi_tx_hdcp_config(HDMI_TX_TypeDef * const hdmi)
+{
+	uint8_t de;
+
+	if (1 /*hdmi->hdmi_data.video_mode.mdataenablepolarity */)
+		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_HIGH;
+	else
+		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_LOW;
+
+	/* disable rx detect */
+	hdmi->HDMI_A_HDCPCFG0 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG0_RXDETECT_MASK) |
+			HDMI_A_HDCPCFG0_RXDETECT_DISABLE;
+//	hdmi_modb(hdmi, HDMI_A_HDCPCFG0_RXDETECT_DISABLE,
+//		  HDMI_A_HDCPCFG0_RXDETECT_MASK, HDMI_A_HDCPCFG0);
+
+	hdmi->HDMI_A_VIDPOLCFG = (hdmi->HDMI_A_VIDPOLCFG & ~ HDMI_A_VIDPOLCFG_DATAENPOL_MASK) |
+			de;
+//	hdmi_modb(hdmi, de, HDMI_A_VIDPOLCFG_DATAENPOL_MASK, HDMI_A_VIDPOLCFG);
+
+	hdmi->HDMI_A_HDCPCFG1 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK) |
+			HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE;
+//	hdmi_modb(hdmi, HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE,
+//		  HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK, HDMI_A_HDCPCFG1);
+}
 #endif
 
 static void t113_hdmi_init(const videomode_t * vdmode)
@@ -7235,6 +7259,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 
 	h3_hdmi_init(vdmode);
 	hdmi_enable_video_path(hdmi, 1);
+	hdmi_tx_hdcp_config(hdmi);
 
 #if 1//CPUSTYLE_T507 || CPUSTYLE_H616
 	{
