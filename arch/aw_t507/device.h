@@ -2616,7 +2616,9 @@ typedef __PACKED_STRUCT TCON_TV_Type
     __IO uint32_t TV_CEU_COEF_RANG_REG [0x003];       /*!< Offset 0x140 TV CEU Coefficient Range R egister (N=0,1,2) */
          uint32_t reserved_0x14C [0x0029];
     __IO uint32_t TV_SAFE_PERIOD_REG;                 /*!< Offset 0x1F0 TV Safe Period Register */
-         uint32_t reserved_0x1F4 [0x0043];
+         uint32_t reserved_0x1F4 [0x0003];
+    __IO uint32_t tcon_mul_ctl;                       /*!< Offset 0x200 https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691 */
+         uint32_t reserved_0x204 [0x003F];
     __IO uint32_t TV_FILL_CTL_REG;                    /*!< Offset 0x300 TV Fill Data Control Register */
     __PACKED_STRUCT
     {

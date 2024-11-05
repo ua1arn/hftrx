@@ -15489,6 +15489,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>tcon_mul_ctl</name>
+    <displayName>tcon_mul_ctl</displayName>
+    <description>https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>TV_FILL_CTL_REG</name>
     <displayName>TV_FILL_CTL_REG</displayName>
     <description>TV Fill Data Control Register</description>

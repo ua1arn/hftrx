@@ -23,6 +23,7 @@
 #regdef; TV_CEU_COEF_MUL_REG; 0x0110 11; TV CEU Coefficient MUL R egister (N=0..10)
 #regdef; TV_CEU_COEF_RANG_REG; 0x0140 3; TV CEU Coefficient Range R egister (N=0,1,2)
 #regdef; TV_SAFE_PERIOD_REG; 0x01F0; TV Safe Period Register
+#regdef; tcon_mul_ctl; 0x0200; https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691
 #regdef; TV_FILL_CTL_REG; 0x0300; TV Fill Data Control Register
 
 #aggreg; TV_FILL; 0x0304 3; V Fill Data 0..2
