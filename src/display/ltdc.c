@@ -6564,7 +6564,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(30, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XI TCON1_YI
@@ -6578,9 +6578,10 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_IO_POL_REG = 0;	// не влияет
 	TCONTV_PTR->TCON1_IO_TRI_REG = 0;	// вличет
 
-//	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
-//	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
-//	TCONTV_PTR->TCON_GCTL_REG &= ~ (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
+	if (TCONTV_IX == 0)
+		TCONTV_PTR->TCON_GCTL_REG &= ~ (UINT32_C(1) << 0); // IO_Map_Sel: 0: TCON0, 1: TCON1
+	else
+		TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 0); // IO_Map_Sel: 0: TCON0, 1: TCON1
 
 
 #elif CPUSTYLE_H3
@@ -6590,7 +6591,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(30, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
@@ -6608,7 +6609,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TV_CTL_REG =
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(30, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
