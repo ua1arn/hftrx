@@ -7545,7 +7545,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	const uint_fast32_t mask =
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 		0;
-	if (mask != bld->BLD_EN_COLOR_CTL)
+	//if (mask != bld->BLD_EN_COLOR_CTL)
 	{
 		// 5.10.9.1 BLD fill color control register
 		// BLD_FILL_COLOR_CTL
@@ -7569,7 +7569,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 //	const uint_fast32_t mask =
 //		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 //		0;
-//	if (mask != bld->BLD_EN_COLOR_CTL)
+//	//if (mask != bld->BLD_EN_COLOR_CTL)
 //	{
 //		// 5.10.9.1 BLD fill color control register
 //		// BLD_FILL_COLOR_CTL
