@@ -7051,18 +7051,18 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].cpce, PHY_OPMODE_PLLCFG);
 	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].gmp, PHY_PLLGMPCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x06dc /*imx_mpll_cfg [2].res[DW_HDMI_RES_8].curr */, PHY_PLLCURRCTRL);
-	unsigned cpce, gmp, curr;
-	hdmi_phy_i2c_read(hdmi, & cpce, PHY_OPMODE_PLLCFG);
-	hdmi_phy_i2c_read(hdmi, & gmp, PHY_PLLGMPCTRL);
-	hdmi_phy_i2c_read(hdmi, & curr, PHY_PLLCURRCTRL);
-	PRINTF("cpce=%04X, gmp=%04X, curr=%04X\n", cpce, gmp, curr);
+//	unsigned cpce, gmp, curr;
+//	hdmi_phy_i2c_read(hdmi, & cpce, PHY_OPMODE_PLLCFG);
+//	hdmi_phy_i2c_read(hdmi, & gmp, PHY_PLLGMPCTRL);
+//	hdmi_phy_i2c_read(hdmi, & curr, PHY_PLLCURRCTRL);
+//	PRINTF("cpce=%04X, gmp=%04X, curr=%04X\n", cpce, gmp, curr);
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
-	unsigned v1, v2;
-	hdmi_phy_i2c_read(hdmi, & v1, PHY_PLLCURRCTRL);
-	hdmi_phy_i2c_read(hdmi, & v2, PHY_PLLCLKBISTPHASE);
-	PRINTF("v1=%04X, v2=%04X\n", v1, v2);
+//	unsigned v1, v2;
+//	hdmi_phy_i2c_read(hdmi, & v1, PHY_PLLCURRCTRL);
+//	hdmi_phy_i2c_read(hdmi, & v2, PHY_PLLCLKBISTPHASE);
+//	PRINTF("v1=%04X, v2=%04X\n", v1, v2);
 
 //	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
 //		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
@@ -7076,11 +7076,11 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].term, PHY_TXTERM);
 	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].sym_ctr, PHY_CKSYMTXCTRL);
 	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].vlev_ctr, PHY_VLEVCTRL);
-	unsigned term, sym_ctr, vlev_ctr;
-	hdmi_phy_i2c_read(hdmi, & term, PHY_TXTERM);
-	hdmi_phy_i2c_read(hdmi, & sym_ctr, PHY_CKSYMTXCTRL);
-	hdmi_phy_i2c_read(hdmi, & vlev_ctr, PHY_VLEVCTRL);
-	PRINTF("term=%04X, sym_ctr=%04X, vlev_ctr=%04X\n", term, sym_ctr, vlev_ctr);
+//	unsigned term, sym_ctr, vlev_ctr;
+//	hdmi_phy_i2c_read(hdmi, & term, PHY_TXTERM);
+//	hdmi_phy_i2c_read(hdmi, & sym_ctr, PHY_CKSYMTXCTRL);
+//	hdmi_phy_i2c_read(hdmi, & vlev_ctr, PHY_VLEVCTRL);
+//	PRINTF("term=%04X, sym_ctr=%04X, vlev_ctr=%04X\n", term, sym_ctr, vlev_ctr);
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
