@@ -7194,13 +7194,37 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //			return ret;
 //		}
 	}
-	//hdmi_enable_video_path(hdmi, 0);
 
 	//bsp_hdmi_set_video_en(1);
 #endif
 
 	h3_hdmi_init(vdmode);
+	hdmi_enable_video_path(hdmi, 1);
 
+#if 1//CPUSTYLE_T507 || CPUSTYLE_H616
+	{
+		uint32_t val;
+		// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L366
+		unsigned color_format = 0x01;	// RGB, 8 bit
+
+		val = HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE |
+			((color_format << HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET) &
+			HDMI_TX_INVID0_VIDEO_MAPPING_MASK);
+		hdmi->HDMI_TX_INVID0 = val;
+
+		/* Enable TX stuffing: When DE is inactive, fix the output data to 0 */
+		val = HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE |
+			HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE |
+			HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE;
+		hdmi->HDMI_TX_INSTUFFING = val;
+		hdmi->HDMI_TX_GYDATA0 = 0x00;
+		hdmi->HDMI_TX_GYDATA1 = 0x00;
+		hdmi->HDMI_TX_RCRDATA0 = 0x00;
+		hdmi->HDMI_TX_RCRDATA1 = 0x00;
+		hdmi->HDMI_TX_BCBDATA0 = 0x00;
+		hdmi->HDMI_TX_BCBDATA1 = 0x00;
+	}
+#endif
 //	t507_hdmi_edid_test();
 
 #endif /* WITHHDMITVHW */

@@ -45,14 +45,14 @@
 #define HDMI_IH_MUTE                            0x01FF
 
 /* Video Sample Registers */
-#define HDMI_TX_INVID0                          0x0200
-#define HDMI_TX_INSTUFFING                      0x0201
-#define HDMI_TX_GYDATA0                         0x0202
-#define HDMI_TX_GYDATA1                         0x0203
-#define HDMI_TX_RCRDATA0                        0x0204
-#define HDMI_TX_RCRDATA1                        0x0205
-#define HDMI_TX_BCBDATA0                        0x0206
-#define HDMI_TX_BCBDATA1                        0x0207
+//#define HDMI_TX_INVID0                          0x0200
+//#define HDMI_TX_INSTUFFING                      0x0201
+//#define HDMI_TX_GYDATA0                         0x0202
+//#define HDMI_TX_GYDATA1                         0x0203
+//#define HDMI_TX_RCRDATA0                        0x0204
+//#define HDMI_TX_RCRDATA1                        0x0205
+//#define HDMI_TX_BCBDATA0                        0x0206
+//#define HDMI_TX_BCBDATA1                        0x0207
 
 /* Video Packetizer Registers */
 #define HDMI_VP_STATUS                          0x0800
