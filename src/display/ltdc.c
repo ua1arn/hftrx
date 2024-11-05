@@ -6950,24 +6950,24 @@ static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
 	}
 };
 
-static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
-	/*      pixelclk     bpp8    bpp10   bpp12 */
-	{
-		54000000, { 0x091c, 0x091c, 0x06dc },
-	}, {
-		58400000, { 0x091c, 0x06dc, 0x06dc },
-	}, {
-		72000000, { 0x06dc, 0x06dc, 0x091c },
-	}, {
-		74250000, { 0x06dc, 0x0b5c, 0x091c },
-	}, {
-		118800000, { 0x091c, 0x091c, 0x06dc },
-	}, {
-		216000000, { 0x06dc, 0x0b5c, 0x091c },
-	}, {
-		~0UL, { 0x0000, 0x0000, 0x0000 },
-	},
-};
+//static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
+//	/*      pixelclk     bpp8    bpp10   bpp12 */
+//	{
+//		54000000, { 0x091c, 0x091c, 0x06dc },
+//	}, {
+//		58400000, { 0x091c, 0x06dc, 0x06dc },
+//	}, {
+//		72000000, { 0x06dc, 0x06dc, 0x091c },
+//	}, {
+//		74250000, { 0x06dc, 0x0b5c, 0x091c },
+//	}, {
+//		118800000, { 0x091c, 0x091c, 0x06dc },
+//	}, {
+//		216000000, { 0x06dc, 0x0b5c, 0x091c },
+//	}, {
+//		~0UL, { 0x0000, 0x0000, 0x0000 },
+//	},
+//};
 
 static const struct hdmi_phy_config rockchip_phy_config[] = {
 	{
@@ -7162,7 +7162,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //			return ret;
 //		}
 	}
-	hdmi_enable_video_path(hdmi, 0);
+	//hdmi_enable_video_path(hdmi, 0);
+
 	//bsp_hdmi_set_video_en(1);
 #endif
 
