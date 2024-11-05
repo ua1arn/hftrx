@@ -6771,6 +6771,7 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 }
 
+#if WITHHDMITVHW
 
 static void hdmi_phy_gen2_pddq(HDMI_TX_TypeDef *hdmi, unsigned enable)
 {
@@ -7177,6 +7178,8 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 //	} while (get_timer(start) < 5);
 	return 0;	// OK
 }
+
+#endif
 
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
