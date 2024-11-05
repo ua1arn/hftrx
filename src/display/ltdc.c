@@ -6239,6 +6239,8 @@ void hardware_edid_test(void)
 #if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW
 
 
+#include "dw-hdmi.h"
+
 //static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
 //{
 //    /* enable read access to HDMI controller */
@@ -6444,7 +6446,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	hdmi->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
 	hdmi->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
 	hdmi->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	hdmi->HDMI_MC_FLOWCTRL = 0;    // Main Controller Feed Through Control
+	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;    // Main Controller Feed Through Control
 	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
@@ -6738,8 +6740,6 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 }
 
-#include "dw-hdmi.h"
-
 
 static void hdmi_phy_gen2_pddq(HDMI_TX_TypeDef *hdmi, unsigned enable)
 {
@@ -7020,9 +7020,13 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 	}
 }
 
-static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotclock)
+static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotclock, unsigned res, int cscon)
 {
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	/* Enable csc path */
+	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
+
 	/* gen2 tx power off */
 	hdmi_phy_gen2_txpwron(hdmi, 0);
 //
@@ -7148,6 +7152,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	/* PHY_I2CM_SLAVE_ADDR field values */
 //		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
 //		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
+	int cscon = 0;//hdmi->sink_is_hdmi && is_color_space_conversion(hdmi);
+
 	/* hdmi phy spec says to do the phy initialization sequence twice */
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -7156,7 +7162,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		hdmi_phy_enable_tmds(hdmi, 0);
 		hdmi_phy_enable_power(hdmi, 0);
 
-		/*ret = */hdmi_phy_configure(hdmi, dotclock);
+		/*ret = */hdmi_phy_configure(hdmi, dotclock, 8, cscon);
 //		if (ret) {
 //			debug("hdmi phy config failure %d\n", ret);
 //			return ret;
