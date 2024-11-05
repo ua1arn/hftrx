@@ -7240,6 +7240,8 @@ static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
 
 	/* TMDS software reset */
 	hdmi->HDMI_MC_SWRSTZ = (uint8_t) ~ HDMI_MC_SWRSTZ_TMDSSWRST_REQ;
+	while ((hdmi->HDMI_MC_SWRSTZ & HDMI_MC_SWRSTZ_TMDSSWRST_REQ) == 0)
+		;
 
 	val = hdmi->HDMI_FC_INVIDCONF;
 //	if (hdmi->dev_type == IMX6DL_HDMI) {
