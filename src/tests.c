@@ -5436,6 +5436,14 @@ void looptests(void)
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 	}
 #endif
+#if 0
+	//for (;;)
+	{
+		PRINTF("TCONTV_PTR->TV_DEBUG_REG=%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+		//printhex32(0x00000000065100f0, 0x00000000065100f0, 16);
+
+	}
+#endif
 #if 1 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		// See buffers2.cpp - WITHBUFFERSDEBUG

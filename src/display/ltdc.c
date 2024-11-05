@@ -5657,7 +5657,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	//allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 
 	// не меняем параметры по умолчанию
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
@@ -5668,6 +5668,23 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 	/* Wait pll stable */
 	while (! (CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))
 		;
+
+	//allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+
+	// не меняем параметры по умолчанию
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+
+	/* Lock enable */
+	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
+
+	/* Wait pll stable */
+	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
+		;
+
+	CCU->PLL_VIDEO0_CTRL_REG = 0x88006203;
+	CCU->PLL_VIDEO1_CTRL_REG = 0x88004701;
+	CCU->PLL_VIDEO2_CTRL_REG = 0x88006213;
+	local_delay_ms(100);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -5785,30 +5802,42 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
 
+    // 0x84000001
 	const unsigned TV_CLK_REG_M = 2;
 	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	TCONTV_CCU_CLK_REG = 0x84000001;	// 010: PLL_VIDEO1(1X)
 
+	// 0x82000000
 	const unsigned HDMI_CLK_REG_M = 2;
 	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI0_CLK_REG = 0x82000000;
     //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 
+    // 0x00030001
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
     //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
+    // 0x80000000
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI0_SLOW_CLK_REG |= ~0;
+    //CCU->HDMI0_SLOW_CLK_REG |= ~0;
+   // CCU->HDMI0_SLOW_CLK_REG = 0x80000000;
     PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
 	// HDCP: High-bandwidth Digital Content Protection
+    // 0x81000001
     CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
+    CCU->HDMI_HDCP_CLK_REG = 0x81000001;
+    PRINTF("CCU->HDMI_HDCP_CLK_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_CLK_REG);
+
+    // 0x00010001
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
-    //CCU->HDMI_HDCP_BGR_REG |= ~0;
     PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
 
+    // 0x00010001
 	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	//CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
     //CCU->TCON_TV_BGR_REG |= ~0;
@@ -5821,15 +5850,21 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	 */
 	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
 
+	// 0x80000000
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+    //CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
     //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+    //CCU->HDMI_CEC_CLK_REG = 0x80000000;
 
+    CCU->TVE0_CLK_REG = 0x82000001;
+    CCU->TVE_BGR_REG = 0x00030003;
 
+    // 0x00010001
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
+	// 0x10100000
     DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
@@ -5948,12 +5983,15 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	//	Clock Source Select
 	//	0: PLL_DE
 	//	1: PLL_PERI0(2X)
+	// 0x80000000
 	unsigned divider = 4;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+    CCU->DE_CLK_REG = 0x80000000;
     local_delay_us(10);
 
 	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
@@ -6203,8 +6241,12 @@ static void awxx_deoutmapping(void)
 	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
 	// Для работы LVDS на RTMIX0 и TV0->HDMI на RTMIX1
 	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
+#if WITHHDMITVHW
+	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000022;
+#endif
 	DE_TOP->DE2TCON_MUX = 0x000000E4;
 	// ----------------- ПРОВЕРЕНО ----------------
+
 //	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
@@ -6655,8 +6697,8 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	TCONTV_PTR->TV_IO_POL_REG = 0;
-	TCONTV_PTR->TV_IO_TRI_REG = 0;
+	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
+	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
 
 	//	 TV_SRC_SEL
 	//	 TV Source Select
@@ -6669,10 +6711,14 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	//	 111: Gridding Check
 
 	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
-	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
+	TCONTV_PTR->TV_SRC_CTL_REG = 1;             //0 - DE, 1..7 - test 1 - color gradient
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
+	* (uint32_t volatile *) 0x0000000006515110 = 0x100;
+	* (uint32_t volatile *) 0x0000000006515124 = 0x100;
+	* (uint32_t volatile *) 0x0000000006515138 = 0x100;
+	//printhex32(TCONTV_PTR, TCONTV_PTR, 0x400);
 
 #else
 	//#error CPUSTYLE_xxx error

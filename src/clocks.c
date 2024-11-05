@@ -9691,7 +9691,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI1_CTRL_REG, & CCU->PLL_PERI1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG, 50);
 
-//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
 
