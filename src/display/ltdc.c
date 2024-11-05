@@ -5832,9 +5832,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
     DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
-//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE ???? may be not need
-	//DISP_IF_TOP->MODULE_GATING |= ~0;
 	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
