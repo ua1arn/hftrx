@@ -6778,7 +6778,7 @@ void testpng_no_stretch(const void * pngbuffer)
 		fbpic, picdx, pich,
 		0, 0, picdx, pich,
 		//BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
 		);
 
 	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
