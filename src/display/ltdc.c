@@ -7038,7 +7038,7 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 
 // See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
 
-static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotclock, unsigned res, int cscon)
+static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
 {
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
@@ -7063,12 +7063,39 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
 	hdmi_phy_test_clear(hdmi, 0);
 
+	const struct dw_hdmi_mpll_config *mpll_config = imx_mpll_cfg;
+	const struct dw_hdmi_curr_ctrl *curr_ctrl = imx_cur_ctr;
+	const struct dw_hdmi_phy_config *phy_config = imx_phy_config;
+
+	/* PLL/MPLL Cfg - always match on final entry */
+	for (; mpll_config->mpixelclock != ~0UL; mpll_config++)
+		if (mpixelclock <=
+		    mpll_config->mpixelclock)
+			break;
+
+	for (; curr_ctrl->mpixelclock != ~0UL; curr_ctrl++)
+		if (mpixelclock <=
+		    curr_ctrl->mpixelclock)
+			break;
+
+	for (; phy_config->mpixelclock != ~0UL; phy_config++)
+		if (mpixelclock <=
+		    phy_config->mpixelclock)
+			break;
+
+	if (mpll_config->mpixelclock == ~0UL ||
+	    curr_ctrl->mpixelclock == ~0UL ||
+	    phy_config->mpixelclock == ~0UL) {
+		PRINTF("Pixel clock %u - unsupported by HDMI\n",
+			(unsigned) mpixelclock);
+		return;
+	}
+
+
 	const int resix = DW_HDMI_RES_8;
-	const int mpllix = 2;
-	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [mpllix].res[resix].cpce, PHY_OPMODE_PLLCFG);
-	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [mpllix].res[resix].gmp, PHY_PLLGMPCTRL);
-	const int currix = 2;
-	hdmi_phy_i2c_write(hdmi, imx_cur_ctr [currix].curr[resix], PHY_PLLCURRCTRL);
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
@@ -7082,10 +7109,9 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	 * preemp cgf 0.00
 	 * tx/ck lvl 10
 	 */
-	const int phyix = 1;
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[phyix].term, PHY_TXTERM);
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[phyix].sym_ctr, PHY_CKSYMTXCTRL);
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[phyix].vlev_ctr, PHY_VLEVCTRL);
+	hdmi_phy_i2c_write(hdmi, phy_config->term, PHY_TXTERM);
+	hdmi_phy_i2c_write(hdmi, phy_config->sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
 
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
