@@ -6694,7 +6694,7 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 void testpng(const void * pngbuffer)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-	LuImage * png = luPngReadMemory((char *) pngbuffer);
+	LuImage * png = luPngReadMemory((char *) pngbuffer);	// Read data in DE2_FORMAT_XBGR_8888 format
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
@@ -6754,10 +6754,11 @@ void testpng(const void * pngbuffer)
 		;
 }
 
+// PNG files test
 void testpng_no_stretch(const void * pngbuffer)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-	LuImage * png = luPngReadMemory((char *) pngbuffer);
+	LuImage * png = luPngReadMemory((char *) pngbuffer);	// Read data in DE2_FORMAT_XBGR_8888 format
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
