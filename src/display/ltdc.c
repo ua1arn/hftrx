@@ -5749,11 +5749,16 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	unsigned ix = TCONTV_IX;
 
-    // 0x00010001
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
+	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
+	//	configured as 1
+    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+    //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
+
+ 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
-	// 0x10100000
     DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
@@ -5763,13 +5768,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
 	PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
 	PRINTF("7 M_HDMI=%u\n", M_HDMI);
-
-	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
-	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
-	//	configured as 1
-    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
-    //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
@@ -5822,6 +5820,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 //    CCU->TVE0_CLK_REG = 0x82000001;
 //    CCU->TVE_BGR_REG = 0x00030003;
 
+    local_delay_us(10);
+
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
 //  0x200
 //	union tcon_mux_ctl_reg_t {
@@ -5833,8 +5833,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 //			u32 res1:22;
 //		} bits;
 //	};
-
-    local_delay_us(10);
 
 	//	7 allwnr_t507_get_hdmi_hdcp_freq()=300000 kHz
 	//	7 allwnr_t507_get_hdmi_freq()=297000 kHz
