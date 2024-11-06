@@ -1660,6 +1660,8 @@ static const videomode_t vdmode_HDMI_1920x1080at60 =
 // https://projectf.io/posts/video-timings-vga-720p-1080p/
 /* Aspect ratio 16:9 (1.7(7)), dot clock = 80.291 MHz */
 // ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+// 1360×765
+// https://billauer.co.il/blog/2015/07/vesa-edid-parameters/
 static const videomode_t vdmode_HDMI_1366x768at60 =
 {
 	.width = 1366,			/* LCD PIXEL WIDTH            */
@@ -1755,7 +1757,7 @@ static const videomode_t vdmode_HDMI_1440x900at75 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.fps = 75,	/* frames per second */
+	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
 };
@@ -1794,11 +1796,11 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	//return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
 	//return & vdmode_HDMI_1440x900at75;
-	return & vdmode_HDMI_1920x1080at60;	// ! TESTED
+	//return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
 
 #endif /* WITHLTDCHW */
@@ -2228,6 +2230,6 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
+	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
 	//return vdmode->ltdc_dotclk;
 }

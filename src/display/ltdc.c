@@ -3464,6 +3464,49 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
+// Step4 - Open volatile output
+static void t113_tcontv_open_IO_output(const videomode_t * vdmode)
+{
+#if defined (TCONTV_PTR)
+
+//#if CPUSTYLE_H3
+//#elif CPUSTYLE_A64
+//#else
+	// io_tristate
+	//write32((uintptr_t) & tcon->io_tristate, 0);
+	TCONTV_PTR->TV_IO_TRI_REG = 0;
+	// 5.1.6.20 0x0088 LCD volatile Polarity Register (Default Value: 0x0000_0000)
+	// io_polarity
+	{
+		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+
+		h_sync_active = vdmode->vsyncneg;
+		v_sync_active = vdmode->hsyncneg;
+		den_active = ! vdmode->deneg;
+		clk_active = 0;
+
+		uint32_t val;
+		val = 0;
+
+		if (! h_sync_active)
+			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
+		if (! v_sync_active)
+			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
+		if (! den_active)
+			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
+		if (!! clk_active)
+			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
+
+		TCONTV_PTR->TV_IO_POL_REG = val;
+
+	}
+//#endif
+#endif /* defined (TCONTV_PTR) */
+}
+
 #if WITHLTDCHWVBLANKIRQ
 #if defined (TCONLCD_PTR)
 
@@ -6741,7 +6784,7 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_tcontv_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
-	//t113_open_IO_output(vdmode);
+	t113_tcontv_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
 	//t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
