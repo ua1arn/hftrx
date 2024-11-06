@@ -7424,29 +7424,15 @@ static void t113_hdmi_initsteps(const videomode_t * vdmode)
 	t113_hdmi_init(vdmode);
 }
 
-static void hardware_tcon_initialize(const videomode_t * vdmode, int rtmixid)
+static void hardware_tcon_initsteps(const videomode_t * vdmode)
 {
-#if WITHHDMITVHW
-	if (rtmixid == RTMIXIDTV)
-	{
-		t113_hdmi_initsteps(vdmode);
-	}
-#endif /* WITHHDMITVHW */
-
-#if defined (TVENCODER_PTR)
-	t113_tvout_initsteps(vdmode);
-#endif /* defined (TVENCODER_PTR) */
-
-	if (rtmixid == RTMIXIDLCD)
-	{
-	#if WITHLVDSHW
-		t113_tcon_lvds_initsteps(vdmode);
-	#elif WITHMIPIDSISHW
-		t113_tcon_dsi_initsteps(vdmode);
-	#else /* WITHLVDSHW */
-		t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
-	#endif /* WITHLVDSHW */
-	}
+#if WITHLVDSHW
+	t113_tcon_lvds_initsteps(vdmode);
+#elif WITHMIPIDSISHW
+	t113_tcon_dsi_initsteps(vdmode);
+#else /* WITHLVDSHW */
+	t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
+#endif /* WITHLVDSHW */
 }
 
 void hardware_ltdc_initialize(const videomode_t * vdmodeX)
@@ -7458,15 +7444,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		int rtmixid;
 		const videomode_t * (* vdmodef)(void);
 		uint_least32_t defcolor;
+		void (* tcon_init)(const videomode_t * vdmode);
 	} initstruct_t;
 
 	static const initstruct_t initstructs [] =
 	{
 #if defined RTMIXIDLCD
-			{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), },
+		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), hardware_tcon_initsteps, },
 #endif /* RTMIXIDLCD */
 #if WITHHDMITVHW
-			{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), },
+		{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), t113_hdmi_initsteps, },
 #endif /* WITHHDMITVHW */
 	};
 
@@ -7477,7 +7464,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		const videomode_t * const vdmode = initstructs [i].vdmodef();
 
 	 	hardware_de_initialize(vdmode, rtmixid);
-		hardware_tcon_initialize(vdmode, rtmixid);
+	 	initstructs [i].tcon_init(vdmode);
 		ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
 		t113_de_rtmix_initialize(rtmixid);
 		awxx_deoutmapping();				// после инициализации и TCON и DE
