@@ -135,6 +135,7 @@
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 		//#define WITHGPUHW	1	/* Graphic processor unit */
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+		#define WITHHDMITVHW 1			/* Second display - HDMI hardware output */
 	#endif
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -633,7 +634,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi0_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPIHARD_PTR
 
 	#if WITHSPIHW
@@ -1024,7 +1025,7 @@
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
 		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
-		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define RTMIXIDTV 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#else
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
