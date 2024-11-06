@@ -739,13 +739,20 @@ void colmain_fb_list(uintptr_t * frames);	// получение массива �
 //-----------------------
 #define LCDMODE_TVOUT_PAGES	5	// Используются буферы: один для полготовки изоображения, один готовый к отображению, один текцщий отображаемый
 
-#define TVD_WIDTH  720
-#define TVD_HEIGHT 576
+#if WITHHDMITVHW
+	#define TVD_WIDTH  1920
+	#define TVD_HEIGHT 1080
+	typedef uint32_t PACKEDTVBUFF_T;
+	typedef uint_fast32_t TVBUFF_T;
+#else /* WITHHDMITVHW */
+	#define TVD_WIDTH  720
+	#define TVD_HEIGHT 576
+	typedef uint8_t PACKEDTVBUFF_T;
+	typedef uint_fast8_t TVBUFF_T;
+#endif /* WITHHDMITVHW */
 
 #define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)
 
-typedef uint8_t PACKEDTVBUFF_T;
-typedef uint_fast8_t TVBUFF_T;
 
 PACKEDTVBUFF_T * tvout_fb_draw(void);
 void tvout_nextfb(void);

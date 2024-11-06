@@ -3692,17 +3692,17 @@ void tvout_nextfb(void)
 #endif	/* defined (TCONTV_PTR) */
 
 // Update framebuffer if needed
-void hardware_ltdc_vblank(unsigned ix)
+void hardware_ltdc_vblank(int rtmixid)
 {
-	switch (ix)
+	switch (rtmixid)
 	{
-	case 0:
+	case RTMIXIDLCD:
 		/* main display */
 		{
 			const uintptr_t fb = getfilled_dmabuffercolmain0fb();
 			if (fb != 0)
 			{
-				hardware_ltdc_main_set_no_vsync(fb);
+				hardware_ltdc_main_set_no_vsync(rtmixid, fb);
 				if (lastset0fb != 0)
 				{
 					release_dmabuffercolmain0fb(lastset0fb);
@@ -3711,23 +3711,23 @@ void hardware_ltdc_vblank(unsigned ix)
 			}
 		}
 		break;
-//#if defined (TCONTV_PTR)
-//	case 1:
-//		/* TVOUT / HDMI display */
-//		{
-//			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
-//			if (fb != 0)
-//			{
-//				hardware_ltdc_tvout_set_no_vsync(fb);
-//				if (lastset1fb != 0)
-//				{
-//					release_dmabuffercolmain1fb(lastset1fb);
-//				}
-//				lastset1fb = fb;
-//			}
-//		}
-//		break;
-//#endif
+#if defined (TCONTV_PTR)
+	case RTMIXIDTV:
+		/* TVOUT / HDMI display */
+		{
+			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
+			if (fb != 0)
+			{
+				hardware_ltdc_main_set_no_vsync(rtmixid, fb);
+				if (lastset1fb != 0)
+				{
+					release_dmabuffercolmain1fb(lastset1fb);
+				}
+				lastset1fb = fb;
+			}
+		}
+		break;
+#endif
 	}
 }
 

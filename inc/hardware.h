@@ -783,15 +783,15 @@ void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
 void hardware_edid_test(void);
 
-void hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
-void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void hardware_ltdc_main_set(int rtmixid, uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
+void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 void hardware_ltdc_L8_palette(void);	// Palette reload
-void hardware_ltdc_vblank(unsigned ix);	// Update framebuffer if needed
-void hardware_ltdc_tvout_set2(uintptr_t layer0, uintptr_t layer1);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_tvout_set_no_vsync(uintptr_t addr);	/* Set TVOUT frame buffer address. No waiting for VSYNC. */
+void hardware_ltdc_vblank(int rtmixid);	// Update framebuffer if needed
+//void hardware_ltdc_tvout_set2(int rtmixid, uintptr_t layer0, uintptr_t layer1);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
+//void hardware_ltdc_tvout_set_no_vsync(int rtmixid, uintptr_t addr);	/* Set TVOUT frame buffer address. No waiting for VSYNC. */
 
 
 uint_fast8_t usbd_cdc1_getrts(void);
