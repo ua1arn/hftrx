@@ -3684,7 +3684,16 @@ void colmain_nextfb(void)
 	//	display_at(0, 0, s);
 #if WITHHDMITVHW
 		// дублирование буфера
-		memcpy(tvout_fb_draw(), (void *) fb0, datasize_dmabuffercolmain0fb());
+		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
+		colpip_bitblt(
+			(uintptr_t) fbtv, datasize_dmabuffercolmain1fb(),
+			(PACKEDCOLORPIP_T *) fbtv, TVD_WIDTH, TVD_HEIGHT,
+			0, 0,			/* позиция прямоугольника - получателя */
+			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
+			(PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y,
+			0, 0, DIM_X, DIM_Y,
+			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
+			);
 		tvout_nextfb();
 #endif /* WITHHDMITVHW */
 		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
