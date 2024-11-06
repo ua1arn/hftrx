@@ -7463,29 +7463,35 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #endif /* WITHLVDSHW */
 }
 
-void hardware_ltdc_initialize(const videomode_t * vdmode)
+void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 {
     //PRINTF("hardware_ltdc_initialize\n");
-//#if defined RTMIXIDLCD
-//	const int rtmixid = RTMIXIDLCD;
-//#endif
-//#if defined RTMIXIDTV
-//	const int rtmixid = RTMIXIDTV;
-//#endif
-	int rtmixid = RTMIXIDLCD;
-#if WITHHDMITVHW
-	//vdmode = get_videomode_HDMI();    // test
-	PRINTF("HDMI clock freq=%u kHz\n", (unsigned) (display_getdotclock(vdmode) / 1000));
-#endif /* WITHHDMITVHW */
 
- 	hardware_de_initialize(vdmode, rtmixid);
-	hardware_tcon_initialize(vdmode);
-	ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
-	t113_de_rtmix_initialize(rtmixid);
-	awxx_deoutmapping();				// после инициализации и TCON и DE
-
-	//for (int rtmixid = 1; rtmixid <= 2; ++ rtmixid)
+	typedef struct initstruct_tag
 	{
+		int rtmixid;
+		const videomode_t * (* vdmodef)(void);
+	} initstruct_t;
+
+	static const initstruct_t initstructs [] =
+	{
+			{ RTMIXIDLCD, get_videomode_DESIGN, },
+#if WITHHDMITVHW
+			{ RTMIXIDTV, get_videomode_HDMI, },
+#endif /* WITHHDMITVHW */
+	};
+
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(initstructs); ++ i)
+	{
+		int rtmixid = initstructs [i].rtmixid;
+		const videomode_t * const vdmode = initstructs [i].vdmodef();
+
+	 	hardware_de_initialize(vdmode, rtmixid);
+		hardware_tcon_initialize(vdmode);
+		ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
+		t113_de_rtmix_initialize(rtmixid);
+		awxx_deoutmapping();				// после инициализации и TCON и DE
 
 		PRINTF("Init rtmixid=%d\n", rtmixid);
 		//TP();
@@ -7504,7 +7510,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		t113_de_update(rtmixid);	/* Update registers */
 		PRINTF("Init rtmixid=%d done\n", rtmixid);
 	}
-
 
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
