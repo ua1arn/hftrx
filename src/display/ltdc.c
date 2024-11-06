@@ -5760,10 +5760,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	// PLL_VIDEO0 as source
 	const uint_fast32_t pllout = allwnr_t507_get_pll_video0_x1_freq();
-	unsigned M_TCON = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
 	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
 	PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
-	PRINTF("7 M_TCON=%u\n", M_TCON);
 	PRINTF("7 M_HDMI=%u\n", M_HDMI);
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
@@ -5775,9 +5773,14 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+	unsigned tcontv_divider;
+	unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock), 4, (8 | 4 | 2 | 1), & tcontv_divider, 1);
 
-	const unsigned TV_CLK_REG_M = M_HDMI;//2;
-	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
+	TCONTV_CCU_CLK_REG =
+			0x00 * (UINT32_C(1) << 24) | 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X)
+			(tcontv_prei) * (UINT32_C(1) << 8) | // prescaler code
+			(tcontv_divider) * (UINT32_C(1) << 0) |
+			0;
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
 	const unsigned HDMI_CLK_REG_M = M_TCON; //2;
