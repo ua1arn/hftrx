@@ -5759,10 +5759,11 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 	// PLL_VIDEO0 as source
-//	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
-//	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
-//	PRINTF("M_1=%u\n", M_1);
-//	PRINTF("M_4=%u\n", M_4);
+	const uint_fast32_t pllout = allwnr_t507_get_pll_video0_x4_freq();
+	unsigned M_TCON = calcdivround2(pllout, dotclock);
+	unsigned M_HDMI = calcdivround2(pllout, dotclock);
+//	PRINTF("M_1=%u\n", M_TCON);
+//	PRINTF("M_4=%u\n", M_HDMI);
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
@@ -5774,12 +5775,12 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
 
-	const unsigned TV_CLK_REG_M = 2;
-	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
+	const unsigned TV_CLK_REG_M = M_HDMI;//2;
+	TCONTV_CCU_CLK_REG = 0x01 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
-	const unsigned HDMI_CLK_REG_M = 1;
-	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
+	const unsigned HDMI_CLK_REG_M = M_TCON; //2;
+	CCU->HDMI0_CLK_REG = 0x01 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 
@@ -5793,7 +5794,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	// HDCP: High-bandwidth Digital Content Protection
     CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
     //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
-    PRINTF("CCU->HDMI_HDCP_CLK_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_CLK_REG);
+    //PRINTF("CCU->HDMI_HDCP_CLK_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_CLK_REG);
 
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
