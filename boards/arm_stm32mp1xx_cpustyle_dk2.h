@@ -1112,4 +1112,6 @@
 			BOARD_SII902X_INITIALIZE(); \
 		} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_DK2_H_INCLUDED */

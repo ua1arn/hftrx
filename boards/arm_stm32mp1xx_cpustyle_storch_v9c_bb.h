@@ -1241,4 +1241,6 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    7
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_BB_H_INCLUDED */

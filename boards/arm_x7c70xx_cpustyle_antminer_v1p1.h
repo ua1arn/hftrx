@@ -1214,4 +1214,6 @@
 		/*USBD_FS_INITIALIZE(); */\
 	} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_XC7ZXX_BGA400_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED */

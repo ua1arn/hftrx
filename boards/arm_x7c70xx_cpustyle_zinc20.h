@@ -1290,4 +1290,6 @@
 			USB_ULPI_INITIALIZE(); \
 		} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_XC7ZXX_BGAXXX_CPUSTYLE_ZINC20_H_INCLUDED */
