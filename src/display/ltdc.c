@@ -4410,12 +4410,16 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 
 }
 
-
-
-static void t113_tvout_init(const videomode_t * vdmode)
+static void t113_tvoutDAC_init(const videomode_t * vdmode)
 {
 	t113_tve_CCU_configuration(vdmode);
 	t113_tve_DAC_configuration(vdmode);
+}
+
+static void t113_tvout_initsteps(const videomode_t * vdmode)
+{
+	t113_tcontv_initsteps(vdmode);
+	t113_tvoutDAC_init(vdmode);
 }
 
 #endif /* defined (TVENCODER_PTR) */
@@ -4423,8 +4427,6 @@ static void t113_tvout_init(const videomode_t * vdmode)
 /* ----- */
 
 #endif /* defined (TCONTV_PTR) */
-
-
 
 #if 0
 struct de_csc_t {
@@ -7416,20 +7418,23 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 }
 #endif
 
+static void t113_hdmi_initsteps(const videomode_t * vdmode)
+{
+	t113_tcontv_initsteps(vdmode);
+	t113_hdmi_init(vdmode);
+}
 
 static void hardware_tcon_initialize(const videomode_t * vdmode, int rtmixid)
 {
 #if WITHHDMITVHW
 	if (rtmixid == RTMIXIDTV)
 	{
-		t113_tcontv_initsteps(vdmode);
-		t113_hdmi_init(vdmode);
+		t113_hdmi_initsteps(vdmode);
 	}
 #endif /* WITHHDMITVHW */
 
 #if defined (TVENCODER_PTR)
-	t113_tcontv_initsteps(vdmode);
-	t113_tvout_init(vdmode);
+	t113_tvout_initsteps(vdmode);
 #endif /* defined (TVENCODER_PTR) */
 
 	if (rtmixid == RTMIXIDLCD)
