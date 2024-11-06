@@ -3746,14 +3746,14 @@ void colmain_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
-	hardware_ltdc_main_set(frame);
+	hardware_ltdc_main_set(RTMIXIDLCD, frame);
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr((uintptr_t) colmain_fb_draw()));
 #endif /* WITHOPENVG */
 }
 
-#if defined (TCONTV_PTR)
+#if defined (TCONTV_PTR) && 0
 
 static uint_fast8_t drawtvframe;
 
@@ -3768,7 +3768,7 @@ void tvout_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) tvout_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain1fb());
-	hardware_ltdc_tvout_set2(frame, 0);
+	hardware_ltdc_tvout_set2(RTMIXIDTV, frame, 0);
 	drawtvframe = (drawtvframe + 1) % LCDMODE_TVOUT_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 }
 

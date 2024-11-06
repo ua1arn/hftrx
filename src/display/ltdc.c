@@ -71,7 +71,7 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 }
 
-static void hardware_ltdc_vsync(void);
+static void hardware_ltdc_vsync(int rtmixid);
 
 #if CPUSTYLE_R7S721
 
@@ -837,7 +837,7 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -862,7 +862,7 @@ static void hardware_ltdc_vsync(void)
 
 /* set visible buffer start. Wait VSYNC. */
 /* Set MAIN frame buffer address. Wait for VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -1617,7 +1617,7 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1632,7 +1632,7 @@ static void hardware_ltdc_vsync(void)
 }
 
 /* Set MAIN frame buffer address. Wait for VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 	LAYER_MAIN->CFBAR = p;
 
@@ -1681,7 +1681,7 @@ void hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 
@@ -1735,7 +1735,7 @@ void hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 
@@ -2585,19 +2585,23 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 #endif
 
 /* ожидаем начало кадра - используется если не по прерываниям*/
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
-#if WITHHDMITVHW
-
-	TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
-    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
-        ;
-#else /* WITHHDMITVHW */
-
-    TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
-    while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
-        ;
-#endif /* WITHHDMITVHW */
+	switch (rtmixid)
+	{
+	case RTMIXIDLCD:
+		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
+		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
+			;
+		break;
+#if defined RTMIXIDTV
+	case RTMIXIDTV:
+		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
+	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
+	        ;
+		break;
+#endif
+	}
 }
 
 /* ожидаем начало кадра - используется если не по прерываниям*/
@@ -7474,7 +7478,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 
 	static const initstruct_t initstructs [] =
 	{
+#if defined RTMIXIDLCD
 			{ RTMIXIDLCD, get_videomode_DESIGN, },
+#endif /* RTMIXIDLCD */
 #if WITHHDMITVHW
 			{ RTMIXIDTV, get_videomode_HDMI, },
 #endif /* WITHHDMITVHW */
@@ -7564,7 +7570,7 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(rtmixid, 3))	| // pipe1 enable - from UI3
 		0;
 
-	hardware_ltdc_vsync();		/* ожидаем начало кадра */
+	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
@@ -7582,7 +7588,7 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
 			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 			0;
 
-	hardware_ltdc_vsync();		/* ожидаем начало кадра */
+	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
@@ -7597,15 +7603,12 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 	const uint_fast32_t mask =
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 		0;
-	//if (mask != bld->BLD_EN_COLOR_CTL)
-	{
-		// 5.10.9.1 BLD fill color control register
-		// BLD_FILL_COLOR_CTL
-		bld->BLD_EN_COLOR_CTL =
-			mask	| // pipe0 enable - from VI1
-			0;
-		t113_de_update(rtmixid);	/* Update registers */
-	}
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	bld->BLD_EN_COLOR_CTL =
+		mask	| // pipe0 enable - from VI1
+		0;
+	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
@@ -7621,7 +7624,6 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 //	const uint_fast32_t mask =
 //		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 //		0;
-//	//if (mask != bld->BLD_EN_COLOR_CTL)
 //	{
 //		// 5.10.9.1 BLD fill color control register
 //		// BLD_FILL_COLOR_CTL
@@ -7651,7 +7653,7 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 }
 
@@ -7661,7 +7663,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 

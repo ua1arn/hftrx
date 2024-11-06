@@ -1739,7 +1739,7 @@ void display_hardware_initialize(void)
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	}
 
-	//hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+	//hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
