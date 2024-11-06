@@ -1163,7 +1163,10 @@
 			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
-		// TUSB parameters
-		#define TUP_DCD_ENDPOINT_MAX    7
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    7
+
+
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
 
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

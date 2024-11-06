@@ -6754,7 +6754,7 @@ void testpng(const void * pngbuffer)
 		);
 
 	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
-	hardware_ltdc_main_set4((uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+	hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
 
 	luImageRelease(png, NULL);
 	for (;;)
@@ -6790,7 +6790,7 @@ void testpng_no_stretch(const void * pngbuffer)
 		);
 
 	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
-	hardware_ltdc_main_set4((uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+	hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
 
 	luImageRelease(png, NULL);
 	for (;;)

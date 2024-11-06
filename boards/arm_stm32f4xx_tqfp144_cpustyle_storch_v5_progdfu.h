@@ -658,4 +658,6 @@
 		/* TXDISABLE_INITIALIZE(); */ \
 		} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V5_H_INCLUDED */

@@ -1026,4 +1026,7 @@
 		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_96k.h"
 	#endif
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
+
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED */

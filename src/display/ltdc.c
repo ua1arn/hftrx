@@ -71,7 +71,7 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 }
 
-static void hardware_ltdc_vsync(void);
+static void hardware_ltdc_vsync(int rtmixid);
 
 #if CPUSTYLE_R7S721
 
@@ -816,12 +816,12 @@ void hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
 	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
-	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, addr);			// GR2_BASE
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
 	// GR2_IBUS_VEN in GR2_UPDATE is 1.
@@ -837,7 +837,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -862,7 +862,7 @@ static void hardware_ltdc_vsync(void)
 
 /* set visible buffer start. Wait VSYNC. */
 /* Set MAIN frame buffer address. Wait for VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -1600,12 +1600,12 @@ void hardware_ltdc_L8_palette(void)
 
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 //	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 //		;
-	LAYER_MAIN->CFBAR = p;
+	LAYER_MAIN->CFBAR = addr;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
@@ -1617,7 +1617,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
@@ -1632,7 +1632,7 @@ static void hardware_ltdc_vsync(void)
 }
 
 /* Set MAIN frame buffer address. Wait for VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 	LAYER_MAIN->CFBAR = p;
 
@@ -1665,7 +1665,7 @@ void hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
@@ -1681,7 +1681,7 @@ void hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 
@@ -1723,7 +1723,7 @@ void hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
@@ -1735,7 +1735,7 @@ void hardware_ltdc_main_set(uintptr_t addr)
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 
@@ -1853,11 +1853,6 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 #else
 	#error Unsupported CPUSTYLE_xxx
 #endif
-
-//#define RTMIXIDLCD 2	/* 1 or 2 */
-//#if defined (TCONTV_PTR)
-//#define RTMIXIDTV 1	/* 1 or 2 */
-//#endif
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
@@ -2377,7 +2372,6 @@ static void hdmi_edid_parse(const uint8_t * edid, unsigned len)
 	}
 }
 
-
 static int hdmi_connector_detect(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -2431,27 +2425,6 @@ static void t507_hdmi_edid_test(void)
 		hdmi_edid_parse(edid, edidlen);
 	}
 }
-
-static void hdmi_writel(unsigned offs, uint32_t v)
-{
-	const uintptr_t addr = HDMI_TX0_BASE + offs;
-	* (volatile uint32_t *) addr = v;
-	__DSB();
-	local_delay_us(10);
-}
-
-static uint32_t hdmi_readl(unsigned offs)
-{
-	__DSB();
-	local_delay_us(10);
-	const uintptr_t addr = HDMI_TX0_BASE + offs;
-	return * (volatile uint32_t *) addr;
-}
-
-//static uintptr_t hdmi_base_addr;
-static unsigned int hdmi_version = 1;
-static unsigned int tmp_rcal_100, tmp_rcal_200;
-static unsigned int bias_source;
 
 #endif
 
@@ -2585,19 +2558,23 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 #endif
 
 /* ожидаем начало кадра - используется если не по прерываниям*/
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
-#if WITHHDMITVHW
-
-	TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
-    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
-        ;
-#else /* WITHHDMITVHW */
-
-    TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
-    while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
-        ;
-#endif /* WITHHDMITVHW */
+	switch (rtmixid)
+	{
+	case RTMIXIDLCD:
+		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
+		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
+			;
+		break;
+#if defined RTMIXIDTV
+	case RTMIXIDTV:
+		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
+	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
+	        ;
+		break;
+#endif
+	}
 }
 
 /* ожидаем начало кадра - используется если не по прерываниям*/
@@ -2776,7 +2753,7 @@ static void t113_de_rtmix_initialize(int rtmixid)
 	memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
 }
 
-static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, unsigned color24)
+static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint_least32_t color24)
 {
 	int i;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -3501,7 +3478,7 @@ static void TCONLCD_IRQHandler(void)
 		//dbg_putchar('l');
 		TCONLCD_GINT0_REG = reg & ~ LCD_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
-		hardware_ltdc_vblank(0);	// Update framebuffer if needed
+		hardware_ltdc_vblank(RTMIXIDLCD);	// Update framebuffer if needed
 	}
 }
 #endif
@@ -3519,7 +3496,7 @@ static void TCONTV_IRQHandler(void)
 		//dbg_putchar('t');
 		TCONTV_GINT0_REG = reg & ~ TVOUT_VB_INT_FLAG;
 		//PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
-		hardware_ltdc_vblank(0);	// Update framebuffer if needed
+		hardware_ltdc_vblank(RTMIXIDTV);	// Update framebuffer if needed
 	}
 }
 
@@ -3538,7 +3515,7 @@ static void TCONTV_IRQHandler_XXXXX(void)
 		TCONTV_GINT0_REG = reg & ~ TVOUT_VB_INT_FLAG;
 		if ((TCONTV_PTR->TV_DEBUG_REG & (UINT32_C(1) << 28)) == 0) // TV_FIELD_POL: 0: Second field, 1: First field
 		{
-			hardware_ltdc_vblank(1);	// Update framebuffer if needed
+			hardware_ltdc_vblank(RTMIXIDTV);	// Update framebuffer if needed
 		}
 	}
 }
@@ -4428,12 +4405,16 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 
 }
 
-
-
-static void t113_tvout_init(const videomode_t * vdmode)
+static void t113_tvoutDAC_init(const videomode_t * vdmode)
 {
 	t113_tve_CCU_configuration(vdmode);
 	t113_tve_DAC_configuration(vdmode);
+}
+
+static void t113_tvout_initsteps(const videomode_t * vdmode)
+{
+	t113_tcontv_initsteps(vdmode);
+	t113_tvoutDAC_init(vdmode);
 }
 
 #endif /* defined (TVENCODER_PTR) */
@@ -4441,8 +4422,6 @@ static void t113_tvout_init(const videomode_t * vdmode)
 /* ----- */
 
 #endif /* defined (TCONTV_PTR) */
-
-
 
 #if 0
 struct de_csc_t {
@@ -5877,7 +5856,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 #endif /* WITHDSIHW */
 
-static void hardware_de_initialize(const videomode_t * vdmode)
+static void hardware_de_initialize(const videomode_t * vdmode, int rtmixid)
 {
 #if CPUSTYLE_A64
 
@@ -5940,15 +5919,14 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
 	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
-	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+//	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
 
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
 	//	0: PLL_DE
 	//	1: PLL_PERI0(2X)
-	// 0x80000000
 	unsigned divider = 4;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
@@ -5956,24 +5934,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
-    CCU->DE_CLK_REG = 0x80000000;
     local_delay_us(10);
 
 	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
 
-    CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
 
  	/* Global DE settings */
-#if defined RTMIXIDLCD
-	const int rtmixid = RTMIXIDLCD;
-#endif
-#if defined RTMIXIDTV
-	const int rtmixid = RTMIXIDTV;
-#endif
-	const int disp = rtmixid - 1;
+    const int disp = rtmixid - 1;
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
@@ -7078,7 +7049,7 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 
 static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
 {
-	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 	/* Enable csc path */
 	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
@@ -7169,10 +7140,10 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	hdmi_phy_enable_spare(hdmi, 1);
 
 	/* wait for phy pll lock */
-	TP();
+	//TP();
 	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
 		;
-	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 //	start = get_timer(0);
 //	do {
@@ -7442,19 +7413,14 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 }
 #endif
 
-
-static void hardware_tcon_initialize(const videomode_t * vdmode)
+static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
-#if WITHHDMITVHW
 	t113_tcontv_initsteps(vdmode);
 	t113_hdmi_init(vdmode);
-#endif /* WITHHDMITVHW */
+}
 
-#if defined (TVENCODER_PTR)
-	t113_tcontv_initsteps(vdmode);
-	t113_tvout_init(vdmode);
-#endif /* defined (TVENCODER_PTR) */
-
+static void hardware_tcon_initsteps(const videomode_t * vdmode)
+{
 #if WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
 #elif WITHMIPIDSISHW
@@ -7464,33 +7430,44 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #endif /* WITHLVDSHW */
 }
 
-void hardware_ltdc_initialize(const videomode_t * vdmode)
+void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 {
     //PRINTF("hardware_ltdc_initialize\n");
-#if defined RTMIXIDLCD
-	const int rtmixid = RTMIXIDLCD;
-#endif
-#if defined RTMIXIDTV
-	const int rtmixid = RTMIXIDTV;
-#endif
-#if WITHHDMITVHW
-	vdmode = get_videomode_HDMI();    // test
-	PRINTF("HDMI clock freq=%u kHz\n", (unsigned) (display_getdotclock(vdmode) / 1000));
-#endif /* WITHHDMITVHW */
 
- 	hardware_de_initialize(vdmode);
-	hardware_tcon_initialize(vdmode);
-	ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
-	t113_de_rtmix_initialize(rtmixid);
-	awxx_deoutmapping();				// после инициализации и TCON и DE
-
-	//for (int rtmixid = 1; rtmixid <= 2; ++ rtmixid)
+	typedef struct initstruct_tag
 	{
+		int rtmixid;
+		const videomode_t * (* vdmodef)(void);
+		uint_least32_t defcolor;
+		void (* tcon_init)(const videomode_t * vdmode);
+	} initstruct_t;
+
+	static const initstruct_t initstructs [] =
+	{
+#if defined RTMIXIDLCD
+		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), hardware_tcon_initsteps, },
+#endif /* RTMIXIDLCD */
+#if WITHHDMITVHW
+		{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), t113_hdmi_initsteps, },
+#endif /* WITHHDMITVHW */
+	};
+
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(initstructs); ++ i)
+	{
+		int rtmixid = initstructs [i].rtmixid;
+		const videomode_t * const vdmode = initstructs [i].vdmodef();
+
+	 	hardware_de_initialize(vdmode, rtmixid);
+	 	initstructs [i].tcon_init(vdmode);
+		ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
+		t113_de_rtmix_initialize(rtmixid);
+		awxx_deoutmapping();				// после инициализации и TCON и DE
 
 		PRINTF("Init rtmixid=%d\n", rtmixid);
 		//TP();
 		/* эта инициализация после корректного соединения с работающим TCON */
-		t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
+		t113_de_bld_initialize(rtmixid, vdmode, initstructs [i].defcolor);	// RED
 		//TP();
 
 		// проверка различных scalers
@@ -7505,7 +7482,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		PRINTF("Init rtmixid=%d done\n", rtmixid);
 	}
 
-
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
@@ -7514,39 +7490,9 @@ hardware_ltdc_deinitialize(void)
 {
 }
 
-//void hardware_ltdc_tvout_set2(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
-//{
-//#if defined (TCONTV_PTR)
-//	const int rtmixid = RTMIXIDTV;
-//	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-//	if (bld == NULL)
-//		return;
-//
-//	// Note: the layer priority is layer3>layer2>layer1>layer0
-//	t113_de_set_address_vi2(rtmixid, layer0, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-//	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
-//
-//	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
-//
-//	bld->BLD_EN_COLOR_CTL =
-//		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-//		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
-//		0;
-//
-//	hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
-//	t113_de_update(rtmixid);	/* Update registers */
-//#endif /* defined (TCONTV_PTR) */
-//}
-
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
-#if defined RTMIXIDLCD
-	const int rtmixid = RTMIXIDLCD;
-#endif
-#if defined RTMIXIDTV
-	const int rtmixid = RTMIXIDTV;
-#endif
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7566,19 +7512,13 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(rtmixid, 3))	| // pipe1 enable - from UI3
 		0;
 
-	hardware_ltdc_vsync();		/* ожидаем начало кадра */
+	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p1)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
 {
-#if defined RTMIXIDLCD
-	const int rtmixid = RTMIXIDLCD;
-#endif
-#if defined RTMIXIDTV
-	const int rtmixid = RTMIXIDTV;
-#endif
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7590,19 +7530,13 @@ void hardware_ltdc_main_set(uintptr_t p1)
 			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 			0;
 
-	hardware_ltdc_vsync();		/* ожидаем начало кадра */
+	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 {
-#if defined RTMIXIDLCD
-	const int rtmixid = RTMIXIDLCD;
-#endif
-#if defined RTMIXIDTV
-	const int rtmixid = RTMIXIDTV;
-#endif
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
@@ -7611,41 +7545,13 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	const uint_fast32_t mask =
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 		0;
-	//if (mask != bld->BLD_EN_COLOR_CTL)
-	{
-		// 5.10.9.1 BLD fill color control register
-		// BLD_FILL_COLOR_CTL
-		bld->BLD_EN_COLOR_CTL =
-			mask	| // pipe0 enable - from VI1
-			0;
-		t113_de_update(rtmixid);	/* Update registers */
-	}
+	// 5.10.9.1 BLD fill color control register
+	// BLD_FILL_COLOR_CTL
+	bld->BLD_EN_COLOR_CTL =
+		mask	| // pipe0 enable - from VI1
+		0;
+	t113_de_update(rtmixid);	/* Update registers */
 }
-
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
-//void hardware_ltdc_tvout_set_no_vsync(uintptr_t p1)
-//{
-//#if defined (TCONTV_PTR)
-//	const int rtmixid = RTMIXIDTV;
-//	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-//	if (bld == NULL)
-//		return;
-//
-//	t113_de_set_address_vi2(rtmixid, p1, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-//	const uint_fast32_t mask =
-//		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
-//		0;
-//	//if (mask != bld->BLD_EN_COLOR_CTL)
-//	{
-//		// 5.10.9.1 BLD fill color control register
-//		// BLD_FILL_COLOR_CTL
-//		bld->BLD_EN_COLOR_CTL =
-//			mask	| // pipe0 enable - from VI1
-//			0;
-//		t113_de_update(rtmixid);	/* Update registers */
-//	}
-//#endif
-//}
 
 /* Palette reload */
 void hardware_ltdc_L8_palette(void)
@@ -7660,12 +7566,12 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void hardware_ltdc_main_set(uintptr_t p)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 }
 
@@ -7675,7 +7581,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 }
 
 /* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
+static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 

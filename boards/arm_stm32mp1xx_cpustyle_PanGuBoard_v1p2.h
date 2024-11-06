@@ -1144,4 +1144,6 @@
 			BOARD_SII902X_INITIALIZE(); \
 		} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

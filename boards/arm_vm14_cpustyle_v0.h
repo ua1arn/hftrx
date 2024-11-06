@@ -983,4 +983,6 @@
 		BOARD_BLINK_INITIALIZE(); \
 	} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_VM14_CPUSTYLE_V0_H_INCLUDED */

@@ -1057,4 +1057,6 @@
 			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
 
+	#define RTMIXIDLCD 1	/* Dummuy parameter */
+
 #endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_EZM_10_H_INCLUDED */

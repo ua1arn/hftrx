@@ -3630,36 +3630,6 @@ int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffe
 
 #if WITHLTDCHWVBLANKIRQ
 
-static uintptr_t fb0;
-static uintptr_t lastset0fb;
-
-PACKEDCOLORPIP_T *
-colmain_fb_draw(void)
-{
-	if (fb0 == 0)
-	{
-		fb0 = allocate_dmabuffercolmain0fb();
-	}
-	return (PACKEDCOLORPIP_T *) fb0;
-}
-
-/* поставить на отображение этот буфер, запросить следующий */
-void colmain_nextfb(void)
-{
-	if (fb0 != 0)
-	{
-	//	char s [32];
-	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
-	//	display_at(0, 0, s);
-		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
-		save_dmabuffercolmain0fb(fb0);
-	}
-	fb0 = allocate_dmabuffercolmain0fb();
-#if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr(fb0));
-#endif /* WITHOPENVG */
-}
-
 #if defined (TCONTV_PTR)
 
 static uintptr_t fb1;
@@ -3691,18 +3661,62 @@ void tvout_nextfb(void)
 
 #endif	/* defined (TCONTV_PTR) */
 
-// Update framebuffer if needed
-void hardware_ltdc_vblank(unsigned ix)
+static uintptr_t fb0;
+static uintptr_t lastset0fb;
+
+PACKEDCOLORPIP_T *
+colmain_fb_draw(void)
 {
-	switch (ix)
+	if (fb0 == 0)
 	{
-	case 0:
+		fb0 = allocate_dmabuffercolmain0fb();
+	}
+	return (PACKEDCOLORPIP_T *) fb0;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void colmain_nextfb(void)
+{
+	if (fb0 != 0)
+	{
+	//	char s [32];
+	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
+	//	display_at(0, 0, s);
+#if WITHHDMITVHW
+		// дублирование буфера
+		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
+		colpip_bitblt(
+			(uintptr_t) fbtv, datasize_dmabuffercolmain1fb(),
+			(PACKEDCOLORPIP_T *) fbtv, TVD_WIDTH, TVD_HEIGHT,
+			0, 0,			/* позиция прямоугольника - получателя */
+			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
+			(PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y,
+			0, 0, DIM_X, DIM_Y,
+			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
+			);
+		tvout_nextfb();
+#endif /* WITHHDMITVHW */
+		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
+		save_dmabuffercolmain0fb(fb0);
+	}
+	fb0 = allocate_dmabuffercolmain0fb();
+#if WITHOPENVG
+	openvg_next(colmain_getindexbyaddr(fb0));
+#endif /* WITHOPENVG */
+}
+
+// Update framebuffer if needed
+void hardware_ltdc_vblank(int rtmixid)
+{
+	switch (rtmixid)
+	{
+	case RTMIXIDLCD:
 		/* main display */
 		{
 			const uintptr_t fb = getfilled_dmabuffercolmain0fb();
 			if (fb != 0)
 			{
-				hardware_ltdc_main_set_no_vsync(fb);
+				hardware_ltdc_main_set_no_vsync(rtmixid, fb);
 				if (lastset0fb != 0)
 				{
 					release_dmabuffercolmain0fb(lastset0fb);
@@ -3711,23 +3725,23 @@ void hardware_ltdc_vblank(unsigned ix)
 			}
 		}
 		break;
-//#if defined (TCONTV_PTR)
-//	case 1:
-//		/* TVOUT / HDMI display */
-//		{
-//			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
-//			if (fb != 0)
-//			{
-//				hardware_ltdc_tvout_set_no_vsync(fb);
-//				if (lastset1fb != 0)
-//				{
-//					release_dmabuffercolmain1fb(lastset1fb);
-//				}
-//				lastset1fb = fb;
-//			}
-//		}
-//		break;
-//#endif
+#if defined (TCONTV_PTR)
+	case RTMIXIDTV:
+		/* TVOUT / HDMI display */
+		{
+			const uintptr_t fb = getfilled_dmabuffercolmain1fb();
+			if (fb != 0)
+			{
+				hardware_ltdc_main_set_no_vsync(rtmixid, fb);
+				if (lastset1fb != 0)
+				{
+					release_dmabuffercolmain1fb(lastset1fb);
+				}
+				lastset1fb = fb;
+			}
+		}
+		break;
+#endif
 	}
 }
 
@@ -3746,14 +3760,14 @@ void colmain_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
-	hardware_ltdc_main_set(frame);
+	hardware_ltdc_main_set(RTMIXIDLCD, frame);
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr((uintptr_t) colmain_fb_draw()));
 #endif /* WITHOPENVG */
 }
 
-#if defined (TCONTV_PTR)
+#if defined (TCONTV_PTR) && 0
 
 static uint_fast8_t drawtvframe;
 
@@ -3768,7 +3782,7 @@ void tvout_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) tvout_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain1fb());
-	hardware_ltdc_tvout_set2(frame, 0);
+	hardware_ltdc_tvout_set2(RTMIXIDTV, frame, 0);
 	drawtvframe = (drawtvframe + 1) % LCDMODE_TVOUT_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 }
 
