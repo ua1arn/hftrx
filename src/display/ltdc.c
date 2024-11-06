@@ -816,12 +816,12 @@ void hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
 	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
-	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, addr);			// GR2_BASE
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
 	// GR2_IBUS_VEN in GR2_UPDATE is 1.
@@ -1600,12 +1600,12 @@ void hardware_ltdc_L8_palette(void)
 
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 //	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 //		;
-	LAYER_MAIN->CFBAR = p;
+	LAYER_MAIN->CFBAR = addr;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
@@ -1665,7 +1665,7 @@ void hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
@@ -1723,7 +1723,7 @@ void hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
@@ -7671,7 +7671,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync(uintptr_t p)
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 }
 
