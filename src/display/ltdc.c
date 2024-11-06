@@ -2377,7 +2377,6 @@ static void hdmi_edid_parse(const uint8_t * edid, unsigned len)
 	}
 }
 
-
 static int hdmi_connector_detect(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -2431,27 +2430,6 @@ static void t507_hdmi_edid_test(void)
 		hdmi_edid_parse(edid, edidlen);
 	}
 }
-
-static void hdmi_writel(unsigned offs, uint32_t v)
-{
-	const uintptr_t addr = HDMI_TX0_BASE + offs;
-	* (volatile uint32_t *) addr = v;
-	__DSB();
-	local_delay_us(10);
-}
-
-static uint32_t hdmi_readl(unsigned offs)
-{
-	__DSB();
-	local_delay_us(10);
-	const uintptr_t addr = HDMI_TX0_BASE + offs;
-	return * (volatile uint32_t *) addr;
-}
-
-//static uintptr_t hdmi_base_addr;
-static unsigned int hdmi_version = 1;
-static unsigned int tmp_rcal_100, tmp_rcal_200;
-static unsigned int bias_source;
 
 #endif
 
@@ -2780,7 +2758,7 @@ static void t113_de_rtmix_initialize(int rtmixid)
 	memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
 }
 
-static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, unsigned color24)
+static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint_least32_t color24)
 {
 	int i;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -7474,15 +7452,16 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 	{
 		int rtmixid;
 		const videomode_t * (* vdmodef)(void);
+		uint_least32_t defcolor;
 	} initstruct_t;
 
 	static const initstruct_t initstructs [] =
 	{
 #if defined RTMIXIDLCD
-			{ RTMIXIDLCD, get_videomode_DESIGN, },
+			{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), },
 #endif /* RTMIXIDLCD */
 #if WITHHDMITVHW
-			{ RTMIXIDTV, get_videomode_HDMI, },
+			{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), },
 #endif /* WITHHDMITVHW */
 	};
 
@@ -7501,7 +7480,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		PRINTF("Init rtmixid=%d\n", rtmixid);
 		//TP();
 		/* эта инициализация после корректного соединения с работающим TCON */
-		t113_de_bld_initialize(rtmixid, vdmode, COLOR24(255, 0, 0));	// RED
+		t113_de_bld_initialize(rtmixid, vdmode, initstructs [i].defcolor);	// RED
 		//TP();
 
 		// проверка различных scalers
@@ -7523,30 +7502,6 @@ void
 hardware_ltdc_deinitialize(void)
 {
 }
-
-//void hardware_ltdc_tvout_set2(uintptr_t layer0, uintptr_t layer1)	/* Set MAIN frame buffer address. Waiting for VSYNC. */
-//{
-//#if defined (TCONTV_PTR)
-//	const int rtmixid = RTMIXIDTV;
-//	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-//	if (bld == NULL)
-//		return;
-//
-//	// Note: the layer priority is layer3>layer2>layer1>layer0
-//	t113_de_set_address_vi2(rtmixid, layer0, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-//	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
-//
-//	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
-//
-//	bld->BLD_EN_COLOR_CTL =
-//		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-//		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
-//		0;
-//
-//	hardware_tvout_ltdc_vsync();		/* ожидаем начало кадра */
-//	t113_de_update(rtmixid);	/* Update registers */
-//#endif /* defined (TCONTV_PTR) */
-//}
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
@@ -7610,30 +7565,6 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 		0;
 	t113_de_update(rtmixid);	/* Update registers */
 }
-
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
-//void hardware_ltdc_tvout_set_no_vsync(uintptr_t p1)
-//{
-//#if defined (TCONTV_PTR)
-//	const int rtmixid = RTMIXIDTV;
-//	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-//	if (bld == NULL)
-//		return;
-//
-//	t113_de_set_address_vi2(rtmixid, p1, 1, DE2_FORMAT_YUV420_V1U1V0U0);	// VI1
-//	const uint_fast32_t mask =
-//		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
-//		0;
-//	{
-//		// 5.10.9.1 BLD fill color control register
-//		// BLD_FILL_COLOR_CTL
-//		bld->BLD_EN_COLOR_CTL =
-//			mask	| // pipe0 enable - from VI1
-//			0;
-//		t113_de_update(rtmixid);	/* Update registers */
-//	}
-//#endif
-//}
 
 /* Palette reload */
 void hardware_ltdc_L8_palette(void)
