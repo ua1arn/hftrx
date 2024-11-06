@@ -740,10 +740,11 @@ void colmain_fb_list(uintptr_t * frames);	// получение массива �
 #define LCDMODE_TVOUT_PAGES	5	// Используются буферы: один для полготовки изоображения, один готовый к отображению, один текцщий отображаемый
 
 #if WITHHDMITVHW
-	#define TVD_WIDTH  1920
-	#define TVD_HEIGHT 1080
-	typedef uint32_t PACKEDTVBUFF_T;
-	typedef uint_fast32_t TVBUFF_T;
+	// Второй дисплей масщтабиует на лету, на вход VI иждут кадры, совпадающие с основным дисплеем
+	#define TVD_WIDTH  DIM_X
+	#define TVD_HEIGHT DIM_Y
+	typedef PACKEDCOLORPIP_T PACKEDTVBUFF_T;
+	typedef COLORPIP_T TVBUFF_T;
 #else /* WITHHDMITVHW */
 	#define TVD_WIDTH  720
 	#define TVD_HEIGHT 576

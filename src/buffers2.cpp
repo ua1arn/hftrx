@@ -3630,36 +3630,6 @@ int_fast32_t datasize_dmabuffercolmain1fb(void) /* parameter for DMA Frame buffe
 
 #if WITHLTDCHWVBLANKIRQ
 
-static uintptr_t fb0;
-static uintptr_t lastset0fb;
-
-PACKEDCOLORPIP_T *
-colmain_fb_draw(void)
-{
-	if (fb0 == 0)
-	{
-		fb0 = allocate_dmabuffercolmain0fb();
-	}
-	return (PACKEDCOLORPIP_T *) fb0;
-}
-
-/* поставить на отображение этот буфер, запросить следующий */
-void colmain_nextfb(void)
-{
-	if (fb0 != 0)
-	{
-	//	char s [32];
-	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
-	//	display_at(0, 0, s);
-		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
-		save_dmabuffercolmain0fb(fb0);
-	}
-	fb0 = allocate_dmabuffercolmain0fb();
-#if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr(fb0));
-#endif /* WITHOPENVG */
-}
-
 #if defined (TCONTV_PTR)
 
 static uintptr_t fb1;
@@ -3690,6 +3660,41 @@ void tvout_nextfb(void)
 }
 
 #endif	/* defined (TCONTV_PTR) */
+
+static uintptr_t fb0;
+static uintptr_t lastset0fb;
+
+PACKEDCOLORPIP_T *
+colmain_fb_draw(void)
+{
+	if (fb0 == 0)
+	{
+		fb0 = allocate_dmabuffercolmain0fb();
+	}
+	return (PACKEDCOLORPIP_T *) fb0;
+}
+
+/* поставить на отображение этот буфер, запросить следующий */
+void colmain_nextfb(void)
+{
+	if (fb0 != 0)
+	{
+	//	char s [32];
+	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
+	//	display_at(0, 0, s);
+#if WITHHDMITVHW
+		// дублирование буфера
+		memcpy(tvout_fb_draw(), (void *) fb0, datasize_dmabuffercolmain0fb());
+		tvout_nextfb();
+#endif /* WITHHDMITVHW */
+		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
+		save_dmabuffercolmain0fb(fb0);
+	}
+	fb0 = allocate_dmabuffercolmain0fb();
+#if WITHOPENVG
+	openvg_next(colmain_getindexbyaddr(fb0));
+#endif /* WITHOPENVG */
+}
 
 // Update framebuffer if needed
 void hardware_ltdc_vblank(int rtmixid)
