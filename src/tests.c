@@ -5436,6 +5436,13 @@ void looptests(void)
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 	}
 #endif
+#if 0
+	{
+		PRINTF("TCONTV_PTR->TV_DEBUG_REG=%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+		//printhex32(0x00000000065100f0, 0x00000000065100f0, 16);
+
+	}
+#endif
 #if 1 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		// See buffers2.cpp - WITHBUFFERSDEBUG
@@ -6694,7 +6701,7 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 void testpng(const void * pngbuffer)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-	LuImage * png = luPngReadMemory((char *) pngbuffer);
+	LuImage * png = luPngReadMemory((char *) pngbuffer);	// Read data in DE2_FORMAT_XBGR_8888 format
 
 	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
 	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
@@ -6745,6 +6752,45 @@ void testpng(const void * pngbuffer)
 		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
+
+	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
+	hardware_ltdc_main_set4((uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+
+	luImageRelease(png, NULL);
+	for (;;)
+		;
+}
+
+// PNG files test
+void testpng_no_stretch(const void * pngbuffer)
+{
+	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+	LuImage * png = luPngReadMemory((char *) pngbuffer);	// Read data in DE2_FORMAT_XBGR_8888 format
+
+	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) png->data;
+	const COLORPIP_T keycolor = TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	const unsigned picdx = png->width;//GXADJ(png->width);
+	const unsigned picw = png->width;
+	const unsigned pich = png->height;
+
+	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
+	PRINTF("testpng: dim_x=%u, dim_y=%u\n", DIM_X, DIM_Y);
+
+	//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
+
+	colpip_bitblt(
+		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
+		fb, DIM_X, DIM_Y,
+		0, 0,			/* позиция прямоугольника - получателя */
+		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
+		fbpic, picdx, pich,
+		0, 0, picdx, pich,
+		//BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
+		);
+
+	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
+	hardware_ltdc_main_set4((uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
 
 	luImageRelease(png, NULL);
 	for (;;)
@@ -11318,9 +11364,26 @@ void hightests(void)
 		board_update();
 		TP();
 
-		#include "Cobra.png.h"
+		#include "testdata/Cobra.png.h"
 
 		testpng(Cobra_png);
+		for (;;)
+			;
+	}
+#endif
+#if 0 && LCDMODE_LTDC
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+
+		static const unsigned char png [] =
+		{
+			#include "testdata/1920x1080.h"
+
+		};
+
+		testpng_no_stretch(png);	// становить формат DE2_FORMAT_XBGR_8888
 		for (;;)
 			;
 	}
@@ -11560,14 +11623,15 @@ void hightests(void)
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
 		int phase = 0;
-		unsigned c = 0;
+		unsigned c = 0;	// cycle
 		while(1)
 		{
+			int cycles = 1024;
 			int y = 50;
 			int x0 = 270;
 			int h = 120;
-			int w = 500;
-			int xpos = (c * (w - 1)) / 255;	/* позиция маркера */
+			int w = DIM_X - x0;
+			int xpos = (c * (w - 1)) / (cycles - 1);	/* позиция маркера */
 
 			PACKEDCOLORPIP_T * const drawlayer = phase ? layer0_a : layer0_b;
 
@@ -11581,7 +11645,7 @@ void hightests(void)
 			hardware_ltdc_main_set4((uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
 
 			phase = ! phase;
-			c = (c + 1) % 256;
+			c = (c + 1) % cycles;
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)

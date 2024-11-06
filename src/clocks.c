@@ -3080,6 +3080,7 @@ uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
+	//const uint_fast32_t D = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _D
 	//	PLL_VIDEO0(4X)= 24MHz*N/M.
 	//	PLL_VIDEO0(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO0(4X) is 1188 MHz.
@@ -3091,6 +3092,7 @@ uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
+	//const uint_fast32_t D = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _D
 	//	PLL_VIDEO1(4X)= 24MHz*N/M.
 	//	PLL_VIDEO1(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO1(4X) is 1188 MHz.
@@ -3101,12 +3103,12 @@ uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO2_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
+	//const uint_fast32_t D = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _D
 	//	PLL_VIDEO2(4X)= 24MHz*N/M.
 	//	PLL_VIDEO2(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO2(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
 uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
@@ -3711,6 +3713,12 @@ uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 	case 0x03:
 		// 011: PLL_VIDEO1(4X)
 		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	case 0x04:
+		// 010: PLL_VIDEO2(1X)
+		return allwnr_t507_get_pll_video2_x1_freq() / pgdiv;
+	case 0x05:
+		// 011: PLL_VIDEO2(4X)
+		return allwnr_t507_get_pll_video2_x4_freq() / pgdiv;
 	}
 }
 
@@ -3737,6 +3745,12 @@ uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 	case 0x03:
 		// 011: PLL_VIDEO1(4X)
 		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	case 0x04:
+		// 010: PLL_VIDEO2(1X)
+		return allwnr_t507_get_pll_video2_x1_freq() / pgdiv;
+	case 0x05:
+		// 011: PLL_VIDEO2(4X)
+		return allwnr_t507_get_pll_video2_x4_freq() / pgdiv;
 	}
 }
 
@@ -9677,7 +9691,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI1_CTRL_REG, & CCU->PLL_PERI1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG, 50);
 
-//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
 

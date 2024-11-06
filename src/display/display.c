@@ -225,13 +225,12 @@ void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 	ltdc_fg = fg;
 	ltdc_bg = bg;
 #else /* ! LCDMODE_LTDC_L24 */
-
-	ltdc_fg.r = fg >> 16;
-	ltdc_fg.g = fg >> 8;
-	ltdc_fg.b = fg >> 0;
-	ltdc_bg.r = bg >> 16;
-	ltdc_bg.g = bg >> 8;
-	ltdc_bg.b = bg >> 0;
+	ltdc_fg.r = COLORPIP_R(fg);
+	ltdc_fg.g = COLORPIP_G(fg);
+	ltdc_fg.b = COLORPIP_B(fg);
+	ltdc_bg.r = COLORPIP_R(bg);
+	ltdc_bg.g = COLORPIP_G(bg);
+	ltdc_bg.b = COLORPIP_B(bg);
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
@@ -1859,7 +1858,7 @@ RGB_t hsv2rgb(HSV_t hsv)
 
 #if WITHRLEDECOMPRESS
 
-PACKEDCOLORPIP_T convert_565_to_a888(uint16_t color)
+COLORPIP_T convert_565_to_a888(uint16_t color)
 {
 	uint8_t b5 = (color & 0x1F) << 3;
 	uint8_t g6 = ((color & 0x7E0) >> 5) << 2;
@@ -1883,7 +1882,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 			i ++;
 			for (uint_fast16_t p = 0; p < count; p ++)
 			{
-				PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
+				const COLORPIP_T point = convert_565_to_a888(picture->data [i]);
 				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
 
 				x1 ++;
@@ -1900,7 +1899,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 			count = ((int16_t)picture->data [i]);
 			i++;
 
-			PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
+			const COLORPIP_T point = convert_565_to_a888(picture->data [i]);
 			for (uint_fast16_t p = 0; p < count; p ++)
 			{
 				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);

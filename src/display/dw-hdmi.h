@@ -45,14 +45,14 @@
 #define HDMI_IH_MUTE                            0x01FF
 
 /* Video Sample Registers */
-#define HDMI_TX_INVID0                          0x0200
-#define HDMI_TX_INSTUFFING                      0x0201
-#define HDMI_TX_GYDATA0                         0x0202
-#define HDMI_TX_GYDATA1                         0x0203
-#define HDMI_TX_RCRDATA0                        0x0204
-#define HDMI_TX_RCRDATA1                        0x0205
-#define HDMI_TX_BCBDATA0                        0x0206
-#define HDMI_TX_BCBDATA1                        0x0207
+//#define HDMI_TX_INVID0                          0x0200
+//#define HDMI_TX_INSTUFFING                      0x0201
+//#define HDMI_TX_GYDATA0                         0x0202
+//#define HDMI_TX_GYDATA1                         0x0203
+//#define HDMI_TX_RCRDATA0                        0x0204
+//#define HDMI_TX_RCRDATA1                        0x0205
+//#define HDMI_TX_BCBDATA0                        0x0206
+//#define HDMI_TX_BCBDATA1                        0x0207
 
 /* Video Packetizer Registers */
 #define HDMI_VP_STATUS                          0x0800
@@ -449,34 +449,34 @@
 #define HDMI_CSC_COEF_C4_LSB                    0x4119
 
 /* HDCP Encryption Engine Registers */
-#define HDMI_A_HDCPCFG0                         0x5000
-#define HDMI_A_HDCPCFG1                         0x5001
-#define HDMI_A_HDCPOBS0                         0x5002
-#define HDMI_A_HDCPOBS1                         0x5003
-#define HDMI_A_HDCPOBS2                         0x5004
-#define HDMI_A_HDCPOBS3                         0x5005
-#define HDMI_A_APIINTCLR                        0x5006
-#define HDMI_A_APIINTSTAT                       0x5007
-#define HDMI_A_APIINTMSK                        0x5008
-#define HDMI_A_VIDPOLCFG                        0x5009
-#define HDMI_A_OESSWCFG                         0x500A
-#define HDMI_A_TIMER1SETUP0                     0x500B
-#define HDMI_A_TIMER1SETUP1                     0x500C
-#define HDMI_A_TIMER2SETUP0                     0x500D
-#define HDMI_A_TIMER2SETUP1                     0x500E
-#define HDMI_A_100MSCFG                         0x500F
-#define HDMI_A_2SCFG0                           0x5010
-#define HDMI_A_2SCFG1                           0x5011
-#define HDMI_A_5SCFG0                           0x5012
-#define HDMI_A_5SCFG1                           0x5013
-#define HDMI_A_SRMVERLSB                        0x5014
-#define HDMI_A_SRMVERMSB                        0x5015
-#define HDMI_A_SRMCTRL                          0x5016
-#define HDMI_A_SFRSETUP                         0x5017
-#define HDMI_A_I2CHSETUP                        0x5018
-#define HDMI_A_INTSETUP                         0x5019
-#define HDMI_A_PRESETUP                         0x501A
-#define HDMI_A_SRM_BASE                         0x5020
+//#define HDMI_A_HDCPCFG0                         0x5000
+//#define HDMI_A_HDCPCFG1                         0x5001
+//#define HDMI_A_HDCPOBS0                         0x5002
+//#define HDMI_A_HDCPOBS1                         0x5003
+//#define HDMI_A_HDCPOBS2                         0x5004
+//#define HDMI_A_HDCPOBS3                         0x5005
+//#define HDMI_A_APIINTCLR                        0x5006
+//#define HDMI_A_APIINTSTAT                       0x5007
+//#define HDMI_A_APIINTMSK                        0x5008
+//#define HDMI_A_VIDPOLCFG                        0x5009
+//#define HDMI_A_OESSWCFG                         0x500A
+//#define HDMI_A_TIMER1SETUP0                     0x500B
+//#define HDMI_A_TIMER1SETUP1                     0x500C
+//#define HDMI_A_TIMER2SETUP0                     0x500D
+//#define HDMI_A_TIMER2SETUP1                     0x500E
+//#define HDMI_A_100MSCFG                         0x500F
+//#define HDMI_A_2SCFG0                           0x5010
+//#define HDMI_A_2SCFG1                           0x5011
+//#define HDMI_A_5SCFG0                           0x5012
+//#define HDMI_A_5SCFG1                           0x5013
+//#define HDMI_A_SRMVERLSB                        0x5014
+//#define HDMI_A_SRMVERMSB                        0x5015
+//#define HDMI_A_SRMCTRL                          0x5016
+//#define HDMI_A_SFRSETUP                         0x5017
+//#define HDMI_A_I2CHSETUP                        0x5018
+//#define HDMI_A_INTSETUP                         0x5019
+//#define HDMI_A_PRESETUP                         0x501A
+//#define HDMI_A_SRM_BASE                         0x5020
 
 /* CEC Engine Registers */
 #define HDMI_CEC_CTRL                           0x7D00

@@ -2894,7 +2894,7 @@ static void t113_tconlcd_CCU_configuration(void)
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
@@ -5537,6 +5537,11 @@ static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 
 static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, const videomode_t * dstvdmode)
 {
+	if (srcvdmode->width == dstvdmode->width && srcvdmode->height == dstvdmode->height)
+	{
+		sun8i_vi_scaler_enable(rtmixid, 0);
+		return;
+	}
 	uint32_t src_w = srcvdmode->width;
 	uint32_t src_h = srcvdmode->height;
 
@@ -5565,9 +5570,9 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
 	if (vsu == NULL)
 		return;
-	if (vdmodein == vdmodeout)
+	if (vdmodein->width == vdmodeout->width && vdmodein->height == vdmodeout->height)
 	{
-		vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+		vsu->VSU_CTRL_REG = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 		return;
 	}
 
@@ -5763,17 +5768,22 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	// PLL_VIDEO0 as source
-	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
-	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
-	PRINTF("M_1=%u\n", M_1);
-	PRINTF("M_4=%u\n", M_4);
-
 	unsigned ix = TCONTV_IX;
 
-    //CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+    // 0x00010001
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
+
+	// 0x10100000
+    DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
+
+	// PLL_VIDEO0 as source
+//	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
+//	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
+//	PRINTF("M_1=%u\n", M_1);
+//	PRINTF("M_4=%u\n", M_4);
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
@@ -5785,30 +5795,30 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
 
-	const unsigned TV_CLK_REG_M = 4;
+	const unsigned TV_CLK_REG_M = 2;
 	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
-	const unsigned HDMI_CLK_REG_M = 2;
+	const unsigned HDMI_CLK_REG_M = 1;
 	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-    //CCU->HDMI_BGR_REG |= ~0;
-    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
+    //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-    //CCU->HDMI0_SLOW_CLK_REG |= ~0;
-    PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
-    PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
+    //PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
 	// HDCP: High-bandwidth Digital Content Protection
     CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
+    //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
+    PRINTF("CCU->HDMI_HDCP_CLK_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_CLK_REG);
+
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
-    //CCU->HDMI_HDCP_BGR_REG |= ~0;
-    PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
+    //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
 
 	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	//CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
@@ -5822,39 +5832,31 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
 
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-    PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+    //CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+    //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
+//    CCU->TVE0_CLK_REG = 0x82000001;
+//    CCU->TVE_BGR_REG = 0x00030003;
 
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
-
-    DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-    //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE ???? may be not need
-//	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 21);	// TV0_GATE ???? may be not need
-	//DISP_IF_TOP->MODULE_GATING |= ~0;
-	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-
+// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
+//  0x200
+//	union tcon_mux_ctl_reg_t {
+//		u32 dwval;
+//		struct {
+//			u32 dsi_src:2;
+//			u32 res0:6;
+//			u32 hdmi_src:2;
+//			u32 res1:22;
+//		} bits;
+//	};
 
     local_delay_us(10);
 
-//	TCON_TV0->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-//	TCON_TV0->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-
-	/* enable read access to HDMI controller */
-    HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-    HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+	//	7 allwnr_t507_get_hdmi_hdcp_freq()=300000 kHz
+	//	7 allwnr_t507_get_hdmi_freq()=297000 kHz
+	//	7 BOARD_TCONLCDFREQ()=148500 kHz
 
 	PRINTF("7 allwnr_t507_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi_hdcp_freq() / 1000));
-
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
@@ -5943,12 +5945,15 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	//	Clock Source Select
 	//	0: PLL_DE
 	//	1: PLL_PERI0(2X)
+	// 0x80000000
 	unsigned divider = 4;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+    CCU->DE_CLK_REG = 0x80000000;
     local_delay_us(10);
 
 	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
@@ -5959,15 +5964,22 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     local_delay_us(10);
 
  	/* Global DE settings */
+#if defined RTMIXIDLCD
+	const int rtmixid = RTMIXIDLCD;
+#endif
+#if defined RTMIXIDTV
+	const int rtmixid = RTMIXIDTV;
+#endif
+	const int disp = rtmixid - 1;
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
 	// CORE0..CORE3 bits valid - valid bits 0x01F
 
- 	DE_TOP->DE_SCLK_GATE |= 0x01F; //UINT32_C(1) << disp;	// COREx_SCLK_GATE
- 	DE_TOP->DE_HCLK_GATE |= 0x01F; //UINT32_C(1) << disp;	// COREx_HCLK_GATE
+ 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+ 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
  	// Only one bit writable
- 	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+ 	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -6185,12 +6197,17 @@ static void awxx_deoutmapping(void)
 //		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_TV0
 //		0;
 
+//	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 	// +++++++++++++++++ ПРОВЕРЕНО ++++++++++++++++
 	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
 	// Для работы LVDS на RTMIX0 и TV0->HDMI на RTMIX1
 	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
 	DE_TOP->DE2TCON_MUX = 0x000000E4;
 	// ----------------- ПРОВЕРЕНО ----------------
+
+//	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 	// Undocumented
 //	DE_TOP->DE2TCON_MUX =
@@ -6201,6 +6218,24 @@ static void awxx_deoutmapping(void)
 //		0;
 //	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
+
+// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
+//  0x200
+//	union tcon_mux_ctl_reg_t {
+//		u32 dwval;
+//		struct {
+//			u32 dsi_src:2;
+//			u32 res0:6;
+//			u32 hdmi_src:2;
+//			u32 res1:22;
+//		} bits;
+//	};
+
+//	TCONTV_PTR->tcon_mul_ctl = (TCONTV_PTR->tcon_mul_ctl & ~ 0x300) |
+//			0x01 * (UINT32_C(1) << 8);
+//	PRINTF("3 TCONTV_PTR->tcon_mul_ctl=%08X\n", (unsigned) TCONTV_PTR->tcon_mul_ctl);
+//	memset(TCONTV_PTR, 0xFF, sizeof * TCONTV_PTR);
+//	printhex(TCONTV_PTR, TCONTV_PTR, sizeof * TCONTV_PTR);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -6238,6 +6273,8 @@ void hardware_edid_test(void)
 
 #if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW
 
+
+#include "dw-hdmi.h"
 
 //static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
 //{
@@ -6277,15 +6314,15 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
 //	/* descramble register offsets */
 //	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
-	local_delay_ms(10);
-	phy->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
-	local_delay_ms(10);
-	phy->REXT_CTRL = (HDMI_PHY->REXT_CTRL & 0xFFFF0000) | 0x80C00000;
-	local_delay_ms(10);
-	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
-#endif
+//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
+//	local_delay_ms(10);
+//	phy->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
+//	local_delay_ms(10);
+//	phy->REXT_CTRL = (HDMI_PHY->REXT_CTRL & 0xFFFF0000) | 0x80C00000;
+//	local_delay_ms(10);
+//	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
+//#endif
 
 	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
@@ -6438,14 +6475,14 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	hdmi->HDMI_FC_VSYNCINDELAY = VFP;
 	hdmi->HDMI_FC_VSYNCINWIDTH = VSYNC;            // Vertical sync pulse
 
-	hdmi->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
-	hdmi->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
-	hdmi->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
-	hdmi->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	hdmi->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	hdmi->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	hdmi->HDMI_MC_FLOWCTRL = 0;    // Main Controller Feed Through Control
-	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
+//	hdmi->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
+//	hdmi->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
+//	hdmi->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
+//	hdmi->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+//	hdmi->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+//	hdmi->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+//	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;    // Main Controller Feed Through Control
+//	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
 			hdmi->HDMI_DESIGN_ID,
@@ -6564,7 +6601,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);			// TCON1_XI TCON1_YI
@@ -6578,9 +6615,10 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_IO_POL_REG = 0;	// не влияет
 	TCONTV_PTR->TCON1_IO_TRI_REG = 0;	// вличет
 
-//	TCONTV_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
-//	TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
-//	TCONTV_PTR->TCON_GCTL_REG &= ~ (UINT32_C(1) << 1); // IO_Map_Sel: 0: TCON0, 1: TCON1
+	if (TCONTV_IX == 0)
+		TCONTV_PTR->TCON_GCTL_REG &= ~ (UINT32_C(1) << 0); // IO_Map_Sel: 0: TCON0, 1: TCON1
+	else
+		TCONTV_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 0); // IO_Map_Sel: 0: TCON0, 1: TCON1
 
 
 #elif CPUSTYLE_H3
@@ -6590,7 +6628,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TCON1_CTL_REG =
 		//(UINT32_C(1) << 31) |	// TCON1_En
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TCON1_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TCON1_XI TCON1_YI
@@ -6608,7 +6646,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TV_CTL_REG =
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(0x1F, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
 
 	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
@@ -6618,8 +6656,8 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	TCONTV_PTR->TV_IO_POL_REG = 0;
-	TCONTV_PTR->TV_IO_TRI_REG = 0;
+//	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
+//	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
 
 	//	 TV_SRC_SEL
 	//	 TV Source Select
@@ -6631,8 +6669,8 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	//	 101: Reserved
 	//	 111: Gridding Check
 
-	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
-	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient
+	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// едокументированно, но требуется
+	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
@@ -6738,8 +6776,7 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 }
 
-#include "dw-hdmi.h"
-
+#if WITHHDMITVHW
 
 static void hdmi_phy_gen2_pddq(HDMI_TX_TypeDef *hdmi, unsigned enable)
 {
@@ -6908,86 +6945,100 @@ struct dw_hdmi_curr_ctrl {
 	uint16_t curr[DW_HDMI_RES_MAX];
 };
 
-struct hdmi_phy_config {
+struct dw_hdmi_phy_config {
 	uint64_t mpixelclock;
 	uint32_t sym_ctr;    /* clock symbol and transmitter control */
 	uint32_t term;       /* transmission termination value */
 	uint32_t vlev_ctr;   /* voltage level control */
 };
 
+// https://github.com/EchoHeim/Allwinner-H616/blob/c499413803e4128439cadf2f56972e207721abe4/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c#L18
 
-static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
-	{
-		45250000, {
-			{ 0x01e0, 0x0000 },
-			{ 0x21e1, 0x0000 },
-			{ 0x41e2, 0x0000 }
-		},
-	}, {
-		92500000, {
-			{ 0x0140, 0x0005 },
-			{ 0x2141, 0x0005 },
-			{ 0x4142, 0x0005 },
-	},
-	}, {
-		148500000, {
-			{ 0x00a0, 0x000a },
-			{ 0x20a1, 0x000a },
-			{ 0x40a2, 0x000a },
-		},
-	}, {
-		216000000, {
-			{ 0x00a0, 0x000a },
-			{ 0x2001, 0x000f },
-			{ 0x4002, 0x000f },
-		},
-	}, {
-		~0UL, {
-			{ 0x0000, 0x0000 },
-			{ 0x0000, 0x0000 },
-			{ 0x0000, 0x0000 },
-		},
-	}
-};
+static const struct dw_hdmi_mpll_config sun50i_h616_mpll_cfg[] = {
+    {
+        27000000,
+        {
+            {0x00b3, 0x0003},
+            {0x2153, 0x0003},
+            {0x40f3, 0x0003},
+        },
+    },
+    {
+        74250000,
+        {
+            {0x0072, 0x0003},
+            {0x2145, 0x0003},
+            {0x4061, 0x0003},
+        },
+    },
+    {
+        148500000,
+        {
+            {0x0051, 0x0003},
+            {0x214c, 0x0003},
+            {0x4064, 0x0003},
+        },
+    },
+    {
+        297000000,
+        {
+            {0x0040, 0x0003},
+            {0x3b4c, 0x0003},
+            {0x5a64, 0x0003},
+        },
+    },
+    {
+        594000000,
+        {
+            {0x1a40, 0x0003},
+            {0x3b4c, 0x0003},
+            {0x5a64, 0x0003},
+        },
+    },
+    {
+        ~0UL,
+        {
+            {0x0000, 0x0000},
+            {0x0000, 0x0000},
+            {0x0000, 0x0000},
+        },
+    }};
 
-static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
-	/*      pixelclk     bpp8    bpp10   bpp12 */
-	{
-		54000000, { 0x091c, 0x091c, 0x06dc },
-	}, {
-		58400000, { 0x091c, 0x06dc, 0x06dc },
-	}, {
-		72000000, { 0x06dc, 0x06dc, 0x091c },
-	}, {
-		74250000, { 0x06dc, 0x0b5c, 0x091c },
-	}, {
-		118800000, { 0x091c, 0x091c, 0x06dc },
-	}, {
-		216000000, { 0x06dc, 0x0b5c, 0x091c },
-	}, {
-		~0UL, { 0x0000, 0x0000, 0x0000 },
-	},
-};
+static const struct dw_hdmi_curr_ctrl sun50i_h616_cur_ctr[] = {
+    /* pixelclk    bpp8    bpp10   bpp12 */
+    {
+        27000000,
+        {0x0012, 0x0000, 0x0000},
+    },
+    {
+        74250000,
+        {0x0013, 0x0013, 0x0013},
+    },
+    {
+        148500000,
+        {0x0019, 0x0019, 0x0019},
+    },
+    {
+        297000000,
+        {0x0019, 0x001b, 0x0019},
+    },
+    {
+        594000000,
+        {0x0010, 0x0010, 0x0010},
+    },
+    {
+        ~0UL,
+        {0x0000, 0x0000, 0x0000},
+    }};
 
-static const struct hdmi_phy_config rockchip_phy_config[] = {
-	{
-		.mpixelclock = 74250000,
-		.sym_ctr = 0x8009, .term = 0x0004, .vlev_ctr = 0x0272,
-	}, {
-		.mpixelclock = 148500000,
-		.sym_ctr = 0x802b, .term = 0x0004, .vlev_ctr = 0x028d,
-	}, {
-		.mpixelclock = 297000000,
-		.sym_ctr = 0x8039, .term = 0x0005, .vlev_ctr = 0x028d,
-	}, {
-		.mpixelclock = 584000000,
-		.sym_ctr = 0x8039, .term = 0x0000, .vlev_ctr = 0x019d,
-	}, {
-		.mpixelclock = ~0ul,
-		.sym_ctr = 0x0000, .term = 0x0000, .vlev_ctr = 0x0000,
-	}
-};
-
+static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
+    /*pixelclk   symbol   term   vlev*/
+    {27000000, 0x8009, 0x0007, 0x02b0},
+    {74250000, 0x8019, 0x0004, 0x0290},
+    {148500000, 0x8019, 0x0004, 0x0290},
+    {297000000, 0x8039, 0x0004, 0x022b},
+    {594000000, 0x8029, 0x0000, 0x008a},
+    {~0UL, 0x0000, 0x0000, 0x0000}};
 
 /* hdmi initialization step b.4 */
 static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
@@ -7020,9 +7071,15 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 	}
 }
 
-static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotclock)
+// See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
+
+static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
 {
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	/* Enable csc path */
+	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
+
 	/* gen2 tx power off */
 	hdmi_phy_gen2_txpwron(hdmi, 0);
 //
@@ -7041,28 +7098,42 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
 	hdmi_phy_test_clear(hdmi, 0);
 
-//	unsigned v1;
-//	hdmi_phy_i2c_read(hdmi, & v1, PHY_OPMODE_PLLCFG);
-//	PRINTF("hdmi phy test: v1=%08X\n", v1);
-//	hdmi_phy_i2c_write(hdmi, 0x01, PHY_OPMODE_PLLCFG);
-//	hdmi_phy_i2c_read(hdmi, & v1, PHY_OPMODE_PLLCFG);
-//	PRINTF("hdmi phy test: v1=%08X\n", v1);
+	const struct dw_hdmi_mpll_config *mpll_config = sun50i_h616_mpll_cfg;
+	const struct dw_hdmi_curr_ctrl *curr_ctrl = sun50i_h616_cur_ctr;
+	const struct dw_hdmi_phy_config *phy_config = sun50i_h616_phy_config;
 
-	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].cpce, PHY_OPMODE_PLLCFG);
-	hdmi_phy_i2c_write(hdmi, imx_mpll_cfg [2].res[DW_HDMI_RES_8].gmp, PHY_PLLGMPCTRL);
-	hdmi_phy_i2c_write(hdmi, 0x06dc /*imx_mpll_cfg [2].res[DW_HDMI_RES_8].curr */, PHY_PLLCURRCTRL);
-	unsigned cpce, gmp, curr;
-	hdmi_phy_i2c_read(hdmi, & cpce, PHY_OPMODE_PLLCFG);
-	hdmi_phy_i2c_read(hdmi, & gmp, PHY_PLLGMPCTRL);
-	hdmi_phy_i2c_read(hdmi, & curr, PHY_PLLCURRCTRL);
-	PRINTF("cpce=%04X, gmp=%04X, curr=%04X\n", cpce, gmp, curr);
+	/* PLL/MPLL Cfg - always match on final entry */
+	for (; mpll_config->mpixelclock != ~0UL; mpll_config++)
+		if (mpixelclock <=
+		    mpll_config->mpixelclock)
+			break;
+
+	for (; curr_ctrl->mpixelclock != ~0UL; curr_ctrl++)
+		if (mpixelclock <=
+		    curr_ctrl->mpixelclock)
+			break;
+
+	for (; phy_config->mpixelclock != ~0UL; phy_config++)
+		if (mpixelclock <=
+		    phy_config->mpixelclock)
+			break;
+
+	if (mpll_config->mpixelclock == ~0UL ||
+	    curr_ctrl->mpixelclock == ~0UL ||
+	    phy_config->mpixelclock == ~0UL) {
+		PRINTF("Pixel clock %u - unsupported by HDMI\n",
+			(unsigned) mpixelclock);
+		return -1;
+	}
+
+
+	const int resix = DW_HDMI_RES_8;
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
-	unsigned v1, v2;
-	hdmi_phy_i2c_read(hdmi, & v1, PHY_PLLCURRCTRL);
-	hdmi_phy_i2c_read(hdmi, & v2, PHY_PLLCLKBISTPHASE);
-	PRINTF("v1=%04X, v2=%04X\n", v1, v2);
 
 //	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
 //		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
@@ -7073,17 +7144,14 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 	 * preemp cgf 0.00
 	 * tx/ck lvl 10
 	 */
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].term, PHY_TXTERM);
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].sym_ctr, PHY_CKSYMTXCTRL);
-	hdmi_phy_i2c_write(hdmi, rockchip_phy_config[1].vlev_ctr, PHY_VLEVCTRL);
-	unsigned term, sym_ctr, vlev_ctr;
-	hdmi_phy_i2c_read(hdmi, & term, PHY_TXTERM);
-	hdmi_phy_i2c_read(hdmi, & sym_ctr, PHY_CKSYMTXCTRL);
-	hdmi_phy_i2c_read(hdmi, & vlev_ctr, PHY_VLEVCTRL);
-	PRINTF("term=%04X, sym_ctr=%04X, vlev_ctr=%04X\n", term, sym_ctr, vlev_ctr);
+	hdmi_phy_i2c_write(hdmi, phy_config->term, PHY_TXTERM);
+	hdmi_phy_i2c_write(hdmi, phy_config->sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
+
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
-	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 	hdmi_phy_enable_power(hdmi, 1);
 
@@ -7099,10 +7167,8 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 
 	/* wait for phy pll lock */
 	TP();
-	local_delay_ms(100);
-//	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) != 0)
-//		;
-	TP();
+	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
+		;
 	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 //	start = get_timer(0);
@@ -7113,8 +7179,79 @@ static void hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t dotcl
 //
 //		udelay(100);
 //	} while (get_timer(start) < 5);
-
+	return 0;	// OK
 }
+
+static void hdmi_tx_hdcp_config(HDMI_TX_TypeDef * const hdmi)
+{
+	uint8_t de;
+
+	if (1 /*hdmi->hdmi_data.video_mode.mdataenablepolarity */)
+		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_HIGH;
+	else
+		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_LOW;
+
+	/* disable rx detect */
+	hdmi->HDMI_A_HDCPCFG0 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG0_RXDETECT_MASK) |
+			HDMI_A_HDCPCFG0_RXDETECT_DISABLE;
+//	hdmi_modb(hdmi, HDMI_A_HDCPCFG0_RXDETECT_DISABLE,
+//		  HDMI_A_HDCPCFG0_RXDETECT_MASK, HDMI_A_HDCPCFG0);
+
+	hdmi->HDMI_A_VIDPOLCFG = (hdmi->HDMI_A_VIDPOLCFG & ~ HDMI_A_VIDPOLCFG_DATAENPOL_MASK) |
+			de;
+//	hdmi_modb(hdmi, de, HDMI_A_VIDPOLCFG_DATAENPOL_MASK, HDMI_A_VIDPOLCFG);
+
+	hdmi->HDMI_A_HDCPCFG1 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK) |
+			HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE;
+//	hdmi_modb(hdmi, HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE,
+//		  HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK, HDMI_A_HDCPCFG1);
+}
+
+static void hdmi_video_sample(HDMI_TX_TypeDef * const hdmi)
+{
+	uint32_t val;
+	// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L366
+	unsigned color_format = 0x01;	// RGB, 8 bit
+
+	val = HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE |
+		((color_format << HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET) &
+		HDMI_TX_INVID0_VIDEO_MAPPING_MASK);
+	hdmi->HDMI_TX_INVID0 = val;
+
+	/* Enable TX stuffing: When DE is inactive, fix the output data to 0 */
+	val = HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE |
+		HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE |
+		HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE;
+	hdmi->HDMI_TX_INSTUFFING = val;
+	hdmi->HDMI_TX_GYDATA0 = 0x00;
+	hdmi->HDMI_TX_GYDATA1 = 0x00;
+	hdmi->HDMI_TX_RCRDATA0 = 0x00;
+	hdmi->HDMI_TX_RCRDATA1 = 0x00;
+	hdmi->HDMI_TX_BCBDATA0 = 0x00;
+	hdmi->HDMI_TX_BCBDATA1 = 0x00;
+}
+
+
+static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
+{
+	int count;
+	uint8_t val;
+
+	/* TMDS software reset */
+	hdmi->HDMI_MC_SWRSTZ = (uint8_t) ~ HDMI_MC_SWRSTZ_TMDSSWRST_REQ;
+	while ((hdmi->HDMI_MC_SWRSTZ & HDMI_MC_SWRSTZ_TMDSSWRST_REQ) == 0)
+		;
+
+	val = hdmi->HDMI_FC_INVIDCONF;
+//	if (hdmi->dev_type == IMX6DL_HDMI) {
+//		hdmi->HDMI_FC_INVIDCONF = val;
+//		return;
+//	}
+
+	for (count = 0; count < 4; count++)
+		hdmi->HDMI_FC_INVIDCONF = val;
+}
+#endif
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -7122,32 +7259,11 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-#else
-#endif
-
-#if 1
-	h3_hdmi_phy_init(dotclock);
-#else
-	// https://github.com/qiaoweibiao/T507_Kernel
-
-	bsp_hdmi_set_addr(HDMI_TX0_BASE);
-	bsp_hdmi_set_version(0);	// 0 or 1 - A64 work
-	bsp_hdmi_set_bias_source(0);	// 0 or 1 - A64 work
-	t507_hdmi_phy_init(dotclock);
-
-	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
-	(void) hdmi->HDMI_DESIGN_ID;
-	/* enable read access to HDMI controller */
-	phy->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-	(void) hdmi->HDMI_DESIGN_ID;
-#endif
-
-#if CPUSTYLE_T507 || CPUSTYLE_H616
 	/* PHY_I2CM_SLAVE_ADDR field values */
 //		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
 //		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
+	int cscon = 0;//hdmi->sink_is_hdmi && is_color_space_conversion(hdmi);
+
 	/* hdmi phy spec says to do the phy initialization sequence twice */
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -7156,19 +7272,22 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		hdmi_phy_enable_tmds(hdmi, 0);
 		hdmi_phy_enable_power(hdmi, 0);
 
-		/*ret = */hdmi_phy_configure(hdmi, dotclock);
+		int ret = hdmi_phy_configure(hdmi, dotclock, 8, cscon);
 //		if (ret) {
 //			debug("hdmi phy config failure %d\n", ret);
 //			return ret;
 //		}
 	}
-	hdmi_enable_video_path(hdmi, 0);
-	//bsp_hdmi_set_video_en(1);
+
+#else
+	h3_hdmi_phy_init(dotclock);
 #endif
 
 	h3_hdmi_init(vdmode);
-
-//	t507_hdmi_edid_test();
+	hdmi_enable_video_path(hdmi, 1);
+	hdmi_video_sample(hdmi);
+	hdmi_tx_hdcp_config(hdmi);
+	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
 #endif /* WITHHDMITVHW */
@@ -7489,7 +7608,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	const uint_fast32_t mask =
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 		0;
-	if (mask != bld->BLD_EN_COLOR_CTL)
+	//if (mask != bld->BLD_EN_COLOR_CTL)
 	{
 		// 5.10.9.1 BLD fill color control register
 		// BLD_FILL_COLOR_CTL
@@ -7513,7 +7632,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 //	const uint_fast32_t mask =
 //		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
 //		0;
-//	if (mask != bld->BLD_EN_COLOR_CTL)
+//	//if (mask != bld->BLD_EN_COLOR_CTL)
 //	{
 //		// 5.10.9.1 BLD fill color control register
 //		// BLD_FILL_COLOR_CTL

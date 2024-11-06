@@ -817,7 +817,7 @@
 	#define targetcodec1	(UINT32_C(1) << 20)		// PE20 on-board codec1 NAU8822L
 	#define targetfpga1		(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
-	#define targetxad2		(UINT32_C(1) << 11)		// PI11 ext2 external SPI device (PA BOARD ADC) CSEXT2
+	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
