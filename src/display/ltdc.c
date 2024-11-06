@@ -2894,7 +2894,7 @@ static void t113_tconlcd_CCU_configuration(void)
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
@@ -5780,13 +5780,23 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	unsigned ix = TCONTV_IX;
+
+    // 0x00010001
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
+
+	// 0x10100000
+    DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
+	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
+
 	// PLL_VIDEO0 as source
 	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
 	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
 	PRINTF("M_1=%u\n", M_1);
 	PRINTF("M_4=%u\n", M_4);
-
-	unsigned ix = TCONTV_IX;
 
     //CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
@@ -5858,16 +5868,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
     CCU->TVE0_CLK_REG = 0x82000001;
     CCU->TVE_BGR_REG = 0x00030003;
-
-    // 0x00010001
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
-
-	// 0x10100000
-    DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
 //  0x200

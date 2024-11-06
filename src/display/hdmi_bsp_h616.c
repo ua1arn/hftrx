@@ -404,6 +404,23 @@ static void sunxi_dw_hdmi_phy_set(unsigned clock, int phy_div)
 //	return 0;
 //}
 
+
+void bsp_hdmi_set_addr(uintptr_t base_addr)
+{
+	//hdmi_base_addr_v2 = (unsigned long long)base_addr;
+}
+
+void bsp_hdmi_set_version(unsigned int version)
+{
+	//hdmi_version = version;
+}
+
+int bsp_hdmi_set_bias_source(unsigned int src)
+{
+	//bias_source = src;
+	return 0;
+}
+
 void t507_hdmi_phy_init(uint_fast32_t dotclock)
 {
 	struct sunxi_hdmi_phy * const phy =
