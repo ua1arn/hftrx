@@ -1854,11 +1854,6 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#error Unsupported CPUSTYLE_xxx
 #endif
 
-//#define RTMIXIDLCD 2	/* 1 or 2 */
-//#if defined (TCONTV_PTR)
-//#define RTMIXIDTV 1	/* 1 or 2 */
-//#endif
-
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
@@ -5944,7 +5939,7 @@ static void hardware_de_initialize(const videomode_t * vdmode, int rtmixid)
 	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
 
-    CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
 
