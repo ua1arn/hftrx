@@ -6203,9 +6203,6 @@ static void awxx_deoutmapping(void)
 	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
 	// Для работы LVDS на RTMIX0 и TV0->HDMI на RTMIX1
 	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
-#if WITHHDMITVHW
-	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000022;
-#endif
 	DE_TOP->DE2TCON_MUX = 0x000000E4;
 	// ----------------- ПРОВЕРЕНО ----------------
 
