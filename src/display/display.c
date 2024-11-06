@@ -1682,6 +1682,104 @@ static const videomode_t vdmode_HDMI_1366x768at60 =
 	.interlaced = 0
 };
 
+// https://projectf.io/posts/video-timings-vga-720p-1080p/
+/* Aspect ratio 16:9 (1.7(7)), dot clock = xxx MHz */
+static const videomode_t vdmode_HDMI_1024x768at60 =
+{
+	.width = 1024,			/* LCD PIXEL WIDTH            */
+	.height = 768,			/* LCD PIXEL HEIGHT           */
+
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 280
+	.hsync = 44,			/* Horizontal synchronization XPULSE  */
+	.hbp = 148,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 88,				/* Horizontal front porch  XOFFSET */
+
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 45
+	.vsync = 5,				/* Vertical synchronization */
+	.vbp = 36,				/* Vertical back porch      */
+	.vfp = 4,				/* Vertical front porch */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
+static const videomode_t vdmode_HDMI_1440x900at60_not_working =
+{
+	.width = 1440,			/* LCD PIXEL WIDTH            */
+	.height = 900,			/* LCD PIXEL HEIGHT           */
+
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 464
+	.hsync = 152,			/* Horizontal synchronization XPULSE  */
+	.hbp = 464 - 80 - 152,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 80,				/* Horizontal front porch  XOFFSET */
+
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 34
+	.vsync = 6,				/* Vertical synchronization */
+	.vbp = 34 - 3 - 6,				/* Vertical back porch      */
+	.vfp = 3,				/* Vertical front porch */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
+static const videomode_t vdmode_HDMI_1440x900at75 =
+{
+	.width = 1440,			/* LCD PIXEL WIDTH            */
+	.height = 900,			/* LCD PIXEL HEIGHT           */
+
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 160
+	.hsync = 32,			/* Horizontal synchronization XPULSE  */
+	.hbp = 160 - 48 - 32,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 48,				/* Horizontal front porch  XOFFSET */
+
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 26
+	.vsync = 6,				/* Vertical synchronization */
+	.vbp = 26 - 3 - 6,				/* Vertical back porch      */
+	.vfp = 3,				/* Vertical front porch */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
+	.fps = 75,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
+static const videomode_t vdmode_HDMI_1280x720at60 =
+{
+	.width = 1280,			/* LCD PIXEL WIDTH            */
+	.height = 720,			/* LCD PIXEL HEIGHT           */
+
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 160
+	.hsync = 32,			/* Horizontal synchronization XPULSE  */
+	.hbp = 160 - 48 - 32,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 48,				/* Horizontal front porch  XOFFSET */
+
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 26
+	.vsync = 6,				/* Vertical synchronization */
+	.vbp = 26 - 3 - 6,				/* Vertical back porch      */
+	.vfp = 3,				/* Vertical front porch */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
 const videomode_t * get_videomode_CRT(void)
 {
 	return & vdmode_PAL0;
@@ -1689,8 +1787,11 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
+	//return & vdmode_HDMI_1024x768at60;
 	//return & vdmode_HDMI_1366x768at60;
-	return & vdmode_HDMI_1920x1080at60;
+	return & vdmode_HDMI_1280x720at60;
+	return & vdmode_HDMI_1440x900at75;
+	//return & vdmode_HDMI_1920x1080at60;
 }
 
 #endif /* WITHLTDCHW */
