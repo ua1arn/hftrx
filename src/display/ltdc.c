@@ -5940,15 +5940,14 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
 	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
-	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+//	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
 
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
 	//	0: PLL_DE
 	//	1: PLL_PERI0(2X)
-	// 0x80000000
 	unsigned divider = 4;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
@@ -5956,7 +5955,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
-    CCU->DE_CLK_REG = 0x80000000;
     local_delay_us(10);
 
 	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
