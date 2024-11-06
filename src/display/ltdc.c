@@ -7049,7 +7049,7 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 
 static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
 {
-	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 	/* Enable csc path */
 	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
@@ -7140,10 +7140,10 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	hdmi_phy_enable_spare(hdmi, 1);
 
 	/* wait for phy pll lock */
-	TP();
+	//TP();
 	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
 		;
-	PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 //	start = get_timer(0);
 //	do {
