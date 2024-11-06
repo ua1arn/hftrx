@@ -7442,11 +7442,14 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 #endif
 
 
-static void hardware_tcon_initialize(const videomode_t * vdmode)
+static void hardware_tcon_initialize(const videomode_t * vdmode, int rtmixid)
 {
 #if WITHHDMITVHW
-	t113_tcontv_initsteps(vdmode);
-	t113_hdmi_init(vdmode);
+	if (rtmixid == RTMIXIDTV)
+	{
+		t113_tcontv_initsteps(vdmode);
+		t113_hdmi_init(vdmode);
+	}
 #endif /* WITHHDMITVHW */
 
 #if defined (TVENCODER_PTR)
@@ -7454,13 +7457,16 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 	t113_tvout_init(vdmode);
 #endif /* defined (TVENCODER_PTR) */
 
-#if WITHLVDSHW
-	t113_tcon_lvds_initsteps(vdmode);
-#elif WITHMIPIDSISHW
-	t113_tcon_dsi_initsteps(vdmode);
-#else /* WITHLVDSHW */
-	t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
-#endif /* WITHLVDSHW */
+	if (rtmixid == RTMIXIDLCD)
+	{
+	#if WITHLVDSHW
+		t113_tcon_lvds_initsteps(vdmode);
+	#elif WITHMIPIDSISHW
+		t113_tcon_dsi_initsteps(vdmode);
+	#else /* WITHLVDSHW */
+		t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
+	#endif /* WITHLVDSHW */
+	}
 }
 
 void hardware_ltdc_initialize(const videomode_t * vdmodeX)
@@ -7488,7 +7494,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		const videomode_t * const vdmode = initstructs [i].vdmodef();
 
 	 	hardware_de_initialize(vdmode, rtmixid);
-		hardware_tcon_initialize(vdmode);
+		hardware_tcon_initialize(vdmode, rtmixid);
 		ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
 		t113_de_rtmix_initialize(rtmixid);
 		awxx_deoutmapping();				// после инициализации и TCON и DE
