@@ -7002,95 +7002,93 @@ struct dw_hdmi_phy_config {
 	uint32_t vlev_ctr;   /* voltage level control */
 };
 
-#if 1
+// https://github.com/EchoHeim/Allwinner-H616/blob/c499413803e4128439cadf2f56972e207721abe4/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c#L18
 
-// See https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/imx/dw_hdmi-imx.c#L36
+static const struct dw_hdmi_mpll_config sun50i_h616_mpll_cfg[] = {
+    {
+        27000000,
+        {
+            {0x00b3, 0x0003},
+            {0x2153, 0x0003},
+            {0x40f3, 0x0003},
+        },
+    },
+    {
+        74250000,
+        {
+            {0x0072, 0x0003},
+            {0x2145, 0x0003},
+            {0x4061, 0x0003},
+        },
+    },
+    {
+        148500000,
+        {
+            {0x0051, 0x0003},
+            {0x214c, 0x0003},
+            {0x4064, 0x0003},
+        },
+    },
+    {
+        297000000,
+        {
+            {0x0040, 0x0003},
+            {0x3b4c, 0x0003},
+            {0x5a64, 0x0003},
+        },
+    },
+    {
+        594000000,
+        {
+            {0x1a40, 0x0003},
+            {0x3b4c, 0x0003},
+            {0x5a64, 0x0003},
+        },
+    },
+    {
+        ~0UL,
+        {
+            {0x0000, 0x0000},
+            {0x0000, 0x0000},
+            {0x0000, 0x0000},
+        },
+    }};
 
-static const struct dw_hdmi_mpll_config imx_mpll_cfg[] = {
-	{
-		45250000, {
-			{ 0x01e0, 0x0000 },
-			{ 0x21e1, 0x0000 },
-			{ 0x41e2, 0x0000 }
-		},
-	}, {
-		92500000, {
-			{ 0x0140, 0x0005 },
-			{ 0x2141, 0x0005 },
-			{ 0x4142, 0x0005 },
-	},
-	}, {
-		148500000, {
-			{ 0x00a0, 0x000a },
-			{ 0x20a1, 0x000a },
-			{ 0x40a2, 0x000a },
-		},
-	}, {
-		216000000, {
-			{ 0x00a0, 0x000a },
-			{ 0x2001, 0x000f },
-			{ 0x4002, 0x000f },
-		},
-	}, {
-		~0UL, {
-			{ 0x0000, 0x0000 },
-			{ 0x0000, 0x0000 },
-			{ 0x0000, 0x0000 },
-		},
-	}
-};
+static const struct dw_hdmi_curr_ctrl sun50i_h616_cur_ctr[] = {
+    /* pixelclk    bpp8    bpp10   bpp12 */
+    {
+        27000000,
+        {0x0012, 0x0000, 0x0000},
+    },
+    {
+        74250000,
+        {0x0013, 0x0013, 0x0013},
+    },
+    {
+        148500000,
+        {0x0019, 0x0019, 0x0019},
+    },
+    {
+        297000000,
+        {0x0019, 0x001b, 0x0019},
+    },
+    {
+        594000000,
+        {0x0010, 0x0010, 0x0010},
+    },
+    {
+        ~0UL,
+        {0x0000, 0x0000, 0x0000},
+    }};
 
-static const struct dw_hdmi_curr_ctrl imx_cur_ctr[] = {
-	/*      pixelclk     bpp8    bpp10   bpp12 */
-	{
-		54000000, { 0x091c, 0x091c, 0x06dc },
-	}, {
-		58400000, { 0x091c, 0x06dc, 0x06dc },
-	}, {
-		72000000, { 0x06dc, 0x06dc, 0x091c },
-	}, {
-		74250000, { 0x06dc, 0x0b5c, 0x091c },
-	}, {
-		118800000, { 0x091c, 0x091c, 0x06dc },
-	}, {
-		216000000, { 0x06dc, 0x0b5c, 0x091c },
-	}, {
-		~0UL, { 0x0000, 0x0000, 0x0000 },
-	},
-};
-
-/*
- * Resistance term 133Ohm Cfg
- * PREEMP config 0.00
- * TX/CK level 10
- */
-static const struct dw_hdmi_phy_config imx_phy_config[] = {
-	/*pixelclk   symbol   term   vlev */
-	{ 216000000, 0x800d, 0x0005, 0x01ad},
-	{ ~0UL,      0x0000, 0x0000, 0x0000}
-};
-
-
-static const struct dw_hdmi_phy_config rockchip_phy_config[] = {
-	{
-		.mpixelclock = 74250000,
-		.sym_ctr = 0x8009, .term = 0x0004, .vlev_ctr = 0x0272,
-	}, {
-		.mpixelclock = 148500000,
-		.sym_ctr = 0x802b, .term = 0x0004, .vlev_ctr = 0x028d,
-	}, {
-		.mpixelclock = 297000000,
-		.sym_ctr = 0x8039, .term = 0x0005, .vlev_ctr = 0x028d,
-	}, {
-		.mpixelclock = 584000000,
-		.sym_ctr = 0x8039, .term = 0x0000, .vlev_ctr = 0x019d,
-	}, {
-		.mpixelclock = ~0ul,
-		.sym_ctr = 0x0000, .term = 0x0000, .vlev_ctr = 0x0000,
-	}
-};
-
-#endif
+static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
+    /*pixelclk   symbol   term   vlev*/
+    {27000000, 0x8009, 0x0007, 0x02b0},
+    {74250000, 0x8019, 0x0004, 0x0290},
+    {148500000, 0x8019, 0x0004, 0x0290},
+    {297000000, 0x8039, 0x0004, 0x022b},
+    {594000000, 0x8029, 0x0000, 0x008a},
+    {~0UL, 0x0000, 0x0000, 0x0000}};
 
 /* hdmi initialization step b.4 */
 static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
@@ -7150,9 +7148,9 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
 	hdmi_phy_test_clear(hdmi, 0);
 
-	const struct dw_hdmi_mpll_config *mpll_config = imx_mpll_cfg;
-	const struct dw_hdmi_curr_ctrl *curr_ctrl = imx_cur_ctr;
-	const struct dw_hdmi_phy_config *phy_config = imx_phy_config;
+	const struct dw_hdmi_mpll_config *mpll_config = sun50i_h616_mpll_cfg;
+	const struct dw_hdmi_curr_ctrl *curr_ctrl = sun50i_h616_cur_ctr;
+	const struct dw_hdmi_phy_config *phy_config = sun50i_h616_phy_config;
 
 	/* PLL/MPLL Cfg - always match on final entry */
 	for (; mpll_config->mpixelclock != ~0UL; mpll_config++)
