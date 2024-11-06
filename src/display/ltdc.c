@@ -5780,8 +5780,9 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 			(tcontv_divider) * (UINT32_C(1) << 0) |
 			0;
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+    //PRINTF("TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
 
-	const unsigned HDMI_CLK_REG_M = M_TCON; //2;
+	const unsigned HDMI_CLK_REG_M = M_HDMI;
 	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
