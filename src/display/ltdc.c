@@ -5537,6 +5537,11 @@ static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 
 static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, const videomode_t * dstvdmode)
 {
+	if (srcvdmode->width == dstvdmode->width && srcvdmode->height == dstvdmode->height)
+	{
+		sun8i_vi_scaler_enable(rtmixid, 0);
+		return;
+	}
 	uint32_t src_w = srcvdmode->width;
 	uint32_t src_h = srcvdmode->height;
 
@@ -5565,9 +5570,9 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
 	if (vsu == NULL)
 		return;
-	if (vdmodein == vdmodeout)
+	if (vdmodein->width == vdmodeout->width && vdmodein->height == vdmodeout->height)
 	{
-		vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+		vsu->VSU_CTRL_REG = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 		return;
 	}
 
@@ -5793,10 +5798,10 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 	// PLL_VIDEO0 as source
-	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
-	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
-	PRINTF("M_1=%u\n", M_1);
-	PRINTF("M_4=%u\n", M_4);
+//	unsigned M_4 = calcdivround2(allwnr_t507_get_pll_video0_x4_freq(), dotclock);
+//	unsigned M_1 = calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock);
+//	PRINTF("M_1=%u\n", M_1);
+//	PRINTF("M_4=%u\n", M_4);
 
     //CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
@@ -5816,7 +5821,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	const unsigned TV_CLK_REG_M = 2;
 	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	TCONTV_CCU_CLK_REG = 0x84000001;	// 010: PLL_VIDEO1(1X)
+	TCONTV_CCU_CLK_REG = 0x84000001;	// 100: PLL_VIDEO2(1X)
 
 	// 0x82000000
 	const unsigned HDMI_CLK_REG_M = 2;
