@@ -6353,15 +6353,15 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
 //	/* descramble register offsets */
 //	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
-	local_delay_ms(10);
-	phy->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
-	local_delay_ms(10);
-	phy->REXT_CTRL = (HDMI_PHY->REXT_CTRL & 0xFFFF0000) | 0x80C00000;
-	local_delay_ms(10);
-	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
-#endif
+//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
+//	local_delay_ms(10);
+//	phy->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
+//	local_delay_ms(10);
+//	phy->REXT_CTRL = (HDMI_PHY->REXT_CTRL & 0xFFFF0000) | 0x80C00000;
+//	local_delay_ms(10);
+//	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
+//#endif
 
 	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
@@ -6514,14 +6514,14 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 	hdmi->HDMI_FC_VSYNCINDELAY = VFP;
 	hdmi->HDMI_FC_VSYNCINWIDTH = VSYNC;            // Vertical sync pulse
 
-	hdmi->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
-	hdmi->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
-	hdmi->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
-	hdmi->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	hdmi->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	hdmi->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;    // Main Controller Feed Through Control
-	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
+//	hdmi->HDMI_FC_CTRLDUR = 12;   // Frame Composer Control Period Duration
+//	hdmi->HDMI_FC_EXCTRLDUR = 32; // Frame Composer Extended Control Period Duration
+//	hdmi->HDMI_FC_EXCTRLSPAC = 1; // Frame Composer Extended Control Period Maximum Spacing
+//	hdmi->HDMI_FC_CH0PREAM = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+//	hdmi->HDMI_FC_CH1PREAM = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+//	hdmi->HDMI_FC_CH2PREAM = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+//	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;    // Main Controller Feed Through Control
+//	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
 			hdmi->HDMI_DESIGN_ID,
@@ -6695,8 +6695,8 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 
-	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
-	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
+//	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
+//	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
 
 	//	 TV_SRC_SEL
 	//	 TV Source Select
@@ -6708,15 +6708,11 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	//	 101: Reserved
 	//	 111: Gridding Check
 
-	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
-	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient, 2 -grayscale gradient
+	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// едокументированно, но требуется
+	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
-	* (uint32_t volatile *) 0x0000000006515110 = 0x100;
-	* (uint32_t volatile *) 0x0000000006515124 = 0x100;
-	* (uint32_t volatile *) 0x0000000006515138 = 0x100;
-	//printhex32(TCONTV_PTR, TCONTV_PTR, 0x400);
 
 #else
 	//#error CPUSTYLE_xxx error
