@@ -1632,6 +1632,7 @@ static const videomode_t vdmode_PAL0 =
 /* HDMI TV out parameters HD 1920x1080 60 Hz*/
 /* Aspect ratio 16:9 (1.7(7)), dot clock = 148.5 MHz */
 // https://edid.tv/edid/2253/
+// ! TESTED
 static const videomode_t vdmode_HDMI_1920x1080at60 =
 {
 	.width = 1920,			/* LCD PIXEL WIDTH            */
@@ -1657,7 +1658,8 @@ static const videomode_t vdmode_HDMI_1920x1080at60 =
 };
 
 // https://projectf.io/posts/video-timings-vga-720p-1080p/
-/* Aspect ratio 16:9 (1.7(7)), dot clock = xxx MHz */
+/* Aspect ratio 16:9 (1.7(7)), dot clock = 80.291 MHz */
+// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 static const videomode_t vdmode_HDMI_1366x768at60 =
 {
 	.width = 1366,			/* LCD PIXEL WIDTH            */
@@ -1682,8 +1684,8 @@ static const videomode_t vdmode_HDMI_1366x768at60 =
 	.interlaced = 0
 };
 
-// https://projectf.io/posts/video-timings-vga-720p-1080p/
 /* Aspect ratio 16:9 (1.7(7)), dot clock = xxx MHz */
+// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 static const videomode_t vdmode_HDMI_1024x768at60 =
 {
 	.width = 1024,			/* LCD PIXEL WIDTH            */
@@ -1708,6 +1710,7 @@ static const videomode_t vdmode_HDMI_1024x768at60 =
 	.interlaced = 0
 };
 
+// ! NOTTESTED
 static const videomode_t vdmode_HDMI_1440x900at60_not_working =
 {
 	.width = 1440,			/* LCD PIXEL WIDTH            */
@@ -1732,6 +1735,7 @@ static const videomode_t vdmode_HDMI_1440x900at60_not_working =
 	.interlaced = 0
 };
 
+// ! NOTTESTED
 static const videomode_t vdmode_HDMI_1440x900at75 =
 {
 	.width = 1440,			/* LCD PIXEL WIDTH            */
@@ -1756,26 +1760,29 @@ static const videomode_t vdmode_HDMI_1440x900at75 =
 	.interlaced = 0
 };
 
-static const videomode_t vdmode_HDMI_1280x720at60 =
+// Pixel Clock: 74.25MHz
+/* Aspect ratio 16:9 (1.7(7)), dot clock = 74.250 MHz */
+// ! TESTED
+static const videomode_t vdmode_HDMI_1280x720at50 =
 {
 	.width = 1280,			/* LCD PIXEL WIDTH            */
 	.height = 720,			/* LCD PIXEL HEIGHT           */
 
-	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 160
-	.hsync = 32,			/* Horizontal synchronization XPULSE  */
-	.hbp = 160 - 48 - 32,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
-	.hfp = 48,				/* Horizontal front porch  XOFFSET */
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 700
+	.hsync = 40,			/* Horizontal synchronization XPULSE  */
+	.hbp = 700 - 40 - 440,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 440,				/* Horizontal front porch  XOFFSET */
 
-	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 26
-	.vsync = 6,				/* Vertical synchronization */
-	.vbp = 26 - 3 - 6,				/* Vertical back porch      */
-	.vfp = 3,				/* Vertical front porch */
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 30
+	.vsync = 5,				/* Vertical synchronization */
+	.vbp = 30 - 5 - 5,				/* Vertical back porch      */
+	.vfp = 5,				/* Vertical front porch */
 
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.fps = 60,	/* frames per second */
+	.fps = 50,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
 };
@@ -1787,11 +1794,11 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	//return & vdmode_HDMI_1024x768at60;
-	//return & vdmode_HDMI_1366x768at60;
-	return & vdmode_HDMI_1280x720at60;
-	return & vdmode_HDMI_1440x900at75;
-	//return & vdmode_HDMI_1920x1080at60;
+	return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
+	//return & vdmode_HDMI_1440x900at75;
+	return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
 
 #endif /* WITHLTDCHW */
