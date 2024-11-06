@@ -5437,7 +5437,6 @@ void looptests(void)
 	}
 #endif
 #if 0
-	//for (;;)
 	{
 		PRINTF("TCONTV_PTR->TV_DEBUG_REG=%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
 		//printhex32(0x00000000065100f0, 0x00000000065100f0, 16);
@@ -6775,6 +6774,7 @@ void testpng_no_stretch(const void * pngbuffer)
 	const unsigned pich = png->height;
 
 	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
+	PRINTF("testpng: dim_x=%u, dim_y=%u\n", DIM_X, DIM_Y);
 
 	//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
 
@@ -11383,7 +11383,7 @@ void hightests(void)
 
 		};
 
-		testpng_no_stretch(png);
+		testpng_no_stretch(png);	// становить формат DE2_FORMAT_XBGR_8888
 		for (;;)
 			;
 	}

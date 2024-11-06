@@ -5871,8 +5871,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
     //CCU->HDMI_CEC_CLK_REG = 0x80000000;
 
-    CCU->TVE0_CLK_REG = 0x82000001;
-    CCU->TVE_BGR_REG = 0x00030003;
+//    CCU->TVE0_CLK_REG = 0x82000001;
+//    CCU->TVE_BGR_REG = 0x00030003;
 
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
 //  0x200
@@ -5888,18 +5888,11 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
     local_delay_us(10);
 
-//	TCON_TV0->TV_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-//	TCON_TV0->TV_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-
-	/* enable read access to HDMI controller */
-    HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-    HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-	PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+	//	7 allwnr_t507_get_hdmi_hdcp_freq()=300000 kHz
+	//	7 allwnr_t507_get_hdmi_freq()=297000 kHz
+	//	7 BOARD_TCONLCDFREQ()=148500 kHz
 
 	PRINTF("7 allwnr_t507_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi_hdcp_freq() / 1000));
-
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
 	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
@@ -6716,7 +6709,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 	//	 111: Gridding Check
 
 	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
-	TCONTV_PTR->TV_SRC_CTL_REG = 1;             //0 - DE, 1..7 - test 1 - color gradient
+	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test 1 - color gradient, 2 -grayscale gradient
 	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
