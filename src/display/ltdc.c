@@ -5759,11 +5759,12 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	//PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 	// PLL_VIDEO0 as source
-	const uint_fast32_t pllout = allwnr_t507_get_pll_video0_x4_freq();
-	unsigned M_TCON = calcdivround2(pllout, dotclock);
-	unsigned M_HDMI = calcdivround2(pllout, dotclock);
-//	PRINTF("M_1=%u\n", M_TCON);
-//	PRINTF("M_4=%u\n", M_HDMI);
+	const uint_fast32_t pllout = allwnr_t507_get_pll_video0_x1_freq();
+	unsigned M_TCON = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
+	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
+	PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
+	PRINTF("7 M_TCON=%u\n", M_TCON);
+	PRINTF("7 M_HDMI=%u\n", M_HDMI);
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
@@ -5776,11 +5777,11 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
 
 	const unsigned TV_CLK_REG_M = M_HDMI;//2;
-	TCONTV_CCU_CLK_REG = 0x01 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
+	TCONTV_CCU_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (TV_CLK_REG_M - 1);	// 000: PLL_VIDEO0(1X)
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
 	const unsigned HDMI_CLK_REG_M = M_TCON; //2;
-	CCU->HDMI0_CLK_REG = 0x01 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
+	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 

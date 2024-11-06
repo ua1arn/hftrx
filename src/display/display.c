@@ -1657,21 +1657,21 @@ static const videomode_t vdmode_HDMI_1920x1080at60 =
 };
 
 // https://projectf.io/posts/video-timings-vga-720p-1080p/
-// Aspect Ratio 4:3
-static const videomode_t vdmode_HDMI_800x600at60 =
+/* Aspect ratio 16:9 (1.7(7)), dot clock = xxx MHz */
+static const videomode_t vdmode_HDMI_1366x768at60 =
 {
-	.width = 800,			/* LCD PIXEL WIDTH            */
-	.height = 600,			/* LCD PIXEL HEIGHT           */
+	.width = 1366,			/* LCD PIXEL WIDTH            */
+	.height = 768,			/* LCD PIXEL HEIGHT           */
 
-	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 256
-	.hsync = 128,			/* Horizontal synchronization XPULSE  */
-	.hbp = 88,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
-	.hfp = 40,				/* Horizontal front porch  XOFFSET */
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 280
+	.hsync = 44,			/* Horizontal synchronization XPULSE  */
+	.hbp = 148,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 88,				/* Horizontal front porch  XOFFSET */
 
-	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 28
-	.vsync = 4,				/* Vertical synchronization */
-	.vbp = 23,				/* Vertical back porch      */
-	.vfp = 1,				/* Vertical front porch */
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 45
+	.vsync = 5,				/* Vertical synchronization */
+	.vbp = 36,				/* Vertical back porch      */
+	.vfp = 4,				/* Vertical front porch */
 
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
@@ -1689,7 +1689,7 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	//return & vdmode_HDMI_800x600at60;
+	//return & vdmode_HDMI_1366x768at60;
 	return & vdmode_HDMI_1920x1080at60;
 }
 
