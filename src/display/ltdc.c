@@ -5630,23 +5630,6 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
 }
 
-static void t113_de_scaler_initialize(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
-{
-	PRINTF("t113_de_scaler_initialize: rtmixid=%d\n", rtmixid);
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-    {
-    	t113_vsu_setup(rtmixid, vdmodein, vdmodeout);
-    }
-#else
-	{
-		t113_vi_scaler_setup(rtmixid, vdmodein, vdmodeout);
-	}
-#endif
-//	PRINTF("1 SUN8I_SCALER_VSU_CTRL(base) = %08X\n", (unsigned) (T113_DE_BASE_N(rtmixid) + T113_DE_MUX_VSU) );
-//	PRINTF("2 SUN8I_SCALER_VSU_CTRL(base) = %08X\n", (unsigned) (de3_getvsu(rtmixid)) );
-//	printhex32((uintptr_t) de3_getvsu(rtmixid), de3_getvsu(rtmixid), sizeof * de3_getvsu(rtmixid));
-}
-
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO0
@@ -7518,9 +7501,14 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		//TP();
 
 		// проверка различных scalers
-	//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
-	//	sun8i_vi_scaler_enable(rtmixid, 0);
+	#if 0
 		h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	#elif 1//CPUSTYLE_T507 || CPUSTYLE_H616
+    	t113_vsu_setup(rtmixid, get_videomode_DESIGN(), vdmode);
+	#else
+    	// On T507 not working...
+		t113_vi_scaler_setup(rtmixid, get_videomode_DESIGN(), vdmode);
+	#endif
 
 		// save settings
 		t113_de_update(rtmixid);	/* Update registers */
