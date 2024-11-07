@@ -5578,58 +5578,6 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 	sun8i_vi_scaler_enable(rtmixid, 1);
 }
 
-// в rtmix0 - похоже не работает с форматом RGB565 или 8888
-static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
-{
-	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
-	// начения менее 1.0 - меньше исходных пикселей/строк становятся большим количеством
-	//const uint_fast32_t scale_x = (((uint_fast64_t) (vdmodeout->width * 15 / 10) << FRAСTWIDTH) / vdmodein->width) << 1;	// 1.0 приводит к исчезновению изображения
-	const uint_fast32_t scale_x = (((uint_fast64_t) vdmodein->width << FRAСTWIDTH) / vdmodeout->width) << 1;	// 1.0 приводит к исчезновению изображения
-	const uint_fast32_t scale_y = (((uint_fast64_t) vdmodein->height << FRAСTWIDTH) / vdmodeout->height) << 1;
-
-	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
-	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
-	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
-	if (vsu == NULL)
-		return;
-	if (vdmodein->width == vdmodeout->width && vdmodein->height == vdmodeout->height)
-	{
-		vsu->VSU_CTRL_REG = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
-		return;
-	}
-
-	//memset(vsu, 0, sizeof * vsu);
-	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
-	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
-
-	vsu->VSU_SCALE_MODE_REG = 0x00;	// FIFO number and filter type for different scale mode 0x0: UI mode (for ARGB/YUV444 format)
-
-	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
-
-	vsu->VSU_Y_SIZE_REG   = ssize;
-	vsu->VSU_Y_HSTEP_REG  = scale_x;	// 1.0 приводит к исчезновению изображения
-	vsu->VSU_Y_VSTEP_REG  = scale_y;
-	vsu->VSU_C_SIZE_REG   = ssize;		// input size
-	vsu->VSU_C_HSTEP_REG  = scale_x;	// 1.0 приводит к исчезновению изображения
-	vsu->VSU_C_VSTEP_REG  = scale_y;
-
-	// Загрущки значенией не происходит. Разобраться
-	for (int n=0; n < 32; n++)
-	{
-
-		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
-		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
-		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
-
-		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
-		vsu->VSU_C_HCOEF1_REGN [n] = 0;
-		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
-	}
-
-	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 4);	// COEF_SWITCH_EN
-	vsu->VSU_CTRL_REG |= (UINT32_C(1) << 0);	// EN
-}
-
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO0
@@ -7501,10 +7449,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		//TP();
 
 		// проверка различных scalers
-	#if 0
+	#if 1
 		h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	#elif 1//CPUSTYLE_T507 || CPUSTYLE_H616
-    	t113_vsu_setup(rtmixid, get_videomode_DESIGN(), vdmode);
 	#else
     	// On T507 not working...
 		t113_vi_scaler_setup(rtmixid, get_videomode_DESIGN(), vdmode);
