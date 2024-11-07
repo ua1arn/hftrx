@@ -7521,9 +7521,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 	//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
 	//	sun8i_vi_scaler_enable(rtmixid, 0);
 		h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	//	t113_de_scaler_initialize(rtmixid, get_videomode_DESIGN(), vdmode);
 
-		//TP();
 		// save settings
 		t113_de_update(rtmixid);	/* Update registers */
 		PRINTF("Init rtmixid=%d done\n", rtmixid);
