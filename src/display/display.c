@@ -1633,6 +1633,9 @@ static const videomode_t vdmode_PAL0 =
 /* Aspect ratio 16:9 (1.7(7)), dot clock = 148.5 MHz */
 // https://edid.tv/edid/2253/
 // ! TESTED
+//	1920x1080 (0x47)  138.5MHz -HSync -VSync *current +preferred
+//	 h: width  1920 start 1968 end 2000 total 2080 skew    0 clock   66.6KHz
+//	 v: height 1080 start 1088 end 1102 total 1110           clock   60.0Hz
 static const videomode_t vdmode_HDMI_1920x1080at60 =
 {
 	.width = 1920,			/* LCD PIXEL WIDTH            */
@@ -1806,8 +1809,8 @@ const videomode_t * get_videomode_HDMI(void)
 {
 	//return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
-	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
-	return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
+	return & vdmode_HDMI_1280x720at50;	// ! TESTED
+	//return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
 	//return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
 
