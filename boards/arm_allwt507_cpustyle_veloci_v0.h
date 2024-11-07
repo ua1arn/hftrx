@@ -134,7 +134,7 @@
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
 		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
-		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+		//#define WITHI2S1HW	1	/* Использование I2S1 - звук через HDMI */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
 		#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
@@ -149,6 +149,7 @@
 		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_HDMI_DUPLEX_MASTER	1		/* Канал выдачи в HDMI */
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -371,9 +372,16 @@
 	arm_hardware_pioa_altfn50(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PA7 H_I2S0_BCLK	*/ \
 	arm_hardware_pioa_altfn50(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PA5 H_I2S0_DOUT0 to FPGA */ \
 	arm_hardware_pioa_altfn50(UINT32_C(1) << 9,	GPIO_CFG_AF3); /* PA9 H_I2S0_DIN0 from FPGA */ \
-} while (0)
+	} while (0)
 #define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 #define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
+
+/* HDMI */
+#define I2S1HW_INITIALIZE(master) do { \
+	} while (0)
+
+#define HARDWARE_I2S1HW_DIN 0	/* stub */
+#define HARDWARE_I2S1HW_DOUT 0	/* stub */
 
 /* Распределение битов в ARM контроллерах */
 

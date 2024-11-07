@@ -5386,7 +5386,20 @@ static const codechw_t audiocodechw_i2s0_duplex_master =
 };
 #endif /* defined(I2S0) && WITHI2S0HW */
 
-#if defined(I2S1) && WITHI2S1HW
+#if defined(I2S1) && WITHI2S1HW && ! WITHCODEC1_HDMI_DUPLEX_MASTER
+static const codechw_t audiocodechw_i2s1_duplex_master =
+{
+	hardware_i2s1_master_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S1_RX_initialize_codec1,
+	DMAC_I2S1_TX_initialize_codec1,
+	hardware_i2s1_enable,
+	hardware_dummy_enable,
+	"audiocodechw-i2s1-duplex-master"
+};
+#endif /* defined(I2S1) && WITHI2S1HW */
+
+#if defined(I2S1) && WITHI2S1HW && WITHCODEC1_HDMI_DUPLEX_MASTER
 static const codechw_t audiocodechw_i2s1_duplex_master =
 {
 	hardware_i2s1_master_duplex_initialize_codec1,
@@ -7854,6 +7867,9 @@ static const codechw_t * const channels [] =
 	#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER	// allwinner t113-s3 or F133
 		& audiocodechw_AudioCodec_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
 	#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
+	#if WITHCODEC1_HDMI_DUPLEX_MASTER	// allwinner A64
+		& audiocodechw_i2s1_duplex_master,					// Интерфейс к HDMI
+	#endif /* WITHCODEC1_HDMI_DUPLEX_MASTER */
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 
 #else
