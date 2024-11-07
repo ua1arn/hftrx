@@ -1737,27 +1737,35 @@ static const videomode_t vdmode_HDMI_1440x900at60_not_working =
 	.interlaced = 0
 };
 
-// ! NOTTESTED
-static const videomode_t vdmode_HDMI_1440x900at75 =
+//	1440x900 (0xb5)  106.5MHz -HSync +VSync
+//	h: width  1440 start 1520 end 1672 total 1904 skew    0 clock   55.9KHz
+//	v: height  900 start  903 end  909 total  934           clock   59.9Hz
+// ! TESTED, параметры не подтверждены, работает на 50 герц
+// 74.720 MHz
+static const videomode_t vdmode_HDMI_1440x900at50 =
 {
 	.width = 1440,			/* LCD PIXEL WIDTH            */
 	.height = 900,			/* LCD PIXEL HEIGHT           */
 
 	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 160
-	.hsync = 32,			/* Horizontal synchronization XPULSE  */
-	.hbp = 160 - 48 - 32,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
-	.hfp = 48,				/* Horizontal front porch  XOFFSET */
+    .hsync = 32,            /* Horizontal synchronization XPULSE  */
+    .hbp = 160 - 48 - 32,    /* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+    .hfp = 48,                /* Horizontal front porch  XOFFSET */
+//	.hsync = 152,			/* Horizontal synchronization XPULSE  */
+//	.hbp = 232,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+//	.hfp = 80,				/* Horizontal front porch  XOFFSET */
 
 	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 26
 	.vsync = 6,				/* Vertical synchronization */
-	.vbp = 26 - 3 - 6,				/* Vertical back porch      */
+    //.vbp = 26 - 3 - 6,                /* Vertical back porch      */
+	.vbp = 25,                /* Vertical back porch      */
 	.vfp = 3,				/* Vertical front porch */
 
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.vsyncneg = 0,			/* Positive polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.fps = 60,	/* frames per second */
+	.fps = 50,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
 };
@@ -1797,9 +1805,9 @@ const videomode_t * get_videomode_CRT(void)
 const videomode_t * get_videomode_HDMI(void)
 {
 	//return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
-	return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	//return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
-	//return & vdmode_HDMI_1440x900at75;
+	return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
 	//return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
 
