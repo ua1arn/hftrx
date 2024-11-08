@@ -4602,8 +4602,7 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 }
 
 
-/* Передача в HDMI */
-/* на встроенный в процессор или подключенный по I2S */
+/* Передача звука в HDMI */
 static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(unsigned dmach)
 {
 	const uintptr_t newaddr = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());
