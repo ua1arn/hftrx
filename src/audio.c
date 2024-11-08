@@ -861,6 +861,7 @@ adapter_t afcodecrx;		/* от микрофона */
 adapter_t afcodectx;		/* к наушникам */
 adapter_t ifcodecrx;		/* канал от FPGA к процессору */
 adapter_t ifcodectx;		/* канал от процессора к FPGA */
+adapter_t adhdmi48tx;			/* к HDMI */
 
 //#if WITHRTS96
 adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
@@ -892,6 +893,7 @@ static void adapterst_initialize(void)
 	/* Аудиокодек */
 	adpt_initialize(& afcodecrx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT, "afcodecrx");
 	adpt_initialize(& afcodectx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT, "afcodectx");
+	adpt_initialize(& adhdmi48tx, WITHADAPTERHDMIWIDTH, WITHADAPTERHDMISHIFT, "hdmi48tx");
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecrx, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT, "ifcodecrx");
 	adpt_initialize(& ifcodectx, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT, "ifcodectx");
@@ -5118,6 +5120,10 @@ void dsp_fillphones(unsigned nsamples)
 			break;
 		}
 #endif /*  */
+#if 0
+		b.IV = get_lout();
+		b.QV = get_rout();
+#endif
 		elfill_dmabuffer16tx(b.IV, b.QV);
 #if WITHHDMITVHW
 		elfill_dmabufferhdmi48tx(b.IV, b.QV);

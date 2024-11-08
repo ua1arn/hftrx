@@ -139,6 +139,8 @@ enum
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
+#define WITHADAPTERHDMIWIDTH 24
+#define WITHADAPTERHDMISHIFT 0
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	/* параметры входного/выходного адаптеров */
@@ -330,6 +332,7 @@ extern adapter_t ifcodecrx;	/* канал от FPGA к процессору */
 extern adapter_t ifcodectx;	/* канал от процессора к FPGA */
 extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
 extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
+extern adapter_t adhdmi48tx;			/* к HDMI */
 
 extern adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
 extern adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */

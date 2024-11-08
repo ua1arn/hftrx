@@ -1196,8 +1196,6 @@ typedef ALIGNX_BEGIN struct hdmi48tx_tag
 
 typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
 
-//typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> hdmi48txadpt_t;
-
 typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1> hdmi48txdma_t;
 
 static RAMNC hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
@@ -1226,8 +1224,8 @@ uintptr_t getfilled_dmabufferhdmi48tx(void) /* take from queue CPU to HDMI */
 	// тестирование вывода на кодек
 	for (unsigned i = 0; i < ARRAY_SIZE(dest->buff); i += DMABUFFSTEPHDMI48TX)
 	{
-		dest->buff [i + 0] = adpt_output(& afcodectx, get_lout());
-		dest->buff [i + 1] = adpt_output(& afcodectx, get_rout());
+		dest->buff [i + 0] = adpt_output(& adhdmi48tx, get_lout());
+		dest->buff [i + 1] = adpt_output(& adhdmi48tx, get_rout());
 	}
 	//printhex32(0, phones->buff, sizeof phones->buff);
 #endif
@@ -1256,6 +1254,20 @@ int_fast32_t cachesize_dmabufferhdmi48tx(void) /* parameter for cache manipulati
 int_fast32_t datasize_dmabufferhdmi48tx(void) /* parameter for DMA CPU to HDMI */
 {
 	return hdmi48tx.get_datasize();
+}
+
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabufferhdmi48tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [0] = adpt_output(& adhdmi48tx, ch0);
+	b [1] = adpt_output(& adhdmi48tx, ch1);
+	return DMABUFFSTEPHDMI48TX;
+}
+
+void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1)
+{
+	hdmi48tx.savedata(ch0, ch1, putcbf_dmabufferhdmi48tx);
 }
 
 #endif /* WITHHDMITVHW */
