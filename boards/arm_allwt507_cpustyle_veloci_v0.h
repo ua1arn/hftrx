@@ -158,7 +158,7 @@
 		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-		//#define WITHCODEC1_HDMI_DUPLEX_MASTER	1		/* Канал выдачи в HDMI */
+		#define WITHCODEC2_HDMI_DUPLEX_MASTER	1		/* Канал выдачи в HDMI */
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */

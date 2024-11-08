@@ -4046,7 +4046,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		(void) AHUB->AHUB_RST;
 		AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 		(void) AHUB->AHUB_RST;
-		PRINTF("NSLOTS=%d, ix=%d, apbifrxix=%d, apbiftxix=%d\n", NSLOTS, ix, apbifrxix, apbiftxix);
+		//PRINTF("NSLOTS=%d, ix=%d, apbifrxix=%d, apbiftxix=%d\n", NSLOTS, ix, apbifrxix, apbiftxix);
 
 		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
@@ -4605,6 +4605,7 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Передача звука в HDMI */
 static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(unsigned dmach)
 {
+	return;
 	const uintptr_t newaddr = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());
 	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
