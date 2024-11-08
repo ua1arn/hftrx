@@ -2180,6 +2180,8 @@ static const struct dram_para para = {
 	.type = SUNXI_DRAM_TYPE_LPDDR3,
 #elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR4)
 	.type = SUNXI_DRAM_TYPE_LPDDR4,
+#elif defined(CONFIG_SUNXI_DRAM_H618_LPDDR4)
+	.type = SUNXI_DRAM_TYPE_LPDDR4,
 #endif
 	.dx_odt = CONFIG_DRAM_SUN50I_H616_DX_ODT,
 	.dx_dri = CONFIG_DRAM_SUN50I_H616_DX_DRI,

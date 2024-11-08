@@ -1,12 +1,18 @@
 #include "hardware.h"
-#include "main.h"
+
+// TODO: move to config file
+
+//	#define WITHSDRAM_AXP313 1
+//	#define PMIC_I2C_W 0x6C  // 7bit: 0x36
+//	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+//	int axp313_initialize(void)
 
 #if WITHSDRAM_AXP313
 
 #include "gpio.h"
 #include "formats.h"
 
-#include "axp313.h"
+//#include "axp313.h"
 
 #include <errno.h>
 
@@ -54,8 +60,8 @@ enum axp313a_reg {
 
 #define AXP313_POWEROFF			BIT(7)
 
- #define AXP_SHUTDOWN_REG	0x27
- #define AXP_SHUTDOWN_MASK	BIT(0)
+// #define AXP_SHUTDOWN_REG	0x27
+// #define AXP_SHUTDOWN_MASK	BIT(0)
 
 #if WITHSDRAM_AXP313				/* AXP313 */
 
@@ -64,8 +70,8 @@ enum axp313a_reg {
 #define AXP_CHIP_VERSION	0x3
 #define AXP_CHIP_VERSION_MASK	0xc8
 #define AXP_CHIP_ID		0x48
-#define AXP_SHUTDOWN_REG	0x1a
-#define AXP_SHUTDOWN_MASK	BIT(7)
+//#define AXP_SHUTDOWN_REG	0x1a
+//#define AXP_SHUTDOWN_MASK	BIT(7)
 
  #else
 
@@ -73,7 +79,7 @@ enum axp313a_reg {
 
  #endif
 
-static i2cp_t pmic_i2cp;	/* параметры для обмена по I2C. Поскольку работаем до инициализации кеша-памяти, надо учитывать медленную работу процессора */
+static i2cp_t pmic_i2cp;	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ I2C. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 
 static int pmic_bus_init(void)
 {
@@ -174,7 +180,7 @@ static int pmic_bus_clrbits(uint8_t reg, uint8_t bits)
 ///-------------
 
 
-static u8 mvolt_to_cfg(int mvolt, int min, int max, int div)
+static uint8_t mvolt_to_cfg(int mvolt, int min, int max, int div)
 {
 	if (mvolt < min)
 		mvolt = min;
@@ -187,7 +193,7 @@ static u8 mvolt_to_cfg(int mvolt, int min, int max, int div)
 static int axp_set_dcdc(int dcdc_num, unsigned int mvolt)
 {
 	int ret;
-	u8 cfg, enable_mask = 1U << (dcdc_num - 1);
+	uint8_t cfg, enable_mask = 1U << (dcdc_num - 1);
 	int volt_reg = AXP313_DCDC1_CTRL + dcdc_num - 1;
 	int max_mV;
 
@@ -224,19 +230,19 @@ static int axp_set_dcdc(int dcdc_num, unsigned int mvolt)
 	return pmic_bus_setbits(AXP313_OUTPUT_CTRL, enable_mask);
 }
 
-int do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
-{
-	pmic_bus_write(AXP313_SHUTDOWN, AXP313_POWEROFF);
-
-	/* infinite loop during shutdown */
-	while (1) {}
-
-	/* not reached */
-	return 0;
-}
+//static int do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+//{
+//	pmic_bus_write(AXP313_SHUTDOWN, AXP313_POWEROFF);
+//
+//	/* infinite loop during shutdown */
+//	while (1) {}
+//
+//	/* not reached */
+//	return 0;
+//}
 
 ///-------------
-static u8 axp313a_mvolt_to_cfg(int mvolt, int min, int max, int div)
+static uint8_t axp313a_mvolt_to_cfg(int mvolt, int min, int max, int div)
 {
 	if (mvolt < min)
 		mvolt = min;
@@ -246,10 +252,10 @@ static u8 axp313a_mvolt_to_cfg(int mvolt, int min, int max, int div)
 	return (mvolt - min) / div;
 }
 
-int axp_set_dcdc1(unsigned int mvolt)
+static int axp_set_dcdc1(unsigned int mvolt)
 {
 	int ret;
-	u8 cfg;
+	uint8_t cfg;
 
 	if (mvolt >= 1600)
 		cfg = 88 + axp313a_mvolt_to_cfg(mvolt, 1600, 3400, 100);
@@ -272,10 +278,10 @@ int axp_set_dcdc1(unsigned int mvolt)
 				AXP313A_OUTPUT_CTRL_DCDC1);
 }
 
-int axp_set_dcdc2(unsigned int mvolt)
+static int axp_set_dcdc2(unsigned int mvolt)
 {
 	int ret;
-	u8 cfg;
+	uint8_t cfg;
 
 	if (mvolt >= 1220)
 		cfg = 71 + axp313a_mvolt_to_cfg(mvolt, 1220, 1540, 20);
@@ -294,10 +300,10 @@ int axp_set_dcdc2(unsigned int mvolt)
 				AXP313A_OUTPUT_CTRL_DCDC2);
 }
 
-int axp_set_dcdc3(unsigned int mvolt)
+static int axp_set_dcdc3(unsigned int mvolt)
 {
 	int ret;
-	u8 cfg;
+	uint8_t cfg;
 
 	if (mvolt >= 1220)
 		cfg = 71 + axp313a_mvolt_to_cfg(mvolt, 1220, 1840, 20);
@@ -316,10 +322,10 @@ int axp_set_dcdc3(unsigned int mvolt)
 				AXP313A_OUTPUT_CTRL_DCDC3);
 }
 
-int axp_set_aldo1(unsigned int mvolt)
+static int axp_set_aldo1(unsigned int mvolt)
 {
 	int ret;
-	u8 cfg = axp313a_mvolt_to_cfg(mvolt, 500, 3500, 100);
+	uint8_t cfg = axp313a_mvolt_to_cfg(mvolt, 500, 3500, 100);
 
 
 	if (mvolt == 0)
@@ -338,10 +344,10 @@ int axp_set_aldo1(unsigned int mvolt)
 
 }
 
-int axp_set_dldo1(int dldo_num, unsigned int mvolt)
+static int axp_set_dldo1(int dldo_num, unsigned int mvolt)
 {
 	int ret;
-	u8 cfg = axp313a_mvolt_to_cfg(mvolt, 500, 3500, 100);
+	uint8_t cfg = axp313a_mvolt_to_cfg(mvolt, 500, 3500, 100);
 
 	if (dldo_num != 1)
 		return -EINVAL;
@@ -391,30 +397,31 @@ int axp313_initialize(void)
 		return -1;
     PRINTF("axp313_chip_id=OK\n");
 
-axp_set_aldo1(1800);///VCC 1V8
-axp_set_dldo1(1,3300);///VCC3V3
-axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
-axp_set_dcdc2(970);///810-1100 VDD-CPU
-axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
+	axp_set_aldo1(1800);///VCC 1V8
+	axp_set_dldo1(1,3300);///VCC3V3
+	axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
+	axp_set_dcdc2(970);///810-1100 VDD-CPU
+	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
 
-PRINTF("axp313 INIT END\n");
+	PRINTF("axp313 INIT END\n");
+	return 0;
 }
 
 
-void read_reg(void)
-{
-uint8_t data_read;
-pmic_bus_read(AXP313A_DCDC1_CTRL, &data_read);
-PRINTF(" reg=%p data=%p\n",AXP313A_DCDC1_CTRL,data_read);
-pmic_bus_read(AXP313A_DCDC2_CTRL, &data_read);
-PRINTF(" reg=%p data=%p\n",AXP313A_DCDC2_CTRL,data_read);
-pmic_bus_read(AXP313A_DCDC3_CTRL, &data_read);
-PRINTF(" reg=%p data=%p\n",AXP313A_DCDC3_CTRL,data_read);
-pmic_bus_read(AXP313A_ALDO1_CTRL, &data_read);
-PRINTF(" reg=%p data=%p\n",AXP313A_ALDO1_CTRL,data_read);
-pmic_bus_read(AXP313A_DLDO1_CTRL, &data_read);
-PRINTF(" reg=%p data=%p\n",AXP313A_DLDO1_CTRL,data_read);
-
-}
+//void read_reg(void)
+//{
+//uint8_t data_read;
+//pmic_bus_read(AXP313A_DCDC1_CTRL, &data_read);
+//PRINTF(" reg=%p data=%p\n",AXP313A_DCDC1_CTRL,data_read);
+//pmic_bus_read(AXP313A_DCDC2_CTRL, &data_read);
+//PRINTF(" reg=%p data=%p\n",AXP313A_DCDC2_CTRL,data_read);
+//pmic_bus_read(AXP313A_DCDC3_CTRL, &data_read);
+//PRINTF(" reg=%p data=%p\n",AXP313A_DCDC3_CTRL,data_read);
+//pmic_bus_read(AXP313A_ALDO1_CTRL, &data_read);
+//PRINTF(" reg=%p data=%p\n",AXP313A_ALDO1_CTRL,data_read);
+//pmic_bus_read(AXP313A_DLDO1_CTRL, &data_read);
+//PRINTF(" reg=%p data=%p\n",AXP313A_DLDO1_CTRL,data_read);
+//
+//}
 
 #endif
