@@ -32,6 +32,7 @@ static const struct params params0 [] =
 
 	{	"16rx",	"CODEC to CPU", },
 	{	"16tx",	"CPU to CODEC", },
+	{	"hdmi48tx",	"CPU to HDMI", },
 
 	{	"16rx8k",	"CODEC to CPU, sample rate 8000", },
 	{	"16tx8k",	"CPU to CODEC, sample rate 8000", },

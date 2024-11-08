@@ -28,6 +28,7 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
+#define HDMI48TX_RESAMPLING 1
 
 #define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
@@ -43,6 +44,7 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
+#define HDMI48TX_CAPACITY (32 * BUFOVERSIZE)
 
 #define BTIN48_CAPACITY 12
 #define BTOUT48_CAPACITY 12
@@ -1179,6 +1181,84 @@ uintptr_t getfilled_dmabuffer16tx(void)
 
 	return (uintptr_t) dest->buff;
 }
+
+////////////////////////////////////////////////////
+///
+#if WITHHDMITVHW
+
+// DMA data to codec
+typedef ALIGNX_BEGIN struct hdmi48tx_tag
+{
+	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZEHDMI48TX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEPHDMI48TX };	// resampling support
+} ALIGNX_END hdmi48tx_t;
+
+typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
+
+//typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> hdmi48txadpt_t;
+
+typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1> hdmi48txdma_t;
+
+static RAMNC hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
+
+
+static hdmi48txdma_t hdmi48tx(IRQL_REALTIME, "hdtx", hdmi48txbuf, ARRAY_SIZE(hdmi48txbuf));		// to codec
+
+/* CPU to HDMI */
+uintptr_t allocate_dmabufferhdmi48tx(void) /* take free buffer CPU to HDMI */
+{
+	hdmi48tx_t * dest;
+	while (! hdmi48tx.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+
+}
+
+uintptr_t getfilled_dmabufferhdmi48tx(void) /* take from queue CPU to HDMI */
+{
+
+	hdmi48tx_t * dest;
+	while (! hdmi48tx.get_readybuffer(& dest) && ! hdmi48tx.get_freebufferforced(& dest))
+		ASSERT(0);
+
+#if 0
+	// тестирование вывода на кодек
+	for (unsigned i = 0; i < ARRAY_SIZE(dest->buff); i += DMABUFFSTEPHDMI48TX)
+	{
+		dest->buff [i + 0] = adpt_output(& afcodectx, get_lout());
+		dest->buff [i + 1] = adpt_output(& afcodectx, get_rout());
+	}
+	//printhex32(0, phones->buff, sizeof phones->buff);
+#endif
+
+	return (uintptr_t) dest->buff;
+}
+
+
+void release_dmabufferhdmi48tx(uintptr_t addr)  /* release CPU to HDMI */
+{
+	hdmi48tx_t * const p = CONTAINING_RECORD(addr, hdmi48tx_t, buff);
+	hdmi48tx.release_buffer(p);
+}
+
+void save_dmabufferhdmi48tx(uintptr_t addr) /* save to queue CPU to HDMI */
+{
+	hdmi48tx_t * const p = CONTAINING_RECORD(addr, hdmi48tx_t, buff);
+	hdmi48tx.save_buffer(p);
+}
+
+int_fast32_t cachesize_dmabufferhdmi48tx(void) /* parameter for cache manipulation functions CPU to HDMI */
+{
+	return hdmi48tx.get_cachesize();
+}
+
+int_fast32_t datasize_dmabufferhdmi48tx(void) /* parameter for DMA CPU to HDMI */
+{
+	return hdmi48tx.get_datasize();
+}
+
+#endif /* WITHHDMITVHW */
 
 ////////////////////////////////////////////////////
 ///

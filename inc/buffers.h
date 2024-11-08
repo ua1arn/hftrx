@@ -675,6 +675,9 @@ extern "C" {
 #define DMABUFFSTEP16MONI 2	// самоконтроль - левый и правый
 #define DMABUFFSIZE16MONI	(48 * DMABUFFSTEP16MONI)		/* самоконтроль - дискретность задержки 1 мс */
 
+#define DMABUFFSIZEHDMI48TX	(DMABUFCLUSTER * DMABUFFSTEPHDMI48TX * DMABUFSCALE)		/* HDMI OUT */
+#define DMABUFFSTEPHDMI48TX 2
+
 // Buffers interface functions
 void buffers_initialize(void);
 void dsp_processtx(unsigned nsamples);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
@@ -725,6 +728,14 @@ void release_dmabuffer16tx(uintptr_t addr);  /* release CPU to CODEC */
 void save_dmabuffer16tx(uintptr_t addr); /* save to queue CPU to CODEC */
 int_fast32_t cachesize_dmabuffer16tx(void); /* parameter for cache manipulation functions CPU to CODEC */
 int_fast32_t datasize_dmabuffer16tx(void); /* parameter for DMA CPU to CODEC */
+
+/* CPU to HDMI */
+uintptr_t allocate_dmabufferhdmi48tx(void); /* take free buffer CPU to HDMI */
+uintptr_t getfilled_dmabufferhdmi48tx(void); /* take from queue CPU to HDMI */
+void release_dmabufferhdmi48tx(uintptr_t addr);  /* release CPU to HDMI */
+void save_dmabufferhdmi48tx(uintptr_t addr); /* save to queue CPU to HDMI */
+int_fast32_t cachesize_dmabufferhdmi48tx(void); /* parameter for cache manipulation functions CPU to HDMI */
+int_fast32_t datasize_dmabufferhdmi48tx(void); /* parameter for DMA CPU to HDMI */
 
 /* CODEC to CPU, sample rate 8000 */
 uintptr_t allocate_dmabuffer16rx8k(void); /* take free buffer CODEC to CPU, sample rate 8000 */

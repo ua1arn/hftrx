@@ -5119,6 +5119,9 @@ void dsp_fillphones(unsigned nsamples)
 		}
 #endif /*  */
 		elfill_dmabuffer16tx(b.IV, b.QV);
+#if WITHHDMITVHW
+		elfill_dmabufferhdmi48tx(b.IV, b.QV);
+#endif /* WITHHDMITVHW */
 	}
 }
 

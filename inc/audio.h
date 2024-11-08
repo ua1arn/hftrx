@@ -465,6 +465,7 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calc
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
