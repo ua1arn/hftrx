@@ -351,23 +351,23 @@
 //#define HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR        0x3032
 
 /* Audio Sampler Registers */
-#define HDMI_AUD_CONF0                          0x3100
-#define HDMI_AUD_CONF1                          0x3101
-#define HDMI_AUD_INT                            0x3102
-#define HDMI_AUD_CONF2                          0x3103
-#define HDMI_AUD_N1                             0x3200
-#define HDMI_AUD_N2                             0x3201
-#define HDMI_AUD_N3                             0x3202
-#define HDMI_AUD_CTS1                           0x3203
-#define HDMI_AUD_CTS2                           0x3204
-#define HDMI_AUD_CTS3                           0x3205
-#define HDMI_AUD_INPUTCLKFS                     0x3206
-#define HDMI_AUD_SPDIFINT			0x3302
-#define HDMI_AUD_CONF0_HBR                      0x3400
-#define HDMI_AUD_HBR_STATUS                     0x3401
-#define HDMI_AUD_HBR_INT                        0x3402
-#define HDMI_AUD_HBR_POL                        0x3403
-#define HDMI_AUD_HBR_MASK                       0x3404
+//#define HDMI_AUD_CONF0                          0x3100
+//#define HDMI_AUD_CONF1                          0x3101
+//#define HDMI_AUD_INT                            0x3102
+//#define HDMI_AUD_CONF2                          0x3103
+//#define HDMI_AUD_N1                             0x3200
+//#define HDMI_AUD_N2                             0x3201
+//#define HDMI_AUD_N3                             0x3202
+//#define HDMI_AUD_CTS1                           0x3203
+//#define HDMI_AUD_CTS2                           0x3204
+//#define HDMI_AUD_CTS3                           0x3205
+//#define HDMI_AUD_INPUTCLKFS                     0x3206
+//#define HDMI_AUD_SPDIFINT			0x3302
+//#define HDMI_AUD_CONF0_HBR                      0x3400
+//#define HDMI_AUD_HBR_STATUS                     0x3401
+//#define HDMI_AUD_HBR_INT                        0x3402
+//#define HDMI_AUD_HBR_POL                        0x3403
+//#define HDMI_AUD_HBR_MASK                       0x3404
 
 /*
  * Generic Parallel Audio Interface Registers

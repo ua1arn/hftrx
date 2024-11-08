@@ -7031,6 +7031,96 @@ static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
 	}
 }
 
+static void hdmi_enable_audio_clk(HDMI_TX_TypeDef * const hdmi)
+{
+	hdmi->HDMI_MC_CLKDIS &= ~ HDMI_MC_CLKDIS_AUDCLK_DISABLE;
+}
+
+
+static uint_fast32_t hdmi_compute_n(uint_fast32_t freq, uint_fast64_t pixel_clk)
+{
+	unsigned int n = (128 * freq) / 1000;
+	unsigned int mult = 1;
+
+	while (freq > 48000) {
+		mult *= 2;
+		freq /= 2;
+	}
+
+	switch (freq) {
+	case 32000:
+		if (pixel_clk == 25175000)
+			n = 4576;
+		else if (pixel_clk == 27027000)
+			n = 4096;
+		else if (pixel_clk == 74176000 || pixel_clk == 148352000)
+			n = 11648;
+		else
+			n = 4096;
+		n *= mult;
+		break;
+
+	case 44100:
+		if (pixel_clk == 25175000)
+			n = 7007;
+		else if (pixel_clk == 74176000)
+			n = 17836;
+		else if (pixel_clk == 148352000)
+			n = 8918;
+		else
+			n = 6272;
+		n *= mult;
+		break;
+
+	case 48000:
+		if (pixel_clk == 25175000)
+			n = 6864;
+		else if (pixel_clk == 27027000)
+			n = 6144;
+		else if (pixel_clk == 74176000)
+			n = 11648;
+		else if (pixel_clk == 148352000)
+			n = 5824;
+		else
+			n = 6144;
+		n *= mult;
+		break;
+
+	default:
+		break;
+	}
+
+	return n;
+}
+static void hdmi_set_cts_n(HDMI_TX_TypeDef * const hdmi, unsigned int cts,
+			   unsigned int n)
+{
+	/* Must be set/cleared first */
+	hdmi->HDMI_AUD_CTS3 = ~ HDMI_AUD_CTS3_CTS_MANUAL;
+//	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
+
+	/* nshift factor = 0 */
+	hdmi->HDMI_AUD_CTS3 = (uint8_t) ~ HDMI_AUD_CTS3_N_SHIFT_MASK;
+//	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_N_SHIFT_MASK, HDMI_AUD_CTS3);
+
+	//  HDMI Audio Clock Regenerator CTS calculated value
+	hdmi->HDMI_AUD_CTS3 = ((cts >> 16) & HDMI_AUD_CTS3_AUDCTS19_16_MASK) | HDMI_AUD_CTS3_CTS_MANUAL;
+//	hdmi_writeb(hdmi, ((cts >> 16) & HDMI_AUD_CTS3_AUDCTS19_16_MASK) |
+//		    HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
+	hdmi->HDMI_AUD_CTS2 = (cts >> 8) & 0xff;
+//	hdmi_writeb(hdmi, (cts >> 8) & 0xff, HDMI_AUD_CTS2);
+	hdmi->HDMI_AUD_CTS1 = cts & 0xff;
+//	hdmi_writeb(hdmi, cts & 0xff, HDMI_AUD_CTS1);
+
+	// HDMI Audio Clock Regenerator N valu
+	hdmi->HDMI_AUD_N3 = (n >> 16) & 0x0f;
+//	hdmi_writeb(hdmi, (n >> 16) & 0x0f, HDMI_AUD_N3);
+	hdmi->HDMI_AUD_N2 = (n >> 8) & 0xff;
+//	hdmi_writeb(hdmi, (n >> 8) & 0xff, HDMI_AUD_N2);
+	hdmi->HDMI_AUD_N1 = n & 0xff;
+//	hdmi_writeb(hdmi, n & 0xff, HDMI_AUD_N1);
+}
+
 // See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
 
 static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
@@ -7243,10 +7333,38 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	h3_hdmi_phy_init(dotclock);
 #endif
 
+
+	static const unsigned int n_table[21] = {
+		32000, 3072, 4096, 44100, 4704, 6272, 88200, 4704 * 2, 6272 * 2,
+		176400, 4704 * 4, 6272 * 4, 48000, 5120, 6144, 96000, 5120 * 2,
+		6144 * 2, 192000, 5120 * 4, 6144 * 4,
+	};
+
+//	hdmi_write(0xE04B, 0x00 | (audio->sample_bit == 16)
+//			? 0x02 : ((audio->sample_bit == 24) ? 0xb : 0x0));
+//	hdmi_write(0x0251, audio->sample_bit);
+//	n = 6272;
+//
+//	for (i = 0; i < 21; i += 3) {
+//		if (audio->sample_rate == n_table[i]) {
+//			if (ptbl[id].para[1] == 1)
+//				n = n_table[i + 1];
+//			else
+//				n = n_table[i + 2];
+///* cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio->sample_rate / 100); */
+//			    break;
+//		}
+//	}
+	/* cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio->sample_rate / 100); */
+	unsigned audio_cts = 10;
+	unsigned audio_n = hdmi_compute_n(48000, dotclock);
 	h3_hdmi_init(vdmode);
 	hdmi_enable_video_path(hdmi, 1);
 	hdmi_video_sample(hdmi);
 	hdmi_tx_hdcp_config(hdmi);
+	// audio enable
+	hdmi_set_cts_n(hdmi, audio_cts, audio_n);
+
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
