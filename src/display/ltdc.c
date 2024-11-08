@@ -2563,11 +2563,13 @@ static void hardware_ltdc_vsync(int rtmixid)
 {
 	switch (rtmixid)
 	{
+#if defined RTMIXIDLCD
 	case RTMIXIDLCD:
 		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
 		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
 			;
 		break;
+#endif
 #if defined RTMIXIDTV
 	case RTMIXIDTV:
 		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
@@ -3417,50 +3419,43 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
 
+	int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+	int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+	int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+	int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+
+	h_sync_active = vdmode->vsyncneg;
+	v_sync_active = vdmode->hsyncneg;
+	den_active = ! vdmode->deneg;
+	clk_active = 0;
+
+	uint32_t val;
+	val = 0;
+
+	if (! h_sync_active)
+		val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
+	if (! v_sync_active)
+		val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
+	if (! den_active)
+		val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
+	if (!! clk_active)
+		val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
+
 #if CPUSTYLE_H3
 #elif CPUSTYLE_A64
 #else
 	// io_tristate
-	//write32((uintptr_t) & tcon->io_tristate, 0);
 	TCONLCD_PTR->LCD_IO_TRI_REG = 0;
 	// 5.1.6.20 0x0088 LCD volatile Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
-	{
-		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
-
-		h_sync_active = vdmode->vsyncneg;
-		v_sync_active = vdmode->hsyncneg;
-		den_active = ! vdmode->deneg;
-		clk_active = 0;
-
-		uint32_t val;
-		val = 0;
-
-		if (! h_sync_active)
-			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
-		if (! v_sync_active)
-			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
-		if (! den_active)
-			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
-		if (!! clk_active)
-			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
-
-		TCONLCD_PTR->LCD_IO_POL_REG = val;
-
-	}
+	TCONLCD_PTR->LCD_IO_POL_REG = val;
 	//t113_tconlcd_set_dither(pdat);
-	{
-		// 31: TCON_FRM_EN: 0: disable, 1: enable
-		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
-		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
-		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
-		/* режим и формат выхода */
-		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
-
-	}
+	// 31: TCON_FRM_EN: 0: disable, 1: enable
+	// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
+	// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
+	// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
+	/* режим и формат выхода */
+	TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 #endif
 #endif /* defined (TCONLCD_PTR) */
 }
@@ -3470,41 +3465,48 @@ static void t113_tcontv_open_IO_output(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 
-//#if CPUSTYLE_H3
-//#elif CPUSTYLE_A64
-//#else
+	int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+	int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+	int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+	int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+
+	h_sync_active = vdmode->vsyncneg;
+	v_sync_active = vdmode->hsyncneg;
+	den_active = ! vdmode->deneg;
+	clk_active = 0;
+
+	uint32_t val;
+	val = 0;
+
+	if (! h_sync_active)
+		val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
+	if (! v_sync_active)
+		val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
+	if (! den_active)
+		val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
+	if (!! clk_active)
+		val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
+
+#if CPUSTYLE_H3
 	// io_tristate
-	//write32((uintptr_t) & tcon->io_tristate, 0);
+	TCONTV_PTR->TCON1_IO_TRI_REG = 0;
+	// 5.1.6.20 0x0088 LCD volatile Polarity Register (Default Value: 0x0000_0000)
+	// io_polarity
+	TCONTV_PTR->TCON1_IO_POL_REG = val;
+#elif CPUSTYLE_A64
+	// io_tristate
+	TCONTV_PTR->TCON1_IO_TRI_REG = 0;
+	// 5.1.6.20 0x0088 LCD volatile Polarity Register (Default Value: 0x0000_0000)
+	// io_polarity
+	TCONTV_PTR->TCON1_IO_POL_REG = val;
+#else
+	// io_tristate
 	TCONTV_PTR->TV_IO_TRI_REG = 0;
 	// 5.1.6.20 0x0088 LCD volatile Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
-	{
-		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+	TCONTV_PTR->TV_IO_POL_REG = val;
 
-		h_sync_active = vdmode->vsyncneg;
-		v_sync_active = vdmode->hsyncneg;
-		den_active = ! vdmode->deneg;
-		clk_active = 0;
-
-		uint32_t val;
-		val = 0;
-
-		if (! h_sync_active)
-			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
-		if (! v_sync_active)
-			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
-		if (! den_active)
-			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
-		if (!! clk_active)
-			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
-
-		TCONTV_PTR->TV_IO_POL_REG = val;
-
-	}
-//#endif
+#endif
 #endif /* defined (TCONTV_PTR) */
 }
 
@@ -5676,11 +5678,13 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
 	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
 
-	unsigned M = 2;//calcdivround2(allwnr_h3_get_pll_video_freq(), dotclock);
+	unsigned M = calcdivround2(allwnr_h3_get_pll_video_freq(), dotclock);
 	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // Enable HDMI clk (use PLL_VIDEO)
-	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // (use PLL_VIDEO) Enable TCONLCD_PTR clk, divide by 2
+	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 
+	//	7 allwnr_h3_get_hdmi_freq()=148500 kHz
+	//	7 BOARD_TCONTVFREQ()=148500 kHz
 	PRINTF("7 allwnr_h3_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_h3_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
 	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 148.5 MHz
 
@@ -5708,7 +5712,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	}
 	else if (TCONTV_IX == 1)
 	{
-		const unsigned TCONLCD_CCU_CLK_REG_M = 2;
+		const unsigned TCONLCD_CCU_CLK_REG_M = M_X1 * 2;
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
@@ -5718,12 +5722,14 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	}
 
 
-	const unsigned HDMI_CLK_REG_M = 1;
+	const unsigned HDMI_CLK_REG_M = M_X1;
 	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
 	CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31); // Enable HDMI clk
 
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
 
+	//	7 allwnr_a64_get_hdmi_freq()=148500 kHz
+	//	7 BOARD_TCONTVFREQ()=74250 kHz
 	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
 	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
 
@@ -6313,33 +6319,50 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	phy->HDMI_PHY_PLL1 &= ~ (UINT32_C(1) << 26);
 	phy->HDMI_PHY_CEC = 0;
 
-#if 1
+
 	// 148.5 MHz
-	const uint_fast32_t PHY_PLL1_VAL = (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)));
-	const uint_fast32_t PHY_PLL2_VAL = 0x80084381;
-	const uint_fast32_t PHY_PLL3_VAL = 0x00000001;
+	uint_fast32_t PHY_PLL1_VAL = (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)));
+	uint_fast32_t PHY_PLL2_VAL = 0x80084381;
+	uint_fast32_t PHY_PLL3_VAL = 0x00000001;
 
-	const uint_fast32_t PHY_CFG1_VAL = 0x01FFFF7F;
-	const uint_fast32_t PHY_CFG2_VAL = 0x8063A800;
-	const uint_fast32_t PHY_CFG3_VAL = 0x0F81C485;
-#else
-	// 74.25 MHz
-	const uint_fast32_t PHY_PLL1_VAL = 0x3ddc5040;
-	const uint_fast32_t PHY_PLL2_VAL = 0x80084343;
-	const uint_fast32_t PHY_PLL3_VAL = 0x00000001;
+	uint_fast32_t PHY_CFG1_VAL = 0x01FFFF7F;
+	uint_fast32_t PHY_CFG2_VAL = 0x8063A800;
+	uint_fast32_t PHY_CFG3_VAL = 0x0F81C485;
 
-	const uint_fast32_t tmp_rcal_200 = 0;
-	const uint_fast32_t PHY_CFG1_VAL = 0x01FFFF7F;
-	const uint_fast32_t PHY_CFG2_VAL = 0x80623000 | tmp_rcal_200;
-	const uint_fast32_t PHY_CFG3_VAL = 0x0F814385;
-#endif
+	uint_fast32_t tmp_rcal_200 = 0;
+
+	switch (dotclock)
+	{
+	default:
+	case 148500000:
+		// 148.5 MHz
+		PHY_PLL1_VAL = (0x3ddc5040 & ~ ((UINT32_C(1) << 25)) & ~ ((UINT32_C(1) << 26)));
+		PHY_PLL2_VAL = 0x80084381;
+		PHY_PLL3_VAL = 0x00000001;
+
+		PHY_CFG1_VAL = 0x01FFFF7F;
+		PHY_CFG2_VAL = 0x8063A800;
+		PHY_CFG3_VAL = 0x0F81C485;
+		break;
+
+	case 74250000:
+		// 74.25 MHz
+		PHY_PLL1_VAL = 0x3ddc5040;
+		PHY_PLL2_VAL = 0x80084343;
+		PHY_PLL3_VAL = 0x00000001;
+
+		tmp_rcal_200 = 0;
+		PHY_CFG1_VAL = 0x01FFFF7F;
+		PHY_CFG2_VAL = 0x80623000 | tmp_rcal_200;
+		PHY_CFG3_VAL = 0x0F814385;
+		break;
+	}
 
 	switch (dotclock)
 	{
 	default:
 		PRINTF("Unspecified dot clock %u Hz\n", (unsigned) dotclock);
 		//break;
-	case 74250000:
 	case 148500000:
 		phy->HDMI_PHY_PLL1 = PHY_PLL1_VAL;
 		phy->HDMI_PHY_PLL2 = PHY_PLL2_VAL;
@@ -7590,7 +7613,9 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 	#if 1
 		h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
 	#else
-    	// On T507 not working...
+    	// On T507 defectiveimafe
+		// On H3 - HSUB=1 VSUB=1 IS_DE3=0 or IS_DE3=1 - work
+		// On A64
 		t113_vi_scaler_setup(rtmixid, get_videomode_DESIGN(), vdmode);
 	#endif
 

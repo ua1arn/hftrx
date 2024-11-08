@@ -114,7 +114,7 @@
 
 	
 
-#elif 0
+#elif 1
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 

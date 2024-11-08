@@ -3710,6 +3710,7 @@ void hardware_ltdc_vblank(int rtmixid)
 {
 	switch (rtmixid)
 	{
+#if defined (RTMIXIDLCD)
 	case RTMIXIDLCD:
 		/* main display */
 		{
@@ -3725,7 +3726,8 @@ void hardware_ltdc_vblank(int rtmixid)
 			}
 		}
 		break;
-#if defined (TCONTV_PTR)
+#endif
+#if defined (RTMIXIDTV)
 	case RTMIXIDTV:
 		/* TVOUT / HDMI display */
 		{
