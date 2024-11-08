@@ -73,6 +73,17 @@ dma_flush16tx(uintptr_t addr)
 	return addr;
 }
 
+// Сейчас эта память будет записываться по DMA куда-то
+// Потом содержимое не требуется
+static uintptr_t
+dma_flushhdmi48tx(uintptr_t addr)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((cachesize_dmabufferhdmi48tx() % DCACHEROWSIZE) == 0);
+	dcache_clean_invalidate(addr, cachesize_dmabufferhdmi48tx());
+	return addr;
+}
+
 // Сейчас в эту память будем читать по DMA
 static uintptr_t
 dma_invalidate16rx8k(uintptr_t addr)
@@ -3365,6 +3376,8 @@ enum
 	DMAC_USBUAC48_RX_Ch,	// UAC48 OUT
 	DMAC_USBUACRTS_TX_Ch,	// UACRTS IN
 	//
+	DMAC_HDMI_TX_Ch,
+	//
 	DMAC_Ch_Total
 };
 
@@ -3478,7 +3491,6 @@ static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
-	//ASSERT(DMAC_Ch_Total <= 8);
 	dmac_handlers [dmach] = handler;
 
 #if CPUSTYLE_A64 || CPUSTYLE_V3S
@@ -3742,14 +3754,14 @@ static void I2S_fill_TXxCHMAP(
 // Return 0..2
 static unsigned getAPBIFrx(unsigned ix)
 {
-	static const uint_fast8_t map [] = { WITHAPBIFMAP_RX };
+	static const uint8_t map [] = { WITHAPBIFMAP_RX };
 	return map [ix];
 }
 
 // Return 0..2
 static unsigned getAPBIFtx(unsigned ix)
 {
-	static const uint_fast8_t map [] = { WITHAPBIFMAP_TX };
+	static const uint8_t map [] = { WITHAPBIFMAP_TX };
 	return map [ix];
 }
 
@@ -3896,7 +3908,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
-	CCU->AUDIO_HUB_BGR_REG = UINT32_C(1) << 0;	// AUDIO_HUB_GATING
+	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
 	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
@@ -4034,17 +4046,16 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		(void) AHUB->AHUB_RST;
 		AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 		(void) AHUB->AHUB_RST;
+		PRINTF("NSLOTS=%d, ix=%d, apbifrxix=%d, apbiftxix=%d\n", NSLOTS, ix, apbifrxix, apbiftxix);
 
-
-		// Каналы AHUB[0..2] - RX
 		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+
 		AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL =
 			!! useDMA * (UINT32_C(1) << 3) |	// RXn_DRQ
 			! useDMA * (UINT32_C(1) << 0) |    // RXnAI_EN
 			0;
 
-		// Каналы AHUB[0..2] - TX
-		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 		AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL =
 			!! useDMA * (UINT32_C(1) << 3) |	// TXn_DRQ
 			! useDMA * (UINT32_C(1) << 0) |	// TXnE_INT
@@ -4482,6 +4493,17 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	I2S1HW_INITIALIZE(master);
 }
 
+// HDMI initialize
+static void hardware_i2s1_master_duplex_initialize_hdmi48(void)
+{
+	const int master = 1;
+	unsigned NSLOTS = 2;
+	unsigned framebits = 64;
+	hardware_i2s_clock(1, I2S1, master, NSLOTS, ARMI2SRATE, framebits);
+	hardware_i2s_initialize(1, I2S1, master, NSLOTS, ARMI2SRATE, framebits, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT, HARDWARE_I2S1HW_USEDMA);
+	//I2S1HW_INITIALIZE(master);
+}
+
 static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
 	const int master = 0;
@@ -4577,6 +4599,18 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
+}
+
+
+/* Передача в HDMI */
+/* на встроенный в процессор или подключенный по I2S */
+static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(unsigned dmach)
+{
+	const uintptr_t newaddr = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
+
+	/* Работа с только что передаными данными */
+	release_dmabufferhdmi48tx(addr);
 }
 
 /* Приём от кодека на скорости 8000 */
@@ -4896,6 +4930,62 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_I2S1_TX_initialize_hdmi48(void)
+{
+	const unsigned ix = 1;	// I2S1
+	const size_t dw = sizeof (hdmi48bufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_HDMI_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZEHDMI48TX * dw;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
+
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
+	const uint_fast32_t configDMAC =
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16tx());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	dcache_clean(descraddr, sizeof descr0);
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_hdmi48);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5386,7 +5476,7 @@ static const codechw_t audiocodechw_i2s0_duplex_master =
 };
 #endif /* defined(I2S0) && WITHI2S0HW */
 
-#if defined(I2S1) && WITHI2S1HW && ! WITHCODEC1_HDMI_DUPLEX_MASTER
+#if defined(I2S1) && WITHI2S1HW && ! WITHCODEC2_HDMI_DUPLEX_MASTER
 static const codechw_t audiocodechw_i2s1_duplex_master =
 {
 	hardware_i2s1_master_duplex_initialize_codec1,
@@ -5399,16 +5489,16 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 };
 #endif /* defined(I2S1) && WITHI2S1HW */
 
-#if defined(I2S1) && WITHI2S1HW && WITHCODEC1_HDMI_DUPLEX_MASTER
-static const codechw_t audiocodechw_i2s1_duplex_master =
+#if defined(I2S1) && WITHI2S1HW && WITHCODEC2_HDMI_DUPLEX_MASTER
+static const codechw_t hdmihw_i2s1_duplex_master =
 {
-	hardware_i2s1_master_duplex_initialize_codec1,
+	hardware_i2s1_master_duplex_initialize_hdmi48,
 	hardware_dummy_initialize,
-	DMAC_I2S1_RX_initialize_codec1,
-	DMAC_I2S1_TX_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S1_TX_initialize_hdmi48,
 	hardware_i2s1_enable,
 	hardware_dummy_enable,
-	"audiocodechw-i2s1-duplex-master"
+	"hdmihw-i2s1-duplex-master"
 };
 #endif /* defined(I2S1) && WITHI2S1HW */
 
@@ -7867,9 +7957,9 @@ static const codechw_t * const channels [] =
 	#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER	// allwinner t113-s3 or F133
 		& audiocodechw_AudioCodec_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
 	#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
-	#if WITHCODEC1_HDMI_DUPLEX_MASTER	// allwinner A64
-		& audiocodechw_i2s1_duplex_master,					// Интерфейс к HDMI
-	#endif /* WITHCODEC1_HDMI_DUPLEX_MASTER */
+	#if WITHCODEC2_HDMI_DUPLEX_MASTER	// allwinner A64, T507, H616
+		& hdmihw_i2s1_duplex_master,					// Интерфейс к HDMI
+	#endif /* WITHCODEC2_HDMI_DUPLEX_MASTER */
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 
 #else
