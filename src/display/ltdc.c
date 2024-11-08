@@ -7036,7 +7036,6 @@ static void hdmi_enable_audio_clk(HDMI_TX_TypeDef * const hdmi)
 	hdmi->HDMI_MC_CLKDIS &= ~ HDMI_MC_CLKDIS_AUDCLK_DISABLE;
 }
 
-
 static uint_fast32_t hdmi_compute_n(uint_fast32_t freq, uint_fast64_t pixel_clk)
 {
 	unsigned int n = (128 * freq) / 1000;
@@ -7092,6 +7091,7 @@ static uint_fast32_t hdmi_compute_n(uint_fast32_t freq, uint_fast64_t pixel_clk)
 
 	return n;
 }
+
 static void hdmi_set_cts_n(HDMI_TX_TypeDef * const hdmi, unsigned int cts,
 			   unsigned int n)
 {
@@ -7358,6 +7358,18 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	/* cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio->sample_rate / 100); */
 	unsigned audio_cts = 10;
 	unsigned audio_n = hdmi_compute_n(48000, dotclock);
+	/*
+	 * Compute the CTS value from the N value.  Note that CTS and N
+	 * can be up to 20 bits in total, so we need 64-bit math.  Also
+	 * note that our TDMS clock is not fully accurate; it is accurate
+	 * to kHz.  This can introduce an unnecessary remainder in the
+	 * calculation below, so we don't try to warn about that.
+	 */
+	uint_fast64_t tmp = (uint_fast64_t)dotclock /*ftdms*/ * audio_n;
+	tmp /= 128 * 48000;
+	audio_cts = tmp;
+	// hdmi audio CTS=74250, N=6144
+	PRINTF("hdmi audio CTS=%u, N=%u\n", audio_cts, audio_n);
 	h3_hdmi_init(vdmode);
 	hdmi_enable_video_path(hdmi, 1);
 	hdmi_video_sample(hdmi);
