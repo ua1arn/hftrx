@@ -4969,7 +4969,7 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());			// Source Address
+		descr0 [i] [1] = dma_flushhdmi48tx(allocate_dmabufferhdmi48tx());			// Source Address
 		descr0 [i] [2] = portaddr;				// Destination Address
 		descr0 [i] [3] = NBYTES;				// Byte Counter
 		descr0 [i] [4] = parameterDMAC;			// Parameter
