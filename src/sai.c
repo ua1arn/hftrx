@@ -3734,7 +3734,7 @@ static void I2S_fill_TXxCHMAP(
 //		;
 //}
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 
 //	#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
 //	#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
@@ -4011,7 +4011,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 	const uint_fast32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
@@ -4389,7 +4389,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 	/* Соответствующий i2S не работает напрямую с DMA */
 	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
@@ -4624,7 +4624,7 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 
 static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 //	static uint32_t v = 0xDEADBEEF;
 //	return (uintptr_t) & v;
 	(void) i2s;
@@ -4637,7 +4637,7 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 	(void) i2s;
 	return (uintptr_t) & AHUB->APBIF_TX [getAPBIFtx(ix)].APBIF_TXnFIFO;
 #else
@@ -4648,7 +4648,7 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 	return DMAC_SrcReqAHUB_drqr0_RX + getAPBIFrx(ix);
 #else
 	return DMAC_SrcReqI2S1_RX + ix - 1;
@@ -4657,7 +4657,7 @@ static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
 	return DMAC_DstReqAHUB_drqt0_TX + getAPBIFtx(ix);
 #elif CPUSTYLE_A64
 	static const unsigned drq [] =
