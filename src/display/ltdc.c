@@ -5670,6 +5670,22 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 #endif /* defined (TCONTV_PTR) */
 }
 
+static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
+{
+#if defined (TCONTV_PTR)
+#if CPUSTYLE_H3
+	return allwnr_h3_get_hdmi_freq();
+#elif CPUSTYLE_A64
+	return allwnr_a64_get_hdmi_freq();
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+	return allwnr_t507_get_hdmi0_freq();
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	return allwnr_t113_get_hdmi_freq();
+#endif
+#endif /* defined (TCONTV_PTR) */
+	return display_getdotclock(vdmode);
+}
+
 static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 {
 #if defined (TCONTV_PTR)
@@ -6361,6 +6377,7 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	default:
 		PRINTF("Unspecified dot clock %u Hz\n", (unsigned) dotclock);
 		//break;
+	case 74250000:
 	case 148500000:
 		phy->HDMI_PHY_PLL1 = PHY_PLL1_VAL;
 		phy->HDMI_PHY_PLL2 = PHY_PLL2_VAL;
@@ -6390,8 +6407,6 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //		phy->HDMI_PHY_CFG3 = 0x0F81C485;
 //		break;
 //
-//	case 74250000:
-//		break;
 //
 //	case 27000000:
 //		break;
@@ -7323,11 +7338,12 @@ static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
 		hdmi->HDMI_FC_INVIDCONF = val;
 }
 #endif
+
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 #if WITHHDMITVHW
-	const uint_fast32_t dotclock = display_getdotclock(vdmode);
+	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	/* PHY_I2CM_SLAVE_ADDR field values */
