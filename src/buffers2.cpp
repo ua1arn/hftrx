@@ -1189,9 +1189,9 @@ uintptr_t getfilled_dmabuffer16tx(void)
 // DMA data to codec
 typedef ALIGNX_BEGIN struct hdmi48tx_tag
 {
-	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZEHDMI48TX] ALIGNX_END;
+	ALIGNX_BEGIN hdmi48bufv_t buff [DMABUFFSIZEHDMI48TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEPHDMI48TX };	// resampling support
+	enum { ss = sizeof (hdmi48bufv_t), nch = DMABUFFSTEPHDMI48TX };	// resampling support
 } ALIGNX_END hdmi48tx_t;
 
 typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
@@ -1258,7 +1258,7 @@ int_fast32_t datasize_dmabufferhdmi48tx(void) /* parameter for DMA CPU to HDMI *
 
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferhdmi48tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
 	b [0] = adpt_output(& adhdmi48tx, ch0);
 	b [1] = adpt_output(& adhdmi48tx, ch1);
@@ -3939,12 +3939,15 @@ void buffers_diagnostics(void)
 #if WITHRTS192
 	uacinrts192.debug();
 #endif
-#if WITHRTS96
+#if WITHRTS96 && 0
 	uacinrts96.debug();
 #endif
 	uacin48.debug();
 #endif
 #endif
+#if WITHHDMITVHW && 0
+	hdmi48tx.debug();
+#endif /* WITHHDMITVHW */
 	//message8.debug();
 
 #if LCDMODE_LTDC && WITHLTDCHW && 0
@@ -3993,6 +3996,9 @@ static void buffers_spool(void * ctx)
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 	uacin48.spool10ms();
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
+#if WITHHDMITVHW
+	hdmi48tx.spool10ms();
+#endif /* WITHHDMITVHW */
 #endif /* WITHINTEGRATEDDSP */
 	//message8.spool10ms();
 

@@ -115,7 +115,6 @@ enum
 	#define WITHADAPTERCODEC1WIDTH	20		// 1 бит знак и 19 бит значащих
 	#define WITHADAPTERCODEC1SHIFT	12		// количество незанятых битов справа.
 	typedef int32_t aubufv_t;
-	typedef int_fast32_t aufastbufv_t;
 
 #elif CODEC1_FRAMEBITS == 64
 
@@ -123,7 +122,6 @@ enum
 	#define WITHADAPTERCODEC1WIDTH	24		// 1 бит знак и 23 бит значащих
 	#define WITHADAPTERCODEC1SHIFT	8		// количество незанятых битов справа.
 	typedef int32_t aubufv_t;
-	typedef int_fast32_t aufastbufv_t;
 
 #elif CODEC1_FRAMEBITS == 32
 
@@ -131,7 +129,6 @@ enum
 	#define WITHADAPTERCODEC1WIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHADAPTERCODEC1SHIFT	0		// количество незанятых битов справа.
 	typedef int16_t aubufv_t;
-	typedef int_fast16_t aufastbufv_t;
 
 #else /* CODEC1_FRAMEBITS == 64 */
 
@@ -141,6 +138,7 @@ enum
 
 #define WITHADAPTERHDMIWIDTH 24
 #define WITHADAPTERHDMISHIFT 0
+typedef int32_t hdmi48bufv_t;
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	/* параметры входного/выходного адаптеров */
