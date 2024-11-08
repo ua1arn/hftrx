@@ -2473,8 +2473,9 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 }
 
 
-static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
+static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 {
+	ASSERT(vich == 1);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	switch (rtmixid)
 	{
@@ -4565,6 +4566,13 @@ static void write32(uintptr_t addr, uint32_t value)
 
 #define SUN8I_SCALER_VSU_CTRL_EN		LTDCBIT32(0)
 #define SUN8I_SCALER_VSU_CTRL_COEFF_RDY		LTDCBIT32(4)
+// T507
+//	de_base(1)=0x00FE4000
+//	de_base(2)=0x01004000
+//	de_vsu_base(1)=0x01104000	DE_VSU1_BASE
+//	de_vsu_base(2)=0x01124000 	DE_VSU2_BASE
+//	PRINTF("de_vsu_base(1)=0x%08X\n", T113_DE_MUX_VSU+T113_DE_BASE_N(1));
+//	PRINTF("de_vsu_base(2)=0x%08X\n", T113_DE_MUX_VSU+T113_DE_BASE_N(2));
 
 // TODO: fix addresses
 #if CPUSTYLE_T507 || CPUSTYLE_H616
@@ -6656,7 +6664,7 @@ static void t113_open_tcontv_module_enable(void)
 
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
-	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, 1);
 	if (vsu == NULL)
 		return;
 
