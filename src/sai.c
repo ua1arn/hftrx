@@ -4605,7 +4605,6 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Передача звука в HDMI */
 static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(unsigned dmach)
 {
-	return;
 	const uintptr_t newaddr = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());
 	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
@@ -4970,7 +4969,7 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16tx());			// Source Address
+		descr0 [i] [1] = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());			// Source Address
 		descr0 [i] [2] = portaddr;				// Destination Address
 		descr0 [i] [3] = NBYTES;				// Byte Counter
 		descr0 [i] [4] = parameterDMAC;			// Parameter
