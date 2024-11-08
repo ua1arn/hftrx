@@ -5690,10 +5690,10 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_A64
 
-	unsigned M_D2 = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock / 2);
-	unsigned M_D1 = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock);
-	PRINTF("MX2=%u\n", M_D2);
-	PRINTF("MX1=%u\n", M_D1);
+	unsigned TCONTV_DIV = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock / 2);	// TCONTV divider
+	unsigned HDMI_DIV = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock);		// HDMI divider
+	PRINTF("MX2=%u\n", TCONTV_DIV);
+	PRINTF("MX1=%u\n", HDMI_DIV);
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11); // Enable HDMI
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 10); // De-assert reset of HDMI0/1 - требуюия оба
@@ -5712,18 +5712,16 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	}
 	else if (TCONTV_IX == 1)
 	{
-		const unsigned TCONLCD_CCU_CLK_REG_M = M_D2;
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
-			(TCONLCD_CCU_CLK_REG_M - 1) * (UINT32_C(1) << 0) | // dvcider / 2
+			(TCONTV_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	}
 
 
-	const unsigned HDMI_CLK_REG_M = M_D1;
-	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
+	CCU->HDMI_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_DIV - 1); // Enable HDMI clk 00: PLL_VIDEO0(1X), 01: PLL_VIDEO1(1X)
 	CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31); // Enable HDMI clk
 
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
