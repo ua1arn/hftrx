@@ -3905,6 +3905,12 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 43);
 
+	// Whhen PLL_AUDIO(1X) is 24.576 MHz
+	// AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
+//	CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;
+//	CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B;
+//	local_delay_ms(25);
+
 	//	00: PLL_AUDIO(1X)
 	//	01: PLL_AUDIO(2X)
 	//	10: PLL_AUDIO(4X)
