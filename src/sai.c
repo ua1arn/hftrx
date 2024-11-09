@@ -4106,8 +4106,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			/* PI0 H_I2S0_MCLK pin 32	*/
 			/* PI1 H_I2S0_BCLK pin 31 */
 			const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
-			const unsigned mclkdiv = 1; //clk / mclkf;
-			const unsigned bclkdiv = 8; //clk / bclkf;
+			const unsigned mclkdiv = calcdivround2(clk, mclkf);
+			const unsigned bclkdiv = calcdivround2(clk, bclkf);
 			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 			PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
 			i2s->I2Sn_CLKD =
@@ -4119,11 +4119,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		else
 		{
 			// Slave
-//			i2s->I2Sn_CLKD =
-//				0 * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
-//				0x0F * (UINT32_C(1) << 0) |		/* MCLKDIV */
-//				0x0F * (UINT32_C(1) << 4) |		/* BCLKDIV */
-//				0;
+			i2s->I2Sn_CLKD =
+				0 * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
+				0x0F * (UINT32_C(1) << 0) |		/* MCLKDIV */
+				0x0F * (UINT32_C(1) << 4) |		/* BCLKDIV */
+				0;
 		}
 
 		i2s->I2Sn_CHCFG =
