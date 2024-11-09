@@ -22,9 +22,10 @@
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
-#define VOICE16RX_CAPACITY (16 * BUFOVERSIZE)	// прием от кодекв
-#define VOICE16TX_CAPACITY (32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define HDMI48TX_CAPACITY 		(64 * BUFOVERSIZE)
 
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
@@ -44,7 +45,6 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
-#define HDMI48TX_CAPACITY (32 * BUFOVERSIZE)
 
 #define BTIN48_CAPACITY 12
 #define BTOUT48_CAPACITY 12
@@ -1213,6 +1213,7 @@ uintptr_t allocate_dmabufferhdmi48tx(void) /* take free buffer CPU to HDMI */
 
 }
 
+// can not be zero
 uintptr_t getfilled_dmabufferhdmi48tx(void) /* take from queue CPU to HDMI */
 {
 
