@@ -3902,14 +3902,17 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	CCU->MBUS_CFG_REG |= (1u << 30);
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
 
+	allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 43);
+
 	//	00: PLL_AUDIO(1X)
 	//	01: PLL_AUDIO(2X)
 	//	10: PLL_AUDIO(4X)
 	//	11: PLL_AUDIO(hs)
 
 	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
-		0x03 * (UINT32_C(1) << 24) |
-		0x03 * (UINT32_C(1) << 8) |	// div8
+		0x02 * (UINT32_C(1) << 24) |
+		0x00 * (UINT32_C(1) << 8) |	// div8
 		0;
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
@@ -4104,7 +4107,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			/* PI1 H_I2S0_BCLK pin 31 */
 			const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
 			const unsigned mclkdiv = 1; //clk / mclkf;
-			const unsigned bclkdiv = 32; //clk / bclkf;
+			const unsigned bclkdiv = 8; //clk / bclkf;
 			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 			PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
 			i2s->I2Sn_CLKD =

@@ -9697,8 +9697,6 @@ sysinit_pll_initialize(int forced)
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
 
-	allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 43);
 #if WITHGPUHW
 	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
