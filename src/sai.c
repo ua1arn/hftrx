@@ -4495,7 +4495,7 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 // HDMI initialize
 static void hardware_i2s1_master_duplex_initialize_hdmi48(void)
 {
-	const int master = 1;
+	const int master = !1;	// !!!! SLAVE
 	unsigned NSLOTS = 2;
 	unsigned framebits = 64;
 	hardware_i2s_clock(1, I2S1, master, NSLOTS, ARMI2SRATE, framebits);
