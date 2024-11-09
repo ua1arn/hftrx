@@ -4147,8 +4147,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			0;
 	}
 
-	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	const unsigned rxcontpos = (ix != 3) ? (27 - ix) : 23;	// From selected I2S: I2S0_TXDIF..:I2S3_TXDIF
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << rxcontpos);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
 	//PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
 	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
