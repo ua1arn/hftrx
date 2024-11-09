@@ -4084,9 +4084,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			ws * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 			0;
 		i2s->I2Sn_FMT1 = 0;
-#if 0
+
 		if (master)
 		{
+			// Configure clock dividers if master mode
+
 			// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
 			// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
 			// (pin P2-6) lrck = 53 khz
@@ -4107,9 +4109,14 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		}
 		else
 		{
-			i2s->I2Sn_CLKD = 0xFF;
+			// Slave
+//			i2s->I2Sn_CLKD =
+//				0 * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
+//				0x0F * (UINT32_C(1) << 0) |		/* MCLKDIV */
+//				0x0F * (UINT32_C(1) << 4) |		/* BCLKDIV */
+//				0;
 		}
-#endif
+
 		i2s->I2Sn_CHCFG =
 			(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
 			(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
@@ -4495,7 +4502,7 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 // HDMI initialize
 static void hardware_i2s1_master_duplex_initialize_hdmi48(void)
 {
-	const int master = !1;	// !!!! SLAVE
+	const int master = 1;
 	unsigned NSLOTS = 2;
 	unsigned framebits = 64;
 	hardware_i2s_clock(1, I2S1, master, NSLOTS, ARMI2SRATE, framebits);
