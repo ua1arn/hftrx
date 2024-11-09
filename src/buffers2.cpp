@@ -44,7 +44,7 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
-#define HDMI48TX_CAPACITY (32 * BUFOVERSIZE)
+#define HDMI48TX_CAPACITY (128 * BUFOVERSIZE)
 
 #define BTIN48_CAPACITY 12
 #define BTOUT48_CAPACITY 12
