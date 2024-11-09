@@ -7132,11 +7132,11 @@ static void hdmi_set_cts_n(HDMI_TX_TypeDef * const hdmi, unsigned int cts,
 			   unsigned int n)
 {
 	/* Must be set/cleared first */
-	hdmi->HDMI_AUD_CTS3 = ~ HDMI_AUD_CTS3_CTS_MANUAL;
+	hdmi->HDMI_AUD_CTS3 &= (uint8_t) ~ HDMI_AUD_CTS3_CTS_MANUAL;
 //	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
 
 	/* nshift factor = 0 */
-	hdmi->HDMI_AUD_CTS3 = (uint8_t) ~ HDMI_AUD_CTS3_N_SHIFT_MASK;
+	hdmi->HDMI_AUD_CTS3 &= (uint8_t) ~ HDMI_AUD_CTS3_N_SHIFT_MASK;
 //	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_N_SHIFT_MASK, HDMI_AUD_CTS3);
 
 	//  HDMI Audio Clock Regenerator CTS calculated value
@@ -7377,6 +7377,9 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		6144 * 2, 192000, 5120 * 4, 6144 * 4,
 	};
 
+	PRINTF("hdmi->HDMI_CONFIG3_ID=%02X, HDMI_CONFIG3_AHBAUDDMA=%02X\n", hdmi->HDMI_CONFIG3_ID, HDMI_CONFIG3_AHBAUDDMA);
+	PRINTF("hdmi->HDMI_CONFIG0_ID=%02X, HDMI_CONFIG0_I2S=%02X\n", hdmi->HDMI_CONFIG0_ID, HDMI_CONFIG0_I2S);
+
 //	hdmi_write(0xE04B, 0x00 | (audio->sample_bit == 16)
 //			? 0x02 : ((audio->sample_bit == 24) ? 0xb : 0x0));
 //	hdmi_write(0x0251, audio->sample_bit);
@@ -7413,7 +7416,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	hdmi_tx_hdcp_config(hdmi);
 	// audio enable
 	hdmi_set_cts_n(hdmi, audio_cts, audio_n);
-
+	hdmi_enable_audio_clk(hdmi);
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
