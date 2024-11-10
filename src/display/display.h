@@ -993,9 +993,9 @@ typedef struct
 	const uint16_t * data;
 } picRLE_t;
 
-PACKEDCOLORPIP_T convert_565_to_a888(uint16_t color);
+COLORPIP_T convert_565_to_a888(uint16_t color);
 void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color);
-void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color);
+void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, COLORPIP_T bg_color);
 
 #endif /* WITHRLEDECOMPRESS */
 

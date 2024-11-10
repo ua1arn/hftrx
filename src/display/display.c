@@ -1809,9 +1809,9 @@ const videomode_t * get_videomode_HDMI(void)
 {
 	//return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
-	return & vdmode_HDMI_1280x720at50;	// ! TESTED
+	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
 	//return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
-	//return & vdmode_HDMI_1920x1080at60;	// ! TESTED
+	return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
 
 #endif /* WITHLTDCHW */
@@ -2037,7 +2037,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 	}
 }
 
-void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color)
+void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, COLORPIP_T bg_color)
 {
 	uint_fast32_t i = 0;
 	uint_fast16_t x1 = x, y1 = y;
@@ -2051,7 +2051,7 @@ void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_f
 			i ++;
 			for (uint_fast16_t p = 0; p < count; p++)
 			{
-				PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
+				COLORPIP_T point = convert_565_to_a888(picture->data [i]);
 				colpip_point(buf, dx, dy, x1, y1, picture->data [i] == transparent_color ? bg_color : point);
 
 				x1 ++;

@@ -1730,8 +1730,9 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 }
 
 /* Set MAIN frame buffer address. */
-void hardware_ltdc_main_set(uintptr_t addr)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 {
+	(void) rtmixid;
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
@@ -1741,12 +1742,12 @@ static void hardware_ltdc_vsync(int rtmixid)
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	ASSERT(layer2 == 0);
 	ASSERT(layer3 == 0);
 	//hardware_ltdc_pip_off();
-	hardware_ltdc_main_set(layer0);
+	hardware_ltdc_main_set(rtmixid, layer0);
 }
 
 #elif CPUSTYLE_ALLWINNER
