@@ -4104,8 +4104,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			/* PI0 H_I2S0_MCLK pin 32	*/
 			/* PI1 H_I2S0_BCLK pin 31 */
 			const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
-			const unsigned mclkdiv = 2;//calcdivround2(clk, mclkf);
-			const unsigned bclkdiv = 16;//calcdivround2(clk, bclkf);
+			const unsigned mclkdiv = 2;//calcdivround2(clk, mclkf);	// 2
+			const unsigned bclkdiv = 16;//calcdivround2(clk, bclkf);	// 16
 			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 			PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
 			PRINTF("bclkout=%u\n", (unsigned) (allwnr_t507_get_ahub_freq() / bclkdiv));

@@ -675,7 +675,7 @@ extern "C" {
 #define DMABUFFSTEP16MONI 2	// самоконтроль - левый и правый
 #define DMABUFFSIZE16MONI	(48 * DMABUFFSTEP16MONI)		/* самоконтроль - дискретность задержки 1 мс */
 
-#define DMABUFFSIZEHDMI48TX	(DMABUFCLUSTER * DMABUFFSTEPHDMI48TX * DMABUFSCALE * 3)		/* HDMI OUT */
+#define DMABUFFSIZEHDMI48TX	(DMABUFCLUSTER * DMABUFFSTEPHDMI48TX * DMABUFSCALE)		/* HDMI OUT */
 #define DMABUFFSTEPHDMI48TX 2
 
 // Buffers interface functions

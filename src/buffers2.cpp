@@ -20,12 +20,17 @@
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
-static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
+static const unsigned SKIPSAMPLES_HDMI = 50; // раз в 50 сэмплов добавление/удаление одного сэмпла
+static const unsigned SKIPSAMPLES_BT = 50; // раз в 50 сэмплов добавление/удаление одного сэмпла
+static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
+static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
+static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
+
 
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-#define HDMI48TX_CAPACITY 		(64 * BUFOVERSIZE)
+#define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
@@ -382,7 +387,7 @@ struct buffitem
 	void * tag3;
 };
 
-template <typename buffitem_t, int hasresample, int hacheckready>
+template <typename buffitem_t, int hasresample, int hacheckready, int SKIPSAMPLES>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
@@ -788,10 +793,10 @@ public:
 	}
 };
 
-template <typename sample_t, typename element_t, int hasresample, int hacheckready>
-class dmahandle: public blists<element_t, hasresample, hacheckready>
+template <typename sample_t, typename element_t, int hasresample, int hacheckready, int skipsamples>
+class dmahandle: public blists<element_t, hasresample, hacheckready, skipsamples>
 {
-	typedef blists<element_t, hasresample, hacheckready> parent_t;
+	typedef blists<element_t, hasresample, hacheckready, skipsamples> parent_t;
 	typedef typeof (element_t::v) wel_t;
 	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
@@ -916,7 +921,7 @@ typedef ALIGNX_BEGIN struct denoise16
 } ALIGNX_END denoise16_t;
 
 typedef buffitem<denoise16_t> denoise16buf_t;
-typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0> denoise16dma_t;
+typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> denoise16dma_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 static denoise16buf_t denoise16buf [SPEEX_CAPACITY];
@@ -982,8 +987,8 @@ typedef buffitem<voice16tx_t> voice16txbuf_t;
 
 //typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
-typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1> voice16rxdma_t;
-typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
 static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
 static RAMNC voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
@@ -1196,7 +1201,7 @@ typedef ALIGNX_BEGIN struct hdmi48tx_tag
 
 typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
 
-typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1> hdmi48txdma_t;
+typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
 
 static RAMNC hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
 
@@ -1315,7 +1320,7 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 
 
 
-typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1> moni16txdma_t;
+typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> moni16txdma_t;
 
 static moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
 static moni16buf_t rx16recbuf [VOICE16TXMONI_CAPACITY];
@@ -1366,7 +1371,7 @@ typedef buffitem<voice32tx_t> voice32txbuf_t;
 
 static RAMNC voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
-typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1> voice32txdma_t;
+typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx", voice32txbuf, ARRAY_SIZE(voice32txbuf));
@@ -1511,7 +1516,7 @@ typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
 static RAMNC voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
-typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1> voice32rxdma_t;
+typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32rxdma_t;
 
 static voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx", voice32rxbuf, ARRAY_SIZE(voice32rxbuf));
 
@@ -1597,7 +1602,7 @@ typedef buffitem<uacout48_t> uacout48buf_t;
 
 static RAMNC uacout48buf_t uacout48buf [UACOUT48_CAPACITY];
 
-typedef dmahandle<FLOAT_t, uacout48buf_t, 1, 1> uacout48dma_t;
+typedef dmahandle<FLOAT_t, uacout48buf_t, 1, 1, SKIPSAMPLES_USB> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
@@ -1686,7 +1691,7 @@ typedef buffitem<eth0io_t> eth0iobuf_t;
 
 static RAMNC eth0iobuf_t eth0iobuf [33];	// количество буферов
 
-typedef dmahandle<int_fast16_t, eth0iobuf_t, 1, 1> eth0iodma_t;
+typedef dmahandle<int_fast16_t, eth0iobuf_t, 1, 1, SKIPSAMPLES_ETH> eth0iodma_t;
 
 static eth0iodma_t eth0iodma(IRQL_REALTIME, "eth0io", eth0iobuf, ARRAY_SIZE(eth0iobuf));
 
@@ -1800,16 +1805,16 @@ typedef buffitem<btio32k_t> btio32kbuf_t;
 typedef buffitem<btio16k_t> btio16kbuf_t;
 typedef buffitem<btio8k_t> btio8kbuf_t;
 
-typedef dmahandle<FLOAT_t, btio48kbuf_t, 0, 1> btio48kdma_t;
-typedef dmahandle<FLOAT_t, btio48kbuf_t, 1, 1> btio48kdmaRS_t;
-typedef dmahandle<int16_t, btio44p1kbuf_t, 0, 1> btio44p1kdma_t;
-typedef dmahandle<int16_t, btio44p1kbuf_t, 1, 1> btio44p1kdmaRS_t;
-typedef dmahandle<int16_t, btio32kbuf_t, 0, 1> btio32kdma_t;
-typedef dmahandle<int16_t, btio32kbuf_t, 1, 1> btio32kdmaRS_t;
-typedef dmahandle<int16_t, btio16kbuf_t, 0, 1> btio16kdma_t;
-typedef dmahandle<int16_t, btio16kbuf_t, 1, 1> btio16kdmaRS_t;
-typedef dmahandle<int16_t, btio8kbuf_t, 0, 1> btio8kdma_t;
-typedef dmahandle<int16_t, btio8kbuf_t, 1, 1> btio8kdmaRS_t;
+typedef dmahandle<FLOAT_t, btio48kbuf_t, 0, 1, SKIPSAMPLES_BT> btio48kdma_t;
+typedef dmahandle<FLOAT_t, btio48kbuf_t, 1, 1, SKIPSAMPLES_BT> btio48kdmaRS_t;
+typedef dmahandle<int16_t, btio44p1kbuf_t, 0, 1, SKIPSAMPLES_BT> btio44p1kdma_t;
+typedef dmahandle<int16_t, btio44p1kbuf_t, 1, 1, SKIPSAMPLES_BT> btio44p1kdmaRS_t;
+typedef dmahandle<int16_t, btio32kbuf_t, 0, 1, SKIPSAMPLES_BT> btio32kdma_t;
+typedef dmahandle<int16_t, btio32kbuf_t, 1, 1, SKIPSAMPLES_BT> btio32kdmaRS_t;
+typedef dmahandle<int16_t, btio16kbuf_t, 0, 1, SKIPSAMPLES_BT> btio16kdma_t;
+typedef dmahandle<int16_t, btio16kbuf_t, 1, 1, SKIPSAMPLES_BT> btio16kdmaRS_t;
+typedef dmahandle<int16_t, btio8kbuf_t, 0, 1, SKIPSAMPLES_BT> btio8kdma_t;
+typedef dmahandle<int16_t, btio8kbuf_t, 1, 1, SKIPSAMPLES_BT> btio8kdmaRS_t;
 
 static btio44p1kbuf_t  btout44p1kbuf [BTOUT48_CAPACITY];
 static btio32kbuf_t  btout32kbuf [BTOUT48_CAPACITY];
@@ -2282,7 +2287,7 @@ typedef enum
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
 	static RAMNC uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
 
-	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1, 1> uacinrts192dma_t;
+	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1, 1, SKIPSAMPLES_USB> uacinrts192dma_t;
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
@@ -2359,7 +2364,7 @@ typedef enum
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
 	static RAMNC uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
 
-	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1, 1> uacinrts96dma_t;
+	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1, 1, SKIPSAMPLES_USB> uacinrts96dma_t;
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
@@ -2439,7 +2444,7 @@ typedef buffitem<uacin48_t> uacin48buf_t;
 
 static RAMNC uacin48buf_t uacin48buf [UACIN48_CAPACITY];
 
-typedef dmahandle<FLOAT_t, uacin48buf_t, 1, 1> uacin48dma_t;
+typedef dmahandle<FLOAT_t, uacin48buf_t, 1, 1, SKIPSAMPLES_USB> uacin48dma_t;
 
 
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
@@ -2608,7 +2613,7 @@ typedef buffitem<message8buff_t> message8v_t;
 static message8v_t message8v [MESSAGE_CAPACITY];
 
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
-typedef blists<message8v_t, 0, 0> message8list_t;
+typedef blists<message8v_t, 0, 0, SKIPSAMPLES_NORESAMPLER> message8list_t;
 
 static message8list_t message8(MESSAGE_IRQL, "msg8", message8v, ARRAY_SIZE(message8v));
 
@@ -2767,7 +2772,7 @@ typedef buffitem<recordswav48_t> recordswav48buf_t;
 static recordswav48buf_t recordswav48buf [AUDIOREC_CAPACITY];
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0> recordswav48dma_t;
+typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec", recordswav48buf, ARRAY_SIZE(recordswav48buf));
 
@@ -3618,7 +3623,7 @@ typedef ALIGNX_BEGIN struct colmain0fb
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
 static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
-typedef blists<colmain0fbbuf_t, 0, 0> colmain0fblist_t;
+typedef blists<colmain0fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain0fblist_t;
 static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
 uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
@@ -3677,7 +3682,7 @@ typedef ALIGNX_BEGIN struct colmain1fb
 typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
 
 static RAMFRAMEBUFF colmain1fbbuf_t colmain1fbbuf [LCDMODE_TVOUT_PAGES];
-typedef blists<colmain1fbbuf_t, 0, 0> colmain1fblist_t;
+typedef blists<colmain1fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain1fblist_t;
 static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
 
 // can not be zero
@@ -3934,12 +3939,12 @@ void buffers_diagnostics(void)
 #endif
 #if WITHINTEGRATEDDSP
 #if 1
-	denoise16list.debug();
+	//denoise16list.debug();
 	codec16rx.debug();
 	codec16tx.debug();
-	moni16.debug();
-	voice32tx.debug();
-	voice32rx.debug();
+//	moni16.debug();
+//	voice32tx.debug();
+//	voice32rx.debug();
 #endif
 #if 1
 	// USB
@@ -3956,7 +3961,7 @@ void buffers_diagnostics(void)
 	uacin48.debug();
 #endif
 #endif
-#if WITHHDMITVHW && 0
+#if WITHHDMITVHW && 1
 	hdmi48tx.debug();
 #endif /* WITHHDMITVHW */
 	//message8.debug();
