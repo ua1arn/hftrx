@@ -3902,13 +3902,6 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	CCU->MBUS_CFG_REG |= (1u << 30);
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
 
-
-	// Whhen PLL_AUDIO(1X) is 24.576 MHz
-	// AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
-//	CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;
-//	CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B;
-//	local_delay_ms(25);
-
 	//	00: PLL_AUDIO(1X)
 	//	01: PLL_AUDIO(2X)
 	//	10: PLL_AUDIO(4X)
@@ -3916,8 +3909,8 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 
 	// 3072 6144 12288 24576
 	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
-		0x03 * (UINT32_C(1) << 24) |
-		0x03 * (UINT32_C(1) << 8) |	// div8
+		0x02 * (UINT32_C(1) << 24) | //	10: PLL_AUDIO(4X)
+		0x01 * (UINT32_C(1) << 8) |	// (0..3) div2
 		0;
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
@@ -4115,6 +4108,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			const unsigned bclkdiv = calcdivround2(clk, bclkf);
 			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 			PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
+			PRINTF("bclkout=%u\n", (unsigned) (allwnr_t507_get_ahub_freq() / bclkdiv));
+
 			i2s->I2Sn_CLKD =
 				!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
 				ratio2div(mclkdiv) * (UINT32_C(1) << 0) |		/* MCLKDIV */
