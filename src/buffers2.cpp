@@ -479,7 +479,7 @@ public:
 	}
 
 	// сохранить в списке готовых
-	void save_buffer(element_t * addr)
+	void save_readybuffer(element_t * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
 		ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
@@ -826,7 +826,7 @@ public:
 		wbn += putcbf(wb->buff + wbn, ch0, ch1);
 		if (wbn >= ARRAY_SIZE(wb->buff))
 		{
-			parent_t::save_buffer(wb);
+			parent_t::save_readybuffer(wb);
 			wb = NULL;
 		}
 	}
@@ -843,7 +843,7 @@ public:
 		wbn += putcbf(wb->buff + wbn, ch0, ch1);
 		if (wbn >= ARRAY_SIZE(wb->buff))
 		{
-			parent_t::save_buffer(wb);
+			parent_t::save_readybuffer(wb);
 			wb = NULL;
 		}
 	}
@@ -962,7 +962,7 @@ void releasespeexbuffer(speexel_t * t)
 void savespeexbuffer(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
-	denoise16list.save_buffer(p);
+	denoise16list.save_readybuffer(p);
 }
 
 // DMA data from codec
@@ -1082,7 +1082,7 @@ uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 void save_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	codec16rx.save_buffer(p);
+	codec16rx.save_readybuffer(p);
 }
 
 void release_dmabuffer16rx(uintptr_t addr)
@@ -1127,7 +1127,7 @@ uintptr_t allocate_dmabuffer16tx(void)
 //void save_dmabuffer16tx(uintptr_t addr)
 //{
 //	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-//	codec16tx.save_buffer(p);
+//	codec16tx.save_readybuffer(p);
 //}
 
 void release_dmabuffer16tx(uintptr_t addr)
@@ -1259,7 +1259,7 @@ void release_dmabufferhdmi48tx(uintptr_t addr)  /* release CPU to HDMI */
 void save_dmabufferhdmi48tx(uintptr_t addr) /* save to queue CPU to HDMI */
 {
 	hdmi48tx_t * const p = CONTAINING_RECORD(addr, hdmi48tx_t, buff);
-	hdmi48tx.save_buffer(p);
+	hdmi48tx.save_readybuffer(p);
 }
 
 int_fast32_t cachesize_dmabufferhdmi48tx(void) /* parameter for cache manipulation functions CPU to HDMI */
@@ -1434,7 +1434,7 @@ uintptr_t allocate_dmabuffer32tx(void)
 void save_dmabuffer32tx(uintptr_t addr)
 {
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
-	voice32tx.save_buffer(p);
+	voice32tx.save_readybuffer(p);
 }
 
 #if WITHFPGAPIPE_CODEC1
@@ -1577,7 +1577,7 @@ static void dsphftrxproc_spool_user(void * ctx)
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-	voice32rx.save_buffer(p);
+	voice32rx.save_readybuffer(p);
 	// dsphftrxproc_spool_user on other CPUs
 #if TXSPOOLCOND
 	dsphftrxproc_spool_user(NULL);
@@ -1652,7 +1652,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 		uacout48.release_buffer(p);
 		return;
 	}
-	uacout48.save_buffer(p);
+	uacout48.save_readybuffer(p);
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -1718,7 +1718,7 @@ uintptr_t getfilled_dmabuffereth0io(void)
 void save_dmabuffereth0io(uintptr_t addr)
 {
 	eth0io_t * const p = CONTAINING_RECORD(addr, eth0io_t, buff);
-	eth0iodma.save_buffer(p);
+	eth0iodma.save_readybuffer(p);
 }
 
 
@@ -2085,7 +2085,7 @@ uintptr_t allocate_dmabufferbtout44p1k(void)
 void save_dmabufferbtout44p1k(uintptr_t addr)
 {
 	btio44p1k_t * const p = CONTAINING_RECORD(addr, btio44p1k_t, buff);
-	btout44p1k.save_buffer(p);
+	btout44p1k.save_readybuffer(p);
 }
 
 int_fast32_t datasize_dmabufferbtout44p1k(void)
@@ -2108,7 +2108,7 @@ uintptr_t allocate_dmabufferbtout32k(void)
 void save_dmabufferbtout32k(uintptr_t addr)
 {
 	btio32k_t * const p = CONTAINING_RECORD(addr, btio32k_t, buff);
-	btout32k.save_buffer(p);
+	btout32k.save_readybuffer(p);
 }
 
 int_fast32_t datasize_dmabufferbtout32k(void)
@@ -2131,7 +2131,7 @@ uintptr_t allocate_dmabufferbtout16k(void)
 void save_dmabufferbtout16k(uintptr_t addr)
 {
 	btio16k_t * const p = CONTAINING_RECORD(addr, btio16k_t, buff);
-	btout16k.save_buffer(p);
+	btout16k.save_readybuffer(p);
 }
 
 int_fast32_t datasize_dmabufferbtout16k(void)
@@ -2154,7 +2154,7 @@ uintptr_t allocate_dmabufferbtout8k(void)
 void save_dmabufferbtout8k(uintptr_t addr)
 {
 	btio8k_t * const p = CONTAINING_RECORD(addr, btio8k_t, buff);
-	btout8k.save_buffer(p);
+	btout8k.save_readybuffer(p);
 }
 
 int_fast32_t datasize_dmabufferbtout8k(void)
@@ -2340,7 +2340,7 @@ typedef enum
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
 		ASSERT(p->tag == BUFFTAG_RTS192);
-		uacinrts192.save_buffer(p);
+		uacinrts192.save_readybuffer(p);
 	}
 
 
@@ -2417,7 +2417,7 @@ typedef enum
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
 		ASSERT(p->tag == BUFFTAG_RTS96);
-		uacinrts96.save_buffer(p);
+		uacinrts96.save_readybuffer(p);
 	}
 
 
@@ -2505,7 +2505,7 @@ void save_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
 	ASSERT(p->tag == BUFFTAG_UACIN48);
-	uacin48.save_buffer(p);
+	uacin48.save_readybuffer(p);
 }
 
 void release_dmabufferuacin48(uintptr_t addr)
@@ -2639,7 +2639,7 @@ void placesemsgbuffer(messagetypes_t type, uint8_t * dest)
 {
 	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, buff);
 	p->type = type;
-	message8.save_buffer(p);
+	message8.save_readybuffer(p);
 }
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
@@ -2834,7 +2834,7 @@ static void saveplaybuffer(void * dest, unsigned used)
 	p->startdata = 0;	// первый сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
 
-	recordswav48dma.save_buffer(p);
+	recordswav48dma.save_readybuffer(p);
 }
 
 /* data to play */
@@ -2908,7 +2908,7 @@ void releaserecordbuffer(void * dest)
 void saverecordbuffer(void * dest)
 {
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	recordswav48dma.save_buffer(p);
+	recordswav48dma.save_readybuffer(p);
 }
 
 #endif /* WITHUSEAUDIOREC */
@@ -3656,7 +3656,7 @@ void save_dmabuffercolmain0fb(uintptr_t addr) /* save to queue Frame buffer for 
 	if (colmain0fblist.get_readybuffer_raw(& old))
 		colmain0fblist.release_buffer(old);
 	colmain0fb_t * const p = CONTAINING_RECORD(addr, colmain0fb_t, buff);
-	colmain0fblist.save_buffer(p);
+	colmain0fblist.save_readybuffer(p);
 }
 
 int_fast32_t cachesize_dmabuffercolmain0fb(void) /* parameter for cache manipulation functions Frame buffer for display 0 */
@@ -3722,7 +3722,7 @@ void save_dmabuffercolmain1fb(uintptr_t addr) /* save to queue Frame buffer for 
 	if (colmain1fblist.get_readybuffer_raw(& old))
 		colmain1fblist.release_buffer(old);
 	colmain1fb_t * const p = CONTAINING_RECORD(addr, colmain1fb_t, buff);
-	colmain1fblist.save_buffer(p);
+	colmain1fblist.save_readybuffer(p);
 }
 
 int_fast32_t cachesize_dmabuffercolmain1fb(void) /* parameter for cache manipulation functions Frame buffer for display 1 */
