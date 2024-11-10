@@ -6256,6 +6256,571 @@ void hardware_edid_test(void)
 
 #include "dw-hdmi.h"
 
+
+/* hdmi initialization step b.4 */
+static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
+{
+	unsigned clkdis;
+
+	/* control period minimum duration */
+	hdmi->HDMI_FC_CTRLDUR = 12;
+	hdmi->HDMI_FC_EXCTRLDUR = 32;
+	hdmi->HDMI_FC_EXCTRLSPAC = 1;
+
+	/* set to fill tmds data channels */
+	hdmi->HDMI_FC_CH0PREAM = 0x0b;
+	hdmi->HDMI_FC_CH1PREAM = 0x16;
+	hdmi->HDMI_FC_CH2PREAM = 0x21;
+
+	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
+
+	/* enable pixel clock and tmds data path */
+	clkdis = 0x7f;
+	clkdis &= ~HDMI_MC_CLKDIS_PIXELCLK_DISABLE;
+	hdmi->HDMI_MC_CLKDIS = clkdis;
+
+	clkdis &= ~HDMI_MC_CLKDIS_TMDSCLK_DISABLE;
+	hdmi->HDMI_MC_CLKDIS = clkdis;
+
+	if (audio) {
+		clkdis &= ~HDMI_MC_CLKDIS_AUDCLK_DISABLE;
+		hdmi->HDMI_MC_CLKDIS = clkdis;
+	}
+}
+
+static void hdmi_enable_audio_clk(HDMI_TX_TypeDef * const hdmi)
+{
+	hdmi->HDMI_MC_CLKDIS &= ~ HDMI_MC_CLKDIS_AUDCLK_DISABLE;
+}
+
+static void hdmi_phy_gen2_pddq(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_GEN2_PDDQ_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_GEN2_PDDQ_MASK,
+//		 enable << HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET);
+}
+static inline void hdmi_phy_test_clear(HDMI_TX_TypeDef *hdmi, unsigned bit)
+{
+	hdmi->HDMI_PHY_TST0 = (hdmi->HDMI_PHY_TST0 & ~ HDMI_PHY_TST0_TSTCLR_MASK) |
+			!! bit * (1 << HDMI_PHY_TST0_TSTCLR_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_TST0, HDMI_PHY_TST0_TSTCLR_MASK,
+//		 bit << HDMI_PHY_TST0_TSTCLR_OFFSET);
+}
+
+static void hdmi_phy_gen2_txpwron(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_GEN2_TXPWRON_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0,
+//		 HDMI_PHY_CONF0_GEN2_TXPWRON_MASK,
+//		 enable << HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET);
+}
+
+static void hdmi_phy_sel_data_en_pol(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SELDATAENPOL_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0,
+//		 HDMI_PHY_CONF0_SELDATAENPOL_MASK,
+//		 enable << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
+}
+
+static void hdmi_phy_sel_interface_control(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SELDIPIF_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_SELDIPIF_MASK,
+//		 enable << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
+}
+
+static void hdmi_phy_enable_power(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_PDZ_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_PDZ_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_PDZ_MASK,
+//		 enable << HDMI_PHY_CONF0_PDZ_OFFSET);
+}
+
+static void hdmi_phy_enable_tmds(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_ENTMDS_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_ENTMDS_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_ENTMDS_MASK,
+//		 enable << HDMI_PHY_CONF0_ENTMDS_OFFSET);
+}
+
+static void hdmi_phy_enable_spare(HDMI_TX_TypeDef *hdmi, unsigned enable)
+{
+	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SPARECTRL_MASK) |
+			!! enable * (1 << HDMI_PHY_CONF0_SPARECTRL_OFFSET);
+//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_SPARECTRL_MASK,
+//		 enable << HDMI_PHY_CONF0_SPARECTRL_OFFSET);
+}
+
+static uint_fast32_t hdmi_compute_n(uint_fast32_t freq, uint_fast64_t pixel_clk)
+{
+	unsigned int n = (128 * freq) / 1000;
+	unsigned int mult = 1;
+
+	while (freq > 48000) {
+		mult *= 2;
+		freq /= 2;
+	}
+
+	switch (freq) {
+	case 32000:
+		if (pixel_clk == 25175000)
+			n = 4576;
+		else if (pixel_clk == 27027000)
+			n = 4096;
+		else if (pixel_clk == 74176000 || pixel_clk == 148352000)
+			n = 11648;
+		else
+			n = 4096;
+		n *= mult;
+		break;
+
+	case 44100:
+		if (pixel_clk == 25175000)
+			n = 7007;
+		else if (pixel_clk == 74176000)
+			n = 17836;
+		else if (pixel_clk == 148352000)
+			n = 8918;
+		else
+			n = 6272;
+		n *= mult;
+		break;
+
+	case 48000:
+		if (pixel_clk == 25175000)
+			n = 6864;
+		else if (pixel_clk == 27027000)
+			n = 6144;
+		else if (pixel_clk == 74176000)
+			n = 11648;
+		else if (pixel_clk == 148352000)
+			n = 5824;
+		else
+			n = 6144;
+		n *= mult;
+		break;
+
+	default:
+		break;
+	}
+
+	return n;
+}
+
+static void hdmi_set_cts_n(HDMI_TX_TypeDef * const hdmi, unsigned int cts,
+			   unsigned int n)
+{
+	/* Must be set/cleared first */
+	hdmi->HDMI_AUD_CTS3 &= (uint8_t) ~ HDMI_AUD_CTS3_CTS_MANUAL;
+//	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
+
+	/* nshift factor = 0 */
+	hdmi->HDMI_AUD_CTS3 &= (uint8_t) ~ HDMI_AUD_CTS3_N_SHIFT_MASK;
+//	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_N_SHIFT_MASK, HDMI_AUD_CTS3);
+
+	//  HDMI Audio Clock Regenerator CTS calculated value
+	hdmi->HDMI_AUD_CTS3 = ((cts >> 16) & HDMI_AUD_CTS3_AUDCTS19_16_MASK) | HDMI_AUD_CTS3_CTS_MANUAL;
+//	hdmi_writeb(hdmi, ((cts >> 16) & HDMI_AUD_CTS3_AUDCTS19_16_MASK) |
+//		    HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
+	hdmi->HDMI_AUD_CTS2 = (cts >> 8) & 0xff;
+//	hdmi_writeb(hdmi, (cts >> 8) & 0xff, HDMI_AUD_CTS2);
+	hdmi->HDMI_AUD_CTS1 = cts & 0xff;
+//	hdmi_writeb(hdmi, cts & 0xff, HDMI_AUD_CTS1);
+
+	// HDMI Audio Clock Regenerator N valu
+	hdmi->HDMI_AUD_N3 = (n >> 16) & 0x0f;
+//	hdmi_writeb(hdmi, (n >> 16) & 0x0f, HDMI_AUD_N3);
+	hdmi->HDMI_AUD_N2 = (n >> 8) & 0xff;
+//	hdmi_writeb(hdmi, (n >> 8) & 0xff, HDMI_AUD_N2);
+	hdmi->HDMI_AUD_N1 = n & 0xff;
+//	hdmi_writeb(hdmi, n & 0xff, HDMI_AUD_N1);
+}
+
+static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
+{
+//	local_delay_ms(msec);
+//	return 0;
+	for (;;)
+	{
+		const uint32_t val = hdmi->HDMI_IH_I2CMPHY_STAT0;
+		if (val & 0x03)
+		{
+			 hdmi->HDMI_IH_I2CMPHY_STAT0 = val;
+			 return (val & 0x01) ? 1 : 0;	// i2cmphyerror chack
+		}
+	}
+	// timeout
+	return 1;
+//	ulong start;
+//	u32 val;
+//
+//	start = get_timer(0);
+//	do {
+//		val = hdmi_read(hdmi, HDMI_IH_I2CMPHY_STAT0);
+//		if (val & 0x3) {
+//			hdmi_write(hdmi, val, HDMI_IH_I2CMPHY_STAT0);
+//			return 0;
+//		}
+//
+//		udelay(100);
+//	} while (get_timer(start) < msec);
+//
+	return 1;
+}
+
+static void hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
+{
+	// I2C reset
+//	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+//		;
+	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
+	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
+	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
+	hdmi->HDMI_PHY_I2CM_DATAO_1_ADDR = (data >> 8);
+	hdmi->HDMI_PHY_I2CM_DATAO_0_ADDR = (data >> 0);
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_WRITE;
+
+//	hdmi_write(hdmi, 0xff, HDMI_IH_I2CMPHY_STAT0);
+//	hdmi_write(hdmi, addr, HDMI_PHY_I2CM_ADDRESS_ADDR);
+//	hdmi_write(hdmi, (u8)(data >> 8), HDMI_PHY_I2CM_DATAO_1_ADDR);
+//	hdmi_write(hdmi, (u8)(data >> 0), HDMI_PHY_I2CM_DATAO_0_ADDR);
+//	hdmi_write(hdmi, HDMI_PHY_I2CM_OPERATION_ADDR_WRITE,
+//		   HDMI_PHY_I2CM_OPERATION_ADDR);
+
+	hdmi_phy_wait_i2c_done(hdmi, 1000);
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
+}
+
+static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned addr)
+{
+	// I2C reset
+//	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
+//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+//		;
+	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
+	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
+	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_READ;
+
+//	hdmi_write(hdmi, 0xff, HDMI_IH_I2CMPHY_STAT0);
+//	hdmi_write(hdmi, addr, HDMI_PHY_I2CM_ADDRESS_ADDR);
+//	hdmi_write(hdmi, (u8)(data >> 8), HDMI_PHY_I2CM_DATAO_1_ADDR);
+//	hdmi_write(hdmi, (u8)(data >> 0), HDMI_PHY_I2CM_DATAO_0_ADDR);
+//	hdmi_write(hdmi, HDMI_PHY_I2CM_OPERATION_ADDR_WRITE,
+//		   HDMI_PHY_I2CM_OPERATION_ADDR);
+
+	* data = 0xDEADBEEF;
+	if (0 == hdmi_phy_wait_i2c_done(hdmi, 1000))
+	{
+		* data = hdmi->HDMI_PHY_I2CM_DATAI_1_ADDR * 256 + hdmi->HDMI_PHY_I2CM_DATAI_0_ADDR;
+	}
+	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
+}
+
+enum {
+	DW_HDMI_RES_8,
+	DW_HDMI_RES_10,
+	DW_HDMI_RES_12,
+	DW_HDMI_RES_MAX,
+};
+
+struct dw_hdmi_mpll_config {
+	unsigned long mpixelclock;
+	struct {
+		uint16_t cpce;
+		uint16_t gmp;
+	} res[DW_HDMI_RES_MAX];
+};
+
+struct dw_hdmi_curr_ctrl {
+	unsigned long mpixelclock;
+	uint16_t curr[DW_HDMI_RES_MAX];
+};
+
+struct dw_hdmi_phy_config {
+	uint64_t mpixelclock;
+	uint32_t sym_ctr;    /* clock symbol and transmitter control */
+	uint32_t term;       /* transmission termination value */
+	uint32_t vlev_ctr;   /* voltage level control */
+};
+
+// https://github.com/EchoHeim/Allwinner-H616/blob/c499413803e4128439cadf2f56972e207721abe4/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c#L18
+
+static const struct dw_hdmi_mpll_config sun50i_h616_mpll_cfg[] = {
+    {
+        27000000,
+        {
+            {0x00b3, 0x0003},
+            {0x2153, 0x0003},
+            {0x40f3, 0x0003},
+        },
+    },
+    {
+        74250000,
+        {
+            {0x0072, 0x0003},
+            {0x2145, 0x0003},
+            {0x4061, 0x0003},
+        },
+    },
+    {
+        148500000,
+        {
+            {0x0051, 0x0003},
+            {0x214c, 0x0003},
+            {0x4064, 0x0003},
+        },
+    },
+    {
+        297000000,
+        {
+            {0x0040, 0x0003},
+            {0x3b4c, 0x0003},
+            {0x5a64, 0x0003},
+        },
+    },
+    {
+        594000000,
+        {
+            {0x1a40, 0x0003},
+            {0x3b4c, 0x0003},
+            {0x5a64, 0x0003},
+        },
+    },
+    {
+        ~0UL,
+        {
+            {0x0000, 0x0000},
+            {0x0000, 0x0000},
+            {0x0000, 0x0000},
+        },
+    }};
+
+static const struct dw_hdmi_curr_ctrl sun50i_h616_cur_ctr[] = {
+    /* pixelclk    bpp8    bpp10   bpp12 */
+    {
+        27000000,
+        {0x0012, 0x0000, 0x0000},
+    },
+    {
+        74250000,
+        {0x0013, 0x0013, 0x0013},
+    },
+    {
+        148500000,
+        {0x0019, 0x0019, 0x0019},
+    },
+    {
+        297000000,
+        {0x0019, 0x001b, 0x0019},
+    },
+    {
+        594000000,
+        {0x0010, 0x0010, 0x0010},
+    },
+    {
+        ~0UL,
+        {0x0000, 0x0000, 0x0000},
+    }};
+
+static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
+    /*pixelclk   symbol   term   vlev*/
+    {27000000, 0x8009, 0x0007, 0x02b0},
+    {74250000, 0x8019, 0x0004, 0x0290},
+    {148500000, 0x8019, 0x0004, 0x0290},
+    {297000000, 0x8039, 0x0004, 0x022b},
+    {594000000, 0x8029, 0x0000, 0x008a},
+    {~0UL, 0x0000, 0x0000, 0x0000}};
+
+// See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
+
+static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
+{
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	/* Enable csc path */
+	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
+
+	/* gen2 tx power off */
+	hdmi_phy_gen2_txpwron(hdmi, 0);
+//
+//	/* gen2 pddq */
+	hdmi_phy_gen2_pddq(hdmi, 1);
+
+	/* phy reset */
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_ASSERT;
+	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_ASSERT;
+
+//	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+//	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_DEASSERT;
+
+	hdmi_phy_test_clear(hdmi, 1);
+	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
+	hdmi_phy_test_clear(hdmi, 0);
+
+	const struct dw_hdmi_mpll_config *mpll_config = sun50i_h616_mpll_cfg;
+	const struct dw_hdmi_curr_ctrl *curr_ctrl = sun50i_h616_cur_ctr;
+	const struct dw_hdmi_phy_config *phy_config = sun50i_h616_phy_config;
+
+	/* PLL/MPLL Cfg - always match on final entry */
+	for (; mpll_config->mpixelclock != ~0UL; mpll_config++)
+		if (mpixelclock <=
+		    mpll_config->mpixelclock)
+			break;
+
+	for (; curr_ctrl->mpixelclock != ~0UL; curr_ctrl++)
+		if (mpixelclock <=
+		    curr_ctrl->mpixelclock)
+			break;
+
+	for (; phy_config->mpixelclock != ~0UL; phy_config++)
+		if (mpixelclock <=
+		    phy_config->mpixelclock)
+			break;
+
+	if (mpll_config->mpixelclock == ~0UL ||
+	    curr_ctrl->mpixelclock == ~0UL ||
+	    phy_config->mpixelclock == ~0UL) {
+		PRINTF("Pixel clock %u - unsupported by HDMI\n",
+			(unsigned) mpixelclock);
+		return -1;
+	}
+
+
+	const int resix = DW_HDMI_RES_8;
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
+
+	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
+	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
+
+//	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
+//		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
+//			break;
+
+	/*
+	 * resistance term 133ohm cfg
+	 * preemp cgf 0.00
+	 * tx/ck lvl 10
+	 */
+	hdmi_phy_i2c_write(hdmi, phy_config->term, PHY_TXTERM);
+	hdmi_phy_i2c_write(hdmi, phy_config->sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
+
+	/* remove clk term */
+	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
+
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	hdmi_phy_enable_power(hdmi, 1);
+
+	/* toggle tmds enable */
+	hdmi_phy_enable_tmds(hdmi, 0);
+	hdmi_phy_enable_tmds(hdmi, 1);
+
+	/* gen2 tx power on */
+	hdmi_phy_gen2_txpwron(hdmi, 1);
+	hdmi_phy_gen2_pddq(hdmi, 0);
+
+	hdmi_phy_enable_spare(hdmi, 1);
+
+	/* wait for phy pll lock */
+	//TP();
+	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
+		;
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+//	start = get_timer(0);
+//	do {
+//		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
+//		if (!(val & HDMI_PHY_TX_PHY_LOCK))
+//			return 0;
+//
+//		udelay(100);
+//	} while (get_timer(start) < 5);
+	return 0;	// OK
+}
+
+static void hdmi_tx_hdcp_config(HDMI_TX_TypeDef * const hdmi)
+{
+	uint8_t de;
+
+	if (1 /*hdmi->hdmi_data.video_mode.mdataenablepolarity */)
+		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_HIGH;
+	else
+		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_LOW;
+
+	/* disable rx detect */
+	hdmi->HDMI_A_HDCPCFG0 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG0_RXDETECT_MASK) |
+			HDMI_A_HDCPCFG0_RXDETECT_DISABLE;
+//	hdmi_modb(hdmi, HDMI_A_HDCPCFG0_RXDETECT_DISABLE,
+//		  HDMI_A_HDCPCFG0_RXDETECT_MASK, HDMI_A_HDCPCFG0);
+
+	hdmi->HDMI_A_VIDPOLCFG = (hdmi->HDMI_A_VIDPOLCFG & ~ HDMI_A_VIDPOLCFG_DATAENPOL_MASK) |
+			de;
+//	hdmi_modb(hdmi, de, HDMI_A_VIDPOLCFG_DATAENPOL_MASK, HDMI_A_VIDPOLCFG);
+
+	hdmi->HDMI_A_HDCPCFG1 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK) |
+			HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE;
+//	hdmi_modb(hdmi, HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE,
+//		  HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK, HDMI_A_HDCPCFG1);
+}
+
+static void hdmi_video_sample(HDMI_TX_TypeDef * const hdmi)
+{
+	uint32_t val;
+	// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L366
+	unsigned color_format = 0x01;	// RGB, 8 bit
+
+	val = HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE |
+		((color_format << HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET) &
+		HDMI_TX_INVID0_VIDEO_MAPPING_MASK);
+	hdmi->HDMI_TX_INVID0 = val;
+
+	/* Enable TX stuffing: When DE is inactive, fix the output data to 0 */
+	val = HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE |
+		HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE |
+		HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE;
+	hdmi->HDMI_TX_INSTUFFING = val;
+	hdmi->HDMI_TX_GYDATA0 = 0x00;
+	hdmi->HDMI_TX_GYDATA1 = 0x00;
+	hdmi->HDMI_TX_RCRDATA0 = 0x00;
+	hdmi->HDMI_TX_RCRDATA1 = 0x00;
+	hdmi->HDMI_TX_BCBDATA0 = 0x00;
+	hdmi->HDMI_TX_BCBDATA1 = 0x00;
+}
+
+
+static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
+{
+	int count;
+	uint8_t val;
+
+	/* TMDS software reset */
+	hdmi->HDMI_MC_SWRSTZ = (uint8_t) ~ HDMI_MC_SWRSTZ_TMDSSWRST_REQ;
+	while ((hdmi->HDMI_MC_SWRSTZ & HDMI_MC_SWRSTZ_TMDSSWRST_REQ) == 0)
+		;
+
+	val = hdmi->HDMI_FC_INVIDCONF;
+//	if (hdmi->dev_type == IMX6DL_HDMI) {
+//		hdmi->HDMI_FC_INVIDCONF = val;
+//		return;
+//	}
+
+	for (count = 0; count < 4; count++)
+		hdmi->HDMI_FC_INVIDCONF = val;
+}
+
 //static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
 //{
 //    /* enable read access to HDMI controller */
@@ -6417,6 +6982,31 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	phy->HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
 	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+}
+
+static void t507_hdmi_phy_init(uint_fast32_t dotclock)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	/* PHY_I2CM_SLAVE_ADDR field values */
+//		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
+//		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
+	int cscon = 0;//hdmi->sink_is_hdmi && is_color_space_conversion(hdmi);
+
+	/* hdmi phy spec says to do the phy initialization sequence twice */
+	int i;
+	for (i = 0; i < 2; i++) {
+		hdmi_phy_sel_data_en_pol(hdmi, 1);
+		hdmi_phy_sel_interface_control(hdmi, 0);
+		hdmi_phy_enable_tmds(hdmi, 0);
+		hdmi_phy_enable_power(hdmi, 0);
+
+		int ret = hdmi_phy_configure(hdmi, dotclock, 8, cscon);
+//		if (ret) {
+//			debug("hdmi phy config failure %d\n", ret);
+//			return ret;
+//		}
+	}
+
 }
 
 static void h3_hdmi_init(const videomode_t * vdmode)
@@ -6774,569 +7364,6 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 
 #if WITHHDMITVHW
 
-static void hdmi_phy_gen2_pddq(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_GEN2_PDDQ_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_GEN2_PDDQ_MASK,
-//		 enable << HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET);
-}
-static inline void hdmi_phy_test_clear(HDMI_TX_TypeDef *hdmi, unsigned bit)
-{
-	hdmi->HDMI_PHY_TST0 = (hdmi->HDMI_PHY_TST0 & ~ HDMI_PHY_TST0_TSTCLR_MASK) |
-			!! bit * (1 << HDMI_PHY_TST0_TSTCLR_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_TST0, HDMI_PHY_TST0_TSTCLR_MASK,
-//		 bit << HDMI_PHY_TST0_TSTCLR_OFFSET);
-}
-
-static void hdmi_phy_gen2_txpwron(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_GEN2_TXPWRON_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0,
-//		 HDMI_PHY_CONF0_GEN2_TXPWRON_MASK,
-//		 enable << HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET);
-}
-
-static void hdmi_phy_sel_data_en_pol(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SELDATAENPOL_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0,
-//		 HDMI_PHY_CONF0_SELDATAENPOL_MASK,
-//		 enable << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
-}
-
-static void hdmi_phy_sel_interface_control(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SELDIPIF_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_SELDIPIF_MASK,
-//		 enable << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
-}
-
-static void hdmi_phy_enable_power(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_PDZ_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_PDZ_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_PDZ_MASK,
-//		 enable << HDMI_PHY_CONF0_PDZ_OFFSET);
-}
-
-static void hdmi_phy_enable_tmds(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_ENTMDS_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_ENTMDS_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_ENTMDS_MASK,
-//		 enable << HDMI_PHY_CONF0_ENTMDS_OFFSET);
-}
-
-static void hdmi_phy_enable_spare(HDMI_TX_TypeDef *hdmi, unsigned enable)
-{
-	hdmi->HDMI_PHY_CONF0 = (hdmi->HDMI_PHY_CONF0 & ~ HDMI_PHY_CONF0_SPARECTRL_MASK) |
-			!! enable * (1 << HDMI_PHY_CONF0_SPARECTRL_OFFSET);
-//	hdmi_mod(hdmi, HDMI_PHY_CONF0, HDMI_PHY_CONF0_SPARECTRL_MASK,
-//		 enable << HDMI_PHY_CONF0_SPARECTRL_OFFSET);
-}
-
-static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
-{
-//	local_delay_ms(msec);
-//	return 0;
-	for (;;)
-	{
-		const uint32_t val = hdmi->HDMI_IH_I2CMPHY_STAT0;
-		if (val & 0x03)
-		{
-			 hdmi->HDMI_IH_I2CMPHY_STAT0 = val;
-			 return (val & 0x01) ? 1 : 0;	// i2cmphyerror chack
-		}
-	}
-	// timeout
-	return 1;
-//	ulong start;
-//	u32 val;
-//
-//	start = get_timer(0);
-//	do {
-//		val = hdmi_read(hdmi, HDMI_IH_I2CMPHY_STAT0);
-//		if (val & 0x3) {
-//			hdmi_write(hdmi, val, HDMI_IH_I2CMPHY_STAT0);
-//			return 0;
-//		}
-//
-//		udelay(100);
-//	} while (get_timer(start) < msec);
-//
-	return 1;
-}
-
-static void hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
-{
-	// I2C reset
-//	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
-//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
-//		;
-	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
-	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
-	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
-	hdmi->HDMI_PHY_I2CM_DATAO_1_ADDR = (data >> 8);
-	hdmi->HDMI_PHY_I2CM_DATAO_0_ADDR = (data >> 0);
-	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_WRITE;
-
-//	hdmi_write(hdmi, 0xff, HDMI_IH_I2CMPHY_STAT0);
-//	hdmi_write(hdmi, addr, HDMI_PHY_I2CM_ADDRESS_ADDR);
-//	hdmi_write(hdmi, (u8)(data >> 8), HDMI_PHY_I2CM_DATAO_1_ADDR);
-//	hdmi_write(hdmi, (u8)(data >> 0), HDMI_PHY_I2CM_DATAO_0_ADDR);
-//	hdmi_write(hdmi, HDMI_PHY_I2CM_OPERATION_ADDR_WRITE,
-//		   HDMI_PHY_I2CM_OPERATION_ADDR);
-
-	hdmi_phy_wait_i2c_done(hdmi, 1000);
-	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
-}
-
-static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned addr)
-{
-	// I2C reset
-//	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
-//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
-//		;
-	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
-	hdmi->HDMI_IH_I2CMPHY_STAT0 = 0xFF;
-	hdmi->HDMI_PHY_I2CM_ADDRESS_ADDR = addr;
-	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = HDMI_PHY_I2CM_OPERATION_ADDR_READ;
-
-//	hdmi_write(hdmi, 0xff, HDMI_IH_I2CMPHY_STAT0);
-//	hdmi_write(hdmi, addr, HDMI_PHY_I2CM_ADDRESS_ADDR);
-//	hdmi_write(hdmi, (u8)(data >> 8), HDMI_PHY_I2CM_DATAO_1_ADDR);
-//	hdmi_write(hdmi, (u8)(data >> 0), HDMI_PHY_I2CM_DATAO_0_ADDR);
-//	hdmi_write(hdmi, HDMI_PHY_I2CM_OPERATION_ADDR_WRITE,
-//		   HDMI_PHY_I2CM_OPERATION_ADDR);
-
-	* data = 0xDEADBEEF;
-	if (0 == hdmi_phy_wait_i2c_done(hdmi, 1000))
-	{
-		* data = hdmi->HDMI_PHY_I2CM_DATAI_1_ADDR * 256 + hdmi->HDMI_PHY_I2CM_DATAI_0_ADDR;
-	}
-	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
-}
-
-enum {
-	DW_HDMI_RES_8,
-	DW_HDMI_RES_10,
-	DW_HDMI_RES_12,
-	DW_HDMI_RES_MAX,
-};
-
-struct dw_hdmi_mpll_config {
-	unsigned long mpixelclock;
-	struct {
-		uint16_t cpce;
-		uint16_t gmp;
-	} res[DW_HDMI_RES_MAX];
-};
-
-struct dw_hdmi_curr_ctrl {
-	unsigned long mpixelclock;
-	uint16_t curr[DW_HDMI_RES_MAX];
-};
-
-struct dw_hdmi_phy_config {
-	uint64_t mpixelclock;
-	uint32_t sym_ctr;    /* clock symbol and transmitter control */
-	uint32_t term;       /* transmission termination value */
-	uint32_t vlev_ctr;   /* voltage level control */
-};
-
-// https://github.com/EchoHeim/Allwinner-H616/blob/c499413803e4128439cadf2f56972e207721abe4/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c#L18
-
-static const struct dw_hdmi_mpll_config sun50i_h616_mpll_cfg[] = {
-    {
-        27000000,
-        {
-            {0x00b3, 0x0003},
-            {0x2153, 0x0003},
-            {0x40f3, 0x0003},
-        },
-    },
-    {
-        74250000,
-        {
-            {0x0072, 0x0003},
-            {0x2145, 0x0003},
-            {0x4061, 0x0003},
-        },
-    },
-    {
-        148500000,
-        {
-            {0x0051, 0x0003},
-            {0x214c, 0x0003},
-            {0x4064, 0x0003},
-        },
-    },
-    {
-        297000000,
-        {
-            {0x0040, 0x0003},
-            {0x3b4c, 0x0003},
-            {0x5a64, 0x0003},
-        },
-    },
-    {
-        594000000,
-        {
-            {0x1a40, 0x0003},
-            {0x3b4c, 0x0003},
-            {0x5a64, 0x0003},
-        },
-    },
-    {
-        ~0UL,
-        {
-            {0x0000, 0x0000},
-            {0x0000, 0x0000},
-            {0x0000, 0x0000},
-        },
-    }};
-
-static const struct dw_hdmi_curr_ctrl sun50i_h616_cur_ctr[] = {
-    /* pixelclk    bpp8    bpp10   bpp12 */
-    {
-        27000000,
-        {0x0012, 0x0000, 0x0000},
-    },
-    {
-        74250000,
-        {0x0013, 0x0013, 0x0013},
-    },
-    {
-        148500000,
-        {0x0019, 0x0019, 0x0019},
-    },
-    {
-        297000000,
-        {0x0019, 0x001b, 0x0019},
-    },
-    {
-        594000000,
-        {0x0010, 0x0010, 0x0010},
-    },
-    {
-        ~0UL,
-        {0x0000, 0x0000, 0x0000},
-    }};
-
-static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
-    /*pixelclk   symbol   term   vlev*/
-    {27000000, 0x8009, 0x0007, 0x02b0},
-    {74250000, 0x8019, 0x0004, 0x0290},
-    {148500000, 0x8019, 0x0004, 0x0290},
-    {297000000, 0x8039, 0x0004, 0x022b},
-    {594000000, 0x8029, 0x0000, 0x008a},
-    {~0UL, 0x0000, 0x0000, 0x0000}};
-
-/* hdmi initialization step b.4 */
-static void hdmi_enable_video_path(HDMI_TX_TypeDef * const hdmi, int audio)
-{
-	unsigned clkdis;
-
-	/* control period minimum duration */
-	hdmi->HDMI_FC_CTRLDUR = 12;
-	hdmi->HDMI_FC_EXCTRLDUR = 32;
-	hdmi->HDMI_FC_EXCTRLSPAC = 1;
-
-	/* set to fill tmds data channels */
-	hdmi->HDMI_FC_CH0PREAM = 0x0b;
-	hdmi->HDMI_FC_CH1PREAM = 0x16;
-	hdmi->HDMI_FC_CH2PREAM = 0x21;
-
-	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
-
-	/* enable pixel clock and tmds data path */
-	clkdis = 0x7f;
-	clkdis &= ~HDMI_MC_CLKDIS_PIXELCLK_DISABLE;
-	hdmi->HDMI_MC_CLKDIS = clkdis;
-
-	clkdis &= ~HDMI_MC_CLKDIS_TMDSCLK_DISABLE;
-	hdmi->HDMI_MC_CLKDIS = clkdis;
-
-	if (audio) {
-		clkdis &= ~HDMI_MC_CLKDIS_AUDCLK_DISABLE;
-		hdmi->HDMI_MC_CLKDIS = clkdis;
-	}
-}
-
-static void hdmi_enable_audio_clk(HDMI_TX_TypeDef * const hdmi)
-{
-	hdmi->HDMI_MC_CLKDIS &= ~ HDMI_MC_CLKDIS_AUDCLK_DISABLE;
-}
-
-static uint_fast32_t hdmi_compute_n(uint_fast32_t freq, uint_fast64_t pixel_clk)
-{
-	unsigned int n = (128 * freq) / 1000;
-	unsigned int mult = 1;
-
-	while (freq > 48000) {
-		mult *= 2;
-		freq /= 2;
-	}
-
-	switch (freq) {
-	case 32000:
-		if (pixel_clk == 25175000)
-			n = 4576;
-		else if (pixel_clk == 27027000)
-			n = 4096;
-		else if (pixel_clk == 74176000 || pixel_clk == 148352000)
-			n = 11648;
-		else
-			n = 4096;
-		n *= mult;
-		break;
-
-	case 44100:
-		if (pixel_clk == 25175000)
-			n = 7007;
-		else if (pixel_clk == 74176000)
-			n = 17836;
-		else if (pixel_clk == 148352000)
-			n = 8918;
-		else
-			n = 6272;
-		n *= mult;
-		break;
-
-	case 48000:
-		if (pixel_clk == 25175000)
-			n = 6864;
-		else if (pixel_clk == 27027000)
-			n = 6144;
-		else if (pixel_clk == 74176000)
-			n = 11648;
-		else if (pixel_clk == 148352000)
-			n = 5824;
-		else
-			n = 6144;
-		n *= mult;
-		break;
-
-	default:
-		break;
-	}
-
-	return n;
-}
-
-static void hdmi_set_cts_n(HDMI_TX_TypeDef * const hdmi, unsigned int cts,
-			   unsigned int n)
-{
-	/* Must be set/cleared first */
-	hdmi->HDMI_AUD_CTS3 &= (uint8_t) ~ HDMI_AUD_CTS3_CTS_MANUAL;
-//	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
-
-	/* nshift factor = 0 */
-	hdmi->HDMI_AUD_CTS3 &= (uint8_t) ~ HDMI_AUD_CTS3_N_SHIFT_MASK;
-//	hdmi_modb(hdmi, 0, HDMI_AUD_CTS3_N_SHIFT_MASK, HDMI_AUD_CTS3);
-
-	//  HDMI Audio Clock Regenerator CTS calculated value
-	hdmi->HDMI_AUD_CTS3 = ((cts >> 16) & HDMI_AUD_CTS3_AUDCTS19_16_MASK) | HDMI_AUD_CTS3_CTS_MANUAL;
-//	hdmi_writeb(hdmi, ((cts >> 16) & HDMI_AUD_CTS3_AUDCTS19_16_MASK) |
-//		    HDMI_AUD_CTS3_CTS_MANUAL, HDMI_AUD_CTS3);
-	hdmi->HDMI_AUD_CTS2 = (cts >> 8) & 0xff;
-//	hdmi_writeb(hdmi, (cts >> 8) & 0xff, HDMI_AUD_CTS2);
-	hdmi->HDMI_AUD_CTS1 = cts & 0xff;
-//	hdmi_writeb(hdmi, cts & 0xff, HDMI_AUD_CTS1);
-
-	// HDMI Audio Clock Regenerator N valu
-	hdmi->HDMI_AUD_N3 = (n >> 16) & 0x0f;
-//	hdmi_writeb(hdmi, (n >> 16) & 0x0f, HDMI_AUD_N3);
-	hdmi->HDMI_AUD_N2 = (n >> 8) & 0xff;
-//	hdmi_writeb(hdmi, (n >> 8) & 0xff, HDMI_AUD_N2);
-	hdmi->HDMI_AUD_N1 = n & 0xff;
-//	hdmi_writeb(hdmi, n & 0xff, HDMI_AUD_N1);
-}
-
-// See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
-
-static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
-{
-	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
-
-	/* Enable csc path */
-	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
-
-	/* gen2 tx power off */
-	hdmi_phy_gen2_txpwron(hdmi, 0);
-//
-//	/* gen2 pddq */
-	hdmi_phy_gen2_pddq(hdmi, 1);
-
-	/* phy reset */
-	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
-	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_ASSERT;
-	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_ASSERT;
-
-//	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
-//	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_DEASSERT;
-
-	hdmi_phy_test_clear(hdmi, 1);
-	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
-	hdmi_phy_test_clear(hdmi, 0);
-
-	const struct dw_hdmi_mpll_config *mpll_config = sun50i_h616_mpll_cfg;
-	const struct dw_hdmi_curr_ctrl *curr_ctrl = sun50i_h616_cur_ctr;
-	const struct dw_hdmi_phy_config *phy_config = sun50i_h616_phy_config;
-
-	/* PLL/MPLL Cfg - always match on final entry */
-	for (; mpll_config->mpixelclock != ~0UL; mpll_config++)
-		if (mpixelclock <=
-		    mpll_config->mpixelclock)
-			break;
-
-	for (; curr_ctrl->mpixelclock != ~0UL; curr_ctrl++)
-		if (mpixelclock <=
-		    curr_ctrl->mpixelclock)
-			break;
-
-	for (; phy_config->mpixelclock != ~0UL; phy_config++)
-		if (mpixelclock <=
-		    phy_config->mpixelclock)
-			break;
-
-	if (mpll_config->mpixelclock == ~0UL ||
-	    curr_ctrl->mpixelclock == ~0UL ||
-	    phy_config->mpixelclock == ~0UL) {
-		PRINTF("Pixel clock %u - unsupported by HDMI\n",
-			(unsigned) mpixelclock);
-		return -1;
-	}
-
-
-	const int resix = DW_HDMI_RES_8;
-	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].cpce, PHY_OPMODE_PLLCFG);
-	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
-	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
-
-	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
-	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
-
-//	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
-//		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
-//			break;
-
-	/*
-	 * resistance term 133ohm cfg
-	 * preemp cgf 0.00
-	 * tx/ck lvl 10
-	 */
-	hdmi_phy_i2c_write(hdmi, phy_config->term, PHY_TXTERM);
-	hdmi_phy_i2c_write(hdmi, phy_config->sym_ctr, PHY_CKSYMTXCTRL);
-	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
-
-	/* remove clk term */
-	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
-
-	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
-
-	hdmi_phy_enable_power(hdmi, 1);
-
-	/* toggle tmds enable */
-	hdmi_phy_enable_tmds(hdmi, 0);
-	hdmi_phy_enable_tmds(hdmi, 1);
-
-	/* gen2 tx power on */
-	hdmi_phy_gen2_txpwron(hdmi, 1);
-	hdmi_phy_gen2_pddq(hdmi, 0);
-
-	hdmi_phy_enable_spare(hdmi, 1);
-
-	/* wait for phy pll lock */
-	//TP();
-	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
-		;
-	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
-
-//	start = get_timer(0);
-//	do {
-//		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
-//		if (!(val & HDMI_PHY_TX_PHY_LOCK))
-//			return 0;
-//
-//		udelay(100);
-//	} while (get_timer(start) < 5);
-	return 0;	// OK
-}
-
-static void hdmi_tx_hdcp_config(HDMI_TX_TypeDef * const hdmi)
-{
-	uint8_t de;
-
-	if (1 /*hdmi->hdmi_data.video_mode.mdataenablepolarity */)
-		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_HIGH;
-	else
-		de = HDMI_A_VIDPOLCFG_DATAENPOL_ACTIVE_LOW;
-
-	/* disable rx detect */
-	hdmi->HDMI_A_HDCPCFG0 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG0_RXDETECT_MASK) |
-			HDMI_A_HDCPCFG0_RXDETECT_DISABLE;
-//	hdmi_modb(hdmi, HDMI_A_HDCPCFG0_RXDETECT_DISABLE,
-//		  HDMI_A_HDCPCFG0_RXDETECT_MASK, HDMI_A_HDCPCFG0);
-
-	hdmi->HDMI_A_VIDPOLCFG = (hdmi->HDMI_A_VIDPOLCFG & ~ HDMI_A_VIDPOLCFG_DATAENPOL_MASK) |
-			de;
-//	hdmi_modb(hdmi, de, HDMI_A_VIDPOLCFG_DATAENPOL_MASK, HDMI_A_VIDPOLCFG);
-
-	hdmi->HDMI_A_HDCPCFG1 = (hdmi->HDMI_A_HDCPCFG0 & ~ HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK) |
-			HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE;
-//	hdmi_modb(hdmi, HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_DISABLE,
-//		  HDMI_A_HDCPCFG1_ENCRYPTIONDISABLE_MASK, HDMI_A_HDCPCFG1);
-}
-
-static void hdmi_video_sample(HDMI_TX_TypeDef * const hdmi)
-{
-	uint32_t val;
-	// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L366
-	unsigned color_format = 0x01;	// RGB, 8 bit
-
-	val = HDMI_TX_INVID0_INTERNAL_DE_GENERATOR_DISABLE |
-		((color_format << HDMI_TX_INVID0_VIDEO_MAPPING_OFFSET) &
-		HDMI_TX_INVID0_VIDEO_MAPPING_MASK);
-	hdmi->HDMI_TX_INVID0 = val;
-
-	/* Enable TX stuffing: When DE is inactive, fix the output data to 0 */
-	val = HDMI_TX_INSTUFFING_BDBDATA_STUFFING_ENABLE |
-		HDMI_TX_INSTUFFING_RCRDATA_STUFFING_ENABLE |
-		HDMI_TX_INSTUFFING_GYDATA_STUFFING_ENABLE;
-	hdmi->HDMI_TX_INSTUFFING = val;
-	hdmi->HDMI_TX_GYDATA0 = 0x00;
-	hdmi->HDMI_TX_GYDATA1 = 0x00;
-	hdmi->HDMI_TX_RCRDATA0 = 0x00;
-	hdmi->HDMI_TX_RCRDATA1 = 0x00;
-	hdmi->HDMI_TX_BCBDATA0 = 0x00;
-	hdmi->HDMI_TX_BCBDATA1 = 0x00;
-}
-
-
-static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
-{
-	int count;
-	uint8_t val;
-
-	/* TMDS software reset */
-	hdmi->HDMI_MC_SWRSTZ = (uint8_t) ~ HDMI_MC_SWRSTZ_TMDSSWRST_REQ;
-	while ((hdmi->HDMI_MC_SWRSTZ & HDMI_MC_SWRSTZ_TMDSSWRST_REQ) == 0)
-		;
-
-	val = hdmi->HDMI_FC_INVIDCONF;
-//	if (hdmi->dev_type == IMX6DL_HDMI) {
-//		hdmi->HDMI_FC_INVIDCONF = val;
-//		return;
-//	}
-
-	for (count = 0; count < 4; count++)
-		hdmi->HDMI_FC_INVIDCONF = val;
-}
 #endif
 
 static void t113_hdmi_init(const videomode_t * vdmode)
@@ -7346,26 +7373,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	/* PHY_I2CM_SLAVE_ADDR field values */
-//		HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2 = 0x69,
-//		HDMI_PHY_I2CM_SLAVE_ADDR_HEAC_PHY = 0x49,
-	int cscon = 0;//hdmi->sink_is_hdmi && is_color_space_conversion(hdmi);
-
-	/* hdmi phy spec says to do the phy initialization sequence twice */
-	int i;
-	for (i = 0; i < 2; i++) {
-		hdmi_phy_sel_data_en_pol(hdmi, 1);
-		hdmi_phy_sel_interface_control(hdmi, 0);
-		hdmi_phy_enable_tmds(hdmi, 0);
-		hdmi_phy_enable_power(hdmi, 0);
-
-		int ret = hdmi_phy_configure(hdmi, dotclock, 8, cscon);
-//		if (ret) {
-//			debug("hdmi phy config failure %d\n", ret);
-//			return ret;
-//		}
-	}
-
+	t507_hdmi_phy_init(dotclock);
 #else
 	h3_hdmi_phy_init(dotclock);
 #endif
@@ -7417,12 +7425,77 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	// audio enable
 	hdmi_set_cts_n(hdmi, audio_cts, audio_n);
 	hdmi_enable_audio_clk(hdmi);
+
+	/* Reset the FIFOs before applying new params */
+	hdmi->HDMI_AUD_CONF0 = HDMI_AUD_CONF0_SW_RESET;
+	hdmi->HDMI_MC_SWRSTZ = ~HDMI_MC_SWRSTZ_I2SSWRST_REQ;
+
+	unsigned int inputclkfs	= HDMI_AUD_INPUTCLKFS_64FS;
+	unsigned int conf0 = (HDMI_AUD_CONF0_I2S_SELECT | HDMI_AUD_CONF0_I2S_EN0);
+	unsigned int conf1 = 0;
+
+//	switch (hparms->channels) {
+//	case 7 ... 8:
+//		conf0 |= HDMI_AUD_CONF0_I2S_EN3;
+//		fallthrough;
+//	case 5 ... 6:
+//		conf0 |= HDMI_AUD_CONF0_I2S_EN2;
+//		fallthrough;
+//	case 3 ... 4:
+//		conf0 |= HDMI_AUD_CONF0_I2S_EN1;
+//		/* Fall-thru */
+//	}
+
+//	switch (hparms->sample_width) {
+//	case 16:
+//		conf1 = HDMI_AUD_CONF1_WIDTH_16;
+//		break;
+//	case 24:
+//	case 32:
+//		conf1 = HDMI_AUD_CONF1_WIDTH_24;
+//		break;
+//	}
+
+//	switch (fmt->fmt) {
+//	case HDMI_I2S:
+//		conf1 |= HDMI_AUD_CONF1_MODE_I2S;
+//		break;
+//	case HDMI_RIGHT_J:
+//		conf1 |= HDMI_AUD_CONF1_MODE_RIGHT_J;
+//		break;
+//	case HDMI_LEFT_J:
+//		conf1 |= HDMI_AUD_CONF1_MODE_LEFT_J;
+//		break;
+//	case HDMI_DSP_A:
+//		conf1 |= HDMI_AUD_CONF1_MODE_BURST_1;
+//		break;
+//	case HDMI_DSP_B:
+//		conf1 |= HDMI_AUD_CONF1_MODE_BURST_2;
+//		break;
+//	default:
+//		dev_err(dev, "unsupported format\n");
+//		return -EINVAL;
+//	}
+
+//	dw_hdmi_set_sample_rate(hdmi, hparms->sample_rate);
+//	dw_hdmi_set_channel_status(hdmi, hparms->iec.status);
+//	dw_hdmi_set_channel_count(hdmi, hparms->channels);
+//	dw_hdmi_set_channel_allocation(hdmi, hparms->cea.channel_allocation);
+//
+	hdmi->HDMI_AUD_INPUTCLKFS = inputclkfs;
+	hdmi->HDMI_AUD_CONF0 = conf0;
+	hdmi->HDMI_AUD_CONF1 = conf1;
+//	hdmi_write(audio, inputclkfs, HDMI_AUD_INPUTCLKFS);
+//	hdmi_write(audio, conf0, HDMI_AUD_CONF0);
+//	hdmi_write(audio, conf1, HDMI_AUD_CONF1);
+
+
+
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
 #endif /* WITHHDMITVHW */
 }
-
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
