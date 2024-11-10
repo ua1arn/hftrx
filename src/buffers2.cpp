@@ -20,7 +20,7 @@
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
-static const unsigned SKIPSAMPLES_HDMI = 50; // раз в 50 сэмплов добавление/удаление одного сэмпла
+static const unsigned SKIPSAMPLES_HDMI = 100; // раз в 50 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_BT = 50; // раз в 50 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
