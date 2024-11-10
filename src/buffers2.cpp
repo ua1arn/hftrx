@@ -1218,9 +1218,19 @@ uintptr_t getfilled_dmabufferhdmi48tx(void) /* take from queue CPU to HDMI */
 {
 
 	hdmi48tx_t * dest;
-	while (! hdmi48tx.get_readybuffer(& dest) && ! hdmi48tx.get_freebufferforced(& dest))
-		ASSERT(0);
+	if (hdmi48tx.get_readybuffer(& dest))
+		return (uintptr_t) dest->buff;
+	if (hdmi48tx.get_freebufferforced(& dest))
+	{
+		memset(dest->buff, 0, sizeof dest->buff);
+		return (uintptr_t) dest->buff;
+	}
+	ASSERT(0);
+	for (;;)
+		;
 
+    while (! hdmi48tx.get_readybuffer(& dest) && ! hdmi48tx.get_freebufferforced(& dest))
+        ASSERT(0);
 #if 0
 	// тестирование вывода на кодек
 	for (unsigned i = 0; i < ARRAY_SIZE(dest->buff); i += DMABUFFSTEPHDMI48TX)

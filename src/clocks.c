@@ -9717,6 +9717,17 @@ sysinit_pll_initialize(int forced)
 			(P - 1) * (UINT32_C(1) << 16) |	// P
 			0;
 	}
+	if (1)
+	{
+
+	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
+	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
+	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;
+	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B;
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
+	    //local_delay_ms(2);
+
+	}
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 
