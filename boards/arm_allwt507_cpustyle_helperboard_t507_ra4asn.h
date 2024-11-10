@@ -134,7 +134,7 @@
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
 		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
-		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+		//#define WITHI2S1HW	1	/* Использование I2S1 - звук через HDMI */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
 		//#define HARDWARE_I2S0HW_USEDMA 0	// test
@@ -149,6 +149,7 @@
 		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC2_HDMI_DUPLEX_MASTER	1		/* Канал выдачи в HDMI */
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -634,7 +635,8 @@
 	} while (0)
 
 	/* Perform delay after assert or de-assert specific CS line */
-	#define SPI_CS_DELAY(target) do { } while (0)
+	#define SPI_CS_DELAY(target) do { \
+	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
@@ -668,7 +670,7 @@
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi1_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
