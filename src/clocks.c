@@ -9722,8 +9722,8 @@ sysinit_pll_initialize(int forced)
 
 	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
 	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
-	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;
-	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B;
+	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
+	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
 		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
 	    //local_delay_ms(2);
 
