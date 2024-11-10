@@ -3867,7 +3867,7 @@ uint_fast32_t allwnr_t507_get_spi0_freq(void)
 		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
 	case 0x02:
 		/* 010: PLL_PERI1(1X) */
-		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
+		return allwnr_t507_get_pll_peri1_x1_freq() / pgdiv;
 	case 0x03:
 		/* 011: PLL_PERI0(2X) */
 		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
@@ -3896,7 +3896,7 @@ uint_fast32_t allwnr_t507_get_spi1_freq(void)
 		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
 	case 0x02:
 		/* 010: PLL_PERI1(1X) */
-		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
+		return allwnr_t507_get_pll_peri1_x1_freq() / pgdiv;
 	case 0x03:
 		/* 011: PLL_PERI0(2X) */
 		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
