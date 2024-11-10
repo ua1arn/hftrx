@@ -9730,8 +9730,7 @@ sysinit_pll_initialize(int forced)
 	    // 49152
 		uint_fast64_t mod = 1u << 17;
 	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
-	    z = 0x8800;	// 0xC49B
-	    //PRINTF("*********** z = %08X\n", (unsigned) (z));
+	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
 			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
 			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
