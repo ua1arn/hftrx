@@ -22,6 +22,7 @@
 #define LTDCBIT32(x) (UINT32_C(1) << (x))
 
 #include "display.h"
+#include "audio.h"
 #include "buffers.h"
 #include <stdint.h>
 #include <string.h>
@@ -7405,7 +7406,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //	}
 	/* cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio->sample_rate / 100); */
 	unsigned audio_cts = 10;
-	unsigned audio_n = hdmi_compute_n(48000, dotclock);
+	unsigned audio_n = hdmi_compute_n(ARMI2SRATE, dotclock);
 	/*
 	 * Compute the CTS value from the N value.  Note that CTS and N
 	 * can be up to 20 bits in total, so we need 64-bit math.  Also
@@ -7414,7 +7415,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	 * calculation below, so we don't try to warn about that.
 	 */
 	uint_fast64_t tmp = (uint_fast64_t)dotclock /*ftdms*/ * audio_n;
-	tmp /= 128 * 48000;
+	tmp /= 128 * ARMI2SRATE;
 	audio_cts = tmp;
 	// hdmi audio CTS=74250, N=6144
 	PRINTF("hdmi audio CTS=%u, N=%u\n", audio_cts, audio_n);
@@ -7426,6 +7427,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	hdmi_set_cts_n(hdmi, audio_cts, audio_n);
 	hdmi_enable_audio_clk(hdmi);
 
+#if 1
 	/* Reset the FIFOs before applying new params */
 	hdmi->HDMI_AUD_CONF0 = HDMI_AUD_CONF0_SW_RESET;
 	hdmi->HDMI_MC_SWRSTZ = ~HDMI_MC_SWRSTZ_I2SSWRST_REQ;
@@ -7482,6 +7484,11 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //	dw_hdmi_set_channel_count(hdmi, hparms->channels);
 //	dw_hdmi_set_channel_allocation(hdmi, hparms->cea.channel_allocation);
 //
+
+
+	conf1 = HDMI_AUD_CONF1_WIDTH_24;
+	conf1 |= HDMI_AUD_CONF1_MODE_I2S;
+
 	hdmi->HDMI_AUD_INPUTCLKFS = inputclkfs;
 	hdmi->HDMI_AUD_CONF0 = conf0;
 	hdmi->HDMI_AUD_CONF1 = conf1;
@@ -7489,7 +7496,10 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //	hdmi_write(audio, conf0, HDMI_AUD_CONF0);
 //	hdmi_write(audio, conf1, HDMI_AUD_CONF1);
 
-
+//	PRINTF("hdmi->HDMI_AUD_INPUTCLKFS=%08X\n", (unsigned) hdmi->HDMI_AUD_INPUTCLKFS);
+//	PRINTF("hdmi->HDMI_AUD_CONF0=%08X\n", (unsigned) hdmi->HDMI_AUD_CONF0);
+//	PRINTF("hdmi->HDMI_AUD_CONF1=%08X\n", (unsigned) hdmi->HDMI_AUD_CONF1);
+#endif
 
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
