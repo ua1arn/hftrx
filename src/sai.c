@@ -3902,8 +3902,6 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	CCU->MBUS_CFG_REG |= (1u << 30);
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
 
-	allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 43);
 
 	// Whhen PLL_AUDIO(1X) is 24.576 MHz
 	// AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
@@ -3916,9 +3914,10 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	//	10: PLL_AUDIO(4X)
 	//	11: PLL_AUDIO(hs)
 
+	// 3072 6144 12288 24576
 	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
-		0x02 * (UINT32_C(1) << 24) |
-		0x00 * (UINT32_C(1) << 8) |	// div8
+		0x03 * (UINT32_C(1) << 24) |
+		0x03 * (UINT32_C(1) << 8) |	// div8
 		0;
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
@@ -5946,23 +5945,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
 
-	if (1)
-	{
-		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
-
-		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
-			(N - 1) * (UINT32_C(1) << 8) |
-			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
-			0;
-		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
-
-		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
-		while ((CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
-			;
-	}
 
 //	const unsigned long src = 0x03;
 //	//	Clock Source Select

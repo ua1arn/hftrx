@@ -9701,6 +9701,20 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
 #endif /* WITHGPUHW */
+	{
+		// Настройки AUDIO PLL используются и AUDIO HUB и аппаратным аужиокодеком - настраиваем ТУТ.
+		//	PLL_AUDIO(hs) = 24 MHz*N/M1
+		//	PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
+		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
+		//	PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
+		unsigned N = 49;	// 12..255 Повторям нстройки по умолчанию... Точнее частоту не подобрать
+		unsigned P = 24;	// 1..64
+		allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, N);
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
+		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (0x3F * (UINT32_C(1) << 16))) | P * (UINT32_C(1) << 16);	// P
+	}
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 
