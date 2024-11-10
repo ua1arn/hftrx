@@ -9724,6 +9724,22 @@ sysinit_pll_initialize(int forced)
 	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
 	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
+
+	    // 384000
+	    // 48000
+	    // 49152
+		uint_fast64_t mod = 1u << 17;
+	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
+	    z = 0x8800;	// 0xC49B
+	    //PRINTF("*********** z = %08X\n", (unsigned) (z));
+	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
+			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
+			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
+			0x00 * (UINT32_C(1) << 20) |	// WAVE_STEP (9 bit)
+			//0x0C49B * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
+			(z & 0x1FFFF) * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
+			0;
+
 		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
 	    //local_delay_ms(2);
 
