@@ -211,8 +211,9 @@ typedef int32_t hdmi48bufv_t;
 
 #endif /* CPUSTYLE_XC7Z */
 
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU || FPGA_ARTIX7
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
-#if (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_122M88_X1
+#if (WITHDSPEXTFIR || WITHDSPEXTDDC) && DIRECT_122M88_X1
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -226,7 +227,7 @@ typedef int32_t hdmi48bufv_t;
 	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_61M440_X1
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && DIRECT_61M440_X1
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -240,7 +241,7 @@ typedef int32_t hdmi48bufv_t;
 	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_96M_X1
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && DIRECT_96M_X1
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -254,7 +255,7 @@ typedef int32_t hdmi48bufv_t;
 	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#elif (WITHDSPEXTFIR || WITHDSPEXTDDC)
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -271,6 +272,7 @@ typedef int32_t hdmi48bufv_t;
 #elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (! defined (ARMI2SMCLK) && ! defined (ARMSAIMCLK))
 
 #endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU || FPGA_ARTIX7 */
 
 #if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
 	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
@@ -298,7 +300,7 @@ typedef struct adapter_tag
 	FLOAT_t outputKexact;
 	int leftbit;
 	int rightspace;
-	int lshift32;	// input convrtsion
+	int lshift32;	// input conversion
 	int rshift32;
 	FLOAT_t outmax;
 	FLOAT_t outmin;
