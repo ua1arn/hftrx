@@ -48,10 +48,10 @@ public:
 
 	void get_media_features(litehtml::media_features &media) const;
 	void get_language(litehtml::string &language, litehtml::string &culture) const;
-	litehtml::string resolve_color(const litehtml::string& /*color*/) const
-	{
-		return litehtml::string();
-	}
+//	litehtml::string resolve_color(const litehtml::string& /*color*/) const
+//	{
+//		return litehtml::string();
+//	}
 	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
 
 };
