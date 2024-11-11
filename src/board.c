@@ -2816,13 +2816,8 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V5
 	const spitarget_t target = targetdac1;
 	// Выдача кода на цифровой потенциометр AD5260BRUZ20 в управлении частотой опорного генератора
 
-	IRQL_t irql
-	spi_operate_lock(& irql);
-	spi_select(target, CTLREG_SPIMODE);
-	spi_progval8_p1(target, glob_dac1);
-	spi_complete(target);
-	spi_unselect(target);
-	spi_operate_unlock(irql);
+	const uint8_t buff [] = { glob_dac1 };
+	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, buff, ARRAY_SIZE(buff), NULL, 0, NULL, 0);
 }
 
 #elif CTLREGMODE_RAVENDSP_V6	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
