@@ -104,7 +104,18 @@ void hftrxcontainer::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::li
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colpip_fillrect(buffer, dx, dy, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, getColor(marker.color));
+    colpip_fillrect(buffer, dx, dy, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, getColor(marker.color));
+
+//	int top_margin = marker.pos.height / 3;
+//	if (top_margin < 4)
+//		top_margin = 0;
+//
+//	int draw_x = marker.pos.x;
+//	int draw_y = marker.pos.y + top_margin;
+//	int draw_width = marker.pos.height - top_margin * 2;
+//	int draw_height = marker.pos.height - top_margin * 2;
+//
+//	colpip_fillrect(buffer, dx, dy, draw_x, draw_y, draw_width, draw_height, getColor(marker.color));
 }
 void hftrxcontainer::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
 {
@@ -217,13 +228,13 @@ void hftrxcontainer::del_clip()
 }
 void hftrxcontainer::get_client_rect(litehtml::position &client) const
 {
-	client = litehtml::position(0, 0, DIM_X, DIM_Y);
+	//client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
 litehtml::element::ptr hftrxcontainer::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
 	//PRINTF("create_element: tag_name='%s'\n", tag_name);
-	return nullptr;
+	return 0;
 }
 
 void hftrxcontainer::get_media_features(litehtml::media_features &media) const
@@ -251,7 +262,8 @@ void hftrxcontainer::get_language(litehtml::string &language, litehtml::string &
 void hftrxcontainer::split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space)
 {
 	//PRINTF("split_text: text='%s'\n", text);
-	on_word("zzzzzz");
+	//on_word("zzzzzz");
+	on_word(text);
 }
 
 void hftrxcontainer::link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el)
@@ -261,7 +273,8 @@ void hftrxcontainer::link(const std::shared_ptr<litehtml::document>& doc, const 
 
 static const char htmlString [] =
 {
-#include "testdata/nut.html.h"
+	#include "testdata/nut.html.h"
+	0,
 };
 
 void litehtmltest(void)
@@ -269,7 +282,7 @@ void litehtmltest(void)
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	COLORPIP_T color = COLORPIP_BLUE;
+	COLORPIP_T color = COLORPIP_WHITE;
 
 	uint_ptr hdc = 0;
 	const position wndclip(0, 0, DIM_X, DIM_Y);
