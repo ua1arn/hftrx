@@ -4,6 +4,7 @@
 
 #if 0
 
+#include <string.h>
 #include "display/display.h"
 #include "display2.h"
 
@@ -53,38 +54,50 @@ public:
 //		return litehtml::string();
 //	}
 //	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
+	hftrxcontainer() = default;
+	virtual ~hftrxcontainer() = default;
 
 };
 
-static COLORPIP_T getColor(const litehtml::web_color& color)
+static COLORPIP_T getCOLPIP(const litehtml::web_color& color)
 {
 	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
 }
 
 litehtml::uint_ptr hftrxcontainer::create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm)
 {
-	PRINTF("create_font: faceName='%s'\n", faceName);
-	return 0;
+	PRINTF("create_font: faceName='%s'm size=%d\n", faceName, size);
+	if (fm)
+	{
+		fm->font_size = size;
+		fm->ascent = 0;//PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
+		fm->descent = 0;//PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
+		fm->height = 13; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
+		fm->x_height = fm->height;
+	}
+	return 1;
 }
 void hftrxcontainer::delete_font(litehtml::uint_ptr hFont)
 {
-	TP();
+	(void) hFont;
 }
 
 int hftrxcontainer::text_width(const char *text, litehtml::uint_ptr hFont)
 {
-	TP();
-	return 5;
+	(void) hFont;
+	return 5 * strlen(text);
 }
+
 void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
-	TP();
+	PRINTF("draw_text: text='%s'\n", text);
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colpip_fillrect(buffer, dx, dy, pos.x, pos.y, pos.width, pos.height, getColor(color));
+	colpip_fillrect(buffer, dx, dy, pos.left(), pos.top(), pos.width, pos.height, getCOLPIP(color));
 }
+
 int hftrxcontainer::pt_to_px(int pt) const
 {
 	return pt;
@@ -104,19 +117,20 @@ void hftrxcontainer::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::li
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-    colpip_fillrect(buffer, dx, dy, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, getColor(marker.color));
+    colpip_fillrect(buffer, dx, dy, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLPIP(marker.color));
 
 //	int top_margin = marker.pos.height / 3;
 //	if (top_margin < 4)
 //		top_margin = 0;
 //
-//	int draw_x = marker.pos.x;
-//	int draw_y = marker.pos.y + top_margin;
+//	int draw_x = marker.pos.left();
+//	int draw_y = marker.pos.top() + top_margin;
 //	int draw_width = marker.pos.height - top_margin * 2;
 //	int draw_height = marker.pos.height - top_margin * 2;
 //
-//	colpip_fillrect(buffer, dx, dy, draw_x, draw_y, draw_width, draw_height, getColor(marker.color));
+//	colpip_fillrect(buffer, dx, dy, draw_x, draw_y, draw_width, draw_height, getCOLPIP(marker.color));
 }
+
 void hftrxcontainer::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
 {
 	TP();
@@ -136,7 +150,7 @@ void hftrxcontainer::draw_solid_fill(litehtml::uint_ptr hdc, const background_la
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, getColor(color));
+	colpip_fillrect(buffer, dx, dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLPIP(color));
 }
 
 void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
@@ -147,7 +161,7 @@ void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const backgrou
 	const uint_fast16_t dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_RED;
 
-	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, color);
+	colpip_fillrect(buffer, dx, dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
 }
 void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
@@ -158,7 +172,7 @@ void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const backgrou
 	const uint_fast16_t dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_RED;
 
-	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, color);
+	colpip_fillrect(buffer, dx, dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
 }
 
@@ -170,7 +184,7 @@ void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const backgroun
 	const uint_fast16_t dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_RED;
 
-	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, color);
+	colpip_fillrect(buffer, dx, dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
 }
 
@@ -215,7 +229,7 @@ void hftrxcontainer::transform_text(litehtml::string &text, litehtml::text_trans
 }
 void hftrxcontainer::import_css(litehtml::string &text, const litehtml::string &url, litehtml::string &baseurl)
 {
-	TP();
+	//TP();
 }
 
 void hftrxcontainer::set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius)
@@ -228,7 +242,7 @@ void hftrxcontainer::del_clip()
 }
 void hftrxcontainer::get_client_rect(litehtml::position &client) const
 {
-	//client = litehtml::position(0, 0, DIM_X, DIM_Y);
+	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
 litehtml::element::ptr hftrxcontainer::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
@@ -249,8 +263,8 @@ void hftrxcontainer::get_media_features(litehtml::media_features &media) const
 	media.monochrome = 0;
 	media.color_index = 256;
 	media.resolution = 96;//GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
-	media.device_width = 1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
-	media.device_height = 1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
+	media.device_width = client.width; //1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
+	media.device_height = client.height; //1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
 }
 
 void hftrxcontainer::get_language(litehtml::string &language, litehtml::string &culture) const
@@ -292,8 +306,9 @@ void litehtmltest(void)
 	auto doc = document::createFromString(htmlString, & cont);
 
 	TP();
-	colpip_fillrect(buffer, dx, dy, wndclip.x, wndclip.y, wndclip.width, wndclip.height, color);
+	colpip_fillrect(buffer, dx, dy, wndclip.left(), wndclip.top(), wndclip.width, wndclip.height, color);
 	TP();
+	doc->render(DIM_X, render_all);
 	doc->draw(hdc, 0, 0, & wndclip);
 	colmain_nextfb();
 	TP();
