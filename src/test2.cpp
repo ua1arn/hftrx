@@ -190,31 +190,3 @@ extern "C" {
 	}
 }
 #endif
-
-#if 0
-
-#include "litehtml.h"
-#include <litehtml/encodings.h>
-
-using namespace litehtml;
-
-static char htmlString [] = "HTML";
-
-class hftrxcontainer: public litehtml::document_container
-{
-	// see doc/document_createFromString.txt
-	static litehtml::document::ptr  createFromString(
-		const estring&       str,
-		document_container*  container,
-		const string&        master_styles = litehtml::master_css,
-		const string&        user_styles = "");
-};
-
-void cpptest(void)
-{
-	//hftrxcontainer cont("", this);
-	hftrxcontainer * cont = nullptr;
-	auto doc = litehtml::document::createFromString(htmlString, cont);
-
-}
-#endif

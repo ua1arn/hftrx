@@ -15791,7 +15791,6 @@ void lowtests(void)
 #if 0 && WITHDEBUG
 	{
 		// c++ execution test
-		extern void cpptest(void);
 		cpptest();
 	}
 #endif /* WITHDEBUG */
