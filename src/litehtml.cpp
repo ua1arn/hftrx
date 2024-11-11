@@ -86,7 +86,7 @@ void hftrxcontainer::delete_font(litehtml::uint_ptr hFont)
 int hftrxcontainer::text_width(const char *text, litehtml::uint_ptr hFont)
 {
 	(void) hFont;
-	return 5 * strlen(text);
+	return SMALLCHARW * strlen(text);
 }
 
 void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
@@ -172,7 +172,7 @@ void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const backgrou
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	COLORPIP_T color = COLORPIP_RED;
+	COLORPIP_T color = COLORPIP_GREEN;
 
 	colpip_fillrect(buffer, dx, dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
@@ -184,7 +184,7 @@ void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const backgroun
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	COLORPIP_T color = COLORPIP_RED;
+	COLORPIP_T color = COLORPIP_BLUE;
 
 	colpip_fillrect(buffer, dx, dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
@@ -198,7 +198,7 @@ void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::border
 	const uint_fast16_t dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_RED;
 
-	colpip_fillrect(buffer, dx, dy, draw_pos.x, draw_pos.y, draw_pos.width, draw_pos.height, color);
+	colpip_rect(buffer, dx, dy, draw_pos.left(), draw_pos.top(), draw_pos.right() - 1, draw_pos.bottom() - 1, color, 0);
 }
 
 void hftrxcontainer::set_caption(const char *caption)
