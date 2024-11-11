@@ -87,22 +87,24 @@ void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtm
 }
 int hftrxcontainer::pt_to_px(int pt) const
 {
-	TP();
 	return pt;
 }
 int hftrxcontainer::get_default_font_size() const
 {
-	TP();
 	return 12;
 }
 const char* hftrxcontainer::get_default_font_name() const
 {
-	//TP();
-	return "";
+	return "Times New Roman";
 }
 void hftrxcontainer::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker)
 {
 	TP();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+
+	colpip_fillrect(buffer, dx, dy, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, getColor(marker.color));
 }
 void hftrxcontainer::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
 {
@@ -174,11 +176,11 @@ void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::border
 
 void hftrxcontainer::set_caption(const char *caption)
 {
-	TP();
+	PRINTF("set_caption: caption='%s'\n", caption);
 }
 void hftrxcontainer::set_base_url(const char *base_url)
 {
-	TP();
+	PRINTF("set_base_url: base_url='%s'\n", base_url);
 }
 void link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
@@ -204,6 +206,7 @@ void hftrxcontainer::import_css(litehtml::string &text, const litehtml::string &
 {
 	TP();
 }
+
 void hftrxcontainer::set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius)
 {
 	TP();
@@ -214,35 +217,52 @@ void hftrxcontainer::del_clip()
 }
 void hftrxcontainer::get_client_rect(litehtml::position &client) const
 {
-	TP();
 	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
 litehtml::element::ptr hftrxcontainer::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
-	PRINTF("create_element: tag_name='%s'\n", tag_name);
+	//PRINTF("create_element: tag_name='%s'\n", tag_name);
 	return nullptr;
 }
 
 void hftrxcontainer::get_media_features(litehtml::media_features &media) const
 {
-	TP();
+	position client;
+	get_client_rect(client);
+
+	media.type = media_type_screen;
+	media.width = client.width;
+	media.height = client.height;
+	media.color = 8;
+	media.monochrome = 0;
+	media.color_index = 256;
+	media.resolution = 96;//GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
+	media.device_width = 1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
+	media.device_height = 1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
 }
+
 void hftrxcontainer::get_language(litehtml::string &language, litehtml::string &culture) const
 {
-	TP();
+	language = "en";
+	culture = "";
 }
+
 void hftrxcontainer::split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space)
 {
-	TP();
+	//PRINTF("split_text: text='%s'\n", text);
+	on_word("zzzzzz");
 }
 
 void hftrxcontainer::link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el)
 {
-	TP();
+	//TP();
 }
 
-static char htmlString [] = "HTML";
+static const char htmlString [] =
+{
+#include "testdata/nut.html.h"
+};
 
 void litehtmltest(void)
 {
@@ -250,12 +270,7 @@ void litehtmltest(void)
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_BLUE;
-	TP();
-	display_fillrect(0, 0, DIM_X, DIM_Y, color);
-	colmain_nextfb();
-	TP();
-	for (;;)
-		;
+
 	uint_ptr hdc = 0;
 	const position wndclip(0, 0, DIM_X, DIM_Y);
 	//hftrxcontainer cont("", this);
@@ -263,10 +278,10 @@ void litehtmltest(void)
 	// see doc/document_createFromString.txt
 	auto doc = document::createFromString(htmlString, & cont);
 
-
-	//colpip_fillrect(buffer, dx, dy, wndclip.x, wndclip.y, wndclip.width, wndclip.height, color);
-
-	//doc->draw(hdc, 0, 0, & wndclip);
+	TP();
+	colpip_fillrect(buffer, dx, dy, wndclip.x, wndclip.y, wndclip.width, wndclip.height, color);
+	TP();
+	doc->draw(hdc, 0, 0, & wndclip);
 	colmain_nextfb();
 	TP();
 	for (;;)

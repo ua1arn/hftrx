@@ -10670,6 +10670,8 @@ void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
 		display_fillrect(0, 0, DIM_X, DIM_Y, display_getbgcolor());
 		display_at(0, 0, "Start...");
 		colmain_nextfb();
