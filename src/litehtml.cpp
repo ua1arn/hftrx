@@ -2,7 +2,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if 0
+#if 1
 
 #include <string.h>
 #include "display/display.h"
@@ -147,7 +147,7 @@ void hftrxcontainer::draw_image(litehtml::uint_ptr hdc, const background_layer &
 }
 void hftrxcontainer::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
-	TP();
+	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -157,7 +157,7 @@ void hftrxcontainer::draw_solid_fill(litehtml::uint_ptr hdc, const background_la
 
 void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
 {
-	TP();
+	//TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -168,7 +168,7 @@ void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const backgrou
 }
 void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
 {
-	TP();
+	//TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -180,7 +180,7 @@ void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const backgrou
 
 void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient)
 {
-	TP();
+	//TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -192,7 +192,7 @@ void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const backgroun
 
 void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
 {
-	PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
+	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -295,28 +295,15 @@ static const char htmlString [] =
 
 void litehtmltest(void)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	COLORPIP_T color = COLORPIP_WHITE;
-
 	uint_ptr hdc = 0;
 	const position wndclip(0, 0, DIM_X, DIM_Y);
-	//hftrxcontainer cont("", this);
 	hftrxcontainer cont;
 	// see doc/document_createFromString.txt
 	auto doc = document::createFromString(htmlString, & cont);
 
-	TP();
-	colpip_fillrect(buffer, dx, dy, wndclip.left(), wndclip.top(), wndclip.width, wndclip.height, color);
-	TP();
-	doc->render(DIM_X, render_all);
+	doc->render(wndclip.width, render_all);
 	doc->draw(hdc, 0, 0, & wndclip);
 	colmain_nextfb();
-	TP();
-	for (;;)
-		;
 	local_delay_ms(2500);
-	TP();
 }
 #endif
