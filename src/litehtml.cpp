@@ -14,6 +14,7 @@ using namespace litehtml;
 
 class hftrxcontainer: public litehtml::document_container
 {
+	// call back interface to draw text, images and other elements
 public:
 	litehtml::uint_ptr create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm);
 	void delete_font(litehtml::uint_ptr hFont);
@@ -62,18 +63,22 @@ static COLORPIP_T getColor(const litehtml::web_color& color)
 
 litehtml::uint_ptr hftrxcontainer::create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm)
 {
+	PRINTF("create_font: faceName='%s'\n", faceName);
 	return 0;
 }
 void hftrxcontainer::delete_font(litehtml::uint_ptr hFont)
 {
+	TP();
 }
 
 int hftrxcontainer::text_width(const char *text, litehtml::uint_ptr hFont)
 {
+	TP();
 	return 5;
 }
 void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
+	TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -82,30 +87,38 @@ void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtm
 }
 int hftrxcontainer::pt_to_px(int pt) const
 {
+	TP();
 	return pt;
 }
 int hftrxcontainer::get_default_font_size() const
 {
+	TP();
 	return 12;
 }
 const char* hftrxcontainer::get_default_font_name() const
 {
+	//TP();
 	return "";
 }
 void hftrxcontainer::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker)
 {
+	TP();
 }
 void hftrxcontainer::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
 {
+	TP();
 }
 void hftrxcontainer::get_image_size(const char *src, const char *baseurl, litehtml::size &sz)
 {
+	TP();
 }
 void hftrxcontainer::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url)
 {
+	TP();
 }
 void hftrxcontainer::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
+	TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -115,6 +128,7 @@ void hftrxcontainer::draw_solid_fill(litehtml::uint_ptr hdc, const background_la
 
 void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
 {
+	TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -125,6 +139,7 @@ void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const backgrou
 }
 void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
 {
+	TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -136,6 +151,7 @@ void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const backgrou
 
 void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient)
 {
+	TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -147,6 +163,7 @@ void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const backgroun
 
 void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
 {
+	TP();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -157,65 +174,77 @@ void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::border
 
 void hftrxcontainer::set_caption(const char *caption)
 {
+	TP();
 }
 void hftrxcontainer::set_base_url(const char *base_url)
 {
+	TP();
 }
 void link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
+	TP();
 }
 void hftrxcontainer::on_anchor_click(const char *url, const litehtml::element::ptr &el)
 {
+	TP();
 }
 void hftrxcontainer::on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_event event)
 {
+	TP();
 }
 void hftrxcontainer::set_cursor(const char *cursor)
 {
+	TP();
 }
 void hftrxcontainer::transform_text(litehtml::string &text, litehtml::text_transform tt)
 {
+	TP();
 }
 void hftrxcontainer::import_css(litehtml::string &text, const litehtml::string &url, litehtml::string &baseurl)
 {
+	TP();
 }
 void hftrxcontainer::set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius)
 {
+	TP();
 }
 void hftrxcontainer::del_clip()
 {
+	TP();
 }
 void hftrxcontainer::get_client_rect(litehtml::position &client) const
 {
+	TP();
 	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
 litehtml::element::ptr hftrxcontainer::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
+	PRINTF("create_element: tag_name='%s'\n", tag_name);
 	return nullptr;
 }
 
 void hftrxcontainer::get_media_features(litehtml::media_features &media) const
 {
-
+	TP();
 }
 void hftrxcontainer::get_language(litehtml::string &language, litehtml::string &culture) const
 {
-
+	TP();
 }
 void hftrxcontainer::split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space)
 {
+	TP();
 }
 
 void hftrxcontainer::link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el)
 {
-
+	TP();
 }
-
 
 static char htmlString [] = "HTML";
 
-void cpptest(void)
+void litehtmltest(void)
 {
 	uint_ptr hdc = 0;
 	position wndclip(0, 0, DIM_X, DIM_Y);

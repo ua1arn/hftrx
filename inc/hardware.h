@@ -1004,6 +1004,7 @@ void usb_polling(void);	/* LWIP support */
 void sys_check_timeouts(void);	/* LWIP support */
 void network_spool(void);
 void cpptest(void);
+void litehtmltest(void);
 
 #define USBALIGN_BEGIN
 #define USBALIGN_END __attribute__ ((aligned (64))) /* nothing */
