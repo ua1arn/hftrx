@@ -221,7 +221,7 @@ SRCDIRS += $(PRJROOT)/lib/xhelpert507
 DINCDIR += $(PRJROOT)/lib/xhelpert507
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
 # http://www.litehtml.com/
 LITEHTMLDIR = $(PRJROOT)/lib/litehtml
