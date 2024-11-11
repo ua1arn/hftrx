@@ -143,7 +143,7 @@
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
 		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
-		#define WITHI2S1HW	1	/* Использование I2S1 - звук через HDMI */
+		#define WITHI2S1HW	(1 && WITHHDMITVHW)	/* Использование I2S1 - звук через HDMI */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
 		#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
@@ -158,7 +158,7 @@
 		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-		#define WITHCODEC2_HDMI_DUPLEX_MASTER	1		/* Канал выдачи в HDMI */
+		#define WITHCODEC2_HDMI_DUPLEX_MASTER	(1 && WITHHDMITVHW)		/* Канал выдачи в HDMI */
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */

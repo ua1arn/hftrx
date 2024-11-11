@@ -259,18 +259,6 @@ void display_clear(void)
 	colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
 }
 
-void display_plotstart(
-	uint_fast16_t dy	// Высота окна источника в пикселях
-	)
-{
-
-}
-
-void display_plotstop(void)
-{
-
-}
-
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 void display_bar(

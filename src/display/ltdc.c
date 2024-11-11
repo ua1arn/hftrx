@@ -7780,18 +7780,16 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 {
+	const int vich = 1;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 
-	t113_de_set_address_vi(rtmixid, p1, 1);
-	const uint_fast32_t mask =
-		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1)) |
-		0;
+	t113_de_set_address_vi(rtmixid, p1, vich);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		mask	| // pipe0 enable - from VI1
+			((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich)) |
 		0;
 	t113_de_update(rtmixid);	/* Update registers */
 }

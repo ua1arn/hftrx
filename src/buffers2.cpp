@@ -3626,6 +3626,7 @@ static RAMFRAMEBUFF colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
 typedef blists<colmain0fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain0fblist_t;
 static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
+// can not be zero
 uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
 {
 	colmain0fb_t * dest;
@@ -3779,6 +3780,7 @@ colmain_fb_draw(void)
 	{
 		fb0 = allocate_dmabuffercolmain0fb();
 	}
+	ASSERT(fb0);
 	return (PACKEDCOLORPIP_T *) fb0;
 }
 
@@ -3793,6 +3795,7 @@ void colmain_nextfb(void)
 #if WITHHDMITVHW
 		// дублирование буфера
 		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
+		ASSERT(fbtv);
 		colpip_bitblt(
 			(uintptr_t) fbtv, datasize_dmabuffercolmain1fb(),
 			(PACKEDCOLORPIP_T *) fbtv, TVD_WIDTH, TVD_HEIGHT,
@@ -3808,6 +3811,7 @@ void colmain_nextfb(void)
 		save_dmabuffercolmain0fb(fb0);
 	}
 	fb0 = allocate_dmabuffercolmain0fb();
+	ASSERT(fb0);
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr(fb0));
 #endif /* WITHOPENVG */

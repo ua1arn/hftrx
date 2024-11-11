@@ -246,12 +246,32 @@ static char htmlString [] = "HTML";
 
 void litehtmltest(void)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_BLUE;
+	TP();
+	display_fillrect(0, 0, DIM_X, DIM_Y, color);
+	colmain_nextfb();
+	TP();
+	for (;;)
+		;
 	uint_ptr hdc = 0;
-	position wndclip(0, 0, DIM_X, DIM_Y);
+	const position wndclip(0, 0, DIM_X, DIM_Y);
 	//hftrxcontainer cont("", this);
 	hftrxcontainer cont;
 	// see doc/document_createFromString.txt
 	auto doc = document::createFromString(htmlString, & cont);
-	doc->draw(hdc, 0, 0, & wndclip);
+
+
+	//colpip_fillrect(buffer, dx, dy, wndclip.x, wndclip.y, wndclip.width, wndclip.height, color);
+
+	//doc->draw(hdc, 0, 0, & wndclip);
+	colmain_nextfb();
+	TP();
+	for (;;)
+		;
+	local_delay_ms(2500);
+	TP();
 }
 #endif
