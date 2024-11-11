@@ -4,6 +4,9 @@
 
 #if 0
 
+#include "display/display.h"
+#include "display2.h"
+
 #include "litehtml.h"
 #include <litehtml/encodings.h>
 
@@ -50,18 +53,12 @@ public:
 	}
 	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
 
-	// see doc/document_createFromString.txt
-//	static litehtml::document::ptr  createFromString(
-//		const estring&       str,
-//		document_container*  container,
-//		const string&        master_styles = litehtml::master_css,
-//		const string&        user_styles = "");
 };
 
-//void hftrxcontainer::pt_to_px(int pt) const
-//{
-//
-//}
+static COLORPIP_T getColor(const litehtml::web_color& color)
+{
+	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
+}
 
 litehtml::uint_ptr hftrxcontainer::create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm)
 {
@@ -70,20 +67,26 @@ litehtml::uint_ptr hftrxcontainer::create_font(const char *faceName, int size, i
 void hftrxcontainer::delete_font(litehtml::uint_ptr hFont)
 {
 }
+
 int hftrxcontainer::text_width(const char *text, litehtml::uint_ptr hFont)
 {
-	return 1;
+	return 5;
 }
 void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+
+	colpip_fillrect(buffer, dx, dy, pos.x, pos.y, pos.width, pos.height, getColor(color));
 }
 int hftrxcontainer::pt_to_px(int pt) const
 {
-	return 1;
+	return pt;
 }
 int hftrxcontainer::get_default_font_size() const
 {
-	return 1;
+	return 12;
 }
 const char* hftrxcontainer::get_default_font_name() const
 {
@@ -103,18 +106,53 @@ void hftrxcontainer::draw_image(litehtml::uint_ptr hdc, const background_layer &
 }
 void hftrxcontainer::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+
+	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, getColor(color));
 }
+
 void hftrxcontainer::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_RED;
+
+	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, color);
+
 }
 void hftrxcontainer::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_RED;
+
+	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, color);
+
 }
+
 void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_RED;
+
+	colpip_fillrect(buffer, dx, dy, layer.border_box.x, layer.border_box.y, layer.border_box.width, layer.border_box.height, color);
+
 }
+
 void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
 {
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_RED;
+
+	colpip_fillrect(buffer, dx, dy, draw_pos.x, draw_pos.y, draw_pos.width, draw_pos.height, color);
 }
 
 void hftrxcontainer::set_caption(const char *caption)
@@ -149,8 +187,9 @@ void hftrxcontainer::del_clip()
 }
 void hftrxcontainer::get_client_rect(litehtml::position &client) const
 {
-
+	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
+
 litehtml::element::ptr hftrxcontainer::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
 	return nullptr;
