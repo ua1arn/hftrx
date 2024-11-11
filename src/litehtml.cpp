@@ -2,7 +2,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if 1
+#if LCDMODE_LTDC
 
 #include <string.h>
 #include "display/display.h"
@@ -313,4 +313,4 @@ void litehtmltest(void)
 	for (;;)
 		;
 }
-#endif
+#endif /* LCDMODE_LTDC */
