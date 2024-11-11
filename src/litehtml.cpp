@@ -192,7 +192,7 @@ void hftrxcontainer::draw_conic_gradient(litehtml::uint_ptr hdc, const backgroun
 
 void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
 {
-	TP();
+	PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
@@ -203,15 +203,15 @@ void hftrxcontainer::draw_borders(litehtml::uint_ptr hdc, const litehtml::border
 
 void hftrxcontainer::set_caption(const char *caption)
 {
-	PRINTF("set_caption: caption='%s'\n", caption);
+	//PRINTF("set_caption: caption='%s'\n", caption);
 }
 void hftrxcontainer::set_base_url(const char *base_url)
 {
-	PRINTF("set_base_url: base_url='%s'\n", base_url);
+	//PRINTF("set_base_url: base_url='%s'\n", base_url);
 }
 void link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
-	TP();
+	//TP();
 }
 void hftrxcontainer::on_anchor_click(const char *url, const litehtml::element::ptr &el)
 {
