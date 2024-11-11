@@ -299,7 +299,7 @@ $(OBJSC):
 
 $(OBJSCPP):
 	@mkdir -p $(@D)
-	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
+	$(GPP) -o $@ -std=gnu++17 -frtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
 $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
