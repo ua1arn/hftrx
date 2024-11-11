@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "display/display.h"
+#include "display/fontmaps.h"
 #include "display2.h"
 
 #include "litehtml.h"
@@ -66,13 +67,13 @@ static COLORPIP_T getCOLPIP(const litehtml::web_color& color)
 
 litehtml::uint_ptr hftrxcontainer::create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm)
 {
-	PRINTF("create_font: faceName='%s'm size=%d\n", faceName, size);
+	PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
 		fm->font_size = size;
 		fm->ascent = 0;//PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
 		fm->descent = 0;//PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
-		fm->height = 13; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
+		fm->height = SMALLCHARH; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
 		fm->x_height = fm->height;
 	}
 	return 1;
@@ -90,12 +91,13 @@ int hftrxcontainer::text_width(const char *text, litehtml::uint_ptr hFont)
 
 void hftrxcontainer::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
-	PRINTF("draw_text: text='%s'\n", text);
+	//PRINTF("draw_text: text='%s'\n", text);
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colpip_fillrect(buffer, dx, dy, pos.left(), pos.top(), pos.width, pos.height, getCOLPIP(color));
+	//colpip_fillrect(buffer, dx, dy, pos.left(), pos.top(), pos.width, pos.height, getCOLPIP(color));
+	colpip_string_tbg(buffer, dx, dy, pos.left(), pos.top(), text, getCOLPIP(color));
 }
 
 int hftrxcontainer::pt_to_px(int pt) const
