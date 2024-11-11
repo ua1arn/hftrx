@@ -52,7 +52,7 @@ public:
 //	{
 //		return litehtml::string();
 //	}
-	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
+//	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
 
 };
 
@@ -259,12 +259,12 @@ void hftrxcontainer::get_language(litehtml::string &language, litehtml::string &
 	culture = "";
 }
 
-void hftrxcontainer::split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space)
-{
-	//PRINTF("split_text: text='%s'\n", text);
-	//on_word("zzzzzz");
-	on_word(text);
-}
+//void hftrxcontainer::split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space)
+//{
+//	//PRINTF("split_text: text='%s'\n", text);
+//	//on_word("zzzzzz");
+//	on_word(text);
+//}
 
 void hftrxcontainer::link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el)
 {
