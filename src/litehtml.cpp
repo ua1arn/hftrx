@@ -2,7 +2,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC && 0
 
 #include <string.h>
 #include "display/display.h"
