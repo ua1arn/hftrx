@@ -304,6 +304,8 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
 void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
+void board_reload_fir_artix7_spistart(IRQL_t * irql);
+void board_reload_fir_artix7_spidone(IRQL_t irql);
 
 void board_fpga_fir_coef_p1(int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
 void board_fpga_fir_coef_p2(int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.

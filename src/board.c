@@ -6697,8 +6697,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 	bits = CWidth - bits - 1;
 
-	spi_operate_lock(& irql);
-	spi_select(targetfpga1, CTLREG_SPIMODE);
+	board_reload_fir_artix7_spistart(& irql);
 
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
@@ -6714,10 +6713,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 		board_reload_fir_artix7_p2(targetfpga1, 13, coeff << bits);
 	}
-
-	spi_complete(targetfpga1);
-	spi_unselect(targetfpga1);
-	spi_operate_unlock(irql);
+	board_reload_fir_artix7_spidone(irql);
 }
 
 #elif ! LINUX_SUBSYSTEM

@@ -7200,6 +7200,19 @@ void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32
 	spi_progval8_p2(target, v2 >> 0);
 }
 
+void board_reload_fir_artix7_spistart(IRQL_t * irql)
+{
+	spi_operate_lock(irql);
+	spi_select(targetfpga1, SPIC_MODE3);
+}
+
+void board_reload_fir_artix7_spidone(IRQL_t irql)
+{
+	spi_complete(targetfpga1);
+	spi_unselect(targetfpga1);
+	spi_operate_unlock(irql);
+}
+
 #elif WITHDSPEXTFIR && ! LINUX_SUBSYSTEM
 
 // Передача одного (первого) 32-битного значения и формирование строба.
