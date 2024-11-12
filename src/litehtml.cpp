@@ -215,14 +215,18 @@ void hftrxgd::on_anchor_click(const char *url, const litehtml::element::ptr &el)
 {
 	TP();
 }
+
+// вызывается если попадаем в элемент
 void hftrxgd::on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_event event)
 {
-	TP();
+	//TP();
+	PRINTF("on_mouse_event: id='%d'\n", el->tag());
 }
 void hftrxgd::set_cursor(const char *cursor)
 {
 	TP();
 }
+
 void hftrxgd::transform_text(litehtml::string &text, litehtml::text_transform tt)
 {
 	TP();
@@ -253,6 +257,12 @@ class freqel: public litehtml::el_td
 			const std::shared_ptr<render_item> &ri);
 	virtual void get_text(string &text);
 	virtual void get_content_size(size& sz, int max_width);
+
+	virtual bool on_mouse_over() override;
+	virtual bool on_mouse_leave() override;
+	virtual bool on_lbutton_down() override;
+	virtual bool on_lbutton_up() override;
+	virtual void on_click() override;
 
 	int m_rxid;
 public:
@@ -306,6 +316,32 @@ void freqel::get_text(string &text)
 	TP();
 	text = "14030000";
 }
+
+bool freqel::on_mouse_over()
+{
+	TP();
+	return false;
+}
+bool freqel::on_mouse_leave()
+{
+	TP();
+	return false;
+}
+bool freqel::on_lbutton_down()
+{
+	TP();
+	return false;
+}
+bool freqel::on_lbutton_up()
+{
+	TP();
+	return false;
+}
+void freqel::on_click()
+{
+	TP();
+}
+
 
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
@@ -375,7 +411,7 @@ static const char htmlString [] =
 
 static hftrxgd cont(DIM_X, DIM_Y);
 static const position wndclip(0, 0, DIM_X, DIM_Y);
-//
+
 //static hftrxgd cont2(DIM_X * 2, DIM_Y * 2);
 //static const position wndclip2(0, 0, DIM_X * 2, DIM_Y *2 );
 
@@ -393,6 +429,8 @@ void litehtmltest(void)
 	colmain_nextfb();
 	TP();
 
+	position::vector redraw_boxes;
+	doc->on_lbutton_down(110, 110, 0, 0, redraw_boxes);
 	local_delay_ms(2500);
 	for (;;)
 		;
