@@ -5732,6 +5732,14 @@ prog_fltlreg(void)
 {
 }
 
+
+/* Получить значение частоты выборок выходного потока DSP */
+int_fast32_t
+dsp_get_sampleraterx(void)
+{
+	return 48000;
+}
+
 #endif /* WITHINTEGRATEDDSP */
 
 

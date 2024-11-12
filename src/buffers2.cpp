@@ -4098,7 +4098,7 @@ void buffers_initialize(void)
 
 	#define BTAUDIO_LPF_STAGES 2
 	iir_filter_t f0;
-	const FLOAT_t samplerate = ARMI2SRATE;	// 48 kHz
+	const FLOAT_t samplerate = dsp_get_sampleraterx();	// 48 kHz
 	{
 		// 44.1 kHs -> 48 kHz
 		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages

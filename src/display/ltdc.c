@@ -7481,7 +7481,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 //	}
 	/* cts = (n / 128) * (glb_video.tmds_clk / 100) / (audio->sample_rate / 100); */
 	unsigned audio_cts = 10;
-	unsigned audio_n = hdmi_compute_n(ARMI2SRATE, dotclock);
+	const int_fast32_t samplerate = dsp_get_sampleraterx();
+	unsigned audio_n = hdmi_compute_n(samplerate, dotclock);
 	/*
 	 * Compute the CTS value from the N value.  Note that CTS and N
 	 * can be up to 20 bits in total, so we need 64-bit math.  Also
@@ -7490,7 +7491,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	 * calculation below, so we don't try to warn about that.
 	 */
 	uint_fast64_t tmp = (uint_fast64_t)dotclock /*ftdms*/ * audio_n;
-	tmp /= 128 * ARMI2SRATE;
+	tmp /= 128 * samplerate;
 	audio_cts = tmp;
 	// hdmi audio CTS=74250, N=6144
 	//PRINTF("hdmi audio CTS=%u, N=%u\n", audio_cts, audio_n);
