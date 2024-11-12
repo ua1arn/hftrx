@@ -1720,7 +1720,7 @@ static const videomode_t vdmode_HDMI_1440x900at50 =
 	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 160
     .hsync = 32,            /* Horizontal synchronization XPULSE  */
     .hbp = 80,    			/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
-    .hfp = 48,                /* Horizontal front porch  XOFFSET */
+    .hfp = 48,              /* Horizontal front porch  XOFFSET */
 
 	// Vblank от DMT - иначе не работает
 	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 34
