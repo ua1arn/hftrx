@@ -266,23 +266,33 @@ public:
 void freqel::draw(uint_ptr hdc, int x, int y, const position *clip,
 		const std::shared_ptr<render_item> &ri)
 {
-	//TP();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const int dx = DIM_X;
+	const int dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_BLUE;
+
 	const position& pos = ri->pos();
 	string text;
 	get_text(text);
-	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
+	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d, U=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height, ri->margin_top());
+	//colpip_fillrect(buffer, dx, dy, x + pos.x, y + pos.y, pos.width, pos.height, color);
 	litehtml::el_td::draw(hdc, x, y, clip, ri);
 }
 
 void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip,
 		const std::shared_ptr<render_item> &ri)
 {
-	//TP();
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const int dx = DIM_X;
+	const int dy = DIM_Y;
+	COLORPIP_T color = COLORPIP_BLUE;
+
 	const position& pos = ri->pos();
 	string text;
 	get_text(text);
-	PRINTF("draw_background: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
-	litehtml::el_td::draw_background(hdc, x, y, clip, ri);
+	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
+	colpip_fillrect(buffer, dx, dy, x + pos.x, y + pos.y, pos.width, pos.height, color);
+	//litehtml::el_td::draw_background(hdc, x, y, clip, ri);
 }
 
 void freqel::get_content_size(size& sz, int max_width)
@@ -305,6 +315,11 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 		PRINTF("create_element: tag_name='%s', id='%s'\n", tag_name, id.c_str());
 
 		if (id == "FREQ_A")
+		{
+			auto newTag = std::make_shared<freqel>(doc, 0);
+			return newTag;
+		}
+		if (id == "FREQ_B")
 		{
 			auto newTag = std::make_shared<freqel>(doc, 1);
 			return newTag;
@@ -358,18 +373,26 @@ static const char htmlString [] =
 	0,
 };
 
+static hftrxgd cont(DIM_X, DIM_Y);
+static const position wndclip(0, 0, DIM_X, DIM_Y);
+//
+//static hftrxgd cont2(DIM_X * 2, DIM_Y * 2);
+//static const position wndclip2(0, 0, DIM_X * 2, DIM_Y *2 );
+
 void litehtmltest(void)
 {
 	uint_ptr hdc = 0;
-	const position wndclip(0, 0, DIM_X, DIM_Y);
-	hftrxgd cont(DIM_X, DIM_Y);
 	// see doc/document_createFromString.txt
 	auto doc = document::createFromString(htmlString, & cont);
+	//auto doc2 = document::createFromString(htmlString, & cont2);
 	//element el_freq = doc->
 	doc->render(wndclip.width, render_all);
+	//doc2->render(wndclip2.width, render_all);
+
 	doc->draw(hdc, 0, 0, & wndclip);
 	colmain_nextfb();
 	TP();
+
 	local_delay_ms(2500);
 	for (;;)
 		;
