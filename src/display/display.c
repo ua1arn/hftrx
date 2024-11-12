@@ -1678,21 +1678,23 @@ static const videomode_t vdmode_HDMI_1366x768at60 =
 };
 
 /* Aspect ratio 16:9 (1.7(7)), dot clock = xxx MHz */
-// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+// ! TESTED
+// https://tomverbeure.github.io/video_timings_calculator
+// CVT-RB Modeline "1024x768_59.87" 56 1024 1072 1104 1184 768 771 775 790 +HSync -VSync
 static const videomode_t vdmode_HDMI_1024x768at60 =
 {
 	.width = 1024,			/* LCD PIXEL WIDTH            */
 	.height = 768,			/* LCD PIXEL HEIGHT           */
 
-	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 280
-	.hsync = 44,			/* Horizontal synchronization XPULSE  */
-	.hbp = 148,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
-	.hfp = 88,				/* Horizontal front porch  XOFFSET */
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 160
+	.hsync = 32,			/* Horizontal synchronization XPULSE  */
+	.hbp = 80,				/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 48,				/* Horizontal front porch  XOFFSET */
 
-	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 45
-	.vsync = 5,				/* Vertical synchronization */
-	.vbp = 36,				/* Vertical back porch      */
-	.vfp = 4,				/* Vertical front porch */
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 22
+	.vsync = 4,				/* Vertical synchronization */
+	.vbp = 15,				/* Vertical back porch      */
+	.vfp = 3,				/* Vertical front porch */
 
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
@@ -1797,7 +1799,7 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	//return & vdmode_HDMI_1024x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	return & vdmode_HDMI_1024x768at60;	// ! TESTED
 	//return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
 	//return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
