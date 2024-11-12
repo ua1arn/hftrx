@@ -1703,27 +1703,29 @@ static const videomode_t vdmode_HDMI_1024x768at60 =
 	.interlaced = 0
 };
 
+// https://tomverbeure.github.io/video_timings_calculator
+// Modeline "1600x900_60" 108 1600 1624 1704 1800 900 901 904 1000 +HSync +VSync
 // ! NOTTESTED
 static const videomode_t vdmode_HDMI_1440x900at60_not_working =
 {
-	.width = 1440,			/* LCD PIXEL WIDTH            */
-	.height = 900,			/* LCD PIXEL HEIGHT           */
+	.width = 1600,      /* LCD PIXEL WIDTH            */
+	.height = 900,      /* LCD PIXEL HEIGHT           */
 
-	// Horizontal Blanking XBLANK = hsync + hbp + hfp = 464
-	.hsync = 152,			/* Horizontal synchronization XPULSE  */
-	.hbp = 464 - 80 - 152,	/* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
-	.hfp = 80,				/* Horizontal front porch  XOFFSET */
+	// Horizontal Blanking XBLANK = hsync + hbp + hfp 200
+	.hsync = 80,      /* Horizontal synchronization XPULSE  */
+	.hbp = 96,  /* Horizontal back porch  XBLANK - XOFFSET - XPULSE    */
+	.hfp = 24,        /* Horizontal front porch  XOFFSET */
 
-	// Vertical Blanking YBLANK  = vsync + vbp + vfp = 34
-	.vsync = 6,				/* Vertical synchronization */
-	.vbp = 34 - 3 - 6,				/* Vertical back porch      */
-	.vfp = 3,				/* Vertical front porch */
+	// Vertical Blanking YBLANK  = vsync + vbp + vfp 100
+	.vsync = 3,        /* Vertical synchronization */
+	.vbp = 96,        /* Vertical back porch      */
+	.vfp = 1,        /* Vertical front porch */
 
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
-	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.vsyncneg = !1,      /* Negative polarity required for VSYNC signal */
+	.hsyncneg = !1,      /* Negative polarity required for HSYNC signal */
+	.deneg = 0,        /* Negative DE polarity: (normal: DE is 0 while sync) */
 
-	.fps = 60,	/* frames per second */
+	.fps = 75,  /* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
 };
@@ -1799,6 +1801,7 @@ const videomode_t * get_videomode_HDMI(void)
 	//return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
 	//return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
+	//return & vdmode_HDMI_1440x900at60_not_working;
 	return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
 

@@ -6802,6 +6802,80 @@ static void hdmi_video_sample(HDMI_TX_TypeDef * const hdmi)
 	hdmi->HDMI_TX_BCBDATA1 = 0x00;
 }
 
+static void dw_hdmi_i2s_setup(HDMI_TX_TypeDef * const hdmi)
+{
+	/* Reset the FIFOs before applying new params */
+	hdmi->HDMI_AUD_CONF0 = HDMI_AUD_CONF0_SW_RESET;
+	hdmi->HDMI_MC_SWRSTZ = ~HDMI_MC_SWRSTZ_I2SSWRST_REQ;
+
+	unsigned int inputclkfs	= HDMI_AUD_INPUTCLKFS_64FS;
+	unsigned int conf0 = (HDMI_AUD_CONF0_I2S_SELECT | HDMI_AUD_CONF0_I2S_EN0);
+	unsigned int conf1 = 0;
+
+	//	switch (hparms->channels) {
+	//	case 7 ... 8:
+	//		conf0 |= HDMI_AUD_CONF0_I2S_EN3;
+	//		fallthrough;
+	//	case 5 ... 6:
+	//		conf0 |= HDMI_AUD_CONF0_I2S_EN2;
+	//		fallthrough;
+	//	case 3 ... 4:
+	//		conf0 |= HDMI_AUD_CONF0_I2S_EN1;
+	//		/* Fall-thru */
+	//	}
+
+	//	switch (hparms->sample_width) {
+	//	case 16:
+	//		conf1 = HDMI_AUD_CONF1_WIDTH_16;
+	//		break;
+	//	case 24:
+	//	case 32:
+	//		conf1 = HDMI_AUD_CONF1_WIDTH_24;
+	//		break;
+	//	}
+
+	//	switch (fmt->fmt) {
+	//	case HDMI_I2S:
+	//		conf1 |= HDMI_AUD_CONF1_MODE_I2S;
+	//		break;
+	//	case HDMI_RIGHT_J:
+	//		conf1 |= HDMI_AUD_CONF1_MODE_RIGHT_J;
+	//		break;
+	//	case HDMI_LEFT_J:
+	//		conf1 |= HDMI_AUD_CONF1_MODE_LEFT_J;
+	//		break;
+	//	case HDMI_DSP_A:
+	//		conf1 |= HDMI_AUD_CONF1_MODE_BURST_1;
+	//		break;
+	//	case HDMI_DSP_B:
+	//		conf1 |= HDMI_AUD_CONF1_MODE_BURST_2;
+	//		break;
+	//	default:
+	//		dev_err(dev, "unsupported format\n");
+	//		return -EINVAL;
+	//	}
+
+	//	dw_hdmi_set_sample_rate(hdmi, hparms->sample_rate);
+	//	dw_hdmi_set_channel_status(hdmi, hparms->iec.status);
+	//	dw_hdmi_set_channel_count(hdmi, hparms->channels);
+	//	dw_hdmi_set_channel_allocation(hdmi, hparms->cea.channel_allocation);
+	//
+
+
+	conf1 = HDMI_AUD_CONF1_WIDTH_24;
+	conf1 |= HDMI_AUD_CONF1_MODE_I2S;
+
+	hdmi->HDMI_AUD_INPUTCLKFS = inputclkfs;
+	hdmi->HDMI_AUD_CONF0 = conf0;
+	hdmi->HDMI_AUD_CONF1 = conf1;
+	//	hdmi_write(audio, inputclkfs, HDMI_AUD_INPUTCLKFS);
+	//	hdmi_write(audio, conf0, HDMI_AUD_CONF0);
+	//	hdmi_write(audio, conf1, HDMI_AUD_CONF1);
+
+	//	PRINTF("hdmi->HDMI_AUD_INPUTCLKFS=%08X\n", (unsigned) hdmi->HDMI_AUD_INPUTCLKFS);
+	//	PRINTF("hdmi->HDMI_AUD_CONF0=%08X\n", (unsigned) hdmi->HDMI_AUD_CONF0);
+	//	PRINTF("hdmi->HDMI_AUD_CONF1=%08X\n", (unsigned) hdmi->HDMI_AUD_CONF1);
+}
 
 static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
 {
@@ -7387,8 +7461,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 		6144 * 2, 192000, 5120 * 4, 6144 * 4,
 	};
 
-	PRINTF("hdmi->HDMI_CONFIG3_ID=%02X, HDMI_CONFIG3_AHBAUDDMA=%02X\n", hdmi->HDMI_CONFIG3_ID, HDMI_CONFIG3_AHBAUDDMA);
-	PRINTF("hdmi->HDMI_CONFIG0_ID=%02X, HDMI_CONFIG0_I2S=%02X\n", hdmi->HDMI_CONFIG0_ID, HDMI_CONFIG0_I2S);
+//	PRINTF("hdmi->HDMI_CONFIG3_ID=%02X, HDMI_CONFIG3_AHBAUDDMA=%02X\n", hdmi->HDMI_CONFIG3_ID, HDMI_CONFIG3_AHBAUDDMA);
+//	PRINTF("hdmi->HDMI_CONFIG0_ID=%02X, HDMI_CONFIG0_I2S=%02X\n", hdmi->HDMI_CONFIG0_ID, HDMI_CONFIG0_I2S);
 
 //	hdmi_write(0xE04B, 0x00 | (audio->sample_bit == 16)
 //			? 0x02 : ((audio->sample_bit == 24) ? 0xb : 0x0));
@@ -7419,7 +7493,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	tmp /= 128 * ARMI2SRATE;
 	audio_cts = tmp;
 	// hdmi audio CTS=74250, N=6144
-	PRINTF("hdmi audio CTS=%u, N=%u\n", audio_cts, audio_n);
+	//PRINTF("hdmi audio CTS=%u, N=%u\n", audio_cts, audio_n);
+
 	h3_hdmi_init(vdmode);
 	hdmi_enable_video_path(hdmi, 1);
 	hdmi_video_sample(hdmi);
@@ -7427,81 +7502,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	// audio enable
 	hdmi_set_cts_n(hdmi, audio_cts, audio_n);
 	hdmi_enable_audio_clk(hdmi);
-
-#if 1
-	/* Reset the FIFOs before applying new params */
-	hdmi->HDMI_AUD_CONF0 = HDMI_AUD_CONF0_SW_RESET;
-	hdmi->HDMI_MC_SWRSTZ = ~HDMI_MC_SWRSTZ_I2SSWRST_REQ;
-
-	unsigned int inputclkfs	= HDMI_AUD_INPUTCLKFS_64FS;
-	unsigned int conf0 = (HDMI_AUD_CONF0_I2S_SELECT | HDMI_AUD_CONF0_I2S_EN0);
-	unsigned int conf1 = 0;
-
-//	switch (hparms->channels) {
-//	case 7 ... 8:
-//		conf0 |= HDMI_AUD_CONF0_I2S_EN3;
-//		fallthrough;
-//	case 5 ... 6:
-//		conf0 |= HDMI_AUD_CONF0_I2S_EN2;
-//		fallthrough;
-//	case 3 ... 4:
-//		conf0 |= HDMI_AUD_CONF0_I2S_EN1;
-//		/* Fall-thru */
-//	}
-
-//	switch (hparms->sample_width) {
-//	case 16:
-//		conf1 = HDMI_AUD_CONF1_WIDTH_16;
-//		break;
-//	case 24:
-//	case 32:
-//		conf1 = HDMI_AUD_CONF1_WIDTH_24;
-//		break;
-//	}
-
-//	switch (fmt->fmt) {
-//	case HDMI_I2S:
-//		conf1 |= HDMI_AUD_CONF1_MODE_I2S;
-//		break;
-//	case HDMI_RIGHT_J:
-//		conf1 |= HDMI_AUD_CONF1_MODE_RIGHT_J;
-//		break;
-//	case HDMI_LEFT_J:
-//		conf1 |= HDMI_AUD_CONF1_MODE_LEFT_J;
-//		break;
-//	case HDMI_DSP_A:
-//		conf1 |= HDMI_AUD_CONF1_MODE_BURST_1;
-//		break;
-//	case HDMI_DSP_B:
-//		conf1 |= HDMI_AUD_CONF1_MODE_BURST_2;
-//		break;
-//	default:
-//		dev_err(dev, "unsupported format\n");
-//		return -EINVAL;
-//	}
-
-//	dw_hdmi_set_sample_rate(hdmi, hparms->sample_rate);
-//	dw_hdmi_set_channel_status(hdmi, hparms->iec.status);
-//	dw_hdmi_set_channel_count(hdmi, hparms->channels);
-//	dw_hdmi_set_channel_allocation(hdmi, hparms->cea.channel_allocation);
-//
-
-
-	conf1 = HDMI_AUD_CONF1_WIDTH_24;
-	conf1 |= HDMI_AUD_CONF1_MODE_I2S;
-
-	hdmi->HDMI_AUD_INPUTCLKFS = inputclkfs;
-	hdmi->HDMI_AUD_CONF0 = conf0;
-	hdmi->HDMI_AUD_CONF1 = conf1;
-//	hdmi_write(audio, inputclkfs, HDMI_AUD_INPUTCLKFS);
-//	hdmi_write(audio, conf0, HDMI_AUD_CONF0);
-//	hdmi_write(audio, conf1, HDMI_AUD_CONF1);
-
-//	PRINTF("hdmi->HDMI_AUD_INPUTCLKFS=%08X\n", (unsigned) hdmi->HDMI_AUD_INPUTCLKFS);
-//	PRINTF("hdmi->HDMI_AUD_CONF0=%08X\n", (unsigned) hdmi->HDMI_AUD_CONF0);
-//	PRINTF("hdmi->HDMI_AUD_CONF1=%08X\n", (unsigned) hdmi->HDMI_AUD_CONF1);
-#endif
-
+	dw_hdmi_i2s_setup(hdmi);
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
