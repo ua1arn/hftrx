@@ -13,6 +13,8 @@
 
 #include "litehtml.h"
 #include <litehtml/encodings.h>
+#include <litehtml/el_td.h>
+#include <litehtml/render_item.h>
 
 using namespace litehtml;
 
@@ -243,34 +245,56 @@ void hftrxgd::get_client_rect(litehtml::position &client) const
 	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
-class freqelement: public litehtml::element
+class freqel: public litehtml::el_td
 {
-	void draw(uint_ptr hdc, int x, int y, const position *clip,
+	virtual void draw(uint_ptr hdc, int x, int y, const position *clip,
 			const std::shared_ptr<render_item> &ri);
-	void draw_background(uint_ptr hdc, int x, int y, const position *clip,
+	virtual void draw_background(uint_ptr hdc, int x, int y, const position *clip,
 			const std::shared_ptr<render_item> &ri);
-	void get_text(string &text);
+	virtual void get_text(string &text);
+	virtual void get_content_size(size& sz, int max_width);
 
+	int m_rxid;
 public:
-	freqelement(const std::shared_ptr<document>& doc, int rxid) : litehtml::element(doc) {}
-	virtual ~ freqelement() = default;
+	freqel(const std::shared_ptr<document>& doc, int rxid) : litehtml::el_td(doc), m_rxid(rxid)
+	{
+		set_data("Hello set data");
+	}
+	virtual ~ freqel() = default;
 };
 
-void freqelement::draw(uint_ptr hdc, int x, int y, const position *clip,
+void freqel::draw(uint_ptr hdc, int x, int y, const position *clip,
 		const std::shared_ptr<render_item> &ri)
 {
-	TP();
+	//TP();
+	const position& pos = ri->pos();
+	string text;
+	get_text(text);
+	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
+	litehtml::el_td::draw(hdc, x, y, clip, ri);
 }
 
-void freqelement::draw_background(uint_ptr hdc, int x, int y, const position *clip,
+void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip,
 		const std::shared_ptr<render_item> &ri)
 {
-	TP();
+	//TP();
+	const position& pos = ri->pos();
+	string text;
+	get_text(text);
+	PRINTF("draw_background: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
+	litehtml::el_td::draw_background(hdc, x, y, clip, ri);
 }
 
-void freqelement::get_text(string &text)
+void freqel::get_content_size(size& sz, int max_width)
 {
-	text = "140300000";
+	TP();
+	sz = size(200, 50);
+}
+
+void freqel::get_text(string &text)
+{
+	TP();
+	text = "14030000";
 }
 
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
@@ -278,11 +302,11 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 	try
 	{
 		std::string id = attributes.at("id");
-		PRINTF("create_element: tag_name='%s', id='%s'\n", tag_name, "id");
+		PRINTF("create_element: tag_name='%s', id='%s'\n", tag_name, id.c_str());
 
 		if (id == "FREQ_A")
 		{
-			auto newTag = std::make_shared<freqelement>(doc, 1);
+			auto newTag = std::make_shared<freqel>(doc, 1);
 			return newTag;
 		}
 
