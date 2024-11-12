@@ -1771,9 +1771,9 @@ const videomode_t * get_videomode_CRT(void)
 
 const videomode_t * get_videomode_HDMI(void)
 {
-	return & vdmode_HDMI_1024x768at60;	// ! TESTED
+	//return & vdmode_HDMI_1024x768at60;	// ! TESTED
 	//return & vdmode_HDMI_1366x768at60;	// ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
-	//return & vdmode_HDMI_1280x720at50;	// ! TESTED
+	return & vdmode_HDMI_1280x720at50;	// ! TESTED
 	//return & vdmode_HDMI_1440x900at50;	// ! TESTED, параметры не подтверждены, работает на 50 герц
 	return & vdmode_HDMI_1920x1080at60;	// ! TESTED
 }
