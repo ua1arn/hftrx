@@ -5,6 +5,8 @@
 #if LCDMODE_LTDC && 0
 
 #include <string.h>
+#include <stdexcept>
+
 #include "display/display.h"
 #include "display/fontmaps.h"
 #include "display2.h"
@@ -203,6 +205,8 @@ void hftrxgd::set_base_url(const char *base_url)
 }
 void link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
+	PRINTF("link: doc=%pid='%s'\n", (const void *) & doc, (const char *) el->id());
+
 	//TP();
 }
 void hftrxgd::on_anchor_click(const char *url, const litehtml::element::ptr &el)
@@ -239,10 +243,55 @@ void hftrxgd::get_client_rect(litehtml::position &client) const
 	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
+class freqelement: public litehtml::element
+{
+	void draw(uint_ptr hdc, int x, int y, const position *clip,
+			const std::shared_ptr<render_item> &ri);
+	void draw_background(uint_ptr hdc, int x, int y, const position *clip,
+			const std::shared_ptr<render_item> &ri);
+	void get_text(string &text);
+
+public:
+	freqelement(const std::shared_ptr<document>& doc, int rxid) : litehtml::element(doc) {}
+	virtual ~ freqelement() = default;
+};
+
+void freqelement::draw(uint_ptr hdc, int x, int y, const position *clip,
+		const std::shared_ptr<render_item> &ri)
+{
+	TP();
+}
+
+void freqelement::draw_background(uint_ptr hdc, int x, int y, const position *clip,
+		const std::shared_ptr<render_item> &ri)
+{
+	TP();
+}
+
+void freqelement::get_text(string &text)
+{
+	text = "140300000";
+}
+
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
-	//PRINTF("create_element: tag_name='%s'\n", tag_name);
-	return 0;
+	try
+	{
+		std::string id = attributes.at("id");
+		PRINTF("create_element: tag_name='%s', id='%s'\n", tag_name, "id");
+
+		if (id == "FREQ_A")
+		{
+			auto newTag = std::make_shared<freqelement>(doc, 1);
+			return newTag;
+		}
+
+	}
+	catch (const std::out_of_range &)
+	{
+		//PRINTF("create_element: tag_name='%s', id not found\n", tag_name);
+	}
+	return nullptr;
 }
 
 void hftrxgd::get_media_features(litehtml::media_features &media) const
