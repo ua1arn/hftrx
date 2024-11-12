@@ -5819,7 +5819,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
 
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    //CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
     //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
 //    CCU->TVE0_CLK_REG = 0x82000001;
@@ -5845,7 +5845,7 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	PRINTF("7 allwnr_t507_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi_hdcp_freq() / 1000));
 	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
-	PRINTF("7 BOARD_TCONLCDFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
