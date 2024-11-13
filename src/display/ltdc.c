@@ -1674,7 +1674,7 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 }
 
 /* Set MAIN frame buffer address. */
-void hardware_ltdc_main_set(uintptr_t addr)
+void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 {
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
