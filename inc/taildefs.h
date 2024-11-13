@@ -15,7 +15,7 @@ extern "C" {
 
 #if LINUX_SUBSYSTEM
 	#include <src/linux/linux_subsystem.h>
-#endif /* LINUX_SUBSYSTEM */
+#else
 
 #define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 
@@ -36,6 +36,8 @@ typedef enum
 	//
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;
+
+#endif /* LINUX_SUBSYSTEM */
 
 #define MULTIVFO ((HYBRID_NVFOS > 1) && (LO1MODE_HYBRID || LO1MODE_FIXSCALE))
 

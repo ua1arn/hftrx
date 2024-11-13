@@ -27,6 +27,8 @@ void spi_initialize(void);	// отдельно инициализация SPI
    режимы SPI с "0" уровнем SCLK в неактивном состоянии.
    */
 
+#if WITHSPIHW || WITHSPISW
+
 typedef enum
 {
 	SPIC_MODE0,
@@ -36,6 +38,8 @@ typedef enum
 	//
 	SPIC_MODES_COUNT
 } spi_modes_t;
+
+#endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHSPISW
 	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU

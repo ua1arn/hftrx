@@ -177,9 +177,9 @@ board_ctlregs_spi_send_frame(
 	unsigned int size
 	)
 {
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW || WITHSPISW || WITHSPIDEV
 	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, buff, size, NULL, 0, NULL, 0);
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW || WITHSPISW || WITHSPIDEV*/
 }
 
 
@@ -4589,7 +4589,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		};
 		const spitarget_t target = targetctl1;
 
-		rbtype_t rbbuff [10] = { 0 };
+		rbtype_t rbbuff [5] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
 
@@ -9367,7 +9367,7 @@ void hardware_cw_diagnostics(
 
 #endif
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW || WITHSPISW || WITHSPIDEV
 
 static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
 static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;

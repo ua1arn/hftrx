@@ -16,7 +16,8 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPIDEV		1	/* Linux SPI userspace API */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -33,6 +34,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define USERFIRSTSBLOCK 0
 
+/*
 enum {
 	XGPI0,	// SPI0_MISO
 	XGPI1,	// ENC_PUULSES2_B
@@ -52,6 +54,16 @@ enum {
 	XGPO5,	// NVRAM_CS
 	XGPO6,	// ADC2CS
 	XGPO7,	// CSEXT2
+};
+*/
+
+enum {
+	XGPI0,	// ENC_PUULSES2_B
+	XGPI1,	// ENC_PUULSES2_A
+	XGPI2,	// ENC_PUULSES_B
+	XGPI3,	// ENC_PUULSES_A
+	XGPI4,	// ptt_input
+	XGPI5,	// adc_of
 };
 
 #define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR			0x8004a000
@@ -679,6 +691,23 @@ enum {
 		default: break; \
 		} \
 	} while (0)
+
+#elif WITHSPIDEV
+
+	#define SPIDEV_PATH	"/dev/spidev1"
+
+	// CS lines
+	enum {
+		cs0,
+		cs1,
+		cs2,
+
+		cs_cnt
+	};
+
+#define targetctl1	cs0
+#define targetnvram	cs1
+//#define targetadc2	cs2
 
 #endif /* WITHSPIHW || WITHSPISW */
 

@@ -27,6 +27,7 @@
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <linux/gpio.h>
+#include <linux/spi/spidev.h>
 #include <sys/stat.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -607,6 +608,160 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 
 	return rc < 0;
 }
+
+/*************************************************************/
+
+#if WITHSPIDEV
+
+uint8_t spidev_mode = SPI_MODE_3;
+uint8_t spidev_bits = 0;
+uint32_t spidev_speed = SPIC_SPEED25M;
+static int * spidev_fd;
+
+void spidev_init(void)
+{
+	spidev_fd = (int *) malloc(cs_cnt * sizeof(int));
+	ASSERT(spidev_fd);
+
+	for (int i = 0; i < cs_cnt; i ++)
+	{
+		char path[20];
+
+		snprintf(path, ARRAY_SIZE(path), "%s.%d", SPIDEV_PATH, i);
+
+		int ret = 0;
+		spidev_fd[i] = open(path, O_RDWR);
+		if (spidev_fd < 0)
+			perror("can't open device");
+
+		ret = ioctl(spidev_fd[i], SPI_IOC_WR_MODE, & spidev_mode);
+		if (ret == -1)
+			perror("can't set spi mode");
+
+		ret = ioctl(spidev_fd[i], SPI_IOC_RD_MODE, & spidev_mode);
+		if (ret == -1)
+			perror("can't get spi mode");
+
+		ret = ioctl(spidev_fd[i], SPI_IOC_WR_BITS_PER_WORD, & spidev_bits);
+		if (ret == -1)
+			perror("can't set bits per word");
+
+		ret = ioctl(spidev_fd[i], SPI_IOC_RD_BITS_PER_WORD, & spidev_bits);
+		if (ret == -1)
+			perror("can't get bits per word");
+
+		ret = ioctl(spidev_fd[i], SPI_IOC_WR_MAX_SPEED_HZ, & spidev_speed);
+		if (ret == -1)
+			perror("can't set max speed hz");
+
+		ret = ioctl(spidev_fd[i], SPI_IOC_RD_MAX_SPEED_HZ, & spidev_speed);
+		if (ret == -1)
+			perror("can't get max speed hz");
+	}
+}
+
+void prog_spi_io(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	)
+{
+	struct spi_ioc_transfer tr[3] = { 0 };
+	uint8_t i = 0;
+
+	ASSERT(target < cs_cnt);
+
+	if (spimode != spidev_mode)
+	{
+		int ret = ioctl(spidev_fd[target], SPI_IOC_WR_MODE, & spimode);
+		if (ret == -1)
+			perror("can't set spi mode");
+	}
+
+	if (spispeedindex != spidev_speed)
+	{
+		int ret = ioctl(spidev_fd[target], SPI_IOC_WR_MAX_SPEED_HZ, & spispeedindex);
+		if (ret == -1)
+			perror("can't set max speed hz");
+	}
+
+	if (txsize1)
+	{
+		tr[i].tx_buf = (__u64) txbuff1;
+		tr[i].rx_buf = 0;
+		tr[i].len = txsize1;
+		tr[i].speed_hz = spispeedindex;
+		tr[i].bits_per_word = 8;
+		tr[i].delay_usecs = 10;
+		i ++;
+	}
+
+	if (txsize2)
+	{
+		tr[i].tx_buf = (__u64) txbuff2;
+		tr[i].rx_buf = 0;
+		tr[i].len = txsize2;
+		tr[i].speed_hz = spispeedindex;
+		tr[i].bits_per_word = 8;
+		tr[i].delay_usecs = 10;
+		i ++;
+	}
+
+	if (rxsize)
+	{
+		tr[i].tx_buf = 0;
+		tr[i].rx_buf = (__u64) rxbuff;
+		tr[i].len = rxsize;
+		tr[i].speed_hz = spispeedindex;
+		tr[i].bits_per_word = 8;
+		tr[i].delay_usecs = 10;
+		i ++;
+	}
+
+	int ret = ioctl(spidev_fd[target], SPI_IOC_MESSAGE(i), tr);
+	if (ret < 1)
+		perror("can't send spi message");
+}
+
+void prog_spi_exchange(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	)
+{
+	ASSERT(target < cs_cnt);
+
+	if (spimode != spidev_mode)
+	{
+		int ret = ioctl(spidev_fd[target], SPI_IOC_WR_MODE, & spimode);
+		if (ret == -1)
+			perror("can't set spi mode");
+	}
+
+	if (spispeedindex != spidev_speed)
+	{
+		int ret = ioctl(spidev_fd[target], SPI_IOC_WR_MAX_SPEED_HZ, & spispeedindex);
+		if (ret == -1)
+			perror("can't set max speed hz");
+	}
+
+	/* full-duplex transfer */
+	struct spi_ioc_transfer tr = {
+		.tx_buf = (__u64) txbuff,
+		.rx_buf = (__u64) rxbuff,
+		.len = size,
+	};
+
+	ASSERT(target < cs_cnt);
+
+	int ret = ioctl(spidev_fd[target], SPI_IOC_MESSAGE(1), & tr);
+	if (ret < 1)
+		perror("can't send spi message");
+}
+
+#endif /* WITHSPIDEV */
 
 /*************************************************************/
 
@@ -1206,6 +1361,10 @@ void linux_subsystem_init(void)
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
+
+#if WITHSPIDEV
+	spidev_init();
+#endif /* WITHSPIDEV */
 }
 
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
