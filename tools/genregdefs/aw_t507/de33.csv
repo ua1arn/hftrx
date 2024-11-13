@@ -201,9 +201,6 @@
 #base; DE_VSU1 0x01104000; VI1 Scaler
 #base; DE_VSU2 0x01124000; VI2 Scaler
 #base; DE_VSU3 0x01144000; VI3 Scaler
-#base; DE_VSU4 0x011C4000; UI1 Scaler
-#base; DE_VSU5 0x011E4000; UI2 Scaler
-#base; DE_VSU6 0x01204000; UI3 Scaler
 
 #regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
 #regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
@@ -238,6 +235,27 @@
 #regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
 #regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
 #typeend;
+
+#type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+
+#base; DE_VSU1 0x011C4000; UI1 Scaler
+#base; DE_VSU2 0x011E4000; UI2 Scaler
+#base; DE_VSU3 0x01204000; UI3 Scaler
+
+#regdef; UIS_CTRL_REG; 0x000; Control register
+#regdef; UIS_STATUS_REG; 0x008; Status register
+#regdef; UIS_FIELD_CTRL_REG; 0x00C; Field control register
+#regdef; UIS_BIST_REG; 0x010; BIST control register
+#regdef; UIS_OUTSIZE_REG; 0x040; Output size register
+#regdef; UIS_INSIZE_REG; 0x080; Input size register
+#regdef; UIS_HSTEP_REG; 0x088; Horizontal step register
+#regdef; UIS_VSTEP_REG; 0x08C; Vertical step register
+#regdef; UIS_HPHASE_REG; 0x090; Horizontal initial phase register
+#regdef; UIS_VPHASE0_REG; 0x098; Vertical initial phase 0 register
+#regdef; UIS_VPHASE1_REG; 0x09C; Vertical initial phase 1 register
+#regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)#typeend;
+#typeend;
+
 
 # define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)

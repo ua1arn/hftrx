@@ -168,19 +168,19 @@ typedef enum IRQn
 #define DE_DNS3_BASE ((uintptr_t) 0x01151400)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_FCC3_BASE ((uintptr_t) 0x01151400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_VSU4_BASE ((uintptr_t) 0x011C4000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_VSU1_BASE ((uintptr_t) 0x011C4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define DE_FCE4_BASE ((uintptr_t) 0x011D0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS4_BASE ((uintptr_t) 0x011D1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
 #define DE_FCC4_BASE ((uintptr_t) 0x011D1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS4_BASE ((uintptr_t) 0x011D4000)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_VSU5_BASE ((uintptr_t) 0x011E4000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_VSU2_BASE ((uintptr_t) 0x011E4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define DE_FCE5_BASE ((uintptr_t) 0x011F0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS5_BASE ((uintptr_t) 0x011F1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
 #define DE_FCC5_BASE ((uintptr_t) 0x011F1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS5_BASE ((uintptr_t) 0x011F4000)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_VSU6_BASE ((uintptr_t) 0x01204000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_VSU3_BASE ((uintptr_t) 0x01204000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define DE_FCE6_BASE ((uintptr_t) 0x01210000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS6_BASE ((uintptr_t) 0x01211000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
 #define DE_FCC6_BASE ((uintptr_t) 0x01211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
@@ -919,6 +919,31 @@ typedef __PACKED_STRUCT DE_UI_Type
     __IO uint32_t OVL_SIZE;                           /*!< Offset 0x088  */
          uint32_t reserved_0x08C [0x01DD];
 } DE_UI_TypeDef; /* size of structure = 0x800 */
+/*
+ * @brief DE_UIS
+ */
+/*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function */
+typedef __PACKED_STRUCT DE_UIS_Type
+{
+    __IO uint32_t UIS_CTRL_REG;                       /*!< Offset 0x000 Control register */
+         uint32_t reserved_0x004;
+    __IO uint32_t UIS_STATUS_REG;                     /*!< Offset 0x008 Status register */
+    __IO uint32_t UIS_FIELD_CTRL_REG;                 /*!< Offset 0x00C Field control register */
+    __IO uint32_t UIS_BIST_REG;                       /*!< Offset 0x010 BIST control register */
+         uint32_t reserved_0x014 [0x000B];
+    __IO uint32_t UIS_OUTSIZE_REG;                    /*!< Offset 0x040 Output size register */
+         uint32_t reserved_0x044 [0x000F];
+    __IO uint32_t UIS_INSIZE_REG;                     /*!< Offset 0x080 Input size register */
+         uint32_t reserved_0x084;
+    __IO uint32_t UIS_HSTEP_REG;                      /*!< Offset 0x088 Horizontal step register */
+    __IO uint32_t UIS_VSTEP_REG;                      /*!< Offset 0x08C Vertical step register */
+    __IO uint32_t UIS_HPHASE_REG;                     /*!< Offset 0x090 Horizontal initial phase register */
+         uint32_t reserved_0x094;
+    __IO uint32_t UIS_VPHASE0_REG;                    /*!< Offset 0x098 Vertical initial phase 0 register */
+    __IO uint32_t UIS_VPHASE1_REG;                    /*!< Offset 0x09C Vertical initial phase 1 register */
+         uint32_t reserved_0x0A0 [0x0058];
+    __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15)#typeend */
+} DE_UIS_TypeDef; /* size of structure = 0x240 */
 /*
  * @brief DE_VI
  */
@@ -3468,19 +3493,19 @@ typedef __PACKED_STRUCT VE_Type
 #define DE_DNS3 ((DE_DNS_TypeDef *) DE_DNS3_BASE)     /*!< DE_DNS3 Denoise (DNS) register set access pointer */
 #define DE_FCC3 ((DE_FCC_TypeDef *) DE_FCC3_BASE)     /*!< DE_FCC3 Fancy color curvature (FCC) register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
-#define DE_VSU4 ((DE_VSU_TypeDef *) DE_VSU4_BASE)     /*!< DE_VSU4 Video Scaler Unit (VSU) register set access pointer */
+#define DE_VSU1 ((DE_UIS_TypeDef *) DE_VSU1_BASE)     /*!< DE_VSU1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define DE_FCE4 ((DE_FCE_TypeDef *) DE_FCE4_BASE)     /*!< DE_FCE4 Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS4 ((DE_BLS_TypeDef *) DE_BLS4_BASE)     /*!< DE_BLS4 Blue Level Stretch (BLS) register set access pointer */
 #define DE_FCC4 ((DE_FCC_TypeDef *) DE_FCC4_BASE)     /*!< DE_FCC4 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS4 ((DE_DNS_TypeDef *) DE_DNS4_BASE)     /*!< DE_DNS4 Denoise (DNS) register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
-#define DE_VSU5 ((DE_VSU_TypeDef *) DE_VSU5_BASE)     /*!< DE_VSU5 Video Scaler Unit (VSU) register set access pointer */
+#define DE_VSU2 ((DE_UIS_TypeDef *) DE_VSU2_BASE)     /*!< DE_VSU2 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define DE_FCE5 ((DE_FCE_TypeDef *) DE_FCE5_BASE)     /*!< DE_FCE5 Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS5 ((DE_BLS_TypeDef *) DE_BLS5_BASE)     /*!< DE_BLS5 Blue Level Stretch (BLS) register set access pointer */
 #define DE_FCC5 ((DE_FCC_TypeDef *) DE_FCC5_BASE)     /*!< DE_FCC5 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS5 ((DE_DNS_TypeDef *) DE_DNS5_BASE)     /*!< DE_DNS5 Denoise (DNS) register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
-#define DE_VSU6 ((DE_VSU_TypeDef *) DE_VSU6_BASE)     /*!< DE_VSU6 Video Scaler Unit (VSU) register set access pointer */
+#define DE_VSU3 ((DE_UIS_TypeDef *) DE_VSU3_BASE)     /*!< DE_VSU3 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define DE_FCE6 ((DE_FCE_TypeDef *) DE_FCE6_BASE)     /*!< DE_FCE6 Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS6 ((DE_BLS_TypeDef *) DE_BLS6_BASE)     /*!< DE_BLS6 Blue Level Stretch (BLS) register set access pointer */
 #define DE_FCC6 ((DE_FCC_TypeDef *) DE_FCC6_BASE)     /*!< DE_FCC6 Fancy color curvature (FCC) register set access pointer */
