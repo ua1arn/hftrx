@@ -2503,6 +2503,35 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 }
 
 
+static DE_UIS_TypeDef * de3_getuis(int rtmixid, int uich)
+{
+	ASSERT(uich == 1);
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_UIS1;	// UI1
+	case 2: return DE_UIS2;	// UI2
+	}
+#elif CPUSTYLE_H3 || CPUSTYLE_A64
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_MIXER0_UIS1;	// UI1
+	case 2: return DE_MIXER1_UIS1;	// UI1
+	}
+#elif CPUSTYLE_T113 || CPUSTYLE_F113
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_MIXER0_UIS1;	// UI1 - need clarification
+	case 2: return DE_MIXER1_UIS1;	// UI1 - need clarification
+	}
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
+	return NULL;
+}
+
+
 //static void write32(uintptr_t a, uint32_t v)
 //{
 //	* (volatile uint32_t *) a = v;

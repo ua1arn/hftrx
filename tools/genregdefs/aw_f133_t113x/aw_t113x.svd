@@ -4876,6 +4876,138 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DE_MIXER0_UIS1</name>
+  <description>UI Scaler(UIS) provides RGB format image resizing function</description>
+  <baseAddress>0x05140000</baseAddress>
+  <registers>
+   <register>
+    <name>UIS_CTRL_REG</name>
+    <displayName>UIS_CTRL_REG</displayName>
+    <description>Control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_STATUS_REG</name>
+    <displayName>UIS_STATUS_REG</displayName>
+    <description>Status register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_FIELD_CTRL_REG</name>
+    <displayName>UIS_FIELD_CTRL_REG</displayName>
+    <description>Field control register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_BIST_REG</name>
+    <displayName>UIS_BIST_REG</displayName>
+    <description>BIST control register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_OUTSIZE_REG</name>
+    <displayName>UIS_OUTSIZE_REG</displayName>
+    <description>Output size register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_INSIZE_REG</name>
+    <displayName>UIS_INSIZE_REG</displayName>
+    <description>Input size register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_HSTEP_REG</name>
+    <displayName>UIS_HSTEP_REG</displayName>
+    <description>Horizontal step register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_VSTEP_REG</name>
+    <displayName>UIS_VSTEP_REG</displayName>
+    <description>Vertical step register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_HPHASE_REG</name>
+    <displayName>UIS_HPHASE_REG</displayName>
+    <description>Horizontal initial phase register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_VPHASE0_REG</name>
+    <displayName>UIS_VPHASE0_REG</displayName>
+    <description>Vertical initial phase 0 register</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_VPHASE1_REG</name>
+    <displayName>UIS_VPHASE1_REG</displayName>
+    <description>Vertical initial phase 1 register</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>UIS_HCOEF_REGN</name>
+     <displayName>UIS_HCOEF_REGN</displayName>
+     <description>Horizontal filter coefficient register N (N=0:15)#typeend</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_UIS1">
+  <name>DE_MIXER0_UIS2</name>
+  <baseAddress>0x05150000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_UIS1">
+  <name>DE_MIXER0_UIS3</name>
+  <baseAddress>0x05160000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_UIS1">
+  <name>DE_MIXER1_UIS1</name>
+  <baseAddress>0x05240000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>DE_MIXER0_VEP0</name>
   <description>Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks</description>
   <baseAddress>0x05120000</baseAddress>
