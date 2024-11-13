@@ -202,7 +202,7 @@
 #base; DE_VSU2 0x01124000; VI2 Scaler
 #base; DE_VSU3 0x01144000; VI3 Scaler
 #base; DE_VSU4 0x011C4000; UI1 Scaler
-#base; DE_VSU5 0x011E1000; UI2 Scaler
+#base; DE_VSU5 0x011E4000; UI2 Scaler
 #base; DE_VSU6 0x01204000; UI3 Scaler
 
 #regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register

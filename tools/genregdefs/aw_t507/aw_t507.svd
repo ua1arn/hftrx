@@ -4200,7 +4200,7 @@
   </peripheral>
   <peripheral derivedFrom="DE_VSU1">
   <name>DE_VSU5</name>
-  <baseAddress>0x011E1000</baseAddress>
+  <baseAddress>0x011E4000</baseAddress>
   </peripheral>
   <peripheral derivedFrom="DE_VSU1">
   <name>DE_VSU6</name>

@@ -174,7 +174,7 @@ typedef enum IRQn
 #define DE_FCC4_BASE ((uintptr_t) 0x011D1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS4_BASE ((uintptr_t) 0x011D4000)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_VSU5_BASE ((uintptr_t) 0x011E1000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_VSU5_BASE ((uintptr_t) 0x011E4000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE5_BASE ((uintptr_t) 0x011F0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS5_BASE ((uintptr_t) 0x011F1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
 #define DE_FCC5_BASE ((uintptr_t) 0x011F1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
