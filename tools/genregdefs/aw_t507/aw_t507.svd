@@ -3678,7 +3678,7 @@
   <baseAddress>0x01201000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_VSU1</name>
+  <name>DE_UIS1</name>
   <description>UI Scaler(UIS) provides RGB format image resizing function</description>
   <baseAddress>0x011C4000</baseAddress>
   <registers>
@@ -3797,12 +3797,12 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_VSU1">
-  <name>DE_VSU2</name>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS2</name>
   <baseAddress>0x011E4000</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="DE_VSU1">
-  <name>DE_VSU3</name>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS3</name>
   <baseAddress>0x01204000</baseAddress>
   </peripheral>
   <peripheral>

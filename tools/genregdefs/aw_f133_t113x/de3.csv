@@ -144,10 +144,12 @@
 #regdef;  CFG; 0x000; 
 #regdef; padding 0; 0x8000; Need for address arithmetics
 #aggregend;
+
 #typeend;
 
 
 #type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+
 ##base; DE_MIXER0_UIS1 0x01140000; DE_MIXER0_UI1 Scaler TBD
 ##base; DE_MIXER0_UIS2 0x01150000; DE_MIXER0_UI2 Scaler TBD
 ##base; DE_MIXER0_UIS3 0x01160000; DE_MIXER0_UI3 Scaler TBD
@@ -165,6 +167,7 @@
 #regdef; UIS_VPHASE0_REG; 0x098; Vertical initial phase 0 register
 #regdef; UIS_VPHASE1_REG; 0x09C; Vertical initial phase 1 register
 #regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)#typeend;
+
 #typeend;
 
 #type; DE_VSU; Video Scaler Unit (VSU), VS
