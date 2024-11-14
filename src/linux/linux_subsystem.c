@@ -618,10 +618,14 @@ uint8_t spidev_bits = 0;
 uint32_t spidev_speed = SPIC_SPEED25M;
 static int * spidev_fd;
 
+static pthread_mutex_t mutex_spidev;
+
 void spidev_init(void)
 {
 	spidev_fd = (int *) malloc(cs_cnt * sizeof(int));
 	ASSERT(spidev_fd);
+
+	pthread_mutex_init(& mutex_spidev, NULL);
 
 	for (int i = 0; i < cs_cnt; i ++)
 	{
@@ -669,6 +673,8 @@ void prog_spi_io(
 {
 	struct spi_ioc_transfer tr[3] = { 0 };
 	uint8_t i = 0;
+
+	pthread_mutex_lock(& mutex_spidev);
 
 	ASSERT(target < cs_cnt);
 
@@ -722,6 +728,8 @@ void prog_spi_io(
 	int ret = ioctl(spidev_fd[target], SPI_IOC_MESSAGE(i), tr);
 	if (ret < 1)
 		perror("can't send spi message");
+
+	pthread_mutex_unlock(& mutex_spidev);
 }
 
 void prog_spi_exchange(
@@ -732,6 +740,8 @@ void prog_spi_exchange(
 	)
 {
 	ASSERT(target < cs_cnt);
+
+	pthread_mutex_lock(& mutex_spidev);
 
 	if (spimode != spidev_mode)
 	{
@@ -759,6 +769,8 @@ void prog_spi_exchange(
 	int ret = ioctl(spidev_fd[target], SPI_IOC_MESSAGE(1), & tr);
 	if (ret < 1)
 		perror("can't send spi message");
+
+	pthread_mutex_unlock(& mutex_spidev);
 }
 
 #endif /* WITHSPIDEV */
