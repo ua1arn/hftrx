@@ -79,15 +79,15 @@
 		{	0,	0,	0, 0, display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	0,	0,	0, 0, display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
-		{	0,	0, 	7, 0, display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
-		//{	0,	0, 	5, 0, display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
-		{	10,	0,	4, 0, display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
-		{	15,	0,	2, 0, display_txrxstate2, REDRM_MODE, PGALL, },
-		{	18, 0,	3, 0, display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	22, 0,	3, 0, display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		{	26,	0,	5, 0, display2_ant5,		REDRM_MODE, PGALL, },
-		{	32,	0,	4, 0, display2_att4,		REDRM_MODE, PGALL, },
-		{	37,	0,	3, 0, display2_preovf3,	REDRM_BARS, PGALL, },
+		{	0,	0, 	7, 5, display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
+		//{	0,	0, 	5, 5, display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
+		{	10,	0,	4, 5, display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
+		{	15,	0,	2, 5, display_txrxstate2, REDRM_MODE, PGALL, },
+		{	18, 0,	3, 5, display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	22, 0,	3, 5, display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	26,	0,	5, 5, display2_ant5,		REDRM_MODE, PGALL, },
+		{	32,	0,	4, 5, display2_att4,		REDRM_MODE, PGALL, },
+		{	37,	0,	3, 5, display2_preovf3,	REDRM_BARS, PGALL, },
 	#if WITHBARS
 		{   0, 	4,  0, 0, display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	15, 0, display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
@@ -101,39 +101,39 @@
 		{	15,	6,	0, 0, display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	6,	0, 0, display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
-		{	41, 0,	9, 0, display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	41,	4,	9, 0, display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	41, 0,	9, 5, display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+		{	41,	4,	9, 5, display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
 
-		{	37, 10,	3, 0, display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 10,	3, 0, display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	46, 10,	3, 0, display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+		{	37, 10,	3, 5, display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	41, 10,	3, 5, display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	46, 10,	3, 5, display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 
-		{	37, 15,	3, 0, display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
-		{	41, 15,	3, 0, display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	45, 15,	5, 0, display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	37, 15,	3, 5, display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	41, 15,	3, 5, display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	45, 15,	5, 5, display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
 
 		{	15, 20,	3, 0, display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-		{	20,	20,	3, 0, display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-		{	24,	20,	0, 0, display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	37, 20,	0, 0, display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 20,	3, 0, display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-		{	45,	20,	4, 0, display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
+		{	20,	20,	3, 5, display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL
+		{	24,	20,	0, 5, display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	37, 20,	0, 5, display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	41, 20,	3, 5, display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	45,	20,	4, 5, display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
-		{	1, 	25,	5, 0, display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
-		{	7, 	25,	6, 0, display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
+		{	1, 	25,	5, 5, display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	7, 	25,	6, 5, display2_currlevelA6, REDRM_VOLT, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25,
 		//{	19, 25,
 		//{	23, 25,
 		//{	27, 25,
-		{	33, 25,	3, 0, display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	37, 25,	3, 0, display2_spk3,		REDRM_MODE, PGALL, },	// отображение признака включения динамика
-		{	41, 25, 0, 0, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
-		{	45,	25,	5, 0, display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
+		{	33, 25,	3, 5, display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	37, 25,	3, 5, display2_spk3,		REDRM_MODE, PGALL, },	// отображение признака включения динамика
+		{	41, 25, 0, 5, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
+		{	45,	25,	5, 5, display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
 
-		//{	24, 30,	10, 0, display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
-		{	37, 30,	8, 0, display2_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
+		//{	24, 30,	10, 5, display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
+		{	37, 30,	8, 5, display2_freqdelta8, REDRM_BARS, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	0, 0, display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
@@ -143,12 +143,12 @@
 //		{	0,	DLES,	50, 0, display2_gcombo,	REDRM_BARS, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 	#endif /* WITHSPECTRUMWF */
 
-		{	0,	DLE1,	12, 0, display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	9, 0, display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	4, 0, display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		{	28, DLE1,	3, 0, display2_usbsts3,		REDRM_BARS, PG0, },	// USB host status
-		{	32, DLE1,	7, 0, display2_classa7,		REDRM_BARS, PGALL, },	// Class-A power amplifier
-		//{	28, DLE1,	10, 0, display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
+		{	0,	DLE1,	12, 5, display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	13,	DLE1,	9, 5, display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	23, DLE1,	4, 5, display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	28, DLE1,	3, 5, display2_usbsts3,		REDRM_BARS, PG0, },	// USB host status
+		{	32, DLE1,	7, 5, display2_classa7,		REDRM_BARS, PGALL, },	// Class-A power amplifier
+		//{	28, DLE1,	10, 5, display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	0,				0,		0, 0, display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
@@ -156,13 +156,13 @@
 		{	LABELW + 5,		DLES,	0, 0, display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 6,	DLES,	0, 0, display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#if WITHAUTOTUNER
-		{	28, 			DLE1,	0, 0, display2_swrsts22,	REDRM_BARS, REDRSUBSET_MENU, },	// SWR METER display
+		{	28, 			DLE1,	22, 5, display2_swrsts22,	REDRM_BARS, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
 
 		// sleep mode display
-		{	5,	25,	12, 0, display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5, 0, display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	5,	25,	12, 5, display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	20, 25,	5, 5, display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 	#if WITHMENU
 		{	15, 25,	0, 0, display2_popup,		REDRM_MODE, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
 	#endif /* WITHMENU */
@@ -170,7 +170,7 @@
 	#if 0
 		{	0,	0,	0, 0, display2_vtty_init,	REDRM_INIS,	PGINI, },	// Подготовка видеобуфера окна протокола
 		{	0,	0, 0, 0, display2_vtty,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
-		{	0,	(DIM_Y - GRID2Y(5)) / 5, 0, 0, display2_freqsof9,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
+		{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
 		/* общий для всех режимов элемент */

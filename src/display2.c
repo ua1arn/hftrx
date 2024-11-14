@@ -5936,6 +5936,8 @@ static uint_fast8_t keyi;					// запрос на отображение, вы�
 
 #endif /* STMD */
 
+enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
+
 static uint_fast16_t
 getsubset(
 	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
@@ -5963,7 +5965,6 @@ display_walktrough(
 		return;
 #endif /* LINUX_SUBSYSTEM */
 
-	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	uint_fast8_t i;
 
 	for (i = 0; i < WALKCOUNT; ++ i)
@@ -6040,7 +6041,6 @@ void display2_bgprocess(void)
 #endif /* WITHLVGL */
 
 #if LINUX_SUBSYSTEM
-	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	uint8_t dpage = REDRSUBSET(amenuset());
 
 	for (int i = 0; i < WALKCOUNT; i ++)
@@ -6051,7 +6051,6 @@ void display2_bgprocess(void)
 	}
 
 #elif STMD
-	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	const uint_fast8_t keyi0 = keyi;
 
 	for (;;)
