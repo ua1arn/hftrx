@@ -58,6 +58,7 @@ struct dzone
 		REDRM_KEYB = REDRM_ALL,
 		REDRM_MODE = REDRM_ALL,
 		REDRM_INIS,
+		//
 		REDRM_count
 	};
 #else
@@ -75,6 +76,7 @@ struct dzone
 		REDRM_BUTTONS,  // область отображения экранных кнопок
 		REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
 		REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
+		//
 		REDRM_count
 	};
 #endif /* LINUX_SUBSYSTEM */
@@ -5904,27 +5906,18 @@ uint_fast8_t display2_getswrmax(void)
 }
 #endif /* WITHSHOWSWRPWR */
 
-#define STMD 1
-
-#if STMD
 
 static uint_fast8_t
 validforredraw(
 	const FLASHMEM struct dzone * const p,
-	uint_fast8_t key,
 	uint_fast16_t subset
 	)
 {
-#if LCDMODE_MAIN_PAGES > 1
 	/* про off-screen composition отрисовываем все элементы вне
 	 * зависимости от группы обновления, но для подходящей страницы.
 	 */
-	if (/*(p->key != key) || */(p->subset & subset) == 0)
+	if ((p->subset & subset) == 0)
 		return 0;
-#else /* LCDMODE_MAIN_PAGES > 1 */
-	if ((p->key != key) || (p->subset & subset) == 0)
-		return 0;
-#endif /* LCDMODE_MAIN_PAGES > 1 */
 	return 1;
 }
 
@@ -5933,8 +5926,6 @@ static uint8_t reqs [REDRM_count];		// запросы на отображени�
 static uint16_t subsets [REDRM_count];	// параметр прохода по списку отображения.
 static uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
 static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
-
-#endif /* STMD */
 
 enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 
@@ -5951,7 +5942,6 @@ getsubset(
 // Например при работе в меню
 static void 
 display_walktrough(
-	uint_fast8_t key,
 	uint_fast16_t subset,
 	dctx_t * pctx
 	)
@@ -5961,7 +5951,7 @@ display_walktrough(
 #endif /* WITHLVGL */
 
 #if LINUX_SUBSYSTEM
-	if (key != REDRM_INIS)
+	if ((subset & REDRSUBSET_INIT) == 0)
 		return;
 #endif /* LINUX_SUBSYSTEM */
 
@@ -5971,7 +5961,7 @@ display_walktrough(
 	{
 		const FLASHMEM struct dzone * const p = & dzones [i];
 
-		if (validforredraw(p, key, subset) == 0)
+		if (validforredraw(p, subset) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, pctx);
 	}
@@ -5988,10 +5978,8 @@ display_walktroughsteps(
 #if LINUX_SUBSYSTEM || WITHLVGL
 		return;
 
-#elif STMD
+#else
 	ASSERT(key < REDRM_count);
-
-	#if LCDMODE_MAIN_PAGES > 1
 
 		key = 0;
 		if (reqs [key] != 0)
@@ -6013,23 +6001,7 @@ display_walktroughsteps(
 			walkis [key] = 0;
 		}
 
-	#else /* LCDMODE_MAIN_PAGES > 1 */
-
-		reqs [key] = 1;
-		subsets [key] = subset;
-		walkis [key] = 0;
-
-	#endif /* LCDMODE_MAIN_PAGES > 1 */
-
-#else /* STMD */
-
-	#if LCDMODE_MAIN_PAGES > 1
-		key = 0;
-	#endif /* LCDMODE_MAIN_PAGES > 1 */
-
-	display_walktrough(key, subset, display2_getcontext());	// выполнение отрисовки всех элементов за раз.
-
-#endif /* STMD */
+#endif
 }
 
 // Interface functions
@@ -6050,7 +6022,7 @@ void display2_bgprocess(void)
 			(* p->redraw)(p->x, p->y, display2_getcontext());
 	}
 
-#elif STMD
+#else
 	const uint_fast8_t keyi0 = keyi;
 
 	for (;;)
@@ -6069,7 +6041,7 @@ void display2_bgprocess(void)
 	{
 		const FLASHMEM struct dzone * const p = & dzones [walkis [keyi]];
 
-		if (validforredraw(p, keyi, subsets [keyi]) == 0)
+		if (validforredraw(p, subsets [keyi]) == 0)
 			continue;
 		(* p->redraw)(p->x, p->y, display2_getcontext());
 		walkis [keyi] += 1;
@@ -6083,7 +6055,7 @@ void display2_bgprocess(void)
 		ASSERT(keyi < REDRM_count);
 	}
 
-#endif /* STMD */
+#endif
 }
 
 // Interface functions
@@ -6098,7 +6070,6 @@ void display2_bgreset(void)
 
 	display_clear();		// Заполниить цветом фона
 
-#if STMD
 	// сброс state machine отображения дисплея
 	for (i = 0; i < REDRM_count; ++ i)
 	{
@@ -6106,13 +6077,13 @@ void display2_bgreset(void)
 		//walkis [keyi] = 0;
 	}
 	keyi = 0;
-#endif /* STMD */
+
 }
 
 void display2_initialize(void)
 {
 	// параметр key игнорируеся обычно, но для случая старых дисплеев выделен особенный
-	display_walktrough(REDRM_INIS, REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
 }
 
 // Interface functions
@@ -6121,7 +6092,7 @@ void display2_mode_subset(
 	)
 {
 	//TP();
-	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));
+	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
 }
 
 // Обработка клавиатуры и валкодеров
@@ -6130,7 +6101,7 @@ void display2_mode_keyboard(
 	)
 {
 	//TP();
-	display_walktroughsteps(REDRM_KEYB, getsubset(menuset, 0));
+	display_walktroughsteps(REDRM_KEYB, getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
 }
 
 void display2_barmeters_subset(
@@ -6138,14 +6109,10 @@ void display2_barmeters_subset(
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	)
 {
-#if LCDMODE_MAIN_PAGES > 1
 	if (extra)
 		return;
 	//TP();
-	display_walktroughsteps(0, getsubset(menuset, extra));
-#else /* LCDMODE_MAIN_PAGES > 1 */
-	display_walktroughsteps(REDRM_BARS, getsubset(menuset, extra));
-#endif /* LCDMODE_MAIN_PAGES > 1 */
+	display_walktroughsteps(0, getsubset(menuset, extra));	// заказ на выполнение отрисовки всех элементов через state machine.
 }
 
 void display2_volts(
@@ -6153,29 +6120,17 @@ void display2_volts(
 	uint_fast8_t extra		/* находимся в режиме отображения настроек */
 	)
 {
-#if LCDMODE_MAIN_PAGES > 1
 	if (extra)
 		return;
 	//TP();
-	display_walktroughsteps(0, getsubset(menuset, extra));
-#else /* LCDMODE_MAIN_PAGES > 1 */
-	display_walktroughsteps(REDRM_VOLT, getsubset(menuset, extra));
-#endif /* LCDMODE_MAIN_PAGES > 1 */
+	display_walktroughsteps(0, getsubset(menuset, extra));	// заказ на выполнение отрисовки всех элементов через state machine.
 }
 
 void display2_dispfreq_ab(
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
-	//TP();
-#if LCDMODE_MAIN_PAGES > 1
-	display_walktroughsteps(0, getsubset(menuset, 0));
-
-#else /* LCDMODE_MAIN_PAGES > 1 */
-	display_walktroughsteps(REDRM_FREQ, getsubset(menuset, 0));
-	display_walktroughsteps(REDRM_FRQB, getsubset(menuset, 0));
-
-#endif /* LCDMODE_MAIN_PAGES > 1 */
+	display_walktroughsteps(0, getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
 }
 
 void display2_dispfreq_a2(
@@ -6198,11 +6153,11 @@ void display2_dispfreq_a2(
 	ctx.type = DCTX_FREQ;
 	ctx.pv = & ef;
 
-	display_walktrough(REDRM_FREQ,  getsubset(menuset, 0), & ctx);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(getsubset(menuset, 0), & ctx);// выполнение отрисовки всех элементов за раз.
 
 #else	/* WITHDIRECTFREQENER */
 
-	display_walktroughsteps(REDRM_FREQ,  getsubset(menuset, 0));
+	display_walktroughsteps(REDRM_FREQ,  getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
 
 #endif /* WITHDIRECTFREQENER */
 }
@@ -6226,23 +6181,8 @@ void display2_menu(
 	dctx.type = DCTX_MENU;
 	dctx.pv = mp;
 
-#if LCDMODE_MAIN_PAGES > 1
 
-	display_walktrough(0, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
-
-#else /* LCDMODE_MAIN_PAGES > 1 */
-
-	display_walktrough(REDRM_FREQ, REDRSUBSET_MENU, NULL);// выполнение отрисовки всех элементов за раз.
-	display_walktrough(REDRM_FRQB, REDRSUBSET_MENU, NULL);// выполнение отрисовки всех элементов за раз.
-	display_walktrough(REDRM_MODE, REDRSUBSET_MENU, NULL);// выполнение отрисовки всех элементов за раз.
-	if (byname == 0)
-	{
-		display_walktrough(REDRM_MFXX, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
-	}
-	display_walktrough(REDRM_MLBL, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
-	display_walktrough(REDRM_MVAL, REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
-
-#endif /* LCDMODE_MAIN_PAGES > 1 */
+	display_walktrough(REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
 }
 
 // последний номер варианта отображения (menuset)
