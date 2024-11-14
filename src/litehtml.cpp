@@ -62,12 +62,15 @@ public:
 //	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
 	int m_dx;
 	int m_dy;
-	hftrxgd(int dx, int dy) : m_dx(dx), m_dy(dy) { }
+	hftrxgd(int dx, int dy) :
+			m_dx(dx), m_dy(dy)
+	{
+	}
 	virtual ~hftrxgd() = default;
 
 };
 
-static COLORPIP_T getCOLPIP(const litehtml::web_color& color)
+static COLORPIP_T getCOLPIP(const litehtml::web_color &color)
 {
 	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
 }
@@ -78,8 +81,8 @@ litehtml::uint_ptr hftrxgd::create_font(const char *faceName, int size, int weig
 	if (fm)
 	{
 		fm->font_size = size;
-		fm->ascent = 0;//PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
-		fm->descent = 0;//PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
+		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
+		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
 		fm->height = SMALLCHARH; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
 		fm->x_height = fm->height;
 	}
@@ -99,7 +102,7 @@ int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
 	//PRINTF("draw_text: text='%s'\n", text);
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
 	//colpip_fillrect(buffer, m_dx, m_dy, pos.left(), pos.top(), pos.width, pos.height, getCOLPIP(color));
 	colpip_string_tbg(buffer, m_dx, m_dy, pos.left(), pos.top(), text, getCOLPIP(color));
@@ -120,9 +123,9 @@ const char* hftrxgd::get_default_font_name() const
 void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker)
 {
 	TP();
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-    colpip_fillrect(buffer, m_dx, m_dy, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLPIP(marker.color));
+	colpip_fillrect(buffer, m_dx, m_dy, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLPIP(marker.color));
 
 //	int top_margin = marker.pos.height / 3;
 //	if (top_margin < 4)
@@ -151,7 +154,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
 	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	const uint_fast16_t m_dx = DIM_X;
 	const uint_fast16_t m_dy = DIM_Y;
 
@@ -161,7 +164,7 @@ void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &la
 void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
 {
 	//TP();
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T color = COLORPIP_RED;
 
 	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
@@ -170,7 +173,7 @@ void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc, const background_laye
 void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
 {
 	//TP();
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T color = COLORPIP_GREEN;
 
 	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
@@ -180,7 +183,7 @@ void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc, const background_laye
 void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient)
 {
 	//TP();
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T color = COLORPIP_BLUE;
 
 	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
@@ -190,7 +193,7 @@ void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer
 void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
 {
 	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T top_color = getCOLPIP(borders.top.color);
 	COLORPIP_T botom_color = getCOLPIP(borders.bottom.color);
 	COLORPIP_T left_color = getCOLPIP(borders.left.color);
@@ -208,7 +211,7 @@ void hftrxgd::set_base_url(const char *base_url)
 }
 void link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
-	PRINTF("link: doc=%pid='%s'\n", (const void *) & doc, (const char *) el->id());
+	PRINTF("link: doc=%pid='%s'\n", (const void*) & doc, (const char*) el->id());
 
 	//TP();
 }
@@ -252,12 +255,10 @@ void hftrxgd::get_client_rect(litehtml::position &client) const
 
 class freqel: public litehtml::el_td
 {
-	virtual void draw(uint_ptr hdc, int x, int y, const position *clip,
-			const std::shared_ptr<render_item> &ri);
-	virtual void draw_background(uint_ptr hdc, int x, int y, const position *clip,
-			const std::shared_ptr<render_item> &ri);
+	virtual void draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
+	virtual void draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
 	virtual void get_text(string &text);
-	virtual void get_content_size(size& sz, int max_width);
+	virtual void get_content_size(size &sz, int max_width);
 
 	virtual bool on_mouse_over() override;
 	virtual bool on_mouse_leave() override;
@@ -267,22 +268,22 @@ class freqel: public litehtml::el_td
 
 	int m_rxid;
 public:
-	freqel(const std::shared_ptr<document>& doc, int rxid) : litehtml::el_td(doc), m_rxid(rxid)
+	freqel(const std::shared_ptr<document> &doc, int rxid) :
+			litehtml::el_td(doc), m_rxid(rxid)
 	{
 		set_data("Hello set data");
 	}
 	virtual ~ freqel() = default;
 };
 
-void freqel::draw(uint_ptr hdc, int x, int y, const position *clip,
-		const std::shared_ptr<render_item> &ri)
+void freqel::draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	const int dx = DIM_X;
 	const int dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_BLUE;
 
-	const position& pos = ri->pos();
+	const position &pos = ri->pos();
 	string text;
 	get_text(text);
 	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d, U=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height, ri->margin_top());
@@ -290,15 +291,14 @@ void freqel::draw(uint_ptr hdc, int x, int y, const position *clip,
 	litehtml::el_td::draw(hdc, x, y, clip, ri);
 }
 
-void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip,
-		const std::shared_ptr<render_item> &ri)
+void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	const int dx = DIM_X;
 	const int dy = DIM_Y;
 	COLORPIP_T color = COLORPIP_BLUE;
 
-	const position& pos = ri->pos();
+	const position &pos = ri->pos();
 	string text;
 	get_text(text);
 	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
@@ -306,7 +306,7 @@ void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip,
 	litehtml::el_td::draw_background(hdc, x, y, clip, ri);
 }
 
-void freqel::get_content_size(size& sz, int max_width)
+void freqel::get_content_size(size &sz, int max_width)
 {
 	TP();
 	sz = size(200, 50);
@@ -343,13 +343,12 @@ void freqel::on_click()
 	TP();
 }
 
-
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
 	try
 	{
 		std::string id = attributes.at("id");
-		std::string classname;// = attributes.at("class");
+		std::string classname = attributes.at("class");
 		PRINTF("create_element: tag_name='%s', id='%s', class='%s'\n", tag_name, id.c_str(), classname.c_str());
 
 		if (id == "FREQ_A")
@@ -363,8 +362,7 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 			return newTag;
 		}
 
-	}
-	catch (const std::out_of_range &)
+	} catch (const std::out_of_range&)
 	{
 		//PRINTF("create_element: tag_name='%s', id not found\n", tag_name);
 	}
@@ -382,7 +380,7 @@ void hftrxgd::get_media_features(litehtml::media_features &media) const
 	media.color = 8;
 	media.monochrome = 0;
 	media.color_index = 256;
-	media.resolution = 96;//GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
+	media.resolution = 96; //GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
 	media.device_width = client.width; //1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
 	media.device_height = client.height; //1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
 }
@@ -400,154 +398,126 @@ void hftrxgd::get_language(litehtml::string &language, litehtml::string &culture
 //	on_word(text);
 //}
 
-void hftrxgd::link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el)
+void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
 	//TP();
 }
 
 }	// namespace
 
-static const char hftrx_css [] = R"##(
-
-
+static const char hftrx_css [] =
+		R"##(
 html {
 	display: block;
 }
-
 head {
 	display: none
 }
-
 meta {
 	display: none
 }
-
 title {
 	display: none
 }
-
 link {
 	display: none
 }
-
 style {
 	display: none
 }
-
 script {
 	display: none
 }
-
 body {
 	display:block; 
 	margin:0px; 
 }
-
 p {
 	display:block; 
 	margin-top:1em; 
 	margin-bottom:1em;
 }
-
 b, strong {
 	display:inline; 
 	font-weight:bold;
 }
-
 i, em, cite {
 	display:inline; 
 	font-style:italic;
 }
-
 ins, u {
 	text-decoration:underline
 }
-
 del, s, strike {
 	text-decoration:line-through
 }
-
 center 
 {
 	text-align:center;
 	display:block;
 }
-
 a:link
 {
 	text-decoration: underline;
 	color: #00f;
 	cursor: pointer;
 }
-
 h1, h2, h3, h4, h5, h6, div {
 	display:block;
 }
-
 h1 {
 	font-weight:bold; 
 	margin-top:0.67em; 
 	margin-bottom:0.67em; 
 	font-size: 2em;
 }
-
 h2 {
 	font-weight:bold; 
 	margin-top:0.83em; 
 	margin-bottom:0.83em; 
 	font-size: 1.5em;
 }
-
 h3 {
 	font-weight:bold; 
 	margin-top:1em; 
 	margin-bottom:1em; 
 	font-size:1.17em;
 }
-
 h4 {
 	font-weight:bold; 
 	margin-top:1.33em; 
 	margin-bottom:1.33em
 }
-
 h5 {
 	font-weight:bold; 
 	margin-top:1.67em; 
 	margin-bottom:1.67em;
 	font-size:.83em;
 }
-
 h6 {
 	font-weight:bold; 
 	margin-top:2.33em; 
 	margin-bottom:2.33em;
 	font-size:.67em;
 } 
-
 br {
 	display:inline-block;
 }
-
 br[clear="all"]
 {
 	clear:both;
 }
-
 br[clear="left"]
 {
 	clear:left;
 }
-
 br[clear="right"]
 {
 	clear:right;
 }
-
 span {
 	display:inline
 }
-
 img {
 	display: inline-block;
 }
@@ -556,20 +526,18 @@ img[align="right"]
 {
 	float: right;
 }
-
 img[align="left"]
 {
 	float: left;
 }
-
 hr {
 	display: block;
-	margin-top: 0.5em;
-	margin-bottom: 0.5em;
-	margin-left: auto;
-	margin-right: auto;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
 	border-style: inset;
-	border-width: 1px
+	border-width: 0px
 }
 
 
@@ -578,7 +546,7 @@ hr {
 table {
 	display: table;
 	border-collapse: separate;
-	border-spacing: 2px;
+	border-spacing: 0px;
 	border-top-color:gray;
 	border-left-color:gray;
 	border-bottom-color:black;
@@ -592,32 +560,26 @@ tbody, tfoot, thead {
 	display:table-row-group;
 	vertical-align:middle;
 }
-
 tr {
 	display: table-row;
 	vertical-align: inherit;
 	border-color: inherit;
 }
-
 td, th {
 	display: table-cell;
 	vertical-align: inherit;
-	border-width:1px;
-	padding:1px;
+	border-width:0px;
+	padding:0px;
 }
-
 th {
 	font-weight: bold;
 }
-
 table[border] {
 	border-style:solid;
 }
-
 table[border^="0"] {
 	border-style:none;
 }
-
 table[border] td, table[border] th {
 	border-style:solid;
 	border-top-color:black;
@@ -625,7 +587,6 @@ table[border] td, table[border] th {
 	border-bottom-color:gray;
 	border-right-color:gray;
 }
-
 table[border^="0"] td, table[border^="0"] th {
 	border-style:none;
 }
@@ -703,7 +664,7 @@ dd {
 
 dl {
 	display: block;
-	margin-top: 1em;
+	margin-top: 0;
 	margin-bottom: 1em;
 	margin-left: 0;
 	margin-right: 0;
@@ -780,51 +741,73 @@ figcaption {
 
 )##";
 
-static const char hftrx_layout_800x480 [] = R"##(
+static const char hftrx_layout_800x480 [] =
+R"##(
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<!-- Created by , GNU Texinfo 7.1 -->
-  <head>
-    <meta charset="utf-8">
-    <title>HF TRX</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="style.min.css">
-
-   <style>
-     td {
-         border-radius:5px;
-         background-color:red;
-      }
-   </style>
-
-  </head> 
-  <body style="background-color:green;">
-
-
-test<br>
-test2<br>
-test3<br>
-
-<table border="1" cellspacing="1" cellpadding="1" height="300">
-   <tr>
-      <td>Cell 1</td>
-      <td>Cell 2</td>
-      <td>Cell 3</td>
-   </tr>
-   <tr>
-      <td>Cell 4</td>
-      <td id="FREQ_A">Cell 5</td>
-      <td>Cell 6</td>
-   </tr>
-   <tr>
-      <td>Cell 7</td>
-      <td>Cell 8</td>
-      <td>Cell 9</td>
-   </tr>
-</table>
-
-  </body>
+	<head>
+		<style>
+			td {
+			}
+		</style>
+		
+	</head> 
+	<body style="background-color:black; color:green;">
+		<!-- 800 x 480 - 50 columns by 16 pixels, 32 rows by 15 pixels  -->
+		<table style="width:100%" border="0px" cellspacing="0px" cellpadding="0px" height="15px">
+			<!-- row 0 -->
+			<tr>
+				<td colspan="2">1</td>
+				<td colspan="12" rowspan="2">2</td>
+				<td>3</td>
+			</tr>
+			<!-- row 1 -->
+			<tr>
+				<td>4</td>
+				<td class="BIGFREQ" id="FREQ_A">5</td>
+				<td>6</td>
+			</tr>
+			<!-- row 2 -->
+			<tr>
+				<td>7</td>
+				<td>8</td>
+				<td>9</td>
+			</tr>
+			<!-- row 3 -->
+			<tr>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+			</tr>
+			<!-- row 4 -->
+			<tr>
+				<td></td>
+			</tr>
+			<!-- row 5 -->
+			<tr>
+				<td></td>
+			</tr>
+			<!-- row 6 -->
+			<tr>
+				<td></td>
+			</tr>
+			<!-- row 7 -->
+			<tr>
+			<td>X</td>
+				<td colspan="3">X</td>
+				<td>X</td>
+				<td>X</td>
+				<td>X</td>
+				<td>X</td>
+				<td>X</td>
+				<td>X</td>
+			</tr>
+		</table>
+		
+	</body>
 </html>
 
 )##";
