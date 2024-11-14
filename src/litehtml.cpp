@@ -748,17 +748,21 @@ R"##(
 	<head>
 		<style>
 			td {
+			width: 16px;
+			}
+			tr {
+			height: 15px;
 			}
 		</style>
 		
 	</head> 
 	<body style="background-color:black; color:green;">
 		<!-- 800 x 480 - 50 columns by 16 pixels, 32 rows by 15 pixels  -->
-		<table style="width:100%" border="0px" cellspacing="0px" cellpadding="0px" height="15px">
+		<table style="width:800px border=0px cellspacing=0px cellpadding=0px">
 			<!-- row 0 -->
 			<tr>
 				<td colspan="2">1</td>
-				<td colspan="12" rowspan="2">2</td>
+				<td colspan="1" rowspan="1">2</td>
 				<td>3</td>
 			</tr>
 			<!-- row 1 -->
@@ -797,7 +801,7 @@ R"##(
 			<!-- row 7 -->
 			<tr>
 			<td>X</td>
-				<td colspan="3">X</td>
+				<td colspan="1">X</td>
 				<td>X</td>
 				<td>X</td>
 				<td>X</td>
