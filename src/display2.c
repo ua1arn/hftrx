@@ -5921,12 +5921,6 @@ validforredraw(
 	return 1;
 }
 
-// Параметры state machine отображения
-static uint8_t reqs [REDRM_count];		// запросы на отображение
-static uint16_t subsets [REDRM_count];	// параметр прохода по списку отображения.
-static uint8_t walkis [REDRM_count];	// индекс в списке параметров отображения в данном проходе
-static uint_fast8_t keyi;					// запрос на отображение, выполняющийся сейчас.
-
 enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 
 static uint_fast16_t
@@ -5967,95 +5961,29 @@ display_walktrough(
 	}
 }
 
+static int redrawreq;
 
-// заказ на выполнение отрисовки всех элементов через state machine.
-static void 
-display_walktroughsteps(
-	uint_fast8_t key,
-	uint_fast16_t subset
-	)
+void display2_needupdae(void)
 {
-#if LINUX_SUBSYSTEM || WITHLVGL
-		return;
-
-#else
-	ASSERT(key < REDRM_count);
-
-		key = 0;
-		if (reqs [key] != 0)
-		{
-			// уже идет отрисовка
-			if ((subsets [key] & subset) == 0)
-			{
-				// начинаем снова - другой subset
-				reqs [key] = 1;
-				subsets [key] = subset;
-				walkis [key] = 0;
-			}
-		}
-		else
-		{
-			// начинаем снова
-			reqs [key] = 1;
-			subsets [key] = subset;
-			walkis [key] = 0;
-		}
-
-#endif
+	redrawreq = 1;
 }
 
 // Interface functions
 // выполнение шагов state machine отображения дисплея
-void display2_bgprocess(void)
+void display2_bgprocess(
+		uint_fast8_t inmenu,
+		uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+		dctx_t * pctx
+		)
 {
 #if WITHLVGL
 	return;
 #endif /* WITHLVGL */
 
-#if LINUX_SUBSYSTEM
-	uint8_t dpage = REDRSUBSET(amenuset());
-
-	for (int i = 0; i < WALKCOUNT; i ++)
-	{
-		const struct dzone * const p = & dzones [i];
-		if (p->subset >= dpage && p->key == REDRM_ALL)
-			(* p->redraw)(p->x, p->y, display2_getcontext());
-	}
-
-#else
-	const uint_fast8_t keyi0 = keyi;
-
-	for (;;)
-	{
-		ASSERT(keyi < REDRM_count);
-		if (reqs [keyi] != 0)
-			break;
-		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
-		if (keyi == keyi0)
-			return;			// не нашли ни одного запроса
-	}
-
-	ASSERT(keyi < REDRM_count);
-	//return;
-	for (; walkis [keyi] < WALKCOUNT; ++ walkis [keyi])
-	{
-		const FLASHMEM struct dzone * const p = & dzones [walkis [keyi]];
-
-		if (validforredraw(p, subsets [keyi]) == 0)
-			continue;
-		(* p->redraw)(p->x, p->y, display2_getcontext());
-		walkis [keyi] += 1;
-		break;
-	}
-	ASSERT(keyi < REDRM_count);
-	if (walkis [keyi] >= WALKCOUNT)
-	{
-		reqs [keyi] = 0;	// снять запрос на отображение данного типа элементов
-		keyi = (keyi == (REDRM_count - 1)) ? 0 : (keyi + 1);
-		ASSERT(keyi < REDRM_count);
-	}
-
-#endif
+	if (redrawreq == 0)
+		return;
+	redrawreq = 0;
+	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
 }
 
 // Interface functions
@@ -6069,120 +5997,13 @@ void display2_bgreset(void)
 	uint_fast8_t i;
 
 	display_clear();		// Заполниить цветом фона
-
-	// сброс state machine отображения дисплея
-	for (i = 0; i < REDRM_count; ++ i)
-	{
-		reqs [i] = 0;
-		//walkis [keyi] = 0;
-	}
-	keyi = 0;
-
+	redrawreq = 1;
 }
 
 void display2_initialize(void)
 {
-	// параметр key игнорируеся обычно, но для случая старых дисплеев выделен особенный
 	display_walktrough(REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
-}
-
-// Interface functions
-void display2_mode_subset(
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	)
-{
-	//TP();
-	display_walktroughsteps(REDRM_MODE, getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
-}
-
-// Обработка клавиатуры и валкодеров
-void display2_mode_keyboard(
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	)
-{
-	//TP();
-	display_walktroughsteps(REDRM_KEYB, getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
-}
-
-void display2_barmeters_subset(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	)
-{
-	if (extra)
-		return;
-	//TP();
-	display_walktroughsteps(0, getsubset(menuset, extra));	// заказ на выполнение отрисовки всех элементов через state machine.
-}
-
-void display2_volts(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	)
-{
-	if (extra)
-		return;
-	//TP();
-	display_walktroughsteps(0, getsubset(menuset, extra));	// заказ на выполнение отрисовки всех элементов через state machine.
-}
-
-void display2_dispfreq_ab(
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	)
-{
-	display_walktroughsteps(0, getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
-}
-
-void display2_dispfreq_a2(
-	uint_fast32_t freq,
-	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	)
-{
-	//TP();
-#if WITHDIRECTFREQENER
-
-	editfreq2_t ef;
-	dctx_t ctx;
-
-	ef.freq = freq;
-	ef.blinkpos = blinkpos;
-	ef.blinkstate = blinkstate;
-
-	ctx.type = DCTX_FREQ;
-	ctx.pv = & ef;
-
-	display_walktrough(getsubset(menuset, 0), & ctx);// выполнение отрисовки всех элементов за раз.
-
-#else	/* WITHDIRECTFREQENER */
-
-	display_walktroughsteps(REDRM_FREQ,  getsubset(menuset, 0));	// заказ на выполнение отрисовки всех элементов через state machine.
-
-#endif /* WITHDIRECTFREQENER */
-}
-
-// Обновление изоражения экрана при нахождении в режиме меню
-// Замена группы вызовов следующих трех функций:
-//	display2_menuitemlabel(mp, byname);
-//	display2_menuitemvalue(mp);
-//	display2_redrawbars(1, 1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-//
-// Если указывает на элемент value - на обычных дисплеях жквивалентна вызову display2_menuitemvalue
-//
-void display2_menu(
-	const FLASHMEM struct menudef * mp,
-	uint_fast8_t byname			/* был выполнен прямой вход в меню */
-	)
-{
-	//PRINTF("display2_menu: mp=%p\n", mp);
-
-	dctx_t dctx;
-	dctx.type = DCTX_MENU;
-	dctx.pv = mp;
-
-
-	display_walktrough(REDRSUBSET_MENU, & dctx);// выполнение отрисовки всех элементов за раз.
+	redrawreq = 0;
 }
 
 // последний номер варианта отображения (menuset)

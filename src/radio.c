@@ -7742,7 +7742,7 @@ uif_encoder2_press(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	display2_mode_subset(amenuset());
+	display2_needupdae();
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state != ENC2STATE_INITIALIZE)
@@ -7768,7 +7768,7 @@ uif_encoder2_hold(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	display2_mode_subset(amenuset());
+	display2_needupdae();
 #else
 	if (enc2state == ENC2STATE_INITIALIZE)
 		hamradio_gui_enc2_update();
@@ -12821,48 +12821,6 @@ display_refreshperformed_freqs(void)
 	LowerIrql(oldIrql);
 }
 
-dctx_t * display2_getcontext(void)
-{
-#if WITHDIRECTFREQENER
-	static editfreq2_t ef;
-	static dctx_t ctx;
-
-	ef.freq = editfreq;
-	ef.blinkpos = blinkpos;
-	ef.blinkstate = blinkstate;
-
-	ctx.type = DCTX_FREQ;
-	ctx.pv = & ef;
-	return editfreqmode ? & ctx : NULL;
-#else /*  WITHDIRECTFREQENER */
-	return NULL;
-#endif /* WITHDIRECTFREQENER */
-}
-
-/* отображение частоты (частот) настройки */
-static void
-display_freqpair(void)
-{
-#if LCDMODE_LTDC == 0
-#if WITHDIRECTFREQENER
-
-	if (editfreqmode)
-	{
-		display2_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
-	}
-	else
-	{
-		display2_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
-	}
-
-#else /* WITHDIRECTFREQENER */
-
-	display2_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
-
-#endif /* WITHDIRECTFREQENER */
-#endif /* LCDMODE_LTDC == 0 */
-}
-
 // Проверка разрешения обновления дисплея (индикация SWR/S-метр).
 static uint_fast8_t
 display_refresenabled_bars(void)
@@ -12922,7 +12880,7 @@ display2_redrawbarstimed(
 
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		display2_barmeters_subset(amenuset(), extra);
+		display2_needupdae();
 		// подтверждение отрисовки
 		display_refreshperformed_bars();
 	}
@@ -12955,11 +12913,7 @@ display2_redrawbarstimed(
 	#endif /* WITHVOLTLEVEL */
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
-		display2_volts(amenuset(), extra);
-		if (extra)
-		{
-			display2_menu(mp, 0);	// на дисплее без offscreen composition обновляем только индикацию значения
-		}
+		display2_needupdae();
 		display_refreshperformed_voltage();
 	}
 }
@@ -12973,7 +12927,7 @@ display_redrawfreqstimed(
 {
 	if (immed || display_refreshenabled_freqs())
 	{
-		display_freqpair();	/* обновление показания частоты */
+		display2_needupdae();
 		display_refreshperformed_freqs();
 	}
 }
@@ -12989,7 +12943,7 @@ display_redrawfreqmodesbarsnow(
 	if (extra == 0)
 	{
 		display_redrawfreqstimed(1);	/* безусловное обновление показания частоты */
-		display2_mode_subset(amenuset());
+		display2_needupdae();
 		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 	else
@@ -15421,13 +15375,44 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
+
 #if WITHLWIP
 	/* LWIP */
 	//usb_polling();     // usb device polling
 	//network_spool();
 	//stmr();            // call software timers
 #endif /* WITHLWIP */
-	display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
+
+
+	if (inmenu)
+	{
+		dctx_t dctx;
+		dctx.type = DCTX_MENU;
+		dctx.pv = mp;
+
+		display2_bgprocess(inmenu, amenuset(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+	}
+#if WITHDIRECTFREQENER
+	else if (editfreqmode)
+	{
+
+		editfreq2_t ef;
+
+		ef.freq = freq;
+		ef.blinkpos = blinkpos;
+		ef.blinkstate = blinkstate;
+
+		dctx_t dctx;
+		dctx.type = DCTX_FREQ;
+		dctx.pv = & ef;
+
+		display2_bgprocess(inmenu, amenuset(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+	}
+#endif
+	else
+	{
+		display2_bgprocess(inmenu, amenuset(), NULL);			/* выполнение шагов state machine отображения дисплея */
+	}
 	directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
@@ -19030,10 +19015,7 @@ hamradio_main_step(void)
 	#endif
 				sthrl = STHRL_RXTX;
 
-#if ! LCDMODE_LTDC
-				display_freqpair();
-				display_refreshperformed_freqs();
-#endif /* ! LCDMODE_LTDC */
+				display2_needupdae();		/* отображение всех индикаторов частоты */
 				board_wakeup();
 				break;
 			}
@@ -19136,7 +19118,7 @@ hamradio_main_step(void)
 				nrotate_sub = 0;
 #if WITHTOUCHGUI
 				hamradio_gui_enc2_update();
-				display2_mode_subset(0);
+				display2_needupdae();
 #else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI */
@@ -19208,7 +19190,7 @@ hamradio_main_step(void)
 				/* обновление индикатора без сохранения состояния диапазона */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
-				display2_mode_subset(amenuset());
+				display2_needupdae();
 
 		#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
@@ -19223,7 +19205,7 @@ hamradio_main_step(void)
 				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
-				display2_mode_subset(amenuset());
+				display2_needupdae();
 
 		#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
@@ -20109,7 +20091,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		}
 		updateboard(1, 0);
 		display_redrawfreqstimed(1);
-		display2_mode_subset(amenuset());
+		display2_needupdae();
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
@@ -20146,7 +20128,7 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	display_redrawfreqstimed(1);
-	display2_mode_subset(amenuset());
+	display2_needupdae();
 }
 
 void hamradio_clean_memory_cells(uint_fast8_t i)

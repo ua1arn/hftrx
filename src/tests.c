@@ -14362,15 +14362,6 @@ void hightests(void)
 				PRINTF(PSTR("keycode = 0x%02X (%u), %d\n"), (unsigned) scancode, (unsigned) scancode, v);
 				v = (v + 1) % 1000;
 			}
-			continue;
-
-			if (scancode != KEYBOARD_NOKEY)
-				display2_dispfreq_a2(scancode * 1000UL + v, 255, 0, menuset);
-			else
-			{
-				display2_dispfreq_a2(v * 1000UL, 255, 0, menuset);
-				v = (v + 1) % 1000;
-			}
 		}
 	}
 #endif

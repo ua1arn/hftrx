@@ -156,49 +156,13 @@ uint_fast8_t display_getpagesmax(void);	// количество разных в�
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
 
-void display2_bgprocess(void);	// выполнение шагов state machine отображения дисплея
+void display2_bgprocess(uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx);	// выполнение шагов state machine отображения дисплея
 void display2_bgreset(void);	// сброс state machine отображения дисплея
 void display2_initialize(void);	// проход по элементам с необходимостью инициализации
 
-void display2_dispfreq_a2(
-	uint_fast32_t freq,
-	uint_fast8_t blinkpos,		// позиция (степень 10) редактируесого символа
-	uint_fast8_t blinkstate,	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-
-void display2_dispfreq_ab(
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-void display2_volts(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	);
-
-// Статическая часть отображения режима работы
-void display2_mode_subset(
-	uint_fast8_t menuset	/* индекс режима отображения (0..3) */
-	);
-
-// Обработка клавиатуры и валкодеров
-void display2_mode_keyboard(
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	);
-
-// S-meter, SWR-meter, voltmeter
-void display2_barmeters_subset(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..3) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
-	);
+void display2_needupdae(void);
 
 struct menudef;
-
-
-// Обновление изоражения экрана при нахождении в режиме меню
-void display2_menu(
-	const FLASHMEM struct menudef * mp,
-	uint_fast8_t byname			/* был выполнен прямой вход в меню */
-	);
 
 // Вызывается из display2.c
 void
@@ -235,8 +199,6 @@ void display2_popup(
 	uint_fast8_t y,
 	dctx_t * pctx
 	);
-
-dctx_t * display2_getcontext(void);
 
 // Параметры отображения многострочного меню для больших экранов
 typedef struct multimenuwnd_tag
