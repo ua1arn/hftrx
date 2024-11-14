@@ -741,11 +741,15 @@ figcaption {
 
 )##";
 
-static const char hftrx_layout_800x480 [] =
+static const char hftrx_layout_800x480_html [] =
 R"##(
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 	<head>
+    <meta charset="utf-8">
+    <title>HF TRX 800x480</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="hftrx.css">	
 		<style>
 			td {
 			width: 16px;
@@ -763,7 +767,8 @@ R"##(
 			<tr>
 				<td colspan="2">1</td>
 				<td colspan="1" rowspan="1">2</td>
-				<td>3</td>
+				<td style="background-color:green; color:black;">3</td>
+				<td colspan="2" style="background-color:red; color:black;">TX</td>
 			</tr>
 			<!-- row 1 -->
 			<tr>
@@ -813,7 +818,6 @@ R"##(
 		
 	</body>
 </html>
-
 )##";
 
 void litehtmltest(void)
@@ -826,7 +830,7 @@ void litehtmltest(void)
 	//static const position wndclip2(0, 0, DIM_X * 2, DIM_Y *2 );
 	uint_ptr hdc = 0;
 	// see doc/document_createFromString.txt
-	auto doc = litehtml::document::createFromString(hftrx_layout_800x480, & cont, hftrx_css);
+	auto doc = litehtml::document::createFromString(hftrx_layout_800x480_html, & cont, hftrx_css);
 	//auto doc2 = document::createFromString(htmlString, & cont2);
 	//element el_freq = doc->
 	doc->render(wndclip.width, litehtml::render_all);
