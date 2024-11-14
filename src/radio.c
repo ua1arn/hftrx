@@ -12848,6 +12848,9 @@ display2_redrawbarstimed(
 	const FLASHMEM struct menudef * mp
 	)
 {
+	if (display_refresenabled_bars())
+		display2_latch();
+
 	if (immed || display_refresenabled_bars())
 	{
 		/* быстро меняющиеся значения с частым опорсом */

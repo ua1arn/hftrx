@@ -144,7 +144,7 @@
 			PGALL = PG0 | REDRSUBSET_MENU,
 			PGNOMEMU = PG0,
 		#endif /* WITHIF4DSP */
-			PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+			PGLATCH = REDRSUBSET_LATCH,	// страницы, на которых возможно отображение водопада или панорамы.
 			PGINI = REDRSUBSET_INIT,
 			PGunused
 		};

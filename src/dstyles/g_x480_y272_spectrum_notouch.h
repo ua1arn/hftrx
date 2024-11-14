@@ -63,7 +63,7 @@
 		PGWFL = PG0,	// страница отображения водопада
 		PGSPE = PG0,	// страница отображения панорамы
 		PGSWR = PGALL,	// страница отоюражения S-meter и SWR-meter
-		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
+		PGLATCH = REDRSUBSET_LATCH,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
 		PGINI = REDRSUBSET_INIT,
 		PGunused
