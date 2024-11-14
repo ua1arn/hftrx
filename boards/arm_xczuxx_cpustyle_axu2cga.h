@@ -707,7 +707,7 @@ enum {
 
 #define targetctl1	cs0
 #define targetnvram	cs1
-//#define targetadc2	cs2
+#define targetadc2	cs2
 
 #endif /* WITHSPIHW || WITHSPISW */
 

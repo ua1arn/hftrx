@@ -15405,10 +15405,12 @@ void app_processing(
 #if WITHDIRECTFREQENER
 	else if (editfreqmode)
 	{
+		const uint_fast8_t bi = getbankindex_tx(gtx);
+		vindex_t vi = getvfoindex(bi);
 
 		editfreq2_t ef;
 
-		ef.freq = freq;
+		ef.freq = gfreqs [bi];
 		ef.blinkpos = blinkpos;
 		ef.blinkstate = blinkstate;
 
