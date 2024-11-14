@@ -64,12 +64,12 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const FLASHMEM struct dzone dzones [] =
 {
-	{	0,	0,	display2_dummy,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },
+	{	0,	0,	0, 0, display2_dummy,	REDRM_MODE,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },
 #if WITHKEYBOARD
-	{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+	{	0,	0,	0, 0, display2_keyboard_screen0,	REDRM_KEYB, REDRSUBSET_ALL, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 #endif /* WITHKEYBOARD */
 #if WITHMENU
-	{	0,	0,	display2_keyboard_menu,		REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
+	{	0,	0,	0, 0, display2_keyboard_menu,		REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 #endif /* WITHMENU */
 };
 

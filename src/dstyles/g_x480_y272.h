@@ -72,77 +72,77 @@
 
 	static const FLASHMEM struct dzone dzones [] =
 	{
-			{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-			{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-			{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-			{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
-			{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
-			{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-			{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
+			{	0,	0,	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+			{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+			{	0,	0,	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+			{	3,	0,	0,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+			{	9,	0,	0,	0,	display2_att4,		REDRM_MODE, PGALL, },
+			{	14,	0,	0,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+			{	18,	0,	0,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
 
 		#if WITHENCODER2
-			{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-			{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-			{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+			{	21, 0,	0,	0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+			{	21,	4,	0,	0,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+			{	25, 12,	0,	0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		#else /* WITHENCODER2 */
-			{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-			{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+			{	25, 0,	0,	0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+			{	25,	4,	0,	0,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
 		#endif /* WITHENCODER2 */
 
-			{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-	//		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-			{	26,	20,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+			{	26, 16,	0,	0,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
+	//		{	26,	16,	0,	0,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
+			{	26,	20,	0,	0,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 
-			{	0,	4,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
-			{	0,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-			{	21,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-			{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-			{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+			{	0,	4,	0,	0,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
+			{	0,	4,	0,	0,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+			{	21,	8,	0,	0,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	21,	12,	0,	0,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+			{	26,	8,	0,	0,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
-			{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-			{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+			{	0,	16,	0,	0,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	0,	16,	0,	0,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-			{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
-			{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-			{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	5,	16,	0,	0,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+			{	9,	16,	0,	0,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+			{	21,	16,	0,	0,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 	#if 1
-	        {	0,  20,	display2_legend_rx, REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы S-метра
-	        {	0,  24,	display2_bars_rx,   REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
-			{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	 // уровень сигнала в баллах S или dBm
-	        {	0,  28,	display2_legend_tx, REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
-	        {	0,  32,	display2_bars_tx,   REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
+	        {	0,  20,	0,	0,	display2_legend_rx, REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы S-метра
+	        {	0,  24,	0,	0,	display2_bars_rx,   REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
+			{	25, 24, 0,	0,	display2_smeors5, 	REDRM_BARS, PGSWR, },	 // уровень сигнала в баллах S или dBm
+	        {	0,  28,	0,	0,	display2_legend_tx, REDRM_MODE, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
+	        {	0,  32,	0,	0,	display2_bars_tx,   REDRM_BARS, PGSWR, },    // S-METER, SWR-METER, POWER-METER
 
-//			{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
-//			{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-//			{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-//			{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+//			{	0,	28,	0,	0,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+//			{	0,	28,	0,	0,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+//			{	0,	28,	0,	0,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+//			{	0,	28,	0,	0,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 	#else
-			{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
+			{	0,	20,	0,	0,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 	#endif
 
-			//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-			{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
-			{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-			{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-			{	14, 51,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
-			{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-			{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+			//{	0,	51,	0,	0,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			{	0,	51,	0,	0,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
+			{	6, 	51,	0,	0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+			{	10, 51,	0,	0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+			{	14, 51,	0,	0,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
+			{	19, 51,	0,	0,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+			{	25, 51,	0,	0,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 		#if WITHAMHIGHKBDADJ
-			{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
+			{	25, 51,	0,	0,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 		#endif /* WITHAMHIGHKBDADJ */
 
 			// sleep mode display
-			{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-			{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+			{	5,	24,	0,	0,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+			{	20, 24,	0,	0,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		#if WITHMENU
-			{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-			{	1,	25,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	LABELW + 1,	25,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	LABELW * 2 + 2,	25,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	0,				0,		0,	0,	display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
+			{	1,	25,	0,	0,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	LABELW + 1,	25,	0,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	LABELW * 2 + 2,	25,	0,	0,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
-			{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+			{	0,	0,	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		};
 
 	#if WITHMENU

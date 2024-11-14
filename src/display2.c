@@ -22,6 +22,8 @@ struct dzone
 {
 	uint8_t x; // левый верхний угол
 	uint8_t y;
+	uint8_t colspan;
+	uint8_t rowspan;
 	void (* redraw)(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);	// функция отображения элемента
 	uint16_t key;		// при каких обновлениях перерисовывается этот элемент
 	uint16_t subset;	// битовая маска страниц

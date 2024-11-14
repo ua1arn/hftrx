@@ -47,34 +47,34 @@
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	0,	0,	display2_clearbg, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
-			{	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-			{	0, 0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },
-			{	16, 0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	0,	0,	0,	display2_clearbg, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
+			{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+			{	0, 0,	0,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	3, 0,	0,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	7, 0,	0,	0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	12, 0,	0,	0,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },
+			{	16, 0,	0,	0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	19, 0,	0,	0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 
-			{	0, 8,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	19, 8,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 8,	0,	0,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
+			{	19, 8,	0,	0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 18,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	5, 18,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	19, 18,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 18,	0,	0,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	5, 18,	0,	0,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
+			{	19, 18,	0,	0,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	1, 24,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+			{	1, 24,	0,	0,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if defined (RTC1_TYPE)
-			{	0, 28,	display_time8,		REDRM_BARS, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// TIME
+			{	0, 28,	0,	0,	display_time8,		REDRM_BARS, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// TIME
 		#endif /* defined (RTC1_TYPE) */
-			{	18, 28,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 28,	0,	0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	0,				0,		display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	0,				0,		0,	0,	display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
+			{	1 + LABELW * 0 + 0,	18,	0,	0,	display2_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	0,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 2 + 2,	18,	0,	0,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
-			{	0,	0,	display2_nextfb, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
+			{	0,	0,	0,	0,	display2_nextfb, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 		};
 
 	#if WITHMENU
