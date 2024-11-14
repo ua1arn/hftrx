@@ -41,7 +41,7 @@ typedef enum
 	SPIC_SPEED25M 	= 25000000,	/* 25 MHz  */
 } spi_speeds_t;
 
-#else
+#else /* WITHSPIDEV */
 
 typedef enum
 {
@@ -73,7 +73,7 @@ typedef enum
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIDEV */
 
 #define MULTIVFO ((HYBRID_NVFOS > 1) && (LO1MODE_HYBRID || LO1MODE_FIXSCALE))
 
@@ -148,12 +148,6 @@ typedef enum
 #else
 	// нет дешифратора адреса - прямое управление сигналами CS имеющихся SPI устройств.
 #endif
-
-#if WITHBOTTOMDBVAL
-#define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
-#else
-#define WITHBOTTOMDBDEFAULT 130
-#endif /* WITHBOTTOMDBVAL */
 
 #if ! LINUX_SUBSYSTEM
 
