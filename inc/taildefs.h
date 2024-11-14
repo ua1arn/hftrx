@@ -15,7 +15,43 @@ extern "C" {
 
 #if LINUX_SUBSYSTEM
 	#include <src/linux/linux_subsystem.h>
+#endif /* LINUX_SUBSYSTEM */
+
+#if WITHSPIDEV
+
+#include <linux/spi/spidev.h>
+
+typedef enum
+{
+	SPIC_MODE0 = SPI_MODE_0,
+	SPIC_MODE1 = SPI_MODE_1,
+	SPIC_MODE2 = SPI_MODE_2,
+	SPIC_MODE3 = SPI_MODE_3,
+	//
+	SPIC_MODES_COUNT = 4
+} spi_modes_t;
+
+typedef enum
+{
+	SPIC_SPEED400k 	= 400000,	/* 400 kHz для MCP3208, DS1305 */
+	SPIC_SPEED1M 	= 1000000,	/* 1 MHz для XPT2046 */
+	SPIC_SPEED4M 	= 4000000,	/* 4 MHz для CS4272 */
+	SPIC_SPEED10M 	= 10000000,	/* 10 MHz для ILI9341 */
+	SPIC_SPEEDFAST 	= 12000000,
+	SPIC_SPEED25M 	= 25000000,	/* 25 MHz  */
+} spi_speeds_t;
+
 #else
+
+typedef enum
+{
+	SPIC_MODE0,
+	SPIC_MODE1,
+	SPIC_MODE2,
+	SPIC_MODE3,
+	//
+	SPIC_MODES_COUNT
+} spi_modes_t;
 
 #define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 
@@ -37,7 +73,7 @@ typedef enum
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;
 
-#endif /* LINUX_SUBSYSTEM */
+#endif /* WITHSPIHW || WITHSPISW */
 
 #define MULTIVFO ((HYBRID_NVFOS > 1) && (LO1MODE_HYBRID || LO1MODE_FIXSCALE))
 

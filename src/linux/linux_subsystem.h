@@ -169,45 +169,5 @@ void board_rtc_gettime(
 void load_memory_cells(uint32_t * mem, uint8_t cnt);
 void write_memory_cells(uint32_t * mem, uint8_t cnt);
 
-#if WITHSPIDEV
-
-#include <linux/spi/spidev.h>
-
-typedef enum
-{
-	SPIC_MODE0 = SPI_MODE_0,
-	SPIC_MODE1 = SPI_MODE_1,
-	SPIC_MODE2 = SPI_MODE_2,
-	SPIC_MODE3 = SPI_MODE_3,
-	//
-	SPIC_MODES_COUNT = 4
-} spi_modes_t;
-
-typedef enum
-{
-	SPIC_SPEED400k 	= 400000,	/* 400 kHz для MCP3208, DS1305 */
-	SPIC_SPEED1M 	= 1000000,	/* 1 MHz для XPT2046 */
-	SPIC_SPEED4M 	= 4000000,	/* 4 MHz для CS4272 */
-	SPIC_SPEED10M 	= 10000000,	/* 10 MHz для ILI9341 */
-	SPIC_SPEEDFAST 	= 12000000,
-	SPIC_SPEED25M 	= 25000000,	/* 25 MHz  */
-} spi_speeds_t;
-
-void prog_spi_io(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	const uint8_t * txbuff1, unsigned int txsize1,
-	const uint8_t * txbuff2, unsigned int txsize2,
-	uint8_t * rxbuff, unsigned int rxsize
-	);
-
-void prog_spi_exchange(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	const uint8_t * txbuff,
-	uint8_t * rxbuff,
-	unsigned int size
-	);
-
-#endif /* WITHSPIDEV */
-
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

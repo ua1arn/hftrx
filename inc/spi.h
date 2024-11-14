@@ -27,19 +27,7 @@ void spi_initialize(void);	// отдельно инициализация SPI
    режимы SPI с "0" уровнем SCLK в неактивном состоянии.
    */
 
-#if WITHSPIHW || WITHSPISW
 
-typedef enum
-{
-	SPIC_MODE0,
-	SPIC_MODE1,
-	SPIC_MODE2,
-	SPIC_MODE3,
-	//
-	SPIC_MODES_COUNT
-} spi_modes_t;
-
-#endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHSPISW
 	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -267,6 +255,19 @@ typedef enum
 
 #endif /* WITHSPISW */
 
+void prog_spi_io(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	);
+
+void prog_spi_exchange(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	);
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
