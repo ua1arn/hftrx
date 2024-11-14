@@ -6006,6 +6006,12 @@ void display2_initialize(void)
 	redrawreq = 0;
 }
 
+void display2_latch(void)
+{
+	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
+	redrawreq = 0;
+}
+
 // последний номер варианта отображения (menuset)
 uint_fast8_t display_getpagesmax(void)
 {
