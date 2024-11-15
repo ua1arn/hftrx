@@ -301,7 +301,7 @@ void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip, c
 	const position &pos = ri->pos();
 	string text;
 	get_text(text);
-	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
+	PRINTF("draw_background: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
 	//colpip_fillrect(buffer, dx, dy, x + pos.x, y + pos.y, pos.width, pos.height, color);
 	litehtml::el_td::draw_background(hdc, x, y, clip, ri);
 }
@@ -314,7 +314,7 @@ void freqel::get_content_size(size &sz, int max_width)
 
 void freqel::get_text(string &text)
 {
-	TP();
+	//TP();
 	text = "14030000";
 }
 
@@ -343,6 +343,8 @@ void freqel::on_click()
 	TP();
 }
 
+static litehtml::element::ptr testel;
+
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
 	try
@@ -354,6 +356,7 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 		if (id == "FREQ_A")
 		{
 			auto newTag = std::make_shared<freqel>(doc, 0);
+			testel = newTag;
 			return newTag;
 		}
 		if (id == "FREQ_B")
@@ -842,7 +845,32 @@ void litehtmltest(void)
 
 	position::vector redraw_boxes;
 	doc->on_lbutton_down(110, 110, 0, 0, redraw_boxes);
-	local_delay_ms(2500);
+
+	//testel = doc->root()->find_sibling()
+	for (;;)
+	{
+		if (testel)
+		{
+			testel->set_attr("style", "background-color:red; color:green;");
+			testel->compute_styles(false);
+			TP();
+		}
+		doc->render(wndclip.width, litehtml::render_all);
+		doc->draw(hdc, 0, 0, & wndclip);
+		colmain_nextfb();
+		local_delay_ms(2500);
+
+		if (testel)
+		{
+			testel->set_attr("style", "background-color:blue; color:green;");
+			testel->compute_styles(false);
+			TP();
+		}
+		doc->render(wndclip.width, litehtml::render_all);
+		doc->draw(hdc, 0, 0, & wndclip);
+		colmain_nextfb();
+		local_delay_ms(2500);
+	}
 	for (;;)
 		;
 }
