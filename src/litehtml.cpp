@@ -848,11 +848,13 @@ void litehtmltest(void)
 
 	litehtml::css_selector sel;
 	sel.parse("[id=FREQ_A]", no_quirks_mode);
-	litehtml::element::ptr testel = doc->root()->select_one(sel);
+	litehtml::elements_list testels = doc->root()->select_all(sel);
+	//litehtml::element::ptr testel = doc->root()->select_one(sel);
 	for (;;)
 	{
-		if (testel)
+		for (litehtml::element::ptr& testel : testels)
 		{
+			//testel->set_data("+");
 			testel->set_attr("style", "background-color:red; color:green;");
 			testel->compute_styles(false);
 			TP();
@@ -862,8 +864,9 @@ void litehtmltest(void)
 		colmain_nextfb();
 		local_delay_ms(2500);
 
-		if (testel)
+		for (litehtml::element::ptr& testel : testels)
 		{
+			//testel->set_data("=");
 			testel->set_attr("style", "background-color:blue; color:green;");
 			testel->compute_styles(false);
 			TP();
