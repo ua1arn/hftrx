@@ -345,6 +345,7 @@ void freqel::on_click()
 
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
+	return nullptr;
 	try
 	{
 		std::string id = attributes.at("id");
@@ -772,14 +773,14 @@ R"##(
 			</tr>
 			<!-- row 1 -->
 			<tr>
-				<td>4</td>
-				<td class="BIGFREQ" id="FREQ_A">5</td>
-				<td>6</td>
+				<td class="BIG-FREQ">4</td>
+				<td class="BIG-FREQs">5</td>
+				<td class="BIG-FREQ">6</td>
 			</tr>
 			<!-- row 2 -->
 			<tr>
 				<td>7</td>
-				<td>8</td>
+				<td class="BIG-FREQ">8</td>
 				<td>9</td>
 			</tr>
 			<!-- row 3 -->
@@ -847,7 +848,8 @@ void litehtmltest(void)
 	doc->on_lbutton_up(mouse_x, mouse_y, 0, 0, redraw_boxes);
 
 	litehtml::css_selector sel;
-	sel.parse("[id=FREQ_A]", no_quirks_mode);
+	//sel.parse("[id=FREQ_A]", no_quirks_mode);
+	sel.parse(".BIG-FREQ", no_quirks_mode);
 	litehtml::elements_list testels = doc->root()->select_all(sel);
 	//litehtml::element::ptr testel = doc->root()->select_one(sel);
 	for (;;)
@@ -862,7 +864,7 @@ void litehtmltest(void)
 		doc->render(wndclip.width, litehtml::render_all);
 		doc->draw(hdc, 0, 0, & wndclip);
 		colmain_nextfb();
-		local_delay_ms(2500);
+		local_delay_ms(200);
 
 		for (litehtml::element::ptr& testel : testels)
 		{
@@ -874,7 +876,7 @@ void litehtmltest(void)
 		doc->render(wndclip.width, litehtml::render_all);
 		doc->draw(hdc, 0, 0, & wndclip);
 		colmain_nextfb();
-		local_delay_ms(2500);
+		local_delay_ms(200);
 	}
 	for (;;)
 		;
