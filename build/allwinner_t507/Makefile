@@ -63,7 +63,7 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 
@@ -76,8 +76,9 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/Core_A/Source
+	$(CMSISDIR)/Core/Include \
+	$(CMSISDIR)/Core/Include/a-profile \
+	$(CMSISDIR)/Core/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -122,16 +123,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
-
-ifeq (1, 0)
-# RTOSX
-RTOSXDIR = $(CMSISDIR)/RTOS2
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-SRCDIRS += $(PRJROOT)/lib/rtx
-DINCDIR += \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include
-endif
 
 ifeq (1, 1)
 # CMSIS_DSP

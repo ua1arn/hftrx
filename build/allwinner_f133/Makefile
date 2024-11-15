@@ -67,9 +67,7 @@ CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
-RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
 TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 
@@ -85,8 +83,7 @@ DINCDIR = \
 DINCDIR += \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
-	$(USBXDIR) \
-	$(DSP3DDIR)
+	$(USBXDIR)
 	
 DINCDIR += \
 	$(CMSISDIR)/Core_A/Include \
@@ -140,8 +137,6 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-#SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
 
 ifeq (1, 0)

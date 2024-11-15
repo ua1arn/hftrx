@@ -1,7 +1,6 @@
-[submodule "CMSIS_5"]
-	path = CMSIS_5
-	url = https://github.com/ARM-software/CMSIS_5.git
-	branch = develop
+[submodule "CMSIS_6"]
+	path = CMSIS_6
+	url = https://github.com/ARM-software/CMSIS_6.git
 [submodule "CMSIS-DSP"]
 	path = CMSIS-DSP
 	url = https://github.com/ARM-software/CMSIS-DSP.git
