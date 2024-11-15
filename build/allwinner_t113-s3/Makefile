@@ -61,8 +61,8 @@ CORE += -mfpu=neon-vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Ofast -flto
-OPT = -Ofast
+OPT = -Ofast -flto
+#OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -201,7 +201,7 @@ ifeq (1, 0)
 include ../btstack.mak
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
 # http://www.litehtml.com/
 LITEHTMLDIR = $(PRJROOT)/lib/litehtml
