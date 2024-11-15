@@ -13,11 +13,7 @@ extern "C" {
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
-#if LINUX_SUBSYSTEM
-	#include <src/linux/linux_subsystem.h>
-#endif /* LINUX_SUBSYSTEM */
-
-#if WITHSPIDEV
+#if WITHSPIDEV && LINUX_SUBSYSTEM
 
 #include <linux/spi/spidev.h>
 
@@ -40,6 +36,8 @@ typedef enum
 	SPIC_SPEEDFAST 	= 12000000,
 	SPIC_SPEED25M 	= 25000000,	/* 25 MHz  */
 } spi_speeds_t;
+
+#include <src/linux/linux_subsystem.h>
 
 #else /* WITHSPIDEV */
 
@@ -73,7 +71,7 @@ typedef enum
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;
 
-#endif /* WITHSPIDEV */
+#endif /* WITHSPIDEV && LINUX_SUBSYSTEM */
 
 #define MULTIVFO ((HYBRID_NVFOS > 1) && (LO1MODE_HYBRID || LO1MODE_FIXSCALE))
 

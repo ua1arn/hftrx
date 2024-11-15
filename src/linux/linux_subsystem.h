@@ -3,6 +3,7 @@
 
 #include "hardware.h"
 #include "src/display/display.h"
+#include "spi.h"
 
 #if LINUX_SUBSYSTEM
 
