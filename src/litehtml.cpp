@@ -228,7 +228,7 @@ void hftrxgd::on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_e
 }
 void hftrxgd::set_cursor(const char *cursor)
 {
-	TP();
+	PRINTF("set_cursor: cursor='%s'\n", cursor);
 }
 
 void hftrxgd::transform_text(litehtml::string &text, litehtml::text_transform tt)
@@ -320,27 +320,27 @@ void freqel::get_text(string &text)
 
 bool freqel::on_mouse_over()
 {
-	TP();
+	PRINTF("on_mouse_over\n");
 	return false;
 }
 bool freqel::on_mouse_leave()
 {
-	TP();
+	PRINTF("on_mouse_leave\n");
 	return false;
 }
 bool freqel::on_lbutton_down()
 {
-	TP();
+	PRINTF("on_lbutton_down\n");
 	return false;
 }
 bool freqel::on_lbutton_up()
 {
-	TP();
+	PRINTF("on_lbutton_up\n");
 	return false;
 }
 void freqel::on_click()
 {
-	TP();
+	PRINTF("on_click\n");
 }
 
 static litehtml::element::ptr testel;
@@ -843,8 +843,11 @@ void litehtmltest(void)
 	colmain_nextfb();
 	TP();
 
+	int mouse_x = 20;
+	int mouse_y = 20;
 	position::vector redraw_boxes;
-	doc->on_lbutton_down(110, 110, 0, 0, redraw_boxes);
+	doc->on_lbutton_down(mouse_x, mouse_y, 0, 0, redraw_boxes);
+	doc->on_lbutton_up(mouse_x, mouse_y, 0, 0, redraw_boxes);
 
 	//testel = doc->root()->find_sibling()
 	for (;;)
