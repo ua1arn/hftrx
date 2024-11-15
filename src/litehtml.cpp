@@ -343,8 +343,6 @@ void freqel::on_click()
 	PRINTF("on_click\n");
 }
 
-static litehtml::element::ptr testel;
-
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
 	try
@@ -356,7 +354,6 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 		if (id == "FREQ_A")
 		{
 			auto newTag = std::make_shared<freqel>(doc, 0);
-			testel = newTag;
 			return newTag;
 		}
 		if (id == "FREQ_B")
@@ -849,7 +846,9 @@ void litehtmltest(void)
 	doc->on_lbutton_down(mouse_x, mouse_y, 0, 0, redraw_boxes);
 	doc->on_lbutton_up(mouse_x, mouse_y, 0, 0, redraw_boxes);
 
-	//testel = doc->root()->find_sibling()
+	litehtml::css_selector sel;
+	sel.parse("[id=FREQ_A]", no_quirks_mode);
+	litehtml::element::ptr testel = doc->root()->select_one(sel);
 	for (;;)
 	{
 		if (testel)
