@@ -5978,12 +5978,23 @@ void display2_bgprocess(
 {
 #if WITHLVGL
 	return;
-#endif /* WITHLVGL */
+#elif LINUX_SUBSYSTEM
+	if (redrawreq == 0)
+		return;
+	redrawreq = 0;
 
+	for (int i = 0; i < WALKCOUNT; i ++)
+	{
+		const struct dzone * const p = & dzones [i];
+		if (p->subset >= REDRSUBSET(amenuset()) && p->key == REDRM_ALL)
+			(* p->redraw)(p->x, p->y, pctx);
+	}
+#else
 	if (redrawreq == 0)
 		return;
 	redrawreq = 0;
 	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
+#endif
 }
 
 // Interface functions
