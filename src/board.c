@@ -91,10 +91,10 @@ static uint_fast8_t 	glob_kblight = 1;
 static uint_fast8_t 	glob_poweron = 1;
 //#endif /* WITHKEYBOARD */
 
+static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
 #if WITHFANTIMER
-	static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
 	#if WITHFANPWM
-	static uint_fast8_t		glob_fanpwm = WITHFANPWMMAX;	/* скорость вентилятора 0..255 */
+		static uint_fast8_t		glob_fanpwm = WITHFANPWMMAX;	/* скорость вентилятора 0..255 */
 	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
 #if WITHDCDCFREQCTL
