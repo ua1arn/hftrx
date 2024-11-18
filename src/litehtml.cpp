@@ -228,7 +228,7 @@ void hftrxgd::on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_e
 }
 void hftrxgd::set_cursor(const char *cursor)
 {
-	TP();
+	PRINTF("set_cursor: cursor='%s'\n", cursor);
 }
 
 void hftrxgd::transform_text(litehtml::string &text, litehtml::text_transform tt)
@@ -301,7 +301,7 @@ void freqel::draw_background(uint_ptr hdc, int x, int y, const position *clip, c
 	const position &pos = ri->pos();
 	string text;
 	get_text(text);
-	PRINTF("draw: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
+	PRINTF("draw_background: x=%d, y=%d, text='%s', x=%d, y=%d, w=%d, h=%d\n", x, y, text.c_str(), pos.x, pos.y, pos.width, pos.height);
 	//colpip_fillrect(buffer, dx, dy, x + pos.x, y + pos.y, pos.width, pos.height, color);
 	litehtml::el_td::draw_background(hdc, x, y, clip, ri);
 }
@@ -314,37 +314,38 @@ void freqel::get_content_size(size &sz, int max_width)
 
 void freqel::get_text(string &text)
 {
-	TP();
+	//TP();
 	text = "14030000";
 }
 
 bool freqel::on_mouse_over()
 {
-	TP();
+	PRINTF("on_mouse_over\n");
 	return false;
 }
 bool freqel::on_mouse_leave()
 {
-	TP();
+	PRINTF("on_mouse_leave\n");
 	return false;
 }
 bool freqel::on_lbutton_down()
 {
-	TP();
+	PRINTF("on_lbutton_down\n");
 	return false;
 }
 bool freqel::on_lbutton_up()
 {
-	TP();
+	PRINTF("on_lbutton_up\n");
 	return false;
 }
 void freqel::on_click()
 {
-	TP();
+	PRINTF("on_click\n");
 }
 
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
+	return nullptr;
 	try
 	{
 		std::string id = attributes.at("id");
@@ -772,14 +773,14 @@ R"##(
 			</tr>
 			<!-- row 1 -->
 			<tr>
-				<td>4</td>
-				<td class="BIGFREQ" id="FREQ_A">5</td>
-				<td>6</td>
+				<td class="BIG-FREQ">4</td>
+				<td class="BIG-FREQs">5</td>
+				<td class="BIG-FREQ">6</td>
 			</tr>
 			<!-- row 2 -->
 			<tr>
 				<td>7</td>
-				<td>8</td>
+				<td class="BIG-FREQ">8</td>
 				<td>9</td>
 			</tr>
 			<!-- row 3 -->
@@ -840,9 +841,43 @@ void litehtmltest(void)
 	colmain_nextfb();
 	TP();
 
+	int mouse_x = 20;
+	int mouse_y = 20;
 	position::vector redraw_boxes;
-	doc->on_lbutton_down(110, 110, 0, 0, redraw_boxes);
-	local_delay_ms(2500);
+	doc->on_lbutton_down(mouse_x, mouse_y, 0, 0, redraw_boxes);
+	doc->on_lbutton_up(mouse_x, mouse_y, 0, 0, redraw_boxes);
+
+	litehtml::css_selector sel;
+	//sel.parse("[id=FREQ_A]", no_quirks_mode);
+	sel.parse(".BIG-FREQ", no_quirks_mode);
+	litehtml::elements_list testels = doc->root()->select_all(sel);
+	//litehtml::element::ptr testel = doc->root()->select_one(sel);
+	for (;;)
+	{
+		for (litehtml::element::ptr& testel : testels)
+		{
+			//testel->set_data("+");
+			testel->set_attr("style", "background-color:red; color:green;");
+			testel->compute_styles(false);
+			TP();
+		}
+		doc->render(wndclip.width, litehtml::render_all);
+		doc->draw(hdc, 0, 0, & wndclip);
+		colmain_nextfb();
+		local_delay_ms(200);
+
+		for (litehtml::element::ptr& testel : testels)
+		{
+			//testel->set_data("=");
+			testel->set_attr("style", "background-color:blue; color:green;");
+			testel->compute_styles(false);
+			TP();
+		}
+		doc->render(wndclip.width, litehtml::render_all);
+		doc->draw(hdc, 0, 0, & wndclip);
+		colmain_nextfb();
+		local_delay_ms(200);
+	}
 	for (;;)
 		;
 }

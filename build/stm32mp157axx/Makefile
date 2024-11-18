@@ -61,7 +61,7 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Os
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -80,9 +80,10 @@ DINCDIR = \
 	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core_A/Include \
+	$(CMSISDIR)/Core/Include \
+	$(CMSISDIR)/Core/Include/a-profile \
+	$(CMSISDIR)/Core/Source \
 	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \

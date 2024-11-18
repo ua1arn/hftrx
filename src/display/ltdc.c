@@ -871,16 +871,16 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
 	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
 
-	hardware_ltdc_vsync();	/* ожидаем начало кадра */
+	hardware_ltdc_vsync(rtmixid);	/* ожидаем начало кадра */
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	ASSERT(layer2 == 0);
 	ASSERT(layer3 == 0);
 	hardware_ltdc_pip_off();
-	hardware_ltdc_main_set(layer0);
+	hardware_ltdc_main_set(rtmixid, layer0);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1641,16 +1641,16 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
 
-	hardware_ltdc_vsync();
+	hardware_ltdc_vsync(rtmixid);
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	ASSERT(layer2 == 0);
 	ASSERT(layer3 == 0);
 	hardware_ltdc_pip_off();
-	hardware_ltdc_main_set(layer0);
+	hardware_ltdc_main_set(rtmixid, layer0);
 }
 
 #elif LINUX_SUBSYSTEM && ! WITHLVGL

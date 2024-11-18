@@ -196,25 +196,4 @@ enum DMAC_DstReqType
   #include "t113s3_hal.h"
 #endif /* USE_HAL_DRIVER */
 
-#if 0
-
-__STATIC_FORCEINLINE uint32_t __UQADD8(uint32_t op1, uint32_t op2)
-{
-  uint32_t result;
-
-  __ASM ("uqadd8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-  return(result);
-}
-
-
-__STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
-{
-  uint32_t result;
-
-  __ASM ("uqsub8 %0, %1, %2" : "=r" (result) : "r" (op1), "r" (op2) );
-  return(result);
-}
-
-#endif
-
 #endif /* ARCH_ALLWNR_T507_H_ */

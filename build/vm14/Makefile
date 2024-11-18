@@ -61,13 +61,11 @@ CORE += -mfpu=neon-vfpv3
 #OPT = -Os -flto=4 --specs=nano.specs
 OPT = -Os
 
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -78,11 +76,9 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(DSP3DDIR) \
-	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/Core_A/Source \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDIR)/Core/Include \
+	$(CMSISDIR)/Core/Include/a-profile \
+	$(CMSISDIR)/Core/Source \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
@@ -130,8 +126,6 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-#SRCDIRS += $(DSP3DDIR)/src
 SRCDIRS += $(ARCHDIR)
 
 ifeq (1, 0)

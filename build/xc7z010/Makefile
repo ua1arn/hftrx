@@ -74,16 +74,14 @@ ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010_zm
 ZYNQLIB = zynq7010.a
 
 
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 #LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
@@ -97,13 +95,11 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(DSP3DDIR) \
-	$(CMSISDIR)/Core_A/Include \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include \
+	$(CMSISDIR)/Core/Include \
+	$(CMSISDIR)/Core/Include/a-profile \
+	$(CMSISDIR)/Core/Source \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude \
 	$(LWIPDIR)/src/include \
@@ -137,7 +133,6 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(MDLWUSBDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-#SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
