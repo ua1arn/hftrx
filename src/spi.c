@@ -19,13 +19,18 @@
 	#include <machine/endian.h>
 #endif /* ! LINUX_SUNSYSTEM */
 
+enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
+
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_ALLWINNER)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 #define USESPIDFSHARESPI (WIHSPIDFHW && CPUSTYLE_ALLWINNER)
 
-#if WITHSPIHW || WITHSPISW
-
 void spi_operate_lock(IRQL_t * oldIrql);
 void spi_operate_unlock(IRQL_t irql);
+void spidf_operate_lock(IRQL_t * oldIrql);
+void spidf_operate_unlock(IRQL_t irql);
+
+#if WITHSPIHW || WITHSPISW
+
 
 // Эти три функции должны использоваться везде, где надо работать с SPI.
 #define prog_select(target) do { prog_select_impl(target); } while (0)
@@ -715,7 +720,6 @@ void spidf_operate_unlock(IRQL_t irql)
 #endif /* USESPIDFSHARESPI */
 
 
-enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
 static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb);
 static void spi_transfer_b16(spitarget_t target, const uint16_t * txbuff, uint16_t * rxbuff, int len, uint_fast8_t readnb);
