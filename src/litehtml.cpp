@@ -746,79 +746,54 @@ static const char hftrx_layout_800x480_html [] =
 R"##(
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-	<head>
+  <head>
     <meta charset="utf-8">
     <title>HF TRX 800x480</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="hftrx.css">	
-		<style>
-			td {
-			width: 16px;
-			}
-			tr {
-			height: 15px;
-			}
-		</style>
-		
-	</head> 
-	<body style="background-color:black; color:green;">
-		<!-- 800 x 480 - 50 columns by 16 pixels, 32 rows by 15 pixels  -->
-		<table style="width:800px border=0px cellspacing=0px cellpadding=0px">
-			<!-- row 0 -->
-			<tr>
-				<td colspan="2">1</td>
-				<td colspan="1" rowspan="1">2</td>
-				<td style="background-color:green; color:black;">3</td>
-				<td colspan="2" style="background-color:red; color:black;">TX</td>
-			</tr>
-			<!-- row 1 -->
-			<tr>
-				<td class="BIG-FREQ">4</td>
-				<td class="BIG-FREQs">5</td>
-				<td class="BIG-FREQ">6</td>
-			</tr>
-			<!-- row 2 -->
-			<tr>
-				<td>7</td>
-				<td class="BIG-FREQ">8</td>
-				<td>9</td>
-			</tr>
-			<!-- row 3 -->
-			<tr>
-				<td> </td>
-				<td> </td>
-				<td> </td>
-				<td> </td>
-				<td> </td>
-				<td> </td>
-			</tr>
-			<!-- row 4 -->
-			<tr>
-				<td></td>
-			</tr>
-			<!-- row 5 -->
-			<tr>
-				<td></td>
-			</tr>
-			<!-- row 6 -->
-			<tr>
-				<td></td>
-			</tr>
-			<!-- row 7 -->
-			<tr>
-			<td>X</td>
-				<td colspan="1">X</td>
-				<td>X</td>
-				<td>X</td>
-				<td>X</td>
-				<td>X</td>
-				<td>X</td>
-				<td>X</td>
-			</tr>
-		</table>
-		
-	</body>
+    <!--link rel="stylesheet" type="text/css" href="hftrx.css"-->  
+<style>
+</style>
+</head>
+<body style="background-color:orange;">
+ <div style="position:absolute; left:0px; top:0px; width:112px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:160px; top:0px; width:64px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:240px; top:0px; width:32px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:288px; top:0px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:352px; top:0px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:416px; top:0px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:512px; top:0px; width:64px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:592px; top:0px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:0px; top:20px; width:224px; height:100px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:240px; top:30px; width:336px; height:65px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:656px; top:0px; width:144px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:656px; top:20px; width:144px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:592px; top:50px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:656px; top:50px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:736px; top:50px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:592px; top:75px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:656px; top:75px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:720px; top:75px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:320px; top:100px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:384px; top:100px; width:192px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:592px; top:100px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:656px; top:100px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:720px; top:100px; width:64px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:16px; top:125px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:112px; top:125px; width:96px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:528px; top:125px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:592px; top:125px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:656px; top:125px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:720px; top:125px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:592px; top:150px; width:128px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:0px; top:175px; width:800px; height:275px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:0px; top:455px; width:192px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:208px; top:455px; width:144px; height:25px; background-color:blue; color:black; ">X</div>
+ <div style="position:absolute; left:368px; top:455px; width:64px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:448px; top:455px; width:48px; height:25px; background-color:green; color:black; ">X</div>
+ <div style="position:absolute; left:512px; top:455px; width:112px; height:25px; background-color:blue; color:black; ">X</div>
+</body>
 </html>
+
 )##";
 
 void litehtmltest(void)
@@ -841,17 +816,24 @@ void litehtmltest(void)
 	colmain_nextfb();
 	TP();
 
-	int mouse_x = 20;
-	int mouse_y = 20;
-	position::vector redraw_boxes;
-	doc->on_lbutton_down(mouse_x, mouse_y, 0, 0, redraw_boxes);
-	doc->on_lbutton_up(mouse_x, mouse_y, 0, 0, redraw_boxes);
+//	int mouse_x = 20;
+//	int mouse_y = 20;
+//	position::vector redraw_boxes;
+//	doc->on_lbutton_down(mouse_x, mouse_y, 0, 0, redraw_boxes);
+//	doc->on_lbutton_up(mouse_x, mouse_y, 0, 0, redraw_boxes);
 
 	litehtml::css_selector sel;
 	//sel.parse("[id=FREQ_A]", no_quirks_mode);
 	sel.parse(".BIG-FREQ", no_quirks_mode);
 	litehtml::elements_list testels = doc->root()->select_all(sel);
 	//litehtml::element::ptr testel = doc->root()->select_one(sel);
+
+	doc->render(wndclip.width, litehtml::render_all);
+	doc->draw(hdc, 0, 0, & wndclip);
+	colmain_nextfb();
+	TP();
+	for (;;)
+		;
 	for (;;)
 	{
 		for (litehtml::element::ptr& testel : testels)

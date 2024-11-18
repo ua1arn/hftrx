@@ -51,8 +51,6 @@
 	{
 		PG0 = REDRSUBSET(DPAGE0),
 		PGALL = PG0 | REDRSUBSET_MENU,
-		PGWFL = PG0,	// страница отображения водопада
-		PGSPE = PG0,	// страница отображения панорамы
 		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = REDRSUBSET_LATCH,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
@@ -90,7 +88,7 @@
 		{	37,	0,	3, 5, display2_preovf3,	REDRM_BARS, PGALL, },
 	#if WITHBARS
 		{   0, 	4,  0, 0, display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	4,	15, 0, display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	4,	14, 20, display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	4,	0, 0, display2_af_spectre15_init,	REDRM_INIS, PGINI, },
@@ -99,7 +97,7 @@
 	#endif /* WITHAFSPECTRE */
 
 		{	15,	6,	0, 0, display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	15,	6,	0, 0, display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	15,	6,	21, 13, display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 5, display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 		{	41,	4,	9, 5, display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
@@ -114,8 +112,8 @@
 
 		{	15, 20,	3, 0, display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 5, display2_vfomode3,	REDRM_MODE, PGALL, },	// SPL
-		{	24,	20,	0, 5, display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	37, 20,	0, 5, display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	24,	20,	12, 5, display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	37, 20,	3, 5, display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	3, 5, display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	45,	20,	4, 5, display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
@@ -129,7 +127,7 @@
 		//{	27, 25,
 		{	33, 25,	3, 5, display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	37, 25,	3, 5, display2_spk3,		REDRM_MODE, PGALL, },	// отображение признака включения динамика
-		{	41, 25, 0, 5, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
+		{	41, 25, 3, 5, display2_bkin3,		REDRM_MODE, PGALL, },	// BREAK-IN
 		{	45,	25,	5, 5, display2_wpm5, 		REDRM_BARS, PGALL, },	// 22WPM
 
 		//{	24, 30,	10, 5, display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
@@ -138,9 +136,7 @@
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	0, 0, display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0, 0, display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50, 0, display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	DLES,	50, 0, display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-//		{	0,	DLES,	50, 0, display2_gcombo,	REDRM_BARS, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
+		{	0,	DLES,	BDTH_ALLRX, BDCV_ALLRX, display2_gcombo,	REDRM_BARS, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	12, 5, display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40

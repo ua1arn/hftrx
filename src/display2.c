@@ -202,6 +202,7 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);		// вызывать после display2_smeter15_init
 static void display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);
 static void display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);
+static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);
 
 #if COLORSTYLE_RED
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_RED;
@@ -5468,6 +5469,7 @@ static void display2_spectrum(
 						if (x_old != x_d)
 						{
 							const uint_fast16_t t0 = wfj3dss_peek(x, draw_step);
+							ASSERT(y0 >= t0);
 							uint_fast16_t y1 = y0 - t0;
 							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
@@ -5694,7 +5696,7 @@ static void display2_latchwaterfall(
 			colpip_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 		#else /* LCDMODE_MAIN_L8 */
 			ASSERT(val >= 0);
-			ASSERT(val < ARRAY_SIZE(wfpalette));
+			ASSERT(val < (int) ARRAY_SIZE(wfpalette));
 			colpip_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 		#endif /* LCDMODE_MAIN_L8 */
 		}
@@ -6013,6 +6015,31 @@ void display2_bgreset(void)
 
 void display2_initialize(void)
 {
+#if 0
+	{
+		// Формирование шаблона с html элементами
+		uint_fast16_t subset = REDRSUBSET(0);
+		uint_fast8_t i;
+		PRINTF("<body style=\"background-color:orange;\">\n");
+		for (i = 0; i < WALKCOUNT; ++ i)
+		{
+			const FLASHMEM struct dzone * const p = & dzones [i];
+
+			if (validforredraw(p, subset) == 0)
+				continue;
+			if (p->colspan == 0 || p->rowspan == 0)
+				continue;
+			if (p->colspan > 4)
+				PRINTF(" <div style=\"position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; background-color:blue; color:black; \">X</div>\n",
+						GRID2X(p->x), GRID2Y(p->y), GRID2X(p->colspan), GRID2Y(p->rowspan));
+			else
+				PRINTF(" <div style=\"position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; background-color:green; color:black; \">X</div>\n",
+						GRID2X(p->x), GRID2Y(p->y), GRID2X(p->colspan), GRID2Y(p->rowspan));
+		}
+		PRINTF("</body>\n");
+
+	}
+#endif
 	display_walktrough(REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
 	redrawreq = 0;
 }
