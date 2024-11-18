@@ -1106,12 +1106,12 @@ void IRQ_Handler_GIC(void)
 */
 
 
-uint32_t gARM_OVERREALTIME_PRIORITY;
-uint32_t gARM_REALTIME_PRIORITY;
-uint32_t gARM_SYSTEM_PRIORITY;
-uint32_t gARM_BASEPRI_ONLY_REALTIME;
-uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
-uint32_t gARM_BASEPRI_ALL_ENABLED;
+//uint32_t gARM_OVERREALTIME_PRIORITY;
+//uint32_t gARM_REALTIME_PRIORITY;
+//uint32_t gARM_SYSTEM_PRIORITY;
+//uint32_t gARM_BASEPRI_ONLY_REALTIME;
+//uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
+//uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
@@ -2004,12 +2004,12 @@ static void arm_hardware_populate_initialize(void)
 	//dcache_clean_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 
 	LCLSPIN_LOCK(& gicdistrib_lock);
-	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
+	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	/* Установить на все процессоры кроме текущего */
-	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x0F & ~ (1u << arm_hardware_cpuid()));
+	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, ARM_IPC_PRIORITY, 0x0F & ~ (1u << arm_hardware_cpuid()));
 }
 
 /* вызывается на дополнительном ядре */
@@ -2019,7 +2019,7 @@ void arm_hardware_populte_second_initialize(void)
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
 	LCLSPIN_LOCK(& gicdistrib_lock);
-	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
+	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
@@ -2559,15 +2559,7 @@ void cpu_initialize(void)
 		r7s721_intc_initialize();
 	#endif /* CPUSTYLE_R7S721 */
 
-		gARM_OVERREALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
-		gARM_REALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
-		gARM_SYSTEM_PRIORITY = GIC_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
-
-		gARM_BASEPRI_ONLY_REALTIME = GIC_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
-		gARM_BASEPRI_ONLY_OVERREALTIME = GIC_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
-		gARM_BASEPRI_ALL_ENABLED = GIC_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
-
-		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+		GIC_SetInterfacePriorityMask(IRQL_USER);
 	}
 
 	#if WITHSMPSYSTEM

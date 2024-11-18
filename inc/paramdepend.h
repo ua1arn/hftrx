@@ -1045,6 +1045,8 @@ extern "C" {
 
 	typedef uint_fast32_t IRQL_t;
 
+	#define IRQL_USER 				0
+	#define IRQL_IPC 				0
 	#define IRQL_SYSTEM 			0
 	#define IRQL_REALTIME 			0
 	#define IRQL_OVERREALTIME 		0
@@ -1097,20 +1099,20 @@ extern "C" {
 #elif (__GIC_PRESENT == 1)
 
 	typedef uint_fast32_t IRQL_t;
+	enum
+	{
+		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+		PRIOv_IPC_ONLY,
+		PRIOv_OVRT,
+		PRIOv_RT,
+		PRIOv_SYS,
+		PRIOv_USER,
+		//
+		PRIOv_count
+	};
 
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
-	extern uint32_t gARM_OVERREALTIME_PRIORITY;
-	extern uint32_t gARM_REALTIME_PRIORITY;
-	extern uint32_t gARM_SYSTEM_PRIORITY;
-	extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
-	extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
-	extern uint32_t gARM_BASEPRI_ALL_ENABLED;
 
-	#define GIC_ENCODE_PRIORITY(v) ((v) << (GIC_GetBinaryPoint() + 1))
-
-	#define IRQL_SYSTEM GIC_ENCODE_PRIORITY(PRI_SYS)	// value for GIC_SetInterfacePriorityMask
-	#define IRQL_REALTIME GIC_ENCODE_PRIORITY(PRI_RT)	// value for GIC_SetInterfacePriorityMask
-	#define IRQL_OVERREALTIME GIC_ENCODE_PRIORITY(PRI_OVRT)	// value for GIC_SetInterfacePriorityMask
 	/*
 		GICC_PMR == INTC.ICCPMR
 
@@ -1119,33 +1121,26 @@ extern "C" {
 		register are signaled to the processor.
 
 	*/
-	enum
-	{
-		PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
-		PRI_IPC_ONLY,
-		PRI_OVRT,
-		PRI_RT,
-		PRI_SYS,
-		PRI_USER,
 
-//		gARM_OVERREALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
-//		gARM_REALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
-//		gARM_SYSTEM_PRIORITY = GIC_ENCODE_PRIORITY(PRI_SYS),		// value for GIC_SetPriority
-//
-//		gARM_BASEPRI_ONLY_REALTIME = GIC_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
-//		gARM_BASEPRI_ALL_ENABLED = GIC_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
-		PRI_count
-	};
+	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_GetBinaryPoint() + 1)))	// Value for GICDistributor->IPRIORITYR[n]
+	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_GetBinaryPoint() + 1)))	// value for GICInterface->PMR
 
-	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
-	#define BOARD_SGI_PRIO	GIC_ENCODE_PRIORITY(PRI_IPC)
-
-	#define RUNNING_PRI	((GICInterface->RPR & 0xFF) >> GIC_PRIORITYSHIFT) // The current running priority on the CPU interface.
+	// value for GIC_SetInterfacePriorityMask
+	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
+	#define IRQL_IPC_ONLU 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
+	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVRT))
+	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_RT))
+	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
+	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
 
 	// A lower priority value indicating a higher priority
-	#define ARM_OVERREALTIME_PRIORITY	((const uint32_t) gARM_OVERREALTIME_PRIORITY)
-	#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
-	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
+	// Value for GICD
+	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
+	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVRT))
+	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_RT))
+	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYS))
+
+	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
 	#if defined(__aarch64__)
 

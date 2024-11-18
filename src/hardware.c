@@ -2983,17 +2983,15 @@ sysinit_fpu_initialize(void)
 #if ! WITHISBOOTLOADER_DDR
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	{
-		GIC_Enable();
-		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));	// nested interrupts support
-	}
+	GIC_Enable();
+	GIC_SetInterfacePriorityMask(IRQL_USER);	// nested interrupts support
 
 #endif
 #endif
 }
 
 static void
-sysintt_sdram_initialize(void)
+sysinit_sdram_initialize(void)
 {
 #if WITHSDRAMHW
 	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
@@ -3628,7 +3626,7 @@ SystemInit(void)
 	local_delay_initialize();
 #endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_pmic_initialize();
-	sysintt_sdram_initialize();
+	sysinit_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_mmu_initialize();
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
@@ -4392,10 +4390,8 @@ void Reset_CPUn_Handler(void)
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 	sysinit_cache_initialize();	// caches iniitialize
 
-	{
-		GIC_Enable();
-		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_IPC_ONLY));	// nested interrupts support
-	}
+	GIC_Enable();
+	GIC_SetInterfacePriorityMask(IRQL_IPC_ONLU);	// nested interrupts support
 
 	L1C_InvalidateDCacheAll();
 	L1C_InvalidateICacheAll();
@@ -4417,7 +4413,7 @@ void Reset_CPUn_Handler(void)
 	unsigned core = arm_hardware_cpuid();
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
-	GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));	// nested interrupts support
+	GIC_SetInterfacePriorityMask(IRQL_USER);	// nested interrupts support
 
 #if WITHLWIP
 	network_initialize();
