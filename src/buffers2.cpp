@@ -23,8 +23,9 @@
 static const unsigned SKIPSAMPLES_HDMI = 2000; // раз в 50 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_BT = 50; // раз в 50 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
-static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
+
+static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
