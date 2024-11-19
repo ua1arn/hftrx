@@ -3874,7 +3874,13 @@ void colmain_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
+
+#if RTMIXIDLCD
 	hardware_ltdc_main_set(RTMIXIDLCD, frame);
+#elif RTMIXIDTV
+	hardware_ltdc_main_set(RTMIXIDTV, frame);
+#endif /* WITHHDMITVHW */
+
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr((uintptr_t) colmain_fb_draw()));

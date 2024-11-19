@@ -254,12 +254,14 @@ void InitializeIrql(IRQL_t newIRQL);
 	typedef void (* udpcfn_t)(void *);
 	typedef struct dpcobj_tag
 	{
+		void * tag1;
 		LIST_ENTRY item;
 		uint8_t coreid;	// в какой список включили - 0..HARDWARE_NCORES-1
 		uint8_t flag;
 		udpcfn_t fn;
 		void * ctx;
 		uint8_t delflag;	// помечена для удаления
+		void * tag2;
 	} dpcobj_t;
 
 	void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg);
