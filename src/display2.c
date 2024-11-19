@@ -5720,10 +5720,6 @@ static void display2_waterfall(
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
-	#if ! LCDMODE_HORFILL
-		#error LCDMODE_HORFILL must be defined
-	#endif /* ! LCDMODE_HORFILL */
-
 #if WITHVIEW_3DSS
 	if (glob_view_style != VIEW_3DSS)
 #endif /* WITHVIEW_3DSS */

@@ -8051,7 +8051,7 @@ stm32h7xx_pll_initialize(void)
 
 #if WITHSAICLOCKFROMI2S && ! WITHUSEPLL2
 	#error WITHUSEPLL2 should be defined if WITHSAICLOCKFROMI2S used.
-#endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */
+#endif /* WITHSAICLOCKFROMI2S && ! WITHUSEPLL2 */
 
 #if WITHUSEPLL2
 	// PLL2 P output used for SAI1, SAI2, SAI3 clocking
@@ -8083,9 +8083,9 @@ stm32h7xx_pll_initialize(void)
 
 #endif /* WITHUSEPLL2 */
 
-#if LCDMODE_LTDC && ! WITHUSEPLL3
-	#error WITHUSEPLL3 should be defined if LCDMODE_LTDC used.
-#endif /* LCDMODE_LTDC && ! WITHUSEPLL3 */
+#if WITHLTDCHW && ! WITHUSEPLL3
+	#error WITHUSEPLL3 should be defined then WITHLTDCHW used.
+#endif /* WITHLTDCHW && ! WITHUSEPLL3 */
 
 #if WITHUSEPLL3
 

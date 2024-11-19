@@ -37,13 +37,6 @@ const char * savewhere = "no func";
 	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
 #endif /* WITHALTERNATIVEFONTS */
 
-//
-//#if ! LCDMODE_LTDC_L24
-//#include "./byte2crun.h"
-//#endif /* ! LCDMODE_LTDC_L24 */
-
-#if LCDMODE_LTDC
-
 void display_putpixel(
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
@@ -88,8 +81,6 @@ display_line(
 	colpip_line(buffer, dx, dy, x1, y1, x2, y2, color, 0);
 }
 
-#endif /* LCDMODE_LTDC */
-
 /* копирование содержимого окна с перекрытием для водопада */
 void
 display_scroll_down(
@@ -105,9 +96,9 @@ display_scroll_down(
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-#if WITHDMA2DHW && LCDMODE_LTDC
+#if WITHDMA2DHW
 
-#if LCDMODE_HORFILL && defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
+#if defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
 	/* исходный растр */
@@ -144,10 +135,9 @@ display_scroll_down(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#else /* LCDMODE_HORFILL */
-#endif /* LCDMODE_HORFILL */
+#endif /* defined (DMA2D_FGPFCCR_CM_VALUE_MAIN) */
 
-#endif /* WITHDMA2DHW && LCDMODE_LTDC */
+#endif /* WITHDMA2DHW */
 }
 
 /* копирование содержимого окна с перекрытием для водопада */
@@ -165,8 +155,8 @@ display_scroll_up(
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-#if WITHDMA2DHW && LCDMODE_LTDC
-#if LCDMODE_HORFILL && defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
+#if WITHDMA2DHW
+#if defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 
 	/* исходный растр */
@@ -203,9 +193,8 @@ display_scroll_up(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#else /* LCDMODE_HORFILL */
-#endif /* LCDMODE_HORFILL */
-#endif /* WITHDMA2DHW && LCDMODE_LTDC */
+#endif /* defined (DMA2D_FGPFCCR_CM_VALUE_MAIN) */
+#endif /* WITHDMA2DHW */
 }
 
 #if ! LCDMODE_LTDC_L24
@@ -344,8 +333,6 @@ ltdc_vertical_pixN(
 	)
 {
 
-#if LCDMODE_LTDC_L24 || LCDMODE_HORFILL
-
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
 	ltdc_pixel(x, y + 0, pattern & 0x01);
 	ltdc_pixel(x, y + 1, pattern & 0x02);
@@ -355,24 +342,7 @@ ltdc_vertical_pixN(
 	ltdc_pixel(x, y + 5, pattern & 0x20);
 	ltdc_pixel(x, y + 6, pattern & 0x40);
 	ltdc_pixel(x, y + 7, pattern & 0x80);
-
-	// сместить по вертикали?
-	//ltdc_secondoffs ++;
-
-#else /* LCDMODE_LTDC_L24 */
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
-	// размещаем пиксели по горизонтали
-	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [pattern];
-	memcpy(tgr, pcl, sizeof (* pcl) * w);
-	//dcache_clean((uintptr_t) tgr, sizeof (PACKEDCOLORPIP_T) * w);
-#endif /* LCDMODE_LTDC_L24 */
 }
-
-#if LCDMODE_HORFILL
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void RAMFUNC ltdc_horizontal_pixels(
@@ -450,21 +420,13 @@ static uint_fast16_t RAMFUNC ltdc_put_char_half(uint_fast16_t xpix, uint_fast16_
 	return xpix + width2;
 }
 
-#else /* LCDMODE_HORFILL */
-#endif /* LCDMODE_HORFILL */
-
 #if 0
 uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
 	const uint_fast8_t ci = smallfont_decode(cc);
-#if LCDMODE_HORFILL
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_put_char_small(xpix, ypix, ci);
-#else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_small(xpix, ypix, ci);
-#endif /* LCDMODE_HORFILL */
 }
 #endif
 
@@ -503,12 +465,7 @@ uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc, ui
     const uint_fast8_t width = bigfont_width(cc);
     const uint_fast8_t ci = bigfont_decode(cc);
 	savewhere = __func__;
-#if LCDMODE_HORFILL
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_put_char_big(x, y, ci, width, buffer, dx, dy);
-#else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_big(x, y, ci, width, buffer, dx, dy);
-#endif /* LCDMODE_HORFILL */
 }
 
 uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
@@ -519,12 +476,7 @@ uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, u
     const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
-#if LCDMODE_HORFILL
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_put_char_half(x, y, ci, width, buffer, dx, dy);
-#else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_half(x, y, ci, buffer, dx, dy);
-#endif /* LCDMODE_HORFILL */
 }
 
 uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
@@ -535,12 +487,8 @@ uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, cha
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t ci = smallfont_decode(cc);
-#if LCDMODE_HORFILL
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+
 	return ltdc_put_char_small(xpix, ypix, ci, buffer, dx, dy);
-#else /* LCDMODE_HORFILL */
-	return ltdc_vertical_put_char_small(xpix, ypix, ci, buffer, dx, dy);
-#endif /* LCDMODE_HORFILL */
 }
 
 void display_wrdata_end(void)
@@ -701,10 +649,6 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 
 #endif /* WITHPRERENDER */
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_TCG104XGLPAPNN || LCDMODE_H497TLB01P4 || LCDMODE_LQ123K3LG01
-
-// заглушки
-
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void
@@ -739,7 +683,6 @@ void display_uninitialize(void)
 #endif /* WITHOPENVG */
 }
 
-#endif /* LCDMODE_LQ043T3DX02K */
 #endif /* LCDMODE_LTDC */
 
 #if 0

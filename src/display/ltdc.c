@@ -287,7 +287,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXADJ(DIM_SECOND);	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXADJ(DIM_X);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -1268,7 +1268,7 @@ static void LCDx_LayerInit(
 
 	/* the length of one line of pixels in bytes + 3 then :
 	Line Lenth = Active high width x number of bytes per pixel + 3 
-	Active high width         = DIM_SECOND 
+	Active high width         = DIM_X 
 	number of bytes per pixel = 2    (pixel_format : RGB565) 
 	number of bytes per pixel = 1    (pixel_format : L8) 
 	*/
@@ -1425,7 +1425,7 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDCx_InitTypeDef LTDC_InitStruct;
 
-	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
+	pipparams_t mainwnd = { 0, 0, DIM_X, DIM_Y };
 
 	LTDC_InitStruct.LTDC_HSPolarity = vdmode->hsyncneg ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     

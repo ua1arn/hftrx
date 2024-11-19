@@ -3608,7 +3608,7 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 #endif /* WITHINTEGRATEDDSP */
 
 
-#if LCDMODE_LTDC && WITHLTDCHW
+#if WITHLTDCHW
 
 // работа с видеобуферами
 
@@ -3929,7 +3929,7 @@ void colmain_fb_list(uintptr_t * frames)
 	}
 }
 
-#endif /* LCDMODE_LTDC && WITHLTDCHW */
+#endif /* WITHLTDCHW */
 
 #if WITHBUFFERSDEBUG
 
@@ -3970,19 +3970,19 @@ void buffers_diagnostics(void)
 #endif /* WITHHDMITVHW */
 	//message8.debug();
 
-#if LCDMODE_LTDC && WITHLTDCHW && 0
+#if WITHLTDCHW && 0
 	colmain0fblist.debugslow();
 #if defined (TCONTV_PTR)
 	colmain1fblist.debugslow();
 #endif /* defined (TCONTV_PTR) */
-#endif /* LCDMODE_LTDC && WITHLTDCHW */
+#endif /* WITHLTDCHW */
 
 	PRINTF("\n");
 #endif /* WITHINTEGRATEDDSP */
 }
 
-#if LCDMODE_LTDC && WITHLTDCHW
-#endif /* LCDMODE_LTDC && WITHLTDCHW */
+#if WITHLTDCHW
+#endif /* WITHLTDCHW */
 
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
@@ -4022,12 +4022,12 @@ static void buffers_spool(void * ctx)
 #endif /* WITHINTEGRATEDDSP */
 	//message8.spool10ms();
 
-#if LCDMODE_LTDC && WITHLTDCHW
+#if WITHLTDCHW
 	colmain0fblist.spool10ms();
 #if defined (TCONTV_PTR)
 	colmain1fblist.spool10ms();
 #endif /* defined (TCONTV_PTR) */
-#endif /* LCDMODE_LTDC && WITHLTDCHW */
+#endif /* WITHLTDCHW */
 }
 
 #else /* WITHBUFFERSDEBUG */
