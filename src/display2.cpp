@@ -1035,7 +1035,7 @@ display2_smeter15(
 	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	static uint_fast8_t first_tx = 0;
 
-	int gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
+	uint_fast16_t gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORPIP_GREEN, 1);
 
@@ -1069,7 +1069,7 @@ display2_smeter15(
 		if (gswr > smpr->gs)
 			gswr_smooth = gswr;
 
-		if (gswr == smpr->gs && gswr_smooth > smpr->gs)
+		if (gswr == smpr->gs && gswr_smooth > smpr->gs && gswr_smooth >= gx_hyst)
 			gswr = (gswr_smooth -= gx_hyst) > smpr->gs ? gswr_smooth : smpr->gs;
 	}
 	else
@@ -5473,11 +5473,11 @@ static void display2_spectrum(
 							uint_fast16_t y1 = y0 - t0;
 							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
-							h = h > y0 ? y0 : h;
+							h = h > (int) y0 ? y0 : h;
 
 							for (; h > 0; h --)
 							{
-								ASSERT(y0 >= h);
+								ASSERT((int) y0 >= h);
 								/* предотвращение отрисовки по ранее закрашенной области*/
 								if (* colpip_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != bgcolor)
 									break;
