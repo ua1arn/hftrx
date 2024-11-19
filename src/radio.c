@@ -12866,9 +12866,10 @@ display2_redrawbarstimed(
 		if (FWD == PWRI)
 		{
 			const adcvalholder_t f = board_getadc_unfiltered_truevalue(FWD);
+			const adcvalholder_t r = board_getadc_unfiltered_truevalue(REF);
 			board_adc_store_data(PWRMRRIX, f);
 			board_adc_store_data(FWDMRRIX, f);
-			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+			board_adc_store_data(REFMRRIX, r);
 		}
 		else
 		{
