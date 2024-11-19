@@ -3875,9 +3875,9 @@ void colmain_nextfb(void)
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
 
-#if RTMIXIDLCD
+#if defined(RTMIXIDLCD)
 	hardware_ltdc_main_set(RTMIXIDLCD, frame);
-#elif RTMIXIDTV
+#elif defined(RTMIXIDTV)
 	hardware_ltdc_main_set(RTMIXIDTV, frame);
 #endif /* WITHHDMITVHW */
 
