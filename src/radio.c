@@ -254,9 +254,7 @@ getstablev16(const volatile uint_fast16_t * p)
 
 static void
 display2_redrawbarstimed(
-	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
-	const FLASHMEM struct menudef * mp
+	uint_fast8_t immed	// Безусловная перерисовка изображения
 	);
 
 #if WITHLFM
@@ -5087,7 +5085,7 @@ static uint_fast8_t tuneabort(void)
 
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
-	display2_redrawbarstimed(1, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbarstimed(1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	processmessages(& kbch, & kbready, 0, NULL);
 	if (kbready != 0)
@@ -12850,18 +12848,19 @@ display_refreshperformed_bars(void)
 static void
 //NOINLINEAT
 display2_redrawbarstimed(
-	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
-	const FLASHMEM struct menudef * mp
+	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
 	if (display_refresenabled_bars())
+	{
 		display2_latch();
+		/* быстро меняющиеся значения с частым опорсом */
+		main_speed_diagnostics();
+		looptests();		// Периодически вызывается в главном цикле - тесты
+	}
 
 	if (immed || display_refresenabled_bars())
 	{
-		/* быстро меняющиеся значения с частым опорсом */
-		main_speed_diagnostics();
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHSWRMTR && WITHTX
 		if (FWD == PWRI)
@@ -12897,7 +12896,6 @@ display2_redrawbarstimed(
 
 	if (immed || display_refreshenabled_voltage())
 	{
-		looptests();		// Периодически вызывается в главном цикле - тесты
 #if WITHAUTOTUNER && 0
 		//if (gtx && ! reqautotune)
 		{
@@ -12942,31 +12940,8 @@ display_redrawfreqstimed(
 	}
 }
 
-// Обновление дисплея - всё, включая частоту
 static void
-//NOINLINEAT
-display_redrawfreqmodesbarsnow(
-	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
-	const FLASHMEM struct menudef * mp
-	)
-{
-	if (extra == 0)
-	{
-		display_redrawfreqstimed(1);	/* безусловное обновление показания частоты */
-		display2_needupdae();
-		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-	}
-	else
-	{
-		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-	}
-}
-
-static void
-directctlupdate(
-	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
-	)
+directctlupdate(void)
 {
 	uint_fast8_t changedtx = 0;
 #if WITHTX
@@ -12978,7 +12953,7 @@ directctlupdate(
 	{
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
-		display_redrawfreqmodesbarsnow(inmenu, mp);	// Обновление дисплея - всё, включая частоту
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 	}
 }
 
@@ -15425,13 +15400,13 @@ void app_processing(
 	{
 		display2_bgprocess(inmenu, amenuset(), NULL);			/* выполнение шагов state machine отображения дисплея */
 	}
-	directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+	directctlupdate();		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
 	if (dimmflagch != 0)
 	{
 		dimmflagch = 0;
-		display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 	}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -15449,7 +15424,7 @@ void app_processing(
 	{
 		sleepflagch = 0;
 		display2_bgreset();
-		display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 	}
 #endif /* WITHSLEEPTIMER */
@@ -15503,7 +15478,7 @@ processmessages(
 			// 12 bytes as parameter
 			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
 			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
-				display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
+				display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		}
 #endif /* WITHCAT */
 		break;
@@ -16666,7 +16641,7 @@ modifysettings(
 #if WITHDEBUG
 	PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
-	display2_redrawbarstimed(1, 1, mp);
+	display2_redrawbarstimed(1);
 	encoders_clear();
 
 	for (;;)
@@ -16747,7 +16722,7 @@ modifysettings(
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
 						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
-						display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+						display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 					}
 				}
 				continue;	// требуется обновление индикатора
@@ -16756,7 +16731,7 @@ modifysettings(
 			case KBD_CODE_LOCK:
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				uif_key_lockencoder();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 		#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 			case KBD_CODE_LOCK_HOLDED:
@@ -16777,27 +16752,27 @@ modifysettings(
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* выключить режим настройки или приём/передача */
 				uif_key_tuneoff();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_TXTUNE:
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* выключить режим настройки или приём/передача */
 				uif_key_tune();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 	#if WITHAUTOTUNER
 			case KBD_CODE_ATUSTART:
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				uif_key_atunerstart();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_ATUBYPASS:
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				uif_key_bypasstoggle();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 	#endif /* WITHAUTOTUNER */
 
@@ -16808,7 +16783,7 @@ modifysettings(
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -16829,7 +16804,7 @@ modifysettings(
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -16854,7 +16829,7 @@ modifysettings(
 				PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				break;
 			}
 		}
@@ -16910,7 +16885,7 @@ modifysettings(
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
-			display2_redrawbarstimed(1, 1, mp);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(1);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 			savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -16918,7 +16893,7 @@ modifysettings(
 		}
 		else
 		{
-			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		}
 #endif /* WITHENCODER */
 	}
@@ -17496,7 +17471,7 @@ static void vfoallignment(void)
 		uint_fast8_t kbch, kbready;
 
 		processmessages(& kbch, & kbready, 1, NULL);
-		//display2_redrawbarstimed(0, 1, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		//display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
 		{
@@ -18035,7 +18010,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHLCDBACKLIGHTOFF
 		{
 			dimmmode = calc_next(dimmmode, 0, 1);
-			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+			display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHTOFF */
@@ -18805,14 +18780,14 @@ static STTE_t hamradio_tune_step(void)
 	switch (tunerstate)
 	{
 	case TUNERSTATE_0:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 		auto_tune0_init();
 		tunerstate = TUNERSTATE_01;
 		break;
 
 	case TUNERSTATE_01:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		switch (auto_tune0())
 		{
 		case PHASE_ABORT:
@@ -18829,7 +18804,7 @@ static STTE_t hamradio_tune_step(void)
 		break;
 
 	case TUNERSTATE_1:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		switch (auto_tune1())
 		{
 		case PHASE_ABORT:
@@ -18846,7 +18821,7 @@ static STTE_t hamradio_tune_step(void)
 		break;
 
 	case TUNERSTATE_2:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		switch (auto_tune2())
 		{
 		case PHASE_ABORT:
@@ -18861,7 +18836,7 @@ static STTE_t hamradio_tune_step(void)
 		}
 
 	case TUNERSTATE_ABORTING:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		auto_tune3();
 		reqautotune = 0;
 		updateboard(1, 0);
@@ -18931,7 +18906,7 @@ static void hamradio_main_initialize(void)
 	gfreqs [getbankindex_raw(1] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
-	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+	directctlupdate();		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_bgreset();
@@ -18963,7 +18938,7 @@ static void hamradio_main_initialize(void)
 		for (;;)
 			prog_cmx992_print(target);
 
-		display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		//prog_pll1_init();
 		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
@@ -18975,8 +18950,7 @@ static void hamradio_main_initialize(void)
 	encoders_clear();
 
 	/* начальное отображение */
-	display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
-
+	display2_redrawbarstimed(1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 }
 
 // работа в главной машине состояний
@@ -19046,7 +19020,7 @@ hamradio_main_step(void)
 				const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
 			#endif /* WITHSPLIT, WITHSPLITEX */
 
-			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && ! BOARD_PPSIN_BIT
 			if (lfmmode)
@@ -19074,7 +19048,7 @@ hamradio_main_step(void)
 				// вход в режим настройки ГУНов первого гетеродина
 				display2_bgreset();
 				vfoallignment();
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
@@ -19125,7 +19099,7 @@ hamradio_main_step(void)
 				hamradio_gui_enc2_update();
 				display2_needupdae();
 #else /* WITHTOUCHGUI */
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 #endif /* WITHTOUCHGUI */
 			}
 #endif /*WITHENCODER2 */
@@ -19198,7 +19172,7 @@ hamradio_main_step(void)
 				display2_needupdae();
 
 		#else /* WITHTOUCHGUI */
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		#endif /* WITHTOUCHGUI */
 
@@ -19213,7 +19187,7 @@ hamradio_main_step(void)
 				display2_needupdae();
 
 		#else /* WITHTOUCHGUI */
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		#endif /* WITHTOUCHGUI */
 
