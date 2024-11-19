@@ -136,8 +136,8 @@ void wait_iq(
 		{	0,	0, 4,	0,	display2_siglevel4, 	REDRM_ALL, PG0, },	// signal level dBm
 		{	0,	DLES,	0,	0,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	REDRM_ALL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50,	0,	display2_spectrum,	REDRM_ALL, PG0, },// подготовка изображения спектра
-		{	0,	DLES,	50,	0,	display2_waterfall,	REDRM_ALL, PG0, },// подготовка изображения водопада
+		{	0,	DLES,	50,	0,	display2_spectrum,	REDRM_ALL, PG1, },// подготовка изображения спектра
+		{	0,	DLES,	50,	0,	display2_waterfall,	REDRM_ALL, PG1, },// подготовка изображения водопада
 		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	REDRM_ALL, PG1, },
 
 		{	0,	0,	0,	0,	display2_nextfb, 	REDRM_ALL, PG1, },
