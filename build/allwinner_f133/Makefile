@@ -62,7 +62,7 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
 #OPT = -Os -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
@@ -86,8 +86,8 @@ DINCDIR += \
 	$(USBXDIR)
 	
 DINCDIR += \
-	$(CMSISDIR)/Core_A/Include \
-	$(CMSISDIR)/Core_A/Source
+	$(CMSISDIR)/Core/Include \
+	$(CMSISDIR)/Core/Source
 	
 DINCDIR += \
 	$(CMSISDSPDIR)/Include \

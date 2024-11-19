@@ -2492,7 +2492,7 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 	case 1: return DE_MIXER0_VSU1;	// VI1
 	case 2: return DE_MIXER1_VSU1;	// VI1
 	}
-#elif CPUSTYLE_T113 || CPUSTYLE_F113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	switch (rtmixid)
 	{
 	default: return NULL;
@@ -2520,7 +2520,7 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int uich)
 	case 1: return DE_MIXER0_UIS1;	// UI1
 	case 2: return DE_MIXER1_UIS1;	// UI1
 	}
-#elif CPUSTYLE_T113 || CPUSTYLE_F113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	switch (rtmixid)
 	{
 	default: return NULL;

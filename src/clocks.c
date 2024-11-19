@@ -4029,7 +4029,7 @@ static void t113_set_pll_cpu(unsigned n)
 }
 //#if CPUSTYLE_F133
 
-void set_riscv_axi(unsigned sel)
+static void f133_set_axi(unsigned sel)
 {
 	uint32_t val;
 
@@ -4042,8 +4042,8 @@ void set_riscv_axi(unsigned sel)
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->RISC_CLK_REG =
 			(sel << 24) | // 000: HOSC or 191
-			(1 << 8) |	// RISC_AXI_DIV_CFG
-			(0 << 0) |	// RISC_DIV_CFG
+			0x01 * (1 << 8) |	// RISC_AXI_DIV_CFG
+			0x00 * (1 << 0) |	// RISC_DIV_CFG
 			0;
 	(void) CCU->RISC_CLK_REG;
 }
@@ -4066,25 +4066,25 @@ static void t113_set_psi_ahb(void)
 #if 0
 	// 300 MHz
 	CCU->PSI_CLK_REG =
-		(0x03 << 24) |
-		(1 << 8) |			// N = 1
-		((1 - 1) << 0) |	// M (1..4)
+		0x03 * (UINT32_C(1) << 24) |
+		0x01 * (UINT32_C(1) << 8) |			// N = 1
+		(1 - 1) * (UINT32_C(1) << 0) |		// M (1..4)
 		0;
 	(void) CCU->PSI_CLK_REG;
 #elif 1
 	// 200 MHz
 	CCU->PSI_CLK_REG =
-		(0x03 << 24) |
-		(0 << 8) |			// N = 1
-		((3 - 1) << 0) |	// M (1..4)
+		0x03 * (UINT32_C(1) << 24) |
+		0x00 * (UINT32_C(1) << 8) |			// N = 1
+		(3 - 1) * (UINT32_C(1) << 0) |		// M (1..4)
 		0;
 	(void) CCU->PSI_CLK_REG;
 #else
 	// 100 MHz
 	CCU->PSI_CLK_REG =
-		(0x03 << 24) |
-		(1 << 8) |			// N = 1
-		((3 - 1) << 0) |	// M (1..4)
+		0x03 * (UINT32_C(1) << 24) |
+		0x01 * (UINT32_C(1) << 8) |			// N = 1
+		(3 - 1) * (UINT32_C(1) << 0) |		// M (1..4)
 		0;
 	(void) CCU->PSI_CLK_REG;
 #endif
@@ -5072,12 +5072,12 @@ uint_fast32_t allwnr_t113_get_dsp_freq(void)
 	}
 }
 
-void allwnr_t113_pll_initialize(int forced)
+void allwnr_t113_pll_initialize(int N)
 {
 #if CPUSTYLE_T113
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
 #elif CPUSTYLE_F133
-	set_riscv_axi(0x00);	// OSC24
+	f133_set_axi(0x00);	// OSC24
 #endif
 	local_delay_initialize();
 
@@ -5091,12 +5091,12 @@ void allwnr_t113_pll_initialize(int forced)
 	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
-	t113_set_pll_cpu(forced ? PLL_CPU_N : 17);	// see sdram.c
+	t113_set_pll_cpu(N);	// see sdram.c
 
 #if CPUSTYLE_T113
 	t113_set_axi(0x03, 4, 2);
 #elif CPUSTYLE_F133
-	set_riscv_axi(0x05);	// 101: PLL_CPU
+	f133_set_axi(0x05);	// 101: PLL_CPU
 #endif
 	local_delay_initialize();
 
@@ -9610,7 +9610,7 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
-	allwnr_t113_pll_initialize(forced);
+	allwnr_t113_pll_initialize(forced ? PLL_CPU_N : 17);
 
 #elif CPUSTYLE_F133
 
@@ -9626,9 +9626,7 @@ sysinit_pll_initialize(int forced)
 	}
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
-	allwnr_t113_pll_initialize(forced);
-//
-	set_pll_riscv_axi(RV_PLL_CPU_N);
+	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
 
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
 

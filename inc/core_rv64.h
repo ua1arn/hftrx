@@ -67,27 +67,6 @@
  extern "C" {
 #endif
 
-
-__STATIC_INLINE void __DMB(void)
-{
-	asm volatile ("FENCE" ::: "memory");
-}
-
-__STATIC_INLINE void __DSB(void)
-{
-	asm volatile ("FENCE" ::: "memory");
-}
-
-__STATIC_INLINE void __WFI(void)
-{
-	__asm volatile ("wfi":::);
-}
-
-__STATIC_INLINE void __NOP(void)
-{
-	__asm volatile ("nop":::);
-}
-
 /** \brief  Enable Floating Point Unit
  */
 __STATIC_INLINE void __FPU_Enable(void)
