@@ -1847,14 +1847,16 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
     __asm__ volatile ("" ::: "memory");
 	cli();
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	if (GIC_GetInterfacePriorityMask() >= newIRQL)
+	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
+	ASSERT2(oldv != 0, file, line);
+	if (oldv >= newIRQL)
 		; /* Не понижаем приоритет */
 	else
 	{
-		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u, cpuid=%u\n", file, line, (unsigned) newIRQL, (unsigned) GIC_GetInterfacePriorityMask(), (unsigned) arm_hardware_cpuid());
-		ASSERT2(GIC_GetInterfacePriorityMask() >= newIRQL, file, line);	/* Не понижаем приоритет */
+		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u, cpuid=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv, (unsigned) arm_hardware_cpuid());
+		ASSERT2(oldv >= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
-	* oldIrql = GIC_GetInterfacePriorityMask();
+	* oldIrql = oldv;
 	GIC_SetInterfacePriorityMask(newIRQL);
 #elif defined (__CORTEX_M)
 	////ASSERT2(__get_BASEPRI() >= newIRQL, file, line);	/* Не понижаем приоритет */
@@ -1877,13 +1879,14 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 }
 
 /* Работа с текущим ядром */
-void LowerIrql(IRQL_t newIRQL)
+void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 {
 #if LINUX_SUBSYSTEM
 #elif CPUSTYLE_ATMEGA
     SREG = newIRQL;
     __asm__ volatile ("" ::: "memory");
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+    ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(newIRQL);
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
@@ -1893,6 +1896,11 @@ void LowerIrql(IRQL_t newIRQL)
 #else
 	#warning Implement LowerIrql
 #endif
+}
+
+void InitializeIrql(IRQL_t newIRQL)
+{
+	LowerIrql(newIRQL);
 }
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
@@ -2336,6 +2344,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 //	{
 //		PRINTF("board_dpc_call: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
 //	}
+	ASSERT(coreid == 0);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
@@ -2361,6 +2370,7 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 //	{
 //		PRINTF("board_dpc_addentry: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
 //	}
+	ASSERT(coreid == 0);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
@@ -2389,10 +2399,10 @@ void board_dpc_processing(void)
 	// Выполнение периодического вызова user-mode функций по списку
 	{
 		IRQL_t oldIrql;
-		PLIST_ENTRY t;
+		PRLIST_ENTRY t;
 		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		const LIST_ENTRY * const list = & dpc->dpclistentries;
-		LIST_ENTRY * tnext;
+		PRLIST_ENTRY const list = & dpc->dpclistentries;
+		PRLIST_ENTRY tnext;
 		for (t = list->Blink; t != list; t = tnext)
 		{
 			ASSERT(t != NULL);
@@ -2420,12 +2430,11 @@ void board_dpc_processing(void)
 	// Выполнение однократно вызываемых user-mode функций по списку
 	{
 		IRQL_t oldIrql;
-		PLIST_ENTRY t;
 		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		LIST_ENTRY * const list = & dpc->dpclistcalls;
+		PRLIST_ENTRY const list = & dpc->dpclistcalls;
 		while (! IsListEmpty(list))
 		{
-			PLIST_ENTRY t = RemoveTailList(list);
+			PRLIST_ENTRY t = RemoveTailList(list);
 			IRQLSPIN_UNLOCK(lock, oldIrql);
 			ASSERT(t != NULL);
 
@@ -2552,15 +2561,13 @@ void cpu_initialize(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	{
-		IRQ_Initialize();	// GIC_Enable() inside
-		//GIC_Enable();
-	#if CPUSTYLE_R7S721
-		r7s721_intc_initialize();
-	#endif /* CPUSTYLE_R7S721 */
+	IRQ_Initialize();	// GIC_Enable() inside
+	//GIC_Enable();
+#if CPUSTYLE_R7S721
+	r7s721_intc_initialize();
+#endif /* CPUSTYLE_R7S721 */
 
-		GIC_SetInterfacePriorityMask(IRQL_USER);
-	}
+	InitializeIrql(IRQL_USER);
 
 	#if WITHSMPSYSTEM
 		arm_hardware_populate_initialize();

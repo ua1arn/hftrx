@@ -15025,7 +15025,7 @@ void midtests(void)
 {
 #if WITHRTOS
 	{
-		  GIC_SetInterfacePriorityMask(0xffU);
+		InitializeIrql(0xffU);
 		  __enable_irq();
 		// now we switch to freertos
 		BaseType_t ret = xTaskCreate(task_init, "init", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+2, NULL);

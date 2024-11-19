@@ -2984,7 +2984,7 @@ sysinit_fpu_initialize(void)
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	GIC_Enable();
-	GIC_SetInterfacePriorityMask(IRQL_USER);	// nested interrupts support
+	InitializeIrql(IRQL_USER);	// nested interrupts support
 
 #endif
 #endif
@@ -4391,7 +4391,7 @@ void Reset_CPUn_Handler(void)
 	sysinit_cache_initialize();	// caches iniitialize
 
 	GIC_Enable();
-	GIC_SetInterfacePriorityMask(IRQL_IPC_ONLU);	// nested interrupts support
+	InitializeIrql(IRQL_IPC_ONLU);	// nested interrupts support
 
 	L1C_InvalidateDCacheAll();
 	L1C_InvalidateICacheAll();
@@ -4413,7 +4413,7 @@ void Reset_CPUn_Handler(void)
 	unsigned core = arm_hardware_cpuid();
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
-	GIC_SetInterfacePriorityMask(IRQL_USER);	// nested interrupts support
+	InitializeIrql(IRQL_USER);	// nested interrupts support
 
 #if WITHLWIP
 	network_initialize();
