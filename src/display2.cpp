@@ -1225,7 +1225,7 @@ display2_clearbg(
 {
 #if LCDMODE_LTDC
 
-	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 
 #endif /* LCDMODE_LTDC */
 }
@@ -2683,14 +2683,14 @@ static void display2_thermo4(
 	if (tempv < 0)
 	{
 		tempv = 999; //- tempv;
-		colmain_setcolors(COLORPIP_WHITE, display_getbgcolor());
+		colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
-		colmain_setcolors(COLORPIP_RED, display_getbgcolor());
+		colmain_setcolors(COLORPIP_RED, display2_getbgcolor());
 	else if (tempv >= 300)
-		colmain_setcolors(COLORPIP_YELLOW, display_getbgcolor());
+		colmain_setcolors(COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		colmain_setcolors(COLORPIP_GREEN, display_getbgcolor());
+		colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
 
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -2719,14 +2719,14 @@ static void display2_thermo5(
 	if (tempv < 0)
 	{
 		tempv = 999; //- tempv;
-		colmain_setcolors(COLORPIP_WHITE, display_getbgcolor());
+		colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
-		colmain_setcolors(COLORPIP_RED, display_getbgcolor());
+		colmain_setcolors(COLORPIP_RED, display2_getbgcolor());
 	else if (tempv >= 300)
-		colmain_setcolors(COLORPIP_YELLOW, display_getbgcolor());
+		colmain_setcolors(COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		colmain_setcolors(COLORPIP_GREEN, display_getbgcolor());
+		colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
 
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -5427,7 +5427,7 @@ static void display2_spectrum(
 			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
 			uint_fast16_t ylast_sp = 0;
 			int i;
-			const COLORPIP_T bgcolor = display_getbgcolor();
+			const COLORPIP_T bgcolor = display2_getbgcolor();
 			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 			{
 				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
@@ -5974,13 +5974,12 @@ void display2_bgprocess(
 		dctx_t * pctx
 		)
 {
-#if WITHLVGL
-	return;
-#elif LINUX_SUBSYSTEM
 	if (redrawreq == 0)
 		return;
 	redrawreq = 0;
-
+#if WITHLVGL
+	return;
+#elif LINUX_SUBSYSTEM
 	for (int i = 0; i < WALKCOUNT; i ++)
 	{
 		const struct dzone * const p = & dzones [i];
@@ -5988,24 +5987,36 @@ void display2_bgprocess(
 			(* p->redraw)(p->x, p->y, pctx);
 	}
 #else
-	if (redrawreq == 0)
-		return;
-	redrawreq = 0;
 	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
 #endif
+}
+
+#if LCDMODE_COLORED
+static COLORPIP_T bgcolor = COLORPIP_BLACK;
+#endif /* LCDMODE_COLORED */
+
+void
+display2_setbgcolor(COLORPIP_T c)
+{
+#if LCDMODE_COLORED
+	bgcolor = c;
+#endif /* LCDMODE_COLORED */
+}
+
+COLORPIP_T
+display2_getbgcolor(void)
+{
+#if LCDMODE_COLORED
+	return bgcolor;
+#else /* LCDMODE_COLORED */
+	return COLOR_BLACK;
+#endif /* LCDMODE_COLORED */
 }
 
 // Interface functions
 // сброс state machine отображения дисплея и очистить дисплей
 void display2_bgreset(void)
 {
-#if WITHLVGL
-	return;
-#endif /* WITHLVGL */
-
-	uint_fast8_t i;
-
-	display_clear();		// Заполниить цветом фона
 	redrawreq = 1;
 }
 

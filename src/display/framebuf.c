@@ -268,7 +268,7 @@ static PACKEDCOLORPIP_T bgscreen [GXSIZE(DIM_X, DIM_Y)];
 /* Заполнение цветом фона - будет использоваться для аппаратной оптимизации заполнения копированием */
 static void aw_g2d_initialize(void)
 {
-	bgcolor = display_getbgcolor();
+	bgcolor = display2_getbgcolor();
 	// программная реализация
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(bgscreen); ++ i)

@@ -9098,7 +9098,7 @@ updateboard2(void)
 #if WITHENCODER
 	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
-	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
+	display2_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
 
 
@@ -15431,7 +15431,6 @@ void app_processing(
 	if (dimmflagch != 0)
 	{
 		dimmflagch = 0;
-		display2_bgreset();
 		display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
 		updateboard(1, 0);
 	}
@@ -16957,8 +16956,6 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #if WITHTOUCHGUI
 	gui_uif_editmenu(name, menupos, exitkey);
 #else
-	display2_bgreset();
-
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
 
 	updateboard(1, 0);
@@ -18038,7 +18035,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHLCDBACKLIGHTOFF
 		{
 			dimmmode = calc_next(dimmmode, 0, 1);
-			display2_bgreset();
 			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 			updateboard(1, 0);
 		}
@@ -18213,7 +18209,6 @@ processkeyboard(uint_fast8_t kbch)
 		if (reqautotune != 0)
 			return 1;
 	#endif /* WITHAUTOTUNER */
-		display2_bgreset();
 	#if defined (RTC1_TYPE)
 		getstamprtc();
 	#endif /* defined (RTC1_TYPE) */
@@ -18247,7 +18242,6 @@ processkeyboard(uint_fast8_t kbch)
 				 - не вызывает сохранение состояния диапазона */
 			menuset = calc_next(menuset, 0, display_getpagesmax());
 			save_i8(RMT_MENUSET_BASE, menuset);
-			display2_bgreset();
 			return 1;	// требуется обновление индикатора
 		}
 #endif /* ! WITHTOUCHGUI */
@@ -19080,7 +19074,6 @@ hamradio_main_step(void)
 				// вход в режим настройки ГУНов первого гетеродина
 				display2_bgreset();
 				vfoallignment();
-				display2_bgreset();
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO

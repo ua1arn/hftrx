@@ -250,7 +250,7 @@ uint_fast16_t normalize(
 	uint_fast16_t range
 	);
 
-#define BGCOLOR (display_getbgcolor())
+#define BGCOLOR (display2_getbgcolor())
 
 void display_2states_P(
 	uint_fast8_t x,
@@ -325,6 +325,9 @@ void board_set_afspeclow(int_fast16_t v);		// нижняя частота ото
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 void display2_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
 void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+
+COLORPIP_T display2_getbgcolor(void);
+void display2_setbgcolor(COLORPIP_T c);
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 

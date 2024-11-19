@@ -183,9 +183,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 #define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
 #define GXSIZE(dx, dy)	((uint_fast32_t) GXADJ(dx) * (dy))	// размер буфера для цветного растра
 
-COLORPIP_T display_getbgcolor(void);
-void display_setbgcolor(COLORPIP_T c);
-
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */

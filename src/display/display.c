@@ -242,7 +242,7 @@ void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 // Заполниить цветом фона
 void display_clear(void)
 {
-	const COLORPIP_T bg = display_getbgcolor();
+	const COLORPIP_T bg = display2_getbgcolor();
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
 	colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
@@ -1116,28 +1116,6 @@ void display_value_small_xy(
 		}
 		freq = res.rem;
 	}
-}
-
-#if LCDMODE_COLORED
-static COLORPIP_T bgcolor = COLORPIP_BLACK;
-#endif /* LCDMODE_COLORED */
-
-void
-display_setbgcolor(COLORPIP_T c)
-{
-#if LCDMODE_COLORED
-	bgcolor = c;
-#endif /* LCDMODE_COLORED */
-}
-
-COLORPIP_T
-display_getbgcolor(void)
-{
-#if LCDMODE_COLORED
-	return bgcolor;
-#else /* LCDMODE_COLORED */
-	return COLOR_BLACK;
-#endif /* LCDMODE_COLORED */
 }
 
 #if WITHLTDCHW || 1
