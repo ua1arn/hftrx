@@ -1101,7 +1101,7 @@ extern "C" {
 	typedef uint_fast32_t IRQL_t;
 	enum
 	{
-		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+		PRIOv_IPC = 1,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
 		PRIOv_OVRT,
 		PRIOv_RT,
