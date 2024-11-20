@@ -1732,9 +1732,9 @@ static void window_options_process(void)
 #if WITHAD936XIIO
 		add_element("btn_936x",    100, 44, 0, 0, "AD936x|IIO");
 #endif /* WITHAD936XIIO */
-#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
+#if defined (RTC1_TYPE)
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
-#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
+#endif /* defined (RTC1_TYPE) */
 #if LINUX_SUBSYSTEM
 		add_element("btn_exit",		100, 44, 0, 0, "Terminate|program");
 #endif /* LINUX_SUBSYSTEM */
@@ -1777,7 +1777,7 @@ static void window_options_process(void)
 			button_t * btn_AUDsett = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Display");
-#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
+#if defined (RTC1_TYPE)
 			button_t * btn_Time = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Time");
 			if (bh == btn_Time)
 			{
@@ -1785,7 +1785,7 @@ static void window_options_process(void)
 				open_window(win);
 			}
 			else
-#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
+#endif /* defined (RTC1_TYPE) */
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
@@ -5459,9 +5459,10 @@ static void window_freq_process (void)
 
 static void window_time_process(void)
 {
-#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
+#if defined (RTC1_TYPE)
 	window_t * const win = get_win(WINDOW_TIME);
-	static unsigned year, month, day, hour, minute, second, update;
+	static uint_fast16_t year;
+	static uint_fast8_t month, day, hour, minute, second, update;
 
 	if (win->first_call)
 	{
@@ -5619,7 +5620,7 @@ static void window_time_process(void)
 		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_second");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", second);
 	}
-#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
+#endif /* defined (RTC1_TYPE) */
 }
 
 static void window_kbd_process(void)

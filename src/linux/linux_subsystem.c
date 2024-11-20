@@ -1673,17 +1673,20 @@ void board_rtc_setdatetime(
 	uint_fast8_t seconds
 	)
 {
-	struct tm tm;
+	struct tm * tm;
 	struct timeval tv;
 
-	tm.tm_sec = seconds;
-	tm.tm_min = minutes;
-	tm.tm_hour = hours;
-	tm.tm_mday = dayofmonth;
-	tm.tm_mon = month - 1;
-	tm.tm_year = year + 2000 - 1900;
+	time_t lt = time(NULL);
+	tm = localtime (& lt);
 
-	tv.tv_sec = mktime(& tm);;
+	tm->tm_sec = seconds;
+	tm->tm_min = minutes;
+	tm->tm_hour = hours;
+	tm->tm_mday = dayofmonth;
+	tm->tm_mon = month - 1;
+	tm->tm_year = year - 1900;
+
+	tv.tv_sec = mktime(tm);
 	tv.tv_usec = 0;
 
 	if (settimeofday(& tv, NULL) == -1)
