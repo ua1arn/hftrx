@@ -11445,6 +11445,12 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_LTDC
 	{
+#ifdef RTMIXIDTV
+		int rtmixid = RTMIXIDTV;
+#endif
+#ifdef RTMIXIDLCD
+		int rtmixid = RTMIXIDLCD;
+#endif
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -11462,7 +11468,7 @@ void hightests(void)
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
-		hardware_ltdc_main_set4((uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+		hardware_ltdc_main_set4(rtmixid, (uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORPIP_T keycolor = COLORPIP_KEY;
@@ -11649,7 +11655,7 @@ void hightests(void)
 			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
 			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
 
-			hardware_ltdc_main_set4((uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+			hardware_ltdc_main_set4(rtmixid, (uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
 
 			phase = ! phase;
 			c = (c + 1) % cycles;
