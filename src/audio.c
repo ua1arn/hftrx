@@ -5655,11 +5655,11 @@ void dsp_initialize(void)
 	static dpcobj_t user_audioproc_dpc;
 	dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
 
-#if 1//LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 2) || ! WITHSMPSYSTEM))
+#if LINUX_SUBSYSTEM || ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM
 	board_dpc_addentry(& user_audioproc_dpc, 0);
-#elif LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && (HARDWARE_NCORES == 2))
-	board_dpc_addentry(& user_audioproc_dpc, 1);
-#elif LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP
+#elif (HARDWARE_NCORES == 2)
+	board_dpc_addentry(& user_audioproc_dpc, 0);	// fix for STM32MP157
+#elif WITHINTEGRATEDDSP
 	board_dpc_addentry(& user_audioproc_dpc, 2);
 #endif /* WITHINTEGRATEDDSP */
 
