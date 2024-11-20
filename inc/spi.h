@@ -255,20 +255,6 @@ void spi_initialize(void);	// отдельно инициализация SPI
 
 #endif /* WITHSPISW */
 
-void prog_spi_io(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	const uint8_t * txbuff1, unsigned int txsize1,
-	const uint8_t * txbuff2, unsigned int txsize2,
-	uint8_t * rxbuff, unsigned int rxsize
-	);
-
-void prog_spi_exchange(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	const uint8_t * txbuff,
-	uint8_t * rxbuff,
-	unsigned int size
-	);
-
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
