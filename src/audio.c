@@ -5654,11 +5654,12 @@ void dsp_initialize(void)
 
 	static dpcobj_t user_audioproc_dpc;
 	dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
+
 #if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 2) || ! WITHSMPSYSTEM))
 	board_dpc_addentry(& user_audioproc_dpc, 0);
-#elif LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES == 2) || ! WITHSMPSYSTEM))
+#elif LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && (HARDWARE_NCORES == 2))
 	board_dpc_addentry(& user_audioproc_dpc, 1);
-#else
+#elif LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP
 	board_dpc_addentry(& user_audioproc_dpc, 2);
 #endif /* WITHINTEGRATEDDSP */
 
