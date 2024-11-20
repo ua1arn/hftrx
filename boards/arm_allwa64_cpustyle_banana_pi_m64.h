@@ -599,8 +599,6 @@
 	#define SPDIF_NCS_BIT (0 * UINT32_C(1) << 3)	// PC3 SPI0_CS
 	//#define SPDIF_MOSI_BIT (UINT32_C(1) << 4)	// PC4 SPI0_MOSI
 	//#define SPDIF_MISO_BIT (UINT32_C(1) << 5)	// PC5 SPI0_MISO
-	#define SPDIF_D2_BIT (0 * UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
-	#define SPDIF_D3_BIT (0 * UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
 //	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
 //	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
@@ -617,11 +615,9 @@
 	#define HARDWARE_SPI_FREQ (allwnr_a64_get_spi1_freq())
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_piod_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PD1 SPI1_CLK */ \
-		arm_hardware_piod_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PD2 SPI1_MOSI */ \
-		arm_hardware_piod_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PD3 SPI1_MISO */ \
-		arm_hardware_pioc_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+		arm_hardware_piod_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PD1 SPI1_CLK */ \
+		arm_hardware_piod_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PD2 SPI1_MOSI */ \
+		arm_hardware_piod_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PD3 SPI1_MISO */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
