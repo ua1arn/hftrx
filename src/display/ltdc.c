@@ -2740,6 +2740,7 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	if (vram == 0)
 	{
 		ui->CFG [UI_CFG_INDEX].ATTR = 0;
+		ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == 0);
 		return;
 	}
 	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
@@ -2756,18 +2757,18 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
 	ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-//	ui->CFG [UI_CFG_INDEX].COORD = 0;
+	ui->CFG [UI_CFG_INDEX].COORD = 0;
 	ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-//	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
-	ui->OVL_SIZE = ovl_ui_mbsize;
+	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
 	ui->CFG [UI_CFG_INDEX].ATTR = attr;
-//	ui->CFG [UI_CFG_INDEX].FCOLOR = 0x0FFFF0000;
 
-//	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
-//	ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-//	ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
-//	ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
-//	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+	ui->OVL_SIZE = ovl_ui_mbsize;
+
+	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+	ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
+	ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
+	ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
+	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
 static void t113_de_rtmix_initialize(int rtmixid)
