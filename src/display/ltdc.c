@@ -1827,15 +1827,11 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
 		DE_MIXER0_VI1,
-		DE_MIXER0_VI2,
-		DE_MIXER0_VI3,
 };
 
 static DE_VI_TypeDef * const rtmix1_vimap [] =
 {
 		DE_MIXER1_VI1,
-		DE_MIXER1_VI2,
-		DE_MIXER1_VI3,
 };
 
 static DE_UI_TypeDef * const rtmix0_uimap [] =
@@ -1862,7 +1858,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	/* BLD_EN_COLOR_CTL positions 8..11 */
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_H3
 	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
 	#error Unexpected CPUSTYLE_xxx
@@ -2856,6 +2852,19 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 		bld->CH [i].BLD_CH_OFFSET = 0;
 		ASSERT(bld->CH [i].BLD_CH_ISIZE == ovl_ui_mbsize);
 		ASSERT(bld->CH [i].BLD_FILL_COLOR == 0xff000000);
+	}
+
+	for (i = 1; ; ++ i)
+	{
+		if (de3_getui(rtmixid, i) == NULL)
+			break;
+		t113_de_set_address_ui(rtmixid, 0, i);
+	}
+	for (i = 1; ; ++ i)
+	{
+		if (de3_getvi(rtmixid, i) == NULL)
+			break;
+		t113_de_set_address_vi(rtmixid, 0, i);
 	}
 }
 
