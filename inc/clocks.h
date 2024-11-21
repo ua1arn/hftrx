@@ -251,6 +251,8 @@ uint_fast32_t allwnr_a64_get_tcon0_freq(void);
 uint_fast32_t allwnr_a64_get_tcon1_freq(void);
 uint_fast32_t allwnr_a64_get_uart_freq(void);
 uint_fast32_t allwnr_a64_get_twi_freq(void);
+uint_fast32_t allwnr_a64_get_spi0_freq(void);
+uint_fast32_t allwnr_a64_get_spi1_freq(void);
 uint_fast32_t allwnr_a64_get_s_twi_freq(void);
 #endif /* CPUSTYLE_A64 */
 
