@@ -2654,7 +2654,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 		(UINT32_C(255) << 24) | // LAY_GLBALPHA
 		(UINT32_C(1) << 1) | 	// LAY_ALPHA _MODE: 0x1:Globe alpha enable
 #endif
-		(ui_format << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+		ui_format * (UINT32_C(1) << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 		(UINT32_C(1) << 15) |	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
 		//(UINT32_C(1) << 4) |	// LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
 		0;
@@ -2664,7 +2664,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
 	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-//	vi->CFG [VI_CFG_INDEX].COORD = 0;
+	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
 	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
 //	vi->HORI [0] = 0;
@@ -2699,7 +2699,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		(UINT32_C(255) << 24) | // LAY_GLBALPHA
 		(UINT32_C(1) << 1) | 	// LAY_ALPHA _MODE: 0x1:Globe alpha enable
 #endif
-		(vi_format << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+		vi_format * (UINT32_C(1) << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 		0*(UINT32_C(1) << 15) |	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
 		//(UINT32_C(1) << 4) |	// LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
 		0;
@@ -2713,7 +2713,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 	vi->TOP_HADDR [1] = (ptr_hi32(vram1) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 
 	vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-//	vi->CFG [VI_CFG_INDEX].COORD = 0;
+	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
 	vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
 //	vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
@@ -2746,8 +2746,8 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
 	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
 	const uint_fast32_t attr =
-		((vram != 0) << 0) |	// enable
-		(ui_format << 8) | 		//верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
+		(vram != 0) * (UINT32_C(1) << 0) |	// enable
+		ui_format * (UINT32_C(1) << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 #if 0
 		(UINT32_C(255) << 24) | // LAY_GLBALPHA
 		(UINT32_C(1) << 1) | 	// LAY_ALPHA _MODE: 0x1:Globe alpha enable
