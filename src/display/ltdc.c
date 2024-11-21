@@ -1856,7 +1856,11 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
-#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_H3
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+	#define VI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 1
+	/* BLD_EN_COLOR_CTL positions 8..13 */
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
