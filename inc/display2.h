@@ -161,7 +161,7 @@ void display2_bgreset(void);	// сброс state machine отображения 
 void display2_initialize(void);	// проход по элементам с необходимостью инициализации
 void display2_latch(void);
 
-void display2_needupdae(void);
+void display2_needupdate(void);
 
 struct menudef;
 

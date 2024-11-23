@@ -7750,7 +7750,7 @@ uif_encoder2_press(void)
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
 	//display2_mode_subset(amenuset());
-	display2_needupdae();
+	display2_needupdate();
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state != ENC2STATE_INITIALIZE)
@@ -7777,7 +7777,7 @@ uif_encoder2_hold(void)
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
 	//display2_mode_subset(amenuset());
-	display2_needupdae();
+	display2_needupdate();
 #else
 	if (enc2state == ENC2STATE_INITIALIZE)
 		hamradio_gui_enc2_update();
@@ -12938,7 +12938,7 @@ display2_redrawbarstimed(
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
 		//display2_barmeters_subset(amenuset(), extra);
-		display2_needupdae();
+		display2_needupdate();
 		// подтверждение отрисовки
 		display_refreshperformed_bars();
 	}
@@ -12971,7 +12971,7 @@ display2_redrawbarstimed(
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
 		//display2_volts(amenuset(), extra);
-		display2_needupdae();
+		display2_needupdate();
 		display_refreshperformed_voltage();
 	}
 }
@@ -13008,7 +13008,7 @@ display_redrawfreqmodesbarsnow(
 //	{
 //		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 //	}
-	display2_needupdae();
+	display2_needupdate();
 }
 
 static void
@@ -19182,7 +19182,7 @@ hamradio_main_step(void)
 				nrotate_sub = 0;
 #if WITHTOUCHGUI
 				hamradio_gui_enc2_update();
-				display2_mode_subset(0);
+				display2_needupdate();
 #else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI */
@@ -19254,7 +19254,7 @@ hamradio_main_step(void)
 				/* обновление индикатора без сохранения состояния диапазона */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
-				display2_mode_subset(amenuset());
+				display2_needupdate();
 
 		#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
@@ -19269,7 +19269,7 @@ hamradio_main_step(void)
 				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
-				display2_mode_subset(amenuset());
+				display2_needupdate();
 
 		#else /* WITHTOUCHGUI */
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
@@ -20155,7 +20155,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		}
 		updateboard(1, 0);
 		display_redrawfreqstimed(1);
-		display2_mode_subset(amenuset());
+		display2_needupdate();
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 		savemenuvalue(mp);		/* сохраняем отредактированное значение */
 #endif
@@ -20192,7 +20192,7 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	display_redrawfreqstimed(1);
-	display2_mode_subset(amenuset());
+	display2_needupdate();
 }
 
 void hamradio_clean_memory_cells(uint_fast8_t i)

@@ -5961,7 +5961,7 @@ display_walktrough(
 
 static int redrawreq;
 
-void display2_needupdae(void)
+void display2_needupdate(void)
 {
 	redrawreq = 1;
 }
