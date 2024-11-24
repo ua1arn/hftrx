@@ -12848,30 +12848,6 @@ dctx_t * display2_getcontext(void)
 #endif /* WITHDIRECTFREQENER */
 }
 
-/* отображение частоты (частот) настройки */
-static void
-display_freqpair(void)
-{
-#if LCDMODE_LTDC == 0
-#if WITHDIRECTFREQENER
-
-	if (editfreqmode)
-	{
-		display2_dispfreq_a2(editfreq, blinkpos + 1, blinkstate, amenuset());
-	}
-	else
-	{
-		display2_dispfreq_ab(amenuset());	/* отображение всех индикаторов частоты */
-	}
-
-#else /* WITHDIRECTFREQENER */
-
-	display2_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
-
-#endif /* WITHDIRECTFREQENER */
-#endif /* LCDMODE_LTDC == 0 */
-}
-
 // Проверка разрешения обновления дисплея (индикация SWR/S-метр).
 static uint_fast8_t
 display_refresenabled_bars(void)
@@ -12985,7 +12961,7 @@ display_redrawfreqstimed(
 {
 	if (immed || display_refreshenabled_freqs())
 	{
-		display_freqpair();	/* обновление показания частоты */
+		display2_needupdate();	/* обновление показания частоты */
 		display_refreshperformed_freqs();
 	}
 }
@@ -19076,10 +19052,6 @@ hamradio_main_step(void)
 	#endif
 				sthrl = STHRL_RXTX;
 
-#if ! LCDMODE_LTDC
-				display_freqpair();
-				display_refreshperformed_freqs();
-#endif /* ! LCDMODE_LTDC */
 				board_wakeup();
 				break;
 			}
