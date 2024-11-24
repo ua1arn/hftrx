@@ -13664,7 +13664,7 @@ static void aganswer(uint_fast8_t arg)
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_2,
 		(int) arg,
-		(int) afgain1.value
+		(int) ((afgain1.value - BOARD_AFGAIN_MIN) * 255 / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN))
 		);
 	cat_answer(len);
 }
@@ -13679,7 +13679,7 @@ static void rganswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) rfgain1.value
+		(int) ((rfgain1.value - BOARD_IFGAIN_MIN) * 255 / (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN))
 		);
 	cat_answer(len);
 }
