@@ -13,7 +13,7 @@ unsigned calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
-#define DCDCPOINTS 256
+#define DCDCPOINTS 1024
 #define MAXHARMONICS 50
 
 static int
@@ -172,7 +172,8 @@ void buildtable(
 int main(int argc, char* argv[])
 {
     const unsigned bw = 96000 * 1;
-     buildtable(50000000, 400000, 1200000, 30000, 54000000, bw, stdout);    /* Allwinner t113-s3 */
+     buildtable(100000000, 400000, 1200000, 30000, 54000000, bw, stdout);    /* Allwinner t507-h */
+     //buildtable(200000000, 400000, 1200000, 30000, 54000000, bw, stdout);    /* Allwinner t113-s3 */
 //    buildtable(16000000, 400000, 1200000, 30000, 54000000, bw, stdout);  /* STM32H7 */
 //   buildtable(15000000, 400000, 1200000, 30000, 54000000, bw, stdout);  /* Renesas RZA1/L @360 MHz */
  //  buildtable(122880000 / 2, 400000, 1200000, 30000, 54000000, bw, stdout);  /* Zynq 7020 */

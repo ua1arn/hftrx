@@ -9822,7 +9822,7 @@ void SystemCoreClockUpdate(void)
 //static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 	// Note: The working clock of PWM is from APB1 or OSC24M.
-	#define PWMTICKSFREQ (allwnr_t507_get_apb1_freq() / 2)	/* Allwinner t507 / H616 */
+	#define PWMTICKSFREQ (allwnr_t507_get_apb1_freq())	/* Allwinner t507 / H616 */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	#define PWMTICKSFREQ (allwnr_t113_get_apb0_freq() / 2)	/* Allwinner t113-s3 */
@@ -9837,6 +9837,11 @@ void SystemCoreClockUpdate(void)
 	//#error Wrong CPUSTYLE_xxx
 
 #endif
+
+void dcdcsynctest(void)
+{
+	PRINTF("PWMTICKSFREQ=%u\n", (unsigned) PWMTICKSFREQ);
+}
 
 struct DCDCFREQ
 {
@@ -10057,8 +10062,110 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
         { 51 , 53070000, 54000000, },   /* dcdc=1204705 Hz visible=no */
 };
 
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+/* fsync=100000000, wflwidth=96000 */
+/* number of dividers=168 83..250 */
+/* Analyze up to 50 harmonics. */
+#define BOARDDCDCSYNC 100000000 /* DCDC clock frequency */
+static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+        { 83 , 30000   , 1182000 , },   /* dcdc=1204819 Hz visible=no */
+        { 89 , 1182000 , 1230000 , },   /* dcdc=1123595 Hz visible=no */
+        { 85 , 1230000 , 1278000 , },   /* dcdc=1176470 Hz visible=no */
+        { 83 , 1278000 , 2382000 , },   /* dcdc=1204819 Hz visible=no */
+        { 86 , 2382000 , 2430000 , },   /* dcdc=1162790 Hz visible=no */
+        { 84 , 2430000 , 2478000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 2478000 , 3582000 , },   /* dcdc=1204819 Hz visible=no */
+        { 85 , 3582000 , 3630000 , },   /* dcdc=1176470 Hz visible=no */
+        { 84 , 3630000 , 3678000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 3678000 , 4782000 , },   /* dcdc=1204819 Hz visible=no */
+        { 85 , 4782000 , 4830000 , },   /* dcdc=1176470 Hz visible=no */
+        { 84 , 4830000 , 4878000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 4878000 , 5982000 , },   /* dcdc=1204819 Hz visible=no */
+        { 85 , 5982000 , 6030000 , },   /* dcdc=1176470 Hz visible=no */
+        { 84 , 6030000 , 6078000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 6078000 , 7182000 , },   /* dcdc=1204819 Hz visible=no */
+        { 85 , 7182000 , 7230000 , },   /* dcdc=1176470 Hz visible=no */
+        { 84 , 7230000 , 7278000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 7278000 , 8430000 , },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 8430000 , 8526000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 8526000 , 9630000 , },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 9630000 , 9726000 , },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 9726000 , 10830000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 10830000, 10926000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 10926000, 12030000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 12030000, 12126000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 12126000, 13230000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 13230000, 13326000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 13326000, 14430000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 14430000, 14526000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 14526000, 15630000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 15630000, 15726000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 15726000, 16830000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 16830000, 16926000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 16926000, 18030000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 18030000, 18126000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 18126000, 19230000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 19230000, 19326000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 19326000, 20478000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 20478000, 20574000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 20574000, 21678000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 21678000, 21774000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 21774000, 22878000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 22878000, 22974000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 22974000, 24078000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 24078000, 24174000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 24174000, 25278000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 25278000, 25374000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 25374000, 26478000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 26478000, 26574000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 26574000, 27678000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 27678000, 27774000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 27774000, 28878000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 28878000, 28974000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 28974000, 30078000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 30078000, 30174000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 30174000, 31278000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 31278000, 31374000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 31374000, 32526000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 32526000, 32622000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 32622000, 33726000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 33726000, 33822000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 33822000, 34926000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 34926000, 35022000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 35022000, 36126000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 36126000, 36222000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 36222000, 37326000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 37326000, 37422000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 37422000, 38526000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 38526000, 38622000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 38622000, 39726000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 39726000, 39822000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 39822000, 40926000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 40926000, 41022000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 41022000, 42126000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 42126000, 42222000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 42222000, 43326000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 43326000, 43422000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 43422000, 44574000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 44574000, 44670000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 44670000, 45774000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 45774000, 45870000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 45870000, 46974000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 46974000, 47070000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 47070000, 48174000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 48174000, 48270000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 48270000, 49374000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 49374000, 49470000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 49470000, 50574000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 50574000, 50670000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 50670000, 51774000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 51774000, 51870000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 51870000, 52974000, },   /* dcdc=1204819 Hz visible=no */
+        { 84 , 52974000, 53070000, },   /* dcdc=1190476 Hz visible=no */
+        { 83 , 53070000, 54000000, },   /* dcdc=1204819 Hz visible=no */
+};
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 /* fsync=50000000, wflwidth=96000 */
 /* number of dividers=84 42..125 */
 /* Analyze up to 50 harmonics. */

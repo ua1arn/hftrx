@@ -9,6 +9,10 @@
 #ifndef INC_CLOCKS_H_
 #define INC_CLOCKS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 uint_fast32_t stm32f4xx_get_hse_freq(void);
 uint_fast32_t stm32f4xx_get_hsi_freq(void);
 uint_fast32_t stm32f4xx_get_pllreference_freq(void);
@@ -329,6 +333,23 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
+
+void hardware_tim21_initialize(void);
+
+void hardware_dcdcfreq_tim16_ch1_initialize(void);
+void hardware_dcdcfreq_tim17_ch1_initialize(void);
+void hardware_dcdcfreq_pwm_initialize(unsigned pwmch);	/* Allwinner */
+void hardware_dcdcfreq_tioc0a_mtu0_initialize(void);
+
+void hardware_dcdcfreq_tim16_ch1_setdiv(uint_fast32_t v);
+void hardware_dcdcfreq_tim17_ch1_setdiv(uint_fast32_t v);
+void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle);	/* Allwinner */
+void hardware_bl_pwm_set_duty(unsigned pwmch, uint_fast32_t freq, uint_fast32_t duty);
+void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v);
+
+uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
+void dcdcsynctest(void);
+
 #if CPUSTYLE_V3S
 // Allwinner v3s
 void allwnr_v3s_pll_initialize(void);
@@ -548,5 +569,9 @@ calcdivider(
 #else
 	//#warning Undefined CPUSTYLE_XXX
 #endif
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* INC_CLOCKS_H_ */

@@ -10677,6 +10677,14 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && WITHDEBUG
+	{
+		dcdcsynctest();
+//		hardware_bl_pwm_set_duty(HARDWARE_DCDC_PWMCH, 1000000, 50);
+//		for (;;)
+//			;
+	}
+#endif
 #if LINUX_SUBSYSTEM && WITHAD9363IIO && 0
 	int ad9363_iio_test (const char * uri);
 	ad9363_iio_test("usb:");
