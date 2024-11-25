@@ -6345,14 +6345,14 @@ uint_fast8_t display2_getswrmax(void)
 
 static uint_fast8_t
 validforredraw(
-	const FLASHMEM struct dzone * const p,
+	const FLASHMEM struct dzone * const dzp,
 	uint_fast16_t subset
 	)
 {
 	/* про off-screen composition отрисовываем все элементы вне
 	 * зависимости от группы обновления, но для подходящей страницы.
 	 */
-	if ((p->subset & subset) == 0)
+	if ((dzp->subset & subset) == 0)
 		return 0;
 	return 1;
 }
@@ -6384,11 +6384,11 @@ display_walktrough(
 
 	for (i = 0; i < WALKCOUNT; ++ i)
 	{
-		const FLASHMEM struct dzone * const p = & dzones [i];
+		const FLASHMEM struct dzone * const dzp = & dzones [i];
 
-		if (validforredraw(p, subset) == 0)
+		if (validforredraw(dzp, subset) == 0)
 			continue;
-		(* p->redraw)(p->x, p->y, pctx);
+		(* dzp->redraw)(dzp->x, dzp->y, pctx);
 	}
 }
 
@@ -6410,7 +6410,10 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 	return 0;
 
 #elif WITHRENDERHTML
-	hftrxmain_docs [menuset]->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
+	litehtml::position::vector redraw_boxes;
+	hftrxmain_docs [menuset]->on_lbutton_down(xe, ye, 0, 0, redraw_boxes);
+	hftrxmain_docs [menuset]->on_lbutton_up(xe, ye, 0, 0, redraw_boxes);
+	return 0;
 
 #else
 	const uint_fast16_t subset = inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset);
@@ -6418,19 +6421,19 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 
 	for (i = 0; i < WALKCOUNT; ++ i)
 	{
-		const FLASHMEM struct dzone * const p = & dzones [i];
-		const uint_fast16_t x = GRID2X(p->x);
-		const uint_fast16_t y = GRID2Y(p->y);
-		const uint_fast16_t w = GRID2X(p->colspan);
-		const uint_fast16_t h = GRID2Y(p->rowspan);
-		if (validforredraw(p, subset) == 0)
+		const FLASHMEM struct dzone * const dzp = & dzones [i];
+		const uint_fast16_t x = GRID2X(dzp->x);
+		const uint_fast16_t y = GRID2Y(dzp->y);
+		const uint_fast16_t w = GRID2X(dzp->colspan);
+		const uint_fast16_t h = GRID2Y(dzp->rowspan);
+		if (validforredraw(dzp, subset) == 0)
 			continue;
 		if (x < xe || (x + w) < xe)
 			continue;
 		if (y < ye || (y + h) < ye)
 			continue;
 		// Попали внутрь прямоугольника
-		//(* p->redraw)(p->x, p->y, pctx);
+		//(* p->redraw)(dzp->x, dzp->y, pctx);
 		return 1;
 	}
 	return 0;
@@ -6542,16 +6545,16 @@ void display2_initialize(void)
 		PRINTF("<style>\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
 		{
-			const FLASHMEM struct dzone * const p = & dzones [i];
+			const FLASHMEM struct dzone * const dzp = & dzones [i];
 
-			if (validforredraw(p, subset) == 0)
+			if (validforredraw(dzp, subset) == 0)
 				continue;
-			if (p->colspan == 0 || p->rowspan == 0)
+			if (dzp->colspan == 0 || dzp->rowspan == 0)
 				continue;
 			//
 			PRINTF(" #id%d { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
 					(int) i,
-					(int) GRID2X(p->x), (int) GRID2Y(p->y), (int) GRID2X(p->colspan), (int) GRID2Y(p->rowspan));
+					(int) GRID2X(dzp->x), (int) GRID2Y(dzp->y), (int) GRID2X(dzp->colspan), (int) GRID2Y(dzp->rowspan));
 		}
 		PRINTF("</style>\n");
 		PRINTF("</head>\n");
@@ -6559,15 +6562,15 @@ void display2_initialize(void)
 		PRINTF("<body style=\"background-color:orange;\">\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
 		{
-			const FLASHMEM struct dzone * const p = & dzones [i];
+			const FLASHMEM struct dzone * const dzp = & dzones [i];
 
-			if (validforredraw(p, subset) == 0)
+			if (validforredraw(dzp, subset) == 0)
 				continue;
-			if (p->colspan == 0 || p->rowspan == 0)
+			if (dzp->colspan == 0 || dzp->rowspan == 0)
 				continue;
 			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black; \">%*.*s</div>\n",
 					(int) i,
-					p->colspan, p->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+					dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 					);
 		}
 		PRINTF("</body>\n");
