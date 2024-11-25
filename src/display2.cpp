@@ -6380,11 +6380,6 @@ display_walktrough(
 	return;
 #endif /* WITHLVGL */
 
-#if LINUX_SUBSYSTEM
-	if ((subset & REDRSUBSET_INIT) == 0)
-		return;
-#endif /* LINUX_SUBSYSTEM */
-
 	uint_fast8_t i;
 
 	for (i = 0; i < WALKCOUNT; ++ i)
