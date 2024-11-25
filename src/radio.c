@@ -12965,27 +12965,6 @@ display_redrawfreqstimed(
 	}
 }
 
-// Обновление дисплея - всё, включая частоту
-static void
-//NOINLINEAT
-display_redrawfreqmodesbarsnow(
-	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
-	const FLASHMEM struct menudef * mp
-	)
-{
-//	if (extra == 0)
-//	{
-//		display_redrawfreqstimed(1);	/* безусловное обновление показания частоты */
-//		display2_mode_subset(amenuset());
-//		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-//	}
-//	else
-//	{
-//		display2_redrawbarstimed(1, extra, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-//	}
-	display2_needupdate();
-}
-
 static void
 directctlupdate(
 	uint_fast8_t inmenu,
@@ -13002,7 +12981,7 @@ directctlupdate(
 	{
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
-		display_redrawfreqmodesbarsnow(inmenu, mp);	// Обновление дисплея - всё, включая частоту
+		display2_needupdate();	// Обновление дисплея - всё, включая частоту
 	}
 }
 
@@ -15473,7 +15452,6 @@ void app_processing(
 	if (sleepflagch != 0)
 	{
 		sleepflagch = 0;
-		display2_bgreset();
 		display2_redrawbarstimed(0, 0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 	}
@@ -15528,7 +15506,7 @@ processmessages(
 			// 12 bytes as parameter
 			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
 			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
-				display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
+				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 		}
 #endif /* WITHCAT */
 		break;
@@ -16981,13 +16959,12 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #if WITHTOUCHGUI
 	gui_uif_editmenu(name, menupos, exitkey);
 #else
-	display2_bgreset();
 
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
 
 	updateboard(1, 0);
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-	display2_bgreset();		/* возможно уже с новой цветовой схемой */
+	display2_needupdate();		/* возможно уже с новой цветовой схемой */
 #endif /* WITHTOUCHGUI */
 }
 
@@ -18062,8 +18039,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHLCDBACKLIGHTOFF
 		{
 			dimmmode = calc_next(dimmmode, 0, 1);
-			display2_bgreset();
-			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+			display2_needupdate();
 			updateboard(1, 0);
 		}
 #endif /* WITHLCDBACKLIGHTOFF */
@@ -18237,7 +18213,6 @@ processkeyboard(uint_fast8_t kbch)
 		if (reqautotune != 0)
 			return 1;
 	#endif /* WITHAUTOTUNER */
-		display2_bgreset();
 	#if defined (RTC1_TYPE)
 		getstamprtc();
 	#endif /* defined (RTC1_TYPE) */
@@ -18248,7 +18223,7 @@ processkeyboard(uint_fast8_t kbch)
 	#endif /* WITHFLATMENU */
 		updateboard(1, 0);
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-		display2_bgreset();		/* возможно уже с новой цветовой схемой */
+		display2_needupdate();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #elif WITHTOUCHGUI
 		gui_open_sys_menu();
@@ -18271,7 +18246,7 @@ processkeyboard(uint_fast8_t kbch)
 				 - не вызывает сохранение состояния диапазона */
 			menuset = calc_next(menuset, 0, display_getpagesmax());
 			save_i8(RMT_MENUSET_BASE, menuset);
-			display2_bgreset();
+			display2_needupdate();
 			return 1;	// требуется обновление индикатора
 		}
 #endif /* ! WITHTOUCHGUI */
@@ -18561,7 +18536,7 @@ void initialize2(void)
 	display_initialize();
 
 	display2_initialize();	// проход по элементам с необходимостью инициализации
-	display2_bgreset();
+	display2_needupdate();
 
 	if (keyboard_test() == 0)
 	{
@@ -18675,7 +18650,7 @@ void initialize2(void)
 				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG)
 					break;
 			}
-			display2_bgreset();
+			display2_needupdate();
 		}
 		/* есть запрос на стирание памяти - опять перебираем все ab */
 		for (ab = 0; ab < ABMAX; ++ ab)
@@ -18758,7 +18733,7 @@ void initialize2(void)
 				}
 				break;
 			}
-			display2_bgreset();
+			display2_needupdate();
 		}
 
 		//PRINTF(PSTR("initialize2: NVRAM initialization: erase NVRAM.\n"));
@@ -18964,7 +18939,7 @@ static void hamradio_main_initialize(void)
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-	display2_bgreset();
+	display2_needupdate();
 
 #if 0 && MODEL_MAXLAB
 	// тестирование алгоритма для MAXLAB
@@ -18993,7 +18968,7 @@ static void hamradio_main_initialize(void)
 		for (;;)
 			prog_cmx992_print(target);
 
-		display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
+		display2_needupdate();	// Обновление дисплея - всё, включая частоту
 
 		//prog_pll1_init();
 		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
@@ -19005,7 +18980,7 @@ static void hamradio_main_initialize(void)
 	encoders_clear();
 
 	/* начальное отображение */
-	display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
+	display2_needupdate();	// Обновление дисплея - всё, включая частоту
 
 }
 
@@ -19101,10 +19076,9 @@ hamradio_main_step(void)
 			{
 	#if MULTIVFO
 				// вход в режим настройки ГУНов первого гетеродина
-				display2_bgreset();
+				display2_needupdate();
 				vfoallignment();
-				display2_bgreset();
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_needupdate();
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
@@ -19155,7 +19129,7 @@ hamradio_main_step(void)
 				hamradio_gui_enc2_update();
 				display2_needupdate();
 #else /* WITHTOUCHGUI */
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI */
 			}
 #endif /*WITHENCODER2 */
@@ -19228,7 +19202,7 @@ hamradio_main_step(void)
 				display2_needupdate();
 
 		#else /* WITHTOUCHGUI */
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 
 		#endif /* WITHTOUCHGUI */
 
@@ -19243,7 +19217,7 @@ hamradio_main_step(void)
 				display2_needupdate();
 
 		#else /* WITHTOUCHGUI */
-				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 
 		#endif /* WITHTOUCHGUI */
 
@@ -20675,7 +20649,7 @@ void hamradio_gui_set_reqautotune2(uint_fast8_t val)
 void display2_set_page_temp(uint_fast8_t page)
 {
 	menuset = page;
-	display2_bgreset();
+	display2_needupdate();
 }
 
 #endif /* WITHTOUCHGUI */

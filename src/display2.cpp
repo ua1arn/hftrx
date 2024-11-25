@@ -6474,7 +6474,11 @@ display2_getbgcolor(void)
 // сброс state machine отображения дисплея и очистить дисплей
 void display2_bgreset(void)
 {
-	//redrawreq = 1;
+}
+
+void display2_latch(void)
+{
+	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
 }
 
 void display2_initialize(void)
@@ -6549,12 +6553,6 @@ void display2_initialize(void)
 	}
 
 #endif /* WITHRENDERHTML */
-}
-
-void display2_latch(void)
-{
-	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
-//	redrawreq = 0;
 }
 
 // последний номер варианта отображения (menuset)
