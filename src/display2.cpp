@@ -6400,8 +6400,41 @@ void display2_needupdate(void)
 }
 
 // Обработка событий тачскрина или мыши
-void display2_mouse(uint_fast16_t x, uint_fast16_t y, unsigned evcode, uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx)
+uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode, uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx)
 {
+
+#if WITHLVGL
+	return 0;
+
+#elif LINUX_SUBSYSTEM
+	return 0;
+
+#elif WITHRENDERHTML
+	hftrxmain_docs [menuset]->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
+
+#else
+	const uint_fast16_t subset = inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset);
+	uint_fast8_t i;
+
+	for (i = 0; i < WALKCOUNT; ++ i)
+	{
+		const FLASHMEM struct dzone * const p = & dzones [i];
+		const uint_fast16_t x = GRID2X(p->x);
+		const uint_fast16_t y = GRID2Y(p->y);
+		const uint_fast16_t w = GRID2X(p->colspan);
+		const uint_fast16_t h = GRID2Y(p->rowspan);
+		if (validforredraw(p, subset) == 0)
+			continue;
+		if (x < xe || (x + w) < xe)
+			continue;
+		if (y < ye || (y + h) < ye)
+			continue;
+		// Попали внутрь прямоугольника
+		//(* p->redraw)(p->x, p->y, pctx);
+		return 1;
+	}
+	return 0;
+#endif
 
 }
 
