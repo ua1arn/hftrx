@@ -6307,6 +6307,14 @@ void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtm
 
 }	// namespace
 
+
+using namespace litehtml;
+
+static hftrxgd hfrx_cont(DIM_X, DIM_Y);
+static const litehtml::position  hfrx_wndclip(0, 0, DIM_X, DIM_Y);
+static document::ptr hftrxmain_doc;
+static uint_ptr hftrx_hdc = 0;
+
 #endif /* WITHRENDERHTML */
 
 
@@ -6399,6 +6407,29 @@ void display2_bgprocess(
 		if (p->subset >= REDRSUBSET(amenuset()) && p->key == REDRM_ALL)
 			(* p->redraw)(p->x, p->y, pctx);
 	}
+
+#elif WITHRENDERHTML
+
+	if (0)
+	{
+		litehtml::css_selector sel;
+		//sel.parse("[id=FREQ_A]", no_quirks_mode);	// select by id
+		sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
+		litehtml::elements_list testels = hftrxmain_doc->root()->select_all(sel);
+		//litehtml::element::ptr testel = hftrxmain_doc->root()->select_one(sel);
+		for (litehtml::element::ptr& testel : testels)
+		{
+			//testel->set_data("+");
+			testel->set_attr("style", "background-color:red; color:green;");
+			testel->compute_styles(false);
+			TP();
+		}
+
+	}
+	hftrxmain_doc->render(hfrx_wndclip.width, litehtml::render_all);
+	hftrxmain_doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
+	colmain_nextfb();
+
 #else
 	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
 #endif
@@ -6465,23 +6496,10 @@ void display2_initialize(void)
 	redrawreq = 0;
 
 #if WITHRENDERHTML
-	using namespace litehtml;
-	static hftrxgd cont(DIM_X, DIM_Y);
-	static const litehtml::position wndclip(0, 0, DIM_X, DIM_Y);
 
-	//static hftrxgd cont2(DIM_X * 2, DIM_Y * 2);
-	//static const position wndclip2(0, 0, DIM_X * 2, DIM_Y *2 );
-	uint_ptr hdc = 0;
-	// see doc/document_createFromString.txt
-	auto doc = litehtml::document::createFromString(display2_gethtml(), & cont, "");
-	//auto doc2 = document::createFromString(htmlString, & cont2);
-	//element el_freq = doc->
-	doc->render(wndclip.width, litehtml::render_all);
-	//doc2->render(wndclip2.width, render_all);
-
-	doc->draw(hdc, 0, 0, & wndclip);
-	colmain_nextfb();
+	hftrxmain_doc = litehtml::document::createFromString(display2_gethtml(), & hfrx_cont, "");
 	TP();
+
 #else /* WITHRENDERHTML */
 #endif /* WITHRENDERHTML */
 }

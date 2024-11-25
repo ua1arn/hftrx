@@ -10700,12 +10700,6 @@ void hightests(void)
 		hardware_edid_test();
 	}
 #endif
-#if 0 && WITHDEBUG
-	{
-		// c++ execution test
-		litehtmltest();
-	}
-#endif /* WITHDEBUG */
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
 		static RAMNC PACKEDCOLORPIP_T buffer [GXSIZE(DIM_X, DIM_Y)];
