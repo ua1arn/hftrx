@@ -6399,6 +6399,12 @@ void display2_needupdate(void)
 	redrawreq = 1;
 }
 
+// Обработка событий тачскрина или мыши
+void display2_mouse(uint_fast16_t x, uint_fast16_t y, unsigned evcode, uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx)
+{
+
+}
+
 // Interface functions
 // выполнение шагов state machine отображения дисплея
 void display2_bgprocess(
