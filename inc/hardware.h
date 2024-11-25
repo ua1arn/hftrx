@@ -1046,23 +1046,9 @@ void xcz_dds_rts(const uint_least64_t * value);// Установка центр�
 
 #endif /* CPUSTYLE_XC7Z */
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#if 1
-	#include "product.h"
-#else
-	#include "boards/arm_stm32h7xx_tqfp100_ctlstyle_storch_v7z_vt.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_stm32h7xx_tqfp100_cpustyle_storch_v7z_vt.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
-#endif
-
-#include "taildefs.h"
-#include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 uint32_t sys_now(void);
 uint32_t board_millis(void);	// tinyusb
-int  sys_dram_init(void);	// 0 - error
+int sys_dram_init(void);	// 0 - error
 
 // RTOS test stuff
 int blinky_main(void);
@@ -1087,6 +1073,21 @@ void applowinitialize(void);
 void initialize2(void);
 void application_mainloop(void);
 void application_initialize(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#if 1
+	#include "product.h"
+#else
+	#include "boards/arm_stm32h7xx_tqfp100_ctlstyle_storch_v7z_vt.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_stm32h7xx_tqfp100_cpustyle_storch_v7z_vt.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+#endif
+
+#include "taildefs.h"
+#include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 
 #if LINUX_SUBSYSTEM
 	#include <src/linux/linux_subsystem.h>

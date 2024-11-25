@@ -6312,6 +6312,7 @@ static litehtml::hftrxgd hfrx_cont(DIM_X, DIM_Y);
 static const litehtml::position hfrx_wndclip(0, 0, DIM_X, DIM_Y);
 static document::ptr hftrxmain_docs [DISPLC_MODCOUNT];
 static litehtml::uint_ptr hftrx_hdc = 0;
+static litehtml::elements_list hftrx_timeels;
 
 static const char hftrx_css [] =
 R"##(
@@ -6476,6 +6477,26 @@ void display2_bgprocess(
 		}
 
 	}
+	if (1)
+	{
+		for (litehtml::element::ptr& el : hftrx_timeels)
+		{
+//			uint_fast8_t hour, minute, seconds;
+//			board_rtc_cached_gettime(& hour, & minute, & seconds);
+
+			if (sys_now() & 0x200)
+			{
+				el->set_attr("style", "background-color:red; color:green;");
+				//el->set_data("1");
+			}
+			else
+			{
+				el->set_attr("style", "background-color:green; color:red;");
+				//el->set_data("2");
+			}
+			el->compute_styles(false);
+		}
+	}
 	hftrxmain_docs [menuset]->render(hfrx_wndclip.width, litehtml::render_all);
 	hftrxmain_docs [menuset]->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
 	colmain_nextfb();
@@ -6559,6 +6580,14 @@ void display2_initialize(void)
 		TP();
 		hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
 		TP();
+		if (1)
+		{
+			litehtml::css_selector sel;
+			sel.parse("#id38", no_quirks_mode);	// select by id
+			//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
+			hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
+			PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
+		}
 	}
 
 #endif /* WITHRENDERHTML */
