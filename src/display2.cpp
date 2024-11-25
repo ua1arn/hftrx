@@ -6470,11 +6470,42 @@ void display2_initialize(void)
 {
 	uint_fast8_t page;
 #if 0
+	PRINTF("+++++++++++++++++++++++\n");
 	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
+		PRINTF("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n");
+		PRINTF("<html>\n");
+		PRINTF("<head>\n");
+		PRINTF("<meta charset=\"utf-8\">\n");
+		PRINTF("<title>HF TRX 800x480</title>\n");
+		PRINTF("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\">\n");
+		PRINTF("<!--link rel=\"stylesheet\" type=\"text/css\" href=\"hftrx.css\"-->\n");
 		// Формирование шаблона с html элементами
 		const uint_fast16_t subset = REDRSUBSET(page);
 		uint_fast8_t i;
+		// Styles section
+		//		/*----------0---------------*/
+		//		#dbm {position: fixed; top:5px;left:10px;width:80px;height:22px;}
+		//		#filter {position: fixed; top:5px;left:115px;width:48px;height:22px;}
+		//		#smeter {position: fixed; top:25px; left:0px;}
+		//		#rxtx {position: fixed; top:5px;left:170px;width:48px;height:22px;}
+		PRINTF("<style>\n");
+		for (i = 0; i < WALKCOUNT; ++ i)
+		{
+			const FLASHMEM struct dzone * const p = & dzones [i];
+
+			if (validforredraw(p, subset) == 0)
+				continue;
+			if (p->colspan == 0 || p->rowspan == 0)
+				continue;
+			//
+			PRINTF(" #id%d { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
+					(int) i,
+					(int) GRID2X(p->x), (int) GRID2Y(p->y), (int) GRID2X(p->colspan), (int) GRID2Y(p->rowspan));
+		}
+		PRINTF("</style>\n");
+		PRINTF("</head>\n");
+
 		PRINTF("<body style=\"background-color:orange;\">\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
 		{
@@ -6484,15 +6515,13 @@ void display2_initialize(void)
 				continue;
 			if (p->colspan == 0 || p->rowspan == 0)
 				continue;
-			if (p->colspan > 4)
-				PRINTF(" <div style=\"position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; background-color:blue; color:black; \">X</div>\n",
-						GRID2X(p->x), GRID2Y(p->y), GRID2X(p->colspan), GRID2Y(p->rowspan));
-			else
-				PRINTF(" <div style=\"position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; background-color:green; color:black; \">X</div>\n",
-						GRID2X(p->x), GRID2Y(p->y), GRID2X(p->colspan), GRID2Y(p->rowspan));
+			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black; \">X</div>\n",
+					(int) i);
 		}
 		PRINTF("</body>\n");
 
+		PRINTF("</html>\n");
+		PRINTF("-------------------------\n");
 	}
 #endif
 
