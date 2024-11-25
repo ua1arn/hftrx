@@ -25,7 +25,7 @@ struct dzone
 	uint8_t colspan;
 	uint8_t rowspan;
 	void (* redraw)(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);	// функция отображения элемента
-	uint16_t key;		// при каких обновлениях перерисовывается этот элемент
+	uint16_t key_UNUSED;		// при каких обновлениях перерисовывается этот элемент
 	uint16_t subset;	// битовая маска страниц
 };
 
@@ -6415,12 +6415,7 @@ void display2_bgprocess(
 	return;
 
 #elif LINUX_SUBSYSTEM
-	for (int i = 0; i < WALKCOUNT; i ++)
-	{
-		const struct dzone * const p = & dzones [i];
-		if ((p->subset & REDRSUBSET(menuset)) /*&& p->key == REDRM_ALL */)
-			(* p->redraw)(p->x, p->y, pctx);
-	}
+	display_walktrough(REDRSUBSET(menuset), pctx);
 
 #elif WITHRENDERHTML
 
