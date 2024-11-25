@@ -6547,9 +6547,7 @@ void display2_initialize(void)
 		hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
 		TP();
 	}
-	redrawreq = 0;
 
-#else /* WITHRENDERHTML */
 #endif /* WITHRENDERHTML */
 }
 
