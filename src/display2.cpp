@@ -6315,6 +6315,17 @@ static const litehtml::position  hfrx_wndclip(0, 0, DIM_X, DIM_Y);
 static document::ptr hftrxmain_docs [DISPLC_MODCOUNT];
 static uint_ptr hftrx_hdc = 0;
 
+static const char hftrx_css [] =
+R"##(
+html { display: block; }
+head { display: none; }
+meta {	display: none; }
+title { display: none; }
+link {	display: none; }
+style { display: none; }
+script { display: none; }
+)##";
+
 #endif /* WITHRENDERHTML */
 
 
@@ -6533,7 +6544,7 @@ void display2_initialize(void)
 	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
 		TP();
-		hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, "");
+		hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
 		TP();
 	}
 	redrawreq = 0;
