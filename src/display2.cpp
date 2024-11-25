@@ -6042,15 +6042,17 @@ void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_mark
 
 void hftrxgd::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
 {
-	TP();
+	PRINTF("load_image: src='%s', baseurl='%s'\n", src, baseurl);
 }
 void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::size &sz)
 {
 	TP();
+	litehtml::size sss(10, 10);
+	sz = sss;
 }
 void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url)
 {
-	TP();
+	PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
 }
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
@@ -6154,6 +6156,7 @@ void hftrxgd::get_client_rect(litehtml::position &client) const
 	client = litehtml::position(0, 0, DIM_X, DIM_Y);
 }
 
+#if 0
 class freqel: public litehtml::el_td
 {
 	virtual void draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
@@ -6243,10 +6246,12 @@ void freqel::on_click()
 {
 	PRINTF("on_click\n");
 }
+#endif
 
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
 	return nullptr;
+#if 0
 	try
 	{
 		std::string id = attributes.at("id");
@@ -6269,6 +6274,7 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 		//PRINTF("create_element: tag_name='%s', id not found\n", tag_name);
 	}
 	return nullptr;
+#endif
 }
 
 void hftrxgd::get_media_features(litehtml::media_features &media) const
@@ -6530,8 +6536,10 @@ void display2_initialize(void)
 				continue;
 			if (p->colspan == 0 || p->rowspan == 0)
 				continue;
-			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black; \">X</div>\n",
-					(int) i);
+			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black; \">%*.*s</div>\n",
+					(int) i,
+					p->colspan, p->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+					);
 		}
 		PRINTF("</body>\n");
 
