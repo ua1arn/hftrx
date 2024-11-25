@@ -88,12 +88,12 @@
 		{	37,	0,	3, 5, display2_preovf3,	REDRM_BARS, PGALL, },
 	#if WITHBARS
 		{   0, 	4,  0, 0, display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	4,	14, 20, display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	4,	15, 20, display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	4,	0, 0, display2_af_spectre15_init,	REDRM_INIS, PGINI, },
 		{	0,	4,	0, 0, display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
-		{	0,	4,	14, 20, display2_af_spectre15,		REDRM_BARS, PG0, },
+		{	0,	4,	15, 20, display2_af_spectre15,		REDRM_BARS, PG0, },
 	#endif /* WITHAFSPECTRE */
 
 		{	15,	6,	0, 0, display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
