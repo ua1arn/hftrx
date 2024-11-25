@@ -6004,8 +6004,6 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	}
 	else if (! strcmp(url.c_str(), "bigfreq"))
 	{
-		uint_fast8_t x = layer.border_box.left() / 16;
-		uint_fast8_t y = layer.border_box.top() / 5;
 		uint_fast8_t rj;
 		uint_fast8_t fullwidth = display_getfreqformat(& rj);
 		const uint_fast8_t comma = 3 - rj;
@@ -6020,9 +6018,9 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		do
 		{
 #if WITHPRERENDER
-			render_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_render_value_big(layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_display_value_big(layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
 		} while (lowhalf --);
 	}

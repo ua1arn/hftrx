@@ -811,12 +811,13 @@ static const FLASHMEM int32_t vals10 [] =
 	1U,
 };
 
+
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-display_value_big(
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
+pix_display_value_big(
+	uint_fast16_t xpix,	// x координата начала вывода значения
+	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -828,16 +829,13 @@ display_value_big(
 	uint_fast8_t lowhalf		// lower half
 	)
 {
-//	if (width > ARRAY_SIZE(vals10))
-//		width = ARRAY_SIZE(vals10);
-	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
+	//	if (width > ARRAY_SIZE(vals10))
+	//		width = ARRAY_SIZE(vals10);
+		//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = (j - width);
 	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -877,16 +875,12 @@ display_value_big(
 		}
 		freq = res.rem;
 	}
-	display_wrdatabig_end();
 }
 
-#if WITHPRERENDER
-
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-/* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-render_value_big(
+display_value_big(
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -900,16 +894,41 @@ render_value_big(
 	uint_fast8_t lowhalf		// lower half
 	)
 {
-//	if (width > ARRAY_SIZE(vals10))
-//		width = ARRAY_SIZE(vals10);
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
+	pix_display_value_big(xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	display_wrdatabig_end();
+}
+
+#if WITHPRERENDER
+
+
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+/* использование предварительно построенных изображений при отображении частоты */
+void
+NOINLINEAT
+pix_render_value_big(
+	uint_fast16_t xpix,	// x координата начала вывода значения
+	uint_fast16_t ypix,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t lowhalf		// lower half
+	)
+{
+	//	if (width > ARRAY_SIZE(vals10))
+	//		width = ARRAY_SIZE(vals10);
 	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = (j - width);
 	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = render_wrdatabig_begin(xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -950,8 +969,33 @@ render_value_big(
 		}
 		freq = res.rem;
 	}
+}
+
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+/* использование предварительно построенных изображений при отображении частоты */
+void
+NOINLINEAT
+render_value_big(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	uint_fast8_t lowhalf		// lower half
+	)
+{
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = render_wrdatabig_begin(xcell, ycell, & ypix);
+	pix_render_value_big(xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
 	render_wrdatabig_end();
 }
+
 #endif /* WITHPRERENDER */
 
 void
