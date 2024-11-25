@@ -238,6 +238,7 @@ typedef struct pipparams_tag
 } pipparams_t;
 
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
+const char * display2_gethtml(void);
 
 // Заполнение буфера сполшным цветом
 // Формат RGB565
