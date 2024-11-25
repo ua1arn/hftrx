@@ -249,7 +249,7 @@
 
 	)##";
 
-	const char * display2_gethtml(void)
+	const char * display2_gethtml(uint_fast8_t page)
 	{
 		return hftrx_layout_html;
 	}

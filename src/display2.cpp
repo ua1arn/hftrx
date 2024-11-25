@@ -6312,7 +6312,7 @@ using namespace litehtml;
 
 static hftrxgd hfrx_cont(DIM_X, DIM_Y);
 static const litehtml::position  hfrx_wndclip(0, 0, DIM_X, DIM_Y);
-static document::ptr hftrxmain_doc;
+static document::ptr hftrxmain_docs [DISPLC_MODCOUNT];
 static uint_ptr hftrx_hdc = 0;
 
 #endif /* WITHRENDERHTML */
@@ -6398,8 +6398,10 @@ void display2_bgprocess(
 	if (redrawreq == 0)
 		return;
 	redrawreq = 0;
+
 #if WITHLVGL
 	return;
+
 #elif LINUX_SUBSYSTEM
 	for (int i = 0; i < WALKCOUNT; i ++)
 	{
@@ -6415,8 +6417,8 @@ void display2_bgprocess(
 		litehtml::css_selector sel;
 		//sel.parse("[id=FREQ_A]", no_quirks_mode);	// select by id
 		sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
-		litehtml::elements_list testels = hftrxmain_doc->root()->select_all(sel);
-		//litehtml::element::ptr testel = hftrxmain_doc->root()->select_one(sel);
+		litehtml::elements_list testels = hftrxmain_docs [menuset]->root()->select_all(sel);
+		//litehtml::element::ptr testel = hftrxmain_docs->root()->select_one(sel);
 		for (litehtml::element::ptr& testel : testels)
 		{
 			//testel->set_data("+");
@@ -6426,8 +6428,8 @@ void display2_bgprocess(
 		}
 
 	}
-	hftrxmain_doc->render(hfrx_wndclip.width, litehtml::render_all);
-	hftrxmain_doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
+	hftrxmain_docs [menuset]->render(hfrx_wndclip.width, litehtml::render_all);
+	hftrxmain_docs [menuset]->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
 	colmain_nextfb();
 
 #else
@@ -6467,9 +6469,11 @@ void display2_bgreset(void)
 void display2_initialize(void)
 {
 #if 0
+	uint_fast8_t page;
+	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
 		// Формирование шаблона с html элементами
-		uint_fast16_t subset = REDRSUBSET(0);
+		uint_fast16_t subset = REDRSUBSET(page);
 		uint_fast8_t i;
 		PRINTF("<body style=\"background-color:orange;\">\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
@@ -6497,8 +6501,14 @@ void display2_initialize(void)
 
 #if WITHRENDERHTML
 
-	hftrxmain_doc = litehtml::document::createFromString(display2_gethtml(), & hfrx_cont, "");
-	TP();
+	uint_fast8_t page;
+	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
+	{
+		TP();
+		hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, "");
+		TP();
+	}
+	redrawreq = 0;
 
 #else /* WITHRENDERHTML */
 #endif /* WITHRENDERHTML */
