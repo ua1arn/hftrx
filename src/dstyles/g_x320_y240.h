@@ -47,31 +47,31 @@
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-			{	0, 0,	2,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	3, 0,	3,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	7, 0,	4,	0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	12, 0,	3,	0,	display2_preovf3,	REDRM_BARS, REDRSUBSET(DPAGE0), },
-			{	16, 0,	1,	0,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
-			{	19, 0,	3,	0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+			{	0, 0,	2,	0,	display_txrxstate2, & dzi_default, REDRSUBSET(DPAGE0), },
+			{	3, 0,	3,	0,	display2_voxtune3,	& dzi_default, REDRSUBSET(DPAGE0), },
+			{	7, 0,	4,	0,	display2_att4,		& dzi_default, REDRSUBSET(DPAGE0), },
+			{	12, 0,	3,	0,	display2_preovf3,	& dzi_default, REDRSUBSET(DPAGE0), },
+			{	16, 0,	1,	0,	display_lockstate1, & dzi_default, REDRSUBSET(DPAGE0), },
+			{	19, 0,	3,	0,	display2_rxbw3,		& dzi_default, REDRSUBSET(DPAGE0), },
 
-			{	0, 8,	0,	0,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
-			{	19, 8,	3,	0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 8,	0,	0,	display_freqXbig_a, & dzi_default, REDRSUBSET(DPAGE0), },
+			{	19, 8,	3,	0,	display2_mode3_a,	& dzi_default,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	0, 18,	0,	0,	display_vfomode5,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	5, 18,	0,	0,	display2_freqX_b,	REDRM_FRQB, REDRSUBSET(DPAGE0), },
-			{	19, 18,	3,	0,	display2_mode3_b,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	0, 18,	0,	0,	display_vfomode5,	& dzi_default, REDRSUBSET(DPAGE0), },	// SPLIT
+			{	5, 18,	0,	0,	display2_freqX_b,	& dzi_default, REDRSUBSET(DPAGE0), },
+			{	19, 18,	3,	0,	display2_mode3_b,	& dzi_default,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
-			{	1, 24,	0,	0,	display2_bars,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
+			{	1, 24,	0,	0,	display2_bars,		& dzi_default, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if defined (RTC1_TYPE)
-			{	0, 28,	0,	0,	display_time8,		REDRM_BARS, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// TIME
+			{	0, 28,	0,	0,	display_time8,		& dzi_default, REDRSUBSET_MENU | REDRSUBSET(DPAGE0), },	// TIME
 		#endif /* defined (RTC1_TYPE) */
-			{	18, 28,	3,	0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
+			{	18, 28,	3,	0,	display2_agc3,		& dzi_default, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	0,				0,		0,	0,	display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-			{	1 + LABELW * 0 + 0,	18,	0,	0,	display2_multilinemenu_block_groups,	REDRM_MLBL, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	0,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	0,	0,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
+			{	1 + LABELW * 0 + 0,	18,	0,	0,	display2_multilinemenu_block_groups,	& dzi_default, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 2 + 2,	18,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 		};
 
@@ -150,55 +150,55 @@
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	2,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-			{	3,	0,	display2_voxtune3,	REDRM_MODE, PGALL, },
-			{	7,	0,	display2_att4,		REDRM_MODE, PGALL, },
-			{	12, 0,	display_pre3,		REDRM_MODE, PGALL, },
+			{	2,	0,	display_txrxstate2, & dzi_default, PGALL, },
+			{	3,	0,	display2_voxtune3,	& dzi_default, PGALL, },
+			{	7,	0,	display2_att4,		& dzi_default, PGALL, },
+			{	12, 0,	display_pre3,		& dzi_default, PGALL, },
 		#if WITHDSPEXTDDC
-			{	16, 0,	display_ovf3,		REDRM_BARS, PGALL, },	// ovf/pre
+			{	16, 0,	display_ovf3,		& dzi_default, PGALL, },	// ovf/pre
 		#endif /* WITHDSPEXTDDC */
-			{	20, 0,	display2_lockstate4, REDRM_MODE, PGALL, },
-			{	25, 0,	display2_agc3,		REDRM_MODE, PGALL, },
-			{	29, 0,	display2_rxbw3,		REDRM_MODE, PGALL, },
+			{	20, 0,	display2_lockstate4, & dzi_default, PGALL, },
+			{	25, 0,	display2_agc3,		& dzi_default, PGALL, },
+			{	29, 0,	display2_rxbw3,		& dzi_default, PGALL, },
 
-			{	0,	8,	display_freqXbig_a, REDRM_FREQ, PGALL, },
-			{	29, 8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	0,	8,	display_freqXbig_a, & dzi_default, PGALL, },
+			{	29, 8,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
-			{	0,	15,	display_vfomode5,	REDRM_MODE, PGALL, },	// SPLIT
-			{	6,	15,	display2_freqX_b,	REDRM_FRQB, PGALL, },
+			{	0,	15,	display_vfomode5,	& dzi_default, PGALL, },	// SPLIT
+			{	6,	15,	display2_freqX_b,	& dzi_default, PGALL, },
 		#if WITHUSEDUALWATCH
-			{	25, 15,	display2_mainsub3,	REDRM_MODE, PGNOMEMU, },	// main/sub RX
+			{	25, 15,	display2_mainsub3,	& dzi_default, PGNOMEMU, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
-			{	29, 15,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+			{	29, 15,	display2_mode3_b,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
-			{	0,	18,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
+			{	0,	18,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
-			{	0,	18,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
-			{	0,	18,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-			{	0,	18,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра
-			{	0,	18,	display2_waterfall,	REDRM_BARS, PG1, },// подготовка изображения водопада
+			{	0,	18,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+			{	0,	18,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	18,	display2_spectrum,	& dzi_default, PG1, },// подготовка изображения спектра
+			{	0,	18,	display2_waterfall,	& dzi_default, PG1, },// подготовка изображения водопада
 
-			{	27, 18,	display_smeter5,	REDRM_BARS, PGNOMEMU, },	// signal level
+			{	27, 18,	display_smeter5,	& dzi_default, PGNOMEMU, },	// signal level
 		#endif /* WITHIF4DSP */
 			//---
-			//{	22, 25,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+			//{	22, 25,	display_samfreqdelta8, & dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 		#if WITHVOLTLEVEL
-			{	0, 28,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+			{	0, 28,	display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL */
 		#if WITHCURRLEVEL || WITHCURRLEVEL2
-			{	6, 28,	display2_currlevelA6, REDRM_VOLT, PGALL, },	// amphermeter with "A"
+			{	6, 28,	display2_currlevelA6, & dzi_default, PGALL, },	// amphermeter with "A"
 		#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 		#if defined (RTC1_TYPE)
-			{	13, 28,	display_time8,		REDRM_BARS, PGALL, },	// TIME
+			{	13, 28,	display_time8,		& dzi_default, PGALL, },	// TIME
 		#endif /* defined (RTC1_TYPE) */
 		#if WITHUSEAUDIOREC
-			{	25, 28,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+			{	25, 28,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
-			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	REDRM_MLBL, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	& dzi_default, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
 		};
 
