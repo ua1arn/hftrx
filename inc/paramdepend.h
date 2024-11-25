@@ -1649,8 +1649,6 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-	#define WITHFASTWATERFLOW 1
-
 #elif LCDMODE_V2_2PAGE
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
@@ -1672,16 +1670,12 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-	#define WITHFASTWATERFLOW 1
-
 #elif LCDMODE_V2A
 	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 2
-
-	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V2A_2PAGE
 	/* только главный экран 16 бит двумя видеобуферами, без PIP */
@@ -1690,8 +1684,6 @@ extern "C" {
 	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 2
 
-	#define WITHFASTWATERFLOW 1
-
 #elif LCDMODE_V5A
 	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
@@ -1699,16 +1691,12 @@ extern "C" {
 	#define LCDMODE_MAIN_ARGB8888	1
 	#define LCDMODE_PIXELSIZE 4
 
-	#define WITHFASTWATERFLOW 1
-
 #elif LCDMODE_V2B
 	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 2
-
-	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_DUMMY
 
@@ -1718,7 +1706,6 @@ extern "C" {
 
 	#define LCDMODE_PIP_PAGES	0
 	//#define COLORPIP_SHADED 128
-
 
 #endif
 

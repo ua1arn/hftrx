@@ -3536,7 +3536,7 @@ typedef struct {
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW && WITHGRADIENT_FIXED
+#elif WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возможности динамисеского изменения высоты отображаемого водопада
@@ -3544,7 +3544,7 @@ typedef struct {
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW
+#elif LCDMODE_LTDC
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возможности динамисеского изменения высоты отображаемого водопада
@@ -3552,22 +3552,6 @@ typedef struct {
 
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
-
-#elif (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-
-	enum { WFROWS = 1 };
-	enum { wfrow = 0 };				// строка, в которую последней занесены данные
-
-	enum { PALETTESIZE = 256 };
-	static RAMBIGDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
-
-#else
-
-	enum { WFROWS = ALLDY };
-	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
-
-	enum { PALETTESIZE = 256 };
-	static RAMBIGDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
 #endif
 
@@ -5664,7 +5648,7 @@ static void display2_waterfall(
 	dctx_t * pctx
 	)
 {
-#if WITHFASTWATERFLOW || ! LCDMODE_MAIN_L8
+#if ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
@@ -6458,6 +6442,9 @@ void display2_bgprocess(
 	display_walktrough(REDRSUBSET(menuset), pctx);
 	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
 	colmain_nextfb();
+
+#elif ! LCDMODE_LTDC
+	return;
 
 #elif WITHRENDERHTML
 
