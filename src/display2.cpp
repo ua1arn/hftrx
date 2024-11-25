@@ -6423,7 +6423,7 @@ void display2_bgprocess(
 	for (int i = 0; i < WALKCOUNT; i ++)
 	{
 		const struct dzone * const p = & dzones [i];
-		if (p->subset >= REDRSUBSET(amenuset()) && p->key == REDRM_ALL)
+		if ((p->subset & REDRSUBSET(menuset)) /*&& p->key == REDRM_ALL */)
 			(* p->redraw)(p->x, p->y, pctx);
 	}
 

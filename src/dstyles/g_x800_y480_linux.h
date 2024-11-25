@@ -64,7 +64,7 @@ void wait_iq(
 	enum
 	{
 		PG0 = REDRSUBSET(DPAGE0),
-		PG1 = REDRSUBSET(DPAGE1),
+		PG0_1 = PG0 | REDRSUBSET(DPAGE1),
 		PGINI = REDRSUBSET_INIT,
 		PGLATCH = REDRSUBSET_LATCH,
 
@@ -87,7 +87,7 @@ void wait_iq(
 	static const FLASHMEM struct dzone dzones [] =
 	{
 #if ! WITHLVGL
-		{	0,	0,	0,	0,	display2_clearbg, 	REDRM_ALL, PG1, },
+		{	0,	0,	0,	0,	display2_clearbg, 	REDRM_ALL, PG0_1, },
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_ALL, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	REDRM_ALL, PG0, },	// RX BW value
 		{	17,	0,	5,	0,	display_txrxstate5alt, REDRM_ALL, PG0, },
@@ -136,11 +136,11 @@ void wait_iq(
 		{	0,	0, 4,	0,	display2_siglevel4, 	REDRM_ALL, PG0, },	// signal level dBm
 		{	0,	DLES,	0,	0,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	REDRM_ALL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50,	0,	display2_spectrum,	REDRM_ALL, PG1, },// подготовка изображения спектра
-		{	0,	DLES,	50,	0,	display2_waterfall,	REDRM_ALL, PG1, },// подготовка изображения водопада
-		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	REDRM_ALL, PG1, },
+		{	0,	DLES,	50,	0,	display2_spectrum,	REDRM_ALL, PG0_1, },// подготовка изображения спектра
+		{	0,	DLES,	50,	0,	display2_waterfall,	REDRM_ALL, PG0_1, },// подготовка изображения водопада
+		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	REDRM_ALL, PG0_1, },
 
-		{	0,	0,	0,	0,	display2_nextfb, 	REDRM_ALL, PG1, },
+		{	0,	0,	0,	0,	display2_nextfb, 	REDRM_ALL, PG0_1, },
 #endif /* ! WITHLVGL */
 	};
 
