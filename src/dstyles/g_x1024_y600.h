@@ -76,8 +76,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		/* общий для всех режимов элемент */
-		{	0,	0,	0, 0, display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+
 		{	0,	0,	0, 0, display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
 		{	0,	0, 	7, 0, display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
@@ -173,8 +172,7 @@
 		{	0,	(DIM_Y - GRID2Y(5)) / 5, 0, 0, display2_freqsof9,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
-		/* общий для всех режимов элемент */
-		{	0,	0,	0, 0, display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+
 	};
 
 #if WITHMENU

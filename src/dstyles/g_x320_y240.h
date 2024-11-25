@@ -47,7 +47,6 @@
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
-			{	0,	0,	0,	0,	display2_clearbg, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 			{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 			{	0, 0,	2,	0,	display_txrxstate2, REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	3, 0,	3,	0,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
@@ -74,7 +73,6 @@
 			{	1 + LABELW * 1 + 1,	18,	0,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	0,	0,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
-			{	0,	0,	0,	0,	display2_nextfb, 	REDRM_MODE, REDRSUBSET(DPAGE0) | REDRSUBSET_MENU | REDRSUBSET_SLEEP, },
 		};
 
 	#if WITHMENU

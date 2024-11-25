@@ -18,6 +18,13 @@
 #include "dspdefines.h"
 
 
+struct dzone;
+struct dzitem
+{
+	void (* draw)(struct dzone * dzp);
+	void (* onclick)(struct dzone * dzp);
+};
+
 struct dzone
 {
 	uint8_t x; // левый верхний угол
@@ -25,9 +32,11 @@ struct dzone
 	uint8_t colspan;
 	uint8_t rowspan;
 	void (* redraw)(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);	// функция отображения элемента
-	uint16_t key_UNUSED;		// при каких обновлениях перерисовывается этот элемент
+	const struct dzitem * dzip;
 	uint16_t subset;	// битовая маска страниц
 };
+
+static struct dzitem dzi_default;
 
 /* struct dzone subset field values */
 
@@ -49,37 +58,6 @@ struct dzone
 #define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
 #define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
 #define REDRSUBSET_LATCH	REDRSUBSET(PAGELATCH)
-
-#if LINUX_SUBSYSTEM
-	enum
-	{
-		REDRM_ALL,
-		REDRM_FREQ = REDRM_ALL,
-		REDRM_KEYB = REDRM_ALL,
-		REDRM_MODE = REDRM_ALL,
-		REDRM_INIS,
-		//
-		REDRM_count
-	};
-#else
-	enum
-	{
-		REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
-		REDRM_FREQ,		// индикаторы частоты
-		REDRM_FRQB,	// индикаторы частоты
-		REDRM_BARS,		// S-meter, SWR-meter, voltmeter
-		REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
-
-		REDRM_MFXX,		// код редактируемого параметра
-		REDRM_MLBL,		// название редактируемого параметра
-		REDRM_MVAL,		// значение параметра меню
-		REDRM_BUTTONS,  // область отображения экранных кнопок
-		REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
-		REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
-		//
-		REDRM_count
-	};
-#endif /* LINUX_SUBSYSTEM */
 
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
@@ -1214,36 +1192,6 @@ display2_smeter15(
 }
 
 #endif /* LCDMODE_LTDC */
-
-// очистка фона
-static void
-display2_clearbg(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-#if LCDMODE_LTDC
-
-	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-
-#endif /* LCDMODE_LTDC */
-}
-
-// Завершение отрисовки, переключение на следующий фреймбуфер
-static void
-display2_nextfb(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-#if WITHLTDCHW && LCDMODE_LTDC
-
-	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
-	colmain_nextfb();
-#endif /* WITHLTDCHW && LCDMODE_LTDC */
-}
 
 // Отображение частоты. Герцы так же большим шрифтом.
 static void display_freqXbig_a(
@@ -6457,7 +6405,10 @@ void display2_bgprocess(
 	return;
 
 #elif LINUX_SUBSYSTEM
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display_walktrough(REDRSUBSET(menuset), pctx);
+	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
+	colmain_nextfb();
 
 #elif WITHRENDERHTML
 
@@ -6482,7 +6433,10 @@ void display2_bgprocess(
 	colmain_nextfb();
 
 #else
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
+	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
+	colmain_nextfb();
 #endif
 }
 
@@ -7000,7 +6954,7 @@ void wfl_init(void)
 
 uint32_t * wfl_proccess(void)
 {
-	display2_clearbg(0, 0, NULL);
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display2_latchwaterfall(0, 0, NULL);
 	display2_spectrum(0, 0, NULL);
 	return getscratchwnd();

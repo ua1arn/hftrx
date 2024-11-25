@@ -87,60 +87,58 @@ void wait_iq(
 	static const FLASHMEM struct dzone dzones [] =
 	{
 #if ! WITHLVGL
-		{	0,	0,	0,	0,	display2_clearbg, 	REDRM_ALL, PG0_1, },
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_ALL, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-		//{	10,	0,	6,	0,	display2_rxbwval6alt,	REDRM_ALL, PG0, },	// RX BW value
-		{	17,	0,	5,	0,	display_txrxstate5alt, REDRM_ALL, PG0, },
-		{	21,	0,	7,	0,	display2_ant7alt,		REDRM_ALL, PG0, },
-		{	26,	0,	5,	0,	display2_att5alt,		REDRM_ALL, PG0, },
-		{	31,	0,	5,	0,	display2_preovf5alt,	REDRM_ALL, PG0, },
-		{	35,	0,	1,	0,	display2_genham1,	REDRM_ALL, PG0, },	// Отображение режима General Coverage / HAM bands
-		{	38,	0,	5,	0,	display2_lockstate5alt, REDRM_ALL, PG0, },	// LOCK
-		{	42, 0,	7,	0,	display2_notch7alt,	REDRM_ALL, PG0, },	// NOTCH on/off
-		{	42, 5,	3,	0,	display2_voxtune3,	REDRM_ALL, PG0, },	// VOX
-		{	46, 5,	3,	0,	display2_datamode3,	REDRM_ALL, PG0, },	// DATA mode indicator
-		{	46, 15,	3,	0,	display2_usbsts3,	REDRM_ALL, PG0, },	// USB host status
-		{	46, 20,	3,	0,	display2_rec3,		REDRM_ALL, PG0, },	// Отображение режима записи аудио фрагмента
+		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PG0, },	// RX BW value
+		{	17,	0,	5,	0,	display_txrxstate5alt, & dzi_default, PG0, },
+		{	21,	0,	7,	0,	display2_ant7alt,		& dzi_default, PG0, },
+		{	26,	0,	5,	0,	display2_att5alt,		& dzi_default, PG0, },
+		{	31,	0,	5,	0,	display2_preovf5alt,	& dzi_default, PG0, },
+		{	35,	0,	1,	0,	display2_genham1,	& dzi_default, PG0, },	// Отображение режима General Coverage / HAM bands
+		{	38,	0,	5,	0,	display2_lockstate5alt, & dzi_default, PG0, },	// LOCK
+		{	42, 0,	7,	0,	display2_notch7alt,	& dzi_default, PG0, },	// NOTCH on/off
+		{	42, 5,	3,	0,	display2_voxtune3,	& dzi_default, PG0, },	// VOX
+		{	46, 5,	3,	0,	display2_datamode3,	& dzi_default, PG0, },	// DATA mode indicator
+		{	46, 15,	3,	0,	display2_usbsts3,	& dzi_default, PG0, },	// USB host status
+		{	46, 20,	3,	0,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
 
 		{   0,  0,  0,	0,	layout_init,		REDRM_INIS, PGINI, },
-//		{   47, 20, 3,	0,	display2_bkin3,		REDRM_ALL, PG0, },
-//		{	46, 20,	3,	0,	display2_agc3,		REDRM_ALL, PG0, },	// AGC mode
-//		{	46, 25,	3,	0,	display2_voxtune3,	REDRM_ALL, PG0, },	// VOX
-//		{	46, 30,	3,	0,	display2_datamode3,	REDRM_ALL, PG0, },	// DATA mode indicator
-//		{	46, 35,	3,	0,	display2_nr3,		REDRM_ALL, PG0, },	// NR
-		{	42, 15,	4,	0,	display2_atu4alt,		REDRM_ALL, PG0, },	// TUNER state (optional)
-		{	42, 20,	4,	0,	display2_byp4alt,		REDRM_ALL, PG0, },	// TUNER BYPASS state (optional)
+//		{   47, 20, 3,	0,	display2_bkin3,		& dzi_default, PG0, },
+//		{	46, 20,	3,	0,	display2_agc3,		& dzi_default, PG0, },	// AGC mode
+//		{	46, 25,	3,	0,	display2_voxtune3,	& dzi_default, PG0, },	// VOX
+//		{	46, 30,	3,	0,	display2_datamode3,	& dzi_default, PG0, },	// DATA mode indicator
+//		{	46, 35,	3,	0,	display2_nr3,		& dzi_default, PG0, },	// NR
+		{	42, 15,	4,	0,	display2_atu4alt,		& dzi_default, PG0, },	// TUNER state (optional)
+		{	42, 20,	4,	0,	display2_byp4alt,		& dzi_default, PG0, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	0,	0,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	17,	7,	0,	0,	display2_freqX_a,	REDRM_ALL, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	38, 10,	3,	0,	display2_mode3_a,	REDRM_ALL,	PG0, },	// SSB/CW/AM/FM/...
-		{	42, 10,	3,	0,	display2_rxbw3,		REDRM_ALL, PG0, },	// 3.1 / 0,5 / WID / NAR
-		{	46, 10,	3,	0,	display2_nr3,		REDRM_ALL, PG0, },	// NR : was: AGC
-		{	38, 15,	3,	0,	display2_mainsub3,	REDRM_ALL, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_default, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
+		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_default, PG0, },	// 3.1 / 0,5 / WID / NAR
+		{	46, 10,	3,	0,	display2_nr3,		& dzi_default, PG0, },	// NR : was: AGC
+		{	38, 15,	3,	0,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	42,	15,	5,	0,	display2_vfomode5alt,	REDRM_ALL, PG0, },	// SPLIT
-		{	26,	20,	0,	0,	display2_freqX_b,	REDRM_ALL, PG0, },	// SUB FREQ
-		{	38, 20,	3,	0,	display2_mode3_b,	REDRM_ALL,	PG0, },	// SSB/CW/AM/FM/...
+		{	42,	15,	5,	0,	display2_vfomode5alt,	& dzi_default, PG0, },	// SPLIT
+		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
+		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
 
-		{	0,	0,	0,	0,	wait_iq, 			REDRM_ALL,	PG0, },
+		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,	REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  15,	0,	display2_smeter15, 		REDRM_ALL, PG0, },	// Изображение стрелочного прибора
+		{    0, 4,  15,	0,	display2_smeter15, 		& dzi_default, PG0, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
-		{	0,	4,	0,	0,	display2_af_spectre15_latch,	REDRM_ALL,	PGLATCH, },
-		{	0,	4,	15,	0,	display2_af_spectre15,		REDRM_ALL, PG0, },
+		{	0,	4,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
+		{	0,	4,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
 #endif /* WITHAFSPECTRE */
 
-		{	0,	0, 4,	0,	display2_siglevel4, 	REDRM_ALL, PG0, },	// signal level dBm
+		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
 		{	0,	DLES,	0,	0,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	0,	0,	display2_latchwaterfall,	REDRM_ALL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50,	0,	display2_spectrum,	REDRM_ALL, PG0_1, },// подготовка изображения спектра
-		{	0,	DLES,	50,	0,	display2_waterfall,	REDRM_ALL, PG0_1, },// подготовка изображения водопада
-		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	REDRM_ALL, PG0_1, },
+		{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	50,	0,	display2_spectrum,	& dzi_default, PG0_1, },// подготовка изображения спектра
+		{	0,	DLES,	50,	0,	display2_waterfall,	& dzi_default, PG0_1, },// подготовка изображения водопада
+		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	& dzi_default, PG0_1, },
 
-		{	0,	0,	0,	0,	display2_nextfb, 	REDRM_ALL, PG0_1, },
 #endif /* ! WITHLVGL */
 	};
 
