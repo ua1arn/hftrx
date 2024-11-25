@@ -992,9 +992,9 @@ static void smeter_arrow(uint_fast16_t target_pixel_x, uint_fast16_t x, uint_fas
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 static void
-display2_smeter15(
-	uint_fast8_t xgrid,
-	uint_fast8_t ygrid,
+pix_display2_smeter15(
+	uint_fast16_t x0,
+	uint_fast16_t y0,
 	dctx_t * pctx
 	)
 {
@@ -1003,8 +1003,6 @@ display2_smeter15(
 	/* получение координат прямоугольника с изображением */
 	const uint_fast16_t width = SM_BG_W;
 	const uint_fast16_t height = SM_BG_H;
-	const uint_fast16_t x0 = GRID2X(xgrid);
-	const uint_fast16_t y0 = GRID2Y(ygrid);
 	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
 	const int yc = y0 + 120 + dial_shift;
@@ -1189,6 +1187,20 @@ display2_smeter15(
 
 		break;
 	}
+}
+
+// ширина занимаемого места - 15 ячеек (240/16 = 15)
+static void
+display2_smeter15(
+	uint_fast8_t xgrid,
+	uint_fast8_t ygrid,
+	dctx_t * pctx
+	)
+{
+	const uint_fast16_t x0 = GRID2X(xgrid);
+	const uint_fast16_t y0 = GRID2Y(ygrid);
+
+	pix_display2_smeter15(x0, y0, pctx);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -5998,9 +6010,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	}
 	else if (! strcmp(url.c_str(), "smeter"))
 	{
-		uint_fast8_t x = layer.border_box.left() / 16;
-		uint_fast8_t y = layer.border_box.top() / 5;
-		display2_smeter15(x, y, NULL);
+		pix_display2_smeter15(layer.border_box.left(), layer.border_box.top(), NULL);
 	}
 	else if (! strcmp(url.c_str(), "bigfreq"))
 	{
