@@ -5937,6 +5937,7 @@ litehtml::uint_ptr hftrxgd::create_font(const char *faceName, int size, int weig
 	}
 	return 1;
 }
+
 void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 {
 	(void) hFont;
@@ -5961,14 +5962,17 @@ int hftrxgd::pt_to_px(int pt) const
 {
 	return pt;
 }
+
 int hftrxgd::get_default_font_size() const
 {
 	return 12;
 }
+
 const char* hftrxgd::get_default_font_name() const
 {
 	return "Times New Roman";
 }
+
 void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker)
 {
 	TP();
@@ -5992,22 +5996,43 @@ void hftrxgd::load_image(const char *src, const char *baseurl, bool redraw_on_re
 {
 	PRINTF("load_image: src='%s', baseurl='%s'\n", src, baseurl);
 }
+
 void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::size &sz)
 {
-	TP();
-	litehtml::size sss(10, 10);
+	//TP();
+	litehtml::size sss(5, 10);
 	sz = sss;
 }
+
 void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url)
 {
-	PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
+	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
+	//PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
+	if (0)
+	{
+
+	}
+	else if (! strcmp(url.c_str(), "smeter"))
+	{
+	}
+	else if (! strcmp(url.c_str(), "bigfreq"))
+	{
+
+	}
+	else if (! strcmp(url.c_str(), "waterfal"))
+	{
+
+	}
+	else
+	{
+		colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, COLORPIP_RED);
+	}
 }
+
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
 	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
 	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
-	const uint_fast16_t m_dx = DIM_X;
-	const uint_fast16_t m_dy = DIM_Y;
 
 	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLPIP(color));
 }
@@ -6264,10 +6289,10 @@ void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtm
 
 using namespace litehtml;
 
-static hftrxgd hfrx_cont(DIM_X, DIM_Y);
-static const litehtml::position  hfrx_wndclip(0, 0, DIM_X, DIM_Y);
+static litehtml::hftrxgd hfrx_cont(DIM_X, DIM_Y);
+static const litehtml::position hfrx_wndclip(0, 0, DIM_X, DIM_Y);
 static document::ptr hftrxmain_docs [DISPLC_MODCOUNT];
-static uint_ptr hftrx_hdc = 0;
+static litehtml::uint_ptr hftrx_hdc = 0;
 
 static const char hftrx_css [] =
 R"##(
@@ -6278,6 +6303,7 @@ title { display: none; }
 link {	display: none; }
 style { display: none; }
 script { display: none; }
+img { display: inline-block; }
 )##";
 
 #endif /* WITHRENDERHTML */
@@ -6440,39 +6466,6 @@ void display2_bgprocess(
 #endif
 }
 
-#if LCDMODE_COLORED
-static COLORPIP_T bgcolor = COLORPIP_BLACK;
-#endif /* LCDMODE_COLORED */
-
-void
-display2_setbgcolor(COLORPIP_T c)
-{
-#if LCDMODE_COLORED
-	bgcolor = c;
-#endif /* LCDMODE_COLORED */
-}
-
-COLORPIP_T
-display2_getbgcolor(void)
-{
-#if LCDMODE_COLORED
-	return bgcolor;
-#else /* LCDMODE_COLORED */
-	return COLOR_BLACK;
-#endif /* LCDMODE_COLORED */
-}
-
-// Interface functions
-// сброс state machine отображения дисплея и очистить дисплей
-void display2_bgreset(void)
-{
-}
-
-void display2_latch(void)
-{
-	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
-}
-
 void display2_initialize(void)
 {
 	uint_fast8_t page;
@@ -6547,6 +6540,39 @@ void display2_initialize(void)
 	}
 
 #endif /* WITHRENDERHTML */
+}
+
+#if LCDMODE_COLORED
+static COLORPIP_T bgcolor = COLORPIP_BLACK;
+#endif /* LCDMODE_COLORED */
+
+void
+display2_setbgcolor(COLORPIP_T c)
+{
+#if LCDMODE_COLORED
+	bgcolor = c;
+#endif /* LCDMODE_COLORED */
+}
+
+COLORPIP_T
+display2_getbgcolor(void)
+{
+#if LCDMODE_COLORED
+	return bgcolor;
+#else /* LCDMODE_COLORED */
+	return COLOR_BLACK;
+#endif /* LCDMODE_COLORED */
+}
+
+// Interface functions
+// сброс state machine отображения дисплея и очистить дисплей
+void display2_bgreset(void)
+{
+}
+
+void display2_latch(void)
+{
+	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
 }
 
 // последний номер варианта отображения (menuset)
