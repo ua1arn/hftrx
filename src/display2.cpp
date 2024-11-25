@@ -6014,13 +6014,35 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	}
 	else if (! strcmp(url.c_str(), "smeter"))
 	{
+		uint_fast8_t x = layer.border_box.left() / 16;
+		uint_fast8_t y = layer.border_box.top() / 5;
+		display2_smeter15(x, y, NULL);
 	}
 	else if (! strcmp(url.c_str(), "bigfreq"))
 	{
+		uint_fast8_t x = layer.border_box.left() / 16;
+		uint_fast8_t y = layer.border_box.top() / 5;
+		uint_fast8_t rj;
+		uint_fast8_t fullwidth = display_getfreqformat(& rj);
+		const uint_fast8_t comma = 3 - rj;
 
+		colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+
+		enum { blinkpos = 255, blinkstate = 0 };
+
+		const uint_fast32_t freq = hamradio_get_freq_a();
+
+		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
+		do
+		{
+			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+		} while (lowhalf --);
 	}
 	else if (! strcmp(url.c_str(), "waterfal"))
 	{
+		uint_fast8_t x = layer.border_box.left() / 16;
+		uint_fast8_t y = layer.border_box.top() / 5;
+		display2_gcombo(x, y, NULL);
 
 	}
 	else

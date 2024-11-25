@@ -250,8 +250,8 @@ R"##(
  <div id="id7" style="background-color:blue; color:black; ">WWWWW</div>
  <div id="id8" style="background-color:blue; color:black; ">WWWW</div>
  <div id="id9" style="background-color:blue; color:black; ">WWW</div>
- <div id="id11" style="background-color:blue; color:black; "><img src='smeter'/>zzzzzzzzz</div>
- <div id="id13" style="background-color:blue; color:black; "><img src='bigfreq'/>zzzzzzzzzzzzzz</div>
+ <div id="id11" style="background-color:blue; color:black; "><img src='smeter'/></div>
+ <div id="id13" style="background-color:blue; color:black; "><img src='bigfreq'/></div>
  <div id="id14" style="background-color:blue; color:black; ">WWWWWWWWW</div>
  <div id="id15" style="background-color:blue; color:black; ">WWWWWWWWW</div>
  <div id="id16" style="background-color:blue; color:black; ">WWW</div>
@@ -272,7 +272,7 @@ R"##(
  <div id="id32" style="background-color:blue; color:black; ">WWW</div>
  <div id="id33" style="background-color:blue; color:black; ">WWWWW</div>
  <div id="id34" style="background-color:blue; color:black; ">WWWWWWWW</div>
- <div id="id37" style="background-color:blue; color:black; "><img src='waterfal'/>zzzzzzzzzzzzzz</div>
+ <div id="id37" style="background-color:blue; color:black; "><img src='waterfal'/></div>
  <div id="id38" style="background-color:blue; color:black; ">WWWWWWWWWWWW</div>
  <div id="id39" style="background-color:blue; color:black; ">WWWWWWWWW</div>
  <div id="id40" style="background-color:blue; color:black; ">WWWW</div>
