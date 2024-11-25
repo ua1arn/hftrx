@@ -6019,7 +6019,11 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+#if WITHPRERENDER
+			render_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+#else /* WITHPRERENDER */
+			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+#endif /* WITHPRERENDER */
 		} while (lowhalf --);
 	}
 	else if (! strcmp(url.c_str(), "waterfal"))
