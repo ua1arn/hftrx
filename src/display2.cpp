@@ -6468,12 +6468,12 @@ void display2_bgreset(void)
 
 void display2_initialize(void)
 {
-#if 0
 	uint_fast8_t page;
+#if 0
 	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
 		// Формирование шаблона с html элементами
-		uint_fast16_t subset = REDRSUBSET(page);
+		const uint_fast16_t subset = REDRSUBSET(page);
 		uint_fast8_t i;
 		PRINTF("<body style=\"background-color:orange;\">\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
@@ -6501,7 +6501,6 @@ void display2_initialize(void)
 
 #if WITHRENDERHTML
 
-	uint_fast8_t page;
 	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
 		TP();
