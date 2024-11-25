@@ -6042,7 +6042,8 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	{
 		uint_fast8_t x = layer.border_box.left() / 16;
 		uint_fast8_t y = layer.border_box.top() / 5;
-		display2_gcombo(x, y, NULL);
+		display2_spectrum(x, y, NULL);
+		display2_waterfall(x, y, NULL);
 
 	}
 	else
