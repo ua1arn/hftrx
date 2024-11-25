@@ -1,3 +1,10 @@
+#ifndef AXP803_H_INCLUDED
+#define AXP803_H_INCLUDED
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /**
  * Taken from https://github.com/jernejsk/u-boot/blob/25fa60a9ee1a92d751c0c3a4a8d4acc2495800cc/include/axp803.h
  *
@@ -122,3 +129,9 @@ enum axp305_reg {
 #define AXP_POWER_STATUS_ALDO_IN		(1 << 0)
 
 int axp305_initialize(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* AXP803_H_INCLUDED */

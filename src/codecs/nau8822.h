@@ -14,6 +14,10 @@
 #ifndef NAU8822_H_INCLUDED
 #define NAU8822_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /*
  * Register values.
  */
@@ -102,15 +106,17 @@
 #if defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
-	//#if WITHPOTAFGAIN
-	//	#define	BOARD_AFGAIN_MIN	NAU8822L_OUT_VOL_MIN		/* код управления усилением НЧ тракта */
-	//	#define	BOARD_AFGAIN_MAX	NAU8822L_OUT_VOL_MAX		/* код управления усилением НЧ тракта */
-	//#endif /* WITHPOTAFGAIN */
+	#define EQUALIZERBASE 12
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 
 void nau8822_setreg(
-	uint_fast8_t regv,			/* 7 bit value */
+	uint_fast8_t regv,			/* 7 bit register address */
 	uint_fast16_t datav			/* 9 bit value */
 	);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif	/* NAU8822_H_INCLUDED */
 

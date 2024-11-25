@@ -9,6 +9,10 @@
 #ifndef AD9851_C_INCLUDED
 #define AD9851_C_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9851)
 	#if (DDS1_CLK_MUL != 1) && (DDS1_CLK_MUL != 6)
 		#error AD9851 as DDS1 use x6 or x1 clock multipliers only
@@ -97,5 +101,9 @@ prog_ad9851_init(
 
 	prog_ad9851_freq(target, & phase_0, ddsmult);
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* AD9851_C_INCLUDED */

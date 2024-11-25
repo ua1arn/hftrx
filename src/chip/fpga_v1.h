@@ -6,6 +6,10 @@
 #ifndef FPGA_V1_C_INCLUDED
 #define FPGA_V1_C_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 extern const phase_t phase_0;
 
 #define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
@@ -198,6 +202,10 @@ static void prog_fpga_initialize(
 
 #endif /* WITHIQSHIFT */
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* FPGA_V1_C_INCLUDED */
 

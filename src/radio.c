@@ -3974,7 +3974,6 @@ enum
 		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
-		#define EQUALIZERBASE 12
 		static int_fast32_t getequalizerbase(void)
 		{
 			return - EQUALIZERBASE;

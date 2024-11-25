@@ -9,6 +9,10 @@
 #ifndef AD9834_C_INCLUDED
 #define AD9834_C_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_AD9834)
 	#if (DDS1_CLK_MUL != 1)
@@ -126,5 +130,9 @@ prog_ad9834_init(
 	* profile = fsel;
 
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* AD9834_C_INCLUDED */
