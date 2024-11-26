@@ -5944,6 +5944,7 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 
 int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
+	//PRINTF("text_width: text='%s'\n", text);
 	(void) hFont;
 	return SMALLCHARW * strlen(text);
 }
@@ -6312,26 +6313,49 @@ void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtm
 }
 
 
-class el_text2: public litehtml::el_text
-{
-public:
-	virtual bool is_replaced() const override { TP(); return true; }
-	explicit el_text2(const char* text, const document::ptr& doc) : el_text(text, doc) { }
-	virtual void draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item>& ri);
-	virtual void draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
-};
+	class el_text2: public litehtml::el_text
+	{
+	public:
+		virtual std::shared_ptr<render_item> create_render_item(const std::shared_ptr<render_item>& parent_ri);
+		virtual bool is_replaced() const override { TP(); return true; }
+		explicit el_text2(const char* text, const document::ptr& doc) : el_text(text, doc) { }
+	//	virtual void draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item>& ri);
+	//	virtual void draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
+	};
 
-void el_text2::draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
-{
-	TP();
+//void el_text2::draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
+//{
+//	TP();
+//}
+//
+//void el_text2::draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
+//{
+//	TP();
+//}
+
+	class render_item_text2 : public render_item
+	{
+	protected:
+//		int calc_max_height(int image_height, int containing_block_height);
+//		int _render(int x, int y, const containing_block_context &containing_block_size, formatting_context* fmt_ctx, bool second_pass) override;
+
+	public:
+		explicit render_item_text2(std::shared_ptr<element>  src_el) : render_item(std::move(src_el))
+		{}
+		std::shared_ptr<render_item> clone() override
+		{
+			return std::make_shared<render_item_text2>(src_el());
+		}
+	};
+
+	std::shared_ptr<litehtml::render_item> litehtml::el_text2::create_render_item(const std::shared_ptr<render_item>& parent_ri)
+	{
+		auto ret = std::make_shared<render_item_text2>(shared_from_this());
+		ret->parent(parent_ri);
+		return ret;
+	}
+
 }
-
-void el_text2::draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
-{
-	TP();
-}
-
-}	// namespace
 
 using namespace litehtml;
 
@@ -6518,7 +6542,6 @@ void display2_bgprocess(
 			local_snprintf_P(s, sizeof s, "%08X", (unsigned) sys_now());
 
 			litehtml::element::ptr tp(std::make_shared<el_text2>(s, doc));
-			tp->parent(el);
 
 			if (sys_now() & 0x200)
 			{
@@ -6533,19 +6556,22 @@ void display2_bgprocess(
 
 
 
-			el->removeChild(old);
-//			//doc->append_children_from_string(* el, s);
-			el->appendChild(tp);
+			//doc->append_children_from_string(* el, s);
+			ASSERT(el->appendChild(tp));
+			ASSERT(el->removeChild(old));
 
+			//PRINTF("***** old = %p\n", old);
 			//tp->compute_styles(false);
 			el->compute_styles(true);
 			//el->refresh_styles();
+
+			//doc->refreshh();
 		}
 	}
 
 	doc->render(hfrx_wndclip.width, litehtml::render_all);
 	doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
-
+	TP();
 	colmain_nextfb();
 
 #else
