@@ -101,7 +101,7 @@ void wait_iq(
 		{	46, 15,	3,	0,	display2_usbsts3,	& dzi_default, PG0, },	// USB host status
 		{	46, 20,	3,	0,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
 
-		{   0,  0,  0,	0,	layout_init,		REDRM_INIS, PGINI, },
+		{   0,  0,  0,	0,	layout_init,		& dzi_default, PGINI, },
 //		{   47, 20, 3,	0,	display2_bkin3,		& dzi_default, PG0, },
 //		{	46, 20,	3,	0,	display2_agc3,		& dzi_default, PG0, },	// AGC mode
 //		{	46, 25,	3,	0,	display2_voxtune3,	& dzi_default, PG0, },	// VOX
@@ -110,7 +110,7 @@ void wait_iq(
 		{	42, 15,	4,	0,	display2_atu4alt,		& dzi_default, PG0, },	// TUNER state (optional)
 		{	42, 20,	4,	0,	display2_byp4alt,		& dzi_default, PG0, },	// TUNER BYPASS state (optional)
 
-		{	17,	7,	0,	0,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_default, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
 		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_default, PG0, },	// 3.1 / 0,5 / WID / NAR
@@ -123,17 +123,17 @@ void wait_iq(
 
 		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
 #if WITHBARS
-		{    0, 4,  0,	0,	display2_smeter15_init,	REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{    0, 4,  0,	0,	display2_smeter15_init,	& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  15,	0,	display2_smeter15, 		& dzi_default, PG0, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
-		{	0,	4,	0,	0,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
+		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
 		{	0,	4,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
 		{	0,	4,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
 #endif /* WITHAFSPECTRE */
 
 		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
-		{	0,	DLES,	0,	0,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	50,	0,	display2_spectrum,	& dzi_default, PG0_1, },// подготовка изображения спектра
 		{	0,	DLES,	50,	0,	display2_waterfall,	& dzi_default, PG0_1, },// подготовка изображения водопада
