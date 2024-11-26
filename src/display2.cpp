@@ -5857,7 +5857,7 @@ static void display2_wfl_init(
 
 #include "litehtml.h"
 #include <litehtml/encodings.h>
-#include <litehtml/el_td.h>
+#include <litehtml/el_text.h>
 #include <litehtml/render_item.h>
 
 
@@ -5905,17 +5905,19 @@ public:
 //		return litehtml::string();
 //	}
 //	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
-	int m_dx;
-	int m_dy;
 	hftrxgd(int dx, int dy) :
 			m_dx(dx), m_dy(dy)
 	{
 	}
 	virtual ~hftrxgd() = default;
 
+private:
+	int m_dx;
+	int m_dy;
+
 };
 
-static COLORPIP_T getCOLPIP(const litehtml::web_color &color)
+static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 {
 	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
 }
@@ -5930,6 +5932,7 @@ litehtml::uint_ptr hftrxgd::create_font(const char *faceName, int size, int weig
 		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
 		fm->height = SMALLCHARH; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
 		fm->x_height = fm->height;
+		fm->draw_spaces = true;
 	}
 	return 1;
 }
@@ -5950,8 +5953,8 @@ void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint
 	//PRINTF("draw_text: text='%s'\n", text);
 	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-	//colpip_fillrect(buffer, m_dx, m_dy, pos.left(), pos.top(), pos.width, pos.height, getCOLPIP(color));
-	colpip_string_tbg(buffer, m_dx, m_dy, pos.left(), pos.top(), text, getCOLPIP(color));
+	//colpip_fillrect(buffer, m_dx, m_dy, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
+	colpip_string_tbg(buffer, m_dx, m_dy, pos.left(), pos.top(), text, getCOLORPIP(color));
 }
 
 int hftrxgd::pt_to_px(int pt) const
@@ -5974,7 +5977,7 @@ void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_mark
 	TP();
 	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-	colpip_fillrect(buffer, m_dx, m_dy, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLPIP(marker.color));
+	colpip_fillrect(buffer, m_dx, m_dy, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLORPIP(marker.color));
 
 //	int top_margin = marker.pos.height / 3;
 //	if (top_margin < 4)
@@ -5985,7 +5988,7 @@ void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_mark
 //	int draw_width = marker.pos.height - top_margin * 2;
 //	int draw_height = marker.pos.height - top_margin * 2;
 //
-//	colpip_fillrect(buffer, m_dx, m_dy, draw_x, draw_y, draw_width, draw_height, getCOLPIP(marker.color));
+//	colpip_fillrect(buffer, m_dx, m_dy, draw_x, draw_y, draw_width, draw_height, getCOLORPIP(marker.color));
 }
 
 void hftrxgd::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
@@ -6053,7 +6056,7 @@ void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &la
 	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
 	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLPIP(color));
+	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
 }
 
 void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
@@ -6089,10 +6092,10 @@ void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &bord
 {
 	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
 	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
-	COLORPIP_T top_color = getCOLPIP(borders.top.color);
-	COLORPIP_T botom_color = getCOLPIP(borders.bottom.color);
-	COLORPIP_T left_color = getCOLPIP(borders.left.color);
-	COLORPIP_T right_color = getCOLPIP(borders.right.color);
+	COLORPIP_T top_color = getCOLORPIP(borders.top.color);
+	COLORPIP_T botom_color = getCOLORPIP(borders.bottom.color);
+	COLORPIP_T left_color = getCOLORPIP(borders.left.color);
+	COLORPIP_T right_color = getCOLORPIP(borders.right.color);
 	colpip_rect(buffer, m_dx, m_dy, draw_pos.left(), draw_pos.top(), draw_pos.right() - 1, draw_pos.bottom() - 1, top_color, 0);
 }
 
@@ -6242,6 +6245,11 @@ void freqel::on_click()
 
 litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
 {
+//	PRINTF("create_element: tag_name='%s'\n", tag_name);
+//	for (const std::pair<string, string> &p: attributes)
+//	{
+//		PRINTF(" create_element: '%s'='%s'\n", p.first.c_str(), p.second.c_str());
+//	}
 	return nullptr;
 #if 0
 	try
@@ -6461,12 +6469,13 @@ void display2_bgprocess(
 
 #elif WITHRENDERHTML
 
+	document::ptr doc = hftrxmain_docs [menuset];
 	if (0)
 	{
 		litehtml::css_selector sel;
 		//sel.parse("[id=FREQ_A]", no_quirks_mode);	// select by id
 		sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
-		litehtml::elements_list testels = hftrxmain_docs [menuset]->root()->select_all(sel);
+		litehtml::elements_list testels = doc->root()->select_all(sel);
 		//litehtml::element::ptr testel = hftrxmain_docs->root()->select_one(sel);
 		for (litehtml::element::ptr& testel : testels)
 		{
@@ -6484,6 +6493,12 @@ void display2_bgprocess(
 //			uint_fast8_t hour, minute, seconds;
 //			board_rtc_cached_gettime(& hour, & minute, & seconds);
 
+			const litehtml::element::ptr & old = el->children().front();	// Единственный элемент
+
+			char s [16];
+			local_snprintf_P(s, sizeof s, "%08X", (unsigned) sys_now());
+			litehtml::element::ptr tp(std::make_shared<el_text>(s, doc));
+
 			if (sys_now() & 0x200)
 			{
 				el->set_attr("style", "background-color:red; color:green;");
@@ -6494,11 +6509,16 @@ void display2_bgprocess(
 				el->set_attr("style", "background-color:green; color:red;");
 				//el->set_data("2");
 			}
+
+			el->removeChild(old);
+			el->appendChild(tp);
+			//PRINTF("Childs=%d\n", el->);
+
 			el->compute_styles(false);
 		}
 	}
-	hftrxmain_docs [menuset]->render(hfrx_wndclip.width, litehtml::render_all);
-	hftrxmain_docs [menuset]->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
+	doc->render(hfrx_wndclip.width, litehtml::render_all);
+	doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
 	colmain_nextfb();
 
 #else
@@ -6558,7 +6578,7 @@ void display2_initialize(void)
 				continue;
 			if (dzp->colspan == 0 || dzp->rowspan == 0)
 				continue;
-			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black; \">%*.*s</div>\n",
+			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
 					(int) i,
 					dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 					);
@@ -6587,6 +6607,16 @@ void display2_initialize(void)
 			//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
 			hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
 			PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
+//			for (litehtml::element::ptr& el : hftrx_timeels)
+//			{
+//				for (const litehtml::element::ptr& el2 : el->children())
+//				{
+//					string t;
+//					el2->get_text(t);
+//					PRINTF(" children: name='%s'\n", el2->dump_get_name().c_str());
+//					PRINTF(" children: text='%s'\n", t.c_str());
+//				}
+//			}
 		}
 	}
 
