@@ -6311,8 +6311,27 @@ void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtm
 	//TP();
 }
 
-}	// namespace
 
+class el_text2: public litehtml::el_text
+{
+public:
+	virtual bool is_replaced() const override { TP(); return true; }
+	explicit el_text2(const char* text, const document::ptr& doc) : el_text(text, doc) { }
+	virtual void draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item>& ri);
+	virtual void draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
+};
+
+void el_text2::draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
+{
+	TP();
+}
+
+void el_text2::draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
+{
+	TP();
+}
+
+}	// namespace
 
 using namespace litehtml;
 
@@ -6493,11 +6512,13 @@ void display2_bgprocess(
 //			uint_fast8_t hour, minute, seconds;
 //			board_rtc_cached_gettime(& hour, & minute, & seconds);
 
-			const litehtml::element::ptr & old = el->children().front();	// Единственный элемент
+			const litehtml::element::ptr & old = el->children().back();	// Единственный элемент
 
 			char s [16];
 			local_snprintf_P(s, sizeof s, "%08X", (unsigned) sys_now());
-			litehtml::element::ptr tp(std::make_shared<el_text>(s, doc));
+
+			litehtml::element::ptr tp(std::make_shared<el_text2>(s, doc));
+			tp->parent(el);
 
 			if (sys_now() & 0x200)
 			{
@@ -6510,15 +6531,21 @@ void display2_bgprocess(
 				//el->set_data("2");
 			}
 
-			el->removeChild(old);
-			el->appendChild(tp);
-			//PRINTF("Childs=%d\n", el->);
 
-			el->compute_styles(false);
+
+			el->removeChild(old);
+//			//doc->append_children_from_string(* el, s);
+			el->appendChild(tp);
+
+			//tp->compute_styles(false);
+			el->compute_styles(true);
+			//el->refresh_styles();
 		}
 	}
+
 	doc->render(hfrx_wndclip.width, litehtml::render_all);
 	doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
+
 	colmain_nextfb();
 
 #else
