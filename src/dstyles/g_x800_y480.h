@@ -242,42 +242,42 @@ R"##(
 </style>
 </head>
 <body style="background-color:orange;">
- <div id="id2" style="background-color:blue; color:black; ">WWWWWWW</div>
- <div id="id3" style="background-color:blue; color:black; ">WWWW</div>
- <div id="id4" style="background-color:blue; color:black; ">WW</div>
- <div id="id5" style="background-color:blue; color:black; ">WWW</div>
- <div id="id6" style="background-color:blue; color:black; ">WWW</div>
- <div id="id7" style="background-color:blue; color:black; ">WWWWW</div>
- <div id="id8" style="background-color:blue; color:black; ">WWWW</div>
- <div id="id9" style="background-color:blue; color:black; ">WWW</div>
- <div id="id11" style="background-color:blue; color:black; "><img src='smeter'/></div>
- <div id="id13" style="background-color:blue; color:black; "><img src='bigfreq'/></div>
- <div id="id14" style="background-color:blue; color:black; ">WWWWWWWWW</div>
- <div id="id15" style="background-color:blue; color:black; ">WWWWWWWWW</div>
- <div id="id16" style="background-color:blue; color:black; ">WWW</div>
- <div id="id17" style="background-color:blue; color:black; ">WWW</div>
- <div id="id18" style="background-color:blue; color:black; ">WWW</div>
- <div id="id19" style="background-color:blue; color:black; ">WWW</div>
- <div id="id20" style="background-color:blue; color:black; ">WWW</div>
- <div id="id21" style="background-color:blue; color:black; ">WWWWW</div>
- <div id="id23" style="background-color:blue; color:black; ">WWW</div>
- <div id="id24" style="background-color:blue; color:black; ">WWWWWWWWWWWW</div>
- <div id="id25" style="background-color:blue; color:black; ">WWW</div>
- <div id="id26" style="background-color:blue; color:black; ">WWW</div>
- <div id="id27" style="background-color:blue; color:black; ">WWWW</div>
- <div id="id28" style="background-color:blue; color:black; ">WWWWW</div>
- <div id="id29" style="background-color:blue; color:black; ">WWWWWW</div>
- <div id="id30" style="background-color:blue; color:black; ">WWW</div>
- <div id="id31" style="background-color:blue; color:black; ">WWW</div>
- <div id="id32" style="background-color:blue; color:black; ">WWW</div>
- <div id="id33" style="background-color:blue; color:black; ">WWWWW</div>
- <div id="id34" style="background-color:blue; color:black; ">WWWWWWWW</div>
- <div id="id37" style="background-color:blue; color:black; "><img src='waterfal'/></div>
- <div id="id38" style="background-color:blue; color:black; ">WWWWWWWWWWWW</div>
- <div id="id39" style="background-color:blue; color:black; ">WWWWWWWWW</div>
- <div id="id40" style="background-color:blue; color:black; ">WWWW</div>
- <div id="id41" style="background-color:blue; color:black; ">WWW</div>
- <div id="id42" style="background-color:blue; color:black; ">WWWWWWW</div>
+ <div id="id2" style="background-color:blue; color:black;">WWWWWWW</div>
+ <div id="id3" style="background-color:blue; color:black;">WWWW</div>
+ <div id="id4" style="background-color:blue; color:black;">WW</div>
+ <div id="id5" style="background-color:blue; color:black;">WWW</div>
+ <div id="id6" style="background-color:blue; color:black;">WWW</div>
+ <div id="id7" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id8" style="background-color:blue; color:black;">WWWW</div>
+ <div id="id9" style="background-color:blue; color:black;">WWW</div>
+ <div id="id11" style="background-color:blue; color:black;"><img src='smeter'/></div>
+ <div id="id13" style="background-color:blue; color:black;"><img src='bigfreq'/></div>
+ <div id="id14" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="id15" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="id16" style="background-color:blue; color:black;">WWW</div>
+ <div id="id17" style="background-color:blue; color:black;">WWW</div>
+ <div id="id18" style="background-color:blue; color:black;">WWW</div>
+ <div id="id19" style="background-color:blue; color:black;">WWW</div>
+ <div id="id20" style="background-color:blue; color:black;">WWW</div>
+ <div id="id21" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id23" style="background-color:blue; color:black;">WWW</div>
+ <div id="id24" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
+ <div id="id25" style="background-color:blue; color:black;">WWW</div>
+ <div id="id26" style="background-color:blue; color:black;">WWW</div>
+ <div id="id27" style="background-color:blue; color:black;">WWWW</div>
+ <div id="id28" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id29" style="background-color:blue; color:black;">WWWWWW</div>
+ <div id="id30" style="background-color:blue; color:black;">WWW</div>
+ <div id="id31" style="background-color:blue; color:black;">WWW</div>
+ <div id="id32" style="background-color:blue; color:black;">WWW</div>
+ <div id="id33" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id34" style="background-color:blue; color:black;">WWWWWWWW</div>
+ <div id="id37" style="background-color:blue; color:black;"><img src='waterfal'/></div>
+ <div id="id38" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
+ <div id="id39" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="id40" style="background-color:blue; color:black;">WWWW</div>
+ <div id="id41" style="background-color:blue; color:black;">WWW</div>
+ <div id="id42" style="background-color:blue; color:black;">WWWWWWW</div>
 </body>
 </html>
 )##";
