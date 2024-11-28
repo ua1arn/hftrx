@@ -5672,6 +5672,8 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 		(N - 1) * (UINT32_C(1) << 8) |
 		(M - 1) * (UINT32_C(1) << 0) |
 		0;
+#error CHECK M field!!!
+
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
 
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);          //Lock enable
@@ -7638,15 +7640,8 @@ static void t113_tcon_PLL_configuration(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-
-	/* Lock enable */
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
-
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
-		;
+	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
 
 #else
 #endif
