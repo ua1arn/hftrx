@@ -4605,15 +4605,14 @@ static void write32(uintptr_t addr, uint32_t value)
 //	PRINTF("de_vsu_base(1)=0x%08X\n", T113_DE_MUX_VSU+T113_DE_BASE_N(1));
 //	PRINTF("de_vsu_base(2)=0x%08X\n", T113_DE_MUX_VSU+T113_DE_BASE_N(2));
 
-// TODO: fix addresses
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	#define T113_DE_BASE_N(id) ((id==2?DE_VSU2_BASE: DE_VSU1_BASE)- 0x100000 - 0x20000)
+	#define T113_VSU_BASE_N(id) ((id) == 2 ? DE_VSU2_BASE: DE_VSU1_BASE)
 #else
-	#define T113_DE_BASE_N(id) ((id)==1 ? DE_BASE : (DE_BASE + 0x100000))
+	#define T113_VSU_BASE_N(id) ((id) == 2 ? DE_MIXER1_VSU1_BASE: DE_MIXER0_VSU1_BASE)
 #endif
 
-#define regmap_write(id,y,z) do { (*(volatile uint32_t*)(T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))=(z); } while (0)
-#define regmap_read(id,y) (*(volatile uint32_t*) (T113_DE_BASE_N((id))+T113_DE_MUX_VSU+(y)))
+#define regmap_vsu_write(id,y,z) do { (*(volatile uint32_t*)(T113_VSU_BASE_N((id))+(y)))=(z); } while (0)
+#define regmap_vsu_read(id,y) (*(volatile uint32_t*) (T113_VSU_BASE_N((id))+(y)))
 
 static const uint32_t bicubic8coefftab32_left[480] = {
 	0x40000000, 0x40ff0000, 0x3ffe0000, 0x3efe0000,
@@ -5494,22 +5493,22 @@ static void sun8i_vi_scaler_set_coeff(int rtmixid, uintptr_t base, uint32_t hste
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(rtmixid, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
+		regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YHCOEFF0(base, i),
 			     lan3coefftab32_left[offset + i]);
-		regmap_write(rtmixid, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
+		regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YHCOEFF1(base, i),
 			     lan3coefftab32_right[offset + i]);
-		regmap_write(rtmixid, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
+		regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CHCOEFF0(base, i),
 			     ch_left[offset + i]);
-		regmap_write(rtmixid, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
+		regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CHCOEFF1(base, i),
 			     ch_right[offset + i]);
 	}
 
 	offset = sun8i_vi_scaler_coef_index(hstep) *
 			SUN8I_VI_SCALER_COEFF_COUNT;
 	for (i = 0; i < SUN8I_VI_SCALER_COEFF_COUNT; i++) {
-		regmap_write(rtmixid, SUN8I_SCALER_VSU_YVCOEFF(base, i),
+		regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YVCOEFF(base, i),
 			     lan2coefftab32[offset + i]);
-		regmap_write(rtmixid, SUN8I_SCALER_VSU_CVCOEFF(base, i),
+		regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CVCOEFF(base, i),
 			     cy[offset + i]);
 	}
 }
@@ -5552,27 +5551,27 @@ static void sun8i_vi_scaler_setup(int rtmixid, uint32_t src_w, uint32_t src_h, u
 		else
 			val = SUN50I_SCALER_VSU_SCALE_MODE_NORMAL;
 
-		regmap_write(rtmixid, SUN50I_SCALER_VSU_SCALE_MODE(base), val);
+		regmap_vsu_write(rtmixid, SUN50I_SCALER_VSU_SCALE_MODE(base), val);
 
-		ASSERT(regmap_read(rtmixid, SUN50I_SCALER_VSU_SCALE_MODE(base)) == val);
+		ASSERT(regmap_vsu_read(rtmixid, SUN50I_SCALER_VSU_SCALE_MODE(base)) == val);
 	}
 
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
-	ASSERT(regmap_read(rtmixid, SUN8I_SCALER_VSU_OUTSIZE(base)) == outsize);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_YINSIZE(base), insize);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_YHSTEP(base), hscale);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_YVSTEP(base), vscale);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_YHPHASE(base), hphase);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_YVPHASE(base), vphase);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_CINSIZE(base), SUN8I_VI_SCALER_SIZE(src_w / HSUB, src_h / VSUB));
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_CHSTEP(base), hscale / HSUB);
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_CVSTEP(base), vscale / VSUB);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_OUTSIZE(base), outsize);
+	ASSERT(regmap_vsu_read(rtmixid, SUN8I_SCALER_VSU_OUTSIZE(base)) == outsize);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YINSIZE(base), insize);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YHSTEP(base), hscale);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YVSTEP(base), vscale);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YHPHASE(base), hphase);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_YVPHASE(base), vphase);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CINSIZE(base), SUN8I_VI_SCALER_SIZE(src_w / HSUB, src_h / VSUB));
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CHSTEP(base), hscale / HSUB);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CVSTEP(base), vscale / VSUB);
 
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_CHPHASE(base), chphase);
-	ASSERT(regmap_read(rtmixid, SUN8I_SCALER_VSU_CHPHASE(base)) == chphase);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CHPHASE(base), chphase);
+	ASSERT(regmap_vsu_read(rtmixid, SUN8I_SCALER_VSU_CHPHASE(base)) == chphase);
 
-	regmap_write(rtmixid, SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
-	//ASSERT(regmap_read(rtmixid, SUN8I_SCALER_VSU_CVPHASE(base)) == cvphase);
+	regmap_vsu_write(rtmixid, SUN8I_SCALER_VSU_CVPHASE(base), cvphase);
+	//ASSERT(regmap_vsu_read(rtmixid, SUN8I_SCALER_VSU_CVPHASE(base)) == cvphase);
 
 	sun8i_vi_scaler_set_coeff(rtmixid, base, hscale, vscale);
 }
@@ -5590,7 +5589,7 @@ static void sun8i_vi_scaler_enable(int rtmixid, uint8_t enable)
 	else
 		val = 0;
 
-	regmap_write(rtmixid,
+	regmap_vsu_write(rtmixid,
 		     SUN8I_SCALER_VSU_CTRL(base), val);
 }
 
@@ -6920,11 +6919,11 @@ static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
 //static void sun8i_hdmi_phy_unlock(struct sun8i_hdmi_phy *phy)
 //{
 //    /* enable read access to HDMI controller */
-//    regmap_write(phy->regs, SUN8I_HDMI_PHY_READ_EN_REG,
+//    regmap_vsu_write(phy->regs, SUN8I_HDMI_PHY_READ_EN_REG,
 //                 SUN8I_HDMI_PHY_READ_EN_MAGIC);
 //
 //    /* unscramble register offsets */
-//    regmap_write(phy->regs, SUN8I_HDMI_PHY_UNSCRAMBLE_REG,
+//    regmap_vsu_write(phy->regs, SUN8I_HDMI_PHY_UNSCRAMBLE_REG,
 //                 SUN8I_HDMI_PHY_UNSCRAMBLE_MAGIC);
 //}
 //
