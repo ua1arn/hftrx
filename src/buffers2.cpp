@@ -3360,6 +3360,7 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 	const unsigned N = ARRAY_SIZE(v0_array);
 	unsigned i;
 	uint_fast32_t results;
+	uint_fast32_t shorted;	// bit0: short d0-d1. bit1: short d1-d2
 
 	ASSERT(v0 == v1);
 	if (v0_skip < 128000)
@@ -3367,19 +3368,38 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 		++ v0_skip;
 		return;
 	}
-	if (v0_count < 1024)
+	if (v0_count < N)
 	{
 		v0_array [v0_count] = v0;
 		++ v0_count;
 		return;
 	}
 	// Analyze
-	//printhex32(0, v0_array,  sizeof v0_array);
+	// tied to VCC/GND lines diagnostics
 	results = 0;
 	for (i = 1; i < N; ++ i)
 	{
 		const uint32_t diffs = v0_array [i - 1] ^ v0_array [i];
 		results |= diffs;
+	}
+	// shorted lines diagnostics
+	shorted = ~ UINT32_C(0);
+	for (i = 0; i < N; ++ i)
+	{
+		unsigned bitpos;
+		for (bitpos = 0; bitpos < 15; ++ bitpos)
+		{
+			unsigned state = (v0_array [i] >> bitpos) & 0x03;
+			switch (state)
+			{
+			case 0x00:
+			case 0x03:
+				break;
+			default:
+				shorted &= ~ (UINT32_C(1) << bitpos);
+				break;
+			}
+		}
 	}
 	PRINTF("ADC lines stable: 0x%04X [", (unsigned) (0xFFFF & ~ results));
 	for (i = 0; i < 16; ++ i)
@@ -3390,6 +3410,17 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 		PRINTF("D%u ", i);
 	}
 	PRINTF("]\n");
+	PRINTF("ADC lines same: 0x%04X [", (unsigned) (shorted & 0x7FFF));
+	for (i = 0; i < 15; ++ i)
+	{
+		uint_fast32_t mask = UINT32_C(1) << i;
+		if (shorted & mask)
+		{
+			PRINTF("D%u-D%u ", i, i + 1);
+		}
+	}
+	PRINTF("]\n");
+	//printhex32(0, v0_array, sizeof v0_array);
 	for (;;)
 		;
 }
