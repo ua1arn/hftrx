@@ -3348,7 +3348,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 }
 #endif
 
-#if WITHDEBUG && WITHFPGAPIPE_CODEC1
+#if WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
 // ADC lines test (with FPGA firmware support)
 
 static uint32_t v0_array [1024];
@@ -3475,9 +3475,9 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
 		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
 #endif /* WITHFPGAPIPE_CODEC1 */
-#if 0 && WITHDEBUG && WITHFPGAPIPE_CODEC1 && DMABUFFSTEP32RX >= 14
+#if 0 && WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
 		savetestadc(b [DMABUFF32RX_ADCTEST_C0], b [DMABUFF32RX_ADCTEST_C1]);
-#endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
+#endif /* WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0) */
 	}
 
 #if WITHWFM
