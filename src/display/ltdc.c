@@ -2991,15 +2991,7 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 	N = ulmax16(N, 1);
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-
-	CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
-	CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
-	CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
-	CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
-	/* Wait pll stable */
-	while ((CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
-		;
-	CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
+	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, N);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -3007,15 +2999,7 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 	// не меняем параметры по умолчанию
 	// default frequency of PLL_VIDEO1(4X) is 1188 MHz.
 	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-
-	/* Lock enable */
-	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 29);
-
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)))
-		;
+	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 
 #else
 
@@ -5671,16 +5655,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-
-	// не меняем параметры по умолчанию
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-
-	/* Lock enable */
-	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 29);
-
-	/* Wait pll stable */
-	while (! (CCU->PLL_VIDEO0_CTRL_REG & (UINT32_C(1) << 28)))
-		;
+	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
