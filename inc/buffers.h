@@ -287,6 +287,10 @@ extern "C" {
 
 			#define DMABUFF32RX_CODEC1_LEFT 	12		/* индекс сэмпла левого канала от кодека (через PIPE) */
 			#define	DMABUFF32RX_CODEC1_RIGHT 	13		/* индекс сэмпла правого канала от кодека (через PIPE)  */
+
+			#define DMABUFF32RX_ADCTEST_C0 14			// состояние выходов RF ADC
+			#define DMABUFF32RX_ADCTEST_C1 15
+
 			// ws=0: 00 02 04 06
 			// ws=1: 01 03 05 07
 

@@ -336,7 +336,7 @@ applicable agreement for further details.
 	(input)
 	(rect -5352 -408 -5184 -392)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "adc2_ovfl" (rect 5 0 55 12)(font "Arial" ))
+	(text "adc2_ovfl" (rect 5 0 54 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -353,7 +353,7 @@ applicable agreement for further details.
 	(input)
 	(rect -5352 -392 -5184 -376)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "adc2_clka" (rect 5 0 55 12)(font "Arial" ))
+	(text "adc2_clka" (rect 5 0 54 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -370,7 +370,7 @@ applicable agreement for further details.
 	(input)
 	(rect -5360 -376 -5184 -360)
 	(text "INPUT" (rect 133 0 161 10)(font "Arial" (font_size 6)))
-	(text "adc2_data[15..0]" (rect 5 0 88 12)(font "Arial" ))
+	(text "adc2_data[15..0]" (rect 5 0 87 12)(font "Arial" ))
 	(pt 176 8)
 	(drawing
 		(line (pt 92 12)(pt 117 12))
@@ -2440,77 +2440,6 @@ applicable agreement for further details.
 	)
 	(drawing
 		(rectangle (rect 16 16 200 112))
-	)
-)
-(symbol
-	(rect -5096 -672 -4888 -512)
-	(text "LTC2208_input" (rect 5 0 89 14)(font "Arial" (font_size 8)))
-	(text "inst33" (rect 8 144 37 156)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "sysclock" (rect 0 0 50 14)(font "Arial" (font_size 8)))
-		(text "sysclock" (rect 21 27 71 41)(font "Arial" (font_size 8)))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 48)
-		(input)
-		(text "adc_of" (rect 0 0 40 14)(font "Arial" (font_size 8)))
-		(text "adc_of" (rect 21 43 61 57)(font "Arial" (font_size 8)))
-		(line (pt 0 48)(pt 16 48))
-	)
-	(port
-		(pt 0 64)
-		(input)
-		(text "adc_clk" (rect 0 0 43 14)(font "Arial" (font_size 8)))
-		(text "adc_clk" (rect 21 59 64 73)(font "Arial" (font_size 8)))
-		(line (pt 0 64)(pt 16 64))
-	)
-	(port
-		(pt 0 80)
-		(input)
-		(text "adc_data[15..0]" (rect 0 0 88 14)(font "Arial" (font_size 8)))
-		(text "adc_data[15..0]" (rect 21 75 109 89)(font "Arial" (font_size 8)))
-		(line (pt 0 80)(pt 16 80)(line_width 3))
-	)
-	(port
-		(pt 0 96)
-		(input)
-		(text "rand" (rect 0 0 25 14)(font "Arial" (font_size 8)))
-		(text "rand" (rect 21 91 46 105)(font "Arial" (font_size 8)))
-		(line (pt 0 96)(pt 16 96))
-	)
-	(port
-		(pt 0 112)
-		(input)
-		(text "adcoffset[15..0]" (rect 0 0 90 14)(font "Arial" (font_size 8)))
-		(text "adcoffset[15..0]" (rect 21 107 111 121)(font "Arial" (font_size 8)))
-		(line (pt 0 112)(pt 16 112)(line_width 3))
-	)
-	(port
-		(pt 208 32)
-		(output)
-		(text "ovf" (rect 0 0 18 14)(font "Arial" (font_size 8)))
-		(text "ovf" (rect 169 27 187 41)(font "Arial" (font_size 8)))
-		(line (pt 208 32)(pt 192 32))
-	)
-	(port
-		(pt 208 48)
-		(output)
-		(text "value[15..0]" (rect 0 0 66 14)(font "Arial" (font_size 8)))
-		(text "value[15..0]" (rect 121 43 187 57)(font "Arial" (font_size 8)))
-		(line (pt 208 48)(pt 192 48)(line_width 3))
-	)
-	(port
-		(pt 208 64)
-		(output)
-		(text "ready" (rect 0 0 33 14)(font "Arial" (font_size 8)))
-		(text "ready" (rect 154 59 187 73)(font "Arial" (font_size 8)))
-		(line (pt 208 64)(pt 192 64))
-	)
-	(drawing
-		(rectangle (rect 16 16 192 144))
 	)
 )
 (symbol
@@ -4895,7 +4824,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -936 -280 -792 -184)
+	(rect -1800 544 -1656 640)
 	(text "lpm_counter_w32" (rect 23 0 142 16)(font "Arial" (font_size 10)))
 	(text "inst17" (rect 8 80 37 92)(font "Arial" ))
 	(port
@@ -5937,6 +5866,84 @@ applicable agreement for further details.
 	)
 )
 (symbol
+	(rect -5096 -672 -4888 -512)
+	(text "LTC2208_input" (rect 5 0 89 14)(font "Arial" (font_size 8)))
+	(text "inst33" (rect 8 144 37 156)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "sysclock" (rect 0 0 50 14)(font "Arial" (font_size 8)))
+		(text "sysclock" (rect 21 27 71 41)(font "Arial" (font_size 8)))
+		(line (pt 0 32)(pt 16 32))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "adc_of" (rect 0 0 40 14)(font "Arial" (font_size 8)))
+		(text "adc_of" (rect 21 43 61 57)(font "Arial" (font_size 8)))
+		(line (pt 0 48)(pt 16 48))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "adc_clk" (rect 0 0 43 14)(font "Arial" (font_size 8)))
+		(text "adc_clk" (rect 21 59 64 73)(font "Arial" (font_size 8)))
+		(line (pt 0 64)(pt 16 64))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "adc_data[15..0]" (rect 0 0 88 14)(font "Arial" (font_size 8)))
+		(text "adc_data[15..0]" (rect 21 75 109 89)(font "Arial" (font_size 8)))
+		(line (pt 0 80)(pt 16 80)(line_width 3))
+	)
+	(port
+		(pt 0 96)
+		(input)
+		(text "rand" (rect 0 0 25 14)(font "Arial" (font_size 8)))
+		(text "rand" (rect 21 91 46 105)(font "Arial" (font_size 8)))
+		(line (pt 0 96)(pt 16 96))
+	)
+	(port
+		(pt 0 112)
+		(input)
+		(text "adcoffset[15..0]" (rect 0 0 90 14)(font "Arial" (font_size 8)))
+		(text "adcoffset[15..0]" (rect 21 107 111 121)(font "Arial" (font_size 8)))
+		(line (pt 0 112)(pt 16 112)(line_width 3))
+	)
+	(port
+		(pt 208 32)
+		(output)
+		(text "ovf" (rect 0 0 18 14)(font "Arial" (font_size 8)))
+		(text "ovf" (rect 169 27 187 41)(font "Arial" (font_size 8)))
+		(line (pt 208 32)(pt 192 32))
+	)
+	(port
+		(pt 208 48)
+		(output)
+		(text "value[15..0]" (rect 0 0 66 14)(font "Arial" (font_size 8)))
+		(text "value[15..0]" (rect 121 43 187 57)(font "Arial" (font_size 8)))
+		(line (pt 208 48)(pt 192 48)(line_width 3))
+	)
+	(port
+		(pt 208 64)
+		(output)
+		(text "ready" (rect 0 0 33 14)(font "Arial" (font_size 8)))
+		(text "ready" (rect 154 59 187 73)(font "Arial" (font_size 8)))
+		(line (pt 208 64)(pt 192 64))
+	)
+	(port
+		(pt 208 80)
+		(output)
+		(text "adcd[15..0]" (rect 0 0 63 14)(font "Arial" (font_size 8)))
+		(text "adcd[15..0]" (rect 124 75 187 89)(font "Arial" (font_size 8)))
+		(line (pt 208 80)(pt 192 80)(line_width 3))
+	)
+	(drawing
+		(rectangle (rect 16 16 192 144))
+	)
+)
+(symbol
 	(rect -5096 -448 -4888 -288)
 	(text "LTC2208_input" (rect 5 0 89 14)(font "Arial" (font_size 8)))
 	(text "inst66" (rect 8 144 37 156)(font "Arial" ))
@@ -6003,8 +6010,56 @@ applicable agreement for further details.
 		(text "ready" (rect 154 59 187 73)(font "Arial" (font_size 8)))
 		(line (pt 208 64)(pt 192 64))
 	)
+	(port
+		(pt 208 80)
+		(output)
+		(text "adcd[15..0]" (rect 0 0 63 14)(font "Arial" (font_size 8)))
+		(text "adcd[15..0]" (rect 124 75 187 89)(font "Arial" (font_size 8)))
+		(line (pt 208 80)(pt 192 80)(line_width 3))
+	)
 	(drawing
 		(rectangle (rect 16 16 192 144))
+	)
+)
+(symbol
+	(rect -1600 584 -1552 616)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst130" (rect 3 21 38 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
+(symbol
+	(rect -1648 600 -1616 632)
+	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
+	(text "inst69" (rect 3 21 32 33)(font "Arial" )(invisible))
+	(port
+		(pt 16 0)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(line (pt 16 8)(pt 16 0))
+	)
+	(drawing
+		(line (pt 8 8)(pt 16 16))
+		(line (pt 16 16)(pt 24 8))
+		(line (pt 8 8)(pt 24 8))
 	)
 )
 (connector
@@ -7662,11 +7717,6 @@ applicable agreement for further details.
 	(pt -1368 -24)
 )
 (connector
-	(pt -1744 -696)
-	(pt -1744 -248)
-	(color 255 0 0)
-)
-(connector
 	(pt -1120 -136)
 	(pt -1120 -200)
 )
@@ -7832,15 +7882,6 @@ applicable agreement for further details.
 (connector
 	(pt -960 -24)
 	(pt -920 -24)
-)
-(connector
-	(text "main64_valid" (rect -1030 -232 -966 -220)(font "Arial" ))
-	(pt -1024 -216)
-	(pt -936 -216)
-)
-(connector
-	(pt -1744 -248)
-	(pt -936 -248)
 )
 (connector
 	(text "spectrum_t1_iq[63..0]" (rect -1462 -136 -1355 -124)(font "Arial" ))
@@ -8693,14 +8734,6 @@ applicable agreement for further details.
 	(pt -2016 -200)
 )
 (connector
-	(pt -2568 -696)
-	(pt -2168 -696)
-)
-(connector
-	(pt -2168 -696)
-	(pt -1744 -696)
-)
-(connector
 	(pt -2168 -696)
 	(pt -2168 -200)
 	(color 255 0 0)
@@ -8759,22 +8792,6 @@ applicable agreement for further details.
 	(text "0" (rect -1918 768 -1913 780)(font "Arial" ))
 	(pt -1920 784)
 	(pt -1872 784)
-)
-(connector
-	(pt -1688 768)
-	(pt -1688 728)
-	(bus)
-)
-(connector
-	(pt -1688 768)
-	(pt -1680 768)
-	(bus)
-)
-(connector
-	(text "testpattern[63..0]" (rect -1587 752 -1503 764)(font "Arial" ))
-	(pt -1632 768)
-	(pt -1584 768)
-	(bus)
 )
 (connector
 	(text "testpattern[63..0]" (rect -1518 680 -1434 692)(font "Arial" ))
@@ -9084,12 +9101,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "w32[31..0],w32[31..0]" (rect -1800 -136 -1695 -124)(font "Arial" ))
-	(pt -1720 -120)
-	(pt -1800 -120)
-	(bus)
-)
-(connector
 	(text "w32[31..0],w32[31..0]" (rect -1462 -104 -1357 -92)(font "Arial" ))
 	(pt -1464 -88)
 	(pt -1368 -88)
@@ -9099,12 +9110,6 @@ applicable agreement for further details.
 	(text "w32[31..0],w32[31..0]" (rect -1462 -88 -1357 -76)(font "Arial" ))
 	(pt -1464 -72)
 	(pt -1368 -72)
-	(bus)
-)
-(connector
-	(text "w32[31..0]" (rect -792 -240 -742 -228)(font "Arial" ))
-	(pt -792 -224)
-	(pt -720 -224)
 	(bus)
 )
 (connector
@@ -9535,6 +9540,76 @@ applicable agreement for further details.
 	(pt -4888 -384)
 	(pt -4792 -384)
 )
+(connector
+	(text "adc1dl[15..0]" (rect -4830 -384 -4767 -372)(font "Arial" ))
+	(pt -4888 -368)
+	(pt -4792 -368)
+	(bus)
+)
+(connector
+	(text "adc0dl[15..0]" (rect -4808 -608 -4745 -596)(font "Arial" ))
+	(pt -4888 -592)
+	(pt -4760 -592)
+	(bus)
+)
+(connector
+	(pt -1776 -120)
+	(pt -1776 -216)
+	(bus)
+)
+(connector
+	(pt -1720 -120)
+	(pt -1776 -120)
+	(bus)
+)
+(connector
+	(text "adc0dl[15..0],adc1dl[15..0],adc0dl[15..0],adc1dl[15..0]" (rect -1808 -232 -1543 -220)(font "Arial" ))
+	(pt -1808 -216)
+	(pt -1776 -216)
+	(bus)
+)
+(connector
+	(pt -2568 -696)
+	(pt -2168 -696)
+)
+(connector
+	(text "main64_valid" (rect -1894 592 -1830 604)(font "Arial" ))
+	(pt -1888 608)
+	(pt -1800 608)
+)
+(connector
+	(text "coreclk" (rect -1926 560 -1891 572)(font "Arial" ))
+	(pt -1928 576)
+	(pt -1800 576)
+	(color 255 0 0)
+)
+(connector
+	(pt -1688 728)
+	(pt -1688 768)
+	(bus)
+)
+(connector
+	(pt -1688 768)
+	(pt -1680 768)
+	(bus)
+)
+(connector
+	(text "testpattern[63..0]" (rect -1587 752 -1503 764)(font "Arial" ))
+	(pt -1632 768)
+	(pt -1584 768)
+	(bus)
+)
+(connector
+	(text "w32[31..0]" (rect -1504 584 -1454 596)(font "Arial" ))
+	(pt -1552 600)
+	(pt -1464 600)
+	(bus)
+)
+(connector
+	(pt -1632 600)
+	(pt -1600 600)
+	(bus)
+)
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
 (junction (pt -4544 -696))
@@ -9592,7 +9667,6 @@ applicable agreement for further details.
 (junction (pt -4664 1376))
 (junction (pt -4672 1552))
 (junction (pt -2168 -200))
-(junction (pt -2168 -696))
 (junction (pt -2152 -560))
 (junction (pt -1800 -616))
 (junction (pt -1800 -496))

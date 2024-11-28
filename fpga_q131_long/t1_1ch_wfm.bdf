@@ -2546,77 +2546,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -3920 -672 -3712 -512)
-	(text "LTC2208_input_fifo" (rect 5 0 115 14)(font "Arial" (font_size 8)))
-	(text "inst4" (rect 8 144 31 156)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "sysclock" (rect 0 0 50 14)(font "Arial" (font_size 8)))
-		(text "sysclock" (rect 21 27 71 41)(font "Arial" (font_size 8)))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 48)
-		(input)
-		(text "adc_of" (rect 0 0 40 14)(font "Arial" (font_size 8)))
-		(text "adc_of" (rect 21 43 61 57)(font "Arial" (font_size 8)))
-		(line (pt 0 48)(pt 16 48))
-	)
-	(port
-		(pt 0 64)
-		(input)
-		(text "adc_clk" (rect 0 0 43 14)(font "Arial" (font_size 8)))
-		(text "adc_clk" (rect 21 59 64 73)(font "Arial" (font_size 8)))
-		(line (pt 0 64)(pt 16 64))
-	)
-	(port
-		(pt 0 80)
-		(input)
-		(text "adc_data[15..0]" (rect 0 0 88 14)(font "Arial" (font_size 8)))
-		(text "adc_data[15..0]" (rect 21 75 109 89)(font "Arial" (font_size 8)))
-		(line (pt 0 80)(pt 16 80)(line_width 3))
-	)
-	(port
-		(pt 0 96)
-		(input)
-		(text "rand" (rect 0 0 25 14)(font "Arial" (font_size 8)))
-		(text "rand" (rect 21 91 46 105)(font "Arial" (font_size 8)))
-		(line (pt 0 96)(pt 16 96))
-	)
-	(port
-		(pt 0 112)
-		(input)
-		(text "adcoffset[15..0]" (rect 0 0 90 14)(font "Arial" (font_size 8)))
-		(text "adcoffset[15..0]" (rect 21 107 111 121)(font "Arial" (font_size 8)))
-		(line (pt 0 112)(pt 16 112)(line_width 3))
-	)
-	(port
-		(pt 208 32)
-		(output)
-		(text "ovf" (rect 0 0 18 14)(font "Arial" (font_size 8)))
-		(text "ovf" (rect 169 27 187 41)(font "Arial" (font_size 8)))
-		(line (pt 208 32)(pt 192 32))
-	)
-	(port
-		(pt 208 48)
-		(output)
-		(text "value[15..0]" (rect 0 0 66 14)(font "Arial" (font_size 8)))
-		(text "value[15..0]" (rect 121 43 187 57)(font "Arial" (font_size 8)))
-		(line (pt 208 48)(pt 192 48)(line_width 3))
-	)
-	(port
-		(pt 208 64)
-		(output)
-		(text "ready" (rect 0 0 33 14)(font "Arial" (font_size 8)))
-		(text "ready" (rect 154 59 187 73)(font "Arial" (font_size 8)))
-		(line (pt 208 64)(pt 192 64))
-	)
-	(drawing
-		(rectangle (rect 16 16 192 144))
-	)
-)
-(symbol
 	(rect -2960 8 -2744 136)
 	(text "ddc_mux" (rect 5 0 56 14)(font "Arial" (font_size 8)))
 	(text "inst27" (rect 8 112 37 124)(font "Arial" ))
@@ -3609,6 +3538,84 @@ applicable agreement for further details.
 	)
 	(drawing
 		(rectangle (rect 16 16 192 432))
+	)
+)
+(symbol
+	(rect -3920 -672 -3712 -512)
+	(text "LTC2208_input" (rect 5 0 89 14)(font "Arial" (font_size 8)))
+	(text "inst39" (rect 8 144 37 156)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "sysclock" (rect 0 0 50 14)(font "Arial" (font_size 8)))
+		(text "sysclock" (rect 21 27 71 41)(font "Arial" (font_size 8)))
+		(line (pt 0 32)(pt 16 32))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "adc_of" (rect 0 0 40 14)(font "Arial" (font_size 8)))
+		(text "adc_of" (rect 21 43 61 57)(font "Arial" (font_size 8)))
+		(line (pt 0 48)(pt 16 48))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "adc_clk" (rect 0 0 43 14)(font "Arial" (font_size 8)))
+		(text "adc_clk" (rect 21 59 64 73)(font "Arial" (font_size 8)))
+		(line (pt 0 64)(pt 16 64))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "adc_data[15..0]" (rect 0 0 88 14)(font "Arial" (font_size 8)))
+		(text "adc_data[15..0]" (rect 21 75 109 89)(font "Arial" (font_size 8)))
+		(line (pt 0 80)(pt 16 80)(line_width 3))
+	)
+	(port
+		(pt 0 96)
+		(input)
+		(text "rand" (rect 0 0 25 14)(font "Arial" (font_size 8)))
+		(text "rand" (rect 21 91 46 105)(font "Arial" (font_size 8)))
+		(line (pt 0 96)(pt 16 96))
+	)
+	(port
+		(pt 0 112)
+		(input)
+		(text "adcoffset[15..0]" (rect 0 0 90 14)(font "Arial" (font_size 8)))
+		(text "adcoffset[15..0]" (rect 21 107 111 121)(font "Arial" (font_size 8)))
+		(line (pt 0 112)(pt 16 112)(line_width 3))
+	)
+	(port
+		(pt 208 32)
+		(output)
+		(text "ovf" (rect 0 0 18 14)(font "Arial" (font_size 8)))
+		(text "ovf" (rect 169 27 187 41)(font "Arial" (font_size 8)))
+		(line (pt 208 32)(pt 192 32))
+	)
+	(port
+		(pt 208 48)
+		(output)
+		(text "value[15..0]" (rect 0 0 66 14)(font "Arial" (font_size 8)))
+		(text "value[15..0]" (rect 121 43 187 57)(font "Arial" (font_size 8)))
+		(line (pt 208 48)(pt 192 48)(line_width 3))
+	)
+	(port
+		(pt 208 64)
+		(output)
+		(text "ready" (rect 0 0 33 14)(font "Arial" (font_size 8)))
+		(text "ready" (rect 154 59 187 73)(font "Arial" (font_size 8)))
+		(line (pt 208 64)(pt 192 64))
+	)
+	(port
+		(pt 208 80)
+		(output)
+		(text "adcd[15..0]" (rect 0 0 63 14)(font "Arial" (font_size 8)))
+		(text "adcd[15..0]" (rect 124 75 187 89)(font "Arial" (font_size 8)))
+		(line (pt 208 80)(pt 192 80)(line_width 3))
+	)
+	(drawing
+		(rectangle (rect 16 16 192 144))
 	)
 )
 (connector
@@ -4830,21 +4837,6 @@ applicable agreement for further details.
 	(pt -3376 -320)
 )
 (connector
-	(text "adcsyncdata[15..0]" (rect -3654 -640 -3559 -628)(font "Arial" ))
-	(pt -3712 -624)
-	(pt -3504 -624)
-	(bus)
-)
-(connector
-	(pt -3712 -640)
-	(pt -3680 -640)
-	(color 128 0 128)
-)
-(connector
-	(pt -3680 -824)
-	(pt -3680 -640)
-)
-(connector
 	(pt -2816 -824)
 	(pt -3680 -824)
 )
@@ -4855,25 +4847,6 @@ applicable agreement for further details.
 (connector
 	(pt -3024 -704)
 	(pt -2832 -704)
-)
-(connector
-	(pt -4056 -704)
-	(pt -4056 -696)
-)
-(connector
-	(pt -4056 -696)
-	(pt -4056 -640)
-)
-(connector
-	(pt -4056 -640)
-	(pt -3920 -640)
-	(color 255 0 0)
-)
-(connector
-	(text "adcoffset[15..0]" (rect -4014 -576 -3934 -564)(font "Arial" ))
-	(pt -3920 -560)
-	(pt -4016 -560)
-	(bus)
 )
 (connector
 	(pt -3640 1032)
@@ -4979,27 +4952,6 @@ applicable agreement for further details.
 	(pt -3232 1336)
 	(pt -3328 1336)
 	(bus)
-)
-(connector
-	(pt -4184 -624)
-	(pt -3920 -624)
-)
-(connector
-	(pt -4184 -608)
-	(pt -3920 -608)
-)
-(connector
-	(pt -4184 -592)
-	(pt -3920 -592)
-	(bus)
-)
-(connector
-	(pt -3920 -576)
-	(pt -3936 -576)
-)
-(connector
-	(pt -3936 -576)
-	(pt -3936 -480)
 )
 (connector
 	(text "adc_rand" (rect -3902 -496 -3858 -484)(font "Arial" ))
@@ -5602,6 +5554,61 @@ applicable agreement for further details.
 (connector
 	(pt -1592 96)
 	(pt -1592 384)
+)
+(connector
+	(text "adcsyncdata[15..0]" (rect -3654 -640 -3559 -628)(font "Arial" ))
+	(pt -3712 -624)
+	(pt -3504 -624)
+	(bus)
+)
+(connector
+	(pt -3680 -640)
+	(pt -3712 -640)
+	(color 128 0 128)
+)
+(connector
+	(pt -3680 -824)
+	(pt -3680 -640)
+)
+(connector
+	(pt -4056 -640)
+	(pt -3920 -640)
+	(color 255 0 0)
+)
+(connector
+	(text "adcoffset[15..0]" (rect -4014 -576 -3934 -564)(font "Arial" ))
+	(pt -3920 -560)
+	(pt -4016 -560)
+	(bus)
+)
+(connector
+	(pt -4184 -624)
+	(pt -3920 -624)
+)
+(connector
+	(pt -4184 -608)
+	(pt -3920 -608)
+)
+(connector
+	(pt -4184 -592)
+	(pt -3920 -592)
+	(bus)
+)
+(connector
+	(pt -3936 -576)
+	(pt -3920 -576)
+)
+(connector
+	(pt -3936 -480)
+	(pt -3936 -576)
+)
+(connector
+	(pt -4056 -704)
+	(pt -4056 -696)
+)
+(connector
+	(pt -4056 -696)
+	(pt -4056 -640)
 )
 (junction (pt -3024 -696))
 (junction (pt -2544 -696))

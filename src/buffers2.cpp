@@ -3348,6 +3348,53 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 }
 #endif
 
+#if WITHDEBUG && WITHFPGAPIPE_CODEC1
+// ADC lines test (with FPGA firmware support)
+
+static uint32_t v0_array [1024];
+static unsigned v0_count;
+static unsigned v0_skip;
+
+static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
+{
+	const unsigned N = ARRAY_SIZE(v0_array);
+	unsigned i;
+	uint_fast32_t results;
+
+	ASSERT(v0 == v1);
+	if (v0_skip < 128000)
+	{
+		++ v0_skip;
+		return;
+	}
+	if (v0_count < 1024)
+	{
+		v0_array [v0_count] = v0;
+		++ v0_count;
+		return;
+	}
+	// Analyze
+	//printhex32(0, v0_array,  sizeof v0_array);
+	results = 0;
+	for (i = 1; i < N; ++ i)
+	{
+		const uint32_t diffs = v0_array [i - 1] ^ v0_array [i];
+		results |= diffs;
+	}
+	PRINTF("ADC lines stable: 0x%04X [", (unsigned) (0xFFFF & ~ results));
+	for (i = 0; i < 16; ++ i)
+	{
+		uint_fast32_t mask = UINT32_C(1) << i;
+		if (results & mask)
+			continue;
+		PRINTF("D%u ", i);
+	}
+	PRINTF("]\n");
+	for (;;)
+		;
+}
+#endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
+
 void process_dmabuffer32rx(const IFADCvalue_t * buff)
 {
 	unsigned i;
@@ -3385,7 +3432,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		FLOAT_t right = rxdmaproc(1, b [DMABUF32RX1I], b [DMABUF32RX1Q]);
 		savedemod_to_AF_proc(left, right);
 #else /* WITHUSEDUALWATCH */
-		FLOAT_t left = rxdmaproc(0, b [ DMABUF32RX0I], b [DMABUF32RX0Q]);
+		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
 		savedemod_to_AF_proc(left, left);
 #endif /* WITHUSEDUALWATCH */
 #else /* WITHDSPEXTDDC */
@@ -3397,6 +3444,9 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
 		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
 #endif /* WITHFPGAPIPE_CODEC1 */
+#if 0 && WITHDEBUG && WITHFPGAPIPE_CODEC1 && DMABUFFSTEP32RX >= 14
+		savetestadc(b [DMABUFF32RX_ADCTEST_C0], b [DMABUFF32RX_ADCTEST_C1]);
+#endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
 	}
 
 #if WITHWFM

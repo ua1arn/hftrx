@@ -266,7 +266,6 @@ set_global_assignment -name BDF_FILE duc_mux.bdf
 set_global_assignment -name BDF_FILE i2s_rx_slave.bdf
 set_global_assignment -name BDF_FILE fqmemter.bdf
 set_global_assignment -name BDF_FILE t1_2ch_transit.bdf
-set_global_assignment -name QIP_FILE adcoffset16.qip
 set_global_assignment -name QIP_FILE cic_128a_3iq.qip
 set_global_assignment -name QIP_FILE cic20a_ddc_2rx.qip
 set_global_assignment -name QIP_FILE fir_10a_2ch.qip
