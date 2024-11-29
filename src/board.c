@@ -7373,6 +7373,29 @@ static void prog_rfadc_initialize(void)
 
 #if WITHMGLOOP
 
+#if WITHMGLOOP_UART4
+	#define HARDWARE_NMEAX_INITIALIZE hardware_uart4_initialize
+	#define HARDWARE_NMEAX_SET_SPEED hardware_uart4_set_speed
+	#define HARDWARE_NMEAX_ENABLETX hardware_uart4_enabletx
+	#define HARDWARE_NMEAX_ENABLERX hardware_uart4_enablerx
+	#define HARDWARE_NMEAX_tx hardware_uart4_tx
+	#define USER_NMEAX_ONRXCHAR user_uart4_onrxchar
+	#define USER_NMEAX_ONTXCHAR user_uart4_ontxchar
+
+#elif WITHMGLOOP_UART0
+	#define HARDWARE_NMEAX_INITIALIZE hardware_uart0_initialize
+	#define HARDWARE_NMEAX_SET_SPEED hardware_uart0_set_speed
+	#define HARDWARE_NMEAX_ENABLETX hardware_uart0_enabletx
+	#define HARDWARE_NMEAX_ENABLERX hardware_uart0_enablerx
+	#define HARDWARE_NMEAX_tx hardware_uart0_tx
+	#define USER_NMEAX_ONRXCHAR user_uart0_onrxchar
+	#define USER_NMEAX_ONTXCHAR user_uart0_ontxchar
+
+#else /* WITHMGLOOP_UART4 */
+	#error Missing serial port assignments
+
+#endif /* WITHMGLOOP_UART4 */
+
 // Очереди символов для обмена
 
 // Очередь символов для передачи в канал обмена
@@ -7389,7 +7412,7 @@ static int nmeaX_putc(int c)
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = uint8_queue_put(& txq, c);
-		hardware_uart0_enabletx(1);
+		HARDWARE_NMEAX_ENABLETX(1);
 		LowerIrql(oldIrql);
 	} while (! f);
 	return c;
@@ -7451,7 +7474,7 @@ static void nmea_send(const char * body, size_t len)
 }
 
 // callback по принятому символу. сохранить в очередь для обработки в user level
-void user_uart0_onrxchar(uint_fast8_t c)
+void USER_NMEAX_ONRXCHAR(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
 
@@ -7461,18 +7484,18 @@ void user_uart0_onrxchar(uint_fast8_t c)
 }
 
 // callback по готовности последовательного порта к пердаче
-void user_uart0_ontxchar(void * ctx)
+void USER_NMEAX_ONTXCHAR(void * ctx)
 {
 	uint_fast8_t c;
 	if (uint8_queue_get(& txq, & c))
 	{
-		hardware_uart0_tx(ctx, c);
+		HARDWARE_NMEAX_tx(ctx, c);
 		if (uint8_queue_empty(& txq))
-			hardware_uart0_enabletx(0);
+			HARDWARE_NMEAX_ENABLETX(0);
 	}
 	else
 	{
-		hardware_uart0_enabletx(0);
+		HARDWARE_NMEAX_ENABLETX(0);
 	}
 }
 
@@ -7501,13 +7524,13 @@ static void ua1cei_magloop_send(void)
 }
 
 /* Функционирование USER MODE обработчиков */
-static void uart0_dpc_spool(void * ctx)
+static void nmeaX_dpc_spool(void * ctx)
 {
 	ua1cei_magloop_send();
 }
 
-static dpcobj_t uart0_dpc_timed;
-static ticker_t uart0_ticker;
+static dpcobj_t nmeaX_dpc_timed;
+static ticker_t nmeaX_ticker;
 
 
 static void ua1cei_magloop_initialize(void)
@@ -7519,14 +7542,14 @@ static void ua1cei_magloop_initialize(void)
 	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
-	hardware_uart0_initialize(0, baudrate, 8, 0, 0);
-	hardware_uart0_set_speed(baudrate);
-	hardware_uart0_enablerx(1);
-	hardware_uart0_enabletx(0);
+	HARDWARE_NMEAX_INITIALIZE(0, baudrate, 8, 0, 0);
+	HARDWARE_NMEAX_SET_SPEED(baudrate);
+	HARDWARE_NMEAX_ENABLERX(1);
+	HARDWARE_NMEAX_ENABLETX(0);
 
-	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
-	ticker_initialize_user(& uart0_ticker, NTICKS(1000), & uart0_dpc_timed);
-	ticker_add(& uart0_ticker);
+	dpcobj_initialize(& nmeaX_dpc_timed, nmeaX_dpc_spool, NULL);
+	ticker_initialize_user(& nmeaX_ticker, NTICKS(1000), & nmeaX_dpc_timed);
+	ticker_add(& nmeaX_ticker);
 }
 
 #endif /* WITHMGLOOP */
@@ -7543,7 +7566,7 @@ static void prog_update_noplanes(void)
 
 #if WITHMGLOOP
 	ua1cei_magloop_send();
-#endif
+#endif /* WITHMGLOOP */
 
 #if defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246
 	// AD9246 vref divider update

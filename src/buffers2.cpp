@@ -4017,6 +4017,12 @@ void colmain_fb_list(uintptr_t * frames)
 	}
 }
 
+#else /* WITHLTDCHW */
+/* поставить на отображение этот буфер, запросить следующий */
+void colmain_nextfb(void)
+{
+}
+
 #endif /* WITHLTDCHW */
 
 #if WITHBUFFERSDEBUG

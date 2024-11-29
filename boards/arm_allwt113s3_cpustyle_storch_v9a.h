@@ -41,6 +41,7 @@
 	void user_uart0_ontxchar(void * ctx);
 	#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar((c)); } while (0)
 	#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar((ctx)); } while (0)
+	#define WITHMGLOOP_UART0 1
 
 #endif /* WITHDEBUG */
 

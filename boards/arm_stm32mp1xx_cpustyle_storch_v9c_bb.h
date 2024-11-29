@@ -47,7 +47,7 @@
 		#define WITHDEBUG_UART4	1
 	#endif /* WITHDEBUG */
 
-	#if WITHCAT
+	#if 0 && WITHCAT
 		// Disable WITHCAT_CDC
 		#define WITHUART1HW			1	/* PG11, PB2 Используется периферийный контроллер последовательного порта USART1 */
 		#define WITHUART1HW_FIFO	1	/* использование FIFO */
@@ -55,12 +55,14 @@
 		#define WITHCATSPEED 115200
 	#endif /* WITHCAT */
 
-	#if 0
+	#if WITHMGLOOP
 		// antenna controller
 		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 		#define WITHUART4HW_FIFO	1	/* использование FIFO */
-		#define WITHCAT_UART4		1
-	#endif
+		#define WITHMGLOOP_UART4 	1
+		#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar((c)); } while (0)
+		#define HARDWARE_UART4_ONTXCHAR(ctx) do { user_uart4_ontxchar((ctx)); } while (0)
+	#endif /* WITHMGLOOP */
 
 	#if WITHLFM
 		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
