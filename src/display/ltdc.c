@@ -5611,7 +5611,6 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 	uint32_t hscale = ((uint64_t) src_w << 16) / dst_w;	// расчет в 16 бит точности (далее будет сдвиг)
 	uint32_t vscale = ((uint64_t) src_h << 16) / dst_h;	// расчет в 16 бит точности (далее будет сдвиг)
 
-	sun8i_vi_scaler_enable(rtmixid, 0);
 	sun8i_vi_scaler_setup(rtmixid, src_w, src_h, dst_w, dst_h, hscale, vscale, 0, 0);
 	sun8i_vi_scaler_enable(rtmixid, 1);
 }
