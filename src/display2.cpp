@@ -3580,7 +3580,13 @@ enum {
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
-	SPY_3DSS_H = SPY_3DSS / 4
+	SPY_3DSS_H = SPY_3DSS / 4,
+#if WITHTOUCHGUI
+	SPY = ALLDY - FOOTER_HEIGHT - 15,
+#else
+	SPY = ALLDY - 15,
+#endif
+	HORMAX_3DSS = SPY - MAX_3DSS_STEP * Y_STEP - 2,
 };
 
 #endif /* WITHVIEW_3DSS */
@@ -5360,11 +5366,6 @@ static void display2_spectrum(
 				xright = ALLDX - 1;
 
 			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-		#if WITHTOUCHGUI
-			const uint_fast16_t spy = ALLDY - FOOTER_HEIGHT - 15;
-		#else
-			const uint_fast16_t spy = ALLDY - 15;
-		#endif
 			static uint_fast8_t current_3dss_step = 0;
 			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
@@ -5374,19 +5375,19 @@ static void display2_spectrum(
 			const COLORPIP_T bgcolor = display2_getbgcolor();
 			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 			{
-				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
+				uint_fast16_t y0 = SPY - 5 - i * Y_STEP;
 				uint_fast16_t x;
 
 				for (x = 0; x < ALLDX; ++ x)
 				{
 					if (i == 0)
 					{
-						const int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
-						uint_fast16_t ynew = spy - 1 - val;
+						const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS, glob_topdb, glob_bottomdb);
+						uint_fast16_t ynew = SPY - 1 - val;
 						uint_fast16_t dy, j;
 						wfj3dss_poke(x, current_3dss_step, val);
 
-						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
+						for (dy = SPY - 1, j = 0; dy > ynew; dy --, j ++)
 						{
 							if (x > xleft && x < xrightv && gview3dss_mark)
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, DSGN_SPECTRUMFG);
@@ -5441,7 +5442,7 @@ static void display2_spectrum(
 				current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 
 			// увеличение контрастности спектра на фоне панорамы
-			ylast_sp = spy;
+			ylast_sp = SPY;
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
 				uint_fast16_t y1 = gvars.envelope_y [x];
@@ -5455,7 +5456,7 @@ static void display2_spectrum(
 				ylast_sp = y1;
 			}
 
-			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
+			display_colorgrid_3dss(colorpip, SPY - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
 		}
 #endif /* WITHVIEW_3DSS */
 		else
