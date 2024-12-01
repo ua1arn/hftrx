@@ -782,7 +782,7 @@ volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_r
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
-static struct cond_thread * ct_iq = NULL;
+static struct cond_thread ct_iq;
 
 // ******************************************************************************
 
@@ -796,8 +796,8 @@ uint8_t rxbuf[SIZERX8] = { 0 };
 
 void iq_mutex_unlock(void)
 {
-	if (ct_iq)
-		safe_cond_signal(ct_iq);
+	if (linux_verify_cond(& ct_iq))
+		safe_cond_signal(& ct_iq);
 }
 
 static void iq_proccessing(uint8_t * buf, uint32_t len)
@@ -1292,19 +1292,27 @@ void linux_init_cond(struct cond_thread * ct)
 	ASSERT(ct != NULL);
 	pthread_cond_init(& ct->ready_cond, NULL);
 	pthread_mutex_init(& ct->ready_mutex, NULL);
+	ct->tag = ct;
+}
+
+int linux_verify_cond(struct cond_thread * ct)
+{
+	return (ct->tag == ct) ? 1 : 0;
 }
 
 void linux_destroy_cond(struct cond_thread * ct)
 {
 	ASSERT(ct != NULL);
+	ASSERT(ct->tag == ct);
 	pthread_cond_destroy(& ct->ready_cond);
 	pthread_mutex_destroy(& ct->ready_mutex);
-	free(ct);
+	ct->tag = NULL;
 }
 
 void safe_cond_signal(struct cond_thread * ct)
 {
 	ASSERT(ct != NULL);
+	ASSERT(ct->tag == ct);
 	pthread_mutex_lock(& ct->ready_mutex);
 	pthread_cond_signal(& ct->ready_cond);
 	pthread_mutex_unlock(& ct->ready_mutex);
@@ -1313,6 +1321,7 @@ void safe_cond_signal(struct cond_thread * ct)
 void safe_cond_wait(struct cond_thread * ct)
 {
 	ASSERT(ct != NULL);
+	ASSERT(ct->tag == ct);
 	pthread_mutex_lock(& ct->ready_mutex);
 	pthread_cond_wait(& ct->ready_cond, & ct->ready_mutex);
 	pthread_mutex_unlock(& ct->ready_mutex);
@@ -1433,8 +1442,7 @@ void linux_user_init(void)
 
 	xcz_resetn_modem(1);
 
-	ct_iq = (struct cond_thread *) malloc(sizeof(struct cond_thread));
-	linux_init_cond(ct_iq);
+	linux_init_cond(& ct_iq);
 
 #if WITHLVGL
 	lvgl_test();
@@ -1443,8 +1451,8 @@ void linux_user_init(void)
 
 void linux_wait_iq(void)
 {
-	if (ct_iq)
-		safe_cond_wait(ct_iq);
+	if (linux_verify_cond(& ct_iq))
+		safe_cond_wait(& ct_iq);
 }
 
 /****************************************************************/

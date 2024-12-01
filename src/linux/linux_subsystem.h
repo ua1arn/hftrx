@@ -107,6 +107,7 @@ extern pthread_mutex_t linux_md;
 struct cond_thread {
     pthread_cond_t   ready_cond;
     pthread_mutex_t  ready_mutex;
+    void * tag;
 };
 
 uint_fast8_t dummy_putchar(uint_fast8_t c);
@@ -132,6 +133,7 @@ void linux_run_shell_cmd(const char * argv []);
 void safe_cond_signal(struct cond_thread * ct);
 void safe_cond_wait(struct cond_thread * ct);
 void linux_init_cond(struct cond_thread * ct);
+int linux_verify_cond(struct cond_thread * ct);
 void linux_destroy_cond(struct cond_thread * ct);
 void linux_wait_iq(void);
 int rpmsg_init(void);
