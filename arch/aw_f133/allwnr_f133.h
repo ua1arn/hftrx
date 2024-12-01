@@ -1,5 +1,6 @@
 ﻿/*
  * allwnr_f133.h
+ * Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.
  *
  * The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
  */

@@ -1,8 +1,7 @@
 /*
  * system_zynq7000.h
  *
- *  Created on: Dec 23, 2020
- *      Author: gena
+ * Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.
  */
 
 #ifndef ARMCPU_SYSTEM_ZYNQ7000_H_

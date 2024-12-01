@@ -1,8 +1,7 @@
 /*
  * arm_acle.h
  *
- *  Created on: Nov 19, 2024
- *      Author: gena
+ * Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.
  */
 
 #ifndef ARCH_AW_F133_ARM_ACLE_H_

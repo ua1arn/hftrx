@@ -1,8 +1,7 @@
 /*
  * system_v14.h
  *
- *  Created on: 16 мар. 2023 г.
- *      Author: User
+  * Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.
  */
 
 #ifndef ARCH_VM14_SYSTEM_V14_H_

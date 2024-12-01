@@ -1,8 +1,7 @@
 ﻿/*
  * allwnr_t13s3.h
  *
- *  Created on: 31 мая 2022 г.
- *      Author: User
+ * Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.
  *
  *       For details of A7 CPUX signals, refer to the technical
  *       reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.

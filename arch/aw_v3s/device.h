@@ -1,3 +1,4 @@
+/* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
 #ifndef HEADER_00003039_INCLUDED
 #define HEADER_00003039_INCLUDED

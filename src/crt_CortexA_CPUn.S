@@ -1,5 +1,6 @@
 /* $Id$ */
 /****************************************************************************
+ * Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.
 *  Copyright (c) 2006 by Michael Fischer. All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without 

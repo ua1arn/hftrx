@@ -11,6 +11,8 @@
 #include "mslist.h"
 #include "getopt_win.h"
 
+static const char copyright_string [] = "Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved.";
+
 static int flag_riscv = 0;
 static int flag_svd = 0;
 static int flag_debug = 0;
@@ -1165,6 +1167,7 @@ static void emitdevice(int indent) {
 
 static void generate_svd(void) {
 	emitline(0, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" "\n");
+	emitline(0, "<!-- %s -->\n", copyright_string);
 	emitdevice(0);
 }
 
@@ -1199,6 +1202,7 @@ static void generate_cmsis(void) {
 	char headrname[128];
 	_snprintf(headrname, sizeof headrname / sizeof headrname[0], "HEADER_%08X_INCLUDED", (unsigned) 12345 /*time(NULL) */);
 
+	emitline(0, "/* %s */\n", copyright_string);
 	emitline(0, "#pragma once" "\n");
 	emitline(0, "#ifndef %s" "\n", headrname);
 	emitline(0, "#define %s" "\n", headrname);
