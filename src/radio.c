@@ -15582,32 +15582,35 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 	}
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
-	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
-	if (gswrprot != 0)
+	if (getactualdownpower() == 0)
 	{
-		if (getactualdownpower() == 0 && get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
+		//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
+		if (gswrprot != 0)
 		{
-			if (txreq)
+			if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
 			{
-				bring_swr("SWR");
+				if (txreq)
+				{
+					bring_swr("SWR");
+				}
+				return 1;
 			}
-			return 1;
-		}
 
-	}
-	else
-	{
-#if WITHPOWERTRIM
-		// Сброс мощности в текущем сеансе передачи
-		if (getactualdownpower() == 0 && get_swr_cached(3 * SWRMIN) >= (3 * SWRMIN))	// SWR >= 3.0
-		{
-			if (txreq)
-			{
-		        normalpower_value = (WITHPOWERTRIMMAX * 60) / WITHPOWERTRIMMAX;
-				bring_swr("SWR");
-			}
 		}
-#endif /* WITHPOWERTRIM */
+		else
+		{
+	#if WITHPOWERTRIM
+			// Сброс мощности в текущем сеансе передачи
+			if ( get_swr_cached(3 * SWRMIN) >= (3 * SWRMIN))	// SWR >= 3.0
+			{
+				if (txreq)
+				{
+			        normalpower_value = (WITHPOWERTRIMMAX * 60) / WITHPOWERTRIMMAX;
+					bring_swr("SWR");
+				}
+			}
+	#endif /* WITHPOWERTRIM */
+		}
 	}
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	//PRINTF("tx ok\n");
