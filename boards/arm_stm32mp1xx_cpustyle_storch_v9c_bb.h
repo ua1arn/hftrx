@@ -63,6 +63,8 @@
 		#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar((c)); } while (0)
 		#define HARDWARE_UART4_ONTXCHAR(ctx) do { user_uart4_ontxchar((ctx)); } while (0)
 	#endif /* WITHMGLOOP */
+	void user_uart4_ontxchar(void * ctx);
+	void user_uart4_onrxchar(uint_fast8_t c);
 
 	#if WITHLFM
 		#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
