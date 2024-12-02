@@ -3547,6 +3547,7 @@ typedef struct {
 	enum { WFROWS = ALLDY };
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
+	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 
 #elif WITHGRADIENT_FIXED
 

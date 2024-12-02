@@ -2927,6 +2927,13 @@ ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr
 //	tlbbase [i] =  accessbits(la);
 //}
 
+#elif defined (__CORTEX_M)
+
+static void
+sysinit_ttbr_initialize(void)
+{
+}
+
 #endif /* CPUSTYLE_R7S721 */
 
 // PLL and caches iniitialize

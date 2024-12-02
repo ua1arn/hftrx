@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
+#undef WITHKBDENCODER
 /* обработчики прерывания от валкодера */
 
 #if WITHHARDINTERLOCK

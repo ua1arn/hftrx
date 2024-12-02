@@ -56,7 +56,7 @@ CORE = -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -ftree-vectorize
 #OPT = -Og
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
