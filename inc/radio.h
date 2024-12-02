@@ -3542,7 +3542,7 @@ int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx);	//
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
 unsigned n7ddc_get_swr(void);
 
-unsigned hamradio_get_swr(void);
+unsigned get_swr_cached(unsigned rangemax);
 unsigned hamradio_get_pwr(void);
 
 #ifdef __cplusplus

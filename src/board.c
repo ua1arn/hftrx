@@ -7516,7 +7516,7 @@ static void ua1cei_magloop_send(void)
 			(unsigned) glob_bandf3,
 			(unsigned) glob_bcdfreq1k,
 			(unsigned) glob_autotune ? 3 : glob_tx,
-			(unsigned) hamradio_get_swr(),
+			(unsigned) get_swr_cached(9 * SWRMIN),
 			(unsigned) hamradio_get_pwr()
 		);
 	nmea_send(state, len);

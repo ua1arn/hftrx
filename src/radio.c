@@ -4165,7 +4165,8 @@ enum
 			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#else /* WITHPACLASSA */
 		#endif /* WITHPACLASSA */
-		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
+			static uint_fast8_t normalpower_value;
+			static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
 		#else /* WITHLOWPOWEREXTTUNE */
@@ -4183,8 +4184,10 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 		#endif /* WITHLOWPOWEREXTTUNE */
+		static uint_fast8_t normalpower_value;
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 	#else
+		static uint_fast8_t normalpower_value;
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
@@ -5027,18 +5030,19 @@ void display2_swrsts22(
 }
 
 // Used with WITHMGLOOP
-unsigned hamradio_get_swr(void)
+unsigned get_swr_cached(unsigned rangemax)
 {
 	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
 	adcvalholder_t forward, reflected;
 
+	ASSERT(rangemax > SWRMIN);
 	forward = board_getswrmeter_cached(& reflected, swrcalibr);
 
 								// рассчитанное  значение
 	if (forward < minforward)
 		swr10 = SWRMIN;				// SWR=1
 	else if (forward <= reflected)
-		swr10 = SWRMIN * 9;		// SWR is infinite
+		swr10 = rangemax;		// SWR is infinite
 	else
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected);
 	return swr10;
@@ -9016,7 +9020,7 @@ makebandf2adjust(
 static uint_fast8_t
 getactualtxpwr(void)
 {
-	return getactualdownpower() ? gtunepower : gnormalpower.value;
+	return getactualdownpower() ? gtunepower : normalpower_value;
 }
 
 /* Возвращает 0..WITHPOWERTRIMMAX */
@@ -12613,7 +12617,11 @@ static uint_fast8_t processpots(void)
 #if WITHPOTPOWER
 	{
 		static adcvalholder_t powerstate;
-		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
+		if (FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX))	// регулировка мощности
+		{
+			normalpower_value = gnormalpower.value;
+			changed |= 1;
+		}
 	}
 #endif /* WITHPOTPOWER */
 #if WITHPOTWPM
@@ -12979,6 +12987,10 @@ directctlupdate(
 	/* произошло изменение режима прием/передача */
 	if (changedtx != 0)
 	{
+		if (gtx)
+		{
+			normalpower_value = gnormalpower.value;
+		}
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
 		display2_needupdate();	// Обновление дисплея - всё, включая частоту
@@ -14738,6 +14750,7 @@ processcatmsg(
 			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
 			if (flagne_u16(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
 			{
+				normalpower_value = gnormalpower.value;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
@@ -15569,8 +15582,18 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 	}
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
-	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
-	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= (40 - SWRMIN))	// SWR >= 4.0
+	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4));
+#if 1 && WITHPOWERTRIM // BB
+	if (getactualdownpower() == 0 && get_swr_cached(3 * SWRMIN) >= (3 * SWRMIN))	// SWR >= 3.0
+	{
+		if (txreq)
+		{
+	        normalpower_value = (WITHPOWERTRIMMAX * 60) / WITHPOWERTRIMMAX;
+			bring_swr("SWR");
+		}
+	}
+#else /* BB */
+	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
 	{
 		if (txreq)
 		{
@@ -15578,6 +15601,7 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 		}
 		return 1;
 	}
+#endif /* BB */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	//PRINTF("tx ok\n");
 	return 0;
@@ -19363,7 +19387,8 @@ void hamradio_set_tx_power(uint_fast8_t v)
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
 	gnormalpower.value = v;
-	save_i8(OFFSETOF(struct nvmap, gnormalpower), gnormalpower.value = v);
+	normalpower_value = v;
+	save_i8(OFFSETOF(struct nvmap, gnormalpower), gnormalpower.value);
 	updateboard(1, 0);
 }
 
