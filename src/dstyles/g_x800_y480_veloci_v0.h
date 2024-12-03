@@ -200,59 +200,82 @@ void display2_getpipparams(pipparams_t * p)
 
 #if WITHRENDERHTML
 
-	static const char hftrx_layout_html [] =
-	R"##(
-	<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-	<html>
-	  <head>
-	    <meta charset="utf-8">
-	    <title>HF TRX 800x480</title>
-	    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-	    <!--link rel="stylesheet" type="text/css" href="hftrx.css"-->  
-	<style>
-	</style>
-	</head>
-	<body style="background-color:orange;">
-	 <div style="position:absolute; left:0px; top:0px; width:112px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:160px; top:0px; width:64px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:240px; top:0px; width:32px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:288px; top:0px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:352px; top:0px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:416px; top:0px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:512px; top:0px; width:64px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:592px; top:0px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:0px; top:20px; width:224px; height:100px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:240px; top:30px; width:336px; height:65px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:656px; top:0px; width:144px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:656px; top:20px; width:144px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:592px; top:50px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:656px; top:50px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:736px; top:50px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:592px; top:75px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:656px; top:75px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:720px; top:75px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:320px; top:100px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:384px; top:100px; width:192px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:592px; top:100px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:656px; top:100px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:720px; top:100px; width:64px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:16px; top:125px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:112px; top:125px; width:96px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:528px; top:125px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:592px; top:125px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:656px; top:125px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:720px; top:125px; width:80px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:592px; top:150px; width:128px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:0px; top:175px; width:800px; height:275px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:0px; top:455px; width:192px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:208px; top:455px; width:144px; height:25px; background-color:blue; color:black; ">X</div>
-	 <div style="position:absolute; left:368px; top:455px; width:64px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:448px; top:455px; width:48px; height:25px; background-color:green; color:black; ">X</div>
-	 <div style="position:absolute; left:512px; top:455px; width:112px; height:25px; background-color:blue; color:black; ">X</div>
-	</body>
-	</html>
-
-	)##";
+static const char hftrx_layout_html [] =
+R"##(
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta charset="utf-8">
+<title>HF TRX 800x480</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!--link rel="stylesheet" type="text/css" href="hftrx.css"-->
+<style>
+ #id1 { position:absolute; left:0px; top:0px; width:144px; height:20px; }
+ #id2 { position:absolute; left:160px; top:0px; width:144px; height:20px; }
+ #id3 { position:absolute; left:320px; top:0px; width:64px; height:20px; }
+ #id4 { position:absolute; left:400px; top:0px; width:48px; height:20px; }
+ #id5 { position:absolute; left:496px; top:0px; width:144px; height:20px; }
+ #id6 { position:absolute; left:656px; top:0px; width:144px; height:20px; }
+ #id8 { position:absolute; left:0px; top:20px; width:240px; height:100px; }
+ #id11 { position:absolute; left:592px; top:50px; width:48px; height:20px; }
+ #id12 { position:absolute; left:656px; top:50px; width:48px; height:20px; }
+ #id13 { position:absolute; left:736px; top:50px; width:48px; height:20px; }
+ #id14 { position:absolute; left:592px; top:75px; width:48px; height:20px; }
+ #id15 { position:absolute; left:656px; top:75px; width:48px; height:20px; }
+ #id16 { position:absolute; left:720px; top:75px; width:80px; height:20px; }
+ #id17 { position:absolute; left:240px; top:100px; width:48px; height:20px; }
+ #id18 { position:absolute; left:320px; top:100px; width:48px; height:20px; }
+ #id20 { position:absolute; left:592px; top:100px; width:48px; height:20px; }
+ #id21 { position:absolute; left:656px; top:100px; width:48px; height:20px; }
+ #id22 { position:absolute; left:16px; top:125px; width:80px; height:20px; }
+ #id24 { position:absolute; left:224px; top:125px; width:64px; height:20px; }
+ #id25 { position:absolute; left:304px; top:125px; width:80px; height:20px; }
+ #id26 { position:absolute; left:400px; top:125px; width:48px; height:20px; }
+ #id27 { position:absolute; left:528px; top:125px; width:48px; height:20px; }
+ #id28 { position:absolute; left:592px; top:125px; width:48px; height:20px; }
+ #id29 { position:absolute; left:656px; top:125px; width:48px; height:20px; }
+ #id30 { position:absolute; left:720px; top:125px; width:64px; height:20px; }
+ #id31 { position:absolute; left:592px; top:150px; width:128px; height:20px; }
+ #id36 { position:absolute; left:0px; top:455px; width:192px; height:20px; }
+ #id38 { position:absolute; left:448px; top:455px; width:48px; height:20px; }
+ #id39 { position:absolute; left:512px; top:455px; width:112px; height:20px; }
+ .on { background-color:red; color:white }
+ .off { background-color:green; color:black }
+</style>
+</head>
+<body style="background-color:orange;">
+ <div id="id1" class="on">WWWWWWWWW</div>
+ <div id="id2" class="on">WWWWWWWWW</div>
+ <div id="id3" class="on off">WWWW</div>
+ <div id="id4" style="background-color:blue; color:black;">WWW</div>
+ <div id="id5" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="id6" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="id8" style="background-color:blue; color:black;">WWWWWWWWWWWWWWW</div>
+ <div id="id11" style="background-color:blue; color:black;">WWW</div>
+ <div id="id12" style="background-color:blue; color:black;">WWW</div>
+ <div id="id13" style="background-color:blue; color:black;">WWW</div>
+ <div id="id14" style="background-color:blue; color:black;">WWW</div>
+ <div id="id15" style="background-color:blue; color:black;">WWW</div>
+ <div id="id16" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id17" style="background-color:blue; color:black;">WWW</div>
+ <div id="id18" style="background-color:blue; color:black;">WWW</div>
+ <div id="id20" style="background-color:blue; color:black;">WWW</div>
+ <div id="id21" style="background-color:blue; color:black;">WWW</div>
+ <div id="id22" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id24" style="background-color:blue; color:black;">WWWW</div>
+ <div id="id25" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="id26" style="background-color:blue; color:black;">WWW</div>
+ <div id="id27" style="background-color:blue; color:black;">WWW</div>
+ <div id="id28" style="background-color:blue; color:black;">WWW</div>
+ <div id="id29" style="background-color:blue; color:black;">WWW</div>
+ <div id="id30" style="background-color:blue; color:black;">WWWW</div>
+ <div id="id31" style="background-color:blue; color:black;">WWWWWWWW</div>
+ <div id="id36" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
+ <div id="id38" style="background-color:blue; color:black;">WWW</div>
+ <div id="id39" style="background-color:blue; color:black;">WWWWWWW</div>
+</body>
+</html>
+)##";
 
 	const char * display2_gethtml(uint_fast8_t page)
 	{

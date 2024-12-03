@@ -6538,42 +6538,48 @@ void display2_bgprocess(
 //			uint_fast8_t hour, minute, seconds;
 //			board_rtc_cached_gettime(& hour, & minute, & seconds);
 
-			const litehtml::element::ptr & old = el->children().back();	// Единственный элемент
+//			const litehtml::element::ptr & old = el->children().back();	// Единственный элемент
+//
+//			char s [16];
+//			local_snprintf_P(s, sizeof s, "%08X", (unsigned) sys_now());
+//
+//			litehtml::element::ptr tp(std::make_shared<el_text2>(s, doc));
 
-			char s [16];
-			local_snprintf_P(s, sizeof s, "%08X", (unsigned) sys_now());
+			int phase = (sys_now() & 0x200) != 0;
+			el->set_class("on", !! phase);
+			el->set_class("off", ! phase);
+			el->compute_styles(true);
+			el->refresh_styles();
 
-			litehtml::element::ptr tp(std::make_shared<el_text2>(s, doc));
-
-			if (sys_now() & 0x200)
-			{
-				el->set_attr("style", "background-color:red; color:green;");
-				//el->set_data("1");
-			}
-			else
-			{
-				el->set_attr("style", "background-color:green; color:red;");
-				//el->set_data("2");
-			}
+//			if (sys_now() & 0x200)
+//			{
+//				//el->set_attr("style", "background-color:red; color:green;");
+//				//el->set_data("1");
+//			}
+//			else
+//			{
+//				//el->set_attr("style", "background-color:green; color:red;");
+//				//el->set_data("2");
+//			}
 
 
 
 			//doc->append_children_from_string(* el, s);
-			ASSERT(el->appendChild(tp));
-			ASSERT(el->removeChild(old));
+//			ASSERT(el->appendChild(tp));
+//			ASSERT(el->removeChild(old));
 
 			//PRINTF("***** old = %p\n", old);
 			//tp->compute_styles(false);
-			el->compute_styles(true);
-			//el->refresh_styles();
+			//el->compute_styles(true);
 
 			//doc->refreshh();
+			//TP();
 		}
 	}
 
 	doc->render(hfrx_wndclip.width, litehtml::render_all);
 	doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
-	TP();
+	//TP();
 	colmain_nextfb();
 
 #else
@@ -6658,7 +6664,7 @@ void display2_initialize(void)
 		if (1)
 		{
 			litehtml::css_selector sel;
-			sel.parse("#id38", no_quirks_mode);	// select by id
+			sel.parse("#id3", no_quirks_mode);	// select by id
 			//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
 			hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
 			PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
