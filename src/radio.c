@@ -4894,52 +4894,10 @@ static void bringtimers(void)
 
 }
 
-#if WITHAUTOTUNER
-
-enum phases
-{
-	PHASE_ABORT,
-	PHASE_DONE,
-	PHASE_CONTINUE
-};
-
-// что удалось достичь в результате перебора
-typedef struct tunerstate
-{
-	uint8_t tunercap, tunerind, tunertype;
-	uint16_t swr;	// values 0..190: SWR = 1..20
-	adcvalholder_t f, r;
-} tus_t;
 
 #define TUS_SWRMIN (100)			// 1.0
 #define TUS_SWRMAX (TUS_SWRMIN * 9)			// 4.0
 #define TUS_SWR1p1 (TUS_SWRMIN * 11 / 10)	// SWR=1.1
-
-static void board_set_tuner_group(void)
-{
-	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
-	// todo: добавить учет включенной антенны
-	board_set_tuner_C(tunercap);
-	board_set_tuner_L(tunerind);
-	board_set_tuner_type(tunertype);
-	board_set_tuner_bypass(! tunerwork);
-}
-
-// выдача параметров на тюнер
-static void updateboard_tuner(void)
-{
-	//PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
-	board_set_tuner_group();
-	board_update();		/* вывести забуферированные изменения в регистры */
-}
-
-// ожидание требуемого времени после выдачи параметров на тюнер.
-static void tuner_waitadc(void)
-{
-	uint_fast8_t n = (gtunerdelay + 4) / 5;
-	while (n --)
-		local_delay_ms(5);
-}
 
 // SWR=1 = озвращаем 0
 static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
@@ -4970,42 +4928,6 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * TUS_SWRMIN / (f - r) - TUS_SWRMIN;
 	return swr10 > fs ? fs : swr10;
-}
-
-
-// SWR=1: return 100
-// no power: return 0
-unsigned n7ddc_get_swr(void)
-{
-	const uint_fast8_t fs = 900;
-	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
-
-	// обновить кеш данных для дисплея
-	if (FWD == PWRI)
-	{
-		board_adc_store_data(PWRMRRIX, f);
-		board_adc_store_data(FWDMRRIX, f);
-		board_adc_store_data(REFMRRIX, r);
-	}
-	else
-	{
-		board_adc_store_data(FWDMRRIX, f);
-		board_adc_store_data(REFMRRIX, r);
-	}
-
-	if (f < minforward)
-	{
-		PRINTF("n7ddc_get_swr: No forward power (f=%u,r=%u,mf=%d),L=%u,C=%u,T=%u\n", f, r, minforward, tunerind, tunercap, tunertype);
-		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
-	}
-	else if (f <= r)
-		return fs;		// SWR is infinite
-
-	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
-	unsigned result = swr10 > fs ? fs : swr10;
-	PRINTF("n7ddc_get_swr: swr=%u (f=%u,r=%u),L=%u,C=%u,T=%u\n", result, f, r, tunerind, tunercap, tunertype);
-	return result;
 }
 
 // Отображение КСВ в меню
@@ -5058,6 +4980,85 @@ unsigned hamradio_get_pwr(void)
 		pwrtrace = maxpwrcali;
 
 	return pwrtrace * 100 / maxpwrcali;
+}
+
+#if WITHAUTOTUNER
+
+enum phases
+{
+	PHASE_ABORT,
+	PHASE_DONE,
+	PHASE_CONTINUE
+};
+
+// что удалось достичь в результате перебора
+typedef struct tunerstate
+{
+	uint8_t tunercap, tunerind, tunertype;
+	uint16_t swr;	// values 0..190: SWR = 1..20
+	adcvalholder_t f, r;
+} tus_t;
+
+static void board_set_tuner_group(void)
+{
+	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	// todo: добавить учет включенной антенны
+	board_set_tuner_C(tunercap);
+	board_set_tuner_L(tunerind);
+	board_set_tuner_type(tunertype);
+	board_set_tuner_bypass(! tunerwork);
+}
+
+// выдача параметров на тюнер
+static void updateboard_tuner(void)
+{
+	//PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	board_set_tuner_group();
+	board_update();		/* вывести забуферированные изменения в регистры */
+}
+
+// ожидание требуемого времени после выдачи параметров на тюнер.
+static void tuner_waitadc(void)
+{
+	uint_fast8_t n = (gtunerdelay + 4) / 5;
+	while (n --)
+		local_delay_ms(5);
+}
+
+
+// SWR=1: return 100
+// no power: return 0
+unsigned n7ddc_get_swr(void)
+{
+	const uint_fast8_t fs = 900;
+	adcvalholder_t r;
+	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+
+	// обновить кеш данных для дисплея
+	if (FWD == PWRI)
+	{
+		board_adc_store_data(PWRMRRIX, f);
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+	else
+	{
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
+	}
+
+	if (f < minforward)
+	{
+		PRINTF("n7ddc_get_swr: No forward power (f=%u,r=%u,mf=%d),L=%u,C=%u,T=%u\n", f, r, minforward, tunerind, tunercap, tunertype);
+		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
+	}
+	else if (f <= r)
+		return fs;		// SWR is infinite
+
+	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
+	unsigned result = swr10 > fs ? fs : swr10;
+	PRINTF("n7ddc_get_swr: swr=%u (f=%u,r=%u),L=%u,C=%u,T=%u\n", result, f, r, tunerind, tunercap, tunertype);
+	return result;
 }
 
 static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_t r, adcvalholder_t f)
