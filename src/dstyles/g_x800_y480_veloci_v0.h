@@ -212,7 +212,8 @@ R"##(
 <style>
  #id1 { position:absolute; left:0px; top:0px; width:144px; height:20px; }
  #id2 { position:absolute; left:160px; top:0px; width:144px; height:20px; }
- #id3 { position:absolute; left:320px; top:0px; width:64px; height:20px; }
+ #id3x { position:absolute; left:320px; top:0px; width:64px; height:20px; }
+ #id3 { z-index:999; position:absolute; left:400px; top:120px; width:120px; height:90px; }
  #id4 { position:absolute; left:400px; top:0px; width:48px; height:20px; }
  #id5 { position:absolute; left:496px; top:0px; width:144px; height:20px; }
  #id6 { position:absolute; left:656px; top:0px; width:144px; height:20px; }
@@ -241,14 +242,45 @@ R"##(
  #id36 { position:absolute; left:0px; top:455px; width:192px; height:20px; }
  #id38 { position:absolute; left:448px; top:455px; width:48px; height:20px; }
  #id39 { position:absolute; left:512px; top:455px; width:112px; height:20px; }
- .on { background-color:red; color:white }
- .off { background-color:green; color:black }
+ .on { background-color:red; color:white; visibility:visible; }
+ .off { background-color:green; color:black; visibility:hidden; }
 </style>
 </head>
 <body style="background-color:orange;">
  <div id="id1" class="on">WWWWWWWWW</div>
  <div id="id2" class="on">WWWWWWWWW</div>
- <div id="id3" class="on off">WWWW</div>
+ <div id="id3x" class="on off">WWWW</div>
+ <div id="id3sssss" class="on off">Menu</div>
+<div id="id3" class="on off">
+    <div class="menu-head">Select band</div>
+    <table style="width: 100%">
+        <tr>
+            <td><div class="menu-click">160m</div></td>
+            <td><div class="menu-click">80m</div></td>
+            <td><div class="menu-click">40m</div></td>
+            <td><div class="menu-click">30m</div></td>
+        </tr>
+        <tr>
+            <td><div class="menu-click">20m</div></td>
+            <td><div class="menu-click on">17m</div></td>
+            <td><div class="menu-click">15m</div></td>
+            <td><div class="menu-click">12m</div></td>
+        </tr>
+        <tr>
+            <td><div class="menu-click">10m</div></td>
+            <td><div class="menu-click">6m</div></td>
+            <td><div class="menu-click">2m</div></td>
+            <td><div class="menu-click">70cm</div></td>
+        </tr>
+        <tr>
+            <td><div class="menu-click">23cm</div></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+</div>
+
  <div id="id4" style="background-color:blue; color:black;">WWW</div>
  <div id="id5" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id6" style="background-color:blue; color:black;">WWWWWWWWW</div>
