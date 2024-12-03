@@ -239,12 +239,14 @@ R"##(
  #id40 { position:absolute; left:368px; top:455px; width:64px; height:20px; }
  #id41 { position:absolute; left:448px; top:455px; width:48px; height:20px; }
  #id42 { position:absolute; left:512px; top:455px; width:112px; height:20px; }
+ .on { background-color:red; color:white }
+ .off { background-color:green; color:black }
 </style>
 </head>
 <body style="background-color:orange;">
- <div id="id2" style="background-color:blue; color:black;">WWWWWWW</div>
- <div id="id3" style="background-color:blue; color:black;">WWWW</div>
- <div id="id4" style="background-color:blue; color:black;">WW</div>
+ <div id="id2" class="on">WWWWWWW</div>
+ <div id="id3" class="on">WWWW</div>
+ <div id="id4" class="on off">WW</div>
  <div id="id5" style="background-color:blue; color:black;">WWW</div>
  <div id="id6" style="background-color:blue; color:black;">WWW</div>
  <div id="id7" style="background-color:blue; color:black;">WWWWW</div>

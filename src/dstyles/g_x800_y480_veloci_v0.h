@@ -102,7 +102,7 @@ static const FLASHMEM struct dzone dzones [] =
 #endif /* WITHAFSPECTRE */
 
 	{	15,	6,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-	{	15,	6,	0,	0,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
@@ -115,7 +115,7 @@ static const FLASHMEM struct dzone dzones [] =
 
 	{	15, 20,	3,	4,	display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 	{	20,	20,	3,	4,	display2_vfomode3,	& dzi_default, PGALL, },	// SPL
-	{	24,	20,	0,	4,	display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
+	{	24,	20,	12,	4,	display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
 	{	37, 20,	3,	4,	display2_mode3_b,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 20,	3,	4,	display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 	//{	45,	20,	4,	4,	display2_lockstate4, & dzi_default, PGALL, },	// LOCK
@@ -217,6 +217,7 @@ R"##(
  #id5 { position:absolute; left:496px; top:0px; width:144px; height:20px; }
  #id6 { position:absolute; left:656px; top:0px; width:144px; height:20px; }
  #id8 { position:absolute; left:0px; top:20px; width:240px; height:100px; }
+ #id10 { position:absolute; left:240px; top:30px; width:336px; height:65px; }
  #id11 { position:absolute; left:592px; top:50px; width:48px; height:20px; }
  #id12 { position:absolute; left:656px; top:50px; width:48px; height:20px; }
  #id13 { position:absolute; left:736px; top:50px; width:48px; height:20px; }
@@ -225,6 +226,7 @@ R"##(
  #id16 { position:absolute; left:720px; top:75px; width:80px; height:20px; }
  #id17 { position:absolute; left:240px; top:100px; width:48px; height:20px; }
  #id18 { position:absolute; left:320px; top:100px; width:48px; height:20px; }
+ #id19 { position:absolute; left:384px; top:100px; width:192px; height:20px; }
  #id20 { position:absolute; left:592px; top:100px; width:48px; height:20px; }
  #id21 { position:absolute; left:656px; top:100px; width:48px; height:20px; }
  #id22 { position:absolute; left:16px; top:125px; width:80px; height:20px; }
@@ -251,6 +253,7 @@ R"##(
  <div id="id5" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id6" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id8" style="background-color:blue; color:black;">WWWWWWWWWWWWWWW</div>
+ <div id="id10" style="background-color:blue; color:black;">WWWWWWWWWWWWWWWWWWWWW</div>
  <div id="id11" style="background-color:blue; color:black;">WWW</div>
  <div id="id12" style="background-color:blue; color:black;">WWW</div>
  <div id="id13" style="background-color:blue; color:black;">WWW</div>
@@ -259,6 +262,7 @@ R"##(
  <div id="id16" style="background-color:blue; color:black;">WWWWW</div>
  <div id="id17" style="background-color:blue; color:black;">WWW</div>
  <div id="id18" style="background-color:blue; color:black;">WWW</div>
+ <div id="id19" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
  <div id="id20" style="background-color:blue; color:black;">WWW</div>
  <div id="id21" style="background-color:blue; color:black;">WWW</div>
  <div id="id22" style="background-color:blue; color:black;">WWWWW</div>

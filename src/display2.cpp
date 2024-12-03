@@ -6545,7 +6545,7 @@ void display2_bgprocess(
 //
 //			litehtml::element::ptr tp(std::make_shared<el_text2>(s, doc));
 
-			int phase = (sys_now() & 0x200) != 0;
+			const int phase = (sys_now() & 0x200) != 0;
 			el->set_class("on", !! phase);
 			el->set_class("off", ! phase);
 			el->compute_styles(true);
