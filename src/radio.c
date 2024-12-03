@@ -12989,7 +12989,9 @@ directctlupdate(
 	{
 		if (gtx)
 		{
+#if WITHPOWERTRIM && WITHTX
 			normalpower_value = gnormalpower.value;
+#endif /* WITHPOWERTRIM && WITHTX */
 		}
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
