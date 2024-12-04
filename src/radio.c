@@ -4894,6 +4894,7 @@ static void bringtimers(void)
 
 }
 
+#if WITHTX
 
 #define TUS_SWRMIN (100)			// 1.0
 #define TUS_SWRMAX (TUS_SWRMIN * 9)			// 4.0
@@ -4981,6 +4982,7 @@ unsigned hamradio_get_pwr(void)
 
 	return pwrtrace * 100 / maxpwrcali;
 }
+#endif /* WITHTX */
 
 #if WITHAUTOTUNER
 
