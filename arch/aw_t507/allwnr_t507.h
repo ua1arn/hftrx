@@ -144,7 +144,7 @@ enum DMAC_SrcReqType
 	DMAC_SrcReqUSB0_EP2,
 	DMAC_SrcReqUSB0_EP3,
 	DMAC_SrcReqUSB0_EP4,
-	DMAC_SrcReqUSB0_EP5,
+	DMAC_SrcReqUSB0_EP5,	// ?
 
 	DMAC_SrcReqTWI0_RX = 43,
 	DMAC_SrcReqTWI1_RX,
@@ -183,7 +183,7 @@ enum DMAC_DstReqType
 	DMAC_DstReqUSB0_EP2,
 	DMAC_DstReqUSB0_EP3,
 	DMAC_DstReqUSB0_EP4,
-	DMAC_DstReqUSB0_EP5,
+	DMAC_DstReqUSB0_EP5,	// ?
 
 	DMAC_DstReqTWI0_TX = 43,
 	DMAC_DstReqTWI1_TX,

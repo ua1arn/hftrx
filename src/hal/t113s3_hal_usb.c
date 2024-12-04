@@ -358,9 +358,9 @@ static uint32_t usb_get_frame_number(pusb_struct pusb)
 
 static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 {
-	ASSERT(ep_no <= USB_MAX_EP_NO);
-	if (ep_no > USB_MAX_EP_NO)
-		return;
+//	ASSERT(ep_no <= USB_MAX_EP_NO);
+//	if (ep_no > USB_MAX_EP_NO)
+//		return;
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (0x0F << 16)) | ((0x0F & ep_no) << 16); // EPIND
 }
 
@@ -596,9 +596,9 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 {
 	uint32_t reg_val;
 
-	ASSERT(ep_no < USB_MAX_EP_NO);
-	if (ep_no>USB_MAX_EP_NO)
-		return;
+//	ASSERT(ep_no < USB_MAX_EP_NO);
+//	if (ep_no>USB_MAX_EP_NO)
+//		return;
 
 	reg_val = 0;
 	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
@@ -810,7 +810,7 @@ static void usb_drive_vbus(pusb_struct pusb, uint32_t vbus, uint32_t index)
 
 static uintptr_t usb_get_ep_fifo_addr(pusb_struct pusb, uint32_t ep_no)
 {
-	ASSERT(ep_no < (USB_MAX_EP_NO + 1));
+//	ASSERT(ep_no < (USB_MAX_EP_NO + 1));
 	return (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep_no];
 	//return (USBOTG0_BASE + USB_bFIFO_OFF(ep_no));
 }
@@ -872,10 +872,10 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 	uint8_t temp;
 	//uint8_t saved;
 
-	if (ep_no>USB_MAX_EP_NO)
-	{
-		return;
-	}
+//	if (ep_no>USB_MAX_EP_NO)
+//	{
+//		return;
+//	}
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
 
@@ -924,10 +924,10 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 {
 	//uint8_t  saved;
 
-	if (ep_no>USB_MAX_EP_NO)
-	{
-		return;
-	}
+//	if (ep_no>USB_MAX_EP_NO)
+//	{
+//		return;
+//	}
 	if (count == 0)
 		return;
 
@@ -2419,11 +2419,12 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		  /* Open INTR EP IN */
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
 
-		usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+		//PRINTF("USBDMTP: pipein=%d, pipeout=%d, pipeint=%d\n", pipein, pipeout, pipeint);
+		usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
 		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
-		usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+		usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
 		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
-		usb_set_eptx_interrupt_enable(pusb, 1u << pipeint);
+		usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
 		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
 	}
 #endif /* WITHUSBDMTP */
@@ -2441,9 +2442,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 		fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
-		usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+		//PRINTF("USBDMSC: pipein=%d, pipeout=%d,\n", pipein, pipeout);
+		usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
 		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
-		usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+		usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
 		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
 	}
 #endif /* WITHUSBDMSC */
@@ -2461,11 +2463,11 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
 
 			//PRINTF("USBCDCACM: offset=%u, pipein=%d, pipeout=%d, pipeint=%d\n", offset, pipein, pipeout, pipeint);
-			usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+			usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
 			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
-			usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+			usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
 			ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
-			usb_set_eptx_interrupt_enable(pusb, 1u << pipeint);
+			usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
 			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
 		}
 	}
