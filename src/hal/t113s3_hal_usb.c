@@ -2420,8 +2420,11 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
 
 		usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
 		usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
 		usb_set_eptx_interrupt_enable(pusb, 1u << pipeint);
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
 	}
 #endif /* WITHUSBDMTP */
 
@@ -2439,7 +2442,9 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
 		usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
 		usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
 	}
 #endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
@@ -2455,9 +2460,13 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
 
+			//PRINTF("USBCDCACM: offset=%u, pipein=%d, pipeout=%d, pipeint=%d\n", offset, pipein, pipeout, pipeint);
 			usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
 			usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+			ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
 			usb_set_eptx_interrupt_enable(pusb, 1u << pipeint);
+			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
 		}
 	}
 #endif /* WITHUSBCDCACM */
@@ -2469,6 +2478,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
 #if 0
 		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
+		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << ep_no));
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
@@ -2485,7 +2495,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_AUDIO48_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
-		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+		usb_set_eptx_interrupt_enable(pusb, (1u << ep_no));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << ep_no));
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
@@ -2501,7 +2512,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_RTS96_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
-		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+		usb_set_eptx_interrupt_enable(pusb, (1u << ep_no));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << ep_no));
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
@@ -2518,7 +2530,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_RTS192_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
-		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+		usb_set_eptx_interrupt_enable(pusb, (1u << ep_no));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << ep_no));
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
@@ -4094,7 +4107,8 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
 	usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-	usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
+	usb_set_eptx_interrupt_enable(pusb, (1u << 0));	// EP0 interrupts
+	ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << 0));
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
@@ -4284,7 +4298,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
 		usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-		usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
+		usb_set_eptx_interrupt_enable(pusb, (1u << 0));	// EP0 interrupts
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << 0));
 
 #if WITHUSBUACOUT
 		buffers_set_uacoutalt(0);
