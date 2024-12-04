@@ -356,12 +356,17 @@ static uint32_t usb_get_frame_number(pusb_struct pusb)
 	return WITHUSBHW_DEVICE->USB_FNUM & 0x7FF;	// 10:0
 }
 
-static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
+static void usb_select_ep(pusb_struct pusb, uint32_t ep_ind)
 {
 //	ASSERT(ep_no <= USB_MAX_EP_NO);
 //	if (ep_no > USB_MAX_EP_NO)
 //		return;
-	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (0x0F << 16)) | ((0x0F & ep_no) << 16); // EPIND
+	ASSERT(ep_ind >= 0 && ep_ind <= 15);
+	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x0F) << 16)) |
+		ep_ind * (UINT32_C(1) << 16) | // EPIND
+		0;
+	while ((((WITHUSBHW_DEVICE->USB_GCS >> 16)) & 0x0F) != ep_ind)
+		;
 }
 
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
@@ -599,7 +604,7 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 //	ASSERT(ep_no < USB_MAX_EP_NO);
 //	if (ep_no>USB_MAX_EP_NO)
 //		return;
-
+	ASSERT(ep_no >= 1 && ep_no <= 8);
 	reg_val = 0;
 	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
 	reg_val |= !! is_rx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
