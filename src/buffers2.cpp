@@ -45,9 +45,9 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (4 * BUFOVERSIZE)
+#define VOICE32RX_CAPACITY (12 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
-#define VOICE32RTS_CAPACITY (4 * BUFOVERSIZE)	// dummy fn
+#define VOICE32RTS_CAPACITY (7 * BUFOVERSIZE)	// dummy fn
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
@@ -3294,7 +3294,7 @@ static void printSeqError(void)
 
 static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 {
-	if (seqValidateSkip < 1000)
+	if (seqValidateSkip < 60000)
 	{
 		++ seqValidateSkip;
 		return;
