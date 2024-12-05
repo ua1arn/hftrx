@@ -140,7 +140,7 @@ typedef struct {
 	usb_device_msc device_msc;
 #endif /* WITHUSBDMSC */
 
-#if WITHUSBDEV_DMAENABLE || 1
+#if WITHUSBDEV_DMAENABLE
 	//DMA Description
 	//DMADESC    dma;
 	uint32_t		 dmarxv[USB_MAX_EP_NO];

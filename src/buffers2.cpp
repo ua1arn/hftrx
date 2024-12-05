@@ -3273,6 +3273,7 @@ static int32_t seqHist [MAXSEQHIST] [DMABUFFSTEP32RX];
 static const void * seqHistP [MAXSEQHIST];
 static unsigned seqPos;
 static unsigned seqAfterError;
+static unsigned seqValidateSkip;
 
 static void printSeqError(void)
 {
@@ -3284,7 +3285,7 @@ static void printSeqError(void)
 		PRINTF("hist %02d @%p :", i, seqHistP [ix]);
 		unsigned col;
 		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
-			PRINTF("%08x ", (unsigned) seqHist [ix] [col]);
+			PRINTF("%08X ", (unsigned) seqHist [ix] [col]);
 		PRINTF("\n");
 	}
 	for (;;)
@@ -3293,6 +3294,12 @@ static void printSeqError(void)
 
 static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 {
+	if (seqValidateSkip < 1000)
+	{
+		++ seqValidateSkip;
+		return;
+	}
+	// Save data for history
 	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
 	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
 	unsigned col;
@@ -3300,16 +3307,13 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 		seqHist [seqPos] [col] = base [col];
 	seqHistP [seqPos] = base;
 
+	// Was error, record tail
 	if (seqAfterError)
 	{
-
-		if (seqAfterError != 0)
+		seqAfterError = seqAfterError - 1;
+		if (seqAfterError == 0)
 		{
-			seqAfterError = seqAfterError - 1;
-			if (seqAfterError == 0)
-			{
-				printSeqError();
-			}
+			printSeqError();
 		}
 		return;
 	}
@@ -3319,12 +3323,13 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 //	return;
 	if (seqDone)
 		return;
-	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFFSTEP32RX) * 10000L))
-	{
-		seqDone = 1;
-		printSeqError();
-		return;
-	}
+//	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFFSTEP32RX) * 10000L))
+//	{
+//		seqDone = 1;
+//		printSeqError();
+//		return;
+//	}
+
 	if (! seqValid [slot])
 	{
 		seqValid [slot] = 1;
@@ -3344,7 +3349,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 		}
 		++ seqTotal;
 	}
-	seqNext [slot] = v + 2;
+	seqNext [slot] = v + 1;
 }
 #endif
 
@@ -3443,7 +3448,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 	}
 	else if (1)
 	{
-		uint_fast8_t slot = DMABUF32RXRTS0I;	// slot 4
+		uint_fast8_t slot = 0;	// slot 4
 		validateSeq(slot, b [slot], b);
 	}
 #endif
