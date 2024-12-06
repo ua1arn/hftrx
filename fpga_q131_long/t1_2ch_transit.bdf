@@ -5828,23 +5828,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -1648 592 -1616 624)
-	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
-	(text "inst85" (rect 3 21 32 33)(font "Arial" )(invisible))
-	(port
-		(pt 16 0)
-		(output)
-		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
-		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
-		(line (pt 16 8)(pt 16 0))
-	)
-	(drawing
-		(line (pt 8 8)(pt 16 16))
-		(line (pt 16 16)(pt 24 8))
-		(line (pt 8 8)(pt 24 8))
-	)
-)
-(symbol
 	(rect -5096 -672 -4888 -512)
 	(text "LTC2208_input" (rect 5 0 89 14)(font "Arial" (font_size 8)))
 	(text "inst33" (rect 8 144 37 156)(font "Arial" ))
@@ -5921,6 +5904,24 @@ applicable agreement for further details.
 	(drawing
 		(rectangle (rect 16 16 192 144))
 	)
+)
+(symbol
+	(rect -1808 -224 -1776 -192)
+	(text "GND" (rect 8 6 29 16)(font "Arial" (font_size 6)))
+	(text "inst125" (rect 3 -1 38 11)(font "Arial" )(invisible))
+	(port
+		(pt 16 32)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 20 23 32)(font "Courier New" (bold))(invisible))
+		(line (pt 16 24)(pt 16 32))
+	)
+	(drawing
+		(line (pt 8 24)(pt 16 16))
+		(line (pt 16 16)(pt 24 24))
+		(line (pt 8 24)(pt 24 24))
+	)
+	(flipx)
 )
 (connector
 	(pt -1576 -336)
@@ -9341,16 +9342,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -1696 592)
-	(pt -1680 592)
-	(bus)
-)
-(connector
-	(pt -1632 592)
-	(pt -1576 592)
-	(bus)
-)
-(connector
 	(text "coreclk" (rect -1918 552 -1883 564)(font "Arial" ))
 	(pt -1840 568)
 	(pt -1920 568)
@@ -9393,19 +9384,18 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -1760 -120)
-	(pt -1760 -232)
+	(pt -1696 592)
+	(pt -1576 592)
 	(bus)
 )
 (connector
 	(pt -1720 -120)
-	(pt -1760 -120)
+	(pt -1792 -120)
 	(bus)
 )
 (connector
-	(text "adc_data_latched[15..0],adc_data_latched[15..0],adc_data_latched[15..0],adc_data_latched[15..0]" (rect -1808 -248 -1326 -236)(font "Arial" ))
-	(pt -1808 -232)
-	(pt -1760 -232)
+	(pt -1792 -192)
+	(pt -1792 -120)
 	(bus)
 )
 (junction (pt -1592 -696))
