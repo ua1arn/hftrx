@@ -1,0 +1,87 @@
+#regdef; DSI_CTL_REG;			0x0000; DSI Control Register
+#regdef; DSI_GINT0_REG;			0x0004; DSI Global Interrupt Register0
+#regdef; DSI_GINT1_REG;			0x0008; DSI Global Interrupt Register1
+#regdef; DSI_BASIC_CTL_REG;		0x000C; DSI Basic Control Register
+#regdef; DSI_BASIC_CTL0_REG;	0x0010; DSI Basic Control Register0
+#regdef; DSI_BASIC_CTL1_REG;	0x0014; DSI Basic Control Register1
+#regdef; DSI_BASIC_SIZE0_REG;	0x0018; DSI Basic Timing Register0
+#regdef; DSI_BASIC_SIZE1_REG;	0x001C; DSI Basic Timing Register1
+#regdef; DSI_BASIC_INST0_REG;	0x0020 8; DSI Basic Instruction Register0 (N=0,1,2,3,4,5,6,7)
+#regdef; DSI_BASIC_INST1_REG;	0x0040; DSI Basic Instruction Register1
+#regdef; DSI_BASIC_INST2_REG;	0x0044; DSI Basic Instruction Register2
+#regdef; DSI_BASIC_INST3_REG;	0x0048; DSI Basic Instruction Register3
+#regdef; DSI_BASIC_INST4_REG;	0x004C; DSI Basic Instruction Register4
+#regdef; DSI_BASIC_INST5_REG;	0x0050; DSI Basic Instruction Register5
+#regdef; DSI_BASIC_INST6_REG;	0x0054; DSI Basic Instruction Register6
+#regdef; DSI_BASIC_TRAN0_REG;	0x0060; DSI Basic Transmission Register0
+#regdef; DSI_BASIC_TRAN4_REG;	0x0078; DSI Basic Transmission Register4
+#regdef; DSI_BASIC_TRAN5_REG;	0x007C; DSI Basic Transmission Register5
+#regdef; DSI_PIXEL_CTL0_REG;	0x0080; DSI Pixel Control Register0
+#regdef; DSI_PIXEL_PH_REG;		0x0090; DSI Pixel Packet Header Register
+#regdef; DSI_PIXEL_PD_REG;		0x0094; DSI Pixel Packet Data Register
+#regdef; DSI_PIXEL_PF0_REG;		0x0098; DSI Pixel Packet Footer Register0
+#regdef; DSI_PIXEL_PF1_REG;		0x009C; DSI Pixel Packet Footer Register1
+#regdef; DSI_SYNC_HSS_REG;		0x00B0; DSI H Sync Start Register
+#regdef; DSI_SYNC_HSE_REG;		0x00B4; DSI H Sync End Register
+#regdef; DSI_SYNC_VSS_REG;		0x00B8; DSI V Sync Start Register
+#regdef; DSI_SYNC_VSE_REG;		0x00BC; DSI V Sync End Register
+#regdef; DSI_BLK_HSA0_REG;		0x00C0; DSI Blanking H Sync Active Register0
+#regdef; DSI_BLK_HSA1_REG;		0x00C4; DSI Blanking H Sync Active Register1
+#regdef; DSI_BLK_HBP0_REG;		0x00C8; DSI Blanking H Back Porch Register0
+#regdef; DSI_BLK_HBP1_REG;		0x00CC; DSI Blanking H Back Porch Register0
+#regdef; DSI_BLK_HFP0_REG;		0x00D0; DSI Blanking H Front Porch Register0
+#regdef; DSI_BLK_HFP1_REG;		0x00D4; DSI Blanking H Front Porch Register1
+#regdef; DSI_BLK_HBLK0_REG;		0x00E0; DSI H Blanking Register0
+#regdef; DSI_BLK_HBLK1_REG;		0x00E4; DSI H Blanking Register1
+#regdef; DSI_BLK_VBLK0_REG;		0x00E8; DSI V Blanking Register0
+#regdef; DSI_BLK_VBLK1_REG;		0x00EC; DSI V Blanking Register1
+#regdef; DSI_BURST_LINE_REG;	0x00F0; DSI Burst Line Register
+#regdef; DSI_BURST_DRQ_REG;		0x00F4; DSI Burst DRQ Register
+#regdef; DSI_DEBUG_REG;			0x00FC; DSI Debug Register
+#regdef; DSI_BASIC_INST10_REG;  0x0120 7; DSI Basic INST10 Register (N=0,1,2,3,4,5,6)
+#regdef; DSI_BASIC_INST11_REG;  0x0140; DSI Basic INST11 Register
+#regdef; DSI_BASIC_INST13_REG;  0x0148; DSI Basic INST13 Register
+#regdef; DSI_SAFE_PERIOD_REG;	0x01F0 DSI Safe Period Register
+#regdef; DSI_CMD_CTL_REG;		0x0200 DSI Command Control Register
+#regdef; DSI_CMD_RX_REG;		0x0240 8; DSI Command RX Register (N=0,1,2,3,4,5,6,7)
+#regdef; DSI_DEBUG0_REG;		0x02E0; DSI Debug Register0
+#regdef; DSI_DEBUG1_REG;		0x02E4; DSI Debug Register1
+#regdef; DSI_INST_DEBUG_REG;	0x02EC; DSI INST Debug Register
+#regdef; DSI_DEBUG2_REG;		0x02F0; DSI Debug Register2
+#regdef; DSI_DEBUG3_REG;		0x02F4;; DSI Debug Register3
+#regdef; DSI_DEBUG4_REG;		0x02F8 DSI Debug Register4
+#regdef; DSI_CMD_TX_REG;		0x0300 64; DSI Command TX Register (N=0,1,2,…,63)
+#regdef; DSI_FIFO_BIST_REG;		0x0FF8; DSI FIFO Bist Register
+
+#regdef; DPHY_CTL_REG;			0x1000; DPHY Control Register
+#regdef; DPHY_TX_CTL_REG;		0x1004; DPHY TX Control Register
+#regdef; DPHY_TX_TIME0_REG;		0x1010; DPHY TX Timing Parameter 0 Register
+#regdef; DPHY_TX_TIME1_REG;		0x1014; DPHY TX Timing Parameter 1 Register
+#regdef; DPHY_TX_TIME2_REG;		0x1018; DPHY TX Timing Parameter 2 Register
+#regdef; DPHY_TX_TIME3_REG;		0x101C; DPHY TX Timing Parameter 3 Register
+#regdef; DPHY_TX_TIME4_REG;		0x1020; DPHY TX Timing Parameter 4 Register
+#regdef; DPHY_RX_TIME0_REG;		0x1030; DPHY RX Timing Parameter 0 Register
+#regdef; DPHY_RX_TIME1_REG;		0x1034; DPHY RX Timing Parameter 1 Register
+#regdef; DPHY_RX_TIME3_REG;		0x1040; DPHY RX Timing Parameter 3 Register
+#regdef; DPHY_ANA0_REG;			0x104C; DPHY Analog 0 Register
+#regdef; DPHY_ANA1_REG;			0x1050; DPHY Analog 1 Register
+#regdef; DPHY_ANA2_REG;			0x1054; DPHY Analog 2 Register
+#regdef; DPHY_ANA3_REG;			0x1058; DPHY Analog 3 Register
+#regdef; DPHY_ANA4_REG;			0x105C; DPHY Analog 4 Register
+#regdef; DPHY_INT_EN0_REG;		0x1060; DPHY Interrupt Enable 0 Register
+#regdef; DPHY_INT_EN1_REG;		0x1064; DPHY Interrupt Enable 1 Register
+#regdef; DPHY_INT_EN2_REG;		0x1068; DPHY Interrupt Enable 2 Register
+#regdef; DPHY_INT_PD0_REG;		0x1070; DPHY Interrupt Pending 0 Register
+#regdef; DPHY_INT_PD1_REG;		0x1074; DPHY Interrupt Pending 1 Register
+#regdef; DPHY_DBG0_REG;			0x10E0; DPHY Debug 0 Register
+#regdef; DPHY_DBG1_REG;			0x10E4; DPHY Debug 1 Register
+#regdef; DPHY_DBG2_REG;			0x10E8; DPHY Debug 2 Register
+#regdef; DPHY_DBG3_REG;			0x10EC; DPHY Debug 3 Register
+#regdef; DPHY_DBG4_REG;			0x10F0; DPHY Debug 4 Register
+#regdef; DPHY_TX_SKEW_REG0;		0x10F8; DPHY TX Skew Register0
+#regdef; DPHY_TX_SKEW_REG1;		0x10FC; DPHY TX Skew Register1
+#regdef; DPHY_TX_SKEW_REG2;		0x1100; DPHY TX Skew Register2
+#regdef; DPHY_PLL_REG0;			0x1104; DPHY PLL Register0
+#regdef; DPHY_PLL_REG1;			0x1108; DPHY PLL Register1
+#regdef; COMBO_PHY_REG0;		0x1110; Combo PHY Register0
+#regdef; COMBO_PHY_REG1;		0x1114; Combo PHY Register1
