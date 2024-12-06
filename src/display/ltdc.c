@@ -6271,7 +6271,7 @@ void hardware_edid_test(void)
 }
 
 
-#if defined (HDMI_PHY) && defined (HDMI_TX0) && WITHHDMITVHW
+#if defined (HDMI_TX0) && WITHHDMITVHW
 
 
 #include "dw-hdmi.h"
@@ -6944,6 +6944,7 @@ static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
 //##	060100C0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 //##	060100E0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 
+#if defined (HDMI_PHY)
 static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 {
 	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
@@ -7077,6 +7078,7 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	/* descramble register offsets */
 	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 }
+#endif /* defined (HDMI_PHY) */
 
 static void t507_hdmi_phy_init(uint_fast32_t dotclock)
 {
@@ -7179,7 +7181,7 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 			);
 }
 
-#endif /* defined (HDMI_PHY) && defined (HDMI_TX0) */
+#endif /* defined (HDMI_TX0) */
 
 #if 0
 // A64

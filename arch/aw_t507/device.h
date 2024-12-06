@@ -276,7 +276,6 @@ typedef enum IRQn
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC3_BASE ((uintptr_t) 0x05311800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define HDMI_TX0_BASE ((uintptr_t) 0x06000000)        /*!< HDMI_TX  Base */
-#define HDMI_PHY_BASE ((uintptr_t) 0x06010000)        /*!< HDMI_PHY  Base */
 #define DISP_IF_TOP_BASE ((uintptr_t) 0x06510000)     /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
@@ -1435,10 +1434,10 @@ typedef __PACKED_STRUCT GPU_MMU_Type
     } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
 } GPU_MMU_TypeDef; /* size of structure = 0x500 */
 /*
- * @brief HDMI_PHY
+ * @brief HDMI_PHY_unused
  */
-/*!< HDMI_PHY  */
-typedef __PACKED_STRUCT HDMI_PHY_Type
+/*!< HDMI_PHY_unused  */
+typedef __PACKED_STRUCT HDMI_PHY_unused_Type
 {
     __IO uint32_t HDMI_PHY_POL;                       /*!< Offset 0x000 tbd */
     __IO uint32_t REXT_CTRL;                          /*!< Offset 0x004 tbd */
@@ -1457,7 +1456,7 @@ typedef __PACKED_STRUCT HDMI_PHY_Type
          uint32_t reserved_0x040 [0x03EE];
     __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
     __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
-} HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
+} HDMI_PHY_unused_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief HDMI_TX
  */
@@ -3598,7 +3597,6 @@ typedef __PACKED_STRUCT VE_Type
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define USBPHYC3 ((USBPHYC_TypeDef *) USBPHYC3_BASE)  /*!< USBPHYC3 HCI Contgroller and PHY Interface Description register set access pointer */
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
-#define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define DISP_IF_TOP ((DISP_IF_TOP_TypeDef *) DISP_IF_TOP_BASE)/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
