@@ -1418,6 +1418,15 @@ void local_delay_ms(int timeMS)
 #endif /* LINUX_SUBSYSTEM */
 }
 
+// задержка до того как включили MMU и cache */
+void local_delay_ms_nocache(int timeMS)
+{
+	int t = timeMS / 25;
+	if (t == 0)
+		t = 1;
+	local_delay_ms(t);
+}
+
 void local_delay_initialize(void)
 {
 	cpufreqMHz = CPU_FREQ / 1000000;

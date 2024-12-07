@@ -1248,11 +1248,11 @@ int axp853_initialize(void)
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control
 
-	axp858_set_sw(1);
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
-
 	local_delay_initialize();
-	local_delay_ms(2);	// TODO: не работает - слишком долго выполняется задержка
+	local_delay_ms_nocache(100);
+	axp858_set_sw(1);
+	local_delay_ms_nocache(100);
 	PRINTF("PMIC: AXP853T/AXP858 done\n");
 
 	return 0;

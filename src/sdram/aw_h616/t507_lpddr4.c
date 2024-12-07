@@ -109,27 +109,27 @@ typedef uintptr_t virtual_addr_t;
 
 uint32_t read32(uintptr_t addr)
 {
-	__DSB();
+	//__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	__DSB();
+	//__DSB();
 }
 
 static void write32ptr(volatile void * addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	__DSB();
+	//__DSB();
 }
 
 static /*static inline*/ void sdelay(int loops)
 {
 //	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
 //		"bne 1b":"=r" (loops):"0"(loops));
-	//local_delay_us(1 * loops);
+	local_delay_us(1 * loops);
 	while (loops --)
 		__NOP();
 
@@ -772,15 +772,20 @@ void mctl_set_timing_params(const struct dram_para *para)
  * Note: dsb() is not available on ARMv5 in Thumb mode
  */
 #ifndef CONFIG_MACH_SUNIV
-int mctl_mem_matches(uint32_t offset)
+static int mctl_mem_matches0(uint32_t offset, uint32_t value)
 {
 	/* Try to write different values to RAM at two addresses */
 	writel(0, CONFIG_SYS_SDRAM_BASE);
-	writel(0xaa55aa55, (unsigned long)CONFIG_SYS_SDRAM_BASE + offset);
+	writel(value, (uintptr_t) CONFIG_SYS_SDRAM_BASE + offset);
 	__DSB();
 	/* Check if the same value is actually observed when reading back */
 	return readl(CONFIG_SYS_SDRAM_BASE) ==
-	       readl((unsigned long)CONFIG_SYS_SDRAM_BASE + offset);
+	       readl((uintptr_t)CONFIG_SYS_SDRAM_BASE + offset);
+}
+
+int mctl_mem_matches(uint32_t offset)
+{
+	return mctl_mem_matches0(offset, 0xaa55aa55) && mctl_mem_matches0(offset, 0xdeadbeef);
 }
 #endif
 // SPDX-License-Identifier: GPL-2.0+
@@ -838,7 +843,7 @@ static void mbus_configure_port(uint8_t port,
 			   | (bwl0 << 16) );
 	const uint32_t cfg1 = ((uint32_t)bwl2 << 16) | (bwl1 & 0xffff);
 
-	PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", (int) port, (unsigned) cfg0, (unsigned) cfg1);
+	//PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", (int) port, (unsigned) cfg0, (unsigned) cfg1);
 	writel_relaxed(cfg0, &mctl_com->master[port].cfg0);
 	writel_relaxed(cfg1, &mctl_com->master[port].cfg1);
 }
@@ -2134,7 +2139,7 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
 
 	for (config->rows = 13; config->rows < 18; config->rows++) {
 		/* 8 banks, 8 bit per byte and 16/32 bit width */
-		if (mctl_mem_matches((1 << (config->rows + config->cols +
+		if (mctl_mem_matches((UINT32_C(1) << (config->rows + config->cols +
 					    4 + config->bus_full_width))))
 			break;
 	}
@@ -2155,6 +2160,7 @@ static uint64_t mctl_calc_size(const struct dram_config *config)
 {
 	uint8_t width = config->bus_full_width ? 4 : 2;
 
+	//PRINTF("mctl_calc_size: cols=%u, rows=%u, bus_full_width=%u, ranks=%u\n", (unsigned) config->cols, (unsigned) config->rows, (unsigned) config->bus_full_width, (unsigned) config->ranks);
 	/* 8 banks */
 	return (UINT64_C(1) << (config->cols + config->rows + 3)) * width * config->ranks;
 }
