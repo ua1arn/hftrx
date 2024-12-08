@@ -3274,12 +3274,14 @@ static const void * seqHistP [MAXSEQHIST];
 static unsigned seqPos;
 static unsigned seqAfterError;
 static unsigned seqValidateSkip;
+static int iMAX, qMAX, deltaMAX;
 
 static int historyStop;
 
 static void historyUserPrint(void * ctx)
 {
 	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
+	PRINTF("iMAX=%d, qMAX=%d, deltaMAX=%d\n", iMAX, qMAX, deltaMAX);
 	unsigned i;
 	for (i = 0; i < MAXSEQHIST; ++ i)
 	{
@@ -3331,6 +3333,7 @@ static void rangeValidate(const int32_t * b)
 		return;
 	} while (0);
 
+	iMAX = i, qMAX = q, deltaMAX = delta;
 	historyPrint();
 }
 
