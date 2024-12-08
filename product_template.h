@@ -31,6 +31,12 @@
 // Сперва выполняем make lib при закомментированном WITHISBOOTLOADER0
 // Далее открыть WITHISBOOTLOADER0 и выполнить make bootloader
 
+// Allwinner
+// Совместное разрешение WITHISBOOTLOADER и WITHISBOOTLOADER_DDR требуется для создания образа,
+// используемого для инициализации DDR памяти при загрузке программ, загружаемых утилитой xfel.
+// При этом смещается начало и размер используемой памяти (смотреть файл (allwnr_t507_boot.ld)
+// Для создания обычного загрузчика требуется только WITHISBOOTLOADER
+
 //#define WITHISBOOTLOADER	1	/* выполняем make bootloader */
 //#define WITHISBOOTLOADER0	(WITHISBOOTLOADER && CPUSTYLE_R7S721)	/* Renesas specific option - FSBL. Открыть эту строку и запустить make bootloader */
 //#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* for xfel: T507, H616, A64, T113-s4 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */

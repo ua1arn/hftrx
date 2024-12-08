@@ -3281,7 +3281,7 @@ static int historyStop;
 static void historyUserPrint(void * ctx)
 {
 	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
-	PRINTF("iMAX=%d, qMAX=%d, deltaMAX=%d\n", iMAX, qMAX, deltaMAX);
+	PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
 	unsigned i;
 	for (i = 0; i < MAXSEQHIST; ++ i)
 	{
@@ -3319,7 +3319,7 @@ static void rangeValidate(const int32_t * b)
 {
 	int32_t i = b [DMABUF32RX0I] << 4;
 	int32_t q = b [DMABUF32RX0Q] << 4;
-	const int32_t delta = INT32_MAX / 20;
+	const int32_t delta = INT32_MAX / 100;
 	do
 	{
 		if (i > delta)
