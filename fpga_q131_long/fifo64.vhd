@@ -94,10 +94,10 @@ BEGIN
 		lpm_width => 64,
 		lpm_widthu => 2,
 		overflow_checking => "OFF",
-		rdsync_delaypipe => 4,
+		rdsync_delaypipe => 5,
 		underflow_checking => "ON",
 		use_eab => "ON",
-		wrsync_delaypipe => 4
+		wrsync_delaypipe => 5
 	)
 	PORT MAP (
 		data => data,
@@ -119,7 +119,7 @@ END SYN;
 -- Retrieval info: PRIVATE: AlmostEmptyThr NUMERIC "-1"
 -- Retrieval info: PRIVATE: AlmostFull NUMERIC "0"
 -- Retrieval info: PRIVATE: AlmostFullThr NUMERIC "-1"
--- Retrieval info: PRIVATE: CLOCKS_ARE_SYNCHRONIZED NUMERIC "0"
+-- Retrieval info: PRIVATE: CLOCKS_ARE_SYNCHRONIZED NUMERIC "1"
 -- Retrieval info: PRIVATE: Clock NUMERIC "4"
 -- Retrieval info: PRIVATE: Depth NUMERIC "4"
 -- Retrieval info: PRIVATE: Empty NUMERIC "1"
@@ -155,10 +155,10 @@ END SYN;
 -- Retrieval info: CONSTANT: LPM_WIDTH NUMERIC "64"
 -- Retrieval info: CONSTANT: LPM_WIDTHU NUMERIC "2"
 -- Retrieval info: CONSTANT: OVERFLOW_CHECKING STRING "OFF"
--- Retrieval info: CONSTANT: RDSYNC_DELAYPIPE NUMERIC "4"
+-- Retrieval info: CONSTANT: RDSYNC_DELAYPIPE NUMERIC "5"
 -- Retrieval info: CONSTANT: UNDERFLOW_CHECKING STRING "ON"
 -- Retrieval info: CONSTANT: USE_EAB STRING "ON"
--- Retrieval info: CONSTANT: WRSYNC_DELAYPIPE NUMERIC "4"
+-- Retrieval info: CONSTANT: WRSYNC_DELAYPIPE NUMERIC "5"
 -- Retrieval info: USED_PORT: data 0 0 64 0 INPUT NODEFVAL "data[63..0]"
 -- Retrieval info: USED_PORT: q 0 0 64 0 OUTPUT NODEFVAL "q[63..0]"
 -- Retrieval info: USED_PORT: rdclk 0 0 0 0 INPUT NODEFVAL "rdclk"
