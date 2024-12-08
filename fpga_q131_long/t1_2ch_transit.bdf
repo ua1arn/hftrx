@@ -9384,18 +9384,18 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
+	(pt -1696 592)
+	(pt -1576 592)
+	(bus)
+)
+(connector
 	(pt -1720 -120)
 	(pt -1792 -120)
 	(bus)
 )
 (connector
-	(pt -1792 -120)
 	(pt -1792 -192)
-	(bus)
-)
-(connector
-	(pt -1696 592)
-	(pt -1576 592)
+	(pt -1792 -120)
 	(bus)
 )
 (junction (pt -1592 -696))
