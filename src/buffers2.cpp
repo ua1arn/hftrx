@@ -3275,7 +3275,9 @@ static unsigned seqPos;
 static unsigned seqAfterError;
 static unsigned seqValidateSkip;
 
-static void printSeqError(void)
+static int historyStop;
+
+static void historyUserPrint(void * ctx)
 {
 	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
 	unsigned i;
@@ -3288,8 +3290,48 @@ static void printSeqError(void)
 			PRINTF("%08X ", (unsigned) seqHist [ix] [col]);
 		PRINTF("\n");
 	}
-	for (;;)
-		;
+}
+
+static dpcobj_t userprintdpc;
+static void historyPrint(void)
+{
+	historyStop = 1;
+	dpcobj_initialize(& userprintdpc, historyUserPrint, NULL);
+	board_dpc_call(& userprintdpc, 0);
+
+}
+// Save data for history
+static void historySave(const int32_t * base)
+{
+	if (historyStop)
+		return;
+	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
+	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
+	unsigned col;
+	for (col = 0; col < DMABUFFSTEP32RX; ++ col)
+		seqHist [seqPos] [col] = base [col];
+	seqHistP [seqPos] = base;
+}
+
+static void rangeValidate(const int32_t * b)
+{
+	int32_t i = b [DMABUF32RX0I] << 4;
+	int32_t q = b [DMABUF32RX0Q] << 4;
+	const int32_t delta = INT32_MAX / 20;
+	do
+	{
+		if (i > delta)
+			break;
+		if (q > delta)
+			break;
+		if (i < - delta)
+			break;
+		if (q < - delta)
+			break;
+		return;
+	} while (0);
+
+	historyPrint();
 }
 
 static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
@@ -3299,13 +3341,6 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 		++ seqValidateSkip;
 		return;
 	}
-	// Save data for history
-	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
-	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
-	unsigned col;
-	for (col = 0; col < DMABUFFSTEP32RX; ++ col)
-		seqHist [seqPos] [col] = base [col];
-	seqHistP [seqPos] = base;
 
 	// Was error, record tail
 	if (seqAfterError)
@@ -3313,22 +3348,13 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 		seqAfterError = seqAfterError - 1;
 		if (seqAfterError == 0)
 		{
-			printSeqError();
+			historyPrint();
 		}
 		return;
 	}
 
-
-//	PRINTF("%d:%08lX ", slot, v);
-//	return;
 	if (seqDone)
 		return;
-//	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFFSTEP32RX) * 10000L))
-//	{
-//		seqDone = 1;
-//		printSeqError();
-//		return;
-//	}
 
 	if (! seqValid [slot])
 	{
@@ -3439,6 +3465,8 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		const IFADCvalue_t * const b = buff + i;
 		//
 #if 0
+	historySave(b);	// Save data for history
+	rangeValidate(b);
 	if (0)
 	{
 		// Проверка качества линии передачи от FPGA
@@ -3446,7 +3474,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
 			validateSeq(slot, b [slot], b);
 	}
-	else if (1)
+	else if (0)
 	{
 		uint_fast8_t slot = 0;	// slot 4
 		validateSeq(slot, b [slot], b);
