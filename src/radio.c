@@ -3897,7 +3897,7 @@ enum
 		static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
 	#elif WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
-			enum { nopttsig = BOARD_CATSIG_SER1_DTR };		// устройство без органов управления и индикации
+			enum { nopttsig = BOARD_CATSIG_NONE /*BOARD_CATSIG_SER1_DTR */};		// устройство без органов управления и индикации
 			enum { nokeysig = BOARD_CATSIG_NONE };		// устройство без органов управления и индикации
 		#else /* LCDMODE_DUMMY || ! WITHKEYBOARD */
 			enum { nopttsig = BOARD_CATSIG_NONE };
