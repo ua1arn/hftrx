@@ -4707,6 +4707,7 @@ static uint_fast16_t actbring_swr;
 // Начать отображение перегруза по SWR
 static void bring_swr(const char * label)
 {
+	PRINTF("bring_swr: %s\n", label);
 	ASSERT(strlen(label) == 3);
 	bring_swr_text = label;
 	actbring_swr = swrbring_time;
@@ -15584,9 +15585,9 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	if (getactualdownpower() == 0)
 	{
-		//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
 		if (gswrprot != 0)
 		{
+			PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
 			if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
 			{
 				if (txreq)
@@ -15597,8 +15598,9 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 			}
 
 		}
-		else
+		else if (0)
 		{
+			PRINTF("2 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
 	#if WITHPOWERTRIM
 			// Сброс мощности в текущем сеансе передачи
 			if ( get_swr_cached(3 * SWRMIN) >= (3 * SWRMIN))	// SWR >= 3.0
