@@ -27,8 +27,6 @@
 #include <ctype.h>
 #include <math.h>
 
-#if WITHISBOOTLOADER
-
 int bootloader_withusb(void)
 {
 #if WITHUSBHW
@@ -37,6 +35,8 @@ int bootloader_withusb(void)
 	return 0;
 #endif
 }
+
+#if WITHISBOOTLOADER
 
 struct stm32_header {
 	uint32_t magic_number;
@@ -511,13 +511,6 @@ void bootloader_mainloop(void)
 	}
 }
 #endif /* WITHISBOOTLOADERFATFS */
-
-#else
-
-int bootloader_withusb(void)
-{
-	return 0;
-}
 
 
 #endif /* WITHISBOOTLOADER */
