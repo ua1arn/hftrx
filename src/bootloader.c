@@ -27,23 +27,15 @@
 #include <ctype.h>
 #include <math.h>
 
-
 #if WITHISBOOTLOADER
 
 int bootloader_withusb(void)
 {
-	static int st;
-	static int en;
-	if (st == 0)
-	{
-		st = 1;
-#if defined BOARD_IS_USERBOOT
-		en = BOARD_IS_USERBOOT();
+#if WITHUSBHW
+	return 1;
 #else
-		en = 0;
+	return 0;
 #endif
-	}
-	return en;
 }
 
 struct stm32_header {
@@ -522,14 +514,10 @@ void bootloader_mainloop(void)
 
 #else
 
-
 int bootloader_withusb(void)
 {
-#if WITHUSBHW
-	return 1;
-#else
 	return 0;
-#endif
 }
+
 
 #endif /* WITHISBOOTLOADER */
