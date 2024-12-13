@@ -1434,30 +1434,6 @@ typedef __PACKED_STRUCT GPU_MMU_Type
     } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
 } GPU_MMU_TypeDef; /* size of structure = 0x500 */
 /*
- * @brief HDMI_PHY_unused
- */
-/*!< HDMI_PHY_unused  */
-typedef __PACKED_STRUCT HDMI_PHY_unused_Type
-{
-    __IO uint32_t HDMI_PHY_POL;                       /*!< Offset 0x000 tbd */
-    __IO uint32_t REXT_CTRL;                          /*!< Offset 0x004 tbd */
-         uint32_t reserved_0x008 [0x0002];
-    __IO uint32_t HDMI_PHY_READ_EN;                   /*!< Offset 0x010 tbd */
-    __IO uint32_t HDMI_PHY_UNSCRAMBLE;                /*!< Offset 0x014 tbd */
-         uint32_t reserved_0x018 [0x0002];
-    __IO uint32_t HDMI_PHY_CFG1;                      /*!< Offset 0x020 tbd */
-    __IO uint32_t HDMI_PHY_CFG2;                      /*!< Offset 0x024 tbd */
-    __IO uint32_t HDMI_PHY_CFG3;                      /*!< Offset 0x028 tbd */
-    __IO uint32_t HDMI_PHY_PLL1;                      /*!< Offset 0x02C tbd */
-    __IO uint32_t HDMI_PHY_PLL2;                      /*!< Offset 0x030 tbd */
-    __IO uint32_t HDMI_PHY_PLL3;                      /*!< Offset 0x034 tbd */
-    __IO uint32_t HDMI_PHY_STS;                       /*!< Offset 0x038 tbd */
-    __IO uint32_t HDMI_PHY_CEC;                       /*!< Offset 0x03C tbd */
-         uint32_t reserved_0x040 [0x03EE];
-    __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
-    __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
-} HDMI_PHY_unused_TypeDef; /* size of structure = 0x1000 */
-/*
  * @brief HDMI_TX
  */
 /*!< HDMI_TX  */
