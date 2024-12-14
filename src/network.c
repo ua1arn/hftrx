@@ -827,11 +827,11 @@ void sys_arch_unprotect(sys_prot_t c)
 {
 	if (c)
 	{
-		__enable_irq();
+		global_enableIRQ();
 	}
 	else
 	{
-		__disable_irq();
+		global_disableIRQ();
 	}
 }
 

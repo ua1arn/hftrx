@@ -172,11 +172,11 @@ void hal_cpu_disable_irqs(void){
 }
 
 void hal_cpu_enable_irqs(void){
-    __enable_irq();
+	global_enableIRQ();
 }
 
 void hal_cpu_enable_irqs_and_sleep(void){
-    __enable_irq();
+	global_enableIRQ();
 #if 0
     // temp disable until effect on RTT is clear
     // go to sleep if event flag isn't set. if set, just clear it. IRQs set event flag

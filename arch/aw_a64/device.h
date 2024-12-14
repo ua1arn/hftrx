@@ -217,7 +217,11 @@ typedef enum IRQn
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
 
-#include <core_ca.h>
+#if __aarch64__
+    #include <core64_ca.h>
+#else
+    #include <core_ca.h>
+#endif
 
 /*
  * @brief AUDIO_CODEC

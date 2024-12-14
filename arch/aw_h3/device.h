@@ -141,7 +141,11 @@ typedef enum IRQn
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO  Base */
 
-#include <core_ca.h>
+#if __aarch64__
+    #include <core64_ca.h>
+#else
+    #include <core_ca.h>
+#endif
 
 /*
  * @brief CCU
