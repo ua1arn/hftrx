@@ -1073,9 +1073,9 @@ void IRQ_Handler_GIC(void)
 //				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
 //			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
 //			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
-			global_enable_irq();						/* modify I bit in CPSR */
+			global_enableIRQ();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
-			global__disable_irq();					/* modify I bit in CPSR */
+			global_disableIRQ();					/* modify I bit in CPSR */
 			//dbg_putchar('_');
 		}
 
