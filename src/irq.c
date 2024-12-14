@@ -1073,9 +1073,9 @@ void IRQ_Handler_GIC(void)
 //				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
 //			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
 //			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
-			__enable_irq();						/* modify I bit in CPSR */
+			global_enable_irq();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
-			__disable_irq();					/* modify I bit in CPSR */
+			global__disable_irq();					/* modify I bit in CPSR */
 			//dbg_putchar('_');
 		}
 
@@ -1726,7 +1726,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_ARM && ! defined(__aarch64__) && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality

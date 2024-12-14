@@ -3320,7 +3320,11 @@ static void sysinit_smp_initialize(void)
 	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
-#elif (__CORTEX_A == 53U)
+#elif (__CORTEX_A == 53U) && __aarch64__
+	// TODO
+	#warning To be done
+
+#elif (__CORTEX_A == 53U) && ! __aarch64__
 	/**
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
@@ -3341,6 +3345,10 @@ static void sysinit_smp_initialize(void)
 	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
+#elif (__CORTEX_A == 53U) && __aarch64__
+	// TODO
+	#warning To be done
+
 #elif (__CORTEX_A == 7U)
 	#if WITHSMPSYSTEM
 		// set the ACTLR.SMP
@@ -4423,7 +4431,7 @@ void Reset_CPUn_Handler(void)
 
 	cortexa_cpuinfo();
 	arm_hardware_populte_second_initialize();
-	__enable_irq();
+	global_enableIRQ();	//  __ASM volatile ("cpsie i" : : : "memory");
 	LCLSPIN_UNLOCK(& cpu1init);
 
 	unsigned core = arm_hardware_cpuid();
