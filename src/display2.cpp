@@ -2697,8 +2697,9 @@ static void display2_thermo5(
 #endif /* WITHTHERMOLEVEL */
 }
 
-// +d.ddA - 5 places (with "A")
-// +dd.dA - 5 places (with "A")
+// Signed value display
+// +d.ddA - 6 places (with "A")
+// +dd.dA - 6 places (with "A")
 static void display2_currlevelA6(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -2716,10 +2717,11 @@ static void display2_currlevelA6(
 		{
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
 		} while (lowhalf --);
+		// last character
 		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
-		// dd.d - 5 places (without "A")
+		// dd.d - 6 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
@@ -2728,6 +2730,7 @@ static void display2_currlevelA6(
 		{
 			display_value_small(x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 		} while (lowhalf --);
+		// last character
 		display_at_P(x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */

@@ -1060,7 +1060,7 @@ display_value_small(
 	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
-	uint_fast8_t z = 1;	// only zeroes
+	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
