@@ -6860,7 +6860,7 @@ static void window_as_process(void)
 {
 	window_t * const win = get_win(WINDOW_AS);
 	static unsigned update = 0;
-	const uint16_t len = 320, lim = 25;
+	enum { len = 320, lim = 25 };
 	static COLORPIP_T d [len];
 
 	if (win->first_call)
