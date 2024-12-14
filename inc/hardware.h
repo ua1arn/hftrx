@@ -1051,6 +1051,7 @@ void xcz_dds_rts(const uint_least64_t * value);// Установка центр�
 uint32_t sys_now(void);
 uint32_t board_millis(void);	// tinyusb
 int sys_dram_init(void);	// 0 - error
+int main(void);
 
 // RTOS test stuff
 int blinky_main(void);
@@ -1095,7 +1096,7 @@ void application_initialize(void);
 	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
-#if (__CORTEX_A == 53U) && 1
+#if (__CORTEX_A == 53U) && ! __aarch64__
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 
