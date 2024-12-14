@@ -1100,15 +1100,14 @@
 	#endif
 	#if 1
 		// LCD
-		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
-		#define TCONLCD_IRQ TCON_LCD0_IRQn
+		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
+		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
+		#define BOARD_TCONLCDFREQ (allwnr_t113_get_tconlcd_freq())
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
+		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
-		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1 */
 	#endif
 
 	#if 0
