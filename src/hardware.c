@@ -1862,7 +1862,7 @@ int_fast32_t icache_rowsize(void)
 
 /** \brief  Set DCCMVAU
 
-  Data cache clean
+  Data Cache Clean by MVA to PoU
  */
 void __set_DCCMVAU(uint32_t value)
 {
