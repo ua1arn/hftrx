@@ -2994,10 +2994,6 @@ sysinit_fpu_initialize(void)
 
 #endif /*  */
 
-#if defined (__CORTEX_M) && CTLSTYLE_V3D
-	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
-#endif /* defined (__CORTEX_M) && CTLSTYLE_V3D */
-
 #if ! WITHISBOOTLOADER_DDR
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
@@ -3011,13 +3007,9 @@ sysinit_fpu_initialize(void)
 static void
 sysinit_sdram_initialize(void)
 {
-#if WITHSDRAMHW
-	/* В процессоре есть внешняя память - если уже в ней то не трогаем */
-	#if WITHISBOOTLOADER || (CTLSTYLE_V1D || CTLSTYLE_V3D)
-		arm_hardware_sdram_initialize();
-
-	#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
-#endif /* WITHSDRAMHW */
+#if WITHSDRAMHW && WITHISBOOTLOADER
+	arm_hardware_sdram_initialize();
+#endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 #if CPUSTYLE_T113 && ! WITHISBOOTLOADER
 	// На 0x00028000:
 	// При 0 видим память DSP

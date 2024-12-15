@@ -47,12 +47,6 @@
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#if CTLSTYLE_V3D
-	#define GUI_SOFTWARE_RENDERING		1 			// Не использовать DMA при отрисовке
-#else
-	#define GUI_SOFTWARE_RENDERING		0
-#endif
-
 #if 1 //! WITHALTERNATIVELAYOUT
 	#define GUI_SHOW_INFOBAR				1
 #endif /* ! WITHALTERNATIVELAYOUT */

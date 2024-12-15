@@ -3493,7 +3493,6 @@ static void agc_reset(
 	st->agcslowcap = m0;
 	LowerIrql(oldIrql);
 
-#if ! CTLSTYLE_V1D		// не Плата STM32F429I-DISCO с процессором STM32F429ZIT6 - на ней приема нет
 	for (;;)
 	{
 		local_delay_ms(1);
@@ -3521,7 +3520,6 @@ static void agc_reset(
 		if (v != m1)
 			break;
 	}
-#endif
 }
 
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS

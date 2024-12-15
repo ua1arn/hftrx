@@ -474,10 +474,10 @@ enum
 	CAT_PT_INDEX,		// ptanswer()
 	CAT_IF_INDEX,		// ifanswer()
 	CAT_FW_INDEX,		// fwanswer()
-#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+#if WITHIF4DSP
 	CAT_ZY_INDEX,		// zyanswer()
 	CAT_ZZ_INDEX,		// zzanswer()
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif
 #if WITHIF4DSP
 	CAT_RG_INDEX,		// rganswer()
 	CAT_AG_INDEX,		// aganswer()
@@ -4624,7 +4624,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
-		#if (ADC1_TYPE == ADC_TYPE_AD9246) || CTLSTYLE_V3D
+		#if (ADC1_TYPE == ADC_TYPE_AD9246)
 			static const uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
 			static const uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
@@ -13590,7 +13590,7 @@ static void fwanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+#if WITHIF4DSP
 static void zyanswer(uint_fast8_t arg)
 {
 	//ZYmSLL
@@ -13639,7 +13639,7 @@ static void zzanswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif
 
 #if WITHIF4DSP
 
@@ -15060,7 +15060,7 @@ processcatmsg(
 		}
 	}
 #endif	/* WITHCATEXT */
-#if WITHIF4DSP//CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 || 1
+#if WITHIF4DSP
 	else if (match2('Z', 'Y'))
 	{
 		if (cathasparam != 0)
@@ -15153,7 +15153,7 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-#endif /* CTLSTYLE_V1D || CTLSTYLE_OLEG4Z_V1 */
+#endif
 	else
 	{
 		// нераспознанная команда - ожидание следующей.

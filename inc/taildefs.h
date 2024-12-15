@@ -480,7 +480,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".sdramdata"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
-	#define RAMLOW	__attribute__((section(".ram")))	// размещение во внутренней мамяти МК
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif (CPUSTYLE_STM32F7XX)

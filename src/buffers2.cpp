@@ -4185,7 +4185,7 @@ void buffers_initialize(void)
 	deliverylist_initialize(& afdemodoutfloat, IRQL_REALTIME);
 
 
-#if WITHSKIPUSERMODE || CTLSTYLE_V3D
+#if WITHSKIPUSERMODE
 
 	// Обход user mode шумоподавителя
 	static subscribefloat_t afsample16register;

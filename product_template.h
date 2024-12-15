@@ -44,7 +44,6 @@
 // Дисплей с фреймбуфером:
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
 #define CTLSTYLE_STORCH_V7	1
-//#define CTLSTYLE_V3D	1	// Плата STM32F746G-DISCO с процессором STM32F746NGH6
 
 // Модемы:
 //#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb UHF modem v2
