@@ -45,8 +45,6 @@
 //#define CTLSTYLE_STORCH_V6	1	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, 8-bit display interface, NAU8822L и FPGA EP4CE22E22I7N
 #define CTLSTYLE_STORCH_V7	1
 
-// Модемы:
-//#define CTLSTYLE_STORCH_V4	1	// Rmainunit_v5im.pcb UHF modem v2
 #endif /* NIGHTBUILD */
 
 #if CPUSTYLE_STM32F && CTLSTYLE_STORCH_V5 && 0	// SD-CARD. 2xUSB, DUAL WATCH, STM32F446ZET6, TLV320AIC23B и FPGA EP4CE22E22I7N
