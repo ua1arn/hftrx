@@ -61,7 +61,7 @@ enum
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		0
 
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_H616
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_H616 || CPUSTYLE_RK356X
 
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
@@ -89,7 +89,7 @@ enum
 
 	/* Фильтрация квадратур осуществляется FPGA */
 
-	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_RK356X
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(1023)
 		#define DUALRXFLT 1
@@ -140,7 +140,7 @@ enum
 #define WITHADAPTERHDMISHIFT 8
 typedef int32_t hdmi48bufv_t;
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_RK356X
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
@@ -211,7 +211,7 @@ typedef int32_t hdmi48bufv_t;
 
 #endif /* CPUSTYLE_XC7Z */
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU || FPGA_ARTIX7
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_RK356X
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if (WITHDSPEXTFIR || WITHDSPEXTDDC) && DIRECT_122M88_X1
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
@@ -272,7 +272,7 @@ typedef int32_t hdmi48bufv_t;
 #elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && (! defined (ARMI2SMCLK) && ! defined (ARMSAIMCLK))
 
 #endif /* CPUSTYLE_XC7Z */
-#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU || FPGA_ARTIX7 */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_RK356X */
 
 #if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
 	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)

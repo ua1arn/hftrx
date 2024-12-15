@@ -1033,6 +1033,33 @@ extern "C" {
 	#define HARDWARE_NCORES 4
 	#define WITHCPUNAME "Zynq XCZU"
 
+#elif CPUSTYLE_RK356X
+	// Rockchip RK356х
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
+	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+
+	#define HARDWARE_NCORES 4
+	#define WITHCPUNAME "RK356x"
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1238,6 +1265,7 @@ extern "C" {
 #define DDS_TYPE_FPGAV1		7	// NCO, DDC/DUC
 #define DDS_TYPE_ATTINY2313	8	// experemental: nco=/7, dds=/9
 #define DDS_TYPE_ZYNQ_PL 	9
+#define DDS_TYPE_FPGAV2		10
 
 #define	ADC_TYPE_AD9246		15
 

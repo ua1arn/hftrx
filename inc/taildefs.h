@@ -178,10 +178,12 @@ typedef struct irqlspinlock_tag
 
 /* Linux targets: No any hardware IRQ control */
 
+#include <src/linux/linux_subsystem.h>
+
 #define IRQLSPINLOCK_t lclspinlock_t
 
 extern pthread_mutex_t linux_md;	/* added by mgs */
-#define IRQLSPINLOCK_INIT { linux_md }
+#define IRQLSPINLOCK_INIT PTHREAD_MUTEX_INITIALIZER
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
@@ -207,12 +209,12 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
 	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
 
-	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
-	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
-
 	void lclspin_lock(lclspinlock_t * __restrict lock, const char * file, int line);
 	void lclspin_unlock(lclspinlock_t * __restrict lock);
 	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
+
+	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
+	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */

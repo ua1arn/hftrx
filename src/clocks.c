@@ -6074,6 +6074,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	#endif
 #elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
 #elif CPUSTYLE_XC7Z && LINUX_SUBSYSTEM
+#elif CPUSTYLE_RK356X && LINUX_SUBSYSTEM
 
 #elif CPUSTYLE_T507
 	#warning Undefined CPUSTYLE_T507

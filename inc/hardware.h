@@ -512,6 +512,16 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
+#elif CPUSTYLE_RK356X
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
 #elif \
 	defined (__TMS320C28X__) || \
 	0
@@ -1007,7 +1017,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 1 //CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #define AX_PWM_AXI_SLV_REG0_OFFSET 0
 #define AX_PWM_AXI_SLV_REG1_OFFSET 4

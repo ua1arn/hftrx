@@ -513,7 +513,7 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * GETENCBIT_A + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_RK356X)
 	return (gpio_readpin(ENCODER2_BITA) != 0) * GETENCBIT_A + (gpio_readpin(ENCODER2_BITB) != 0) * GETENCBIT_B;
 #else /* WITHENCODER2 */
 	return 0;
@@ -1344,6 +1344,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_XC7Z
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XCZU
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_RK356X
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора

@@ -5,14 +5,14 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на кастомной плате SV9 + Alinx AXU2CGA Petalinux, by RA4ASN
+// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 
-#ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED
-#define ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED 1
+#ifndef LINUX_ROCKCHIP_CTLSTYLE_ORANGEPICM4_H_INCLUDED
+#define LINUX_ROCKCHIP_CTLSTYLE_ORANGEPICM4_H_INCLUDED 1
 
-	#if ! defined(XCZU2CG)
-		#error Wrong CPU selected. XCZU2CG expected
-	#endif /* ! defined(XCZU2CG) */
+	#if ! defined(RK3566)
+		#error Wrong CPU selected. RK3566 expected
+	#endif /* ! defined(RK3566) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -59,14 +59,14 @@
 	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#define XVTR_R820T2			1	// ad936x
-	#define	WITHAD936XIIO		1	// External AD936x board
+//	#define XVTR_R820T2			1	// ad936x
+//	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
 
 	// --- вариации прошивки, специфические для разных частот
 
-//	#define CTLREGMODE_NOCTLREG	1
-	#define CTLREGMODE_AXU2CGA_FULL	1
+	#define CTLREGMODE_NOCTLREG	1
+//	#define CTLREGMODE_AXU2CGA_FULL	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -141,13 +141,13 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
+	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
@@ -161,7 +161,7 @@
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
 
-	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
+	//#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
@@ -232,7 +232,7 @@
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
 			#define WITHAFGAINDEFAULT		10
-			#define WITHCPUTEMPERATURE		1
+//			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
@@ -246,12 +246,11 @@
 			#define DMABUFSCALE				1
 			#define WITHIQSHIFT				1
 //			#define DEFAULTDIALFREQ			12289000uL
-			#define WITHCPUFANPWM			1
-			#define WITHCPUTHERMOLEVEL		1
-			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
-			#define WITHWNB					1	// Simple noise blanker
+//			#define WITHCPUFANPWM			1
+//			#define WITHCPUTHERMOLEVEL		1
+//			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
+//			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
-			#define ZYNQ_PL_MODEM			1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -323,14 +322,14 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
-	#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define RTC1_TYPE RTC_TYPE_LINUX
 
@@ -339,7 +338,7 @@
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
+	#define DDS1_TYPE DDS_TYPE_FPGAV2
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC1_TYPE TSC_TYPE_GT911
 	//#define TSC_RESET_BY_REG		1
@@ -479,4 +478,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED */
+#endif /* LINUX_ROCKCHIP_CTLSTYLE_ORANGEPICM4_H_INCLUDED */
