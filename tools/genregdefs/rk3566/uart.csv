@@ -1,26 +1,26 @@
-#type UART
+#type; UART
 
-#base UART0 0xFDD50000
-#base UART1 0xFE650000
-#base UART2 0xFE660000
-#base UART3 0xFE670000
-#base UART4 0xFE680000
-#base UART5 0xFE690000
-#base UART6 0xFE6A0000
-#base UART7 0xFE6B0000
-#base UART8 0xFE6C0000
-#base UART9 0xFE6D0000
+#base; UART0 0xFDD50000
+#base; UART1 0xFE650000
+#base; UART2 0xFE660000
+#base; UART3 0xFE670000
+#base; UART4 0xFE680000
+#base; UART5 0xFE690000
+#base; UART6 0xFE6A0000
+#base; UART7 0xFE6B0000
+#base; UART8 0xFE6C0000
+#base; UART9 0xFE6D0000
 
-#irq UART0 148
-#irq UART1 149
-#irq UART2 150
-#irq UART3 151
-#irq UART4 152
-#irq UART5 153
-#irq UART6 154
-#irq UART7 155
-#irq UART8 156
-#irq UART9 157
+#irq; UART0 148
+#irq; UART1 149
+#irq; UART2 150
+#irq; UART3 151
+#irq; UART4 152
+#irq; UART5 153
+#irq; UART6 154
+#irq; UART7 155
+#irq; UART8 156
+#irq; UART9 157
 
 #regdef; UART_RBR_THR_DLL; 0x0000; UART Receive Buffer Register/Transmit Holding Register
 #regdef; UART_DLH_IER; 0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register
@@ -40,7 +40,7 @@
 #regdef; UART_SRR; 0x0088; W 0x00000000 Software Reset Register
 #regdef; UART_SRTS; 0x008C; W 0x00000000 Shadow Request to Send
 #regdef; UART_SBCR; 0x0090; W 0x00000000 Shadow Break Control Register
-#regdef; UART_SDMAM 0x0094; W 0x00000000 Shadow DMA Mode
+#regdef; UART_SDMAM; 0x0094; W 0x00000000 Shadow DMA Mode
 #regdef; UART_SFE; 0x0098; W 0x00000000 Shadow FIFO enable
 #regdef; UART_SRT; 0x009C; W 0x00000000 Shadow RCVR Trigger
 #regdef; UART_STET; 0x00A0; W 0x00000000 Shadow TX Empty Trigger
