@@ -742,6 +742,10 @@ void user_uart4_onrxchar(uint_fast8_t c);
 			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit */ \
 		} while (0)
 
+	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
+	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	//#define HARDWARE_SPI_FREQ (allwnr_mp157_get_spi1_freq())
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART4HW

@@ -568,8 +568,8 @@
 ////#define TARGET_CS4272_RESET_BIT		(1U << 2)	// PD2
 
 // RSPI0 used
-#define HW_SPIUSED (& RSPI1)
-#define HW_SPIUSED_IX 1		// 0: RSPI0, 1: RSPI1
+#define SPIHARD_PTR (& RSPI1)
+#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
 
 // MOSI & SCK port
 #define SPI_TARGET_SCLK_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)

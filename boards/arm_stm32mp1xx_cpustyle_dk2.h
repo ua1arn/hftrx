@@ -564,6 +564,11 @@
 			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
+	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
+	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	//#define HARDWARE_SPI_FREQ (allwnr_mp157_get_spi1_freq())
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW

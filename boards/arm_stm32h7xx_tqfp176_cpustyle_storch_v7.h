@@ -523,6 +523,11 @@
 			arm_hardware_piod_updown((UINT32_C(1) << 6), (UINT32_C(1) << 6), 0);	/* PD6: pull-up RX data */ \
 		} while (0)
 
+	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
+	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	//#define HARDWARE_SPI_FREQ (allwnr_mp157_get_spi1_freq())
+
 #endif
 
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
