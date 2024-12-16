@@ -1,3 +1,15 @@
+## DSI0 0x06504000
+## DSI_CORE 0x06504000
+## DSI_CONFIG_REG 0x06504400
+## DPSS_TOP0 0x0651 0000
+
+## COMBO_PHY_TX_DSI 0x06504000
+## COMBO_PHY_TX_GPIO_DSI 0x06504400
+
+#type; DSI0;  MIPI DSI System (A133/R818)
+#base; DSI0 0x06504000
+#irq; DSI0 100; DSI0 interrupt
+
 #regdef; DSI_CTL_REG;			0x0000; DSI Control Register
 #regdef; DSI_GINT0_REG;			0x0004; DSI Global Interrupt Register0
 #regdef; DSI_GINT1_REG;			0x0008; DSI Global Interrupt Register1
@@ -50,8 +62,10 @@
 #regdef; DSI_DEBUG2_REG;		0x02F0; DSI Debug Register2
 #regdef; DSI_DEBUG3_REG;		0x02F4;; DSI Debug Register3
 #regdef; DSI_DEBUG4_REG;		0x02F8 DSI Debug Register4
-#regdef; DSI_CMD_TX_REG;		0x0300 64; DSI Command TX Register (N=0,1,2,…,63)
+#regdef; DSI_CMD_TX_REG;		0x0300 64; DSI Command TX Register (N=0,1,2,ï¿½,63)
 #regdef; DSI_FIFO_BIST_REG;		0x0FF8; DSI FIFO Bist Register
+
+## The following addresses need add offset 0x4000.
 
 #regdef; DPHY_CTL_REG;			0x1000; DPHY Control Register
 #regdef; DPHY_TX_CTL_REG;		0x1004; DPHY TX Control Register
@@ -85,3 +99,5 @@
 #regdef; DPHY_PLL_REG1;			0x1108; DPHY PLL Register1
 #regdef; COMBO_PHY_REG0;		0x1110; Combo PHY Register0
 #regdef; COMBO_PHY_REG1;		0x1114; Combo PHY Register1
+
+#typeend;
