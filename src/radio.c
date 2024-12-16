@@ -20634,7 +20634,7 @@ void hamradio_change_nr(void)
 
 void hamradio_load_gui_settings(void * ptrv)
 {
-	uint8_t * ptr = ptrv;
+	uint8_t * ptr = (uint8_t *) ptrv;
 	nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
 	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
 	size_t i;
@@ -20647,7 +20647,7 @@ void hamradio_load_gui_settings(void * ptrv)
 
 void hamradio_save_gui_settings(const void * ptrv)
 {
-	const uint8_t * ptr = ptrv;
+	const uint8_t * ptr = (uint8_t *) ptrv;
 	nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
 	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
 	size_t i;

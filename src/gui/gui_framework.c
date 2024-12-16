@@ -50,7 +50,7 @@ const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, N
 const text_field_t tf_default = { 0, 0, CANCELLED, 0, NON_VISIBLE, UP, NULL, "", };
 const touch_area_t ta_default = { 0, 0, 0, 0, 0, "", 0, 0, 0, 0, 0, };
 
-static uint_fast8_t parse_element_name(const char * name)
+static element_type_t parse_element_name(const char * name)
 {
 	if (! strncmp(name, "btn_", 4))
 		return TYPE_BUTTON;
@@ -68,7 +68,7 @@ static uint_fast8_t parse_element_name(const char * name)
 	{
 		PRINTF("unrecognized element type: %s\n", name);
 		ASSERT(0);
-		return 0;
+		return TYPE_DUMMY;
 	}
 }
 
@@ -97,7 +97,7 @@ void add_element(const char * element_name, ...)
 
 		lh->parent = window_id;
 		lh->is_trackable = va_arg(arg, uint32_t);
-		lh->font_size = va_arg(arg, int);
+		lh->font_size = (font_size_t) va_arg(arg, int);
 		lh->color = va_arg(arg, COLORPIP_T);
 
 		strncpy(lh->name, element_name, NAME_ARRAY_SIZE - 1);
@@ -146,7 +146,7 @@ void add_element(const char * element_name, ...)
 		tf->parent = window_id;
 		tf->w_sim = va_arg(arg, uint32_t);
 		tf->h_str = va_arg(arg, uint32_t);
-		tf->direction = va_arg(arg, uint32_t);
+		tf->direction = (tf_direction_t) va_arg(arg, uint32_t);
 		tf->font = va_arg(arg, UB_Font *);
 		strncpy(tf->name, element_name, NAME_ARRAY_SIZE - 1);
 
