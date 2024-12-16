@@ -37,6 +37,7 @@ void * ft8_processing_thread(void * args)
 		printf("%02d:%02d:%02d\n", ts.hour, ts.minute, ts.second);
 		uint8_t prev_idx = (buf_num + 1) % 2;
 		ft8_decode_buf(rx_buf[prev_idx], ts);
+		memset(rx_buf[prev_idx], 0, sizeof(rx_buf[prev_idx]));
 		hamradio_gui_parse_ft8buf();
 	}
 
@@ -46,7 +47,7 @@ void * ft8_processing_thread(void * args)
 void * ft8_sync_thread(void * args)
 {
 	struct timeval lTime;
-	gettimeofday(&lTime, NULL);
+	gettimeofday(& lTime, NULL);
 	uint32_t sec   = lTime.tv_sec % 15;
 	uint32_t usec  = sec * 1000000 + lTime.tv_usec;
 	uint32_t uwait = 15000000 - usec;
@@ -54,7 +55,7 @@ void * ft8_sync_thread(void * args)
 
 	while(1)
 	{
-		gettimeofday(&lTime, NULL);
+		gettimeofday(& lTime, NULL);
 		sec   = lTime.tv_sec % 15;
 		usec  = sec * 1000000 + lTime.tv_usec;
 		uwait = 15000000 - usec;
@@ -64,6 +65,7 @@ void * ft8_sync_thread(void * args)
 		idx = 0;
 		pthread_mutex_unlock(& mutex_ft8);
 		safe_cond_signal(& ct_ft8);
+		printf("FT8: start fill buffer %d\n", buf_num);
 	}
 
 	return NULL;
@@ -84,7 +86,9 @@ void ft8_txfill(float * sample)
 			ft8_tx = 0;
 			tx_ind = 0;
 			pthread_mutex_unlock(& mutex_ft8);
-			hamradio_moxmode(1);
+
+			if (hamradio_get_tx())
+				hamradio_moxmode(1);
 		}
 	}
 }
@@ -111,7 +115,6 @@ void ft8_set_state(uint8_t v)
 	if (v)
 	{
 		subscribefloat(& speexoutfloat, & ft8_outregister, NULL, ft8_fill);
-		linux_init_cond(& ct_ft8);
 		linux_create_thread(& ft8_sync_t, ft8_sync_thread, 50, 1);
 		linux_create_thread(& ft8_proc_t, ft8_processing_thread, 5, 0);
 
@@ -127,7 +130,6 @@ void ft8_set_state(uint8_t v)
 
 		linux_cancel_thread(ft8_proc_t);
 		linux_cancel_thread(ft8_sync_t);
-		linux_destroy_cond(& ct_ft8);
 		unsubscribefloat(& speexoutfloat, & ft8_outregister);
 	}
 }
@@ -145,7 +147,9 @@ void ft8_do_encode(void)
 
 	memset(ft8.tx_buf, 0, sizeof(float) * ft8_sample_rate * ft8_length);
 	ft8_encode_buf(ft8.tx_buf, ft8.tx_text, ft8.tx_freq);
-	hamradio_moxmode(1);
+
+	if (! hamradio_get_tx())
+		hamradio_moxmode(1);
 
 	pthread_mutex_lock(& mutex_ft8);
 	ft8_tx = 1;
@@ -155,6 +159,7 @@ void ft8_do_encode(void)
 void ft8_initialize(void)
 {
 	pthread_mutex_init(& mutex_ft8, NULL);
+	linux_init_cond(& ct_ft8);
 }
 
 #endif /* LINUX_SUBSYSTEM && WITHFT8 */

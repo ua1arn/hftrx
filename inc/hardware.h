@@ -1038,7 +1038,6 @@ void xc7z_writepin(uint8_t pin, uint8_t val);
 void xc7z_gpio_input(uint8_t pin);
 void xc7z_gpio_output(uint8_t pin);
 
-void xcz_rxtx_state(uint8_t tx);
 void xcz_ah_preinit(void);
 
 void xcz_audio_rx_init(void);
@@ -1057,6 +1056,8 @@ void xcz_dds_ftw_sub(const uint_least64_t * value);// Установка цен�
 void xcz_dds_rts(const uint_least64_t * value);// Установка центральной частоты панорамного индикатора
 
 #endif /* CPUSTYLE_XC7Z */
+
+void linux_rxtx_state(uint8_t tx);
 
 uint32_t sys_now(void);
 uint32_t board_millis(void);	// tinyusb

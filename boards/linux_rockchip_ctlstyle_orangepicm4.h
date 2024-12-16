@@ -104,8 +104,8 @@
 #else /* WITHISBOOTLOADER */
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 #endif /* WITHISBOOTLOADER */
 
@@ -244,7 +244,7 @@
 			#define WITHLFMTOFFSET			15
 			#define DMABUFCLUSTER			32
 			#define DMABUFSCALE				1
-			#define WITHIQSHIFT				1
+//			#define WITHIQSHIFT				1
 //			#define DEFAULTDIALFREQ			12289000uL
 //			#define WITHCPUFANPWM			1
 //			#define WITHCPUTHERMOLEVEL		1
@@ -344,6 +344,7 @@
 	//#define TSC_RESET_BY_REG		1
 	//#define TSC1_TYPE TSC_TYPE_ILI2102
 	#define TSC1_TYPE TSC_TYPE_EVDEV
+	#define TSC_EVDEV_REQUIRED_NORMALIZE	1
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 

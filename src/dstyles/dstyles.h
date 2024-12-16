@@ -17,7 +17,7 @@
     #include "g_x480_y272_spectrum_notouch.h"
 #elif DSTYLE_G_X480_Y272
     #include "g_x480_y272.h"
-#elif DSTYLE_G_X800_Y480 && LINUX_SUBSYSTEM
+#elif LINUX_SUBSYSTEM
     #include <src/dstyles/g_x800_y480_linux.h>
 #elif DSTYLE_G_X800_Y480 && WITHTOUCHGUI && WITHALTERNATIVELAYOUT
     #include "g_x800_y480_touch_alternative.h"

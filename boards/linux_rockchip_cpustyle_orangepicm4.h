@@ -16,8 +16,8 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-//#define WITHSPIDEV		1	/* Linux SPI userspace API */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPIDEV		1	/* Linux SPI userspace API */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -88,6 +88,7 @@ enum {
 #define LINUX_TTY_FILE		"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/uio2"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
+#define LINUX_EVDEV_FILE	"/dev/input/event2"
 
 #if WITHISBOOTLOADER
 
@@ -670,20 +671,20 @@ enum {
 
 #elif WITHSPIDEV
 
-	#define SPIDEV_PATH	"/dev/spidev1"
+	#define SPIDEV_PATH	"/dev/spidev3"
 
 	// CS lines
 	enum {
 		cs0,
-		cs1,
-		cs2,
+//		cs1,
+//		cs2,
 
 		cs_cnt
 	};
 
 #define targetctl1	cs0
-#define targetnvram	cs1
-#define targetadc2	cs2
+//#define targetnvram	cs1
+//#define targetadc2	cs2
 
 #endif /* WITHSPIHW || WITHSPISW */
 

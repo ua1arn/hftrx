@@ -875,7 +875,7 @@ prog_gpioreg(void)
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 #if LINUX_SUBSYSTEM
-	xcz_rxtx_state(glob_tx);
+	linux_rxtx_state(glob_tx);
 #endif /* LINUX_SUBSYSTEM */
 }
 

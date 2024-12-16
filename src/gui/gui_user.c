@@ -753,8 +753,8 @@ static void gui_main_process(void)
 		touch_area_t * ta_freq = (touch_area_t *) find_gui_element(TYPE_TOUCH_AREA, win, "ta_freq");
 		ta_freq->x1 = 0;
 		ta_freq->y1 = infobar_2nd_str_y + SMALLCHARH2 + 5;
-		ta_freq->w = DIM_X;
-		ta_freq->h = DIM_Y - FOOTER_HEIGHT - ta_freq->y1;
+		ta_freq->w = WITHGUIMAXX;
+		ta_freq->h = WITHGUIMAXY - FOOTER_HEIGHT - ta_freq->y1;
 		ta_freq->index = 255;
 		ta_freq->visible = VISIBLE;
 
