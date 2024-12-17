@@ -15587,7 +15587,7 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 	{
 		if (gswrprot != 0)
 		{
-			PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
+			//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
 			if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
 			{
 				if (txreq)
@@ -15600,7 +15600,7 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 		}
 		else if (0)
 		{
-			PRINTF("2 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
+			//PRINTF("2 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
 	#if WITHPOWERTRIM
 			// Сброс мощности в текущем сеансе передачи
 			if ( get_swr_cached(3 * SWRMIN) >= (3 * SWRMIN))	// SWR >= 3.0
