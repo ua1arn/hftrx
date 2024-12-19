@@ -5728,8 +5728,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	unsigned TCONTV_DIV = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock / 2);	// TCONTV divider
 	unsigned HDMI_DIV = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), dotclock);		// HDMI divider
-	PRINTF("MX2=%u\n", TCONTV_DIV);
-	PRINTF("MX1=%u\n", HDMI_DIV);
+//	PRINTF("MX2=%u\n", TCONTV_DIV);
+//	PRINTF("MX1=%u\n", HDMI_DIV);
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11); // Enable HDMI
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 10); // De-assert reset of HDMI0/1 - требуюия оба
@@ -5764,8 +5764,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 
 	//	7 allwnr_a64_get_hdmi_freq()=148500 kHz
 	//	7 BOARD_TCONTVFREQ()=74250 kHz
-	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
-	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
+//	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
+//	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -5909,8 +5909,8 @@ static void hardware_de_initialize(const videomode_t * vdmode, int rtmixid)
     CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 12);	// DE_RST
     CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
 
-	PRINTF("2 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
-//	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_mbus_freq() / 1000);
+	//PRINTF("2 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
+    //PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_mbus_freq() / 1000);
     local_delay_us(10);
  	/* Global DE settings */
 

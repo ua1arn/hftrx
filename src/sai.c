@@ -6088,7 +6088,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 #if CPUSTYLE_A64
 	#warning CPUSTYLE_A64 to be implemented
 
-	PRINTF("PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
+	// 0x90032A14
+	//PRINTF("PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
 
 	ASSERT(DMABUFFSTEP16TX == 2);
 
@@ -6102,9 +6103,12 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->MOD_CLK_ENA = 0xFFFF;
 	AUDIO_CODEC->MOD_RST_CTL = 0xFFFF;
 
-	PRINTF("SYSCLK_CTL=%08X\n", (unsigned) AUDIO_CODEC->SYSCLK_CTL);
-	PRINTF("MOD_CLK_ENA=%08X\n", (unsigned) AUDIO_CODEC->MOD_CLK_ENA);
-	PRINTF("MOD_RST_CTL=%08X\n", (unsigned) AUDIO_CODEC->MOD_RST_CTL);
+	//	SYSCLK_CTL=00000888
+	//	MOD_CLK_ENA=0000FFFF
+	//	MOD_RST_CTL=0000FFFF
+//	PRINTF("SYSCLK_CTL=%08X\n", (unsigned) AUDIO_CODEC->SYSCLK_CTL);
+//	PRINTF("MOD_CLK_ENA=%08X\n", (unsigned) AUDIO_CODEC->MOD_CLK_ENA);
+//	PRINTF("MOD_RST_CTL=%08X\n", (unsigned) AUDIO_CODEC->MOD_RST_CTL);
 
 	//AUDIO_CODEC->DA_FCTL |= (UINT32_C(1) << 31);	// HUB_EN Audio Hub Enable
 	AUDIO_CODEC->DA_CTL |= (UINT32_C(1) << 2);	// TXEN

@@ -957,9 +957,9 @@ void ohciehci_clk_init(void)
 
 #elif CPUSTYLE_A64
 
-	PRINTF("allwnr_a64_get_pll_hsic_freq()=%" PRIuFAST32 "\n", allwnr_a64_get_pll_hsic_freq());
-	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 "\n", allwnr_a64_get_mbus_freq());
-	PRINTF("allwnr_a64_get_pll_ddr0_freq()=%" PRIuFAST64 "\n", allwnr_a64_get_pll_ddr0_freq());
+//	PRINTF("allwnr_a64_get_pll_hsic_freq()=%" PRIuFAST32 "\n", allwnr_a64_get_pll_hsic_freq());
+//	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 "\n", allwnr_a64_get_mbus_freq());
+//	PRINTF("allwnr_a64_get_pll_ddr0_freq()=%" PRIuFAST64 "\n", allwnr_a64_get_pll_ddr0_freq());
 
 	// xfel boot
 	//	USBPHY_CFG_REG: 00000101
