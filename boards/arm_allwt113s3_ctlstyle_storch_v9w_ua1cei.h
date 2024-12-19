@@ -313,7 +313,7 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
-	#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	//#define COLORSTYLE_GREEN	1
 	#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_RED	1
