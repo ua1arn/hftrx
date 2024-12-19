@@ -219,6 +219,10 @@
 	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
+#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7
+	#include "boards/linux_rockchip_ctlstyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/linux_rockchip_cpustyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 #elif CPUSTYLE_VM14 && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_vm14_ctlstyle_v0.h"	// 1892ВМ14Я ELVEES multicore.ru
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
