@@ -2,14 +2,14 @@
  
 #type; GIC
 
-#base; GIC  0x39000000
+#base; GIC  0xF8F00000
 
 #typeend;
  
 #type; GICV
 
-#base; GICVSELF 0x39004000; Virtual interface control block, for the processor that is performing the access
-#base; GICV  0x39005000; Virtual interface control block, for the processor selected by address bits [11:9]
+#base; GICVSELF 0xF8F04000; Virtual interface control block, for the processor that is performing the access
+#base; GICV  0xF8F05000; Virtual interface control block, for the processor selected by address bits [11:9]
 
 #regdef; GICH_HCR; 0x000; RW 0x00000000 Hypervisor Control Register
 #regdef; GICH_VTR; 0x004; RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13
@@ -28,12 +28,12 @@
 #typeend;
 
 #type; GIC_DISTRIBUTOR
-#base; GIC_DISTRIBUTOR  0x39001000
+#base; GIC_DISTRIBUTOR  0xF8F01000
 
 #typeend;
 
 #type; GIC_INTERFACE; GIC CPU IF
-#base; GIC_INTERFACE 0x39000100
+#base; GIC_INTERFACE 0xF8F00100
 
 #irq; SGI0 0
 #irq; SGI1 1
