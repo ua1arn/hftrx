@@ -4160,7 +4160,6 @@ enum
 			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#else /* WITHPACLASSA */
 		#endif /* WITHPACLASSA */
-			static uint_fast8_t normalpower_value;
 			static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
@@ -4179,10 +4178,8 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 		#endif /* WITHLOWPOWEREXTTUNE */
-		static uint_fast8_t normalpower_value;
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 	#else
-		static uint_fast8_t normalpower_value;
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
@@ -9019,7 +9016,7 @@ makebandf2adjust(
 static uint_fast8_t
 getactualtxpwr(void)
 {
-	return getactualdownpower() ? gtunepower : normalpower_value;
+	return getactualdownpower() ? gtunepower : gnormalpower.value;
 }
 
 /* Возвращает 0..WITHPOWERTRIMMAX */
@@ -12616,11 +12613,7 @@ static uint_fast8_t processpots(void)
 #if WITHPOTPOWER
 	{
 		static adcvalholder_t powerstate;
-		if (FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX))	// регулировка мощности
-		{
-			normalpower_value = gnormalpower.value;
-			changed |= 1;
-		}
+		changed |= FLAGNE_U8_CAT(& gnormalpower, board_getpot_filtered_u8(POTPOWER, WITHPOWERTRIMMIN, WITHPOWERTRIMMAX, & powerstate), CAT_PC_INDEX);	// регулировка мощности
 	}
 #endif /* WITHPOTPOWER */
 #if WITHPOTWPM
@@ -12986,12 +12979,6 @@ directctlupdate(
 	/* произошло изменение режима прием/передача */
 	if (changedtx != 0)
 	{
-		if (gtx)
-		{
-#if WITHPOWERTRIM && WITHTX
-			normalpower_value = gnormalpower.value;
-#endif /* WITHPOWERTRIM && WITHTX */
-		}
 		updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
 		display2_needupdate();	// Обновление дисплея - всё, включая частоту
@@ -14751,7 +14738,6 @@ processcatmsg(
 			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
 			if (flagne_u16(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
 			{
-				normalpower_value = gnormalpower.value;
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
@@ -15597,21 +15583,6 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 				return 1;
 			}
 
-		}
-		else if (0)
-		{
-			//PRINTF("2 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr_cached(4 * SWRMIN));
-	#if WITHPOWERTRIM
-			// Сброс мощности в текущем сеансе передачи
-			if ( get_swr_cached(3 * SWRMIN) >= (3 * SWRMIN))	// SWR >= 3.0
-			{
-				if (txreq)
-				{
-			        normalpower_value = (WITHPOWERTRIMMAX * 60) / WITHPOWERTRIMMAX;
-					bring_swr("SWR");
-				}
-			}
-	#endif /* WITHPOWERTRIM */
 		}
 	}
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
@@ -19399,7 +19370,6 @@ void hamradio_set_tx_power(uint_fast8_t v)
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
 	gnormalpower.value = v;
-	normalpower_value = v;
 	save_i8(OFFSETOF(struct nvmap, gnormalpower), gnormalpower.value);
 	updateboard(1, 0);
 }
