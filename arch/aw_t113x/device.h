@@ -182,8 +182,11 @@ typedef enum IRQn
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM Base */
 #define HSTIMER_BASE ((uintptr_t) 0x03008000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Debug control interface? Base */
+#define GIC_BASE ((uintptr_t) 0x03020000)             /*!< GIC  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GICVSELF_BASE ((uintptr_t) 0x03024000)        /*!< GICV  Base */
+#define GICV_BASE ((uintptr_t) 0x03025000)            /*!< GICV  Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Crypto Engine (CE) Base */
 #define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM  Base */
@@ -1694,6 +1697,30 @@ typedef __PACKED_STRUCT G2D_WB_Type
     __IO uint32_t WB_LADD2;                           /*!< Offset 0x024 WB_LADD2 */
     __IO uint32_t WB_HADD2;                           /*!< Offset 0x028 WB_HADD2 */
 } G2D_WB_TypeDef; /* size of structure = 0x02C */
+/*
+ * @brief GICV
+ */
+/*!< GICV  */
+typedef __PACKED_STRUCT GICV_Type
+{
+    __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
+    __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
+    __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
+         uint32_t reserved_0x00C;
+    __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
+         uint32_t reserved_0x014 [0x0003];
+    __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
+         uint32_t reserved_0x024 [0x0003];
+    __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
+         uint32_t reserved_0x034 [0x002F];
+    __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
+         uint32_t reserved_0x0F4 [0x0003];
+    __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
+    __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
+    __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
+    __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
+         uint32_t reserved_0x110 [0x003C];
+} GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief GPADC
  */
@@ -4027,6 +4054,8 @@ typedef __PACKED_STRUCT VE_Type
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM register set access pointer */
 #define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
+#define GICVSELF ((GICV_TypeDef *) GICVSELF_BASE)     /*!< GICVSELF  register set access pointer */
+#define GICV ((GICV_TypeDef *) GICV_BASE)             /*!< GICV  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Crypto Engine (CE) register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Crypto Engine (CE) register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */

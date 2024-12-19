@@ -183,8 +183,11 @@ typedef enum IRQn
 #define DRAMPHY0_BASE ((uintptr_t) 0x01C65000)        /*!< DRAMPHY0  Base */
 #define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Serial Peripheral Interface Base */
+#define GIC_BASE ((uintptr_t) 0x01C80000)             /*!< GIC  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GICVSELF_BASE ((uintptr_t) 0x01C84000)        /*!< GICV  Base */
+#define GICV_BASE ((uintptr_t) 0x01C85000)            /*!< GICV  Base */
 #define MIPI_DSI_BASE ((uintptr_t) 0x01CA0000)        /*!< MIPI_DSI  Base */
 #define MIPI_DSI_PHY_BASE ((uintptr_t) 0x01CA1000)    /*!< MIPI_DSI_PHY  Base */
 #define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI De-interlaced Base */
@@ -1126,6 +1129,30 @@ typedef __PACKED_STRUCT EMAC_Type
          uint32_t reserved_0x0CC;
     __IO uint32_t EMAC_RGMII_STA;                     /*!< Offset 0x0D0 EMAC RGMII Status Register */
 } EMAC_TypeDef; /* size of structure = 0x0D4 */
+/*
+ * @brief GICV
+ */
+/*!< GICV  */
+typedef __PACKED_STRUCT GICV_Type
+{
+    __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
+    __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
+    __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
+         uint32_t reserved_0x00C;
+    __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
+         uint32_t reserved_0x014 [0x0003];
+    __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
+         uint32_t reserved_0x024 [0x0003];
+    __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
+         uint32_t reserved_0x034 [0x002F];
+    __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
+         uint32_t reserved_0x0F4 [0x0003];
+    __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
+    __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
+    __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
+    __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
+         uint32_t reserved_0x110 [0x003C];
+} GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief GPADC
  */
@@ -3248,6 +3275,8 @@ typedef __PACKED_STRUCT VE_Type
 #define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU Mali-400MP2 register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define GICVSELF ((GICV_TypeDef *) GICVSELF_BASE)     /*!< GICVSELF  register set access pointer */
+#define GICV ((GICV_TypeDef *) GICV_BASE)             /*!< GICV  register set access pointer */
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */

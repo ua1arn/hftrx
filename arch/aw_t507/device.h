@@ -222,8 +222,11 @@ typedef enum IRQn
 #define GPIOINTG_BASE ((uintptr_t) 0x0300B2C0)        /*!< GPIOINT  Base */
 #define GPIOINTH_BASE ((uintptr_t) 0x0300B2E0)        /*!< GPIOINT  Base */
 #define GPIOINTI_BASE ((uintptr_t) 0x0300B300)        /*!< GPIOINT  Base */
+#define GIC_BASE ((uintptr_t) 0x03020000)             /*!< GIC  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GICVSELF_BASE ((uintptr_t) 0x03024000)        /*!< GICV  Base */
+#define GICV_BASE ((uintptr_t) 0x03025000)            /*!< GICV  Base */
 #define IOMMU_BASE ((uintptr_t) 0x030F0000)           /*!< IOMMU IOMMU (I/O Memory management unit) Base */
 #define NAND0_BASE ((uintptr_t) 0x04011000)           /*!< NDFC Nand Flash Controller Base */
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
@@ -1192,6 +1195,30 @@ typedef __PACKED_STRUCT G2D_TOP_Type
     __IO uint32_t G2D_SCLK_DIV;                       /*!< Offset 0x00C  */
     __I  uint32_t G2D_VERSION;                        /*!< Offset 0x010  */
 } G2D_TOP_TypeDef; /* size of structure = 0x014 */
+/*
+ * @brief GICV
+ */
+/*!< GICV  */
+typedef __PACKED_STRUCT GICV_Type
+{
+    __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
+    __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
+    __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
+         uint32_t reserved_0x00C;
+    __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
+         uint32_t reserved_0x014 [0x0003];
+    __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
+         uint32_t reserved_0x024 [0x0003];
+    __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
+         uint32_t reserved_0x034 [0x002F];
+    __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
+         uint32_t reserved_0x0F4 [0x0003];
+    __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
+    __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
+    __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
+    __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
+         uint32_t reserved_0x110 [0x003C];
+} GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief GPADC
  */
@@ -3525,6 +3552,8 @@ typedef __PACKED_STRUCT VE_Type
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define GPIOINTI ((GPIOINT_TypeDef *) GPIOINTI_BASE)  /*!< GPIOINTI  register set access pointer */
+#define GICVSELF ((GICV_TypeDef *) GICVSELF_BASE)     /*!< GICVSELF  register set access pointer */
+#define GICV ((GICV_TypeDef *) GICV_BASE)             /*!< GICV  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU IOMMU (I/O Memory management unit) register set access pointer */
 #define NAND0 ((NDFC_TypeDef *) NAND0_BASE)           /*!< NAND0 Nand Flash Controller register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */

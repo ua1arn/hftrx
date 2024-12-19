@@ -130,8 +130,11 @@ typedef enum IRQn
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
 #define UART3_BASE ((uintptr_t) 0x01C28C00)           /*!< UART  Base */
 #define UART4_BASE ((uintptr_t) 0x01C29000)           /*!< UART  Base */
+#define GIC_BASE ((uintptr_t) 0x01C80000)             /*!< GIC  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GICVSELF_BASE ((uintptr_t) 0x01C84000)        /*!< GICV  Base */
+#define GICV_BASE ((uintptr_t) 0x01C85000)            /*!< GICV  Base */
 #define HDMI_TX0_BASE ((uintptr_t) 0x01EE0000)        /*!< HDMI_TX  Base */
 #define HDMI_PHY_BASE ((uintptr_t) 0x01EF0000)        /*!< HDMI_PHY  Base */
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC  Base */
@@ -548,6 +551,30 @@ typedef __PACKED_STRUCT DE_WB_Type
          uint32_t reserved_0x240 [0x0010];
     __IO uint32_t WB_CH1_HCOEF_REGN [0x010];          /*!< Offset 0x280 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15) */
 } DE_WB_TypeDef; /* size of structure = 0x2C0 */
+/*
+ * @brief GICV
+ */
+/*!< GICV  */
+typedef __PACKED_STRUCT GICV_Type
+{
+    __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
+    __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
+    __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
+         uint32_t reserved_0x00C;
+    __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
+         uint32_t reserved_0x014 [0x0003];
+    __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
+         uint32_t reserved_0x024 [0x0003];
+    __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
+         uint32_t reserved_0x034 [0x002F];
+    __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
+         uint32_t reserved_0x0F4 [0x0003];
+    __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
+    __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
+    __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
+    __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
+         uint32_t reserved_0x110 [0x003C];
+} GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief GPIO
  */
@@ -1493,6 +1520,8 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
 #define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
+#define GICVSELF ((GICV_TypeDef *) GICVSELF_BASE)     /*!< GICVSELF  register set access pointer */
+#define GICV ((GICV_TypeDef *) GICV_BASE)             /*!< GICV  register set access pointer */
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */

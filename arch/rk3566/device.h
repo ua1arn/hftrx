@@ -50,8 +50,11 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define GIC_BASE ((uintptr_t) 0xFD400000)             /*!< GIC  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0xFD401000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0xFD402000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GICVSELF_BASE ((uintptr_t) 0xFD404000)        /*!< GICV  Base */
+#define GICV_BASE ((uintptr_t) 0xFD405000)            /*!< GICV  Base */
 #define UART0_BASE ((uintptr_t) 0xFDD50000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0xFE650000)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0xFE660000)           /*!< UART  Base */
@@ -69,6 +72,30 @@ typedef enum IRQn
     #include <core_ca.h>
 #endif
 
+/*
+ * @brief GICV
+ */
+/*!< GICV  */
+typedef __PACKED_STRUCT GICV_Type
+{
+    __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
+    __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
+    __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
+         uint32_t reserved_0x00C;
+    __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
+         uint32_t reserved_0x014 [0x0003];
+    __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
+         uint32_t reserved_0x024 [0x0003];
+    __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
+         uint32_t reserved_0x034 [0x002F];
+    __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
+         uint32_t reserved_0x0F4 [0x0003];
+    __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
+    __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
+    __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
+    __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
+         uint32_t reserved_0x110 [0x003C];
+} GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief UART
  */
@@ -114,6 +141,8 @@ typedef __PACKED_STRUCT UART_Type
 
 /* Access pointers */
 
+#define GICVSELF ((GICV_TypeDef *) GICVSELF_BASE)     /*!< GICVSELF  register set access pointer */
+#define GICV ((GICV_TypeDef *) GICV_BASE)             /*!< GICV  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */

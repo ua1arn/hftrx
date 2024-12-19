@@ -8612,6 +8612,116 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>GICVSELF</name>
+  <description></description>
+  <baseAddress>0x03024000</baseAddress>
+  <registers>
+   <register>
+    <name>GICH_HCR</name>
+    <displayName>GICH_HCR</displayName>
+    <description>RW 0x00000000 Hypervisor Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_VTR</name>
+    <displayName>GICH_VTR</displayName>
+    <description>RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_VMCR</name>
+    <displayName>GICH_VMCR</displayName>
+    <description>RW 0x004C0000 Virtual Machine Control Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_MISR</name>
+    <displayName>GICH_MISR</displayName>
+    <description>RO 0x00000000 Maintenance Interrupt Status Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_EISR0</name>
+    <displayName>GICH_EISR0</displayName>
+    <description>RO 0x00000000 End of Interrupt Status Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_ELSR0</name>
+    <displayName>GICH_ELSR0</displayName>
+    <description>RO 0x0000000F Empty List register Status Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_APR0</name>
+    <displayName>GICH_APR0</displayName>
+    <description>RW 0x00000000 Active Priority Register</description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_LR0</name>
+    <displayName>GICH_LR0</displayName>
+    <description>RW 0x00000000 List Register 0</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_LR1</name>
+    <displayName>GICH_LR1</displayName>
+    <description>RW 0x00000000 List Register 1</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_LR2</name>
+    <displayName>GICH_LR2</displayName>
+    <description>RW 0x00000000 List Register 2</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GICH_LR3</name>
+    <displayName>GICH_LR3</displayName>
+    <description>RW 0x00000000 List Register 3</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="GICVSELF">
+  <name>GICV</name>
+  <baseAddress>0x03025000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>GPADC</name>
   <description></description>
   <baseAddress>0x02009000</baseAddress>
