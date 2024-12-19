@@ -10677,6 +10677,17 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	{
+		unsigned core;
+		for (core = 0; core < HARDWARE_NCORES; ++ core)
+		{
+			const uintptr_t base = (uintptr_t) (GICV + core);
+			PRINTF("GICV%u:\n", core);
+			printhex32(base, (void *) base, 512);
+		}
+	}
+#endif
 #if 0 && WITHDEBUG
 	{
 		dcdcsynctest();
