@@ -251,7 +251,6 @@
 			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
 			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
-			#define ZYNQ_PL_MODEM			1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

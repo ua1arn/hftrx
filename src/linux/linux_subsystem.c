@@ -37,10 +37,12 @@
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
-void xcz_resetn_modem(uint8_t val);
 void ft8_thread(void);
 void lvgl_init(void);
 void lvgl_test(void);
+
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
+static struct cond_thread ct_iq;
 
 enum {
 	rx_fir_shift_pos 	= 0,
@@ -53,6 +55,15 @@ enum {
 	iq_test_pos			= 28,
 	wnb_pos				= 29,
 };
+
+#if (DDS1_TYPE == DDS_TYPE_FPGAV2)
+
+void linux_rxtx_state(uint8_t tx)
+{
+
+}
+
+#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV2) */
 
 #if WITHAUDIOSAMPLESREC
 
@@ -263,7 +274,7 @@ void * process_linux_timer_spool(void * args)
 	}
 }
 
-
+#if WITHENCODER || WITHENCODER2
 void * linux_encoder_spool(void * args)
 {
 	extern encoder_t encoder2;
@@ -274,6 +285,7 @@ void * linux_encoder_spool(void * args)
 		usleep(500);
 	}
 }
+#endif /* WITHENCODER || WITHENCODER2 */
 
 #if WITHNMEA //&& WITHLFM
 
@@ -425,6 +437,8 @@ void framebuffer_close(void)
 #elif CPUSTYLE_XCZU
 	uint32_t * xgpo, * xgpi;
 	pthread_mutex_t gpiolock;
+#elif CPUSTYLE_RK356X
+
 #endif
 void linux_xgpio_init(void)
 {
@@ -443,6 +457,8 @@ void linux_xgpio_init(void)
 	XGpioPs_Config * gpiocfg = XGpioPs_LookupConfig(0);
 	gpiops_ptr = (uint32_t *) get_highmem_ptr(gpiocfg->BaseAddr);
 	XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, (uintptr_t) gpiops_ptr);
+#elif CPUSTYLE_RK356X
+
 #endif
 }
 
@@ -455,6 +471,8 @@ uint8_t linux_xgpi_read_pin(uint8_t pin)
 	return (v >> pin) & 1;
 #elif CPUSTYLE_XC7Z
 	return XGpioPs_ReadPin(& xc7z_gpio, pin);
+#elif CPUSTYLE_RK356X
+	return 0;
 #endif
 }
 
@@ -476,6 +494,8 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 	pthread_mutex_unlock(& gpiolock);
 #elif CPUSTYLE_XC7Z
 	XGpioPs_WritePin(& xc7z_gpio, pin, val);
+#elif CPUSTYLE_RK356X
+
 #endif
 }
 
@@ -493,6 +513,8 @@ void xc7z_gpio_input(uint8_t pin)
 {
 #if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 0);
+#elif CPUSTYLE_RK356X
+
 #endif
 }
 
@@ -501,6 +523,8 @@ void xc7z_gpio_output(uint8_t pin)
 #if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 1);
 	XGpioPs_SetOutputEnablePin(& xc7z_gpio, pin, 1);
+#elif CPUSTYLE_RK356X
+
 #endif
 }
 
@@ -632,10 +656,11 @@ void spidev_init(void)
 		char path[20];
 
 		snprintf(path, ARRAY_SIZE(path), "%s.%d", SPIDEV_PATH, i);
+		printf("%s start\n", path);
 
 		int ret = 0;
 		spidev_fd[i] = open(path, O_RDWR);
-		if (spidev_fd < 0)
+		if (!spidev_fd)
 			perror("can't open device");
 
 		ret = ioctl(spidev_fd[i], SPI_IOC_WR_MODE, & spidev_mode);
@@ -777,14 +802,13 @@ void prog_spi_exchange(
 
 /*************************************************************/
 
+#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
-static struct cond_thread ct_iq;
-
-// ******************************************************************************
 
 enum {
 	CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX,
@@ -794,79 +818,104 @@ enum {
 
 uint8_t rxbuf[SIZERX8] = { 0 };
 
-void iq_mutex_unlock(void)
+void update_modem_ctrl(void)
 {
-	if (linux_verify_cond(& ct_iq))
-		safe_cond_signal(& ct_iq);
+	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
+			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
+			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
+			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
+			| (!! wnb_state << wnb_pos)
+			| 0;
+
+	* modem_ctrl = v;
 }
 
-static void iq_proccessing(uint8_t * buf, uint32_t len)
+void xcz_resetn_modem(uint8_t val)
 {
-	static int rx_stage = 0;
-	uintptr_t addr32rx = allocate_dmabuffer32rx();
-	memcpy((uint8_t *) addr32rx, buf, len);
-	save_dmabuffer32rx(addr32rx);
+	resetn_modem = val != 0;
+	update_modem_ctrl();
+}
 
-	rx_stage += CNT32RX;
+void xcz_dds_rts(const uint_least64_t * val)
+{
+	uint32_t v = * val;
+	* rts = v;
+    mirror_ncorts = v;
+}
 
-	while (rx_stage >= CNT16TX)
+void xcz_dds_ftw(const uint_least64_t * val)
+{
+	uint32_t v = * val;
+	* ftw = v;
+    mirror_nco1 = v;
+}
+
+void xcz_dds_ftw_sub(const uint_least64_t * val)
+{
+	uint32_t v = * val;
+	* ftw_sub = v;
+	mirror_nco2 = v;
+}
+
+uint8_t iq_shift_fir_rx(uint8_t val) // 52
+{
+	if (val > 0)
 	{
-#if DMABUFSCALE == 2
-		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-		uint32_t * b = (uint32_t *) addr_ph;
+		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
+			rx_fir_shift = val & 0xFF;
 
-		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-			* ph_fifo = b[i];
-
-		release_dmabuffer16tx(addr_ph);
-#endif /* DMABUFSCALE == 2 */
-
-		const uintptr_t addr = getfilled_dmabuffer32tx();
-		uint32_t * t = (uint32_t *) addr;
-
-		for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-			* iq_fifo_tx = t[i];
-
-		release_dmabuffer32tx(addr);
-
-		rx_stage -= CNT16TX;
+		update_modem_ctrl();
 	}
+	return rx_fir_shift;
+}
 
-#if WITHFT8
-	if (! ft8_get_state())
-#endif /* WITHFT8 */
+uint8_t iq_shift_cic_rx(uint8_t val)
+{
+	if (val > 0)
 	{
-#if DMABUFSCALE == 1
-		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-		uint32_t * b = (uint32_t *) addr_ph;
+		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
+			rx_cic_shift = val & 0xFF;
 
-#if WITHAUDIOSAMPLESREC
-#if WITHAD936XIIO
-		if (! get_ad936x_stream_status())
-#endif /* WITHAD936XIIO */
-			as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
-
-		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-			* ph_fifo = b[i];
-
-		release_dmabuffer16tx(addr_ph);
-#endif /* DMABUFSCALE == 1 */
-
-		uintptr_t addr_mic = allocate_dmabuffer16rx();
-		uint32_t * mic = (uint32_t *) addr_mic;
-
-		for (int i = 0; i < DMABUFFSIZE16RX; i ++)
-			mic[i] = * mic_fifo;
-
-#if WITHAUDIOSAMPLESREC
-		as_tx(mic);
-#endif /* WITHAUDIOSAMPLESREC */
-
-		save_dmabuffer16rx(addr_mic);
+		update_modem_ctrl();
 	}
+	return rx_cic_shift;
+}
 
-	iq_mutex_unlock();
+uint8_t iq_shift_tx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= tx_shift_min && val <= tx_shift_max)
+			tx_shift = val & 0xFF;
+
+		update_modem_ctrl();
+	}
+	return tx_shift;
+}
+
+uint8_t wnb_state_switch(void)
+{
+	wnb_state = wnb_state ? 0 : 1;
+	update_modem_ctrl();
+
+	return wnb_state;
+}
+
+uint32_t iq_cic_test_process(void)
+{
+	return 0;
+}
+
+void iq_cic_test(uint32_t val)
+{
+	iq_test = val != 0;
+	update_modem_ctrl();
+}
+
+void linux_rxtx_state(uint8_t tx)
+{
+	tx_state = tx != 0;
+	update_modem_ctrl();
 }
 
 #if WITHWNB		// Simple noise blanker в PL
@@ -1108,6 +1157,81 @@ void server_start(void)
 
 #endif /* WITHEXTIO_LAN */
 
+void iq_mutex_unlock(void)
+{
+	if (linux_verify_cond(& ct_iq))
+		safe_cond_signal(& ct_iq);
+}
+
+static void iq_proccessing(uint8_t * buf, uint32_t len)
+{
+	static int rx_stage = 0;
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
+	memcpy((uint8_t *) addr32rx, buf, len);
+	save_dmabuffer32rx(addr32rx);
+
+	rx_stage += CNT32RX;
+
+	while (rx_stage >= CNT16TX)
+	{
+#if DMABUFSCALE == 2
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
+
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			* ph_fifo = b[i];
+
+		release_dmabuffer16tx(addr_ph);
+#endif /* DMABUFSCALE == 2 */
+
+		const uintptr_t addr = getfilled_dmabuffer32tx();
+		uint32_t * t = (uint32_t *) addr;
+
+		for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+			* iq_fifo_tx = t[i];
+
+		release_dmabuffer32tx(addr);
+
+		rx_stage -= CNT16TX;
+	}
+
+#if WITHFT8
+	if (! ft8_get_state())
+#endif /* WITHFT8 */
+	{
+#if DMABUFSCALE == 1
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
+
+#if WITHAUDIOSAMPLESREC
+#if WITHAD936XIIO
+		if (! get_ad936x_stream_status())
+#endif /* WITHAD936XIIO */
+			as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC */
+
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			* ph_fifo = b[i];
+
+		release_dmabuffer16tx(addr_ph);
+#endif /* DMABUFSCALE == 1 */
+
+		uintptr_t addr_mic = allocate_dmabuffer16rx();
+		uint32_t * mic = (uint32_t *) addr_mic;
+
+		for (int i = 0; i < DMABUFFSIZE16RX; i ++)
+			mic[i] = * mic_fifo;
+
+#if WITHAUDIOSAMPLESREC
+		as_tx(mic);
+#endif /* WITHAUDIOSAMPLESREC */
+
+		save_dmabuffer16rx(addr_mic);
+	}
+
+	iq_mutex_unlock();
+}
+
 void linux_iq_init(void)
 {
 	ftw = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR);
@@ -1267,6 +1391,58 @@ void * audio_interrupt_thread(void * args)
     }
 }
 
+void zynq_pl_init(void)
+{
+	xcz_resetn_modem(0);
+
+#if WITHAUDIOSAMPLESREC
+	pthread_mutex_init(& mutex_as, NULL);
+#endif /* WITHAUDIOSAMPLESREC */
+
+	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
+//	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+//	linux_create_thread(& audio_interrupt_t, audio_interrupt_thread, 50, 1);
+
+#if defined AXI_DCDC_PWM_ADDR
+	const float FS = powf(2, 32);
+	uint32_t dcdcpwm_period = 25000 * FS / REFERENCE_FREQ;
+	reg_write(AXI_DCDC_PWM_ADDR + 0, dcdc_pwm_period);
+
+	uint32_t dcdc_pwm_duty = FS * (1.0f - 0.8f) - 1;
+	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
+#endif /* defined AXI_DCDC_PWM_ADDR */
+
+#if WITHCPUFANPWM
+	{
+		const float FS = powf(2, 32);
+		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
+		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 0, fan_pwm_period);
+
+		uint32_t fan_pwm_duty = FS * (1.0f - 0.6f) - 1;
+		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
+	}
+#endif /* WITHCPUFANPWM */
+
+#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
+	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
+	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
+	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
+	if (Status != XST_SUCCESS) {
+		PRINTF("sysmon init error %d\n", Status);
+		ASSERT(0);
+	}
+	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
+	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
+#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
+
+	xcz_resetn_modem(1);
+
+	linux_init_cond(& ct_iq);
+}
+
+#endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
+
 /*************************************************************/
 
 void linux_run_shell_cmd(const char * argv [])
@@ -1374,76 +1550,30 @@ void linux_subsystem_init(void)
 	const char * argv [] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
 	linux_run_shell_cmd(argv);
 
-	linux_xgpio_init();
-	linux_iq_init();
-
 	signal(SIGINT, handle_sig);
-
+	linux_xgpio_init();
+#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+	linux_iq_init();
+#endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL*/
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
-
 #if WITHSPIDEV
 	spidev_init();
 #endif /* WITHSPIDEV */
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
-
 void linux_user_init(void)
 {
-	xcz_resetn_modem(0);
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+	zynq_pl_init();
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
 
-#if WITHAUDIOSAMPLESREC
-	pthread_mutex_init(& mutex_as, NULL);
-#endif /* WITHAUDIOSAMPLESREC */
-
-	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
-//	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
-//	linux_create_thread(& audio_interrupt_t, audio_interrupt_thread, 50, 1);
-
-#if defined AXI_DCDC_PWM_ADDR
-	const float FS = powf(2, 32);
-	uint32_t dcdcpwm_period = 25000 * FS / REFERENCE_FREQ;
-	reg_write(AXI_DCDC_PWM_ADDR + 0, dcdc_pwm_period);
-
-	uint32_t dcdc_pwm_duty = FS * (1.0f - 0.8f) - 1;
-	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
-#endif /* defined AXI_DCDC_PWM_ADDR */
-
-#if WITHCPUFANPWM
-	{
-		const float FS = powf(2, 32);
-		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
-		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 0, fan_pwm_period);
-
-		uint32_t fan_pwm_duty = FS * (1.0f - 0.6f) - 1;
-		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
-	}
-#endif /* WITHCPUFANPWM */
-
-#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
-	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
-	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
-	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
-	if (Status != XST_SUCCESS) {
-		PRINTF("sysmon init error %d\n", Status);
-		ASSERT(0);
-	}
-	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
-	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
-#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
-
+#endif /*  */
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
-
-	xcz_resetn_modem(1);
-
-	linux_init_cond(& ct_iq);
-
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
@@ -1469,107 +1599,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 	pthread_mutex_unlock(p);
 }
 
-void update_modem_ctrl(void)
-{
-	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
-			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
-			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
-			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
-			| (!! wnb_state << wnb_pos)
-			| 0;
-
-	* modem_ctrl = v;
-}
-
-void xcz_resetn_modem(uint8_t val)
-{
-	resetn_modem = val != 0;
-	update_modem_ctrl();
-}
-
-void xcz_rxtx_state(uint8_t tx)
-{
-	tx_state = tx != 0;
-	update_modem_ctrl();
-}
-
-void xcz_dds_rts(const uint_least64_t * val)
-{
-	uint32_t v = * val;
-	* rts = v;
-    mirror_ncorts = v;
-}
-
-void xcz_dds_ftw(const uint_least64_t * val)
-{
-	uint32_t v = * val;
-	* ftw = v;
-    mirror_nco1 = v;
-}
-
-void xcz_dds_ftw_sub(const uint_least64_t * val)
-{
-	uint32_t v = * val;
-	* ftw_sub = v;
-	mirror_nco2 = v;
-}
-
-uint8_t iq_shift_fir_rx(uint8_t val) // 52
-{
-	if (val > 0)
-	{
-		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
-			rx_fir_shift = val & 0xFF;
-
-		update_modem_ctrl();
-	}
-	return rx_fir_shift;
-}
-
-uint8_t iq_shift_cic_rx(uint8_t val)
-{
-	if (val > 0)
-	{
-		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
-			rx_cic_shift = val & 0xFF;
-
-		update_modem_ctrl();
-	}
-	return rx_cic_shift;
-}
-
-uint8_t iq_shift_tx(uint8_t val)
-{
-	if (val > 0)
-	{
-		if (val >= tx_shift_min && val <= tx_shift_max)
-			tx_shift = val & 0xFF;
-
-		update_modem_ctrl();
-	}
-	return tx_shift;
-}
-
-uint8_t wnb_state_switch(void)
-{
-	wnb_state = wnb_state ? 0 : 1;
-	update_modem_ctrl();
-
-	return wnb_state;
-}
-
-uint32_t iq_cic_test_process(void)
-{
-	return 0;
-}
-
-void iq_cic_test(uint32_t val)
-{
-	iq_test = val != 0;
-	update_modem_ctrl();
-}
-
-#if WITHDSPEXTFIR
+#if WITHDSPEXTFIR && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 volatile uint32_t * fir_reload = NULL;
 static adapter_t plfircoefsout;		/* параметры прербразования к PL */
 
@@ -1615,7 +1645,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		}
 	}
 }
-#endif /* WITHDSPEXTFIR */
+#endif /* WITHDSPEXTFIR && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
 
 #if RTC1_TYPE == RTC_TYPE_LINUX
 void board_rtc_getdate(
@@ -1734,9 +1764,19 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	while (read(evdev_fd, &in, sizeof(struct input_event)) > 0)
 	{
 		if(in.type == EV_ABS && in.code == ABS_X)
+		{
 			xx = in.value;
+#if defined (TSC_EVDEV_RAWX)
+			xx = normalize(xx, 0, TSC_EVDEV_RAWX, DIM_X - 1);
+#endif /* defined (TSC_EVDEV_RAWX)*/
+		}
 		else if (in.type == EV_ABS && in.code == ABS_Y)
+		{
 			yy = in.value;
+#if defined (TSC_EVDEV_RAWY)
+			yy = normalize(yy, 0, TSC_EVDEV_RAWY, DIM_Y - 1);
+#endif /* defined (TSC_EVDEV_RAWY) */
+		}
 		else if(in.type == EV_KEY && in.code == BTN_TOUCH)
 			pr = in.value;
 	}
@@ -1753,7 +1793,7 @@ void evdev_initialize(void)
 	linux_run_shell_cmd(argv);
 	usleep(500000);
 
-    evdev_fd = open(EVDEV_NAME, O_RDWR | O_NOCTTY | O_NDELAY);
+    evdev_fd = open(LINUX_EVDEV_FILE, O_RDWR | O_NOCTTY | O_NDELAY);
     if(evdev_fd == -1) {
         perror("unable open evdev interface:");
         return;

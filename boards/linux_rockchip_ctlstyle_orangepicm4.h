@@ -343,8 +343,9 @@
 	//#define TSC1_TYPE TSC_TYPE_GT911
 	//#define TSC_RESET_BY_REG		1
 	//#define TSC1_TYPE TSC_TYPE_ILI2102
-	#define TSC1_TYPE TSC_TYPE_EVDEV
-	#define TSC_EVDEV_REQUIRED_NORMALIZE	1
+	#define TSC1_TYPE 		TSC_TYPE_EVDEV
+	#define TSC_EVDEV_RAWX	2048
+	#define TSC_EVDEV_RAWY	2048
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
