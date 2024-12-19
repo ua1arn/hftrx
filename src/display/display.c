@@ -2171,6 +2171,7 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
+	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
+	//return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
 	//return vdmode->ltdc_dotclk;
 }
