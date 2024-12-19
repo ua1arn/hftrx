@@ -5932,9 +5932,10 @@ static void hardware_de_initialize(const videomode_t * vdmode, int rtmixid)
 		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
 		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 1);		// CORE1_AHB_RESET
 
-		PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
-		PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
-		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
+		// All registers are 0xFF
+//		PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
+//		PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
+//		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
     }
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
@@ -6964,7 +6965,7 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
 //#endif
 
-	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
+	//PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
 	// http://linux-sunxi.org/images/3/38/AW_HDMI_TX_PHY_S40_Spec_V0.1.pdf
 	phy->HDMI_PHY_CFG1 = 0;
@@ -6984,7 +6985,7 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	int z = 0;
 	while (z ++ < 10 && (phy->HDMI_PHY_STS & 0x80) == 0)
 		local_delay_ms(10);
-	PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
+	//PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 
 	phy->HDMI_PHY_CFG1 |= (0xf << 4);
 	phy->HDMI_PHY_CFG1 |= (0xf << 8);
