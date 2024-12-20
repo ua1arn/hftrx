@@ -3157,7 +3157,7 @@ sysinit_perfmeter_initialize(void)
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 }
 
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if 0 && defined(__aarch64__) && ! LINUX_SUBSYSTEM
 //uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
 {
@@ -3673,7 +3673,7 @@ void __attribute__((used)) SystemDRAMInit(void)
 	SystemInit();
 }
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) && 0
 
 static void ptc(int c)
 {
@@ -3683,8 +3683,9 @@ static void ptc(int c)
 
 }
 
-void __attribute__((section(".startup0"))) start0(void)
+void SystemInit0(void)
 {
+	if (0)
 	{
 		 extern void _start(void) __NO_RETURN;
 
@@ -4879,7 +4880,7 @@ void _stack_init(void)
 
 }
 
-#if (CPUSTYLE_RISCV /*|| defined(__aarch64__) */) && ! LINUX_SUBSYSTEM
+#if (CPUSTYLE_RISCV || defined(__aarch64__) ) && ! LINUX_SUBSYSTEM
 
 /**
   \brief   Initializes data and bss sections

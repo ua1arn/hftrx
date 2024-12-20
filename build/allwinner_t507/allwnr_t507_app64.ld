@@ -93,9 +93,11 @@ SECTIONS
 		QUAD (__data_start__)
 		QUAD (__data_end__ - __data_start__)
 	*/
+		/*
 		QUAD (__etext2)
 		QUAD (__data2_start__)
 		QUAD (__data2_end__ - __data2_start__)
+		*/
 		__copy_table_end64__ = .;
 	} > RAM
 
@@ -145,30 +147,12 @@ SECTIONS
 
 		KEEP(*(.jcr*))
 		/* All data end */
+		*(.itcm*)
+		*(.dtcm*)
 
 		__data_end__ = .;
 
 	} > RAM
-
-	__etext2 = .;
-
-	.sysram : AT (__etext2)
-	{
-		__data2_start__ = .;
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		/*
-		__Vectors_End64 = .;
-		__Vectors_Size64 = __Vectors_End64 - __Vectors64;
-		*/
-		*(.itcm*)
-		*(.dtcm*)
-
-		__data2_end__ = .;
-	} > RAM
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
 
 	.bss (NOLOAD):
 	{
