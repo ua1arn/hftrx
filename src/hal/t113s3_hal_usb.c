@@ -4227,6 +4227,31 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   return HAL_OK;
 }
 
+
+/**
+  * @brief  Flush an endpoint
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+//  __HAL_LOCK(hpcd);
+//
+//  if ((ep_addr & 0x80U) == 0x80U)
+//  {
+//    (void)USB_FlushTxFifo(hpcd->Instance, (uint32_t)ep_addr & EP_ADDR_MSK);
+//  }
+//  else
+//  {
+//    (void)USB_FlushRxFifo(hpcd->Instance);
+//  }
+//
+//  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+
 // https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 // https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
 

@@ -5085,7 +5085,7 @@ char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
 		heap = (char *) &__HeapBase;
 	}
 
-	//PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
+	//PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), (unsigned) incr, (unsigned) (heap + incr), & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
