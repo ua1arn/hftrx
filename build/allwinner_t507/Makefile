@@ -296,14 +296,21 @@ allZ:
 bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
-# Take from tc1_t507_boot.map - address of SystemInit
-SystemInitAddr_H616 = 0x00032594
-SystemInitAddr_T507 = 0x0003300c
+# Take from tc1_t507_boot.map - address of SystemDRAMInit
+ifeq (1, 1)
+# T507
+SystemDRAMInit = 0x00033474
+SystemExecAARCH64 = 0x00031444
+# H616
+else
+SystemDRAMInit = 0x00032594
+SystemExecAARCH64 = xxx0x00031444
+endif
 
 # Invoke SystemInit 
 ddrinit_h616: h616_fsbl_frz.alw32
 	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
-	$(XFEL) exec $(SystemInitAddr_H616)
+	$(XFEL) exec $(SystemDRAMInit)
 
 ddrinit_t507_:
 	$(XFEL) ddr lpddr4
@@ -311,11 +318,15 @@ ddrinit_t507_:
 
 ddrinit_t507:
 	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
-	$(XFEL) exec $(SystemInitAddr_T507)
+	$(XFEL) exec $(SystemDRAMInit)
 
 app_run: $(PROJECT)_app.alw32 ddrinit_t507
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
+
+app_run64: $(PROJECT)_app.alw32 ddrinit_t507
+	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
 _app_run: bootloader

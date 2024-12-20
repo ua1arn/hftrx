@@ -1164,78 +1164,98 @@ typedef struct
 /** \brief Enable Caches by setting I and C bits in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableCaches(void) {
+#if 0
   __set_SCTLR( __get_SCTLR() | SCTLR_I_Msk | SCTLR_C_Msk);
   __ISB();
+#endif
 }
 
 /** \brief Disable Caches by clearing I and C bits in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableCaches(void) {
+#if 0
   __set_SCTLR( __get_SCTLR() & (~SCTLR_I_Msk) & (~SCTLR_C_Msk));
   __ISB();
+#endif
 }
 
 /** \brief  Enable Branch Prediction by setting Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableBTAC(void) {
+#if 0
   __set_SCTLR( __get_SCTLR() | SCTLR_Z_Msk);
   __ISB();
+#endif
 }
 
 /** \brief  Disable Branch Prediction by clearing Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableBTAC(void) {
+#if 0
   __set_SCTLR( __get_SCTLR() & (~SCTLR_Z_Msk));
   __ISB();
+#endif
 }
 
 /** \brief  Invalidate entire branch predictor array
 */
 __STATIC_FORCEINLINE void L1C_InvalidateBTAC(void) {
+#if 0
   __set_BPIALL(0);
   __DSB();     //ensure completion of the invalidation
   __ISB();     //ensure instruction fetch path sees new state
+#endif
 }
 
 /** \brief  Clean instruction cache line by address.
 * \param [in] va Pointer to instructions to clear the cache for.
 */
 __STATIC_FORCEINLINE void L1C_InvalidateICacheMVA(void *va) {
+#if 0
   __set_ICIMVAC((uintptr_t)va);
   __DSB();     //ensure completion of the invalidation
   __ISB();     //ensure instruction fetch path sees new I cache state
+#endif
 }
 
 /** \brief  Invalidate the whole instruction cache
 */
 __STATIC_FORCEINLINE void L1C_InvalidateICacheAll(void) {
+#if 0
   __set_ICIALLU(0);
   __DSB();     //ensure completion of the invalidation
   __ISB();     //ensure instruction fetch path sees new I cache state
+#endif
 }
 
 /** \brief  Clean data cache line by address.
 * \param [in] va Pointer to data to clear the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanDCacheMVA(void *va) {
+#if 0
   __set_DCCMVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
+#endif
 }
 
 /** \brief  Invalidate data cache line by address.
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_InvalidateDCacheMVA(void *va) {
+#if 0
   __set_DCIMVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
+#endif
 }
 
 /** \brief  Clean and Invalidate data cache by address.
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanInvalidateDCacheMVA(void *va) {
+#if 0
   __set_DCCIMVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
+#endif
 }
 
 /** \brief Calculate log2 rounded up
@@ -1274,6 +1294,7 @@ __STATIC_FORCEINLINE uint8_t __log2_up(uint32_t n)
 */
 __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t maint)
 {
+#if 0
   uint32_t Dummy;
   uint32_t ccsidr;
   uint32_t num_sets;
@@ -1309,12 +1330,14 @@ __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t ma
     }
   }
   __DMB();
+#endif
 }
 
 /** \brief  Clean and Invalidate the entire data or unified cache
 * \param [in] op 0 - invalidate, 1 - clean, otherwise - invalidate and clean
 */
 __STATIC_FORCEINLINE void L1C_CleanInvalidateCache(uint32_t op) {
+#if 0
   uint32_t clidr;
   uint32_t cache_type;
   clidr =  __get_CLIDR();
@@ -1326,6 +1349,7 @@ __STATIC_FORCEINLINE void L1C_CleanInvalidateCache(uint32_t op) {
       __L1C_MaintainDCacheSetWay(i, op);
     }
   }
+#endif
 }
 
 /** \brief  Invalidate the whole data cache.
@@ -2063,6 +2087,7 @@ __STATIC_INLINE void PTIM_ClearEventFlag(void)
 #endif
 
 /* ##########################  MMU functions  ###################################### */
+#if 0
 
 #define SECTION_DESCRIPTOR      (0x2)
 #define SECTION_MASK            (0xFFFFFFFC)
@@ -2955,24 +2980,29 @@ __STATIC_INLINE void MMU_TTPage64k(uint32_t *ttb, uint32_t base_address, uint32_
   }
 }
 
+#endif
 /** \brief  Enable MMU
 */
 __STATIC_INLINE void MMU_Enable(void)
 {
+#if 0
   // Set M bit 0 to enable the MMU
   // Set AFE bit to enable simplified access permissions model
   // Clear TRE bit to disable TEX remap and A bit to disable strict alignment fault checking
   __set_SCTLR( (__get_SCTLR() & ~(1 << 28) & ~(1 << 1)) | 1 | (1 << 29));
   __ISB();
+#endif
 }
 
 /** \brief  Disable MMU
 */
 __STATIC_INLINE void MMU_Disable(void)
 {
+#if 0
   // Clear M bit 0 to disable the MMU
   __set_SCTLR( __get_SCTLR() & ~1);
   __ISB();
+#endif
 }
 
 /** \brief  Invalidate entire unified TLB
@@ -2980,9 +3010,11 @@ __STATIC_INLINE void MMU_Disable(void)
 
 __STATIC_INLINE void MMU_InvalidateTLB(void)
 {
+#if 0
   __set_TLBIALL(0);
   __DSB();     //ensure completion of the invalidation
   __ISB();     //ensure instruction fetch path sees new state
+#endif
 }
 
 

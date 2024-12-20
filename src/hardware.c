@@ -2715,7 +2715,10 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 static void
 sysinit_ttbr_initialize(void)
 {
-#if __CORTEX_A
+#if defined(__aarch64__)
+    #warning to be implement
+
+#elif (__CORTEX_A != 0)
 
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -2971,6 +2974,14 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
+#elif defined(__aarch64__)
+
+	// FPU
+	//__FPU_Enable_fixed();
+	L1C_DisableCaches();
+	L1C_DisableBTAC();
+	MMU_Disable();
+
 #elif (__CORTEX_A != 0)
 
 	// FPU
@@ -3158,7 +3169,10 @@ void __attribute__((used)) Reset_Handler(void)
 static void
 sysinit_vbar_initialize(void)
 {
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if defined(__aarch64__)
+    #warning to be implement
+
+#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
 	extern unsigned long __Vectors_rtos;
 	const uintptr_t vbase = (uintptr_t) & __Vectors_rtos;
@@ -3653,6 +3667,82 @@ SystemInit(void)
 #endif
 }
 
+
+void __attribute__((used)) SystemDRAMInit(void)
+{
+	SystemInit();
+}
+
+#if defined(__aarch64__)
+
+static void ptc(int c)
+{
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = c;
+
+}
+
+void __attribute__((section(".startup0"))) start0(void)
+{
+	{
+		 extern void _start(void) __NO_RETURN;
+
+		  typedef struct {
+		    volatile uint32_t const* src;
+		    volatile uint32_t* dest;
+		    ptrdiff_t  wlen;
+		  } __copy_table_t;
+
+		  typedef struct {
+			volatile uint32_t* dest;
+		    ptrdiff_t  wlen;
+		  } __zero_table_t;
+
+		  extern const __copy_table_t __copy_table_start64__;
+		  extern const __copy_table_t __copy_table_end64__;
+		  extern const __zero_table_t __zero_table_start64__;
+		  extern const __zero_table_t __zero_table_end64__;
+
+		  for (__copy_table_t const* pTable = &__copy_table_start64__; pTable < &__copy_table_end64__; ++pTable) {
+		    for(ptrdiff_t i=0u; i<pTable->wlen; ++i) {
+		      pTable->dest[i] = pTable->src[i];
+		    }
+		  }
+
+		  for (__zero_table_t const* pTable = &__zero_table_start64__; pTable < &__zero_table_end64__; ++pTable) {
+		    for(ptrdiff_t i=0u; i<pTable->wlen; ++i) {
+		      pTable->dest[i] = 0u;
+		    }
+		  }
+
+		 // _start();
+
+	}
+	ptc('H');
+	ptc('e');
+	ptc('l');
+	ptc('l');
+	ptc('o');
+	ptc('6');
+	ptc('4');
+	ptc('!');
+	ptc('\r');
+	ptc('\n');
+	for (;;)
+		;
+}
+/*
+void __attribute__((section(".isr_vector")))  (* __Vectors64 [])(void) =
+{
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};
+*/
+#endif
+
 #endif /* LINUX_SUBSYSTEM */
 
 
@@ -3660,6 +3750,9 @@ SystemInit(void)
 
 static void cortexa_cpuinfo(void)
 {
+#if defined(__aarch64__)
+    #warning to be implement
+#else
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
 	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%p, MPIDR=%08X\n",
@@ -3672,6 +3765,7 @@ static void cortexa_cpuinfo(void)
 			& vvv,
 			(unsigned) __get_MPIDR()
 			);
+#endif
 }
 
 #if WITHSMPSYSTEM && ! WITHRTOS
@@ -4785,7 +4879,7 @@ void _stack_init(void)
 
 }
 
-#if (CPUSTYLE_RISCV || defined(__aarch64__)) && ! LINUX_SUBSYSTEM
+#if (CPUSTYLE_RISCV /*|| defined(__aarch64__) */) && ! LINUX_SUBSYSTEM
 
 /**
   \brief   Initializes data and bss sections

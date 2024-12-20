@@ -4,9 +4,7 @@
 
 MEMORY
 {
-  xRAM (rwx)	 : ORIGIN = 0x00028000 + 256, 	LENGTH = 192k - 256		/* base addres for bootloader tests */
-  RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 	LENGTH = 224k - 256		/*  */
-  DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 1024M - 32M		/*  */
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 1024M - 256	/* DDR internal memory - 1 GB - 256 B */
 }
 
 /* Library configurations */
@@ -44,12 +42,7 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(64);
+		. = ALIGN(32);
 		KEEP(*(.startup0))
 
 		*(.text*)
@@ -73,9 +66,7 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
-		
-		*(.itcm*)
-		
+
 	} > RAM
 
 	.ARM.extab :
@@ -95,17 +86,17 @@ SECTIONS
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	.copy.table :
 	{
-		. = ALIGN(4);
-		__copy_table_start__ = .;
+		. = ALIGN(8);
+		__copy_table_start64__ = .;
 	/*
-		LONG (__etext)
-		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
-		LONG (__etext2)
-		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
+		QUAD (__etext)
+		QUAD (__data_start__)
+		QUAD (__data_end__ - __data_start__)
 	*/
-		__copy_table_end__ = .;
+		QUAD (__etext2)
+		QUAD (__data2_start__)
+		QUAD (__data2_end__ - __data2_start__)
+		__copy_table_end64__ = .;
 	} > RAM
 
 	/* To clear multiple BSS sections,
@@ -113,33 +104,23 @@ SECTIONS
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	.zero.table :
 	{
-		. = ALIGN(4);
-		__zero_table_start__ = .;
-		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
-	/*
-		LONG (__bss2_start__)
-		LONG (__bss2_end__ - __bss2_start__)
-	*/
-		__zero_table_end__ = .;
+		. = ALIGN(8);
+		__zero_table_start64__ = .;
+		QUAD (__bss_start__)
+		QUAD (__bss_end__ - __bss_start__)
+		QUAD (__bss2_start__)
+		QUAD (__bss2_end__ - __bss2_start__)
+		__zero_table_end64__ = .;
 	} > RAM
-	/*
-	.special.table:
-	{
-		LONG (SystemDRAMInit)
-		LONG (SystemExecAARCH64)
-	} > RAM
-	*/
-	__etext = .;
+
+	/* __etext = .; */
 
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-
 		. = ALIGN(64);
 
 		*(.data*)
-		*(.dtcm*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -163,11 +144,31 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-
 		/* All data end */
+
 		__data_end__ = .;
 
 	} > RAM
+
+	__etext2 = .;
+
+	.sysram : AT (__etext2)
+	{
+		__data2_start__ = .;
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		/*
+		__Vectors_End64 = .;
+		__Vectors_Size64 = __Vectors_End64 - __Vectors64;
+		*/
+		*(.itcm*)
+		*(.dtcm*)
+
+		__data2_end__ = .;
+	} > RAM
+
+	. = __etext2 + __data2_end__ - __data2_start__;
+
 
 	.bss (NOLOAD):
 	{
@@ -183,22 +184,15 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.noinit*)
-
-	} > RAM
-
-	.vram (NOLOAD):
-	{
-		. = ALIGN(64);
 		*(.framebuff*)
-
-	} > DDR3
+	} > RAM
 
 	.ttb BLOCK(16k) (NOLOAD):
 	{
 		PROVIDE(__TTB_BASE = .);
 		LONG(0)	/* dummy object */
 		. = ALIGN(16k);
-	} > DDR3
+	} > RAM
 
 	.ramnc BLOCK(1M) (NOLOAD):
 	{
@@ -208,7 +202,7 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
-	} > DDR3
+	} > RAM
 
 	.heap (NOLOAD):
 	{
@@ -234,5 +228,5 @@ SECTIONS
 	PROVIDE(__stack = __StackTop);
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
+	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 }

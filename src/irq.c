@@ -1726,6 +1726,11 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
+#if defined(__aarch64__)
+//    #define __LDREXB __LDAEXB
+//    #define __STREXB __STLEXB
+#endif
+
 #if CPUSTYLE_ARM && ! defined(__aarch64__) && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
@@ -1930,6 +1935,10 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 	return 0;
 
+#elif defined(__aarch64__)
+	#warning to be implement
+	return 0;
+
 #elif (__CORTEX_A != 0)
 	// Cortex-A computers
 
@@ -2060,6 +2069,9 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	AT91C_BASE_AIC->AIC_ICCR = mask32;		// clear pending interrupt
 	AT91C_BASE_AIC->AIC_IECR = mask32;	// enable interrupt
 
+#elif defined(__aarch64__)
+	#warning to be implement
+
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
 
@@ -2142,6 +2154,9 @@ void arm_hardware_enable_handler(uint_fast16_t int_ida)
 
 	AT91C_BASE_AIC->AIC_IECR = mask32;	// enable interrupt
 
+#elif defined(__aarch64__)
+	#warning to be implement
+
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
 
@@ -2187,6 +2202,9 @@ void arm_hardware_disable_handler(uint_fast16_t int_ida)
 	const uint_fast32_t mask32 = (1UL << int_id);
 
 	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
+
+#elif defined(__aarch64__)
+	#warning to be implement
 
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
@@ -2591,7 +2609,11 @@ void cpu_initialize(void)
 	arm_cpu_CMx_initialize_NVIC();
 #endif
 
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+#if defined(__aarch64__)
+	#warning to be implement
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	IRQ_Initialize();	// GIC_Enable() inside
 	//GIC_Enable();

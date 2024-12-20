@@ -93,6 +93,10 @@ HypAddr:  	.word Hyp_Handler
 IRQAddr:    .word IRQ_Handler
 FIQAddr:    .word FIQ_Handler
 
+	/* Force link */
+	.word SystemExecAARCH64
+	.word SystemDRAMInit
+
    .ltorg
 
 	.align 6

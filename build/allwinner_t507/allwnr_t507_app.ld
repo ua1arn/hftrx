@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 1024M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 1024M - 256	/* DDR internal memory - 1 GB - 256 B */
 }
 
 /* Library configurations */

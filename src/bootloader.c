@@ -208,7 +208,7 @@ bootloader_launch_app(uintptr_t startfunc)
 		__WFE();
 	}
 
-#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && 0
+#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && WITHISBOOTLOADER_DDR
 
 	// Start aarch64 core as application
 
@@ -550,5 +550,28 @@ void bootloader_mainloop(void)
 }
 #endif /* WITHISBOOTLOADERFATFS */
 
+void __attribute__((used)) SystemExecAARCH64(void)
+{
+	uintptr_t header = 0x40000000;
+	uintptr_t ip;
+	if (bootloader_get_start((uintptr_t) header, & ip) == 0)	/* проверка сигнатуры и получение стартового адреса */
+	{
+		PRINTF("Start address ip=%08X\n", (unsigned) ip);
+		bootloader_launch_app(ip);
+		for (;;)
+			;
+	}
+	else
+	{
+		PRINTF("Start address not found\n");
+	}
+}
+
+#else
+
+void SystemExecAARCH64(void)
+{
+
+}
 
 #endif /* WITHISBOOTLOADER */
