@@ -6799,7 +6799,7 @@ void testpng_no_stretch(const void * pngbuffer)
 
 #endif
 
-#if (__CORTEX_A == 53U) && CPUSTYLE_CA53
+#if (__CORTEX_A == 53U) && CPUSTYLE_CA53 && (! defined(__aarch64__))
 
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR

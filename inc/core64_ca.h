@@ -165,15 +165,15 @@
 #define     __IOM    volatile            /*!< \brief Defines 'read / write' structure member permissions */
 #define RESERVED(N, T) T RESERVED##N;    // placeholder struct members used for "reserved" areas
 
-#undef __get_CP
-#undef __set_CP
-#undef __get_CP64
-#undef __set_CP64
-
-#define __get_CP(cp, op1, Rt, CRn, CRm, op2) do { } while (0) //__ASM volatile("MRC p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : "=r" (Rt) : : "memory" )
-#define __set_CP(cp, op1, Rt, CRn, CRm, op2) do { } while (0) //__ASM volatile("MCR p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : : "r" (Rt) : "memory" )
-#define __get_CP64(cp, op1, Rt, CRm)         do { } while (0) //__ASM volatile("MRRC p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : "=r" (Rt) : : "memory" )
-#define __set_CP64(cp, op1, Rt, CRm)         do { } while (0) //__ASM volatile("MCRR p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : : "r" (Rt) : "memory" )
+//#undef __get_CP
+//#undef __set_CP
+//#undef __get_CP64
+//#undef __set_CP64
+//
+//#define __get_CP(cp, op1, Rt, CRn, CRm, op2) do { } while (0) //__ASM volatile("MRC p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : "=r" (Rt) : : "memory" )
+//#define __set_CP(cp, op1, Rt, CRn, CRm, op2) do { } while (0) //__ASM volatile("MCR p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : : "r" (Rt) : "memory" )
+//#define __get_CP64(cp, op1, Rt, CRm)         do { } while (0) //__ASM volatile("MRRC p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : "=r" (Rt) : : "memory" )
+//#define __set_CP64(cp, op1, Rt, CRm)         do { } while (0) //__ASM volatile("MCRR p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : : "r" (Rt) : "memory" )
 
  /*******************************************************************************
   *                 Register Abstraction
