@@ -121,8 +121,9 @@ static uint_fast8_t bootloader_copyapp(
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
 static void
-bootloader_launch_app(uintptr_t ip)
+bootloader_launch_app(uintptr_t startfunc)
 {
+	const unsigned targetcore = 0;
 	dcache_clean_all();
 	global_disableIRQ();
 
@@ -195,14 +196,49 @@ bootloader_launch_app(uintptr_t ip)
 #if 0
 
 	// start RV64 core as application
-	const unsigned tgcode = 0;	// core for start
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
-	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << tgcode));	/* Assert rv64 reset */
+	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << targetcore));	/* Assert rv64 reset */
 	CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
-	RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32((uintptr_t) ip);
-	RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32((uintptr_t) ip);
-	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << tgcode));	/* De-assert rv64 reset */
+	RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32((uintptr_t) startfunc);
+	RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32((uintptr_t) startfunc);
+	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << targetcore));	/* De-assert rv64 reset */
+	for (;;)
+	{
+		__WFE();
+	}
+
+#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && 0
+
+	// Start aarch64 core as application
+
+#if CPUSTYLE_A64
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+#elif CPUSTYLE_H616
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+#elif CPUSTYLE_T507
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+#else
+	#error Unexpected CPUSTYLE_xxx
+#endif
+	// RMR - Reset Management Register
+	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
+	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+
+	//__set_CP(15, 0, result, 12, 0, 2);
+	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+	// G8.2.123 RMR, Reset Management Register
+	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
+	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
+	__ISB();
+	__WFI();
+
 	for (;;)
 	{
 		__WFE();
@@ -210,9 +246,11 @@ bootloader_launch_app(uintptr_t ip)
 
 #else
 
-	(* (void (*)(void)) ip)();
+	(* (void (*)(void)) startfunc)();
 	for (;;)
-		;
+	{
+		__WFE();
+	}
 
 #endif
 }
