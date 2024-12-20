@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
+#if (__CORTEX_A != 0)
 
 	#include "irq_ctrl_gic.c"
 
