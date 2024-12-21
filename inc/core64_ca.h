@@ -1322,6 +1322,21 @@ __STATIC_FORCEINLINE uint32_t __get_SCTLR_EL1(void)
 	return result;
 }
 
+///////////////
+///
+__STATIC_FORCEINLINE void __set_CPACR_EL1(uint32_t value)
+{
+	__set_RG32("CPACR_EL1", value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
+{
+	uint32_t result;
+	// MRS <Xt>, CPACR_EL1 ; Read CPACR_EL1 into Xt
+	__get_RG32("CPACR_EL1", result);
+	return result;
+}
+
 /* ##########################  L1 Cache functions  ################################# */
 
 /** \brief Enable Caches by setting I and C bits in SCTLR register.

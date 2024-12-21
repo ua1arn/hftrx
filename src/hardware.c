@@ -3010,6 +3010,8 @@ sysinit_fpu_initialize(void)
 
 	// FPU
 	//__FPU_Enable_fixed();
+	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT32_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
+
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
