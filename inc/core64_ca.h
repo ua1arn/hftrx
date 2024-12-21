@@ -1292,43 +1292,49 @@ __STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
 	__ASM volatile("DC IVAC, %0" : : "r" (value) : "memory");
 }
 
+///////////////
+///
+__STATIC_FORCEINLINE void __set_SCTLR_EL1(uint32_t value)
+{
+	__set_RG32("SCTLR_EL1", value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL1(void)
+{
+	uint32_t result;
+	// MRS <Xt>, MIDR_EL1 ; Read SCTLR_EL1 into Xt
+	__get_RG32("SCTLR_EL1", result);
+	return result;
+}
 
 /* ##########################  L1 Cache functions  ################################# */
 
 /** \brief Enable Caches by setting I and C bits in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableCaches(void) {
-#if 0
-  __set_SCTLR( __get_SCTLR() | SCTLR_I_Msk | SCTLR_C_Msk);
+  __set_SCTLR_EL1( __get_SCTLR_EL1() | SCTLR_I_Msk | SCTLR_C_Msk);
   __ISB();
-#endif
 }
 
 /** \brief Disable Caches by clearing I and C bits in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableCaches(void) {
-#if 0
-  __set_SCTLR( __get_SCTLR() & (~SCTLR_I_Msk) & (~SCTLR_C_Msk));
+  __set_SCTLR_EL1( __get_SCTLR_EL1() & (~SCTLR_I_Msk) & (~SCTLR_C_Msk));
   __ISB();
-#endif
 }
 
 /** \brief  Enable Branch Prediction by setting Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableBTAC(void) {
-#if 0
-  __set_SCTLR( __get_SCTLR() | SCTLR_Z_Msk);
+  __set_SCTLR_EL1( __get_SCTLR_EL1() | SCTLR_Z_Msk);
   __ISB();
-#endif
 }
 
 /** \brief  Disable Branch Prediction by clearing Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableBTAC(void) {
-#if 0
-  __set_SCTLR( __get_SCTLR() & (~SCTLR_Z_Msk));
+  __set_SCTLR_EL1( __get_SCTLR_EL1() & (~SCTLR_Z_Msk));
   __ISB();
-#endif
 }
 
 /** \brief  Invalidate entire branch predictor array
@@ -3109,24 +3115,20 @@ __STATIC_INLINE void MMU_TTPage64k(uint32_t *ttb, uint32_t base_address, uint32_
 */
 __STATIC_INLINE void MMU_Enable(void)
 {
-#if 0
   // Set M bit 0 to enable the MMU
   // Set AFE bit to enable simplified access permissions model
   // Clear TRE bit to disable TEX remap and A bit to disable strict alignment fault checking
-  __set_SCTLR( (__get_SCTLR() & ~(1 << 28) & ~(1 << 1)) | 1 | (1 << 29));
+  __set_SCTLR_EL1( (__get_SCTLR_EL1() & ~(1 << 28) & ~(1 << 1)) | 1 | (1 << 29));
   __ISB();
-#endif
 }
 
 /** \brief  Disable MMU
 */
 __STATIC_INLINE void MMU_Disable(void)
 {
-#if 0
   // Clear M bit 0 to disable the MMU
-  __set_SCTLR( __get_SCTLR() & ~1);
+  __set_SCTLR_EL1( __get_SCTLR_EL1() & ~1);
   __ISB();
-#endif
 }
 
 /** \brief  Invalidate entire unified TLB

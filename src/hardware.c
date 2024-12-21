@@ -2722,7 +2722,6 @@ static void
 sysinit_ttbr_initialize(void)
 {
 #if defined(__aarch64__)
-    #warning to be implement
 
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
@@ -3728,10 +3727,11 @@ static void cortexa_cpuinfo(void)
 #if defined(__aarch64__)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL1=%08X, TTBR0_EL1=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+	PRINTF("CPU%u: VBAR_EL1=%08X, TTBR0_EL1=%08X, SCTLR_EL1=%08X, sp=%08X, MPIDR_EL1=%08X\n",
 			(unsigned) (__get_MPIDR_EL1() & 0x03),
 			(unsigned) __get_VBAR_EL1(),
 			(unsigned) __get_TTBR0_EL1(),
+			(unsigned) __get_SCTLR_EL1(),
 			(unsigned) (uintptr_t) & vvv,
 			(unsigned) __get_MPIDR_EL1()
 			);
