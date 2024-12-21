@@ -216,10 +216,24 @@ __STATIC_FORCEINLINE uint64_t __get_FAR_EL2(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE uint64_t __get_CLIDR_EL1(void)
+{
+	uint64_t result;
+	__get_RG64("CLIDR_EL1", result);
+	return result;
+}
+
 __STATIC_FORCEINLINE uint32_t __get_ESR_EL1(void)
 {
 	uint32_t result;
 	__get_RG32("ESR_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_CCSIDR_EL1(void)
+{
+	uint32_t result;
+	__get_RG32("CCSIDR_EL1", result);
 	return result;
 }
 
@@ -239,6 +253,12 @@ __STATIC_FORCEINLINE void __set_DACR32_EL2(uint32_t value)
 {
 	// MSR DACR32_EL2, <Xt> ; Write Xt to DACR32_EL2
 	__set_RG32("DACR32_EL2", value);
+}
+
+__STATIC_FORCEINLINE void __set_CSSELR_EL1(uint32_t value)
+{
+	// MSR DACR32_EL2, <Xt> ; Write Xt to DACR32_EL2
+	__set_RG32("CSSELR_EL1", value);
 }
 
 #define __get_MPIDR() 	(__get_MPIDR_EL1())
@@ -1230,6 +1250,49 @@ typedef struct
    - MMU Functions
   ******************************************************************************/
 
+/** \brief  Set DCISW
+ */
+__STATIC_FORCEINLINE void __set_DCISW64(uint64_t value)
+{
+	__ASM volatile("DC ISW, %0" : : "r" (value) : "memory");
+}
+
+/** \brief Clean by Set/Way DCCSW
+ */
+__STATIC_FORCEINLINE void __set_DCCSW64(uint64_t value)
+{
+	__ASM volatile("DC CSW, %0" : : "r" (value) : "memory");
+}
+
+/** \brief CISW Clean and invalidate by Set/Way DCCISW
+ */
+__STATIC_FORCEINLINE void __set_DCCISW64(uint64_t value)
+{
+	__ASM volatile("DC CISW, %0" : : "r" (value) : "memory");
+}
+
+/** \brief CIVAC Clean and Invalidate by Virtual Address to Point of Coherency DCCIMVAC
+ */
+__STATIC_FORCEINLINE void __set_DCCIVAC64(uint64_t value)
+{
+	__ASM volatile("DC CIVAC, %0" : : "r" (value) : "memory");
+}
+
+/** \brief CVAC Clean by Virtual Address to Point of Coherency DCCMVAC
+ */
+__STATIC_FORCEINLINE void __set_DCCVAC64(uint64_t value)
+{
+	__ASM volatile("DC CVAC, %0" : : "r" (value) : "memory");
+}
+
+/** \brief IVAC Invalidate by Virtual Address, to Point of Coherency DCIMVAC
+ */
+__STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
+{
+	__ASM volatile("DC IVAC, %0" : : "r" (value) : "memory");
+}
+
+
 /* ##########################  L1 Cache functions  ################################# */
 
 /** \brief Enable Caches by setting I and C bits in SCTLR register.
@@ -1303,30 +1366,24 @@ __STATIC_FORCEINLINE void L1C_InvalidateICacheAll(void) {
 * \param [in] va Pointer to data to clear the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanDCacheMVA(void *va) {
-#if 0
-  __set_DCCMVAC((uintptr_t)va);
+  __set_DCCVAC64((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
-#endif
 }
 
 /** \brief  Invalidate data cache line by address.
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_InvalidateDCacheMVA(void *va) {
-#if 0
-  __set_DCIMVAC((uintptr_t)va);
+  __set_DCIVAC64((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
-#endif
 }
 
 /** \brief  Clean and Invalidate data cache by address.
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanInvalidateDCacheMVA(void *va) {
-#if 0
-  __set_DCCIMVAC((uintptr_t)va);
-  __DMB();     //ensure the ordering of data cache maintenance operations and their effects
-#endif
+	__set_DCCIVAC64((uintptr_t)va);
+	__DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
 /** \brief Calculate log2 rounded up
@@ -1365,7 +1422,6 @@ __STATIC_FORCEINLINE uint8_t __log2_up(uint32_t n)
 */
 __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t maint)
 {
-#if 0
   uint32_t Dummy;
   uint32_t ccsidr;
   uint32_t num_sets;
@@ -1376,9 +1432,9 @@ __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t ma
 
   Dummy = level << 1U;
   /* set csselr, select ccsidr register */
-  __set_CSSELR(Dummy);
+  __set_CSSELR_EL1(Dummy);
   /* get current ccsidr register */
-  ccsidr = __get_CCSIDR();
+  ccsidr = __get_CCSIDR_EL1();
   num_sets = ((ccsidr & 0x0FFFE000U) >> 13U) + 1U;
   num_ways = ((ccsidr & 0x00001FF8U) >> 3U) + 1U;
   log2_linesize = (ccsidr & 0x00000007U) + 2U + 2U;
@@ -1391,27 +1447,25 @@ __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t ma
   {
     for(int32_t set = num_sets-1; set >= 0; set--)
     {
-      Dummy = (level << 1U) | (((uint32_t)set) << log2_linesize) | (((uint32_t)way) << shift_way);
+    	uint64_t Dummy = (level << 1U) | (((uint32_t)set) << log2_linesize) | (((uint32_t)way) << shift_way);
       switch (maint)
       {
-        case 0U: __set_DCISW(Dummy);  break;
-        case 1U: __set_DCCSW(Dummy);  break;
-        default: __set_DCCISW(Dummy); break;
+        case 0U: __set_DCISW64(Dummy);  break;
+        case 1U: __set_DCCSW64(Dummy);  break;
+        default: __set_DCCISW64(Dummy); break;
       }
     }
   }
   __DMB();
-#endif
 }
 
 /** \brief  Clean and Invalidate the entire data or unified cache
 * \param [in] op 0 - invalidate, 1 - clean, otherwise - invalidate and clean
 */
 __STATIC_FORCEINLINE void L1C_CleanInvalidateCache(uint32_t op) {
-#if 0
   uint32_t clidr;
   uint32_t cache_type;
-  clidr =  __get_CLIDR();
+  clidr =  __get_CLIDR_EL1();
   for(uint32_t i = 0U; i<7U; i++)
   {
     cache_type = (clidr >> i*3U) & 0x7UL;
@@ -1420,7 +1474,6 @@ __STATIC_FORCEINLINE void L1C_CleanInvalidateCache(uint32_t op) {
       __L1C_MaintainDCacheSetWay(i, op);
     }
   }
-#endif
 }
 
 /** \brief  Invalidate the whole data cache.
