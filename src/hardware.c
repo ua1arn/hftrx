@@ -2943,6 +2943,28 @@ ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr
 	}
 }
 
+static void
+ttb_64kB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+{
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	unsigned i;
+	const uint_fast32_t pagesize = (1uL << 16);
+
+	for (i = 0; i < (4096 * 16); ++ i)
+	{
+		const uintptr_t address = (uintptr_t) i << 16;
+		tlbbase [i] =  accessbits(address, 0, 0);
+	}
+	/* Установить R/O атрибуты для указанной области */
+	while (textsize >= pagesize)
+	{
+		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
+		textsize -= pagesize;
+		textstart += pagesize;
+	}
+}
+
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
 //static void
@@ -3310,7 +3332,13 @@ sysinit_mmu_initialize(void)
 	}
 #endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
 
-#if WITHISBOOTLOADER || CPUSTYLE_R7S721
+
+#if defined (__aarch64__)
+	// MMU iniitialize
+	//ttb_64kB_initialize(ttb_1MB_accessbits, 0, 0);
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+
+#elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
 	// MMU iniitialize
 	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
@@ -3710,7 +3738,7 @@ static void cortexa_cpuinfo(void)
 #if defined(__aarch64__)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL3=%08X, _TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
 			(unsigned) (__get_MPIDR_EL1() & 0x03),
 			(unsigned) __get_VBAR_EL3(),
 			(unsigned) __get_TTBR0_EL3(),
