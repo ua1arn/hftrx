@@ -187,19 +187,27 @@ __STATIC_FORCEINLINE uint64_t __get_MPIDR_EL1(void)
 	return result;
 }
 
-__STATIC_FORCEINLINE uint64_t __get_VBAR_EL1(void)
+__STATIC_FORCEINLINE uint64_t __get_VBAR_EL3(void)
 {
 	uint64_t result;
-	// MRS <Xt>, MPIDR_EL1 ; Read MPIDR_EL1 into Xt
-	__get_RG64("VBAR_EL1", result);
+	// MRS <Xt>, VBAR_EL3 ; Read VBAR_EL3 into Xt
+	__get_RG64("VBAR_EL3", result);
 	return result;
 }
 
 __STATIC_FORCEINLINE uint64_t __get_TTBR0_EL1(void)
 {
 	uint64_t result;
-	// MRS <Xt>, MPIDR_EL1 ; Read MPIDR_EL1 into Xt
+	// MRS <Xt>, TTBR0_EL1 ; Read TTBR0_EL1 into Xt
 	__get_RG64("TTBR0_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_TTBR0_EL3(void)
+{
+	uint64_t result;
+	// MRS <Xt>, TTBR0_EL3 ; Read TTBR0_EL3 into Xt
+	__get_RG64("TTBR0_EL3", result);
 	return result;
 }
 
@@ -247,14 +255,44 @@ __STATIC_FORCEINLINE uint32_t __get_CTR_EL0(void)
 
 __STATIC_FORCEINLINE void __set_TTBR0_EL1(uint64_t value)
 {
-	// MSR TTBR0_EL1, <Xt> ; Write Xt to TTBR0_EL
+	// MSR TTBR0_EL1, <Xt> ; Write Xt to TTBR0_EL1
 	__set_RG64("TTBR0_EL1", value);
+}
+
+__STATIC_FORCEINLINE void __set_TTBR0_EL2(uint64_t value)
+{
+	// MSR TTBR0_EL2, <Xt> ; Write Xt to TTBR0_EL2
+	__set_RG64("TTBR0_EL2", value);
+}
+
+__STATIC_FORCEINLINE void __set_TTBR0_EL3(uint64_t value)
+{
+	// MSR TTBR0_EL3, <Xt> ; Write Xt to TTBR0_EL3
+	__set_RG64("TTBR0_EL3", value);
+}
+
+__STATIC_FORCEINLINE void __set_TCR_EL3(uint32_t value)
+{
+	// MSR TCR_EL3, <Xt> ; Write Xt to TCR_EL3
+	__set_RG32("TCR_EL3", value);
 }
 
 __STATIC_FORCEINLINE void __set_VBAR_EL1(uint64_t value)
 {
 	// MSR VBAR_EL1, <Xt> ; Write Xt to VBAR_EL1
 	__set_RG64("VBAR_EL1", value);
+}
+
+__STATIC_FORCEINLINE void __set_VBAR_EL2(uint64_t value)
+{
+	// MSR VBAR_EL2, <Xt> ; Write Xt to VBAR_EL2
+	__set_RG64("VBAR_EL2", value);
+}
+
+__STATIC_FORCEINLINE void __set_VBAR_EL3(uint64_t value)
+{
+	// MSR VBAR_EL3, <Xt> ; Write Xt to VBAR_EL3
+	__set_RG64("VBAR_EL3", value);
 }
 
 __STATIC_FORCEINLINE void __set_DACR32_EL2(uint32_t value)
@@ -265,7 +303,7 @@ __STATIC_FORCEINLINE void __set_DACR32_EL2(uint32_t value)
 
 __STATIC_FORCEINLINE void __set_CSSELR_EL1(uint32_t value)
 {
-	// MSR DACR32_EL2, <Xt> ; Write Xt to DACR32_EL2
+	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
 	__set_RG32("CSSELR_EL1", value);
 }
 
@@ -1309,16 +1347,30 @@ __STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
 
 ///////////////
 ///
-__STATIC_FORCEINLINE void __set_SCTLR_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_SCTLR_EL3(uint32_t value)
 {
-	__set_RG32("SCTLR_EL1", value);
+	__set_RG32("SCTLR_EL3", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL1(void)
+__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL3(void)
 {
 	uint32_t result;
-	// MRS <Xt>, MIDR_EL1 ; Read SCTLR_EL1 into Xt
-	__get_RG32("SCTLR_EL1", result);
+	// MRS <Xt>, SCTLR_EL3 ; Read SCTLR_EL3 into Xt
+	__get_RG32("SCTLR_EL3", result);
+	return result;
+}
+///////////////
+///
+__STATIC_FORCEINLINE void __set_ACTLR_EL3(uint32_t value)
+{
+	__set_RG32("ACTLR_EL3", value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ACTLR_EL3(void)
+{
+	uint32_t result;
+	// MRS <Xt>, ACTLR_EL3 ; Read ACTLR_EL3 into Xt
+	__get_RG32("ACTLR_EL3", result);
 	return result;
 }
 
@@ -1342,28 +1394,28 @@ __STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
 /** \brief Enable Caches by setting I and C bits in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableCaches(void) {
-  __set_SCTLR_EL1( __get_SCTLR_EL1() | SCTLR_I_Msk | SCTLR_C_Msk);
+  __set_SCTLR_EL3( __get_SCTLR_EL3() | SCTLR_I_Msk | SCTLR_C_Msk);
   __ISB();
 }
 
 /** \brief Disable Caches by clearing I and C bits in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableCaches(void) {
-  __set_SCTLR_EL1( __get_SCTLR_EL1() & (~SCTLR_I_Msk) & (~SCTLR_C_Msk));
+  __set_SCTLR_EL3( __get_SCTLR_EL3() & (~SCTLR_I_Msk) & (~SCTLR_C_Msk));
   __ISB();
 }
 
 /** \brief  Enable Branch Prediction by setting Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableBTAC(void) {
-//  __set_SCTLR_EL1( __get_SCTLR_EL1() | SCTLR_Z_Msk);
+//  __set_SCTLR_EL3( __get_SCTLR_EL3() | SCTLR_Z_Msk);
 //  __ISB();
 }
 
 /** \brief  Disable Branch Prediction by clearing Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableBTAC(void) {
-//  __set_SCTLR_EL1( __get_SCTLR_EL1() & (~SCTLR_Z_Msk));
+//  __set_SCTLR_EL3( __get_SCTLR_EL3() & (~SCTLR_Z_Msk));
 //  __ISB();
 }
 
@@ -3148,7 +3200,7 @@ __STATIC_INLINE void MMU_Enable(void)
   // Set M bit 0 to enable the MMU
   // Set AFE bit to enable simplified access permissions model
   // Clear TRE bit to disable TEX remap and A bit to disable strict alignment fault checking
-  __set_SCTLR_EL1( (__get_SCTLR_EL1() & ~(1 << 28) & ~(1 << 1)) | 1 | (1 << 29));
+  __set_SCTLR_EL3( (__get_SCTLR_EL3() & ~(1 << 28) & ~(1 << 1)) | 1 | (1 << 29));
   __ISB();
 }
 
@@ -3157,7 +3209,7 @@ __STATIC_INLINE void MMU_Enable(void)
 __STATIC_INLINE void MMU_Disable(void)
 {
   // Clear M bit 0 to disable the MMU
-  __set_SCTLR_EL1( __get_SCTLR_EL1() & ~1);
+  __set_SCTLR_EL3( __get_SCTLR_EL3() & ~1);
   __ISB();
 }
 

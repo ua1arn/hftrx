@@ -2376,11 +2376,19 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
 #define MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
 
-// Also see __set_TTBR0 parameter
-#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
-#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
-#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
-#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+#if defined(__aarch64__)
+	// Also see TCR_EL3 parameter
+	#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+	#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
+	#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
+	#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
+#else
+	// Also see __set_TTBR0 parameter
+	#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+	#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
+	#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
+	#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+#endif
 
 /* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
 #define RAM_ATTRS CACHEATTR_WB_WA_CACHE
@@ -2717,44 +2725,21 @@ sysinit_ttbr_initialize(void)
 
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
+	ASSERT(((uintptr_t) tlbbase & 0x3FFF) == 0);
 
-	//CP15_writeTTBCR(0);
-	   /* Set location of level 1 page table
-	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
-	    ; 13:7  - 0x0
-	    ; 6     - IRGN[0] 0x1  (Inner WB WA)
-	    ; 5     - NOS     0x0  (Non-shared)
-	    ; 4:3   - RGN     0x01 (Outer WB WA)
-	    ; 2     - IMP     0x0  (Implementation Defined)
-	    ; 1     - S       0x0  (Non-shared)
-	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-
-	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
-#if WITHSMPSYSTEM
-	// TTBR0
+	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	__set_TTBR0_EL1(
-			(uintptr_t) tlbbase |
-			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
-			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
-			(RGN_attr << 3) |	// RGN
-			!1*(UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
-			1*(UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
-			0);
-#else /* WITHSMPSYSTEM */
-	// TTBR0
-	__set_TTBR0_EL1(
-			(uintptr_t) tlbbase |
-			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
-			(UINT32_C(1) << 3) |	// RGN
-			0*(UINT32_C(1) << 5) |	// NOS
-			0*(UINT32_C(1) << 1) |	// S
-			0);
-#endif /* WITHSMPSYSTEM */
-	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
-	  __ISB();
+	const uint32_t tcrv =
+			IRGN_attr * (UINT32_C(1) << 8) |
+			RGN_attr * (UINT32_C(1) << 10) |
+			0;
+//	__set_TTBR0_EL1((uintptr_t) tlbbase);
+//	__set_TTBR0_EL2((uintptr_t) tlbbase);
+	__set_TTBR0_EL3((uintptr_t) tlbbase);
+
+	//__set_TCR_EL3(tcrv);
+	__ISB();
 
 	// Program the domain access register
 	__set_DACR32_EL2(0xFFFFFFFF); // domain 15: access are not checked
@@ -2769,13 +2754,13 @@ sysinit_ttbr_initialize(void)
 	L2C_InvAllByWay();
 #endif
 
-	MMU_Enable();
+	//MMU_Enable();
 
 #elif (__CORTEX_A != 0)
 
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
+	ASSERT(((uintptr_t) tlbbase & 0x3FFF) == 0);
 
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
@@ -3204,10 +3189,13 @@ sysinit_vbar_initialize(void)
 	const uintptr_t vbase = (uintptr_t) & __Vectors64;
 #endif /* WITHRTOS */
 
-	__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+	ASSERT((vbase & 0x07FF) == 0);
+	__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
+	__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
+	__set_VBAR_EL3(vbase);	 // TRAP at memcpy Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
-	//__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
-	__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+	//__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
+	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
@@ -3218,6 +3206,7 @@ sysinit_vbar_initialize(void)
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
 #endif /* WITHRTOS */
 
+	ASSERT((vbase & 0x01F) == 0);
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
@@ -3721,11 +3710,11 @@ static void cortexa_cpuinfo(void)
 #if defined(__aarch64__)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL1=%08X, TTBR0_EL1=%08X, SCTLR_EL1=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
 			(unsigned) (__get_MPIDR_EL1() & 0x03),
-			(unsigned) __get_VBAR_EL1(),
-			(unsigned) __get_TTBR0_EL1(),
-			(unsigned) __get_SCTLR_EL1(),
+			(unsigned) __get_VBAR_EL3(),
+			(unsigned) __get_TTBR0_EL3(),
+			(unsigned) __get_SCTLR_EL3(),
 			(unsigned) (uintptr_t) & vvv,
 			(unsigned) __get_MPIDR_EL1()
 			);
