@@ -3019,6 +3019,7 @@ sysinit_fpu_initialize(void)
 	//__FPU_Enable_fixed();
 	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT32_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
 	__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT32_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
+	//__builtin_aarch64_set_fpcr( __builtin_aarch64_get_fpcr() & 0x00086060u);
 
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
@@ -3973,64 +3974,6 @@ static void restart_self_aarch64(void)
 
 }
 
-
-// aarch64-none-elf-gcc.exe -mcpu=cortex-A53 -Os -c tt.c
-// aarch64-none-elf-ld -o tt.elf tt.o
-// aarch64-none-elf-objdump.exe -d tt.elf
-
-//	#include <stdint.h>
-//
-//	void _start(void)
-//	{
-//		volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
-//		base [0] = 0xDEADBEEF;
-//		for (;;)
-//			;
-//	}
-
-static const uint32_t halt64_a [] =
-{
-		0xD2880000,        //mov     x0, #0x4000                     // #16384
-		0xF2A00080,        //movk    x0, #0x4, lsl #16
-		0x5297DDE1,        //mov     w1, #0xbeef                     // #48879
-		0x72BBD5A1,        //movk    w1, #0xdead, lsl #16
-		0xB9000001,        //str     w1, [x0]
-		0x14000000,        //b       400014 <_start+0x14>
-};
-
-//	#include <stdint.h>
-//	#include "../../arch/aw_a64/cmsis_a64.h"
-//	void _start(void)
-//	{
-//		while ((UART0->UART_USR & (UINT8_C(1) << 1)) == 0)	// TX FIFO Not Full
-//			;
-//		UART0->UART_RBR_THR_DLL = '#';
-//		for (;;)
-//			;
-//	}
-
-static const uint32_t halt64_0 [] =
-{
-		0xD2900000,	// 	mov	x0, #0x8000                	// #32768
-		0xF2A03840,	// 	movk	x0, #0x1c2, lsl #16
-		0xB9407C01,	// 	ldr	w1, [x0, #124]
-		0x360FFFE1,	// 	tbz	w1, #1, 400008 <_start+0x8>
-		0x52800461,	// 	mov	w1, #0x23                  	// #35
-		0xB9000001,	// 	str	w1, [x0]
-		0x14000000,	// 	b	400018 <_start+0x18>
-};
-
-static const uint32_t halt64_1 [] =
-{
-		0xD2900000,	// 	mov	x0, #0x8000                	// #32768
-		0xF2A03840,	// 	movk	x0, #0x1c2, lsl #16
-		0xB9407C01,	// 	ldr	w1, [x0, #124]
-		0x360FFFE1,	// 	tbz	w1, #1, 400008 <_start+0x8>
-		0x528004A1,	// 	mov	w1, #0x23                  	// #35
-		0xB9000001,	// 	str	w1, [x0]
-		0x14000000,	// 	b	400018 <_start+0x18>
-};
-
 // H3: R_CPUCFG @ 0x01F01C00
 
 /*
@@ -4057,22 +4000,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 
 	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
-}
-
-/* for AArch64 */
-static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
-{
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
-	// aarch64
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = startfunc;
-	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = startfunc >> 32;
-//#pragma GCC diagnostic pop
-
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
-	restart_self_aarch64();
 }
 
 #elif CPUSTYLE_H3
@@ -4237,18 +4164,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
 
-/* for AArch64 */
-static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
-{
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= UINT32_C(1) << (targetcore + 24); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = startfunc;
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = startfunc >> 32;
-//#pragma GCC diagnostic pop
-}
-
 #elif CPUSTYLE_T507
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
@@ -4376,18 +4291,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-}
-
-/* for AArch64 */
-static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
-{
-	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG [targetcore] = 1; // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = startfunc;
-	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = startfunc >> 32;
-//#pragma GCC diagnostic pop
 }
 
 #elif CPUSTYLE_T113
@@ -4541,7 +4444,6 @@ void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
@@ -4567,7 +4469,6 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1init);
 
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
-		//aarch64_mp_cpuN_start((uintptr_t) halt64_0, __get_MPIDR() & 0x03);
 
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);

@@ -239,17 +239,24 @@ __STATIC_FORCEINLINE uint64_t __get_ELR_EL3(void)
 	return result;
 }
 
-__STATIC_FORCEINLINE uint32_t __get_ESR_EL1(void)
+__STATIC_FORCEINLINE uint64_t __get_FAR_EL3(void)
 {
-	uint32_t result;
-	__get_RG32("ESR_EL1", result);
+	uint64_t result;
+	__get_RG64("FAR_EL3", result);
 	return result;
 }
 
-__STATIC_FORCEINLINE uint32_t __get_CCSIDR_EL1(void)
+__STATIC_FORCEINLINE uint64_t __get_ESR_EL3(void)
 {
-	uint32_t result;
-	__get_RG32("CCSIDR_EL1", result);
+	uint64_t result;
+	__get_RG64("ESR_EL3", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_CCSIDR_EL1(void)
+{
+	uint64_t result;
+	__get_RG64("CCSIDR_EL1", result);
 	return result;
 }
 
@@ -1357,6 +1364,13 @@ __STATIC_FORCEINLINE void __set_DCCVAC64(uint64_t value)
 __STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
 {
 	__ASM volatile("DC IVAC, %0" : : "r" (value) : "memory");
+}
+
+/** \brief  ZVA Cache zero by Virtual Address
+ */
+__STATIC_FORCEINLINE void __set_DCZVA64(uint64_t value)
+{
+	__ASM volatile("DC ZVA, %0" : : "r" (value) : "memory");
 }
 
 ///////////////
