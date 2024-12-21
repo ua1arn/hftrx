@@ -64,6 +64,7 @@
 	 STACKSIZEIRQ = 64
 
 	 STACKSIZESYSBOOT = 512
+  	#if 1
   
 	.section .isr_vector, "ax"
 	//.code 64
@@ -72,39 +73,30 @@
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
-#if 0
-	.align 6
-	.global __Vectors
-__Vectors:
-	ldr pc, ResetAddr    /* Reset                 */
-	ldr pc, UndefAddr    /* Undefined instruction */
-	ldr pc, SWIAddr      /* Software interrupt    */
-	ldr pc, PAbortAddr   /* Prefetch abort        */
-	ldr pc, DAbortAddr   /* Data abort            */
-	ldr pc, HypAddr 		/* Entry to Hyp mode	 */
-	ldr pc, IRQAddr      /* IRQ interrupt         */
-	ldr pc, FIQAddr      /* FIQ interrupt         */
-
-ResetAddr:	.word Reset_Handler
-UndefAddr:  .word Undef_Handler
-SWIAddr:    .word SWI_Handler
-PAbortAddr: .word PAbort_Handler
-DAbortAddr: .word DAbort_Handler
-HypAddr:  	.word Hyp_Handler
-IRQAddr:    .word IRQ_Handler
-FIQAddr:    .word FIQ_Handler
+	// 4.3.72 Vector Base Address Register, EL1
+	.align 11	// Bits 10..0 of address should be zero
+	.global __Vectors64
+__Vectors64:
+	b Reset_Handler    /* Reset                 */
+	b Undef_Handler    /* Undefined instruction */
+	b SWI_Handler      /* Software interrupt    */
+	b PAbort_Handler   /* Prefetch abort        */
+	b DAbort_Handler   /* Data abort            */
+	b Hyp_Handler 		/* Entry to Hyp mode	 */
+	b IRQ_Handler      /* IRQ interrupt         */
+	b FIQ_Handler      /* FIQ interrupt         */
 
 #endif
+   	.ltorg
 
-   .ltorg
-
-   .section .startup0
-   //.code 64
+   	.section .startup0
+	.align 3
+   	//.code 64
    
-   .extern _start
-   /*.extern __libc_init_array*/
-   .extern SystemInit
-   .global Reset_Handler
+   	.extern _start
+   	/*.extern __libc_init_array*/
+   	.extern SystemInit
+   	.global Reset_Handler
  /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/

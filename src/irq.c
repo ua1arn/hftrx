@@ -1936,8 +1936,8 @@ uint_fast8_t arm_hardware_cpuid(void)
 	return 0;
 
 #elif defined(__aarch64__)
-	#warning to be implement
-	return 0;
+	// Cortex-A53 computers
+	return __get_MPIDR_EL1() & 0x03;
 
 #elif (__CORTEX_A != 0)
 	// Cortex-A computers

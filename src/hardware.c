@@ -1635,6 +1635,9 @@ uint32_t __get_DFAR(void)
 	__get_CP(15, 0, result, 6, 0, 0);
 	return result;
 }
+#endif
+
+#if (__CORTEX_A != 0)
 
 void Undef_Handler(void)
 {
@@ -1645,7 +1648,7 @@ void Undef_Handler(void)
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
-		PRINTF("marker[%2d]=%08lX\n", i, (& marker) [i]);
+		PRINTF("marker[%2d]=%08X\n", i, (unsigned) (& marker) [i]);
 	}
 	for (;;)
 		;
@@ -1659,7 +1662,7 @@ void SWI_Handler(void)
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
-		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 	}
 //	for (;;)
 //		;
@@ -1673,7 +1676,7 @@ void PAbort_Handler(void)
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08lX, IFAR=%08lX, pc=%08lX, sp~%08lx __get_MPIDR()=%08lX\n"), __get_DFSR(), __get_IFAR(), (& marker) [2], (unsigned long) & marker, __get_MPIDR());
+	PRINTF(PSTR("DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) & marker, (unsigned) __get_MPIDR());
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -1717,7 +1720,7 @@ void PAbort_Handler(void)
 //	unsigned i;
 //	for (i = 0; i < 8; ++ i)
 //	{
-//		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+//		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 //	}
 	for (;;)
 	{
@@ -1782,7 +1785,7 @@ void DAbort_Handler(void)
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
-		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 	}
 	for (;;)
 	{
@@ -2718,31 +2721,25 @@ sysinit_ttbr_initialize(void)
 #if defined(__aarch64__)
     #warning to be implement
 
+	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
+	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
+	// TTBR0
+//	__set_TTBR0_EL1(
+//			(uintptr_t) tlbbase |
+//			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+//			(UINT32_C(1) << 3) |	// RGN
+//			0*(UINT32_C(1) << 5) |	// NOS
+//			0*(UINT32_C(1) << 1) |	// S
+//			0);
+
 #elif (__CORTEX_A != 0)
 
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 
-#if 0
-	/* Set location of level 1 page table
-	; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
-	; 13:7  - 0x0
-	; 6     - IRGN[0] 0x1  (Inner WB WA)
-	; 5     - NOS     0x0  (Non-shared)
-	; 4:3   - RGN     0x01 (Outer WB WA)
-	; 2     - IMP     0x0  (Implementation Defined)
-	; 1     - S       0x0  (Non-shared)
-	; 0     - IRGN[1] 0x0  (Inner WB WA) */
-	__set_TTBR0(((uint32_t)&Image$$TTB$$ZI$$Base) | 0x48);
-	__ISB();
-
-	/* Set up domain access control register
-	; We set domain 0 to Client and all other domains to No Access.
-	; All translation table entries specify domain 0 */
-	__set_DACR(1);
-	__ISB();
-#else
+#if 1
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
 	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
@@ -3157,20 +3154,23 @@ sysinit_perfmeter_initialize(void)
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 }
 
-#if 0 && defined(__aarch64__) && ! LINUX_SUBSYSTEM
-//uint32_t __Vectors [32];
-void __attribute__((used)) Reset_Handler(void)
-{
-	SystemInit();
-	main();
-}
-#endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
-
 static void
 sysinit_vbar_initialize(void)
 {
 #if defined(__aarch64__)
     #warning to be implement
+#if WITHRTOS
+	extern unsigned long __Vectors64_rtos;
+	const uintptr_t vbase = (uintptr_t) & __Vectors64_rtos;
+#else /* WITHRTOS */
+	extern unsigned long __Vectors64;
+	const uintptr_t vbase = (uintptr_t) & __Vectors64;
+#endif /* WITHRTOS */
+
+	//__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+
+	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
+	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
@@ -3187,6 +3187,7 @@ sysinit_vbar_initialize(void)
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 #endif /* (__CORTEX_A != 0) */
+
 #if CPUSTYLE_RISCV
 
 	// http://five-embeddev.com/riscv-isa-manual/latest/machine.html#machine-trap-vector-base-address-register-mtvec
@@ -3752,7 +3753,15 @@ void __attribute__((section(".isr_vector")))  (* __Vectors64 [])(void) =
 static void cortexa_cpuinfo(void)
 {
 #if defined(__aarch64__)
-    #warning to be implement
+	volatile uint_fast32_t vvv;
+	dbg_putchar('$');
+	PRINTF("CPU%u: VBAR_EL1=%08X, TTBR0_EL1=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+			(unsigned) (__get_MPIDR_EL1() & 0x03),
+			(unsigned) __get_VBAR_EL1(),
+			(unsigned) __get_TTBR0_EL1(),
+			(unsigned) & vvv,
+			(unsigned) __get_MPIDR_EL1()
+			);
 #else
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
@@ -3946,6 +3955,7 @@ uint32_t __get_RVBAR(void)
 	  __get_CP(15, 0, result, 12, 0, 1);
 	  return(result);
 }
+
 
 // Address that execution starts from after reset when executing in 32-bit state.
 void __set_RVBAR(uint32_t rvbar)
@@ -4936,7 +4946,13 @@ extern void __libc_init_array(void);
 
 void __NO_RETURN _start(void)
 {
+//	dbg_putchar('1');
+//	TP();
+//	PRINTF("__get_MIDR_EL1()=%08" PRIX32 "\n", __get_MIDR_EL1());
+//	PRINTF("__get_MPIDR_EL1()=%08" PRIX64 "\n", __get_MPIDR_EL1());
+//	TP();
 	__libc_init_array();	// invoke constructors
+//	TP();
     /* Branch to main function */
     main();
 

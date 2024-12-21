@@ -165,15 +165,92 @@
 #define     __IOM    volatile            /*!< \brief Defines 'read / write' structure member permissions */
 #define RESERVED(N, T) T RESERVED##N;    // placeholder struct members used for "reserved" areas
 
-//#undef __get_CP
-//#undef __set_CP
-//#undef __get_CP64
-//#undef __set_CP64
-//
-//#define __get_CP(cp, op1, Rt, CRn, CRm, op2) do { } while (0) //__ASM volatile("MRC p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : "=r" (Rt) : : "memory" )
-//#define __set_CP(cp, op1, Rt, CRn, CRm, op2) do { } while (0) //__ASM volatile("MCR p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : : "r" (Rt) : "memory" )
-//#define __get_CP64(cp, op1, Rt, CRm)         do { } while (0) //__ASM volatile("MRRC p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : "=r" (Rt) : : "memory" )
-//#define __set_CP64(cp, op1, Rt, CRm)         do { } while (0) //__ASM volatile("MCRR p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : : "r" (Rt) : "memory" )
+
+ //#define __get_CP(cp, op1, Rt, CRn, CRm, op2) __ASM volatile("MRC p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : "=r" (Rt) : : "memory" )
+ //#define __set_CP(cp, op1, Rt, CRn, CRm, op2) __ASM volatile("MCR p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : : "r" (Rt) : "memory" )
+ //#define __get_CP64(cp, op1, Rt, CRm)         __ASM volatile("MRRC p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : "=r" (Rt) : : "memory" )
+ //#define __set_CP64(cp, op1, Rt, CRm)         __ASM volatile("MCRR p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : : "r" (Rt) : "memory" )
+
+#define __get_RG32(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
+#define __set_RG32(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
+#define __get_RG64(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
+#define __set_RG64(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
+
+__STATIC_FORCEINLINE uint32_t __get_MIDR_EL1(void)
+{
+	uint32_t result;
+	// MRS <Xt>, MIDR_EL1 ; Read MIDR_EL1 into Xt
+	__get_RG32("MIDR_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_MPIDR_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, MPIDR_EL1 ; Read MPIDR_EL1 into Xt
+	__get_RG64("MPIDR_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_VBAR_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, MPIDR_EL1 ; Read MPIDR_EL1 into Xt
+	__get_RG64("VBAR_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_TTBR0_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, MPIDR_EL1 ; Read MPIDR_EL1 into Xt
+	__get_RG64("TTBR0_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_FAR_EL1(void)
+{
+	uint64_t result;
+	__get_RG64("FAR_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint64_t __get_FAR_EL2(void)
+{
+	uint64_t result;
+	__get_RG64("FAR_EL2", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ESR_EL1(void)
+{
+	uint32_t result;
+	__get_RG32("ESR_EL1", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_TTBR0_EL1(uint64_t value)
+{
+	// MSR TTBR0_EL1, <Xt> ; Write Xt to TTBR0_EL
+	__set_RG64("TTBR0_EL1", value);
+}
+
+__STATIC_FORCEINLINE void __set_VBAR_EL1(uint64_t value)
+{
+	// MSR VBAR_EL1, <Xt> ; Write Xt to VBAR_EL1
+	__set_RG64("VBAR_EL1", value);
+}
+
+#define __get_MPIDR() 	(__get_MPIDR_EL1())
+#define __get_IFAR() 	(__get_FAR_EL1())
+#define __get_DFAR() 	(__get_FAR_EL2())
+#define __get_DFSR() 	(__get_ESR_EL1())
+
+// Used in __FPU_Enable
+#define __get_FPSCR() (0)
+#define __get_CPACR() (0)
+#define __set_FPSCR(v) ((void) (v))
+#define __set_CPACR(v) ((void) (v))
 
  /*******************************************************************************
   *                 Register Abstraction
