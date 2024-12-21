@@ -70,12 +70,10 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-/*
 		. = ALIGN(2048);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors64;
-*/
 
 
 	} > RAM

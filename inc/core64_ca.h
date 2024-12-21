@@ -167,6 +167,7 @@
 
 #define __get_RG32(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
 #define __set_RG32(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
+#define __set_RG32C(reg, v)         __ASM volatile("MSR " reg ", #" # v : : : "memory" )
 #define __get_RG64(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
 #define __set_RG64(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
 
@@ -390,7 +391,7 @@ typedef union
     uint32_t Z:1;                        /*!< \brief bit:    11  Branch prediction enable */
     uint32_t I:1;                        /*!< \brief bit:    12  Instruction cache enable */
     uint32_t V:1;                        /*!< \brief bit:    13  Vectors bit */
-    uint32_t RR:1;                       /*!< \brief bit:    14  Round Robin select */
+    uint32_t DZE:1;                      /*!< \brief bit:    14   Enables access to the DC ZVA instruction */
     RESERVED(3:2, uint32_t)
     uint32_t HA:1;                       /*!< \brief bit:    17  Hardware Access flag enable */
     RESERVED(4:1, uint32_t)
@@ -444,23 +445,23 @@ typedef union
 #define SCTLR_HA_Pos                     17U                                    /*!< \brief SCTLR: HA Position */
 #define SCTLR_HA_Msk                     (1UL << SCTLR_HA_Pos)                  /*!< \brief SCTLR: HA Mask */
 
-#define SCTLR_RR_Pos                     14U                                    /*!< \brief SCTLR: RR Position */
-#define SCTLR_RR_Msk                     (1UL << SCTLR_RR_Pos)                  /*!< \brief SCTLR: RR Mask */
+#define SCTLR_DZE_Pos                     14U                                    /*!< \brief SCTLR: DZE Position */
+#define SCTLR_DZE_Msk                     (1UL << SCTLR_RR_Pos)                  /*!< \brief SCTLR: DZE Mask */
 
-#define SCTLR_V_Pos                      13U                                    /*!< \brief SCTLR: V Position */
-#define SCTLR_V_Msk                      (1UL << SCTLR_V_Pos)                   /*!< \brief SCTLR: V Mask */
+//#define SCTLR_V_Pos                      13U                                    /*!< \brief SCTLR: V Position */
+//#define SCTLR_V_Msk                      (1UL << SCTLR_V_Pos)                   /*!< \brief SCTLR: V Mask */
 
 #define SCTLR_I_Pos                      12U                                    /*!< \brief SCTLR: I Position */
 #define SCTLR_I_Msk                      (1UL << SCTLR_I_Pos)                   /*!< \brief SCTLR: I Mask */
 
-#define SCTLR_Z_Pos                      11U                                    /*!< \brief SCTLR: Z Position */
-#define SCTLR_Z_Msk                      (1UL << SCTLR_Z_Pos)                   /*!< \brief SCTLR: Z Mask */
+//#define SCTLR_Z_Pos                      11U                                    /*!< \brief SCTLR: Z Position */
+//#define SCTLR_Z_Msk                      (1UL << SCTLR_Z_Pos)                   /*!< \brief SCTLR: Z Mask */
 
-#define SCTLR_SW_Pos                     10U                                    /*!< \brief SCTLR: SW Position */
-#define SCTLR_SW_Msk                     (1UL << SCTLR_SW_Pos)                  /*!< \brief SCTLR: SW Mask */
+//#define SCTLR_SW_Pos                     10U                                    /*!< \brief SCTLR: SW Position */
+//#define SCTLR_SW_Msk                     (1UL << SCTLR_SW_Pos)                  /*!< \brief SCTLR: SW Mask */
 
-#define SCTLR_B_Pos                      7U                                     /*!< \brief SCTLR: B Position */
-#define SCTLR_B_Msk                      (1UL << SCTLR_B_Pos)                   /*!< \brief SCTLR: B Mask */
+//#define SCTLR_B_Pos                      7U                                     /*!< \brief SCTLR: B Position */
+//#define SCTLR_B_Msk                      (1UL << SCTLR_B_Pos)                   /*!< \brief SCTLR: B Mask */
 
 #define SCTLR_CP15BEN_Pos                5U                                     /*!< \brief SCTLR: CP15BEN Position */
 #define SCTLR_CP15BEN_Msk                (1UL << SCTLR_CP15BEN_Pos)             /*!< \brief SCTLR: CP15BEN Mask */
@@ -1340,15 +1341,15 @@ __STATIC_FORCEINLINE void L1C_DisableCaches(void) {
 /** \brief  Enable Branch Prediction by setting Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_EnableBTAC(void) {
-  __set_SCTLR_EL1( __get_SCTLR_EL1() | SCTLR_Z_Msk);
-  __ISB();
+//  __set_SCTLR_EL1( __get_SCTLR_EL1() | SCTLR_Z_Msk);
+//  __ISB();
 }
 
 /** \brief  Disable Branch Prediction by clearing Z bit in SCTLR register.
 */
 __STATIC_FORCEINLINE void L1C_DisableBTAC(void) {
-  __set_SCTLR_EL1( __get_SCTLR_EL1() & (~SCTLR_Z_Msk));
-  __ISB();
+//  __set_SCTLR_EL1( __get_SCTLR_EL1() & (~SCTLR_Z_Msk));
+//  __ISB();
 }
 
 /** \brief  Invalidate entire branch predictor array

@@ -1170,11 +1170,14 @@ extern "C" {
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
 	#if defined(__aarch64__)
-
+		// MSR DAIFCLR, #IRQ_bit
 		#define global_enableIRQ() do { \
+				__set_RG32C("DAIFCLR", 0x07); /* I bit of DAIF */ \
 			} while (0)
+		// MSR DAIFSET, #IRQ_bit
 		#define global_disableIRQ() do { \
-		} while (0)
+				__set_RG32C("DAIFSET", 0x07); /* I bit of DAIF */ \
+			} while (0)
 
 	#else /* defined(__aarch64__) */
 
@@ -1183,7 +1186,7 @@ extern "C" {
 			} while (0)
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
-		} while (0)
+			} while (0)
 	#endif /* defined(__aarch64__) */
 
 #elif CPUSTYLE_RISCV

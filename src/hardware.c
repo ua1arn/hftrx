@@ -3204,8 +3204,8 @@ sysinit_vbar_initialize(void)
 
 	__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
 
-	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
-	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+	//__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
+	__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
