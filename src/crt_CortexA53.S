@@ -72,26 +72,46 @@
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
-	// 4.3.72 Vector Base Address Register, EL1
-	//.align 11	// Bits 10..0 of address should be zero
+	// DDI0500J_cortex_a53_r0p4_trm.pdf 4.3.74 Vector Base Address Register, EL3
+	// ARMv8-A-Programmer-Guide.pdf 10.4 AArch64 exception table
+	// Bits 10..0 of address should be zero
 	.global __Vectors64
 __Vectors64:
-	.org __Vectors64 + 0x000
-	b Reset_Handler    /* Reset                 */
-	.org __Vectors64 + 0x008
-	b Undef_Handler    /* Undefined instruction */
-	.org __Vectors64 + 0x018
-	b SWI_Handler      /* Software interrupt    */
-	.org __Vectors64 + 0x028
-	b PAbort_Handler   /* Prefetch abort        */
-	.org __Vectors64 + 0x038
-	b DAbort_Handler   /* Data abort            */
-	.org __Vectors64 + 0x048
-	b Hyp_Handler 		/* Entry to Hyp mode	 */
-	.org __Vectors64 + 0x080
-	b VIRQ_Handler      /* IRQ interrupt         */
-	.org __Vectors64 + 0x100
-	b FIQ_Handler      /* FIQ interrupt         */
+	.org __Vectors64 + 0x000	// Current EL with SP0
+	b Synchro_Handler	// Synchronous
+	.org __Vectors64 + 0x080	// Current EL with SP0
+	b VIRQ_Handler	// IRQ/vIRQ
+	.org __Vectors64 + 0x100	// Current EL with SP0
+	b FIQ_Handler	// FIQ/vFIQ
+	.org __Vectors64 + 0x180	// Current EL with SP0
+	b SError_Handler	// SError/vSError
+
+	.org __Vectors64 + 0x200	// Current EL with SPx
+	b Synchro_Handler1	// Synchronous
+	.org __Vectors64 + 0x280	// Current EL with SPx
+	b VIRQ_Handler	// IRQ/vIRQ
+	.org __Vectors64 + 0x300	// Current EL with SPx
+	b FIQ_Handler	// FIQ/vFIQ
+	.org __Vectors64 + 0x380	// Current EL with SPx
+	b SError_Handler	// SError/vSError
+
+	.org __Vectors64 + 0x400	// Lower EL using AArch64
+	b Synchro_Handler2	// Synchronous
+	.org __Vectors64 + 0x480	// Lower EL using AArch64
+	b VIRQ_Handler	// IRQ/vIRQ
+	.org __Vectors64 + 0x500	// Lower EL using AArch64
+	b FIQ_Handler	// FIQ/vFIQ
+	.org __Vectors64 + 0x580	// Lower EL using AArch64
+	b SError_Handler	// SError/vSError
+
+	.org __Vectors64 + 0x600	// Lower EL using AArch32
+	b Synchro_Handler3	// Synchronous
+	.org __Vectors64 + 0x680	// Lower EL using AArch32
+	b VIRQ_Handler	// IRQ/vIRQ
+	.org __Vectors64 + 0x700	// Lower EL using AArch32
+	b FIQ_Handler	// FIQ/vFIQ
+	.org __Vectors64 + 0x780	//Lower EL using AArch32
+	b SError_Handler	// SError/vSError
 
    	.ltorg
 

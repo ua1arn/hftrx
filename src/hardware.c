@@ -3018,6 +3018,7 @@ sysinit_fpu_initialize(void)
 	// FPU
 	//__FPU_Enable_fixed();
 	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT32_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
+	__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT32_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
 
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
@@ -3218,6 +3219,7 @@ sysinit_vbar_initialize(void)
 
 	//__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ (UINT32_C(1) << 3));	// Disables stack alignment check
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
@@ -4936,6 +4938,7 @@ void __NO_RETURN _start(void)
 //	PRINTF("__get_MIDR_EL1()=%08" PRIX32 "\n", __get_MIDR_EL1());
 //	PRINTF("__get_MPIDR_EL1()=%08" PRIX64 "\n", __get_MPIDR_EL1());
 //	TP();
+	//PRINTF("__get_DCZID_EL0()=%08" PRIX32 "\n", __get_DCZID_EL0());
 	__libc_init_array();	// invoke constructors
 //	TP();
     /* Branch to main function */

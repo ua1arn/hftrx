@@ -1730,10 +1730,52 @@ void IRQ15_Handler(void)
 //    #define __LDREXB __LDAEXB
 //    #define __STREXB __STLEXB
 
+void Synchro_Handler(void)
+{
+	TP();
+	for (;;)
+		;
+}
+
+void Synchro_Handler1(void)
+{
+	TP();
+	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	for (;;)
+		;
+}
+
+void Synchro_Handler2(void)
+{
+	TP();
+	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	for (;;)
+		;
+}
+
+void Synchro_Handler3(void)
+{
+	TP();
+	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	for (;;)
+		;
+}
+
 void VIRQ_Handler(void)
 {
-
+	TP();
+	for (;;)
+		;
 }
+
+void SError_Handler(void)
+{
+	TP();
+	for (;;)
+		;
+}
+
+
 #endif
 
 #if CPUSTYLE_ARM && ! defined(__aarch64__) && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM

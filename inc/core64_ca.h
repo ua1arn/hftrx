@@ -232,6 +232,13 @@ __STATIC_FORCEINLINE uint64_t __get_CLIDR_EL1(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE uint64_t __get_ELR_EL3(void)
+{
+	uint64_t result;
+	__get_RG64("ELR_EL3", result);
+	return result;
+}
+
 __STATIC_FORCEINLINE uint32_t __get_ESR_EL1(void)
 {
 	uint32_t result;
@@ -1354,6 +1361,36 @@ __STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
 
 ///////////////
 ///
+__STATIC_FORCEINLINE void __set_SCTLR_EL1(uint32_t value)
+{
+	__set_RG32("SCTLR_EL1", value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL1(void)
+{
+	uint32_t result;
+	// MRS <Xt>, SCTLR_EL1 ; Read SCTLR_EL1 into Xt
+	__get_RG32("SCTLR_EL1", result);
+	return result;
+}
+
+///////////////
+///
+__STATIC_FORCEINLINE void __set_SCTLR_EL2(uint32_t value)
+{
+	__set_RG32("SCTLR_EL2", value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL2(void)
+{
+	uint32_t result;
+	// MRS <Xt>, SCTLR_EL2 ; Read SCTLR_EL2 into Xt
+	__get_RG32("SCTLR_EL2", result);
+	return result;
+}
+
+///////////////
+///
 __STATIC_FORCEINLINE void __set_SCTLR_EL3(uint32_t value)
 {
 	__set_RG32("SCTLR_EL3", value);
@@ -1395,6 +1432,15 @@ __STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
 	__get_RG32("CPACR_EL1", result);
 	return result;
 }
+
+__STATIC_FORCEINLINE uint32_t __get_DCZID_EL0(void)
+{
+	uint32_t result;
+	// MRS <Xt>, DCZID_EL0 ; Read DCZID_EL0 into Xt
+	__get_RG32("DCZID_EL0", result);
+	return result;
+}
+
 
 /* ##########################  L1 Cache functions  ################################# */
 
