@@ -1676,7 +1676,7 @@ void PAbort_Handler(void)
 	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) & marker, (unsigned) __get_MPIDR());
+	PRINTF(PSTR("DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -1737,11 +1737,12 @@ void PAbort_Handler(void)
 void DAbort_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl_P(PSTR("DAbort_Handler trapped.\n"));
-	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	dbg_puts_impl_P(PSTR("DAbort_Handler trapped. CPUID="));
+	dbg_putchar('0' + (__get_MPIDR() & 0x03));
+	dbg_putchar('\n');
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08X, DFAR=%08X, pc=%08X, sp~%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_DFAR(), (unsigned) (& marker) [2], (unsigned) & marker);
+	PRINTF(PSTR("DFSR=%08X, DFAR=%08X, pc=%08X, sp~%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_DFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker);
 #pragma GCC diagnostic pop
 	const unsigned WnR = (__get_DFSR() & (UINT32_C(1) << 11)) != 0;
 	const unsigned Status = (__get_DFSR() & (UINT32_C(0x0F) << 0));
@@ -1800,16 +1801,18 @@ void DAbort_Handler(void)
 
 void FIQ_Handler(void)
 {
-	dbg_puts_impl_P(PSTR("FIQHandler trapped.\n"));
-	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	dbg_puts_impl_P(PSTR("FIQ_Handler trapped. CPUID="));
+	dbg_putchar('0' + (__get_MPIDR() & 0x03));
+	dbg_putchar('\n');
 	for (;;)
 		;
 }
 
 void Hyp_Handler(void)
 {
-	dbg_puts_impl_P(PSTR("Hyp_Handler trapped.\n"));
-	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+	dbg_puts_impl_P(PSTR("Hyp_Handler trapped. CPUID="));
+	dbg_putchar('0' + (__get_MPIDR() & 0x03));
+	dbg_putchar('\n');
 	for (;;)
 		;
 }
@@ -3759,7 +3762,7 @@ static void cortexa_cpuinfo(void)
 			(unsigned) (__get_MPIDR_EL1() & 0x03),
 			(unsigned) __get_VBAR_EL1(),
 			(unsigned) __get_TTBR0_EL1(),
-			(unsigned) & vvv,
+			(unsigned) (uintptr_t) & vvv,
 			(unsigned) __get_MPIDR_EL1()
 			);
 #else

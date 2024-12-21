@@ -99,6 +99,13 @@
   #endif
 #endif
 
+
+ // Used in __FPU_Enable
+ #define __get_FPSCR() (0)
+ //#define __get_CPACR() (0)
+ #define __set_FPSCR(v) ((void) (v))
+ //#define __set_CPACR(v) ((void) (v))
+
 #include "cmsis_compiler.h"               /* CMSIS compiler specific defines */
 
 #ifdef __cplusplus
@@ -164,12 +171,6 @@
 #define     __OM     volatile            /*!< \brief Defines 'write only' structure member permissions */
 #define     __IOM    volatile            /*!< \brief Defines 'read / write' structure member permissions */
 #define RESERVED(N, T) T RESERVED##N;    // placeholder struct members used for "reserved" areas
-
-
- //#define __get_CP(cp, op1, Rt, CRn, CRm, op2) __ASM volatile("MRC p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : "=r" (Rt) : : "memory" )
- //#define __set_CP(cp, op1, Rt, CRn, CRm, op2) __ASM volatile("MCR p" # cp ", " # op1 ", %0, c" # CRn ", c" # CRm ", " # op2 : : "r" (Rt) : "memory" )
- //#define __get_CP64(cp, op1, Rt, CRm)         __ASM volatile("MRRC p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : "=r" (Rt) : : "memory" )
- //#define __set_CP64(cp, op1, Rt, CRm)         __ASM volatile("MCRR p" # cp ", " # op1 ", %Q0, %R0, c" # CRm  : : "r" (Rt) : "memory" )
 
 #define __get_RG32(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
 #define __set_RG32(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
@@ -245,12 +246,6 @@ __STATIC_FORCEINLINE void __set_VBAR_EL1(uint64_t value)
 #define __get_IFAR() 	(__get_FAR_EL1())
 #define __get_DFAR() 	(__get_FAR_EL2())
 #define __get_DFSR() 	(__get_ESR_EL1())
-
-// Used in __FPU_Enable
-#define __get_FPSCR() (0)
-#define __get_CPACR() (0)
-#define __set_FPSCR(v) ((void) (v))
-#define __set_CPACR(v) ((void) (v))
 
  /*******************************************************************************
   *                 Register Abstraction
