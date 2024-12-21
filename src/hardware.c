@@ -1637,7 +1637,7 @@ uint32_t __get_DFAR(void)
 }
 #endif
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) // && (! defined(__aarch64__))
 
 void Undef_Handler(void)
 {
@@ -2725,13 +2725,13 @@ sysinit_ttbr_initialize(void)
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 	// TTBR0
-//	__set_TTBR0_EL1(
-//			(uintptr_t) tlbbase |
-//			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
-//			(UINT32_C(1) << 3) |	// RGN
-//			0*(UINT32_C(1) << 5) |	// NOS
-//			0*(UINT32_C(1) << 1) |	// S
-//			0);
+	__set_TTBR0_EL1(
+			(uintptr_t) tlbbase |
+			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+			(UINT32_C(1) << 3) |	// RGN
+			0*(UINT32_C(1) << 5) |	// NOS
+			0*(UINT32_C(1) << 1) |	// S
+			0);
 
 #elif (__CORTEX_A != 0)
 
@@ -3167,7 +3167,7 @@ sysinit_vbar_initialize(void)
 	const uintptr_t vbase = (uintptr_t) & __Vectors64;
 #endif /* WITHRTOS */
 
-	//__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
+	__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
 
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	//__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.

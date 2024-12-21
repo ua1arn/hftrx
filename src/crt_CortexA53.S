@@ -64,8 +64,7 @@
 	 STACKSIZEIRQ = 64
 
 	 STACKSIZESYSBOOT = 512
-  	#if 1
-  
+
 	.section .isr_vector, "ax"
 	//.code 64
         
@@ -74,10 +73,12 @@
 /* Table B1-3 The vector tables */
 /****************************************************************************/
 	// 4.3.72 Vector Base Address Register, EL1
-	.align 11	// Bits 10..0 of address should be zero
+	//.align 11	// Bits 10..0 of address should be zero
 	.global __Vectors64
 __Vectors64:
+	.org __Vectors64 + 0x000
 	b Reset_Handler    /* Reset                 */
+	.org __Vectors64 + 0x008
 	b Undef_Handler    /* Undefined instruction */
 	b SWI_Handler      /* Software interrupt    */
 	b PAbort_Handler   /* Prefetch abort        */
@@ -86,7 +87,6 @@ __Vectors64:
 	b IRQ_Handler      /* IRQ interrupt         */
 	b FIQ_Handler      /* FIQ interrupt         */
 
-#endif
    	.ltorg
 
    	.section .startup0
