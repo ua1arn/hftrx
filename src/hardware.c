@@ -1637,7 +1637,7 @@ uint32_t __get_DFAR(void)
 }
 #endif
 
-#if (__CORTEX_A != 0) // && (! defined(__aarch64__))
+#if (__CORTEX_A != 0)
 
 void Undef_Handler(void)
 {
@@ -3676,77 +3676,6 @@ void __attribute__((used)) SystemDRAMInit(void)
 {
 	SystemInit();
 }
-
-#if defined(__aarch64__) && 0
-
-static void ptc(int c)
-{
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = c;
-
-}
-
-void SystemInit0(void)
-{
-	if (0)
-	{
-		 extern void _start(void) __NO_RETURN;
-
-		  typedef struct {
-		    volatile uint32_t const* src;
-		    volatile uint32_t* dest;
-		    ptrdiff_t  wlen;
-		  } __copy_table_t;
-
-		  typedef struct {
-			volatile uint32_t* dest;
-		    ptrdiff_t  wlen;
-		  } __zero_table_t;
-
-		  extern const __copy_table_t __copy_table_start64__;
-		  extern const __copy_table_t __copy_table_end64__;
-		  extern const __zero_table_t __zero_table_start64__;
-		  extern const __zero_table_t __zero_table_end64__;
-
-		  for (__copy_table_t const* pTable = &__copy_table_start64__; pTable < &__copy_table_end64__; ++pTable) {
-		    for(ptrdiff_t i=0u; i<pTable->wlen; ++i) {
-		      pTable->dest[i] = pTable->src[i];
-		    }
-		  }
-
-		  for (__zero_table_t const* pTable = &__zero_table_start64__; pTable < &__zero_table_end64__; ++pTable) {
-		    for(ptrdiff_t i=0u; i<pTable->wlen; ++i) {
-		      pTable->dest[i] = 0u;
-		    }
-		  }
-
-		 // _start();
-
-	}
-	ptc('H');
-	ptc('e');
-	ptc('l');
-	ptc('l');
-	ptc('o');
-	ptc('6');
-	ptc('4');
-	ptc('!');
-	ptc('\r');
-	ptc('\n');
-	for (;;)
-		;
-}
-/*
-void __attribute__((section(".isr_vector")))  (* __Vectors64 [])(void) =
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-};
-*/
-#endif
 
 #endif /* LINUX_SUBSYSTEM */
 

@@ -1729,6 +1729,11 @@ void IRQ15_Handler(void)
 #if defined(__aarch64__)
 //    #define __LDREXB __LDAEXB
 //    #define __STREXB __STLEXB
+
+void VIRQ_Handler(void)
+{
+
+}
 #endif
 
 #if CPUSTYLE_ARM && ! defined(__aarch64__) && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM

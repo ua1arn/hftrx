@@ -80,11 +80,17 @@ __Vectors64:
 	b Reset_Handler    /* Reset                 */
 	.org __Vectors64 + 0x008
 	b Undef_Handler    /* Undefined instruction */
+	.org __Vectors64 + 0x018
 	b SWI_Handler      /* Software interrupt    */
+	.org __Vectors64 + 0x028
 	b PAbort_Handler   /* Prefetch abort        */
+	.org __Vectors64 + 0x038
 	b DAbort_Handler   /* Data abort            */
+	.org __Vectors64 + 0x048
 	b Hyp_Handler 		/* Entry to Hyp mode	 */
-	b IRQ_Handler      /* IRQ interrupt         */
+	.org __Vectors64 + 0x080
+	b VIRQ_Handler      /* IRQ interrupt         */
+	.org __Vectors64 + 0x100
 	b FIQ_Handler      /* FIQ interrupt         */
 
    	.ltorg
@@ -305,8 +311,8 @@ ExitFunction:
 	f	flags field mask byte, PSR[31:24] (privileged software execution).
 */
  	.align 	4, 0
-    .func   IRQ_Handler
-IRQ_Handler:
+    .func   VIRQ_Handler
+VIRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack

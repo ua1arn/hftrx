@@ -90,7 +90,7 @@ SWIAddr:    .word SWI_Handler
 PAbortAddr: .word PAbort_Handler
 DAbortAddr: .word DAbort_Handler
 HypAddr:  	.word Hyp_Handler
-IRQAddr:    .word IRQ_Handler
+IRQAddr:    .word VIRQ_Handler
 FIQAddr:    .word FIQ_Handler
 
 	/* Force link */
@@ -327,8 +327,8 @@ ExitFunction:
 	f	flags field mask byte, PSR[31:24] (privileged software execution).
 */
  	.align 	4, 0
-    .func   IRQ_Handler
-IRQ_Handler:
+    .func   VIRQ_Handler
+VIRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack

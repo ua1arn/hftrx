@@ -99,13 +99,6 @@
   #endif
 #endif
 
-
- // Used in __FPU_Enable
- #define __get_FPSCR() (0)
- //#define __get_CPACR() (0)
- #define __set_FPSCR(v) ((void) (v))
- //#define __set_CPACR(v) ((void) (v))
-
 #include "cmsis_compiler.h"               /* CMSIS compiler specific defines */
 
 #ifdef __cplusplus

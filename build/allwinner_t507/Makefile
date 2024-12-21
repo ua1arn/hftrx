@@ -52,8 +52,8 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
-CORE = -mcpu=cortex-a53
-CORE += -mfloat-abi=hard -mfpu=neon-vfpv4
+#CORE = -mcpu=cortex-a53+fp+simd
+CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4
 
 # Define optimisation level here
 #OPT = -Og
