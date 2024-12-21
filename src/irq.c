@@ -1740,7 +1740,11 @@ void Synchro_Handler(void)
 void Synchro_Handler1(void)
 {
 	TP();
+	unsigned ec = (__get_ESR_EL3() >> 26) & 0x1F;
+	PRINTF("ec=%02X\n", ec);
+	PRINTF("ESR_EL3=%08X\n", (unsigned) __get_ESR_EL3());
 	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
 	for (;;)
 		;
 }
@@ -1748,7 +1752,11 @@ void Synchro_Handler1(void)
 void Synchro_Handler2(void)
 {
 	TP();
+	unsigned ec = (__get_ESR_EL3() >> 26) & 0x1F;
+	PRINTF("ec=%02X\n", ec);
+	PRINTF("ESR_EL3=%08X\n", (unsigned) __get_ESR_EL3());
 	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
 	for (;;)
 		;
 }
@@ -1756,7 +1764,11 @@ void Synchro_Handler2(void)
 void Synchro_Handler3(void)
 {
 	TP();
+	unsigned ec = (__get_ESR_EL3() >> 26) & 0x1F;
+	PRINTF("ec=%02X\n", ec);
+	PRINTF("ESR_EL3=%08X\n", (unsigned) __get_ESR_EL3());
 	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
 	for (;;)
 		;
 }
