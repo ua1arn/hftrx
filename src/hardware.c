@@ -4834,17 +4834,9 @@ extern void __libc_init_array(void);
 
 void __NO_RETURN _start(void)
 {
-//	dbg_putchar('1');
-//	TP();
-//	PRINTF("__get_MIDR_EL1()=%08" PRIX32 "\n", __get_MIDR_EL1());
-//	PRINTF("__get_MPIDR_EL1()=%08" PRIX64 "\n", __get_MPIDR_EL1());
-//	TP();
-	//PRINTF("__get_DCZID_EL0()=%08" PRIX32 "\n", __get_DCZID_EL0());
 	__libc_init_array();	// invoke constructors
-//	TP();
     /* Branch to main function */
     main();
-
      /* Infinite loop */
 	for (;;)
 		;

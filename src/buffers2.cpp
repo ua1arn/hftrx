@@ -419,11 +419,12 @@ public:
 	bool outready;
 
 public:
-	blists() :
-		name("uninited")
-	{
-
-	}
+//	blists() :
+//		name("uninited")
+//	{
+//		PRINTF("dmahandle(%s)\n", name);
+//
+//	}
 	blists(IRQL_t airql, const char * aname, buffitem_t * storage, unsigned capacity) :
 		irqllockarg(airql),
 #if WITHBUFFERSDEBUG

@@ -2771,6 +2771,19 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
+/* Для обнуления регистров периферии не очень
+ * подходит системный memset - иногда может группировать обращения к соседним ячейкам
+*/
+static void memset32(void * d, uint32_t v, unsigned sz)
+{
+	uint32_t volatile * dst = (uint32_t volatile *) d;
+	while (sz > 4)
+	{
+		* dst ++ = v;
+		sz -= 4;
+	}
+}
+
 static void t113_de_rtmix_initialize(int rtmixid)
 {
 	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
@@ -2785,7 +2798,7 @@ static void t113_de_rtmix_initialize(int rtmixid)
 #endif
 
 	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
-	memset(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
+	memset32(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
 }
 
 static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint_least32_t color24)
