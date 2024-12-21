@@ -237,6 +237,13 @@ __STATIC_FORCEINLINE uint32_t __get_CCSIDR_EL1(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE uint32_t __get_CTR_EL0(void)
+{
+	uint32_t result;
+	__get_RG32("CTR_EL0", result);
+	return result;
+}
+
 __STATIC_FORCEINLINE void __set_TTBR0_EL1(uint64_t value)
 {
 	// MSR TTBR0_EL1, <Xt> ; Write Xt to TTBR0_EL
@@ -265,6 +272,13 @@ __STATIC_FORCEINLINE void __set_CSSELR_EL1(uint32_t value)
 #define __get_IFAR() 	(__get_FAR_EL1())
 #define __get_DFAR() 	(__get_FAR_EL2())
 #define __get_DFSR() 	(__get_ESR_EL1())
+
+
+#define __set_DCCMVAC(v) __set_DCCVAC64(v)
+#define __set_DCCIMVAC(v) __set_DCCIVAC64(v)
+#define __set_DCIMVAC(v) __set_DCIVAC64(v)
+#define __get_CTR() (__get_CTR_EL0())
+
 
  /*******************************************************************************
   *                 Register Abstraction

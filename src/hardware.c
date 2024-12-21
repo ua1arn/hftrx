@@ -1866,16 +1866,7 @@ int_fast32_t icache_rowsize(void)
 	return ICACHEROWSIZE;
 }
 
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
-
-/** \brief  Set DCCMVAU
-
-  Data Cache Clean by MVA to PoU
- */
-void __set_DCCMVAU(uint32_t value)
-{
-  __set_CP(15, 0, value, 7, 11, 1);
-}
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required
@@ -1933,7 +1924,7 @@ void L1_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 	}
 }
 
-
+#if (! defined(__aarch64__))
 /** \brief  Get CTR
 \return		Cache Type Register value
 */
@@ -1943,6 +1934,7 @@ uint32_t __get_CTR(void)
 	__get_CP(15, 0, result, 0, 0, 1);
 	return result;
 }
+#endif
 
 int_fast32_t dcache_rowsize(void)
 {
