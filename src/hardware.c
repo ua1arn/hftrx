@@ -3013,7 +3013,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
 	// FPU
 	//__FPU_Enable_fixed();
@@ -3203,7 +3203,7 @@ sysinit_perfmeter_initialize(void)
 static void
 sysinit_vbar_initialize(void)
 {
-#if defined(__aarch64__)
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
     #warning to be implement
 #if WITHRTOS
 	extern unsigned long __Vectors64_rtos;
