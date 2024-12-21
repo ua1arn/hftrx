@@ -2727,6 +2727,32 @@ sysinit_ttbr_initialize(void)
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
+
+	//CP15_writeTTBCR(0);
+	   /* Set location of level 1 page table
+	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
+	    ; 13:7  - 0x0
+	    ; 6     - IRGN[0] 0x1  (Inner WB WA)
+	    ; 5     - NOS     0x0  (Non-shared)
+	    ; 4:3   - RGN     0x01 (Outer WB WA)
+	    ; 2     - IMP     0x0  (Implementation Defined)
+	    ; 1     - S       0x0  (Non-shared)
+	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
+
+	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
+#if WITHSMPSYSTEM
+	// TTBR0
+	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	__set_TTBR0_EL1(
+			(uintptr_t) tlbbase |
+			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
+			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
+			(RGN_attr << 3) |	// RGN
+			!1*(UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
+			1*(UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+			0);
+#else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0_EL1(
 			(uintptr_t) tlbbase |
@@ -2735,6 +2761,24 @@ sysinit_ttbr_initialize(void)
 			0*(UINT32_C(1) << 5) |	// NOS
 			0*(UINT32_C(1) << 1) |	// S
 			0);
+#endif /* WITHSMPSYSTEM */
+	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
+	  __ISB();
+
+	// Program the domain access register
+	__set_DACR32_EL2(0xFFFFFFFF); // domain 15: access are not checked
+
+	MMU_InvalidateTLB();
+
+	// Обеспечиваем нормальную обработку RESEТ
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+#if (__L2C_PRESENT == 1)
+	L2C_InvAllByWay();
+#endif
+
+	MMU_Enable();
 
 #elif (__CORTEX_A != 0)
 
@@ -2742,7 +2786,6 @@ sysinit_ttbr_initialize(void)
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 
-#if 1
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
 	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
@@ -2781,9 +2824,7 @@ sysinit_ttbr_initialize(void)
 	  __ISB();
 
 	// Program the domain access register
-	//__set_DACR(0x55555555); // domain 15: access are not checked
 	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
-#endif
 
 	MMU_InvalidateTLB();
 

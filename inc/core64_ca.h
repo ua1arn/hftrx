@@ -235,6 +235,12 @@ __STATIC_FORCEINLINE void __set_VBAR_EL1(uint64_t value)
 	__set_RG64("VBAR_EL1", value);
 }
 
+__STATIC_FORCEINLINE void __set_DACR32_EL2(uint32_t value)
+{
+	// MSR DACR32_EL2, <Xt> ; Write Xt to DACR32_EL2
+	__set_RG32("DACR32_EL2", value);
+}
+
 #define __get_MPIDR() 	(__get_MPIDR_EL1())
 #define __get_IFAR() 	(__get_FAR_EL1())
 #define __get_DFAR() 	(__get_FAR_EL2())
