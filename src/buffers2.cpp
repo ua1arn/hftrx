@@ -453,7 +453,7 @@ public:
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
 		}
-		//PRINTF("%s: %u[%u]\n", name, sizeof (storage [0].v.buff), capacity);
+		//PRINTF("%s: %u[%u]\n", name, (unsigned) sizeof (storage [0].v.buff), capacity);
  	}
 
 	/* готовность буферов с "гистерезисом". */
