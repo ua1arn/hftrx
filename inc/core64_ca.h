@@ -253,6 +253,13 @@ __STATIC_FORCEINLINE uint32_t __get_CTR_EL0(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE uint32_t __get_TCR_EL3(void)
+{
+	uint32_t result;
+	__get_RG32("TCR_EL3", result);
+	return result;
+}
+
 __STATIC_FORCEINLINE void __set_TTBR0_EL1(uint64_t value)
 {
 	// MSR TTBR0_EL1, <Xt> ; Write Xt to TTBR0_EL1

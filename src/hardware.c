@@ -2738,7 +2738,7 @@ sysinit_ttbr_initialize(void)
 //	__set_TTBR0_EL2((uintptr_t) tlbbase);
 	__set_TTBR0_EL3((uintptr_t) tlbbase);
 
-	//__set_TCR_EL3(tcrv);
+	__set_TCR_EL3(tcrv);
 	__ISB();
 
 	// Program the domain access register
@@ -3710,11 +3710,12 @@ static void cortexa_cpuinfo(void)
 #if defined(__aarch64__)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL3=%08X, _TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
 			(unsigned) (__get_MPIDR_EL1() & 0x03),
 			(unsigned) __get_VBAR_EL3(),
 			(unsigned) __get_TTBR0_EL3(),
 			(unsigned) __get_SCTLR_EL3(),
+			(unsigned) __get_TCR_EL3(),
 			(unsigned) (uintptr_t) & vvv,
 			(unsigned) __get_MPIDR_EL1()
 			);
