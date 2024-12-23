@@ -562,7 +562,7 @@ void sdhci_t113_clock(void)
 // SMHC_BGR_REG|=1;                              //gating on clock SMHC0
 //
 // SMHC_BGR_REG|=(1<<16);                        //SMHC0 de-assert reset
-
+#if ! defined CPUSTYLE_A64
 	if (SMHCHARD_PTR == SMHC2)
 	{
 
@@ -609,6 +609,7 @@ void sdhci_t113_clock(void)
 		//PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
 
 	}
+#endif
 }
 
 struct sdhci_t HCI;

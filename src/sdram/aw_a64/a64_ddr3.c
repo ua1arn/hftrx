@@ -9,6 +9,7 @@
 
 #if WITHSDRAMHW && CPUSTYLE_A64
 
+#include "clocks.h"
 #include "formats.h"
 #include "reg-ccu.h"
 #include "reg-dram.h"

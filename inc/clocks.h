@@ -258,6 +258,11 @@ uint_fast32_t allwnr_a64_get_twi_freq(void);
 uint_fast32_t allwnr_a64_get_spi0_freq(void);
 uint_fast32_t allwnr_a64_get_spi1_freq(void);
 uint_fast32_t allwnr_a64_get_s_twi_freq(void);
+uint_fast32_t allwnr_a64_get_smhc0_freq(void);
+uint_fast32_t allwnr_a64_get_smhc1_freq(void);
+uint_fast32_t allwnr_a64_get_smhc2_freq(void);
+uint_fast32_t allwnr_a64_get_ths_freq(void);
+uint_fast32_t allwnr_a64_get_nand_freq(void);
 #endif /* CPUSTYLE_A64 */
 
 #if (CPUSTYLE_H3)

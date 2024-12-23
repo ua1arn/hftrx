@@ -4817,7 +4817,7 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 		(use4bit ? UINT32_C(0x01) : UINT32_C(0x00)) |	// 00: 1-bit width, 01: 4-biut width
 		0;
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_A64
 
 	switch(use4bit ? 4 : 1)
 	{
@@ -5256,6 +5256,43 @@ void hardware_sdhost_initialize(void)
 	(void) CCU->SMHC_BGR_REG;
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
 	(void) CCU->SMHC_BGR_REG;
+
+	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	HARDWARE_SDIOSENSE_INITIALIZE();
+	HARDWARE_SDIO_INITIALIZE();
+
+#elif CPUSTYLE_A64
+
+	unsigned ix = SMHCHARD_IX;
+
+	SMHCHARD_CCU_CLK_REG = 0;
+	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+//	{
+//		// Automatic divisors calculation
+//		unsigned clksrc = 1;	// 01: PLL_PERI0(2X)
+//		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+//		unsigned dvalue;
+//		unsigned prei = calcdivider(calcdivround2(allwnr_a64_get_pll_peri0_x2_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
+//		SMHCHARD_CCU_CLK_REG =
+//			//(UINT32_C(1) << 31) |
+//			clksrc * (UINT32_C(1) << 24) |
+//			prei * (UINT32_C(1) << 8) |
+//			dvalue * (UINT32_C(1) << 0) |
+//			0;
+//		SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+//	}
+
+	CCU->BUS_CLK_GATING_REG0 |= UINT32_C(1) << (ix + 8); // SMHCx_GATING
+	(void) CCU->BUS_CLK_GATING_REG0;
+
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << (ix + 8)); // SMHCx_RESET
+	(void) CCU->BUS_SOFT_RST_REG0;
+	CCU->BUS_SOFT_RST_REG0 |= UINT32_C(1) << (ix + 8); // SMHCx_RESET
+	(void) CCU->BUS_SOFT_RST_REG0;
 
 	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
 
