@@ -261,7 +261,7 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32
+bootloader: BOOT2 fsbl.bt0
   
 app_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3
@@ -274,15 +274,15 @@ app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) exec 0x40000000 
 
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00000000 fsbl.bt0
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-fsbl.alw32: $(PROJECT)_boot.bin
-	./egontool $(PROJECT)_boot.bin fsbl.alw32
+fsbl.bt0: $(PROJECT)_boot.bin
+	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
@@ -317,7 +317,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 fsbl.alw32
+	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0
 
 version:
 	$(CC) --version

@@ -279,10 +279,10 @@ allZ:
 
 bootloader: BOOT2
 
-BOOT2: fsbl.alw32
+BOOT2: fsbl.bt0
 
-fsbl.alw32: $(PROJECT)_boot.bin
-	./egontool $(PROJECT)_boot.bin fsbl.alw32
+fsbl.bt0: $(PROJECT)_boot.bin
+	./egontool -old $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
 SystemInitAddr = 0x0002157c
@@ -293,8 +293,8 @@ ddr_init: fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr)
 
 # test bootloader
-_app_run: fsbl.alw32
-	$(XFEL) write 0x00018000 fsbl.alw32
+_app_run: fsbl.bt0
+	$(XFEL) write 0x00018000 fsbl.bt0
 	$(XFEL) exec 0x00018000 
 
 app_run: $(PROJECT)_app.alw32 ddr_init
@@ -302,7 +302,7 @@ app_run: $(PROJECT)_app.alw32 ddr_init
 	$(XFEL) exec 0x40000100 
 
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00000000 fsbl.bt0
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
@@ -342,7 +342,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 fsbl.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
 
 version:
 	$(CC) --version

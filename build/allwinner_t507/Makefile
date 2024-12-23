@@ -291,7 +291,7 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	./egontool $(PROJECT)_boot.bin fsbl.alw32
+	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_t507_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
@@ -327,11 +327,11 @@ app_run64: $(PROJECT)_app.alw32 ddrinit_t507
 
 # debug for bootloader - check .ld file
 _app_run: bootloader
-	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) write 0x00028000 fsbl.bt0
 	$(XFEL) exec 0x00028000 
 
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00000000 fsbl.bt0
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 erase:
@@ -339,7 +339,7 @@ erase:
 	$(XFEL) spinor erase 0x00040000 1024
 
 flash_old:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00000000 fsbl.bt0
 	$(XFEL) spinor write 0x00040000 ddr3init.bin
 	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
@@ -381,7 +381,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 fsbl.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
 
 version:
 	$(CC) --version

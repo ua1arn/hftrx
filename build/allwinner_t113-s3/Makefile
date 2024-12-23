@@ -282,7 +282,7 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32
+bootloader: BOOT2 fsbl.bt0
 
 #DDR_INIT=ddr_init_s3
 DDR_INIT=ddr_init_s4
@@ -302,8 +302,8 @@ app_run: $(PROJECT)_app.alw32 $(DDR_INIT)
 	$(XFEL) exec 0x40000100 
 	
 # bootloader debug - check allwnr_t113s3_boot.ld
-_app_run: fsbl.alw32
-	$(XFEL) write 0x00028000 fsbl.alw32
+_app_run: fsbl.bt0
+	$(XFEL) write 0x00028000 fsbl.bt0
 	$(XFEL) exec 0x00028000 
 
 app_runXBOOT: xboot_t113_800.bin $(DDR_INIT)
@@ -311,7 +311,7 @@ app_runXBOOT: xboot_t113_800.bin $(DDR_INIT)
 	$(XFEL) exec 0x40000000 
 
 flash:
-	-$(XFEL) spinor write 0x00000000 fsbl.alw32
+	-$(XFEL) spinor write 0x00000000 fsbl.bt0
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 erase:
@@ -322,8 +322,8 @@ BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-fsbl.alw32: $(PROJECT)_boot.bin
-	./egontool $(PROJECT)_boot.bin fsbl.alw32
+fsbl.bt0: $(PROJECT)_boot.bin
+	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
@@ -358,7 +358,7 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 fsbl.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
 
 version:
 	$(CC) --version

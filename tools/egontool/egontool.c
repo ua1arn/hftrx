@@ -17,6 +17,7 @@
 
 static int targetRV = 0;
 static int targetAARCH64 = 0;
+static int targetOLD = 0;
 
 /* boot_file_head copied from mksunxiboot */
 /* boot head definition from sun4i boot code */
@@ -87,8 +88,8 @@ static void process(
 {
 	boot_file_head_t head;
 	static const uint8_t magic_eGON_BT0 [8] = { 'e', 'G', 'O', 'N', '.', 'B', 'T', '0' };	/* eGON.BT0 */
-	static const uint8_t pub_head_vsn [8] = { '3', '0', '0', '0' };	/* 3000 */
-	static const uint8_t platform [8] = {  '\0',  '\0',  '\0',  '\0', '4', '.', '0', '\0' };	/* 4.0 */
+	static const uint8_t pub_head_vsn3 [8] = { '3', '0', '0', '0' };	/* 3000 */
+	static const uint8_t platform4 [8] = {  '\0',  '\0',  '\0',  '\0', '4', '.', '0', '\0' };	/* 4.0 */
 	const unsigned execoffset = 0x100;
 	long binsize;
 	long silesizealigned;
@@ -120,6 +121,7 @@ static void process(
 
 
 	/* Fill head */
+	memset(& head, 0x00, sizeof head);
 	if (targetRV)
 		place_uint32_le(& head.jump_instruction, 0x6F | (execoffset << 20));	/// Jump to $ + 0x0100
 	else if (targetAARCH64)
@@ -127,15 +129,22 @@ static void process(
 	else
 		place_uint32_le(& head.jump_instruction, 0xEA000000 | (execoffset - 8) / 4);	/// Jump to $ + 0x0100
 
-	memset(& head, 0x00, sizeof head);
 	memcpy(& head.magic, magic_eGON_BT0, 8);
 	place_uint32_le(& head.check_sum, 0x5F0A6C39);//check_sum;
 	place_uint32_le(& head.length, silesizealigned);//binsize;
 	place_uint32_le(& head.pub_head_size, sizeof head);
-	//memcpy(& head.pub_head_vsn, pub_head_vsn, sizeof head.pub_head_vsn);
-	place_uint32_le(& head.pub_head_size, 0x014C5053);
-	//place_uint32_le(& head.file_head_vsn, 0x000F0000);
-	//memcpy(& head.platform, platform, sizeof head.platform);
+	if (targetOLD)
+	{
+		// A64
+		place_uint32_le(& head.pub_head_size, 0x014C5053);
+		//place_uint32_le(& head.file_head_vsn, 0x000F0000);
+		//memcpy(& head.platform, platform, sizeof head.platform);
+	}
+	else
+	{
+		//memcpy(& head.pub_head_vsn, pub_head_vsn3, sizeof head.pub_head_vsn);// Not need for T507
+		memcpy(& head.platform, platform4, sizeof head.platform);	// need for T507
+	}
 
 	check_sum = cks((const uint8_t *) & head, sizeof head, check_sum);
 
@@ -199,6 +208,13 @@ static int printFLAG;
 
 int main(int argc, char* argv[])
 {
+	if (argc > 1 && strcmp(argv [1], "-old") == 0)
+	{
+		++ argv;
+		-- argc;
+		targetOLD = 1;
+		//fprintf(stderr, "RISC-V header generate\n");
+	}
 	if (argc > 1 && strcmp(argv [1], "-rv") == 0)
 	{
 		++ argv;
@@ -250,7 +266,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		const char * const infilename = argv [1]; //"../../build/allwinner_t113_s3/tc1_t113s3_boot.bin";
-		const char * const outfilename = argv [2]; //"../../build/allwinner_t113_s3/fsbl.alw32";
+		const char * const outfilename = argv [2]; //"../../build/allwinner_t113_s3/fsbl.bt0";
 
 		FILE * infile = fopen(infilename,"rb");
 		FILE * outfile = fopen(outfilename,"wb");
