@@ -2895,6 +2895,42 @@ uint_fast32_t allwnr_a64_get_nand_freq(void)
 	}
 }
 
+// A64
+uint_fast32_t allwnr_a64_get_smhc0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SDMMC0_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		return allwnr_a64_get_hosc_freq() / (N * M);
+	case 0x01:
+		return allwnr_a64_get_pll_periph0_x2_freq() / (N * M);
+	case 0x02:
+		return allwnr_a64_get_pll_periph1_x2_freq() / (N * M);
+	}
+}
+
+// A64
+uint_fast32_t allwnr_a64_get_smhc1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SDMMC1_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		return allwnr_a64_get_hosc_freq() / (N * M);
+	case 0x01:
+		return allwnr_a64_get_pll_periph0_x2_freq() / (N * M);
+	case 0x02:
+		return allwnr_a64_get_pll_periph1_x2_freq() / (N * M);
+	}
+}
+
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 static void set_t507_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
