@@ -2,7 +2,7 @@
 //
 #include <stdio.h>
 #include <string.h>
-
+#include <stddef.h>
 
 #if defined   (__GNUC__)        /* GNU Compiler */
 	#include <stdint.h>
@@ -48,15 +48,6 @@ static void fillpad(FILE * fp, long size)
 	}
 }
 
-static uint32_t cks(const void * buff, unsigned size, uint32_t sum)
-{
-	const uint32_t * p = (const uint32_t *) buff;
-	size /= 4;
-	while (size --)
-		sum += * p ++;
-	return sum;
-}
-
 static void place_uint32_le(void * buff, uint32_t v)
 {
 	uint8_t * const p = (uint8_t * const) buff;
@@ -66,6 +57,29 @@ static void place_uint32_le(void * buff, uint32_t v)
 	p [2] = (v >> 16);
 	p [3] = (v >> 24);
 }
+
+static uint32_t get_uint32_le(const void * buff)
+{
+	const uint8_t * const p = (const uint8_t * const) buff;
+
+	uint32_t v = 0;
+	v = v * 256 + p [3];
+	v = v * 256 + p [2];
+	v = v * 256 + p [1];
+	v = v * 256 + p [0];
+
+	return v;
+}
+
+static uint32_t cks(const void * buff, unsigned size, uint32_t sum)
+{
+	const uint32_t * p = (const uint32_t *) buff;
+	size /= 4;
+	while (size --)
+		sum += * p ++;
+	return sum;
+}
+
 
 static void process(
 	FILE * infile,
@@ -82,7 +96,7 @@ static void process(
 
 	fseek(infile, 0, SEEK_END);
 	binsize = ftell(infile);
-	silesizealigned = alignup(binsize + execoffset, 16 * 1024);
+	silesizealigned = alignup(binsize + execoffset, 8 * 1024);
 
 	fprintf(stderr, "Okay open file: original:%ld aligned:%ld\n", binsize, silesizealigned);
 
@@ -113,15 +127,15 @@ static void process(
 	else
 		place_uint32_le(& head.jump_instruction, 0xEA000000 | (execoffset - 8) / 4);	/// Jump to $ + 0x0100
 
+	memset(& head, 0x00, sizeof head);
 	memcpy(& head.magic, magic_eGON_BT0, 8);
 	place_uint32_le(& head.check_sum, 0x5F0A6C39);//check_sum;
 	place_uint32_le(& head.length, silesizealigned);//binsize;
 	place_uint32_le(& head.pub_head_size, sizeof head);
-	memcpy(& head.pub_head_vsn, pub_head_vsn, sizeof head.pub_head_vsn);
-	place_uint32_le(& head.file_head_vsn, 0x00020000 * 0);	// ignored by Allwinner T113-S3 ?
-	place_uint32_le(& head.Boot_vsn, 0x00020000 * 0);		// ignored by Allwinner T113-S3 ?
-	memset(& head.eGON_vsn, 0x00, sizeof head.eGON_vsn);
-	memcpy(& head.platform, platform, sizeof head.platform);
+	//memcpy(& head.pub_head_vsn, pub_head_vsn, sizeof head.pub_head_vsn);
+	place_uint32_le(& head.pub_head_size, 0x014C5053);
+	//place_uint32_le(& head.file_head_vsn, 0x000F0000);
+	//memcpy(& head.platform, platform, sizeof head.platform);
 
 	check_sum = cks((const uint8_t *) & head, sizeof head, check_sum);
 
@@ -147,22 +161,39 @@ static void process(
 	}
 
 	fillpad(outfile, silesizealigned - binsize - execoffset);
+	
+	fprintf(stderr, "Okay processing... %08X %08X\n", binsize, silesizealigned);
+}
+
+static void printfield32(const void * buff, const char * name, unsigned offset)
+{
+	printf("%04X: '%-12s'=0x%08X\n", offset, name, get_uint32_le((const uint8_t *) buff + offset));
 }
 
 static void printfile(FILE * fp)
 {
-	boot_file_head_t head;
+	boot_file_head_t head = { 0 };
 	size_t n;
 
-	n = fread(& head, 1, sizeof head, fp);
+	n = fread(& head, sizeof head, 1, fp);
 	if (n < 1)
 	{
-		fprintf(stderr, "Not enough data\n");
+		fprintf(stderr, "Not enough data (sizeof head=%d, n=%d)\n", sizeof head, n);
 		return;
 	}
 	printf("magic: '%8.8s'\n", head.magic);
 	printf("length: %u (0x%x) bytes\n", (unsigned) head.length, (unsigned) head.length);
+
+	printfield32(& head, "jump_instruction", offsetof(boot_file_head_t, jump_instruction));
+	printfield32(& head, "check_sum", offsetof(boot_file_head_t, check_sum));
+	printfield32(& head, "length", offsetof(boot_file_head_t, length));
+	printfield32(& head, "pub_head_size", offsetof(boot_file_head_t, pub_head_size));
+	printfield32(& head, "pub_head_vsn", offsetof(boot_file_head_t, pub_head_vsn));
+	printfield32(& head, "file_head_vsn", offsetof(boot_file_head_t, file_head_vsn));
+	printfield32(& head, "Boot_vsn", offsetof(boot_file_head_t, Boot_vsn));
+	printfield32(& head, "eGON_vsn", offsetof(boot_file_head_t, eGON_vsn));
 }
+
 
 static int printFLAG;
 
@@ -190,7 +221,7 @@ int main(int argc, char* argv[])
 		//fprintf(stderr, "RISC-V header generate\n");
 	}
 
-	if (printFLAG && argc >= 2)
+	if (printFLAG && argc >= 1)
 	{
 		int i;
 		const char * const infilename = argv [1];
@@ -201,14 +232,15 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		printfile(infile);
-		fseek(infile, 0x38, SEEK_SET);
-		for (i = 0; i < 40; ++ i)
-		{
-			uint32_t v;
-			fread(& v, 1, 4, infile);
-			printf(".xxx%i = 0x%08X, /* %i */,\n", i, v, i);
 
-		}
+//		fseek(infile, 0x38, SEEK_SET);
+//		for (i = 0; i < 40; ++ i)
+//		{
+//			uint32_t v;
+//			fread(& v, 1, 4, infile);
+//			printf(".xxx%i = 0x%08X, /* %i */,\n", i, v, i);
+//
+//		}
 		fclose(infile);
 		return 0;
 	}
@@ -231,7 +263,6 @@ int main(int argc, char* argv[])
 		
 		process(infile, outfile);
 
-		//fprintf(stderr, "Okay processing... %ld %ld\n", binsize, silesizealigned);
 	}
 
 	return 0;

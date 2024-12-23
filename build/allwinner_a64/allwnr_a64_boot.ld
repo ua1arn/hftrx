@@ -2,10 +2,11 @@
 /* Allwinner A64-H (Banana Pi BPI-M64) layout */
 /* Linker script to configure memory regions. */
 
+/* https://linux-sunxi.org/A64/Memory_map say about 108k 0x00018000-0x00032FFF, wee use 96k */
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x00010000 + 256, 			LENGTH = 32k + 104k - 256		/* SRAM A1 + SRAM C: SD card boot */
-  boottestRAM (rwx) : ORIGIN = 0x00018000 + 256, 			LENGTH = 104k - 256		/* bootloader tests / DDR initialier base */
+  RAM (rwx)	 : ORIGIN = 0x00010000 + 256, 			LENGTH = 32k + 96k - 256		/* SRAM A1 + SRAM C: SD card boot */
+  bootltestRAM (rwx) : ORIGIN = 0x00018000 + 256, 			LENGTH = 96k - 256		/* bootloader tests / DDR initialier base */
   STACK (rwx): ORIGIN = 0x00044000,					LENGTH = 64k
   DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
   TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
@@ -214,7 +215,7 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > STACK
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
