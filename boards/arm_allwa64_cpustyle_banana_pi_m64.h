@@ -62,6 +62,7 @@
 		axp803_initialize(); \
 	} while (0)
 
+#if 0
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
@@ -86,6 +87,9 @@
 //	#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */
 //	#define WITHUSBHW_OHCI		USBOHCI0	/* host and usb-otg port */
 
+
+	#define WITHTINYUSB 1
+
 	#if WITHTINYUSB
 		#define BOARD_TUH_RHPORT 1
 		#define CFG_TUH_ENABLED 1
@@ -109,13 +113,14 @@
 
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	
+
 	#define WITHUSBWCID	1
 
 	//#define WITHLWIP 1
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+#endif
 
 #else /* WITHISBOOTLOADER */
 

@@ -136,7 +136,7 @@ static void process(
 	if (targetOLD)
 	{
 		// A64
-		place_uint32_le(& head.pub_head_size, 0x014C5053);
+		//place_uint32_le(& head.pub_head_size, 0x014C5053);
 		//place_uint32_le(& head.file_head_vsn, 0x000F0000);
 		//memcpy(& head.platform, platform, sizeof head.platform);
 	}
@@ -151,7 +151,7 @@ static void process(
 	place_uint32_le(& head.check_sum, check_sum);
 
 
-	fwrite(& head, 1, sizeof head, outfile);
+	fwrite(& head, sizeof head, 1, outfile);
 	fillpad(outfile, execoffset - sizeof head);
 
 	{
