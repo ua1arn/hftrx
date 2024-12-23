@@ -29,29 +29,26 @@ typedef uintptr_t virtual_addr_t;
 
 static uint32_t read32(uintptr_t addr)
 {
-	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	__DSB();
 }
 
 static void write32ptr(volatile void * addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	__DSB();
 }
 
 static /*static inline*/ void sdelay(int loops)
 {
 //	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
 //		"bne 1b":"=r" (loops):"0"(loops));
-	//local_delay_us(1 * loops);
-	while (loops --)
-		__NOP();
+	local_delay_us(1 * loops);
+//	while (loops --)
+//		__NOP();
 
 }
 
@@ -332,12 +329,19 @@ static void mctl_await_completion(uint32_t * reg, uint32_t mask, uint32_t val)
 	}
 }
 
-static int mctl_mem_matches(uint32_t offset)
+// 1: wrapped
+static int mctl_mem_matches0(uint32_t offset, uint32_t v)
 {
 	write32(CONFIG_DRAM_BASE, 0);
-	write32(CONFIG_DRAM_BASE + offset, 0xaa55aa55);
+	write32(CONFIG_DRAM_BASE + offset, v);
 	__DSB();
 	return (read32(CONFIG_DRAM_BASE) == read32(CONFIG_DRAM_BASE + offset)) ? 1 : 0;
+}
+
+// 1: wrapped
+static int mctl_mem_matches(uint32_t offset)
+{
+	return mctl_mem_matches0(offset, 0xaa55aa55) || mctl_mem_matches0(offset, 0xdeadbeef);
 }
 
 static void mctl_phy_init(uint32_t val)

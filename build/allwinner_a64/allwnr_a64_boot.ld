@@ -4,8 +4,8 @@
 
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x00010000 + 256, 			LENGTH = 96k - 256		/* SRAM A1 + SRAM C: SD card boot */
-  bRAM (rwx) : ORIGIN = 0x00018000 + 256, 			LENGTH = 96k - 256		/* DDR initialier base */
+  bRAM (rwx)	 : ORIGIN = 0x00010000 + 256, 			LENGTH = 104k - 256		/* SRAM A1 + SRAM C: SD card boot */
+  RAM (rwx) : ORIGIN = 0x00018000 + 256, 			LENGTH = 104k - 256		/* DDR initialier base */
   STACK (rwx): ORIGIN = 0x00044000,					LENGTH = 64k
   DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
   TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
