@@ -3706,6 +3706,9 @@ SystemInit(void)
 	local_delay_initialize();
 #endif /* ! WITHISBOOTLOADER_DDR */
 	sysinit_gpio_initialize();
+#ifdef BOARD_BLINK_INITIALIZE
+	BOARD_BLINK_INITIALIZE();
+#endif
 	sysinit_debug_initialize();
 //	PRINTF("csr_read_mhint=0x%lx\n", (long unsigned) csr_read_mhint());
 //	PRINTF("csr_read_mxstatus=0x%lx\n", (long unsigned) csr_read_mxstatus());
