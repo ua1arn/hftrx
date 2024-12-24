@@ -5269,22 +5269,20 @@ void hardware_sdhost_initialize(void)
 
 	unsigned ix = SMHCHARD_IX;
 
-	SMHCHARD_CCU_CLK_REG = 0;
-	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-//	{
-//		// Automatic divisors calculation
-//		unsigned clksrc = 1;	// 01: PLL_PERI0(2X)
-//		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
-//		unsigned dvalue;
-//		unsigned prei = calcdivider(calcdivround2(allwnr_a64_get_pll_peri0_x2_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
-//		SMHCHARD_CCU_CLK_REG =
-//			//(UINT32_C(1) << 31) |
-//			clksrc * (UINT32_C(1) << 24) |
-//			prei * (UINT32_C(1) << 8) |
-//			dvalue * (UINT32_C(1) << 0) |
-//			0;
-//		SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-//	}
+	{
+		// Automatic divisors calculation
+		unsigned clksrc = 1;	// 01: PLL_PERI0(2X)
+		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+		unsigned dvalue;
+		unsigned prei = calcdivider(calcdivround2(allwnr_a64_get_pll_periph0_x2_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
+		SMHCHARD_CCU_CLK_REG =
+			//(UINT32_C(1) << 31) |
+			clksrc * (UINT32_C(1) << 24) |
+			prei * (UINT32_C(1) << 8) |
+			dvalue * (UINT32_C(1) << 0) |
+			0;
+		SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
 
 	CCU->BUS_CLK_GATING_REG0 |= UINT32_C(1) << (ix + 8); // SMHCx_GATING
 	(void) CCU->BUS_CLK_GATING_REG0;

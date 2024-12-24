@@ -83,25 +83,25 @@ enum {
 /*
  * Global control register bits
  */
-#define SDXC_SOFT_RESET				(1 << 0)
-#define SDXC_FIFO_RESET				(1 << 1)
-#define SDXC_DMA_RESET				(1 << 2)
-#define SDXC_INTERRUPT_ENABLE_BIT	(1 << 4)
-#define SDXC_DMA_ENABLE_BIT			(1 << 5)
-#define SDXC_DEBOUNCE_ENABLE_BIT	(1 << 8)
-#define SDXC_POSEDGE_LATCH_DATA		(1 << 9)
-#define SDXC_DDR_MODE				(1 << 10)
-#define SDXC_MEMORY_ACCESS_DONE		(1 << 29)
-#define SDXC_ACCESS_DONE_DIRECT		(1 << 30)
-#define SDXC_ACCESS_BY_AHB			(1 << 31)
+#define SDXC_SOFT_RESET				(UINT32_C(1) << 0)
+#define SDXC_FIFO_RESET				(UINT32_C(1) << 1)
+#define SDXC_DMA_RESET				(UINT32_C(1) << 2)
+#define SDXC_INTERRUPT_ENABLE_BIT	(UINT32_C(1) << 4)
+#define SDXC_DMA_ENABLE_BIT			(UINT32_C(1) << 5)
+#define SDXC_DEBOUNCE_ENABLE_BIT	(UINT32_C(1) << 8)
+#define SDXC_POSEDGE_LATCH_DATA		(UINT32_C(1) << 9)
+#define SDXC_DDR_MODE				(UINT32_C(1) << 10)
+#define SDXC_MEMORY_ACCESS_DONE		(UINT32_C(1) << 29)
+#define SDXC_ACCESS_DONE_DIRECT		(UINT32_C(1) << 30)
+#define SDXC_ACCESS_BY_AHB			(UINT32_C(1) << 31)
 #define SDXC_ACCESS_BY_DMA			(0 << 31)
 #define SDXC_HARDWARE_RESET			(SDXC_SOFT_RESET | SDXC_FIFO_RESET | SDXC_DMA_RESET)
 
 /*
  * Clock control bits
  */
-#define SDXC_CARD_CLOCK_ON			(1 << 16)
-#define SDXC_LOW_POWER_ON			(1 << 17)
+#define SDXC_CARD_CLOCK_ON			(UINT32_C(1) << 16)
+#define SDXC_LOW_POWER_ON			(UINT32_C(1) << 17)
 
 /*
  * Bus width
@@ -113,48 +113,48 @@ enum {
 /*
  * Smc command bits
  */
-#define SDXC_RESP_EXPIRE			(1 << 6)
-#define SDXC_LONG_RESPONSE			(1 << 7)
-#define SDXC_CHECK_RESPONSE_CRC		(1 << 8)
-#define SDXC_DATA_EXPIRE			(1 << 9)
-#define SDXC_WRITE					(1 << 10)
-#define SDXC_SEQUENCE_MODE			(1 << 11)
-#define SDXC_SEND_AUTO_STOP			(1 << 12)
-#define SDXC_WAIT_PRE_OVER			(1 << 13)
-#define SDXC_STOP_ABORT_CMD			(1 << 14)
-#define SDXC_SEND_INIT_SEQUENCE		(1 << 15)
-#define SDXC_UPCLK_ONLY				(1 << 21)
-#define SDXC_READ_CEATA_DEV			(1 << 22)
-#define SDXC_CCS_EXPIRE				(1 << 23)
-#define SDXC_ENABLE_BIT_BOOT		(1 << 24)
-#define SDXC_ALT_BOOT_OPTIONS		(1 << 25)
-#define SDXC_BOOT_ACK_EXPIRE		(1 << 26)
-#define SDXC_BOOT_ABORT				(1 << 27)
-#define SDXC_VOLTAGE_SWITCH			(1 << 28)
-#define SDXC_USE_HOLD_REGISTER		(1 << 29)
-#define SDXC_START					(1 << 31)
+#define SDXC_RESP_EXPIRE			(UINT32_C(1) << 6)
+#define SDXC_LONG_RESPONSE			(UINT32_C(1) << 7)
+#define SDXC_CHECK_RESPONSE_CRC		(UINT32_C(1) << 8)
+#define SDXC_DATA_EXPIRE			(UINT32_C(1) << 9)
+#define SDXC_WRITE					(UINT32_C(1) << 10)
+#define SDXC_SEQUENCE_MODE			(UINT32_C(1) << 11)
+#define SDXC_SEND_AUTO_STOP			(UINT32_C(1) << 12)
+#define SDXC_WAIT_PRE_OVER			(UINT32_C(1) << 13)
+#define SDXC_STOP_ABORT_CMD			(UINT32_C(1) << 14)
+#define SDXC_SEND_INIT_SEQUENCE		(UINT32_C(1) << 15)
+#define SDXC_UPCLK_ONLY				(UINT32_C(1) << 21)
+#define SDXC_READ_CEATA_DEV			(UINT32_C(1) << 22)
+#define SDXC_CCS_EXPIRE				(UINT32_C(1) << 23)
+#define SDXC_ENABLE_BIT_BOOT		(UINT32_C(1) << 24)
+#define SDXC_ALT_BOOT_OPTIONS		(UINT32_C(1) << 25)
+#define SDXC_BOOT_ACK_EXPIRE		(UINT32_C(1) << 26)
+#define SDXC_BOOT_ABORT				(UINT32_C(1) << 27)
+#define SDXC_VOLTAGE_SWITCH			(UINT32_C(1) << 28)
+#define SDXC_USE_HOLD_REGISTER		(UINT32_C(1) << 29)
+#define SDXC_START					(UINT32_C(1) << 31)
 
 /*
  * Interrupt bits
  */
-#define SDXC_RESP_ERROR				(1 << 1)
-#define SDXC_COMMAND_DONE			(1 << 2)
-#define SDXC_DATA_OVER				(1 << 3)
-#define SDXC_TX_DATA_REQUEST		(1 << 4)
-#define SDXC_RX_DATA_REQUEST		(1 << 5)
-#define SDXC_RESP_CRC_ERROR			(1 << 6)
-#define SDXC_DATA_CRC_ERROR			(1 << 7)
-#define SDXC_RESP_TIMEOUT			(1 << 8)
-#define SDXC_DATA_TIMEOUT			(1 << 9)
-#define SDXC_VOLTAGE_CHANGE_DONE	(1 << 10)
-#define SDXC_FIFO_RUN_ERROR			(1 << 11)
-#define SDXC_HARD_WARE_LOCKED		(1 << 12)
-#define SDXC_START_BIT_ERROR		(1 << 13)
-#define SDXC_AUTO_COMMAND_DONE		(1 << 14)
-#define SDXC_END_BIT_ERROR			(1 << 15)
-#define SDXC_SDIO_INTERRUPT			(1 << 16)
-#define SDXC_CARD_INSERT			(1 << 30)
-#define SDXC_CARD_REMOVE			(1 << 31)
+#define SDXC_RESP_ERROR				(UINT32_C(1) << 1)
+#define SDXC_COMMAND_DONE			(UINT32_C(1) << 2)
+#define SDXC_DATA_OVER				(UINT32_C(1) << 3)
+#define SDXC_TX_DATA_REQUEST		(UINT32_C(1) << 4)
+#define SDXC_RX_DATA_REQUEST		(UINT32_C(1) << 5)
+#define SDXC_RESP_CRC_ERROR			(UINT32_C(1) << 6)
+#define SDXC_DATA_CRC_ERROR			(UINT32_C(1) << 7)
+#define SDXC_RESP_TIMEOUT			(UINT32_C(1) << 8)
+#define SDXC_DATA_TIMEOUT			(UINT32_C(1) << 9)
+#define SDXC_VOLTAGE_CHANGE_DONE	(UINT32_C(1) << 10)
+#define SDXC_FIFO_RUN_ERROR			(UINT32_C(1) << 11)
+#define SDXC_HARD_WARE_LOCKED		(UINT32_C(1) << 12)
+#define SDXC_START_BIT_ERROR		(UINT32_C(1) << 13)
+#define SDXC_AUTO_COMMAND_DONE		(UINT32_C(1) << 14)
+#define SDXC_END_BIT_ERROR			(UINT32_C(1) << 15)
+#define SDXC_SDIO_INTERRUPT			(UINT32_C(1) << 16)
+#define SDXC_CARD_INSERT			(UINT32_C(1) << 30)
+#define SDXC_CARD_REMOVE			(UINT32_C(1) << 31)
 
 //#define SDXC_INTERRUPT_ERROR_BIT    (SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | 0*SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | 0*SDXC_END_BIT_ERROR)
 #define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | SDXC_END_BIT_ERROR)
@@ -164,26 +164,26 @@ enum {
 /*
  * Status
  */
-#define SDXC_RXWL_FLAG				(1 << 0) //
-#define SDXC_TXWL_FLAG				(1 << 1) //
-#define SDXC_FIFO_EMPTY				(1 << 2) //при чтении
-#define SDXC_FIFO_FULL				(1 << 3) //при записи
-#define SDXC_CARD_PRESENT			(1 << 8) //
-#define SDXC_CARD_DATA_BUSY			(1 << 9)
-#define SDXC_DATA_FSM_BUSY			(1 << 10) //не используется
-#define SDXC_DMA_REQUEST			(1 << 31) //не используется
+#define SDXC_RXWL_FLAG				(UINT32_C(1) << 0) //
+#define SDXC_TXWL_FLAG				(UINT32_C(1) << 1) //
+#define SDXC_FIFO_EMPTY				(UINT32_C(1) << 2) //при чтении
+#define SDXC_FIFO_FULL				(UINT32_C(1) << 3) //при записи
+#define SDXC_CARD_PRESENT			(UINT32_C(1) << 8) //
+#define SDXC_CARD_DATA_BUSY			(UINT32_C(1) << 9)
+#define SDXC_DATA_FSM_BUSY			(UINT32_C(1) << 10) //не используется
+#define SDXC_DMA_REQUEST			(UINT32_C(1) << 31) //не используется
 #define SDXC_FIFO_SIZE				(16)
 
 /*
  * Function select
  */
 #define SDXC_CEATA_ON				(0xceaa << 16)
-#define SDXC_SEND_IRQ_RESPONSE		(1 << 0)
-#define SDXC_SDIO_READ_WAIT		(1 << 1)
-#define SDXC_ABORT_READ_DATA		(1 << 2)
-#define SDXC_SEND_CCSD			(1 << 8)
-#define SDXC_SEND_AUTO_STOPCCSD		(1 << 9)
-#define SDXC_CEATA_DEV_IRQ_ENABLE	(1 << 10)
+#define SDXC_SEND_IRQ_RESPONSE		(UINT32_C(1) << 0)
+#define SDXC_SDIO_READ_WAIT		(UINT32_C(1) << 1)
+#define SDXC_ABORT_READ_DATA		(UINT32_C(1) << 2)
+#define SDXC_SEND_CCSD			(UINT32_C(1) << 8)
+#define SDXC_SEND_AUTO_STOPCCSD		(UINT32_C(1) << 9)
+#define SDXC_CEATA_DEV_IRQ_ENABLE	(UINT32_C(1) << 10)
 
 static void WaitAfterReset(struct sdhci_t * sdhci)
 {
@@ -470,11 +470,13 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 
 int sdhci_t113_update_clk(struct sdhci_t * sdhci)
 {
-	uint32_t cmd = (1U << 31) | (1 << 21) | (1 << 13);
+	uint32_t cmd = (UINT32_C(1) << 31) | (UINT32_C(1) << 21) | (UINT32_C(1) << 13);
 
+	//TP();
 	write32(sdhci->base + SD_CMDR, cmd);
 	while(read32(sdhci->base + SD_CMDR)&SDXC_START)
 		;
+	//TP();
 
 //	ktime_t timeout = ktime_add_ms(ktime_get(), 1);
 
@@ -486,8 +488,10 @@ int sdhci_t113_update_clk(struct sdhci_t * sdhci)
                 }*/
 
 	} while(read32(sdhci->base + SD_CMDR) & SDXC_START);
+	//TP();
 
 	write32(sdhci->base + SD_RISR, read32(sdhci->base + SD_RISR));
+	//TP();
 	return 1;
 }
 
@@ -518,7 +522,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		ratio = 255;
         }
 
-	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(1 << 16));	// card clock off
+	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(UINT32_C(1) << 16));	// card clock off
 	write32(sdhci->base + SD_CKCR, ratio);
 
 	if(!sdhci_t113_update_clk(sdhci))
@@ -527,7 +531,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		return 0;
         }
 
-	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) | (1 << 17) | (1 << 16));
+	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) | (UINT32_C(1) << 17) | (UINT32_C(1) << 16));
 
 	if(!sdhci_t113_update_clk(sdhci))
         {
