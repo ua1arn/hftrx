@@ -170,27 +170,29 @@ SECTIONS
 		*(COMMON)
 
 		__bss_end__ = .;
-	} > SRAM_A2
+	} > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 
-	} > SRAM_A2
+	} > RAM
+
+	.heap (NOLOAD):
+	{
+		__HeapBase = .;
+		__end__ = .;
+		end = __end__;
+		KEEP(*(.heap*))
+		__HeapLimit = .;
+	} > RAM
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
 
-	} > DDR3
-
-	.ttb BLOCK(16k) (NOLOAD):
-	{
-		PROVIDE(__TTB_BASE = .);
-		LONG(0)	/* dummy object */
-		. = ALIGN(16k);
 	} > DDR3
 
 	.ramnc BLOCK(1M) (NOLOAD):
@@ -203,14 +205,12 @@ SECTIONS
 		PROVIDE(__RAMNC_TOP = .);
 	} > DDR3
 
-	.heap (NOLOAD):
+	.ttb BLOCK(16k) (NOLOAD):
 	{
-		__HeapBase = .;
-		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
-	} > RAM
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -218,13 +218,16 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > SRAM_A2
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(SRAM_A2) + LENGTH(SRAM_A2);
+	__StackTop = ORIGIN(STACK) + LENGTH(STACK);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
+
+	/* PROVIDE(__TTB_BASE = ORIGIN(TTB)); */
+	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/

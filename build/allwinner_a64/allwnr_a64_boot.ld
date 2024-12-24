@@ -8,8 +8,7 @@ MEMORY
   RAM (rwx)	 : ORIGIN = 0x00010000 + 256, 			LENGTH = 32k + 96k - 256		/* SRAM A1 + SRAM C: SD card boot */
   bootltestRAM (rwx) : ORIGIN = 0x00018000 + 256, 			LENGTH = 96k - 256		/* bootloader tests / DDR initialier base */
   STACK (rwx): ORIGIN = 0x00044000,					LENGTH = 64k
-  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
-  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M		/*  */
 }
 
 /* Library configurations */
@@ -120,10 +119,8 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
-	/*
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
-	*/
 		__zero_table_end__ = .;
 	} > RAM
 
@@ -183,6 +180,15 @@ SECTIONS
 
 	} > RAM
 
+	.heap (NOLOAD):
+	{
+		__HeapBase = .;
+		__end__ = .;
+		end = __end__;
+		KEEP(*(.heap*))
+		__HeapLimit = .;
+	} > RAM
+
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
@@ -200,14 +206,12 @@ SECTIONS
 		PROVIDE(__RAMNC_TOP = .);
 	} > DDR3
 
-	.heap (NOLOAD):
+	.ttb BLOCK(16k) (NOLOAD):
 	{
-		__HeapBase = .;
-		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
-	} > RAM
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -223,7 +227,7 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
+	/* PROVIDE(__TTB_BASE = ORIGIN(TTB)); */
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
