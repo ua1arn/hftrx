@@ -40,7 +40,7 @@
 
 enum {
 	SD_GCTL			= 0x00,
-	SD_CKCR			= 0x04,
+	SD_CLKDIV			= 0x04,
 	SD_TMOR			= 0x08,
 	SD_BWDR			= 0x0c,
 	SD_BKSR			= 0x10,
@@ -202,7 +202,7 @@ static void WaitAfterReset(struct sdhci_t * sdhci)
 
 static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
-	uint32_t cmdval = SDXC_START;
+	uint32_t cmdval = 0;
 	uint32_t status = 0;
 
 //	ktime_t timeout;
@@ -256,7 +256,7 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 
 	sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);	// NO DMA, всегда чтение процессором
 
-	sdhci->instance->SMHC_CMD = cmdval | cmd->cmdidx;
+	sdhci->instance->SMHC_CMD = SDXC_START | cmdval | cmd->cmdidx;
 	while (sdhci->instance->SMHC_CMD & SDXC_START)
 		 ;
 
@@ -470,11 +470,11 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 
 int sdhci_t113_update_clk(struct sdhci_t * sdhci)
 {
-	uint32_t cmd = (UINT32_C(1) << 31) | (UINT32_C(1) << 21) | (UINT32_C(1) << 13);
+	uint32_t cmd = (UINT32_C(1) << 21) | (UINT32_C(1) << 13);	// PRG_CLK WAIT_PRE_OVER
 
 	//TP();
-	write32(sdhci->base + SD_CMDR, cmd);
-	while(read32(sdhci->base + SD_CMDR)&SDXC_START)
+	write32(sdhci->base + SD_CMDR, cmd | SDXC_START);
+	while(read32(sdhci->base + SD_CMDR) & SDXC_START)
 		;
 	//TP();
 
@@ -522,8 +522,8 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		ratio = 255;
         }
 
-	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(UINT32_C(1) << 16));	// card clock off
-	write32(sdhci->base + SD_CKCR, ratio);
+	write32(sdhci->base + SD_CLKDIV, read32(sdhci->base + SD_CLKDIV) & ~ (UINT32_C(1) << 16));	// card clock off CCLK_ENB=0
+	write32(sdhci->base + SD_CLKDIV, ratio);
 
 	if(!sdhci_t113_update_clk(sdhci))
         {
@@ -531,7 +531,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		return 0;
         }
 
-	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) | (UINT32_C(1) << 17) | (UINT32_C(1) << 16));
+	write32(sdhci->base + SD_CLKDIV, read32(sdhci->base + SD_CLKDIV) | (UINT32_C(1) << 17) | (UINT32_C(1) << 16)); // CCLK_CTRL-1, CCLK_ENB=1
 
 	if(!sdhci_t113_update_clk(sdhci))
         {
@@ -558,7 +558,7 @@ int sdhci_t113_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct
 
 void sdhci_t113_clock(void)
 {
-// SMHC_BGR_REG&=~(1<<16);                       //SMHC0 assert reset
+// SMHC_BGR_REG&=~ (1<<16);                       //SMHC0 assert reset
 //
 //// SMHC0_CLK_REG|=(1UL<<31);                   //clock enable SMHC0, HOSC         selected, N=1, M=1 =>  24 MHz ( Quartz  24 MHz /1 /1 ) = HOSC_CLOCK
 // SMHC0_CLK_REG=(1UL<<31)|(1<<24)|(1<<8)|(3-1); //clock enable SMHC0, PLL_PERI(1x) selected, N=2, M=3 => 100 MHz ( PLL    600 MHz /2 /3 ) = PLLPERI1X_CLOCK_DIV
