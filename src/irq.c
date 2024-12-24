@@ -1726,7 +1726,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 //    #define __LDREXB __LDAEXB
 //    #define __STREXB __STLEXB
 

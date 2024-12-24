@@ -4,6 +4,10 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "../display.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if WITHALTERNATIVEFONTS
 
 //--------------------------------------------------------------
@@ -99,4 +103,9 @@ extern UB_pFont gothic_12x16_p;
 extern UB_Font gothic_11x13;
 
 #endif /* WITHALTERNATIVEFONTS */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif /* UB_FONTS_H_INCLUDED */

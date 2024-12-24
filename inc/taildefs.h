@@ -35,6 +35,7 @@ typedef enum
 	SPIC_SPEED10M 	= 10000000,	/* 10 MHz для ILI9341 */
 	SPIC_SPEEDFAST 	= 12000000,
 	SPIC_SPEED25M 	= 25000000,	/* 25 MHz  */
+	SPIC_SPEEDUFAST = 10000000,
 } spi_speeds_t;
 
 #include <src/linux/linux_subsystem.h>

@@ -5,6 +5,10 @@
 #include "../display/display.h"
 #include "display2.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if WITHTOUCHGUI
 
 #define WITHGUIMAXX				800
@@ -139,4 +143,9 @@ void gui_open_debug_window(void);
 void gui_as_update(void);
 
 #endif /* WITHTOUCHGUI */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif /* GUI_H_INCLUDED */
