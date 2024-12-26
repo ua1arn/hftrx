@@ -723,7 +723,6 @@ void nmeatuner_initialize(void)
 		CTLSTYLE_STORCH_V2 || \
 		CTLSTYLE_STORCH_V3 || \
 		CTLSTYLE_STORCH_V5 || \
-		CTLSTYLE_STORCH_V6 || \
 		CTLSTYLE_STORCH_V7 || \
 		CTLSTYLE_OLEG4Z_V1 || \
 		CTLSTYLE_NUCLEO_V1 || \
