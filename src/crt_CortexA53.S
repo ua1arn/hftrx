@@ -55,13 +55,13 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 64
-	 STACKSIZEABT = 64
-	 STACKSIZEFIQ = 64
-	 STACKSIZEHYP = 64
-	 STACKSIZEMON = 64
-	 STACKSIZESVC = 64
-	 STACKSIZEIRQ = 64
+	 STACKSIZEUND = 512
+	 STACKSIZEABT = 512
+	 STACKSIZEFIQ = 512
+	 STACKSIZEHYP = 512
+	 STACKSIZEMON = 512
+	 STACKSIZESVC = 512
+	 STACKSIZEIRQ = 512
 
 	 STACKSIZESYSBOOT = 512
 
@@ -127,11 +127,45 @@ __Vectors64:
 /*                           Reset handler                                  */
 /****************************************************************************/
 Reset_Handler:
+	mov	x0, XZR
+	mov x1, x0
+	mov x2, x0
+	mov x3, x0
+	mov x4, x0
+	mov x5, x0
+	mov x6, x0
+	mov x7, x0
+	mov x8, x0
+	mov x9, x0
+	mov x10, x0
+	mov x11, x0
+	mov x12, x0
+	mov x13, x0
+	mov x14, x0
+	mov x15, x0
+	mov x16, x0
+	mov x17, x0
+	mov x18, x0
+	mov x19, x0
+	mov x20, x0
+	mov x21, x0
+	mov x22, x0
+	mov x23, x0
+	mov x24, x0
+	mov x25, x0
+	mov x26, x0
+	mov x27, x0
+	mov x28, x0
+	mov x29, x0
+	mov x30, x0
+
 	ldr x30, =__stack_cpu0_sys_end
 	mov sp, x30
+	mov x30, XZR
 	bl SystemInit
 	ldr x30, =__stack
 	mov sp, x30
+	mov x30, XZR
 	bl __riscv_start
 hang:
 	b hang

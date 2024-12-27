@@ -3305,21 +3305,20 @@ __STATIC_INLINE void MMU_TTPage64k(uint32_t *ttb, uint32_t base_address, uint32_
 */
 __STATIC_INLINE void MMU_Enable(void)
 {
-  // Set M bit 0 to enable the MMU
-  // Set AFE bit to enable simplified access permissions model
-  // Clear TRE bit to disable TEX remap and A bit to disable strict alignment fault checking
-//  __set_SCTLR_EL3( (__get_SCTLR_EL3() & ~(UINT32_C(1) << 28) & ~(UINT32_C(1) << 1)) | 1 | (UINT32_C(1) << 29));
-	  __set_SCTLR_EL3( (__get_SCTLR_EL3() & ~ (UINT32_C(1) << 1)) | (UINT32_C(1) << 0));
-  __ISB();
+	// Set M bit 0 to enable the MMU
+	// Set AFE bit to enable simplified access permissions model
+	// Clear TRE bit to disable TEX remap and A bit to disable strict alignment fault checking
+	__set_SCTLR_EL3(__get_SCTLR_EL3() | SCTLR_EL3_M_Msk);
+	__ISB();
 }
 
 /** \brief  Disable MMU
 */
 __STATIC_INLINE void MMU_Disable(void)
 {
-  // Clear M bit 0 to disable the MMU
-  __set_SCTLR_EL3( __get_SCTLR_EL3() & ~ (UINT32_C(1) << 0));
-  __ISB();
+	// Clear M bit 0 to disable the MMU
+	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_M_Msk);
+	__ISB();
 }
 
 /** \brief  Invalidate entire unified TLB
