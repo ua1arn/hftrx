@@ -216,8 +216,8 @@ bootloader_launch_app(uintptr_t startfunc)
 	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
 	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
 #elif CPUSTYLE_H616
-	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
-	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
 #elif CPUSTYLE_T507
 	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
 	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
