@@ -9709,8 +9709,10 @@ sysinit_pll_initialize(int forced)
 
 	/* IOMMU off */
 	{
+#if ! defined(__aarch64__)
 		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
 		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
+#endif
 		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
 	}
 

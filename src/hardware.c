@@ -3017,6 +3017,7 @@ sysinit_fpu_initialize(void)
 
 	// FPU
 	//__FPU_Enable_fixed();
+	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_SA_Msk & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
 	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT32_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
 	__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT32_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
 	//__builtin_aarch64_set_fpcr( __builtin_aarch64_get_fpcr() & 0x00086060u);
@@ -3218,9 +3219,9 @@ sysinit_vbar_initialize(void)
 	__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 	__set_VBAR_EL3(vbase);	 // TRAP at memcpy Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
-	//__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
-	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
-	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ (UINT32_C(1) << 3));	// Disables stack alignment check
+	//__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_V_Msk);	// v=0 - use VBAR as vectors address
+	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_SA_Msk);	// Disables stack alignment check
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
