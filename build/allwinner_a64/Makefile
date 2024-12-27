@@ -285,12 +285,13 @@ fsbl.bt0: $(PROJECT)_boot.bin
 	./egontool -old $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
-SystemInitAddr = 0x0002157c
+SystemDRAMInit = 0x000196a8
+SystemExecAARCH64 = 0x0001e120
 
 # Invoke SystemInit 
 ddr_init: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
-	$(XFEL) exec $(SystemInitAddr)
+	$(XFEL) exec $(SystemDRAMInit)
 
 # test bootloader
 _app_run: fsbl.bt0
@@ -300,6 +301,10 @@ _app_run: fsbl.bt0
 app_run: $(PROJECT)_app.alw32 ddr_init
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
+
+app_run64: $(PROJECT)_app.alw32 ddr_init
+	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+	$(XFEL) exec $(SystemExecAARCH64) 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.bt0
