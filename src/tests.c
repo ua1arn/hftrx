@@ -6789,8 +6789,24 @@ void testpng_no_stretch(const void * pngbuffer)
 		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
 		);
 
-	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
-	hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+	if (1)
+	{
+		// Convert ABGR8886 to ARGB8888
+		for (unsigned y = 0; y < DIM_Y; ++ y)
+		{
+			for (unsigned x = 0; x < DIM_X; ++ x)
+			{
+				PACKEDCOLORPIP_T * const p = colpip_mem_at(fb, DIM_X, DIM_Y, x, y);
+				unsigned a = (* p >> 24) & 0xFF;
+				unsigned b = (* p >> 16) & 0xFF;
+				unsigned g = (* p >> 8) & 0xFF;
+				unsigned r = (* p >> 0) & 0xFF;
+				* p = TFTALPHA(a, TFTRGB(r, g, b));
+			}
+		}
+	}
+
+	colmain_nextfb();
 
 	luImageRelease(png, NULL);
 	for (;;)
@@ -10709,6 +10725,62 @@ void hightests(void)
 #if 1 && WITHHDMITVHW
 	{
 		hardware_edid_test();
+	}
+#endif
+#if 0 && ! WITHISBOOTLOADER
+	{
+		TP();
+		unsigned i;
+		for (i = 0; i < 2000; ++ i)
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			local_delay_ms(1);
+		}
+		TP();
+		// Тест чтения с FatFS данных
+		do {
+			static FIL pngfile; /* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+			static const char fname [] = "demo.png";
+			static FATFS fs; /* File system object  - нельзя располагать в Cortex-M4 CCM */
+			const size_t pngbufsize = 2 * 1024 * 1024;
+			void * pngbuffer = malloc(pngbufsize);
+			if (pngbuffer == NULL)
+				break;
+			FRESULT rc;
+			UINT nread;
+
+			rc = f_mount(& fs, "", 0);
+			if (rc != FR_OK) {
+				PRINTF("SD card not found\n");
+				break;
+			}
+			rc = f_open(&pngfile, fname, FA_OPEN_EXISTING | FA_READ);
+			if (rc != FR_OK) {
+				PRINTF("Key file '%s' not found\n", fname);
+				break;
+			}
+			rc = f_read(& pngfile, pngbuffer, pngbufsize, & nread);
+			if (rc != FR_OK) {
+				PRINTF("Key file '%s' can not be read\n", fname);
+				f_close(&pngfile);
+				break;
+			}
+			//PRINTF("Key file '%s' (%u bytes):\n", fname, (unsigned) nread);
+			//printhex(0, data, nread);
+
+			testpng_no_stretch(pngbuffer);	// становить формат DE2_FORMAT_XBGR_8888
+			for (;;)
+			{
+				uint_fast8_t kbch, kbready;
+				processmessages(& kbch, & kbready, 0, NULL);
+				if (kbready)
+					break;
+			}
+
+			f_close(&pngfile);
+
+		} while (0);
+		TP();
 	}
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
