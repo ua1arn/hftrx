@@ -55,17 +55,17 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 512
-	 STACKSIZEABT = 512
-	 STACKSIZEFIQ = 512
-	 STACKSIZEHYP = 512
-	 STACKSIZEMON = 512
-	 STACKSIZESVC = 512
-	 STACKSIZEIRQ = 512
+	 STACKSIZEUND = 64
+	 STACKSIZEABT = 64
+	 STACKSIZEFIQ = 64
+	 STACKSIZEHYP = 64
+	 STACKSIZEMON = 64
+	 STACKSIZESVC = 64
+	 STACKSIZEIRQ = 64
 
-	 STACKSIZESYSBOOT = 512
+	 STACKSIZESYSBOOT = 4096
 
-	.section .isr_vector, "ax"
+	.section .isr_vector
 	//.code 64
         
 /****************************************************************************/

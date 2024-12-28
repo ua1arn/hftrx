@@ -2941,10 +2941,36 @@ sysinit_ttbr_initialize(void)
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 void * memset(void * dst, int v, size_t n)
 {
-	uint8_t * d = (uint8_t *) dst;
+	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
 	while (n --)
 		* d ++ = v;
 	return dst;
+}
+
+void * memcpy(void * dst, const void * src, size_t n)
+{
+	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
+	const volatile uint8_t * restrict s = (const volatile uint8_t *) src;
+	while (n --)
+		* d ++ = * s ++;
+	return dst;
+}
+
+void * memmove(void * dst, const void * src, size_t n)
+{
+	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
+	const volatile uint8_t * restrict s = (const volatile uint8_t *) src;
+	while (n --)
+		* d ++ = * s ++;
+	return dst;
+}
+
+size_t strlen(const char * s)
+{
+	size_t n = 0;
+	while (* s ++)
+		++ n;
+	return n;
 }
 #endif
 
