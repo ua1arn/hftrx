@@ -167,8 +167,8 @@ Reset_Handler:
 	mov sp, x30
 	mov x30, XZR
 	bl __riscv_start
-hang:
-	b hang
+1:
+	b 1b
 	//call
 #if 000
 //	b	skipMarker
