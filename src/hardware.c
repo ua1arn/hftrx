@@ -2938,7 +2938,7 @@ sysinit_ttbr_initialize(void)
 #endif
 }
 
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM && 1
 void * memset(void * dst, int v, size_t n)
 {
 	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
@@ -2960,8 +2960,18 @@ void * memmove(void * dst, const void * src, size_t n)
 {
 	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
 	const volatile uint8_t * restrict s = (const volatile uint8_t *) src;
-	while (n --)
-		* d ++ = * s ++;
+	if (0)//(d + n > s && d > s + n)
+	{
+		s += n;
+		d += n;
+		while (n --)
+			* -- d = * -- s;
+	}
+	else
+	{
+		while (n --)
+			* d ++ = * s ++;
+	}
 	return dst;
 }
 
@@ -3071,8 +3081,8 @@ sysinit_fpu_initialize(void)
 	// FPU
 	//__FPU_Enable_fixed();
 	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_SA_Msk & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
-	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT32_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
-	__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT32_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
+	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT64_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
+	__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT64_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
 	//__builtin_aarch64_set_fpcr( __builtin_aarch64_get_fpcr() & 0x00086060u);
 
 	L1C_DisableCaches();
@@ -3806,10 +3816,11 @@ static void cortexa_cpuinfo(void)
 #if defined(__aarch64__)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL1=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
 			(unsigned) (__get_MPIDR_EL1() & 0x03),
 			(unsigned) __get_VBAR_EL3(),
 			(unsigned) __get_TTBR0_EL3(),
+			(unsigned) __get_SCTLR_EL1(),
 			(unsigned) __get_SCTLR_EL3(),
 			(unsigned) __get_TCR_EL3(),
 			(unsigned) (uintptr_t) & vvv,

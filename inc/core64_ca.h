@@ -518,70 +518,70 @@ typedef union
 
 
 #define SCTLR_EL1_DZE_Pos                     14U                                    /*!< \brief SCTLR: DZE Position */
-#define SCTLR_EL1_DZE_Msk                     (UINT32_C(1) << SCTLR_EL1_DZE_Pos)                  /*!< \brief SCTLR: DZE Mask */
+#define SCTLR_EL1_DZE_Msk                     (UINT64_C(1) << SCTLR_EL1_DZE_Pos)                  /*!< \brief SCTLR: DZE Mask */
 
 #define SCTLR_EL3_TE_Pos                     30U                                    /*!< \brief SCTLR: TE Position */
-#define SCTLR_EL3_TE_Msk                     (UINT32_C(1) << SCTLR_EL3_TE_Pos)                  /*!< \brief SCTLR: TE Mask */
+#define SCTLR_EL3_TE_Msk                     (UINT64_C(1) << SCTLR_EL3_TE_Pos)                  /*!< \brief SCTLR: TE Mask */
 
 #define SCTLR_EL3_AFE_Pos                    29U                                    /*!< \brief SCTLR: AFE Position */
-#define SCTLR_EL3_AFE_Msk                    (UINT32_C(1) << SCTLR_EL3_AFE_Pos)                 /*!< \brief SCTLR: AFE Mask */
+#define SCTLR_EL3_AFE_Msk                    (UINT64_C(1) << SCTLR_EL3_AFE_Pos)                 /*!< \brief SCTLR: AFE Mask */
 
 #define SCTLR_EL3_TRE_Pos                    28U                                    /*!< \brief SCTLR: TRE Position */
-#define SCTLR_EL3_TRE_Msk                    (UINT32_C(1) << SCTLR_EL3_TRE_Pos)                 /*!< \brief SCTLR: TRE Mask */
+#define SCTLR_EL3_TRE_Msk                    (UINT64_C(1) << SCTLR_EL3_TRE_Pos)                 /*!< \brief SCTLR: TRE Mask */
 
 #define SCTLR_EL3_NMFI_Pos                   27U                                    /*!< \brief SCTLR: NMFI Position */
-#define SCTLR_EL3_NMFI_Msk                   (UINT32_C(1) << SCTLR_EL3_NMFI_Pos)                /*!< \brief SCTLR: NMFI Mask */
+#define SCTLR_EL3_NMFI_Msk                   (UINT64_C(1) << SCTLR_EL3_NMFI_Pos)                /*!< \brief SCTLR: NMFI Mask */
 
 #define SCTLR_EL3_EE_Pos                     25U                                    /*!< \brief SCTLR: EE Position */
-#define SCTLR_EL3_EE_Msk                     (UINT32_C(1) << SCTLR_EL3_EE_Pos)                  /*!< \brief SCTLR: EE Mask */
+#define SCTLR_EL3_EE_Msk                     (UINT64_C(1) << SCTLR_EL3_EE_Pos)                  /*!< \brief SCTLR: EE Mask */
 
 #define SCTLR_EL3_VE_Pos                     24U                                    /*!< \brief SCTLR: VE Position */
-#define SCTLR_EL3_VE_Msk                     (UINT32_C(1) << SCTLR_EL3_VE_Pos)                  /*!< \brief SCTLR: VE Mask */
+#define SCTLR_EL3_VE_Msk                     (UINT64_C(1) << SCTLR_EL3_VE_Pos)                  /*!< \brief SCTLR: VE Mask */
 
 #define SCTLR_EL3_U_Pos                      22U                                    /*!< \brief SCTLR: U Position */
-#define SCTLR_EL3_U_Msk                      (UINT32_C(1) << SCTLR_EL3_U_Pos)                   /*!< \brief SCTLR: U Mask */
+#define SCTLR_EL3_U_Msk                      (UINT64_C(1) << SCTLR_EL3_U_Pos)                   /*!< \brief SCTLR: U Mask */
 
 #define SCTLR_EL3_FI_Pos                     21U                                    /*!< \brief SCTLR: FI Position */
-#define SCTLR_EL3_FI_Msk                     (UINT32_C(1) << SCTLR_EL3_FI_Pos)                  /*!< \brief SCTLR: FI Mask */
+#define SCTLR_EL3_FI_Msk                     (UINT64_C(1) << SCTLR_EL3_FI_Pos)                  /*!< \brief SCTLR: FI Mask */
 
 #define SCTLR_EL3_UWXN_Pos                   20U                                    /*!< \brief SCTLR: UWXN Position */
-#define SCTLR_EL3_UWXN_Msk                   (UINT32_C(1) << SCTLR_EL3_UWXN_Pos)                /*!< \brief SCTLR: UWXN Mask */
+#define SCTLR_EL3_UWXN_Msk                   (UINT64_C(1) << SCTLR_EL3_UWXN_Pos)                /*!< \brief SCTLR: UWXN Mask */
 
 #define SCTLR_EL3_WXN_Pos                    19U                                    /*!< \brief SCTLR: WXN Position */
-#define SCTLR_EL3_WXN_Msk                    (UINT32_C(1) << SCTLR_EL3_WXN_Pos)                 /*!< \brief SCTLR: WXN Mask */
+#define SCTLR_EL3_WXN_Msk                    (UINT64_C(1) << SCTLR_EL3_WXN_Pos)                 /*!< \brief SCTLR: WXN Mask */
 
 #define SCTLR_EL3_HA_Pos                     17U                                    /*!< \brief SCTLR: HA Position */
-#define SCTLR_EL3_HA_Msk                     (UINT32_C(1) << SCTLR_EL3_HA_Pos)                  /*!< \brief SCTLR: HA Mask */
+#define SCTLR_EL3_HA_Msk                     (UINT64_C(1) << SCTLR_EL3_HA_Pos)                  /*!< \brief SCTLR: HA Mask */
 
 //#define SCTLR_EL3_V_Pos                      13U                                    /*!< \brief SCTLR: V Position */
-//#define SCTLR_EL3_V_Msk                      (UINT32_C(1) << SCTLR_EL3_V_Pos)                   /*!< \brief SCTLR: V Mask */
+//#define SCTLR_EL3_V_Msk                      (UINT64_C(1) << SCTLR_EL3_V_Pos)                   /*!< \brief SCTLR: V Mask */
 
 #define SCTLR_EL3_I_Pos                      12U                                    /*!< \brief SCTLR: I Position */
-#define SCTLR_EL3_I_Msk                      (UINT32_C(1) << SCTLR_EL3_I_Pos)                   /*!< \brief SCTLR: I Mask */
+#define SCTLR_EL3_I_Msk                      (UINT64_C(1) << SCTLR_EL3_I_Pos)                   /*!< \brief SCTLR: I Mask */
 
 //#define SCTLR_EL3_Z_Pos                      11U                                    /*!< \brief SCTLR: Z Position */
-//#define SCTLR_EL3_Z_Msk                      (UINT32_C(1) << SCTLR_EL3_Z_Pos)                   /*!< \brief SCTLR: Z Mask */
+//#define SCTLR_EL3_Z_Msk                      (UINT64_C(1) << SCTLR_EL3_Z_Pos)                   /*!< \brief SCTLR: Z Mask */
 
 //#define SCTLR_EL3_SW_Pos                     10U                                    /*!< \brief SCTLR: SW Position */
-//#define SCTLR_EL3_SW_Msk                     (UINT32_C(1) << SCTLR_EL3_SW_Pos)                  /*!< \brief SCTLR: SW Mask */
+//#define SCTLR_EL3_SW_Msk                     (UINT64_C(1) << SCTLR_EL3_SW_Pos)                  /*!< \brief SCTLR: SW Mask */
 
 //#define SCTLR_EL3_B_Pos                      7U                                     /*!< \brief SCTLR: B Position */
-//#define SCTLR_EL3_B_Msk                      (UINT32_C(1) << SCTLR_EL3_B_Pos)                   /*!< \brief SCTLR: B Mask */
+//#define SCTLR_EL3_B_Msk                      (UINT64_C(1) << SCTLR_EL3_B_Pos)                   /*!< \brief SCTLR: B Mask */
 
 //#define SCTLR_EL3_CP15BEN_Pos                5U                                     /*!< \brief SCTLR: CP15BEN Position */
-//#define SCTLR_EL3_CP15BEN_Msk                (UINT32_C(1) << SCTLR_EL3_CP15BEN_Pos)             /*!< \brief SCTLR: CP15BEN Mask */
+//#define SCTLR_EL3_CP15BEN_Msk                (UINT64_C(1) << SCTLR_EL3_CP15BEN_Pos)             /*!< \brief SCTLR: CP15BEN Mask */
 
 #define SCTLR_EL3_SA_Pos                 3U                                     /*!< \brief SCTLR: SA Position */
-#define SCTLR_EL3_SA_Msk                 (UINT32_C(1) << SCTLR_EL3_SA_Pos)                   /*!< \brief SCTLR: SA Mask */
+#define SCTLR_EL3_SA_Msk                 (UINT64_C(1) << SCTLR_EL3_SA_Pos)                   /*!< \brief SCTLR: SA Mask */
 
 #define SCTLR_EL3_C_Pos                      2U                                     /*!< \brief SCTLR: C Position */
-#define SCTLR_EL3_C_Msk                      (UINT32_C(1) << SCTLR_EL3_C_Pos)                   /*!< \brief SCTLR: C Mask */
+#define SCTLR_EL3_C_Msk                      (UINT64_C(1) << SCTLR_EL3_C_Pos)                   /*!< \brief SCTLR: C Mask */
 
 #define SCTLR_EL3_A_Pos                      1U                                     /*!< \brief SCTLR: A Position */
-#define SCTLR_EL3_A_Msk                      (UINT32_C(1) << SCTLR_EL3_A_Pos)                   /*!< \brief SCTLR: A Mask */
+#define SCTLR_EL3_A_Msk                      (UINT64_C(1) << SCTLR_EL3_A_Pos)                   /*!< \brief SCTLR: A Mask */
 
 #define SCTLR_EL3_M_Pos                      0U                                     /*!< \brief SCTLR: M Position */
-#define SCTLR_EL3_M_Msk                      (UINT32_C(1) << SCTLR_EL3_M_Pos)                   /*!< \brief SCTLR: M Mask */
+#define SCTLR_EL3_M_Msk                      (UINT64_C(1) << SCTLR_EL3_M_Pos)                   /*!< \brief SCTLR: M Mask */
 
 /* CP15 Register ACTLR */
 typedef union
@@ -1454,16 +1454,16 @@ __STATIC_FORCEINLINE uint32_t __get_SCTLR_EL2(void)
 
 ///////////////
 ///
-__STATIC_FORCEINLINE void __set_SCTLR_EL3(uint32_t value)
+__STATIC_FORCEINLINE void __set_SCTLR_EL3(uint64_t value)
 {
-	__set_RG32("SCTLR_EL3", value);
+	__set_RG64("SCTLR_EL3", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL3(void)
+__STATIC_FORCEINLINE uint64_t __get_SCTLR_EL3(void)
 {
-	uint32_t result;
+	uint64_t result;
 	// MRS <Xt>, SCTLR_EL3 ; Read SCTLR_EL3 into Xt
-	__get_RG32("SCTLR_EL3", result);
+	__get_RG64("SCTLR_EL3", result);
 	return result;
 }
 ///////////////
