@@ -76,7 +76,7 @@ typedef enum IRQn
  * @brief GICV
  */
 /*!< GICV  */
-typedef __PACKED_STRUCT GICV_Type
+typedef struct GICV_Type
 {
     __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
     __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
@@ -100,7 +100,7 @@ typedef __PACKED_STRUCT GICV_Type
  * @brief UART
  */
 /*!< UART  */
-typedef __PACKED_STRUCT UART_Type
+typedef struct UART_Type
 {
     __IO uint32_t UART_RBR_THR_DLL;                   /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
     __IO uint32_t UART_DLH_IER;                       /*!< Offset 0x004  */

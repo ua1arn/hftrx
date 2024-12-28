@@ -62,7 +62,7 @@ typedef enum IRQn
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
-typedef __PACKED_STRUCT I2S_PCM_Type
+typedef struct I2S_PCM_Type
 {
     __IO uint32_t I2S_PCM_CTL;                        /*!< Offset 0x000 I2S/PCM Control Register */
     __IO uint32_t I2S_PCM_FMT0;                       /*!< Offset 0x004 I2S/PCM Format Register 0 */
@@ -106,7 +106,7 @@ typedef __PACKED_STRUCT I2S_PCM_Type
  * @brief TWI
  */
 /*!< TWI  */
-typedef __PACKED_STRUCT TWI_Type
+typedef struct TWI_Type
 {
     __IO uint32_t TWI_ADDR;                           /*!< Offset 0x000 TWI Slave Address Register */
     __IO uint32_t TWI_XADDR;                          /*!< Offset 0x004 TWI Extended Slave Address Register */
@@ -135,7 +135,7 @@ typedef __PACKED_STRUCT TWI_Type
  * @brief UART
  */
 /*!< UART  */
-typedef __PACKED_STRUCT UART_Type
+typedef struct UART_Type
 {
     __IO uint32_t UART_RBR_THR_DLL;                   /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
     __IO uint32_t UART_DLH_IER;                       /*!< Offset 0x004  */

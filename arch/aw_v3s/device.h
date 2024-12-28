@@ -102,7 +102,7 @@ typedef enum IRQn
  * @brief CCU
  */
 /*!< CCU  */
-typedef __PACKED_STRUCT CCU_Type
+typedef struct CCU_Type
 {
     __IO uint32_t PLL_CPU_CTRL_REG;                   /*!< Offset 0x000 PLL_CPU Control Register */
          uint32_t reserved_0x004;
@@ -207,7 +207,7 @@ typedef __PACKED_STRUCT CCU_Type
  * @brief DMAC
  */
 /*!< DMAC  */
-typedef __PACKED_STRUCT DMAC_Type
+typedef struct DMAC_Type
 {
     __IO uint32_t DMAC_IRQ_EN_REG;                    /*!< Offset 0x000 DMAC IRQ Enable Register */
          uint32_t reserved_0x004 [0x0003];
@@ -217,7 +217,7 @@ typedef __PACKED_STRUCT DMAC_Type
          uint32_t reserved_0x024 [0x0003];
     __I  uint32_t DMAC_STA_REG;                       /*!< Offset 0x030 DMAC Status Register */
          uint32_t reserved_0x034 [0x0033];
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t DMAC_EN_REGN;                   /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 7) 0x0100 + N*0x0040 */
         __IO uint32_t DMAC_PAU_REGN;                  /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 7) 0x0104 + N*0x0040 */
@@ -235,7 +235,7 @@ typedef __PACKED_STRUCT DMAC_Type
  * @brief GPIO
  */
 /*!< GPIO  */
-typedef __PACKED_STRUCT GPIO_Type
+typedef struct GPIO_Type
 {
     __IO uint32_t CFG [0x004];                        /*!< Offset 0x000 Configure Register */
     __IO uint32_t DATA;                               /*!< Offset 0x010 Data Register */
@@ -246,9 +246,9 @@ typedef __PACKED_STRUCT GPIO_Type
  * @brief GPIOBLOCK
  */
 /*!< GPIOBLOCK  */
-typedef __PACKED_STRUCT GPIOBLOCK_Type
+typedef struct GPIOBLOCK_Type
 {
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t CFG [0x004];                    /*!< Offset 0x000 Configure Register */
         __IO uint32_t DATA;                           /*!< Offset 0x010 Data Register */
@@ -256,7 +256,7 @@ typedef __PACKED_STRUCT GPIOBLOCK_Type
         __IO uint32_t PULL [0x002];                   /*!< Offset 0x01C Pull Register */
     } GPIO_PINS [0x007];                              /*!< Offset 0x000 GPIO pin control */
          uint32_t reserved_0x0FC [0x0041];
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t EINT_CFG [0x004];               /*!< Offset 0x200 External Interrupt Configure Registers */
         __IO uint32_t EINT_CTL;                       /*!< Offset 0x210 External Interrupt Control Register */
@@ -270,7 +270,7 @@ typedef __PACKED_STRUCT GPIOBLOCK_Type
  * @brief GPIOINT
  */
 /*!< GPIOINT  */
-typedef __PACKED_STRUCT GPIOINT_Type
+typedef struct GPIOINT_Type
 {
     __IO uint32_t EINT_CFG [0x004];                   /*!< Offset 0x000 External Interrupt Configure Registers */
     __IO uint32_t EINT_CTL;                           /*!< Offset 0x010 External Interrupt Control Register */
@@ -282,7 +282,7 @@ typedef __PACKED_STRUCT GPIOINT_Type
  * @brief PWM
  */
 /*!< PWM  */
-typedef __PACKED_STRUCT PWM_Type
+typedef struct PWM_Type
 {
     __IO uint32_t PWM_CH_CTRL;                        /*!< Offset 0x000 PWM Control Register */
     __IO uint32_t PWM_CH0_PERIOD;                     /*!< Offset 0x004 PWM Channel 0 Period Register */
@@ -293,7 +293,7 @@ typedef __PACKED_STRUCT PWM_Type
  * @brief RTC
  */
 /*!< RTC  */
-typedef __PACKED_STRUCT RTC_Type
+typedef struct RTC_Type
 {
     __IO uint32_t LOSC_CTRL_REG;                      /*!< Offset 0x000 Low Oscillator Control Register l */
     __IO uint32_t LOSC_AUTO_SWT_STA_REG;              /*!< Offset 0x004 LOSC Auto Switch Status Register */
@@ -326,7 +326,7 @@ typedef __PACKED_STRUCT RTC_Type
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
-typedef __PACKED_STRUCT SPI_Type
+typedef struct SPI_Type
 {
          uint32_t reserved_0x000;
     __IO uint32_t SPI_GCR;                            /*!< Offset 0x004 SPI Global Control Register */
@@ -352,7 +352,7 @@ typedef __PACKED_STRUCT SPI_Type
  * @brief SYS_CFG
  */
 /*!< SYS_CFG  */
-typedef __PACKED_STRUCT SYS_CFG_Type
+typedef struct SYS_CFG_Type
 {
          uint32_t reserved_0x000 [0x0009];
     __I  uint32_t VER_REG;                            /*!< Offset 0x024 Version Register */
@@ -363,12 +363,12 @@ typedef __PACKED_STRUCT SYS_CFG_Type
  * @brief TIMER
  */
 /*!< TIMER  */
-typedef __PACKED_STRUCT TIMER_Type
+typedef struct TIMER_Type
 {
     __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
     __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
          uint32_t reserved_0x008 [0x0002];
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t CTRL_REG;                       /*!< Offset 0x010 Timer n Control Register */
         __IO uint32_t INTV_VALUE_REG;                 /*!< Offset 0x014 Timer n Interval Value Register */
@@ -398,7 +398,7 @@ typedef __PACKED_STRUCT TIMER_Type
  * @brief TWI
  */
 /*!< TWI  */
-typedef __PACKED_STRUCT TWI_Type
+typedef struct TWI_Type
 {
     __IO uint32_t TWI_ADDR;                           /*!< Offset 0x000 TWI Slave Address Register */
     __IO uint32_t TWI_XADDR;                          /*!< Offset 0x004 TWI Extended Slave Address Register */
@@ -415,7 +415,7 @@ typedef __PACKED_STRUCT TWI_Type
  * @brief UART
  */
 /*!< UART  */
-typedef __PACKED_STRUCT UART_Type
+typedef struct UART_Type
 {
     __IO uint32_t UART_RBR_THR_DLL;                   /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
     __IO uint32_t UART_DLH_IER;                       /*!< Offset 0x004  */
@@ -460,7 +460,7 @@ typedef __PACKED_STRUCT UART_Type
  * @brief USBEHCI
  */
 /*!< USBEHCI  */
-typedef __PACKED_STRUCT USBEHCI_Type
+typedef struct USBEHCI_Type
 {
     __IO uint16_t E_CAPLENGTH;                        /*!< Offset 0x000 EHCI Capability Register Length Register */
     __IO uint16_t E_HCIVERSION;                       /*!< Offset 0x002 EHCI Host Interface Version Number Register */
@@ -505,7 +505,7 @@ typedef __PACKED_STRUCT USBEHCI_Type
  * @brief USBOTG
  */
 /*!< USBOTG  */
-typedef __PACKED_STRUCT USBOTG_Type
+typedef struct USBOTG_Type
 {
     __IO uint32_t USB_EPFIFO [0x006];                 /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
          uint32_t reserved_0x018 [0x000A];
@@ -528,7 +528,7 @@ typedef __PACKED_STRUCT USBOTG_Type
     __IO uint32_t USB_EPATTR;                         /*!< Offset 0x08C USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register */
     __IO uint32_t USB_TXFIFO;                         /*!< Offset 0x090 USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
     __IO uint32_t USB_RXFIFO;                         /*!< Offset 0x094 USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
-    __PACKED_STRUCT
+    struct
     {
         __IO uint16_t USB_TXFADDR;                    /*!< Offset 0x098 USB_TXFADDR */
         __IO uint8_t  USB_TXHADDR;                    /*!< Offset 0x09A USB_TXHADDR */
@@ -552,7 +552,7 @@ typedef __PACKED_STRUCT USBOTG_Type
     __IO uint32_t USB_DMA_INTE;                       /*!< Offset 0x500 USB DMA Interrupt Enable Register */
     __IO uint32_t USB_DMA_INTS;                       /*!< Offset 0x504 USB DMA Interrupt Status Register */
          uint32_t reserved_0x508 [0x000E];
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t CHAN_CFG;                       /*!< Offset 0x540 USB DMA Channel Configuration Register */
         __IO uint32_t SDRAM_ADD;                      /*!< Offset 0x544 USB DMA Channel Configuration Register */
@@ -564,7 +564,7 @@ typedef __PACKED_STRUCT USBOTG_Type
  * @brief USBPHYC
  */
 /*!< USBPHYC  */
-typedef __PACKED_STRUCT USBPHYC_Type
+typedef struct USBPHYC_Type
 {
     __IO uint32_t HCI_ICR;                            /*!< Offset 0x000 HCI Interface Control Register(Default Value: 0x10000000) */
     __IO uint32_t HSIC_STATUS;                        /*!< Offset 0x004 HSIC status Register(Default Value: 0x00000000) */
@@ -578,7 +578,7 @@ typedef __PACKED_STRUCT USBPHYC_Type
  * @brief USB_EHCI_Capability
  */
 /*!< USB_EHCI_Capability  */
-typedef __PACKED_STRUCT USB_EHCI_Capability_Type
+typedef struct USB_EHCI_Capability_Type
 {
     __I  uint32_t HCCAPBASE;                          /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
     __I  uint32_t HCSPARAMS;                          /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
@@ -596,7 +596,7 @@ typedef __PACKED_STRUCT USB_EHCI_Capability_Type
  * @brief USB_OHCI_Capability
  */
 /*!< USB_OHCI_Capability  */
-typedef __PACKED_STRUCT USB_OHCI_Capability_Type
+typedef struct USB_OHCI_Capability_Type
 {
     __IO uint32_t O_HcRevision;                       /*!< Offset 0x000 OHCI Revision Register (not documented) */
     __IO uint32_t O_HcControl;                        /*!< Offset 0x004 OHCI Control Register */
@@ -625,7 +625,7 @@ typedef __PACKED_STRUCT USB_OHCI_Capability_Type
  * @brief VE
  */
 /*!< VE Video Encoding */
-typedef __PACKED_STRUCT VE_Type
+typedef struct VE_Type
 {
     __IO uint32_t VE_CTRL;                            /*!< Offset 0x000 Sub-Engine Select and RAM type select */
     __IO uint32_t VE_RESET;                           /*!< Offset 0x004 Sub-Engines Reset */

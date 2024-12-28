@@ -113,7 +113,7 @@ typedef enum IRQn
  * @brief CMCTR
  */
 /*!< CMCTR Контроллер управления синхронизацией */
-typedef __PACKED_STRUCT CMCTR_Type
+typedef struct CMCTR_Type
 {
          uint32_t reserved_0x000;
     __IO uint32_t DIV_MPU_CTR;                        /*!< Offset 0x004 Регистр делителя частоты MPUCLK */
@@ -151,7 +151,7 @@ typedef __PACKED_STRUCT CMCTR_Type
  * @brief GICV
  */
 /*!< GICV  */
-typedef __PACKED_STRUCT GICV_Type
+typedef struct GICV_Type
 {
     __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
     __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
@@ -175,7 +175,7 @@ typedef __PACKED_STRUCT GICV_Type
  * @brief GPIO
  */
 /*!< GPIO Регистры блока управления GPIO */
-typedef __PACKED_STRUCT GPIO_Type
+typedef struct GPIO_Type
 {
     __IO uint32_t gpio_swport_dr;                     /*!< Offset 0x000 Регистр данных порта А. W/R 0x0 0x00 */
     __IO uint32_t gpio_swport_ddr;                    /*!< Offset 0x004 Регистр направления потока данных через порт А. W/R 0x0 0x04 */
@@ -185,7 +185,7 @@ typedef __PACKED_STRUCT GPIO_Type
  * @brief GPIOBLOCK
  */
 /*!< GPIOBLOCK Регистры блока управления GPIO */
-typedef __PACKED_STRUCT GPIOBLOCK_Type
+typedef struct GPIOBLOCK_Type
 {
     __IO uint32_t gpio_swporta_dr;                    /*!< Offset 0x000 Регистр данных порта А. W/R 0x0 0x00 */
     __IO uint32_t gpio_swporta_ddr;                   /*!< Offset 0x004 Регистр направления потока данных через порт А. W/R 0x0 0x04 */
@@ -217,7 +217,7 @@ typedef __PACKED_STRUCT GPIOBLOCK_Type
  * @brief I2C
  */
 /*!< I2C  */
-typedef __PACKED_STRUCT I2C_Type
+typedef struct I2C_Type
 {
     __IO uint32_t IC_CON;                             /*!< Offset 0x000 Регистр управления W/R (R для 4-ого бита) 0x7F 0x0 */
     __IO uint32_t IC_TAR;                             /*!< Offset 0x004 Регистр адреса абонента W/R 0x1055 0x4 */
@@ -266,7 +266,7 @@ typedef __PACKED_STRUCT I2C_Type
  * @brief I2S
  */
 /*!< I2S Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. */
-typedef __PACKED_STRUCT I2S_Type
+typedef struct I2S_Type
 {
     __IO uint32_t IER;                                /*!< Offset 0x000 Регистр включения контроллера. W/R 0x0 0x0 */
     __IO uint32_t IRER;                               /*!< Offset 0x004 Регистр включения блока приема. W/R 0x0 0x4 */
@@ -350,7 +350,7 @@ typedef __PACKED_STRUCT I2S_Type
  * @brief MFBSP
  */
 /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
-typedef __PACKED_STRUCT MFBSP_Type
+typedef struct MFBSP_Type
 {
     __IO uint32_t RX_TX_MFBSP;                        /*!< Offset 0x000 R Буфер приёма данных, W Буфер передачи данных */
     __IO uint32_t CSR_MFBSP;                          /*!< Offset 0x004 R/W Регистр управления и состояния */
@@ -371,7 +371,7 @@ typedef __PACKED_STRUCT MFBSP_Type
  * @brief NANDMPORT
  */
 /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
-typedef __PACKED_STRUCT NANDMPORT_Type
+typedef struct NANDMPORT_Type
 {
     __IO uint32_t PACKET;                             /*!< Offset 0x000 0x0 RW Регистр настройки пакетов */
     __IO uint32_t MEMADDR1;                           /*!< Offset 0x004 RW Регистр адреса 1 */
@@ -407,7 +407,7 @@ typedef __PACKED_STRUCT NANDMPORT_Type
  * @brief NORMPORT
  */
 /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. */
-typedef __PACKED_STRUCT NORMPORT_Type
+typedef struct NORMPORT_Type
 {
          uint32_t reserved_0x000 [0x0400];
     __IO uint32_t SMC_MEMC_STATUS;                    /*!< Offset 0x1000 RO Регистр состояния контроллера */
@@ -446,7 +446,7 @@ typedef __PACKED_STRUCT NORMPORT_Type
  * @brief PMCTR
  */
 /*!< PMCTR Контроллер управления энергопотреблением */
-typedef __PACKED_STRUCT PMCTR_Type
+typedef struct PMCTR_Type
 {
     __IO uint32_t SYS_PWR_UP;                         /*!< Offset 0x000 undocumented */
     __IO uint32_t SYS_PWR_DOWN;                       /*!< Offset 0x004 undocumented */
@@ -485,7 +485,7 @@ typedef __PACKED_STRUCT PMCTR_Type
  * @brief SDMA
  */
 /*!< SDMA Регистры блока управления SDMA */
-typedef __PACKED_STRUCT SDMA_Type
+typedef struct SDMA_Type
 {
     __IO uint32_t DSR;                                /*!< Offset 0x000 RO Состояние потока управления */
     __IO uint32_t DPC;                                /*!< Offset 0x004 RO Счётчик команд потока управления */
@@ -500,13 +500,13 @@ typedef __PACKED_STRUCT SDMA_Type
          uint32_t reserved_0x03C;
     __IO uint32_t FTR [0x008];                        /*!< Offset 0x040 RO Тип ошибки канала 0..7 */
          uint32_t reserved_0x060 [0x0028];
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t CSR;                            /*!< Offset 0x100 RO Статус канала 0..7 */
         __IO uint32_t CPC;                            /*!< Offset 0x104 RO PC канала 0..7 */
     } CSR_CPC [0x008];                                /*!< Offset 0x100 Статус и PC канала 0..7 */
          uint32_t reserved_0x140 [0x00B0];
-    __PACKED_STRUCT
+    struct
     {
         __IO uint32_t SAR;                            /*!< Offset 0x400 RO Адрес Источника для канала 0..7 */
         __IO uint32_t DAR;                            /*!< Offset 0x404 RO Адрес Приёмника для канала 0..7 */
@@ -534,7 +534,7 @@ typedef __PACKED_STRUCT SDMA_Type
  * @brief SMCTR
  */
 /*!< SMCTR общиме системные настройки микросхемы */
-typedef __PACKED_STRUCT SMCTR_Type
+typedef struct SMCTR_Type
 {
     __IO uint32_t BOOT;                               /*!< Offset 0x000 Регистр отображения сигналов BOOT[1:0] микросхемы */
     __IO uint32_t BOOT_REMAP;                         /*!< Offset 0x004 Регистр управления картой памяти при начальной загрузке */
@@ -555,7 +555,7 @@ typedef __PACKED_STRUCT SMCTR_Type
  * @brief SWIC
  */
 /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
-typedef __PACKED_STRUCT SWIC_Type
+typedef struct SWIC_Type
 {
     __IO uint32_t HW_VER;                             /*!< Offset 0x000 Номер версии контроллера RD 0x00 */
     __IO uint32_t STATUS;                             /*!< Offset 0x004 Регистр состояния WR/RD 0x04 */
@@ -596,7 +596,7 @@ typedef __PACKED_STRUCT SWIC_Type
  * @brief SWIC_MFBSP_DMA
  */
 /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP */
-typedef __PACKED_STRUCT SWIC_MFBSP_DMA_Type
+typedef struct SWIC_MFBSP_DMA_Type
 {
     __IO uint32_t CSR;                                /*!< Offset 0x000 Регистр управления и состояния (по чтению сброс битов «END» и «DONE») */
     __IO uint32_t CP;                                 /*!< Offset 0x004 Регистр указателя цепочки  */
@@ -607,7 +607,7 @@ typedef __PACKED_STRUCT SWIC_MFBSP_DMA_Type
  * @brief UART
  */
 /*!< UART Universal Asynchronous Receiver-Transmitter */
-typedef __PACKED_STRUCT UART_Type
+typedef struct UART_Type
 {
     __IO uint32_t UART_RBR_THR_DLL;                   /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
     __IO uint32_t UART_DLH_IER;                       /*!< Offset 0x004  */
