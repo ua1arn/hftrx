@@ -1873,7 +1873,7 @@ int_fast32_t icache_rowsize(void)
 // 	see Terms used in describing the maintenance operations on page B2-1272.
 // 	When the data is stated to be an MVA, it does not have to be cache line aligned.
 
-void L1_CleanDCache_by_Addr(void * __restrict addr, int32_t dsize)
+void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2941,7 +2941,7 @@ sysinit_ttbr_initialize(void)
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM && 1
 void * memset(void * dst, int v, size_t n)
 {
-	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
+	volatile uint8_t * d = (volatile uint8_t *) dst;
 	while (n --)
 		* d ++ = v;
 	return dst;
@@ -2949,8 +2949,8 @@ void * memset(void * dst, int v, size_t n)
 
 void * memcpy(void * dst, const void * src, size_t n)
 {
-	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
-	const volatile uint8_t * restrict s = (const volatile uint8_t *) src;
+	volatile uint8_t * d = (volatile uint8_t *) dst;
+	const volatile uint8_t * s = (const volatile uint8_t *) src;
 	while (n --)
 		* d ++ = * s ++;
 	return dst;
@@ -2958,10 +2958,11 @@ void * memcpy(void * dst, const void * src, size_t n)
 
 void * memmove(void * dst, const void * src, size_t n)
 {
-	volatile uint8_t * restrict d = (volatile uint8_t *) dst;
-	const volatile uint8_t * restrict s = (const volatile uint8_t *) src;
-	if (0)//(d + n > s && d > s + n)
+	volatile uint8_t * d = (volatile uint8_t *) dst;
+	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	if (s >= d && s < (d + n))
 	{
+		// If overlaps
 		s += n;
 		d += n;
 		while (n --)
