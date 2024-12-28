@@ -1740,11 +1740,22 @@ void Synchro_Handler(void)
 void Synchro_Handler1(void)
 {
 	TP();
-	unsigned ec = (__get_ESR_EL3() >> 26) & 0x1F;
-	PRINTF("ec=%02X\n", ec);
-	PRINTF("ESR_EL3=%08X\n", (unsigned) __get_ESR_EL3());
+	PRINTF("Synchro_Handler1:\n");
+	unsigned esr_el3 = __get_ESR_EL3();
+	unsigned ec = (esr_el3 >> 26) & 0x1F;
+	unsigned iss = (esr_el3 >> 0) & 0xFFFFFF;
+	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
 	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
 	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
+
+	PRINTF("ec=%02X\n", ec);
+	switch (ec)
+	{
+	case 0x03:	PRINTF("Trapped MCR or MRC access with (coproc==0b1111) iss=%06X\n", iss); break;
+	case 0x04:	PRINTF("Trapped MCRR or MRRC access with (coproc==0b1111) iss=%06X\n", iss); break;
+	case 0x05:	PRINTF("Trapped MCR or MRC access with (coproc==0b1110) iss=%06X\n", iss); break;
+	default: break;
+	}
 	for (;;)
 		;
 }
