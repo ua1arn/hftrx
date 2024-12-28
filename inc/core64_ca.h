@@ -297,6 +297,18 @@ __STATIC_FORCEINLINE uint64_t __get_CPUECTLR_EL1(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE uint64_t __get_MAIR_EL3(void)
+{
+	uint64_t result;
+	__get_RG64("MAIR_EL3", result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_MAIR_EL3(uint64_t value)
+{
+	__set_RG64("MAIR_EL3", value);
+}
+
 __STATIC_FORCEINLINE void __set_TTBR0_EL1(uint64_t value)
 {
 	// MSR TTBR0_EL1, <Xt> ; Write Xt to TTBR0_EL1

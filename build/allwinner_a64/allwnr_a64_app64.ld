@@ -64,8 +64,17 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		
+		*(.itcm*)
+		*(.dtcm*)
 
 		KEEP(*(.eh_frame*))
+
+		. = ALIGN(2048);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors64;
+
 
 	} > RAM
 
@@ -86,17 +95,19 @@ SECTIONS
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	.copy.table :
 	{
-		. = ALIGN(4);
-		__copy_table_start__ = .;
+		. = ALIGN(8);
+		__copy_table_start64__ = .;
 	/*
-		LONG (__etext)
-		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		QUAD (__etext)
+		QUAD (__data_start__)
+		QUAD (__data_end__ - __data_start__)
 	*/
-		LONG (__etext2)
-		LONG (__data2_start__)
-		LONG (__data2_end__ - __data2_start__)
-		__copy_table_end__ = .;
+		/*
+		QUAD (__etext2)
+		QUAD (__data2_start__)
+		QUAD (__data2_end__ - __data2_start__)
+		*/
+		__copy_table_end64__ = .;
 	} > RAM
 
 	/* To clear multiple BSS sections,
@@ -104,15 +115,13 @@ SECTIONS
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	.zero.table :
 	{
-		. = ALIGN(4);
-		__zero_table_start__ = .;
-		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
-	/*
-		LONG (__bss2_start__)
-		LONG (__bss2_end__ - __bss2_start__)
-	*/
-		__zero_table_end__ = .;
+		. = ALIGN(8);
+		__zero_table_start64__ = .;
+		QUAD (__bss_start__)
+		QUAD (__bss_end__ - __bss_start__)
+		QUAD (__bss2_start__)
+		QUAD (__bss2_end__ - __bss2_start__)
+		__zero_table_end64__ = .;
 	} > RAM
 
 	/* __etext = .; */
@@ -124,13 +133,13 @@ SECTIONS
 
 		*(.data*)
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -138,7 +147,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -146,30 +155,18 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
+		
+		*(.got) *(.igot)
+		*(.got.plt)  *(.igot.plt)
+		*(.plt) *(.iplt)
+		*(.plt.got)
+		*(.plt.bnd)
+		
 		/* All data end */
-
+		
 		__data_end__ = .;
 
 	} > RAM
-
-	__etext2 = .;
-
-	.sysram : AT (__etext2)
-	{
-		__data2_start__ = .;
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-
-		*(.itcm*)
-		*(.dtcm*)
-
-		__data2_end__ = .;
-	} > RAM /* was: STSRAN */
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
 
 	.bss (NOLOAD):
 	{
@@ -178,6 +175,7 @@ SECTIONS
 		*(.bss*)
 		*(COMMON)
 
+		. = ALIGN(64);
 		__bss_end__ = .;
 	} > RAM
 

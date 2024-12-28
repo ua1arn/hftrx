@@ -200,8 +200,8 @@ bootloader_launch_app(uintptr_t startfunc)
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << targetcore));	/* Assert rv64 reset */
 	CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
-	RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32((uintptr_t) startfunc);
-	RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32((uintptr_t) startfunc);
+	RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32(startfunc);
+	RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32(startfunc);
 	CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << targetcore));	/* De-assert rv64 reset */
 	for (;;)
 	{
@@ -211,16 +211,16 @@ bootloader_launch_app(uintptr_t startfunc)
 #elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && WITHISBOOTLOADER_DDR
 
 	// Start aarch64 core as application
-
+	__set_RVBAR_EL3(startfunc);
 #if CPUSTYLE_A64
-	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
-	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_H616
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_T507
-	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32((uintptr_t) startfunc);
-	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32((uintptr_t) startfunc);
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 #else
 	#error Unexpected CPUSTYLE_xxx
 #endif

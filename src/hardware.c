@@ -2727,16 +2727,19 @@ sysinit_ttbr_initialize(void)
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	ASSERT(((uintptr_t) tlbbase & 0x3FFF) == 0);
 
+	__set_TTBR0_EL1((uintptr_t) tlbbase);
+	__set_TTBR0_EL2((uintptr_t) tlbbase);
+	__set_TTBR0_EL3((uintptr_t) tlbbase);
+
+	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	const uint32_t tcrv =
 			IRGN_attr * (UINT32_C(1) << 8) |
 			RGN_attr * (UINT32_C(1) << 10) |
+			40 * (UINT32_C(1) << 0) |		// 0..63
 			0;
-//	__set_TTBR0_EL1((uintptr_t) tlbbase);
-//	__set_TTBR0_EL2((uintptr_t) tlbbase);
-	__set_TTBR0_EL3((uintptr_t) tlbbase);
 
 	__set_TCR_EL3(tcrv);
 	__ISB();
@@ -2754,6 +2757,20 @@ sysinit_ttbr_initialize(void)
 	L2C_InvAllByWay();
 #endif
 
+#if 0
+	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
+	uint64_t mair = __get_MAIR_EL3();
+	PRINTF("a7=%02X a6=%02X a5=%02X a4=%02X a3=%02X a2=%02X a1=%02X a0=%02X\n",
+			(unsigned) (mair >> 56) & 0xFF,
+			(unsigned) (mair >> 48) & 0xFF,
+			(unsigned) (mair >> 40) & 0xFF,
+			(unsigned) (mair >> 32) & 0xFF,
+			(unsigned) (mair >> 24) & 0xFF,
+			(unsigned) (mair >> 16) & 0xFF,
+			(unsigned) (mair >> 8) & 0xFF,
+			(unsigned) (mair >> 0) & 0xFF
+			);
+#endif
 	//MMU_Enable();
 
 #elif (__CORTEX_A != 0)
@@ -2920,6 +2937,16 @@ sysinit_ttbr_initialize(void)
 
 #endif
 }
+
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+void * memset(void * dst, int v, size_t n)
+{
+	uint8_t * d = (uint8_t *) dst;
+	while (n --)
+		* d ++ = v;
+	return dst;
+}
+#endif
 
 static void
 ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
