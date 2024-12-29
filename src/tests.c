@@ -11101,14 +11101,6 @@ void hightests(void)
 #endif
 #if 0
 	{
-		PRINTF("DE_MIXER0_VSU0_BASE:\n");
-		printhex32(DE_MIXER0_VSU0_BASE, DE_MIXER0_VSU0_BASE, 128);
-		PRINTF("DE_MIXER1_VSU0_BASE:\n");
-		printhex32(DE_MIXER1_VSU0_BASE, DE_MIXER1_VSU0_BASE, 128);
-	}
-#endif
-#if 0
-	{
 		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;
 		for (;n --;)
