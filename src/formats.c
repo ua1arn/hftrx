@@ -338,7 +338,7 @@ uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, co
 	int n;
 
 #if FORMATFROMLIBRARY
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM || 1
 	n = vsnprintf(buffer, count, format, ap);
 #else
 	struct _reent treent = { 0 };
@@ -401,7 +401,7 @@ dbg_local_putchar(void * param, int ch)
 /*	User-side of console output.			*/
 // использование самописной функции
 
-void debug_printf_P(const FLASHMEM char *format, ... )
+void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
 	va_list	ap;
 	va_start(ap, format);
@@ -494,7 +494,7 @@ printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 
 #else /* WITHDEBUG */
 
-void debug_printf_P(const FLASHMEM char *format, ... )
+void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
 	(void) format;
 }

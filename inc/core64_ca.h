@@ -568,6 +568,9 @@ typedef union
 //#define SCTLR_EL3_B_Pos                      7U                                     /*!< \brief SCTLR: B Position */
 //#define SCTLR_EL3_B_Msk                      (UINT64_C(1) << SCTLR_EL3_B_Pos)                   /*!< \brief SCTLR: B Mask */
 
+#define SCTLR_EL3_NAA_Pos                6U                                     /*!< \brief SCTLR: NAA Position */
+#define SCTLR_EL3_NAA_Msk                (UINT64_C(1) << SCTLR_EL3_NAA_Pos)             /*!< \brief SCTLR: NAA Mask */
+
 //#define SCTLR_EL3_CP15BEN_Pos                5U                                     /*!< \brief SCTLR: CP15BEN Position */
 //#define SCTLR_EL3_CP15BEN_Msk                (UINT64_C(1) << SCTLR_EL3_CP15BEN_Pos)             /*!< \brief SCTLR: CP15BEN Mask */
 
@@ -1424,31 +1427,31 @@ __STATIC_FORCEINLINE void __set_DCZVA64(uint64_t value)
 
 ///////////////
 ///
-__STATIC_FORCEINLINE void __set_SCTLR_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_SCTLR_EL1(uint64_t value)
 {
-	__set_RG32("SCTLR_EL1", value);
+	__set_RG64("SCTLR_EL1", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL1(void)
+__STATIC_FORCEINLINE uint64_t __get_SCTLR_EL1(void)
 {
-	uint32_t result;
+	uint64_t result;
 	// MRS <Xt>, SCTLR_EL1 ; Read SCTLR_EL1 into Xt
-	__get_RG32("SCTLR_EL1", result);
+	__get_RG64("SCTLR_EL1", result);
 	return result;
 }
 
 ///////////////
 ///
-__STATIC_FORCEINLINE void __set_SCTLR_EL2(uint32_t value)
+__STATIC_FORCEINLINE void __set_SCTLR_EL2(uint64_t value)
 {
-	__set_RG32("SCTLR_EL2", value);
+	__set_RG64("SCTLR_EL2", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_SCTLR_EL2(void)
+__STATIC_FORCEINLINE uint64_t __get_SCTLR_EL2(void)
 {
-	uint32_t result;
+	uint64_t result;
 	// MRS <Xt>, SCTLR_EL2 ; Read SCTLR_EL2 into Xt
-	__get_RG32("SCTLR_EL2", result);
+	__get_RG64("SCTLR_EL2", result);
 	return result;
 }
 
