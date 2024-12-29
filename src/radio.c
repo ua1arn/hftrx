@@ -10126,22 +10126,6 @@ static RAM_D1 rxaproc_t rxaprocs [NTRX];
 
 #endif /* ! WITHNOSPEEX */
 
-#if WITHUSEMALLOC
-
-	#define ROUNDUP64(v) (((v) + 63uL) & ~ 63uL)
-
-	#if ! WITHNOSPEEX
-		static RAMHEAP uint8_t speexheap [ROUNDUP64(SPEEXALLOCSIZE)];
-	#endif /* ! WITHNOSPEEX */
-
-	#if WITHTOUCHGUI
-		static RAMHEAP uint8_t guiheap [ROUNDUP64(WITHGUIHEAP)];
-	#endif /* WITHTOUCHGUI */
-
-#endif /* WITHUSEMALLOC */
-
-#if WITHUSEMALLOC
-
 void *speex_alloc(int size)
 {
    /* WARNING: this is not equivalent to malloc(). If you want to use malloc()
@@ -10156,35 +10140,6 @@ void speex_free (void *ptr)
 {
 	free(ptr);
 }
-
-#else /* WITHUSEMALLOC */
-
-	#if SPEEXALLOCSIZE
-
-	static int speexallocated = 0;
-
-	static RAM_D2 uint8_t speexheapbuff [SPEEXALLOCSIZE];
-
-	void *speex_alloc (int size)
-	{
-		size = (size + 0x03) & ~ 0x03;
-		ASSERT((speexallocated + size) <= sizeof speexheapbuff / sizeof speexheapbuff [0]);
-		if (! ((speexallocated + size) <= sizeof speexheapbuff / sizeof speexheapbuff [0]))
-		{
-			for (;;)
-				;
-		}
-		void * p = (void *) (speexheapbuff + speexallocated);
-		speexallocated += size;
-		return p;
-	}
-
-	void speex_free (void *ptr)
-	{
-	}
-
-	#endif /* SPEEXALLOCSIZE */
-#endif /* WITHUSEMALLOC */
 
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)

@@ -288,7 +288,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP 		//__attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_R7S721
@@ -303,7 +302,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_STM32MP1
@@ -318,7 +316,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_A64
@@ -333,7 +330,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_T507
@@ -348,7 +344,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_T113
@@ -363,9 +358,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
-
 
 #elif CPUSTYLE_H3
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
@@ -379,9 +372,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
-
 
 #elif CPUSTYLE_V3S
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
@@ -395,7 +386,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_VM14
@@ -410,7 +400,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_F133
@@ -425,7 +414,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_XC7Z
@@ -440,7 +428,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif (CPUSTYLE_STM32H7XX)
@@ -462,7 +449,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		__attribute__((section(".ram_d1"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif (CPUSTYLE_STM32F7XX) && WITHSDRAMHW
@@ -480,7 +466,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".sdramdata"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif (CPUSTYLE_STM32F7XX)
@@ -496,7 +481,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
@@ -512,7 +496,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_STM32F4XX
@@ -528,7 +511,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif  CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
@@ -542,7 +524,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP //__attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_STM32L0XX
@@ -558,7 +539,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_ARM && 0
@@ -575,7 +555,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 	#define RAMNC //__attribute__((section(".ramnc")))
 
 #else

@@ -33,8 +33,8 @@ CP   = $(TRGT)objcopy
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
 
 # Cortex-A9 r3p0
 
@@ -42,7 +42,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 # Cortex™-A9 based processing system (PS) and 28 nm Xilinx programmable logic (PL) in a single device. The ARM Cortex-A9 CPUs are
 # the heart of the PS and also include on-chip memory, external memory interfaces, and a rich set of peripheral connectivity interfaces.
 
-CORE = -mcpu=cortex-a9 
+CORE = -mcpu=cortex-a9 --specs=nosys.specs
 CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon

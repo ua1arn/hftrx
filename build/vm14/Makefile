@@ -42,8 +42,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 
 # For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
@@ -56,10 +56,10 @@ CORE += -mfpu=neon-vfpv3
 #CORE += -mlong-calls
 
 # Define optimisation level here
-#OPT = -Og
-#OPT = -Ofast -flto
+#OPT = -Og --specs=nosys.specs
+#OPT = -Ofast -flto --specs=nosys.specs
 #OPT = -Os -flto=4 --specs=nano.specs
-OPT = -Os
+OPT = -Os --specs=nosys.specs
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP

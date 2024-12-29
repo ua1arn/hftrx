@@ -199,15 +199,10 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
-	} > DDR3
-
-	.heap (NOLOAD):
-	{
-		__HeapBase = .;
+		
+		. = ALIGN(64);
 		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
+		PROVIDE(end = __end__);
 	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
@@ -228,5 +223,5 @@ SECTIONS
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
 }

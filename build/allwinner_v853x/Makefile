@@ -44,15 +44,15 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7
+CORE = -mcpu=cortex-a7 --specs=nosys.specs
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
 CORE += -mfpu=neon-vfpv4

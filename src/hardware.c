@@ -5030,66 +5030,13 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
-#if WITHUSEMALLOC
-
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && ! WITHISBOOTLOADER
-
-	static RAMHEAP uint8_t heapplace [38 * 1024uL * 1024uL];
-
-#elif (CPUSTYLE_STM32MP1 || CPUSTYLE_T507 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
-
-	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
-
-#else /* CPUSTYLE_STM32MP1 */
-
-	static RAMHEAP uint8_t heapplace [8 * 1024uL];
-
-#endif /* CPUSTYLE_STM32MP1 */
-
-extern int __HeapBase;
-extern int __HeapLimit;
-
-// This version of _sbrk_r() requires the heap area to be defined explicitly in linker script with symbols __heap_start and __heap_end.
-
-char * __attribute__((used)) (_sbrk)(ptrdiff_t incr)
-{
-	uintptr_t alignment = DCACHEROWSIZE;
-	static char * heap;
-	char * prev_heap;
-
-	incr = (incr + (alignment - 1u)) & ~ (alignment - 1u);
-
-	if (heap == NULL)
-	{
-		heap = (char *) &__HeapBase;
-	}
-
-	//PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), (unsigned) incr, (unsigned) (heap + incr), & __HeapBase, & __HeapLimit);
-
-	prev_heap = heap;
-
-	if ((heap + incr) > (char *) &__HeapLimit)
-	{
-		PRINTF(PSTR("_sbrk: incr=%X, new heap=%p, & __HeapBase=%p, & __HeapLimit=%p\n"), (unsigned) incr, heap + incr, & __HeapBase, & __HeapLimit);
-		//errno = ENOMEM;
-		ASSERT(0);
-		return (char *) -1;
-	}
-
-	heap += incr;
-
-	return (char *) prev_heap;
-}
-#endif /* WITHUSEMALLOC */
-
-
-
 struct _reent * __getreent(void)
 {
     static struct _reent r [4];
     PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
     return r + arm_hardware_cpuid();
 }
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

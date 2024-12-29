@@ -173,15 +173,10 @@ SECTIONS
 		. = ALIGN(64);
 		*(.framebuff*)
 		. = ALIGN(64);
-	} > RAM
-
-	.heap (NOLOAD):
-	{
-		__HeapBase = .;
+		
+		. = ALIGN(64);
 		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
+		PROVIDE(end = __end__);
 	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
@@ -202,5 +197,5 @@ SECTIONS
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
 }

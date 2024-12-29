@@ -180,15 +180,6 @@ SECTIONS
 
 	} > RAM
 
-	.heap (NOLOAD):
-	{
-		__HeapBase = .;
-		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
-	} > RAM
-
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
@@ -211,6 +202,10 @@ SECTIONS
 		PROVIDE(__TTB_BASE = .);
 		LONG(0)	/* dummy object */
 		. = ALIGN(16k);
+		
+		. = ALIGN(64);
+		__end__ = .;
+		PROVIDE(end = __end__);
 	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only

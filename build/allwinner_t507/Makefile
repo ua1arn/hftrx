@@ -46,14 +46,14 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
-#CORE = -mcpu=cortex-a53+fp+simd -mstrict-align -momit-leaf-frame-pointer
-CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4
+#CORE = -mcpu=cortex-a53+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
+CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 
 # Define optimisation level here
 #OPT = -Og

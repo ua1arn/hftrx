@@ -220,15 +220,10 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
-	} > RAM
-
-	.heap (NOLOAD):
-	{
-		__HeapBase = .;
+		
+		. = ALIGN(64);
 		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
+		PROVIDE(end = __end__);
 	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
@@ -252,5 +247,5 @@ SECTIONS
 	PROVIDE(__stack = __StackTop);
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
 }

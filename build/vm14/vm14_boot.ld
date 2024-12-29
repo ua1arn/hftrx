@@ -196,16 +196,11 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
-	} > DDR3
-
-	.heap (NOLOAD):
-	{
-		__HeapBase = .;
+		
+		. = ALIGN(64);
 		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
-	} > RAM
+		PROVIDE(end = __end__);
+	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

@@ -183,17 +183,12 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
+		
+		. = ALIGN(64);
+		__end__ = .;
+		PROVIDE(end = __end__);
 
 	} > DDR3
-
-	.heap (NOLOAD):
-	{
-		__HeapBase = .;
-		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
-	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

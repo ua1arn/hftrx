@@ -4,10 +4,7 @@
 
 MEMORY
 {
-  FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
-  TTB (rwx)  	: ORIGIN = 0xFFFF0000, LENGTH = 16k		/* last 16 kB OCM3 for TTB */
-  OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 0x00BE00		/* OCM3 - on-chip memory 64k - 16k - 512 for TTB */
+  RAM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
   DDR3 (rwx) 	: ORIGIN = 0x01100000, LENGTH = 16M 	/* lower 16MB reserved for image */
 }
 
@@ -46,30 +43,50 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.startup0))
-		KEEP(*(.init))
-		KEEP(*(.fini))
 
 		*(.text*)
+		KEEP(*(.init))
+		KEEP(*(.fini))
+		
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+		
 		*(.itcm*)
-	} > OCM
+		
+	} > RAM
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > OCM
+	} > RAM
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > OCM
+	} > RAM
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
@@ -88,7 +105,7 @@ SECTIONS
 		LONG (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end__ = .;
-	} > OCM
+	} > RAM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -104,37 +121,24 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > OCM
-
+	} > RAM
+	/*
+	.special.table:
+	{
+		LONG (SystemDRAMInit)
+		LONG (SystemExecAARCH64)
+	} > RAM
+	*/
 	__etext = .;
 
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-		. = ALIGN(32);
-		*(.dtcm*)
 
-		. = ALIGN(32);
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
+		. = ALIGN(64);
 
 		*(.data*)
-	   . = ALIGN(4);	/* one line added by ua1arn */
+		*(.dtcm*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -158,44 +162,55 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+
 		/* All data end */
 		__data_end__ = .;
 
-	} > OCM
+	} > RAM
 
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
-		. = ALIGN(32);
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+
 		__bss_end__ = .;
-	} > OCM3
+	} > RAM
 
 	.noinit (NOLOAD):
 	{
-		. = ALIGN(32);
+		. = ALIGN(64);
 		*(.noinit*)
-		. = ALIGN(32);
-	} > OCM3
+
+	} > RAM
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(64);
+
 	} > DDR3
 
-	.heap (NOLOAD):
+	.ttb BLOCK(16k) (NOLOAD):
 	{
-		__HeapBase = .;
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > DDR3
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
+		. = ALIGN(64);
 		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
-	} > OCM3
+		PROVIDE(end = __end__);
+	} > DDR3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -203,16 +218,13 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > OCM3
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(OCM3) + LENGTH(OCM3);
+	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
-
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
-	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/

@@ -3,10 +3,7 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  TTB (rwx)  	: ORIGIN = 0x00100000, LENGTH = 16k		/* first 16 kB DDR3 for TTB */
-  RAM (rwx) 	: ORIGIN = 0x00104100, LENGTH = 0x1FEFBF00  	/* DDR3 511 MB - 16 kB - 256 B */
-  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
-  FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
+  RAM (rwx) 	: ORIGIN = 0x00104100, LENGTH = 511M - 256  	/* DDR3 511 MB - 16 kB - 256 B */
 }
 
 /* Library configurations */
@@ -46,11 +43,29 @@ SECTIONS
 	{
 		. = ALIGN(32);
 		KEEP(*(.startup0))
-		KEEP(*(.init))
-		KEEP(*(.fini))
 
 		*(.text*)
-		. = ALIGN(4);
+		KEEP(*(.init))
+		KEEP(*(.fini))
+		
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+
 	} > RAM
 
 	.ARM.extab :
@@ -77,6 +92,9 @@ SECTIONS
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
 	*/
+		LONG (__etext2)
+		LONG (__data2_start__)
+		LONG (__data2_end__ - __data2_start__)
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -89,10 +107,8 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
-	/*
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
-	*/
 		__zero_table_end__ = .;
 	} > RAM
 
@@ -103,37 +119,9 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		. = ALIGN(64);
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
-
-		. = ALIGN(32);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-
-		. = ALIGN(64);
 		*(.data*)
-		. = ALIGN(64);
-		*(.itcm*)
-		. = ALIGN(64);
-		*(.dtcm*)
-		. = ALIGN(32);
+
+		. = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
@@ -156,10 +144,29 @@ SECTIONS
 
 		KEEP(*(.jcr*))
 		/* All data end */
-		. = ALIGN(64);
+
 		__data_end__ = .;
 
 	} > RAM
+
+	__etext2 = .;
+
+	.sysram : AT (__etext2)
+	{
+		__data2_start__ = .;
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+
+		*(.itcm*)
+		*(.dtcm*)
+
+		__data2_end__ = .;
+	} > RAM /* was: STSRAN */
+
+	. = __etext2 + __data2_end__ - __data2_start__;
+
 
 	.bss (NOLOAD):
 	{
@@ -167,7 +174,7 @@ SECTIONS
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(64);
+
 		__bss_end__ = .;
 	} > RAM
 
@@ -175,24 +182,33 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.noinit*)
-		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(64);
 	} > RAM
 
-	.heap (NOLOAD):
+	.ttb BLOCK(16k) (NOLOAD):
 	{
-		__HeapBase = .;
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > RAM
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
+		. = ALIGN(64);
 		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		__HeapLimit = .;
+		PROVIDE(end = __end__);
 	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
 	} > RAM
@@ -203,9 +219,6 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
-	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
-
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
 }
