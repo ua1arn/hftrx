@@ -1764,10 +1764,6 @@ extern "C" {
 	#define FORMATFROMLIBRARY 		1
 #endif
 
-#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
-	#define WITHUSEMALLOC		1
-#endif /* ! defined WITHUSEMALLOC */
-
 #if ! WITHMENU
 	#error WITHMENU must be defined for WITHTOUCHGUI
 #endif

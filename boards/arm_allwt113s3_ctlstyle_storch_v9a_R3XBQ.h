@@ -183,12 +183,12 @@
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	//
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
@@ -296,7 +296,7 @@
 			#define WITHDISPLAYSWR_FPS	30
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
+			
 			#define WITHAFGAINDEFAULT	(150 * BOARD_AFGAIN_MAX / 255)
 			//#define WITHTHERMOLEVEL	1
 			#define WITHALTERNATIVEFONTS	1
@@ -432,12 +432,12 @@
 
 	#if 0
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLWIP 1
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */

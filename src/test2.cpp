@@ -47,55 +47,6 @@ void cpptest() {
 }
 #endif
 
-// Taken from https://wiki.osdev.org/C++#The_Operators_.27new.27_and_.27delete.27
-
-#if 0// WITHUSEMALLOC
-// при использовании компилятора g++ вместо gcc этот код не требуется
-// Скорее всего благодаря ключу -lstdc++
-// see https://stackoverflow.com/questions/172587/what-is-the-difference-between-g-and-gcc
-
-void *operator new(size_t size) {
-	return malloc(size);
-}
-
-void *operator new[](size_t size) {
-	return malloc(size);
-}
-
-void operator delete(void *p) {
-	free(p);
-}
-
-void operator delete[](void *p) {
-	free(p);
-}
-
-std::bad_alloc::~bad_alloc()
-{
-	ASSERT(0);
-	for (;;)
-		;
-}
-
-const char* std::bad_alloc::what() const
-{
-	return NULL;
-}
-
-const char* std::exception::what() const
-{
-	return NULL;
-}
-
-std::exception::~exception()
-{
-	ASSERT(0);
-	for (;;)
-		;
-}
-
-#endif /* WITHUSEMALLOC */
-
 #if 0
 // при использовании компилятора g++ вместо gcc этот код не требуется
 // Скорее всего благодаря ключу -lstdc++

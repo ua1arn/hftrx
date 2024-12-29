@@ -379,7 +379,7 @@
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+			
 			#define WITHALTERNATIVEFONTS	1
 			#define WITHALTERNATIVELAYOUT	1
 		#endif

@@ -276,7 +276,7 @@
 	#define WITHFFTSIZEAF 	128		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	#define BOARD_FFTZOOM_POW2MAX 0	// Возможные масштабы FFT x1, x2, x4, x8
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */

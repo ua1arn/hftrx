@@ -131,7 +131,7 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	//
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHISBOOTLOADERFATFS 1
 	#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app_xyl32.bin"
@@ -230,7 +230,7 @@
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
-			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
+			
 			#define WITHAFGAINDEFAULT		10
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
@@ -301,12 +301,12 @@
 
 	#if 0
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLWIP 1
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */

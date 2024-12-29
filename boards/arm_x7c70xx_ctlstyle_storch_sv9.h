@@ -217,7 +217,7 @@
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	//
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
-	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHISBOOTLOADERFATFS 1
 	//#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
@@ -323,7 +323,7 @@
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
-			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
+			
 			//#define WITHTHERMOLEVEL		1
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
@@ -454,12 +454,12 @@
 
 	#if 0
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLWIP 1
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
