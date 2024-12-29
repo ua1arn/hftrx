@@ -44,7 +44,12 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		
+		. = ALIGN(64);
 		KEEP(*(.startup0))
 
 		*(.text*)
@@ -65,21 +70,12 @@ SECTIONS
  		*(SORT(.dtors.*))
  		*(.dtors)
 
-		*(.rodata*  .srodata*)
+		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
 		
-		. = ALIGN(4);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
+		*(.itcm*)
 		
-	} > RAM
-
-	.gcc_except_table :
-	{
-		*(.gcc_except_table)
-		*(.gcc_except_table.*)
 	} > RAM
 
 	.ARM.extab :
@@ -99,19 +95,17 @@ SECTIONS
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	.copy.table :
 	{
-		. = ALIGN(8);
-		__copy_table_start64__ = .;
+		. = ALIGN(4);
+		__copy_table_start__ = .;
 	/*
-		QUAD (__etext)
-		QUAD (__data_start__)
-		QUAD ((__data_end__ - __data_start__) / 4)
+		LONG (__etext)
+		LONG (__data_start__)
+		LONG (__data_end__ - __data_start__)
+		LONG (__etext2)
+		LONG (__data2_start__)
+		LONG (__data2_end__ - __data2_start__)
 	*/
-	/*
-		QUAD (__etext2)
-		QUAD (__data2_start__)
-		QUAD ((__data2_end__ - __data2_start__) / 4)
-	*/
-		__copy_table_end64__ = .;
+		__copy_table_end__ = .;
 	} > RAM
 
 	/* To clear multiple BSS sections,
@@ -119,38 +113,41 @@ SECTIONS
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	.zero.table :
 	{
-		. = ALIGN(8);
-		__zero_table_start64__ = .;
-		QUAD (__bss_start__)
-		QUAD ((__bss_end__ - __bss_start__) / 4)
-		QUAD (__bss2_start__)
-		QUAD ((__bss2_end__ - __bss2_start__) / 4)
-		__zero_table_end64__ = .;
+		. = ALIGN(4);
+		__zero_table_start__ = .;
+		LONG (__bss_start__)
+		LONG (__bss_end__ - __bss_start__)
+		LONG (__bss2_start__)
+		LONG (__bss2_end__ - __bss2_start__)
+		__zero_table_end__ = .;
 	} > RAM
 
-	/* __etext = .; */
+	__etext = .;
 
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
+
 		. = ALIGN(64);
 
-		*(.data* .sdata*)
-		*(.itcm*)
+		*(.data*)
 		*(.dtcm*)
 
-		. = ALIGN(8);
+		. = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
-		. = ALIGN(8);
+
+		. = ALIGN(4);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
 		KEEP(*(.init_array))
 		PROVIDE_HIDDEN (__init_array_end = .);
-		. = ALIGN(8);
+
+
+		. = ALIGN(4);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -158,44 +155,41 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		/* All data end */
 
+		/* All data end */
 		__data_end__ = .;
 
-	} > RAM
-
-	/*
-	__etext2 = .;
-
-	.sysram : AT (__etext2)
-	{
-		__data2_start__ = .;
-
-		*(.itcm*)
-		*(.dtcm*)
-
-		__data2_end__ = .;
-	} > RAM
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
-   */
-	
-	.bss (NOLOAD):
-	{
-		__bss_start__ = .;
-		. = ALIGN(64);
-		*(.bss*  .sbss*)
-		*(COMMON)
-
-		__bss_end__ = .;
 	} > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
+
+	} > RAM
+
+	.bss (NOLOAD):
+	{
+		__bss_start__ = .;
+		. = ALIGN(64);
+		*(.bss*)
+		*(COMMON)
+
+		__bss_end__ = .;
+	} > RAM 
+
+	.vram (NOLOAD):
+	{
+		. = ALIGN(64);
 		*(.framebuff*)
+
+	} > DDR3
+
+	.ttb BLOCK(16k) (NOLOAD):
+	{
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
 	} > DDR3
 
 	.ramnc BLOCK(1M) (NOLOAD):

@@ -116,19 +116,11 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
-	/*
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
-	*/
 		__zero_table_end__ = .;
 	} > RAM
-	/*
-	.special.table:
-	{
-		LONG (SystemDRAMInit)
-		LONG (SystemExecAARCH64)
-	} > RAM
-	*/
+
 	__etext = .;
 
 	.data : /*AT (__etext)*/
@@ -168,6 +160,13 @@ SECTIONS
 
 	} > RAM
 
+	.noinit (NOLOAD):
+	{
+		. = ALIGN(64);
+		*(.noinit*)
+
+	} > RAM
+
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
@@ -176,14 +175,7 @@ SECTIONS
 		*(COMMON)
 
 		__bss_end__ = .;
-	} > RAM
-
-	.noinit (NOLOAD):
-	{
-		. = ALIGN(64);
-		*(.noinit*)
-
-	} > RAM
+	} > RAM 
 
 	.vram (NOLOAD):
 	{
@@ -207,11 +199,12 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
+		
 		. = ALIGN(64);
 		__end__ = .;
 		PROVIDE(end = __end__);
 	} > DDR3
 
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	PROVIDE(__stack = __StackTop);
 }

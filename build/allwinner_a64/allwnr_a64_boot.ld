@@ -163,6 +163,13 @@ SECTIONS
 
 	} > RAM
 
+	.noinit (NOLOAD):
+	{
+		. = ALIGN(64);
+		*(.noinit*)
+
+	} > RAM
+
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
@@ -171,20 +178,20 @@ SECTIONS
 		*(COMMON)
 
 		__bss_end__ = .;
-	} > RAM
-
-	.noinit (NOLOAD):
-	{
-		. = ALIGN(64);
-		*(.noinit*)
-
-	} > RAM
+	} > RAM 
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
 
+	} > DDR3
+
+	.ttb BLOCK(16k) (NOLOAD):
+	{
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
 	} > DDR3
 
 	.ramnc BLOCK(1M) (NOLOAD):
@@ -195,13 +202,6 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
-	} > DDR3
-
-	.ttb BLOCK(16k) (NOLOAD):
-	{
-		PROVIDE(__TTB_BASE = .);
-		LONG(0)	/* dummy object */
-		. = ALIGN(16k);
 		
 		. = ALIGN(64);
 		__end__ = .;

@@ -56,19 +56,38 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.startup0))
-		KEEP(*(.init))
-		KEEP(*(.fini))
 
 		*(.text*)
+		KEEP(*(.init))
+		KEEP(*(.fini))
+		
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
+
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+		
 		*(.itcm*)
-		. = ALIGN(4);
+		
 	} > RAM
 
 	.ARM.extab :
@@ -110,10 +129,8 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
-	/*
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
-	*/
 		__zero_table_end__ = .;
 	} > RAM
 
@@ -122,30 +139,11 @@ SECTIONS
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-		. = ALIGN(32);
-		*(.dtcm*)
 
-		. = ALIGN(32);
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
+		. = ALIGN(64);
 
 		*(.data*)
-	   . = ALIGN(4);	/* one line added by ua1arn */
+		*(.dtcm*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -169,34 +167,34 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+
 		/* All data end */
 		__data_end__ = .;
+
+	} > RAM
+
+	.noinit (NOLOAD):
+	{
+		. = ALIGN(64);
+		*(.noinit*)
 
 	} > RAM
 
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
-		. = ALIGN(32);
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
-		__bss_end__ = .;
-	} > RAM
 
-	.noinit (NOLOAD):
-	{
-		. = ALIGN(32);
-		*(.noinit*)
-		. = ALIGN(32);
-	} > RAM
+		__bss_end__ = .;
+	} > RAM 
 
 	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(64);
+
 	} > DDR3
 
 	.ttb BLOCK(16k) (NOLOAD):
@@ -220,6 +218,6 @@ SECTIONS
 		PROVIDE(end = __end__);
 	} > DDR3
 
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	PROVIDE(__stack = __StackTop);
 }
