@@ -2350,8 +2350,6 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
-uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
-
 #if (__CORTEX_A != 0)
 
 // Short-descriptor format memory region attributes, without TEX remap
