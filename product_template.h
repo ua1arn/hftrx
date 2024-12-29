@@ -222,10 +222,6 @@
 	#include "boards/linux_rockchip_ctlstyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/linux_rockchip_cpustyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
-#elif CPUSTYLE_VM14 && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_vm14_ctlstyle_v0.h"	// 1892ВМ14Я ELVEES multicore.ru
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_vm14_cpustyle_v0.h"
 #else
 	#define LCDMODE_DUMMY	1
 	#define BANDSELSTYLERE_NOTHING	1
