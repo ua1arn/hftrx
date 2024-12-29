@@ -2976,10 +2976,11 @@ void * memmove(void * dst, const void * src, size_t n)
 	return dst;
 }
 
-size_t strlen(const char * s)
+size_t strlen(const char * s1)
 {
+	volatile const char * s = s1;
 	size_t n = 0;
-	while (* s ++)
+	while (* s ++ != '\0')
 		++ n;
 	return n;
 }
