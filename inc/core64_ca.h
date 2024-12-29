@@ -375,6 +375,15 @@ __STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
 	__set_RG64("S3_1_C15_C2_1", value);
 }
 
+__STATIC_FORCEINLINE uint32_t __get_DAIF(void)
+{
+	uint32_t result;
+	// MRS <Xt>, DAIF ; Read DAIF into Xt
+	__get_RG32("DAIF", result);
+	return result;
+}
+
+
 #define __get_MPIDR() 	(__get_MPIDR_EL1())
 #define __get_IFAR() 	(__get_FAR_EL1())
 #define __get_DFAR() 	(__get_FAR_EL2())
