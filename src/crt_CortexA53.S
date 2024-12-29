@@ -55,13 +55,13 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 64
-	 STACKSIZEABT = 64
-	 STACKSIZEFIQ = 64
-	 STACKSIZEHYP = 64
-	 STACKSIZEMON = 64
-	 STACKSIZESVC = 64
-	 STACKSIZEIRQ = 64
+	 STACKSIZEUND = 256
+	 STACKSIZEABT = 256
+	 STACKSIZEFIQ = 256
+	 STACKSIZEHYP = 256
+	 STACKSIZEMON = 256
+	 STACKSIZESVC = 256
+	 STACKSIZEIRQ = 256
 
 	 STACKSIZESYSBOOT = 4096
 
@@ -159,6 +159,14 @@ Reset_Handler:
 	mov x29, x0
 	mov x30, x0
 
+	ldr x30, =__stack_cpu0_fiq_end
+	MSR SPSR_fiq, x30
+	ldr x30, =__stack_cpu0_und_end
+	MSR SPSR_und, x30
+	ldr x30, =__stack_cpu0_abt_end
+	MSR SPSR_abt, x30
+	ldr x30, =__stack_cpu0_irq_end
+	MSR SPSR_irq, x30
 	ldr x30, =__stack_cpu0_sys_end
 	mov sp, x30
 	mov x30, XZR

@@ -1172,11 +1172,13 @@ extern "C" {
 	#if defined(__aarch64__)
 		// MSR DAIFCLR, #IRQ_bit
 		#define global_enableIRQ() do { \
-				__set_RG32C("DAIFCLR", 0x07); /* I bit of DAIF */ \
+				__ASM volatile ("MSR DAIFCLR, #7" : : : "memory"); \
+				/*__set_RG32C("DAIFCLR", 0x07); */ /* I bit of DAIF */ \
 			} while (0)
 		// MSR DAIFSET, #IRQ_bit
 		#define global_disableIRQ() do { \
-				__set_RG32C("DAIFSET", 0x07); /* I bit of DAIF */ \
+				__ASM volatile ("MSR DAIFSET, #7" : : : "memory"); \
+				/*__set_RG32C("DAIFSET", 0x07); *//* I bit of DAIF */ \
 			} while (0)
 
 	#else /* defined(__aarch64__) */
