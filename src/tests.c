@@ -6809,8 +6809,6 @@ void testpng_no_stretch(const void * pngbuffer)
 	colmain_nextfb();
 
 	luImageRelease(png, NULL);
-	for (;;)
-		;
 }
 
 #endif
