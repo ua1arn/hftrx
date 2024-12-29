@@ -165,6 +165,8 @@
 #define     __IOM    volatile            /*!< \brief Defines 'read / write' structure member permissions */
 #define RESERVED(N, T) T RESERVED##N;    // placeholder struct members used for "reserved" areas
 
+// __ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (7)  : "memory");
+
 #define __get_RG32(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
 #define __set_RG32(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
 #define __set_RG32C(reg, v)         __ASM volatile("MSR " reg ", #" # v : : : "memory" )
@@ -1513,6 +1515,21 @@ __STATIC_FORCEINLINE uint32_t __get_DCZID_EL0(void)
 	uint32_t result;
 	// MRS <Xt>, DCZID_EL0 ; Read DCZID_EL0 into Xt
 	__get_RG32("DCZID_EL0", result);
+	return result;
+}
+
+/* CurrentEL, Current Exception Level
+	EL, bits [3:2]
+		Current exception level. Possible values of this field are:
+		00 EL0
+		01 EL1
+		10 EL2
+		11 EL3
+*/
+__STATIC_FORCEINLINE uint32_t __get_CURRENTEL(void)
+{
+	uint32_t result;
+	__get_RG32("CURRENTEL", result);
 	return result;
 }
 

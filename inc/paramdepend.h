@@ -1169,15 +1169,16 @@ extern "C" {
 
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
+	// https://github.com/NienfengYao/armv8-bare-metal/blob/572c6f95880e70aa92fe9fed4b8ad7697082a764/aarch64.c#L63
 	#if defined(__aarch64__)
 		// MSR DAIFCLR, #IRQ_bit
 		#define global_enableIRQ() do { \
-				__ASM volatile ("MSR DAIFCLR, #7" : : : "memory"); \
+				__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (7)  : "memory"); \
 				/*__set_RG32C("DAIFCLR", 0x07); */ /* I bit of DAIF */ \
 			} while (0)
 		// MSR DAIFSET, #IRQ_bit
 		#define global_disableIRQ() do { \
-				__ASM volatile ("MSR DAIFSET, #7" : : : "memory"); \
+				__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (7)  : "memory"); \
 				/*__set_RG32C("DAIFSET", 0x07); *//* I bit of DAIF */ \
 			} while (0)
 
