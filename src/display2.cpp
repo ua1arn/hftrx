@@ -744,7 +744,7 @@ display2_smeter15_layout(
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	PACKEDCOLORPIP_T * bg;
-	uint_fast8_t xb = 120, yb = 120;
+	uint_fast16_t xb = 120, yb = 120;	// In pixels
 	unsigned p;
 	unsigned i;
 
