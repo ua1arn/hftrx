@@ -1455,6 +1455,15 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL2(void)
 	return result;
 }
 
+
+
+__STATIC_FORCEINLINE uint64_t __get_ID_AA64MMFR2_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, ID_AA64MMFR2_EL1 ; Read ID_AA64MMFR2_EL1 into Xt
+	__get_RG64("ID_AA64MMFR2_EL1", result);
+	return result;
+}
 ///////////////
 ///
 __STATIC_FORCEINLINE void __set_SCTLR_EL3(uint64_t value)
