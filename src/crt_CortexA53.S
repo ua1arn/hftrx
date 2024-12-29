@@ -110,7 +110,7 @@ __Vectors64:
 	b VIRQ_Handler	// IRQ/vIRQ
 	.org __Vectors64 + 0x700	// Lower EL using AArch32
 	b FIQ_Handler	// FIQ/vFIQ
-	.org __Vectors64 + 0x780	//Lower EL using AArch32
+	.org __Vectors64 + 0x780	// Lower EL using AArch32
 	b SError_Handler	// SError/vSError
 
    	.ltorg
