@@ -10824,6 +10824,10 @@ void hightests(void)
 					}
 					break;
 				}
+				else
+				{
+					continue;
+				}
 			}
 
 		}
