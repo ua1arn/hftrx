@@ -10727,7 +10727,7 @@ void hightests(void)
 #endif
 #if 0 && ! WITHISBOOTLOADER
 	{
-		TP();
+		//TP();
 		unsigned i;
 		for (i = 0; i < 2000; ++ i)
 		{
@@ -10735,50 +10735,102 @@ void hightests(void)
 			local_delay_ms(1);
 		}
 		TP();
-		// Тест чтения с FatFS данных
-		do {
-			static FIL pngfile; /* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
-			static const char fname [] = "demo.png";
-			static FATFS fs; /* File system object  - нельзя располагать в Cortex-M4 CCM */
-			const size_t pngbufsize = 2 * 1024 * 1024;
-			void * pngbuffer = malloc(pngbufsize);
-			if (pngbuffer == NULL)
-				break;
-			FRESULT rc;
-			UINT nread;
+		enum { N = 10 };
+		int filen = 0;
+		int files = 0;
+		void * buffers [N];
+		for (filen = 0; filen < 99 && files < N; ++ filen)
+		{
+			char fname [64];
+			if (filen == 0)
+				local_snprintf_P(fname, 64, "demo.png");
+			else
+				local_snprintf_P(fname, 64, "demo%d.png", filen);
 
-			rc = f_mount(& fs, "", 0);
-			if (rc != FR_OK) {
-				PRINTF("SD card not found\n");
-				break;
-			}
-			rc = f_open(&pngfile, fname, FA_OPEN_EXISTING | FA_READ);
-			if (rc != FR_OK) {
-				PRINTF("Key file '%s' not found\n", fname);
-				break;
-			}
-			rc = f_read(& pngfile, pngbuffer, pngbufsize, & nread);
-			if (rc != FR_OK) {
-				PRINTF("Key file '%s' can not be read\n", fname);
-				f_close(&pngfile);
-				break;
-			}
-			//PRINTF("Key file '%s' (%u bytes):\n", fname, (unsigned) nread);
-			//printhex(0, data, nread);
+			// Тест чтения с FatFS данных
+			do {
+				static FIL pngfile; /* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+				static FATFS fs; /* File system object  - нельзя располагать в Cortex-M4 CCM */
+				const size_t pngbufsize = 2 * 1024 * 1024;
+				buffers [files] = malloc(pngbufsize);
+				if (buffers [files] == NULL)
+					break;
+				FRESULT rc;
+				UINT nread;
 
-			testpng_no_stretch(pngbuffer);	// становить формат DE2_FORMAT_XBGR_8888
+				rc = f_mount(& fs, "", 0);
+				if (rc != FR_OK) {
+					PRINTF("SD card not found\n");
+					break;
+				}
+				rc = f_open(&pngfile, fname, FA_OPEN_EXISTING | FA_READ);
+				if (rc != FR_OK) {
+					PRINTF("Key file '%s' not found\n", fname);
+					break;
+				}
+				rc = f_read(& pngfile, buffers [files], pngbufsize, & nread);
+				if (rc != FR_OK) {
+					PRINTF("Key file '%s' can not be read\n", fname);
+					f_close(&pngfile);
+					break;
+				}
+				//PRINTF("Key file '%s' (%u bytes):\n", fname, (unsigned) nread);
+				//printhex(0, data, nread);
+				f_close(& pngfile);
+
+				++ files;
+				break;
+
+			} while (0);
+		}
+
+		int seefile = 0;
+		if (files)
+			testpng_no_stretch(buffers [seefile]);	// становить формат DE2_FORMAT_XBGR_8888
+		for (;files;)
+		{
 			for (;;)
 			{
 				uint_fast8_t kbch, kbready;
 				processmessages(& kbch, & kbready, 0, NULL);
 				if (kbready)
+				{
+					switch (kbch)
+					{
+					case KBD_CODE_CWMSG2:	// F2
+					case KBD_CODE_BAND_DOWN:
+						if (seefile > 0)
+							-- seefile;
+						else
+							seefile = files - 1;
+						testpng_no_stretch(buffers [seefile]);	// становить формат DE2_FORMAT_XBGR_8888
+						continue;
+
+					case KBD_CODE_CWMSG3:	// F3
+					case KBD_CODE_BAND_UP:
+						if ((seefile + 1) < files)
+							++ seefile;
+						else
+							seefile = 0;
+						testpng_no_stretch(buffers [seefile]);	// становить формат DE2_FORMAT_XBGR_8888
+						continue;
+
+					case KBD_CODE_DISPMODE:
+					case KBD_CODE_CWMSG1:	// F1
+						break;
+
+					default:
+						continue;
+					}
 					break;
+				}
 			}
 
-			f_close(&pngfile);
-
-		} while (0);
-		TP();
+		}
+		for (i = 0; i < files; ++ i)
+		{
+			free(buffers [i]);
+		}
 	}
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
