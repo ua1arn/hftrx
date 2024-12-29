@@ -4948,6 +4948,7 @@ void _fini(void)
  * ****************************
  */
 #include <sys/stat.h>
+#include <sys/unistd.h>
 #include <string.h>
 #include <errno.h>
 
@@ -4964,6 +4965,7 @@ static int SER_GetChar(void)
 
 /*-- GCC - Newlib runtime support --------------------------------------------*/
 
+
 int __attribute__((used)) (_open)(const char * path, int flags, ...)
 {
 	return (-1);
@@ -4973,12 +4975,23 @@ int __attribute__((used)) (_close)(int fd) {
 	return (-1);
 }
 
+int __attribute__((used)) (_unlink)(const char * path) {
+	return (-1);
+}
+
 int __attribute__((used)) (_lseek)(int fd, int ptr, int dir)
 {
 	return (0);
 }
 
-int __attribute__((used)) (_fstat)(int fd, struct stat * st)
+int __attribute__((used)) (_stat)(const char *__restrict path, struct stat *__restrict st)
+{
+	memset(st, 0, sizeof(*st));
+	st->st_mode = S_IFCHR;
+	return (0);
+}
+
+int __attribute__((used)) (_fstat)(int fd, struct stat *st )
 {
 	memset(st, 0, sizeof(*st));
 	st->st_mode = S_IFCHR;
