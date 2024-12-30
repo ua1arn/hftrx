@@ -2467,6 +2467,16 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #endif /* __CORTEX_A */
 
+#if defined(__aarch64__)
+
+static RAMFRAMEBUFF __attribute__ ((aligned(4 * 1024))) volatile uint64_t ttb_base0 [4096];	// ttb0_base must be a 4KB-aligned address.
+static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base1 [4096];
+
+#else /* defined(__aarch64__) */
+	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
+	static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base0 [4096];
+#endif /* defined(__aarch64__) */
+
 /*
  * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
  *
@@ -2715,8 +2725,113 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #endif
 }
 
-/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base0 [4096];
+
+static void
+ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+{
+	unsigned i;
+	const uint_fast32_t pagesize = (1uL << 20);
+
+	for (i = 0; i < 4096; ++ i)
+	{
+		const uintptr_t address = (uintptr_t) i << 20;
+		ttb_base0 [i] =  accessbits(address, 0, 0);
+	}
+	/* Установить R/O атрибуты для указанной области */
+	while (textsize >= pagesize)
+	{
+		ttb_base0 [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
+		textsize -= pagesize;
+		textstart += pagesize;
+	}
+}
+
+static void
+sysinit_mmu_tables(void)
+{
+	//PRINTF("sysinit_mmu_tables\n");
+
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+	// MMU iniitialize
+
+#if 0 && WITHDEBUG
+	uint_fast32_t leveli;
+	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
+	{
+
+		__set_CSSELR(leveli * 2 + 0);	// data cache select
+		const uint32_t ccsidr0 = __get_CCSIDR();
+		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
+		const int passoc0 = countbits2(assoc0);
+		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
+		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
+		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
+
+		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
+		const uint32_t ccsidr1 = __get_CCSIDR();
+		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
+		const int passoc1 = countbits2(assoc1);
+		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
+		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
+		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
+	}
+#endif /* WITHDEBUG */
+#if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
+	{
+		// SCU inut
+		// SCU Control Register
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
+//
+//
+//		// Filtering Start Address Register
+//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
+//				(0x001uL << 20) |
+//				0;
+//		TP();
+//		// Filtering End Address Register
+//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
+//				(0xFFEuL << 20) |
+//				0;
+
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
+	}
+#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
+
+
+#if defined (__aarch64__)
+	// MMU iniitialize
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+
+#elif WITHISBOOTLOADER || CPUSTYLE_R7S721
+
+	// MMU iniitialize
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+
+#elif CPUSTYLE_STM32MP1
+	extern uint32_t __data_start__;
+	// MMU iniitialize
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+
+#else
+	// MMU iniitialize
+	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+
+#endif
+
+
+#elif CPUSTYLE_RISCV
+
+	// RISC-V MMU initialize
+
+
+	//ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+
+
+#endif
+
+	//PRINTF("sysinit_mmu_tables done.\n");
+}
 
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void
@@ -2724,7 +2839,7 @@ sysinit_ttbr_initialize(void)
 {
 #if defined(__aarch64__)
 
-	ASSERT(((uintptr_t) ttb_base0 & 0x3FFF) == 0);
+	ASSERT(((uintptr_t) ttb_base0 & 0x0FFF) == 0);
 
 	__set_TTBR0_EL1((uintptr_t) ttb_base0);
 	__set_TTBR0_EL2((uintptr_t) ttb_base0);
@@ -2745,7 +2860,8 @@ sysinit_ttbr_initialize(void)
 	__ISB();
 
 	// Program the domain access register
-	__set_DACR32_EL2(0xFFFFFFFF); // domain 15: access are not checked
+	__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
+	__set_MAIR_EL3(0xFF440400);		// ATTR0 Device-nGnRnE ATTR1 Device, ATTR2 Normal Non-Cacheable.
 
 	MMU_InvalidateTLB();
 
@@ -2933,59 +3049,6 @@ sysinit_ttbr_initialize(void)
 
 #endif
 }
-
-static void
-ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
-{
-	unsigned i;
-	const uint_fast32_t pagesize = (1uL << 20);
-
-	for (i = 0; i < 4096; ++ i)
-	{
-		const uintptr_t address = (uintptr_t) i << 20;
-		ttb_base0 [i] =  accessbits(address, 0, 0);
-	}
-	/* Установить R/O атрибуты для указанной области */
-	while (textsize >= pagesize)
-	{
-		ttb_base0 [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
-		textsize -= pagesize;
-		textstart += pagesize;
-	}
-}
-
-static void
-ttb_64kB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
-{
-	unsigned i;
-	const uint_fast32_t pagesize = (1uL << 16);
-
-	for (i = 0; i < (4096 * 16); ++ i)
-	{
-		const uintptr_t address = (uintptr_t) i << 16;
-		ttb_base0 [i] =  accessbits(address, 0, 0);
-	}
-	/* Установить R/O атрибуты для указанной области */
-	while (textsize >= pagesize)
-	{
-		ttb_base0 [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
-		textsize -= pagesize;
-		textstart += pagesize;
-	}
-}
-
-// TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
-// с точностью до 1 мегабайта
-//static void
-//ttb_map(
-//	uintptr_t va,	/* virtual address */
-//	uintptr_t la,	/* linear (physical) address */
-//	uint32_t (* accessbits)(uintptr_t a)
-//	)
-//{
-//	unsigned i = va >> 20;
-//	ttb_base0 [i] =  accessbits(la);
-//}
 
 #elif defined (__CORTEX_M)
 
@@ -3295,94 +3358,6 @@ void xtrap(void)
 	dbg_putchar('#');
 	for (;;)
 		;
-}
-
-static void
-sysinit_mmu_initialize(void)
-{
-	//PRINTF("sysinit_mmu_initialize\n");
-
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-	// MMU iniitialize
-
-#if 0 && WITHDEBUG
-	uint_fast32_t leveli;
-	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
-	{
-
-		__set_CSSELR(leveli * 2 + 0);	// data cache select
-		const uint32_t ccsidr0 = __get_CCSIDR();
-		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
-		const int passoc0 = countbits2(assoc0);
-		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
-		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
-		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
-
-		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
-		const uint32_t ccsidr1 = __get_CCSIDR();
-		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
-		const int passoc1 = countbits2(assoc1);
-		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
-		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
-		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
-	}
-#endif /* WITHDEBUG */
-#if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
-	{
-		// SCU inut
-		// SCU Control Register
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
-//
-//
-//		// Filtering Start Address Register
-//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
-//				(0x001uL << 20) |
-//				0;
-//		TP();
-//		// Filtering End Address Register
-//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
-//				(0xFFEuL << 20) |
-//				0;
-
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
-	}
-#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
-
-
-#if defined (__aarch64__)
-	// MMU iniitialize
-	//ttb_64kB_initialize(ttb_1MB_accessbits, 0, 0);
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-#elif WITHISBOOTLOADER || CPUSTYLE_R7S721
-
-	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-#elif CPUSTYLE_STM32MP1
-	extern uint32_t __data_start__;
-	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
-
-#else
-	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-#endif
-
-
-#elif CPUSTYLE_RISCV
-
-	// RISC-V MMU initialize
-
-
-	//ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-
-#endif
-
-	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
 // SystemInit (on Core #0)
@@ -3720,7 +3695,7 @@ SystemInit(void)
 	local_delay_initialize();
 	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
-	sysinit_mmu_initialize();
+	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
