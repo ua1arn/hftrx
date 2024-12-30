@@ -18981,6 +18981,74 @@ static void hamradio_main_initialize(void)
 
 }
 
+#if WITHDEBUG
+static void keyspoolprocess(void * ctx)
+{
+	//IRQ_Handler_GIC();
+#if ! defined (HAVE_BTSTACK_STDIN)
+
+//	void zdataprint(void);
+//	void zcountsprint(void);
+//	void zfreqprint(void);
+
+	/* здесь можно добавить обработку каких-либо команд с debug порта */
+	char c;
+	if (dbg_getchar(& c))
+	{
+		switch (c)
+		{
+		case 0x00:
+			break;
+		default:
+			PRINTF("key=%02X\n", (unsigned char) c);
+			break;
+//		#if CPUSTYLE_T507
+//					case ' ':
+//						zcountsprint();
+//						break;
+//					case 'f':
+//						zfreqprint();
+//						break;
+//					case 'z':
+//						zdataprint();
+//						break;
+//		#endif /* CPUSTYLE_T507 */
+#if WITHDEBUG && WITHMENU
+		case 'm':
+			PRINTF("menu items:\n");
+			menu_print();
+			PRINTF("menu items end\n");
+			break;
+#endif /* WITHDEBUG && WITHMENU */
+#if 1 && WITHDEBUG && __riscv
+		case ' ':
+			{
+				uint64_t v = csr_read_mcycle();
+				static uint64_t v0;
+				PRINTF("%lu\n", (long) (v - v0) / 1000000);
+				v0 = v;
+			}
+			break;
+#endif
+#if WITHUSBHOST_HIGHSPEEDULPI
+		case 'u':
+			PRINTF("hkey:\n");
+			ulpi_chip_debug();
+			break;
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+#if WITHWAVPLAYER || WITHSENDWAV
+		case 'p':
+			PRINTF(PSTR("Play test file\n"));
+			playwavfile("1.wav");
+			break;
+#endif /* WITHWAVPLAYER */
+		}
+	}
+
+#endif /* ! defined (HAVE_BTSTACK_STDIN) */
+}
+#endif /* WITHDEBUG */
+
 // работа в главной машине состояний
 static STTE_t
 hamradio_main_step(void)
@@ -19130,67 +19198,6 @@ hamradio_main_step(void)
 #endif /* WITHTOUCHGUI */
 			}
 #endif /*WITHENCODER2 */
-	#if WITHDEBUG && ! defined (HAVE_BTSTACK_STDIN)
-			{
-//				void zdataprint(void);
-//				void zcountsprint(void);
-//				void zfreqprint(void);
-
-				/* здесь можно добавить обработку каких-либо команд с debug порта */
-				char c;
-				if (dbg_getchar(& c))
-				{
-					switch (c)
-					{
-					case 0x00:
-						break;
-					default:
-						PRINTF("key=%02X\n", (unsigned char) c);
-						break;
-//		#if CPUSTYLE_T507
-//					case ' ':
-//						zcountsprint();
-//						break;
-//					case 'f':
-//						zfreqprint();
-//						break;
-//					case 'z':
-//						zdataprint();
-//						break;
-//		#endif /* CPUSTYLE_T507 */
-		#if WITHDEBUG && WITHMENU
-					case 'm':
-						PRINTF("menu items:\n");
-						menu_print();
-						PRINTF("menu items end\n");
-						break;
-		#endif /* WITHDEBUG && WITHMENU */
-		#if 1 && WITHDEBUG && __riscv
-					case ' ':
-						{
-							uint64_t v = csr_read_mcycle();
-							static uint64_t v0;
-							PRINTF("%lu\n", (long) (v - v0) / 1000000);
-							v0 = v;
-						}
-						break;
-		#endif
-		#if WITHUSBHOST_HIGHSPEEDULPI
-					case 'u':
-						PRINTF("hkey:\n");
-						ulpi_chip_debug();
-						break;
-		#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-		#if WITHWAVPLAYER || WITHSENDWAV
-					case 'p':
-						PRINTF(PSTR("Play test file\n"));
-						playwavfile("1.wav");
-						break;
-		#endif /* WITHWAVPLAYER */
-					}
-				}
-			}
-	#endif /* WITHDEBUG */
 			if (processpots() || processencoders())
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
@@ -21007,4 +21014,12 @@ application_initialize(void)
 		ticker_add(& ticker_tuner);
 	}
 #endif /* WITHAUTOTUNER */
+#if WITHDEBUG
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+#endif
 }
