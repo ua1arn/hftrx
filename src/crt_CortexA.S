@@ -65,7 +65,7 @@
 
 	 STACKSIZESYSBOOT = 512
   
-	.section .isr_vector, "ax"
+	.section ".isr_vector", "ax"
 	.code 32
         
 /****************************************************************************/
@@ -123,7 +123,7 @@ FIQAddr_rtos:       .word FIQ_Handler
    .ltorg
 
 
-   .section .startup0
+   .section ".startup0"
    .code 32
    
    .extern _start
@@ -307,7 +307,7 @@ ExitFunction:
 /****************************************************************************/
 /*                         Default interrupt handler                        */
 /****************************************************************************/
-	.section .text
+	.section ".text"
    .code 32
 /* ================================================================== */
 /* Entry point for the IRQ handler */
@@ -381,7 +381,7 @@ VIRQ_Handler:
 	.endfunc
    	.ltorg
 
-	.section .noinit
+	.section ".noinit"
 	.align 3
 
 	.space	STACKSIZEUND

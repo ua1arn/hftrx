@@ -65,7 +65,7 @@
 
 	 STACKSIZESYSBOOT = 4096
 
-	.section .isr_vector
+	.section ".isr_vector"
 	//.code 64
         
 /****************************************************************************/
@@ -115,7 +115,7 @@ __Vectors64:
 
    	.ltorg
 
-   	.section .startup0
+   	.section ".startup0"
 	.align 3
    	//.code 64
    
@@ -353,7 +353,7 @@ ExitFunction:
 /*                         Default interrupt handler                        */
 /****************************************************************************/
 #if 0
-	.section .text
+	.section ".text"
    //.code 64
 /* ================================================================== */
 /* Entry point for the IRQ handler */
@@ -429,7 +429,7 @@ VIRQ_Handler:
 #endif
    	.ltorg
 
-	.section .noinit
+	.section ".noinit"
 	.align 3
 
 	.space	STACKSIZEUND

@@ -247,7 +247,7 @@ trap_\func:
 .endm
 
 	.global Reset_Handler
-.section .startup0
+.section ".startup0"
 .align 8
 Reset_Handler:
 	fill0_i64		/* set all integer registers to zero */
@@ -266,7 +266,7 @@ Reset_Handler:
     addi x2,x0,-1
     sw x1, 0(x2)
 
-.section .isr_vector
+.section ".isr_vector"
 .align 8
 
 .global __Vectors
@@ -339,7 +339,7 @@ __Vectors:
 
  //   .space (4096 - (16 + 16) * 4)
 
-.section .text
+	.section ".text"
 
 	mtrap_handler SYNCTRAP
 	mtrap_handler VMSI

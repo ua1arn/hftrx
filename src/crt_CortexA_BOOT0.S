@@ -66,7 +66,7 @@
 
 	 STACKSIZESYSBOOT = 512
 
-   .section .startup0
+   .section ".startup0"
    .code 32
    
    .extern _start
@@ -232,7 +232,7 @@ ExitFunction:
 
    .ltorg
 
-	.section .noinit
+	.section ".noinit"
 	.align 3
 
 	.space	STACKSIZEUND

@@ -66,7 +66,7 @@
 
 	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 1MB */
 
-	.section .text
+	.section ".text"
 	.code 32
 
 	.align 4, 0
@@ -81,7 +81,7 @@ aarch32_reset_handlers:
 	.word 0
 	.word 0
 
-	.section .text
+	.section ".text"
 	.code 32
 	.align 4, 0
 
@@ -149,7 +149,7 @@ Reset_CPU1_Handler:
 		.endfunc
    .ltorg
 
-	.section .noinit
+	.section ".noinit"
 	.align 3
 
 	.space	STACKSIZEIRQ
@@ -171,7 +171,7 @@ __stack_cpu1_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
-	.section .text
+	.section ".text"
 
   	.global Reset_CPU2_Handler
     .func   Reset_CPU2_Handler
@@ -235,7 +235,7 @@ Reset_CPU2_Handler:
 		.endfunc
    .ltorg
 
-	.section .noinit
+	.section ".noinit"
 	.align 3
 
 	.space	STACKSIZEIRQ
@@ -257,7 +257,7 @@ __stack_cpu2_sys_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
-	.section .text
+	.section ".text"
 
   	.global Reset_CPU3_Handler
     .func   Reset_CPU3_Handler
@@ -321,7 +321,7 @@ Reset_CPU3_Handler:
 		.endfunc
    .ltorg
 
-	.section .noinit
+	.section ".noinit"
 	.align 3
 
 	.space	STACKSIZEIRQ
