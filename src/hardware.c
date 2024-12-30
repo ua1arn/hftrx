@@ -2727,7 +2727,7 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 
 static void
-ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_level0_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 20);
@@ -2801,21 +2801,21 @@ sysinit_mmu_tables(void)
 
 #if defined (__aarch64__)
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb32_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
 
 #else
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #endif
 
@@ -2825,7 +2825,7 @@ sysinit_mmu_tables(void)
 	// RISC-V MMU initialize
 
 
-	//ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	//ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 
 #endif
@@ -2857,11 +2857,12 @@ sysinit_ttbr_initialize(void)
 			0;
 
 	__set_TCR_EL3(tcrv);
-	__ISB();
 
 	// Program the domain access register
 	__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
 	__set_MAIR_EL3(0xFF440400);		// ATTR0 Device-nGnRnE ATTR1 Device, ATTR2 Normal Non-Cacheable.
+
+	__ISB();
 
 	MMU_InvalidateTLB();
 
