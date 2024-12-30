@@ -2493,13 +2493,16 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
  *
 */
 
+// 0x740 - BLOCK_1GB
+// 0x74C - BLOCK_2MB
+// 0x758 - BLOCK_1MB
 
 static uintptr_t
 ttb64_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint64_t addrbase = a & ~ UINT64_C(0x0FFFFF);
 
-	return addrbase | 0x74D | 0x01;
+	return addrbase | 0x758 | 0x01;
 }
 
 static uintptr_t
@@ -2814,7 +2817,7 @@ sysinit_mmu_tables(void)
 	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
-	// 0x74D - BLOCK_1MB
+	// 0x758 - BLOCK_1MB
 
 //	ttb_base0 [0] = (ttb_base1_addr) | 0x74D | 0x01;
 //	ttb_base0 [1] = (ttb_base1_addr) | 0x74D | 0x01;
