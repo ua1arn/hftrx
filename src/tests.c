@@ -12374,15 +12374,17 @@ void hightests(void)
 		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
 		// ZINQ XC7Z010: ARM GICv1
 		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
+		// Allwinner T507-H: ARM GICv2
+		//	GICInterface->IIDR=0202143B, GICDistributor->IIDR=0200143B
 
-		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
+		PRINTF("GICInterface->IIDR=%08X, GICDistributor->IIDR=%08X\n", (unsigned) GIC_GetInterfaceId(), (unsigned) GIC_DistributorImplementer());
 
-//		switch (ICPIDR1 & 0x0F)
-//		{
-//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-//		}
+		switch (ICPIDR1 & 0x0F)
+		{
+		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08X @%p)\n", (unsigned) ICPIDR1, & ICPIDR1); break;
+		}
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
