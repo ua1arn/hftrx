@@ -2469,8 +2469,8 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if defined(__aarch64__)
 
-static RAMFRAMEBUFF __attribute__ ((aligned(4 * 1024))) volatile uint64_t ttb_base0 [4096];	// ttb0_base must be a 4KB-aligned address.
-static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base1 [4096];
+static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint64_t ttb_base0 [4096];	// ttb0_base must be a 4KB-aligned address.
+//static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base1 [4096];
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
@@ -2801,6 +2801,17 @@ sysinit_mmu_tables(void)
 
 #if defined (__aarch64__)
 	// MMU iniitialize
+
+	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
+	// 0x740 - BLOCK_1GB
+	// 0x74C - BLOCK_2MB
+	// 0x74D - BLOCK_1MB
+
+//	ttb_base0 [0] = (ttb_base1_addr) | 0x74D | 0x01;
+//	ttb_base0 [1] = (ttb_base1_addr) | 0x74D | 0x01;
+//	ttb_base0 [2] = (ttb_base1_addr) | 0x74D | 0x01;
+//	ttb_base0 [3] = (ttb_base1_addr) | 0x74D | 0x01;
+
 	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
@@ -2853,7 +2864,7 @@ sysinit_ttbr_initialize(void)
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
-			32 * (UINT32_C(1) << 0) |		// 0..63
+			44 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=44: 1MB
 			0;
 
 	__set_TCR_EL3(tcrv);
