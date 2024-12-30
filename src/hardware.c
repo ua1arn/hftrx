@@ -2469,7 +2469,7 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if defined(__aarch64__)
 
-static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint64_t ttb_base0 [4096];	// ttb0_base must be a 4KB-aligned address.
+static RAMFRAMEBUFF __attribute__ ((aligned(1024 * 1024))) volatile uint64_t ttb_base0 [4096];	// ttb0_base must be a 4KB-aligned address.
 //static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base1 [4096];
 
 #else /* defined(__aarch64__) */
@@ -2493,10 +2493,19 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
  *
 */
 
-static uint32_t
+
+static uintptr_t
+ttb64_1MB_accessbits(uintptr_t a, int ro, int xn)
+{
+	const uint64_t addrbase = a & ~ UINT64_C(0x0FFFFF);
+
+	return addrbase | 0x74D | 0x01;
+}
+
+static uintptr_t
 ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
-	const uint32_t addrbase = a & 0xFFF00000;
+	const uint32_t addrbase = a & ~ UINT32_C(0x0FFFFF);
 
 #if CPUSTYLE_R7S721020
 
@@ -2727,7 +2736,7 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 
 static void
-ttb_level0_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 20);
@@ -2812,7 +2821,7 @@ sysinit_mmu_tables(void)
 //	ttb_base0 [2] = (ttb_base1_addr) | 0x74D | 0x01;
 //	ttb_base0 [3] = (ttb_base1_addr) | 0x74D | 0x01;
 
-	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
