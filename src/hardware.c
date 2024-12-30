@@ -2936,56 +2936,6 @@ sysinit_ttbr_initialize(void)
 #endif
 }
 
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM && 1
-
-// Fix dc zva, xx opcode usage
-void * memset(void * dst, int v, size_t n)
-{
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	while (n --)
-		* d ++ = v;
-	return dst;
-}
-
-void * memcpy(void * dst, const void * src, size_t n)
-{
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	const volatile uint8_t * s = (const volatile uint8_t *) src;
-	while (n --)
-		* d ++ = * s ++;
-	return dst;
-}
-
-void * memmove(void * dst, const void * src, size_t n)
-{
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	const volatile uint8_t * s = (const volatile uint8_t *) src;
-	if (s >= d && s < (d + n))
-	{
-		// If overlaps
-		s += n;
-		d += n;
-		while (n --)
-			* -- d = * -- s;
-	}
-	else
-	{
-		while (n --)
-			* d ++ = * s ++;
-	}
-	return dst;
-}
-
-size_t strlen(const char * s1)
-{
-	volatile const char * s = s1;
-	size_t n = 0;
-	while (* s ++ != '\0')
-		++ n;
-	return n;
-}
-#endif
-
 static void
 ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
@@ -4904,7 +4854,7 @@ __NO_RETURN void __riscv_start(void)
 }
 #endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
-#if ! LINUX_SUBSYSTEM && 1//! defined (__CORTEX_M) && 0
+#if ! LINUX_SUBSYSTEM
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
@@ -4963,9 +4913,6 @@ static int SER_GetChar(void)
 
 	return (-1);
 }
-
-/*-- GCC - Newlib runtime support --------------------------------------------*/
-
 
 int __attribute__((used)) (_open)(const char * path, int flags, ...)
 {
@@ -5048,6 +4995,56 @@ struct _reent * __getreent(void)
     PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
     return r + arm_hardware_cpuid();
 }
+
+#if defined(__aarch64__)
+
+// Fix dc zva, xx opcode usage
+void * memset(void * dst, int v, size_t n)
+{
+	volatile uint8_t * d = (volatile uint8_t *) dst;
+	while (n --)
+		* d ++ = v;
+	return dst;
+}
+
+void * memcpy(void * dst, const void * src, size_t n)
+{
+	volatile uint8_t * d = (volatile uint8_t *) dst;
+	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	while (n --)
+		* d ++ = * s ++;
+	return dst;
+}
+
+void * memmove(void * dst, const void * src, size_t n)
+{
+	volatile uint8_t * d = (volatile uint8_t *) dst;
+	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	if (s >= d && s < (d + n))
+	{
+		// If overlaps
+		s += n;
+		d += n;
+		while (n --)
+			* -- d = * -- s;
+	}
+	else
+	{
+		while (n --)
+			* d ++ = * s ++;
+	}
+	return dst;
+}
+
+size_t strlen(const char * s1)
+{
+	volatile const char * s = s1;
+	size_t n = 0;
+	while (* s ++ != '\0')
+		++ n;
+	return n;
+}
+#endif
 
 #ifdef __cplusplus
 }
