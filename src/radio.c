@@ -18987,10 +18987,6 @@ static void keyspoolprocess(void * ctx)
 	//IRQ_Handler_GIC();
 #if ! defined (HAVE_BTSTACK_STDIN)
 
-//	void zdataprint(void);
-//	void zcountsprint(void);
-//	void zfreqprint(void);
-
 	/* здесь можно добавить обработку каких-либо команд с debug порта */
 	char c;
 	if (dbg_getchar(& c))
@@ -19002,25 +18998,14 @@ static void keyspoolprocess(void * ctx)
 		default:
 			PRINTF("key=%02X\n", (unsigned char) c);
 			break;
-//		#if CPUSTYLE_T507
-//					case ' ':
-//						zcountsprint();
-//						break;
-//					case 'f':
-//						zfreqprint();
-//						break;
-//					case 'z':
-//						zdataprint();
-//						break;
-//		#endif /* CPUSTYLE_T507 */
-#if WITHDEBUG && WITHMENU
+#if WITHMENU
 		case 'm':
 			PRINTF("menu items:\n");
 			menu_print();
 			PRINTF("menu items end\n");
 			break;
-#endif /* WITHDEBUG && WITHMENU */
-#if 1 && WITHDEBUG && __riscv
+#endif /* WITHMENU */
+#if __riscv
 		case ' ':
 			{
 				uint64_t v = csr_read_mcycle();
@@ -19029,7 +19014,7 @@ static void keyspoolprocess(void * ctx)
 				v0 = v;
 			}
 			break;
-#endif
+#endif /* __riscv */
 #if WITHUSBHOST_HIGHSPEEDULPI
 		case 'u':
 			PRINTF("hkey:\n");
