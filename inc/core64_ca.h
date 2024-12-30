@@ -383,6 +383,19 @@ __STATIC_FORCEINLINE uint32_t __get_DAIF(void)
 	return result;
 }
 
+// 4.3.42 Secure Configuration Register
+__STATIC_FORCEINLINE void __set_SCR_EL3(uint32_t value)
+{
+	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
+	__set_RG32("SCR_EL3", value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_SCR_EL3(void)
+{
+	uint32_t result;
+	__get_RG32("SCR_EL3", result);
+	return result;
+}
 
 #define __get_MPIDR() 	(__get_MPIDR_EL1())
 #define __get_IFAR() 	(__get_FAR_EL1())

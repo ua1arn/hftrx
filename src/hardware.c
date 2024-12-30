@@ -3241,6 +3241,8 @@ sysinit_vbar_initialize(void)
 	__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 	__set_VBAR_EL3(vbase);	 // TRAP at memcpy Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
+	__set_SCR_EL3(__get_SCR_EL3() | (UINT32_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 #if WITHRTOS
 	extern unsigned long __Vectors_rtos;

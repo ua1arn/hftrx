@@ -18984,7 +18984,6 @@ static void hamradio_main_initialize(void)
 #if WITHDEBUG
 static void keyspoolprocess(void * ctx)
 {
-	//IRQ_Handler_GIC();
 #if ! defined (HAVE_BTSTACK_STDIN)
 
 	/* здесь можно добавить обработку каких-либо команд с debug порта */
