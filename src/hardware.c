@@ -2734,10 +2734,11 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	const uint32_t tcrv =
-			IRGN_attr * (UINT32_C(1) << 8) |
-			RGN_attr * (UINT32_C(1) << 10) |
-			40 * (UINT32_C(1) << 0) |		// 0..63
+	uint32_t tcrv =
+			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
+			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
+			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
+			32 * (UINT32_C(1) << 0) |		// 0..63
 			0;
 
 	__set_TCR_EL3(tcrv);
