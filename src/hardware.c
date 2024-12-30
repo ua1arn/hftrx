@@ -3227,10 +3227,10 @@ sysinit_vbar_initialize(void)
 	const uintptr_t vbase = (uintptr_t) & __Vectors64;
 #endif /* WITHRTOS */
 
-	ASSERT((vbase & 0x07FF) == 0);
+	ASSERT((vbase & 0x3FF) == 0);
+
 	//__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 	//__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
-	ASSERT((vbase & 0x3FF) == 0);
 	__set_VBAR_EL3(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT32_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
