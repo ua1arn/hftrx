@@ -1350,7 +1350,7 @@ static void generate_cmsis(void) {
 			emitline(0, "#include <core_cm3.h>\n");
 		} else {
 			emitline(0, "#if __aarch64__\n");
-			emitline(4, "#include <core64_ca.h>\n");
+			emitline(4, "#include <core_ca53.h>\n");
 			emitline(0, "#else\n");
 			emitline(4, "#include <core_ca.h>\n");
 			emitline(0, "#endif\n");

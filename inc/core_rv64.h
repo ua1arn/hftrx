@@ -1,3 +1,9 @@
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 #ifndef INC_CORE_RV64_H_
 #define INC_CORE_RV64_H_
 

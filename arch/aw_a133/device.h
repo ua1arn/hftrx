@@ -53,7 +53,7 @@ typedef enum IRQn
 #define R_TWI1_BASE ((uintptr_t) 0x07081800)          /*!< TWI  Base */
 
 #if __aarch64__
-    #include <core64_ca.h>
+    #include <core_ca53.h>
 #else
     #include <core_ca.h>
 #endif

@@ -1,4 +1,9 @@
-// $Id$
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef PIO_H_INCLUDED
 #define PIO_H_INCLUDED

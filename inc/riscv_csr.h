@@ -1,9 +1,12 @@
 /*
  * riscv_csr.h
- *
- *  Created on: Oct 28, 2022
- *      Author: gena
  */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef ARCH_AW_F133_RISCV_CSR_H_
 #define ARCH_AW_F133_RISCV_CSR_H_

@@ -93,7 +93,7 @@ typedef enum IRQn
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 
 #if __aarch64__
-    #include <core64_ca.h>
+    #include <core_ca53.h>
 #else
     #include <core_ca.h>
 #endif

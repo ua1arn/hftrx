@@ -1,9 +1,12 @@
 /*
- * core64_ca.h
- *
- *  Created on: 14 дек. 2024 г.
- *      Author: User
+ * core_ca53.h
  */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef INC_CORE64_CA_H_
 #define INC_CORE64_CA_H_

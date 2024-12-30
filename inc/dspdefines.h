@@ -1,9 +1,9 @@
-/*
- * dspdefines.h
- *
- *  Created on: 17 апр. 2023 г.
- *      Author: User
- */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef SRC_DSPDEFINES_H_
 #define SRC_DSPDEFINES_H_

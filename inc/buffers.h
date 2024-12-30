@@ -1,9 +1,12 @@
 /*
  * buffers.h
- *
- *  Created on: Aug 25, 2023
- *      Author: Gena
  */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef INC_BUFFERS_H_
 #define INC_BUFFERS_H_

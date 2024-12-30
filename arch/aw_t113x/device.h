@@ -264,7 +264,7 @@ typedef enum IRQn
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG  Base */
 
 #if __aarch64__
-    #include <core64_ca.h>
+    #include <core_ca53.h>
 #else
     #include <core_ca.h>
 #endif
