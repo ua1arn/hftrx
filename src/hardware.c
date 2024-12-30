@@ -2452,18 +2452,18 @@ uint_fast32_t cpu_getdebugticks(void)
 		0 \
 	)
 
-#define	TTB_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
-#define	TTB_PARA_NO_ACCESS 		0
+#define	TTB32_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB32_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB32_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB32_PARA_NO_ACCESS 		0
 
 #elif CPUSTYLE_RISCV
 
 // See Table 4.2: Encoding of PTE Type field.
 
-#define	TTB_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
-#define	TTB_PARA_DEVICE 		((0x00u << 1) | 0x01)
-#define	TTB_PARA_NO_ACCESS 		0
+#define	TTB32_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
+#define	TTB32_PARA_DEVICE 		((0x00u << 1) | 0x01)
+#define	TTB32_PARA_NO_ACCESS 		0
 
 #endif /* __CORTEX_A */
 
@@ -2494,7 +2494,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 */
 
 static uint32_t
-ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
+ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint32_t addrbase = a & 0xFFF00000;
 
@@ -2503,17 +2503,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a == 0x00000000)
-		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
+		return addrbase | TTB32_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000 && a < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
-		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
+		return addrbase | TTB32_PARA_CACHED(ro || 0, 0);
 
 	if (a >= 0x00000000 && a < 0x00A00000)			// up to 10 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 	if (a >= 0x20000000 && a < 0x20A00000)			// up to 10 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_STM32MP1
 
@@ -2522,69 +2522,69 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
 
 	// Все сравнения должны быть не точнее 1 MB
 	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0xC0000000)							// DDR memory
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
-	return addrbase | TTB_PARA_NO_ACCESS;
+	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB32_PARA_NO_ACCESS;
 
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
 #if WITHLWIP
 	if (a == (uintptr_t) bd_space)
-		return addrbase | TTB_PARA_NCACHED(ro, 0);
+		return addrbase | TTB32_PARA_NCACHED(ro, 0);
 #endif /* WITHLWIP */
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return addrbase | TTB_PARA_DEVICE;
+		return addrbase | TTB32_PARA_DEVICE;
 
 	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
+		return addrbase | TTB32_PARA_CACHED(ro || 0, 0);
 
 	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_XCZU
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return addrbase | TTB_PARA_DEVICE;
+		return addrbase | TTB32_PARA_DEVICE;
 
 	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
+		return addrbase | TTB32_PARA_CACHED(ro || 1, 0);
 
 	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_T113
 
@@ -2595,17 +2595,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
+//		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 
 #elif CPUSTYLE_V3S
@@ -2617,17 +2617,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
+//		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_H3
 
@@ -2638,18 +2638,18 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x01000000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
+		return addrbase | TTB32_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
 
 	if (a >= 0xC0000000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);	// N-BROM, S-BROM
+		return addrbase | TTB32_PARA_CACHED(ro, 0);	// N-BROM, S-BROM
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_A64
 
@@ -2660,15 +2660,15 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x01000000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -2679,27 +2679,27 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00100000)			// SYSRAM, BROM
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_F133
 
 	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
+//		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #elif CPUSTYLE_VM14
 
@@ -2707,20 +2707,20 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return addrbase | TTB32_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #else
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	#warning ttb_1MB_accessbits: Unhandled CPUSTYLE_xxxx
+	#warning ttb32_1MB_accessbits: Unhandled CPUSTYLE_xxxx
 
-	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB32_PARA_DEVICE;
 
 #endif
 }
@@ -2801,21 +2801,21 @@ sysinit_mmu_tables(void)
 
 #if defined (__aarch64__)
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+	ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+	ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+	ttb_1MB_initialize(ttb32_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
 
 #else
 	// MMU iniitialize
-	ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+	ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 #endif
 
@@ -2825,7 +2825,7 @@ sysinit_mmu_tables(void)
 	// RISC-V MMU initialize
 
 
-	//ttb_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+	//ttb_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
 
 
 #endif
