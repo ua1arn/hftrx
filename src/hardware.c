@@ -3405,11 +3405,11 @@ static void sysinit_smp_initialize(void)
 	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
-#elif (__CORTEX_A == 53U) && __aarch64__
+#elif (__CORTEX_A == 53U) && defined(__aarch64__)
 	// TODO
 	#warning To be done
 
-#elif (__CORTEX_A == 53U) && ! __aarch64__
+#elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
 	/**
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
@@ -3430,9 +3430,6 @@ static void sysinit_smp_initialize(void)
 	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
-#elif (__CORTEX_A == 53U) && __aarch64__
-	// TODO
-	#warning To be done
 
 #elif (__CORTEX_A == 7U)
 	#if WITHSMPSYSTEM
@@ -3641,20 +3638,16 @@ sysinit_cache_initialize(void)
 static void
 sysinit_cache_L2_initialize(void)
 {
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-
-	#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
-		L2C_Disable();
-		* (volatile uint32_t *) (L2C_310_BASE + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
-		* (volatile uint32_t *) (L2C_310_BASE + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
-	#endif /* (__L2C_PRESENT == 1) */
-	#if (__L2C_PRESENT == 1)
-		// Enable Level 2 Cache
-		L2C_InvAllByWay();
-		L2C_Enable();
-	#endif
-
-#endif /* (__CORTEX_A != 0) */
+#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+	L2C_Disable();
+	* (volatile uint32_t *) (L2C_310_BASE + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+	* (volatile uint32_t *) (L2C_310_BASE + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+#endif /* (__L2C_PRESENT == 1) */
+#if (__L2C_PRESENT == 1)
+	// Enable Level 2 Cache
+	L2C_InvAllByWay();
+	L2C_Enable();
+#endif
 }
 
 
@@ -3721,24 +3714,20 @@ SystemInit(void)
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
+	sysinit_pll_initialize(0);		// PLL iniitialize - minimal freq
 	local_delay_initialize();
 	sysinit_gpio_initialize();
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
 	sysinit_debug_initialize();
-//	PRINTF("csr_read_mhint=0x%lx\n", (long unsigned) csr_read_mhint());
-//	PRINTF("csr_read_mxstatus=0x%lx\n", (long unsigned) csr_read_mxstatus());
-//	PRINTF("csr_read_mhcr=0x%lx\n", (long unsigned) csr_read_mhcr());
-//	PRINTF("csr_read_mcor=0x%lx\n", (long unsigned) csr_read_mcor());
-	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
+	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	local_delay_initialize();
 	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_initialize();
-	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
-	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif /* ! WITHISBOOTLOADER_DDR */
 }
@@ -3762,7 +3751,6 @@ void __attribute__((used)) SystemDRAMInit(void)
 }
 
 #endif /* LINUX_SUBSYSTEM */
-
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
