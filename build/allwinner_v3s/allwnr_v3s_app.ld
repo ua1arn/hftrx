@@ -187,13 +187,6 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ttb BLOCK(16k) (NOLOAD):
-	{
-		PROVIDE(__TTB_BASE = .);
-		LONG(0)	/* dummy object = check for need */
-		. = ALIGN(16k);
-	} > RAM
-
 	.ramnc BLOCK(1M) (NOLOAD):
 	{
 		PROVIDE(__RAMNC_BASE = .);

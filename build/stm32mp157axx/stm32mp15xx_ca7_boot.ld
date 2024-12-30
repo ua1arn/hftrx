@@ -197,13 +197,6 @@ SECTIONS
 
 	} > DDR3
 
-	.ttb BLOCK(16k) (NOLOAD):
-	{
-		PROVIDE(__TTB_BASE = .);
-		LONG(0)	/* dummy object */
-		. = ALIGN(16k);
-	} > DDR3
-
 	.ramnc BLOCK(1M) (NOLOAD):
 	{
 		PROVIDE(__RAMNC_BASE = .);

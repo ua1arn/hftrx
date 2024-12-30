@@ -1,6 +1,8 @@
 /* $Id$ */
 // Inspired by
 // https://github.com/NienfengYao/armv8-bare-metal
+// See also
+// Application Note Bare-metal Boot Code for ARMv8-A Processors Version 1.0
 
 #define vector_table_align .align 11    /* Vector tables must be placed at a 2KB-aligned address */
 #define vector_entry_align .align 7     /* Each entry is 128B in size*/

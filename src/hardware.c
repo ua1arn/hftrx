@@ -2715,19 +2715,20 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #endif
 }
 
+/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
+static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base0 [4096];
+
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void
 sysinit_ttbr_initialize(void)
 {
 #if defined(__aarch64__)
 
-	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	ASSERT(((uintptr_t) tlbbase & 0x3FFF) == 0);
+	ASSERT(((uintptr_t) ttb_base0 & 0x3FFF) == 0);
 
-	__set_TTBR0_EL1((uintptr_t) tlbbase);
-	__set_TTBR0_EL2((uintptr_t) tlbbase);
-	__set_TTBR0_EL3((uintptr_t) tlbbase);
+	__set_TTBR0_EL1((uintptr_t) ttb_base0);
+	__set_TTBR0_EL2((uintptr_t) ttb_base0);
+	__set_TTBR0_EL3((uintptr_t) ttb_base0);
 
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
@@ -2773,9 +2774,7 @@ sysinit_ttbr_initialize(void)
 
 #elif (__CORTEX_A != 0)
 
-	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
-	ASSERT(((uintptr_t) tlbbase & 0x3FFF) == 0);
+	ASSERT(((uintptr_t) ttb_base0 & 0x3FFF) == 0);
 
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
@@ -2794,7 +2793,7 @@ sysinit_ttbr_initialize(void)
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
-			(uintptr_t) tlbbase |
+			(uintptr_t) ttb_base0 |
 			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
 			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
 			(RGN_attr << 3) |	// RGN
@@ -2804,14 +2803,14 @@ sysinit_ttbr_initialize(void)
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
-			(uintptr_t) tlbbase |
+			(uintptr_t) ttb_base0 |
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 			(UINT32_C(1) << 3) |	// RGN
 			0*(UINT32_C(1) << 5) |	// NOS
 			0*(UINT32_C(1) << 1) |	// S
 			0);
 #endif /* WITHSMPSYSTEM */
-	//CP15_writeTTB1((unsigned int) tlbbase | 0x48);	// TTBR1
+	//CP15_writeTTB1((unsigned int) ttb_base0 | 0x48);	// TTBR1
 	  __ISB();
 
 	// Program the domain access register
@@ -2911,11 +2910,9 @@ sysinit_ttbr_initialize(void)
 		}
 	}
 
-//	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-//	volatile uint32_t * const tlbbase = & __TTB_BASE;
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
-//	csr_write_sptbr((uintptr_t) tlbbase >> 10);
+//	csr_write_sptbr((uintptr_t) ttb_base0 >> 10);
 
 	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
 	// 3.1.6 Virtualization Management Field in mstatus Register
@@ -2939,20 +2936,18 @@ sysinit_ttbr_initialize(void)
 static void
 ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
-	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 20);
 
 	for (i = 0; i < 4096; ++ i)
 	{
 		const uintptr_t address = (uintptr_t) i << 20;
-		tlbbase [i] =  accessbits(address, 0, 0);
+		ttb_base0 [i] =  accessbits(address, 0, 0);
 	}
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
 	{
-		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
+		ttb_base0 [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
@@ -2961,20 +2956,18 @@ ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr
 static void
 ttb_64kB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
-	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
-	volatile uint32_t * const tlbbase = & __TTB_BASE;
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 16);
 
 	for (i = 0; i < (4096 * 16); ++ i)
 	{
 		const uintptr_t address = (uintptr_t) i << 16;
-		tlbbase [i] =  accessbits(address, 0, 0);
+		ttb_base0 [i] =  accessbits(address, 0, 0);
 	}
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
 	{
-		tlbbase [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
+		ttb_base0 [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
@@ -2989,10 +2982,8 @@ ttb_64kB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintpt
 //	uint32_t (* accessbits)(uintptr_t a)
 //	)
 //{
-//	volatile extern uint32_t __TTB_BASE;		// получено из скрипта линкера
-//	volatile uint32_t * const tlbbase = & __TTB_BASE;
 //	unsigned i = va >> 20;
-//	tlbbase [i] =  accessbits(la);
+//	ttb_base0 [i] =  accessbits(la);
 //}
 
 #elif defined (__CORTEX_M)
