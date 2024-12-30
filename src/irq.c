@@ -1727,38 +1727,37 @@ void IRQ15_Handler(void)
 #endif /* CPUSTYLE_RISCV */
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+
+void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); for (;;) ; }
+void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); for (;;) ; }
+void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); for (;;) ; }
+void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); for (;;) ; }
+void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); for (;;) ; }
+//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); for (;;) ; }	// VIRQ EL3
+void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); for (;;) ; }
+void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); for (;;) ; }
+void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); for (;;) ; }
+void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); for (;;) ; }
+void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); for (;;) ; }
+void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); for (;;) ; }
+void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); for (;;) ; }
+void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); for (;;) ; }
+void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }
+void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }
+
 //    #define __LDREXB __LDAEXB
 //    #define __STREXB __STLEXB
 
 void Synchro_Handler(void)
 {
 	TP();
+	PRINTF("Synchro_Handler:\n");
 	for (;;)
 		;
 }
 
 void Synchro_Handler1(void)
-{
-	TP();
-	PRINTF("Synchro_Handler1:\n");
-	unsigned esr_el3 = __get_ESR_EL3();
-	unsigned ec = (esr_el3 >> 26) & 0x1F;
-	unsigned iss = (esr_el3 >> 0) & 0xFFFFFF;
-	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
-	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
-	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
-
-	PRINTF("ec=%02X\n", ec);
-	switch (ec)
-	{
-	case 0x03:	PRINTF("Trapped MCR or MRC access with (coproc==0b1111) iss=%06X\n", iss); break;
-	case 0x04:	PRINTF("Trapped MCRR or MRRC access with (coproc==0b1111) iss=%06X\n", iss); break;
-	case 0x05:	PRINTF("Trapped MCR or MRC access with (coproc==0b1110) iss=%06X\n", iss); break;
-	default: break;
-	}
-	for (;;)
-		;
-}
+{}
 
 void Synchro_Handler2(void)
 {
@@ -1784,16 +1783,35 @@ void Synchro_Handler3(void)
 		;
 }
 
+// wasL: uncommon_trap_handler_6
+// Current EL with SPx VIRQ
 void VIRQ_Handler(void)
 {
-	TP();
-	for (;;)
-		;
+	//dbg_putchar('.');
+	IRQ_Handler_GIC();
 }
 
+// wasL: uncommon_trap_handler_5
+// Current EL with SPx Synchronous
 void SError_Handler(void)
 {
 	TP();
+	PRINTF("SError_Handler:\n");
+	unsigned esr_el3 = __get_ESR_EL3();
+	unsigned ec = (esr_el3 >> 26) & 0x1F;
+	unsigned iss = (esr_el3 >> 0) & 0xFFFFFF;
+	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
+	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
+	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
+
+	PRINTF("ec=%02X\n", ec);
+	switch (ec)
+	{
+	case 0x03:	PRINTF("Trapped MCR or MRC access with (coproc==0b1111) iss=%06X\n", iss); break;
+	case 0x04:	PRINTF("Trapped MCRR or MRRC access with (coproc==0b1111) iss=%06X\n", iss); break;
+	case 0x05:	PRINTF("Trapped MCR or MRC access with (coproc==0b1110) iss=%06X\n", iss); break;
+	default: break;
+	}
 	for (;;)
 		;
 }

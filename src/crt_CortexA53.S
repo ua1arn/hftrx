@@ -1,42 +1,10 @@
 /* $Id$ */
-/****************************************************************************
-*  Copyright (c) 2006 by Michael Fischer. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without 
-*  modification, are permitted provided that the following conditions 
-*  are met:
-*  
-*  1. Redistributions of source code must retain the above copyright 
-*     notice, this list of conditions and the following disclaimer.
-*  2. Redistributions in binary form must reproduce the above copyright
-*     notice, this list of conditions and the following disclaimer in the 
-*     documentation and/or other materials provided with the distribution.
-*  3. Neither the name of the author nor the names of its contributors may 
-*     be used to endorse or promote products derived from this software 
-*     without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
-*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-*  THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
-*  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-*  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
-*  THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
-*  SUCH DAMAGE.
-*
-****************************************************************************
-*
-*  History:
-*
-*  18.12.06  mifi   First Version
-*                   The hardware initialization is based on the startup file
-*                   crtat91sam7x256_rom.S from NutOS 4.2.1. 
-*                   Therefore partial copyright by egnite Software GmbH.
-****************************************************************************/
+// Inspired by
+// https://github.com/NienfengYao/armv8-bare-metal
+
+#define vector_table_align .align 11    /* Vector tables must be placed at a 2KB-aligned address */
+#define vector_entry_align .align 7     /* Each entry is 128B in size*/
+#define text_align .align  2            /* Text alignment */
 
 /*
  * Some defines for the program status registers
@@ -78,41 +46,40 @@
 	.global __Vectors64
 __Vectors64:
 	.org __Vectors64 + 0x000	// Current EL with SP0
-	b Synchro_Handler	// Synchronous
+	b	_curr_el_sp0_sync		/* Synchronous */
 	.org __Vectors64 + 0x080	// Current EL with SP0
-	b VIRQ_Handler	// IRQ/vIRQ
+	b	_curr_el_sp0_irq		/* IRQ/vIRQ */
 	.org __Vectors64 + 0x100	// Current EL with SP0
-	b FIQ_Handler	// FIQ/vFIQ
+	b	_curr_el_sp0_fiq		/* FIQ/vFIQ */
 	.org __Vectors64 + 0x180	// Current EL with SP0
-	b SError_Handler	// SError/vSError
+	b	_curr_el_sp0_serror		/* SError/vSError */
 
 	.org __Vectors64 + 0x200	// Current EL with SPx
-	b Synchro_Handler1	// Synchronous
+	b	_curr_el_spx_sync		/* Synchronous */
 	.org __Vectors64 + 0x280	// Current EL with SPx
-	b VIRQ_Handler	// IRQ/vIRQ
+	b	_curr_el_spx_irq		/* IRQ/vIRQ */
 	.org __Vectors64 + 0x300	// Current EL with SPx
-	b FIQ_Handler	// FIQ/vFIQ
+	b	_curr_el_spx_fiq		/* FIQ/vFIQ */
 	.org __Vectors64 + 0x380	// Current EL with SPx
-	b SError_Handler	// SError/vSError
+	b	_curr_el_spx_serror		/* SError/vSError */
 
 	.org __Vectors64 + 0x400	// Lower EL using AArch64
-	b Synchro_Handler2	// Synchronous
+	b	_lower_el_aarch64_sync
 	.org __Vectors64 + 0x480	// Lower EL using AArch64
-	b VIRQ_Handler	// IRQ/vIRQ
+	b	_lower_el_aarch64_irq
 	.org __Vectors64 + 0x500	// Lower EL using AArch64
-	b FIQ_Handler	// FIQ/vFIQ
+	b	_lower_el_aarch64_fiq
 	.org __Vectors64 + 0x580	// Lower EL using AArch64
-	b SError_Handler	// SError/vSError
+	b	_lower_el_aarch64_serror
 
 	.org __Vectors64 + 0x600	// Lower EL using AArch32
-	b Synchro_Handler3	// Synchronous
+	b	_lower_el_aarch32_sync
 	.org __Vectors64 + 0x680	// Lower EL using AArch32
-	b VIRQ_Handler	// IRQ/vIRQ
+	b	_lower_el_aarch32_irq
 	.org __Vectors64 + 0x700	// Lower EL using AArch32
-	b FIQ_Handler	// FIQ/vFIQ
+	b	_lower_el_aarch32_fiq
 	.org __Vectors64 + 0x780	// Lower EL using AArch32
-	b SError_Handler	// SError/vSError
-
+	b	_lower_el_aarch32_serror
    	.ltorg
 
    	.section ".startup0"
@@ -427,6 +394,286 @@ VIRQ_Handler:
 	.endfunc
 
 #endif
+
+
+
+/* Vector Table
+ * see 5.1.1 Setting up a vector table in
+ * Application Note Bare-metal Boot Code for ARMv8-A Processors Version 1.0
+ */
+
+/*
+ * AArch64 exception types
+ */
+/* Current EL with SP0 */
+#define AARCH64_EXC_SYNC_SP0      (0x1)   /* Synchronous */
+#define AARCH64_EXC_IRQ_SP0       (0x2)   /* IRQ/vIRQ */
+#define AARCH64_EXC_FIQ_SP0       (0x3)   /* FIQ/vFIQ */
+#define AARCH64_EXC_SERR_SP0      (0x4)   /* SError/vSError */
+/* Current EL with SPx */
+#define AARCH64_EXC_SYNC_SPX      (0x11)
+#define AARCH64_EXC_IRQ_SPX       (0x12)
+#define AARCH64_EXC_FIQ_SPX       (0x13)
+#define AARCH64_EXC_SERR_SPX      (0x14)
+/* Lower EL using AArch64 */
+#define AARCH64_EXC_SYNC_AARCH64  (0x21)
+#define AARCH64_EXC_IRQ_AARCH64   (0x22)
+#define AARCH64_EXC_FIQ_AARCH64   (0x23)
+#define AARCH64_EXC_SERR_AARCH64  (0x24)
+/* Lower EL using AArch32 */
+#define AARCH64_EXC_SYNC_AARCH32  (0x31)
+#define AARCH64_EXC_IRQ_AARCH32   (0x32)
+#define AARCH64_EXC_FIQ_AARCH32   (0x33)
+#define AARCH64_EXC_SERR_AARCH32  (0x34)
+
+#if defined(ASM_FILE)
+#define vector_table_align .align 11    /* Vector tables must be placed at a 2KB-aligned address */
+#define vector_entry_align .align 7     /* Each entry is 128B in size*/
+#define text_align .align  2            /* Text alignment */
+#endif /* ASM_FILE */
+
+
+/*
+ * exception_frame offset definitions
+ */
+#define EXC_FRAME_SIZE (288)	/* sizeof(struct _exception_frame) */
+#define EXC_EXC_TYPE_OFFSET (0)	/* __asm_offsetof(struct _exception_frame, exc_type) */
+#define EXC_EXC_ESR_OFFSET (8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
+#define EXC_EXC_SP_OFFSET (16)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
+#define EXC_EXC_ELR_OFFSET (24)	/* __asm_offsetof(struct _exception_frame, exc_elr) */
+#define EXC_EXC_SPSR_OFFSET (32)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
+
+	.section ".text"
+
+.macro build_trapframe exc_type
+	/*
+	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
+	 */
+	stp	x29, x30, [sp, #-16]!
+	stp	x27, x28, [sp, #-16]!
+	stp	x25, x26, [sp, #-16]!
+	stp	x23, x24, [sp, #-16]!
+	stp	x21, x22, [sp, #-16]!
+	stp	x19, x20, [sp, #-16]!
+	stp	x17, x18, [sp, #-16]!
+	stp	x15, x16, [sp, #-16]!
+	stp	x13, x14, [sp, #-16]!
+	stp	x11, x12, [sp, #-16]!
+	stp	x9, x10, [sp, #-16]!
+	stp	x7, x8, [sp, #-16]!
+	stp	x5, x6, [sp, #-16]!
+	stp	x3, x4, [sp, #-16]!
+	stp	x1, x2, [sp, #-16]!
+	/*
+	 * Store (spsr, x0)
+	 */
+	mrs	x21, spsr_el1
+	stp	x21, x0, [sp, #-16]!
+	/*
+	 * Allocate a room for sp_el0 and store elr
+	 */
+	mrs	x21, elr_el1
+	stp	xzr, x21, [sp, #-16]!
+	/*
+	 * store exception type and esr
+	 */
+	mov	x21, #(\exc_type)
+	mrs	x22, esr_el1
+	stp	x21, x22, [sp, #-16]!
+.endm
+
+.macro store_traped_sp
+	mrs	x21, sp_el0
+	str	x21, [sp, #EXC_EXC_SP_OFFSET]
+.endm
+
+.macro call_common_trap_handler, codeN, tail=fname
+	mov	x0, sp
+	bl uncommon_trap_handler_\codeN
+.endm
+
+.macro store_nested_sp
+	mov	x21, sp
+	add	x21, x21, #EXC_FRAME_SIZE
+	str	x21, [sp, #EXC_EXC_SP_OFFSET]
+.endm
+
+.macro restore_traped_sp
+	ldr	x21, [sp, #EXC_EXC_SP_OFFSET]
+	msr	sp_el0, x21
+.endm
+
+.macro restore_trapframe
+
+	/*
+	 * Drop exception type, esr,
+	 */
+	add	sp, sp, #16
+	/*
+	 * Drop exception stack pointer and restore elr_el1
+	 */
+	ldp	x21, x22, [sp], #16
+	msr	elr_el1, x22
+
+	/*
+	 * Retore spsr and x0
+	 */
+	ldp	x21, x0, [sp], #16
+	msr	spsr_el1, x21
+
+	/*
+	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
+	 */
+	ldp	x1, x2, [sp], #16
+	ldp	x3, x4, [sp], #16
+	ldp	x5, x6, [sp], #16
+	ldp	x7, x8, [sp], #16
+	ldp	x9, x10, [sp], #16
+	ldp	x11, x12, [sp], #16
+	ldp	x13, x14, [sp], #16
+	ldp	x15, x16, [sp], #16
+	ldp	x17, x18, [sp], #16
+	ldp	x19, x20, [sp], #16
+	ldp	x21, x22, [sp], #16
+	ldp	x23, x24, [sp], #16
+	ldp	x25, x26, [sp], #16
+	ldp	x27, x28, [sp], #16
+	ldp	x29, x30, [sp], #16
+
+	eret
+.endm
+
+	text_align
+_curr_el_sp0_sync:
+	build_trapframe AARCH64_EXC_SYNC_SP0
+	store_traped_sp
+	call_common_trap_handler 1
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_curr_el_sp0_irq:
+	build_trapframe AARCH64_EXC_IRQ_SP0
+	store_traped_sp
+	call_common_trap_handler 2
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_curr_el_sp0_fiq:
+	build_trapframe AARCH64_EXC_FIQ_SP0
+	store_traped_sp
+	call_common_trap_handler 3
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_curr_el_sp0_serror:
+	build_trapframe AARCH64_EXC_SERR_SP0
+	store_traped_sp
+	call_common_trap_handler 4
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_curr_el_spx_sync:
+	build_trapframe AARCH64_EXC_SYNC_SPX
+	store_nested_sp
+	//call_common_trap_handler 5
+	bl SError_Handler
+	restore_trapframe
+
+	text_align
+_curr_el_spx_irq:
+	build_trapframe AARCH64_EXC_IRQ_SPX
+	store_nested_sp
+	//call_common_trap_handler 6
+	bl VIRQ_Handler		// Calls from EL3 system
+	restore_trapframe
+
+	text_align
+_curr_el_spx_fiq:
+	build_trapframe AARCH64_EXC_FIQ_SPX
+	store_nested_sp
+	call_common_trap_handler 7
+	restore_trapframe
+
+	text_align
+_curr_el_spx_serror:
+	build_trapframe AARCH64_EXC_SERR_SPX
+	store_nested_sp
+	call_common_trap_handler 8
+	restore_trapframe
+
+
+	text_align
+_lower_el_aarch64_sync:
+	build_trapframe AARCH64_EXC_SYNC_AARCH64
+	store_traped_sp
+	call_common_trap_handler 9
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_lower_el_aarch64_irq:
+	build_trapframe AARCH64_EXC_IRQ_AARCH64
+	store_traped_sp
+	call_common_trap_handler 10
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_lower_el_aarch64_fiq:
+	build_trapframe AARCH64_EXC_FIQ_AARCH64
+	store_traped_sp
+	call_common_trap_handler 11
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_lower_el_aarch64_serror:
+	build_trapframe AARCH64_EXC_SERR_AARCH64
+	store_traped_sp
+	call_common_trap_handler 12
+	restore_traped_sp
+	restore_trapframe
+
+
+	text_align
+_lower_el_aarch32_sync:
+	build_trapframe AARCH64_EXC_SYNC_AARCH32
+	store_traped_sp
+	call_common_trap_handler 13
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_lower_el_aarch32_irq:
+	build_trapframe AARCH64_EXC_IRQ_AARCH32
+	store_traped_sp
+	call_common_trap_handler 14
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_lower_el_aarch32_fiq:
+	build_trapframe AARCH64_EXC_FIQ_AARCH32
+	store_traped_sp
+	call_common_trap_handler 15
+	restore_traped_sp
+	restore_trapframe
+
+	text_align
+_lower_el_aarch32_serror:
+	build_trapframe AARCH64_EXC_SERR_AARCH32
+	store_traped_sp
+	call_common_trap_handler 16
+	restore_traped_sp
+	restore_trapframe
+
+
+
+
    	.ltorg
 
 	.section ".noinit"
