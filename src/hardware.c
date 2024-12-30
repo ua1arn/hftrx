@@ -3218,7 +3218,7 @@ static void
 sysinit_vbar_initialize(void)
 {
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
-    #warning to be implement
+
 #if WITHRTOS
 	extern unsigned long __Vectors64_rtos;
 	const uintptr_t vbase = (uintptr_t) & __Vectors64_rtos;
@@ -3228,9 +3228,10 @@ sysinit_vbar_initialize(void)
 #endif /* WITHRTOS */
 
 	ASSERT((vbase & 0x07FF) == 0);
-	__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
-	__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
-	__set_VBAR_EL3(vbase);	 // TRAP at memcpy Set Vector Base Address Register (Bits 10..0 of address should be zero)
+	//__set_VBAR_EL1(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
+	//__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
+	ASSERT((vbase & 0x3FF) == 0);
+	__set_VBAR_EL3(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT32_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
 
