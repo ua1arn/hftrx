@@ -2350,7 +2350,70 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
-#if (__CORTEX_A != 0)
+
+#if defined (__aarch64__)
+// 13.3 Memory attributes
+
+// Also see TCR_EL3 parameter
+#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
+#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
+#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
+
+static const uint32_t aarch64_pageattr =
+			0x01 * (UINT32_C(1) << 10) |	// AF
+			0x00 * (UINT32_C(1) << 5) |		// NS
+			0x01 * (UINT32_C(1) << 6) |		// AP[1:0]
+			0x03 * (UINT32_C(1) << 8) |		// SH[1:0]
+			0;
+
+//	//PRINTF("aarch64_pageattr=%08X\n", (unsigned) aarch64_pageattr);
+//	//ASSERT(0x00000740 == aarch64_pageattr);
+//	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
+//	// 0x740 - BLOCK_1GB
+//	// 0x74C - BLOCK_2MB
+
+	enum aarch64_attrindex
+	{
+		AARCH64_ATTR_CACHED = 0,
+		AARCH64_ATTR_NCACHED,
+		AARCH64_ATTR_DEVICE
+
+	};
+
+	static const uint32_t pageAttrDEVICE =
+			aarch64_pageattr |
+			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
+			0
+			;
+	static const uint32_t pageAttrRAM =
+			aarch64_pageattr |
+			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
+			0
+			;
+	static const uint32_t pageAttrNCRAM =
+			aarch64_pageattr |
+			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
+			0
+			;
+//	PRINTF("pageAttrNCRAM=%08X\n", pageAttrNCRAM);
+//	PRINTF("pageAttrRAM=%08X\n", pageAttrRAM);
+//	PRINTF("pageAttrDEVICE=%08X\n", pageAttrDEVICE);
+//	pageAttrNCRAM=00000744
+//	pageAttrRAM=00000740
+//	pageAttrDEVICE=00000748
+
+#undef TTB_PARA_NCACHED
+#undef TTB_PARA_CACHED
+#undef TTB_PARA_DEVICE
+#undef TTB_PARA_NO_ACCESS
+
+#define	TTB_PARA_NCACHED(ro, xn)	(aarch64_pageattr | pageAttrNCRAM | 0x01)
+#define	TTB_PARA_CACHED(ro, xn) 	(aarch64_pageattr | pageAttrRAM | 0x01)
+#define	TTB_PARA_DEVICE 			(aarch64_pageattr | pageAttrDEVICE | 0x01)
+#define	TTB_PARA_NO_ACCESS 			0
+
+#elif (__CORTEX_A != 0)
 
 // Short-descriptor format memory region attributes, without TEX remap
 // When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
@@ -2374,19 +2437,11 @@ uint_fast32_t cpu_getdebugticks(void)
 #define MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
 #define MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
 
-#if defined(__aarch64__)
-	// Also see TCR_EL3 parameter
-	#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
-	#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
-	#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
-	#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
-#else
-	// Also see __set_TTBR0 parameter
-	#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
-	#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
-	#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
-	#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
-#endif
+// Also see __set_TTBR0 parameter
+#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
+#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
+#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
 
 /* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
 #define RAM_ATTRS CACHEATTR_WB_WA_CACHE
@@ -2457,63 +2512,6 @@ uint_fast32_t cpu_getdebugticks(void)
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
 
-#if defined (__aarch64__)
-// 13.3 Memory attributes
-	static const uint32_t aarch64_pageattr =
-			0x01 * (UINT32_C(1) << 10) |	// AF
-			0x00 * (UINT32_C(1) << 5) |		// NS
-			0x01 * (UINT32_C(1) << 6) |		// AP[1:0]
-			0x03 * (UINT32_C(1) << 8) |		// SH[1:0]
-			0;
-
-//	//PRINTF("aarch64_pageattr=%08X\n", (unsigned) aarch64_pageattr);
-//	//ASSERT(0x00000740 == aarch64_pageattr);
-//	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
-//	// 0x740 - BLOCK_1GB
-//	// 0x74C - BLOCK_2MB
-
-	enum aarch64_attrindex
-	{
-		AARCH64_ATTR_CACHED = 0,
-		AARCH64_ATTR_NCACHED,
-		AARCH64_ATTR_DEVICE
-
-	};
-
-	static const uint32_t pageAttrDEVICE =
-			aarch64_pageattr |
-			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
-			0
-			;
-	static const uint32_t pageAttrRAM =
-			aarch64_pageattr |
-			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
-			0
-			;
-	static const uint32_t pageAttrNCRAM =
-			aarch64_pageattr |
-			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
-			0
-			;
-//	PRINTF("pageAttrNCRAM=%08X\n", pageAttrNCRAM);
-//	PRINTF("pageAttrRAM=%08X\n", pageAttrRAM);
-//	PRINTF("pageAttrDEVICE=%08X\n", pageAttrDEVICE);
-//	pageAttrNCRAM=00000744
-//	pageAttrRAM=00000740
-//	pageAttrDEVICE=00000748
-
-#undef TTB_PARA_NCACHED
-#undef TTB_PARA_CACHED
-#undef TTB_PARA_DEVICE
-#undef TTB_PARA_NO_ACCESS
-
-#define	TTB_PARA_NCACHED(ro, xn)	(aarch64_pageattr | pageAttrNCRAM | 0x01)
-#define	TTB_PARA_CACHED(ro, xn) 	(aarch64_pageattr | pageAttrRAM | 0x01)
-#define	TTB_PARA_DEVICE 			(aarch64_pageattr | pageAttrDEVICE | 0x01)
-#define	TTB_PARA_NO_ACCESS 			0
-
-#endif
-
 #elif CPUSTYLE_RISCV
 
 // See Table 4.2: Encoding of PTE Type field.
@@ -2550,15 +2548,10 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
  *
 */
 
-// 0x740 - BLOCK_1GB
-// 0x74C - BLOCK_2MB
-// 0x758 - BLOCK_1MB
-
-
 static uintptr_t
 ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
-	const uint32_t addrbase = a & ~ UINT32_C(0x0FFFFF);
+	const uint32_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
 
 #if CPUSTYLE_R7S721020
 
@@ -2743,7 +2736,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
 		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
-	if (a < 0x00100000)			// SYSRAM, BROM
+	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
@@ -2886,21 +2879,25 @@ sysinit_mmu_tables(void)
 #if defined (__aarch64__)
 	// MMU iniitialize
 
-	unsigned i;
-	uintptr_t addr = 0;
-	uintptr_t addstep = 2 * 1024 * 1024;	// 2 MB
-	for (i = 0; i < 512 && i < ARRAY_SIZE(level2_pagetable); ++ i)
-	{
-		level2_pagetable [i] = addr | TTB_PARA_DEVICE;
-		addr += addstep;
-	}
-	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
-	{
-		level2_pagetable [i] = addr | TTB_PARA_CACHED(0, 0);
-		addr += addstep;
-	}
+//	unsigned i;
+//	uintptr_t addr = 0;
+//	uintptr_t addstep = 2 * 1024 * 1024;	// 2 MB
+//	for (i = 0; i < 512 && i < ARRAY_SIZE(level2_pagetable); ++ i)
+//	{
+//		level2_pagetable [i] = addr | TTB_PARA_DEVICE;
+//		addr += addstep;
+//	}
+//	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
+//	{
+//		level2_pagetable [i] = addr | TTB_PARA_CACHED(0, 0);
+//		addr += addstep;
+//	}
+//	PRINTF("Work:\n");
+//	printhex64((uintptr_t) level2_pagetable, level2_pagetable, sizeof level2_pagetable);
 
-	//ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
+	ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
+//	PRINTF("Bad:\n");
+//	printhex64((uintptr_t) level2_pagetable, level2_pagetable, sizeof level2_pagetable);
 
 	ttb0_base [0] = (((uintptr_t) (level2_pagetable + 512 * 0)) & 0xFFFFF000) | 0x03;
 	ttb0_base [1] = (((uintptr_t) (level2_pagetable + 512 * 1)) & 0xFFFFF000) | 0x03;
