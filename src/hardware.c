@@ -2834,24 +2834,24 @@ sysinit_mmu_tables(void)
 	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
-	const uint32_t attrbaseDEVICE =
+	const uint32_t pageAttrDEVICE =
 			pageattr |
 			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
 			0
 			;
-	const uint32_t attrbaseRAM =
+	const uint32_t pageAttrRAM =
 			pageattr |
 			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
 			0
 			;
-	const uint32_t attrbaseNCRAM =
+	const uint32_t pageAttrNCRAM =
 			pageattr |
 			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
 			0
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 	unsigned i;
-	uintptr_t attr = attrbaseDEVICE | 0x01;
+	uintptr_t attr = pageAttrDEVICE | 0x01;
 	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
 		level2_pagetable [i] = attr;
@@ -2859,10 +2859,10 @@ sysinit_mmu_tables(void)
 	}
 
 	ttb0_base [0] = (((uintptr_t) level2_pagetable) & 0xFFFFF000) | 0x03;
-	ttb0_base [0] = 0x00000000 | attrbaseDEVICE | 0x01;
-	ttb0_base [1] = 0x40000000 | attrbaseRAM | 0x01;	// 0x740 - BLOCK_1GB
-	ttb0_base [2] = 0x80000000 | attrbaseRAM | 0x01;	// 0x740 - BLOCK_1GB
-	ttb0_base [3] = 0xC0000000 | attrbaseRAM | 0x01;	// 0x740 - BLOCK_1GB
+	ttb0_base [0] = 0x00000000 | pageAttrDEVICE | 0x01;
+	ttb0_base [1] = 0x40000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
+	ttb0_base [2] = 0x80000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
+	ttb0_base [3] = 0xC0000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
