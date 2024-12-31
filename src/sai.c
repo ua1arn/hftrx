@@ -3491,10 +3491,6 @@ static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
-#if defined(__aarch64__)
-	#warning Remove this stub
-	return;
-#endif
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	dmac_handlers [dmach] = handler;
 

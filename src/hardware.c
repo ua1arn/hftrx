@@ -2497,6 +2497,15 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // 0x74C - BLOCK_2MB
 // 0x758 - BLOCK_1MB
 
+
+enum aarch64_attrindex
+{
+	AARCH64_CACHED = 0,
+	AARCH64_NCACHED,
+	AARCH64_DEVICE
+
+};
+
 static uintptr_t
 ttb64_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
@@ -2818,11 +2827,16 @@ sysinit_mmu_tables(void)
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
 	uint32_t attrbaseDEVICE = 0x00000740 |
-			(0x00 * (UINT32_C(1) << 2)) |	// ATTR index 0
+			//(0x00 * (UINT32_C(1) << 2)) |	// ATTR index 0
+			(AARCH64_DEVICE * (UINT32_C(1) << 2)) |	// ATTR index 1
 			0
 			;
 	uint32_t attrbaseRAM = 0x00000740 |
-			(0x03 * (UINT32_C(1) << 2)) |	// ATTR index 3
+			(AARCH64_CACHED * (UINT32_C(1) << 2)) |	// ATTR index 3
+			0
+			;
+	uint32_t attrbaseNCRAM = 0x00000740 |
+			(AARCH64_NCACHED * (UINT32_C(1) << 2)) |	// ATTR index 3
 			0
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
@@ -2895,10 +2909,10 @@ sysinit_ttbr_initialize(void)
 	__set_TCR_EL3(tcrv);
 
 	const uint32_t mairv =
-			0xFF * (UINT32_C(1) << 24) |	// ATTR index 3 ATTR3 is Normal Cacheable
-			0x44 * (UINT32_C(1) << 16) |	// ATTR2 is Normal Non-Cacheable.
-			0x04 * (UINT32_C(1) << 8) |		// ATTR1 is Device
-			0x00 * (UINT32_C(1) << 0) |		// ATTR index 0 ATTR0 is Device-nGnRnE.
+			0xFF * (UINT32_C(1) << (AARCH64_CACHED * 8)) |	// ATTR index 3 ATTR3 is Normal Cacheable
+			0x44 * (UINT32_C(1) << (AARCH64_NCACHED * 8)) |	// ATTR2 is Normal Non-Cacheable.
+			0x04 * (UINT32_C(1) << (AARCH64_DEVICE * 8)) |		// ATTR1 is Device
+			//0x00 * (UINT32_C(1) << 0) |		// ATTR index 0 ATTR0 is Device-nGnRnE.
 			0;
 	// Program the domain access register
 	//__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
@@ -2917,7 +2931,7 @@ sysinit_ttbr_initialize(void)
 #endif
 
 #if 1
-	PRINTF("__get_TCR_EL3=%016" PRIX64 "\n", __get_TCR_EL3());
+	PRINTF("__get_TCR_EL3=%016" PRIX32 "\n", __get_TCR_EL3());
 	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
 	uint64_t mair = __get_MAIR_EL3();
 	PRINTF("a7=%02X a6=%02X a5=%02X a4=%02X a3=%02X a2=%02X a1=%02X a0=%02X\n",
@@ -3749,16 +3763,6 @@ SystemInit(void)
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
-	TP();
-//    for (;;)
-//    {
-//#if defined (BOARD_BLINK_SETSTATE)
-//        BOARD_BLINK_SETSTATE(1);
-//        local_delay_ms(250);
-//        BOARD_BLINK_SETSTATE(0);
-//        local_delay_ms(250);
-//#endif /* defined (BOARD_BLINK_SETSTATE) */
-//    }
 #endif /* ! WITHISBOOTLOADER_DDR */
 }
 
