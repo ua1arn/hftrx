@@ -2470,7 +2470,7 @@ uint_fast32_t cpu_getdebugticks(void)
 #if defined(__aarch64__)
 
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
@@ -2852,18 +2852,22 @@ sysinit_mmu_tables(void)
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 	unsigned i;
 	uintptr_t addr = 0;
-	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
+	for (i = 0; i < 512; ++ i)
 	{
 		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
 		addr += 2 * 1024 * 1024;	// 2 MB
 	}
-//	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
-//	{
-//		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
-//		addr += 2 * 1024 * 1024;	// 2 MB
-//	}
+	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
+	{
+		level2_pagetable [i] = addr | pageAttrRAM | 0x01;
+		addr += 2 * 1024 * 1024;	// 2 MB
+	}
 
 	ttb0_base [0] = (((uintptr_t) (level2_pagetable + 512 * 0)) & 0xFFFFF000) | 0x03;
+	ttb0_base [1] = (((uintptr_t) (level2_pagetable + 512 * 1)) & 0xFFFFF000) | 0x03;
+	ttb0_base [2] = (((uintptr_t) (level2_pagetable + 512 * 2)) & 0xFFFFF000) | 0x03;
+	ttb0_base [3] = (((uintptr_t) (level2_pagetable + 512 * 3)) & 0xFFFFF000) | 0x03;
+
 	ttb0_base [0] = 0x00000000 | pageAttrDEVICE | 0x01;
 	ttb0_base [1] = 0x40000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
 	ttb0_base [2] = 0x80000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
@@ -2915,15 +2919,16 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	const uint32_t tcrv =
+	uint_fast32_t tcrv =
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
 			32 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=44: 1MB
 			0;
+	//tcrv = 0xB0003500;
 	__set_TCR_EL3(tcrv);
 
-	const uint32_t mairv =
+	const uint_fast32_t mairv =
 			0xFF * (UINT32_C(1) << (AARCH64_ATTR_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
 			0x44 * (UINT32_C(1) << (AARCH64_ATTR_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
 			0x00 * (UINT32_C(1) << (AARCH64_ATTR_DEVICE * 8)) | 	// Device-nGnRnE memory
