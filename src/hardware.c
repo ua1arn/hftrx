@@ -2452,18 +2452,75 @@ uint_fast32_t cpu_getdebugticks(void)
 		0 \
 	)
 
-#define	TTB32_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB32_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB32_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
-#define	TTB32_PARA_NO_ACCESS 		0
+#define	TTB_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_NO_ACCESS 		0
+
+#if defined (__aarch64__)
+// 13.3 Memory attributes
+	static const uint32_t aarch64_pageattr =
+			0x01 * (UINT32_C(1) << 10) |	// AF
+			0x00 * (UINT32_C(1) << 5) |		// NS
+			0x01 * (UINT32_C(1) << 6) |		// AP[1:0]
+			0x03 * (UINT32_C(1) << 8) |		// SH[1:0]
+			0;
+
+//	//PRINTF("aarch64_pageattr=%08X\n", (unsigned) aarch64_pageattr);
+//	//ASSERT(0x00000740 == aarch64_pageattr);
+//	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
+//	// 0x740 - BLOCK_1GB
+//	// 0x74C - BLOCK_2MB
+
+	enum aarch64_attrindex
+	{
+		AARCH64_ATTR_CACHED = 0,
+		AARCH64_ATTR_NCACHED,
+		AARCH64_ATTR_DEVICE
+
+	};
+
+	static const uint32_t pageAttrDEVICE =
+			aarch64_pageattr |
+			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
+			0
+			;
+	static const uint32_t pageAttrRAM =
+			aarch64_pageattr |
+			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
+			0
+			;
+	static const uint32_t pageAttrNCRAM =
+			aarch64_pageattr |
+			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
+			0
+			;
+//	PRINTF("pageAttrNCRAM=%08X\n", pageAttrNCRAM);
+//	PRINTF("pageAttrRAM=%08X\n", pageAttrRAM);
+//	PRINTF("pageAttrDEVICE=%08X\n", pageAttrDEVICE);
+//	pageAttrNCRAM=00000744
+//	pageAttrRAM=00000740
+//	pageAttrDEVICE=00000748
+
+#undef TTB_PARA_NCACHED
+#undef TTB_PARA_CACHED
+#undef TTB_PARA_DEVICE
+#undef TTB_PARA_NO_ACCESS
+
+#define	TTB_PARA_NCACHED(ro, xn)	(aarch64_pageattr | pageAttrNCRAM | 0x01)
+#define	TTB_PARA_CACHED(ro, xn) 	(aarch64_pageattr | pageAttrRAM | 0x01)
+#define	TTB_PARA_DEVICE 			(aarch64_pageattr | pageAttrDEVICE | 0x01)
+#define	TTB_PARA_NO_ACCESS 			0
+
+#endif
 
 #elif CPUSTYLE_RISCV
 
 // See Table 4.2: Encoding of PTE Type field.
 
-#define	TTB32_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
-#define	TTB32_PARA_DEVICE 		((0x00u << 1) | 0x01)
-#define	TTB32_PARA_NO_ACCESS 		0
+#define	TTB_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
+#define	TTB_PARA_DEVICE 		((0x00u << 1) | 0x01)
+#define	TTB_PARA_NO_ACCESS 		0
 
 #endif /* __CORTEX_A */
 
@@ -2498,24 +2555,8 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // 0x758 - BLOCK_1MB
 
 
-enum aarch64_attrindex
-{
-	AARCH64_ATTR_CACHED = 0,
-	AARCH64_ATTR_NCACHED,
-	AARCH64_ATTR_DEVICE
-
-};
-
 static uintptr_t
-ttb64_1MB_accessbits(uintptr_t a, int ro, int xn)
-{
-	const uint64_t addrbase = a & ~ UINT64_C(0x0FFFFF);
-
-	return addrbase | 0x758 | 0x01;
-}
-
-static uintptr_t
-ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
+ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint32_t addrbase = a & ~ UINT32_C(0x0FFFFF);
 
@@ -2524,17 +2565,17 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a == 0x00000000)
-		return addrbase | TTB32_PARA_NO_ACCESS;		// NULL pointers access trap
+		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
 	if (a >= 0x18000000 && a < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
-		return addrbase | TTB32_PARA_CACHED(ro || 0, 0);
+		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
 
 	if (a >= 0x00000000 && a < 0x00A00000)			// up to 10 MB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 	if (a >= 0x20000000 && a < 0x20A00000)			// up to 10 MB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_STM32MP1
 
@@ -2543,69 +2584,69 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	// Все сравнения должны быть не точнее 1 MB
 	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0xC0000000)							// DDR memory
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
-	return addrbase | TTB32_PARA_NO_ACCESS;
+	return addrbase | TTB_PARA_DEVICE;
+	return addrbase | TTB_PARA_NO_ACCESS;
 
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
 #if WITHLWIP
 	if (a == (uintptr_t) bd_space)
-		return addrbase | TTB32_PARA_NCACHED(ro, 0);
+		return addrbase | TTB_PARA_NCACHED(ro, 0);
 #endif /* WITHLWIP */
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return addrbase | TTB32_PARA_DEVICE;
+		return addrbase | TTB_PARA_DEVICE;
 
 	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB32_PARA_CACHED(ro || 0, 0);
+		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
 
 	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_XCZU
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return addrbase | TTB32_PARA_DEVICE;
+		return addrbase | TTB_PARA_DEVICE;
 
 	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB32_PARA_CACHED(ro || 1, 0);
+		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
 
 	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_T113
 
@@ -2616,17 +2657,17 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00400000)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB32_PARA_CACHED(ro, 0);
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 
 #elif CPUSTYLE_V3S
@@ -2638,17 +2679,17 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00400000)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB32_PARA_CACHED(ro, 0);
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_H3
 
@@ -2659,18 +2700,18 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x01000000)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
+		return addrbase | TTB_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
 
 	if (a >= 0xC0000000)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);	// N-BROM, S-BROM
+		return addrbase | TTB_PARA_CACHED(ro, 0);	// N-BROM, S-BROM
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_A64
 
@@ -2681,15 +2722,15 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x01000000)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -2700,27 +2741,27 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB32_PARA_NCACHED(ro, 1 || xn);
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00100000)			// SYSRAM, BROM
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_F133
 
 	if (a < 0x00400000)
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR3 - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB32_PARA_CACHED(ro, 0);
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_VM14
 
@@ -2728,24 +2769,46 @@ ttb32_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR - 2 GB
-		return addrbase | TTB32_PARA_CACHED(ro, 0);
+		return addrbase | TTB_PARA_CACHED(ro, 0);
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #else
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	#warning ttb32_1MB_accessbits: Unhandled CPUSTYLE_xxxx
+	#warning ttb_1MB_accessbits: Unhandled CPUSTYLE_xxxx
 
-	return addrbase | TTB32_PARA_DEVICE;
+	return addrbase | TTB_PARA_DEVICE;
 
 #endif
 }
 
+#if defined (__aarch64__)
+
+static void
+ttb_level2_2MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+{
+	unsigned i;
+	const uint_fast32_t pagesize = (UINT32_C(1) << 21);
+
+	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
+	{
+		const uintptr_t address = (uintptr_t) i << 21;
+		level2_pagetable [i] =  accessbits(address, 0, 0);
+	}
+	/* Установить R/O атрибуты для указанной области */
+	while (textsize >= pagesize)
+	{
+		level2_pagetable [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
+		textsize -= pagesize;
+		textstart += pagesize;
+	}
+}
+#endif
 
 static void
 ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
@@ -2753,7 +2816,7 @@ ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn),
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 20);
 
-	for (i = 0; i < 4096; ++ i)
+	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
 		const uintptr_t address = (uintptr_t) i << 20;
 		ttb0_base [i] =  accessbits(address, 0, 0);
@@ -2822,50 +2885,22 @@ sysinit_mmu_tables(void)
 
 #if defined (__aarch64__)
 	// MMU iniitialize
-	// 13.3 Memory attributes
-	const uint32_t pageattr =
-			0x01 * (UINT32_C(1) << 10) |	// AF
-			0x00 * (UINT32_C(1) << 5) |		// NS
-			0x01 * (UINT32_C(1) << 6) |		// AP[1:0]
-			0x03 * (UINT32_C(1) << 8) |		// SH[1:0]
-			0;
-	//PRINTF("pageattr=%08X\n", (unsigned) pageattr);
-	//ASSERT(0x00000740 == pageattr);
-	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
-	// 0x740 - BLOCK_1GB
-	// 0x74C - BLOCK_2MB
-	const uint32_t pageAttrDEVICE =
-			pageattr |
-			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
-			0
-			;
-	const uint32_t pageAttrRAM =
-			pageattr |
-			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
-			0
-			;
-	const uint32_t pageAttrNCRAM =
-			pageattr |
-			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
-			0
-			;
-	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 
-//	PRINTF("ttb0_base=%p\n", ttb0_base);
-//	PRINTF("level2_pagetable=%p\n", level2_pagetable);
 	unsigned i;
 	uintptr_t addr = 0;
 	uintptr_t addstep = 2 * 1024 * 1024;	// 2 MB
 	for (i = 0; i < 512 && i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
-		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
+		level2_pagetable [i] = addr | TTB_PARA_DEVICE;
 		addr += addstep;
 	}
 	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
-		level2_pagetable [i] = addr | pageAttrRAM | 0x01;
+		level2_pagetable [i] = addr | TTB_PARA_CACHED(0, 0);
 		addr += addstep;
 	}
+
+	//ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
 
 	ttb0_base [0] = (((uintptr_t) (level2_pagetable + 512 * 0)) & 0xFFFFF000) | 0x03;
 	ttb0_base [1] = (((uintptr_t) (level2_pagetable + 512 * 1)) & 0xFFFFF000) | 0x03;
@@ -2875,16 +2910,16 @@ sysinit_mmu_tables(void)
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
 	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
 	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
+	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
 
 #else
 	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 
 #endif
 
@@ -2894,7 +2929,7 @@ sysinit_mmu_tables(void)
 	// RISC-V MMU initialize
 
 
-	//ttb_level0_1MB_initialize(ttb32_1MB_accessbits, 0, 0);
+	//ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 
 
 #endif
