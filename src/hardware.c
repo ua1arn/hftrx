@@ -2469,12 +2469,14 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if defined(__aarch64__)
 
-static RAMFRAMEBUFF __attribute__ ((aligned(1024 * 1024))) volatile uint64_t ttb_base0 [4096];	// ttb0_base must be a 4KB-aligned address.
+//static RAMFRAMEBUFF __attribute__ ((aligned(1024 * 1024))) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
 //static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base1 [4096];
+static RAMFRAMEBUFF __attribute__ ((aligned(4 * 1024))) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
+static RAMFRAMEBUFF __attribute__ ((aligned(1024 * 1024))) volatile uint64_t level2_pagetable [512];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-	static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base0 [4096];
+	static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb0_base [4096];
 #endif /* defined(__aarch64__) */
 
 /*
@@ -2747,12 +2749,12 @@ ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn),
 	for (i = 0; i < 4096; ++ i)
 	{
 		const uintptr_t address = (uintptr_t) i << 20;
-		ttb_base0 [i] =  accessbits(address, 0, 0);
+		ttb0_base [i] =  accessbits(address, 0, 0);
 	}
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
 	{
-		ttb_base0 [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
+		ttb0_base [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
@@ -2817,14 +2819,20 @@ sysinit_mmu_tables(void)
 	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
-	// 0x758 - BLOCK_1MB
 
-//	ttb_base0 [0] = (ttb_base1_addr) | 0x74D | 0x01;
-//	ttb_base0 [1] = (ttb_base1_addr) | 0x74D | 0x01;
-//	ttb_base0 [2] = (ttb_base1_addr) | 0x74D | 0x01;
-//	ttb_base0 [3] = (ttb_base1_addr) | 0x74D | 0x01;
+	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
+	unsigned i;
+	uintptr_t attr = 0x0000074C | 0x01; // 0x74C - BLOCK_2MB
+	for (i = 0; i < 512; ++ i)
+	{
+		level2_pagetable [i] = attr;
+		attr += 0x00200000;
+	}
 
-	ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
+	ttb0_base [0] = (((uintptr_t) level2_pagetable) & 0xFFFFF000) | 0x03;
+	ttb0_base [1] = 0x40000740 | 0x01;	// 0x740 - BLOCK_1GB
+	ttb0_base [2] = 0x80000740 | 0x01;	// 0x740 - BLOCK_1GB
+	ttb0_base [3] = 0xC0000740 | 0x01;	// 0x740 - BLOCK_1GB
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
@@ -2862,11 +2870,11 @@ sysinit_ttbr_initialize(void)
 {
 #if defined(__aarch64__)
 
-	ASSERT(((uintptr_t) ttb_base0 & 0x0FFF) == 0);
+	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
 
-	__set_TTBR0_EL1((uintptr_t) ttb_base0);
-	__set_TTBR0_EL2((uintptr_t) ttb_base0);
-	__set_TTBR0_EL3((uintptr_t) ttb_base0);
+	__set_TTBR0_EL1((uintptr_t) ttb0_base);
+	__set_TTBR0_EL2((uintptr_t) ttb0_base);
+	__set_TTBR0_EL3((uintptr_t) ttb0_base);
 
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
@@ -2876,13 +2884,12 @@ sysinit_ttbr_initialize(void)
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
-			44 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=44: 1MB
+			32 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=44: 1MB
 			0;
-
 	__set_TCR_EL3(tcrv);
 
 	// Program the domain access register
-	__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
+	//__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
 	__set_MAIR_EL3(0xFF440400);		// ATTR0 Device-nGnRnE ATTR1 Device, ATTR2 Normal Non-Cacheable.
 
 	__ISB();
@@ -2898,6 +2905,7 @@ sysinit_ttbr_initialize(void)
 #endif
 
 #if 0
+	PRINTF("__get_TCR_EL3=%016" PRIX64 "\n", __get_TCR_EL3());
 	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
 	uint64_t mair = __get_MAIR_EL3();
 	PRINTF("a7=%02X a6=%02X a5=%02X a4=%02X a3=%02X a2=%02X a1=%02X a0=%02X\n",
@@ -2911,11 +2919,21 @@ sysinit_ttbr_initialize(void)
 			(unsigned) (mair >> 0) & 0xFF
 			);
 #endif
-	//MMU_Enable();
-
+	TP();
+	MMU_Enable();
+	TP();
+//	for (;;)
+//	{
+//#if defined (BOARD_BLINK_SETSTATE)
+//		BOARD_BLINK_SETSTATE(1);
+//		local_delay_ms(11);
+//		BOARD_BLINK_SETSTATE(0);
+//		local_delay_ms(11);
+//#endif /* defined (BOARD_BLINK_SETSTATE) */
+//	}
 #elif (__CORTEX_A != 0)
 
-	ASSERT(((uintptr_t) ttb_base0 & 0x3FFF) == 0);
+	ASSERT(((uintptr_t) ttb0_base & 0x3FFF) == 0);
 
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
@@ -2934,7 +2952,7 @@ sysinit_ttbr_initialize(void)
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
-			(uintptr_t) ttb_base0 |
+			(uintptr_t) ttb0_base |
 			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
 			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
 			(RGN_attr << 3) |	// RGN
@@ -2944,14 +2962,14 @@ sysinit_ttbr_initialize(void)
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
-			(uintptr_t) ttb_base0 |
+			(uintptr_t) ttb0_base |
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 			(UINT32_C(1) << 3) |	// RGN
 			0*(UINT32_C(1) << 5) |	// NOS
 			0*(UINT32_C(1) << 1) |	// S
 			0);
 #endif /* WITHSMPSYSTEM */
-	//CP15_writeTTB1((unsigned int) ttb_base0 | 0x48);	// TTBR1
+	//CP15_writeTTB1((unsigned int) ttb0_base | 0x48);	// TTBR1
 	  __ISB();
 
 	// Program the domain access register
@@ -3053,7 +3071,7 @@ sysinit_ttbr_initialize(void)
 
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
-//	csr_write_sptbr((uintptr_t) ttb_base0 >> 10);
+//	csr_write_sptbr((uintptr_t) ttb0_base >> 10);
 
 	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
 	// 3.1.6 Virtualization Management Field in mstatus Register
