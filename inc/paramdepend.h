@@ -1164,8 +1164,10 @@ extern "C" {
 
 	*/
 
-	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_GetBinaryPoint() + 1)))	// Value for GICDistributor->IPRIORITYR[n]
-	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_GetBinaryPoint() + 1)))	// value for GICInterface->PMR
+	#define GIC_BINARY_POINT 2//(GIC_GetBinaryPoint())
+
+	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
+	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_BINARY_POINT + 1)))	// value for GICInterface->PMR
 
 	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))

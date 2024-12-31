@@ -2817,17 +2817,18 @@ sysinit_mmu_tables(void)
 	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
-
+	uint32_t attrbase = 0x0000074C; // 0x74C - BLOCK_2MB
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 	unsigned i;
-	uintptr_t attr = 0x0000074C | 0x01; // 0x74C - BLOCK_2MB
-	for (i = 0; i < 512; ++ i)
+	uintptr_t attr = attrbase | 0x01;
+	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
 		level2_pagetable [i] = attr;
-		attr += 0x00200000;
+		attr += 2 * 1024 * 1024;	// 2 MB
 	}
 
 	ttb0_base [0] = (((uintptr_t) level2_pagetable) & 0xFFFFF000) | 0x03;
+	ttb0_base [0] = 0x00000740 | 0x01;
 	ttb0_base [1] = 0x40000740 | 0x01;	// 0x740 - BLOCK_1GB
 	ttb0_base [2] = 0x80000740 | 0x01;	// 0x740 - BLOCK_1GB
 	ttb0_base [3] = 0xC0000740 | 0x01;	// 0x740 - BLOCK_1GB
@@ -2870,8 +2871,8 @@ sysinit_ttbr_initialize(void)
 
 	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
 
-	__set_TTBR0_EL1((uintptr_t) ttb0_base);
-	__set_TTBR0_EL2((uintptr_t) ttb0_base);
+	//__set_TTBR0_EL1((uintptr_t) ttb0_base);
+	//__set_TTBR0_EL2((uintptr_t) ttb0_base);
 	__set_TTBR0_EL3((uintptr_t) ttb0_base);
 
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
@@ -2920,15 +2921,6 @@ sysinit_ttbr_initialize(void)
 	TP();
 	MMU_Enable();
 	TP();
-//	for (;;)
-//	{
-//#if defined (BOARD_BLINK_SETSTATE)
-//		BOARD_BLINK_SETSTATE(1);
-//		local_delay_ms(11);
-//		BOARD_BLINK_SETSTATE(0);
-//		local_delay_ms(11);
-//#endif /* defined (BOARD_BLINK_SETSTATE) */
-//	}
 #elif (__CORTEX_A != 0)
 
 	ASSERT(((uintptr_t) ttb0_base & 0x3FFF) == 0);
@@ -3391,6 +3383,9 @@ sysinit_vbar_initialize(void)
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
 
 #endif /* CPUSTYLE_RISCV */
+#if (__GIC_PRESENT == 1)
+	GIC_SetBinaryPoint(GIC_BINARY_POINT);
+#endif /* (__GIC_PRESENT == 1) */
 }
 
 void xtrap(void)
@@ -3461,6 +3456,8 @@ sysinit_cache_initialize(void)
 	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
 	ASSERT(ICACHEROWSIZE == icache_rowsize());
+	//PRINTF("GIC_BINARY_POINT=%u\n", GIC_BINARY_POINT);
+	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
 
 #if defined (__CORTEX_M)
 	#if __ICACHE_PRESENT

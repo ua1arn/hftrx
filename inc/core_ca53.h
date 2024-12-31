@@ -1563,16 +1563,19 @@ __STATIC_FORCEINLINE uint32_t __get_CURRENTEL(void)
 
 /** \brief Enable Caches by setting I and C bits in SCTLR register.
 */
-__STATIC_FORCEINLINE void L1C_EnableCaches(void) {
-  __set_SCTLR_EL3( __get_SCTLR_EL3() | SCTLR_EL3_I_Msk | SCTLR_EL3_C_Msk);
-  __ISB();
+__STATIC_FORCEINLINE void L1C_EnableCaches(void)
+{
+	__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT32_C(1) << 6));	// // The SMP bit
+	__set_SCTLR_EL3( __get_SCTLR_EL3() | SCTLR_EL3_I_Msk | SCTLR_EL3_C_Msk);
+	__ISB();
 }
 
 /** \brief Disable Caches by clearing I and C bits in SCTLR register.
 */
-__STATIC_FORCEINLINE void L1C_DisableCaches(void) {
-  __set_SCTLR_EL3( __get_SCTLR_EL3() & (~SCTLR_EL3_I_Msk) & (~SCTLR_EL3_C_Msk));
-  __ISB();
+__STATIC_FORCEINLINE void L1C_DisableCaches(void)
+{
+	__set_SCTLR_EL3( __get_SCTLR_EL3() & (~ SCTLR_EL3_I_Msk) & (~ SCTLR_EL3_C_Msk));
+	__ISB();
 }
 
 /** \brief  Enable Branch Prediction by setting Z bit in SCTLR register.
