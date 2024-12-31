@@ -2469,7 +2469,7 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if defined(__aarch64__)
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
@@ -2850,9 +2850,12 @@ sysinit_mmu_tables(void)
 			0
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
+
+	PRINTF("ttb0_base=%p\n", ttb0_base);
+	PRINTF("level2_pagetable=%p\n", level2_pagetable);
 	unsigned i;
 	uintptr_t addr = 0;
-	for (i = 0; i < 512; ++ i)
+	for (i = 0; i < 512 && i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
 		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
 		addr += 2 * 1024 * 1024;	// 2 MB
