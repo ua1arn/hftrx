@@ -2524,8 +2524,8 @@ static const uint32_t aarch64_pageattr =
 
 #if defined(__aarch64__)
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
@@ -2879,30 +2879,13 @@ sysinit_mmu_tables(void)
 #if defined (__aarch64__)
 	// MMU iniitialize
 
-//	unsigned i;
-//	uintptr_t addr = 0;
-//	uintptr_t addstep = 2 * 1024 * 1024;	// 2 MB
-//	for (i = 0; i < 512 && i < ARRAY_SIZE(level2_pagetable); ++ i)
-//	{
-//		level2_pagetable [i] = addr | TTB_PARA_DEVICE;
-//		addr += addstep;
-//	}
-//	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
-//	{
-//		level2_pagetable [i] = addr | TTB_PARA_CACHED(0, 0);
-//		addr += addstep;
-//	}
-//	PRINTF("Work:\n");
-//	printhex64((uintptr_t) level2_pagetable, level2_pagetable, sizeof level2_pagetable);
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
+	{
+		ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+	}
 
 	ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
-//	PRINTF("Bad:\n");
-//	printhex64((uintptr_t) level2_pagetable, level2_pagetable, sizeof level2_pagetable);
-
-	ttb0_base [0] = (((uintptr_t) (level2_pagetable + 512 * 0)) & 0xFFFFF000) | 0x03;
-	ttb0_base [1] = (((uintptr_t) (level2_pagetable + 512 * 1)) & 0xFFFFF000) | 0x03;
-	ttb0_base [2] = (((uintptr_t) (level2_pagetable + 512 * 2)) & 0xFFFFF000) | 0x03;
-	ttb0_base [3] = (((uintptr_t) (level2_pagetable + 512 * 3)) & 0xFFFFF000) | 0x03;
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
