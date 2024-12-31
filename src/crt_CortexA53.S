@@ -469,8 +469,7 @@ VIRQ_Handler:
 
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
-	mrs	x1, FPCR
-	//mrs x2, FPEXC32_EL2
+
 	/*
 	 * store floating point registers from (q30,q31) pair to (q0,q1) pair.
 	 */
@@ -490,6 +489,15 @@ VIRQ_Handler:
 	stp q4, q5, [sp, #-32]!
 	stp q2, q3, [sp, #-32]!
 	stp q0, q1, [sp, #-32]!
+
+	/* Save VFP control state */
+	mrs	x1, FPCR
+	mrs x2, FPEXC32_EL2
+	stp	x1, x2, [sp, #-16]!
+
+	//mrs	x1, FPCR
+	mrs x2, FPSR
+	stp	x1, x2, [sp, #-16]!
 
 	/*
 	 * Store (spsr, x0)
@@ -550,8 +558,14 @@ VIRQ_Handler:
 
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
-	mrs	x1, FPCR
-	//mrs x2, FPEXC32_EL2
+	/* Restire VFP control state */
+	ldp	x1, x2, [sp], #16
+	//msr	FPCR, x1
+	msr FPSR, x2
+
+	ldp	x1, x2, [sp], #16
+	msr	FPCR, x1
+	msr FPEXC32_EL2, x2
 
 	/*
 	 * Restore gstore floating point registers from (q0,q1) pair to (q30,q31) pair.
