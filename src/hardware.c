@@ -2851,30 +2851,26 @@ sysinit_mmu_tables(void)
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 
-	PRINTF("ttb0_base=%p\n", ttb0_base);
-	PRINTF("level2_pagetable=%p\n", level2_pagetable);
+//	PRINTF("ttb0_base=%p\n", ttb0_base);
+//	PRINTF("level2_pagetable=%p\n", level2_pagetable);
 	unsigned i;
 	uintptr_t addr = 0;
+	uintptr_t addstep = 2 * 1024 * 1024;	// 2 MB
 	for (i = 0; i < 512 && i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
 		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
-		addr += 2 * 1024 * 1024;	// 2 MB
+		addr += addstep;
 	}
 	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
 		level2_pagetable [i] = addr | pageAttrRAM | 0x01;
-		addr += 2 * 1024 * 1024;	// 2 MB
+		addr += addstep;
 	}
 
 	ttb0_base [0] = (((uintptr_t) (level2_pagetable + 512 * 0)) & 0xFFFFF000) | 0x03;
 	ttb0_base [1] = (((uintptr_t) (level2_pagetable + 512 * 1)) & 0xFFFFF000) | 0x03;
 	ttb0_base [2] = (((uintptr_t) (level2_pagetable + 512 * 2)) & 0xFFFFF000) | 0x03;
 	ttb0_base [3] = (((uintptr_t) (level2_pagetable + 512 * 3)) & 0xFFFFF000) | 0x03;
-
-	ttb0_base [0] = 0x00000000 | pageAttrDEVICE | 0x01;
-	ttb0_base [1] = 0x40000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
-	ttb0_base [2] = 0x80000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
-	ttb0_base [3] = 0xC0000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
 
 #elif WITHISBOOTLOADER || CPUSTYLE_R7S721
 
@@ -2923,12 +2919,13 @@ sysinit_ttbr_initialize(void)
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	uint_fast32_t tcrv =
+			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
-			32 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=44: 1MB
+			32 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=43: 2MB, n=44: 1MB
+			//43 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=43: 2MB, n=44: 1MB
 			0;
-	//tcrv = 0xB0003500;
 	__set_TCR_EL3(tcrv);
 
 	const uint_fast32_t mairv =
