@@ -3736,9 +3736,9 @@ SystemInit(void)
 	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
-	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
+	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 #endif /* ! WITHISBOOTLOADER_DDR */
 }
 
@@ -4429,8 +4429,8 @@ void Reset_CPUn_Handler(void)
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 
 	GIC_Enable();
 	InitializeIrql(IRQL_IPC_ONLU);	// nested interrupts support
