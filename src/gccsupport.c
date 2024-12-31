@@ -199,7 +199,7 @@ struct _reent * __getreent(void)
     return r + arm_hardware_cpuid();
 }
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) && 1
 
 // Fix dc zva, xx opcode usage
 void * memset(void * dst, int v, size_t n)

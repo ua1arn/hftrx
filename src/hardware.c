@@ -2500,9 +2500,9 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 
 enum aarch64_attrindex
 {
-	AARCH64_CACHED = 0,
-	AARCH64_NCACHED,
-	AARCH64_DEVICE
+	AARCH64_ATTR_CACHED = 0,
+	AARCH64_ATTR_NCACHED,
+	AARCH64_ATTR_DEVICE
 
 };
 
@@ -2826,17 +2826,16 @@ sysinit_mmu_tables(void)
 	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
-	uint32_t attrbaseDEVICE = 0x00000740 |
-			//(0x00 * (UINT32_C(1) << 2)) |	// ATTR index 0
-			(AARCH64_DEVICE * (UINT32_C(1) << 2)) |	// ATTR index 1
+	const uint32_t attrbaseDEVICE = 0x00000740 |
+			(AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2)) |
 			0
 			;
-	uint32_t attrbaseRAM = 0x00000740 |
-			(AARCH64_CACHED * (UINT32_C(1) << 2)) |	// ATTR index 3
+	const uint32_t attrbaseRAM = 0x00000740 |
+			(AARCH64_ATTR_CACHED * (UINT32_C(1) << 2)) |
 			0
 			;
-	uint32_t attrbaseNCRAM = 0x00000740 |
-			(AARCH64_NCACHED * (UINT32_C(1) << 2)) |	// ATTR index 3
+	const uint32_t attrbaseNCRAM = 0x00000740 |
+			(AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2)) |
 			0
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
@@ -2900,7 +2899,7 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	uint32_t tcrv =
+	const uint32_t tcrv =
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
@@ -2909,14 +2908,14 @@ sysinit_ttbr_initialize(void)
 	__set_TCR_EL3(tcrv);
 
 	const uint32_t mairv =
-			0xFF * (UINT32_C(1) << (AARCH64_CACHED * 8)) |	// ATTR index 3 ATTR3 is Normal Cacheable
-			0x44 * (UINT32_C(1) << (AARCH64_NCACHED * 8)) |	// ATTR2 is Normal Non-Cacheable.
-			0x04 * (UINT32_C(1) << (AARCH64_DEVICE * 8)) |		// ATTR1 is Device
+			0xFF * (UINT32_C(1) << (AARCH64_ATTR_CACHED * 8)) |	// ATTR index 3 ATTR3 is Normal Cacheable
+			0x44 * (UINT32_C(1) << (AARCH64_ATTR_NCACHED * 8)) |	// ATTR2 is Normal Non-Cacheable.
+			0x04 * (UINT32_C(1) << (AARCH64_ATTR_DEVICE * 8)) |		// ATTR1 is Device
 			//0x00 * (UINT32_C(1) << 0) |		// ATTR index 0 ATTR0 is Device-nGnRnE.
 			0;
 	// Program the domain access register
 	//__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
-	__set_MAIR_EL3(mairv);		// ATTR0 Device-nGnRnE ATTR1 Device, ATTR2 Normal Non-Cacheable.
+	__set_MAIR_EL3(mairv);
 
 	__ISB();
 
@@ -2930,7 +2929,7 @@ sysinit_ttbr_initialize(void)
 	L2C_InvAllByWay();
 #endif
 
-#if 1
+#if 0
 	PRINTF("__get_TCR_EL3=%016" PRIX32 "\n", __get_TCR_EL3());
 	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
 	uint64_t mair = __get_MAIR_EL3();
@@ -2945,9 +2944,8 @@ sysinit_ttbr_initialize(void)
 			(unsigned) (mair >> 0) & 0xFF
 			);
 #endif
-	TP();
 	MMU_Enable();
-	TP();
+
 #elif (__CORTEX_A != 0)
 
 	ASSERT(((uintptr_t) ttb0_base & 0x3FFF) == 0);
