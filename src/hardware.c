@@ -2469,14 +2469,12 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #if defined(__aarch64__)
 
-//static RAMFRAMEBUFF __attribute__ ((aligned(1024 * 1024))) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
-//static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb_base1 [4096];
-static RAMFRAMEBUFF __attribute__ ((aligned(4 * 1024))) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
-static RAMFRAMEBUFF __attribute__ ((aligned(1024 * 1024))) volatile uint64_t level2_pagetable [512];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4096];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-	static RAMFRAMEBUFF __attribute__ ((aligned(16 * 1024))) volatile uint32_t ttb0_base [4096];
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
 #endif /* defined(__aarch64__) */
 
 /*
