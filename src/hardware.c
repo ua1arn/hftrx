@@ -2851,14 +2851,19 @@ sysinit_mmu_tables(void)
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
 	unsigned i;
-	uintptr_t attr = pageAttrDEVICE | 0x01;
+	uintptr_t addr = 0;
 	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
-		level2_pagetable [i] = attr;
-		attr += 2 * 1024 * 1024;	// 2 MB
+		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
+		addr += 2 * 1024 * 1024;	// 2 MB
 	}
+//	for (i = 512; i < ARRAY_SIZE(level2_pagetable); ++ i)
+//	{
+//		level2_pagetable [i] = addr | pageAttrDEVICE | 0x01;
+//		addr += 2 * 1024 * 1024;	// 2 MB
+//	}
 
-	ttb0_base [0] = (((uintptr_t) level2_pagetable) & 0xFFFFF000) | 0x03;
+	ttb0_base [0] = (((uintptr_t) (level2_pagetable + 512 * 0)) & 0xFFFFF000) | 0x03;
 	ttb0_base [0] = 0x00000000 | pageAttrDEVICE | 0x01;
 	ttb0_base [1] = 0x40000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
 	ttb0_base [2] = 0x80000000 | pageAttrRAM | 0x01;	// 0x740 - BLOCK_1GB
