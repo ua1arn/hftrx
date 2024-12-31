@@ -2822,20 +2822,31 @@ sysinit_mmu_tables(void)
 
 #if defined (__aarch64__)
 	// MMU iniitialize
-
+	// 13.3 Memory attributes
+	const uint32_t pageattr =
+			0x01 * (UINT32_C(1) << 10) |	// AF
+			0x00 * (UINT32_C(1) << 5) |		// NS
+			0x01 * (UINT32_C(1) << 6) |		// AP[1:0]
+			0x03 * (UINT32_C(1) << 8) |		// SH[1:0]
+			0;
+	//PRINTF("pageattr=%08X\n", (unsigned) pageattr);
+	//ASSERT(0x00000740 == pageattr);
 	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
 	// 0x740 - BLOCK_1GB
 	// 0x74C - BLOCK_2MB
-	const uint32_t attrbaseDEVICE = 0x00000740 |
-			(AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2)) |
+	const uint32_t attrbaseDEVICE =
+			pageattr |
+			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
 			0
 			;
-	const uint32_t attrbaseRAM = 0x00000740 |
-			(AARCH64_ATTR_CACHED * (UINT32_C(1) << 2)) |
+	const uint32_t attrbaseRAM =
+			pageattr |
+			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
 			0
 			;
-	const uint32_t attrbaseNCRAM = 0x00000740 |
-			(AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2)) |
+	const uint32_t attrbaseNCRAM =
+			pageattr |
+			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
 			0
 			;
 	//ttb_level0_1MB_initialize(ttb64_1MB_accessbits, 0, 0);
@@ -2908,10 +2919,9 @@ sysinit_ttbr_initialize(void)
 	__set_TCR_EL3(tcrv);
 
 	const uint32_t mairv =
-			0xFF * (UINT32_C(1) << (AARCH64_ATTR_CACHED * 8)) |	// ATTR index 3 ATTR3 is Normal Cacheable
-			0x44 * (UINT32_C(1) << (AARCH64_ATTR_NCACHED * 8)) |	// ATTR2 is Normal Non-Cacheable.
-			0x04 * (UINT32_C(1) << (AARCH64_ATTR_DEVICE * 8)) |		// ATTR1 is Device
-			//0x00 * (UINT32_C(1) << 0) |		// ATTR index 0 ATTR0 is Device-nGnRnE.
+			0xFF * (UINT32_C(1) << (AARCH64_ATTR_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
+			0x44 * (UINT32_C(1) << (AARCH64_ATTR_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
+			0x00 * (UINT32_C(1) << (AARCH64_ATTR_DEVICE * 8)) | 	// Device-nGnRnE memory
 			0;
 	// Program the domain access register
 	//__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
