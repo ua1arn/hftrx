@@ -57,7 +57,7 @@ CORE = -mcpu=cortex-a53+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Os
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
