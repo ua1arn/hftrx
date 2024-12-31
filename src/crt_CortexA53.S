@@ -449,6 +449,26 @@ VIRQ_Handler:
 
 .macro build_trapframe exc_type
 	/*
+	 * store floating point registers from (q30,q31) pair to (q0,q1) pair.
+	 */
+	stp q30, q31, [sp, #-32]!
+	stp q28, q29, [sp, #-32]!
+	stp q26, q27, [sp, #-32]!
+	stp q24, q25, [sp, #-32]!
+	stp q22, q23, [sp, #-32]!
+	stp q20, q21, [sp, #-32]!
+	stp q18, q19, [sp, #-32]!
+	stp q16, q17, [sp, #-32]!
+	stp q14, q15, [sp, #-32]!
+	stp q12, q13, [sp, #-32]!
+	stp q10, q11, [sp, #-32]!
+	stp q8, q9, [sp, #-32]!
+	stp q6, q7, [sp, #-32]!
+	stp q4, q5, [sp, #-32]!
+	stp q2, q3, [sp, #-32]!
+	stp q0, q1, [sp, #-32]!
+
+	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
 	stp	x29, x30, [sp, #-16]!
@@ -541,6 +561,25 @@ VIRQ_Handler:
 	ldp	x25, x26, [sp], #16
 	ldp	x27, x28, [sp], #16
 	ldp	x29, x30, [sp], #16
+	/*
+	 * Restore gstore floating point registers from (q0,q1) pair to (q30,q31) pair.
+	 */
+	ldp q0, q1, [sp], #32
+	ldp q2, q3, [sp], #32
+	ldp q4, q5, [sp], #32
+	ldp q6, q7, [sp], #32
+	ldp q8, q9, [sp], #32
+	ldp q10, q11, [sp], #32
+	ldp q12, q13, [sp], #32
+	ldp q14, q15, [sp], #32
+	ldp q16, q17, [sp], #32
+	ldp q18, q19, [sp], #32
+	ldp q20, q21, [sp], #32
+	ldp q22, q23, [sp], #32
+	ldp q24, q25, [sp], #32
+	ldp q26, q27, [sp], #32
+	ldp q28, q29, [sp], #32
+	ldp q30, q31, [sp], #32
 
 	eret
 .endm
