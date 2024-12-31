@@ -449,6 +449,29 @@ VIRQ_Handler:
 
 .macro build_trapframe exc_type
 	/*
+	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
+	 */
+	stp	x29, x30, [sp, #-16]!
+	stp	x27, x28, [sp, #-16]!
+	stp	x25, x26, [sp, #-16]!
+	stp	x23, x24, [sp, #-16]!
+	stp	x21, x22, [sp, #-16]!
+	stp	x19, x20, [sp, #-16]!
+	stp	x17, x18, [sp, #-16]!
+	stp	x15, x16, [sp, #-16]!
+	stp	x13, x14, [sp, #-16]!
+	stp	x11, x12, [sp, #-16]!
+	stp	x9, x10, [sp, #-16]!
+	stp	x7, x8, [sp, #-16]!
+	stp	x5, x6, [sp, #-16]!
+	stp	x3, x4, [sp, #-16]!
+	stp	x1, x2, [sp, #-16]!
+
+	/* Wait for FPU operation done */
+ 	mrs	x1, FPSR
+	mrs	x1, FPCR
+	//mrs x2, FPEXC32_EL2
+	/*
 	 * store floating point registers from (q30,q31) pair to (q0,q1) pair.
 	 */
 	stp q30, q31, [sp, #-32]!
@@ -468,24 +491,6 @@ VIRQ_Handler:
 	stp q2, q3, [sp, #-32]!
 	stp q0, q1, [sp, #-32]!
 
-	/*
-	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
-	 */
-	stp	x29, x30, [sp, #-16]!
-	stp	x27, x28, [sp, #-16]!
-	stp	x25, x26, [sp, #-16]!
-	stp	x23, x24, [sp, #-16]!
-	stp	x21, x22, [sp, #-16]!
-	stp	x19, x20, [sp, #-16]!
-	stp	x17, x18, [sp, #-16]!
-	stp	x15, x16, [sp, #-16]!
-	stp	x13, x14, [sp, #-16]!
-	stp	x11, x12, [sp, #-16]!
-	stp	x9, x10, [sp, #-16]!
-	stp	x7, x8, [sp, #-16]!
-	stp	x5, x6, [sp, #-16]!
-	stp	x3, x4, [sp, #-16]!
-	stp	x1, x2, [sp, #-16]!
 	/*
 	 * Store (spsr, x0)
 	 */
@@ -543,24 +548,11 @@ VIRQ_Handler:
 	ldp	x21, x0, [sp], #16
 	msr	spsr_el1, x21
 
-	/*
-	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
-	 */
-	ldp	x1, x2, [sp], #16
-	ldp	x3, x4, [sp], #16
-	ldp	x5, x6, [sp], #16
-	ldp	x7, x8, [sp], #16
-	ldp	x9, x10, [sp], #16
-	ldp	x11, x12, [sp], #16
-	ldp	x13, x14, [sp], #16
-	ldp	x15, x16, [sp], #16
-	ldp	x17, x18, [sp], #16
-	ldp	x19, x20, [sp], #16
-	ldp	x21, x22, [sp], #16
-	ldp	x23, x24, [sp], #16
-	ldp	x25, x26, [sp], #16
-	ldp	x27, x28, [sp], #16
-	ldp	x29, x30, [sp], #16
+	/* Wait for FPU operation done */
+ 	mrs	x1, FPSR
+	mrs	x1, FPCR
+	//mrs x2, FPEXC32_EL2
+
 	/*
 	 * Restore gstore floating point registers from (q0,q1) pair to (q30,q31) pair.
 	 */
@@ -580,6 +572,25 @@ VIRQ_Handler:
 	ldp q26, q27, [sp], #32
 	ldp q28, q29, [sp], #32
 	ldp q30, q31, [sp], #32
+
+	/*
+	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
+	 */
+	ldp	x1, x2, [sp], #16
+	ldp	x3, x4, [sp], #16
+	ldp	x5, x6, [sp], #16
+	ldp	x7, x8, [sp], #16
+	ldp	x9, x10, [sp], #16
+	ldp	x11, x12, [sp], #16
+	ldp	x13, x14, [sp], #16
+	ldp	x15, x16, [sp], #16
+	ldp	x17, x18, [sp], #16
+	ldp	x19, x20, [sp], #16
+	ldp	x21, x22, [sp], #16
+	ldp	x23, x24, [sp], #16
+	ldp	x25, x26, [sp], #16
+	ldp	x27, x28, [sp], #16
+	ldp	x29, x30, [sp], #16
 
 	eret
 .endm
