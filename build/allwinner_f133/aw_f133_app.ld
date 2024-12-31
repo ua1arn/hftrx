@@ -205,6 +205,6 @@ SECTIONS
 		PROVIDE(end = __end__);
 	} > DDR3
 
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	PROVIDE(__stack = __StackTop);
 }

@@ -2336,7 +2336,7 @@ uint_fast32_t cpu_getdebugticks(void)
 		return(result);
 	}
 
-#elif __riscv
+#elif defined(__riscv)
 
 	uint64_t v = csr_read_mcycle();
 	return v;

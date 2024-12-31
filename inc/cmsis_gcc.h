@@ -1,3 +1,5 @@
+// RISC-V targeted modificatios
+
 /**************************************************************************//**
  * @file     cmsis_gcc.h
  * @brief    CMSIS compiler GCC header file
@@ -133,27 +135,30 @@
 #define __CMSIS_GCC_USE_REG(r) "r" (r)
 #endif
 
+#if defined(__aarch64__)
 
+#elif defined(__riscv)
 
-  __STATIC_INLINE void __DMB(void)
-  {
-  	asm volatile ("FENCE" ::: "memory");
-  }
+__STATIC_INLINE void __DMB(void)
+{
+	__ASM volatile ("FENCE" ::: "memory");
+}
 
-  __STATIC_INLINE void __DSB(void)
-  {
-  	asm volatile ("FENCE" ::: "memory");
-  }
+__STATIC_INLINE void __DSB(void)
+{
+	__ASM volatile ("FENCE" ::: "memory");
+}
 
-  __STATIC_INLINE void __WFI(void)
-  {
-  	__asm volatile ("wfi":::);
-  }
+__STATIC_INLINE void __WFI(void)
+{
+	__ASM volatile ("WFI":::);
+}
 
-  __STATIC_INLINE void __NOP(void)
-  {
-  	__asm volatile ("nop":::);
-  }
+__STATIC_INLINE void __NOP(void)
+{
+	__asm volatile ("NOP":::);
+}
 
+#endif
 
 #endif /* __CMSIS_GCC_H */
