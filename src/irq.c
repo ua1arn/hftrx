@@ -1893,7 +1893,7 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 		status = __STXRB(1, & p->lock); // Try to set
 	// Lock_Variable
 	} while (status != 0); //retry until lock successfully
-	__DMB();		// Do not start any other memory access
+	//__DMB();		// Do not start any other memory access
 	// until memory barrier is completed
 #if WITHDEBUG
 	p->file = file;
