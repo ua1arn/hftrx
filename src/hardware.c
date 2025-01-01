@@ -3546,15 +3546,6 @@ sysinit_cache_initialize(void)
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
-	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
-	#else
-		L1C_InvalidateDCacheAll();
-		L1C_InvalidateICacheAll();
-		L1C_InvalidateBTAC();
-		L1C_EnableCaches();
-		L1C_EnableBTAC();
-	#endif
-
 #elif CPUSTYLE_F133
 
 	// RISC-V cache initialize
@@ -3707,6 +3698,11 @@ sysinit_cache_initialize(void)
 //	PRINTF("MHCR=%08X\n", (unsigned) csr_read_mhcr());
 
 #endif /* CPUSTYLE_RISCV */
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
 }
 
 /* инициадизации кеш-памяти, специфические для CORE0 */
@@ -4365,18 +4361,6 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 
 	GIC_Enable();
 	InitializeIrql(IRQL_IPC_ONLU);	// nested interrupts support
-
-	L1C_InvalidateDCacheAll();
-	L1C_InvalidateICacheAll();
-	L1C_InvalidateBTAC();
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
-	#if (__L2C_PRESENT == 1)
-		// L2 контроллерп единственный и уже инициализирован
-		// Enable Level 2 Cache
-		//L2C_Enable();
-		//L2C_InvAllByWay();
-	#endif
 
 	cortexa_cpuinfo();
 	arm_hardware_populte_second_initialize();
