@@ -1871,13 +1871,15 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 //		cbnz	w1, l2
 //		ret
 //	.endfunc //spin_lock
-	__SEV();
+	__SEVL();
+	__WFE();
 	int status;
 	do
 	{
 		while (__LDAXRB(& p->lock) != 0)// Wait until
 		{
-			__NOP();	// !!!! strange, but unstable work without this line...
+			__WFE();
+			//__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
 			if (-- v == 0)
 			{
