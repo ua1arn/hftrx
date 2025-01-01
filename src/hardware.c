@@ -3513,11 +3513,13 @@ static void sysinit_smp_initialize(void)
 static void
 sysinit_cache_initialize(void)
 {
+#if ! LINUX_SUBSYSTEM
 	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
 	ASSERT(ICACHEROWSIZE == icache_rowsize());
 	//PRINTF("GIC_BINARY_POINT=%u\n", GIC_BINARY_POINT);
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
+#endif /* ! LINUX_SUBSYSTEM */
 
 #if defined (__CORTEX_M)
 	#if __ICACHE_PRESENT
