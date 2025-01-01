@@ -194,7 +194,7 @@ bootloader_launch_app(uintptr_t startfunc)
 	}
 	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 
-#if CPUSTYLE_T113 && WITHISBOOTLOADER_DDR
+#if CPUSTYLE_T113 && (WITHISBOOTLOADER_DDR || WITHISBOOTLOADER_RUN64)
 
 	if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0)
 	{
@@ -212,7 +212,7 @@ bootloader_launch_app(uintptr_t startfunc)
 		}
 	}
 
-#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && WITHISBOOTLOADER_DDR
+#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && (WITHISBOOTLOADER_DDR || WITHISBOOTLOADER_RUN64)
 
 	// Start aarch64 core as application
 	//__set_RVBAR_EL3(startfunc);
@@ -249,6 +249,7 @@ bootloader_launch_app(uintptr_t startfunc)
 	}
 
 #else
+	/* Обычный запуск, в 32-бит режиме. */
 
 	(* (void (*)(void)) startfunc)();
 	for (;;)
