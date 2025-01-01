@@ -3856,6 +3856,36 @@ static void cortexa_cpuinfo(void)
 
 #if WITHSMPSYSTEM && ! WITHRTOS
 
+
+static __ALIGNED(4) const uint32_t Xtrampoline32 [] =
+{
+	0xE3A06003,	//	2bdc0:	e3a06003 	mov	r6, #3
+	0xEE0C6F50,	//	2bdc4:	ee0c6f50 	mcr	15, 0, r6, cr12, cr0, {2}
+	0xEAFFFFFE,	//	2bdc8:	eafffffe 	b	2bdc8 <bootloader_mainloop+0x1d8>
+};
+
+static __ALIGNED(4) const uint32_t trampoline32 [] =
+{
+	0xE3A02405,	// 	mov	r2, #83886080	@ 0x5000000
+	0xE592307C,	// 	ldr	r3, [r2, #124]	@ 0x7c
+	0xE3130002,	// 	tst	r3, #2
+	0x0AFFFFFC,	// 	beq	4 <sendch+0x4>
+	0xE3A01023,	// 	mov	r1, #35	@ 0x23
+	0xE3A03003,	// 	mov	r3, #3
+	0xE5821000,	// 	str	r1, [r2]
+	0xEE0C3F50,	// 	mcr	15, 0, r3, cr12, cr0, {2}
+	0xE3A02405,	// 	mov	r2, #83886080	@ 0x5000000
+	0xE592307C,	// 	ldr	r3, [r2, #124]	@ 0x7c
+	0xE3130002,	// 	tst	r3, #2
+	0x0AFFFFFC,	// 	beq	24 <sendch+0x24>
+	0xE3A03040,	// 	mov	r3, #64	@ 0x40
+	0xE5823000,	// 	str	r3, [r2]
+	0xF57FF06F,	// 	isb	sy
+	0xE320F003,	// 	wfi
+	0xE320F002,	// 	wfe
+	0xEAFFFFFD,	// 	b	40 <sendch+0x40>
+};
+
 #if CPUSTYLE_STM32MP1
 
 
@@ -3983,84 +4013,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 }
 
 #elif CPUSTYLE_A64
-
-//#define HARDWARE_NCORES 4
-
-
-// https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
-
-//	00000000 <_reset>:
-//	   0:   e59f0024        ldr     r0, [pc, #36]   ; 2c <_reset+0x2c>
-//	   4:   e59f1024        ldr     r1, [pc, #36]   ; 30 <_reset+0x30>
-//	   8:   e5801000        str     r1, [r0]
-//	   c:   f57ff04f        dsb     sy
-//	  10:   f57ff06f        isb     sy
-//	  14:   ee1c0f50        mrc     15, 0, r0, cr12, cr0, {2}
-//	  18:   e3800003        orr     r0, r0, #3
-//	  1c:   ee0c0f50        mcr     15, 0, r0, cr12, cr0, {2}
-//	  20:   f57ff06f        isb     sy
-//	  24:   e320f003        wfi
-//	  28:   eafffffe        b       28 <_reset+0x28>
-//	  2c:   017000a0        .word   0x017000a0
-//	  30:   40008000        .word   0x40008000
-
-void halt32(void)
-{
-	while ((UART0->UART_USR & (UINT8_C(1) << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '#';
-	for (;;)
-		;
-	volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
-	base [0] = 0xDEADBEEF;
-	base [1] = __get_MPIDR() & 0x03; //0xABBA1980;
-	for (;;)
-		;
-	ASSERT(0);
-}
-
-
-// MRC{<c>}{<q>} <coproc>, {#}<opc1>, <Rt>, <CRn>, <CRm>{, {#}<opc2>}
-// coproc: 0b1111 opc1: 0b000 CRn: 0b1100 CRm: 0b0000 opc2: 0b001
-// Table G7-3 AArch32 VMSA (coproc==0b1111) register summary, in MCR/MRC parameter order
-
-// Address that execution starts from after reset when executing in 32-bit state.
-uint32_t __get_RVBAR(void)
-{
-	  uint32_t result;
-	  __get_CP(15, 0, result, 12, 0, 1);
-	  return(result);
-}
-
-
-// Address that execution starts from after reset when executing in 32-bit state.
-void __set_RVBAR(uint32_t rvbar)
-{
-	  __set_CP(15, 0, rvbar, 12, 0, 1);
-}
-
-// От состяния бита AA64nAA32 в C_CTRL_REG0 не зависит
-static void restart_self_aarch64(void)
-{
-	// RMR - Reset Management Register
-	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
-	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-
-	//__set_CP(15, 0, result, 12, 0, 2);
-	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
-	// G8.2.123 RMR, Reset Management Register
-	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
-	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
-	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
-
-
-	__ISB();
-	__WFI();
-	for (;;)
-	;
-
-}
 
 // H3: R_CPUCFG @ 0x01F01C00
 
@@ -4256,112 +4208,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
 
-/* Memory regions */
-//#define SUNXI_ROM_BASE			0x00000000
-//#define SUNXI_ROM_SIZE			0x00010000
-//#define SUNXI_SRAM_BASE			0x00020000
-//#define SUNXI_SRAM_SIZE			0x00038000
-//#define SUNXI_SRAM_A1_BASE		0x00020000
-//#define SUNXI_SRAM_A1_SIZE		0x00008000
-//#define SUNXI_SRAM_C_BASE		0x00028000
-//#define SUNXI_SRAM_C_SIZE		0x00030000
-//#define SUNXI_DEV_BASE			0x01000000
-//#define SUNXI_DEV_SIZE			0x09000000
-//#define SUNXI_DRAM_BASE			0x40000000
-//#define SUNXI_DRAM_VIRT_BASE		SUNXI_DRAM_BASE
-
-/* Memory-mapped devices */
-//#define SUNXI_SYSCON_BASE		0x03000000
-//#define SUNXI_CCU_BASE			0x03001000
-//#define SUNXI_DMA_BASE			0x03002000
-////#define SUNXI_SID_BASE			0x03006000
-//#define SUNXI_SPC_BASE			0x03008000
-//#define SUNXI_WDOG_BASE			0x030090a0
-////#define SUNXI_PIO_BASE			0x0300b000
-//#define SUNXI_GICD_BASE			0x03021000
-//#define SUNXI_GICC_BASE			0x03022000
-//#define SUNXI_UART0_BASE		0x05000000
-//#define SUNXI_SPI0_BASE			0x05010000
-//#define SUNXI_R_CPUCFG_BASE		0x07000400
-//#define SUNXI_R_PRCM_BASE		0x07010000
-////#define SUNXI_R_WDOG_BASE		0x07020400
-//#define SUNXI_R_WDOG_BASE		SUNXI_WDOG_BASE
-//#define SUNXI_R_PIO_BASE		0x07022000
-//#define SUNXI_R_UART_BASE		0x07080000
-//#define SUNXI_R_I2C_BASE		0x07081400
-//#define SUNXI_R_RSB_BASE		0x07083000
-//#define SUNXI_CPUCFG_BASE		0x09010000
-
-// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h#L68
-// arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h
-
-//#define SUNXI_DE3_BASE			0x01000000
-//#define SUNXI_SS_BASE			0x01904000
-//#define SUNXI_EMCE_BASE			0x01905000
-//
-//#define SUNXI_SRAMC_BASE		0x03000000
-//#define SUNXI_CCM_BASE			0x03001000
-//#define SUNXI_DMA_BASE			0x03002000
-///* SID address space starts at 0x03006000, but e-fuse is at offset 0x200 */
-//#define SUNXI_SIDC_BASE			0x03006000
-////#define SUNXI_SID_BASE			0x03006200
-//#define SUNXI_TIMER_BASE		0x03009000
-////#define SUNXI_PIO_BASE			0x0300B000
-//#define SUNXI_PSI_BASE			0x0300C000
-//
-//#define SUNXI_GIC400_BASE		0x03020000
-//#define SUNXI_IOMMU_BASE		0x030F0000
-//
-//#ifdef CONFIG_MACH_SUN50I_H6
-//#define SUNXI_DRAM_COM_BASE		0x04002000
-//#define SUNXI_DRAM_CTL0_BASE		0x04003000
-//#define SUNXI_DRAM_PHY0_BASE		0x04005000
-//#endif
-////#define SUNXI_NFC_BASE			0x04011000
-////#define SUNXI_MMC0_BASE			0x04020000
-////#define SUNXI_MMC1_BASE			0x04021000
-////#define SUNXI_MMC2_BASE			0x04022000
-//#ifdef CONFIG_MACH_SUN50I_H616
-//#define SUNXI_DRAM_COM_BASE		0x047FA000
-//#define SUNXI_DRAM_CTL0_BASE		0x047FB000
-//#define SUNXI_DRAM_PHY0_BASE		0x04800000
-//#endif
-//
-////#define SUNXI_UART0_BASE		0x05000000
-////#define SUNXI_UART1_BASE		0x05000400
-////#define SUNXI_UART2_BASE		0x05000800
-////#define SUNXI_UART3_BASE		0x05000C00
-//#define SUNXI_TWI0_BASE			0x05002000
-//#define SUNXI_TWI1_BASE			0x05002400
-//#define SUNXI_TWI2_BASE			0x05002800
-//#define SUNXI_TWI3_BASE			0x05002C00
-//#define SUNXI_SPI0_BASE			0x05010000
-//#define SUNXI_SPI1_BASE			0x05011000
-//#define SUNXI_GMAC_BASE			0x05020000
-//#define SUNXI_USB0_BASE			0x05100000
-//#define SUNXI_XHCI_BASE			0x05200000
-//#define SUNXI_USB3_BASE			0x05311000
-//#define SUNXI_PCIE_BASE			0x05400000
-//
-//#define SUNXI_HDMI_BASE			0x06000000
-//#define SUNXI_TCON_TOP_BASE		0x06510000
-//#define SUNXI_TCON_LCD0_BASE		0x06511000
-//#define SUNXI_TCON_TV0_BASE		0x06515000
-//
-//#define SUNXI_RTC_BASE			0x07000000
-//#define SUNXI_R_CPUCFG_BASE		0x07000400
-//#define SUNXI_PRCM_BASE			0x07010000
-//#define SUNXI_R_WDOG_BASE		0x07020400
-//#define SUNXI_R_PIO_BASE		0x07022000
-//#define SUNXI_R_UART_BASE		0x07080000
-//#define SUNXI_R_TWI_BASE		0x07081400
-
-// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
-
-//#define HARDWARE_NCORES 4
-
-//#define R_CPUCFG_BASE 0x07000400
-
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
@@ -4369,13 +4215,60 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
-	// не влияет
-	//CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = !0; // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
-	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
+	* rvaddr = startfunc;
 	ASSERT(* rvaddr == startfunc);
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+}
+
+static void ese64(void)
+{
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '$';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = 'c';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = 'p';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = 'u';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '0' + (int) (__get_MPIDR() & 0x03);
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '!';
+	for (;;)
+		;
+}
+
+static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	startfunc = (uintptr_t) ese64;
+	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+	PRINTF("%u %p %p\n", targetcore, startfunc, startfunc32);
+
+	ASSERT(startfunc32 != 0);
+	ASSERT(ptr_hi32(startfunc32) == 0);
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	* rvaddr = ptr_lo32(startfunc32);
+	ASSERT(* rvaddr == startfunc32);
+
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
@@ -4558,7 +4451,7 @@ void cpump_initialize(void)
 
 #if defined(__aarch64__)
 		extern const uint64_t aarch64_reset_handlers [];	/* crt_CortexA53_CPUn.S */
-		//aarch64_mp_cpuN_start(aarch64_reset_handlers [core], core);
+		aarch64_mp_cpuN_start(aarch64_reset_handlers [core], core);
 #else
 		extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);

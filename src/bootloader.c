@@ -211,7 +211,7 @@ bootloader_launch_app(uintptr_t startfunc)
 #elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && WITHISBOOTLOADER_DDR
 
 	// Start aarch64 core as application
-	__set_RVBAR_EL3(startfunc);
+	//__set_RVBAR_EL3(startfunc);
 #if CPUSTYLE_A64
 	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
