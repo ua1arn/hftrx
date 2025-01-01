@@ -85,7 +85,7 @@ __Vectors64:
    	.ltorg
 
    	.section ".startup0"
-	.align 3
+	.align 4
    	//.code 64
    
    	.extern _start
@@ -139,11 +139,11 @@ Reset_Handler:
 	ldr x30, =__stack_cpu0_sys_end
 	mov sp, x30
 	mov x30, XZR
-	bl SystemInit
+	BL SystemInit
 	ldr x30, =__stack
 	mov sp, x30
 	mov x30, XZR
-	bl __riscv_start
+	BL __riscv_start
 1:
 	b 1b
 
@@ -176,8 +176,8 @@ Reset_Handler:
 	f	flags field mask byte, PSR[31:24] (privileged software execution).
 */
  	.align 	4, 0
-    .func   VIRQ_Handler
-VIRQ_Handler:
+    .func   IRQ_Handler
+IRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
@@ -281,7 +281,7 @@ VIRQ_Handler:
 
 	.section ".text"
 
-.macro build_trapframe exc_type
+.macro push_trapframe
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -332,6 +332,9 @@ VIRQ_Handler:
 	//mrs	x1, FPCR
 	mrs x2, FPSR
 	stp	x1, x2, [sp, #-16]!
+.endm
+
+.macro build_trapframe exc_type
 
 	/*
 	 * Store (spsr, x0)
@@ -354,11 +357,6 @@ VIRQ_Handler:
 .macro store_traped_sp
 	mrs	x21, sp_el0
 	str	x21, [sp, #EXC_EXC_SP_OFFSET]
-.endm
-
-.macro call_common_trap_handler, codeN, tail=fname
-	mov	x0, sp
-	bl uncommon_trap_handler_\codeN
 .endm
 
 .macro store_nested_sp
@@ -389,6 +387,9 @@ VIRQ_Handler:
 	 */
 	ldp	x21, x0, [sp], #16
 	msr	spsr_el1, x21
+.endm
+
+.macro pop_trapframe
 
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
@@ -440,144 +441,195 @@ VIRQ_Handler:
 	ldp	x27, x28, [sp], #16
 	ldp	x29, x30, [sp], #16
 
-	eret
+.endm
+
+.macro call_common_trap_handler, codeN, tail=fname
+	mov	x0, sp
+	BL uncommon_trap_handler_\codeN
 .endm
 
 	text_align
 _curr_el_sp0_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_SP0
 	store_traped_sp
 	call_common_trap_handler 1
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_sp0_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_SP0
 	store_traped_sp
 	call_common_trap_handler 2
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_sp0_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_SP0
 	store_traped_sp
 	call_common_trap_handler 3
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_sp0_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_SP0
 	store_traped_sp
 	call_common_trap_handler 4
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_SPX
 	store_nested_sp
 	//call_common_trap_handler 5
-	bl SError_Handler
+	BL SError_Handler
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_SPX
 	store_nested_sp
 	//call_common_trap_handler 6
-	bl VIRQ_Handler		// Calls from EL3 system
+	BL VIRQ_Handler		// Calls from EL3 system
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_SPX
 	store_nested_sp
 	call_common_trap_handler 7
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_SPX
 	store_nested_sp
 	call_common_trap_handler 8
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 
 	text_align
 _lower_el_aarch64_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_AARCH64
 	store_traped_sp
 	call_common_trap_handler 9
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch64_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_AARCH64
 	store_traped_sp
 	call_common_trap_handler 10
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch64_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_AARCH64
 	store_traped_sp
 	call_common_trap_handler 11
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch64_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_AARCH64
 	store_traped_sp
 	call_common_trap_handler 12
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 
 	text_align
 _lower_el_aarch32_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_AARCH32
 	store_traped_sp
 	call_common_trap_handler 13
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch32_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_AARCH32
 	store_traped_sp
 	call_common_trap_handler 14
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch32_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_AARCH32
 	store_traped_sp
 	call_common_trap_handler 15
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch32_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_AARCH32
 	store_traped_sp
 	call_common_trap_handler 16
 	restore_traped_sp
 	restore_trapframe
-
+	pop_trapframe
+	ERET
 
 
 
    	.ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
