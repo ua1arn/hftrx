@@ -3864,7 +3864,7 @@ static __ALIGNED(4) const uint32_t trampoline32 [] =
 	0xF57FF06F,	// 	isb	sy
 	0xE320F003,	// 	wfi
 	0xE320F002,	// 	wfe
-	0xEAFFFFFD,	// 	b	10 <sendch+0x10>
+	0xEAFFFFFD,	// 	b	10 <trampoline32+0x10>
 };
 
 #if CPUSTYLE_STM32MP1
@@ -4206,40 +4206,8 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
-static void ese64(void)
-{
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '$';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'c';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'p';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'u';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '0' + (int) (__get_MPIDR() & 0x03);
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '\r';
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '\n';
-
-	//Reset_CPUn_Handler();
-	for (;;)
-		;
-}
-
 static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	startfunc = (uintptr_t) ese64;
 	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
@@ -4360,6 +4328,73 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
 static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
+
+#if 0
+static inline void ese64(void)
+{
+	static const char hex [] = "0123456789ABCDEF";
+	//const uintptr_t v = (uintptr_t) & ese64;
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '$';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = 'c';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = 'p';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = 'u';
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '0' + (int) (__get_MPIDR() & 0x03);
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '\r';
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '\n';
+
+#if 0
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 28) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 24) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 20) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 16) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 12) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 8) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 4) & 0x0F];
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = hex [(v >> 0) & 0x0F];
+#endif
+	for (;;)
+		;
+}
+#endif
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 __NO_RETURN void Reset_CPUn_Handler(void)
