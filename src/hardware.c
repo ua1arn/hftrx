@@ -1287,7 +1287,7 @@ uint32_t hardware_get_random(void)
 		;
 	return RNG->DR;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_A133
 
 	return cpu_getdebugticks();
 
@@ -4034,6 +4034,33 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
 
+static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << (0 + targetcore);
+
+	ASSERT(startfunc32 != 0);
+	ASSERT(ptr_hi32(startfunc32) == 0);
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	C0_CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
+
+	* rvaddr = startfunc32;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	// Не влияют
+	// Register width state.Determines which execution state the processor boots into after a cold reset.
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+
+	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
+}
+
 #elif CPUSTYLE_H3
 // H3: CPUCFG_BASE @ 0x01F01C00
 
@@ -4091,6 +4118,38 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
 
+static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
+	// AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
+	// CPUSTYLE_H616
+	// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/cpu/armv8/fel_utils.S#L39
+
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_RTC_BASE + 0x5c4 + targetcore * 4));
+
+	/* Не влияет: */
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
+	ASSERT(startfunc32 != 0);
+	ASSERT(ptr_hi32(startfunc32) == 0);
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+
+	* rvaddr = startfunc32;
+	ASSERT(* rvaddr == startfunc32);
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
+}
+
 #elif CPUSTYLE_T507
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
@@ -4123,10 +4182,11 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+
 	* rvaddr = ptr_lo32(startfunc32);
 	ASSERT(* rvaddr == startfunc32);
 
-	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 	CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
