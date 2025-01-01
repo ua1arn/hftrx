@@ -80,9 +80,7 @@ DINCDIR = \
 	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/Core/Include/a-profile \
-	$(CMSISDIR)/Core/Source \
+	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
 	$(RTOSXDIR)/Include \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \

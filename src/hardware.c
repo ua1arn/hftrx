@@ -3526,8 +3526,10 @@ sysinit_cache_initialize(void)
 	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
 	ASSERT(ICACHEROWSIZE == icache_rowsize());
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	//PRINTF("GIC_BINARY_POINT=%u\n", GIC_BINARY_POINT);
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #endif /* ! LINUX_SUBSYSTEM */
 
 #if defined (__CORTEX_M)
@@ -3545,9 +3547,18 @@ sysinit_cache_initialize(void)
 	#endif /* __DCACHE_PRESENT */
 
 	//dcache_clean_all();
-#endif /* defined (__CORTEX_M) */
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
 
 #elif CPUSTYLE_F133
 
@@ -3701,11 +3712,6 @@ sysinit_cache_initialize(void)
 //	PRINTF("MHCR=%08X\n", (unsigned) csr_read_mhcr());
 
 #endif /* CPUSTYLE_RISCV */
-	L1C_InvalidateDCacheAll();
-	L1C_InvalidateICacheAll();
-	L1C_InvalidateBTAC();
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
 }
 
 /* инициадизации кеш-памяти, специфические для CORE0 */

@@ -24,7 +24,7 @@
 #define RESERVED(N, T) T RESERVED##N;    // placeholder struct members used for "reserved" areas
 
 //#include "core_ca.h"
-#include "cmsis_gcc.h"
+#include <__cmsis_gcc.h>
 
 
 /* CMSIS compiler specific defines */
@@ -72,6 +72,26 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+
+__STATIC_INLINE void __DMB(void)
+{
+	__ASM volatile ("FENCE" ::: "memory");
+}
+
+__STATIC_INLINE void __DSB(void)
+{
+	__ASM volatile ("FENCE" ::: "memory");
+}
+
+__STATIC_INLINE void __WFI(void)
+{
+	__ASM volatile ("WFI":::);
+}
+
+__STATIC_INLINE void __NOP(void)
+{
+	__asm volatile ("NOP":::);
+}
 
 /** \brief  Enable Floating Point Unit
  */

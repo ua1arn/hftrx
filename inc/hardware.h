@@ -322,7 +322,7 @@ elif CPUSTYLE_STM32F0XX
 	#include "arch/renesasRZA1/iodefine.h"		// peripherial registers
 	#include "arch/renesasRZA1/rza_io_regrw.h"	// iobitmasks
 
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 
 	#define DCACHEROWSIZE 32
@@ -344,7 +344,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "arch/stm32mp1xx/stm32mp1xx.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -360,7 +360,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_f133.h"
-	//#include "irq_ctrl.h"
+	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
@@ -374,7 +374,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a64.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
@@ -389,7 +389,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t507.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -407,7 +407,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v853x.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -421,7 +421,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_h3.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -436,7 +436,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t113x.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -451,7 +451,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v3s.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -465,7 +465,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "elvees_vm14.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -485,7 +485,7 @@ elif CPUSTYLE_STM32F0XX
 
 #if ! LINUX_SUBSYSTEM
 	#include "arch/zynq/zynq7000.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 #endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
@@ -503,7 +503,7 @@ elif CPUSTYLE_STM32F0XX
 
 #if ! LINUX_SUBSYSTEM
 	#include "arch/zynqmp/zynquscale.h"
-	#include "irq_ctrl.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 #endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32

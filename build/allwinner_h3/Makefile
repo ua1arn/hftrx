@@ -77,9 +77,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/Core/Include/a-profile \
-	$(CMSISDIR)/Core/Source \
+	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \

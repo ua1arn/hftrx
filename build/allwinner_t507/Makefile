@@ -73,9 +73,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/Core/Include/a-profile \
-	$(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC

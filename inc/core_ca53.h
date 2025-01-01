@@ -176,26 +176,6 @@
 #define __get_RG64(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
 #define __set_RG64(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
 
-/**
-\brief   No Operation
-\details No Operation does nothing. This instruction can be used for code alignment purposes.
-*/
-#define __NOP()         do { __ASM volatile ("nop"); } while (0)
-
-
-/**
-\brief   Wait For Interrupt
-\details Wait For Interrupt is a hint instruction that suspends execution until one of a number of events occurs.
-*/
-#define __WFI()         do { __ASM volatile ("wfi":::"memory"); } while (0)
-
-
-/**
-\brief   Wait For Event
-\details Wait For Event is a hint instruction that permits the processor to enter
-		a low-power state until one of a number of events occurs.
-*/
-#define __WFE()         do { __ASM volatile ("wfe":::"memory"); } while (0)
 
 
 /**
@@ -203,61 +183,6 @@
 \details  Send Event Local is a hint instruction that causes an event to be signaled locally without requiring the event to be  signaled to other PEs in the multiprocessor system.
 */
 #define __SEVL()         do { __ASM volatile ("sevl"); } while (0)
-
-
-/**
-\brief   Send Event
-\details Send Event is a hint instruction. It causes an event to be signaled to the CPU.
-*/
-#define __SEV()         do { __ASM volatile ("sev"); } while (0)
-
-
-/**
-\brief   Instruction Synchronization Barrier
-\details Instruction Synchronization Barrier flushes the pipeline in the processor,
-		so that all instructions following the ISB are fetched from cache or memory,
-		after the instruction has been completed.
-*/
-__STATIC_FORCEINLINE void __ISB(void)
-{
-__ASM volatile ("isb 0xF":::"memory");
-}
-
-
-/**
-\brief   Data Synchronization Barrier
-\details Acts as a special kind of Data Memory Barrier.
-		It completes when all explicit memory accesses before this instruction complete.
-*/
-__STATIC_FORCEINLINE void __DSB(void)
-{
-__ASM volatile ("dsb 0xF":::"memory");
-}
-
-/**
-\brief   Data Memory Barrier
-\details Ensures the apparent order of the explicit memory operations before
-		and after the instruction, without ensuring their completion.
-*/
-__STATIC_FORCEINLINE void __DMB(void)
-{
-__ASM volatile ("dmb 0xF":::"memory");
-}
-
-
-/**
-\brief   Load-Acquire Exclusive (8 bit)
-\details Executes a LDAB exclusive instruction for 8 bit value.
-\param [in]    ptr  Pointer to data
-\return             value of type uint8_t at (*ptr)
-*/
-__STATIC_FORCEINLINE uint8_t __LDAEXB(volatile uint8_t *ptr)
-{
-	uint8_t result;
-
-	__ASM volatile ("ldaexb %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
-	return (result);    /* Add explicit type cast here */
-}
 
 /**
 \brief   Load-acquire exclusive register byte (8 bit)
@@ -272,54 +197,6 @@ __STATIC_FORCEINLINE uint8_t __LDAXRB(volatile uint8_t *ptr)
 	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
 	return result;    /* Add explicit type cast here */
 }
-
-
-/**
-\brief   Load-Acquire Exclusive (16 bit)
-\details Executes a LDAH exclusive instruction for 16 bit values.
-\param [in]    ptr  Pointer to data
-\return        value of type uint16_t at (*ptr)
-*/
-__STATIC_FORCEINLINE uint16_t __LDAEXH(volatile uint16_t *ptr)
-{
-	uint16_t result;
-
-	__ASM volatile ("ldaexh %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
-	return result;    /* Add explicit type cast here */
-}
-
-
-/**
-\brief   Load-Acquire Exclusive (32 bit)
-\details Executes a LDA exclusive instruction for 32 bit values.
-\param [in]    ptr  Pointer to data
-\return        value of type uint32_t at (*ptr)
-*/
-__STATIC_FORCEINLINE uint32_t __LDAEX(volatile uint32_t *ptr)
-{
-	uint32_t result;
-
-	__ASM volatile ("ldaex %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
-	return (result);
-}
-
-
-/**
-\brief   Store-Release Exclusive (8 bit)
-\details Executes a STLB exclusive instruction for 8 bit values.
-\param [in]  value  Value to store
-\param [in]    ptr  Pointer to location
-\return          0  Function succeeded
-\return          1  Function failed
-*/
-__STATIC_FORCEINLINE uint32_t __STLEXB(uint8_t value, volatile uint8_t *ptr)
-{
-	uint32_t result;
-
-	__ASM volatile ("stlexb %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory" );
-	return (result);
-}
-
 
 /**
 \brief   Store-Release Exclusive (8 bit)
@@ -347,43 +224,6 @@ __STATIC_FORCEINLINE void __STLRB(uint8_t value, volatile uint8_t *ptr)
 {
 	__ASM volatile ("stlrb %w1, %0" : "=Q" (*ptr) : "r" (value) : "memory" );
 }
-
-
-/**
-\brief   Store-Release Exclusive (16 bit)
-\details Executes a STLH exclusive instruction for 16 bit values.
-\param [in]  value  Value to store
-\param [in]    ptr  Pointer to location
-\return          0  Function succeeded
-\return          1  Function failed
-*/
-__STATIC_FORCEINLINE uint32_t __STLEXH(uint16_t value, volatile uint16_t *ptr)
-{
-	uint32_t result;
-
-	__ASM volatile ("stlexh %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" ((uint32_t)value) : "memory" );
-	return (result);
-}
-
-
-/**
-\brief   Store-Release Exclusive (32 bit)
-\details Executes a STL exclusive instruction for 32 bit values.
-\param [in]  value  Value to store
-\param [in]    ptr  Pointer to location
-\return          0  Function succeeded
-\return          1  Function failed
-*/
-__STATIC_FORCEINLINE uint32_t __STLEX(uint32_t value, volatile uint32_t *ptr)
-{
-	uint32_t result;
-
-	__ASM volatile ("stlex %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" ((uint32_t)value) : "memory" );
-	return (result);
-}
-
-
-
 
 
 __STATIC_FORCEINLINE uint32_t __get_MIDR_EL1(void)

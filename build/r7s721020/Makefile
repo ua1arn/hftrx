@@ -82,9 +82,7 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/Core/Include/a-profile \
-	$(CMSISDIR)/Core/Source \
+	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
 	$(CMSISDSPDIR)/Include \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDIR)/Core_A/Source \

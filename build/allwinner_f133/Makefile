@@ -86,8 +86,7 @@ DINCDIR += \
 	$(USBXDIR)
 	
 DINCDIR += \
-	$(CMSISDIR)/Core/Include \
-	$(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
 	
 DINCDIR += \
 	$(CMSISDSPDIR)/Include \
