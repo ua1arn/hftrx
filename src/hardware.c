@@ -4062,112 +4062,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 // AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
 // H616 version
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
-//
-///* Memory regions */
-//#define SUNXI_ROM_BASE			0x00000000
-//#define SUNXI_ROM_SIZE			0x00010000
-//#define SUNXI_SRAM_BASE			0x00020000
-//#define SUNXI_SRAM_SIZE			0x00038000
-//#define SUNXI_SRAM_A1_BASE		0x00020000
-//#define SUNXI_SRAM_A1_SIZE		0x00008000
-//#define SUNXI_SRAM_C_BASE		0x00028000
-//#define SUNXI_SRAM_C_SIZE		0x00030000
-//#define SUNXI_DEV_BASE			0x01000000
-//#define SUNXI_DEV_SIZE			0x09000000
-//#define SUNXI_DRAM_BASE			0x40000000
-//#define SUNXI_DRAM_VIRT_BASE		SUNXI_DRAM_BASE
 
-/* Memory-mapped devices */
-//#define SUNXI_SYSCON_BASE		0x03000000
-//#define SUNXI_CCU_BASE			0x03001000
-//#define SUNXI_DMA_BASE			0x03002000
-////#define SUNXI_SID_BASE			0x03006000
-//#define SUNXI_SPC_BASE			0x03008000
-//#define SUNXI_WDOG_BASE			0x030090a0
-////#define SUNXI_PIO_BASE			0x0300b000
-//#define SUNXI_GICD_BASE			0x03021000
-//#define SUNXI_GICC_BASE			0x03022000
-//#define SUNXI_UART0_BASE		0x05000000
-//#define SUNXI_SPI0_BASE			0x05010000
-//#define SUNXI_R_CPUCFG_BASE		0x07000400
-//#define SUNXI_R_PRCM_BASE		0x07010000
-////#define SUNXI_R_WDOG_BASE		0x07020400
-//#define SUNXI_R_WDOG_BASE		SUNXI_WDOG_BASE
-//#define SUNXI_R_PIO_BASE		0x07022000
-//#define SUNXI_R_UART_BASE		0x07080000
-//#define SUNXI_R_I2C_BASE		0x07081400
-//#define SUNXI_R_RSB_BASE		0x07083000
-//#define SUNXI_CPUCFG_BASE		0x09010000
-
-// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h#L68
-// arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h
-
-//#define SUNXI_DE3_BASE			0x01000000
-//#define SUNXI_SS_BASE			0x01904000
-//#define SUNXI_EMCE_BASE			0x01905000
-//
-//#define SUNXI_SRAMC_BASE		0x03000000
-//#define SUNXI_CCM_BASE			0x03001000
-//#define SUNXI_DMA_BASE			0x03002000
-///* SID address space starts at 0x03006000, but e-fuse is at offset 0x200 */
-//#define SUNXI_SIDC_BASE			0x03006000
-////#define SUNXI_SID_BASE			0x03006200
-//#define SUNXI_TIMER_BASE		0x03009000
-////#define SUNXI_PIO_BASE			0x0300B000
-//#define SUNXI_PSI_BASE			0x0300C000
-//
-//#define SUNXI_GIC400_BASE		0x03020000
-//#define SUNXI_IOMMU_BASE		0x030F0000
-//
-//#ifdef CONFIG_MACH_SUN50I_H6
-//#define SUNXI_DRAM_COM_BASE		0x04002000
-//#define SUNXI_DRAM_CTL0_BASE		0x04003000
-//#define SUNXI_DRAM_PHY0_BASE		0x04005000
-//#endif
-//#define SUNXI_NFC_BASE			0x04011000
-//#define SUNXI_MMC0_BASE			0x04020000
-//#define SUNXI_MMC1_BASE			0x04021000
-//#define SUNXI_MMC2_BASE			0x04022000
-//#ifdef CONFIG_MACH_SUN50I_H616
-//#define SUNXI_DRAM_COM_BASE		0x047FA000
-//#define SUNXI_DRAM_CTL0_BASE		0x047FB000
-//#define SUNXI_DRAM_PHY0_BASE		0x04800000
-//#endif
-
-////#define SUNXI_UART0_BASE		0x05000000
-////#define SUNXI_UART1_BASE		0x05000400
-////#define SUNXI_UART2_BASE		0x05000800
-////#define SUNXI_UART3_BASE		0x05000C00
-//#define SUNXI_TWI0_BASE			0x05002000
-//#define SUNXI_TWI1_BASE			0x05002400
-//#define SUNXI_TWI2_BASE			0x05002800
-//#define SUNXI_TWI3_BASE			0x05002C00
-//#define SUNXI_SPI0_BASE			0x05010000
-//#define SUNXI_SPI1_BASE			0x05011000
-//#define SUNXI_GMAC_BASE			0x05020000
-//#define SUNXI_USB0_BASE			0x05100000
-//#define SUNXI_XHCI_BASE			0x05200000
-//#define SUNXI_USB3_BASE			0x05311000
-//#define SUNXI_PCIE_BASE			0x05400000
-
-//#define SUNXI_HDMI_BASE			0x06000000
-//#define SUNXI_TCON_TOP_BASE		0x06510000
-//#define SUNXI_TCON_LCD0_BASE		0x06511000
-//#define SUNXI_TCON_TV0_BASE		0x06515000
-//
-//#define SUNXI_RTC_BASE			0x07000000
-//#define SUNXI_R_CPUCFG_BASE		0x07000400
-//#define SUNXI_PRCM_BASE			0x07010000
-//#define SUNXI_R_WDOG_BASE		0x07020400
-//#define SUNXI_R_PIO_BASE		0x07022000
-//#define SUNXI_R_UART_BASE		0x07080000
-//#define SUNXI_R_TWI_BASE		0x07081400
-
-// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
-
-//#define HARDWARE_NCORES 4
-
-//#define R_CPUCFG_BASE 0x07000400
 
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
@@ -4389,7 +4284,6 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 // Запуск остальных процессоров
 void cpump_initialize(void)
 {
-#if 1
 	unsigned core;
 
 	SystemCoreClock = CPU_FREQ;
@@ -4414,9 +4308,6 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
 	}
-
-#endif /* (__CORTEX_A != 0) */
-
 }
 
 /* остальным ядрам разрешаем выполнять прерывания */
@@ -4463,156 +4354,6 @@ void cpump_runuser(void)
 }
 
 #endif /*  (__CORTEX_A != 0) */
-
-#if CPUSTYLE_ATSAM3S
-
-static void 
-arm_cpu_atsam3s_pll_initialize(void)
-{
-	// Disable Watchdog
-	//WDT->WDT_MR = WDT_MR_WDDIS;
-
-	// Embedded Flash Wait State VDDCORE set at 1.65V
-	// 17 MHz - 1 cycle = FWS = 0
-	// 30 MHz - 2 cycle = FWS = 1
-	// 54 MHz - 3 cycle = FWS = 2
-	// 64 MHz - 4 cycle = FWS = 3
-
-	// Embedded Flash Wait State VDDCORE set at 1.80V
-	// 32 MHz - 1 cycle = FWS = 0
-	// 38 MHz - 2 cicle = FWS = 1
-	// 64 MHz - 3 cycls = FWS = 2
-
-#if CPU_FREQ == 64000000UL
-	enum { OSC_MUL = 32, OSC_DIV = 3, FWS = 2, noneedpll = 0 };	// 12 MHz / 3 * 32 = 128 MHz
-#elif CPU_FREQ == 48000000UL
-	enum { OSC_MUL = 8, OSC_DIV = 1, FWS = 2, noneedpll = 0 };	// 12 MHz / 1 * 8 = 96 MHz
-#elif CPU_FREQ == 32000000UL
-	enum { OSC_MUL = 16, OSC_DIV = 3, FWS = 1, noneedpll = 0 };	// 12 MHz / 3 * 16 = 96 MHz
-#else
-	enum { OSC_MUL = 1, OSC_DIV = 1, FWS = 1, noneedpll = 1 };	// 12 MHz / 3 * 16 = 96 MHz
-	//#error Unsupported CPU_FREQ value
-#endif
-
-	if (noneedpll)
-	{
-	}
-	else if (1)
-	{
-		// умножение кварцевого генератора
-		lowlevel_sam3s_init_pll_clock_xtal(OSC_MUL, OSC_DIV, FWS);
-	}
-	else if (0)
-	{
-		// умножение от внутреннего RC генератора
-		lowlevel_sam3s_init_pll_clock_RC12(OSC_MUL, OSC_DIV, FWS);	
-	}
-}
-#endif /* CPUSTYLE_ATSAM3S */
-
-#if CPUSTYLE_ATSAM4S
-static void 
-arm_cpu_atsam4s_pll_initialize(void)
-{
-	// Disable Watchdog
-	//WDT->WDT_MR = WDT_MR_WDDIS;
-
-	// Embedded Flash Wait State VDDCORE set at 1.65V
-	// 17 MHz - 1 cycle = FWS = 0
-	// 30 MHz - 2 cycle = FWS = 1
-	// 54 MHz - 3 cycle = FWS = 2
-	// 64 MHz - 4 cycle = FWS = 3
-
-	// Embedded Flash Wait State VDDCORE set at 1.80V
-	// 32 MHz - 1 cycle = FWS = 0
-	// 38 MHz - 2 cicle = FWS = 1
-	// 64 MHz - 3 cycls = FWS = 2
-
-#if CPU_FREQ == 120000000UL
-	enum { OSC_MUL = 60, OSC_DIV = 3, FWS = 5, noneedpll = 0 };	// 12 MHz / 3 * 60 = 240 MHz
-#elif CPU_FREQ == 112000000UL
-	enum { OSC_MUL = 56, OSC_DIV = 3, FWS = 5, noneedpll = 0 };	// 12 MHz / 3 * 40 = 224 MHz
-#elif CPU_FREQ == 104000000UL
-	enum { OSC_MUL = 52, OSC_DIV = 3, FWS = 5, noneedpll = 0 };	// 12 MHz / 3 * 52 = 208 MHz
-#elif CPU_FREQ == 96000000UL
-	enum { OSC_MUL = 48, OSC_DIV = 3, FWS = 5, noneedpll = 0 };	// 12 MHz / 3 * 40 = 160 MHz
-#elif CPU_FREQ == 80000000UL
-	enum { OSC_MUL = 40, OSC_DIV = 3, FWS = 4, noneedpll = 0 };	// 12 MHz / 3 * 40 = 160 MHz
-#elif CPU_FREQ == 64000000UL
-	enum { OSC_MUL = 32, OSC_DIV = 3, FWS = 3, noneedpll = 0 };	// 12 MHz / 3 * 32 = 128 MHz
-#elif CPU_FREQ == 48000000UL
-	enum { OSC_MUL = 8, OSC_DIV = 1, FWS = 2, noneedpll = 0 };	// 12 MHz / 1 * 8 = 96 MHz
-#elif CPU_FREQ == 32000000UL
-	enum { OSC_MUL = 16, OSC_DIV = 3, FWS = 1, noneedpll = 0 };	// 12 MHz / 3 * 16 = 96 MHz
-#else
-	enum { OSC_MUL = 1, OSC_DIV = 1, FWS = 1, noneedpll = 1 };	// 12 MHz / 3 * 16 = 96 MHz
-	//#error Unsupported CPU_FREQ value
-#endif
-
-	if (noneedpll)
-	{
-	}
-	else if (1)
-	{
-		// умножение кварцевого генератора
-		lowlevel_sam4s_init_pll_clock_xtal(OSC_MUL, OSC_DIV, FWS);
-	}
-	else if (0)
-	{
-		// умножение от внутреннего RC генератора
-		lowlevel_sam4s_init_pll_clock_RC12(OSC_MUL, OSC_DIV, FWS);	
-	}
-}
-#endif /* CPUSTYLE_ATSAM4S */
-
-#if CPUSTYLE_ATXMEGA
-
-static uint8_t CLKSYS_Main_ClockSource_Select( CLK_SCLKSEL_t clockSource )
-{
-	auto void CCPWrite(volatile uint8_t * address, uint8_t value)
-	{
-		volatile uint8_t * const tmpAddr = address;
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-	#ifdef RAMPZ
-		RAMPZ = 0;
-	#endif
-		asm volatile(
-			"movw r30,  %0"	      "\n\t"
-			"ldi  r16,  %2"	      "\n\t"	// take signature to R16
-			"out   %3, r16"	      "\n\t"	// write to CCP
-			"st     Z,  %1"       "\n\t"	// write to desired register
-			:
-			: "r" (tmpAddr), "r" (value), "M" (CCP_IOREG_gc), "i" (& CCP)
-			: "r16", "r30", "r31"
-			);
-
-		LowerIrql(oldIrql);
-	}
-
-	const uint8_t clkCtrl = (CLK.CTRL & ~CLK_SCLKSEL_gm) | clockSource;
-#if 0
-	// Так нельзя, работоспособность кода зависит от оптимизаций.
-	CCP = CCP_IOREG_gc;   	
-	CLK.CTRL = clkCtrl;
-#else
-	CCPWrite(& CLK.CTRL, clkCtrl);
-#endif
-	return (CLK.CTRL & clockSource);
-}
-
-
-static void cpu_atxmega_switchto32MHz()
-{
-	// switch to 32 MHz
-	OSC.CTRL |= OSC_RC32MEN_bm;
-	while ((OSC.STATUS & OSC_RC32MRDY_bm ) == 0)
-		;
-	CLKSYS_Main_ClockSource_Select(CLK_SCLKSEL_RC32M_gc);
-	OSC.CTRL &= ~ (OSC_RC2MEN_bm | OSC_RC32KEN_bm);
-}
-
-#endif /* CPUSTYLE_ATXMEGA */
 
 // секция init больше не нужна
 void cpu_initdone(void)
