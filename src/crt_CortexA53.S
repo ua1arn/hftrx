@@ -334,6 +334,22 @@ IRQ_Handler:
 	stp	x1, x2, [sp, #-16]!
 .endm
 
+.macro store_traped_sp
+	mrs	x21, sp_el0
+	str	x21, [sp, #EXC_EXC_SP_OFFSET]
+.endm
+
+.macro store_nested_sp
+	mov	x21, sp
+	add	x21, x21, #EXC_FRAME_SIZE
+	str	x21, [sp, #EXC_EXC_SP_OFFSET]
+.endm
+
+.macro restore_traped_sp
+	ldr	x21, [sp, #EXC_EXC_SP_OFFSET]
+	msr	sp_el0, x21
+.endm
+
 .macro build_trapframe exc_type
 
 	/*
@@ -352,22 +368,6 @@ IRQ_Handler:
 	mov	x21, #(\exc_type)
 	mrs	x22, esr_el1
 	stp	x21, x22, [sp, #-16]!
-.endm
-
-.macro store_traped_sp
-	mrs	x21, sp_el0
-	str	x21, [sp, #EXC_EXC_SP_OFFSET]
-.endm
-
-.macro store_nested_sp
-	mov	x21, sp
-	add	x21, x21, #EXC_FRAME_SIZE
-	str	x21, [sp, #EXC_EXC_SP_OFFSET]
-.endm
-
-.macro restore_traped_sp
-	ldr	x21, [sp, #EXC_EXC_SP_OFFSET]
-	msr	sp_el0, x21
 .endm
 
 .macro restore_trapframe
