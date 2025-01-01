@@ -3857,33 +3857,14 @@ static void cortexa_cpuinfo(void)
 #if WITHSMPSYSTEM && ! WITHRTOS
 
 
-static __ALIGNED(4) const uint32_t Xtrampoline32 [] =
-{
-	0xE3A06003,	//	2bdc0:	e3a06003 	mov	r6, #3
-	0xEE0C6F50,	//	2bdc4:	ee0c6f50 	mcr	15, 0, r6, cr12, cr0, {2}
-	0xEAFFFFFE,	//	2bdc8:	eafffffe 	b	2bdc8 <bootloader_mainloop+0x1d8>
-};
-
 static __ALIGNED(4) const uint32_t trampoline32 [] =
 {
-	0xE3A02405,	// 	mov	r2, #83886080	@ 0x5000000
-	0xE592307C,	// 	ldr	r3, [r2, #124]	@ 0x7c
-	0xE3130002,	// 	tst	r3, #2
-	0x0AFFFFFC,	// 	beq	4 <sendch+0x4>
-	0xE3A01023,	// 	mov	r1, #35	@ 0x23
 	0xE3A03003,	// 	mov	r3, #3
-	0xE5821000,	// 	str	r1, [r2]
 	0xEE0C3F50,	// 	mcr	15, 0, r3, cr12, cr0, {2}
-	0xE3A02405,	// 	mov	r2, #83886080	@ 0x5000000
-	0xE592307C,	// 	ldr	r3, [r2, #124]	@ 0x7c
-	0xE3130002,	// 	tst	r3, #2
-	0x0AFFFFFC,	// 	beq	24 <sendch+0x24>
-	0xE3A03040,	// 	mov	r3, #64	@ 0x40
-	0xE5823000,	// 	str	r3, [r2]
 	0xF57FF06F,	// 	isb	sy
 	0xE320F003,	// 	wfi
 	0xE320F002,	// 	wfe
-	0xEAFFFFFD,	// 	b	40 <sendch+0x40>
+	0xEAFFFFFD,	// 	b	10 <sendch+0x10>
 };
 
 #if CPUSTYLE_STM32MP1
@@ -4242,9 +4223,15 @@ static void ese64(void)
 	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		;
 	UART0->UART_RBR_THR_DLL = '0' + (int) (__get_MPIDR() & 0x03);
+
 	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		;
-	UART0->UART_RBR_THR_DLL = '!';
+	UART0->UART_RBR_THR_DLL = '\r';
+
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '\n';
+
 	for (;;)
 		;
 }
@@ -4255,7 +4242,6 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
-	PRINTF("%u %p %p\n", targetcore, startfunc, startfunc32);
 
 	ASSERT(startfunc32 != 0);
 	ASSERT(ptr_hi32(startfunc32) == 0);

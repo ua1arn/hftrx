@@ -132,16 +132,13 @@ Reset_CPU1_Handler:
 	ldr x30, =__stack_cpu1_sys_end
 	mov sp, x30
 	mov x30, XZR
-	BL SystemInit
-	ldr x30, =__stack_cpu1_sys_end
-	mov sp, x30
-	mov x30, XZR
 	BL Reset_CPUn_Handler
 1:
 	wfi
 	b 1b
 
 	.endfunc
+
    .ltorg
 
 	.section ".noinit"
@@ -212,10 +209,6 @@ Reset_CPU2_Handler:
 	MSR SPSR_abt, x30
 	ldr x30, =__stack_cpu2_irq_end
 	MSR SPSR_irq, x30
-	ldr x30, =__stack_cpu2_sys_end
-	mov sp, x30
-	mov x30, XZR
-	BL SystemInit
 	ldr x30, =__stack_cpu2_sys_end
 	mov sp, x30
 	mov x30, XZR
@@ -296,10 +289,6 @@ Reset_CPU3_Handler:
 	MSR SPSR_abt, x30
 	ldr x30, =__stack_cpu3_irq_end
 	MSR SPSR_irq, x30
-	ldr x30, =__stack_cpu3_sys_end
-	mov sp, x30
-	mov x30, XZR
-	BL SystemInit
 	ldr x30, =__stack_cpu3_sys_end
 	mov sp, x30
 	mov x30, XZR
