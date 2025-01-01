@@ -19,11 +19,11 @@
 #include "encoder.h"
 #include "clocks.h"
 
-#define DBGC(c) do { \
-	while ((UART0->UART_USR & (1u << 1)) == 0) \
-		; \
-	UART0->UART_RBR_THR_DLL = (c); \
-} while (0)
+//#define DBGC(c) do { \
+//	while ((UART0->UART_USR & (1u << 1)) == 0) \
+//		; \
+//	UART0->UART_RBR_THR_DLL = (c); \
+//} while (0)
 
 #if WITHRTOS
 #include "FreeRTOS.h"
@@ -4330,24 +4330,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
 static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
-
-#if 0
-static void ese64(void)
-{
-	static const char hex [] = "0123456789ABCDEF";
-	//const uintptr_t v = (uintptr_t) & ese64;
-	DBGC('$');
-	DBGC('c');
-	DBGC('p');
-	DBGC('u');
-	DBGC('0' + (int) (__get_MPIDR() & 0x03));
-	DBGC('\r');
-	DBGC('\n');
-	for (;;)
-		;
-}
-
-#endif
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
 __NO_RETURN void Reset_CPUn_Handler(void)

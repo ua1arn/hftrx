@@ -56,13 +56,13 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 2560
-	 STACKSIZEABT = 2560
-	 STACKSIZEFIQ = 2560
-	 STACKSIZEHYP = 2560
-	 STACKSIZEMON = 2560
-	 STACKSIZESVC = 2560
-	 STACKSIZEIRQ = 2560
+	 STACKSIZEUND = 4096
+	 STACKSIZEABT = 4096
+	 STACKSIZEFIQ = 4096
+	 STACKSIZEHYP = 4096
+	 STACKSIZEMON = 4096
+	 STACKSIZESVC = 4096
+	 STACKSIZEIRQ = 4096
 
 	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 1MB */
 
@@ -107,7 +107,7 @@ Reset_CPU1_Handler:
    .ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEIRQ
 __stack_cpu1_irq_end = .
@@ -152,7 +152,7 @@ Reset_CPU2_Handler:
    .ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEIRQ
 __stack_cpu2_irq_end = .
@@ -197,7 +197,7 @@ Reset_CPU3_Handler:
    .ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEIRQ
 __stack_cpu3_irq_end = .
