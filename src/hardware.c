@@ -4335,7 +4335,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
 static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
-#if 1
+#if 0
 static void ese64(void)
 {
 	static const char hex [] = "0123456789ABCDEF";
