@@ -4232,6 +4232,7 @@ static void ese64(void)
 		;
 	UART0->UART_RBR_THR_DLL = '\n';
 
+	//Reset_CPUn_Handler();
 	for (;;)
 		;
 }
@@ -4361,7 +4362,7 @@ static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
 static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
-void Reset_CPUn_Handler(void)
+__NO_RETURN void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_smp_initialize();
