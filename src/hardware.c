@@ -19,6 +19,12 @@
 #include "encoder.h"
 #include "clocks.h"
 
+#define DBGC(c) do { \
+	while ((UART0->UART_USR & (1u << 1)) == 0) \
+		; \
+	UART0->UART_RBR_THR_DLL = (c); \
+} while (0)
+
 #if WITHRTOS
 #include "FreeRTOS.h"
 //#include "task.h"
@@ -4329,71 +4335,22 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
 static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
-#if 0
-static inline void ese64(void)
+#if 1
+static void ese64(void)
 {
 	static const char hex [] = "0123456789ABCDEF";
 	//const uintptr_t v = (uintptr_t) & ese64;
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '$';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'c';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'p';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = 'u';
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '0' + (int) (__get_MPIDR() & 0x03);
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '\r';
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = '\n';
-
-#if 0
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 28) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 24) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 20) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 16) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 12) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 8) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 4) & 0x0F];
-
-	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		;
-	UART0->UART_RBR_THR_DLL = hex [(v >> 0) & 0x0F];
-#endif
+	DBGC('$');
+	DBGC('c');
+	DBGC('p');
+	DBGC('u');
+	DBGC('0' + (int) (__get_MPIDR() & 0x03));
+	DBGC('\r');
+	DBGC('\n');
 	for (;;)
 		;
 }
+
 #endif
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
