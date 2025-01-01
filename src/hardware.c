@@ -4542,7 +4542,6 @@ void cpump_initialize(void)
 {
 #if 1
 	unsigned core;
-	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
@@ -4550,11 +4549,18 @@ void cpump_initialize(void)
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
+
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
 
+#if defined(__aarch64__)
+		extern const uint64_t aarch64_reset_handlers [];	/* crt_CortexA53_CPUn.S */
+		//aarch64_mp_cpuN_start(aarch64_reset_handlers [core], core);
+#else
+		extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
+#endif
 
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);

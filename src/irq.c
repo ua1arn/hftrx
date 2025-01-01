@@ -1819,8 +1819,24 @@ void SError_Handler(void)
 
 #endif
 
-#if CPUSTYLE_ARM && ! defined(__aarch64__) && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
 
+#if defined(__aarch64__)
+
+static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
+{
+}
+
+static void lclspin_unlock_work(lclspinlock_t * __restrict p)
+{
+	// Note: __LDREXW and __STREXW are CMSIS functions
+	__DMB(); // Ensure memory operations completed before
+	// releasing lock
+	p->lock = 0;
+	return;
+}
+
+#else
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
 static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
@@ -1899,6 +1915,7 @@ static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 	return;
 }
 
+#endif
 
 static void lclspin_lock_dummy(lclspinlock_t * __restrict p, const char * file, int line)
 {
