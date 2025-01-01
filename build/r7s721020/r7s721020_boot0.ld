@@ -48,7 +48,7 @@ SECTIONS
 		KEEP(*(.fini))
 		*(.text*)
 		*(.rodata*)
-		. = ALIGN(4);
+		. = ALIGN(8);
 	} > FLASH
 
 	.ARM.extab :
@@ -68,7 +68,7 @@ SECTIONS
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	.copy.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__copy_table_start__ = .;
 		LONG (__etext)
 		LONG (__data_start__)
@@ -86,7 +86,7 @@ SECTIONS
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	.zero.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
@@ -126,15 +126,15 @@ SECTIONS
 
 		*(vtable)
 		*(.data*)
-	   . = ALIGN(4);	/* one line added by ua1arn */
+	   . = ALIGN(8);	/* one line added by ua1arn */
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -142,7 +142,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))

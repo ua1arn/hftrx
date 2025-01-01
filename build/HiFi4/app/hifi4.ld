@@ -44,29 +44,29 @@ SECTIONS
 _sidata = LOADADDR(.data);
 
 .data : {
-	 . = ALIGN(4);
+	 . = ALIGN(8);
 	 _sdata = .;
          KEEP( *(.data) )
 	 KEEP( *(.data.*) )
          KEEP( *(.rodata) )
 	 KEEP( *(.rodata.*) )
-	 . = ALIGN(4);
+	 . = ALIGN(8);
 	 _edata = .;
 	} > RAM AT > ROM
 
 .bss : {
-	. = ALIGN(4);
+	. = ALIGN(8);
         _sbss = .;
         *(.bss*). = . ;
-	. = ALIGN(4);
+	. = ALIGN(8);
         _ebss = .;
        } > RAM
 
 .heap : {
-	 . = ALIGN(4);
+	 . = ALIGN(8);
          __heap_start = . ;
          *(.heap*). = . ;
-	 . = ALIGN(4);
+	 . = ALIGN(8);
          __heap_end = . + HEAP_SIZE ;
         } > HEAP 
 

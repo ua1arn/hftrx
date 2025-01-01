@@ -78,7 +78,7 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
-		. = ALIGN(4);
+		. = ALIGN(8);
 		
 	} > FLASH
 
@@ -100,7 +100,7 @@ SECTIONS
 
 	.copy.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__copy_table_start__ = .;
 		
 		LONG (__etext)
@@ -133,7 +133,7 @@ SECTIONS
 
 	.zero.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG ((__bss_end__ - __bss_start__) / 4)
@@ -146,18 +146,18 @@ SECTIONS
 	{
 		__data_start__ = .;
 		*(vtable*)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		*(.data*)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		*(.dtcm*)
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -165,7 +165,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -173,7 +173,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* All data end */
 		__data_end__ = .;
 
@@ -193,7 +193,7 @@ SECTIONS
 		*(.text.__ieee754_sqrtf)
 		*(.text.__kernel_rem_pio2f)
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__data2_end__ = .;
 	} > ITCMRAM AT > FLASH
 
@@ -206,7 +206,7 @@ SECTIONS
 		__data3_start__ = .;
 		*(.ram_d1)
 		*(.ram_d1.*)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__data3_end__ = .;
 	} > RAM_D1 AT > FLASH
 
@@ -219,7 +219,7 @@ SECTIONS
 		__data4_start__ = .;
 		*(.ram_d2)
 		*(.ram_d2.*)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__data4_end__ = .;
 	} > RAM_D2 AT > FLASH
 
@@ -232,7 +232,7 @@ SECTIONS
 		__data5_start__ = .;
 		*(.ram_d3)
 		*(.ram_d3.*)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__data5_end__ = .;
 	} > RAM_D3 AT > FLASH
 
@@ -254,7 +254,7 @@ SECTIONS
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__HeapLimit = .;
 	} > RAM_D3
 
@@ -271,7 +271,7 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-		. = ALIGN(4);
+		. = ALIGN(8);
 	} > DTCMRAM
 
 	/* Set stack top to end of RAM, and stack limit move down by

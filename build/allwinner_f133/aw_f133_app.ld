@@ -68,7 +68,7 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 		
-		. = ALIGN(4);
+		. = ALIGN(8);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;

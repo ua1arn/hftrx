@@ -75,7 +75,7 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
-		. = ALIGN(4);
+		. = ALIGN(8);
 	} > FLASH
 
 	.ARM.extab :
@@ -96,7 +96,7 @@ SECTIONS
 
 	.copy.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__copy_table_start__ = .;
 		LONG (__etext)
 		LONG (__data_start__)
@@ -117,7 +117,7 @@ SECTIONS
 
 	.zero.table :
 	{
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG ((__bss_end__ - __bss_start__) / 4)
@@ -131,9 +131,9 @@ SECTIONS
 	{
 		__data_start__ = .;
 		*(vtable)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		*(.dtcm*)
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(8);	/* may be 32 */
 		/* All data end */
 		__data_end__ = .;
 
@@ -153,7 +153,7 @@ SECTIONS
 		*(.text.__ieee754_sqrtf)
 		*(.text.__kernel_rem_pio2f)
 
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(8);	/* may be 32 */
 		__data2_end__ = .;
 	} > ITCM
 
@@ -165,13 +165,13 @@ SECTIONS
 	{
 		__data3_start__ = .;
 		*(.data*)
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(8);	/* may be 32 */
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
 
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(8);	/* may be 32 */
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -179,7 +179,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 
 
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(8);	/* may be 32 */
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -187,7 +187,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);	/* may be 32 */
+		. = ALIGN(8);	/* may be 32 */
 		__data3_end__ = .;
 	} > RAM
 

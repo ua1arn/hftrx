@@ -150,7 +150,7 @@ Reset_CPU1_Handler:
    .ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEIRQ
 __stack_cpu1_irq_end = .
@@ -236,7 +236,7 @@ Reset_CPU2_Handler:
    .ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEIRQ
 __stack_cpu2_irq_end = .
@@ -322,7 +322,7 @@ Reset_CPU3_Handler:
    .ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEIRQ
 __stack_cpu3_irq_end = .

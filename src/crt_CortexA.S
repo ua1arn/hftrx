@@ -382,7 +382,7 @@ VIRQ_Handler:
    	.ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .
