@@ -19,11 +19,13 @@
 #include "encoder.h"
 #include "clocks.h"
 
-//#define DBGC(c) do { \
-//	while ((UART0->UART_USR & (1u << 1)) == 0) \
-//		; \
-//	UART0->UART_RBR_THR_DLL = (c); \
-//} while (0)
+#if 0
+#define DBGC(c) do { \
+	while ((UART0->UART_USR & (1u << 1)) == 0) \
+		; \
+	UART0->UART_RBR_THR_DLL = (c); \
+} while (0)
+#endif
 
 #if WITHRTOS
 #include "FreeRTOS.h"
@@ -3478,7 +3480,8 @@ static void sysinit_smp_initialize(void)
 	__DSB();
 #elif (__CORTEX_A == 53U) && defined(__aarch64__)
 	// TODO
-	#warning To be done
+	//#warning To be done
+	// Всё что надо делается в инициализации cache
 
 #elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
 	/**
