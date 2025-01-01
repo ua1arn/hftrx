@@ -355,18 +355,18 @@ IRQ_Handler:
 	/*
 	 * Store (spsr, x0)
 	 */
-	mrs	x21, spsr_el1
+	mrs	x21, SPSR_EL3
 	stp	x21, x0, [sp, #-16]!
 	/*
 	 * Allocate a room for sp_el0 and store elr
 	 */
-	mrs	x21, elr_el1
+	mrs	x21, ELR_EL3
 	stp	xzr, x21, [sp, #-16]!
 	/*
 	 * store exception type and esr
 	 */
 	mov	x21, #(\exc_type)
-	mrs	x22, esr_el1
+	mrs	x22, ESR_EL3
 	stp	x21, x22, [sp, #-16]!
 .endm
 
@@ -377,16 +377,16 @@ IRQ_Handler:
 	 */
 	add	sp, sp, #16
 	/*
-	 * Drop exception stack pointer and restore elr_el1
+	 * Drop exception stack pointer and restore ELR_EL3
 	 */
 	ldp	x21, x22, [sp], #16
-	msr	elr_el1, x22
+	msr	ELR_EL3, x22
 
 	/*
 	 * Retore spsr and x0
 	 */
 	ldp	x21, x0, [sp], #16
-	msr	spsr_el1, x21
+	msr	SPSR_EL3, x21
 .endm
 
 .macro pop_trapframe
