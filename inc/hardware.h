@@ -518,6 +518,7 @@ elif CPUSTYLE_STM32F0XX
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
+	#define GIC_BINARY_POINT 1
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */

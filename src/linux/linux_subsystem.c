@@ -44,6 +44,18 @@ void lvgl_test(void);
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
 
+void linux_wait_iq(void)
+{
+	if (linux_verify_cond(& ct_iq))
+		safe_cond_wait(& ct_iq);
+}
+
+void iq_mutex_unlock(void)
+{
+	if (linux_verify_cond(& ct_iq))
+		safe_cond_signal(& ct_iq);
+}
+
 enum {
 	rx_fir_shift_pos 	= 0,
 	tx_shift_pos 		= 8,
@@ -56,14 +68,20 @@ enum {
 	wnb_pos				= 29,
 };
 
-#if (DDS1_TYPE == DDS_TYPE_FPGAV2)
+enum {
+	CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX,
+	CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX,
+	SIZERX8 = DMABUFFSIZE32RX * 4,
+};
+
+#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
 
 void linux_rxtx_state(uint8_t tx)
 {
 
 }
 
-#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV2) */
+#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
 #if WITHAUDIOSAMPLESREC
 
@@ -660,7 +678,7 @@ void spidev_init(void)
 
 		int ret = 0;
 		spidev_fd[i] = open(path, O_RDWR);
-		if (!spidev_fd)
+		if (!spidev_fd[i])
 			perror("can't open device");
 
 		ret = ioctl(spidev_fd[i], SPI_IOC_WR_MODE, & spidev_mode);
@@ -809,12 +827,6 @@ volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_r
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
-
-enum {
-	CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX,
-	CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX,
-	SIZERX8 = DMABUFFSIZE32RX * 4,
-};
 
 uint8_t rxbuf[SIZERX8] = { 0 };
 
@@ -1157,12 +1169,6 @@ void server_start(void)
 
 #endif /* WITHEXTIO_LAN */
 
-void iq_mutex_unlock(void)
-{
-	if (linux_verify_cond(& ct_iq))
-		safe_cond_signal(& ct_iq);
-}
-
 static void iq_proccessing(uint8_t * buf, uint32_t len)
 {
 	static int rx_stage = 0;
@@ -1399,8 +1405,6 @@ void zynq_pl_init(void)
 	pthread_mutex_init(& mutex_as, NULL);
 #endif /* WITHAUDIOSAMPLESREC */
 
-	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
-//	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
 //	linux_create_thread(& audio_interrupt_t, audio_interrupt_thread, 50, 1);
 
@@ -1543,6 +1547,107 @@ static void handle_sig(int sig)
 	linux_exit();
 }
 
+/*************************************************************/
+
+#if (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
+
+#include <tinyalsa/pcm.h>
+#include <sound/asound.h>
+
+int pcm_state(struct pcm *pcm);
+
+struct pcm * iq_pcm_in, * iq_pcm_out;
+pthread_t alsa_t;
+
+void alsa_init(void)
+{
+    unsigned int card = 0;
+    unsigned int device = 0;
+    int flags = PCM_IN;
+
+    const struct pcm_config config = {
+    	.channels = 16,
+    	.rate = 48000,
+    	.format = PCM_FORMAT_S32_LE,
+    	.period_size = 1024,
+    	.period_count = 2,
+    	.start_threshold = 0,
+    	.silence_threshold = 0,
+    	.stop_threshold = 0,
+    };
+
+    iq_pcm_in = pcm_open(card, device, flags, & config);
+    if (iq_pcm_in == NULL) {
+        fprintf(stderr, "failed to allocate memory for PCM\n");
+        return;
+    } else if (! pcm_is_ready(iq_pcm_in)){
+        pcm_close(iq_pcm_in);
+        fprintf(stderr, "failed to open PCM\n");
+        return;
+    }
+
+    if (pcm_state(iq_pcm_in) == SNDRV_PCM_STATE_RUNNING)
+    	pcm_stop(iq_pcm_in);
+
+    flags = PCM_OUT;
+
+    iq_pcm_out = pcm_open(card, device, flags, & config);
+    if (iq_pcm_out == NULL) {
+        fprintf(stderr, "failed to allocate memory for PCM\n");
+        return;
+    } else if (! pcm_is_ready(iq_pcm_out)){
+        pcm_close(iq_pcm_out);
+        fprintf(stderr, "failed to open PCM\n");
+        return;
+    }
+
+    if (pcm_state(iq_pcm_out) == SNDRV_PCM_STATE_RUNNING)
+    	pcm_stop(iq_pcm_out);
+
+}
+
+void * alsa_thread(void * args)
+{
+	static int rx_stage = 0;
+
+	while(1)
+	{
+		uint32_t buf[DMABUFFSIZE32RX];
+		int cnt = 0;
+
+		do {
+			cnt += pcm_readi(iq_pcm_in, & buf[cnt], 32);
+		} while(cnt < DMABUFFSIZE32RX / 16);
+
+		uintptr_t addr32rx = allocate_dmabuffer32rx();
+		uint32_t * r = (uint32_t *) addr32rx;
+		memcpy((uint8_t *) addr32rx, buf, DMABUFFSIZE32RX * 4);
+		save_dmabuffer32rx(addr32rx);
+
+		const uintptr_t addr = getfilled_dmabuffer32tx();
+		uint32_t * t = (uint32_t *) addr;
+		int w = pcm_writei(iq_pcm_out, t, 32);
+		release_dmabuffer32tx(addr);
+
+		iq_mutex_unlock();
+	}
+
+	return NULL;
+}
+
+void alsa_init2(void)
+{
+	linux_init_cond(& ct_iq);
+	linux_create_thread(& alsa_t, alsa_thread, 50, 1);
+	while(pcm_state(iq_pcm_in) != SNDRV_PCM_STATE_RUNNING);
+	board_set_i2s_enable(1);
+	board_update();
+}
+
+#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA*/
+
+/*************************************************************/
+
 void linux_subsystem_init(void)
 {
 	char spid[6];
@@ -1552,24 +1657,36 @@ void linux_subsystem_init(void)
 
 	signal(SIGINT, handle_sig);
 	linux_xgpio_init();
-#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
-	linux_iq_init();
-#endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL*/
-#if WITHLVGL
-	lvgl_init();
-#endif /* WITHLVGL */
 #if WITHSPIDEV
 	spidev_init();
 #endif /* WITHSPIDEV */
+#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+	linux_iq_init();
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
+	board_set_i2s_enable(0);
+	board_update();
+	alsa_init();
+#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA */
+#if WITHLVGL
+	lvgl_init();
+#endif /* WITHLVGL */
+#if WITHIQSHIFT
+	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
+	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
+	iq_shift_tx(CALIBRATION_TX_SHIFT);
+#endif /* WITHIQSHIFT */
 }
 
 void linux_user_init(void)
 {
+	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
+//	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
+
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
-
-#endif /*  */
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
+	alsa_init2();
+#endif /* DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA */
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
@@ -1577,12 +1694,6 @@ void linux_user_init(void)
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
-}
-
-void linux_wait_iq(void)
-{
-	if (linux_verify_cond(& ct_iq))
-		safe_cond_wait(& ct_iq);
 }
 
 /****************************************************************/
@@ -1815,6 +1926,9 @@ void linux_exit(void)
 #if ! WITHLVGL
 	framebuffer_close();
 #endif /* WITHLVGL */
+
+	board_set_i2s_enable(0);
+	board_update();
 
 #if 0
 	linux_cancel_thread(timer_spool_t);

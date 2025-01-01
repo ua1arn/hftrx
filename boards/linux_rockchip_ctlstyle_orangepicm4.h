@@ -166,7 +166,7 @@
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
 	//#define WITHFPGAIF_FRAMEBITS 64	// Полный размер фрейма - только один приемник без спектра.
-	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
+	#define WITHFPGAIF_FRAMEBITS 512	// Полный размер фрейма
 	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 	//#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -218,8 +218,8 @@
 		#define WITHVIEW_3DSS		1
 		#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHVIEW_3DSS_MARK	1
-		#define WITHDISPLAY_FPS		30
-		#define WITHDISPLAYSWR_FPS	30
+		#define WITHDISPLAY_FPS		40
+		#define WITHDISPLAYSWR_FPS	40
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
@@ -244,13 +244,14 @@
 			#define WITHLFMTOFFSET			15
 			#define DMABUFCLUSTER			32
 			#define DMABUFSCALE				1
-//			#define WITHIQSHIFT				1
+			#define WITHIQSHIFT				1
 //			#define DEFAULTDIALFREQ			12289000uL
 //			#define WITHCPUFANPWM			1
 //			#define WITHCPUTHERMOLEVEL		1
 //			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
 //			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
+			#define WITHALSA				1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -338,7 +339,7 @@
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_FPGAV2
+	#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC1_TYPE TSC_TYPE_GT911
 	//#define TSC_RESET_BY_REG		1

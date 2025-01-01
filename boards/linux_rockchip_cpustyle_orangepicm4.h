@@ -24,10 +24,11 @@
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
-	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
+	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 #endif /* WITHINTEGRATEDDSP */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
@@ -68,9 +69,9 @@ enum {
 };
 */
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		54	// 56 - sw FIR, 50 - hw FIR
+#define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
-#define CALIBRATION_TX_SHIFT			27
+#define CALIBRATION_TX_SHIFT			28
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUART2HW_FIFO	1	/* испольование FIFO */
@@ -682,7 +683,7 @@ enum {
 		cs_cnt
 	};
 
-#define targetctl1	cs0
+#define targetfpga1	cs0
 //#define targetnvram	cs1
 //#define targetadc2	cs2
 
