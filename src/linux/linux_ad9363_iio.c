@@ -427,7 +427,7 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	return true;
 }
 
-void gui_ad936x_set_gain(uint8_t type, int gain)
+void iio_ad936x_set_gain(uint8_t type, int gain)
 {
 	struct iio_channel *chn = NULL;
 	const char * modes[2] = { "manual", "fast_attack" };
@@ -440,7 +440,7 @@ void gui_ad936x_set_gain(uint8_t type, int gain)
 	if (! type) wr_ch_lli(chn, "hardwaregain", gain);
 }
 
-uint8_t gui_ad936x_find(const char * uri)
+uint8_t iio_ad936x_find(const char * uri)
 {
 	if (rxstream) return 2;
 

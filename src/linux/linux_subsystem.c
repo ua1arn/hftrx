@@ -1984,7 +1984,7 @@ void * iio_stream_thread(void * args)
 
 void iio_start_stream(void);
 
-uint8_t gui_ad936x_start(const char * uri)
+uint8_t iio_ad936x_start(const char * uri)
 {
 	strncpy(iio_uri, uri, 30);
 
@@ -2000,7 +2000,7 @@ uint8_t gui_ad936x_start(const char * uri)
 	return 2;
 }
 
-uint8_t gui_ad936x_stop(void)
+uint8_t iio_ad936x_stop(void)
 {
 	//while(get_ad936x_stream_status()) ;
 	//linux_cancel_thread(iio_t);

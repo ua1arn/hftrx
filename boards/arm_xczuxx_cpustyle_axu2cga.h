@@ -106,7 +106,7 @@ enum {
 #define LINUX_TTY_FILE		"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/uio2"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
-#define LINUX_EVDEV_FILE	"/dev/input/event3"
+#define LINUX_EVDEV_FILE	"/dev/input/event0"
 
 #if WITHISBOOTLOADER
 

@@ -157,6 +157,11 @@ int ad9363_iio_start (const char * uri);
 void iio_stop_stream(void);
 uint8_t get_status_iio(void);
 
+uint8_t iio_ad936x_find(const char * uri);
+uint8_t iio_ad936x_start(const char * uri);
+uint8_t iio_ad936x_stop(void);
+void iio_ad936x_set_gain(uint8_t type, int gain);
+
 void board_rtc_getdate(
 	uint_fast16_t * year,
 	uint_fast8_t * month,

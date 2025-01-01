@@ -6777,18 +6777,18 @@ static void window_iioconfig_process(void)
 		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action"))
 		{
 			if (status == 10 || status == 1)
-				status = gui_ad936x_find(uri);
+				status = iio_ad936x_find(uri);
 			else if (status == 0)
-				status = gui_ad936x_start(uri);
+				status = iio_ad936x_start(uri);
 			else if (status == 2)
-				status = gui_ad936x_stop();
+				status = iio_ad936x_stop();
 
 			update = 1;
 		}
 		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_type"))
 		{
 			gain_mode = ! gain_mode;
-			gui_ad936x_set_gain(gain_mode, gain_val);
+			iio_ad936x_set_gain(gain_mode, gain_val);
 			update = 1;
 		}
 		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gain_add") ||
@@ -6797,7 +6797,7 @@ static void window_iioconfig_process(void)
 			if (gain_val + bh->payload > 3 || gain_val + bh->payload < 70)
 			{
 				gain_val += bh->payload;
-				gui_ad936x_set_gain(gain_mode, gain_val);
+				iio_ad936x_set_gain(gain_mode, gain_val);
 				update = 1;
 			}
 
