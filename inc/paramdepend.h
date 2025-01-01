@@ -1127,19 +1127,6 @@ extern "C" {
 
 	typedef uint_fast32_t IRQL_t;
 
-#if defined(__aarch64__)
-	enum
-	{
-		PRIOv_IPC = 1,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
-		PRIOv_IPC_ONLY = 1,
-		PRIOv_OVRT = 1,
-		PRIOv_RT = 1,
-		PRIOv_SYS = 1,
-		PRIOv_USER,
-		//
-		PRIOv_count
-	};
-#else
 	enum
 	{
 		PRIOv_IPC = 1,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
@@ -1151,7 +1138,6 @@ extern "C" {
 		//
 		PRIOv_count
 	};
-#endif
 
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
 

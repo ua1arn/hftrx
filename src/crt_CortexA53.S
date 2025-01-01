@@ -85,7 +85,7 @@ __Vectors64:
    	.ltorg
 
    	.section ".startup0"
-	.align 3
+	.align 4
    	//.code 64
    
    	.extern _start
@@ -139,179 +139,13 @@ Reset_Handler:
 	ldr x30, =__stack_cpu0_sys_end
 	mov sp, x30
 	mov x30, XZR
-	bl SystemInit
+	BL SystemInit
 	ldr x30, =__stack
 	mov sp, x30
 	mov x30, XZR
-	bl __riscv_start
+	BL __riscv_start
 1:
 	b 1b
-	//call
-#if 000
-//	b	skipMarker
-//	.ascii "Xmonitor"
-//	.align 8, 0
-//skipMarker:
-
-#if 0
-	ldr	r0, =0x05000000
-	ldr r1, =0x23
-	str	r1, [r0]
-rrrr:
-	b rrrr
-#endif
-
-	/* Mask interrupts */
-    mov   	lr, #0
-	cpsid   if
-	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
-	ands    r0, r0, #3
-gotosleep:
-	wfine
-	bne     gotosleep
-
-   /*
-    * Reset SCTLR Settings
-    */
-	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
-	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
-	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
-	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
-	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
-	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
-	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
-	ISB
-
-  /*
-    * Setup a stack for each mode
-    */    
-   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-   ldr   sp, =__stack_cpu0_und_end
-   mov   lr, #0
-   
-   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-   ldr   sp, =__stack_cpu0_abt_end
-   mov   lr, #0
-   
-   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-   ldr   sp, =__stack_cpu0_fiq_end
-   mov   lr, #0
-   
-   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-   ldr   sp, =__stack_cpu0_irq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
-   ldr   sp, =__stack_cpu0_mon_end
-   mov   lr, #0
-
-//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-//   ldr   sp, =__stack_cpu0_hyp_end
-//  mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-   ldr   sp, = __stack_cpu0_svc_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu0_sys_end
-   mov   lr, #0
-
-	/* low-level CPU peripherials init */
-
-	ldr   r2, =SystemInit
-	mov   lr, pc
-	bx    r2     /* And jump... */
-
-	ldr   sp, =__stack	/* New stack may be placed in DDR RAM */
-
-/*  Firstly it copies data from read only memory to RAM. There are two schemes
- *  to copy. One can copy more than one sections. Another can only copy
- *  one section.  The former scheme needs more instructions and read-only
- *  data to implement than the latter.
- *  Macro __STARTUP_COPY_MULTIPLE is used to choose between two schemes.  */
-
-/*  Multiple sections scheme.
- *
- *  Between symbol address __copy_table_start__ and __copy_table_end__,
- *  there are array of triplets, each of which specify:
- *    offset 0: LMA of start of a section to copy from
- *    offset 4: VMA of start of a section to copy to
- *    offset 8: size of the section to copy. Must be multiply of 4
- *
- *  All addresses must be aligned to 4 bytes boundary.
- */
-	ldr	r4, =__copy_table_start__
-	ldr	r5, =__copy_table_end__
-
-.L_loop0:
-	cmp	r4, r5
-	bge	.L_loop0_done
-	ldr	r1, [r4]
-	ldr	r2, [r4, #4]
-	ldr	r3, [r4, #8]
-
-.L_loop0_0:
-	subs	r3, #4
-	ittt	ge
-	ldrge	r0, [r1, r3]
-	strge	r0, [r2, r3]
-	bge	.L_loop0_0
-
-	adds	r4, #12
-	b	.L_loop0
-
-.L_loop0_done:
-
-/*  This part of work usually is done in C library startup code. Otherwise,
- *  define this macro to enable it in this startup.
- *
- *  There are two schemes too. One can clear multiple BSS sections. Another
- *  can only clear one section. The former is more size expensive than the
- *  latter.
- *
- *  Define macro __STARTUP_CLEAR_BSS_MULTIPLE to choose the former.
- *  Otherwise efine macro __STARTUP_CLEAR_BSS to choose the later.
- */
-/*  Multiple sections scheme.
- *
- *  Between symbol address __copy_table_start__ and __copy_table_end__,
- *  there are array of tuples specifying:
- *    offset 0: Start of a BSS section
- *    offset 4: Size of this BSS section. Must be multiply of 4
- */
-	ldr	r3, =__zero_table_start__
-	ldr	r4, =__zero_table_end__
-
-.L_loop2:
-	cmp	r3, r4
-	bge	.L_loop2_done
-	ldr	r1, [r3]
-	ldr	r2, [r3, #4]
-	ldr r0, =0
-	//movs	r0, 0
-
-.L_loop2_0:
-	subs	r2, #4
-	itt	ge
-	strge	r0, [r1, r2]
-	bge	.L_loop2_0
-
-	adds	r3, #8
-	b	.L_loop2
-.L_loop2_done:
-
-	ldr   r2, =_start
-	mov   lr, pc
-	bx    r2     /* And jump... */
-                       
-ExitFunction:
-   nop
-   nop
-   nop
-   b ExitFunction   
-
-#endif
 
    .ltorg
 
@@ -342,8 +176,8 @@ ExitFunction:
 	f	flags field mask byte, PSR[31:24] (privileged software execution).
 */
  	.align 	4, 0
-    .func   VIRQ_Handler
-VIRQ_Handler:
+    .func   IRQ_Handler
+IRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
@@ -447,7 +281,7 @@ VIRQ_Handler:
 
 	.section ".text"
 
-.macro build_trapframe exc_type
+.macro push_trapframe
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -466,32 +300,43 @@ VIRQ_Handler:
 	stp	x5, x6, [sp, #-16]!
 	stp	x3, x4, [sp, #-16]!
 	stp	x1, x2, [sp, #-16]!
+
+	/* Wait for FPU operation done */
+ 	mrs	x1, FPSR
+
 	/*
-	 * Store (spsr, x0)
+	 * store floating point registers from (q30,q31) pair to (q0,q1) pair.
 	 */
-	mrs	x21, spsr_el1
-	stp	x21, x0, [sp, #-16]!
-	/*
-	 * Allocate a room for sp_el0 and store elr
-	 */
-	mrs	x21, elr_el1
-	stp	xzr, x21, [sp, #-16]!
-	/*
-	 * store exception type and esr
-	 */
-	mov	x21, #(\exc_type)
-	mrs	x22, esr_el1
-	stp	x21, x22, [sp, #-16]!
+	stp q30, q31, [sp, #-32]!
+	stp q28, q29, [sp, #-32]!
+	stp q26, q27, [sp, #-32]!
+	stp q24, q25, [sp, #-32]!
+	stp q22, q23, [sp, #-32]!
+	stp q20, q21, [sp, #-32]!
+	stp q18, q19, [sp, #-32]!
+	stp q16, q17, [sp, #-32]!
+	stp q14, q15, [sp, #-32]!
+	stp q12, q13, [sp, #-32]!
+	stp q10, q11, [sp, #-32]!
+	stp q8, q9, [sp, #-32]!
+	stp q6, q7, [sp, #-32]!
+	stp q4, q5, [sp, #-32]!
+	stp q2, q3, [sp, #-32]!
+	stp q0, q1, [sp, #-32]!
+
+	/* Save VFP control state */
+	mrs	x1, FPCR
+	mrs x2, FPEXC32_EL2
+	stp	x1, x2, [sp, #-16]!
+
+	//mrs	x1, FPCR
+	mrs x2, FPSR
+	stp	x1, x2, [sp, #-16]!
 .endm
 
 .macro store_traped_sp
 	mrs	x21, sp_el0
 	str	x21, [sp, #EXC_EXC_SP_OFFSET]
-.endm
-
-.macro call_common_trap_handler, codeN, tail=fname
-	mov	x0, sp
-	bl uncommon_trap_handler_\codeN
 .endm
 
 .macro store_nested_sp
@@ -505,6 +350,26 @@ VIRQ_Handler:
 	msr	sp_el0, x21
 .endm
 
+.macro build_trapframe exc_type
+
+	/*
+	 * Store (spsr, x0)
+	 */
+	mrs	x21, SPSR_EL3
+	stp	x21, x0, [sp, #-16]!
+	/*
+	 * Allocate a room for sp_el0 and store elr
+	 */
+	mrs	x21, ELR_EL3
+	stp	xzr, x21, [sp, #-16]!
+	/*
+	 * store exception type and esr
+	 */
+	mov	x21, #(\exc_type)
+	mrs	x22, ESR_EL3
+	stp	x21, x22, [sp, #-16]!
+.endm
+
 .macro restore_trapframe
 
 	/*
@@ -512,16 +377,50 @@ VIRQ_Handler:
 	 */
 	add	sp, sp, #16
 	/*
-	 * Drop exception stack pointer and restore elr_el1
+	 * Drop exception stack pointer and restore ELR_EL3
 	 */
 	ldp	x21, x22, [sp], #16
-	msr	elr_el1, x22
+	msr	ELR_EL3, x22
 
 	/*
 	 * Retore spsr and x0
 	 */
 	ldp	x21, x0, [sp], #16
-	msr	spsr_el1, x21
+	msr	SPSR_EL3, x21
+.endm
+
+.macro pop_trapframe
+
+	/* Wait for FPU operation done */
+ 	mrs	x1, FPSR
+	/* Restire VFP control state */
+	ldp	x1, x2, [sp], #16
+	//msr	FPCR, x1
+	msr FPSR, x2
+
+	ldp	x1, x2, [sp], #16
+	msr	FPCR, x1
+	msr FPEXC32_EL2, x2
+
+	/*
+	 * Restore gstore floating point registers from (q0,q1) pair to (q30,q31) pair.
+	 */
+	ldp q0, q1, [sp], #32
+	ldp q2, q3, [sp], #32
+	ldp q4, q5, [sp], #32
+	ldp q6, q7, [sp], #32
+	ldp q8, q9, [sp], #32
+	ldp q10, q11, [sp], #32
+	ldp q12, q13, [sp], #32
+	ldp q14, q15, [sp], #32
+	ldp q16, q17, [sp], #32
+	ldp q18, q19, [sp], #32
+	ldp q20, q21, [sp], #32
+	ldp q22, q23, [sp], #32
+	ldp q24, q25, [sp], #32
+	ldp q26, q27, [sp], #32
+	ldp q28, q29, [sp], #32
+	ldp q30, q31, [sp], #32
 
 	/*
 	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
@@ -542,144 +441,195 @@ VIRQ_Handler:
 	ldp	x27, x28, [sp], #16
 	ldp	x29, x30, [sp], #16
 
-	eret
+.endm
+
+.macro call_common_trap_handler, codeN, tail=fname
+	mov	x0, sp
+	BL uncommon_trap_handler_\codeN
 .endm
 
 	text_align
 _curr_el_sp0_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_SP0
 	store_traped_sp
 	call_common_trap_handler 1
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_sp0_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_SP0
 	store_traped_sp
 	call_common_trap_handler 2
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_sp0_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_SP0
 	store_traped_sp
 	call_common_trap_handler 3
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_sp0_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_SP0
 	store_traped_sp
 	call_common_trap_handler 4
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_SPX
 	store_nested_sp
 	//call_common_trap_handler 5
-	bl SError_Handler
+	BL SError_Handler
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_SPX
 	store_nested_sp
 	//call_common_trap_handler 6
-	bl VIRQ_Handler		// Calls from EL3 system
+	BL VIRQ_Handler		// Calls from EL3 system
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_SPX
 	store_nested_sp
 	call_common_trap_handler 7
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _curr_el_spx_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_SPX
 	store_nested_sp
 	call_common_trap_handler 8
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 
 	text_align
 _lower_el_aarch64_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_AARCH64
 	store_traped_sp
 	call_common_trap_handler 9
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch64_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_AARCH64
 	store_traped_sp
 	call_common_trap_handler 10
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch64_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_AARCH64
 	store_traped_sp
 	call_common_trap_handler 11
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch64_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_AARCH64
 	store_traped_sp
 	call_common_trap_handler 12
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 
 	text_align
 _lower_el_aarch32_sync:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SYNC_AARCH32
 	store_traped_sp
 	call_common_trap_handler 13
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch32_irq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_IRQ_AARCH32
 	store_traped_sp
 	call_common_trap_handler 14
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch32_fiq:
+	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_AARCH32
 	store_traped_sp
 	call_common_trap_handler 15
 	restore_traped_sp
 	restore_trapframe
+	pop_trapframe
+	ERET
 
 	text_align
 _lower_el_aarch32_serror:
+	push_trapframe
 	build_trapframe AARCH64_EXC_SERR_AARCH32
 	store_traped_sp
 	call_common_trap_handler 16
 	restore_traped_sp
 	restore_trapframe
-
+	pop_trapframe
+	ERET
 
 
 
    	.ltorg
 
 	.section ".noinit"
-	.align 3
+	.align 4
 
 	.space	STACKSIZEUND
 __stack_cpu0_und_end = .

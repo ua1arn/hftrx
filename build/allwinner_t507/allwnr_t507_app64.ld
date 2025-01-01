@@ -100,12 +100,12 @@ SECTIONS
 	/*
 		QUAD (__etext)
 		QUAD (__data_start__)
-		QUAD (__data_end__ - __data_start__)
+		QUAD ((__data_end__ - __data_start__) / 4)
 	*/
 		/*
 		QUAD (__etext2)
 		QUAD (__data2_start__)
-		QUAD (__data2_end__ - __data2_start__)
+		QUAD ((__data2_end__ - __data2_start__) / 4)
 		*/
 		__copy_table_end64__ = .;
 	} > RAM
@@ -118,9 +118,9 @@ SECTIONS
 		. = ALIGN(8);
 		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
-		QUAD (__bss_end__ - __bss_start__)
+		QUAD ((__bss_end__ - __bss_start__) / 4)
 		QUAD (__bss2_start__)
-		QUAD (__bss2_end__ - __bss2_start__)
+		QUAD ((__bss2_end__ - __bss2_start__) / 4)
 		__zero_table_end64__ = .;
 	} > RAM
 
@@ -186,13 +186,13 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc BLOCK(1M) (NOLOAD):
+	.ramnc BLOCK(2M) (NOLOAD):
 	{
 		PROVIDE(__RAMNC_BASE = .);
 		__bss2_start__ = .;
 		*(.ramnc*)
 		__bss2_end__ = .;
-		. = ALIGN(1M);
+		. = ALIGN(2M);
 		PROVIDE(__RAMNC_TOP = .);
 		
 		. = ALIGN(64);
