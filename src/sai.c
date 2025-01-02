@@ -3416,7 +3416,7 @@ enum
 
 static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 {
-	if (sizeof (uintptr_t) == 2)
+	if (sizeof (uintptr_t) == 4)
 	{
 		desc [DMAC_DESC_DST] = addr;					// Destination Address
 
@@ -3435,7 +3435,7 @@ static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 
 static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 {
-	if (sizeof (uintptr_t) == 2)
+	if (sizeof (uintptr_t) == 4)
 	{
 		desc [DMAC_DESC_SRC] = addr;				// Source Address
 
@@ -3453,7 +3453,7 @@ static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 
 static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
 {
-	if (sizeof (uintptr_t) == 2)
+	if (sizeof (uintptr_t) == 4)
 	{
 		return desc [DMAC_DESC_SRC];	// Source Address
 	}
@@ -3467,7 +3467,7 @@ static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
 
 static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 {
-	if (sizeof (uintptr_t) == 2)
+	if (sizeof (uintptr_t) == 4)
 	{
 		return desc [DMAC_DESC_DST];	// Destination Address
 	}
@@ -3481,7 +3481,7 @@ static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 
 static uintptr_t DMAC_get_link(uint32_t regv)
 {
-	if (sizeof (uintptr_t) == 2)
+	if (sizeof (uintptr_t) == 4)
 	{
 		return regv;				// Link Address
 	}
@@ -3494,7 +3494,7 @@ static uintptr_t DMAC_get_link(uint32_t regv)
 static uint32_t DMAC_set_link(uintptr_t addr)
 {
 	ASSERT((addr & UINT32_C(0x03)) == 0);
-	if (sizeof (uintptr_t) == 2)
+	if (sizeof (uintptr_t) == 4)
 	{
 		return addr;				// Link Address
 	}

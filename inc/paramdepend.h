@@ -746,7 +746,11 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "Allw A64"
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "Allw A64_64"
+	#else
+		#define WITHCPUNAME "Allw A64"
+	#endif
 
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
@@ -789,7 +793,11 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "Allw T507"
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "Allw T507_64"
+	#else
+		#define WITHCPUNAME "Allw T507"
+	#endif
 
 #elif CPUSTYLE_T113
 
@@ -881,7 +889,11 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "Allw H3"
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "Allw H3_64"
+	#else
+		#define WITHCPUNAME "Allw H3"
+	#endif
 
 
 #elif CPUSTYLE_V3S
@@ -1058,7 +1070,11 @@ extern "C" {
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 
 	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "RK356x"
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "RK356x_64"
+	#else
+		#define WITHCPUNAME "RK356x"
+	#endif
 
 #else
 
