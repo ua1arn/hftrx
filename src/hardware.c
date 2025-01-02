@@ -4021,7 +4021,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
+	CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
@@ -4031,7 +4031,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 
-	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
+	CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
 
 static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
@@ -4045,11 +4045,11 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
+	CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc32;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
@@ -4058,7 +4058,7 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 
-	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
+	CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
 
 #elif CPUSTYLE_H3

@@ -217,8 +217,8 @@ bootloader_launch_app(uintptr_t startfunc)
 	// Start aarch64 core as application
 	//__set_RVBAR_EL3(startfunc);
 #if CPUSTYLE_A64
-	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_H616
 	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);

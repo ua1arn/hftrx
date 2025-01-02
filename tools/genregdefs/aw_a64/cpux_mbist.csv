@@ -1,0 +1,4 @@
+#type; CPUX_MBIST
+#base; CPUX_MBIST 0x01502000
+
+#typeend;

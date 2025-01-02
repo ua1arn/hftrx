@@ -1,5 +1,5 @@
-#type; C0_CPUX_CFG
-#base; C0_CPUX_CFG 0x01700000
+#type; CPUX_CFG
+#base; CPUX_CFG 	0x01700000	; User manual v 1.0 say this value, wrk okay
 
 #regdef; C_CTRL_REG0; 0x0000; Cluster Control Register0
 #regdef; C_CTRL_REG1; 0x0004; Cluster Control Register1

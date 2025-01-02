@@ -122,7 +122,8 @@ typedef enum IRQn
 #define DE_MIXER1_UI3_BASE ((uintptr_t) 0x01205000)   /*!< DE_UI  Base */
 #define DE_MIXER1_VSU1_BASE ((uintptr_t) 0x01220000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
 #define DE_MIXER1_UIS1_BASE ((uintptr_t) 0x01240000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
-#define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG  Base */
+#define CPUX_MBIST_BASE ((uintptr_t) 0x01502000)      /*!< CPUX_MBIST  Base */
+#define CPUX_CFG_BASE ((uintptr_t) 0x01700000)        /*!< CPUX_CFG  Base */
 #define SRAMC_BASE ((uintptr_t) 0x01C00000)           /*!< SRAMC  Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
 #define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC  Base */
@@ -436,31 +437,6 @@ typedef struct AUDIO_CODEC_Type
     __IO uint32_t AC_DRC1_OPT;                        /*!< Offset 0x7B4 DRC1 Optimum Register */
 } AUDIO_CODEC_TypeDef; /* size of structure = 0x7B8 */
 /*
- * @brief C0_CPUX_CFG
- */
-/*!< C0_CPUX_CFG  */
-typedef struct C0_CPUX_CFG_Type
-{
-    __IO uint32_t C_CTRL_REG0;                        /*!< Offset 0x000 Cluster Control Register0 */
-    __IO uint32_t C_CTRL_REG1;                        /*!< Offset 0x004 Cluster Control Register1 */
-    __IO uint32_t CACHE_CFG_REG0;                     /*!< Offset 0x008 Cache parameters configuration register0 */
-    __IO uint32_t CACHE_CFG_REG1;                     /*!< Offset 0x00C Cache parameters configuration register1 */
-         uint32_t reserved_0x010 [0x0006];
-    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x028 General Control Register0 */
-         uint32_t reserved_0x02C;
-    __IO uint32_t C_CPU_STATUS;                       /*!< Offset 0x030 Cluster CPU Status Register */
-         uint32_t reserved_0x034 [0x0002];
-    __IO uint32_t L2_STATUS_REG;                      /*!< Offset 0x03C L2 Status Register */
-         uint32_t reserved_0x040 [0x0010];
-    __IO uint32_t C_RST_CTRL;                         /*!< Offset 0x080 Cluster Reset Control Register */
-         uint32_t reserved_0x084 [0x0007];
-    struct
-    {
-        __IO uint32_t LOW;                            /*!< Offset 0x0A0 Reset Vector Base Address Registerx_L */
-        __IO uint32_t HIGH;                           /*!< Offset 0x0A4 Reset Vector Base Address Registerx_H */
-    } RVBARADDR [0x004];                              /*!< Offset 0x0A0 Reset Vector Base Address Register for core [0..3] */
-} C0_CPUX_CFG_TypeDef; /* size of structure = 0x0C0 */
-/*
  * @brief CCU
  */
 /*!< CCU  */
@@ -629,6 +605,31 @@ typedef struct CIR_RX_Type
     __IO uint32_t CIR_RXSTA;                          /*!< Offset 0x030 CIR Receiver Status Register */
     __IO uint32_t CIR_RXCFG;                          /*!< Offset 0x034 CIR Receiver Configure Register */
 } CIR_RX_TypeDef; /* size of structure = 0x038 */
+/*
+ * @brief CPUX_CFG
+ */
+/*!< CPUX_CFG  */
+typedef struct CPUX_CFG_Type
+{
+    __IO uint32_t C_CTRL_REG0;                        /*!< Offset 0x000 Cluster Control Register0 */
+    __IO uint32_t C_CTRL_REG1;                        /*!< Offset 0x004 Cluster Control Register1 */
+    __IO uint32_t CACHE_CFG_REG0;                     /*!< Offset 0x008 Cache parameters configuration register0 */
+    __IO uint32_t CACHE_CFG_REG1;                     /*!< Offset 0x00C Cache parameters configuration register1 */
+         uint32_t reserved_0x010 [0x0006];
+    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x028 General Control Register0 */
+         uint32_t reserved_0x02C;
+    __IO uint32_t C_CPU_STATUS;                       /*!< Offset 0x030 Cluster CPU Status Register */
+         uint32_t reserved_0x034 [0x0002];
+    __IO uint32_t L2_STATUS_REG;                      /*!< Offset 0x03C L2 Status Register */
+         uint32_t reserved_0x040 [0x0010];
+    __IO uint32_t C_RST_CTRL;                         /*!< Offset 0x080 Cluster Reset Control Register */
+         uint32_t reserved_0x084 [0x0007];
+    struct
+    {
+        __IO uint32_t LOW;                            /*!< Offset 0x0A0 Reset Vector Base Address Registerx_L */
+        __IO uint32_t HIGH;                           /*!< Offset 0x0A4 Reset Vector Base Address Registerx_H */
+    } RVBARADDR [0x004];                              /*!< Offset 0x0A0 Reset Vector Base Address Register for core [0..3] */
+} CPUX_CFG_TypeDef; /* size of structure = 0x0C0 */
 /*
  * @brief CPU_SUBSYS_CTRL
  */
@@ -3219,7 +3220,7 @@ typedef struct VE_Type
 #define DE_MIXER1_UI3 ((DE_UI_TypeDef *) DE_MIXER1_UI3_BASE)/*!< DE_MIXER1_UI3  register set access pointer */
 #define DE_MIXER1_VSU1 ((DE_VSU_TypeDef *) DE_MIXER1_VSU1_BASE)/*!< DE_MIXER1_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
 #define DE_MIXER1_UIS1 ((DE_UIS_TypeDef *) DE_MIXER1_UIS1_BASE)/*!< DE_MIXER1_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
-#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
+#define CPUX_CFG ((CPUX_CFG_TypeDef *) CPUX_CFG_BASE) /*!< CPUX_CFG  register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
