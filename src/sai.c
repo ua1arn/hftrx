@@ -3416,14 +3416,14 @@ enum
 
 static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 {
-	if (sizeof (uintptr_t) == 4)
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		desc [DMAC_DESC_DST] = addr;					// Destination Address
 
 	}
 	else
 	{
-		uint32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
+		uint_fast32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
 		ASSERT(addr < 0x400000000);
 		param &= ~ (UINT32_C(0x03) << 18);
 		param |= (ptr_hi32(addr) & 0x03) << 18;
@@ -3435,14 +3435,14 @@ static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 
 static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 {
-	if (sizeof (uintptr_t) == 4)
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		desc [DMAC_DESC_SRC] = addr;				// Source Address
 
 	}
 	else
 	{
-		uint32_t param = desc [DMAC_DESC_PRM]; 	// 17:16 DMA transfers the high 2 bits of the 34-bit source address
+		uint_fast32_t param = desc [DMAC_DESC_PRM]; 	// 17:16 DMA transfers the high 2 bits of the 34-bit source address
 		ASSERT(addr < 0x400000000);
 		param &= ~ (UINT32_C(0x03) << 16);
 		param |= (ptr_hi32(addr) & 0x03) << 16;
@@ -3453,7 +3453,7 @@ static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 
 static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
 {
-	if (sizeof (uintptr_t) == 4)
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		return desc [DMAC_DESC_SRC];	// Source Address
 	}
@@ -3467,7 +3467,7 @@ static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
 
 static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 {
-	if (sizeof (uintptr_t) == 4)
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		return desc [DMAC_DESC_DST];	// Destination Address
 	}
@@ -3479,9 +3479,9 @@ static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 	}
 }
 
-static uintptr_t DMAC_get_link(uint32_t regv)
+static uintptr_t DMAC_get_link(uint_fast32_t regv)
 {
-	if (sizeof (uintptr_t) == 4)
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		return regv;				// Link Address
 	}
@@ -3491,10 +3491,10 @@ static uintptr_t DMAC_get_link(uint32_t regv)
 	}
 }
 
-static uint32_t DMAC_set_link(uintptr_t addr)
+static uint_fast32_t DMAC_set_link(uintptr_t addr)
 {
 	ASSERT((addr & UINT32_C(0x03)) == 0);
-	if (sizeof (uintptr_t) == 4)
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		return addr;				// Link Address
 	}
