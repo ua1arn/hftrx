@@ -4872,8 +4872,8 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -4928,8 +4928,8 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -4988,8 +4988,8 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5044,8 +5044,8 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5100,8 +5100,8 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5156,8 +5156,8 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5212,8 +5212,8 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5272,8 +5272,8 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5332,8 +5332,8 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5395,8 +5395,8 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5451,8 +5451,8 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5512,8 +5512,8 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5570,8 +5570,8 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5694,8 +5694,8 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5769,8 +5769,8 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5842,8 +5842,8 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -5914,8 +5914,8 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -6540,8 +6540,8 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -6610,8 +6610,8 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -6877,8 +6877,8 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -6933,8 +6933,8 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
