@@ -1728,63 +1728,26 @@ void IRQ15_Handler(void)
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
-void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); for (;;) ; }
-void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); for (;;) ; }
-void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); for (;;) ; }
-void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); for (;;) ; }
-void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); for (;;) ; }
-//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); for (;;) ; }	// VIRQ EL3
-void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); for (;;) ; }
-void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); for (;;) ; }
-void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); for (;;) ; }
-void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); for (;;) ; }
-void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); for (;;) ; }
-void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); for (;;) ; }
-void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); for (;;) ; }
-void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); for (;;) ; }
-void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }
-void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }
-
-//    #define __LDREXB __LDAEXB
-//    #define __STREXB __STLEXB
-
-void Synchro_Handler(void)
-{
-	TP();
-	PRINTF("Synchro_Handler:\n");
-	for (;;)
-		;
-}
-
-void Synchro_Handler1(void)
-{}
-
-void Synchro_Handler2(void)
-{
-	TP();
-	unsigned ec = (__get_ESR_EL3() >> 26) & 0x1F;
-	PRINTF("ec=%02X\n", ec);
-	PRINTF("ESR_EL3=%08X\n", (unsigned) __get_ESR_EL3());
-	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
-	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
-	for (;;)
-		;
-}
-
-void Synchro_Handler3(void)
-{
-	TP();
-	unsigned ec = (__get_ESR_EL3() >> 26) & 0x1F;
-	PRINTF("ec=%02X\n", ec);
-	PRINTF("ESR_EL3=%08X\n", (unsigned) __get_ESR_EL3());
-	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
-	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
-	for (;;)
-		;
-}
+void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); for (;;) ; }	// 0x000
+void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); for (;;) ; }	// 0x080
+void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); for (;;) ; }	// 0x100
+void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); for (;;) ; }	// 0x180
+//void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); for (;;) ; }	// 0x200 Current EL with SPx Synchronous
+//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); for (;;) ; }	// 0x280 VIRQ EL3
+void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); for (;;) ; }	// 0x300
+void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); for (;;) ; }	// 0x380
+void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); for (;;) ; }	// 0x400
+void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); for (;;) ; }	// 0x480
+void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); for (;;) ; }	// 0x500
+void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); for (;;) ; }	// 0x580
+void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); for (;;) ; }	// 0x600
+void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); for (;;) ; }	// 0x680
+void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }	// 0x700
+void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
 
 // wasL: uncommon_trap_handler_6
 // Current EL with SPx VIRQ
+// 0x280
 void VIRQ_Handler(void)
 {
 	//dbg_putchar('.');
@@ -1793,6 +1756,7 @@ void VIRQ_Handler(void)
 
 // wasL: uncommon_trap_handler_5
 // Current EL with SPx Synchronous
+// 0x200
 void SError_Handler(void)
 {
 	TP();
