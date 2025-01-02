@@ -16,8 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT2 = arm-none-eabi
-#TRGT2 = riscv-none-elf
+#TRGT2 = arm-none-eabi
+TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 
 #XFEL = ../../tools/xfel-windows-v1.3.2/xfel
@@ -26,19 +26,20 @@ XFEL = ./xfel_fixed_t113-s3
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj
+OBJDIR = obj64
 
 # Define project name here
-PROJECT = tc1_t113s3
+PROJECT = tc1_t113s3_64
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./allwnr_t113s3_boot.ld
-LDSCRIPT_APP = ./allwnr_t113s3_app.ld
-ARCHDIR = $(PRJROOT)/arch/aw_t113x
+LDSCRIPT_APP = ./allwnr_t113s3_app64.ld
+#ARCHDIR = $(PRJROOT)/arch/aw_t113x
+ARCHDIR = $(PRJROOT)/arch/aw_f133
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_T113"=1
-#UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_F133"=1 -D"EGL_STATIC_LIBRARY"=1
+#UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_T113"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_F133"=1 -D"EGL_STATIC_LIBRARY"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -55,13 +56,13 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a7 --specs=nosys.specs -mfloat-abi=hard -mfpu=neon-vfpv4
-#CORE = -march=rv64imafdc_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector --specs=nosys.specs
+#CORE = -mcpu=cortex-a7 --specs=nosys.specs -mfloat-abi=hard -mfpu=neon-vfpv4
+CORE = -march=rv64imafdc_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector --specs=nosys.specs
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
-#OPT = -Ofast
+#OPT = -Ofast -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -212,7 +213,7 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ifeq (1, 1)
+ifeq (1, 0)
 ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
 ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
 else
@@ -256,8 +257,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
-LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
