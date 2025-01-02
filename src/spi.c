@@ -6099,7 +6099,7 @@ static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * pa
 
 	for (i = 0; i <= lastnum; ++ i)
 	{
-		readSFDPDATAFLASH((i + 1) * 8uL, buff8, 8);
+		readSFDPDATAFLASH((i + 1) * 8, buff8, 8);
 		if (buff8 [0] == id)
 		{
 			* paramlength = buff8 [3];	// in double words
@@ -6205,7 +6205,7 @@ int testchipDATAFLASH(void)
 		if (len4 < 9 || len4 > 16)
 		{
 			releaseDATAFLASH(oldIrql);
-			PRINTF("SFDP layout wrong\n");
+			PRINTF("SFDP layout wrong (len4=0x%04X)\n", (unsigned) len4);
 			return 1;
 		}
 		uint8_t buff32 [len4 * 4];
