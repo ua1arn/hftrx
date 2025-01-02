@@ -3390,10 +3390,11 @@ enum
 #define DMAC_MODE_REGN_VALUE_UACOUT (0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2))	// // mode: DMA_DST_MODE, DMA_SRC_MODE
 
 
+#define DMAC_DESC_CFG	0	/* параметры и старшие биты адресов истояника/приемника */
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
 #define DMAC_DESC_LEN	3	/* размер */
-#define DMAC_DESC_PARAM	4	/* Parameter */
+#define DMAC_DESC_PRM	4	/* Parameter */
 #define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
 
 #define DMAC_DESC_SIZE	(DCACHEROWSIZE / sizeof (uint32_t))	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано больше */
@@ -3411,6 +3412,94 @@ enum
 	#define DMAC_SRC_ADDR_MODE_POS 8	// DMA Source Address Mode
 	static void (* dmac_handlers [16])(unsigned dmach);
 #endif
+
+
+static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
+{
+	if (sizeof (uintptr_t) == 2)
+	{
+		desc [DMAC_DESC_DST] = addr;					// Destination Address
+
+	}
+	else
+	{
+		uint32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
+		param &= ~ (UINT32_C(0x03) << 18);
+		param |= (ptr_hi32(addr) & 0x03) << 18;
+		desc [DMAC_DESC_PRM] = param;
+		desc [DMAC_DESC_DST] = ptr_lo32(addr);	// Destination Address
+	}
+
+}
+
+static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
+{
+	if (sizeof (uintptr_t) == 2)
+	{
+		desc [DMAC_DESC_SRC] = addr;				// Source Address
+
+	}
+	else
+	{
+		uint32_t param = desc [DMAC_DESC_PRM]; 	// 17:16 DMA transfers the high 2 bits of the 34-bit source address
+		param &= ~ (UINT32_C(0x03) << 16);
+		param |= (ptr_hi32(addr) & 0x03) << 16;
+		desc [DMAC_DESC_PRM] = param;
+		desc [DMAC_DESC_SRC] = ptr_lo32(addr);	// Source Address
+	}
+}
+
+static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
+{
+	if (sizeof (uintptr_t) == 2)
+	{
+		return desc [DMAC_DESC_SRC];	// Source Address
+	}
+	else
+	{
+		const uint32_t param = desc [DMAC_DESC_PRM]; // 17:16 DMA transfers the high 2 bits of the 34-bit source address
+		const uint32_t addr = desc [DMAC_DESC_SRC];	// Source Address
+		return (((param >> 16) & UINT64_C(0x03)) << 32) | addr;
+	}
+}
+
+static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
+{
+	if (sizeof (uintptr_t) == 2)
+	{
+		return desc [DMAC_DESC_DST];	// Destination Address
+	}
+	else
+	{
+		const uint32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
+		const uint32_t addr = desc [DMAC_DESC_DST];	// Destination Address
+		return (((param >> 16) & UINT64_C(0x03)) << 32) | addr;
+	}
+}
+
+static uintptr_t DMAC_get_link(uint32_t regv)
+{
+	if (sizeof (uintptr_t) == 2)
+	{
+		return regv;				// Link Address
+	}
+	else
+	{
+		return ((UINT64_C(0x03) & regv) << 32) | (regv & ~ (UINT32_C(0x03)));				// Link Address
+	}
+}
+
+static uint32_t DMAC_set_link(uintptr_t addr)
+{
+	if (sizeof (uintptr_t) == 2)
+	{
+		return addr;				// Link Address
+	}
+	else
+	{
+		return (addr & ~ UINT32_C(0x03)) | (ptr_hi32(addr) & 0x03);				// Link Address
+	}
+}
 
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
@@ -3460,7 +3549,7 @@ static void DMAC_NS_IRQHandler(void)
 #endif /* CPUSTYLE_A64 */
 }
 
-// TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PARAM]
+// TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PRM]
 // 19:18 DMA transfers the higher 2 bits of the 34-bit destination address
 // 17:16 DMA transfers the high 2 bits of the 34-bit source address
 
@@ -3470,13 +3559,25 @@ static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;
 
-	const uintptr_t descraddr = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;	// только что обработанный дескриптор
+	const uintptr_t descraddr = DMAC_get_link(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN);	// только что обработанный дескриптор
 	volatile uint32_t * const desc = (volatile uint32_t *) descraddr;
-	const uintptr_t addr = desc [ix];
-	desc [ix] = newaddr;
-	dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	return addr;
+	if (DMAC_DESC_DST == ix)
+	{
+		const uintptr_t addr = DMAC_get_dst(desc);
+		DMAC_set_dst(desc, newaddr);
+		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
+
+		return addr;
+	}
+	else
+	{
+		const uintptr_t addr = DMAC_get_src(desc);
+		DMAC_set_src(desc, newaddr);
+		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
+
+		return addr;
+	}
 }
 
 static uintptr_t DMAC_TX_swap(unsigned dmach, uintptr_t newaddr)
@@ -4727,7 +4828,7 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 {
 	const unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -4756,12 +4857,12 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4783,7 +4884,7 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 {
 	const unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -4812,12 +4913,12 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16tx());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4843,7 +4944,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -4872,12 +4973,12 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4899,7 +5000,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -4928,12 +5029,12 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16tx());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4955,7 +5056,7 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (hdmi48bufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_HDMI_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -4984,12 +5085,12 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flushhdmi48tx(allocate_dmabufferhdmi48tx());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flushhdmi48tx(allocate_dmabufferhdmi48tx()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5011,7 +5112,7 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -5040,12 +5141,12 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate16rx8k(allocate_dmabuffer16rx8k());				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate16rx8k(allocate_dmabuffer16rx8k()));				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5067,7 +5168,7 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -5096,12 +5197,12 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush16tx8k(allocate_dmabuffer16tx8k());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush16tx8k(allocate_dmabuffer16tx8k()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5127,7 +5228,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 {
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -5156,12 +5257,12 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16tx());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5187,7 +5288,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (IFADCvalue_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_FPGA_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -5216,12 +5317,12 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5250,7 +5351,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 {
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -5279,12 +5380,12 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5306,7 +5407,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 {
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (IFADCvalue_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_FPGA_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -5335,12 +5436,12 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5367,7 +5468,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 {
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (IFDACvalue_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_FPGA_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -5396,12 +5497,12 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5425,7 +5526,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 {
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (IFDACvalue_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_FPGA_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -5454,12 +5555,12 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5549,7 +5650,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
 	const unsigned NBYTES = datasize_dmabufferuacout48();
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
@@ -5578,12 +5679,12 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidateuacout48(allocate_dmabufferuacout48()));				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5624,7 +5725,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
 	const unsigned NBYTES = datasize_dmabufferuacin48();
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
@@ -5653,12 +5754,12 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flushuacin48(allocate_dmabufferuacin48()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5697,7 +5798,7 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 {
 	const unsigned NBYTES = datasize_dmabufferuacinrts96();
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
@@ -5726,12 +5827,12 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flushuacinrts96(allocate_dmabufferuacinrts96()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -5769,7 +5870,7 @@ static void DMAC_USB_TX_handler_UACINRTS192(unsigned dmach)
 void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep)
 {
 	const unsigned NBYTES = datasize_dmabufferuacinrts192();
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
@@ -5798,12 +5899,12 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flushuacinrts192(allocate_dmabufferuacinrts192());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flushuacinrts192(allocate_dmabufferuacinrts192()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -6396,7 +6497,7 @@ static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -6424,12 +6525,12 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -6466,7 +6567,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 static void DMAC_AudioCodec_TX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -6494,12 +6595,12 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16tx());			// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -6732,7 +6833,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 {
 	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFADCvalue_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_FPGA_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
@@ -6761,12 +6862,12 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = portaddr;				// Source Address
-		descr0 [i] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -6788,7 +6889,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 {
 	const unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFDACvalue_t);
-	static ALIGNX_BEGIN RAMNCDESC uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_FPGA_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
@@ -6817,12 +6918,12 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		descr0 [i] [0] = configDMAC;			// Cofigurarion
-		descr0 [i] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-		descr0 [i] [2] = portaddr;				// Destination Address
-		descr0 [i] [3] = NBYTES;				// Byte Counter
-		descr0 [i] [4] = parameterDMAC;			// Parameter
-		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
+		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
+		DMAC_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
+		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
+		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
