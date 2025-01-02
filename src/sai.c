@@ -3404,12 +3404,12 @@ enum
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 #if CPUSTYLE_A64 || CPUSTYLE_V3S
-	#define DMAC_DEST_ADDR_MODE_POS 21	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
-	#define DMAC_SRC_ADDR_MODE_POS 5	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
+	#define DMAC_DEST_ADDR_MODE_Pos 21	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
+	#define DMAC_SRC_ADDR_MODE_Pos 5	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
 	static void (* dmac_handlers [8])(unsigned dmach);
 #else
-	#define DMAC_DEST_ADDR_MODE_POS 24	// DMA Destination Address Mode
-	#define DMAC_SRC_ADDR_MODE_POS 8	// DMA Source Address Mode
+	#define DMAC_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode
+	#define DMAC_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode
 	static void (* dmac_handlers [16])(unsigned dmach);
 #endif
 
@@ -3424,6 +3424,7 @@ static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 	else
 	{
 		uint32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
+		ASSERT(addr < 0x400000000);
 		param &= ~ (UINT32_C(0x03) << 18);
 		param |= (ptr_hi32(addr) & 0x03) << 18;
 		desc [DMAC_DESC_PRM] = param;
@@ -3442,6 +3443,7 @@ static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 	else
 	{
 		uint32_t param = desc [DMAC_DESC_PRM]; 	// 17:16 DMA transfers the high 2 bits of the 34-bit source address
+		ASSERT(addr < 0x400000000);
 		param &= ~ (UINT32_C(0x03) << 16);
 		param |= (ptr_hi32(addr) & 0x03) << 16;
 		desc [DMAC_DESC_PRM] = param;
@@ -3491,13 +3493,15 @@ static uintptr_t DMAC_get_link(uint32_t regv)
 
 static uint32_t DMAC_set_link(uintptr_t addr)
 {
+	ASSERT((addr & UINT32_C(0x03)) == 0);
 	if (sizeof (uintptr_t) == 2)
 	{
 		return addr;				// Link Address
 	}
 	else
 	{
-		return (addr & ~ UINT32_C(0x03)) | (ptr_hi32(addr) & 0x03);				// Link Address
+		ASSERT(addr < 0x400000000);
+		return (ptr_lo32(addr) & ~ UINT32_C(0x03)) | (ptr_hi32(addr) & 0x03);				// Link Address
 	}
 }
 
@@ -4840,11 +4844,11 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -4896,11 +4900,11 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -4956,11 +4960,11 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5012,11 +5016,11 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5068,11 +5072,11 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5124,11 +5128,11 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5180,11 +5184,11 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5240,11 +5244,11 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5300,11 +5304,11 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5363,11 +5367,11 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5419,11 +5423,11 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5480,11 +5484,11 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5538,11 +5542,11 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5662,11 +5666,11 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5737,11 +5741,11 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5810,11 +5814,11 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -5882,11 +5886,11 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -6508,11 +6512,11 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqAudioCodec * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -6578,11 +6582,11 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqAudioCodec * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -6845,11 +6849,11 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
@@ -6901,11 +6905,11 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_POS) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_POS) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
