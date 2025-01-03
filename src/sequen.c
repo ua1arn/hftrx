@@ -242,8 +242,8 @@ enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) +  SEQNTICKS(WITHMAXTXRXDE
 
 // очередь организована как массив битов
 static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
-static uint_fast8_t keyqueueput;
-static uint_fast8_t keyqueueget;
+static unsigned keyqueueput;
+static unsigned keyqueueget;
 //static uint_fast8_t keyqueuecnt;
 
 static void keyqueuein(uint_fast8_t v)
@@ -625,15 +625,6 @@ void seq_initialize(void)
 	////usertxstate = 0;
 
 	seqstate = SEQST_INITIALIZE;
-
-	// compile-time check
-	if (QUEUEUESIZE > 256)
-	{
-		extern void wrong_QUEUEUESIZE_holder_type(void);
-		wrong_QUEUEUESIZE_holder_type();
-		for (;;)
-			;
-	}
 }
 
 /* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
