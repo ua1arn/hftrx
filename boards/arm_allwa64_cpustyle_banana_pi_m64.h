@@ -154,9 +154,6 @@
 		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
 	#endif /* WITHINTEGRATEDDSP */
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 	#if ! LCDMODE_DUMMY
 		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -944,14 +941,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-			arm_hardware_pioa_analoginput(((ainmask) >> 0) & 0xff);	/* ADC12_IN0..ADC12_IN7 */ \
-			arm_hardware_piob_analoginput(((ainmask) >> 8) & 0x03);	/* ADC12_IN8..ADC12_IN0 */ \
-			arm_hardware_pioc_analoginput(((ainmask) >> 10) & 0x3f);	/* ADC12_IN10..ADC12_IN15 */ \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { } while (0) //do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)

@@ -161,9 +161,6 @@
 		#define WITHCODEC2_HDMI_DUPLEX_MASTER	(1 && WITHHDMITVHW)		/* Канал выдачи в HDMI */
 	#endif /* WITHINTEGRATEDDSP */
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -1144,11 +1141,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
 

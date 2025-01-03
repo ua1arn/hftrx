@@ -149,9 +149,6 @@
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	#endif /* WITHINTEGRATEDDSP */
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 	#if ! LCDMODE_DUMMY
 		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -847,11 +844,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
 

@@ -868,7 +868,6 @@ typedef struct adcinmap_tag
 const adcinmap_t * getadcmap(uint_fast8_t adci);
 
 void spool_adcdonebundle(void);
-void adcdones_initialize(void);
 uint_fast8_t isadchw(uint_fast8_t adci); // Проверка что индекс входа АЦП относится ко встроенной периферии процессора
 
 

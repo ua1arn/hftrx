@@ -196,9 +196,6 @@ void user_uart5_ontxchar(void * ctx);
 	//#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 //	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 //	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */

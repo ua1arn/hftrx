@@ -15,7 +15,6 @@
 static ticker_t seqticker;
 static adcdone_t voxoribet;
 
-#define SEQNTICKS(v) ((v + (SEQ_TICKS_PERIOD - 1)) / SEQ_TICKS_PERIOD)
 
 #if WITHTX
 

@@ -121,9 +121,6 @@
 		//#define WITHGPUHW	1	/* Graphic processor unit */
 	#endif
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -838,11 +835,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 #if WITHUSBHW || 1
 

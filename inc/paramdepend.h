@@ -188,7 +188,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	// ADC clock frequency: 1..20 MHz
@@ -240,7 +240,7 @@ extern "C" {
 	#define TICKS_FREQUENCY		200	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	// ADC clock frequency: 1..20 MHz
@@ -370,7 +370,7 @@ extern "C" {
 	#define TICKS_FREQUENCY	 200	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	// ADC clock frequency: 1..20 MHz
@@ -423,7 +423,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -458,7 +458,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -512,7 +512,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200	// Hz
 
 	#define SEQ_TICKS_PERIOD	5	// 5 ms
-	#define KBD_TICKS_PERIOD	5	// 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD	5	// 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -563,7 +563,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -618,7 +618,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -670,7 +670,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -716,7 +716,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -768,7 +768,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -800,7 +800,7 @@ extern "C" {
 	#define TICKS_FREQUENCY 200
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt

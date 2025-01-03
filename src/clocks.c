@@ -5887,7 +5887,6 @@ void hardware_spi_io_delay(void)
 void
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
-	adcdones_initialize();
 	tickers_initialize();
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7

@@ -449,6 +449,9 @@ void nmeamodem_parsechar(uint_fast8_t c);				/* вызывается из обр
 void nmeamodem_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmeamodem_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
+#define KBDNTICKS(v) ((v + (KBD_TICKS_PERIOD - 1)) / KBD_TICKS_PERIOD)
+#define SEQNTICKS(v) ((v + (SEQ_TICKS_PERIOD - 1)) / SEQ_TICKS_PERIOD)
+
 
 #ifdef __cplusplus
 }

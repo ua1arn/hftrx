@@ -181,8 +181,6 @@
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -817,14 +815,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-			arm_hardware_pioa_analoginput(((ainmask) >> 0) & 0xff);	/* ADC12_IN0..ADC12_IN7 */ \
-			arm_hardware_piob_analoginput(((ainmask) >> 8) & 0x03);	/* ADC12_IN8..ADC12_IN0 */ \
-			arm_hardware_pioc_analoginput(((ainmask) >> 10) & 0x3f);	/* ADC12_IN10..ADC12_IN15 */ \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)

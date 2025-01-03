@@ -129,9 +129,6 @@
 	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 	#if ! LCDMODE_DUMMY
 		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -895,11 +892,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 #if WITHUSBHW || 1
 	// PE11

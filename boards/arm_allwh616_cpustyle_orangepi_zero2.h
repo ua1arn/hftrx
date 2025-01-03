@@ -127,9 +127,6 @@
 	//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 	#endif /* WITHINTEGRATEDDSP */
 
-	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
-	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
-
 	#if ! LCDMODE_DUMMY
 		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -876,11 +873,6 @@
 		} while (0)
 
 #endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		} while (0)
-#endif /* WITHCPUADCHW */
 
 	#define TARGET_GPIOC_VBUSON_BIT (UINT32_C(1) << 16)	// PC16 - единицей включение питания для device
 

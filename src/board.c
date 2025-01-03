@@ -8618,7 +8618,7 @@ enum
 	BOARD_ADCFILTER_TYPECOUNT
 };
 
-enum { ADC_LPF_WND = NTICKS(320) };	// длительность окна
+enum { ADC_LPF_WND = KBDNTICKS(320) };	// длительность окна
 
 typedef struct lpfdata_tag
 {

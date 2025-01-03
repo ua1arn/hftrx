@@ -21,7 +21,8 @@ extern "C" {
 #define ENCODER_MENU_STEPS 24	/* количество изменений настраиваемого параметра на один оборот валкодера */
 
 #define HISTLEN 4		// кое-где дальше есть код, в неявном виде использующий это значение
-#define TICKSMAX NTICKS(125)
+#define TICKSMAX ENCNTICKS(125)
+#define ENCNTICKS(v) ((v + (ENC_TICKS_PERIOD - 1)) / ENC_TICKS_PERIOD)
 
 typedef struct encoder_tag
 {

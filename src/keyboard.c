@@ -12,7 +12,6 @@
 
 #if WITHKEYBOARD
 
-#define KBDNTICKS(v) ((v + (KBD_TICKS_PERIOD - 1)) / KBD_TICKS_PERIOD)
 
 enum 
 {
@@ -320,7 +319,7 @@ kbd_is_tready(void)
 	#warning TODO: remove this
 	return 1;
 
-#elif WITHCPUADCHW && KEYBOARD_USE_ADC
+#elif KEYBOARD_USE_ADC
 
 	uint_fast8_t f;
 
@@ -397,7 +396,7 @@ void kbd_initialize(void)
 	////kbd_press = 0;
 	////kbd_release = 0;
 	////kbd_repeat = 0;
-#if KEYBOARD_USE_ADC
+#if WITHCPUADCHW
 	adcdone_initialize(& aevent, kbd_spool, NULL);
 	adcdone_add(& aevent);
 #else /* KEYBOARD_USE_ADC */

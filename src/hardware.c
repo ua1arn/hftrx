@@ -348,10 +348,36 @@ static void tickers_event(void)
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
+static void adcstart_event(void * ctx)
+{
+#if WITHCPUADCHW
+	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
+#endif /* WITHCPUADCHW */
+}
+
+static void adcdones_event(void * ctx);
+
 void tickers_initialize(void)
 {
 	IRQLSPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
+
+	IRQLSPINLOCK_INITIALIZE(& adcdoneslock);
+	InitializeListHead(& adcdones);
+
+#if WITHCPUADCHW
+
+	static ticker_t adcticker;
+	ticker_initialize(& adcticker, SEQNTICKS(KBD_TICKS_PERIOD), adcstart_event, NULL);
+	ticker_add(& adcticker);
+
+#else /* WITHCPUADCHW */
+
+	static ticker_t adcticker;
+	ticker_initialize(& adcticker, SEQNTICKS(KBD_TICKS_PERIOD), adcdones_event, NULL);
+	ticker_add(& adcticker);
+
+#endif /* WITHCPUADCHW */
 }
 
 void tickers_deinitialize(void)
@@ -361,13 +387,6 @@ void tickers_deinitialize(void)
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	RemoveEntryVList(& tickers);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
-
-// инициализация списка обработчиков конца преобразования АЦП
-void adcdones_initialize(void)
-{
-	IRQLSPINLOCK_INITIALIZE(& adcdoneslock);
-	InitializeListHead(& adcdones);
 }
 
 // регистрируются обработчики конца преобразования АЦП
@@ -387,7 +406,8 @@ void adcdone_add(adcdone_t * p)
 	IRQLSPIN_UNLOCK(& adcdoneslock, oldIrql);
 }
 
-static void adcdones_event(void)
+// Call on KBD_TICKS_PERIOD
+static void adcdones_event(void * ctx)
 {
 	IRQL_t oldIrql;
 
@@ -438,10 +458,6 @@ RAMFUNC void spool_systimerbundle1(void)
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 
 	tickers_event();
-
-//#if ! WITHCPUADCHW
-	adcdones_event();
-//#endif /* ! WITHCPUADCHW */
 }
 
 /* Машинно-независимый обработчик прерываний. */
@@ -449,10 +465,6 @@ RAMFUNC void spool_systimerbundle1(void)
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 RAMFUNC void spool_systimerbundle2(void)
 {
-
-#if WITHCPUADCHW
-	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
-#endif /* WITHCPUADCHW */
 }
 
 #if WITHCPUADCHW
@@ -464,7 +476,7 @@ RAMFUNC void spool_systimerbundle2(void)
 
 RAMFUNC void spool_adcdonebundle(void)
 {
-	adcdones_event();
+	adcdones_event(NULL);
 }
 #endif /* WITHCPUADCHW */
 
