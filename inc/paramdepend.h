@@ -507,9 +507,9 @@ extern "C" {
 	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 200	// Hz
+	#define TICKS_FREQUENCY 1000	// Hz
 
-	#define SEQ_TICKS_PERIOD	5	// 5 ms
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
 	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
 	#define ENC_TICKS_PERIOD	5	// 5 ms
 
@@ -557,11 +557,11 @@ extern "C" {
 	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 1000	// Hz
 
-	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
 	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
-	#define ENC_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD	5	// 5 ms
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
