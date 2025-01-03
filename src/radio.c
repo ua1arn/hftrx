@@ -12796,7 +12796,7 @@ display_refreshperformed_voltage(void)
 	const uint_fast16_t n = UINTICKS(500);	/* 1/2 секунды */
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	counterupdatedvoltage = n;
 	LowerIrql(oldIrql);
 }
@@ -12816,7 +12816,7 @@ display_refreshperformed_freqs(void)
 	const uint_fast8_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	counterupdatedfreqs = n;
 	LowerIrql(oldIrql);
 }
@@ -12852,7 +12852,7 @@ display_refreshperformed_bars(void)
 	const uint_fast8_t n = UINTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	counterupdatebars = n;
 	LowerIrql(oldIrql);
 }
@@ -13049,14 +13049,17 @@ static uint_fast8_t cat_answer_ready_uart(void)
 	return 1;
 }
 
+static IRQLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
+static IRQLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
+
 #if WITHUSBHW && WITHUSBCDCACM
 static uint_fast8_t cat_answer_ready_cdcacm(void)
 {
 	uint_fast8_t f;
 	IRQL_t oldIrql;
-	RiseIrql(USBSYS_IRQL, & oldIrql);
+	IRQLSPIN_LOCK(& usbsyslock, & oldIrql, USBSYS_IRQL);
 	f = usbd_cdc_ready();
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& usbsyslock, oldIrql);
 	return f;
 }
 #endif /* WITHUSBHW && WITHUSBCDCACM */
@@ -13079,17 +13082,17 @@ static void
 cat_answervariable_cdcacm(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	RiseIrql(CATSYS_IRQL, & oldIrql);
+	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
 		// Добавлено для поддержки отладки при работающем CAT
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 		return;
 	}
 	usbd_cdc_send(p, len);
 	catstateout = CATSTATEO_SENDREADY;
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 
@@ -13097,12 +13100,12 @@ static void
 cat_answervariable_uart(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	RiseIrql(CATSYS_IRQL, & oldIrql);
+	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
 		// Добавлено для поддержки отладки при работающем CAT
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 		return;
 	}
 	if ((catsendcount = len) != 0)
@@ -13116,7 +13119,7 @@ cat_answervariable_uart(const char * p, uint_fast8_t len)
 		//catstateout = CATSTATEO_SENDREADY;
 		HARDWARE_CAT_ENABLETX(0);
 	}
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 
 // Вызов из user-mode программы
@@ -14123,9 +14126,9 @@ static void
 cat_reset_ptt(void)
 {
 	IRQL_t oldIrql;
-	RiseIrql(CATSYS_IRQL, & oldIrql);
+	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 	cattunemode = catstatetx = 0;
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 
 static uint_fast8_t
@@ -14151,9 +14154,9 @@ cat_get_ptt(void)
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(CATSYS_IRQL, & oldIrql);
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 		const uint_fast8_t r = cat_get_signal(catsigptt);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 
 		return (catstatetx != 0) || r;	// catstatetx - это по текстовым командам
 	}
@@ -14171,9 +14174,9 @@ uint_fast8_t cat_get_keydown(void)
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(CATSYS_IRQL, & oldIrql);
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 		const uint_fast8_t r = cat_get_signal(catsigkey);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 
 		return r;
 	}
@@ -14202,12 +14205,12 @@ static void processcat_enable(uint_fast8_t enable)
 	if (! catprocenable)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(CATSYS_IRQL, & oldIrql);
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 		HARDWARE_CAT_ENABLERX(0);
 		HARDWARE_CAT_ENABLETX(0);
 		catstatein = CATSTATE_HALTED;
 		catstateout = CATSTATEO_HALTED;
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 	}
 	else
 	{
@@ -14224,13 +14227,13 @@ static void processcat_enable(uint_fast8_t enable)
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		IRQL_t oldIrql;
-		RiseIrql(CATSYS_IRQL, & oldIrql);
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 		catstatetxdata = 0;
 		cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 	}
 }
 
@@ -14306,16 +14309,16 @@ cat_answer_forming(void)
 		const uint_fast8_t i = ilast;
 		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);
 		IRQL_t oldIrql;
-		RiseIrql(CATSYS_IRQL, & oldIrql);
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 		if (cat_answer_map [i] != 0)
 		{
 			const uint_fast8_t answerparam = cat_answerparam_map [i];
 			cat_answer_map [i] = 0;
-			LowerIrql(oldIrql);
+			IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 			(* catanswers [i])(answerparam);
 			return;
 		}
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 		if (ilast == original)
 			break;
 	}
@@ -19113,7 +19116,7 @@ hamradio_main_step(void)
 					if (islfmstart(minute * 60 + seconds))
 					{
 						IRQL_t oldIrql;
-						RiseIrql(IRQL_SYSTEM, & oldIrql);
+						RiseIrql(TICKER_IRQL, & oldIrql);
 						lfm_run();
 						LowerIrql(oldIrql);
 					}
