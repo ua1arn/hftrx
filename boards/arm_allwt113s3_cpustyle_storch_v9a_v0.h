@@ -274,7 +274,7 @@
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
 		/* FUNC encoder */ \
 		arm_hardware_pioe_inputs(TARGET_ENCODER2_BITS); \
-		ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
+		ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
 		ticker_add(& th2); \
 		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh2, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \

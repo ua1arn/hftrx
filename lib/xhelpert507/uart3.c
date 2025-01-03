@@ -925,7 +925,7 @@ void user_uart3_initialize(void)
 	hardware_uart3_enablerx(1);
 	hardware_uart3_enabletx(0);
 
-	ticker_initialize(& uart3_pkg_ticker, 1, uart3_timer_pkg_event, NULL);
+	ticker_initialize(& uart3_pkg_ticker, NTICKS(UART_TICKS_PERIOD), uart3_timer_pkg_event, NULL);
 	ticker_add(& uart3_pkg_ticker);
 
 	static ticker_t uart3_ticker;

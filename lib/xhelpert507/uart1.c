@@ -399,7 +399,7 @@ void user_uart1_initialize(void)
 	hardware_uart1_enabletx(0);
 
 	static ticker_t uart1_pkg_ticker;
-	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
+	ticker_initialize(& uart1_pkg_ticker, NTICKS(UART_TICKS_PERIOD), uart1_timer_pkg_event, NULL);
 	ticker_add(& uart1_pkg_ticker);
 
 	static ticker_t uart1_ticker;

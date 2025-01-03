@@ -898,8 +898,6 @@
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
-	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \

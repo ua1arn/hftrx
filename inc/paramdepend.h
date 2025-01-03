@@ -11,146 +11,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if CPUSTYLE_AT91SAM7S
-
-	//#define CPU_FREQ ((18432000u * 73) / 14 / 2)	// satmod9if_v0 ARM board
-	#define CPU_FREQ 48000000u
-	//#define CPU_FREQ 12000000u
-
-	#define ADC_FREQ	500000u	/* тактовая частота SAR преобразователя АЦП. */
-
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
-
-	//#define SCL_CLOCK  100000u	/* 100 kHz I2C/TWI speed */
-	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define ARM_OVERREALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST
-	#define ARM_REALTIME_PRIORITY		(AT91C_AIC_PRIOR_LOWEST + 1)
-	#define ARM_SYSTEM_PRIORITY			AT91C_AIC_PRIOR_LOWEST
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-
-#elif CPUSTYLE_STM32F0XX
-	//
-	// STM32F030F4P6, STM32F051C6T6 processors
-
-	//#define REF1_DIV 1
-	//#define REF1_MUL 1	// 8 MHz
-	#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
-
-	#define CPU_FREQ (PLL_FREQ / 1)	// 48 MHz
-	//#define CPU_FREQ 180000000uL
-	//#define CPU_FREQ 168000000uL
-	/* частоты, подающиеся на периферию */
-	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
-	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-
-	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 400 Hz
-
-	// ADC clock frequency: 0.6..14 MHz
-	#define ADC_FREQ	12000000u	/* тактовая частота SAR преобразователя АЦП. */
-	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
-
-#elif CPUSTYLE_STM32L0XX
-	//
-	// STM32L051K6T processor
-
-	#define	REFINFREQ 16000000u 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
-	//#define	REFINFREQ 4000000u 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
-	//#define	REFINFREQ 2100000u 	/* definition from stm32f0xx.h нельзя использовать - SPISPEED использцтся в условной компиляции */
-	//#define REF1_DIV 2
-	//#define REF1_MUL 12	// 48 MHz
-	// HSI without PLL
-	#define REF1_DIV 1
-	#define REF1_MUL 1	// 8 MHz
-	#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
-
-	#define CPU_FREQ (PLL_FREQ / 1)	// 48 MHz
-	//#define CPU_FREQ 180000000uL
-	//#define CPU_FREQ 168000000uL
-	/* частоты, подающиеся на периферию */
-	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
-	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-
-	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 200 Hz
-
-	#define BOARD_TIM21_FREQ PCLK1_FREQ
-
-	// ADC clock frequency: 0.6..14 MHz
-	#define ADC_FREQ	12000000u	/* тактовая частота SAR преобразователя АЦП. */
-	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (PCLK1_FREQ / 1)	/* 8 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define ADCVREF_CPU	30		// 3.3 volt
-	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#define WITHREFSENSORVAL	1224	/* Reference voltage: STM32L031xx = 1.224V */
-
-#elif CPUSTYLE_STM32F1XX
-	//
-	#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
-	#define CPU_FREQ (PLL_FREQ / 1)
-
- 	#if CPU_FREQ >= 48000000uL
-		#define	PCLK1_FREQ (CPU_FREQ / 2)	// PCLK1 frequency
-		#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)
-		#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
-	#else
-		#define	PCLK1_FREQ (CPU_FREQ / 1)	// PCLK1 frequency
-		#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)
-		#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
-	#endif
-	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 200 Hz
-
-	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
-	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
-
-	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	#define DACVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 32-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
@@ -324,7 +185,11 @@ extern "C" {
 
 	#endif
 
-	#define TICKS_FREQUENCY		200uL	// at ARM - 200 Hz
+	#define TICKS_FREQUENCY 200	// Hz
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
@@ -363,156 +228,6 @@ extern "C" {
 		#define WITHREFSENSORVAL	1210	/* Reference voltage: STM32F746, STM32F429, STM32F446 = 1.21V */
 	#endif
 
-#elif CPUSTYLE_ATSAM3S
-
-	//#define CPU_FREQ ((18432000uL * 73) / 14 / 2)	// satmod9if_v0 ARM board
-	#define CPU_FREQ 64000000uL
-	//#define CPU_FREQ 48000000uL
-	//#define CPU_FREQ 32000000uL
-	//#define CPU_FREQ 12000000uL
-	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-
-	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
-	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
-
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
-
-	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
-	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#define HARDWARE_NCORES 1
-	#define WITHCPUNAME "ATSAM3S"
-
-#elif CPUSTYLE_ATSAM4S
-
-	//#define CPU_FREQ ((18432000uL * 73) / 14 / 2)	// satmod9if_v0 ARM board
-	#define CPU_FREQ 64000000uL
-	//#define CPU_FREQ 48000000uL
-	//#define CPU_FREQ 32000000uL
-	//#define CPU_FREQ 12000000uL
-	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-
-	// ADC clock frequency: 1..20 MHz
-	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
-	//#define ADC_FREQ	16000000uL	/* тактовая частота SAR преобразователя АЦП. */
-
-	#define TICKS_FREQUENCY		(200u * 1) // at ARM - 400 Hz
-
-	//#define SCL_CLOCK  100000u	/* 100 kHz I2C/TWI speed */
-	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#define HARDWARE_NCORES 1
-	#define WITHCPUNAME "ATSAM4S"
-
-#elif CPUSTYLE_AT91SAM9XE
-
-	#define CPU_FREQ (196608000uL / 2)	// частота периферии (процессорная после деления).
-	//#define CPU_FREQ 14400000uL
-	//#define SCL_CLOCK  100000L	/* 100 kHz I2C/TWI speed */
-	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define TICKS_FREQUENCY		200U // 200 Hz
-
-	#define ARM_REALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST 
-	#define ARM_SYSTEM_PRIORITY		AT91C_AIC_PRIOR_LOWEST 
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-#elif CPUSTYLE_ATMEGA
-
-	// ATMega processors
-
-	#define CPU_FREQ (F_CPU)
-
-	#define TICKS_FREQUENCY	 (200u)	// 200 Hz - use compare/match interrupt
-
-	//#define SCL_CLOCK  100000u	/* 100 kHz I2C/TWI speed */
-	//#define SCL_CLOCK  250000u		/* 250 kHz I2C/TWI speed */
-	#define SCL_CLOCK  400000u	/* 400 kHz I2C/TWI speed */
-	//#define SCL_CLOCK  40000u	/* 40 kHz I2C/TWI speed */
-
-	#define SPISPEED (CPU_FREQ / 2) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST SPISPEED
-
-	#define ADC_FREQ	250000u	/* тактовая частота SAR преобразователя АЦП. */
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define ADCVREF_CPU	50		// 5.0 volt
-
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	//#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
-	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-
-	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-
-	#if HARDWARE_ADCBITS == 8
-		/* тип для хранения данных, считанных с АЦП */
-		typedef uint_fast16_t adcvalholder_t;
-		typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#elif HARDWARE_ADCBITS == 10
-		/* тип для хранения данных, считанных с АЦП */
-		typedef uint_fast16_t adcvalholder_t;		
-		typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#else
-		#error Erong HARDWARE_ADCBITS value
-	#endif
-	#define HARDWARE_NCORES 1
-
-#elif CPUSTYLE_ATXMEGA
-
-	// ATMega processors
-
-	#define CPU_FREQ (F_CPU)
-
-	#define TICKS_FREQUENCY	 (200U * 2)	// 400 Hz - use compare/match interrupt
-
-	//#define SCL_CLOCK  100000uL	/* 100 kHz I2C/TWI speed */
-	//#define SCL_CLOCK  250000uL		/* 250 kHz I2C/TWI speed */
-	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
-
-	#define SPISPEED (8000000) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define ADC_FREQ	125000uL	/* тактовая частота SAR преобразователя АЦП. */
-
-
-	#define ADCVREF_CPU	25		// 2.5 volt
-	#define HARDWARE_ADCBITS 8	/* АЦП работает с 8-битными значениями */
-
-	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast8_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-	#define HARDWARE_NCORES 1
-
 #elif CPUSTYLE_R7S721
 
 	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
@@ -522,7 +237,11 @@ extern "C" {
 	#define P1CLOCK_FREQ	(CPU_FREQ / 6)		// 60 MHz
 	#define P0CLOCK_FREQ	(CPU_FREQ / 12)		// 30 MHz
 
-	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+	#define TICKS_FREQUENCY		200	// Hz
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000u	/* тактовая частота SAR преобразователя АЦП. */
@@ -648,7 +367,11 @@ extern "C" {
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 	#define BOARD_USART1_FREQ  (stm32mp1_uart1_get_freq())
 
-	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
+	#define TICKS_FREQUENCY	 200	// Hz
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
 
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000u	/* 400 kHz I2C/TWI speed */
@@ -697,7 +420,12 @@ extern "C" {
 	#define CPU_FREQ	(xc7z_get_arm_freq())
 	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 200	// Hz
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -727,7 +455,12 @@ extern "C" {
 	#define CPU_PL1_FREQ (allwnr_a64_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_a64_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 200	// Hz
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -770,11 +503,18 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
+
 	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 100//1000
+	#define TICKS_FREQUENCY 200	// Hz
+
+	#define SEQ_TICKS_PERIOD	5	// 5 ms
+	#define KBD_TICKS_PERIOD	5	// 5 ms
+	#define ENC_TICKS_PERIOD	5	// 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -821,6 +561,11 @@ extern "C" {
 	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -871,6 +616,11 @@ extern "C" {
 	#define HARDWARE_HOSC_FREQ (allwnr_h3_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -918,6 +668,11 @@ extern "C" {
 	#define HARDWARE_HOSC_FREQ 	(allwnr_v3s_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -937,36 +692,6 @@ extern "C" {
 
 	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw V3s"
-
-#elif CPUSTYLE_VM14
-
-	typedef uint_fast16_t adcvalholder_t;
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
-
-	#define HARDWARE_CLK32K_FREQ 32000uL
-	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
-
-	#define CPU_FREQ	(elveesvm14_get_arm_freq())
-	#define HARDWARE_SPI_FREQ (elveesvm14_get_spi_freq())
-	#define HARDWARE_UART_FREQ (elveesvm14_get_usart_freq())
-
-	#define TICKS_FREQUENCY 200
-	#define ADCVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_ADCBITS 12
-
-	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	24000000u	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	#define HARDWARE_NCORES 2
-	#define WITHCPUNAME "Elvees VM14"
 
 #elif CPUSTYLE_F133
 
@@ -989,6 +714,11 @@ extern "C" {
 	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -1036,6 +766,11 @@ extern "C" {
 	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
@@ -1063,6 +798,11 @@ extern "C" {
 	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 

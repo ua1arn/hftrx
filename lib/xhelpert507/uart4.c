@@ -911,7 +911,7 @@ void user_uart4_initialize(void)
 	hardware_uart4_enablerx(1);
 	hardware_uart4_enabletx(0);
 
-	ticker_initialize(& uart3_pkg_ticker, 1, serialtouts, NULL);
+	ticker_initialize(& uart3_pkg_ticker, NTICKS(UART_TICKS_PERIOD), serialtouts, NULL);
 	ticker_add(& uart3_pkg_ticker);
 
 	static const char msg [] = "Hello!\n";

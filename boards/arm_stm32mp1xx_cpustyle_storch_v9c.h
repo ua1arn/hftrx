@@ -324,7 +324,7 @@
 			einthandler_initialize(& eh2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_pioe_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
 			/* ticker for spool */ \
-			ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
+			ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
 			ticker_add(& th2); \
 		} while (0)
 

@@ -8,6 +8,7 @@
 #ifndef SRC_XHELPERT507_XHELPER507_H_
 #define SRC_XHELPERT507_XHELPER507_H_
 
+#define UART_TICKS_PERIOD 10	// ms
 
 void user_uart0_initialize(void);
 void user_uart1_initialize(void);

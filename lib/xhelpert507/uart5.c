@@ -350,7 +350,7 @@ void user_uart5_initialize(void)
 	hardware_uart5_enabletx(0);
 
 	static ticker_t uart5_pkg_ticker;
-	ticker_initialize(& uart5_pkg_ticker, 1, uart5_timer_pkg_event, NULL);
+	ticker_initialize(& uart5_pkg_ticker, NTICKS(UART_TICKS_PERIOD), uart5_timer_pkg_event, NULL);
 	ticker_add(& uart5_pkg_ticker);
 
 	static ticker_t uart5_ticker;

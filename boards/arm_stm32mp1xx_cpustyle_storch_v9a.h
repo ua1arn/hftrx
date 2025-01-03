@@ -309,7 +309,7 @@
 			einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 			/* ticker for spool */ \
-			ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
+			ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
 		} while (0)
 
 #endif

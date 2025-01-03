@@ -15,6 +15,8 @@
 static ticker_t seqticker;
 static adcdone_t voxoribet;
 
+#define SEQNTICKS(v) ((v + (SEQ_TICKS_PERIOD - 1)) / SEQ_TICKS_PERIOD)
+
 #if WITHTX
 
 enum {
@@ -177,7 +179,7 @@ vox_enable(
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	vox_delay = NTICKS(10 * vox_delay_tens);
+	vox_delay = SEQNTICKS(10 * vox_delay_tens);
 	seq_voxenable = voxstate;
 	LowerIrql(oldIrql);
 }
@@ -193,7 +195,7 @@ seq_set_bkin_enable(
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	bkin_delay = NTICKS(10 * bkin_delay_tens);
+	bkin_delay = SEQNTICKS(10 * bkin_delay_tens);
 	seq_bkinenable = bkinstate;
 	LowerIrql(oldIrql);
 }
@@ -228,8 +230,8 @@ void
 vox_initialize(void)
 {
 	//bkin_count = vox_count = vox_count_stk = 0;
-	bkin_delay = NTICKS(250);
-	vox_delay = NTICKS(1000); /* Одна секунда */
+	bkin_delay = SEQNTICKS(250);
+	vox_delay = SEQNTICKS(1000); /* Одна секунда */
 	//vox_level = avox_level = 0;
 	//seq_voxenable = 0;
 	//seq_cwenable = 0;
@@ -237,12 +239,12 @@ vox_initialize(void)
 
 ////////////////////////////////
 
-enum { QUEUEUESIZE = 2 * (NTICKS(WITHMAXRXTXDELAY) +  NTICKS(WITHMAXTXRXDELAY) * 2 + 4) };
+enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) +  SEQNTICKS(WITHMAXTXRXDELAY) * 2 + 4) };
 
 // очередь организована как массив битов
 static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
-static unsigned keyqueueput;
-static unsigned keyqueueget;
+static uint_fast8_t keyqueueput;
+static uint_fast8_t keyqueueget;
 //static uint_fast8_t keyqueuecnt;
 
 static void keyqueuein(uint_fast8_t v)
@@ -565,9 +567,9 @@ void seq_set_rxtxdelay(
 	uint_fast8_t pretxdelay
 	)
 {
-	const uint_fast8_t arxtxticks = NTICKS(rxtxdelay); // задержка пре переходе на передачу
-	const uint_fast8_t atxrxticks = NTICKS(txrxdelay); // и обратно
-	const uint_fast8_t apretxticks = NTICKS(pretxdelay); // задержка перед переходом на передачу
+	const uint_fast8_t arxtxticks = SEQNTICKS(rxtxdelay); // задержка пре переходе на передачу
+	const uint_fast8_t atxrxticks = SEQNTICKS(txrxdelay); // и обратно
+	const uint_fast8_t apretxticks = SEQNTICKS(pretxdelay); // задержка перед переходом на передачу
 	if (arxtxticks != rxtxticks || atxrxticks != txrxticks || apretxticks != pretxticks)
 	{
 		IRQL_t oldIrql;
@@ -594,7 +596,7 @@ static void vox_spool(void * ctx)
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
-	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
+	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL);
 	ticker_add(& seqticker);
 #if WITHTX && WITHVOX
 	adcdone_initialize(& voxoribet, vox_spool, NULL);
@@ -609,21 +611,30 @@ void seq_initialize(void)
 	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 
 
-	rxtxticks = NTICKS(WITHMAXRXTXDELAY);	// 15 ms задержка пре переходе на передачу
-	txrxticks = NTICKS(WITHMAXTXRXDELAY);	// 15 ms задержка пре переходе на приём
-	pretxticks = NTICKS(WITHMAXTXRXDELAY);
+	rxtxticks = SEQNTICKS(WITHMAXRXTXDELAY);	// 15 ms задержка пре переходе на передачу
+	txrxticks = SEQNTICKS(WITHMAXTXRXDELAY);	// 15 ms задержка пре переходе на приём
+	pretxticks = SEQNTICKS(WITHMAXTXRXDELAY);
 
 	keyqueueclear();
 	uint_fast8_t n = (pretxticks + rxtxticks) * 2;	// Умножение на 2 просто "от балды", в некоторых состояниях основного цикла задержка больше той, что в скобках.
 	while (n --)
 		keyqueuein(0);
 	
-	rgbeepticks = NTICKS(200);	// длительность roger beep
+	rgbeepticks = SEQNTICKS(200);	// длительность roger beep
 	////exttunereq =
 	////usertxreq =
 	////usertxstate = 0;
 
 	seqstate = SEQST_INITIALIZE;
+
+	// compile-time check
+	if (QUEUEUESIZE > 256)
+	{
+		extern void wrong_QUEUEUESIZE_holder_type(void);
+		wrong_QUEUEUESIZE_holder_type();
+		for (;;)
+			;
+	}
 }
 
 /* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
@@ -705,7 +716,7 @@ void seq_ask_txstate(uint_fast8_t tx)
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
-	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
+	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL);
 	ticker_add(& seqticker);
 }
 

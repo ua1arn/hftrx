@@ -11,27 +11,30 @@
 #include "board.h"
 
 #if WITHKEYBOARD
+
+#define KBDNTICKS(v) ((v + (KBD_TICKS_PERIOD - 1)) / KBD_TICKS_PERIOD)
+
 enum 
 {
-	KBD_BEEP_LENGTH =			NTICKS(25),	// длительность озвучивания нажатия
+	KBD_BEEP_LENGTH =			KBDNTICKS(25),	// длительность озвучивания нажатия
 
-	KBD_STABIL_PRESS =			NTICKS(15),	// время для регистраци нажатия
-	KBD_STABIL_RELEASE =		NTICKS(15),	// время для регистраци отпускания
+	KBD_STABIL_PRESS =			KBDNTICKS(15),	// время для регистраци нажатия
+	KBD_STABIL_RELEASE =		KBDNTICKS(15),	// время для регистраци отпускания
 
-	KBD_MAX_PRESS_DELAY_LONG =	NTICKS(600), // время для регистрации удержания кнопки с медленным автоповтором
-	KBD_MAX_PRESS_DELAY_POWER =	NTICKS(2000), // время для регистрации удержания кнопки выключения питания
-	KBD_PRESS_REPEAT_SLOW =		NTICKS(400),	// время между символами по медленному автоповтору
+	KBD_MAX_PRESS_DELAY_LONG =	KBDNTICKS(600), // время для регистрации удержания кнопки с медленным автоповтором
+	KBD_MAX_PRESS_DELAY_POWER =	KBDNTICKS(2000), // время для регистрации удержания кнопки выключения питания
+	KBD_PRESS_REPEAT_SLOW =		KBDNTICKS(400),	// время между символами по медленному автоповтору
 
-	KBD_MAX_PRESS_DELAY_LONG4 =	NTICKS(200), // RK4CI:1600 время для регистрации удержания кнопки с медленным автоповтором
-	KBD_PRESS_REPEAT_SLOW4 =	NTICKS(100),	// время между символами по медленному автоповтору
+	KBD_MAX_PRESS_DELAY_LONG4 =	KBDNTICKS(200), // RK4CI:1600 время для регистрации удержания кнопки с медленным автоповтором
+	KBD_PRESS_REPEAT_SLOW4 =	KBDNTICKS(100),	// время между символами по медленному автоповтору
 
-	//KBD_MED_STAGE1 = NTICKS(200),			// моменты, на которых вырабатывается очередной символ клавиши с быстрым автоповтором
-	//KBD_MED_STAGE2 = NTICKS(300),
-	//KBD_MED_STAGE3 = NTICKS(400),
-	//KBD_MED_STAGE4 = NTICKS(500),
-	KBD_TIME_SWITCH_QUICK = NTICKS(200), // с этого времени начинается быстрый автоповтор
-	KBD_PRESS_REPEAT_QUICK1 =	NTICKS(20),	// время между символами по быстрому автоповтору
-	KBD_PRESS_REPEAT_QUICK2 =	NTICKS(5)	// время между символами по очень быстрому автоповтору
+	//KBD_MED_STAGE1 = KBDNTICKS(200),			// моменты, на которых вырабатывается очередной символ клавиши с быстрым автоповтором
+	//KBD_MED_STAGE2 = KBDNTICKS(300),
+	//KBD_MED_STAGE3 = KBDNTICKS(400),
+	//KBD_MED_STAGE4 = KBDNTICKS(500),
+	KBD_TIME_SWITCH_QUICK = KBDNTICKS(200), // с этого времени начинается быстрый автоповтор
+	KBD_PRESS_REPEAT_QUICK1 =	KBDNTICKS(20),	// время между символами по быстрому автоповтору
+	KBD_PRESS_REPEAT_QUICK2 =	KBDNTICKS(5)	// время между символами по очень быстрому автоповтору
 };
 
 
@@ -398,7 +401,7 @@ void kbd_initialize(void)
 	adcdone_initialize(& aevent, kbd_spool, NULL);
 	adcdone_add(& aevent);
 #else /* KEYBOARD_USE_ADC */
-	ticker_initialize(& kbdticker, 1, kbd_spool, NULL);
+	ticker_initialize(& kbdticker, NTICKS(KBD_TICKS_PERIOD), kbd_spool, NULL);
 	ticker_add(& kbdticker);
 #endif /* KEYBOARD_USE_ADC */
 }

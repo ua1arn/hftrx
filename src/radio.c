@@ -24,6 +24,9 @@
 
 #include "dspdefines.h"
 
+#define UI_TICKS_PERIOD 50	// ms
+#define UINTICKS(v) ((v + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
+
 #if WITHUSEUSBBT
 #include "btstack.h"
 #endif /* WITHUSEUSBBT */
@@ -12790,7 +12793,7 @@ display_refreshenabled_voltage(void)
 static void
 display_refreshperformed_voltage(void)
 {
-	const uint_fast16_t n = NTICKS(500);	/* 1/2 секунды */
+	const uint_fast16_t n = UINTICKS(500);	/* 1/2 секунды */
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -12810,7 +12813,7 @@ display_refreshenabled_freqs(void)
 static void
 display_refreshperformed_freqs(void)
 {
-	const uint_fast8_t n = NTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast8_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -12846,7 +12849,7 @@ display_refresenabled_bars(void)
 static void
 display_refreshperformed_bars(void)
 {
-	const uint_fast8_t n = NTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast8_t n = UINTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -20967,7 +20970,7 @@ application_initialize(void)
 	{
 		static ticker_t ticker;
 
-		ticker_initialize(& ticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& ticker);
 	}
 
