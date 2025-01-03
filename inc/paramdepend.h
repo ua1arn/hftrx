@@ -774,7 +774,7 @@ extern "C" {
 	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 1000
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
