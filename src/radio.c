@@ -25,7 +25,7 @@
 #include "dspdefines.h"
 
 #define UI_TICKS_PERIOD 50	// ms
-#define UINTICKS(v) ((v + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
+#define UINTICKS(v) (((v) + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
 
 #if WITHUSEUSBBT
 #include "btstack.h"
