@@ -11319,14 +11319,13 @@ uint_fast8_t hamradio_get_bkin_value(void)
 }
 
 static IRQLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
-#define CATCWMSG_IRQL IRQL_SYSTEM
 static const char * usersend;
 
 void uif_key_sendcw(const char * msg)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, CATCWMSG_IRQL);
+	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, ELKEY_IRQL);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
 	else
@@ -15243,7 +15242,7 @@ static char beacon_getnextcw(void)
 #elif WITHELKEY && WITHTX
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, CATCWMSG_IRQL);
+	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, ELKEY_IRQL);
 	if (usersend != NULL && * usersend != '\0')
 	{
 		IRQLSPIN_UNLOCK(& lockcwmsg, oldIrql);

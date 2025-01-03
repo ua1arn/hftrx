@@ -1235,7 +1235,7 @@ extern "C" {
 	typedef uint_fast32_t IRQL_t;
 
 	#define IRQL_SYSTEM 			0
-	#define IRQL_REALTIME 		0
+	#define IRQL_REALTIME 			0
 	#define IRQL_OVERREALTIME 		0
 
 	#define global_enableIRQ() do {  } while (0)

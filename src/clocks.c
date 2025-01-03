@@ -11890,9 +11890,7 @@ hardware_elkey_timer_initialize(void)
 	TC2->TC_CHANNEL [2].TC_IER = TC_IER_CPCS ; // Interrupt on RC compare
 
 	// enable interrupts from TC2
-	NVIC_SetVector(TC2_IRQn, (uintptr_t) & TC2_IRQHandler);
-	NVIC_SetPriority(TC2_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(TC2_IRQn);		// enable TC2_Handler();
+	arm_hardware_set_handler_overrealtime(TC2_IRQn, TC2_IRQHandler);
 
 #elif CPUSTYLE_AT91SAM7S
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
@@ -11920,7 +11918,7 @@ hardware_elkey_timer_initialize(void)
 		AT91C_BASE_AIC->AIC_IDCR = (UINT32_C(1) << irqID);		// disable interrupt
 		AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_TC2_IRQHandler;
 		AT91C_BASE_AIC->AIC_SMR [irqID] =
-			(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |
+			(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |	// !!! ARM_OVERREALTIME_PRIORITY
 			(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_HIGHEST);
 		AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << irqID);		// clear pending interrupt
 		AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << irqID);	// enable interrupt
@@ -11936,7 +11934,7 @@ hardware_elkey_timer_initialize(void)
 	(void) RCC->APB1LENR;
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
+	arm_hardware_set_handler_overrealtime(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_STM32F
 
@@ -11944,7 +11942,7 @@ hardware_elkey_timer_initialize(void)
 	(void) RCC->APB1ENR;
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
+	arm_hardware_set_handler_overrealtime(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_R7S721
 
@@ -11957,7 +11955,7 @@ hardware_elkey_timer_initialize(void)
     /* ---- OSTM count stop trigger register (TT) setting ---- */
     OSTM1.OSTMnTT = 0x01u;      /* Stop counting */
 
-    arm_hardware_set_handler_system(OSTMI1TINT_IRQn, OSTMI1TINT_IRQHandler);
+    arm_hardware_set_handler_overrealtime(OSTMI1TINT_IRQn, OSTMI1TINT_IRQHandler);
 
 	OSTM1.OSTMnTS = 0x01u;      /* Start counting */
 
@@ -11970,7 +11968,7 @@ hardware_elkey_timer_initialize(void)
 
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
+	arm_hardware_set_handler_overrealtime(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -11980,7 +11978,7 @@ hardware_elkey_timer_initialize(void)
 
 	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR0_IRQ_EN
 
-	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
+	arm_hardware_set_handler_overrealtime(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
 
 #else
 	#warning Undefined CPUSTYLE_XXX

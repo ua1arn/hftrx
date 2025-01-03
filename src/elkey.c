@@ -121,7 +121,7 @@ static uint_fast8_t delay_dash;	// 30
 	static void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		RiseIrql(ELKEY_IRQL, & oldIrql);
 		if (elkey->vibroplex_slope > slope)
 		{
 			elkey->vibroplex_grade = 0;
@@ -881,7 +881,7 @@ void elkey_set_format(
 {
 #if WITHELKEY
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(ELKEY_IRQL, & oldIrql);
 
 	delay_space = spaceratio * ELKEY_DISCRETE / 10;
 	delay_dash = dashratio * ELKEY_DISCRETE / 10;
@@ -899,8 +899,6 @@ elkey_set_mode(
 	)
 {
 #if WITHELKEY
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	elkey_reverse = reverse;
 	switch (mode)
 	{
@@ -918,7 +916,6 @@ elkey_set_mode(
 		elkey_straight_flags = DASHFLAG;
 		break;
 	}
-	LowerIrql(oldIrql);
 #endif /* WITHELKEY */
 }
 
