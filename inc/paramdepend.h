@@ -447,7 +447,6 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define HARDWARE_CLK32K_FREQ 32000u
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
@@ -499,7 +498,6 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define HARDWARE_CLK32K_FREQ 32000u
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
@@ -552,7 +550,6 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnr_t113_get_arm_freq())
@@ -607,7 +604,6 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnr_h3_get_cpux_freq())
@@ -659,7 +655,6 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ			(allwnr_v3s_get_cpu_freq())
@@ -706,7 +701,6 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	//#define HARDWARE_CLK32K_FREQ 32000uL
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnr_f133_get_riscv_freq())
