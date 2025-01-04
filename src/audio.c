@@ -417,7 +417,7 @@ static uint_fast8_t getTxShapeNotComplete(void);
 static FLOAT32P_t getsampmlemike2(void);
 static FLOAT32P_t getsampmleusb2(void);
 
-static uint_fast8_t getRxGate(void);	/* разрешение работы тракта в режиме приёма */
+static int getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
 typedef uint32_t ncoftw_t;
 typedef int32_t ncoftwi_t;
@@ -657,7 +657,6 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode
 		delaylo6lastmode [pathi] = dspmode;
 		delayblanklo6tx [pathi] = firdelay;
 		delayblanklo6rx [pathi] = firdelay;
-
 	}
 	// Установка звдержки смены FTW
 	if (anglestep_aflotx [pathi] != ftw || anglestep_aflorx [pathi] != ftw)
@@ -5258,10 +5257,8 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
-	int rxgate = getRxGate();
-
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	rxgate *= !! nco_setlo6_delayrx(pathi);
+	int rxgate = getRxGate() * nco_setlo6_delayrx(pathi);
 
 #if WITHDSPEXTDDC
 
@@ -5371,7 +5368,7 @@ static RAMFUNC uint_fast8_t getTxShapeNotComplete(void)
 }
 
 /* разрешение работы тракта в режиме приёма */
-static uint_fast8_t getRxGate(void)
+static int getRxGate(void)
 {
 	return ! txgateInput && rxgateflag;
 }
