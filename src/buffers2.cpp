@@ -26,7 +26,7 @@ static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов �
 static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
 static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
-
+#define DBG_PERIOD 100	// ms
 
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
@@ -347,9 +347,9 @@ public:
 class fqmeter
 {
 	unsigned debugcount;
-	unsigned ms10;
+	unsigned ms100;
 public:
-	fqmeter() : debugcount(0), ms10(0)
+	fqmeter() : debugcount(0), ms100(0)
 	{
 
 	}
@@ -359,21 +359,22 @@ public:
 		debugcount += samples;
 	}
 
+	// Get Hz value
 	unsigned getfreq()
 	{
 		unsigned v = debugcount;
 		debugcount = 0;
 
-		unsigned v10ms = ms10;
-		ms10 = 0;
+		unsigned v100ms = ms100;
+		ms100 = 0;
 
-		if (v10ms == 0)
+		if (v100ms == 0)
 			return 0;
-		return v * 10000 / v10ms;
+		return v * 10 / v100ms;
 	}
-	void spool10ms()
+	void spool100ms()
 	{
-		ms10 += 10000 / TICKS_FREQUENCY;
+		ms100 += 100 / DBG_PERIOD;
 	}
 };
 
@@ -698,14 +699,14 @@ public:
 #endif /* WITHBUFFERSDEBUG */
 	}
 
-	void spool10ms()
+	void spool100ms()
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 
-		fqin.spool10ms();
-		fqout.spool10ms();
+		fqin.spool100ms();
+		fqout.spool100ms();
 
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 #endif /* WITHBUFFERSDEBUG */
@@ -4118,44 +4119,44 @@ void buffers_diagnostics(void)
 static void buffers_spool(void * ctx)
 {
 #if WITHUSEUSBBT
-	btout44p1k.spool10ms();
-	btout32k.spool10ms();
-	btout16k.spool10ms();
-	btout8k.spool10ms();
+	btout44p1k.spool100ms();
+	btout32k.spool100ms();
+	btout16k.spool100ms();
+	btout8k.spool100ms();
 #endif
 #if WITHINTEGRATEDDSP
 	// internal sources/targets
-	//denoise16list.spool10ms();
-	codec16rx.spool10ms();
-	codec16tx.spool10ms();
-	moni16.spool10ms();
-	voice32tx.spool10ms();
-	voice32rx.spool10ms();
+	//denoise16list.spool100ms();
+	codec16rx.spool100ms();
+	codec16tx.spool100ms();
+	moni16.spool100ms();
+	voice32tx.spool100ms();
+	voice32rx.spool100ms();
 	// USB
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	uacout48.spool10ms();
+	uacout48.spool100ms();
 #endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 #if WITHRTS192
-	uacinrts192.spool10ms();
+	uacinrts192.spool100ms();
 #endif
 #if WITHRTS96
-	uacinrts96.spool10ms();
+	uacinrts96.spool100ms();
 #endif
 #endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-	uacin48.spool10ms();
+	uacin48.spool100ms();
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 #if WITHHDMITVHW
-	hdmi48tx.spool10ms();
+	hdmi48tx.spool100ms();
 #endif /* WITHHDMITVHW */
 #endif /* WITHINTEGRATEDDSP */
-	//message8.spool10ms();
+	//message8.spool100ms();
 
 #if WITHLTDCHW
-	colmain0fblist.spool10ms();
+	colmain0fblist.spool100ms();
 #if defined (TCONTV_PTR)
-	colmain1fblist.spool10ms();
+	colmain1fblist.spool100ms();
 #endif /* defined (TCONTV_PTR) */
 #endif /* WITHLTDCHW */
 }
@@ -4174,7 +4175,7 @@ void buffers_initialize(void)
 
 #if WITHBUFFERSDEBUG
 	static ticker_t buffticker;
-	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
+	ticker_initialize(& buffticker, NTICKS(DBG_PERIOD), buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
 
