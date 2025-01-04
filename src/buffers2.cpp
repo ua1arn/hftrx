@@ -1113,7 +1113,7 @@ static void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1)
 // Поэлементное заполнение DMA буфера AF DAC
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	voicerec16_put(ch0, ch1);	// аудиоданные - выход приемника
+	elfill_dmabufferrx16rec(ch0, ch1);	// аудиоданные - выход приемника
 }
 
 // Used at initialization DMA
@@ -2596,7 +2596,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
-	voicemoni16_put(ch0, ch1);
+	elfill_dmabuffermoni16(ch0, ch1);
 }
 
 #endif /* WITHINTEGRATEDDSP */
@@ -3032,12 +3032,12 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHINTEGRATEDDSP
 
-void voicerec16_put(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
 {
 	rx16rec.savedata(ch0, ch1, putcbf_dmabuffer16moni);
 }
 
-void voicemoni16_put(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabuffermoni16(FLOAT_t ch0, FLOAT_t ch1)
 {
 	moni16.savedata(ch0, ch1, putcbf_dmabuffer16moni);
 }

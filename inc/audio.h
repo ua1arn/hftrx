@@ -497,8 +497,8 @@ uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest);
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1);
 
 /* Сервис очереди сэмплов */
-void voicerec16_put(FLOAT_t ch0, FLOAT_t ch1);
-void voicemoni16_put(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabuffermoni16(FLOAT_t ch0, FLOAT_t ch1);
 uint_fast8_t voicerec16_get(FLOAT32P_t * v);
 uint_fast8_t voicemoni16_get(FLOAT32P_t * v);
 
