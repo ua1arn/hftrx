@@ -557,16 +557,18 @@ static uint32_t aw_log2(uint32_t x)
 }
 
 //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
-static void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size)
+static void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t sizea)
 {
 	uint8_t reg_val;
-	unsigned sz = aw_log2(size >> 3);
+	uint32_t size8 = (sizea + 7) / 8;
+	unsigned sz = aw_log2(size8);
+	unsigned sz2 = __log2_up(size8);
 
-	ASSERT((size & 0x07) == 0);
+	ASSERT(sz == sz2);
 	ASSERT(sz <= 9);
 	reg_val = 0;
 	if (is_dpb) reg_val |= UINT32_C(1) << 4;
-	reg_val |= aw_log2(size >> 3) & 0xf;
+	reg_val |= aw_log2(size8) & 0xf;
 	WITHUSBHW_DEVICE->USB_TXFIFO = (WITHUSBHW_DEVICE->USB_TXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
 }
 

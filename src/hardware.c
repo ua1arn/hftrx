@@ -2547,8 +2547,9 @@ static const uint32_t aarch64_pageattr =
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 	// Last x4 - for 34 bit address (16 GB address space)
 	// Check TCR_EL3 setup
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	// pages of 2 MB
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [ARRAY_SIZE(level2_pagetable) / 512];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
@@ -2956,12 +2957,13 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	const unsigned aspacebits = 21 + __log2_up(ARRAY_SIZE(level2_pagetable));	// pages of 2 MB
 	uint_fast32_t tcrv =
 			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
-			30 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
+			(64 - aspacebits) * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 			0;
 	__set_TCR_EL3(tcrv);
 
@@ -2987,6 +2989,8 @@ sysinit_ttbr_initialize(void)
 #endif
 
 #if 0
+	PRINTF("aspacebits=%u\n", aspacebits);
+	//PRINTF("log2=%u\n", __log2_up(ARRAY_SIZE(level2_pagetable)));
 	PRINTF("__get_TCR_EL3=%016" PRIX32 "\n", __get_TCR_EL3());
 	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
 	uint64_t mair = __get_MAIR_EL3();
