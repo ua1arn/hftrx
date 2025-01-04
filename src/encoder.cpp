@@ -176,7 +176,7 @@ void encoderB_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 {
 }
 
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+// вызывается с ENC_TICKS_PERIOD с запрещенными прерываниями.
 // Расчёт средней скорости вращения валкодера (подготовка данных для расчёта вне прерываний).
 static void
 encspeed_spool(void * ctx)
@@ -199,7 +199,7 @@ encspeed_spool(void * ctx)
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
 	e->enchist [e->enchistindex] += abs(p1) + 0;//abs(p1kbd);
-	if (++ e->tichist >= TICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
+	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
 		e->tichist  = 0;
 		e->enchistindex = (e->enchistindex + 1) % HISTLEN;
@@ -247,7 +247,7 @@ encoder_get_snapshotproportional(
 	s = e->enchist [0] + e->enchist [1] + e->enchist [2] + e->enchist [3]; // количество шагов валкодера за время наблюдений
 	ASSERT(HISTLEN == 4);
 	// 2. Время измерения
-	tdelta = e->tichist + TICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
+	tdelta = e->tichist + ENCTICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
 
 	hrotate = e->rotate + e->rotate_kbd * derate;	/* работа в меню от клавиш - реагируем сразу */
 	e->rotate = 0;
@@ -255,8 +255,8 @@ encoder_get_snapshotproportional(
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
-	// ((s * TICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
-	* speed = ((s * (uint_fast32_t) TICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder1_actual_resolution));
+	// ((s * ENCTICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
+	* speed = ((s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder1_actual_resolution));
 	
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + e->backup_rotate, derate);
@@ -484,16 +484,16 @@ void encoders_initialize(void)
 	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
 
 #if WITHENCODER
-	ticker_initialize(& encticker, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder1);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder1);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker);
 #endif /* WITHENCODER */
 #if WITHENCODER_SUB
-	ticker_initialize(& encticker_sub, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder_sub);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker_sub, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder_sub);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker_sub);
 #endif /* WITHENCODER */
 #if WITHENCODER2 && ! ENCODER2_NOSPOOL
 	// второй енкодер всегда по опросу (если это не назначено при инициализации)
-	ticker_initialize(& encticker2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupt2_local, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupt2_local, NULL);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker2);
 #endif /* WITHENCODER2 && ! ENCODER2_NOSPOOL */
 }
