@@ -4126,7 +4126,7 @@ static void buffers_spool(void * ctx)
 #endif
 #if WITHINTEGRATEDDSP
 	// internal sources/targets
-	//denoise16list.spool100ms();
+	denoise16list.spool100ms();
 	codec16rx.spool100ms();
 	codec16tx.spool100ms();
 	moni16.spool100ms();
