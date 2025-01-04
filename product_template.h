@@ -91,7 +91,7 @@
 	#include "boards/arm_stm32mp1xx_ctlstyle_PanGuBoard_v1p2.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_PanGuBoard_v1p2.h"
-#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 0	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
@@ -100,16 +100,16 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1cbu.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9c.h"	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 0	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_bb.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9c_bb.h"	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7	// rmainunit_v5km2.pcb STM32MP153DAB, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, LTC2208
-	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_R1BBQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, LTC2208
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RL1D.h"	// RU3FW rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, LTC2208
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_r1yq.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_china_84748588.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_R3XBQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RK1AQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
@@ -146,9 +146,9 @@
 	#include "boards/arm_allwt113s3_ctlstyle_ra4asn.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_ra4asn.h"
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt113s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9f.pcb, rmainunit_sv9u.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
-	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9a_R3XBQ.h"	// rmainunit_sv9f.pcb, rmainunit_sv9u.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9f.pcb, Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9a_R3XBQ.h"	// rmainunit_sv9f.pcb, Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9a_weather.h"	// rmainunit_sv9f.pcb, rmainunit_sv9u.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9a_ua1cei_mini100W.h"	// 4.3 inch 272*480, rmainunit_sv9e.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -158,11 +158,11 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9a_v0.h"	// rmainunit_sv9e.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
-	#include "boards/arm_allwt113s3_ctlstyle_storch_v9w.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb  Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9w.h"	// rmainunit_sv9u.pcb. rmainunit_sv9w.pcb, rmainunit_sv9x.pcb  Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9w_ua1cei.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb  Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9w.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9x2.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
@@ -207,7 +207,7 @@
 	#include "boards/arm_x7c70xx_ctlstyle_zm10.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_zm10.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 1
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_storch_sv9.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_storch_sv9.h"
