@@ -628,71 +628,103 @@ static RAMFUNC FLOAT_t get_dualtonefloat(void)
 	return (v1 + v2) / 2;
 }
 
-static RAMDTCM unsigned delaysetlo6 [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
-static RAMDTCM ncoftw_t anglestep_aflo [NTRX];
-static RAMDTCM ncoftw_t anglestep_aflo_shadow [NTRX];
-static RAMDTCM ncoftw_t angle_aflo [NTRX];
-static RAMDTCM ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 2.5 kHz (-2.5..+2.5) deviation
+static unsigned delayftwlo6tx [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
+static unsigned delayblanklo6tx [NTRX];	// приглушить тракт
+
+static unsigned delayftwlo6rx [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
+static unsigned delayblanklo6rx [NTRX];	// приглушить тракт
+static uint8_t delaylo6lasttx [NTRX];
+
+static ncoftw_t anglestep_aflotx [NTRX];
+static ncoftw_t anglestep_aflorx [NTRX];
+static ncoftw_t anglestep_aflotx_shadow [NTRX];
+static ncoftw_t anglestep_aflorx_shadow [NTRX];
+static ncoftw_t angle_aflotx [NTRX];
+static ncoftw_t angle_aflorx [NTRX];
+static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
 
 // установить частоту
-static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
+static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t tx)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	delaysetlo6 [pathi] = Ntap_trxi_IQ / 2;
-	anglestep_aflo_shadow [pathi] = ftw;
+	const unsigned firdelay = 3 * Ntap_trxi_IQ / 2;
 #elif WITHDSPLOCALFIR
-	delaysetlo6 [pathi] = Ntap_rx_SSB_IQ / 2;
-	anglestep_aflo_shadow [pathi] = ftw;
-#else
-	anglestep_aflo [pathi] = ftw;
-	if (ftw == 0)
-	{
-		/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-		angle_aflo [pathi] = 0;	// 0 Pi
-	}
+	const unsigned firdelay = 3 * Ntap_rx_SSB_IQ / 2;
 #endif
+	// Установка звдержки открывания тракта по смене режима
+	if (delaylo6lasttx [pathi] != tx)
+	{
+		delaylo6lasttx [pathi] = tx;
+		delayblanklo6tx [pathi] = firdelay;
+		delayblanklo6rx [pathi] = firdelay;
+
+	}
+	// Установка звдержки смены FTW
+	if (anglestep_aflotx [pathi] != ftw || anglestep_aflorx [pathi] != ftw)
+	{
+		anglestep_aflotx_shadow [pathi] = ftw;
+		anglestep_aflorx_shadow [pathi] = ftw;
+		delayftwlo6tx [pathi] = firdelay;
+		delayftwlo6rx [pathi] = firdelay;
+	}
 }
 
-/* задержка установки нового значение частоты генератора - возврат 1 если закончилась отработка времени */
-static RAMFUNC uint_fast8_t nco_setlo6_delay(uint_fast8_t pathi, uint_fast8_t tx)
+/* задержка установки нового значение частоты генератора
+ * возврат 1 если закончилась отработка времени
+ */
+static RAMFUNC int nco_setlo6_delaytx(uint_fast8_t pathi)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
-	if (tx != 0)
+	if (delayftwlo6tx [pathi] != 0 && -- delayftwlo6tx [pathi] == 0)
 	{
-		if (delaysetlo6 [pathi] != 0)
+		// Установить требуемый ftw по окончании задержки
+		if ((anglestep_aflotx [pathi] = anglestep_aflotx_shadow [pathi]) == 0)
 		{
-			delaysetlo6 [pathi] = 0;	// предотвращаем повторное срабатывание
-			if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
-			{
-				/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-				angle_aflo [pathi] = 0;	// 0 Pi
-			}
+			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
+			angle_aflotx [pathi] = 0;	// 0 Pi
 		}
 	}
-	else
-	{
-		if (delaysetlo6 [pathi] != 0 && -- delaysetlo6 [pathi] == 0)
-		{
-			if ((anglestep_aflo [pathi] = anglestep_aflo_shadow [pathi]) == 0)
-			{
-				/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-				angle_aflo [pathi] = 0;	// 0 Pi
-			}
-		}
-	}
-	return delaysetlo6 [pathi] == 0;
-#else
-	return 1;
 #endif
+	if (delayblanklo6tx [pathi])
+		delayblanklo6tx [pathi] -= 1;
+	return ! delayblanklo6tx [pathi];
 }
 
-// Получение квадратурных значений для данной частоты со смещением (в герцах)
-// Returned is a full scale value
-static RAMFUNC FLOAT32P_t get_float_aflo_delta(long int deltaftw, uint_fast8_t pathi)
+static RAMFUNC int nco_setlo6_delayrx(uint_fast8_t pathi)
 {
-	const ncoftw_t angle = angle_aflo [pathi];
+#if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
+	if (delayftwlo6rx [pathi] != 0 && -- delayftwlo6rx [pathi] == 0)
+	{
+		// Установить требуемый ftw по окончании задержки
+		if ((anglestep_aflorx [pathi] = anglestep_aflorx_shadow [pathi]) == 0)
+		{
+			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
+			angle_aflorx [pathi] = 0;	// 0 Pi
+		}
+	}
+#endif
+	if (delayblanklo6rx [pathi])
+		delayblanklo6rx [pathi] -= 1;
+	return ! delayblanklo6rx [pathi];
+}
+
+// Получение квадратурных значений для данной частоты со смещением фазы
+// Returned is a full scale value
+static RAMFUNC FLOAT32P_t get_float_aflotx_delta(long int deltaftw, uint_fast8_t pathi)
+{
+	const ncoftw_t angle = angle_aflotx [pathi];
 	const FLOAT32P_t v = getsincosf(angle);
-	angle_aflo [pathi] = FTWROUND(angle + anglestep_aflo [pathi] + deltaftw);
+	angle_aflotx [pathi] = FTWROUND(angle + anglestep_aflotx [pathi] + deltaftw);
+	return v;
+}
+
+// Получение квадратурных значений для данной частоты
+// Returned is a full scale value
+static RAMFUNC FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
+{
+	const ncoftw_t angle = angle_aflorx [pathi];
+	const FLOAT32P_t v = getsincosf(angle);
+	angle_aflorx [pathi] = FTWROUND(angle + anglestep_aflorx [pathi]);
 	return v;
 }
 
@@ -2957,7 +2989,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
-static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
+static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_t tx)
 {
 	globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
 
@@ -2965,7 +2997,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 	audio_setup_wiver(spf, pathi);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 
 	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
-	nco_setlo_ftw(lo6_ftw, pathi);
+	nco_setlo_ftw(lo6_ftw, pathi, tx);
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
 #if 0
@@ -3925,8 +3957,8 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	uint_fast8_t dspmode
 	)
 {
-	const FLOAT_t shape = shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
+	const FLOAT_t shape = nco_setlo6_delaytx(pathi) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -3967,7 +3999,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_FREEDV:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), vi * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(0, pathi), vi * shape);
 			return vfb;
 		}
 	
@@ -3976,7 +4008,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 			// vi - audio sample in range [- txlevelfenceSSB.. + txlevelfenceSSB]
 			// input range: of vi: (- IFDACMAXVAL) .. (+ IFDACMAXVAL)
 			const FLOAT_t peak = amcarrierHALF + vi * amshapesignalHALF;
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(0, pathi), peak * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(0, pathi), peak * shape);
 			return vfb;
 		}
 
@@ -3984,7 +4016,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			const long int deltaftw = (int64_t) (long) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
-			const FLOAT32P_t vfb = scalepair(get_float_aflo_delta(deltaftw, pathi), txlevelfenceNFM * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(deltaftw, pathi), txlevelfenceNFM * shape);
 			return vfb;
 		}
 	}
@@ -4398,7 +4430,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, SQRTF(sigpower), pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
-			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// средняя частота выходного спектра
+			const FLOAT32P_t af = get_float_aflorx_delta(pathi);	// средняя частота выходного спектра
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			//r = (pathi != 0 ? get_rout() : get_lout()) * (FLOAT_t) 0.9;
 			//r = af.IV * 0.9f;
@@ -5223,11 +5255,11 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 {
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
-	const uint_fast8_t dspmode = pathi ? (tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [1]) : globDSPMode [gwprof] [0];
+	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
 	int rxgate = getRxGate();
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	rxgate *= !! nco_setlo6_delay(pathi, tx);
+	rxgate *= !! nco_setlo6_delayrx(pathi);
 
 #if WITHDSPEXTDDC
 
@@ -5245,7 +5277,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 
 #else /* WITHDSPEXTDDC */
 
-	return processifadcsamplei(iv, dspmode);
+	return processifadcsamplei(iv * rxgate, dspmode);
 
 #endif /* WITHDSPEXTDDC */
 }
@@ -5339,11 +5371,7 @@ static RAMFUNC uint_fast8_t getTxShapeNotComplete(void)
 /* разрешение работы тракта в режиме приёма */
 static uint_fast8_t getRxGate(void)
 {
-#if TXGFV_RX != 0
-	return rxgateflag;
-#else
-	return ! txgateInput;
-#endif
+	return ! txgateInput && rxgateflag;
 }
 
 
@@ -5647,7 +5675,7 @@ void dsp_initialize(void)
 
 	audio_setup_mike(spf);
 	for (pathi = 0; pathi < NTRX; ++ pathi)
-		audio_update(spf, pathi);
+		audio_update(spf, pathi, 0);
 	gwprof = spf;
 
 	static dpcobj_t user_audioproc_dpc;
@@ -5708,14 +5736,15 @@ prog_dsplreg(void)
 void 
 prog_fltlreg(void)
 {
-	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// при передаче только тракт с идексом 0
+	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
+	const uint_fast8_t pathn = NTRX;//tx ? 1 : NTRX;	// при передаче только тракт с идексом 0
 	// Обновление расчитываемых параметров
 	const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
 	audio_setup_mike(spf);
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
-		audio_update(spf, pathi);
+		audio_update(spf, pathi, tx);
 
 	gwprof = spf;
 
