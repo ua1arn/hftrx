@@ -2403,7 +2403,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 
 static void awxx_setup_fifo(pusb_struct pusb)
 {
-    const uint32_t fifo_base = 0;
+    const uint32_t fifo_base = 64;
 	uint32_t fifo_addr = fifo_base;
 	enum { EP_DIR_IN = 1, EP_DIR_OUT = 0 };
 
@@ -3564,8 +3564,8 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
 	      	break;
 #if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
-    		// work
-    		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		// work (стадия 1, сюда доходит всегда)
+    		PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
     		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler
 			pusb->ep0_xfer_residue = 0;
 	      	break;
@@ -3715,7 +3715,8 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
 	  	{
 	  	case CDC_SET_LINE_CODING:
 	  		// work
-	  		//PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+	   		// work (стадия 2, сюда доходит не всегда)
+	  		PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
 	  		gbaudrate = USBD_peek_u32(buff);
 	  		break;
 	  	default:
@@ -3849,7 +3850,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				}
 			}
 		}
-		else
+		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
 		{
 #if WITHWAWXXUSB
 			ep0_setup_out_handler(pusb);
@@ -3857,7 +3858,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			HAL_PCD_SetupStageCallback(hpcd);
 #endif
 		}
-	}
+	} /* (pusb->ep0_xfer_state == USB_EP0_SETUP) */
 
 	return 1;
 }
