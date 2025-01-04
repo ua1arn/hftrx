@@ -633,7 +633,7 @@ static unsigned delayblanklo6tx [NTRX];	// приглушить тракт
 
 static unsigned delayftwlo6rx [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
 static unsigned delayblanklo6rx [NTRX];	// приглушить тракт
-static uint8_t delaylo6lasttx [NTRX];
+static uint8_t delaylo6lastmode [NTRX];
 
 static ncoftw_t anglestep_aflotx [NTRX];
 static ncoftw_t anglestep_aflorx [NTRX];
@@ -644,7 +644,7 @@ static ncoftw_t angle_aflorx [NTRX];
 static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
 
 // установить частоту
-static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t tx)
+static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 	const unsigned firdelay = 3 * Ntap_trxi_IQ / 2;
@@ -652,9 +652,9 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t tx)
 	const unsigned firdelay = 3 * Ntap_rx_SSB_IQ / 2;
 #endif
 	// Установка звдержки открывания тракта по смене режима
-	if (delaylo6lasttx [pathi] != tx)
+	if (delaylo6lastmode [pathi] != dspmode)
 	{
-		delaylo6lasttx [pathi] = tx;
+		delaylo6lastmode [pathi] = dspmode;
 		delayblanklo6tx [pathi] = firdelay;
 		delayblanklo6rx [pathi] = firdelay;
 
@@ -687,6 +687,7 @@ static RAMFUNC int nco_setlo6_delaytx(uint_fast8_t pathi)
 #endif
 	if (delayblanklo6tx [pathi])
 		delayblanklo6tx [pathi] -= 1;
+
 	return ! delayblanklo6tx [pathi];
 }
 
@@ -705,12 +706,13 @@ static RAMFUNC int nco_setlo6_delayrx(uint_fast8_t pathi)
 #endif
 	if (delayblanklo6rx [pathi])
 		delayblanklo6rx [pathi] -= 1;
+
 	return ! delayblanklo6rx [pathi];
 }
 
 // Получение квадратурных значений для данной частоты со смещением фазы
 // Returned is a full scale value
-static RAMFUNC FLOAT32P_t get_float_aflotx_delta(long int deltaftw, uint_fast8_t pathi)
+static RAMFUNC FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
 {
 	const ncoftw_t angle = angle_aflotx [pathi];
 	const FLOAT32P_t v = getsincosf(angle);
@@ -2997,7 +2999,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 	audio_setup_wiver(spf, pathi);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 
 	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
-	nco_setlo_ftw(lo6_ftw, pathi, tx);
+	nco_setlo_ftw(lo6_ftw, pathi, globDSPMode  [spf] [pathi]);
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
 #if 0
@@ -4015,7 +4017,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_NFM:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const long int deltaftw = (int64_t) (long) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
+			const int32_t deltaftw = (int64_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
 			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(deltaftw, pathi), txlevelfenceNFM * shape);
 			return vfb;
 		}
