@@ -5054,13 +5054,13 @@ void dsp_fillphones(unsigned nsamples)
 		const FLOAT_t sdtnv = get_float_sidetone();
 		ASSERT(sdtnenvelop >= 0 && sdtnenvelop <= 1);
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
-		if (voice_get(VOICE_REC16, & voice) == 0)
+		if (voicerec16_get(& voice) == 0)
 		{
 			voice.IV =  0;	// левый канал
 			voice.QV = 0; 	// правый канал
 		}
 		// Использование данных.
-		if (voice_get(VOICE_MONI16, & moni) == 0)
+		if (voicemoni16_get(& moni) == 0)
 		{
 			moni.IV =  0;	// левый канал
 			moni.QV = 0; 	// правый канал
@@ -5258,7 +5258,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	int rxgate = getRxGate() * nco_setlo6_delayrx(pathi);
+	const int rxgate = getRxGate() * nco_setlo6_delayrx(pathi);
 
 #if WITHDSPEXTDDC
 

@@ -1113,7 +1113,7 @@ static void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1)
 // Поэлементное заполнение DMA буфера AF DAC
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	voice_put(VOICE_REC16, ch0, ch1);	// аудиоданные - выход приемника
+	voicerec16_put(ch0, ch1);	// аудиоданные - выход приемника
 }
 
 // Used at initialization DMA
@@ -2596,7 +2596,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
-	voice_put(VOICE_MONI16, ch0, ch1);
+	voicemoni16_put(ch0, ch1);
 }
 
 #endif /* WITHINTEGRATEDDSP */
@@ -3032,49 +3032,25 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHINTEGRATEDDSP
 
-
-void voice_put(VOICE_t * p, FLOAT_t ch0, FLOAT_t ch1)
+void voicerec16_put(FLOAT_t ch0, FLOAT_t ch1)
 {
-	moni16txdma_t * const obj = (moni16txdma_t *) p;
-	obj->savedata(ch0, ch1, putcbf_dmabuffer16moni);
+	rx16rec.savedata(ch0, ch1, putcbf_dmabuffer16moni);
 }
 
-uint_fast8_t voice_get(VOICE_t * p, FLOAT32P_t * v)
+void voicemoni16_put(FLOAT_t ch0, FLOAT_t ch1)
 {
-	moni16txdma_t * const obj = (moni16txdma_t *) p;
-	return obj->fetchdata(v->ivqv, getcbf_dmabuffer16moni);
+	moni16.savedata(ch0, ch1, putcbf_dmabuffer16moni);
 }
 
-VOICE_t * voice_moni16(void)
+uint_fast8_t voicerec16_get(FLOAT32P_t * v)
 {
-	return (VOICE_t *) & moni16;
+	return rx16rec.fetchdata(v->ivqv, getcbf_dmabuffer16moni);
 }
 
-// аудиоданные - выход приемника
-VOICE_t * voice_rec16(void)
+uint_fast8_t voicemoni16_get(FLOAT32P_t * v)
 {
-	return (VOICE_t *) & rx16rec;
+	return moni16.fetchdata(v->ivqv, getcbf_dmabuffer16moni);
 }
-//
-//VOICE_t * voice_uacin48(void)
-//{
-//	return (VOICE_t *) & uacin48;
-//}
-//
-//VOICE_t * voice_uacout48(void)
-//{
-//	return (VOICE_t *) & uacout48;
-//}
-//
-//VOICE_t * voice_16txphones(void)
-//{
-//	return (VOICE_t *) & codec16tx;
-//}
-//
-//VOICE_t * voice_swav48(void)
-//{
-//	return (VOICE_t *) & recordswav48dma;
-//}
 
 #endif /* WITHINTEGRATEDDSP */
 
