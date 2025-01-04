@@ -2544,8 +2544,11 @@ static const uint32_t aarch64_pageattr =
 
 #if defined(__aarch64__)
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4 * 16];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4 * 16];	// ttb0_base must be a 4KB-aligned address.
+	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
+	// Last x4 - for 34 bit address (16 GB address space)
+	// Check TCR_EL3 setup
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
 
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
@@ -2943,7 +2946,7 @@ sysinit_ttbr_initialize(void)
 {
 #if defined(__aarch64__)
 
-	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
+	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0); // 4 KB
 
 	//__set_TTBR0_EL1((uintptr_t) ttb0_base);
 	//__set_TTBR0_EL2((uintptr_t) ttb0_base);
@@ -2958,8 +2961,7 @@ sysinit_ttbr_initialize(void)
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
 			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
 			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
-			28 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=32: 4GB, n=43: 2MB, n=44: 1MB
-			//43 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=32: 4GB, n=43: 2MB, n=44: 1MB
+			30 * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 			0;
 	__set_TCR_EL3(tcrv);
 
