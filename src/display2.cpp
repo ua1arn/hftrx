@@ -6709,10 +6709,10 @@ display2_getbgcolor(void)
 #endif /* LCDMODE_COLORED */
 }
 
-// Interface functions
-// сброс state machine отображения дисплея и очистить дисплей
-void display2_bgreset(void)
+// очистить дисплей
+void display2_fillbg(void)
 {
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 }
 
 void display2_latch(void)

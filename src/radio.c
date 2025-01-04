@@ -18548,6 +18548,7 @@ void initialize2(void)
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
+		display2_fillbg();
 		display_at_P(0, 0, msg);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
@@ -18576,6 +18577,7 @@ void initialize2(void)
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+		display2_fillbg();
 		display_menu_digit(0, 0, sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(0, 1, msg);
 		colmain_nextfb();
@@ -18641,6 +18643,7 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+			display2_fillbg();
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
@@ -18678,6 +18681,7 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+			display2_fillbg();
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
@@ -18713,6 +18717,7 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+			display2_fillbg();
 			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
@@ -18759,6 +18764,7 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+			display2_fillbg();
 			display_menu_digit(0, 1, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
