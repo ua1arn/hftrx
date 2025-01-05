@@ -2551,6 +2551,10 @@ static const uint32_t aarch64_pageattr =
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [ARRAY_SIZE(level2_pagetable) / 512];	// ttb0_base must be a 4KB-aligned address.
 
+#elif CPUSTYLE_RISCV
+
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [512];	// Used as PPN in SATP register
+
 #else /* defined(__aarch64__) */
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
@@ -2855,28 +2859,6 @@ sysinit_mmu_tables(void)
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
-#if 0 && WITHDEBUG
-	uint_fast32_t leveli;
-	for (leveli = 0; leveli <= ARM_CA9_CACHELEVELMAX; ++ leveli)
-	{
-
-		__set_CSSELR(leveli * 2 + 0);	// data cache select
-		const uint32_t ccsidr0 = __get_CCSIDR();
-		const uint32_t assoc0 = (ccsidr0 >> 3) & 0x3FF;
-		const int passoc0 = countbits2(assoc0);
-		const uint32_t maxsets0 = (ccsidr0 >> 13) & 0x7FFF;
-		const uint32_t linesize0 = 4uL << (((ccsidr0 >> 0) & 0x07) + 2);
-		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, data cache row size = %u\n"), leveli, passoc0, assoc0, maxsets0, linesize0);
-
-		__set_CSSELR(leveli * 2 + 1);	// instruction cache select
-		const uint32_t ccsidr1 = __get_CCSIDR();
-		const uint32_t assoc1 = (ccsidr1 >> 3) & 0x3FF;
-		const int passoc1 = countbits2(assoc1);
-		const uint32_t maxsets1 = (ccsidr1 >> 13) & 0x7FFF;
-		const uint32_t linesize1 = 4uL << (((ccsidr1 >> 0) & 0x07) + 2);
-		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
-	}
-#endif /* WITHDEBUG */
 #if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
 		// SCU inut
@@ -2929,12 +2911,80 @@ sysinit_mmu_tables(void)
 
 
 #elif CPUSTYLE_RISCV
-
+	#warning To be implemented
 	// RISC-V MMU initialize
 
 
 	//ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 
+	// XuanTie-Openc906 SYSMAP
+
+	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
+	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
+	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
+	// ? 0xEFFFF000
+
+#if 0
+
+	#define RAM_ATTRS 		(UINT32_C(0x03) << 2)	// Cacheable memory
+	#define NCRAM_ATTRS 	(UINT32_C(0x01) << 2)	// Non-cacheable memory
+	#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
+
+	#define FULLADFSZ 32	// Not __riscv_xlen
+	if (0)
+	{
+		const unsigned SYSMAP_ASH = 12;	// 40-28
+
+		extern uint32_t __RAMNC_BASE;
+		extern uint32_t __RAMNC_TOP;
+		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+
+		// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
+
+		// The smallest address of address space 0 is 0x0
+		SYSMAP->PARAM [0].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [1].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
+
+		SYSMAP->PARAM [2].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
+
+		SYSMAP->PARAM [3].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
+
+		// DRAM space ends at 0xC0000000
+		SYSMAP->PARAM [4].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [5].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
+
+		SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
+		SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
+
+		{
+			unsigned i;
+			for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
+			{
+				const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
+				PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
+						i,
+						(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
+						(attr >> 4) & 0x01,
+						(attr >> 3) & 0x01,
+						(attr >> 2) & 0x01
+						);
+			}
+		}
+	}
+
+#endif
 
 #endif
 
@@ -3068,82 +3118,27 @@ sysinit_ttbr_initialize(void)
 	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
 	// Strong Order, Cacheable, Bufferable, Shareable, Security
 
-	#define RAM_ATTRS 		(UINT32_C(0x03) << 2)	// Cacheable memory
-	#define NCRAM_ATTRS 	(UINT32_C(0x01) << 2)	// Non-cacheable memory
-	#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
-
-	#define FULLADFSZ 32	// Not __riscv_xlen
-
 	#define CSR_SATP_MODE_PHYS   0
 	#define CSR_SATP_MODE_SV32   1
 	#define CSR_SATP_MODE_SV39   8
 	#define CSR_SATP_MODE_SV48   9
 	#define CSR_SATP_MODE_SV57   10
 
-	PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
+	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
+
+	// 5.2.1.1 MMU address translation register (SATP)
+	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
+	const uint_fast64_t satp =
+			CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
+			0x00 * (UINT64_C(1) << 44) | // ASID
+			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
+			0;
+	csr_write_satp(satp);
+	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+
 	//csr_write_satp(csr_read_satp() | CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60));
-	csr_write_satp(0);
-	PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
-
-	// XuanTie-Openc906 SYSMAP
-
-	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
-	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
-	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
-	// ? 0xEFFFF000
-
-	if (0)
-	{
-		const unsigned SYSMAP_ASH = 12;	// 40-28
-
-		extern uint32_t __RAMNC_BASE;
-		extern uint32_t __RAMNC_TOP;
-		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-
-		// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
-
-		// The smallest address of address space 0 is 0x0
-		SYSMAP->PARAM [0].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [1].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
-
-		SYSMAP->PARAM [2].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
-
-		SYSMAP->PARAM [3].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
-
-		// DRAM space ends at 0xC0000000
-		SYSMAP->PARAM [4].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [5].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
-
-		{
-			unsigned i;
-			for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
-			{
-				const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-				PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
-						i,
-						(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
-						(attr >> 4) & 0x01,
-						(attr >> 3) & 0x01,
-						(attr >> 2) & 0x01
-						);
-			}
-		}
-	}
+	//csr_write_satp(0);
+	//PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
 
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
