@@ -2347,8 +2347,6 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 static void usb_struct_idle(pusb_struct pusb)
 {
-	//Reset Function Address
-	usb_set_dev_addr(pusb, 0x00);
 
 #if WITHUSBDMSC && WITHWAWXXUSB
 	usb_struct_idle_msc(pusb);
@@ -4048,6 +4046,8 @@ static void usb_struct_init(PCD_HandleTypeDef *hpcd)
 		pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
 	}
 
+	//Reset Function Address
+	usb_set_dev_addr(pusb, 0x00);
 	usb_struct_idle(pusb);
 
 	//pusb->timer = USB_IDLE_TIMER;
@@ -4322,6 +4322,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			pusb->eprx_ret[i] = USB_RETVAL_COMPOK;
 			pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
 		}
+		//Reset Function Address
+		usb_set_dev_addr(pusb, 0x00);
 		usb_struct_idle(pusb);
 
 		//pusb->timer = USB_IDLE_TIMER;
