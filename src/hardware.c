@@ -2553,9 +2553,51 @@ static const uint32_t aarch64_pageattr =
 
 #elif CPUSTYLE_RISCV
 
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [512];	// Used as PPN in SATP register
 
+	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
+	// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
+	static inline void mmu_write_satp(uintptr_t reg)
+	{
+	  __asm__ __volatile__
+	    (
+	      "csrw satp, %0\n"
+	      "sfence.vma x0, x0\n"
+	      "fence rw, rw\n"
+	      //"fence.i\n"
+	      :
+	      : "rK" (reg)
+	      : "memory"
+	    );
+
+	  /* Flush the MMU Cache if needed (T-Head C906) */
+
+//	  if (mmu_flush_cache != NULL)
+//	    {
+//	      mmu_flush_cache(reg);
+//	    }
+	}
+
+
+	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
+
+	// Flush the MMU Cache for T-Head C906.  Called by mmu_write_satp() after
+	// updating the MMU SATP Register, when swapping MMU Page Tables.
+	// This operation executes RISC-V Instructions that are specific to
+	// T-Head C906.
+	void mmu_flush_cache(void) {
+	  __asm__ __volatile__ (
+	    // DCACHE.IALL: Invalidate all Page Table Entries in the D-Cache
+	    ".long 0x0020000b\n"
+
+	    // SYNC.S: Ensure that all Cache Operations are completed
+	    ".long 0x0190000b\n"
+	  );
+	}
+
 #else /* defined(__aarch64__) */
+
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
 #endif /* defined(__aarch64__) */
@@ -2923,12 +2965,47 @@ sysinit_mmu_tables(void)
 	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
 	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
 	// ? 0xEFFFF000
+	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
+	// Strong Order, Cacheable, Bufferable, Shareable, Security
 
+	// Bit 63 - Strong order
+	// Bit 62 - Cacheable
+	// Bit 61 - Buffer
+	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0))	// Cacheable memory
+	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0))	// Non-cacheable memory
+	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0))	// Non-bufferable device
+	#define TABLE_ATTRS		(UINT64_C(0) << 63)	// Pointer to next level of page table
+
+	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
+	uintptr_t address = 0;
+	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
+	{
+		level2_pagetable [i] =
+				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+				RAM_ATTRS |
+				0;
+		address += addrstep;
+	}
+	// Pointe to 1 GB pages
+	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
+	{
+		//uintptr_t address = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+		uintptr_t address = 0 * (UINT64_C(1) << 30) * i;
+		ttb0_base [i] =
+			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+			RAM_ATTRS |
+			0;
+	}
+
+	//ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
 #if 0
 
-	#define RAM_ATTRS 		(UINT32_C(0x03) << 2)	// Cacheable memory
-	#define NCRAM_ATTRS 	(UINT32_C(0x01) << 2)	// Non-cacheable memory
-	#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
 
 	#define FULLADFSZ 32	// Not __riscv_xlen
 	if (0)
@@ -3129,16 +3206,33 @@ sysinit_ttbr_initialize(void)
 	// 5.2.1.1 MMU address translation register (SATP)
 	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
 	const uint_fast64_t satp =
-			CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
+			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
+			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
 			0x00 * (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	csr_write_satp(satp);
 	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
-	//csr_write_satp(csr_read_satp() | CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60));
-	//csr_write_satp(0);
-	//PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
+	mmu_write_satp(satp);
+	mmu_flush_cache();
+	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+
+	// MAEE in MXSTATUS
+	//
+	//
+	//	/*
+	//	(15) When MM is 1, unaligned access is supported, and the hardware handles unaligned access
+	//	(16) When UCME is 1, user mode can execute extended cache operation instructions
+	//	(17) When CLINTEE is 1, CLINT-initiated superuser software interrupts and timer interrupts can be responded to
+	//	(21) When the MAEE is 1, the address attribute bit is extended in the PTE of the MMU, and the user can configure the address attribute of the page
+	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
+	//	*/
+	//	csr_set(CSR_MXSTATUS, 0x638000);
+//	csr_set_bits_mxstatus(
+//			1 * (UINT32_C(1) << 21) |
+//			0
+//			);
 
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
