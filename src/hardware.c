@@ -2979,10 +2979,11 @@ sysinit_mmu_tables(void)
 	// Bit 63 - Strong order
 	// Bit 62 - Cacheable
 	// Bit 61 - Buffer
-	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0))	// Cacheable memory
-	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0))	// Non-cacheable memory
-	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0))	// Non-bufferable device
-	#define TABLE_ATTRS		(UINT64_C(0) << 63)	// Pointer to next level of page table
+	// Bit 0 - Valid
+	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Cacheable memory
+	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-cacheable memory
+	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-bufferable device
+	#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
 
 	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
 	uintptr_t address = 0;
@@ -3210,6 +3211,7 @@ sysinit_ttbr_initialize(void)
 	#define CSR_SATP_MODE_SV57   10
 
 	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
+	mmu_flush_cache();
 
 	// 5.2.1.1 MMU address translation register (SATP)
 	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
