@@ -2077,7 +2077,7 @@ static void dcache_wb_range(unsigned long start, unsigned long end)
     {
         asm volatile("dcache.cva %0\n"::"r"(i):"memory");
     }
-    asm volatile(".long 0x01b0000b");
+    asm volatile(".4byte 0x01b0000b");
 }
 
 static void dcache_inv_range(unsigned long start, unsigned long end)
@@ -2088,7 +2088,7 @@ static void dcache_inv_range(unsigned long start, unsigned long end)
     {
         asm volatile("dcache.iva %0\n"::"r"(i):"memory");
     }
-    asm volatile(".long 0x01b0000b");
+    asm volatile(".4byte 0x01b0000b");
 }
 
 static void dcache_wbinv_range(unsigned long start, unsigned long end)
@@ -2099,7 +2099,7 @@ static void dcache_wbinv_range(unsigned long start, unsigned long end)
     {
         asm volatile("dcache.civa %0\n"::"r"(i):"memory");
     }
-    asm volatile(".long 0x01b0000b");
+    asm volatile(".4byte 0x01b0000b");
 }
 
 static void icache_inv_range(unsigned long start, unsigned long end)
@@ -2110,7 +2110,7 @@ static void icache_inv_range(unsigned long start, unsigned long end)
     {
         asm volatile("icache.iva %0\n"::"r"(i):"memory");
     }
-    asm volatile(".long 0x01b0000b");
+    asm volatile(".4byte 0x01b0000b");
 }
 
 void awos_arch_clean_dcache(void)
@@ -2195,8 +2195,8 @@ void cache_flush_range(uintptr_t start, uintptr_t stop)
 	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
 
 	for(; i < stop; i += L1_CACHE_BYTES)
-		__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
-	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+		__ASM volatile(".4byte 0x0295000b");	/* dcache.cpa a0 */
+	__ASM volatile(".4byte 0x01b0000b");		/* sync.is */
 }
 
 /*
@@ -2207,19 +2207,19 @@ void cache_inv_range(uintptr_t start, uintptr_t stop)
 	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
 
 	for(; i < stop; i += L1_CACHE_BYTES)
-		__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
-	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
+		__ASM volatile(".4byte 0x02a5000b");	/* dcache.ipa a0 */
+	__ASM volatile(".4byte 0x01b0000b");		/* sync.is */
 }
 
 #endif
 
-//      __asm__ __volatile__(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
-//      __asm__ __volatile__(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
-//      __asm__ __volatile__(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
-//      __asm__ __volatile__(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
-//      __asm__ __volatile__(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
-//      __asm__ __volatile__(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
-//      __asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
+//      __ASM volatile(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
+//      __ASM volatile(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
+//      __ASM volatile(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
+//      __ASM volatile(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
+//      __ASM volatile(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
+//      __ASM volatile(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
+//      __ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 //
 
 // Сейчас в эту память будем читать по DMA
@@ -2230,13 +2230,13 @@ void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(
+			__ASM volatile(
 					"\t" "mv a0,%0\n"
 					//"\t" ".4byte 0x0265000b\n" /* dcache.iva a0 */
 					"\t" ".4byte 0x02a5000b\n" /* dcache.ipa a0 */
 					:: "r"(base):"a0");
 		}
-		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		//__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2248,13 +2248,13 @@ void dcache_clean(uintptr_t base, int_fast32_t dsize)
 		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(
+			__ASM volatile(
 					"\t" "mv a0,%0\n"
 					//"\t" ".4byte 0x0245000b\n" /* dcache.cva a0 */
 					"\t" ".4byte 0x0285000b\n" /* dcache.cpa a0 */
 					:: "r"(base):"a0");
 		}
-		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		//__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2266,13 +2266,13 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(
+			__ASM volatile(
 					"\t" "mv a0,%0\n"
 					//"\t" ".4byte 0x0275000b\n" /* dcache.civa a0 */
 					"\t" ".4byte 0x02b5000b\n" /* dcache.cipa a0 */
 					:: "r"(base):"a0");
 		}
-		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		//__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2280,7 +2280,7 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 // применяется после начальной инициализации среды выполнния
 void dcache_clean_all(void)
 {
-	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
+	__ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 }
 
 
@@ -2560,7 +2560,7 @@ static const uint32_t aarch64_pageattr =
 	// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
 	static inline void mmu_write_satp(uintptr_t reg)
 	{
-	  __asm__ __volatile__
+	  __ASM volatile
 	    (
 	      "csrw satp, %0\n"
 	      "sfence.vma x0, x0\n"
@@ -2587,12 +2587,12 @@ static const uint32_t aarch64_pageattr =
 	// This operation executes RISC-V Instructions that are specific to
 	// T-Head C906.
 	void mmu_flush_cache(void) {
-	  __asm__ __volatile__ (
+	  __ASM volatile (
 	    // DCACHE.IALL: Invalidate all Page Table Entries in the D-Cache
-	    ".long 0x0020000b\n"
+	    ".4byte 0x0020000b\n"
 
 	    // SYNC.S: Ensure that all Cache Operations are completed
-	    ".long 0x0190000b\n"
+	    ".4byte 0x0190000b\n"
 	  );
 	}
 
