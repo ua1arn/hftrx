@@ -2236,7 +2236,7 @@ void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 					"\t" ".4byte 0x02a5000b\n" /* dcache.ipa a0 */
 					:: "r"(base):"a0");
 		}
-		//__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2254,7 +2254,7 @@ void dcache_clean(uintptr_t base, int_fast32_t dsize)
 					"\t" ".4byte 0x0285000b\n" /* dcache.cpa a0 */
 					:: "r"(base):"a0");
 		}
-		//__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2272,7 +2272,7 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 					"\t" ".4byte 0x02b5000b\n" /* dcache.cipa a0 */
 					:: "r"(base):"a0");
 		}
-		//__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
