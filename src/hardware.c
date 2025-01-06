@@ -2397,6 +2397,7 @@ static const uint32_t aarch64_pageattr =
 // See Table 4.2: Encoding of PTE Type field.
 
 #define	TTB_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
+#define	TTB_PARA_NCACHED(ro, xn) ((0x00u << 1) | 0x01)
 #define	TTB_PARA_DEVICE 		((0x00u << 1) | 0x01)
 #define	TTB_PARA_NO_ACCESS 		0
 
