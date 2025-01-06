@@ -3357,9 +3357,9 @@ sysinit_fpu_initialize(void)
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	GIC_Enable();
-	InitializeIrql(IRQL_USER);	// nested interrupts support
 
 #endif
+	InitializeIrql(IRQL_USER);	// nested interrupts support
 #endif
 }
 

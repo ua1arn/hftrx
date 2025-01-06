@@ -883,7 +883,7 @@ extern "C" {
 		PRIOv_IPC_ONLY,
 		PRIOv_OVRT,
 		PRIOv_RT,
-		PRIOv_SYS,
+		PRIOv_SYS,		/* таймеры, USB */
 		PRIOv_USER,
 		//
 		PRIOv_count
@@ -916,9 +916,9 @@ extern "C" {
 	// A lower priority value indicating a higher priority
 	// Value for GICD
 	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
-	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVRT))
-	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_RT))
-	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYS))
+	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVRT))	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_RT))	/* звук */
+	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYS))	/* таймеры, USB */
 
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
@@ -950,7 +950,7 @@ extern "C" {
 	typedef uint_xlen_t IRQL_t;
 
 	#define ARM_IPC_PRIORITY			4
-	#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер */
+	#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер и телеграф */
 	#define ARM_REALTIME_PRIORITY		2	/* звук */
 	#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
 	#define ARM_USER_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
@@ -958,6 +958,7 @@ extern "C" {
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
+	#define IRQL_USER				ARM_USER_PRIORITY
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
