@@ -15612,32 +15612,54 @@ void lowtests(void)
 #if 0
 	// cached memory tests
 	{
-		PRINTF("Cached memory test:\n");
-		static ALIGNX_BEGIN uint8_t buff [256];
+		PRINTF("Cached memory test - dcache row size test:\n");
+		static ALIGNX_BEGIN uint8_t buff [128];
 
 		global_disableIRQ();
+
 		memset(buff, 0xE5, sizeof buff);
 		dcache_clean((uintptr_t) buff, sizeof buff);
 
-		memset(buff + DCACHEROWSIZE, 0x33, 16);
+		memset(buff, 0x00, sizeof buff);
+		dcache_clean((uintptr_t) buff, 1);	// one byte - force one cache row clear
 		dcache_invalidate((uintptr_t) buff, sizeof buff);
 
-		printhex32((uintptr_t) buff, buff, sizeof buff);
+		printhex((uintptr_t) buff, buff, sizeof buff);
+//		for (;;)
+//			;
+	}
+	// cached memory tests
+	{
+		static const char msg [] = "May not see this text";
+		PRINTF("Cached memory test (may not see text):\n");
+		static ALIGNX_BEGIN uint8_t buff [128];
+
+		global_disableIRQ();
+
+		memset(buff, 0xE5, sizeof buff);
+		dcache_clean((uintptr_t) buff, sizeof buff);
+
+		memcpy(buff + DCACHEROWSIZE, msg, sizeof msg);
+		dcache_invalidate((uintptr_t) buff, sizeof buff);
+
+		printhex((uintptr_t) buff, buff, sizeof buff);
 //		for (;;)
 //			;
 	}
 	{
-		PRINTF("Non-cached memory test:\n");
-		static RAMNC ALIGNX_BEGIN uint8_t buff [256];
+		static const char msg [] = "Should see this text";
+		PRINTF("Non-cached memory test (should see text):\n");
+		static RAMNC ALIGNX_BEGIN uint8_t buff [128];
 
 		global_disableIRQ();
+
 		memset(buff, 0xE5, sizeof buff);
 		dcache_clean((uintptr_t) buff, sizeof buff);
 
-		memset(buff + DCACHEROWSIZE, 0x33, 16);
+		memcpy(buff + DCACHEROWSIZE, msg, sizeof msg);
 		dcache_invalidate((uintptr_t) buff, sizeof buff);
 
-		printhex32((uintptr_t) buff, buff, sizeof buff);
+		printhex((uintptr_t) buff, buff, sizeof buff);
 		for (;;)
 			;
 	}

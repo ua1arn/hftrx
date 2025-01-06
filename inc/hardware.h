@@ -34,7 +34,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
+	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -55,7 +55,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
+	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -79,7 +79,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
+	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -103,7 +103,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
+	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -125,7 +125,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
+	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
 #elif \
@@ -148,7 +148,7 @@ extern "C" {
 	#include <avr/cpufunc.h>
 	#include <util/delay.h>
 
-	#define ALIGNX_BEGIN /* __attribute__ ((aligned(64)))  */
+	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_STM32H7XX
@@ -162,13 +162,13 @@ extern "C" {
 
 	#include "arch/stm32h7xx/stm32h7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
-	#define ALIGNX_END /* nothing */
-
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define DCACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+
+	#define ALIGNX_BEGIN __ALIGNED(DCACHEROWSIZE)
+	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
@@ -179,13 +179,13 @@ extern "C" {
 
 	#include "arch/stm32f7xx/stm32f7xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
-	#define ALIGNX_END /* nothing */
-
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define DCACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
+
+	#define ALIGNX_BEGIN __ALIGNED(DCACHEROWSIZE)
+	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_STM32F4XX
 
@@ -195,79 +195,13 @@ extern "C" {
 
 	#include "arch/stm32f4xx/stm32f4xx.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
+	#define ALIGNX_BEGIN __ALIGNED(4)
 	#define ALIGNX_END /* nothing */
 
 	//#define DCACHEROWSIZE __SCB_DCACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 	//#define ICACHEROWSIZE __SCB_ICACHE_LINE_SIZE  //32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
-	#define DCACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
-	#define ICACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
-
-#elif CPUSTYLE_STM32F30X
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
-	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
-
-	// STM32F303VC processors
-	#include "arch/stm32f30x/stm32f30x.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
-	#define ALIGNX_END /* nothing */
-
-#elif CPUSTYLE_STM32F1XX
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
-	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
-
-	#include "arch/stm32f1xx/stm32f1xx.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
-	#define ALIGNX_END /* nothing */
-
-elif CPUSTYLE_STM32F0XX
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
-	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
-	
-	#include "arch/stm32f0xx/stm32f0xx.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
-	#define ALIGNX_END /* nothing */
-
-#elif CPUSTYLE_STM32L0XX
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
-	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
-	#include "arch/stm32l0xx/stm32l0xx.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
-	#define ALIGNX_END /* nothing */
-
-#elif CPUSTYLE_ATSAM3S
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
-
-	#define __SAM3S4C__ 1		// replace to __SAM3S4B__
-	#include "sam3s.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
-
-#elif CPUSTYLE_ATSAM4S
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
-
-	#define __SAM4SA16C__ 1
-	#include "sam4s.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
+	#define DCACHEROWSIZE 16U // stub
+	#define ICACHEROWSIZE 16U // stub
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -281,7 +215,7 @@ elif CPUSTYLE_STM32F0XX
 
 	#include "arch/tdmi7_gcc.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_AT91SAM9XE
@@ -295,7 +229,7 @@ elif CPUSTYLE_STM32F0XX
 
 	#include "arch/at91sam/at91sam9xe512.h"
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 	#define __ASM            __asm           /*!< asm keyword for GNU Compiler          */
@@ -328,7 +262,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(DCACHEROWSIZE)))
+	#define ALIGNX_BEGIN __ALIGNED(DCACHEROWSIZE)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_STM32MP1
@@ -349,7 +283,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_F133
@@ -365,7 +299,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_A64
@@ -379,7 +313,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 
@@ -398,7 +332,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_V853X
@@ -412,7 +346,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_H3
@@ -426,7 +360,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 
@@ -441,7 +375,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 
@@ -456,7 +390,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_VM14
@@ -470,7 +404,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __ALIGNED(64)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_XC7Z
@@ -491,7 +425,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_XCZU
@@ -509,7 +443,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
 #elif CPUSTYLE_RK356X
@@ -519,7 +453,7 @@ elif CPUSTYLE_STM32F0XX
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
 #elif \

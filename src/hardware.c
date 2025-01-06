@@ -2060,118 +2060,8 @@ void dcache_clean_invalidate(uintptr_t addr, int_fast32_t dsize)
 
 #elif CPUSTYLE_F133
 
-	// C906 core specific cache operations
+// C906 core specific cache operations
 
-
-#if 0
-
-// https://github.com/Tina-Linux/d1s-melis/blob/26ea5f09f53b49b9efce8a4dd487f875b0496f86/ekernel/arch/riscv/rv64gc/c906_cache.c
-
-#define L1_CACHE_BYTES (64)
-
-static void dcache_wb_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("dcache.cva %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".4byte 0x01b0000b");
-}
-
-static void dcache_inv_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("dcache.iva %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".4byte 0x01b0000b");
-}
-
-static void dcache_wbinv_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("dcache.civa %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".4byte 0x01b0000b");
-}
-
-static void icache_inv_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("icache.iva %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".4byte 0x01b0000b");
-}
-
-void awos_arch_clean_dcache(void)
-{
-    asm volatile("dcache.call\n":::"memory");
-}
-
-void awos_arch_clean_flush_dcache(void)
-{
-    asm volatile("dcache.ciall\n":::"memory");
-}
-
-void awos_arch_flush_dcache(void)
-{
-    asm volatile("dcache.iall\n":::"memory");
-}
-
-void awos_arch_flush_icache(void)
-{
-    asm volatile("icache.iall\n":::"memory");
-}
-
-void awos_arch_mems_flush_icache_region(unsigned long start, unsigned long len)
-{
-    icache_inv_range(start, start + len);
-}
-
-void awos_arch_mems_clean_dcache_region(unsigned long start, unsigned long len)
-{
-    dcache_wb_range(start, start + len);
-}
-
-void awos_arch_mems_clean_flush_dcache_region(unsigned long start, unsigned long len)
-{
-    dcache_wbinv_range(start, start + len);
-}
-
-void awos_arch_mems_flush_dcache_region(unsigned long start, unsigned long len)
-{
-    dcache_inv_range(start, start + len);
-}
-
-void awos_arch_clean_flush_cache(void)
-{
-    awos_arch_clean_flush_dcache();
-    awos_arch_flush_icache();
-}
-
-void awos_arch_clean_flush_cache_region(unsigned long start, unsigned long len)
-{
-    awos_arch_mems_clean_flush_dcache_region(start, len);
-    awos_arch_mems_flush_icache_region(start, len);
-}
-
-void awos_arch_flush_cache(void)
-{
-    awos_arch_flush_dcache();
-    awos_arch_flush_icache();
-}
-
-#endif
 
 //	cache.c/iva means three instructions:
 //	 - dcache.cva %0  : writeback     by virtual address cacheline
@@ -2183,35 +2073,6 @@ void awos_arch_flush_cache(void)
 //	asm volatile ("fence.i" ::: "memory");
 //}
 
-// See https://github.com/xboot/xboot/blob/master/src/arch/riscv64/mach-f133/cache-c906.c
-
-#define L1_CACHE_BYTES	(64)
-#if 0
-/*
- * Flush range(clean & invalidate), affects the range [start, stop - 1]
- */
-void cache_flush_range(uintptr_t start, uintptr_t stop)
-{
-	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-
-	for(; i < stop; i += L1_CACHE_BYTES)
-		__ASM volatile(".4byte 0x0295000b");	/* dcache.cpa a0 */
-	__ASM volatile(".4byte 0x01b0000b");		/* sync.is */
-}
-
-/*
- * Invalidate range, affects the range [start, stop - 1]
- */
-void cache_inv_range(uintptr_t start, uintptr_t stop)
-{
-	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-
-	for(; i < stop; i += L1_CACHE_BYTES)
-		__ASM volatile(".4byte 0x02a5000b");	/* dcache.ipa a0 */
-	__ASM volatile(".4byte 0x01b0000b");		/* sync.is */
-}
-
-#endif
 
 //      __ASM volatile(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
 //      __ASM volatile(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
@@ -3216,17 +3077,17 @@ sysinit_ttbr_initialize(void)
 	// 5.2.1.1 MMU address translation register (SATP)
 	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
 	const uint_fast64_t satp =
-			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
-			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
+			CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
+			//CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
 			0x00 * (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	csr_write_satp(satp);
 	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
-	mmu_write_satp(satp);
-	mmu_flush_cache();
-	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+//	mmu_write_satp(satp);
+//	mmu_flush_cache();
+//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
 	// MAEE in MXSTATUS
 	//
