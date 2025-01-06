@@ -3330,6 +3330,15 @@ sysinit_fpu_initialize(void)
 
 #elif CPUSTYLE_RISCV
 
+	// 15.1.7.1 M-mode extension status register (MXSTATUS)
+	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
+	//	(18) When MHRD is 1, hardware writeback is not performed after the TLB is missing.
+	csr_set_bits_mxstatus(
+			1 * (UINT32_C(1) << 22) |
+			//1 * (UINT32_C(1) << 18) |
+			0
+			);
+
 	/* disable interrupts*/
 	csr_clr_bits_mie(MIE_MSI_BIT_MASK | MIE_MTI_BIT_MASK | MIE_MEI_BIT_MASK);	// MSI MTI MEI
 	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
@@ -3340,6 +3349,7 @@ sysinit_fpu_initialize(void)
 	csr_set_bits_mstatus(0x00006000);	/* MSTATUS_FS = 0x00006000 = Dirty */
  	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
 	//__FPU_Enable();
+
 
 #endif /*  */
 
