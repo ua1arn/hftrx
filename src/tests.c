@@ -15612,7 +15612,7 @@ void lowtests(void)
 #if 0
 	// cached memory tests
 	{
-		PRINTF("Cached memory test - dcache row size test:\n");
+		PRINTF("Cached memory test - dcache row size test (should see partially modified buffer):\n");
 		static ALIGNX_BEGIN uint8_t buff [128];
 
 		global_disableIRQ();

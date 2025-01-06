@@ -1893,11 +1893,11 @@ int_fast32_t icache_rowsize(void)
 // 	see Terms used in describing the maintenance operations on page B2-1272.
 // 	When the data is stated to be an MVA, it does not have to be cache line aligned.
 
-void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
+void L1_CleanDCache_by_Addr(void * addr, int32_t op_size)
 {
-	if (dsize > 0)
+	if (op_size > 0)
 	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
@@ -1910,11 +1910,11 @@ void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
 	}
 }
 
-void L1_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
+void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t op_size)
 {
-	if (dsize > 0)
+	if (op_size > 0)
 	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
@@ -1927,11 +1927,11 @@ void L1_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 	}
 }
 
-void L1_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
+void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
 {
-	if (dsize > 0)
+	if (op_size > 0)
 	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		do
 		{
@@ -1940,7 +1940,6 @@ void L1_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2238,8 +2237,8 @@ uint_fast32_t cpu_getdebugticks(void)
 // Also see TCR_EL3 parameter
 #define CACHEATTR_NOCACHE 0x00		// Non-cacheable
 #define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
-#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
-#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
+//#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
+//#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
 
 static const uint32_t aarch64_pageattr =
 			0x01 * (UINT32_C(1) << 10) |	// AF
@@ -2321,8 +2320,8 @@ static const uint32_t aarch64_pageattr =
 // Also see __set_TTBR0 parameter
 #define CACHEATTR_NOCACHE 0x00		// Non-cacheable
 #define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
-#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
-#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+//#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
+//#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
 
 /* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
 #define RAM_ATTRS CACHEATTR_WB_WA_CACHE
