@@ -1550,7 +1550,7 @@ struct afsetitempl
 	#define AGC_RATE_DIGI	AGC_RATE_FLAT //(UINT8_MAX - 1)
 	#define AGC_RATE_DRM	AGC_RATE_FLAT //(UINT8_MAX - 1)
 #else /* CTLSTYLE_OLEG4Z_V1 */
-	#define AGC_RATE_SSB	20
+	#define AGC_RATE_SSB	10
 	#define AGC_RATE_DIGI	6
 	#define AGC_RATE_DRM	6
 #endif /* CTLSTYLE_OLEG4Z_V1 */
