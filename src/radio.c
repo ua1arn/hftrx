@@ -5907,7 +5907,7 @@ static uint_fast8_t dimmflagch;	/* не-0: изменилось состояни
 #if WITHFANTIMER
 
 #define FANPATIMEMAX	240
-static uint_fast8_t gfanpatime = 15;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
+static uint_fast8_t gfanpatime = 25;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
