@@ -5801,8 +5801,8 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	// PLL_VIDEO0 as source
 	const uint_fast32_t pllout = allwnr_t507_get_pll_video0_x1_freq();
 	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
-	PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
-	PRINTF("7 M_HDMI=%u\n", M_HDMI);
+	//PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
+	//PRINTF("7 M_HDMI=%u\n", M_HDMI);
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
@@ -5874,9 +5874,9 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	//	7 allwnr_t507_get_hdmi_freq()=297000 kHz
 	//	7 BOARD_TCONLCDFREQ()=148500 kHz
 
-	PRINTF("7 allwnr_t507_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi_hdcp_freq() / 1000));
-	PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
-	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+	//PRINTF("7 allwnr_t507_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi_hdcp_freq() / 1000));
+	//PRINTF("7 allwnr_t507_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_hdmi0_freq() / 1000));
+	//PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -7180,19 +7180,19 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 //	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;    // Main Controller Feed Through Control
 //	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
-	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_DESIGN_ID,
-			hdmi->HDMI_REVISION_ID,
-			hdmi->HDMI_PRODUCT_ID0,
-			hdmi->HDMI_PRODUCT_ID1
-			);
-
-	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-			hdmi->HDMI_CONFIG0_ID,
-			hdmi->HDMI_CONFIG1_ID,
-			hdmi->HDMI_CONFIG2_ID,
-			hdmi->HDMI_CONFIG3_ID
-			);
+//	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
+//			hdmi->HDMI_DESIGN_ID,
+//			hdmi->HDMI_REVISION_ID,
+//			hdmi->HDMI_PRODUCT_ID0,
+//			hdmi->HDMI_PRODUCT_ID1
+//			);
+//
+//	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
+//			hdmi->HDMI_CONFIG0_ID,
+//			hdmi->HDMI_CONFIG1_ID,
+//			hdmi->HDMI_CONFIG2_ID,
+//			hdmi->HDMI_CONFIG3_ID
+//			);
 }
 
 #endif /* defined (HDMI_TX0) */
@@ -7287,7 +7287,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 //	PRINTF("HBP=%u\n", HBP);
 //	PRINTF("VBP=%u\n", VBP);
 
-	PRINTF("start delay=%u\n", (VTOTAL - HEIGHT) / interlace - 5);
+	//PRINTF("start delay=%u\n", (VTOTAL - HEIGHT) / interlace - 5);
 
 #if CPUSTYLE_A64
 	// A64
@@ -7733,7 +7733,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		t113_de_rtmix_initialize(rtmixid);
 		awxx_deoutmapping();				// после инициализации и TCON и DE
 
-		PRINTF("Init rtmixid=%d\n", rtmixid);
+		//PRINTF("Init rtmixid=%d\n", rtmixid);
 		//TP();
 		/* эта инициализация после корректного соединения с работающим TCON */
 		t113_de_bld_initialize(rtmixid, vdmode, initstructs [i].defcolor);	// RED
@@ -7751,7 +7751,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 
 		// save settings
 		t113_de_update(rtmixid);	/* Update registers */
-		PRINTF("Init rtmixid=%d done\n", rtmixid);
+		//PRINTF("Init rtmixid=%d done\n", rtmixid);
 	}
 
     //PRINTF("hardware_ltdc_initialize done.\n");
