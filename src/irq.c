@@ -2123,10 +2123,6 @@ static void arm_hardware_gicsfetch(void)
 		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
-	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
-
 }
 
 /* вызывается на любом ядре */
@@ -2139,9 +2135,6 @@ static void arm_hardware_populate(int int_ida)
 	//gicshadow_target [int_id] = targetcpu;
 	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
 	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
-	//dcache_clean((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//dcache_clean((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	dcache_clean((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x00);	// other CORE, filer=0
 
@@ -2162,8 +2155,6 @@ static void arm_hardware_populate_initialize(void)
 	}
 	//LCLSPINLOCK_INITIALIZE(& gicdistrib_lock);
 	//LCLSPINLOCK_INITIALIZE(& populate_lock);
-	//dcache_clean_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//dcache_clean_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 
 	LCLSPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
@@ -2183,9 +2174,6 @@ void arm_hardware_populte_second_initialize(void)
 	LCLSPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
-	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	//dcache_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
-	dcache_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 }
 
 #endif /* WITHSMPSYSTEM */

@@ -1893,11 +1893,11 @@ int_fast32_t icache_rowsize(void)
 // 	see Terms used in describing the maintenance operations on page B2-1272.
 // 	When the data is stated to be an MVA, it does not have to be cache line aligned.
 
-void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
+void L1_CleanDCache_by_Addr(void * addr, int32_t op_size)
 {
-	if (dsize > 0)
+	if (op_size > 0)
 	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
@@ -1910,11 +1910,11 @@ void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
 	}
 }
 
-void L1_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
+void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t op_size)
 {
-	if (dsize > 0)
+	if (op_size > 0)
 	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
@@ -1927,11 +1927,11 @@ void L1_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 	}
 }
 
-void L1_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
+void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
 {
-	if (dsize > 0)
+	if (op_size > 0)
 	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		do
 		{
@@ -1940,7 +1940,6 @@ void L1_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2060,118 +2059,8 @@ void dcache_clean_invalidate(uintptr_t addr, int_fast32_t dsize)
 
 #elif CPUSTYLE_F133
 
-	// C906 core specific cache operations
+// C906 core specific cache operations
 
-
-#if 0
-
-// https://github.com/Tina-Linux/d1s-melis/blob/26ea5f09f53b49b9efce8a4dd487f875b0496f86/ekernel/arch/riscv/rv64gc/c906_cache.c
-
-#define L1_CACHE_BYTES (64)
-
-static void dcache_wb_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("dcache.cva %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".long 0x01b0000b");
-}
-
-static void dcache_inv_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("dcache.iva %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".long 0x01b0000b");
-}
-
-static void dcache_wbinv_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("dcache.civa %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".long 0x01b0000b");
-}
-
-static void icache_inv_range(unsigned long start, unsigned long end)
-{
-    unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-    for (; i < end; i += L1_CACHE_BYTES)
-    {
-        asm volatile("icache.iva %0\n"::"r"(i):"memory");
-    }
-    asm volatile(".long 0x01b0000b");
-}
-
-void awos_arch_clean_dcache(void)
-{
-    asm volatile("dcache.call\n":::"memory");
-}
-
-void awos_arch_clean_flush_dcache(void)
-{
-    asm volatile("dcache.ciall\n":::"memory");
-}
-
-void awos_arch_flush_dcache(void)
-{
-    asm volatile("dcache.iall\n":::"memory");
-}
-
-void awos_arch_flush_icache(void)
-{
-    asm volatile("icache.iall\n":::"memory");
-}
-
-void awos_arch_mems_flush_icache_region(unsigned long start, unsigned long len)
-{
-    icache_inv_range(start, start + len);
-}
-
-void awos_arch_mems_clean_dcache_region(unsigned long start, unsigned long len)
-{
-    dcache_wb_range(start, start + len);
-}
-
-void awos_arch_mems_clean_flush_dcache_region(unsigned long start, unsigned long len)
-{
-    dcache_wbinv_range(start, start + len);
-}
-
-void awos_arch_mems_flush_dcache_region(unsigned long start, unsigned long len)
-{
-    dcache_inv_range(start, start + len);
-}
-
-void awos_arch_clean_flush_cache(void)
-{
-    awos_arch_clean_flush_dcache();
-    awos_arch_flush_icache();
-}
-
-void awos_arch_clean_flush_cache_region(unsigned long start, unsigned long len)
-{
-    awos_arch_mems_clean_flush_dcache_region(start, len);
-    awos_arch_mems_flush_icache_region(start, len);
-}
-
-void awos_arch_flush_cache(void)
-{
-    awos_arch_flush_dcache();
-    awos_arch_flush_icache();
-}
-
-#endif
 
 //	cache.c/iva means three instructions:
 //	 - dcache.cva %0  : writeback     by virtual address cacheline
@@ -2183,43 +2072,14 @@ void awos_arch_flush_cache(void)
 //	asm volatile ("fence.i" ::: "memory");
 //}
 
-// See https://github.com/xboot/xboot/blob/master/src/arch/riscv64/mach-f133/cache-c906.c
 
-#define L1_CACHE_BYTES	(64)
-#if 0
-/*
- * Flush range(clean & invalidate), affects the range [start, stop - 1]
- */
-void cache_flush_range(uintptr_t start, uintptr_t stop)
-{
-	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-
-	for(; i < stop; i += L1_CACHE_BYTES)
-		__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
-	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
-}
-
-/*
- * Invalidate range, affects the range [start, stop - 1]
- */
-void cache_inv_range(uintptr_t start, uintptr_t stop)
-{
-	register uintptr_t i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
-
-	for(; i < stop; i += L1_CACHE_BYTES)
-		__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
-	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
-}
-
-#endif
-
-//      __asm__ __volatile__(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
-//      __asm__ __volatile__(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
-//      __asm__ __volatile__(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
-//      __asm__ __volatile__(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
-//      __asm__ __volatile__(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
-//      __asm__ __volatile__(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
-//      __asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
+//      __ASM volatile(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
+//      __ASM volatile(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
+//      __ASM volatile(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
+//      __ASM volatile(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
+//      __ASM volatile(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
+//      __ASM volatile(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
+//      __ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 //
 
 // Сейчас в эту память будем читать по DMA
@@ -2230,13 +2090,13 @@ void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
 		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(
+			__ASM volatile(
 					"\t" "mv a0,%0\n"
 					//"\t" ".4byte 0x0265000b\n" /* dcache.iva a0 */
 					"\t" ".4byte 0x02a5000b\n" /* dcache.ipa a0 */
 					:: "r"(base):"a0");
 		}
-		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2248,13 +2108,13 @@ void dcache_clean(uintptr_t base, int_fast32_t dsize)
 		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(
+			__ASM volatile(
 					"\t" "mv a0,%0\n"
 					//"\t" ".4byte 0x0245000b\n" /* dcache.cva a0 */
 					"\t" ".4byte 0x0285000b\n" /* dcache.cpa a0 */
 					:: "r"(base):"a0");
 		}
-		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2266,13 +2126,13 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
 		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
 		{
-			__asm__ __volatile__(
+			__ASM volatile(
 					"\t" "mv a0,%0\n"
 					//"\t" ".4byte 0x0275000b\n" /* dcache.civa a0 */
 					"\t" ".4byte 0x02b5000b\n" /* dcache.cipa a0 */
 					:: "r"(base):"a0");
 		}
-		//__asm__ __volatile__(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
+		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
 	}
 }
 
@@ -2280,7 +2140,7 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 // применяется после начальной инициализации среды выполнния
 void dcache_clean_all(void)
 {
-	__asm__ __volatile__(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
+	__ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 }
 
 
@@ -2377,8 +2237,8 @@ uint_fast32_t cpu_getdebugticks(void)
 // Also see TCR_EL3 parameter
 #define CACHEATTR_NOCACHE 0x00		// Non-cacheable
 #define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
-#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
-#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
+//#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
+//#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
 
 static const uint32_t aarch64_pageattr =
 			0x01 * (UINT32_C(1) << 10) |	// AF
@@ -2460,8 +2320,8 @@ static const uint32_t aarch64_pageattr =
 // Also see __set_TTBR0 parameter
 #define CACHEATTR_NOCACHE 0x00		// Non-cacheable
 #define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
-#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
-#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+//#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
+//#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
 
 /* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
 #define RAM_ATTRS CACHEATTR_WB_WA_CACHE
@@ -2537,6 +2397,7 @@ static const uint32_t aarch64_pageattr =
 // See Table 4.2: Encoding of PTE Type field.
 
 #define	TTB_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
+#define	TTB_PARA_NCACHED(ro, xn) ((0x00u << 1) | 0x01)
 #define	TTB_PARA_DEVICE 		((0x00u << 1) | 0x01)
 #define	TTB_PARA_NO_ACCESS 		0
 
@@ -2553,9 +2414,51 @@ static const uint32_t aarch64_pageattr =
 
 #elif CPUSTYLE_RISCV
 
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [512];	// Used as PPN in SATP register
 
+	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
+	// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
+	static inline void mmu_write_satp(uintptr_t reg)
+	{
+	  __ASM volatile
+	    (
+	      "csrw satp, %0\n"
+	      "sfence.vma x0, x0\n"
+	      "fence rw, rw\n"
+	      //"fence.i\n"
+	      :
+	      : "rK" (reg)
+	      : "memory"
+	    );
+
+	  /* Flush the MMU Cache if needed (T-Head C906) */
+
+//	  if (mmu_flush_cache != NULL)
+//	    {
+//	      mmu_flush_cache(reg);
+//	    }
+	}
+
+
+	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
+
+	// Flush the MMU Cache for T-Head C906.  Called by mmu_write_satp() after
+	// updating the MMU SATP Register, when swapping MMU Page Tables.
+	// This operation executes RISC-V Instructions that are specific to
+	// T-Head C906.
+	void mmu_flush_cache(void) {
+	  __ASM volatile (
+	    // DCACHE.IALL: Invalidate all Page Table Entries in the D-Cache
+	    ".4byte 0x0020000b\n"
+
+	    // SYNC.S: Ensure that all Cache Operations are completed
+	    ".4byte 0x0190000b\n"
+	  );
+	}
+
 #else /* defined(__aarch64__) */
+
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
 #endif /* defined(__aarch64__) */
@@ -2690,6 +2593,26 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYLE_F133
+
+	// Все сравнения должны быть не точнее 2 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
+	if (a < 0x00400000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x40000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_V3S
 
@@ -2769,18 +2692,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	return addrbase | TTB_PARA_DEVICE;
-
-#elif CPUSTYLE_F133
-
-	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
@@ -2923,12 +2834,48 @@ sysinit_mmu_tables(void)
 	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
 	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
 	// ? 0xEFFFF000
+	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
+	// Strong Order, Cacheable, Bufferable, Shareable, Security
 
+	// Bit 63 - Strong order
+	// Bit 62 - Cacheable
+	// Bit 61 - Buffer
+	// Bit 0 - Valid
+	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Cacheable memory
+	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-cacheable memory
+	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-bufferable device
+	#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
+
+	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
+	uintptr_t address = 0;
+	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
+	{
+		level2_pagetable [i] =
+				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+				RAM_ATTRS |
+				0;
+		address += addrstep;
+	}
+	// Pointe to 1 GB pages
+	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
+	{
+		//uintptr_t address = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+		uintptr_t address = 0 * (UINT64_C(1) << 30) * i;
+		ttb0_base [i] =
+			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+			RAM_ATTRS |
+			0;
+	}
+
+	//ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
 #if 0
 
-	#define RAM_ATTRS 		(UINT32_C(0x03) << 2)	// Cacheable memory
-	#define NCRAM_ATTRS 	(UINT32_C(0x01) << 2)	// Non-cacheable memory
-	#define DEVICE_ATTRS 	(UINT32_C(0x04) << 2)	// Non-bufferable device
 
 	#define FULLADFSZ 32	// Not __riscv_xlen
 	if (0)
@@ -3125,20 +3072,38 @@ sysinit_ttbr_initialize(void)
 	#define CSR_SATP_MODE_SV57   10
 
 	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
+	mmu_flush_cache();
 
 	// 5.2.1.1 MMU address translation register (SATP)
 	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
 	const uint_fast64_t satp =
 			CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
+			//CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
 			0x00 * (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	csr_write_satp(satp);
 	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
-	//csr_write_satp(csr_read_satp() | CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60));
-	//csr_write_satp(0);
-	//PRINTF("csr_read_satp()=%016lX\n", (unsigned long) csr_read_satp());
+//	mmu_write_satp(satp);
+//	mmu_flush_cache();
+//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+
+	// MAEE in MXSTATUS
+	//
+	//
+	//	/*
+	//	(15) When MM is 1, unaligned access is supported, and the hardware handles unaligned access
+	//	(16) When UCME is 1, user mode can execute extended cache operation instructions
+	//	(17) When CLINTEE is 1, CLINT-initiated superuser software interrupts and timer interrupts can be responded to
+	//	(21) When the MAEE is 1, the address attribute bit is extended in the PTE of the MMU, and the user can configure the address attribute of the page
+	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
+	//	*/
+	//	csr_set(CSR_MXSTATUS, 0x638000);
+//	csr_set_bits_mxstatus(
+//			1 * (UINT32_C(1) << 21) |
+//			0
+//			);
 
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
@@ -3226,6 +3191,15 @@ sysinit_fpu_initialize(void)
 
 #elif CPUSTYLE_RISCV
 
+	// 15.1.7.1 M-mode extension status register (MXSTATUS)
+	//	(22) When the THEADISAE is 1, the C906 extended instruction set can be used
+	//	(18) When MHRD is 1, hardware writeback is not performed after the TLB is missing.
+	csr_set_bits_mxstatus(
+			1 * (UINT32_C(1) << 22) |
+			//1 * (UINT32_C(1) << 18) |
+			0
+			);
+
 	/* disable interrupts*/
 	csr_clr_bits_mie(MIE_MSI_BIT_MASK | MIE_MTI_BIT_MASK | MIE_MEI_BIT_MASK);	// MSI MTI MEI
 	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
@@ -3237,15 +3211,16 @@ sysinit_fpu_initialize(void)
  	csr_write_fcsr(0);             		/* initialize rounding mode, undefined at reset */
 	//__FPU_Enable();
 
+
 #endif /*  */
 
 #if ! WITHISBOOTLOADER_DDR
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	GIC_Enable();
-	InitializeIrql(IRQL_USER);	// nested interrupts support
 
 #endif
+	InitializeIrql(IRQL_USER);	// nested interrupts support
 #endif
 }
 
