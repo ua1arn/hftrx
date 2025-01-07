@@ -6827,6 +6827,15 @@ __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
   return(result);
 }
 
+// G8.2.112 MIDR, Main ID Register
+// FAULT!!!
+__STATIC_FORCEINLINE uint32_t __get_MIDR(void)
+{
+	uint32_t result;
+  __get_CP(15, 0, result, 0, 0, 0);
+  return(result);
+}
+
 #endif /* (__CORTEX_A == 53U) && CPUSTYLE_CA53 */
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
@@ -11454,14 +11463,34 @@ void hightests(void)
 #endif
 #if 0 && CPUSTYLE_CA53
 	{
+		// H9.2.46 MIDR_EL1, Main ID Register
+	#if defined(__aarch64__)
+		const unsigned midr = __get_MIDR_EL1();
+	#else
+		const unsigned midr = __get_MIDR();
+	#endif
+		const unsigned partNum = (midr >> 4) & 0xFFF;
+		// Allwinner A64	- midr=0x410FD034 (partNum=0xD03 (3331)
+		// Allwinner T507-H	- midr=0x410FD034 (partNum=0xD03 (3331)
+		PRINTF("midr=0x%08X (partNum=0x%03X (%u)\n", midr, partNum, partNum);
+	}
+#endif
+#if 0 && CPUSTYLE_CA53
+	{
+#if defined(__aarch64__)
 		const uint_fast32_t ca53_cbar = __get_CA53_CBAR();
-		const uint64_t periphbase = (uint64_t) (ca53_cbar & UINT32_C(0xFFFC0000)) | ((uint64_t) (ca53_cbar & UINT32_C(0xFF)) << 32);
-
-		//PRINTF("__get_CBAR()=%08X\n", (unsigned) __get_CBAR());
+		PRINTF("__get_CBAR()=%08X\n", ca53_cbar);
+		PRINTF("__get_CPUACTLR_EL1()=%08X\n", (unsigned) __get_CPUACTLR_EL1());
+		PRINTF("__get_CPUECTLR_EL1()=%08X\n", (unsigned) __get_CPUECTLR_EL1());
+#else
+		const uint_fast32_t ca53_cbar = __get_CA53_CBAR();
+		PRINTF("__get_CBAR()=%08X\n", ca53_cbar);
 		PRINTF("__get_CPUACTLR()=%08X\n", (unsigned) __get_CPUACTLR());
 		PRINTF("__get_CPUECTLR()=%08X\n", (unsigned) __get_CPUECTLR());
-		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) ca53_cbar);			/* SYS_CFG_BASE */
+#endif
+		const uint64_t periphbase = (uint64_t) (ca53_cbar & UINT32_C(0xFFFC0000)) | ((uint64_t) (ca53_cbar & UINT32_C(0xFF)) << 32);
 		PRINTF("periphbase=%016" PRIX64 "\n", periphbase);			/* SYS_CFG_BASE */
+
 
 		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
 		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
