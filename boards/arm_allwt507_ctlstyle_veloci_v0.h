@@ -8,6 +8,7 @@
 // Трансивер с DSP обработкой "Веорсираптор" на процессоре Allwinner T507
 // Rrfboard_v0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 // HelperBoard T507 Core Board
+// ARM® Cortex®-A53 MPCore Processor Revision: r0p4
 
 #ifndef ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED
 #define ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED 1

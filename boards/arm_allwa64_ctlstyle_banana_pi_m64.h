@@ -6,6 +6,7 @@
 // UA1ARN
 //
 // banana-pi board - Allwinner A64-H
+// ARM® Cortex®-A53 MPCore Processor Revision: r0p4
 
 #ifndef ARM_ALWA64_BANANA_PI_V9A_H_INCLUDED
 #define ARM_ALWA64_BANANA_PI_V9A_H_INCLUDED 1
