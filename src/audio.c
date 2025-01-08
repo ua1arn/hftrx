@@ -628,7 +628,6 @@ static RAMFUNC FLOAT_t get_dualtonefloat(void)
 	return (v1 + v2) / 2;
 }
 
-static unsigned delayftwlo6tx [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
 static unsigned delayblanklo6tx [NTRX];	// приглушить тракт
 
 static unsigned delayftwlo6rx [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
@@ -637,8 +636,6 @@ static uint8_t delaylo6lastmode [NTRX];
 
 static ncoftw_t anglestep_aflotx [NTRX];
 static ncoftw_t anglestep_aflorx [NTRX];
-static ncoftw_t anglestep_aflotx_shadow [NTRX];
-static ncoftw_t anglestep_aflorx_shadow [NTRX];
 static ncoftw_t angle_aflotx [NTRX];
 static ncoftw_t angle_aflorx [NTRX];
 static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
@@ -647,9 +644,9 @@ static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviatio
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	const unsigned firdelay = 3 * Ntap_trxi_IQ / 2;
+	const unsigned firdelay = 0*Ntap_trxi_IQ / 2;
 #elif WITHDSPLOCALFIR
-	const unsigned firdelay = 3 * Ntap_rx_SSB_IQ / 2;
+	const unsigned firdelay = 0*Ntap_rx_SSB_IQ / 2;
 #endif
 	// Установка звдержки открывания тракта по смене режима
 	if (delaylo6lastmode [pathi] != dspmode)
@@ -658,51 +655,23 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode
 		delayblanklo6tx [pathi] = firdelay;
 		delayblanklo6rx [pathi] = firdelay;
 	}
-	// Установка звдержки смены FTW
-	if (anglestep_aflotx [pathi] != ftw || anglestep_aflorx [pathi] != ftw)
-	{
-		anglestep_aflotx_shadow [pathi] = ftw;
-		anglestep_aflorx_shadow [pathi] = ftw;
-		delayftwlo6tx [pathi] = firdelay;
-		delayftwlo6rx [pathi] = firdelay;
-	}
+	anglestep_aflotx [pathi] = ftw;
+	anglestep_aflorx [pathi] = ftw;
 }
 
 /* задержка установки нового значение частоты генератора
  * возврат 1 если закончилась отработка времени
  */
-static RAMFUNC int nco_setlo6_delaytx(uint_fast8_t pathi)
+static RAMFUNC int switchmode_delaytx(uint_fast8_t pathi)
 {
-#if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
-	if (delayftwlo6tx [pathi] != 0 && -- delayftwlo6tx [pathi] == 0)
-	{
-		// Установить требуемый ftw по окончании задержки
-		if ((anglestep_aflotx [pathi] = anglestep_aflotx_shadow [pathi]) == 0)
-		{
-			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-			angle_aflotx [pathi] = 0;	// 0 Pi
-		}
-	}
-#endif
 	if (delayblanklo6tx [pathi])
 		delayblanklo6tx [pathi] -= 1;
 
 	return ! delayblanklo6tx [pathi];
 }
 
-static RAMFUNC int nco_setlo6_delayrx(uint_fast8_t pathi)
+static RAMFUNC int switchmode_delayrx(uint_fast8_t pathi)
 {
-#if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
-	if (delayftwlo6rx [pathi] != 0 && -- delayftwlo6rx [pathi] == 0)
-	{
-		// Установить требуемый ftw по окончании задержки
-		if ((anglestep_aflorx [pathi] = anglestep_aflorx_shadow [pathi]) == 0)
-		{
-			/* Для обеспечения 0.7 от максимальной амплитуды после суммирования квадратурных составляющих в FPA */
-			angle_aflorx [pathi] = 0;	// 0 Pi
-		}
-	}
-#endif
 	if (delayblanklo6rx [pathi])
 		delayblanklo6rx [pathi] -= 1;
 
@@ -3959,7 +3928,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
-	const FLOAT_t shape = nco_setlo6_delaytx(pathi) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
+	const FLOAT_t shape = switchmode_delaytx(pathi) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -5258,7 +5227,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	const int rxgate = getRxGate() * nco_setlo6_delayrx(pathi);
+	const int rxgate = getRxGate() * switchmode_delayrx(pathi);
 
 #if WITHDSPEXTDDC
 
