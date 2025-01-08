@@ -725,7 +725,7 @@ void close_all_windows(void)
 {
 	close_window(DONT_OPEN_PARENT_WINDOW);
 	footer_buttons_state(CANCELLED);
-	hamradio_set_lockmode(0);
+	hamradio_set_lock(0);
 	hamradio_disable_keyboard_redirect();
 	gui_user_actions_after_close_window();
 }

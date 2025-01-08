@@ -2963,7 +2963,7 @@ struct nvmap
 #if WITHUSEUSBBT
 	uint8_t tlvbt [TLVBT_SIZE];
 #endif /* WITHUSEUSBBT */
-	uint8_t lockmode;			/* блокировка валкодера */
+	uint8_t glock;			/* блокировка валкодера */
 #if WITHENCODER2
 	uint8_t enc2state;
 	uint8_t enc2pos;			// выбраный пунки меню (второй валкодер)
@@ -3497,7 +3497,7 @@ struct nvmap
 #define RMT_MENUSET_BASE OFFSETOF(struct nvmap, menuset)		/* набор функций кнопок и режим отображения на дисплее */
 #define RMT_GROUP_BASE OFFSETOF(struct nvmap, ggroup)		/* байт - последняя группа меню, с которой работали */
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
-#define RMT_LOCKMODE_BASE OFFSETOF(struct nvmap, lockmode)		/* признак блокировки валкодера */
+#define RMT_LOCKMODE_BASE OFFSETOF(struct nvmap, glock)		/* признак блокировки валкодера */
 #define RMT_USEFAST_BASE OFFSETOF(struct nvmap, gusefast)		/* переключение в режим крупного шага */
 #define RMT_MUTELOUDSP_BASE OFFSETOF(struct nvmap, gmutespkr)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 
@@ -3705,7 +3705,7 @@ static uint_fast8_t gagcmode;
 	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
 #endif /* WITHOVFHIDE */
 
-static uint_fast8_t lockmode;
+static uint_fast8_t glock;
 #if WITHLCDBACKLIGHTOFF
 	// Имеется управление включением/выключением подсветки дисплея
 	static uint_fast8_t dimmmode;
@@ -4466,7 +4466,7 @@ uint_fast8_t hamradio_get_classa(void)
 uint_fast8_t
 hamradio_get_lockvalue(void)
 {
-	return lockmode;
+	return glock;
 }
 
 // текущее состояние FAST
@@ -7918,7 +7918,7 @@ void display2_fnvalue9(
 static void
 loadsavedstate(void)
 {
-	lockmode = loadvfy8up(RMT_LOCKMODE_BASE, 0, 1, lockmode);	/* вытаскиваем признак блокировки валкодера */
+	glock = loadvfy8up(RMT_LOCKMODE_BASE, 0, 1, glock);	/* вытаскиваем признак блокировки валкодера */
 #if WITHUSEFAST
 	gusefast = loadvfy8up(RMT_USEFAST_BASE, 0, 1, gusefast);	/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
@@ -11179,7 +11179,7 @@ updateboardZZZ(
 		board_set_poweron(gpoweronhold);
 	#endif /* WITHPWBUTTON */
 	#if WITHNBONOFF
-		board_set_nfmnbon(lockmode);	/* Включние noise blanker на SW2014FM */
+		board_set_nfmnbon(glock);	/* Включние noise blanker на SW2014FM */
 	#endif /* WITHNBONOFF */
 
 	#if WITHSPKMUTE
@@ -11974,8 +11974,8 @@ uif_key_click_notch(void)
 static void
 uif_key_lockencoder(void)
 {
-	lockmode = calc_next(lockmode, 0, 1);
-	save_i8(RMT_LOCKMODE_BASE, lockmode);
+	glock = calc_next(glock, 0, 1);
+	save_i8(RMT_LOCKMODE_BASE, glock);
 	updateboard(1, 0);
 }
 
@@ -12545,8 +12545,8 @@ const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void)
 //uif_key_changestep(uint_fast8_t tx)
 //{
 //while (repeat --)
-//	lockmode = calc_next(lockmode, 0, 1);
-//save_i8(RMT_LOCKMODE_BASE, lockmode);
+//	glock = calc_next(glock, 0, 1);
+//save_i8(RMT_LOCKMODE_BASE, glock);
 //}
 
 ///////////////////////////
@@ -16868,7 +16868,7 @@ modifysettings(
 #if WITHENCODER
 		/* редактирование значения с помощью поворота валкодера. */
 		nrotate = getRotateLoRes_A(genc1div);
-		if (lockmode != 0)
+		if (glock != 0)
 			nrotate = 0;	// ignore encoder
 
 		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
@@ -19229,7 +19229,7 @@ hamradio_main_step(void)
 				bring_tuneB();	// Начать отображение текущей частоты на водопаде
 			}
 
-			if (lockmode == 0)
+			if (glock == 0)
 			{
 				uint_fast8_t freqchanged = 0;
 
@@ -19710,10 +19710,10 @@ uint_fast8_t hamradio_get_cw_wpm(void)
 }
 #endif /* WITHELKEY */
 
-void hamradio_set_lockmode(uint_fast8_t lock)
+void hamradio_set_lock(uint_fast8_t lock)
 {
-	lockmode = lock != 0;
-	save_i8(RMT_LOCKMODE_BASE, lockmode);
+	glock = lock != 0;
+	save_i8(RMT_LOCKMODE_BASE, glock);
 	updateboard(1, 0);
 }
 

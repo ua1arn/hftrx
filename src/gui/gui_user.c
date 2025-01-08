@@ -319,7 +319,7 @@ window_t * get_win(uint8_t window_id)
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
-	hamradio_set_lockmode(0);
+	hamradio_set_lock(0);
 	gui_update();
 }
 
@@ -771,7 +771,7 @@ static void gui_main_process(void)
 
 		load_settings();
 		elements_state(win);
-		hamradio_set_lockmode(0);
+		hamradio_set_lock(0);
 
 #if WITHGUIDEBUG
 		for (unsigned i = 0; i < tmpstr_index; i ++)
@@ -904,7 +904,7 @@ static void gui_main_process(void)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
-					hamradio_set_lockmode(0);
+					hamradio_set_lock(0);
 					hamradio_disable_keyboard_redirect();
 				}
 				else
@@ -920,7 +920,7 @@ static void gui_main_process(void)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
-					hamradio_set_lockmode(0);
+					hamradio_set_lock(0);
 					hamradio_disable_keyboard_redirect();
 				}
 				else
@@ -1689,7 +1689,7 @@ static void window_bands_process(void)
 			{
 				window_t * const win = get_win(WINDOW_FREQ);
 				open_window(win);
-				hamradio_set_lockmode(1);
+				hamradio_set_lock(1);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
@@ -4756,7 +4756,7 @@ static void window_ft8_process(void)
 		}
 		work = 0;
 
-		hamradio_set_lockmode(1);
+		hamradio_set_lock(1);
 		display2_set_page_temp(display_getpagegui());
 	}
 
