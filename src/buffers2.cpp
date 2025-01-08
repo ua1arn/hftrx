@@ -1156,7 +1156,7 @@ static void dsp_loopback(unsigned nsamples)
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 		// Канал от микрофона в USB
 		if (elfetch_dmabuffer16rx(v))
-			elfill_dmabufferuacin48(v [L], v [R]);
+			recordsampleUAC(v [L], v [R]);
 #endif
 
 	}
