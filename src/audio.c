@@ -5090,6 +5090,10 @@ void dsp_fillphones(unsigned nsamples)
 		switch (glob_mainsubrxmode)
 		{
 		default:
+			// for debug
+			b.ivqv [L] = left;
+			b.ivqv [R] = right;
+			break;
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
 			b.ivqv [L] = (injectsidetone(left, moniL));

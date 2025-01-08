@@ -10357,7 +10357,7 @@ user_audioproc(void * ctx)
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			rxaproc_t * const nrp = & rxaprocs [pathi];
-			const uint_fast8_t amode = getamode(pathi);
+			//const uint_fast8_t amode = getamode(pathi);
 			// nrp->outsp указывает на результат обработки
 			//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
 			outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
