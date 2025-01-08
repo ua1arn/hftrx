@@ -1836,21 +1836,29 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 //		ret
 //	.endfunc //spin_lock
 	__SEVL();
-L1:
-#if WITHDEBUG
-	if (-- v == 0)
-	{
-		PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
-		for (;;)
-			;
-	}
-#endif /* WITHDEBUG */
 	__WFE();
-L2:
-	if (__LDAXRB(& p->lock) != 0)
-		goto L1;
-	if (__STXRB(1, & p->lock) != 0)
-		goto L2;
+	int status;
+	do
+	{
+		while (__LDAXRB(& p->lock) != 0)// Wait until
+		{
+#if WITHDEBUG
+			if (-- v == 0)
+			{
+				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
+				for (;;)
+					;
+			}
+#endif /* WITHDEBUG */
+			__WFE();
+			//__NOP();	// !!!! strange, but unstable work without this line...
+		}
+		// Lock_Variable is free
+		status = __STXRB(1, & p->lock); // Try to set
+	// Lock_Variable
+	} while (status != 0); //retry until lock successfully
+	//__DMB();		// Do not start any other memory access
+	// until memory barrier is completed
 #if WITHDEBUG
 	p->file = file;
 	p->line = line;
