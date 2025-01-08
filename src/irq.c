@@ -1842,8 +1842,6 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 	{
 		while (__LDAXRB(& p->lock) != 0)// Wait until
 		{
-			__WFE();
-			//__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
 			if (-- v == 0)
 			{
@@ -1852,6 +1850,8 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 					;
 			}
 #endif /* WITHDEBUG */
+			__WFE();
+			//__NOP();	// !!!! strange, but unstable work without this line...
 		}
 		// Lock_Variable is free
 		status = __STXRB(1, & p->lock); // Try to set
@@ -1890,7 +1890,6 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 	{
 		while (__LDREXB(& p->lock) != 0)// Wait until
 		{
-			__NOP();	// !!!! strange, but unstable work without this line...
 #if WITHDEBUG
 			if (-- v == 0)
 			{
@@ -1899,6 +1898,7 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 					;
 			}
 #endif /* WITHDEBUG */
+			__NOP();	// !!!! strange, but unstable work without this line...
 		}
 		// Lock_Variable is free
 		status = __STREXB(1, & p->lock); // Try to set
