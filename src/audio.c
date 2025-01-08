@@ -3739,16 +3739,15 @@ static RAMFUNC float iir_nfmnbbpf(FLOAT_t NewSample) {
 /* Значения 0..1 */
 
 static FLOAT_t sidetonevolume = 0; //(glob_sidetonelevel / (FLOAT_t) 100);
-static FLOAT_t mainvolumerx = 1; //1 - sidetonevolume;
 
 static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
-static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
 	if (uacoutplayer)
 		return sdtn;
+	const FLOAT_t mainvolumerx = 1 - sidetonevolume;
 	return v * mainvolumerx + sdtn * sidetonevolume;
 }
 
@@ -3764,6 +3763,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
+	const FLOAT_t mainvolumetx = 1 - subtonevolume;
 	return v * mainvolumetx + ctcss * subtonevolume;
 }
 
@@ -5522,7 +5522,6 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 #else /* */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
 #endif /*  */
-	mainvolumerx = 1 - sidetonevolume;
 }
 
 // Передача параметров в DSP модуль
@@ -5588,7 +5587,6 @@ txparam_update(uint_fast8_t profile)
 	scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEMAX;
 
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
-	mainvolumetx = 1 - subtonevolume;
 
 	// Девиация в NFM
 	gnfmdeviationftw = FTWAF((int) glob_nfmdeviation100 * 100L);
