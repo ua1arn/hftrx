@@ -190,9 +190,9 @@
 \param [in]    ptr  Pointer to data
 \return             value of type uint8_t at (*ptr)
 */
-__STATIC_FORCEINLINE uint8_t __LDAXRB(volatile uint8_t *ptr)
+__STATIC_FORCEINLINE uint32_t __LDAXRB(const volatile uint8_t *ptr)
 {
-	uint8_t result;
+	uint32_t result;
 
 	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
 	return result;    /* Add explicit type cast here */
@@ -206,7 +206,7 @@ __STATIC_FORCEINLINE uint8_t __LDAXRB(volatile uint8_t *ptr)
 \return          0  Function succeeded
 \return          1  Function failed
 */
-__STATIC_FORCEINLINE uint32_t __STXRB(uint8_t value, volatile uint8_t *ptr)
+__STATIC_FORCEINLINE uint32_t __STXRB(uint32_t value, volatile uint8_t *ptr)
 {
 	uint32_t result;
 
@@ -220,7 +220,7 @@ __STATIC_FORCEINLINE uint32_t __STXRB(uint8_t value, volatile uint8_t *ptr)
 \param [in]  value  Value to store
 \param [in]    ptr  Pointer to location
 */
-__STATIC_FORCEINLINE void __STLRB(uint8_t value, volatile uint8_t *ptr)
+__STATIC_FORCEINLINE void __STLRB(uint32_t value, volatile uint8_t *ptr)
 {
 	__ASM volatile ("stlrb %w1, %0" : "=Q" (*ptr) : "r" (value) : "memory" );
 }
