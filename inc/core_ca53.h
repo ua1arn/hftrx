@@ -194,7 +194,7 @@ __STATIC_FORCEINLINE uint32_t __LDAXRB(const volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : );
 	return result;    /* Add explicit type cast here */
 }
 
