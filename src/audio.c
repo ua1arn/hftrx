@@ -3056,13 +3056,13 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 		break;
 
 	case DSPCTL_MODE_RX_NARROW:
+	case DSPCTL_MODE_TX_CW:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, getCoefNumLtdValidated(iCoefNum, fltsofter), cutfreqlow, cutfreqhigh);
 		fir_design_windowbuff_half(dWindow, iCoefNum, getCoefNumLtdValidated(iCoefNum, fltsofter));
 		fir_design_adjust_rx(dCoeff, dWindow, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
 		break;
 
-	case DSPCTL_MODE_TX_CW:
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, iCoefNum, cutfreqlow, cutfreqhigh);
@@ -5035,6 +5035,11 @@ void dsp_fillphones(unsigned nsamples)
 			moni.QV = 0; 	// правый канал
 		}
 
+		// Устранение щелчков на приеме при переходе на передачу
+//		const FLOAT_t gate = 1 - sdtnenvelop;
+//		voice.IV *= gate;
+//		voice.QV *= gate;
+
 		/* Замещаем звук из мониторинга на sidetone пропорционально огибающей */
 		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, moni.IV);
 		const FLOAT_t moniR = mixmonitor(sdtnenvelop, sdtnv, moni.QV);
@@ -5231,20 +5236,20 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	const int rxgate = getRxGate() * switchmode_delayrx(pathi);
+	const int rxgate = ! tx * getRxGate() * switchmode_delayrx(pathi);
 
 #if WITHDSPEXTDDC
 
-		if (dspmode == DSPCTL_MODE_RX_ISB)
+		if (rxgate && dspmode == DSPCTL_MODE_RX_ISB)
 		{
 			/* прием независимых боковых полос */
 			// Обработка буфера с парами значений
-			const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv * rxgate, qv * rxgate, pathi);
+			const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv, qv, pathi);
 			return 0;
 		}
 		else
 		{
-			return processifadcsampleIQ(iv * rxgate, qv * rxgate, dspmode, pathi);
+			return processifadcsampleIQ(iv, qv, rxgate ? dspmode : DSPCTL_MODE_IDLE, pathi);
 		}
 
 #else /* WITHDSPEXTDDC */
