@@ -644,9 +644,9 @@ static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviatio
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	const unsigned firdelay = 0*Ntap_trxi_IQ / 2;
+	const unsigned firdelay = 2 * Ntap_trxi_IQ / 2;
 #elif WITHDSPLOCALFIR
-	const unsigned firdelay = 0*Ntap_rx_SSB_IQ / 2;
+	const unsigned firdelay = 2 * Ntap_rx_SSB_IQ / 2;
 #endif
 	// Установка звдержки открывания тракта по смене режима
 	if (delaylo6lastmode [pathi] != dspmode)
