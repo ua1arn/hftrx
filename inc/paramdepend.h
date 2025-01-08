@@ -1178,17 +1178,17 @@ extern "C" {
 	#define LCDMODE_COLORED	1
 
 	#define LCD_LVDS_IF_REG_VALUE ( \
-		(UINT32_C(1) << 31) |  /* LCD_LVDS_EN */
-		(0u << 30) |  /* LCD_LVDS_LINK: 0: single link */
-		(! UINT32_C(1) << 27) |  /* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
-		///(1 << 27) | ///for HSD100IF3
-		(0u << 26) |  /* LCD_LVDS_BITWIDTH 0: 24-bit */
-		(UINT32_C(1) << 20) |  /* LCD_LVDS_CLK_SEL 1: LCD CLK */
-		0 * (UINT32_C(1) << 25) |    /* LCD_LVDS_DEBUG_EN */
-		0 * (UINT32_C(1) << 24) |    /* LCD_LVDS_DEBUG_MODE */
-		0 * (UINT32_C(1) << 4) |        /* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
-		0 * 0x0F * (UINT32_C(1) << 0) |    /* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
-		0)
+		1 * (UINT32_C(1) << 31) | \
+		0 * (UINT32_C(1) << 30) | \
+		1 * (UINT32_C(1) << 27) | \
+		0 * (UINT32_C(1) << 26) | \
+		1 * (UINT32_C(1) << 20) | \
+		0 * (UINT32_C(1) << 25) |  \
+		0 * (UINT32_C(1) << 24) | \
+		0 * (UINT32_C(1) << 4) | \
+		0 * (UINT32_C(0x0F) << 0) |  \
+		0
+		)
 
 #endif /* LCDMODE_HSD100IF3 */
 
