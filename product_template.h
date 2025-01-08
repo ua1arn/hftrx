@@ -26,9 +26,9 @@
 //#define DEFAULTDIALFREQ	14021000
 
 
-// Renesas specific
+// Renesas bootloader specific
 //
-// Сперва выполняем make lib при закомментированном WITHISBOOTLOADER0
+// Сперва выполняем make lib при закомментированном WITHISBOOTLOADER0 и открытом WITHISBOOTLOADER
 // Далее открыть WITHISBOOTLOADER0 и выполнить make bootloader
 
 // Allwinner
