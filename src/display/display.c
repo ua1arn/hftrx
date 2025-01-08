@@ -1513,6 +1513,44 @@ static const videomode_t vdmode0 =
 	.interlaced = 0
 };
 
+#elif LCDMODE_HSD100IF3
+/* 1024 x 600 display LVDS mode */
+static const videomode_t vdmode0 =
+{
+	.width = 1024,      /* LCD PIXEL WIDTH            */
+	.height = 600,      /* LCD PIXEL HEIGHT           */
+	/**
+	* @brief  LQ123K1LG03 Timing
+	* MODE=0 (DE)
+	* When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	* MODE=1 (SYNC)
+	* When selected sync mode, de must be grounded.
+	*/
+	.hsync = 6,//40,      /* Horizontal synchronization 1..40 */
+	.hbp = 39,//6,        /* Horizontal back porch      */
+	.hfp = 368,///210,        /* Horizontal front porch  16..354   */
+
+	.vsync = 1,//20,        /* Vertical synchronization 1..20  */
+	.vbp = 24,//73,        /* Vertical back porch      */
+	.vfp = 15,///22,        /* Vertical front porch  7..147     */
+
+
+	/* Accumulated parameters for this display */
+	//LEFTMARGIN = 46,    /* horizontal blanking EXACTLY */
+	//TOPMARGIN = 23,      /* vertical blanking EXACTLY */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,      /* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,      /* Negative polarity required for HSYNC signal */
+	.deneg = 0,        /* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,  // LQ043T3DX02K require DE reset
+	///.ltdc_dotclk = 53000000uL,  // частота пикселей при работе с интерфейсом RGB
+	.fps = 60,  /* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
 #else
 	//#error Unsupported LCDMODE_xxx
 
