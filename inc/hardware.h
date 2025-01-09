@@ -428,32 +428,27 @@ extern "C" {
 	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
-#elif CPUSTYLE_XCZU
+#elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
 	// Zynq UltraScale+ Device
 	// r0p4-50rel0
 	// XCZU2..XCZU9, XCZU11
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-#if ! LINUX_SUBSYSTEM
-	#include "arch/zynqmp/zynquscale.h"
-	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
-#endif /* ! LINUX_SUBSYSTEM */
-
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __ALIGNED(32)
+	#define ALIGNX_BEGIN //__ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
-#elif CPUSTYLE_RK356X
+#elif CPUSTYLE_RK356X && LINUX_SUBSYSTEM
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __ALIGNED(32)
+	#define ALIGNX_BEGIN //__ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
 #elif \
