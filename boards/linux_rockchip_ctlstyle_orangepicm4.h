@@ -147,7 +147,7 @@
 	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
+	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
@@ -249,7 +249,7 @@
 //			#define WITHCPUFANPWM			1
 //			#define WITHCPUTHERMOLEVEL		1
 //			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
-//			#define WITHWNB					1	// Simple noise blanker
+			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
 			#define WITHALSA				1
 #endif

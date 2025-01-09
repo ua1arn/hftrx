@@ -381,8 +381,8 @@ extern "C" {
 	#define DMABUF32TX_NCORTS	4		// NCO RTS
 
 	/* звук идет по PIPE */
-	#define DMABUFF32TX_CODEC1_LEFT 	14		/* индекс сэмпла левого канала к кодеку (через PIPE) */
-	#define	DMABUFF32TX_CODEC1_RIGHT 	15		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
+	#define DMABUFF32TX_CODEC1_LEFT 	6		/* индекс сэмпла левого канала к кодеку (через PIPE) */
+	#define	DMABUFF32TX_CODEC1_RIGHT 	7		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
 
 
 	#else

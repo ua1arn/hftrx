@@ -20,11 +20,11 @@
 #define WITHSPIDEV		1	/* Linux SPI userspace API */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
-	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+	#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
 	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
 	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
 	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
@@ -84,7 +84,7 @@ enum {
 #define LINUX_NMEA_FILE		"/dev/ttyPS1"
 #define LINUX_IQ_INT_FILE	"/dev/uio0"
 #define LINUX_PPS_INT_FILE	"/dev/uio1"
-#define LINUX_I2C_FILE		"/dev/i2c-0"
+#define LINUX_I2C_FILE		"/dev/i2c-3"
 #define LINUX_FB_FILE		"/dev/fb0"
 #define LINUX_TTY_FILE		"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/uio2"
