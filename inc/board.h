@@ -296,6 +296,8 @@ void board_get_serialnr(uint_fast32_t * sn);
 
 void save_i32(nvramaddress_t addr, uint_fast32_t v);	/* сохранение по указанному индексу в FRAM одного 32-битного слова */
 uint_fast32_t restore_i32(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 32-битного слова */
+void save_i24(nvramaddress_t addr, uint_fast32_t v);	/* сохранение по указанному индексу в FRAM одного 24-битного слова */
+uint_fast32_t restore_i24(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 24-битного слова */
 void save_i16(nvramaddress_t addr, uint_fast16_t v); /* сохранение по указанному индексу в FRAM одного 16-битного слова */
 uint_fast16_t restore_i16(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 16-битного слова */
 void save_i8(nvramaddress_t addr, uint_fast8_t v); /* сохранение по указанному индексу в FRAM одного байта */

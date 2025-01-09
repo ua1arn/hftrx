@@ -2901,6 +2901,7 @@ struct bandinfo
 	uint32_t freq;		/* рабочая частота */
 	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
 	uint8_t moderow;		/* номер режима работы в маске (номер тройки бит) */
+	uint8_t glock;			/* блокировка валкодера */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
@@ -2963,7 +2964,6 @@ struct nvmap
 #if WITHUSEUSBBT
 	uint8_t tlvbt [TLVBT_SIZE];
 #endif /* WITHUSEUSBBT */
-	uint8_t glock;			/* блокировка валкодера */
 #if WITHENCODER2
 	uint8_t enc2state;
 	uint8_t enc2pos;			// выбраный пунки меню (второй валкодер)
@@ -3497,7 +3497,7 @@ struct nvmap
 #define RMT_MENUSET_BASE OFFSETOF(struct nvmap, menuset)		/* набор функций кнопок и режим отображения на дисплее */
 #define RMT_GROUP_BASE OFFSETOF(struct nvmap, ggroup)		/* байт - последняя группа меню, с которой работали */
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
-#define RMT_LOCKMODE_BASE OFFSETOF(struct nvmap, glock)		/* признак блокировки валкодера */
+#define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
 #define RMT_USEFAST_BASE OFFSETOF(struct nvmap, gusefast)		/* переключение в режим крупного шага */
 #define RMT_MUTELOUDSP_BASE OFFSETOF(struct nvmap, gmutespkr)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 
@@ -3520,15 +3520,15 @@ struct nvmap
 #define RMT_TXAUDIO_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudio)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
-#define RMT_BFREQ_BASE(i) OFFSETOF(struct nvmap, bands [(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
+#define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #define RMT_PAMPBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp)	/* признак включения аттенюатора (1 байт) */
 #define RMT_ATTBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att)		/* признак включения аттенюатора (1 байт) */
 #define RMT_RXANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].rxant)			/* код включённой антенны (1 байт) */
 #define RMT_ANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].ant)			/* код включённой антенны (1 байт) */
-#define RMT_MODEROW_BASE(i)	OFFSETOF(struct nvmap, bands [(i)].moderow)			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(i, j)	OFFSETOF(struct nvmap, bands [(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
+#define RMT_MODEROW_BASE(b)	OFFSETOF(struct nvmap, bands [(b)].moderow)			/* номер строки в массиве режимов. */
+#define RMT_MODECOLS_BASE(b, j)	OFFSETOF(struct nvmap, bands [(b)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 #define RMT_PWR_BASE OFFSETOF(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
 #define RMT_NOTCHTYPE_BASE OFFSETOF(struct nvmap, gnotchtype)					/* NOTCH filter type */
@@ -3541,16 +3541,16 @@ struct nvmap
 #define RMT_BWPROPSFLTSOFTER_BASE(i) OFFSETOF(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) OFFSETOF(struct nvmap, bwpropsafresponce [(i)])
 
-#define RMT_MICLEVEL_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].level)
-#define RMT_MICCLIP_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].clip)
-#define RMT_MICAGC_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].agc)
-#define RMT_MICAGCGAIN_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].agcgain)
+#define RMT_MICLEVEL_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].level)
+#define RMT_MICCLIP_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].clip)
+#define RMT_MICAGC_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].agc)
+#define RMT_MICAGCGAIN_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].agcgain)
 #if WITHAFCODEC1HAVEPROC
-	#define RMT_MICBOOST_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].mikeboost20db)
-	#define RMT_MICEQ_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_enable)
-	#define RMT_MICEQPARAMS_BASE(i, j) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_params[(j)])
+	#define RMT_MICBOOST_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].mikeboost20db)
+	#define RMT_MICEQ_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_enable)
+	#define RMT_MICEQPARAMS_BASE(c, j) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_params[(j)])
 #endif /* WITHAFCODEC1HAVEPROC */
-#define RMT_MICPSAVE_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].cell_saved)
+#define RMT_MICPSAVE_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].cell_saved)
 
 #if WITHUSEUSBBT
 
@@ -7918,7 +7918,6 @@ void display2_fnvalue9(
 static void
 loadsavedstate(void)
 {
-	glock = loadvfy8up(RMT_LOCKMODE_BASE, 0, 1, glock);	/* вытаскиваем признак блокировки валкодера */
 #if WITHUSEFAST
 	gusefast = loadvfy8up(RMT_USEFAST_BASE, 0, 1, gusefast);	/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
@@ -7996,6 +7995,7 @@ loadnewband(
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 
 	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
+	glock = loadvfy8up(RMT_LOCKMODE_BASE(b), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
@@ -11974,8 +11974,11 @@ uif_key_click_notch(void)
 static void
 uif_key_lockencoder(void)
 {
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+
 	glock = calc_next(glock, 0, 1);
-	save_i8(RMT_LOCKMODE_BASE, glock);
+	save_i8(RMT_LOCKMODE_BASE(b), glock);
 	updateboard(1, 0);
 }
 
@@ -16868,8 +16871,8 @@ modifysettings(
 #if WITHENCODER
 		/* редактирование значения с помощью поворота валкодера. */
 		nrotate = getRotateLoRes_A(genc1div);
-		if (glock != 0)
-			nrotate = 0;	// ignore encoder
+//		if (glock != 0)
+//			nrotate = 0;	// ignore encoder
 
 		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
 		{
@@ -19712,8 +19715,11 @@ uint_fast8_t hamradio_get_cw_wpm(void)
 
 void hamradio_set_lock(uint_fast8_t lock)
 {
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+
 	glock = lock != 0;
-	save_i8(RMT_LOCKMODE_BASE, glock);
+	save_i8(RMT_LOCKMODE_BASE(b), glock);
 	updateboard(1, 0);
 }
 
