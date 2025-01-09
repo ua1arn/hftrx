@@ -6608,6 +6608,16 @@ static void window_wnbconfig_process(void)
 		win->first_call = 0;
 		unsigned x = 0, y = 0, interval = 24;
 
+		static const button_t buttons [] = {
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_WNBCONFIG, NON_VISIBLE, -1, "btn_-",  "-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_WNBCONFIG, NON_VISIBLE, 1,  "btn_+",  "+", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		unsigned buttons_size = sizeof(buttons);
+		win->bh_ptr = (button_t*) malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
 		static const label_t labels [] = {
 			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_name", "Threshold:  ", FONT_MEDIUM, COLORPIP_YELLOW, 0, },
 			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_val",  "xxxxx", 		FONT_MEDIUM, COLORPIP_YELLOW, 1, },
@@ -6635,6 +6645,17 @@ static void window_wnbconfig_process(void)
 			y = y + get_label_height(lh1) + interval;
 		}
 
+		button_t * btn_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_+");
+		button_t * btn_n = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_-");
+
+		btn_p->x1 = 0;
+		btn_p->y1 = 20;
+		btn_p->visible = VISIBLE;
+
+		btn_n->x1 = btn_p->x1 + btn_p->w + 20;
+		btn_n->y1 = 20;
+		btn_n->visible = VISIBLE;
+
 		hamradio_enable_encoder2_redirect();
 		enable_window_move(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -6643,6 +6664,15 @@ static void window_wnbconfig_process(void)
 
 	GET_FROM_WM_QUEUE
 	{
+	case WM_MESSAGE_ACTION:
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			enc.change = bh->payload;
+			enc.updated = 1;
+		}
+		break;
+
 	case WM_MESSAGE_ENC2_ROTATE:
 
 		enc.change = action;
