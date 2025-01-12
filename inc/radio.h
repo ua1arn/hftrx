@@ -513,6 +513,15 @@ enum
 
 uint_fast8_t cat_get_keydown(void);	// Получить нажате ключа от порта управления, вызывается из обработчика перерываний
 
+enum
+{
+	ELKEY_MODE_ACS,	// режим электронного ключа - ACS,
+	ELKEY_MODE_ELE,	// electronic key
+	ELKEY_MODE_OFF,	// straight key
+	ELKEY_MODE_BUG,	// BUG key emulation
+	//
+	ELKEY_MODE_count
+};
 
 /* электронный ключ */
 void seq_initialize(void);

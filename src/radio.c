@@ -4258,12 +4258,21 @@ enum
 
 #if WITHELKEY
 
+	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	static const FLASHMEM char elkeymsg [ELKEY_MODE_count][4] =
+	{
+		"ACS", 	//
+		"ELE",
+		"OFF",
+		"BUG",
+	};
+
 	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
 	static uint_fast8_t elkeyreverse;
 
-	static uint_fast8_t elkeymode;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	static uint_fast8_t elkeymode = 1;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 
 #else
@@ -16517,20 +16526,9 @@ void display2_menu_valxx(
 
 #if WITHELKEY
 	case RJ_ELKEYMODE:
-		{
-			/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-			static const FLASHMEM char msg [][4] =
-			{
-				"ACS", 	//
-				"ELE",
-				"OFF",
-				"BUG",
-			};
-
-			width = VALUEW;
-			comma = 3;
-			display_menu_string_P(x, y, msg [value], width, comma);
-		}
+		width = VALUEW;
+		comma = 3;
+		display_menu_string_P(x, y, elkeymsg [value], width, comma);
 		break;
 #endif /* WITHELKEY */
 
@@ -16538,7 +16536,7 @@ void display2_menu_valxx(
 	case RJ_POWER:	/* отображние мощности HP/LP */
 		width = VALUEW;
 		comma = 2;
-			display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
+		display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
 		break;
 #endif /* WITHPOWERLPHP */
 
@@ -17233,18 +17231,9 @@ static void menu_print(void)
         #if WITHELKEY
         	case RJ_ELKEYMODE:
         		{
-        			/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-        			static const FLASHMEM char msg [][4] =
-        			{
-        				"ACS", 	//
-        				"ELE",
-        				"OFF",
-        				"BUG",
-        			};
-
-        			width = VALUEW;
+         			width = VALUEW;
         			comma = 3;
-        			print_menu_string_P(x, y, msg [value], width, comma);
+        			print_menu_string_P(x, y, elkeymsg [value], width, comma);
         		}
         		break;
         #endif /* WITHELKEY */

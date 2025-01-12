@@ -1302,7 +1302,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
 		ITEM_VALUE,
-		0, 3,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+		0, ELKEY_MODE_count - 1,	/* режим электронного ключа */
 		OFFSETOF(struct nvmap, elkeymode),
 		nvramoffs0,
 		NULL,

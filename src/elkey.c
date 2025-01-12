@@ -902,17 +902,17 @@ elkey_set_mode(
 	elkey_reverse = reverse;
 	switch (mode)
 	{
-	case 0:
+	case ELKEY_MODE_ACS:
 		elkey_straight_flags = ACSFLAG; // DASHFLAG DITSFLAG
 		break;
-	case 1:
+	case ELKEY_MODE_ELE:
 		elkey_straight_flags = 0; // DASHFLAG DITSFLAG
 		break;
-	case 2:
+	case ELKEY_MODE_OFF:
 		elkey_straight_flags = DASHFLAG | DITSFLAG;
 		break;
 	// "bug" key - точки автоматические, тире вручнуб
-	case 3:
+	case ELKEY_MODE_BUG:
 		elkey_straight_flags = DASHFLAG;
 		break;
 	}
