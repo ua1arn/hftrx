@@ -4259,12 +4259,17 @@ enum
 #if WITHELKEY
 
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-	static const FLASHMEM char elkeymsg [ELKEY_MODE_count][4] =
+	/* строки, выводимые на индикатор для обозначения режимов.
+	 */
+	static const FLASHMEM struct {
+		uint8_t code;
+		char label [4];
+	}  elkeymodes [] =
 	{
-		"ACS", 	//
-		"ELE",
-		"OFF",
-		"BUG",
+		{ ELKEY_MODE_ACS, "ACS", },
+		{ ELKEY_MODE_ELE, "ELE", },
+		{ ELKEY_MODE_OFF, "OFF", },
+		{ ELKEY_MODE_BUG, "BUG", },
 	};
 
 	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
@@ -11031,7 +11036,7 @@ updateboardZZZ(
 			elkey_set_slope(elkeyslope);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
 			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-			elkey_set_mode(elkeymode, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+			elkey_set_mode(elkeymodes [elkeymode].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
@@ -16528,7 +16533,7 @@ void display2_menu_valxx(
 	case RJ_ELKEYMODE:
 		width = VALUEW;
 		comma = 3;
-		display_menu_string_P(x, y, elkeymsg [value], width, comma);
+		display_menu_string_P(x, y, elkeymodes [value].label, width, comma);
 		break;
 #endif /* WITHELKEY */
 
@@ -17233,7 +17238,7 @@ static void menu_print(void)
         		{
          			width = VALUEW;
         			comma = 3;
-        			print_menu_string_P(x, y, elkeymsg [value], width, comma);
+        			print_menu_string_P(x, y, elkeymodes [value].label, width, comma);
         		}
         		break;
         #endif /* WITHELKEY */

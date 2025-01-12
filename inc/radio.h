@@ -518,9 +518,7 @@ enum
 	ELKEY_MODE_ACS,	// режим электронного ключа - ACS,
 	ELKEY_MODE_ELE,	// electronic key
 	ELKEY_MODE_OFF,	// straight key
-	ELKEY_MODE_BUG,	// BUG key emulation
-	//
-	ELKEY_MODE_count
+	ELKEY_MODE_BUG	// BUG key emulation
 };
 
 /* электронный ключ */

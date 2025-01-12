@@ -1302,7 +1302,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
 		ITEM_VALUE,
-		0, ELKEY_MODE_count - 1,	/* режим электронного ключа */
+		0, ARRAY_SIZE(elkeymodes) - 1,	/* режим электронного ключа */
 		OFFSETOF(struct nvmap, elkeymode),
 		nvramoffs0,
 		NULL,
@@ -1537,7 +1537,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
 		ITEM_VALUE,
-		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1,
+		0, ARRAY_SIZE(catbr2int) - 1,
 		OFFSETOF(struct nvmap, catbaudrate),
 		nvramoffs0,
 		NULL,
@@ -1595,7 +1595,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 		ITEM_VALUE,
-		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
+		0, ARRAY_SIZE(gsubtones) - 1,
 		OFFSETOF(struct nvmap, gsubtonei),
 		nvramoffs0,
 		NULL,
@@ -1726,7 +1726,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("LOOP MSG"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
-		0, (sizeof loopnames / sizeof loopnames [0]) - 1,
+		0, ARRAY_SIZE(loopnames) - 1,
 		OFFSETOF(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 		nvramoffs0,
 		NULL,
@@ -2499,7 +2499,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
 		ITEM_VALUE,
-		0, (sizeof modembr2int100 / sizeof modembr2int100 [0]) - 1, 
+		0, ARRAY_SIZE(modembr2int100) - 1,
 		OFFSETOF(struct nvmap, gmodemspeed),
 		nvramoffs0,
 		NULL,
@@ -3324,7 +3324,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("ENC1 RES"), 7, 0, RJ_ENCRES,	ISTEP1,
 		ITEM_VALUE,
-		0, (sizeof encresols / sizeof encresols [0]) - 1,
+		0, ARRAY_SIZE(encresols) - 1,
 		OFFSETOF(struct nvmap, genc1pulses),
 		nvramoffs0,
 		NULL,
