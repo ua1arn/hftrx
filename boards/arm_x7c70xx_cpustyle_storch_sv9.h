@@ -688,6 +688,8 @@
 		gpio_input2(SPI_MOSI_MIO, pinmode_input); \
 	} while (0)
 
+	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART1HW

@@ -121,6 +121,10 @@
 	#include "boards/arm_allwh3_ctlstyle_orange_pi_pc.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh3_cpustyle_orange_pi_pc.h"
+#elif (CPUSTYLE_A133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
@@ -186,14 +190,6 @@
 	#include "boards/arm_ctlstyle_allw_v3s_lichee0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_cpustyle_allw_v3s_lichee0.h"
-#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_xczuxx_ctlstyle_axu2cga_ad9640.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_xczuxx_cpustyle_axu2cga_ad9640.h"
-#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
-	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_xczu2_cpustyle_alinx_axu2cga.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
 	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020

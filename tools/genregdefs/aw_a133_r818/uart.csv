@@ -12,7 +12,6 @@
 #irq; UART2 34
 #irq; UART3 35
 #irq; UART4 36
-#irq; R_UART 144
 
 
 # 

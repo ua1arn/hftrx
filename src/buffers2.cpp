@@ -4031,8 +4031,32 @@ void colmain_fb_list(uintptr_t * frames)
 }
 
 #else /* WITHLTDCHW */
+
 /* поставить на отображение этот буфер, запросить следующий */
+// dummy function
 void colmain_nextfb(void)
+{
+}
+
+// буфер для построения изображения
+// dummy function
+PACKEDCOLORPIP_T * colmain_fb_draw(void)
+{
+	return NULL;
+}
+
+// заполнение прямоугольной области в видеобуфере
+// dummy function
+void colpip_fillrect(
+	PACKEDCOLORPIP_T * dst,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	)
 {
 }
 

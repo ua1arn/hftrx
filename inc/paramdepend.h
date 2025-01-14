@@ -117,8 +117,6 @@ extern "C" {
 
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
-			#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
-
 			#define HARDWARE_NCORES 1
 			#define WITHCPUNAME "STM32H7xx"
 
@@ -137,7 +135,7 @@ extern "C" {
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
 			#define CPU_FREQ (stm32f7xx_get_sys_freq())	// 172032000uL
-			#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
+			//#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 
 			#define HSIFREQ 16000000u
 
@@ -149,7 +147,7 @@ extern "C" {
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
 			#define CPU_FREQ (stm32f4xx_get_sysclk_freq())	// 172032000uL
-			#define HARDWARE_SPI_FREQ (stm32f4xx_get_spi1_freq())
+			//#define HARDWARE_SPI_FREQ (stm32f4xx_get_spi1_freq())
 
 			#define HSIFREQ 16000000u	// 16 MHz
 
@@ -363,8 +361,6 @@ extern "C" {
 	#define AXISS_FREQ	(stm32mp1_get_axiss_freq())
 	#define CPU_PL1_FREQ (stm32mp1_get_hsi_freq())	/* PL1 times source frequency */
 
-	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
-	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 	#define BOARD_USART1_FREQ  (stm32mp1_uart1_get_freq())
 
 	#define TICKS_FREQUENCY	 200	// Hz
@@ -418,7 +414,7 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(xc7z_get_arm_freq())
-	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200	// Hz
 
@@ -485,6 +481,59 @@ extern "C" {
 	#endif
 
 
+#elif CPUSTYLE_A133
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define HARDWARE_CLK16M_RC_FREQ 16000000u
+
+	#define CPU_FREQ	(allwnr_a133_get_cpux_freq())
+	//#define HARDWARE_SPI_FREQ (allwnr_a133_get_spi1_freq())
+	#define HARDWARE_UART_FREQ (allwnr_a133_get_uart_freq())
+
+	#define CPU_PL1_FREQ (allwnr_a133_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_a133_get_hosc_freq())	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 1000	// Hz
+
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
+	#define ENC_TICKS_PERIOD	5	// 5 ms
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		(allwnr_a133_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(allwnr_a133_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+
+	typedef enum {
+		GPIO_CFG_IN  = 0x00,
+		GPIO_CFG_OUT = 0x01,
+		GPIO_CFG_AF2 = 0x02,
+		GPIO_CFG_AF3 = 0x03,
+		GPIO_CFG_AF4 = 0x04,
+		GPIO_CFG_AF5 = 0x05,
+		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x07,
+	} GPIOMode_TypeDef;
+
+	#define HARDWARE_NCORES 4
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "Allw A133_64"
+	#else
+		#define WITHCPUNAME "Allw A133"
+	#endif
+
+
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	typedef uint_fast16_t adcvalholder_t;
@@ -501,7 +550,7 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
-	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
+	//#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
 
 	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
@@ -757,7 +806,7 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
-	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 
@@ -789,7 +838,7 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
-	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 
