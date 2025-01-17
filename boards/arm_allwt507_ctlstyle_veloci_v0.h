@@ -549,16 +549,16 @@
 	#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 	
 	// ST LM235Z
-	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-
-	// ST LM35DZ
-//	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-//	#define THERMOSENSOR_LOWER		47	// 1 kOhm - нижний резистор
+//	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+//	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
 //	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 //	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
+	// TI LM35
+	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+	#define THERMOSENSOR_LOWER		47	// 1 kOhm - нижний резистор
+	#define THERMOSENSOR_OFFSET 	(0)		// 0 volt = 0 Celsius, 10 mV/C
+	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	// Назначения входов АЦП процессора.
 	enum
