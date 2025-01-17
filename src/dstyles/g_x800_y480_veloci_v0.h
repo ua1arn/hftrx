@@ -7,8 +7,11 @@
 
 enum {
 	DLEM = 35,		// Menu window upper line
-	DLES = 35,		// spectrum window upper line
+	DLES = 35 + GRID2Y(2),		// spectrum window upper line
 	DLEB = 96 - GRID2Y(1),		// 96-5	- bottom line
+	MIDLABEL = 35,
+	MIDVALUE = MIDLABEL + GRID2Y(1),
+	//
 	DLE_unused
 };
 
@@ -20,7 +23,7 @@ enum
 
 	/* совмещение на одном экрание водопада и панорамы */
 	BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-	BDCV_SPMRX = ROWS2GRID(35),	// вертикальный размер спектра в ячейках
+	BDCV_SPMRX = ROWS2GRID(25),	// вертикальный размер спектра в ячейках
 	//
 	B_unused
 };
@@ -145,6 +148,29 @@ static const FLASHMEM struct dzone dzones [] =
 
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
+
+	// Middle bar
+	{	0 + CHARS2GRID(5) * 0, MIDLABEL,	8,	4,	display2_midlabel0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 1, MIDLABEL,	8,	4,	display2_midlabel1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 2, MIDLABEL,	8,	4,	display2_midlabel0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 3, MIDLABEL,	8,	4,	display2_midlabel1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 4, MIDLABEL,	8,	4,	display2_midlabel0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 5, MIDLABEL,	8,	4,	display2_midlabel1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 6, MIDLABEL,	8,	4,	display2_midlabel0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 7, MIDLABEL,	8,	4,	display2_midlabel1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 8, MIDLABEL,	8,	4,	display2_midlabel0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 9, MIDLABEL,	8,	4,	display2_midlabel1_5,  & dzi_default, PG0, },
+
+	{	0 + CHARS2GRID(5) * 0, MIDVALUE,	8,	4,	display2_midvalue0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 1, MIDVALUE,	8,	4,	display2_midvalue1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 2, MIDVALUE,	8,	4,	display2_midvalue0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 3, MIDVALUE,	8,	4,	display2_midvalue1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 4, MIDVALUE,	8,	4,	display2_midvalue0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 5, MIDVALUE,	8,	4,	display2_midvalue1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 6, MIDVALUE,	8,	4,	display2_midvalue0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 7, MIDVALUE,	8,	4,	display2_midvalue1_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 8, MIDVALUE,	8,	4,	display2_midvalue0_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(5) * 9, MIDVALUE,	8,	4,	display2_midvalue1_5,  & dzi_default, PG0, },
 
 #if WITHSPECTRUMWF
 	{	0,	DLES,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада

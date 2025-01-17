@@ -1688,6 +1688,50 @@ void display_1fmenu_P(
 {
 	display2_text_P(x, y, & label, colors_1fmenu, 0);
 }
+/////////////////
+///
+
+
+
+void display2_midlabel0_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * label = "Label";
+	display2_text_P(x, y, & label, colors_1state, 0);
+}
+
+void display2_midvalue0_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * label = "Value";
+	display2_text_P(x, y, & label, colors_1state, 0);
+}
+
+void display2_midlabel1_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * label = "Label";
+	display2_text_P(x, y, & label, colors_2state, 0);
+}
+
+void display2_midvalue1_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char * label = "Value";
+	display2_text_P(x, y, & label, colors_2state, 0);
+}
 
 //////////////
 
