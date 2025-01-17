@@ -6,8 +6,9 @@
 #define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
 
 enum {
+	DLEM = 35,		// Menu window upper line
 	DLES = 35,		// spectrum window upper line
-	DLE1 = 96 - GRID2Y(1),		// 96-5
+	DLEB = 96 - GRID2Y(1),		// 96-5	- bottom line
 	DLE_unused
 };
 
@@ -15,7 +16,7 @@ enum {
 enum
 {
 	BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
-	BDCV_ALLRX = ROWS2GRID(55 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
+	BDCV_ALLRX = ROWS2GRID(55 /* DLEB - DLES */),	// количество строк, отведенное под панораму и волопад.
 
 	/* совмещение на одном экрание водопада и панорамы */
 	BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
@@ -153,20 +154,20 @@ static const FLASHMEM struct dzone dzones [] =
 //		{	0,	DLES,	0,	0,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 
-	{	0,	DLE1,	12,	4,	display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
-	//{	13,	DLE1,	9,	4,	display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-	{	23, DLE1,	0,	4,	display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
-	{	28, DLE1,	3,	4,	display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-	{	32, DLE1,	7,	4,	display2_classa7,		& dzi_default, PGALL, },	// Class-A power amplifier
-	//{	28, DLE1,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
+	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
+	//{	13,	DLEB,	9,	4,	display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+	{	23, DLEB,	0,	4,	display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
+	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_default, PG0, },	// USB host status
+	{	32, DLEB,	7,	4,	display2_classa7,		& dzi_default, PGALL, },	// Class-A power amplifier
+	//{	28, DLEB,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
 	{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-	{	3,				DLES,	0,	0,	display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-	{	LABELW + 5,		DLES,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-	{	LABELW*2 + 6,	DLES,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	{	3,				DLEM,	0,	0,	display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+	{	LABELW + 5,		DLEM,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+	{	LABELW*2 + 6,	DLEM,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 #if WITHAUTOTUNER
-	{	28, 			DLE1,	22,	4,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
+	{	28, 			DLEB,	22,	4,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
 #endif /* WITHMENU */
 
@@ -190,7 +191,7 @@ static const FLASHMEM struct dzone dzones [] =
 void display2_getmultimenu(multimenuwnd_t * p)
 {
 	enum { YSTEP = 5 };		// количество ячеек разметки на одну строку меню
-	p->multilinemenu_max_rows = (DLE1 - DLES) / YSTEP;
+	p->multilinemenu_max_rows = (DLEB - DLEM) / YSTEP;
 	p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 	p->reverse = 1;
 	p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
