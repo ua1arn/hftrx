@@ -2668,14 +2668,14 @@ static void display_voltlevel4(
 #endif /* WITHVOLTLEVEL */
 }
 
-// отображение градусов с десятыми долями
+// отображение градусов с десятыми долями без отрицаткльных температур
 static void display2_thermo4(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 
 	// 50+ - красный
@@ -2686,7 +2686,7 @@ static void display2_thermo4(
 
 	if (tempv < 0)
 	{
-		tempv = 999; //- tempv;
+		tempv = 0; //- tempv;
 		colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
@@ -2701,17 +2701,17 @@ static void display2_thermo4(
 	{
 		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
-// отображение градусов с десятыми долями и "C"
+// отображение градусов с десятыми долями и "C" без отрицаткльных температур
 static void display2_thermo5(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 
 	// 50+ - красный
@@ -2722,7 +2722,7 @@ static void display2_thermo5(
 
 	if (tempv < 0)
 	{
-		tempv = 999; //- tempv;
+		tempv = 0; //- tempv;
 		colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
@@ -2738,7 +2738,7 @@ static void display2_thermo5(
 		display_value_small(x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
 	display_at_P(x + CHARS2GRID(4), y, PSTR("C"));
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
 // Signed value display

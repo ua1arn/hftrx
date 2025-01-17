@@ -8515,7 +8515,10 @@ static const uint8_t adcinputs [] =
 	VOLTSIX,
 #endif /* WITHVOLTSENSOR */
 
-#if WITHTHERMOLEVEL
+#if WITHTHERMOLEVEL2
+	XTHERMOREFIX,		// Exernal thermo sensor ST LM235Z
+	XTHERMOIX,		// Exernal thermo sensor ST LM235Z
+#elif WITHTHERMOLEVEL
 	XTHERMOIX,		// Exernal thermo sensor ST LM235Z
 #endif /* WITHTHERMOLEVEL */
 
@@ -8994,7 +8997,15 @@ adcfilters_initialize(void)
 		}
 	#endif /* WITHCURRLEVEL */
 
-	#if WITHTHERMOLEVEL
+	#if WITHTHERMOLEVEL2
+		{
+			static lpfdata_t temperature;
+			static lpfdata_t temperatureref;
+
+			hardware_set_adc_filterLPF(XTHERMOMRRIX, & temperature);	// Включить фильтр с параметром 0.03
+			hardware_set_adc_filterLPF(XTHERMOREFMRRIX, & temperatureref);	// Включить фильтр с параметром 0.03
+		}
+	#elif WITHTHERMOLEVEL
 		{
 			static lpfdata_t temperature;
 

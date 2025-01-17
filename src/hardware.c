@@ -77,7 +77,7 @@ void xc7z_hardware_initialize(void)
 	xc7z_writepin(TARGET_RFADC_DITH_EMIO, 0);
 #endif /* WITHPS7BOARD_MYC_Y7Z020 */
 
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 
 	HARDWARE_DCDC_SETDIV(0);
 
@@ -92,7 +92,7 @@ void xc7z_hardware_initialize(void)
 	}
 
 	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
 void xcz_dcdc_sync(uint32_t freq)

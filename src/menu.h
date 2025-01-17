@@ -3583,7 +3583,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase,
 	},
 #endif
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	{
 		QLABEL("HEAT LIM"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
@@ -3604,7 +3604,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gheatprot,
 		getzerobase,
 	},
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
 	{
 		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */

@@ -3394,10 +3394,10 @@ struct nvmap
 	uint8_t gsubtonei;	// номер subtone
 	uint8_t gctssenable;	// разрешить формирование subtone
 #endif /* WITHSUBTONES */
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	uint8_t gtempvmax;
 	uint8_t gheatprot;	/* защита от перегрева */
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	uint8_t gswrprot;	/* защита от превышения КСВ */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
@@ -4414,14 +4414,14 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if WITHTX
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
 #if defined (WITHHEATPROT)
 	static uint_fast8_t gheatprot = WITHHEATPROT;	/* защита от перегрева */
 #else /* defined (WITHHEATPROT) */
 	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
 #endif /* defined (WITHHEATPROT) */
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if defined (WITHSWRPROT)
 	static uint_fast8_t gswrprot = WITHSWRPROT;
@@ -12276,7 +12276,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #endif /* WITHVOLTLEVEL */
 
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 
 // Градусы в десятых долях
 // Read from thermo sensor ST LM235Z (2 kOhm to +12)
@@ -12313,6 +12313,13 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 		return 999;
 	}
 
+#elif WITHTHERMOLEVEL2
+
+	const unsigned Vref_mV = ADCVREF_CPU * 100;
+	const unsigned vrefff = (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER;
+	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff) - (int32_t) board_getadc_filtered_u32(XTHERMOREFMRRIX, 0, vrefff);
+	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
+
 #else /* WITHREFSENSOR */
 
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
@@ -12322,7 +12329,7 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 #endif /* WITHREFSENSOR */
 }
 
-#endif /* WITHTHERMOLEVEL */
+#endif /* WITHTHERMOLEVEL || WITHTHERMOLEVEL2 */
 
 #if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
@@ -12940,7 +12947,10 @@ display2_redrawbarstimed(
 #endif /* WITHAUTOTUNER */
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
-	#if WITHTHERMOLEVEL
+	#if WITHTHERMOLEVEL2
+		board_adc_store_data(XTHERMOREFMRRIX, board_getadc_unfiltered_truevalue(XTHERMOREFIX));
+		board_adc_store_data(XTHERMOMRRIX, board_getadc_unfiltered_truevalue(XTHERMOIX));
+	#elif WITHTHERMOLEVEL
 		// ST LM235Z test values:
 		// 2.98 V @ 25C
 		// 2.98 / 5.7 = 0.5223V at ADC input
@@ -15569,7 +15579,7 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 		return 1;
 	}
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
-#if WITHTHERMOLEVEL
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
 	if (gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 	{
@@ -15579,7 +15589,7 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 		}
 		return 1;
 	}
-#endif /* WITHTHERMOLEVEL */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	if (getactualdownpower() == 0)
 	{
