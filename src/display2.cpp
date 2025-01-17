@@ -2668,7 +2668,7 @@ static void display_voltlevel4(
 #endif /* WITHVOLTLEVEL */
 }
 
-// отображение градусов с десятыми долями без отрицаткльных температур
+// отображение градусов с десятыми долями без отрицательных температур
 static void display2_thermo4(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -2704,7 +2704,7 @@ static void display2_thermo4(
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
-// отображение градусов с десятыми долями и "C" без отрицаткльных температур
+// отображение градусов с десятыми долями и "C" без отрицательных температур
 static void display2_thermo5(
 	uint_fast8_t x,
 	uint_fast8_t y,
