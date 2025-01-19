@@ -1368,25 +1368,19 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_RK356X
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
-	// калибровано для 800 МГц процессора
+	// калибровано для 800 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_A64
-	// калибровано для 1200 МГц процессора
-	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_T507
-	// калибровано для 1200 МГц процессора
+#elif CPUSTYLE_CA53
+	// калибровано для Cortex-A53 процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
-	// калибровано для 1200 МГц процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_H3
-	// калибровано для 1200 МГц процессора
+	// калибровано для 1200 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_V3S
-	// калибровано для 1200 МГц процессора
+	// калибровано для 1200 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_F133
-	// калибровано для 1200 МГц процессора
+	// калибровано для 1200 МГц RISC-V C906 процессора
 	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_VM14
 	// калибровано для 1200 МГц процессора
@@ -2677,6 +2671,25 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
+	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+	// 1 GB DDR RAM memory size allowed
+	if (a >= 0x40000000)			//  DRAM - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
+#elif CPUSTYLE_A133 || CPUSTYLE_R818
 
 	// Все сравнения должны быть не точнее 1 MB
 
