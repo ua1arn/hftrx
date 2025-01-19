@@ -4817,7 +4817,7 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 		(use4bit ? UINT32_C(0x01) : UINT32_C(0x00)) |	// 00: 1-bit width, 01: 4-biut width
 		0;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_A133
 
 	switch(use4bit ? 4 : 1)
 	{

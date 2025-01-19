@@ -122,9 +122,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh3_cpustyle_orange_pi_pc.h"
 #elif (CPUSTYLE_A133) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
+	#include "boards/arm_allwa133_ctlstyle_helper133.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
+	#include "boards/arm_allwa133_cpustyle_helper133.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"

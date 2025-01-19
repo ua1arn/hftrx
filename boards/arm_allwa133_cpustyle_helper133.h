@@ -6,29 +6,28 @@
 // UA1ARN
 //
 
-// Orange Pi Zero 2
-// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2
+// Helperboard A133
 
 #ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED
 #define ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта UART0 */
@@ -134,6 +133,8 @@
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 		#define WITHHDMITVHW 1			/* Second display - HDMI hardware output */
 	#endif
+
+#if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -229,7 +230,7 @@
 
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
+#endif
 #endif /* WITHISBOOTLOADER */
 
 
@@ -384,7 +385,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t507_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_a133_get_smhc0_freq())
 
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -631,7 +632,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi0_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_a133_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPIHARD_PTR
 
 	#if WITHSPIHW
@@ -747,7 +748,7 @@
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_a133_get_s_twi_freq()) // APBS2_CLK allwnr_a133_get_apb2_freq() or allwnr_a133_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 
@@ -784,7 +785,7 @@
 	} while (0)
 	#define	TWIHARD_IX 3	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t507_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_a133_get_twi_freq()) // APBS2_CLK allwnr_a133_get_apb2_freq() or allwnr_a133_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -1016,7 +1017,7 @@
 		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
-		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+		#define BOARD_TCONTVFREQ (allwnr_a133_get_tcon_tv0_freq())
 		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 	#if 0
@@ -1025,7 +1026,7 @@
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_a133_get_tcon_lcd0_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
@@ -1038,7 +1039,7 @@
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE0_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define	TVE_CCU_BGR_REG (CCU->TVE_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
-		#define BOARD_TVEFREQ (allwnr_t507_get_tve0_freq())
+		#define BOARD_TVEFREQ (allwnr_a133_get_tve0_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

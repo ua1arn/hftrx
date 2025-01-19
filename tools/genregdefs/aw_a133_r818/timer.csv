@@ -12,7 +12,9 @@
 #irq; R_TIMER1 137
 #irq; R_TIMER2 138
 #irq; R_TIMER3 139
-#irq; R_WDOG 141
+
+#irq; R_WDOG 141; Watchdog interrupt in CPU
+#irq; R_TWD 142; Trust watchdog interrupt in CPU
 
 #regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
 #regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register

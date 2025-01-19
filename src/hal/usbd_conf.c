@@ -424,7 +424,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	}
 
-#elif CPUSTYLE_T507
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 //	void SetupUsbPhyc(USBPHYC_TypeDef * phy);
 //
@@ -718,7 +718,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 		  }
 	#endif /* defined (USB_OTG_FS) */
 
-#elif CPUSTYLE_T507
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
