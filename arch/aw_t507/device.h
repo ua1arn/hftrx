@@ -71,6 +71,7 @@ typedef enum IRQn
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
     DMAC_IRQn = 74,                                   /*!< DMAC  */
+    GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector bunber not sequential) */
     SMC_IRQn = 79,                                    /*!< SMC  */
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
@@ -218,6 +219,7 @@ typedef enum IRQn
 #define GPIOINTA_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
 #define GPIOINTC_BASE ((uintptr_t) 0x0300B240)        /*!< GPIOINT  Base */
 #define GPIOINTD_BASE ((uintptr_t) 0x0300B260)        /*!< GPIOINT  Base */
+#define GPIOINTE_BASE ((uintptr_t) 0x0300B280)        /*!< GPIOINT  Base */
 #define GPIOINTF_BASE ((uintptr_t) 0x0300B2A0)        /*!< GPIOINT  Base */
 #define GPIOINTG_BASE ((uintptr_t) 0x0300B2C0)        /*!< GPIOINT  Base */
 #define GPIOINTH_BASE ((uintptr_t) 0x0300B2E0)        /*!< GPIOINT  Base */
@@ -3548,6 +3550,7 @@ typedef struct VE_Type
 #define GPIOINTA ((GPIOINT_TypeDef *) GPIOINTA_BASE)  /*!< GPIOINTA  register set access pointer */
 #define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)  /*!< GPIOINTC  register set access pointer */
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
+#define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)  /*!< GPIOINTE  register set access pointer */
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */

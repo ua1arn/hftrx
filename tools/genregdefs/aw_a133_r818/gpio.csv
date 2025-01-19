@@ -1,7 +1,7 @@
 #type; GPIO; Port Controller
 
-#base; GPIOA 0x0300B000
-##base; GPIOB 0x0300B024
+#base; GPIOA 	0x0300B000
+#base; GPIOB 	0x0300B024
 #base; GPIOC 	0x0300B048
 #base; GPIOD 	0x0300B06C
 #base; GPIOE 	0x0300B090
@@ -45,23 +45,25 @@
 #type; GPIOINT
 
 #base; GPIOINTA 0x0300B200; GPIOA interrupt
-##base; GPIOINTB 0x0300B220; GPIOB interrupt
+#base; GPIOINTB 0x0300B220; GPIOB interrupt
 #base; GPIOINTC 0x0300B240; GPIOC interrupt
 #base; GPIOINTD 0x0300B260; GPIOD interrupt
-##base; GPIOINTE 0x0300B280; GPIOE interrupt
+#base; GPIOINTE 0x0300B280; GPIOE interrupt
 #base; GPIOINTF 0x0300B2A0; GPIOF interrupt
 #base; GPIOINTG 0x0300B2C0; GPIOG interrupt
 #base; GPIOINTH 0x0300B2E0; GPIOH interrupt
 #base; GPIOINTI 0x0300B300; GPIOI interrupt
 
-#irq; GPIOA 83; GPIOA interrupt
-#irq; GPIOC 84; GPIOC interrupt
-#irq; GPIOD 85; GPIOD interrupt
-##irq; GPIOE 75; GPIOE interrupt
-#irq; GPIOF 86; GPIOF interrupt
-#irq; GPIOG 87; GPIOG interrupt
-#irq; GPIOH 88; GPIOH interrupt
-#irq; GPIOI 89; GPIOI interrupt
+##irq; GPIOA XX; GPIOA interrupt
+#irq; GPIOB 86; GPIOC interrupt
+#irq; GPIOC 87; GPIOC interrupt
+#irq; GPIOD 88; GPIOD interrupt
+#irq; GPIOE 89; GPIOE interrupt
+#irq; GPIOF 90; GPIOF interrupt
+#irq; GPIOG 91; GPIOG interrupt
+#irq; GPIOH 92; GPIOH interrupt
+#irq; GPIOI 93; GPIOI interrupt
+#irq; R_GPIOL 143; GPIOL interrupt in CPUS
 
 #regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register

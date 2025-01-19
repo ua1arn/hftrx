@@ -2,13 +2,9 @@
 
 #base; USB20_HOST0_OHCI 0x05101400
 #base; USB20_HOST1_OHCI 0x05200400
-#base; USB20_HOST2_OHCI 0x05310400
-#base; USB20_HOST3_OHCI 0x05311400
 
-#irq; USB20_HOST0_OHCI 59
-#irq; USB20_HOST1_OHCI 61
-#irq; USB20_HOST2_OHCI 63
-#irq; USB20_HOST3_OHCI 65
+#irq; USB20_HOST0_OHCI 63
+#irq; USB20_HOST1_OHCI 66
 
 #regdef; O_HcRevision; 0x0000; OHCI Revision Register (not documented)
 #regdef; O_HcControl; 0x0004; OHCI Control Register

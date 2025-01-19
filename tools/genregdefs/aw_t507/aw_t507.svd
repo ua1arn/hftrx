@@ -5833,6 +5833,11 @@
    <description></description>
   </interrupt>
   <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>GPIOF</name>
    <value>86</value>
    <description></description>
@@ -5915,6 +5920,11 @@
    <description></description>
   </interrupt>
   <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>GPIOF</name>
    <value>86</value>
    <description></description>
@@ -5951,6 +5961,55 @@
   <interrupt>
    <name>GPIOD</name>
    <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>88</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="GPIOINTA">
+  <name>GPIOINTE</name>
+  <baseAddress>0x0300B280</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -5993,6 +6052,11 @@
    <description></description>
   </interrupt>
   <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>GPIOF</name>
    <value>86</value>
    <description></description>
@@ -6029,6 +6093,11 @@
   <interrupt>
    <name>GPIOD</name>
    <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -6071,6 +6140,11 @@
    <description></description>
   </interrupt>
   <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>GPIOF</name>
    <value>86</value>
    <description></description>
@@ -6107,6 +6181,11 @@
   <interrupt>
    <name>GPIOD</name>
    <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE</name>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>

@@ -179,6 +179,10 @@
   </registers>
   </peripheral>
   <peripheral derivedFrom="GPIOA">
+  <name>GPIOB</name>
+  <baseAddress>0x0300B024</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOC</name>
   <baseAddress>0x0300B048</baseAddress>
   </peripheral>
@@ -363,38 +367,48 @@
   <description></description>
   <baseAddress>0x0300B200</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   <registers>
@@ -442,41 +456,100 @@
   </registers>
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
-  <name>GPIOINTC</name>
-  <baseAddress>0x0300B240</baseAddress>
+  <name>GPIOINTB</name>
+  <baseAddress>0x0300B220</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="GPIOINTA">
+  <name>GPIOINTC</name>
+  <baseAddress>0x0300B240</baseAddress>
+  <interrupt>
+   <name>GPIOB</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>88</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -484,38 +557,97 @@
   <name>GPIOINTD</name>
   <baseAddress>0x0300B260</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="GPIOINTA">
+  <name>GPIOINTE</name>
+  <baseAddress>0x0300B280</baseAddress>
+  <interrupt>
+   <name>GPIOB</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOC</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>88</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOE</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -523,38 +655,48 @@
   <name>GPIOINTF</name>
   <baseAddress>0x0300B2A0</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -562,38 +704,48 @@
   <name>GPIOINTG</name>
   <baseAddress>0x0300B2C0</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -601,38 +753,48 @@
   <name>GPIOINTH</name>
   <baseAddress>0x0300B2E0</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -640,38 +802,48 @@
   <name>GPIOINTI</name>
   <baseAddress>0x0300B300</baseAddress>
   <interrupt>
-   <name>GPIOA</name>
-   <value>83</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD</name>
-   <value>85</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF</name>
+   <name>GPIOB</name>
    <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOG</name>
+   <name>GPIOC</name>
    <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOH</name>
+   <name>GPIOD</name>
    <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOI</name>
+   <name>GPIOE</name>
    <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOF</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOG</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOH</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOI</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_GPIOL</name>
+   <value>143</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -1100,6 +1272,298 @@
   <interrupt>
    <name>I2S3</name>
    <value>62</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>TIMER</name>
+  <description></description>
+  <baseAddress>0x03009000</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER0</name>
+   <value>136</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER1</name>
+   <value>137</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER2</name>
+   <value>138</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER3</name>
+   <value>139</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_WDOG</name>
+   <value>141</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TMR_IRQ_EN_REG</name>
+    <displayName>TMR_IRQ_EN_REG</displayName>
+    <description>Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR_IRQ_STA_REG</name>
+    <displayName>TMR_IRQ_STA_REG</displayName>
+    <description>Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000010</addressOffset>
+    <registers>
+     <register>
+      <name>CTRL_REG</name>
+      <displayName>CTRL_REG</displayName>
+      <description>Timer n Control Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>INTV_VALUE_REG</name>
+      <displayName>INTV_VALUE_REG</displayName>
+      <description>Timer n Interval Value Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CUR_VALUE_REG</name>
+      <displayName>CUR_VALUE_REG</displayName>
+      <description>Timer n Current Value Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>WDOG_IRQ_EN_REG</name>
+    <displayName>WDOG_IRQ_EN_REG</displayName>
+    <description>Watchdog IRQ Enable Register</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_IRQ_STA_REG</name>
+    <displayName>WDOG_IRQ_STA_REG</displayName>
+    <description>Watchdog Status Register</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CTRL_REG</name>
+    <displayName>WDOG_CTRL_REG</displayName>
+    <description>Watchdog Control Register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CFG_REG</name>
+    <displayName>WDOG_CFG_REG</displayName>
+    <description>Watchdog Configuration Register</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_MODE_REG</name>
+    <displayName>WDOG_MODE_REG</displayName>
+    <description>Watchdog Mode Register</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT_CTL_REG</name>
+    <displayName>AVS_CNT_CTL_REG</displayName>
+    <description>AVS Control Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT0_REG</name>
+    <displayName>AVS_CNT0_REG</displayName>
+    <description>AVS Counter 0 Register</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT1_REG</name>
+    <displayName>AVS_CNT1_REG</displayName>
+    <description>AVS Counter 1 Register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT_DIV_REG</name>
+    <displayName>AVS_CNT_DIV_REG</displayName>
+    <description>AVS Divisor Register</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="TIMER">
+  <name>R_TIMER</name>
+  <baseAddress>0x07029000</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER0</name>
+   <value>136</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER1</name>
+   <value>137</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER2</name>
+   <value>138</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER3</name>
+   <value>139</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_WDOG</name>
+   <value>141</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="TIMER">
+  <name>R_WDG</name>
+  <baseAddress>0x07020400</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER0</name>
+   <value>136</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER1</name>
+   <value>137</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER2</name>
+   <value>138</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER3</name>
+   <value>139</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_WDOG</name>
+   <value>141</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="TIMER">
+  <name>R_TWDG</name>
+  <baseAddress>0x07020800</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER0</name>
+   <value>136</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER1</name>
+   <value>137</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER2</name>
+   <value>138</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_TIMER3</name>
+   <value>139</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_WDOG</name>
+   <value>141</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -1890,7 +2354,7 @@
   <baseAddress>0x05100000</baseAddress>
   <interrupt>
    <name>USB20_OTG_DEVICE</name>
-   <value>57</value>
+   <value>64</value>
    <description></description>
   </interrupt>
   <registers>
@@ -2263,6 +2727,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>HCI_CTRL3</name>
+    <displayName>HCI_CTRL3</displayName>
+    <description>HCI Control 3 Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>PHY_CTRL</name>
     <displayName>PHY_CTRL</displayName>
     <description>PHY Control Register </description>
@@ -2317,36 +2790,18 @@
   <name>USBPHYC1</name>
   <baseAddress>0x05200800</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_PHYC">
-  <name>USBPHYC2</name>
-  <baseAddress>0x05310800</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="USB20_OTG_PHYC">
-  <name>USBPHYC3</name>
-  <baseAddress>0x05311800</baseAddress>
-  </peripheral>
   <peripheral>
   <name>USB20_HOST0_EHCI</name>
   <description></description>
   <baseAddress>0x05101000</baseAddress>
   <interrupt>
    <name>USB20_HOST0_EHCI</name>
-   <value>58</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST1_EHCI</name>
-   <value>60</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_EHCI</name>
    <value>62</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>USB20_HOST3_EHCI</name>
-   <value>64</value>
+   <name>USB20_HOST1_EHCI</name>
+   <value>65</value>
    <description></description>
   </interrupt>
   <registers>
@@ -2456,70 +2911,12 @@
   <baseAddress>0x05200000</baseAddress>
   <interrupt>
    <name>USB20_HOST0_EHCI</name>
-   <value>58</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST1_EHCI</name>
-   <value>60</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_EHCI</name>
    <value>62</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>USB20_HOST3_EHCI</name>
-   <value>64</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="USB20_HOST0_EHCI">
-  <name>USB20_HOST2_EHCI</name>
-  <baseAddress>0x05310000</baseAddress>
-  <interrupt>
-   <name>USB20_HOST0_EHCI</name>
-   <value>58</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
    <name>USB20_HOST1_EHCI</name>
-   <value>60</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_EHCI</name>
-   <value>62</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST3_EHCI</name>
-   <value>64</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="USB20_HOST0_EHCI">
-  <name>USB20_HOST3_EHCI</name>
-  <baseAddress>0x05311000</baseAddress>
-  <interrupt>
-   <name>USB20_HOST0_EHCI</name>
-   <value>58</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST1_EHCI</name>
-   <value>60</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_EHCI</name>
-   <value>62</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST3_EHCI</name>
-   <value>64</value>
+   <value>65</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -2529,22 +2926,12 @@
   <baseAddress>0x05101400</baseAddress>
   <interrupt>
    <name>USB20_HOST0_OHCI</name>
-   <value>59</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST1_OHCI</name>
-   <value>61</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_OHCI</name>
    <value>63</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>USB20_HOST3_OHCI</name>
-   <value>65</value>
+   <name>USB20_HOST1_OHCI</name>
+   <value>66</value>
    <description></description>
   </interrupt>
   <registers>
@@ -2758,70 +3145,12 @@
   <baseAddress>0x05200400</baseAddress>
   <interrupt>
    <name>USB20_HOST0_OHCI</name>
-   <value>59</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST1_OHCI</name>
-   <value>61</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_OHCI</name>
    <value>63</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>USB20_HOST3_OHCI</name>
-   <value>65</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="USB20_HOST0_OHCI">
-  <name>USB20_HOST2_OHCI</name>
-  <baseAddress>0x05310400</baseAddress>
-  <interrupt>
-   <name>USB20_HOST0_OHCI</name>
-   <value>59</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
    <name>USB20_HOST1_OHCI</name>
-   <value>61</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_OHCI</name>
-   <value>63</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST3_OHCI</name>
-   <value>65</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="USB20_HOST0_OHCI">
-  <name>USB20_HOST3_OHCI</name>
-  <baseAddress>0x05311400</baseAddress>
-  <interrupt>
-   <name>USB20_HOST0_OHCI</name>
-   <value>59</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST1_OHCI</name>
-   <value>61</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST2_OHCI</name>
-   <value>63</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>USB20_HOST3_OHCI</name>
-   <value>65</value>
+   <value>66</value>
    <description></description>
   </interrupt>
   </peripheral>

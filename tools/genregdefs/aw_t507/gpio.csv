@@ -48,7 +48,7 @@
 ##base; GPIOINTB 0x0300B220; GPIOB interrupt
 #base; GPIOINTC 0x0300B240; GPIOC interrupt
 #base; GPIOINTD 0x0300B260; GPIOD interrupt
-##base; GPIOINTE 0x0300B280; GPIOE interrupt
+#base; GPIOINTE 0x0300B280; GPIOE interrupt
 #base; GPIOINTF 0x0300B2A0; GPIOF interrupt
 #base; GPIOINTG 0x0300B2C0; GPIOG interrupt
 #base; GPIOINTH 0x0300B2E0; GPIOH interrupt
@@ -57,7 +57,7 @@
 #irq; GPIOA 83; GPIOA interrupt
 #irq; GPIOC 84; GPIOC interrupt
 #irq; GPIOD 85; GPIOD interrupt
-##irq; GPIOE 75; GPIOE interrupt
+#irq; GPIOE 75; GPIOE interrupt (vector bunber not sequential)
 #irq; GPIOF 86; GPIOF interrupt
 #irq; GPIOG 87; GPIOG interrupt
 #irq; GPIOH 88; GPIOH interrupt
