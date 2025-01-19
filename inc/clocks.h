@@ -154,6 +154,14 @@ unsigned long hardware_get_apb1_tim_freq(void);
 unsigned long hardware_get_apb2_freq(void);
 unsigned long hardware_get_apb2_tim_freq(void);
 
+
+#if (CPUSTYLE_V3S)
+// Allwinner V3s
+
+uint_fast32_t allwnr_v3s_get_hosc_freq(void);
+
+#endif /* (CPUSTYLE_V3S) */
+
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 // Allwinner t113-s3
 void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode

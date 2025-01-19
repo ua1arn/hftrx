@@ -593,7 +593,6 @@
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define HARDWARE_SPI_FREQ (allwnr_v3s_get_apb2_freq())
 	#define	SPIDFHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
-	#define HARDWARE_SPI_FREQ (allwnr_v3s_get_spi_freq())
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF3); 	/* PC2 SPI_CLK */ \
