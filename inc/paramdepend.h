@@ -405,14 +405,6 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
-
 	#define CPU_FREQ	(xc7z_get_arm_freq())
 	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
@@ -434,14 +426,6 @@ extern "C" {
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
 
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
@@ -481,18 +465,10 @@ extern "C" {
 	#endif
 
 
-#elif CPUSTYLE_A133
+#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
 
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
@@ -539,14 +515,6 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
-
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
@@ -590,14 +558,6 @@ extern "C" {
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
 
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
@@ -645,14 +605,6 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
-
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnr_h3_get_cpux_freq())
@@ -696,14 +648,6 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
-
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ			(allwnr_v3s_get_cpu_freq())
@@ -741,14 +685,6 @@ extern "C" {
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
 
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
@@ -797,14 +733,6 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
-
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
 	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
@@ -828,14 +756,6 @@ extern "C" {
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#if WITHCPUXOSC
-		// с внешним генератором
-		#define	REFINFREQ WITHCPUXOSC
-	#elif WITHCPUXTAL
-		// с внешним кварцевым резонатором
-		#define	REFINFREQ WITHCPUXTAL
-	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
 	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())

@@ -162,6 +162,14 @@ uint_fast32_t allwnr_v3s_get_hosc_freq(void);
 
 #endif /* (CPUSTYLE_V3S) */
 
+#if (CPUSTYLE_A133 || CPUSTYLE_R828)
+// Allwinner V3s
+
+uint_fast32_t allwnr_a133_get_hosc_freq(void);
+uint_fast32_t allwnr_a133_get_cpux_freq(void);
+
+#endif /* (CPUSTYLE_V3S) */
+
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 // Allwinner t113-s3
 void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
@@ -570,7 +578,7 @@ calcdivider(
 		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
 	};
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H616 || CPUSTYLE_H3
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H616 || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),
