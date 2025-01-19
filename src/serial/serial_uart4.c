@@ -134,7 +134,7 @@
 	}
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	static RAMFUNC_NONILINE void UART4_IRQHandler(void)
 	{
@@ -209,7 +209,7 @@ void hardware_uart4_enabletx(uint_fast8_t state)
 	else
 		SCIF4.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if (state)
 		 UART4->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -239,7 +239,7 @@ void hardware_uart4_enablerx(uint_fast8_t state)
 	else
 		SCIF4.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if (state)
 		 UART4->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -269,7 +269,7 @@ void hardware_uart4_tx(void * ctx, uint_fast8_t c)
 	SCIF4.SCFTDR = c;
 	SCIF4.SCFSR = (uint16_t) ~ (1U << SCIF4_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	UART4->UART_RBR_THR_DLL = c;
 
@@ -281,7 +281,7 @@ void hardware_uart4_tx(void * ctx, uint_fast8_t c)
 /* дождаться, когда буде все передано */
 void hardware_uart4_flush(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	while ((UART4->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
 		;
@@ -332,7 +332,7 @@ hardware_uart4_getchar(char * cp)
 	* cp = SCIF4.SCFRDR;
 	SCIF4.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if ((UART4->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -392,7 +392,7 @@ hardware_uart4_putchar(uint_fast8_t c)
 	SCIF4.SCFTDR = c;
 	SCIF4.SCFSR = (uint16_t) ~ (1U << SCIF4_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if ((UART4->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -715,7 +715,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF4.SCBRR = value;	/* Bit rate register */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	unsigned divisor = calcdivround2(HARDWARE_UART_FREQ, baudrate * 16);
 

@@ -167,7 +167,7 @@
 		}
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 	{
@@ -313,7 +313,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 		 UART1->IDR = mask;
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if (state)
 		UART1->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -420,7 +420,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 		 UART1->IDR = mask;
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if (state)
 		 UART1->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -494,7 +494,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART1->FIFO = c;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	UART1->UART_RBR_THR_DLL = c;
 
@@ -510,7 +510,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 /* дождаться, когда буде все передано */
 void hardware_uart1_flush(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	while ((UART1->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
 		;
@@ -612,7 +612,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART1->FIFO;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -704,7 +704,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART1->FIFO = c;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	if ((UART1->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -1302,7 +1302,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	unsigned divisor = calcdivround2(HARDWARE_UART_FREQ, baudrate * 16);
 
