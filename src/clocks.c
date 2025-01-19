@@ -4070,6 +4070,22 @@ uint_fast32_t allwnr_a133_get_cpux_freq(void)
 	return 488000000;
 }
 
+
+uint_fast32_t allwnr_a133_get_uart_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_spi_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_twi_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 static void t113_set_pll_cpu(unsigned n)
