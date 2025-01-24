@@ -310,12 +310,12 @@ enum {
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_BITA		XGPI3
-	#define ENCODER_BITB		XGPI4
+	#define ENCODER_BITA		XGPI2
+	#define ENCODER_BITB		XGPI3
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		XGPI1
-	#define ENCODER2_BITB		XGPI2
+	#define ENCODER2_BITA		XGPI0
+	#define ENCODER2_BITB		XGPI1
 
 	#define ENCODER_INITIALIZE() \
 		do { \
