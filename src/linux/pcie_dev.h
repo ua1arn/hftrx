@@ -29,7 +29,7 @@ void pcie_close();
 long xdma_h2c_transfer(long offset, unsigned long size, char* snd_content);
 long xdma_c2h_transfer(long offset, unsigned long size, char* rcv_content);
 void xdma_write_user(long offset, uint32_t value);
-void xdma_read_user(long offset, uint32_t* value);
+uint32_t xdma_read_user(long offset);
 
 #endif /* LINUX_SUBSYSTEM */
 

@@ -34,6 +34,7 @@
 #include <linux/input.h>
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
+#include "pcie_dev.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
@@ -820,7 +821,7 @@ void prog_spi_exchange(
 
 /*************************************************************/
 
-#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
@@ -839,7 +840,11 @@ void update_modem_ctrl(void)
 			| (!! wnb_state << wnb_pos)
 			| 0;
 
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* modem_ctrl = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_write_user(AXI_LITE_MODEM_CONTROL, v);
+#endif
 }
 
 void xcz_resetn_modem(uint8_t val)
@@ -851,22 +856,37 @@ void xcz_resetn_modem(uint8_t val)
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-	* rts = v;
     mirror_ncorts = v;
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	* rts = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_write_user(AXI_LITE_DDS_RTS, v);
+#endif
 }
 
 void xcz_dds_ftw(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-	* ftw = v;
     mirror_nco1 = v;
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+    * ftw = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+    xdma_write_user(AXI_LITE_DDS_FTW, v);
+#endif
 }
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-	* ftw_sub = v;
 	mirror_nco2 = v;
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	* ftw_sub = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+
+#endif
 }
 
 uint8_t iq_shift_fir_rx(uint8_t val) // 52
@@ -1240,6 +1260,7 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 
 void linux_iq_init(void)
 {
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	ftw = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR);
 	ftw_sub = 		(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR);
 	rts = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR);
@@ -1249,6 +1270,13 @@ void linux_iq_init(void)
 	modem_ctrl = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR);
 	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
+#endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
+
+#if DDS1_TYPE == DDS_TYPE_XDMA
+	pcie_init();
+	if (pcie_open() < 0)
+		perror("pcie init");
+#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
 #if WITHEXTIO_LAN
 	stream_rate = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_RATE);
@@ -1261,9 +1289,11 @@ void linux_iq_init(void)
 	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, 1);
 #endif /* WITHEXTIO_LAN */
 
+#if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK | RX_ENABLE_MASK);
+#endif /* defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR) */
 
 #if WITHWNB
 	wnb_update();
@@ -1273,6 +1303,46 @@ void linux_iq_init(void)
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 }
+
+#if DDS1_TYPE == DDS_TYPE_XDMA
+
+void * linux_iq_xdma_thread(void * args)
+{
+	uint16_t position, limit = 0, offset;
+
+	while(1)
+	{
+		position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
+
+		if((limit > 0 && position > limit) || (limit == 0 && position < DMABUFFSIZE32RX))
+		{
+			offset = limit > 0 ? 0 : SIZERX8;
+			limit = limit > 0 ? 0 : DMABUFFSIZE32RX;
+			xdma_c2h_transfer(AXI_IQ_RX_BRAM + offset, SIZERX8, rxbuf);
+
+			uintptr_t addr32rx = allocate_dmabuffer32rx();
+			memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
+			save_dmabuffer32rx(addr32rx);
+			iq_mutex_unlock();
+		}
+		else
+			usleep(100);
+	}
+
+	return NULL;
+}
+
+void xdma_iq_init(void)
+{
+	xcz_resetn_modem(0);
+
+	linux_create_thread(& iq_interrupt_t, linux_iq_xdma_thread, 95, 2);
+
+	xcz_resetn_modem(1);
+	linux_init_cond(& ct_iq);
+}
+
+#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
 void linux_iq_thread(void)
 {
@@ -1702,7 +1772,7 @@ void linux_subsystem_init(void)
 #if WITHSPIDEV
 	spidev_init();
 #endif /* WITHSPIDEV */
-#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_iq_init();
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
 	board_set_i2s_enable(0);
@@ -1728,7 +1798,9 @@ void linux_user_init(void)
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
-	alsa_init2();
+
+#elif (DDS1_TYPE == DDS_TYPE_XDMA)
+	xdma_iq_init();
 #endif /* DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA */
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
@@ -2003,6 +2075,10 @@ void linux_exit(void)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* WITHDSPEXTFIR */
 #endif
+
+#if DDS1_TYPE == DDS_TYPE_XDMA
+	pcie_close();
+#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
 	exit(EXIT_SUCCESS);
 }

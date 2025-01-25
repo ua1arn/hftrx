@@ -183,11 +183,12 @@ void xdma_write_user(long offset, uint32_t value)
     *((uint32_t *) (xdma.user_map_base + offset)) = value;
 }
 
-void xdma_read_user(long offset, uint32_t* value)
+uint32_t xdma_read_user(long offset)
 {
-   *value = *((uint32_t *) (xdma.user_map_base + offset));
-   /* swap 32-bit endianess if host is not little-endian */
-   *value = ltohl(*value);
+	uint32_t v = *((uint32_t *) (xdma.user_map_base + offset));
+	/* swap 32-bit endianess if host is not little-endian */
+	v = ltohl(v);
+	return v;
 }
 
 #endif /* LINUX_SUBSYSTEM */
