@@ -1306,43 +1306,64 @@ void linux_iq_init(void)
 
 #if DDS1_TYPE == DDS_TYPE_XDMA
 
-void * linux_iq_xdma_thread(void * args)
+pthread_t xdma_t;
+
+void xdma_event(void)
 {
-	uint16_t position, limit = 0, offset;
+	uint16_t position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
+	uint16_t offset = position >= DMABUFFSIZE32RX ? 0 : SIZERX8;
+	xdma_c2h_transfer(AXI_IQ_RX_BRAM + offset, SIZERX8, rxbuf);
 
-	while(1)
-	{
-		position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
+	memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
+	save_dmabuffer32rx(addr32rx);
+	iq_mutex_unlock();
+}
 
-		if((limit > 0 && position > limit) || (limit == 0 && position < DMABUFFSIZE32RX))
-		{
-			offset = limit > 0 ? 0 : SIZERX8;
-			limit = limit > 0 ? 0 : DMABUFFSIZE32RX;
-			xdma_c2h_transfer(AXI_IQ_RX_BRAM + offset, SIZERX8, rxbuf);
-
-			uintptr_t addr32rx = allocate_dmabuffer32rx();
-			memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
-			save_dmabuffer32rx(addr32rx);
-			iq_mutex_unlock();
-		}
-		else
-			usleep(100);
+void * xdma_event_thread(void * args)
+{
+	uint32_t events_user;
+	int read_fd;
+	int fd = open(LINUX_XDMA_EVENT_FILE, O_RDONLY);
+	if (fd < 0) {
+		perror(LINUX_XDMA_EVENT_FILE);
+		return NULL;
 	}
 
-	return NULL;
+	pread(fd, & events_user, sizeof(events_user), 0);
+
+	struct pollfd fds[] = { { fd, POLLIN }, };
+
+	while (1) {
+		int r = poll(fds, 1, 0);
+		if (r < 0) {
+			perror("poll");
+		} else {
+			if (fds[0].revents & POLLIN) {
+				read_fd = fd;
+			}
+
+			xdma_event(); // iq interrupt from FPGA via XDMA
+
+			/* read and clear the interrupt so we can detect future interrupts */
+			pread(read_fd, & events_user, sizeof(events_user), 0);
+		}
+	}
 }
 
 void xdma_iq_init(void)
 {
 	xcz_resetn_modem(0);
 
-	linux_create_thread(& iq_interrupt_t, linux_iq_xdma_thread, 95, 2);
+	linux_create_thread(& xdma_t, xdma_event_thread, 95, 2);
 
 	xcz_resetn_modem(1);
 	linux_init_cond(& ct_iq);
 }
 
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 
 void linux_iq_thread(void)
 {
@@ -1515,6 +1536,7 @@ void zynq_pl_init(void)
 	linux_init_cond(& ct_iq);
 }
 
+#endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
 #endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
 
 /*************************************************************/
