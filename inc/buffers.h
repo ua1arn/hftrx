@@ -112,7 +112,7 @@ extern "C" {
 		#define	DMABUFF32TX_CODEC1_RIGHT 	7		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
 
 
-	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_RK356X
+	#elif CPUSTYLE_XC7Z || CPUSTYLE_RK356X
 
 		#if WITHFPGAIF_FRAMEBITS == 64
 

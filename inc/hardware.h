@@ -447,19 +447,6 @@ extern "C" {
 	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
-#elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
-	// Zynq UltraScale+ Device
-	// r0p4-50rel0
-	// XCZU2..XCZU9, XCZU11
-
-	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-
-	#define DCACHEROWSIZE 32
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN //__ALIGNED(32)
-	#define ALIGNX_END /* nothing */
-
 #elif CPUSTYLE_RK356X && LINUX_SUBSYSTEM
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
@@ -964,7 +951,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if 1 //CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 1 //CPUSTYLE_XC7Z
 
 #define AX_PWM_AXI_SLV_REG0_OFFSET 0
 #define AX_PWM_AXI_SLV_REG1_OFFSET 4

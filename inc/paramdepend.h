@@ -726,31 +726,6 @@ extern "C" {
 	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw F133-A"
 
-#elif CPUSTYLE_XCZU
-	// Zynq UltraScale+ Device
-	// XCZU2..XCZU9, XCZU11
-
-	typedef uint_fast16_t adcvalholder_t;
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
-	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
-	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
-
-	#define TICKS_FREQUENCY 200
-
-	#define SEQ_TICKS_PERIOD    5    // 5 ms
-	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
-	#define ENC_TICKS_PERIOD    5    // 5 ms
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	#define HARDWARE_ADCBITS 12
-
-	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
-
-	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "Zynq XCZU"
-
 #elif CPUSTYLE_RK356X
 	// Rockchip RK356х
 

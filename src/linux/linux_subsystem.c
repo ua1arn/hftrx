@@ -236,17 +236,6 @@ void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 
 #endif /* WITHAUDIOSAMPLESREC */
 
-#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
-#include "../sysmon/xsysmonpsu.h"
-static XSysMonPsu xczu_sysmon;
-
-float xczu_get_cpu_temperature(void)
-{
-	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
-	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
-}
-#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
-
 void * get_highmem_ptr(uint32_t addr)
 {
 	int fd;
@@ -453,7 +442,7 @@ void framebuffer_close(void)
 	#include "./gpiops/xgpiops.h"
 	static XGpioPs xc7z_gpio;
 	uint32_t * gpiops_ptr;
-#elif CPUSTYLE_XCZU
+#elif 0
 	uint32_t * xgpo, * xgpi;
 	pthread_mutex_t gpiolock;
 #elif CPUSTYLE_RK356X
@@ -461,7 +450,7 @@ void framebuffer_close(void)
 #endif
 void linux_xgpio_init(void)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	xgpo = (uint32_t *) get_highmem_ptr(AXI_XGPO_ADDR);
 	xgpi = (uint32_t *) get_highmem_ptr(AXI_XGPI_ADDR);
 	pthread_mutex_init(& gpiolock, NULL);
@@ -483,7 +472,7 @@ void linux_xgpio_init(void)
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	pthread_mutex_lock(& gpiolock);
 	uint32_t v = * xgpi;
 	pthread_mutex_unlock(& gpiolock);
@@ -497,7 +486,7 @@ uint8_t linux_xgpi_read_pin(uint8_t pin)
 
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	pthread_mutex_lock(& gpiolock);
 
 	uint32_t mask = 1 << pin;
@@ -1518,18 +1507,6 @@ void zynq_pl_init(void)
 		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
 	}
 #endif /* WITHCPUFANPWM */
-
-#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
-	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
-	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
-	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
-	if (Status != XST_SUCCESS) {
-		PRINTF("sysmon init error %d\n", Status);
-		ASSERT(0);
-	}
-	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
-	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
-#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
 
 	xcz_resetn_modem(1);
 
