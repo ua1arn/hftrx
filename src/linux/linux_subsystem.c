@@ -2013,22 +2013,26 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return pr;
 }
 
-static int is_event_device(const struct dirent *dir) {
+static int is_event_device(const struct dirent * dir) {
 	return strncmp("event", dir->d_name, 5) == 0;
 }
 
 void evdev_initialize(void)
 {
-	struct dirent **namelist;
-	int i, ndev, devnum, match;
-	char *filename;
-	int max_device = 0;
+	struct dirent ** namelist;
+	char * filename;
 
-	ndev = scandir("/dev/input", &namelist, is_event_device, alphasort);
+#if CPUSTYLE_XC7Z
+	const char * argv [] = { "/sbin/modprobe", "gt911", NULL, };
+	linux_run_shell_cmd(argv);
+	usleep(500000);
+#endif /* CPUSTYLE_XC7Z */
+
+	int ndev = scandir("/dev/input", & namelist, is_event_device, alphasort);
 	if (ndev <= 0)
 		return;
 
-	for (i = 0; i < ndev; i++)
+	for (int i = 0; i < ndev; i++)
 	{
 		char fname[4096];
 		int fd = -1;
@@ -2047,27 +2051,20 @@ void evdev_initialize(void)
 		{
 			filename = fname;
 			printf("Use %s for touch events\n", fname);
-			goto init2;
+
+		    evdev_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+		    if(evdev_fd == -1) {
+		        perror("unable open evdev interface:");
+		        return;
+		    }
+
+		    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+		    return;
 		}
 	}
 
 	printf("Not found %s event devices\n", TOUCH_EVENT_NAME);
 	return;
-
-init2:
-#if CPUSTYLE_XC7Z
-	const char * argv [] = { "/sbin/modprobe", "gt911", NULL, };
-	linux_run_shell_cmd(argv);
-	usleep(500000);
-#endif /* CPUSTYLE_XC7Z */
-
-    evdev_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
-    if(evdev_fd == -1) {
-        perror("unable open evdev interface:");
-        return;
-    }
-
-    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
 }
 
 #endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
