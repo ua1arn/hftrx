@@ -95,7 +95,7 @@ enum {
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/uio2"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
-#define LINUX_EVDEV_FILE		"/dev/input/event2"
+#define TOUCH_EVENT_NAME		"Touch2USB"
 
 #if WITHISBOOTLOADER
 

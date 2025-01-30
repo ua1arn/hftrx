@@ -32,6 +32,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <linux/input.h>
+#include <dirent.h>
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
 #include "pcie_dev.h"
@@ -2012,13 +2013,55 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return pr;
 }
 
+static int is_event_device(const struct dirent *dir) {
+	return strncmp("event", dir->d_name, 5) == 0;
+}
+
 void evdev_initialize(void)
 {
+	struct dirent **namelist;
+	int i, ndev, devnum, match;
+	char *filename;
+	int max_device = 0;
+
+	ndev = scandir("/dev/input", &namelist, is_event_device, alphasort);
+	if (ndev <= 0)
+		return;
+
+	for (i = 0; i < ndev; i++)
+	{
+		char fname[4096];
+		int fd = -1;
+		char name[256] = "???";
+
+		snprintf(fname, sizeof(fname), "%s/%s", "/dev/input", namelist[i]->d_name);
+		fd = open(fname, O_RDONLY);
+		if (fd < 0)
+			continue;
+		ioctl(fd, EVIOCGNAME(sizeof(name)), name);
+
+		close(fd);
+		free(namelist[i]);
+
+		if (strstr(name, TOUCH_EVENT_NAME))
+		{
+			filename = fname;
+			printf("Use %s for touch events\n", fname);
+			goto init2;
+		}
+	}
+
+	printf("Not found %s event devices\n", TOUCH_EVENT_NAME);
+	return;
+
+init2:
+#if CPUSTYLE_XC7Z
 	const char * argv [] = { "/sbin/modprobe", "gt911", NULL, };
 	linux_run_shell_cmd(argv);
 	usleep(500000);
+#endif /* CPUSTYLE_XC7Z */
 
-    evdev_fd = open(LINUX_EVDEV_FILE, O_RDWR | O_NOCTTY | O_NDELAY);
+    evdev_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
     if(evdev_fd == -1) {
         perror("unable open evdev interface:");
         return;
