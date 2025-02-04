@@ -1792,7 +1792,14 @@ unsigned long hardware_get_spi_freq(void)
 // V3s
 uint_fast32_t allwnr_v3s_get_hosc_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
+#if WITHCPUXTAL
+	return WITHCPUXTAL;	// 24 MHz usually
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;	// 24 MHz usually
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000;
+#endif
 }
 
 // V3s
@@ -2365,7 +2372,14 @@ static void allwnr_a64_module_pllaudio_enable(void)
 // A64
 uint_fast32_t allwnr_a64_get_hosc_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
+#if WITHCPUXTAL
+	return WITHCPUXTAL;	// 24 MHz usually
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;	// 24 MHz usually
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000;
+#endif
 }
 
 // A64
@@ -3029,7 +3043,14 @@ uint_fast32_t allwnr_t507_get_chipid(void)
 // T507
 uint_fast32_t allwnr_t507_get_hosc_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
+#if WITHCPUXTAL
+	return WITHCPUXTAL;	// 24 MHz usually
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;	// 24 MHz usually
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000;
+#endif
 }
 
 // T507
@@ -4029,6 +4050,41 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 	}
 }
 
+#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+
+
+uint_fast32_t allwnr_a133_get_hosc_freq(void)
+{
+#if WITHCPUXTAL
+	return WITHCPUXTAL;	// 24 MHz usually
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;	// 24 MHz usually
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000;
+#endif
+}
+
+uint_fast32_t allwnr_a133_get_cpux_freq(void)
+{
+	return 488000000;
+}
+
+
+uint_fast32_t allwnr_a133_get_uart_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_spi_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_twi_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -4199,7 +4255,14 @@ uint_fast32_t allwnr_t113_get_chipid(void)
 
 uint_fast32_t allwnr_t113_get_hosc_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
+#if WITHCPUXTAL
+	return WITHCPUXTAL;	// 24 MHz usually
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;	// 24 MHz usually
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000;
+#endif
 }
 
 // T113-s3
@@ -5643,7 +5706,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H616 || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828)
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -6050,7 +6113,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_A133  || CPUSTYLE_R828 )
 
 	// timebase timer
 	const unsigned ix = 1;
@@ -6107,12 +6170,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		PTIM_SetControl(PTIM_GetControl() | 0x01);
 
 	#endif
-#elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
 #elif CPUSTYLE_XC7Z && LINUX_SUBSYSTEM
 #elif CPUSTYLE_RK356X && LINUX_SUBSYSTEM
-
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
 
 #elif CPUSTYLE_VM14
 	// Private timer use
@@ -9533,7 +9592,7 @@ sysinit_pll_initialize(int forced)
 	stm32mp1_usb_clocks_initialize();
 	stm32mp1_audio_clocks_initialize();
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 	#if WITHISBOOTLOADER
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
@@ -9687,7 +9746,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_v3s_pll_initialize();
 
 
-#elif CPUSTYLE_T507
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	{
 		// Disable SD hosts
@@ -9825,12 +9884,15 @@ sysinit_pll_initialize(int forced)
 		0;
 
 #if CPUSTYLE_H616
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#else /* CPUSTYLE_H616 */
+	C0_CPUX_CFG_->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	C0_CPUX_CFG_->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#else /* CPUSTYLE_ */
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#endif /* CPUSTYLE_H616 */
+#endif /* CPUSTYLE_ */
+
+#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+
 
 #elif CPUSTYLE_VM14
 	/* 1892ВМ14Я */

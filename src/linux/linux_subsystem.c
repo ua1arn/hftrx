@@ -32,9 +32,10 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <linux/input.h>
+#include <dirent.h>
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
-
+#include "pcie_dev.h"
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
 void ft8_thread(void);
@@ -234,17 +235,6 @@ void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 }
 
 #endif /* WITHAUDIOSAMPLESREC */
-
-#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
-#include "../sysmon/xsysmonpsu.h"
-static XSysMonPsu xczu_sysmon;
-
-float xczu_get_cpu_temperature(void)
-{
-	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
-	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
-}
-#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
 
 void * get_highmem_ptr(uint32_t addr)
 {
@@ -452,7 +442,7 @@ void framebuffer_close(void)
 	#include "./gpiops/xgpiops.h"
 	static XGpioPs xc7z_gpio;
 	uint32_t * gpiops_ptr;
-#elif CPUSTYLE_XCZU
+#elif 0
 	uint32_t * xgpo, * xgpi;
 	pthread_mutex_t gpiolock;
 #elif CPUSTYLE_RK356X
@@ -460,7 +450,7 @@ void framebuffer_close(void)
 #endif
 void linux_xgpio_init(void)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	xgpo = (uint32_t *) get_highmem_ptr(AXI_XGPO_ADDR);
 	xgpi = (uint32_t *) get_highmem_ptr(AXI_XGPI_ADDR);
 	pthread_mutex_init(& gpiolock, NULL);
@@ -482,7 +472,7 @@ void linux_xgpio_init(void)
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	pthread_mutex_lock(& gpiolock);
 	uint32_t v = * xgpi;
 	pthread_mutex_unlock(& gpiolock);
@@ -496,7 +486,7 @@ uint8_t linux_xgpi_read_pin(uint8_t pin)
 
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	pthread_mutex_lock(& gpiolock);
 
 	uint32_t mask = 1 << pin;
@@ -820,7 +810,7 @@ void prog_spi_exchange(
 
 /*************************************************************/
 
-#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
@@ -839,7 +829,11 @@ void update_modem_ctrl(void)
 			| (!! wnb_state << wnb_pos)
 			| 0;
 
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* modem_ctrl = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_write_user(AXI_LITE_MODEM_CONTROL, v);
+#endif
 }
 
 void xcz_resetn_modem(uint8_t val)
@@ -851,22 +845,37 @@ void xcz_resetn_modem(uint8_t val)
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-	* rts = v;
     mirror_ncorts = v;
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	* rts = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_write_user(AXI_LITE_DDS_RTS, v);
+#endif
 }
 
 void xcz_dds_ftw(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-	* ftw = v;
     mirror_nco1 = v;
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+    * ftw = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+    xdma_write_user(AXI_LITE_DDS_FTW, v);
+#endif
 }
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-	* ftw_sub = v;
 	mirror_nco2 = v;
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	* ftw_sub = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+
+#endif
 }
 
 uint8_t iq_shift_fir_rx(uint8_t val) // 52
@@ -1169,6 +1178,43 @@ void server_start(void)
 
 #endif /* WITHEXTIO_LAN */
 
+/*************************************************************/
+
+#if WITHPULSE
+
+#include <pulse/simple.h>
+#include <pulse/error.h>
+
+pthread_t pa_t;
+pa_simple * pa_phones = NULL;
+int error;
+
+void pulse_init(void)
+{
+	pa_sample_spec ss;
+	ss.format = PA_SAMPLE_S32LE;
+	ss.rate = 48000;
+	ss.channels = 2;
+
+//	pa_buffer_attr bufattr;
+//	bufattr.maxlength = (uint32_t) -1;
+//	bufattr.tlength = (uint32_t) -1;
+//	bufattr.prebuf = (uint32_t) 256;
+//	bufattr.minreq = (uint32_t) 64;
+//	bufattr.fragsize = (uint32_t) -1;
+
+	pa_phones = pa_simple_new(NULL, "Phones", PA_STREAM_PLAYBACK, NULL, "playback", & ss, NULL, NULL, & error);
+
+	if (! pa_phones) {
+		fprintf(stderr, "pa_simple_new() failed: %s\n", pa_strerror(error));
+		return;
+	}
+}
+
+#endif /* WITHPULSE */
+
+/*************************************************************/
+
 static void iq_proccessing(uint8_t * buf, uint32_t len)
 {
 	static int rx_stage = 0;
@@ -1240,6 +1286,7 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 
 void linux_iq_init(void)
 {
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	ftw = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR);
 	ftw_sub = 		(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR);
 	rts = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR);
@@ -1249,6 +1296,13 @@ void linux_iq_init(void)
 	modem_ctrl = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR);
 	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
+#endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
+
+#if DDS1_TYPE == DDS_TYPE_XDMA
+	pcie_init();
+	if (pcie_open() < 0)
+		perror("pcie init");
+#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
 #if WITHEXTIO_LAN
 	stream_rate = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_RATE);
@@ -1261,9 +1315,11 @@ void linux_iq_init(void)
 	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, 1);
 #endif /* WITHEXTIO_LAN */
 
+#if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK | RX_ENABLE_MASK);
+#endif /* defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR) */
 
 #if WITHWNB
 	wnb_update();
@@ -1273,6 +1329,80 @@ void linux_iq_init(void)
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 }
+
+#if DDS1_TYPE == DDS_TYPE_XDMA
+
+pthread_t xdma_t;
+
+void xdma_event(void)
+{
+	uint16_t position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
+	uint16_t offset = position >= DMABUFFSIZE32RX ? 0 : SIZERX8;
+	xdma_c2h_transfer(AXI_IQ_RX_BRAM + offset, SIZERX8, rxbuf);
+
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
+	memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
+	save_dmabuffer32rx(addr32rx);
+
+#if WITHPULSE
+	const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+	int32_t * b = (int32_t *) addr_ph;
+#if WITHAUDIOSAMPLESREC
+	as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC */
+	arm_shift_q31(b, -2, b, DMABUFFSIZE16TX);
+	if (pa_simple_write(pa_phones, b, DMABUFFSIZE16TX * 4, & error) < 0)
+		fprintf(stderr, "pa_simple_write() failed: %s\n", pa_strerror(error));
+	release_dmabuffer16tx(addr_ph);
+#endif /* WITHPULSE */
+
+	iq_mutex_unlock();
+}
+
+void * xdma_event_thread(void * args)
+{
+	uint32_t events_user;
+	int read_fd;
+	int fd = open(LINUX_XDMA_EVENT_FILE, O_RDONLY);
+	if (fd < 0) {
+		perror(LINUX_XDMA_EVENT_FILE);
+		return NULL;
+	}
+
+	pread(fd, & events_user, sizeof(events_user), 0);
+
+	struct pollfd fds[] = { { fd, POLLIN }, };
+
+	while (1) {
+		int r = poll(fds, 1, 0);
+		if (r < 0) {
+			perror("poll");
+		} else {
+			if (fds[0].revents & POLLIN) {
+				read_fd = fd;
+			}
+
+			xdma_event(); // iq interrupt from FPGA via XDMA
+
+			/* read and clear the interrupt so we can detect future interrupts */
+			pread(read_fd, & events_user, sizeof(events_user), 0);
+		}
+	}
+}
+
+void xdma_iq_init(void)
+{
+	xcz_resetn_modem(0);
+
+	linux_create_thread(& xdma_t, xdma_event_thread, 95, 2);
+
+	xcz_resetn_modem(1);
+	linux_init_cond(& ct_iq);
+}
+
+#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 
 void linux_iq_thread(void)
 {
@@ -1428,23 +1558,12 @@ void zynq_pl_init(void)
 	}
 #endif /* WITHCPUFANPWM */
 
-#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
-	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
-	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
-	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
-	if (Status != XST_SUCCESS) {
-		PRINTF("sysmon init error %d\n", Status);
-		ASSERT(0);
-	}
-	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
-	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
-#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
-
 	xcz_resetn_modem(1);
 
 	linux_init_cond(& ct_iq);
 }
 
+#endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
 #endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
 
 /*************************************************************/
@@ -1549,147 +1668,6 @@ static void handle_sig(int sig)
 
 /*************************************************************/
 
-#if (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
-
-#include <tinyalsa/pcm.h>
-#include <sound/asound.h>
-
-int pcm_state(struct pcm *pcm);
-
-struct pcm * iq_pcm_in, * iq_pcm_out;
-pthread_t alsarx_t, alsatx_t;
-
-#if WITHWNB
-
-const uint16_t threshold_min = 8, threshold_max = 31;
-static uint32_t threshold = 30;
-static uint8_t wnb_state = 0;
-
-void wnb_set_threshold(uint16_t v)
-{
-	if (v >= threshold_min && v <= threshold_max)
-		threshold = v;
-}
-
-uint16_t wnb_get_threshold(void)
-{
-	return threshold;
-}
-
-uint8_t wnb_state_switch(void)
-{
-	wnb_state = wnb_state ? 0 : 1;
-	return wnb_state;
-}
-
-#endif /* WITHWNB */
-
-void alsa_init(void)
-{
-    unsigned int card = 0;
-    unsigned int device = 0;
-    int flags = PCM_IN | PCM_MMAP;
-
-    const struct pcm_config config = {
-    	.channels = 16,
-    	.rate = 48000,
-    	.format = PCM_FORMAT_S32_LE,
-    	.period_size = 1024,
-    	.period_count = 2,
-    	.start_threshold = 16,
-    	.silence_threshold = 0,
-    	.stop_threshold = 0,
-    };
-
-    iq_pcm_in = pcm_open(card, device, flags, & config);
-    if (iq_pcm_in == NULL) {
-        fprintf(stderr, "failed to allocate memory for PCM\n");
-        return;
-    } else if (! pcm_is_ready(iq_pcm_in)){
-        pcm_close(iq_pcm_in);
-        fprintf(stderr, "failed to open PCM\n");
-        return;
-    }
-
-    if (pcm_state(iq_pcm_in) == SNDRV_PCM_STATE_RUNNING)
-    	pcm_stop(iq_pcm_in);
-
-    flags = PCM_OUT | PCM_MMAP;
-
-    iq_pcm_out = pcm_open(card, device, flags, & config);
-    if (iq_pcm_out == NULL) {
-        fprintf(stderr, "failed to allocate memory for PCM\n");
-        return;
-    } else if (! pcm_is_ready(iq_pcm_out)){
-        pcm_close(iq_pcm_out);
-        fprintf(stderr, "failed to open PCM\n");
-        return;
-    }
-
-    if (pcm_state(iq_pcm_out) == SNDRV_PCM_STATE_RUNNING)
-    	pcm_stop(iq_pcm_out);
-}
-
-void * alsa_thread_rx(void * args)
-{
-	static int rx_stage = 0;
-
-	while(1)
-	{
-		uint32_t buf[DMABUFFSIZE32RX];
-		int w = pcm_readi(iq_pcm_in, buf, 32);
-		uintptr_t addr32rx = allocate_dmabuffer32rx();
-		uint32_t * r = (uint32_t *) addr32rx;
-
-#if WITHWNB		// Программный simple noise blanker
-		if (wnb_state)
-		{
-			for (int i = 0; i < DMABUFFSIZE32RX; i ++)
-			{
-				uint32_t absv = r[i] >> 31 ? (~ r[i] + 1) : r[i];
-				if (absv > 1 << threshold)
-					r[i] = 0x0;
-			}
-		}
-#endif /* WITHWNB */
-
-		memcpy((uint8_t *) addr32rx, buf, DMABUFFSIZE32RX * 4);
-		save_dmabuffer32rx(addr32rx);
-
-		iq_mutex_unlock();
-	}
-
-	return NULL;
-}
-
-void * alsa_thread_tx(void * args)
-{
-	while(1)
-	{
-		int cnt = 0;
-		const uintptr_t addr = getfilled_dmabuffer32tx();
-		uint32_t * t = (uint32_t *) addr;
-		int w = pcm_writei(iq_pcm_out, t, 32);
-		release_dmabuffer32tx(addr);
-	}
-}
-
-void alsa_init2(void)
-{
-	linux_init_cond(& ct_iq);
-
-	linux_create_thread(& alsarx_t, alsa_thread_rx, 50, 1);
-	while(pcm_state(iq_pcm_in) != SNDRV_PCM_STATE_RUNNING);
-	board_set_i2s_enable(1);
-	board_update();
-	linux_create_thread(& alsatx_t, alsa_thread_tx, 50, 2);
-	while(pcm_state(iq_pcm_out) != SNDRV_PCM_STATE_RUNNING);
-}
-
-#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA*/
-
-/*************************************************************/
-
 void linux_subsystem_init(void)
 {
 	char spid[6];
@@ -1702,14 +1680,12 @@ void linux_subsystem_init(void)
 #if WITHSPIDEV
 	spidev_init();
 #endif /* WITHSPIDEV */
-#if DDS1_TYPE  == DDS_TYPE_ZYNQ_PL
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_iq_init();
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
-	board_set_i2s_enable(0);
-	board_update();
-	usleep(100);
-	alsa_init();
-#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA */
+#endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
+#if WITHPULSE
+	pulse_init();
+#endif /* WITHPULSE */
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
@@ -1727,9 +1703,11 @@ void linux_user_init(void)
 
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA
-	alsa_init2();
-#endif /* DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHALSA */
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHPULSE
+
+#elif (DDS1_TYPE == DDS_TYPE_XDMA)
+	xdma_iq_init();
+#endif /* DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHPULSE */
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
@@ -1941,19 +1919,58 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return pr;
 }
 
+static int is_event_device(const struct dirent * dir) {
+	return strncmp("event", dir->d_name, 5) == 0;
+}
+
 void evdev_initialize(void)
 {
+	struct dirent ** namelist;
+	char * filename;
+
+#if CPUSTYLE_XC7Z
 	const char * argv [] = { "/sbin/modprobe", "gt911", NULL, };
 	linux_run_shell_cmd(argv);
 	usleep(500000);
+#endif /* CPUSTYLE_XC7Z */
 
-    evdev_fd = open(LINUX_EVDEV_FILE, O_RDWR | O_NOCTTY | O_NDELAY);
-    if(evdev_fd == -1) {
-        perror("unable open evdev interface:");
-        return;
-    }
+	int ndev = scandir("/dev/input", & namelist, is_event_device, alphasort);
+	if (ndev <= 0)
+		return;
 
-    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+	for (int i = 0; i < ndev; i++)
+	{
+		char fname[4096];
+		int fd = -1;
+		char name[256] = "???";
+
+		snprintf(fname, sizeof(fname), "%s/%s", "/dev/input", namelist[i]->d_name);
+		fd = open(fname, O_RDONLY);
+		if (fd < 0)
+			continue;
+		ioctl(fd, EVIOCGNAME(sizeof(name)), name);
+
+		close(fd);
+		free(namelist[i]);
+
+		if (strstr(name, TOUCH_EVENT_NAME))
+		{
+			filename = fname;
+			printf("Use %s for touch events\n", fname);
+
+		    evdev_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+		    if(evdev_fd == -1) {
+		        perror("unable open evdev interface:");
+		        return;
+		    }
+
+		    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+		    return;
+		}
+	}
+
+	printf("Not found %s event devices\n", TOUCH_EVENT_NAME);
+	return;
 }
 
 #endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
@@ -2003,6 +2020,15 @@ void linux_exit(void)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* WITHDSPEXTFIR */
 #endif
+
+#if DDS1_TYPE == DDS_TYPE_XDMA
+	pcie_close();
+#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
+
+#if WITHPULSE
+	pa_simple_drain(pa_phones, NULL);
+	pa_simple_free(pa_phones);
+#endif /* WITHPULSE */
 
 	exit(EXIT_SUCCESS);
 }

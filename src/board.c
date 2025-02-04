@@ -5761,7 +5761,7 @@ prog_dds1_setlevel(uint_fast8_t percent)
 void 
 prog_dds1_ftw_sub(const ftw_t * value)
 {
-#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	xcz_dds_ftw_sub(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq2(targetfpga1, value);
@@ -5798,7 +5798,7 @@ prog_dds1_ftw(const ftw_t * value)
 
 #else	/* LO1PHASES */
 
-	#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+	#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 		xcz_dds_ftw(value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
@@ -5835,7 +5835,7 @@ prog_dds1_ftw(const ftw_t * value)
 void 
 prog_rts1_ftw(const ftw_t * value)
 {
-#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	xcz_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
@@ -9604,7 +9604,7 @@ void board_get_serialnr(uint_fast32_t * sn)
 #endif
 }
 
-#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && (! LINUX_SUBSYSTEM || CPUSTYLE_RK356X)
+#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
 
 #define FPGA_DECODE_CIC_SHIFT	(10u)
 #define FPGA_DECODE_FIR_SHIFT	(11u)

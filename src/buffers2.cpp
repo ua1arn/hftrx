@@ -1400,7 +1400,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
 
-#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && WITHLFM
+#if CPUSTYLE_XC7Z && WITHLFM
 	if (iflfmactive())
 	{
 		ftw_t v = dspfpga_get_nco1();

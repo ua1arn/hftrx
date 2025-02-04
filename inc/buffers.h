@@ -74,7 +74,45 @@ extern "C" {
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+	#elif CPUSTYLE_RK356X &&  WITHFPGAIF_FRAMEBITS == 512
+
+		#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
+
+		#define DMABUF32RX0I	0		// RX0, I
+		#define DMABUF32RX0Q	1		// RX0, Q
+		#define DMABUF32RX1I	2		// RX1, I
+		#define DMABUF32RX1Q	3		// RX1, Q
+
+		#if WITHRTS96
+			#define DMABUF32RXRTS0I	4		// RTS(t-1), I	// previous - oldest
+			#define DMABUF32RXRTS0Q	5		// RTS(t-1), Q	// previous
+			#define DMABUF32RXRTS1I	6		// RTS(t), I	// current	- newest
+			#define DMABUF32RXRTS1Q	7		// RTS(t), Q	// current
+		#endif /* WITHRTS96 */
+
+		#define DMABUFF32RX_CODEC1_LEFT 	8		/* индекс сэмпла левого канала от кодека (через PIPE) */
+		#define	DMABUFF32RX_CODEC1_RIGHT 	9		/* индекс сэмпла правого канала от кодека (через PIPE)  */
+
+		#define DMABUFF32RX_ADCTEST_C0 14			// состояние выходов RF ADC
+		#define DMABUFF32RX_ADCTEST_C1 15
+
+		// *************************************
+
+		#define DMABUFFSTEP32TX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
+
+		#define DMABUF32TXI	0		// TX, I
+		#define DMABUF32TXQ	1		// TX, Q
+
+		#define DMABUF32TX_NCO1		2		// NCO RX A
+		#define DMABUF32TX_NCO2		3		// NCO RX B
+		#define DMABUF32TX_NCORTS	4		// NCO RTS
+
+		/* звук идет по PIPE */
+		#define DMABUFF32TX_CODEC1_LEFT 	6		/* индекс сэмпла левого канала к кодеку (через PIPE) */
+		#define	DMABUFF32TX_CODEC1_RIGHT 	7		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
+
+
+	#elif CPUSTYLE_XC7Z || CPUSTYLE_RK356X
 
 		#if WITHFPGAIF_FRAMEBITS == 64
 
@@ -346,44 +384,6 @@ extern "C" {
 		#else
 			#error Undefined WITHFPGAIF_FRAMEBITS
 		#endif
-
-#elif CPUSTYLE_RK356X &&  WITHFPGAIF_FRAMEBITS == 512
-
-	#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
-
-	#define DMABUF32RX0I	0		// RX0, I
-	#define DMABUF32RX0Q	1		// RX0, Q
-	#define DMABUF32RX1I	2		// RX1, I
-	#define DMABUF32RX1Q	3		// RX1, Q
-
-	#if WITHRTS96
-		#define DMABUF32RXRTS0I	4		// RTS(t-1), I	// previous - oldest
-		#define DMABUF32RXRTS0Q	5		// RTS(t-1), Q	// previous
-		#define DMABUF32RXRTS1I	6		// RTS(t), I	// current	- newest
-		#define DMABUF32RXRTS1Q	7		// RTS(t), Q	// current
-	#endif /* WITHRTS96 */
-
-	#define DMABUFF32RX_CODEC1_LEFT 	8		/* индекс сэмпла левого канала от кодека (через PIPE) */
-	#define	DMABUFF32RX_CODEC1_RIGHT 	9		/* индекс сэмпла правого канала от кодека (через PIPE)  */
-
-	#define DMABUFF32RX_ADCTEST_C0 14			// состояние выходов RF ADC
-	#define DMABUFF32RX_ADCTEST_C1 15
-
-	// *************************************
-
-	#define DMABUFFSTEP32TX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
-
-	#define DMABUF32TXI	0		// TX, I
-	#define DMABUF32TXQ	1		// TX, Q
-
-	#define DMABUF32TX_NCO1		2		// NCO RX A
-	#define DMABUF32TX_NCO2		3		// NCO RX B
-	#define DMABUF32TX_NCORTS	4		// NCO RTS
-
-	/* звук идет по PIPE */
-	#define DMABUFF32TX_CODEC1_LEFT 	6		/* индекс сэмпла левого канала к кодеку (через PIPE) */
-	#define	DMABUFF32TX_CODEC1_RIGHT 	7		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
-
 
 	#else
 		#warning Define I2S layout for this CPUSTYLE_XXX

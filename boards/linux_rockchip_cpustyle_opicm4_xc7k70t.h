@@ -5,66 +5,80 @@
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
  *
- * Трансивер с DSP обработкой "Аист" на плате Alinx AXU2CGA + AD9640 board, Petalinux, by RA4ASN
+ * Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA PCIE плата Kintex-7 XC7K70T, by RA4ASN
  *
  */
 
-#ifndef ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED
-#define ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED 1
+#ifndef LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7K70T_H_INCLUDED
+#define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7K70T_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPIDEV		1	/* Linux SPI userspace API */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#if WITHINTEGRATEDDSP
-	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
+#if 0 //WITHINTEGRATEDDSP
+	#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 #endif /* WITHINTEGRATEDDSP */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define USERFIRSTSBLOCK 0
 
+#define	AXI_IQ_RX_BRAM				0xC0000000
+#define	AXI_LITE_IQ_RX_BRAM_CNT		0x00001000
+#define	AXI_LITE_DDS_FTW			0x00002000
+#define	AXI_LITE_DDS_RTS			0x00003000
+#define	AXI_LITE_MODEM_CONTROL		0x00004000
+#define	AXI_LITE_WNB_CONFIG			0x00005000
+
+/*
 enum {
-	XGPI0,	// encoder2 bit A
-	XGPI1,	// encoder2 bit B
-	XGPI2,	// encoder2 button
-	XGPI3,	// spi_miso
+	XGPI0,	// SPI0_MISO
+	XGPI1,	// ENC_PUULSES2_B
+	XGPI2,	// ENC_PUULSES2_A
+	XGPI3,	// ENC_PUULSES_B
+	XGPI4,	// ENC_PUULSES_A
+	XGPI5,	// ptt_input
+	XGPI6,	// adc_of
 };
 
 enum {
-	XGPO0,	// cs_ctrl_int
-	XGPO1,	// spi_mosi
-	XGPO2,	// spi_sck
-	XGPO3,	// cs_fram
+	XGPO0,	// SPI0_MOSI
+	XGPO1,	// SPI0_SCLK
+	XGPO2,	// ADC1CS
+	XGPO3,	// CSEXT1
+	XGPO4,	// CSCTL1
+	XGPO5,	// NVRAM_CS
+	XGPO6,	// ADC2CS
+	XGPO7,	// CSEXT2
 };
+*/
 
-#define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR			0x8004a000
-#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR		0x80045000
-#define XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR			0x80042000
-#define XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR		0x80049000
-#define XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR			0x8004c000
-#define XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR			0x80060000
-#define XPAR_AUDIO_FIFO_PHONES_BASEADDR				0x80043000
-#define XPAR_AUDIO_FIFO_MIC_BASEADDR				0x8004e000
-#define XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR		0x80050000
-#define XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR			0x80044000
-#define XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR		0x8004b000
-#define XPAR_FAN_PWM_RX_BASEADDR					0x80048000
-#define AXI_XGPI_ADDR								0x80046000
-#define AXI_XGPO_ADDR								0x80047000
+/*
+enum {
+	XGPI0,	// ENC_PUULSES2_B
+	XGPI1,	// ENC_PUULSES2_A
+	XGPI2,	// ENC_PUULSES_B
+	XGPI3,	// ENC_PUULSES_A
+	XGPI4,	// ptt_input
+	XGPI5,	// adc_of
+};
+*/
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
+#define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
-#define CALIBRATION_TX_SHIFT			25
+#define CALIBRATION_TX_SHIFT			28
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUART2HW_FIFO	1	/* испольование FIFO */
@@ -74,12 +88,14 @@ enum {
 //#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#define LINUX_NMEA_FILE		"/dev/ttyPS1"
-#define LINUX_IQ_INT_FILE	"/dev/uio0"
-#define LINUX_PPS_INT_FILE	"/dev/uio1"
-#define LINUX_I2C_FILE		"/dev/i2c-0"
-#define LINUX_FB_FILE		"/dev/fb0"
-#define LINUX_TTY_FILE		"/dev/tty0"
+#define LINUX_NMEA_FILE			"/dev/ttyPS1"
+#define LINUX_XDMA_EVENT_FILE	"/dev/xdma0_events_0"
+#define LINUX_I2C_FILE			"/dev/i2c-3"
+#define LINUX_FB_FILE			"/dev/fb0"
+#define LINUX_TTY_FILE			"/dev/tty0"
+#define LINUX_STREAM_INT_FILE	"/dev/uio2"
+#define LINUX_AUDIO_INT_FILE	"/dev/uio3"
+#define TOUCH_EVENT_NAME		"Touch2USB"
 
 #if WITHISBOOTLOADER
 
@@ -147,6 +163,7 @@ enum {
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define RTMIXIDLCD	0
 
 	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -282,10 +299,12 @@ enum {
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
+	#define ENCODER_BITA		XGPI3
+	#define ENCODER_BITB		XGPI4
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		XGPI0
-	#define ENCODER2_BITB		XGPI1
+	#define ENCODER2_BITA		XGPI1
+	#define ENCODER2_BITB		XGPI2
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -600,41 +619,38 @@ enum {
 
 #if WITHSPIHW || WITHSPISW
 
-	#define targetctl1		XGPO0
-	#define targetnvram		XGPO3
+	#define targetctl1		0
+	#define targetnvram		0
+	#define targetadc2		0	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetadck		0	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	#define targetext1		0
+	#define targetext2		0
 
 	/* Select specified chip. */
-	#define SPI_CS_ASSERT(target)	do { \
-		gpio_writepin(target, 0); \
-	} while (0)
+	#define SPI_CS_ASSERT(target)	do { } while (0)
 
 	/* Unelect specified chip. */
-	#define SPI_CS_DEASSERT(target)	do { \
-		gpio_writepin(target, 1); \
-	} while (0)
-
-	#define SPI_ALLCS_DISABLE() \
-		do { \
-			gpio_writepin(targetctl1, 1); \
-		} while(0)
+	#define SPI_CS_DEASSERT(target)	do { } while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
 		} while (0)
 
+	#define SPI_ALLCS_DISABLE()	SPI_ALLCS_INITIALIZE()
+
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	XGPO2
-	#define	SPI_MOSI_MIO 	XGPO1
-	#define	SPI_MISO_MIO 	XGPI3
+	#define	SPI_SCLK_MIO 	0
+	#define	SPI_MOSI_MIO 	0
+	#define	SPI_MISO_MIO 	0
 
-	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)
-	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); } while (0)
+	#define SPI_SCLK_C()	do {  } while (0)
+	#define SPI_SCLK_S()	do {  } while (0)
 
-	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); } while (0)
-	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); } while (0)
+	#define SPI_MOSI_C()	do {  } while (0)
+	#define SPI_MOSI_S()	do {  } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(0)
 
 	#define SPIIO_INITIALIZE() do { \
 		} while (0)
@@ -650,6 +666,30 @@ enum {
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		} while (0)
+
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
+#elif WITHSPIDEV
+
+	#define SPIDEV_PATH	"/dev/spidev3"
+
+	// CS lines
+	enum {
+		cs0,
+//		cs1,
+//		cs2,
+
+		cs_cnt
+	};
+
+#define targetfpga1	cs0
+//#define targetnvram	cs1
+//#define targetadc2	cs2
 
 #endif /* WITHSPIHW || WITHSPISW */
 
@@ -668,7 +708,7 @@ enum {
 #if WITHKEYBOARD
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (gpio_readpin(XGPI2) == 0)
+	//#define TARGET_ENC2BTN_GET (gpio_readpin(XGPI2) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -1022,4 +1062,4 @@ enum {
 
 #define HARDWARE_DEBUG_FLUSH()	do {} while(0)
 
-#endif /* ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED */
+#endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7K70T_H_INCLUDED */
