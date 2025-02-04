@@ -11908,7 +11908,7 @@ uif_key_next_antenna(void)
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 
 	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
-	loadbandgroup(bg, gantenna);
+	loadbandgroup(bg, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
 }
