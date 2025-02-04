@@ -10,6 +10,10 @@
 
 #include "hardware.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 void bootloader_fatfs_mainloop(void);
 void bootloader_mainloop(void);
 void bootloader0_mainloop(void);
@@ -115,5 +119,9 @@ void ctlboardt507_mainloop(void);
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
 #endif /* CPUSTYLE_ALLWINNER */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* INC_BOOTLOADER_H_ */

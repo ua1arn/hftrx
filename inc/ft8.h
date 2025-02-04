@@ -7,6 +7,10 @@
 
 #include "audio.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 enum {
 	FT8_MSG_TIME_UPDATED = 1,
 	FT8_MSG_DISABLE,
@@ -67,6 +71,10 @@ void xcz_ipi_sendmsg_c0(uint8_t msg);
 void xcz_ipi_sendmsg_c1(uint8_t msg);
 
 void hamradio_gui_parse_ft8buf(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* WITHFT8 */
 #endif /* FT8_H_ */

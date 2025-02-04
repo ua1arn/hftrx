@@ -10,6 +10,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 void serial_set_handler(uint_fast16_t int_id, void (* handler)(void));
 
 
@@ -155,5 +159,9 @@ uint_fast8_t btspp_ready(void);	/* временное решение для пе
 	//#define BOARD_UART8_FREQ 	(stm32mp1_uart7_8_get_freq())
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* INC_SERIAL_H_ */

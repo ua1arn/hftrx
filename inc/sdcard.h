@@ -6,6 +6,9 @@
 #include "src/fatfs/ff.h"
 #include "src/fatfs/diskio.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 struct drvfunc
 {
@@ -47,5 +50,9 @@ void sdcardtoggle(void);	// комбинированная функция для
 void sdcardrecord(void);	// функция "начать запись"
 void sdcardstop(void);	// функция "остановить запись"
 void sdcardformat(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* SDCARD_H_INCLUDED */
