@@ -164,8 +164,6 @@ uint_fast8_t display2_mouse(uint_fast16_t x, uint_fast16_t y, unsigned evcode, u
 
 void display2_needupdate(void);
 
-struct menudef;
-
 // Вызывается из display2.c
 void
 display2_bars(
