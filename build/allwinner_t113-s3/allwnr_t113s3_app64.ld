@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  DDR3 (rwx) 	: ORIGIN = 0x40000100, LENGTH = 64M - 256 	/* DDR internal memory - 64 MB - 16 kB - 256 B*/
+  DDR3 (rwx) 	: ORIGIN = 0x40000100, LENGTH = 256M - 256 	/* DDR internal memory */
   SRAM_A1 (rwx)	: ORIGIN = 0x00020000, LENGTH = 160k	/*  */
 }
 
