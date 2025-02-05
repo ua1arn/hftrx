@@ -4742,6 +4742,20 @@ static void bring_swr(const char * label)
 
 ///
 
+const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active)
+{
+	* active = 0;
+	return "Label";
+}
+
+const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
+{
+	* active = 0;
+	return "Value";
+}
+
+///
+
 
 static uint_fast16_t actbring_ENC1F;
 static uint_fast16_t actbring_ENC2F;

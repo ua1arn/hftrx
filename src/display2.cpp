@@ -1688,10 +1688,33 @@ void display_1fmenu_P(
 {
 	display2_text_P(x, y, & label, colors_1fmenu, 0);
 }
+
 /////////////////
 ///
 
+void display2_midlabelX_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx,
+	uint_fast8_t section
+	)
+{
+	uint_fast8_t active;
+	const char * label = hamradio_midlabel5(section, & active);
+	display2_text_P(x, y, & label, colors_1state, 0);
+}
 
+void display2_midvalueX_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx,
+	uint_fast8_t section
+	)
+{
+	uint_fast8_t active;
+	const char * label = hamradio_midvalue5(section, & active);
+	display2_text_P(x, y, & label, colors_1state, 0);
+}
 
 void display2_midlabel0_5(
 	uint_fast8_t x,
@@ -1699,18 +1722,7 @@ void display2_midlabel0_5(
 	dctx_t * pctx
 	)
 {
-	const char * label = "Label";
-	display2_text_P(x, y, & label, colors_1state, 0);
-}
-
-void display2_midvalue0_5(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-	const char * label = "Value";
-	display2_text_P(x, y, & label, colors_1state, 0);
+	display2_midlabelX_5(x, y, pctx, 0);
 }
 
 void display2_midlabel1_5(
@@ -1719,8 +1731,88 @@ void display2_midlabel1_5(
 	dctx_t * pctx
 	)
 {
-	const char * label = "Label";
-	display2_text_P(x, y, & label, colors_2state, 0);
+	display2_midlabelX_5(x, y, pctx, 1);
+}
+
+void display2_midlabel2_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 2);
+}
+
+void display2_midlabel3_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 3);
+}
+
+void display2_midlabel4_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 4);
+}
+
+void display2_midlabel5_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 5);
+}
+
+void display2_midlabel6_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 6);
+}
+
+void display2_midlabel7_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 7);
+}
+
+void display2_midlabel8_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 8);
+}
+
+void display2_midlabel9_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midlabelX_5(x, y, pctx, 9);
+}
+
+void display2_midvalue0_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 0);
 }
 
 void display2_midvalue1_5(
@@ -1729,8 +1821,79 @@ void display2_midvalue1_5(
 	dctx_t * pctx
 	)
 {
-	const char * label = "Value";
-	display2_text_P(x, y, & label, colors_2state, 0);
+	display2_midvalueX_5(x, y, pctx, 1);
+}
+
+void display2_midvalue2_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 2);
+}
+
+void display2_midvalue3_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 3);
+}
+
+void display2_midvalue4_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 4);
+}
+
+void display2_midvalue5_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 5);
+}
+
+void display2_midvalue6_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 6);
+}
+
+void display2_midvalue7_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 7);
+}
+
+void display2_midvalue8_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 8);
+}
+
+void display2_midvalue9_5(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display2_midvalueX_5(x, y, pctx, 9);
 }
 
 //////////////
