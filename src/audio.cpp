@@ -5244,7 +5244,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 		{
 			/* прием независимых боковых полос */
 			// Обработка буфера с парами значений
-			const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv, qv, pathi);
+			//const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv, qv, pathi);
 			return 0;
 		}
 		else

@@ -554,18 +554,16 @@ savemenuvalue(
 
 /* получение следующего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
-uint_fast8_t
-//NOINLINEAT
-calc_next(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+uint_fast16_t
+calc_next(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high)
 {
 	return (v < low || v >= high) ? low : (v + 1);
 }
 
 /* получение предыдущего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
-static uint_fast8_t
-//NOINLINEAT
-calc_prev(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+static uint_fast16_t
+calc_prev(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high)
 {
 	return (v <= low || v > high) ? high : (v - 1);
 }
@@ -573,9 +571,8 @@ calc_prev(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
 
 /* получение предыдущего или следующего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
-static uint_fast8_t
-//NOINLINEAT
-calc_dir(uint_fast8_t reverse, uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+static uint_fast16_t
+calc_dir(uint_fast8_t reverse, uint_fast16_t v, uint_fast16_t low, uint_fast16_t high)
 {
 	return reverse ? calc_prev(v, low, high) : calc_next(v, low, high);
 }
@@ -18235,7 +18232,7 @@ processkeyboard(uint_fast8_t kbch)
 			editfreqmode = 0;
 			return 1;
 		}
-		if (c == '#' && blinkpos < DISPLAY_LEFTBLINKPOS)
+		if (c == '#' && (int) blinkpos < DISPLAY_LEFTBLINKPOS)
 		{
 			blinkpos += 1;	/* перемещаемся на одну позицию левее */
 			updateboard(1, 0);
@@ -20073,7 +20070,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals [count];
-			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->label);
+			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->pd->label);
 			v->index = el;
 			count++;
 		}
@@ -20094,7 +20091,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			menu_names_t * const v = & vals [count];
-			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
+			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->pd->label);
 			v->index = el;
 			count++;
 		}
@@ -20133,9 +20130,9 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 	if (rotate != 0 && ismenukind(mp, ITEM_VALUE))
 	{
 		/* редактирование паратметра */
-		const uint_fast16_t step = mp->qistep;
-		uint_fast16_t * const pv16 = mp->qpval16;
-		uint_fast8_t * const pv8 = mp->qpval8;
+		const uint_fast16_t step = mp->pd->qistep;
+		uint_fast16_t * const pv16 = mp->pd->qpval16;
+		uint_fast8_t * const pv8 = mp->pd->qpval8;
 
 		if (step == ISTEP_RO)
 		{
@@ -20144,7 +20141,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		else if (rotate < 0)
 		{
 			// negative change value
-			const uint_fast32_t bottom = mp->qbottom;
+			const uint_fast32_t bottom = mp->pd->qbottom;
 			if (pv16 != NULL)
 			{
 				* pv16 =
@@ -20159,7 +20156,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		else
 		{
 			// positive change value
-			const uint_fast32_t upper = mp->qupper;
+			const uint_fast32_t upper = mp->pd->qupper;
 			if (pv16 != NULL)
 			{
 				* pv16 =

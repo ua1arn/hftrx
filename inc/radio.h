@@ -339,7 +339,7 @@ int_fast32_t getlo4baseflt(
 	const filter_t * workfilter 
 	);
 
-uint_fast8_t calc_next(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high);
+uint_fast16_t calc_next(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high);
 
 uint_fast8_t getgfasize(void);
 
