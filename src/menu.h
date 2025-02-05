@@ -3779,16 +3779,6 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHBARS */
 
-	(const struct paramdefdef []) {
-		QLABEL("BAND 27 "), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, bandset11m),
-		nvramoffs0,
-		NULL,
-		& bandset11m,
-		getzerobase, /* складывается со смещением и отображается */
-	},
 #if WITHANTSELECT2
 	(const struct paramdefdef []) {
 		QLABEL2("HF ANT F", "HF Ant freq"), 3, 0, 0, ISTEP1,
@@ -3801,6 +3791,8 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHANTSELECT2 */
+
+	& xgbandset11m,
 #if WITHBCBANDS
 	(const struct paramdefdef []) {
 		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,

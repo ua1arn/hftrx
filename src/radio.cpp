@@ -506,6 +506,31 @@ struct menudef
 	const struct paramdefdef * pd;
 };
 
+
+static uint_fast16_t gzero;
+
+static unsigned valoffset0(void)
+{
+	return 0;
+}
+
+//
+//static unsigned valoffset_bi_a(void)
+//{
+//	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+//}
+
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base)
+{
+	return base;
+}
+
+static int_fast32_t getzerobase(void)
+{
+	return 0;
+}
+
 #if WITHIF4DSP
 struct rxaproc_tag;
 static FLOAT_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
@@ -3839,6 +3864,18 @@ static uint_fast8_t gusefast;
 //static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
 static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
 static uint_fast8_t bandset11m;
+static const struct paramdefdef xgbandset11m =
+{
+	QLABEL("BAND 27 "), 7, 3, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, bandset11m),
+	nvramoffs0,
+	NULL,
+	& bandset11m,
+	getzerobase, /* складывается со смещением и отображается */
+};
+
 #if TUNE_6MBAND
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
 #endif /* TUNE_6MBAND */
@@ -4575,30 +4612,6 @@ uint_fast8_t
 hamradio_get_usefastvalue(void)
 {
 	return gusefast;
-}
-
-static int_fast32_t getzerobase(void)
-{
-	return 0;
-}
-
-static uint_fast16_t gzero;
-
-static unsigned valoffset0(void)
-{
-	return 0;
-}
-
-//
-//static unsigned valoffset_bi_a(void)
-//{
-//	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
-//}
-
-
-static nvramaddress_t nvramoffs0(nvramaddress_t base)
-{
-	return base;
 }
 
 /* поддержка ABOUT: частота процессора */
