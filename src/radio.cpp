@@ -501,11 +501,115 @@ struct paramdefdef
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
+#define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
+
+/* входит ли данный пункт меню в группу разрешённых для показа */
+static uint_fast8_t
+ismenukinddp(
+	const FLASHMEM struct paramdefdef * pd,
+	uint_fast8_t itemmask
+	)
+{
+	return (pd->qspecial & itemmask) != 0;
+}
+
 struct menudef
 {
 	const struct paramdefdef * pd;
 };
 
+
+/* Сохранить параметр после редактирования */
+static void
+//NOINLINEAT
+savemenuvalue(
+	const FLASHMEM struct paramdefdef * pd
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram);
+		const uint_fast16_t * const pv16 = pd->qpval16;
+		const uint_fast8_t * const pv8 = pd->qpval8;
+		const unsigned valoffset = 0;//menuvaloffset(mp);
+
+		if (nvram == MENUNONVRAM)
+			return;
+		if (pv16 != NULL)
+		{
+			// FIXME: mp->label is not null-terminated
+			ASSERT3(pv16 [valoffset] <= pd->qupper, __FILE__, __LINE__, pd->label);
+			ASSERT3(pv16 [valoffset] >= pd->qbottom, __FILE__, __LINE__, pd->label);
+			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
+		}
+		else if (pv8 != NULL)
+		{
+			// FIXME: mp->label is not null-terminated
+			ASSERT3(pv8 [valoffset] <= pd->qupper, __FILE__, __LINE__, pd->label);
+			ASSERT3(pv8 [valoffset] >= pd->qbottom, __FILE__, __LINE__, pd->label);
+			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
+		}
+	}
+}
+
+/* получение следующего числа в диапазоне low..high с "заворотом" */
+/* используется при переборе режимов кнопками */
+uint_fast8_t
+//NOINLINEAT
+calc_next(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+{
+	return (v < low || v >= high) ? low : (v + 1);
+}
+
+/* получение предыдущего числа в диапазоне low..high с "заворотом" */
+/* используется при переборе режимов кнопками */
+static uint_fast8_t
+//NOINLINEAT
+calc_prev(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+{
+	return (v <= low || v > high) ? high : (v - 1);
+}
+
+
+/* получение предыдущего или следующего числа в диапазоне low..high с "заворотом" */
+/* используется при переборе режимов кнопками */
+static uint_fast8_t
+//NOINLINEAT
+calc_dir(uint_fast8_t reverse, uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
+{
+	return reverse ? calc_prev(v, low, high) : calc_next(v, low, high);
+}
+
+/* модификация паметра по нажатиям - выбор следующего значения из допустимых (с "заворотом" через границы) */
+static void param_keyclick(const struct paramdefdef * pd)
+{
+	uint_fast16_t * const pv16 = pd->qpval16;
+	uint_fast8_t * const pv8 = pd->qpval8;
+	if (pv16)
+		* pv16 = calc_next(* pv16, pd->qbottom, pd->qupper);
+	else if (pv8)
+		* pv8 = calc_next(* pv8, pd->qbottom, pd->qupper);
+
+	savemenuvalue(pd);
+}
+
+/* модификация паметра по валкодеру - выбор следующего значения из допустимых (с "заворотом" через границы) */
+static void param_rotate(const struct paramdefdef * pd, int delta)
+{
+	const uint_fast8_t reverse = delta < 0;
+	int cycles = delta < 0 ? - delta : delta;
+	uint_fast16_t * const pv16 = pd->qpval16;
+	uint_fast8_t * const pv8 = pd->qpval8;
+
+	while (cycles --)
+	{
+		if (pv16)
+			* pv16 = calc_dir(reverse, * pv16, pd->qbottom, pd->qupper);
+		else if (pv8)
+			* pv8 = calc_dir(reverse, * pv8, pd->qbottom, pd->qupper);
+	}
+	savemenuvalue(pd);
+}
 
 static uint_fast16_t gzero;
 
@@ -1164,8 +1268,6 @@ static const FLASHMEM struct {
 #else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 	#define ANTMODE_COUNT 1
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
-
-#define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t
@@ -4535,6 +4637,17 @@ static uint_fast8_t gmoderows [2];		/* индексом используется
 static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 #if WITHSPKMUTE
 	static uint_fast8_t gmutespkr;		/*  выключение динамика */
+	static const struct paramdefdef xgmutespkr =
+	{
+		QLABEL2("SPK MUTE", "SPK MUTE"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gmutespkr),
+		nvramoffs0,
+		NULL,
+		& gmutespkr,
+		getzerobase, /* складывается со смещением и отображается */
+	};
 #endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if WITHTX
@@ -5608,34 +5721,6 @@ static void tuner_eventrestart(void)
 }
 
 #endif /* WITHAUTOTUNER */
-
-/* получение следующего числа в диапазоне low..high с "заворотом" */
-/* используется при переборе режимов кнопками */
-uint_fast8_t
-//NOINLINEAT
-calc_next(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
-{
-	return (v < low || v >= high) ? low : (v + 1);
-}
-
-/* получение предыдущего числа в диапазоне low..high с "заворотом" */
-/* используется при переборе режимов кнопками */
-static uint_fast8_t
-//NOINLINEAT
-calc_prev(uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
-{
-	return (v <= low || v > high) ? high : (v - 1);
-}
-
-
-/* получение предыдущего или следующего числа в диапазоне low..high с "заворотом" */
-/* используется при переборе режимов кнопками */
-static uint_fast8_t
-//NOINLINEAT
-calc_dir(uint_fast8_t reverse, uint_fast8_t v, uint_fast8_t low, uint_fast8_t high)
-{
-	return reverse ? calc_prev(v, low, high) : calc_next(v, low, high);
-}
 
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
 /* freq - новая частота, step - шаг */
@@ -15862,7 +15947,7 @@ ismenukind(
 	uint_fast8_t itemmask
 	)
 {
-	return (mp->pd->qspecial & itemmask) != 0;
+	return ismenukinddp(mp->pd, itemmask);
 }
 
 /* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
@@ -15923,39 +16008,6 @@ loadsettings(void)
 	}
 }
 
-/* Сохранить параметр после редактирования */
-static void
-//NOINLINEAT
-savemenuvalue(
-	const FLASHMEM struct menudef * mp
-	)
-{
-	if (ismenukind(mp, ITEM_VALUE))
-	{
-		const nvramaddress_t nvram = mp->pd->qnvramoffs(mp->pd->qnvram);
-		const uint_fast16_t * const pv16 = mp->pd->qpval16;
-		const uint_fast8_t * const pv8 = mp->pd->qpval8;
-		const unsigned valoffset = 0;//menuvaloffset(mp);
-
-		if (nvram == MENUNONVRAM)
-			return;
-		if (pv16 != NULL)
-		{
-			// FIXME: mp->label is not null-terminated
-			ASSERT3(pv16 [valoffset] <= mp->pd->qupper, __FILE__, __LINE__, mp->pd->label);
-			ASSERT3(pv16 [valoffset] >= mp->pd->qbottom, __FILE__, __LINE__, mp->pd->label);
-			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
-		}
-		else if (pv8 != NULL)
-		{
-			// FIXME: mp->label is not null-terminated
-			ASSERT3(pv8 [valoffset] <= mp->pd->qupper, __FILE__, __LINE__, mp->pd->label);
-			ASSERT3(pv8 [valoffset] >= mp->pd->qbottom, __FILE__, __LINE__, mp->pd->label);
-			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
-		}
-	}
-}
-
 
 
 /* Загрузка в NVRAM значениями по умолчанию.
@@ -15972,7 +16024,7 @@ defaultsettings(void)
 		const FLASHMEM struct menudef * const mp = & menutable [i];
 		if (! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
-			savemenuvalue(mp);
+			savemenuvalue(mp->pd);
 		}
 	}
 
@@ -16789,7 +16841,7 @@ modifysettings(
 #endif /* ! WITHFLATMENU */
 
 			case KBD_CODE_LOCK:
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_key_lockencoder();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
@@ -16802,21 +16854,21 @@ modifysettings(
 
 		#if WITHPWBUTTON
 			case KBD_CODE_POWEROFF:
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_pwbutton_press();
 				return;
 		#endif /* WITHPWBUTTON */
 
 #if WITHTX
 			case KBD_CODE_MOX:
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* выключить режим настройки или приём/передача */
 				uif_key_tuneoff();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_TXTUNE:
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* выключить режим настройки или приём/передача */
 				uif_key_tune();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -16824,13 +16876,13 @@ modifysettings(
 
 	#if WITHAUTOTUNER
 			case KBD_CODE_ATUSTART:
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_key_atunerstart();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_ATUBYPASS:
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_key_bypasstoggle();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
@@ -16840,7 +16892,7 @@ modifysettings(
 
 			case KBD_CODE_BAND_DOWN:
 #if WITHENCODER2
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -16849,7 +16901,7 @@ modifysettings(
 
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				do
 				{
 					/* проход по определённому типу элементов (itemmask) */
@@ -16861,7 +16913,7 @@ modifysettings(
 
 			case KBD_CODE_BAND_UP:
 #if WITHENCODER2
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -16870,7 +16922,7 @@ modifysettings(
 
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
-				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				do
 				{
 					/* если спецпункты запрещены - ищем обычный */
@@ -16948,7 +17000,7 @@ modifysettings(
 			display2_redrawbarstimed(1, 1, mp);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-			savemenuvalue(mp);		/* сохраняем отредактированное значение */
+			savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 #endif
 		}
 		else
@@ -20123,7 +20175,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		display_redrawfreqstimed(1);
 		display2_needupdate();
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-		savemenuvalue(mp);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 #endif
 		}
 	dctx_t dctx;
@@ -20387,7 +20439,7 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 	}
 
 #if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-		savemenuvalue(mp);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 #endif
 
 	dctx_t dctx;
