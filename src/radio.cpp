@@ -10141,37 +10141,6 @@ static RAM_D1 rxaproc_t rxaprocs [NTRX];
 
 #endif /* ! WITHSKIPUSERMODE */
 
-#if ! WITHNOSPEEX
-
-	#if FIRBUFSIZE == 64
-		#define SPEEXALLOCSIZE (NTRX * 15584)
-	#elif FIRBUFSIZE == 128
-		#define SPEEXALLOCSIZE (NTRX * 22584)
-	#elif FIRBUFSIZE == 256
-		#define SPEEXALLOCSIZE (NTRX * 38584)
-	#elif FIRBUFSIZE == 512
-		#define SPEEXALLOCSIZE (NTRX * 75448)
-	#elif FIRBUFSIZE == 1024
-		#define SPEEXALLOCSIZE (NTRX * 149176)
-	#endif
-
-#endif /* ! WITHNOSPEEX */
-
-void *speex_alloc(int size)
-{
-   /* WARNING: this is not equivalent to malloc(). If you want to use malloc()
-      or your own allocator, YOU NEED TO CLEAR THE MEMORY ALLOCATED. Otherwise
-      you will experience strange bugs */
-	void * p = calloc(size, 1);
-	ASSERT(p != NULL);
-	return p;
-}
-
-void speex_free (void *ptr)
-{
-	free(ptr);
-}
-
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
@@ -10416,16 +10385,6 @@ user_audioproc(void * ctx)
 
 #else /* WITHINTEGRATEDDSP */
 
-/* поддержка компиляции без Link Time Optimization */
-void *speex_alloc (int size)
-{
-	return NULL;
-}
-
-void speex_free (void *ptr)
-{
-}
-
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y)
 {
 	return 0;
@@ -10575,7 +10534,7 @@ encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, in
 		return 0;
 	else if (d < 0)
 	{
-		if (- d >= v)
+		if (- d >= (int) v)
 			v = 0;
 		else
 			v += d;
@@ -10584,7 +10543,7 @@ encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, in
 	}
 	else
 	{
-		if (d > upper)
+		if (d > (int) upper)
 			v = upper;
 		else
 		{
@@ -13846,9 +13805,9 @@ scaletopointssmeter(
 	const int s0level = s9level - s9delta;
 	const int s9_60level = s9level + s9_60_delta;
 
-	if (v < s0level)
+	if ((int) v < s0level)
 		v = s0level;
-	if (v > s9_60level)
+	if ((int) v > s9_60level)
 		v = s9_60level;
 
 	return ((v - s0level) * 30) / (s9delta + s9_60_delta);
