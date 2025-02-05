@@ -407,8 +407,6 @@ static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усил�
 
 static void processtxrequest(void);	/* Установка сиквенсору запроса на передачу.	*/
 
-struct menudef;
-
 static uint_fast8_t getbankindex_raw(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
 static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
@@ -418,6 +416,95 @@ static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 static uint_fast8_t getactualmainsubrx(void);
 static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
+
+
+// шаг изменения значения параметра
+enum
+{
+	ISTEP_RO = 0,
+	ISTEP1 = 1,
+	ISTEP2 = 2,
+	ISTEP3 = 3,
+	ISTEP5 = 5,
+	ISTEP10 = 10,
+	ISTEP50 = 50,
+	ISTEP100 = 100,
+	//ISTEPG,
+	//
+};
+
+// особые случаи отображения значения параметра
+enum
+{
+	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
+	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
+	RJ_CATSPEED,	/* отображение скорости CAT */
+	RJ_CATMUX,		/* выбор одного из каналов CAT */
+	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
+	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
+	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
+	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
+	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
+	RJ_MDMSPEED,	/* параметр - скорость модема */
+	RJ_MDMMODE,		/* параметр - тип модуляции модема */
+	RJ_MONTH,		/* параметр - месяц 1..12 */
+	RJ_POWER,		/* отображние мощности HP/LP */
+	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
+	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
+	RJ_CPUTYPE,		/* текст типа процессора */
+	RJ_VIEW,		/* стиль отображения спектра и панорамы */
+	RJ_COMPILED,		/* текст даты компиляции */
+	RJ_SERIALNR,		/* текст серийного номера */
+	//
+	RJ_notused
+};
+
+// WSIGNFLAG
+
+#define ITEM_VALUE	(0x01u << 0)	/* пункт меню для редактирования параметра */
+#define ITEM_GROUP	(0x01u << 1)	/* пункт меню без изменяемого значения - связан с подменю */
+
+#define ITEM_FILTERU	(0x01u << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
+#define ITEM_FILTERL	(0x01u << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
+
+#define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
+
+#if CPUSTYLE_ATMEGA
+	#define QLABEL(s) (s)
+	#define QLABEL2(s1, s2) (s1)
+#else /* CPUSTYLE_ATMEGA */
+	#define QLABEL(s) (s), (s)
+	#define QLABEL2(s1, s2) (s1), (s2)
+#endif /* CPUSTYLE_ATMEGA */
+
+struct paramdefdef
+{
+#if CPUSTYLE_ATMEGA
+	char qlabel [LABELW + 1];		/* текст - название пункта меню */
+#else /* CPUSTYLE_ATMEGA */
+	char qlabel [LABELW + 1];		/* текст - название пункта меню */
+	const char * label;
+#endif /* CPUSTYLE_ATMEGA */
+	uint8_t qwidth, qcomma, qrj;
+	uint8_t qistep;
+	uint8_t qspecial;	/* признак к какому меню относится */
+	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
+
+	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+
+	uint_fast16_t * qpval16;			/* переменная, которую подстраиваем - если она 16 бит */
+	uint_fast8_t * qpval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+};
+
+struct menudef
+{
+	const struct paramdefdef * pd;
+};
 
 #if WITHIF4DSP
 struct rxaproc_tag;
@@ -4495,11 +4582,54 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
+static uint_fast16_t gzero;
+
+static unsigned valoffset0(void)
+{
+	return 0;
+}
+
+//
+//static unsigned valoffset_bi_a(void)
+//{
+//	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+//}
+
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base)
+{
+	return base;
+}
+
 /* поддержка ABOUT: частота процессора */
 static int_fast32_t getcpufreqbase(void)
 {
 	return CPU_FREQ / 1000000;
 }
+
+static const struct paramdefdef xgcpufreq =
+{
+	QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота процессора
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	nvramoffs0,
+	& gzero,
+	NULL,
+	getcpufreqbase,
+};
+
+static const struct paramdefdef xgcputype =
+{
+	QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP_RO,	// тип процессора
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	nvramoffs0,
+	& gzero,
+	NULL,
+	getzerobase,
+};
 
 #ifdef DDR_FREQ
 /* поддержка ABOUT: частота памяти */
@@ -4525,8 +4655,6 @@ static int_fast32_t getlfmbias(void)
 }
 
 #endif /* WITHLFM */
-
-static uint_fast16_t gzero;
 //
 //#define ADCOFFSETMID (512 / 2)
 //static int_fast32_t getadcoffsbase(void)
@@ -7191,50 +7319,6 @@ static void micproc_load(void)
 //
 // работа со вторым валкодером
 
-// шаг изменения значения параметра
-enum
-{
-	ISTEP_RO = 0,
-	ISTEP1 = 1,
-	ISTEP2 = 2,
-	ISTEP3 = 3,
-	ISTEP5 = 5,
-	ISTEP10 = 10,
-	ISTEP50 = 50,
-	ISTEP100 = 100,
-	//ISTEPG,
-	//
-};
-
-// особые случаи отображения значения параметра
-enum
-{
-	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
-	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
-	RJ_CATSPEED,	/* отображение скорости CAT */
-	RJ_CATMUX,		/* выбор одного из каналов CAT */
-	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
-	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
-	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
-	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
-	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
-	RJ_MDMSPEED,	/* параметр - скорость модема */
-	RJ_MDMMODE,		/* параметр - тип модуляции модема */
-	RJ_MONTH,		/* параметр - месяц 1..12 */
-	RJ_POWER,		/* отображние мощности HP/LP */
-	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
-	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
-	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
-	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
-	RJ_CPUTYPE,		/* текст типа процессора */
-	RJ_VIEW,		/* стиль отображения спектра и панорамы */
-	RJ_COMPILED,		/* текст даты компиляции */
-	RJ_SERIALNR,		/* текст серийного номера */
-	//
-	RJ_notused
-};
-
 struct enc2menu
 {
 	char label [10];
@@ -7267,22 +7351,6 @@ static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
 	"USB     ",
 	"DIN8    ",
 };
-
-static unsigned valoffset0(void)
-{
-	return 0;
-}
-//
-//static unsigned valoffset_bi_a(void)
-//{
-//	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
-//}
-
-
-static nvramaddress_t nvramoffs0(nvramaddress_t base)
-{
-	return base;
-}
 
 static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base)
 {
@@ -15771,55 +15839,17 @@ display_menu_string(
 
 #if WITHMENU
 
-// WSIGNFLAG
-
-#define ITEM_VALUE	(0x01u << 0)	/* пункт меню для редактирования параметра */
-#define ITEM_GROUP	(0x01u << 1)	/* пункт меню без изменяемого значения - связан с подменю */
-
-#define ITEM_FILTERU	(0x01u << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-#define ITEM_FILTERL	(0x01u << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
-
-#define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
-
-#if CPUSTYLE_ATMEGA
-	#define QLABEL(s) (s)
-	#define QLABEL2(s1, s2) (s1)
-#else /* CPUSTYLE_ATMEGA */
-	#define QLABEL(s) (s), (s)
-	#define QLABEL2(s1, s2) (s1), (s2)
-#endif /* CPUSTYLE_ATMEGA */
-
-struct menudef
-{
-#if CPUSTYLE_ATMEGA
-	char qlabel [LABELW + 1];		/* текст - название пункта меню */
-#else /* CPUSTYLE_ATMEGA */
-	char qlabel [LABELW + 1];		/* текст - название пункта меню */
-	const char * label;
-#endif /* CPUSTYLE_ATMEGA */
-	uint8_t qwidth, qcomma, qrj;
-	uint8_t qistep;
-	uint8_t qspecial;	/* признак к какому меню относится */
-	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
-
-	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-
-	uint_fast16_t * qpval16;			/* переменная, которую подстраиваем - если она 16 бит */
-	uint_fast8_t * qpval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
-	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
-};
 
 #include "menu.h"
 
-/* входит ли данный пункт меню в группу разрешенных для показа */
+/* входит ли данный пункт меню в группу разрешённых для показа */
 static uint_fast8_t
 ismenukind(
 	const FLASHMEM struct menudef * mp,
 	uint_fast8_t itemmask
 	)
 {
-	return (mp->qspecial & itemmask) != 0;
+	return (mp->pd->qspecial & itemmask) != 0;
 }
 
 /* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
@@ -15859,11 +15889,11 @@ loadsettings(void)
 		const FLASHMEM struct menudef * const mp = & menutable [i];
 		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
-			const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
-			const uint_fast16_t bottom = mp->qbottom;
-			const uint_fast16_t upper = mp->qupper;
-			uint_fast16_t * const pv16 =  mp->qpval16;
-			uint_fast8_t * const pv8 = mp->qpval8;
+			const nvramaddress_t nvram = mp->pd->qnvramoffs(mp->pd->qnvram);
+			const uint_fast16_t bottom = mp->pd->qbottom;
+			const uint_fast16_t upper = mp->pd->qupper;
+			uint_fast16_t * const pv16 =  mp->pd->qpval16;
+			uint_fast8_t * const pv8 = mp->pd->qpval8;
 			const unsigned valoffset = 0;//menuvaloffset(mp);
 
 			if (nvram == MENUNONVRAM)
@@ -15889,9 +15919,9 @@ savemenuvalue(
 {
 	if (ismenukind(mp, ITEM_VALUE))
 	{
-		const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
-		const uint_fast16_t * const pv16 = mp->qpval16;
-		const uint_fast8_t * const pv8 = mp->qpval8;
+		const nvramaddress_t nvram = mp->pd->qnvramoffs(mp->pd->qnvram);
+		const uint_fast16_t * const pv16 = mp->pd->qpval16;
+		const uint_fast8_t * const pv8 = mp->pd->qpval8;
 		const unsigned valoffset = 0;//menuvaloffset(mp);
 
 		if (nvram == MENUNONVRAM)
@@ -15899,15 +15929,15 @@ savemenuvalue(
 		if (pv16 != NULL)
 		{
 			// FIXME: mp->label is not null-terminated
-			ASSERT3(pv16 [valoffset] <= mp->qupper, __FILE__, __LINE__, mp->label);
-			ASSERT3(pv16 [valoffset] >= mp->qbottom, __FILE__, __LINE__, mp->label);
+			ASSERT3(pv16 [valoffset] <= mp->pd->qupper, __FILE__, __LINE__, mp->pd->label);
+			ASSERT3(pv16 [valoffset] >= mp->pd->qbottom, __FILE__, __LINE__, mp->pd->label);
 			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
 			// FIXME: mp->label is not null-terminated
-			ASSERT3(pv8 [valoffset] <= mp->qupper, __FILE__, __LINE__, mp->label);
-			ASSERT3(pv8 [valoffset] >= mp->qbottom, __FILE__, __LINE__, mp->label);
+			ASSERT3(pv8 [valoffset] <= mp->pd->qupper, __FILE__, __LINE__, mp->pd->label);
+			ASSERT3(pv8 [valoffset] >= mp->pd->qbottom, __FILE__, __LINE__, mp->pd->label);
 			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 	}
@@ -16249,7 +16279,7 @@ void display2_menu_lblng(
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(x, y, mp->qlabel);
+	display_at_P(x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
@@ -16264,7 +16294,7 @@ void display2_menu_lblst(
 		return;
 	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(x, y, mp->qlabel);
+	display_at_P(x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
@@ -16282,7 +16312,7 @@ void display2_menu_group(
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_at_P(x, y, mp->qlabel);
+	display_at_P(x, y, mp->pd->qlabel);
 }
 
 
@@ -16323,11 +16353,11 @@ void display2_menu_valxx(
 	const uint_fast8_t VALUEW = window.valuew;
 
 	int_fast32_t value;
-	const uint_fast8_t rj = mp->qrj;
-	uint_fast8_t width = mp->qwidth;
-	uint_fast8_t comma = mp->qcomma;
-	const uint_fast16_t * const pv16 = mp->qpval16;
-	const uint_fast8_t * const pv8 = mp->qpval8;
+	const uint_fast8_t rj = mp->pd->qrj;
+	uint_fast8_t width = mp->pd->qwidth;
+	uint_fast8_t comma = mp->pd->qcomma;
+	const uint_fast16_t * const pv16 = mp->pd->qpval16;
+	const uint_fast8_t * const pv8 = mp->pd->qpval8;
 	const unsigned valoffset = 0;//menuvaloffset(mp);
 
 	// получение значения для отображения
@@ -16343,17 +16373,17 @@ void display2_menu_valxx(
 	}
 	else if (pv16 != NULL)
 	{
-		const int_fast32_t offs = mp->funcoffs();
+		const int_fast32_t offs = mp->pd->funcoffs();
 		value = offs + pv16 [valoffset];
 	}
 	else if (pv8 != NULL)
 	{
-		const int_fast32_t offs = mp->funcoffs();
+		const int_fast32_t offs = mp->pd->funcoffs();
 		value = offs + pv8 [valoffset];
 	}
 	else
 	{
-		value = mp->qbottom;	/* чтобы не ругался компилятор */
+		value = mp->pd->qbottom;	/* чтобы не ругался компилятор */
 	}
 
 	// отображение параметра, отличающиеся от цифрового
@@ -16412,7 +16442,7 @@ void display2_menu_valxx(
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(x, y, months [value - mp->qbottom + 1], width, comma);
+			display_menu_string_P(x, y, months [value - mp->pd->qbottom + 1], width, comma);
 		}
 		break;
 #endif /* defined (RTC1_TYPE) */
@@ -16656,7 +16686,7 @@ modifysettings(
 		mp = & menutable [menupos];
 	}
 #if WITHDEBUG
-	PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
+	PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 	display2_redrawbarstimed(1, 1, mp);
 	encoders_clear();
@@ -16738,7 +16768,7 @@ modifysettings(
 					#if defined (RTC1_TYPE)
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
-						modifysettings(first, last, ITEM_VALUE, mp->qnvram, exitkey, byname);
+						modifysettings(first, last, ITEM_VALUE, mp->pd->qnvram, exitkey, byname);
 						display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 					}
 				}
@@ -16843,7 +16873,7 @@ modifysettings(
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 
 #if WITHDEBUG
-				PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
+				PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -16861,9 +16891,9 @@ modifysettings(
 		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
 		{
 			/* редактирование паратметра */
-			const uint_fast16_t step = mp->qistep;
-			uint_fast16_t * const pv16 = mp->qpval16;
-			uint_fast8_t * const pv8 = mp->qpval8;
+			const uint_fast16_t step = mp->pd->qistep;
+			uint_fast16_t * const pv16 = mp->pd->qpval16;
+			uint_fast8_t * const pv8 = mp->pd->qpval8;
 
 			if (step == ISTEP_RO)
 			{
@@ -16872,7 +16902,7 @@ modifysettings(
 			else if (nrotate < 0)
 			{
 				// negative change value
-				const uint_fast32_t bottom = mp->qbottom;
+				const uint_fast32_t bottom = mp->pd->qbottom;
 				if (pv16 != NULL)
 				{
 					* pv16 =
@@ -16887,7 +16917,7 @@ modifysettings(
 			else
 			{
 				// positive change value
-				const uint_fast32_t upper = mp->qupper;
+				const uint_fast32_t upper = mp->pd->qupper;
 				if (pv16 != NULL)
 				{
 					* pv16 =
@@ -16933,9 +16963,9 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 			continue;
 	#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 		// Сравнение строки в SRAM и FLASH
-		const int r = strcmp_P(name, mp->qlabel);
+		const int r = strcmp_P(name, mp->pd->qlabel);
 	#else /* CPUSTYLE_ATMEGA */
-		const int r = strcmp(name, mp->qlabel);
+		const int r = strcmp(name, mp->pd->qlabel);
 	#endif /* CPUSTYLE_ATMEGA */
 		if (r == 0)
 			break;
@@ -17008,21 +17038,21 @@ static void menu_print(void)
         if (ismenukind(mp, ITEM_GROUP) == 0)
         	continue;
         const FLASHMEM struct menudef * const mpgroup = mp ++;	/* группа */
-    	PRINTF("%s,,\n", mpgroup->qlabel);
+    	PRINTF("%s,,\n", mpgroup->pd->qlabel);
         for (; mp < (menutable + MENUROW_COUNT) && ismenukind(mp, ITEM_VALUE); ++ mp)
         {
         	int x = 0;
         	int y = 0;
         	/* параметры полей вывода значений в меню */
         	const uint_fast8_t VALUEW = 32;//window.valuew;
-        	PRINTF(",,%s,", mp->qlabel);
+        	PRINTF(",,%s,", mp->pd->qlabel);
 
         	int_fast32_t value;
-        	const uint_fast8_t rj = mp->qrj;
-        	uint_fast8_t width = mp->qwidth;
-        	uint_fast8_t comma = mp->qcomma;
-        	const uint_fast16_t * const pv16 = mp->qpval16;
-        	const uint_fast8_t * const pv8 = mp->qpval8;
+        	const uint_fast8_t rj = mp->pd->qrj;
+        	uint_fast8_t width = mp->pd->qwidth;
+        	uint_fast8_t comma = mp->pd->qcomma;
+        	const uint_fast16_t * const pv16 = mp->pd->qpval16;
+        	const uint_fast8_t * const pv8 = mp->pd->qpval8;
         	const unsigned valoffset = 0;//menuvaloffset(mp);
 
         	// получение значения для отображения
@@ -17038,17 +17068,17 @@ static void menu_print(void)
         	}
         	else if (pv16 != NULL)
         	{
-        		const int_fast32_t offs = mp->funcoffs();
+        		const int_fast32_t offs = mp->pd->funcoffs();
         		value = offs + pv16 [valoffset];
         	}
         	else if (pv8 != NULL)
         	{
-        		const int_fast32_t offs = mp->funcoffs();
+        		const int_fast32_t offs = mp->pd->funcoffs();
         		value = offs + pv8 [valoffset];
         	}
         	else
         	{
-        		value = mp->qbottom;	/* чтобы не ругался компилятор */
+        		value = mp->pd->qbottom;	/* чтобы не ругался компилятор */
         	}
 
         	// отображение параметра, отличающиеся от цифрового
@@ -17122,7 +17152,7 @@ static void menu_print(void)
 
         			width = VALUEW;
         			comma = 3;
-        			print_menu_string_P(x, y, months [value - mp->qbottom], width, comma);
+        			print_menu_string_P(x, y, months [value - mp->pd->qbottom], width, comma);
         		}
         		break;
         #endif /* defined (RTC1_TYPE) */
@@ -20329,7 +20359,7 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 		if (ismenukind(mp, ITEM_VALUE) == 0)
 			continue;
 
-		if (! strcmp(name, mp->qlabel))
+		if (! strcmp(name, mp->pd->qlabel))
 			break;
 	}
 
@@ -20337,8 +20367,8 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 
 	if (v)
 	{
-		uint_fast8_t * const pv8 = mp->qpval8;
-		* pv8 = (* pv8 + 1) % (mp->qupper + 1);
+		uint_fast8_t * const pv8 = mp->pd->qpval8;
+		* pv8 = (* pv8 + 1) % (mp->pd->qupper + 1);
 		gviewstyle = * pv8;
 		updateboard(1, 0);
 	}
