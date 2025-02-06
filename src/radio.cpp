@@ -187,7 +187,6 @@ static uint_fast8_t band_no_check = 0;
 static uint_fast8_t encoder2_redirect = 0;
 
 #endif /* WITHTOUCHGUI */
-static char menuw [20];						// буфер для вывода значений системного меню
 
 static uint_fast32_t
 nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
@@ -552,6 +551,43 @@ savemenuvalue(
 	}
 }
 
+/* выравнивание после перехода на следующую частоту, кратную указаному шагу */
+/* freq - новая частота, step - шаг */
+static uint_fast32_t
+nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
+							   uint_fast32_t step, uint_fast32_t top)
+{
+	//const ldiv_t r = ldiv(freq, step);
+	//freq -= r.rem;
+	freq -= (freq % step);
+
+	if (oldfreq > freq || freq >= top)
+		return top - step;
+
+	return freq;
+}
+
+/* выравнивание после перехода на предидущую частоту, кратную указаному шагу */
+/* freq - новая частота, step - шаг */
+static uint_fast32_t
+prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
+							   uint_fast32_t step, uint_fast32_t bottom)
+{
+	const uint_fast32_t rem = (freq % step);
+	if (rem != 0)
+		freq += (step - rem);
+	//const ldiv_t r = ldiv(freq, step);
+
+	//if (r.rem != 0)
+	//	freq += (step - r.rem);
+
+	if (oldfreq < freq || freq < bottom)
+		return bottom;
+
+
+	return freq;
+}
+
 /* получение следующего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
 uint_fast16_t
@@ -578,7 +614,8 @@ calc_dir(uint_fast8_t reverse, uint_fast16_t v, uint_fast16_t low, uint_fast16_t
 }
 
 /* модификация паметра по нажатиям - выбор следующего значения из допустимых (с "заворотом" через границы) */
-static void param_keyclick(const struct paramdefdef * pd)
+static void
+param_keyclick(const struct paramdefdef * pd)
 {
 	uint_fast16_t * const pv16 = pd->qpval16;
 	uint_fast8_t * const pv8 = pd->qpval8;
@@ -590,20 +627,50 @@ static void param_keyclick(const struct paramdefdef * pd)
 	savemenuvalue(pd);
 }
 
-/* модификация паметра по валкодеру - выбор следующего значения из допустимых (с "заворотом" через границы) */
-static void param_rotate(const struct paramdefdef * pd, int delta)
+/* модификация паметра по валкодеру */
+static void
+param_rotate(const struct paramdefdef * pd, int nrotate)
 {
-	const uint_fast8_t reverse = delta < 0;
-	int cycles = delta < 0 ? - delta : delta;
+	/* редактирование паратметра */
+	const uint_fast16_t step = pd->qistep;
 	uint_fast16_t * const pv16 = pd->qpval16;
 	uint_fast8_t * const pv8 = pd->qpval8;
 
-	while (cycles --)
+	if (! ismenukinddp(pd, ITEM_VALUE))
+		return;
+	if (step == ISTEP_RO)
 	{
-		if (pv16)
-			* pv16 = calc_dir(reverse, * pv16, pd->qbottom, pd->qupper);
-		else if (pv8)
-			* pv8 = calc_dir(reverse, * pv8, pd->qbottom, pd->qupper);
+
+	}
+	else if (nrotate < 0)
+	{
+		// negative change value
+		const uint_fast32_t bottom = pd->qbottom;
+		if (pv16 != NULL)
+		{
+			* pv16 =
+				prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
+		}
+		else
+		{
+			* pv8 =
+				prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
+		}
+	}
+	else
+	{
+		// positive change value
+		const uint_fast32_t upper = pd->qupper;
+		if (pv16 != NULL)
+		{
+			* pv16 =
+				nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
+		}
+		else
+		{
+			* pv8 =
+				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
+		}
 	}
 	savemenuvalue(pd);
 }
@@ -5718,45 +5785,6 @@ static void tuner_eventrestart(void)
 }
 
 #endif /* WITHAUTOTUNER */
-
-/* выравнивание после перехода на следующую частоту, кратную указаному шагу */
-/* freq - новая частота, step - шаг */
-static uint_fast32_t
-NOINLINEAT
-nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
-							   uint_fast32_t step, uint_fast32_t top)
-{
-	//const ldiv_t r = ldiv(freq, step);
-	//freq -= r.rem;
-	freq -= (freq % step);
-
-	if (oldfreq > freq || freq >= top)
-		return top - step;
-
-	return freq;
-}
-
-/* выравнивание после перехода на предидущую частоту, кратную указаному шагу */
-/* freq - новая частота, step - шаг */
-static uint_fast32_t
-NOINLINEAT
-prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
-							   uint_fast32_t step, uint_fast32_t bottom)
-{
-	const uint_fast32_t rem = (freq % step);
-	if (rem != 0)
-		freq += (step - rem);
-	//const ldiv_t r = ldiv(freq, step);
-
-	//if (r.rem != 0)
-	//	freq += (step - r.rem);
-
-	if (oldfreq < freq || freq < bottom)
-		return bottom;
-
-
-	return freq;
-}
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
@@ -15823,6 +15851,8 @@ static uint_fast32_t ipow10(uint_fast8_t v)
 	return r;
 }
 
+static char menuw [20];						// буфер для вывода значений системного меню
+
 // При редактировании настроек - показ цифровых значений параметров.
 // Или диагностическое сообщение при запуске
 static void
@@ -16931,10 +16961,8 @@ modifysettings(
 				while (! ismenukind(mp, itemmask));
 
 			menuswitch:
-#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-				if (posnvram != MENUNONVRAM)
-					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-#endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
+			if (posnvram != MENUNONVRAM)
+				save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 
 #if WITHDEBUG
 				PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
@@ -16954,53 +16982,11 @@ modifysettings(
 
 		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
 		{
-			/* редактирование паратметра */
-			const uint_fast16_t step = mp->pd->qistep;
-			uint_fast16_t * const pv16 = mp->pd->qpval16;
-			uint_fast8_t * const pv8 = mp->pd->qpval8;
-
-			if (step == ISTEP_RO)
-			{
-
-			}
-			else if (nrotate < 0)
-			{
-				// negative change value
-				const uint_fast32_t bottom = mp->pd->qbottom;
-				if (pv16 != NULL)
-				{
-					* pv16 =
-						prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
-				}
-				else
-				{
-					* pv8 =
-						prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
-				}
-			}
-			else
-			{
-				// positive change value
-				const uint_fast32_t upper = mp->pd->qupper;
-				if (pv16 != NULL)
-				{
-					* pv16 =
-						nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
-				}
-				else
-				{
-					* pv8 =
-						nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
-				}
-			}
+			param_rotate(mp->pd, nrotate);
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
 			display2_redrawbarstimed(1, 1, mp);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-
-#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-			savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-#endif
 		}
 		else
 		{
@@ -19150,10 +19136,8 @@ hamradio_main_step(void)
 				#endif /* WITHSPLIT, WITHSPLITEX */
 			/* в случае внутренней памяти микроконтроллера - частоту не запоминать (очень мал ресурс). */
 
-	#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 				storebandfreq(getvfoindex(bi_main), bi_main);		/* сохранение частоты в текущем VFO */
 				storebandfreq(getvfoindex(bi_sub), bi_sub);		/* сохранение частоты в текущем VFO */
-	#endif
 				sthrl = STHRL_RXTX;
 
 				board_wakeup();
@@ -20173,9 +20157,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 		updateboard(1, 0);
 		display_redrawfreqstimed(1);
 		display2_needupdate();
-#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
 		savemenuvalue(pd);		/* сохраняем отредактированное значение */
-#endif
 		}
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
@@ -20427,6 +20409,9 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 			break;
 	}
 
+	if (menupos >= MENUROW_COUNT)
+		return menuw;
+
 	const FLASHMEM struct menudef * const mp = & menutable [menupos];
 
 	if (v)
@@ -20437,9 +20422,7 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 		updateboard(1, 0);
 	}
 
-#if (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM)
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-#endif
+	savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
