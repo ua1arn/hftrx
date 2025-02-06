@@ -4241,6 +4241,18 @@ enum
 #endif /* defined WITHAFGAINDEFAULT */
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
+	/* подстройка усиления с линейного входа через меню. */
+	static const struct paramdefdef xglineamp =
+	{
+		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
+		ITEM_VALUE,
+		WITHLINEINGAINMIN, WITHLINEINGAINMAX,
+		OFFSETOF(struct nvmap, glineamp),	/* усиление с линейного входа */
+		nvramoffs0,
+		& glineamp,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
@@ -5078,6 +5090,18 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #if WITHMIC1LEVEL
 	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 4 + WITHMIKEINGAINMIN;
+	/* подстройка усиления микрофонного усилителя через меню. */
+	static const struct paramdefdef xgmik1level =
+	{
+		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
+		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
+		nvramoffs0,
+		& gmik1level,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint_fast8_t ALCNEN = 0;	// ALC noise gate function control bit

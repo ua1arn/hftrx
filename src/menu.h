@@ -1592,28 +1592,10 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHMIC1LEVEL
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
-		ITEM_VALUE,
-		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
-		nvramoffs0,
-		& gmik1level,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgmik1level,
 #endif /* ITHMIC1LEVEL */
 	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-	(const struct paramdefdef [1]) {
-		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
-		ITEM_VALUE,
-		WITHLINEINGAINMIN, WITHLINEINGAINMAX, 
-		OFFSETOF(struct nvmap, glineamp),	/* усиление с линейного входа */
-		nvramoffs0,
-		& glineamp,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC SSB "), 8, 5, RJ_TXAUDIO,	ISTEP1,
