@@ -302,18 +302,20 @@ extern "C" {
 			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
 			// ws=0: even samples, ws=1: odd samples
 
-			// Slot S0, S4: Oldest sample (T-3)
-			// Slot S1, S5: Old sample (T-2)
-			// Slot S2, S6: Old sample (T-1)
-			// Slot S3, S7: Newest sample (T-0)
-			#define DMABUF32RXWFM0I	0		// WFM OLDEST
-			#define DMABUF32RXWFM0Q	1		// WFM
-			#define DMABUF32RXWFM1I	2		// WFM
-			#define DMABUF32RXWFM1Q	3		// WFM
-			#define DMABUF32RXWFM2I	4		// WFM
-			#define DMABUF32RXWFM2Q	5		// WFM
-			#define DMABUF32RXWFM3I	6		// WFM NEWEST
-			#define DMABUF32RXWFM3Q	7		// WFM
+			#if WITHWFM
+				// Slot S0, S4: Oldest sample (T-3)
+				// Slot S1, S5: Old sample (T-2)
+				// Slot S2, S6: Old sample (T-1)
+				// Slot S3, S7: Newest sample (T-0)
+				#define DMABUF32RXWFM0I	0		// WFM OLDEST
+				#define DMABUF32RXWFM0Q	1		// WFM
+				#define DMABUF32RXWFM1I	2		// WFM
+				#define DMABUF32RXWFM1Q	3		// WFM
+				#define DMABUF32RXWFM2I	4		// WFM
+				#define DMABUF32RXWFM2Q	5		// WFM
+				#define DMABUF32RXWFM3I	6		// WFM NEWEST
+				#define DMABUF32RXWFM3Q	7		// WFM
+			#endif /* WITHWFM */
 
 		#elif WITHFPGAIF_FRAMEBITS == 512
 			// buff data layout: I main/I sub/Q main/Q sub

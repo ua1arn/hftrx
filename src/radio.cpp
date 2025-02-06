@@ -3905,7 +3905,7 @@ static uint_fast8_t gagcmode;
 
 
 #else
-	static const uint_fast8_t gbigstep;
+	static const uint_fast8_t gbigstep = 0;
 	static const uint_fast8_t genc1div = 1;
 	static const uint_fast8_t genc2div = 1;
 #endif
@@ -10566,12 +10566,14 @@ FLOAT_t local_log(FLOAT_t x)
 
 #endif /* WITHINTEGRATEDDSP */
 
+#if WITHDEBUG
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
 {
-	const ldiv_t v = ldiv(freq, 1000);
+	 ldiv_t v = ldiv(freq, 1000);
 	PRINTF(PSTR("%s%ld.%03ld"), (v.quot >= 0 && freq < 0) ? "-" : "", v.quot, freq < 0 ? - v.rem : v.rem);
 }
+#endif /* WITHDEBUG */
 
 /* Получить частоту lo1 из частоты настройки */
 static int_fast32_t synth_if1 [2];
