@@ -1447,26 +1447,8 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
-	(const struct paramdefdef [1]) {
-		QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, gctssenable),
-		nvramoffs0,
-		NULL,
-		& gctssenable,
-		getzerobase, 
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
-		ITEM_VALUE,
-		0, ARRAY_SIZE(gsubtones) - 1,
-		OFFSETOF(struct nvmap, gsubtonei),
-		nvramoffs0,
-		NULL,
-		& gsubtonei,
-		getzerobase, 
-	},
+	& xgctssenable,	//  Continuous Tone-Coded Squelch System or CTCSS control
+	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
 		QLABEL("CTCSSLVL"), 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */

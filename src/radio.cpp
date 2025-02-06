@@ -4440,6 +4440,30 @@ enum
 
 		static uint_fast8_t gsubtonei = 18;	// частота subtone = 77.0 герц
 		static uint_fast8_t gctssenable;	// разрешить формирование subtone
+		//  Continuous Tone-Coded Squelch System or CTCSS freq
+		static const struct paramdefdef xgsubtonei =
+		{
+			QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,
+			ITEM_VALUE,
+			0, ARRAY_SIZE(gsubtones) - 1,
+			OFFSETOF(struct nvmap, gsubtonei),
+			nvramoffs0,
+			NULL,
+			& gsubtonei,
+			getzerobase,
+		};
+		//  Continuous Tone-Coded Squelch System or CTCSS control
+		static const struct paramdefdef xgctssenable =
+		{
+			QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gctssenable),
+			nvramoffs0,
+			NULL,
+			& gctssenable,
+			getzerobase,
+		};
 	#endif /* WITHSUBTONES */
 
 		/* пара значений для 10% выходной мощности и 100% выходной мощности */
