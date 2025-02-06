@@ -629,7 +629,7 @@ param_keyclick(const struct paramdefdef * pd)
 
 /* модификация паметра по валкодеру */
 static void
-param_rotate(const struct paramdefdef * pd, int nrotate)
+param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
 	/* редактирование паратметра */
 	const uint_fast16_t step = pd->qistep;
@@ -3942,8 +3942,17 @@ static uint_fast8_t gagcmode;
 	}
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
-//
-//static uint_fast8_t extmenu;
+static const struct paramdefdef xgcwpitch10 =
+{
+	QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
+	ITEM_VALUE,
+	CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
+	OFFSETOF(struct nvmap, gcwpitch10),
+	nvramoffs0,
+	NULL,
+	& gcwpitch10,
+	getzerobase,
+};
 
 #if WITHUSEDUALWATCH
 	uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
@@ -4502,6 +4511,53 @@ enum
 		static uint_fast8_t gvoxlevel = 10;	/* модифицируется через меню - усиление VOX */
 		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
 		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
+
+		static const struct paramdefdef xgvoxenable =
+		{
+			QLABEL("VOX EN  "), 8, 3, RJ_ON,	ISTEP1,
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gvoxenable),
+			nvramoffs0,
+			NULL,
+			& gvoxenable,
+			getzerobase,
+		};
+		static const struct paramdefdef xgvoxlevel =
+		{
+			QLABEL("VOX LEVL"), 7, 0, 0,	ISTEP1,
+			ITEM_VALUE,
+			WITHVOXLEVELMIN, WITHVOXLEVELMAX,
+			OFFSETOF(struct nvmap, gvoxlevel),
+			nvramoffs0,
+			NULL,
+			& gvoxlevel,
+			getzerobase,
+		};
+		static const struct paramdefdef xgavoxlevel =
+		{
+			QLABEL("AVOX LEV"), 7, 0, 0,	ISTEP1,
+			ITEM_VALUE,
+			WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
+			OFFSETOF(struct nvmap, gavoxlevel),
+			nvramoffs0,
+			NULL,
+			& gavoxlevel,
+			getzerobase,
+		};
+		static const struct paramdefdef xgvoxdelay =
+		{
+			QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
+			ITEM_VALUE,
+			WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
+			OFFSETOF(struct nvmap, voxdelay),
+			nvramoffs0,
+			NULL,
+			& voxdelay,
+			getzerobase,
+		};
+
+
 	#else /* WITHVOX */
 		enum { gvoxenable = 0 };	/* автоматическое управление передатчиком (от голоса) */
 	#endif /* WITHVOX */
@@ -4569,6 +4625,126 @@ enum
 
 	static uint_fast8_t elkeymode = 1;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+
+
+	static const struct paramdefdef xgelkeywpm =
+	{
+		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
+		OFFSETOF(struct nvmap, elkeywpm),
+		nvramoffs0,
+		NULL,
+		& elkeywpm.value,
+		getzerobase,
+	};
+	static const struct paramdefdef xgdashratio =
+	{
+		QLABEL("DASH LEN"), 7, 1, 0,	ISTEP1,
+		ITEM_VALUE,
+		23, 45,
+		OFFSETOF(struct nvmap, dashratio),
+		nvramoffs0,
+		NULL,
+		& dashratio,
+		getzerobase,
+	};
+	static const struct paramdefdef xgspaceratio =
+	{
+		QLABEL("DOT LEN "), 7, 1, 0,	ISTEP1,
+		ITEM_VALUE,
+		7, 13,
+		OFFSETOF(struct nvmap, spaceratio),
+		nvramoffs0,
+		NULL,
+		& spaceratio,
+		getzerobase,
+	};
+	static const struct paramdefdef xgelkeyreverse =
+	{
+		QLABEL("KEY REV "), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
+		OFFSETOF(struct nvmap, elkeyreverse),
+		nvramoffs0,
+		NULL,
+		& elkeyreverse,
+		getzerobase,
+	};
+	static const struct paramdefdef xgelkeymode =
+	{
+		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
+		ITEM_VALUE,
+		0, ARRAY_SIZE(elkeymodes) - 1,	/* режим электронного ключа */
+		OFFSETOF(struct nvmap, elkeymode),
+		nvramoffs0,
+		NULL,
+		& elkeymode,
+		getzerobase,
+	};
+	static const struct paramdefdef xgelkeyslope =
+	{
+		QLABEL("VIBROPLX"), 7, 0, 0,	ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+		ITEM_VALUE,
+		0, 5,		// minimal 0 - без эффекта Виброплекса
+		OFFSETOF(struct nvmap, elkeyslope),
+		nvramoffs0,
+		NULL,
+		& elkeyslope,
+		getzerobase,
+	};
+#if WITHTX
+	static const struct paramdefdef xgbkinenable =
+	{
+		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, bkinenable),
+		nvramoffs0,
+		NULL,
+		& bkinenable,
+		getzerobase,
+	};
+	static const struct paramdefdef xgbkindelay =
+	{
+		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP1,	/* задержка в десятках ms */
+		ITEM_VALUE,
+		5, 160,						/* 0.05..1.6 секунды */
+		OFFSETOF(struct nvmap, bkindelay),
+		nvramoffs0,
+		NULL,
+		& bkindelay,
+		getzerobase,
+	};
+#endif /* WITHTX */
+#if WITHIF4DSP
+	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+	static const struct paramdefdef xgcwedgetime =
+	{
+		QLABEL("EDGE TIM"), 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
+		ITEM_VALUE,
+		2, 16,
+		OFFSETOF(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+		nvramoffs0,
+		NULL,
+		& gcwedgetime,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+#endif /* WITHIF4DSP */
+#if WITHTX && WITHIF4DSP
+	static uint_fast8_t gcwssbtx;		/* разрешение передачи телеграфа как тона в режиме SSB */
+	static const struct paramdefdef xgcwssbtx =
+	{
+		QLABEL("SSB TXCW"), 8, 3, RJ_ON,	ISTEP1,		/*  */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
+		nvramoffs0,
+		NULL,
+		& gcwssbtx,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+#endif /* WITHTX && WITHIF4DSP */
 
 #else
 	//static const uint_fast8_t elkeymode = 2;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -4933,7 +5109,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	void playhandler(uint8_t code);
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 
-	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if CTLSTYLE_OLEG4Z_V1
 	static uint_fast8_t gsidetonelevel = 0;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -4963,7 +5138,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	};
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
-	static uint_fast8_t gcwssbtx;		/* разрешение передачи телеграфа как тона в режиме SSB */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -12887,6 +13061,7 @@ static uint_fast8_t processencoders(void)
 	}
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
+	/* перемещение по middle bar */
 	{
 		const int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
 		if (delta)
@@ -12901,8 +13076,11 @@ static uint_fast8_t processencoders(void)
 	}
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
+	/* редактирование параметра в middle bar */
+
 	{
 		int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+		//param_rotate(middlebar [gmiddlebarpos], delta);
 		if (delta)
 			bring_enc4f();
 		switch (enc4f_sel)
