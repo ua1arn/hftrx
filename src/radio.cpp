@@ -15867,27 +15867,28 @@ display_menu_digit(
 	)
 {
 #if WITHTOUCHGUI
-		const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
-		const uint_fast32_t ca = ipow10(comma);
+	const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
+	const uint_fast32_t ca = ipow10(comma);
 
-		if (ca == 1)
-		{
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), (long) value);
-		}
-		else if (value < 0)
-		{
-			ldiv_t d;
-			d = ldiv(- value, ca);
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
-		}
-		else
-		{
-			ldiv_t d;
-			d = ldiv(value, ca);
-			local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
-		}
-		return;
-#endif /* WITHTOUCHGUI */
+	if (ca == 1)
+	{
+		local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), (long) value);
+	}
+	else if (value < 0)
+	{
+		ldiv_t d;
+		d = ldiv(- value, ca);
+		local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
+	}
+	else
+	{
+		ldiv_t d;
+		d = ldiv(value, ca);
+		local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
+	}
+
+#else /* WITHTOUCHGUI */
+
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
 	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
@@ -15895,6 +15896,8 @@ display_menu_digit(
 	{
 		display2_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
+
+#endif /* WITHTOUCHGUI */
 }
 
 // При редактировании настроек - показ строковых (из FLASHMEM) значений параметров.
@@ -15911,8 +15914,9 @@ display_menu_string_P(
 {
 #if WITHTOUCHGUI
 	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
-	return;
-#else
+
+#else /* WITHTOUCHGUI */
+
 	if (width > filled)
 	{
 		const size_t fill = width - filled;
@@ -15942,9 +15946,11 @@ display_menu_string(
 	)
 {
 #if WITHTOUCHGUI
+
 	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
-	return;
-#else
+
+#else /* WITHTOUCHGUI */
+
 	if (width > filled)
 	{
 		const size_t fill = width - filled;
@@ -15961,6 +15967,7 @@ display_menu_string(
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 		display_at(x + 0, y, text);
 	}
+
 #endif /* WITHTOUCHGUI */
 }
 
