@@ -4213,8 +4213,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			const unsigned mclkdiv = 2;//calcdivround2(clk, mclkf);	// 2
 			const unsigned bclkdiv = 16;//calcdivround2(clk, bclkf);	// 16
 			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
-			PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
-			PRINTF("bclkout=%u\n", (unsigned) (allwnr_t507_get_ahub_freq() / bclkdiv));
+			PRINTF("i2s%u: need mclkdiv=%u, bclkdiv=%u\n", ix, mclkdiv, bclkdiv);
+			PRINTF("i2s%u: bclkout=%u\n", ix, (unsigned) (allwnr_t507_get_ahub_freq() / bclkdiv));
 
 			i2s->I2Sn_CLKD =
 				!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
