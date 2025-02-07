@@ -218,16 +218,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
-	(const struct paramdefdef [1]) {
-		QLABEL2("VIEW STL", "View style"), 7, 5, RJ_VIEW, ISTEP1,
-		ITEM_VALUE,
-		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
-		OFFSETOF(struct nvmap, gviewstyle),
-		nvramoffs0,
-		NULL,
-		& gviewstyle,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgviewstyle,	/* стиль отображения спектра и панорамы */
 #if WITHVIEW_3DSS
 	(const struct paramdefdef [1]) {
 		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,

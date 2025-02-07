@@ -471,22 +471,16 @@ enum
 
 #define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
 
-#if CPUSTYLE_ATMEGA
-	#define QLABEL(s) (s)
-	#define QLABEL2(s1, s2) (s1)
-#else /* CPUSTYLE_ATMEGA */
-	#define QLABEL(s) (s), (s)
-	#define QLABEL2(s1, s2) (s1), (s2)
-#endif /* CPUSTYLE_ATMEGA */
+#define QLABEL(s1) (s1), (s1), (s1)
+#define QLABEL2(s1, s2) (s1), (s2), (s2)
+#define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
 
 struct paramdefdef
 {
-#if CPUSTYLE_ATMEGA
-	char qlabel [LABELW + 1];		/* текст - название пункта меню */
-#else /* CPUSTYLE_ATMEGA */
 	char qlabel [LABELW + 1];		/* текст - название пункта меню */
 	const char * label;
-#endif /* CPUSTYLE_ATMEGA */
+	const char * enc2label;
+
 	uint8_t qwidth, qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
@@ -4121,6 +4115,19 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else /* defined (WITHDEFAULTVIEW) */
 	static uint_fast8_t gviewstyle = VIEW_COLOR;
 #endif /* defined (WITHDEFAULTVIEW) */
+	/* стиль отображения спектра и панорамы */
+	static const struct paramdefdef xgviewstyle =
+	{
+		QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_VIEW, ISTEP1,
+		ITEM_VALUE,
+		0, VIEW_COUNT - 1,
+		OFFSETOF(struct nvmap, gviewstyle),
+		nvramoffs0,
+		NULL,
+		& gviewstyle,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
 #else /* defined (WITHVIEW_3DSS_MARK) */
