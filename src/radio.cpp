@@ -500,6 +500,20 @@ struct paramdefdef
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
+struct enc2menu
+{
+	char label [10];
+	uint8_t rj;
+	uint8_t istep;
+	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
+
+	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
+	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
+	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
+	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+};
+
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
 /* входит ли данный пункт меню в группу разрешённых для показа */
@@ -7685,20 +7699,6 @@ static void micproc_load(void)
 ///////////////////////////
 //
 // работа со вторым валкодером
-
-struct enc2menu
-{
-	char label [10];
-	uint8_t rj;
-	uint8_t istep;
-	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
-
-	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
-	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
-	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
-};
 
 static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 {
