@@ -3454,7 +3454,7 @@ struct nvmap
 		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 	#if WITHUSEUSBBT
-		uint8_t gusbbt;	/* управление трансивером произволится по USB BT каналу, звуук на передачу так же оттуда */
+		uint8_t gusbbt;	/* управление трансивером производится по USB BT каналу, звуук на передачу так же оттуда */
 	#endif /* WITHUSEUSBBT */
 	#if WITHUSBHW && WITHUSBUAC
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
@@ -4276,7 +4276,7 @@ enum
 	#endif /* WITHREVERB */
 
 	#if WITHUSEUSBBT
-		static uint_fast8_t gusbbt;	/* управление трансивером произволится по USB BT каналу, звуук на передачу так же оттуда */
+		static uint_fast8_t gusbbt;	/* управление трансивером производится по USB BT каналу, звуук на передачу так же оттуда */
 	#else /* WITHUSEUSBBT */
 		enum { gusbbt = 0 };
 	#endif /* WITHUSEUSBBT */
