@@ -177,5 +177,9 @@ void board_rtc_gettime(
 void load_memory_cells(uint32_t * mem, uint8_t cnt);
 void write_memory_cells(uint32_t * mem, uint8_t cnt);
 
+int sdl2_render_init(void);
+void sdl2_render_update(uintptr_t frame);
+void sdl2_render_close(void);
+
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

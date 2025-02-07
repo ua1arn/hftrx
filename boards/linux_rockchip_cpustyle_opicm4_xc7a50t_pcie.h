@@ -5,12 +5,12 @@
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
  *
- * Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA PCIE плата Kintex-7 XC7K70T, by RA4ASN
+ * Плата на основе вычислительного модуля Orange Pi CM4 (Rockchip RK3566 + 2Гб DDR4) и FPGA Artix-7 XC7A50T, интерфейс связи - PCI Express x1, by RA4ASN
  *
  */
 
-#ifndef LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7K70T_H_INCLUDED
-#define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7K70T_H_INCLUDED 1
+#ifndef LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED
+#define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -19,6 +19,8 @@
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 #define WITHSPIDEV		1	/* Linux SPI userspace API */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
+//#define WITHFBDEV		1	/* Вывод графики посредством Linux Framebuffer */
+#define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -1062,4 +1064,4 @@ enum {
 
 #define HARDWARE_DEBUG_FLUSH()	do {} while(0)
 
-#endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7K70T_H_INCLUDED */
+#endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED */

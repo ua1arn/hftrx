@@ -36,6 +36,7 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
 #include "pcie_dev.h"
+
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
 void ft8_thread(void);
@@ -354,7 +355,7 @@ void * linux_pps_thread(void * args)
 
 /******************************************************************/
 
-#if ! WITHLVGL
+#if WITHFBDEV && ! WITHLVGL
 
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
@@ -434,7 +435,7 @@ void framebuffer_close(void)
     close(ttyd);
 }
 
-#endif
+#endif /* WITHFBDEV && ! WITHLVGL */
 
 /********************** EMIO ************************/
 
@@ -1983,12 +1984,11 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
-#if ! WITHLVGL
+#if WITHFBDEV && ! WITHLVGL
 	framebuffer_close();
-#endif /* WITHLVGL */
-
-	board_set_i2s_enable(0);
-	board_update();
+#elif WITHSDL2VIDEO
+	sdl2_render_close();
+#endif /* WITHFBDEV && ! WITHLVGL */
 
 #if 0
 	linux_cancel_thread(timer_spool_t);

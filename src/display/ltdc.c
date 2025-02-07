@@ -1653,7 +1653,7 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 	hardware_ltdc_main_set(rtmixid, layer0);
 }
 
-#elif LINUX_SUBSYSTEM && ! WITHLVGL
+#elif LINUX_SUBSYSTEM && WITHFBDEV && ! WITHLVGL
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
@@ -1679,6 +1679,35 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 	uint32_t size;
 	uint32_t * linux_fb = linux_get_fb(& size);
 	memcpy(linux_fb, (uint32_t *) addr, size);
+}
+
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(int rtmixid)
+{
+}
+
+#elif LINUX_SUBSYSTEM && WITHSDL2VIDEO
+
+void hardware_ltdc_initialize(const videomode_t * vdmode)
+{
+	ASSERT(sdl2_render_init());
+}
+
+/* Palette reload (dummy fuction) */
+void hardware_ltdc_L8_palette(void)
+{
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
+{
+	sdl2_render_update(addr);
+}
+
+/* Set MAIN frame buffer address. */
+void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
+{
+	sdl2_render_update(addr);
 }
 
 /* ожидаем начало кадра */

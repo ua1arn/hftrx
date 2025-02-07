@@ -5,10 +5,10 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA PCIE плата Kintex-7 XC7K70T, by RA4ASN
+// Плата на основе вычислительного модуля Orange Pi CM4 (Rockchip RK3566 + 2Гб DDR4) и FPGA Artix-7 XC7A50T, интерфейс связи - PCI Express x1, by RA4ASN
 
-#ifndef LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7K70T_H_INCLUDED
-#define LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7K70T_H_INCLUDED 1
+#ifndef LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED
+#define LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED 1
 
 	#if ! defined(RK3566)
 		#error Wrong CPU selected. RK3566 expected
@@ -105,8 +105,8 @@
 #else /* WITHISBOOTLOADER */
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
-	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 #endif /* WITHISBOOTLOADER */
 
@@ -148,7 +148,7 @@
 	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
+	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
@@ -252,7 +252,7 @@
 //			#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
 //			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
-			#define WITHPULSE				1	// вывод звука через Linux Pulseaudio
+//			#define WITHPULSE				1	// вывод звука через Linux Pulseaudio
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -482,4 +482,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7K70T_H_INCLUDED */
+#endif /* LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED */
