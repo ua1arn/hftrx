@@ -8042,28 +8042,23 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 static
 const FLASHMEM char *
 enc2menu_label_P(
-	uint_fast8_t item
+	const FLASHMEM struct enc2menu * const mp
 	)
 {
-	const FLASHMEM struct enc2menu * const p = & enc2menus [item];
-
-	ASSERT(item < ENC2POS_COUNT);
-	return p->label;
+	return mp->label;
 }
 
 /* получение значения редактируемого параметра */
 static void
 enc2menu_value(
-	uint_fast8_t item,
+	const FLASHMEM struct enc2menu * const mp,
 	int WDTH,	// ширина поля для отображения (в GUI не используется)
 	char * buff,	// буфер для текста значения параметра
 	size_t sz		// размер буфера
 	)
 {
-	const FLASHMEM struct enc2menu * const mp = & enc2menus [item];
 	long int value;
 
-	ASSERT(item < ENC2POS_COUNT);
 	if (mp->pval16 != NULL)
 	{
 		value = mp->funcoffs() + * mp->pval16;
@@ -8294,7 +8289,7 @@ void display2_fnlabel9(
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
-	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+	const char FLASHMEM * const text = enc2menu_label_P(& enc2menus [enc2pos]);
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
@@ -8321,7 +8316,7 @@ void display2_fnvalue9(
 	enum { WDTH = 9 };	// ширина поля для отображения
 	char b [WDTH + 1];	// тут формируется текст для отображения
 
-	enc2menu_value(enc2pos, WDTH, b, ARRAY_SIZE(b));
+	enc2menu_value(& enc2menus [enc2pos], WDTH, b, ARRAY_SIZE(b));
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
@@ -20884,9 +20879,9 @@ void hamradio_save_gui_settings(const void * ptrv)
 #if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
-	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+	const char FLASHMEM * const text = enc2menu_label_P(& enc2menus [enc2pos]);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	enc2menu_value(& enc2menus [enc2pos], INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
