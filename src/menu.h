@@ -10,7 +10,7 @@
 static const FLASHMEM struct menudef menutable [] =
 {
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL2("TUNER   ", "Tuner"), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -21,7 +21,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		(const struct paramdefdef [1]) {
@@ -112,7 +112,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHAUTOTUNER_N7DDCALGOT */
 #endif /* WITHAUTOTUNER */
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL2("DISPLAY ", "Display"), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -123,7 +123,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 #if WITHLCDBACKLIGHT
 	(const struct paramdefdef [1]) {
 		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
@@ -378,7 +378,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHDSPEXTDDC */
 #if defined (RTC1_TYPE)
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("CLOCK   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -389,7 +389,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("TM YEAR "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
@@ -451,7 +451,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* defined (RTC1_TYPE) */
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL2("FILTERS ", "Filters"), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -462,7 +462,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
 		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
@@ -1155,7 +1155,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS) */
 
 #if WITHNOTCHFREQ
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1166,7 +1166,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("NOTCH   "), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
@@ -1200,7 +1200,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	#endif /* ! WITHPOTNOTCH */
 #elif WITHNOTCHONOFF
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1211,7 +1211,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
@@ -1226,7 +1226,7 @@ static const FLASHMEM struct menudef menutable [] =
 
 #if defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX)
 #if ! WITHPOTPBT && WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("PBTS   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1237,7 +1237,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("PBT     "), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
 		ITEM_VALUE,
@@ -1252,7 +1252,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) */
 
 #if WITHELKEY
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("ELKEY   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1263,7 +1263,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
 	& xgcwpitch10,
   #if ! WITHPOTWPM
@@ -1288,7 +1288,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHTX && WITHIF4DSP */
 #endif /* WITHELKEY */
 #if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("RF ADC  "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1299,7 +1299,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 #if 0 && ! CTLREGMODE_STORCH_V9A
 	(const struct paramdefdef [1]) {
 		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
@@ -1345,7 +1345,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHDSPEXTDDC */
 #if WITHTX
 #if WITHVOX
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("VOX     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1356,7 +1356,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	& xgvoxenable,
 	& xgvoxdelay,
 	& xgvoxlevel,
@@ -1364,7 +1364,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHVOX */
 #endif /* WITHTX */
 #if WITHCAT
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("CAT     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1375,7 +1375,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
@@ -1435,34 +1435,16 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
-#if ! WITHFLATMENU
-	(const struct paramdefdef [1]) {
-		QLABEL("CTCSS   "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		OFFSETOF(struct nvmap, ggrpctcss),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-#endif /* ! WITHFLATMENU */
+/* group name +++ */
+	& xgctssgroup,
+/* group name --- */
 	& xgctssenable,	//  Continuous Tone-Coded Squelch System or CTCSS control
 	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL("CTCSSLVL"), 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */
-		ITEM_VALUE,
-		0, 100, 
-		OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		nvramoffs0,
-		NULL,
-		& gsubtonelevel,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgctsslevel,	/* Select the CTCSS transmit level. */
 #endif /* WITHIF4DSP */
 #endif /* WITHSUBTONES && WITHTX */
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AUDIO   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -1473,7 +1455,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 #if WITHIF4DSP
 	#if ! WITHPOTAFGAIN
 	(const struct paramdefdef [1]) {
@@ -1977,7 +1959,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("USB     "), 0, 0, 0, 0,
 		ITEM_GROUP,
@@ -1988,7 +1970,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 #if WITHIF4DSP
 #if WITHUSEUSBBT
 	(const struct paramdefdef [1]) {
@@ -2063,7 +2045,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHIF4DSP */
 #endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT) */
 #if WITHIF4DSP
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -2074,7 +2056,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("ADC FS  "), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
@@ -2115,7 +2097,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC SSB "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -2126,7 +2108,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -2177,7 +2159,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gagc [AGCSETI_SSB].t4,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC CW  "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -2188,7 +2170,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -2239,7 +2221,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gagc [AGCSETI_CW].t4,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC DIGI"), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -2250,7 +2232,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -2303,7 +2285,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHIF4DSP */
 #if WITHMODEM
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("MODEM   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -2314,7 +2296,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
 		ITEM_VALUE,
@@ -2337,7 +2319,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHMODEM */
 #if WITHLFM
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("LFM     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
@@ -2348,7 +2330,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
@@ -2425,7 +2407,7 @@ static const FLASHMEM struct menudef menutable [] =
 
 #if WITHTX
 /* settings page header */
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("TX ADJ  "), 0, 0, 0, 0,
 		ITEM_GROUP,
@@ -2436,7 +2418,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 
 /* settings page list */
 #if WITHIF4DSP
@@ -3123,7 +3105,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHTX */
 
 /* settings page header */
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("SPECIAL "), 0, 0, 0, 0,
 		ITEM_GROUP,
@@ -3134,7 +3116,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 
 /* settings page list */
 #if WITHRFSG
@@ -3674,7 +3656,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* TUNE_2MBAND */
 #endif /* CTLSTYLE_SW2011ALL */
 
-#if ! WITHFLATMENU
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL2("ABOUT   ", "About"), 0, 0, 0, 0,
 		ITEM_GROUP,
@@ -3685,7 +3667,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
+/* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("VERSION "), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */

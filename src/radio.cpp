@@ -4447,6 +4447,18 @@ enum
 
 		static uint_fast8_t gsubtonei = 18;	// частота subtone = 77.0 герц
 		static uint_fast8_t gctssenable;	// разрешить формирование subtone
+		//  Continuous Tone-Coded Squelch System or CTCSS settings group
+		static const struct paramdefdef xgctssgroup =
+		{
+			QLABEL("CTCSS   "), 0, 0, 0, 0,
+			ITEM_GROUP,
+			0, 0,
+			OFFSETOF(struct nvmap, ggrpctcss),
+			nvramoffs0,
+			NULL,
+			NULL,
+			NULL,
+		};
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
 		static const struct paramdefdef xgsubtonei =
 		{
@@ -4471,6 +4483,22 @@ enum
 			& gctssenable,
 			getzerobase,
 		};
+	#if WITHIF4DSP
+		static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+		//  Continuous Tone-Coded Squelch System or CTCSS control
+		/* Select the CTCSS transmit level. */
+		static const struct paramdefdef xgctsslevel =
+		{
+			QLABEL("CTCSSLVL"), 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */
+			ITEM_VALUE,
+			0, 100,
+			OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+			nvramoffs0,
+			NULL,
+			& gsubtonelevel,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+	#endif /* WITHIF4DSP */
 	#endif /* WITHSUBTONES */
 
 		/* пара значений для 10% выходной мощности и 100% выходной мощности */
@@ -5152,7 +5180,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	void playhandler(uint8_t code);
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 
-	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if CTLSTYLE_OLEG4Z_V1
 	static uint_fast8_t gsidetonelevel = 0;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 120; /* диапазон ручной регулировки цифрового усиления - максимальное значение */
@@ -16257,7 +16284,6 @@ defaultsettings(void)
 
 //+++ menu support
 
-#if ! WITHFLATMENU
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
 void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
@@ -16518,7 +16544,6 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * 
 		display_at(x, y_position_params, nolabel);
 	}
 }
-#endif /* ! WITHFLATMENU */
 
 // Вызывается из display2.c
 // код редактируемого параметра
@@ -17036,7 +17061,6 @@ modifysettings(
 				encoders_clear();	// сбросить информацию о повороте
 				return;
 
-#if ! WITHFLATMENU
 			case KBD_CODE_MENU:
 			case KBD_ENC2_HOLD:
 				if (ismenukind(mp, ITEM_GROUP))
@@ -17055,7 +17079,6 @@ modifysettings(
 					}
 				}
 				continue;	// требуется обновление индикатора
-#endif /* ! WITHFLATMENU */
 
 			case KBD_CODE_LOCK:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
@@ -17640,7 +17663,6 @@ static const struct menudef notchPopUp [] =
 	},
 	#endif /* ! WITHPOTNOTCH */
 #elif WITHNOTCHONOFF
-#if ! WITHFLATMENU
 	{
 		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP,
@@ -17651,7 +17673,6 @@ static const struct menudef notchPopUp [] =
 		NULL,
 		NULL,
 	},
-#endif /* ! WITHFLATMENU */
 	{
 		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
@@ -18462,11 +18483,7 @@ processkeyboard(uint_fast8_t kbch)
 	#if defined (RTC1_TYPE)
 		getstamprtc();
 	#endif /* defined (RTC1_TYPE) */
-	#if WITHFLATMENU
-		modifysettings(0, MENUROW_COUNT - 1, ITEM_VALUE, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
-	#else /* WITHFLATMENU */
 		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
-	#endif /* WITHFLATMENU */
 		updateboard(1, 0);
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_needupdate();		/* возможно уже с новой цветовой схемой */

@@ -1372,10 +1372,6 @@ extern "C" {
 #endif
 #define WITHHARDINTERLOCK (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 || (__CORTEX_A != 0))
 
-#ifndef WITHFLATMENU
-	#define WITHFLATMENU (CTLSTYLE_SW2011ALL && ! CPUSTYLE_ATMEGA_XXX4)
-#endif /* WITHFLATMENU */
-
 #define HARDWARE_DELAY_MS(t) do { local_delay_ms(t); } while (0)	//HAL_Delay(t)
 #define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
 #define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
