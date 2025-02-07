@@ -4803,7 +4803,6 @@ enum
 	};
 #endif /* WITHTX */
 #if WITHIF4DSP
-	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
 	{
 		QLABEL("EDGE TIM"), 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
@@ -4817,7 +4816,6 @@ enum
 	};
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
-	static uint_fast8_t gcwssbtx;		/* разрешение передачи телеграфа как тона в режиме SSB */
 	static const struct paramdefdef xgcwssbtx =
 	{
 		QLABEL("SSB TXCW"), 8, 3, RJ_ON,	ISTEP1,		/*  */
@@ -4836,8 +4834,9 @@ enum
 	//static const uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 #endif
 
-
-static uint_fast8_t  stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
+static uint_fast8_t gcwssbtx;			/* разрешение передачи телеграфа как тона в режиме SSB */
+static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+static uint_fast8_t stayfreq;			/* при изменении режимов кнопками - не меняем частоту */
 
 #if defined (DAC1_TYPE)
 	#if defined (WITHDAC1VALDEF)
