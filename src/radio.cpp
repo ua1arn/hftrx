@@ -4311,6 +4311,67 @@ enum
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
+		/* передача звука с USB вместо обычного источника */
+		static const struct paramdefdef xgdatamode =
+		{
+			QLABEL("DATA MDE"), 8, 3, RJ_ON,	ISTEP1,
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gdatamode),
+			nvramoffs0,
+			NULL,
+			& gdatamode,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+		/* совместимость VID/PID для работы с программой FT8CN */
+		static const struct paramdefdef xgusb_ft8cn =
+		{
+			QLABEL("FT8CN   "), 7, 3, RJ_YES,	ISTEP1,
+			ITEM_VALUE,
+			0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
+			OFFSETOF(struct nvmap, gusb_ft8cn),
+			nvramoffs0,
+			NULL,
+			& gusb_ft8cn,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+		/* автоматическое изменение источника при появлении звука со стороны компьютера */
+		static const struct paramdefdef xgdatatx =
+		{
+			QLABEL("USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gdatatx),
+			nvramoffs0,
+			NULL,
+			& gdatatx,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static const struct paramdefdef xguacplayer =
+		{
+			QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
+			ITEM_VALUE,
+			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+			OFFSETOF(struct nvmap, guacplayer),
+			nvramoffs0,
+			NULL,
+			& guacplayer,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+		/* Поменять местами I и Q сэмплы в потоке RTS96 */
+		static const struct paramdefdef xgswapiq =
+		{
+			QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
+			ITEM_VALUE,
+			0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
+			OFFSETOF(struct nvmap, gswapiq),
+			nvramoffs0,
+			NULL,
+			& gswapiq,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+
 	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };

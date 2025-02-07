@@ -1977,48 +1977,12 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHUSEUSBBT */
 #if WITHUSBUAC
 #if WITHTX
-	(const struct paramdefdef [1]) {
-		QLABEL("USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gdatatx),
-		nvramoffs0,
-		NULL,
-		& gdatatx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgdatatx,	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 #endif /* WITHTX */
-	(const struct paramdefdef [1]) {
-		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		OFFSETOF(struct nvmap, guacplayer),
-		nvramoffs0,
-		NULL,
-		& guacplayer,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xguacplayer,	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 	#if WITHRTS96 || WITHRTS192
-	(const struct paramdefdef [1]) {
-		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
-		OFFSETOF(struct nvmap, gswapiq),
-		nvramoffs0,
-		NULL,
-		& gswapiq,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("FT8CN   "), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
-		OFFSETOF(struct nvmap, gusb_ft8cn),
-		nvramoffs0,
-		NULL,
-		& gusb_ft8cn,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgswapiq,	/* Поменять местами I и Q сэмплы в потоке RTS96 */
+	& xgusb_ft8cn,	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHRTS96 || WITHRTS192 */
 #if WITHTX
 	(const struct paramdefdef [1]) {
