@@ -498,6 +498,9 @@ struct paramdefdef
 struct enc2menudef
 {
 	char label [10];
+	const char * label2;
+	const char * label3;
+
 	uint8_t qwidth, qcomma, rj;
 	uint8_t istep;
 	uint8_t qspecial;	/* признак к какому меню относится */
@@ -7837,7 +7840,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
 	{
-		"VOLUME   ",				// Громкость в процентах
+		QLABEL("VOLUME   "),				// Громкость в процентах
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -7852,7 +7855,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* ! WITHPOTAFGAIN */
 #if ! WITHPOTIFGAIN
 	{
-		"RF GAIN  ",			// Усиление ПЧ/ВЧ в процентах
+		QLABEL("RF GAIN  "),			// Усиление ПЧ/ВЧ в процентах
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -7866,7 +7869,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 	},
 #endif /* ! WITHPOTIFGAIN */
 	{
-		"CW N SOFT",	// CW filter edges for NARROW
+		QLABEL("CW N SOFT"),	// CW filter edges for NARROW
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -7881,7 +7884,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	{
-		"CW SPEED ",		// WPM
+		QLABEL("CW SPEED "),		// WPM
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -7897,7 +7900,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #if WITHTX
 #if WITHTXCPATHCALIBRATE
 	{
-		"TX CALIBR",
+		QLABEL("TX CALIBR"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -7912,7 +7915,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 	{
-		"TX POWER ",
+		QLABEL("TX POWER "),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP5,
@@ -7927,7 +7930,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
 #if WITHSUBTONES
 	{
-		"CTCSS FRQ",
+		QLABEL("CTCSS FRQ"),
 		0, 0,
 		RJ_SUBTONE,		// rj
 		ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
@@ -7942,7 +7945,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* WITHPOWERTRIM */
 #if WITHMIC1LEVEL
 	{
-		"MIKE LEVL",
+		QLABEL("MIKE LEVL"),
 		0, 0,
 		RJ_UNSIGNED,
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
@@ -7957,7 +7960,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* ITHMIC1LEVEL */
 #if WITHIF4DSP
 	{
-		"MIKE CLIP",
+		QLABEL("MIKE CLIP"),
 		0, 0,
 		RJ_UNSIGNED,
 		ISTEP1,
@@ -7973,7 +7976,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* WITHTX */
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
 	{
-		"NOTCH FRQ",
+		QLABEL("NOTCH FRQ"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP50,
@@ -7988,7 +7991,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHIF4DSP
 	{
-		"NR LEVEL ",
+		QLABEL("NR LEVEL "),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* nr level */
@@ -8002,7 +8005,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 	},
 #if ! WITHPOTNFMSQL
 	{
-		"SQUELCHFM",
+		QLABEL("SQUELCHFM"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
@@ -8017,7 +8020,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #endif /* ! WITHPOTNFMSQL */
 #if WITHSPECTRUMWF
 	{
-		"BOTTOM DB",
+		QLABEL("BOTTOM DB"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
@@ -8031,7 +8034,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 	},
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
-		"ZOOM PAN ",
+		QLABEL("ZOOM PAN "),
 		0, 0,
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
@@ -8045,7 +8048,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 	},
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
 	{
-		"VIEW STLE",
+		QLABEL("VIEW STLE"),
 		0, 0,
 		RJ_VIEW,
 		ISTEP1,
@@ -8062,7 +8065,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
 	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
 	{
-		"IF SHIFT ",
+		QLABEL("IF SHIFT "),
 		0, 0,
 		RJ_SIGNED,		// rj
 		ISTEP50,
