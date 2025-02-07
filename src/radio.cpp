@@ -3425,10 +3425,12 @@ struct nvmap
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 50..100% */
 	uint16_t gdesignscale;	/* используется при калибровке параметров интерполятора */
+#if WITHELKEY
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+	uint8_t gcwssbtx;		/* разрешение самопрослушивания */
+#endif /* WITHELKEY */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
-	uint8_t gcwssbtx;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 #if WITHWAVPLAYER || WITHSENDWAV
 	uint8_t gloopmsg, gloopsec;
@@ -4707,10 +4709,8 @@ enum
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
 	static uint_fast8_t elkeyreverse;
-
 	static uint_fast8_t elkeymode = 1;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-
 
 	static const struct paramdefdef xgelkeywpm =
 	{
@@ -4803,6 +4803,7 @@ enum
 	};
 #endif /* WITHTX */
 #if WITHIF4DSP
+	static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
 	{
 		QLABEL("EDGE TIM"), 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
@@ -4816,6 +4817,7 @@ enum
 	};
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
+	static uint_fast8_t gcwssbtx;			/* разрешение передачи телеграфа как тона в режиме SSB */
 	static const struct paramdefdef xgcwssbtx =
 	{
 		QLABEL("SSB TXCW"), 8, 3, RJ_ON,	ISTEP1,		/*  */
@@ -4834,8 +4836,6 @@ enum
 	//static const uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 #endif
 
-static uint_fast8_t gcwssbtx;			/* разрешение передачи телеграфа как тона в режиме SSB */
-static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 static uint_fast8_t stayfreq;			/* при изменении режимов кнопками - не меняем частоту */
 
 #if defined (DAC1_TYPE)
@@ -11355,13 +11355,17 @@ updateboardZZZ(
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
-		#if WITHPABIASTRIM
-			board_set_pabias(gpabias);	/* регулировка тока покоя оконечного каскада передатчика */
-		#endif /* WITHPABIASTRIM */
+			#if WITHPABIASTRIM
+				board_set_pabias(gpabias);	/* регулировка тока покоя оконечного каскада передатчика */
+			#endif /* WITHPABIASTRIM */
 			// установка параметров Speech processor
 			//board_speech_set_mode(speechmode);
 			//board_speech_set_width(speechwidth);
-			seq_set_cw_enable(getmodetempl(txsubmode)->wbkin || (getmodetempl(txsubmode)->abkin && gcwssbtx));	/* разрешение передачи CW */
+			#if WITHELKEY
+				seq_set_cw_enable(getmodetempl(txsubmode)->wbkin || (getmodetempl(txsubmode)->abkin && gcwssbtx));	/* разрешение передачи CW */
+			#else /* WITHELKEY */
+				seq_set_cw_enable(0);	/* Неразрешение передачи CW */
+			#endif /* WITHELKEY */
 		#endif /* WITHTX */
 
 		/* Этот блок (установка опорной частоты DDS) вызывать до настроек частот */
@@ -11503,10 +11507,12 @@ updateboardZZZ(
 #if WITHREVERB
 		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
 #endif /* WITHREVERB */
+#if WITHELKEY
 		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
+#endif /* WITHELKEY */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
-		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
