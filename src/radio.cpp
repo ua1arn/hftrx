@@ -490,6 +490,7 @@ struct paramdefdef
 	uint8_t qwidth, qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
+
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
@@ -500,11 +501,12 @@ struct paramdefdef
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
-struct enc2menu
+struct enc2menudef
 {
 	char label [10];
-	uint8_t rj;
+	uint8_t qwidth, qcomma, rj;
 	uint8_t istep;
+	uint8_t qspecial;	/* признак к какому меню относится */
 	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
@@ -512,6 +514,11 @@ struct enc2menu
 	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
 	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+};
+
+struct menudef
+{
+	const struct paramdefdef * pd;
 };
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
@@ -525,11 +532,6 @@ ismenukinddp(
 {
 	return (pd->qspecial & itemmask) != 0;
 }
-
-struct menudef
-{
-	const struct paramdefdef * pd;
-};
 
 
 /* Сохранить параметр после редактирования */
@@ -7754,7 +7756,7 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base)
 /* функция для сохранения значения параметра */
 static void
 enc2savemenuvalue(
-	const FLASHMEM struct enc2menu * mp
+	const FLASHMEM struct enc2menudef * mp
 	)
 {
 	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase);
@@ -7782,7 +7784,7 @@ enc2savemenuvalue(
 static
 void
 enc2menu_adjust(
-	const FLASHMEM struct enc2menu * mp,
+	const FLASHMEM struct enc2menudef * mp,
 	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
@@ -7823,14 +7825,16 @@ enc2menu_adjust(
 
 #if WITHENCODER2
 
-static const FLASHMEM struct enc2menu enc2menus [] =
+static const FLASHMEM struct enc2menudef enc2menus [] =
 {
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
 	{
 		"VOLUME   ",				// Громкость в процентах
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
+		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX,
 		OFFSETOF(struct nvmap, afgain1),
 		nvramoffs0,
@@ -7842,8 +7846,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if ! WITHPOTIFGAIN
 	{
 		"RF GAIN  ",			// Усиление ПЧ/ВЧ в процентах
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
+		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX,
 		OFFSETOF(struct nvmap, rfgain1),
 		nvramoffs0,
@@ -7854,8 +7860,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #endif /* ! WITHPOTIFGAIN */
 	{
 		"CW N SOFT",	// CW filter edges for NARROW
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
+		ITEM_VALUE,
 		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
 		nvramoffs0,
@@ -7867,8 +7875,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHELKEY && ! WITHPOTWPM
 	{
 		"CW SPEED ",		// WPM
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
+		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		OFFSETOF(struct nvmap, elkeywpm),
 		nvramoffs0,
@@ -7881,8 +7891,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHTXCPATHCALIBRATE
 	{
 		"TX CALIBR",
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
+		ITEM_VALUE,
 		0, 150,		/* используется при калибровке параметров интерполятора */
 		OFFSETOF(struct nvmap, gdesignscale),
 		nvramoffs0,
@@ -7894,8 +7906,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 	{
 		"TX POWER ",
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP5,
+		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		OFFSETOF(struct nvmap, gnormalpower),
 		nvramoffs0,
@@ -7907,8 +7921,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHSUBTONES
 	{
 		"CTCSS FRQ",
+		0, 0,
 		RJ_SUBTONE,		// rj
 		ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+		ITEM_VALUE,
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1,
 		OFFSETOF(struct nvmap, gsubtonei),
 		nvramoffs0,
@@ -7920,8 +7936,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHMIC1LEVEL
 	{
 		"MIKE LEVL",
+		0, 0,
 		RJ_UNSIGNED,
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
+		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
@@ -7933,8 +7951,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHIF4DSP
 	{
 		"MIKE CLIP",
+		0, 0,
 		RJ_UNSIGNED,
 		ISTEP1,
+		ITEM_VALUE,
 		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
 		OFFSETOF(struct nvmap, gmikehclip),
 		nvramoffs0,
@@ -7947,8 +7967,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
 	{
 		"NOTCH FRQ",
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP50,
+		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
 		nvramoffs0,
@@ -7960,8 +7982,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHIF4DSP
 	{
 		"NR LEVEL ",
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* nr level */
+		ITEM_VALUE,
 		0, NRLEVELMAX,
 		OFFSETOF(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
@@ -7972,8 +7996,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if ! WITHPOTNFMSQL
 	{
 		"SQUELCHFM",
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
+		ITEM_VALUE,
 		0, SQUELCHMAX,
 		OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
@@ -7985,8 +8011,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHSPECTRUMWF
 	{
 		"BOTTOM DB",
+		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
+		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,	/* диапазон отображаемых значений */
 		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
 		nvramoffs_bandgroup,
@@ -7997,8 +8025,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		"ZOOM PAN ",
+		0, 0,
 		RJ_POW2,		// rj
 		ISTEP1,		/* spectrum range */
+		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
 		OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
 		nvramoffs_bandgroup,
@@ -8009,8 +8039,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
 	{
 		"VIEW STLE",
+		0, 0,
 		RJ_VIEW,
 		ISTEP1,
+		ITEM_VALUE,
 		0, VIEW_COUNT - 1,
 		OFFSETOF(struct nvmap, gviewstyle),
 		nvramoffs0,
@@ -8024,8 +8056,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
 	{
 		"IF SHIFT ",
+		0, 0,
 		RJ_SIGNED,		// rj
 		ISTEP50,
+		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		OFFSETOF(struct nvmap, ifshifoffset),
 		nvramoffs0,
@@ -8042,7 +8076,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 static
 const FLASHMEM char *
 enc2menu_label_P(
-	const FLASHMEM struct enc2menu * const mp
+	const FLASHMEM struct enc2menudef * const mp
 	)
 {
 	return mp->label;
@@ -8051,7 +8085,7 @@ enc2menu_label_P(
 /* получение значения редактируемого параметра */
 static void
 enc2menu_value(
-	const FLASHMEM struct enc2menu * const mp,
+	const FLASHMEM struct enc2menudef * const mp,
 	int WDTH,	// ширина поля для отображения (в GUI не используется)
 	char * buff,	// буфер для текста значения параметра
 	size_t sz		// размер буфера
@@ -8255,7 +8289,7 @@ uif_encoder2_rotate(
 	case ENC2STATE_EDITITEM:
 		if (nrotate != 0)
 		{
-			const FLASHMEM struct enc2menu * const mp = & enc2menus [enc2pos];
+			const FLASHMEM struct enc2menudef * const mp = & enc2menus [enc2pos];
 			enc2menu_adjust(mp, nrotate);	// изменение и сохранение значения параметра
 			updateboard(1, 0);
 			return 1;
