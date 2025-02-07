@@ -1027,6 +1027,8 @@ static void usb_ep0_ctl_error(pusb_struct pusb)
 	// stall ep0
 	pusb->ep0_xfer_residue = 0;
 	usb_set_ep0_csr(pusb, USB_CSR0_SENDSTALL);	// SendStall
+ 	while ((usb_get_ep0_csr(pusb) & USB_CSR0_SENDSTALL) != 0)
+ 		;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
 }
 
@@ -1365,6 +1367,8 @@ static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintp
 		//usb_fifo_accessed_by_cpu(pusb);
         usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
     	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | (usb_get_eptx_csr(pusb) & USB_TXCSR_ISO));
+    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+    		;
     	//usb_set_fifo_access_config(pusb, saved);
     }
     else
@@ -1482,6 +1486,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			  	pusb->eptx_xfer_tranferredv[ep_no-1] += maxpkt;
 			  	pusb->eptx_xfer_addrv[ep_no-1] += maxpkt;
 				usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+		    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+		    		;
 			    pusb->eptx_xfer_state[ep_no-1] = USB_EPX_DATA;
 #endif
 		 	}
@@ -1495,6 +1501,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 //					PRINTF("Error: FIFO Access Config Error!!\n");
 //			  	}
 				usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+		    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+		    		;
 				pusb->eptx_xfer_state[ep_no-1] = USB_EPX_END;
 			  	pusb->eptx_xfer_residuev[ep_no-1] = 0;
 			  	pusb->eptx_xfer_tranferredv[ep_no-1] = byte_count;
@@ -1562,6 +1570,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			    	if (aw_module(byte_count, maxpkt))
 			    	{
 				   		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb)|USB_TXCSR_TXPKTRDY);
+				    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+				    		;
 			   	 	}
 			    	pusb->eptx_xfer_state[ep_no-1] = USB_EPX_END;
 	 			}
@@ -1579,6 +1589,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			  		pusb->eptx_xfer_tranferredv[ep_no-1] += xfer_count;
 			  		pusb->eptx_xfer_addrv[ep_no-1] += xfer_count;
 					usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+			    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+			    		;
 			    	pusb->eptx_xfer_state[ep_no-1] = USB_EPX_DATA;
 				}
 				else if (!(usb_get_eptx_csr(pusb) & USB_TXCSR_FIFONOTEMP))
@@ -3559,7 +3571,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
       			TP();
       			break;
     		}
-	      	break;
+	      	break;	// USB_REQ_SET_INTERFACE
 #if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
     		// work (стадия 1, сюда доходит всегда)
@@ -3760,6 +3772,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
 
 #endif /* WITHWAWXXUSB */
 
+/* отсюда начинается разбор, что же пришло в EP0 */
 static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
