@@ -5234,7 +5234,54 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
-
+	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+	static const struct paramdefdef xggaindigitx =
+	{
+		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		90, 300,
+		OFFSETOF(struct nvmap, ggaindigitx),
+		nvramoffs0,
+		& ggaindigitx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+	/* Глубина модуляции в АМ - 0..100% */
+	static const struct paramdefdef xgamdepth =
+	{
+		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gamdepth,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+	/* Девиация при передаче в NFM - в сотнях герц */
+	static const struct paramdefdef xgnfmdeviation =
+	{
+		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
+		ITEM_VALUE,
+		0, 120,
+		OFFSETOF(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
+		nvramoffs0,
+		NULL,
+		& gnfmdeviation,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	static const struct paramdefdef xggaincwtx =
+	{
+		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		30, 100,
+		OFFSETOF(struct nvmap, ggaincwtx),
+		nvramoffs0,
+		& ggaincwtx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	#if defined (WITHDEFDACSCALE)
 		static uint_fast8_t gdacscale = WITHDEFDACSCALE;	/* настраивается под прегруз драйвера. */
