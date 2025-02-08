@@ -6923,7 +6923,7 @@ static void dw_hdmi_i2s_setup(HDMI_TX_TypeDef * const hdmi)
 	//
 
 
-	conf1 = HDMI_AUD_CONF1_WIDTH_24;
+	conf1 = WITHADAPTERHDMIWIDTH == 16 ? HDMI_AUD_CONF1_WIDTH_16 : HDMI_AUD_CONF1_WIDTH_24;
 	conf1 |= HDMI_AUD_CONF1_MODE_I2S;
 
 	hdmi->HDMI_AUD_INPUTCLKFS = inputclkfs;

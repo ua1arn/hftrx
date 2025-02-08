@@ -4618,8 +4618,8 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 static void hardware_i2s1_master_duplex_initialize_hdmi48(void)
 {
 	const int master = 1;
-	unsigned NSLOTS = 2;
-	unsigned framebits = 64;
+	unsigned NSLOTS = 2;	// stereo
+	unsigned framebits = (WITHADAPTERHDMIWIDTH + WITHADAPTERHDMISHIFT) * NSLOTS;
 	hardware_i2s_clock(1, I2S1, master, NSLOTS, ARMI2SRATE, framebits);
 	hardware_i2s_initialize(1, I2S1, master, NSLOTS, ARMI2SRATE, framebits, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT, HARDWARE_I2S1HW_USEDMA);
 	//I2S1HW_INITIALIZE(master);
