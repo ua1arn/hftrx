@@ -24,7 +24,7 @@ typedef enum {
 	USB_RETVAL_COMPERR
 	} USB_RETVAL;
 
-typedef struct
+typedef __PACKED_STRUCT
 {
     uint8_t bmRequest;
     uint8_t bRequest;

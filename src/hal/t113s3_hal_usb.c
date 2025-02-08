@@ -3778,12 +3778,6 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
 static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-	//uint32_t i=0;
-	;
-	//uint32_t src_addr;
-
-//	if (!pusb->ep0_flag) return 0;
-//	pusb->ep0_flag--;
 
 	usb_select_ep(pusb, 0);
 	const uint32_t ep0_csr = usb_get_ep0_csr(pusb);
