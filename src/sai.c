@@ -4156,7 +4156,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		const uint_fast32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
 
 		AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
-		(void) AHUB->AHUB_RST;
+		(void) AHUB->AHUB_GAT;
 		AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 		(void) AHUB->AHUB_RST;
 		//PRINTF("NSLOTS=%d, ix=%d, apbifrxix=%d, apbiftxix=%d\n", NSLOTS, ix, apbifrxix, apbiftxix);

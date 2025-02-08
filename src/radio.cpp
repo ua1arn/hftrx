@@ -4413,6 +4413,7 @@ enum
 			& guacplayer,
 			getzerobase, /* складывается со смещением и отображается */
 		};
+	#if WITHRTS96 || WITHRTS192
 		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		static const struct paramdefdef xgswapiq =
 		{
@@ -4425,7 +4426,7 @@ enum
 			& gswapiq,
 			getzerobase, /* складывается со смещением и отображается */
 		};
-
+	#endif /* WITHRTS96 || WITHRTS192 */
 	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
