@@ -3344,8 +3344,8 @@ void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, int len);	/* п�
 void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC3F */
 void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC4F */
 
-const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active);
-const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active);
+const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active, unsigned width);
+const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, unsigned width);
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);

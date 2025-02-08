@@ -707,6 +707,18 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
+const static struct paramdefdef xgdummy =
+{
+	QLABEL("DUMMY "), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
+	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	nvramoffs0,
+	& gzero,
+	NULL,
+	getzerobase,
+};
+
 #if WITHIF4DSP
 struct rxaproc_tag;
 static FLOAT_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
@@ -1931,6 +1943,14 @@ static agcp_t gagc [AGCSETI_COUNT];
 
 #endif /* WITHIF4DSP */
 
+const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size);
+const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size);
+const struct paramdefdef * const * getmiddlemenu_am(unsigned * size);
+const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size);
+const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size);
+const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * size);
+
+
 #define	DEFAULT_DRM_PITCH	12000	/* тон DRM - 12 кГц*/
 // The standard mark and space tones are 2125 hz and 2295 hz respectively
 #define	DEFAULT_RTTY_PITCH	1275	/* mark тон DIGI modes - 2.125 кГц (1275 2125) */
@@ -2070,6 +2090,7 @@ struct modetempl
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
+	const struct paramdefdef * const * (* getmiddlemenu)(unsigned * size);
 	char label [4];					// для контроля правильности инициализации структуры
 };
 
@@ -2110,6 +2131,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_cw,
 		"CW",
 	},
 	/* MODE_SSB */
@@ -2144,6 +2166,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_ssb,
 		"SSB",
 	},
 	/* MODE_AM */
@@ -2178,6 +2201,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_am,
 		"AM",
 	},
 #if WITHSAM
@@ -2213,6 +2237,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_am,
 		"SAM",
 	},
 #endif /* WITHSAM */
@@ -2248,6 +2273,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_nfm,
 		"NFM",
 	},
 	/* MODE_DRM */
@@ -2282,6 +2308,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_am,
 		"DRM",
 	},
 	/* MODE_CWZ - этот режим при передаче используется во время TUNE. */
@@ -2316,6 +2343,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_am,
 		"CWZ",
 	},
 #if WITHWFM || WITHMODESETFULLNFMWFM
@@ -2352,6 +2380,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_wfm,
 		"WFM",
 	},
 #endif /* WITHWFM || WITHMODESETFULLNFMWFM */
@@ -2391,6 +2420,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_digi,
 		"DIG",
 	},
 	/* MODE_RTTY */
@@ -2429,6 +2459,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_digi,
 		"TTY",
 	},
 #if WITHMODEM
@@ -2464,6 +2495,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_digi,
 		"MDM",
 	},
 #endif /* WITHMODEM */
@@ -2503,6 +2535,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_ssb,
 		"ISB",
 	},
 #if WITHFREEDV
@@ -2538,6 +2571,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
+		getmiddlemenu_ssb,
 		"FDV",
 	},
 #endif /* WITHFREEDV */
@@ -3174,6 +3208,7 @@ struct modeprops
 	uint8_t txaudio;	/* источник звука для передачи */
 	uint8_t noisereduct;	/* включение NR для данного режима */
 #endif /* WITHIF4DSP */
+	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
 
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3806,6 +3841,7 @@ struct nvmap
 #define RMT_TXPOWER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txpower)
 #define RMT_TXCOMPR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txcompr)
 #define RMT_TXAUDIO_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudio)
+#define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
@@ -5433,20 +5469,6 @@ static void bring_swr(const char * label)
 	bring_swr_text = label;
 	actbring_swr = swrbring_time;
 	board_errbeep_enable(1);
-}
-
-///
-
-const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active)
-{
-	* active = 0;
-	return "Label";
-}
-
-const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
-{
-	* active = 0;
-	return "Value";
 }
 
 ///
@@ -7717,6 +7739,8 @@ getdefaultbandsubmode(
 
 #endif /* WITHIF4DSP */
 
+	static uint_fast8_t gmiddlepos [MODE_COUNT];
+
 #if WITHIF4DSP
 
 // Начальная загрузка значений из NVRAM
@@ -8541,6 +8565,8 @@ loadsavedstate(void)
 	uint_fast8_t mode;
 	for (mode = 0; mode < MODE_COUNT; ++ mode)
 	{
+		unsigned middlerowsize;
+		mdt [mode].getmiddlemenu(& middlerowsize);
 	#if WITHIF4DSP
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
@@ -8549,6 +8575,7 @@ loadsavedstate(void)
 	#if WITHIF4DSP
 		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
 	#endif /* WITHIF4DSP */
+		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
 	}
 }
 
@@ -16333,8 +16360,123 @@ display_menu_string(
 
 #if WITHMENU
 
+const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgcwpitch10,
+		& xgbkinenable,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgcwpitch10,
+		& xgvoxenable,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgcwpitch10,
+		& xgvoxenable,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgcwpitch10,
+		& xgvoxenable,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgcwpitch10,
+		& xgvoxenable,
+		& xgctssenable,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgcwpitch10,
+		& xgvoxenable,
+	};
+
+	* nitems = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active)
+{
+	unsigned nitems;
+	const uint_fast8_t bi = getbankindex_ab(0);
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	const struct paramdefdef * const * mpd = mdt [mode].getmiddlemenu(& nitems);
+	const unsigned apos = gmiddlepos [mode];
+	if (apos >= nitems)
+	{
+		* active = 0;
+		return & xgdummy;
+	}
+	* active = (section == apos);
+	return mpd [section];
+}
+
+const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active, unsigned size)
+{
+	const struct paramdefdef * pd = getmiddlemenu(section, active);
+	static char buff [32];
+	ASSERT(ARRAY_SIZE(buff) >= (size + 1));
+	ASSERT(pd);
+	safestrcpy(buff, size + 1, pd->qlabel);
+	buff [size] = '\0';
+
+	return buff;
+}
+
+const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, unsigned size)
+{
+	const struct paramdefdef * pd = getmiddlemenu(section, active);
+	static char buff [32];
+	ASSERT(ARRAY_SIZE(buff) >= (size + 1));
+	ASSERT(pd);
+
+	return "ZzZzZ";
+}
+
+
+///
 
 #include "menu.h"
+
 
 /* входит ли данный пункт меню в группу разрешённых для показа */
 static uint_fast8_t

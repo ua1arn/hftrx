@@ -149,28 +149,26 @@ static const FLASHMEM struct dzone dzones [] =
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
+#if 1
 	// Middle bar
-	{	0 + CHARS2GRID(5) * 0, MIDLABEL,	8,	4,	display2_midlabel0_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 1, MIDLABEL,	8,	4,	display2_midlabel1_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 2, MIDLABEL,	8,	4,	display2_midlabel2_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 3, MIDLABEL,	8,	4,	display2_midlabel3_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 4, MIDLABEL,	8,	4,	display2_midlabel4_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 5, MIDLABEL,	8,	4,	display2_midlabel5_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 6, MIDLABEL,	8,	4,	display2_midlabel6_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 7, MIDLABEL,	8,	4,	display2_midlabel7_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 8, MIDLABEL,	8,	4,	display2_midlabel8_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 9, MIDLABEL,	8,	4,	display2_midlabel9_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 0, MIDLABEL,	8,	4,	display2_midlabel0,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 1, MIDLABEL,	8,	4,	display2_midlabel1,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 2, MIDLABEL,	8,	4,	display2_midlabel2,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 3, MIDLABEL,	8,	4,	display2_midlabel3,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 4, MIDLABEL,	8,	4,	display2_midlabel4,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 5, MIDLABEL,	8,	4,	display2_midlabel5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 6, MIDLABEL,	8,	4,	display2_midlabel6,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 7, MIDLABEL,	8,	4,	display2_midlabel7,  & dzi_default, PG0, },
 
-	{	0 + CHARS2GRID(5) * 0, MIDVALUE,	8,	4,	display2_midvalue0_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 1, MIDVALUE,	8,	4,	display2_midvalue1_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 2, MIDVALUE,	8,	4,	display2_midvalue2_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 3, MIDVALUE,	8,	4,	display2_midvalue3_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 4, MIDVALUE,	8,	4,	display2_midvalue4_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 5, MIDVALUE,	8,	4,	display2_midvalue5_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 6, MIDVALUE,	8,	4,	display2_midvalue6_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 7, MIDVALUE,	8,	4,	display2_midvalue7_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 8, MIDVALUE,	8,	4,	display2_midvalue8_5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(5) * 9, MIDVALUE,	8,	4,	display2_midvalue9_5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 0, MIDVALUE,	8,	4,	display2_midvalue0,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 1, MIDVALUE,	8,	4,	display2_midvalue1,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 2, MIDVALUE,	8,	4,	display2_midvalue2,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 3, MIDVALUE,	8,	4,	display2_midvalue3,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 4, MIDVALUE,	8,	4,	display2_midvalue4,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 5, MIDVALUE,	8,	4,	display2_midvalue5,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 6, MIDVALUE,	8,	4,	display2_midvalue6,  & dzi_default, PG0, },
+	{	0 + CHARS2GRID(6) * 7, MIDVALUE,	8,	4,	display2_midvalue7,  & dzi_default, PG0, },
+#endif
 
 #if WITHSPECTRUMWF
 	{	0,	DLES,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
