@@ -513,6 +513,8 @@ struct enc2menudef
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
+static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active);
+
 struct menudef
 {
 	const struct paramdefdef * pd;
@@ -624,6 +626,22 @@ static uint_fast16_t
 calc_dir(uint_fast8_t reverse, uint_fast16_t v, uint_fast16_t low, uint_fast16_t high)
 {
 	return reverse ? calc_prev(v, low, high) : calc_next(v, low, high);
+}
+
+static uint_fast16_t
+calc_delta(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high, int delta)
+{
+	while (delta < 0)
+	{
+		v = calc_prev(v, low, high);
+		++ delta;
+	}
+	while (delta > 0)
+	{
+		v = calc_next(v, low, high);
+		-- delta;
+	}
+	return v;
 }
 
 /* модификация паметра по нажатиям - выбор следующего значения из допустимых (с "заворотом" через границы) */
@@ -8567,6 +8585,7 @@ loadsavedstate(void)
 	{
 		unsigned middlerowsize;
 		mdt [mode].getmiddlemenu(& middlerowsize);
+		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
 	#if WITHIF4DSP
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
@@ -8575,7 +8594,6 @@ loadsavedstate(void)
 	#if WITHIF4DSP
 		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
 	#endif /* WITHIF4DSP */
-		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
 	}
 }
 
@@ -13233,6 +13251,9 @@ static uint_fast8_t processpots(void)
 
 static uint_fast8_t processencoders(void)
 {
+	const uint_fast8_t bi = getbankindex_ab(0);
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
 	uint_fast8_t changed = 0;
 	// +++ получение состояния органов управления */
 #if WITHENCODER_1F
@@ -13274,43 +13295,56 @@ static uint_fast8_t processencoders(void)
 	{
 		const int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
 		if (delta)
-			bring_enc3f();
-		switch (enc3f_sel)
 		{
-		default:
-			break;
-		case 0:
-			break;
+			unsigned middlerowsize;
+			mdt [mode].getmiddlemenu(& middlerowsize);
+			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
+			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
+			changed = 1;
 		}
+//		if (delta)
+//			bring_enc3f();
+//		switch (enc3f_sel)
+//		{
+//		default:
+//			break;
+//		case 0:
+//			break;
+//		}
 	}
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
 	/* редактирование параметра в middle bar */
 
 	{
+		unsigned nitems;
+		const unsigned apos = gmiddlepos [mode];
+		const struct paramdefdef * const pd = mdt [mode].getmiddlemenu(& nitems) [gmiddlepos [mode]];
+
 		int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
-		//param_rotate(middlebar [gmiddlebarpos], delta);
+		param_rotate(pd, delta);
+		changed = changed || (delta != 0);
 		if (delta)
 			bring_enc4f();
-		switch (enc4f_sel)
-		{
-		default:
-			break;
-		case 0:
-			while (delta < 0)
-			{
-				uif_key_click_banddown();
-				++ delta;
-				changed = 1;
-			}
-			while (delta > 0)
-			{
-				uif_key_click_bandup();
-				-- delta;
-				changed = 1;
-			}
-			break;
-		}
+//		switch (enc4f_sel)
+//		{
+//		default:
+//			break;
+//		case 0:
+//			while (delta < 0)
+//			{
+//				uif_key_click_banddown();
+//				++ delta;
+//				changed = 1;
+//			}
+//			while (delta > 0)
+//			{
+//				uif_key_click_bandup();
+//				-- delta;
+//				changed = 1;
+//			}
+//			break;
+//		}
 	}
 #endif /* WITHENCODER_4F */
 
@@ -16441,7 +16475,7 @@ static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8
 	const uint_fast8_t mode = submodes [submode].mode;
 	const struct paramdefdef * const * mpd = mdt [mode].getmiddlemenu(& nitems);
 	const unsigned apos = gmiddlepos [mode];
-	if (apos >= nitems)
+	if (section >= nitems)
 	{
 		* active = 0;
 		return & xgdummy;
@@ -16468,8 +16502,24 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, uns
 	static char buff [32];
 	ASSERT(ARRAY_SIZE(buff) >= (size + 1));
 	ASSERT(pd);
+	long int value;
 
-	return "ZzZzZ";
+	if (pd->qpval16 != NULL)
+	{
+		value = pd->funcoffs() + * pd->qpval16;
+	}
+	else if (pd->qpval8 != NULL)
+	{
+		value = pd->funcoffs() + * pd->qpval8;
+	}
+	else
+	{
+		ASSERT(0);
+		value = pd->qbottom;	/* чтобы не ругался компилятор */
+	}
+	local_snprintf_P(buff, ARRAY_SIZE(buff), "%*ld", size, value);
+	buff [size] = '\0';
+	return buff;
 }
 
 
