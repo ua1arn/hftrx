@@ -3071,11 +3071,10 @@ static uint8_t dfu_dev_status [6];
 
 // После возврата отсюда ставим
 //	pusb->ep0_xfer_state = USB_EP0_DATA;
-static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
+static int32_t ep0_setup_in_handler_all(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
 	uint32_t temp = 0;
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 
 	pusb->ep0_xfer_residue = 0;
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
@@ -3601,39 +3600,16 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
 	return 0;
 }
 
-// Сперва проверяется RECIPNENT, потом TYPE
-static int32_t ep0_setup_out_handler(pusb_struct pusb)
-{
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-
-	switch (ep0_setup->bmRequest & 0x1F)
-	{
-	case USB_REQ_RECIPIENT_DEVICE:
-		ep0_out_handler_all(pusb);
-		break;
-	case USB_REQ_RECIPIENT_INTERFACE:
-		ep0_out_handler_all(pusb);
-		break;
-	case USB_REQ_RECIPIENT_ENDPOINT:
-		ep0_out_handler_all(pusb);
-		break;
-	default:
-		TP();
-		break;
-	}
-	return 0;
-}
-
 static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	return 0;
 }
 
-static void usb_dev_ep0_out(usb_struct * const pusb)
+// Тут стадия 2 установки формата передачи CDC
+static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 {
 	const uint32_t ep0_count = usb_get_ep0_count(pusb);
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	// OUT
 	static uint8_t buff [512];
@@ -3778,13 +3754,13 @@ static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
+	#if WITHWAWXXUSB
+		pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+	#else /* WITHWAWXXUSB */
+		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
+	#endif /* WITHWAWXXUSB */
 		if (ep0_csr & USB_CSR0_RXPKTRDY) // RxPktRdy
 		{
-#if WITHWAWXXUSB
-			pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-#else /* WITHWAWXXUSB */
-			pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
-#endif /* WITHWAWXXUSB */
 
 			if (ep0_count == 8)
 			{
@@ -3803,7 +3779,8 @@ static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					case USB_REQ_RECIPIENT_DEVICE:
 					case USB_REQ_RECIPIENT_INTERFACE:
 					case USB_REQ_RECIPIENT_ENDPOINT:
-						ep0_setup_in_handler_all(pusb);
+						ep0_setup_in_handler_all(pusb, ep0_setup);
+						pusb->ep0_xfer_state = USB_EP0_DATA;
 						break;
 
 					default:
@@ -3815,7 +3792,6 @@ static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
 
-				   	pusb->ep0_xfer_state = USB_EP0_DATA;
 				}
 				else
 				{
@@ -3829,17 +3805,22 @@ static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				// Not 8 bytes
 				if (ep0_setup->bmRequest & 0x80)
 				{
+					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+					// Not 8 bytes
 					//in
 				  	usb_ep0_flush_fifo(pusb);
 				}
 				else
 				{
+					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+					// Not 8 bytes
 					// out
 #if WITHWAWXXUSB
-					usb_dev_ep0_out(pusb);	// тут вторая стадия установки скоторсти CDC
+					usb_dev_ep0_out(pusb, ep0_setup);	// Тут стадия 2 установки формата передачи CDC
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
+					pusb->ep0_xfer_state = USB_EP0_SETUP;
 					pusb->ep0_xfer_residue = 0;
 				}
 			}
@@ -3847,7 +3828,19 @@ static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
 		{
 #if WITHWAWXXUSB
-			ep0_setup_out_handler(pusb);
+
+			switch (ep0_setup->bmRequest & 0x1F)
+			{
+			case USB_REQ_RECIPIENT_DEVICE:
+			case USB_REQ_RECIPIENT_INTERFACE:
+			case USB_REQ_RECIPIENT_ENDPOINT:
+				ep0_out_handler_all(pusb);	// Тут стадия 1 установки формата передачи CDC
+				break;
+			default:
+				TP();
+				usb_ep0_ctl_error(pusb);
+				break;
+			}
 #else
 			HAL_PCD_SetupStageCallback(hpcd);
 #endif
