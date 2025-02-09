@@ -1075,11 +1075,11 @@ static void usb_ep0_complete_send_data(pusb_struct pusb)
 	 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
 	 	if (is_last || (!byte_trans))
 	 	{
-	 		usb_set_ep0_csr(pusb, 0x0a);	// USB_TXCSR_FLUSHFIFO | USB_TXCSR_FIFONOTEMP
+	 		usb_set_ep0_csr(pusb, USB_TXCSR_FLUSHFIFO | USB_TXCSR_FIFONOTEMP);
 	 	}
 	 	else
 	 	{
-	 		usb_set_ep0_csr(pusb, 0x02);	// USB_TXCSR_FIFONOTEMP
+	 		usb_set_ep0_csr(pusb, USB_TXCSR_FIFONOTEMP);
 		}
 
 	 	if (usb_get_ep0_count(pusb))
@@ -3578,7 +3578,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb, pSetupPKG ep0_setup)
 #if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
     		// work (стадия 1, сюда доходит всегда)
-    		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
     		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
@@ -3606,17 +3606,18 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 }
 
 // Тут стадия 2 установки формата передачи CDC
-static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
+static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup, uint32_t ep0_count)
 {
-	const uint32_t ep0_count = usb_get_ep0_count(pusb);
+	PRINTF("Now count=%u\n", (unsigned) ep0_count);
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	// OUT
 	static uint8_t buff [512];
-	if ((ep0_setup->bmRequest & 0x80) == 0)
+	//if ((ep0_setup->bmRequest & 0x80) == 0)
 	{
 		// OUT
 		usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, AWUSB_MIN(sizeof buff, ep0_count));
-		usb_ep0_flush_fifo(pusb);
+		printhex(0, buff, ep0_count);
+		//usb_ep0_flush_fifo(pusb);
 
 	}
 
@@ -3675,7 +3676,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	  	case CDC_SET_LINE_CODING:
 	  		// work
 	   		// work (стадия 2, сюда доходит не всегда)
-	  		//PRINTF("usb_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+	  		PRINTF("usb_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
 	  		gbaudrate = USBD_peek_u32(buff);
 	  		break;
 	  	default:
@@ -3896,9 +3897,14 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 #endif
 
 ///////////////////////
+#if WITHWAWXXUSB
+	pSetupPKG const ep0_setup = & pusb->setup_packet;
+#else /* WITHWAWXXUSB */
+	pSetupPKG const ep0_setup = (pSetupPKG)(hpcd->Setup);
+#endif /* WITHWAWXXUSB */
 
 
-	PRINTF("ep0_csr=%02X, ep0_count=%04X, state=%d\n", (unsigned) ep0_count, (unsigned) ep0_count, !! pusb->ep0_xfer_state);
+	//PRINTF("ep0_csr=%02X, ep0_count=%04X, state=%d\n", (unsigned) ep0_count, (unsigned) ep0_count, !! pusb->ep0_xfer_state);
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
 		if (ep0_csr & USB_CSR0_RXPKTRDY)	// RxPktRdy - 16rd bit of USB_CSR0
@@ -3922,11 +3928,6 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
-	#if WITHWAWXXUSB
-		pSetupPKG ep0_setup = & pusb->setup_packet;
-	#else /* WITHWAWXXUSB */
-		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
-	#endif /* WITHWAWXXUSB */
 		if (ep0_csr & USB_CSR0_RXPKTRDY) // RxPktRdy
 		{
 
@@ -3980,14 +3981,15 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				}
 				else
 				{
-					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+					PRINTF("Not 8 bytes: ep0_count=%u\n", (unsigned) ep0_count);
 					// Not 8 bytes
 					// out
 #if WITHWAWXXUSB
-					usb_dev_ep0_out(pusb, ep0_setup);	// Тут стадия 2 установки формата передачи CDC
+					usb_dev_ep0_out(pusb, ep0_setup, ep0_count);	// Тут стадия 2 установки формата передачи CDC
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
+					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
 					pusb->ep0_xfer_state = USB_EP0_SETUP;
 					pusb->ep0_xfer_residue = 0;
 				}
