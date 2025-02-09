@@ -456,7 +456,8 @@ static uint32_t usb_get_ep0_csr(pusb_struct pusb)
 /* read out FIFO status */
 static void usb_set_ep0_csr(pusb_struct pusb, uint32_t csr)
 {
-	 WITHUSBHW_DEVICE->USB_TXCSRHI = csr;
+	WITHUSBHW_DEVICE->USB_TXCSRHI = csr;
+	//PRINTF("usb_set_ep0_csr: %02X\n", (unsigned) csr);
 }
 
 static uint32_t usb_get_eptx_csr(pusb_struct pusb)
@@ -3535,7 +3536,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb, pSetupPKG ep0_setup)
 
 		case USB_REQ_SET_ADDRESS:
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
+       		PRINTF("usb_device: Set Address 0x%02X\n", LO_BYTE(ep0_setup->wValue));
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
        		PRINTF("usb_device: Set Descriptor\n");
