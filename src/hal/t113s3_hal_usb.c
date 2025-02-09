@@ -3722,14 +3722,30 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 
 #endif /* WITHWAWXXUSB */
 
+
+static void __USBC_Dev_ep0_ClearStall(usb_struct * pusb)
+{
+	usb_set_ep0_csr(pusb, usb_get_ep0_csr(pusb) & ~ USB_CSR0_SENDSTALL);
+	usb_set_ep0_csr(pusb, usb_get_ep0_csr(pusb) & ~ USB_CSR0_SENTSTALL);
+//	USBC_REG_clear_bit_w(USBC_BP_CSR0_D_SEND_STALL, USBC_REG_CSR0(USBC0_BASE));
+//	USBC_REG_clear_bit_w(USBC_BP_CSR0_D_SENT_STALL, USBC_REG_CSR0(USBC0_BASE));
+}
+
 /* отсюда начинается разбор, что же пришло в EP0 */
-static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
+static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
 	usb_select_ep(pusb, 0);
 	const uint32_t ep0_csr = usb_get_ep0_csr(pusb);
 	const uint32_t ep0_count = usb_get_ep0_count(pusb);
+
+	if (ep0_csr & USB_CSR0_SENTSTALL)	// Endpoint Stalled
+	{
+	    /* Returned STALL packet to HOST. */
+	    __USBC_Dev_ep0_ClearStall(pusb);
+	    return;
+	}
 	//PRINTF("ep0_csr=%02X, ep0_count=%04X\n", (unsigned) ep0_count, (unsigned) ep0_count);
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
@@ -3846,8 +3862,6 @@ static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 #endif
 		}
 	} /* (pusb->ep0_xfer_state == USB_EP0_SETUP) */
-
-	return 1;
 }
 
 //static void usb_power_polling_dev(pusb_struct pusb)
@@ -4359,8 +4373,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	{
 		// tx interrupt, ep0 interrupt
-		uint32_t temp;
-		temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
+		uint32_t temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
 		usb_clear_eptx_interrupt_status(pusb, temp);
 		if (temp & 0x01)
 		{
@@ -4382,13 +4395,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	{
 		//rx interrupt
-		uint32_t temp;
-		uint32_t i;
-		temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
+		uint32_t temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
 		usb_clear_eprx_interrupt_status(pusb, temp);
 		if (temp&0xfffe)
 		{
-			for(i=0; i<USB_MAX_EP_NO; ++ i)
+		uint32_t i;
+			for(i = 0; i < USB_MAX_EP_NO; ++ i)
 			{
 				if (temp & (0x2<<i))
 				{
