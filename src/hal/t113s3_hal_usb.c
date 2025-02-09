@@ -960,15 +960,15 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 		}
 		src_addr = (uintptr_t) src;
 	}
-	if ((src_addr % 2) == 0 && count >= 2)
-	{
-		volatile const uint16_t * src = (volatile uint16_t *) src_addr;
-		for (; count >= 2; count -= 2)
-		{
-			put_hvalue(pipe, * src ++);
-		}
-		src_addr = (uintptr_t) src;
-	}
+//	if ((src_addr % 2) == 0 && count >= 2)
+//	{
+//		volatile const uint16_t * src = (volatile uint16_t *) src_addr;
+//		for (; count >= 2; count -= 2)
+//		{
+//			put_hvalue(pipe, * src ++);
+//		}
+//		src_addr = (uintptr_t) src;
+//	}
 	if (count != 0)
 	{
 		volatile const uint8_t * src = (volatile const uint8_t *) src_addr;
@@ -3580,8 +3580,8 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
 #if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
     		// work (стадия 1, сюда доходит всегда)
-    		PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
-    		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler
+    		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
+    		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
@@ -3650,7 +3650,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
   	{
 #if WITHUSBDFU && WITHWAWXXUSB
   	case INTERFACE_DFU_CONTROL:
-		PRINTF("usb_dev_ep0xfer_handler: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
+		PRINTF("usb_ep0xfer_handler: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
 		printhex(0, buff, ep0_count);
 
 		switch (ep0_setup->bRequest)
@@ -3681,7 +3681,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
 			break;
 		default:
 			pusb->ep0_xfer_residue = 0;
-			PRINTF("usb_dev_ep0xfer_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, (unsigned) ep0_setup->bRequest);
+			PRINTF("usb_ep0xfer_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, (unsigned) ep0_setup->bRequest);
 			break;
 		}
   		break;
@@ -3700,12 +3700,12 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
 	  	case CDC_SET_LINE_CODING:
 	  		// work
 	   		// work (стадия 2, сюда доходит не всегда)
-	  		PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+	  		//PRINTF("usb_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
 	  		gbaudrate = USBD_peek_u32(buff);
 	  		break;
 	  	default:
 	  		// work
-			PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
+			PRINTF("usb_ep0xfer_handler: CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
 			//printhex(0, buff, ep0_count);
 	  		break;
 	  	}
@@ -3747,13 +3747,14 @@ static void usb_dev_ep0_out(usb_struct * const pusb)
 #endif /* WITHWAWXXUSB */
 
 /* отсюда начинается разбор, что же пришло в EP0 */
-static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
+static uint32_t usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
 	usb_select_ep(pusb, 0);
 	const uint32_t ep0_csr = usb_get_ep0_csr(pusb);
-
+	const uint32_t ep0_count = usb_get_ep0_count(pusb);
+	//PRINTF("ep0_csr=%02X, ep0_count=%04X\n", (unsigned) ep0_count, (unsigned) ep0_count);
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
 		if (ep0_csr & USB_CSR0_RXPKTRDY)	// RxPktRdy - 16rd bit of USB_CSR0
@@ -3763,7 +3764,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else if (ep0_csr & USB_CSR0_SETUPEND)	// SetupEnd - 20th bit of USB_CSR0
 		{
 			usb_set_ep0_csr(pusb, USB_CSR0_SERVICESETUPEND);	// ServicedSetupEnd - 23rd bit of USB_CSR0
-			PRINTF("usb_dev_ep0xfer_handler: WRN: EP0 Setup End!!\n");
+			PRINTF("usb_ep0xfer_handler: WRN: EP0 Setup End!!\n");
 		}
 		else if (!(ep0_csr & USB_CSR0_TXPKTRDY))	// ! TxPktRdy - 17th bit of USB_CSR0
 		{
@@ -3771,7 +3772,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else
 		{
-			PRINTF("usb_dev_ep0xfer_handler: WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", (unsigned) ep0_csr);
+			PRINTF("usb_ep0xfer_handler: WRN: Unknown EP0 Interrupt, CSR=0x%x!!\n", (unsigned) ep0_csr);
 		}
 	}
 
@@ -3784,7 +3785,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 #else /* WITHWAWXXUSB */
 			pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 #endif /* WITHWAWXXUSB */
-			const uint32_t ep0_count = usb_get_ep0_count(pusb);
 
 			if (ep0_count == 8)
 			{
@@ -3798,8 +3798,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 				    pusb->ep0_xfer_residue = 0;
 #if WITHWAWXXUSB
-					//pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-
 					switch (ep0_setup->bmRequest & 0x1F)
 					{
 					case USB_REQ_RECIPIENT_DEVICE:
@@ -4367,27 +4365,25 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 
 	{
-		//tx interrupt
+		// tx interrupt, ep0 interrupt
 		uint32_t temp;
-		uint32_t i;
 		temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
 		usb_clear_eptx_interrupt_status(pusb, temp);
-		if (temp&0x01)
+		if (temp & 0x01)
 		{
-			//pusb->ep0_flag ++;
-			usb_dev_ep0xfer_handler(hpcd);
-			//ep0_irq_count ++;
+			// EP0 TX/RX interrupts
+			usb_ep0xfer_handler(hpcd);
 		}
-		if (temp&0xfffe)
+		if (temp & 0xfffe)
 		{
-			for(i=0; i<USB_MAX_EP_NO; ++ i)
+			uint32_t i;
+			for(i = 0; i < USB_MAX_EP_NO; ++ i)
 			{
-				if (temp & (0x2<<i))
+				if (temp & (0x2 << i))
 				{
-					pusb->eptx_flag[i] ++;
+					pusb->eptx_flag [i] ++;
 				}
 			}
-			//eptx_irq_count ++;
 		}
 	}
 
@@ -4403,10 +4399,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			{
 				if (temp & (0x2<<i))
 				{
-					pusb->eprx_flag[i] ++;
+					pusb->eprx_flag [i] ++;
 				}
 			}
-			//eprx_irq_count ++;
 		}
 	}
   	//usb_select_ep(pusb, ep_save);
