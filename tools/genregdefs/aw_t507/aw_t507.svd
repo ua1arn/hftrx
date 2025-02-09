@@ -17761,18 +17761,18 @@
   </interrupt>
   <registers>
    <cluster>
-    <dim>6</dim>
+    <dim>5</dim>
     <addressOffset>0x00000000</addressOffset>
     <register>
      <name>USB_EPFIFO</name>
      <displayName>USB_EPFIFO</displayName>
-     <description>USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N</description>
+     <description>USB_EPFIFO [0..4] USB FIFO Entry for Endpoint N</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x018</dimIncrement>
+    <dimIncrement>0x014</dimIncrement>
    </cluster>
    <register>
     <name>USB_GCS</name>
