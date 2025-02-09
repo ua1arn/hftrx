@@ -3817,6 +3817,7 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 #if 0
 	  unsigned req = pusb->setup_packet.bmRequest;
+	  PRINTF("1 bmRequest=%02X, bRequest=%02X\n", (unsigned) pusb->setup_packet.bmRequest, (unsigned) pusb->setup_packet.bRequest);
 	  if (ep0_csr & USB_CSR0_SETUPEND) {
 	    // TU_LOG1("   ABORT by the next packets\r\n");
 	    USBC_Dev_Ctrl_ClearSetupEnd(pusb);
@@ -3840,6 +3841,8 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	      process_setup_packet(pusb);
 	      return;
 	    }
+	    TP();
+		  PRINTF("2 bmRequest=%02X, bRequest=%02X\n", (unsigned) pusb->setup_packet.bmRequest, (unsigned) pusb->setup_packet.bRequest);
 	    if (pusb->pipe0.buf) {
 	      /* DATA OUT */
 	      const unsigned vld = usb_get_ep0_count(pusb);;
@@ -3859,10 +3862,13 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	    }
 	    return;
 	  }
+	    TP();
+		  PRINTF("3 bmRequest=%02X, bRequest=%02X\n", (unsigned) pusb->setup_packet.bmRequest, (unsigned) pusb->setup_packet.bRequest);
 
 	  /* When CSRL0 is zero, it means that completion of sending a any length packet
 	   * or receiving a zero length packet. */
 	  if (req != REQUEST_TYPE_INVALID && !tu_edpt_dir(req)) {
+		  TP();
 	    /* STATUS IN */
 		if (pusb->setup_packet.bmRequest == 0x00 && pusb->setup_packet.bRequest == 0x05) {
 	    	PRINTF("Do set address!\n");
@@ -3877,6 +3883,7 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	                            XFER_RESULT_SUCCESS, true);
 	    return;
 	  }
+	    TP();
 	  if (pusb->pipe0.buf) {
 	    /* DATA IN */
 	    pusb->pipe0.buf = NULL;
@@ -3891,16 +3898,16 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 ///////////////////////
 
 
-	//PRINTF("ep0_csr=%02X, ep0_count=%04X\n", (unsigned) ep0_count, (unsigned) ep0_count);
+	PRINTF("ep0_csr=%02X, ep0_count=%04X, state=%d\n", (unsigned) ep0_count, (unsigned) ep0_count, !! pusb->ep0_xfer_state);
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
 		if (ep0_csr & USB_CSR0_RXPKTRDY)	// RxPktRdy - 16rd bit of USB_CSR0
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;	// получили setup пакет
 		}
-		else if (ep0_csr & USB_CSR0_SETUPEND)	// SetupEnd - 20th bit of USB_CSR0
+		else if (ep0_csr & USB_CSR0_SETUPEND)	// SetupEnd - 20th bit of USB_CSR0 - may be 1st check?
 		{
-			usb_set_ep0_csr(pusb, USB_CSR0_SERVICESETUPEND);	// ServicedSetupEnd - 23rd bit of USB_CSR0
+			usb_set_ep0_csr(pusb, usb_get_ep0_csr(pusb) | USB_CSR0_SERVICESETUPEND);	// ServicedSetupEnd - 23rd bit of USB_CSR0
 			PRINTF("usb_ep0xfer_handler: WRN: EP0 Setup End!!\n");
 		}
 		else if (!(ep0_csr & USB_CSR0_TXPKTRDY))	// ! TxPktRdy - 17th bit of USB_CSR0
@@ -3916,7 +3923,7 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
 	#if WITHWAWXXUSB
-		pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+		pSetupPKG ep0_setup = & pusb->setup_packet;
 	#else /* WITHWAWXXUSB */
 		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 	#endif /* WITHWAWXXUSB */
@@ -3930,7 +3937,7 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
-
+					// продолжаем читать
 					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
 
 				    pusb->ep0_xfer_residue = 0;
@@ -3985,6 +3992,10 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					pusb->ep0_xfer_residue = 0;
 				}
 			}
+		}
+		else if (ep0_csr & USB_CSR0_SETUPEND)
+		{
+			TP();
 		}
 		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
 		{
@@ -4456,6 +4467,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	if (irqstatus & USB_BUSINT_RESET)
 	{
+		PRINTF("Bus reset\n");
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
 
 		/* When bmRequestType is REQUEST_TYPE_INVALID(0xFF),
@@ -4525,7 +4537,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 
 	{
-		// tx interrupt, ep0 interrupt
+		// ep0 interrupt
 		uint32_t temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
 		usb_clear_eptx_interrupt_status(pusb, temp);
 		if (temp & 0x01)
@@ -4533,6 +4545,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			// EP0 TX/RX interrupts
 			usb_ep0xfer_handler(hpcd);
 		}
+		// tx interrupt
 		if (temp & 0xfffe)
 		{
 			uint32_t i;
@@ -4547,7 +4560,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	}
 
 	{
-		//rx interrupt
+		// rx interrupt
 		uint32_t temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
 		usb_clear_eprx_interrupt_status(pusb, temp);
 		if (temp&0xfffe)

@@ -170,10 +170,6 @@ typedef struct {
 
 	#define USB_BUFFER_SIZE							256
 
-#if WITHWAWXXUSB
-	//#define USB_EP0_OUT_BUFFER_START		8
-	volatile uint8_t buffer[USB_BUFFER_SIZE];
-#endif
 	//uint32_t power_debouce;
 	uSetupPKG setup_packet;
 	pipe_state_t pipe0;
