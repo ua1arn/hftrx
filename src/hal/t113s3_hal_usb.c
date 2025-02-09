@@ -882,6 +882,8 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 //		return;
 //	}
 
+	void * pp = (void *) dest_addr;
+	unsigned cc = count;
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
 
 	if ((dest_addr % 4) == 0 && count >= 4)
@@ -904,15 +906,15 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 		}
 		dest_addr = (uintptr_t) dest;
 	}
-	if ((dest_addr % 2) == 0 && count >= 2)
-	{
-		volatile uint16_t * dest = (volatile uint16_t *) dest_addr;
-		for (; count >= 2; count -= 2)
-		{
-			* dest ++ = get_hvalue(pipe);
-		}
-		dest_addr = (uintptr_t) dest;
-	}
+//	if ((dest_addr % 2) == 0 && count >= 2)
+//	{
+//		volatile uint16_t * dest = (volatile uint16_t *) dest_addr;
+//		for (; count >= 2; count -= 2)
+//		{
+//			* dest ++ = get_hvalue(pipe);
+//		}
+//		dest_addr = (uintptr_t) dest;
+//	}
 	if (count != 0)
 	{
 		volatile uint8_t * dest = (volatile uint8_t *) dest_addr;
@@ -922,6 +924,7 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 			* dest ++ = get_bvalue(pipe);
 		}
 	}
+	//printhex(0, pp, cc);
 }
 
 
@@ -3621,37 +3624,6 @@ static int32_t ep0_setup_out_handler(pusb_struct pusb)
 	return 0;
 }
 
-// Сперва проверяется RECIPNENT, потом TYPE
-static int32_t ep0_setup_in_handler(pusb_struct pusb)
-{
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-
-	switch (ep0_setup->bmRequest & 0x1F)
-	{
-	case USB_REQ_RECIPIENT_DEVICE:
-		ep0_setup_in_handler_all(pusb);
-		break;
-	case USB_REQ_RECIPIENT_INTERFACE:
-		ep0_setup_in_handler_all(pusb);
-		break;
-	case USB_REQ_RECIPIENT_ENDPOINT:
-		ep0_setup_in_handler_all(pusb);
-		break;
-	default:
-		TP();
-		usb_ep0_ctl_error(pusb);
-		break;
-	}
-	return 0;
-}
-
-static int32_t ep0_setup_handler(pusb_struct pusb)
-{
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-
-	return 0;
-}
-
 static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
@@ -3826,15 +3798,30 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 				    pusb->ep0_xfer_residue = 0;
 #if WITHWAWXXUSB
-					ep0_setup_in_handler(pusb);
+					//pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+
+					switch (ep0_setup->bmRequest & 0x1F)
+					{
+					case USB_REQ_RECIPIENT_DEVICE:
+					case USB_REQ_RECIPIENT_INTERFACE:
+					case USB_REQ_RECIPIENT_ENDPOINT:
+						ep0_setup_in_handler_all(pusb);
+						break;
+
+					default:
+						TP();
+						usb_ep0_ctl_error(pusb);
+						break;
+					}
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
 
 				   	pusb->ep0_xfer_state = USB_EP0_DATA;
 				}
-				else                         //out
+				else
 				{
+					// out
 					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
 					pusb->ep0_xfer_state = USB_EP0_SETUP;
 				}
@@ -3842,14 +3829,16 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			else
 			{
 				// Not 8 bytes
-				if (ep0_setup->bmRequest & 0x80)//in
+				if (ep0_setup->bmRequest & 0x80)
 				{
+					//in
 				  	usb_ep0_flush_fifo(pusb);
 				}
 				else
 				{
+					// out
 #if WITHWAWXXUSB
-					usb_dev_ep0_out(pusb);
+					usb_dev_ep0_out(pusb);	// тут вторая стадия установки скоторсти CDC
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
