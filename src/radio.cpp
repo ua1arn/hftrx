@@ -3206,7 +3206,7 @@ __TIME__;
 /* Шаблон данных для тестирования доступа к NVRAM */
 static const FLASHMEM char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]] =
 {
-	"DEADBEEF"
+	'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
 };
 
 /* структура - расположение байтов в конфигурационной памяти.
