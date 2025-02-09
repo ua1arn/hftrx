@@ -412,39 +412,39 @@ static void usb_ep0_flush_fifo(pusb_struct pusb)
 	WITHUSBHW_DEVICE->USB_TXCSRHI |= USB_CSR0_FLUSHFIFO;	// CSR0 bit 24
 }
 
-static uint32_t usb_ep0_is_naktimeout(pusb_struct pusb)
-{
-	return (WITHUSBHW_DEVICE->USB_TXCSRHI >> 7) & 0x1;
-}
+//static uint32_t usb_ep0_is_naktimeout(pusb_struct pusb)
+//{
+//	return (WITHUSBHW_DEVICE->USB_TXCSRHI >> 7) & 0x1;
+//}
+//
+//static void usb_ep0_clear_naktimeout(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 7);
+//}
 
-static void usb_ep0_clear_naktimeout(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 7);
-}
-
-static void usb_ep0_set_statuspkt(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);
-}
-
-static void usb_ep0_clear_statuspkt(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 6);
-}
-
-static void usb_ep0_set_reqpkt(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 5);
-}
+//static void usb_ep0_set_statuspkt(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);	// ??  USB_CSR0_SERVICERXPKTRDY
+//}
+//
+//static void usb_ep0_clear_statuspkt(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 6);	// ??  USB_CSR0_SERVICERXPKTRDY
+//}
+//
+//static void usb_ep0_set_reqpkt(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 5);	// ?? USB_CSR0_SENDSTALL
+//}
 
 static void usb_ep0_clear_setupend(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 7);
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 7);	// USB_CSR0_SERVICESETUPEND
 }
 
 static void usb_ep0_clear_rxpktrdy(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);	// USB_CSR0_SERVICERXPKTRDY
 }
 
 
