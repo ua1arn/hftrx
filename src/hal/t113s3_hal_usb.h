@@ -62,6 +62,14 @@ typedef struct {
 	uint32_t csw_fail_flag;
 } usb_device_msc;
 
+
+typedef struct
+{
+  void      *buf;      /* the start address of a transfer data buffer */
+  uint16_t  length;    /* the number of bytes in the buffer */
+  uint16_t  remaining; /* the number of bytes remaining in the buffer */
+} pipe_state_t;
+
 typedef struct {
 	//USB SIE Hardware Config
 	//uint32_t index;
@@ -167,7 +175,15 @@ typedef struct {
 	volatile uint8_t buffer[USB_BUFFER_SIZE];
 #endif
 	//uint32_t power_debouce;
+	uSetupPKG setup_packet;
+	pipe_state_t pipe0;
+	pipe_state_t pipe[2][7];   /* pipe[direction][endpoint number - 1] */
+	uint16_t     remaining_ctrl; /* The number of bytes remaining in data stage of control transfer. */
+	int8_t       status_out;
+
 } usb_struct, *pusb_struct;
+
+#define REQUEST_TYPE_INVALID  (0xFFu)
 
 #if WITHUSBDMSC
 

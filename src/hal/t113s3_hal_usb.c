@@ -3465,7 +3465,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb, pSetupPKG ep0_setup)
 	return 0;
 }
 
-static int32_t ep0_out_handler_all(pusb_struct pusb)
+static int32_t ep0_out_handler_all(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static const uint8_t TestPkt [54] =
 	{
@@ -3477,7 +3477,6 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
 		0xFB, 0xFD, 0x7E, 0x00
 	};
 
-	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	switch (ep0_setup->bRequest)
 	{
@@ -3536,7 +3535,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
 
 		case USB_REQ_SET_ADDRESS:
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		//PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
+       		PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
        		PRINTF("usb_device: Set Descriptor\n");
@@ -3731,6 +3730,72 @@ static void __USBC_Dev_ep0_ClearStall(usb_struct * pusb)
 //	USBC_REG_clear_bit_w(USBC_BP_CSR0_D_SENT_STALL, USBC_REG_CSR0(USBC0_BASE));
 }
 
+static void USBC_Dev_Ctrl_ClearSetupEnd(usb_struct * pusb)
+{
+	usb_set_ep0_csr(pusb, usb_get_ep0_csr(pusb) | USB_CSR0_SERVICESETUPEND);
+	//USBC_REG_set_bit_w(USBC_BP_CSR0_D_SERVICED_SETUP_END, USBC_REG_CSR0(USBC0_BASE));
+}
+
+static void __USBC_Dev_ep0_ReadDataHalf(usb_struct * pusb)
+{
+	usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+	//USBC_Writew(1<<USBC_BP_CSR0_D_SERVICED_RX_PKT_READY, USBC_REG_CSR0(USBC0_BASE));
+}
+
+// helper to send transfer complete event
+static void dcd_event_xfer_complete (
+		usb_struct * pusb,
+		uint8_t ep_addr,
+		uint32_t xferred_bytes,
+		uint8_t result,
+		bool in_isr)
+{
+  //dcd_event_t event = { .rhport = rhport, .event_id = DCD_EVENT_XFER_COMPLETE };
+//
+//  event.xfer_complete.ep_addr = ep_addr;
+//  event.xfer_complete.len     = xferred_bytes;
+//  event.xfer_complete.result  = result;
+//
+//  dcd_event_handler(&event, in_isr);
+	PRINTF("dcd_event_xfer_complete: ep=%02X, byres=%04X\n", (unsigned) ep_addr, (unsigned) xferred_bytes);
+	  usb_ep0_ctl_status_send(pusb);
+}
+
+// helper to send setup received
+// разбор setup пакета
+static void dcd_event_setup_received(usb_struct * pusb, uint8_t const * setup, bool in_isr) {
+//  dcd_event_t event = { .rhport = rhport, .event_id = DCD_EVENT_SETUP_RECEIVED };
+//  memcpy(&event.setup_received, setup, sizeof(tusb_control_request_t));
+//
+//  dcd_event_handler(&event, in_isr);
+  printhex(0, setup, 8);
+  if (tu_edpt_dir(pusb->setup_packet.bmRequest))
+	  ep0_setup_in_handler_all(pusb, (pSetupPKG) setup);
+  else
+  {
+	  ep0_out_handler_all(pusb, (pSetupPKG) setup);
+  	  //usb_ep0_ctl_status_send(pusb);
+  }
+}
+
+static void process_setup_packet(usb_struct * pusb)
+{
+  usb_read_ep_fifo(pusb, 0, (uintptr_t) &pusb->setup_packet, 8);
+
+  pusb->pipe0.buf       = NULL;
+  pusb->pipe0.length    = 0;
+  pusb->pipe0.remaining = 0;
+
+  // разбор setup пакета
+  dcd_event_setup_received(pusb, (const uint8_t*)(uintptr_t)&pusb->setup_packet, true);
+
+  const unsigned len    = pusb->setup_packet.wLength;
+  pusb->remaining_ctrl   = len;
+  const unsigned dir_in = tu_edpt_dir(pusb->setup_packet.bmRequest);
+  /* Clear RX FIFO and reverse the transaction direction */
+  if (len && dir_in) __USBC_Dev_ep0_ReadDataHalf(pusb);
+}
+
 /* отсюда начинается разбор, что же пришло в EP0 */
 static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
@@ -3746,6 +3811,83 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	    __USBC_Dev_ep0_ClearStall(pusb);
 	    return;
 	}
+
+#if 0
+	  unsigned req = pusb->setup_packet.bmRequest;
+	  if (ep0_csr & USB_CSR0_SETUPEND) {
+	    // TU_LOG1("   ABORT by the next packets\r\n");
+	    USBC_Dev_Ctrl_ClearSetupEnd(pusb);
+	    if (req != REQUEST_TYPE_INVALID && pusb->pipe0.buf) {
+	      /* DATA stage was aborted by receiving STATUS or SETUP packet. */
+	      pusb->pipe0.buf = NULL;
+	      pusb->setup_packet.bmRequest = REQUEST_TYPE_INVALID;
+	      dcd_event_xfer_complete(pusb,
+	                              req & TUSB_DIR_IN_MASK,
+	                              pusb->pipe0.length - pusb->pipe0.remaining,
+	                              XFER_RESULT_SUCCESS, true);
+	    }
+	    req = REQUEST_TYPE_INVALID;
+	    if (!(ep0_csr & USB_CSR0_RXPKTRDY)) return; /* Received SETUP packet */
+	  }
+
+	  if (ep0_csr & USB_CSR0_RXPKTRDY) {
+	    /* Received SETUP or DATA OUT packet */
+	    if (req == REQUEST_TYPE_INVALID) {
+	      /* SETUP */
+	      process_setup_packet(pusb);
+	      return;
+	    }
+	    if (pusb->pipe0.buf) {
+	      /* DATA OUT */
+	      const unsigned vld = usb_get_ep0_count(pusb);;
+	      const unsigned rem = pusb->pipe0.remaining;
+	      const unsigned len = TU_MIN(TU_MIN(rem, 64), vld);
+	      //pipe_read_packet(pusb->pipe0.buf, (volatile void*)USBC_REG_EPFIFO0(USBC0_BASE), len);
+		  usb_read_ep_fifo(pusb, 0, (uintptr_t) pusb->pipe0.buf, len);
+
+	      pusb->pipe0.remaining = rem - len;
+	      pusb->remaining_ctrl -= len;
+
+	      pusb->pipe0.buf = NULL;
+	      dcd_event_xfer_complete(pusb,
+	                              tu_edpt_addr(0, TUSB_DIR_OUT),
+	                              pusb->pipe0.length - pusb->pipe0.remaining,
+	                              XFER_RESULT_SUCCESS, true);
+	    }
+	    return;
+	  }
+
+	  /* When CSRL0 is zero, it means that completion of sending a any length packet
+	   * or receiving a zero length packet. */
+	  if (req != REQUEST_TYPE_INVALID && !tu_edpt_dir(req)) {
+	    /* STATUS IN */
+	    if (*(const uint16_t*)(uintptr_t)&pusb->setup_packet == 0x0500) {
+	    	PRINTF("Do set address!\n");
+	      /* The address must be changed on completion of the control transfer. */
+		  //USBC_Dev_SetAddress((uint8_t)pusb->setup_packet.wValue);
+			usb_set_dev_addr(pusb, LO_BYTE(pusb->setup_packet.wValue));
+	    }
+	    pusb->setup_packet.bmRequest = REQUEST_TYPE_INVALID;
+	    dcd_event_xfer_complete(pusb,
+	                            tu_edpt_addr(0, TUSB_DIR_IN),
+	                            pusb->pipe0.length - pusb->pipe0.remaining,
+	                            XFER_RESULT_SUCCESS, true);
+	    return;
+	  }
+	  if (pusb->pipe0.buf) {
+	    /* DATA IN */
+	    pusb->pipe0.buf = NULL;
+	    dcd_event_xfer_complete(pusb,
+	                            tu_edpt_addr(0, TUSB_DIR_IN),
+	                            pusb->pipe0.length - pusb->pipe0.remaining,
+	                            XFER_RESULT_SUCCESS, true);
+	  }
+	  return;
+#endif
+
+///////////////////////
+
+
 	//PRINTF("ep0_csr=%02X, ep0_count=%04X\n", (unsigned) ep0_count, (unsigned) ep0_count);
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
@@ -3850,7 +3992,7 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			case USB_REQ_RECIPIENT_DEVICE:
 			case USB_REQ_RECIPIENT_INTERFACE:
 			case USB_REQ_RECIPIENT_ENDPOINT:
-				ep0_out_handler_all(pusb);	// Тут стадия 1 установки формата передачи CDC
+				ep0_out_handler_all(pusb, ep0_setup);	// Тут стадия 1 установки формата передачи CDC
 				break;
 			default:
 				TP();
@@ -4312,6 +4454,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	if (irqstatus & USB_BUSINT_RESET)
 	{
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
+
+		/* When bmRequestType is REQUEST_TYPE_INVALID(0xFF),
+		* a control transfer state is SETUP or STATUS stage. */
+		pusb->setup_packet.bmRequest = REQUEST_TYPE_INVALID;
+		pusb->status_out = 0;
+		/* When pipe0.buf has not NULL, DATA stage works in progress. */
+		pusb->pipe0.buf = NULL;
+
 		uint32_t temp;
 		uint32_t i;
 		//Device Reset Service Subroutine
