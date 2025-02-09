@@ -3770,11 +3770,13 @@ static void dcd_event_setup_received(usb_struct * pusb, uint8_t const * setup, b
 //  dcd_event_handler(&event, in_isr);
   printhex(0, setup, 8);
   if (tu_edpt_dir(pusb->setup_packet.bmRequest))
+  {
 	  ep0_setup_in_handler_all(pusb, (pSetupPKG) setup);
+  }
   else
   {
+  	  usb_ep0_ctl_status_send(pusb);
 	  ep0_out_handler_all(pusb, (pSetupPKG) setup);
-  	  //usb_ep0_ctl_status_send(pusb);
   }
 }
 
@@ -3799,6 +3801,7 @@ static void process_setup_packet(usb_struct * pusb)
 /* отсюда начинается разбор, что же пришло в EP0 */
 static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
+	//dbg_putchar('.');
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
 	usb_select_ep(pusb, 0);
@@ -3861,7 +3864,7 @@ static void usb_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	   * or receiving a zero length packet. */
 	  if (req != REQUEST_TYPE_INVALID && !tu_edpt_dir(req)) {
 	    /* STATUS IN */
-	    if (*(const uint16_t*)(uintptr_t)&pusb->setup_packet == 0x0500) {
+		if (pusb->setup_packet.bmRequest == 0x00 && pusb->setup_packet.bRequest == 0x05) {
 	    	PRINTF("Do set address!\n");
 	      /* The address must be changed on completion of the control transfer. */
 		  //USBC_Dev_SetAddress((uint8_t)pusb->setup_packet.wValue);
