@@ -4404,7 +4404,7 @@ enum
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
-		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t guacplayer = !1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
@@ -16469,9 +16469,12 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-#if WITHVOX && WITHTX
+	#if WITHVOX && WITHTX
 		& xgvoxenable,
-#endif /* WITHVOX && WITHTX */
+	#endif /* WITHVOX && WITHTX */
+	#if WITHTX && WITHAFCODEC1HAVEPROC
+		& xgmikeequalizer
+	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16483,9 +16486,12 @@ const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-#if WITHVOX && WITHTX
+	#if WITHVOX && WITHTX
 		& xgvoxenable,
-#endif /* WITHVOX && WITHTX */
+	#endif /* WITHVOX && WITHTX */
+	#if WITHTX && WITHAFCODEC1HAVEPROC
+		& xgmikeequalizer
+	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16497,9 +16503,9 @@ const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-#if WITHVOX && WITHTX
+	#if WITHVOX && WITHTX
 		& xgvoxenable,
-#endif /* WITHVOX && WITHTX */
+	#endif /* WITHVOX && WITHTX */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16511,12 +16517,15 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-#if WITHVOX && WITHTX
+	#if WITHVOX && WITHTX
 		& xgvoxenable,
-#endif /* WITHVOX && WITHTX */
-#if WITHSUBTONES && WITHTX
+	#endif /* WITHVOX && WITHTX */
+	#if WITHSUBTONES && WITHTX
 		& xgctssenable,
-#endif /* WITHSUBTONES && WITHTX */
+	#endif /* WITHSUBTONES && WITHTX */
+	#if WITHTX && WITHAFCODEC1HAVEPROC
+		& xgmikeequalizer
+	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16528,9 +16537,9 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-#if WITHVOX && WITHTX
+	#if WITHVOX && WITHTX
 		& xgvoxenable,
-#endif /* WITHVOX && WITHTX */
+	#endif /* WITHVOX && WITHTX */
 	};
 
 	* nitems = ARRAY_SIZE(middlemenu);
