@@ -1735,16 +1735,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC EQUA"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gmikeequalizer),
-		nvramoffs0,
-		NULL,
-		& gmikeequalizer,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgmikeequalizer,	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	(const struct paramdefdef [1]) {
 		QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,

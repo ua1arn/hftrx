@@ -535,7 +535,6 @@ ismenukinddp(
 
 /* Сохранить параметр после редактирования */
 static void
-//NOINLINEAT
 savemenuvalue(
 	const FLASHMEM struct paramdefdef * pd
 	)
@@ -564,6 +563,50 @@ savemenuvalue(
 			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 	}
+}
+
+static void
+param_setvalue(
+	const FLASHMEM struct paramdefdef * pd,
+	int_fast32_t v
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		uint_fast16_t * const pv16 = pd->qpval16;
+		uint_fast8_t * const pv8 = pd->qpval8;
+
+		if (pv16 != NULL)
+		{
+			* pv16 = v - pd->funcoffs();
+		}
+		else if (pv8 != NULL)
+		{
+			* pv8 = v - pd->funcoffs();
+		}
+	}
+}
+
+static int_fast32_t
+param_getvalue(
+	const FLASHMEM struct paramdefdef * pd
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		const uint_fast16_t * const pv16 = pd->qpval16;
+		const uint_fast8_t * const pv8 = pd->qpval8;
+
+		if (pv16 != NULL)
+		{
+			return (int_fast32_t) * pv16 + pd->funcoffs();
+		}
+		else if (pv8 != NULL)
+		{
+			return (int_fast32_t) * pv8 + pd->funcoffs();
+		}
+	}
+	return 0;
 }
 
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
@@ -4361,7 +4404,7 @@ enum
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
-		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
@@ -4443,6 +4486,18 @@ enum
 		{
 			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
+		};
+		// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+		static const struct paramdefdef xgmikeequalizer =
+		{
+			QLABEL("MIC EQUA"), 8, 3, RJ_ON,	ISTEP1,
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gmikeequalizer),
+			nvramoffs0,
+			NULL,
+			& gmikeequalizer,
+			getzerobase, /* складывается со смещением и отображается */
 		};
 	#endif /* WITHAFCODEC1HAVEPROC */
 #if WITHAFEQUALIZER
@@ -20263,13 +20318,13 @@ void hamradio_set_gmikeboost20db(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gmikeequalizer(void)
 {
-	return gmikeequalizer;
+	return param_getvalue(& xgmikeequalizer);
 }
 
 void hamradio_set_gmikeequalizer(uint_fast8_t v)
 {
-	gmikeequalizer = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gmikeequalizer), gmikeequalizer);
+	param_setvalue(& xgmikeequalizer, v != 0);
+	savemenuvalue(& xgmikeequalizer);
 	updateboard(1, 0);
 }
 
