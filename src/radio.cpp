@@ -16400,7 +16400,9 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
+#if WITHTX
 		& xgbkinenable,
+#endif /* WITHTX */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16412,7 +16414,9 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
+#if WITHVOX && WITHTX
 		& xgvoxenable,
+#endif /* WITHVOX && WITHTX */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16424,7 +16428,9 @@ const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
+#if WITHVOX && WITHTX
 		& xgvoxenable,
+#endif /* WITHVOX && WITHTX */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16436,7 +16442,9 @@ const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
+#if WITHVOX && WITHTX
 		& xgvoxenable,
+#endif /* WITHVOX && WITHTX */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16448,8 +16456,12 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
+#if WITHVOX && WITHTX
 		& xgvoxenable,
+#endif /* WITHVOX && WITHTX */
+#if WITHSUBTONES && WITHTX
 		& xgctssenable,
+#endif /* WITHSUBTONES && WITHTX */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16461,7 +16473,9 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
+#if WITHVOX && WITHTX
 		& xgvoxenable,
+#endif /* WITHVOX && WITHTX */
 	};
 
 	* nitems = ARRAY_SIZE(middlemenu);
