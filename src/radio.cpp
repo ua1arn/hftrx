@@ -4083,7 +4083,7 @@ static uint_fast8_t gusefast;
 	static uint_fast8_t gvfoab;	/* 1: vfoa/vfob swapped */
 	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
 #else /* WITHSPLIT */
-	static const uint_fast8_t gvfoab;	/* (vfoa/vfob) */
+	static const uint_fast8_t gvfoab = 0;	/* (vfoa/vfob) */
 	static const uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
 #endif /* WITHSPLIT */
 
@@ -4497,8 +4497,8 @@ enum
 #else /* WITHUSEUSBBT */
 	enum { gusbbt = 0 };
 #endif /* WITHUSEUSBBT */
-	static const uint_fast8_t gagcoff;
-	static const uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
+	static const uint_fast8_t gagcoff = 0;
+	static const uint_fast8_t gdatamode = 0;	/* передача звука с USB вместо обычного источника */
 	uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 #endif /* WITHIF4DSP */
 
@@ -4949,7 +4949,7 @@ enum
 
 #else
 	//static const uint_fast8_t elkeymode = 2;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-	//static const uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+	//static const uint_fast8_t elkeyslope = 0;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 #endif
 
 static uint_fast8_t stayfreq;			/* при изменении режимов кнопками - не меняем частоту */
