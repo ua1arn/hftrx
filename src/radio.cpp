@@ -770,7 +770,7 @@ static int_fast32_t getzerobase(void)
 
 const static struct paramdefdef xgdummy =
 {
-	QLABEL("DUMMY "), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
+	QLABEL("      "), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
 	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -16454,6 +16454,9 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 {
 	static const struct paramdefdef * const middlemenu [] =
 	{
+#if WITHELKEY
+		& xgelkeywpm,
+#endif /* WITHELKEY */
 		& xgcwpitch10,
 #if WITHTX && WITHELKEY
 		& xgbkinenable,
