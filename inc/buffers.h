@@ -65,6 +65,7 @@ extern "C" {
 		// Slot S1, S5: Old sample (T-2)
 		// Slot S2, S6: Old sample (T-1)
 		// Slot S3, S7: Newest sample (T-0)
+	#if WITHWFM
 		#define DMABUF32RXWFM0I	0		// WFM OLDEST
 		#define DMABUF32RXWFM0Q	4		// WFM
 		#define DMABUF32RXWFM1I	1		// WFM
@@ -73,6 +74,7 @@ extern "C" {
 		#define DMABUF32RXWFM2Q	6		// WFM
 		#define DMABUF32RXWFM3I	3		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
+	#endif /* WITHWFM */
 
 	#elif CPUSTYLE_RK356X &&  WITHFPGAIF_FRAMEBITS == 512
 
