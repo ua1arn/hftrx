@@ -8581,7 +8581,7 @@ void display2_fnvalue9(
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
-// split, lock, s-meter display
+// split, s-meter display
 static void
 loadsavedstate(void)
 {
