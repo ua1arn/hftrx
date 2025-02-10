@@ -24,6 +24,7 @@ int sdl2_render_init(void)
         return 0;
     }
 
+    // Установить атрибуты для настройки аппаратного ускорения графики
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
@@ -40,14 +41,15 @@ int sdl2_render_init(void)
     }
 
     // Get OpenGL version information
-    const char* glVersion = (const char*)glGetString(GL_VERSION);
-    const char* glRenderer = (const char*)glGetString(GL_RENDERER);
+    const char * glVersion = (const char *) glGetString(GL_VERSION);
+    const char * glRenderer = (const char *) glGetString(GL_RENDERER);
     printf("OpenGL Version: %s\n", glVersion);
     printf("OpenGL Renderer: %s\n", glRenderer);
 
-    SDL_RenderSetScale(renderer, 1.28f, 1.25f); // 800x480 -> 1024x600
-    ASSERT(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"));
+    SDL_RenderSetScale(renderer, 1.28f, 1.25f); 				// 800x480 -> 1024x600
+    ASSERT(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"));	// Antialiasing для масштабированных объектов
 
+    // Текстура для отрисовки фреймбуфера
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, DIM_X, DIM_Y);
     if (! texture) return 0;
 
@@ -64,6 +66,7 @@ void sdl2_render_close(void)
 
 void sdl2_render_update(uintptr_t frame)
 {
+	// Натянуть фреймбуфер на текстуру
 	ASSERT(! SDL_UpdateTexture(texture, NULL, (PACKEDCOLORPIP_T *) frame, DIM_X * sizeof(PACKEDCOLORPIP_T)));
 	SDL_Rect destRect = { 0, 0, DIM_X, DIM_Y };
 	SDL_RenderCopy(renderer, texture, NULL, & destRect);
