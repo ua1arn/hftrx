@@ -385,7 +385,7 @@ static void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t 
 
 static uint32_t usb_get_eptx_maxpkt(pusb_struct pusb)
 {
-	uint32_t v = WITHUSBHW_DEVICE->USB_TXMAXP;	// TXCSR bits 15..0
+	const uint32_t v = WITHUSBHW_DEVICE->USB_TXMAXP;	// TXCSR bits 15..0
 	return (v & 0x7ff) * (((v & 0xf800) >> 11) + 1);
 }
 
@@ -3536,7 +3536,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb, pSetupPKG ep0_setup)
 
 		case USB_REQ_SET_ADDRESS:
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		PRINTF("usb_device: Set Address 0x%02X\n", LO_BYTE(ep0_setup->wValue));
+       		//PRINTF("usb_device: Set Address 0x%02X\n", LO_BYTE(ep0_setup->wValue));
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
        		PRINTF("usb_device: Set Descriptor\n");
@@ -4470,7 +4470,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	if (irqstatus & USB_BUSINT_RESET)
 	{
-		PRINTF("Bus reset\n");
+		//PRINTF("Bus reset\n");
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
 
 		/* When bmRequestType is REQUEST_TYPE_INVALID(0xFF),
