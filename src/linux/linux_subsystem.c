@@ -1181,38 +1181,98 @@ void server_start(void)
 
 /*************************************************************/
 
-#if WITHPULSE
+#if WITHALSA
 
-#include <pulse/simple.h>
-#include <pulse/error.h>
+#include <alsa/asoundlib.h>
 
-pthread_t pa_t;
-pa_simple * pa_phones = NULL;
-int error;
+pthread_t alsa_t;
 
-void pulse_init(void)
+snd_pcm_t * pcm_ph = NULL;
+snd_pcm_uframes_t frames = DMABUFFSIZE16TX / 2;
+unsigned int actual_sample_rate = ARMI2SRATE;
+snd_pcm_sframes_t error;
+
+void ph(void)
 {
-	pa_sample_spec ss;
-	ss.format = PA_SAMPLE_S32LE;
-	ss.rate = 48000;
-	ss.channels = 2;
+	const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+	int32_t * b = (int32_t *) addr_ph;
+#if WITHAUDIOSAMPLESREC
+	as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC */
+	arm_shift_q31(b, -2, b, DMABUFFSIZE16TX);
 
-//	pa_buffer_attr bufattr;
-//	bufattr.maxlength = (uint32_t) -1;
-//	bufattr.tlength = (uint32_t) -1;
-//	bufattr.prebuf = (uint32_t) 256;
-//	bufattr.minreq = (uint32_t) 64;
-//	bufattr.fragsize = (uint32_t) -1;
+    if ((error = snd_pcm_writei(pcm_ph, b, frames)) != frames) {
+    	printf("Write to PCM device failed: %s\n", snd_strerror(error));
+        if (error == -EPIPE)
+            snd_pcm_prepare(pcm_ph);
+    }
 
-	pa_phones = pa_simple_new(NULL, "Phones", PA_STREAM_PLAYBACK, NULL, "playback", & ss, NULL, NULL, & error);
+	release_dmabuffer16tx(addr_ph);
+}
 
-	if (! pa_phones) {
-		fprintf(stderr, "pa_simple_new() failed: %s\n", pa_strerror(error));
-		return;
+void * alsa_thread(void * args)
+{
+	while(1)
+	{
+		linux_wait_iq();
+
+		ph();
+		ph();
 	}
 }
 
-#endif /* WITHPULSE */
+int alsa_init(void)
+{
+	if ((error = snd_pcm_open(&pcm_ph, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_ASYNC)) < 0) {
+		printf("Cannot open PCM device: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	snd_pcm_hw_params_t *params;
+	snd_pcm_hw_params_alloca(&params);
+
+	if ((error = snd_pcm_hw_params_any(pcm_ph, params)) < 0) {
+		printf("Cannot initialize hardware parameter structure: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	if ((error = snd_pcm_hw_params_set_access(pcm_ph, params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+		printf("Cannot set access type: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	if ((error = snd_pcm_hw_params_set_format(pcm_ph, params, SND_PCM_FORMAT_S32_LE)) < 0) {
+		printf("Cannot set sample format: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	if ((error = snd_pcm_hw_params_set_rate_near(pcm_ph, params, &actual_sample_rate, 0)) < 0) {
+		printf("Cannot set sample rate: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	if ((error = snd_pcm_hw_params_set_channels(pcm_ph, params, 2)) < 0) {
+		printf("Cannot set channel count: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	snd_pcm_uframes_t buffer_size = ARMI2SRATE * 50 / 1000; // 50 мс
+	if ((error = snd_pcm_hw_params_set_buffer_size_near(pcm_ph, params, & buffer_size)) < 0) {
+		printf("Cannot set channel count: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	if ((error = snd_pcm_hw_params(pcm_ph, params)) < 0) {
+		printf("Cannot set parameters: %s\n", snd_strerror(error));
+		return 1;
+	}
+
+	linux_create_thread(& alsa_t, alsa_thread, 50, 3);
+
+	return 0;
+}
+
+#endif /* WITHALSA */
 
 /*************************************************************/
 
@@ -1344,18 +1404,6 @@ void xdma_event(void)
 	uintptr_t addr32rx = allocate_dmabuffer32rx();
 	memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
 	save_dmabuffer32rx(addr32rx);
-
-#if WITHPULSE
-	const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-	int32_t * b = (int32_t *) addr_ph;
-#if WITHAUDIOSAMPLESREC
-	as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
-	arm_shift_q31(b, -2, b, DMABUFFSIZE16TX);
-	if (pa_simple_write(pa_phones, b, DMABUFFSIZE16TX * 4, & error) < 0)
-		fprintf(stderr, "pa_simple_write() failed: %s\n", pa_strerror(error));
-	release_dmabuffer16tx(addr_ph);
-#endif /* WITHPULSE */
 
 	iq_mutex_unlock();
 }
@@ -1684,9 +1732,9 @@ void linux_subsystem_init(void)
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_iq_init();
 #endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
-#if WITHPULSE
-	pulse_init();
-#endif /* WITHPULSE */
+#if WITHALSA
+	ASSERT(! alsa_init());
+#endif /* WITHALSA */
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
@@ -1704,11 +1752,9 @@ void linux_user_init(void)
 
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
-#elif (DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHPULSE
-
 #elif (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_iq_init();
-#endif /* DDS1_TYPE == DDS_TYPE_FPGAV1) && WITHPULSE */
+#endif /*  */
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
@@ -2025,10 +2071,9 @@ void linux_exit(void)
 	pcie_close();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
-#if WITHPULSE
-	pa_simple_drain(pa_phones, NULL);
-	pa_simple_free(pa_phones);
-#endif /* WITHPULSE */
+#if WITHALSA
+	snd_pcm_close(pcm_ph);
+#endif /* WITHALSA */
 
 	exit(EXIT_SUCCESS);
 }
