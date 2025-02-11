@@ -4217,18 +4217,6 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else /* defined (WITHDEFAULTVIEW) */
 	static uint_fast8_t gviewstyle = VIEW_COLOR;
 #endif /* defined (WITHDEFAULTVIEW) */
-	/* стиль отображения спектра и панорамы */
-	static const struct paramdefdef xgviewstyle =
-	{
-		QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_VIEW, ISTEP1,
-		ITEM_VALUE,
-		0, VIEW_COUNT - 1,
-		OFFSETOF(struct nvmap, gviewstyle),
-		nvramoffs0,
-		NULL,
-		& gviewstyle,
-		getzerobase, /* складывается со смещением и отображается */
-	};
 
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
@@ -4256,7 +4244,52 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
+
+static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base)
+{
+
+	ASSERT(base != MENUNONVRAM);
+
+	if (base == MENUNONVRAM)
+		return MENUNONVRAM;
+
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+
+	//
+	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
+	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
+}
+
+/* стиль отображения спектра и панорамы */
+static const struct paramdefdef xgviewstyle =
+{
+	QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_VIEW, ISTEP1,
+	ITEM_VALUE,
+	0, VIEW_COUNT - 1,
+	OFFSETOF(struct nvmap, gviewstyle),
+	nvramoffs0,
+	NULL,
+	& gviewstyle,
+	getzerobase, /* складывается со смещением и отображается */
+};
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+/* уменьшение отображаемого участка спектра */
+static const struct paramdefdef xgzoomxpow2 =
+{
+	QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
+	ITEM_VALUE,
+	0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
+	OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
+	nvramoffs_bandgroup,
+	NULL,
+	& gzoomxpow2,
+	getzerobase, /* складывается со смещением и отображается */
+};
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+
 #endif /* WITHSPECTRUMWF */
+
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER
 		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
@@ -7934,22 +7967,6 @@ static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
 	"DIN8    ",
 };
 
-static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base)
-{
-
-	ASSERT(base != MENUNONVRAM);
-
-	if (base == MENUNONVRAM)
-		return MENUNONVRAM;
-
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-
-	//
-	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
-}
-
 static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base)
 {
 
@@ -8840,7 +8857,9 @@ catchangefreq(
 		cat_answer_request(CAT_PA_INDEX);
 	}
 	loadantenna(bi, bg);
-	loadbandgroup(bg, geteffantenna(gfreqs [bi]), geteffrxantenna(gfreqs [bi]));
+	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	loadbandgroup(bg, effantenna, effrxantenna);
 }
 
 static void catchangesplit(
@@ -12490,7 +12509,8 @@ uif_key_next_antenna(void)
 
 	gantennabym = calc_next(gantennabym, 0, ANTMODE_COUNT - 1);
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
-	loadbandgroup(bg, effantenna);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	loadbandgroup(bg, effantenna, effrxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard(1, 0);
 }
@@ -12502,9 +12522,10 @@ uif_key_next_autoantmode(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	gantmanual = calc_next(gantmanual, 0, 1);
 	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
-	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-	loadbandgroup(bg, effantenna);
+	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	loadbandgroup(bg, effantenna, effrxantenna);
 	updateboard(1, 0);
 }
 
@@ -16461,6 +16482,9 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 #if WITHTX && WITHELKEY
 		& xgbkinenable,
 #endif /* WITHTX && WITHELKEY */
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16476,8 +16500,11 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
-		& xgmikeequalizer
+		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16493,8 +16520,11 @@ const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
-		& xgmikeequalizer
+		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16509,6 +16539,9 @@ const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
 	#if WITHVOX && WITHTX
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16527,8 +16560,11 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 		& xgctssenable,
 	#endif /* WITHSUBTONES && WITHTX */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
-		& xgmikeequalizer
+		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16543,6 +16579,9 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	#if WITHVOX && WITHTX
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* nitems = ARRAY_SIZE(middlemenu);

@@ -302,16 +302,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if BOARD_FFTZOOM_POW2MAX > 0
-	(const struct paramdefdef [1]) {
-		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
-		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
-		nvramoffs_bandgroup,
-		NULL,
-		& gzoomxpow2,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
 	(const struct paramdefdef [1]) {
 		QLABEL2("SPEC TX ", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
