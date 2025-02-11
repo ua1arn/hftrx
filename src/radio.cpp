@@ -4389,6 +4389,8 @@ enum
 #if WITHIF4DSP
 #if defined WITHAFGAINDEFAULT
 	static dualctl16_t afgain1 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
+#elif defined WITHPOTAFGAIN
+	static dualctl16_t afgain1 = { BOARD_AFGAIN_MIN, BOARD_AFGAIN_MIN };	// Усиление НЧ на максимуме
 #else
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
