@@ -18189,6 +18189,67 @@ void display2_popup(
 
 #else // WITHMENU
 
+const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+			& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+			& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+			& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+			& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+			& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+			& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
 static void
 uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 {
