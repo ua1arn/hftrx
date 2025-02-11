@@ -1368,6 +1368,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_H3
+	// калибровано для 800 МГц Cortex-A7 процессора
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_CA53
 	// калибровано для Cortex-A53 процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
