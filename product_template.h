@@ -25,9 +25,7 @@
 //#define DEFAULTDIALFREQ	225000
 //#define DEFAULTDIALFREQ	14021000
 
-
 // Renesas bootloader specific
-//
 // Сперва выполняем make lib при закомментированном WITHISBOOTLOADER0 и открытом WITHISBOOTLOADER
 // Далее открыть WITHISBOOTLOADER0 и выполнить make bootloader
 
