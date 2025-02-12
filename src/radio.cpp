@@ -617,18 +617,35 @@ static size_t
 param_format(
 	const FLASHMEM struct paramdefdef * pd,
 	char * buff,
-	size_t width
+	size_t width	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
 	)
 {
-	if (ismenukinddp(pd, ITEM_VALUE))
+	if (! ismenukinddp(pd, ITEM_VALUE))
 	{
-		int_fast32_t v = param_getvalue(pd);
-		size_t n = local_snprintf_P(buff, width, "%*" PRIdFAST32, width, v);
-		buff [n] = '\n';
-		return n;
+		memset(buff, ' ', width);
+		buff [width] = '\0';
+		return 0;
 	}
-	strcpy(buff, "");
-	return 0;
+	switch (pd->qrj)
+	{
+	case RJ_POW2:
+		{
+			int_fast32_t v = param_getvalue(pd);
+			const size_t n = local_snprintf_P(buff, width + 1, "%*" PRIu32, width, UINT32_C(1) << v);
+			buff [n] = '\0';
+			return n;
+		}
+
+	default:
+	case RJ_UNSIGNED:
+		{
+			int_fast32_t v = param_getvalue(pd);
+			const size_t n = local_snprintf_P(buff, width + 1, "%*" PRIdFAST32, width, v);
+			buff [n] = '\0';
+			return n;
+		}
+
+	}
 }
 
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
@@ -16720,26 +16737,7 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, uns
 	static char buff [32];
 	ASSERT(ARRAY_SIZE(buff) >= (size + 1));
 	ASSERT(pd);
-	long int value;
-	const ptrdiff_t offs = pd->valoffs();
-	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-
-	if (pv16 != NULL)
-	{
-		value = pd->funcoffs() + * pv16;
-	}
-	else if (pv8 != NULL)
-	{
-		value = pd->funcoffs() + * pv8;
-	}
-	else
-	{
-		ASSERT(0);
-		value = pd->qbottom;	/* чтобы не ругался компилятор */
-	}
-	local_snprintf_P(buff, ARRAY_SIZE(buff), "%*ld", size, value);
-	buff [size] = '\0';
+	param_format(pd, buff, size);
 	return buff;
 }
 
