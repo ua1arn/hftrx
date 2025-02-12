@@ -488,7 +488,7 @@ struct paramdefdef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned * count, unsigned * step);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	ptrdiff_t (* valoffs)(void);		/* индекс для работы с массивом переменных */
 
 	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
@@ -508,7 +508,7 @@ struct enc2menudef
 	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* nvramoffs)(nvramaddress_t base, unsigned * count, unsigned * step);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	ptrdiff_t (* valoffs)(void);		/* индекс для работы с массивом переменных */
 	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
 	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
@@ -543,7 +543,8 @@ savemenuvalue(
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
-		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram);
+		unsigned nvalues, nvstep;
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, & nvalues, & nvstep);
 		const ptrdiff_t offs = pd->valoffs();
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -768,8 +769,10 @@ static ptrdiff_t valueoffs0(void)
 	return 0;
 }
 
-static nvramaddress_t nvramoffs0(nvramaddress_t base)
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned * count, unsigned * step)
 {
+	* count = 1;
+	* step = 0;
 	return base;
 }
 
@@ -3993,7 +3996,7 @@ static uint_fast16_t gstep_ENC1;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
-static nvramaddress_t nvramoffs_mode(nvramaddress_t base)
+static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned * count, unsigned * step)
 {
 	ASSERT(base != MENUNONVRAM);
 
@@ -4001,6 +4004,8 @@ static nvramaddress_t nvramoffs_mode(nvramaddress_t base)
 		return MENUNONVRAM;
 
 	const uint_fast8_t mode = gmode;
+	* count = MODE_COUNT;
+	* step = RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
 
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
@@ -4306,7 +4311,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #endif /* defined (WITHWFLBETA_DEFAULT) */
 
 
-static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base)
+static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base, unsigned * count, unsigned * step)
 {
 	ASSERT(base != MENUNONVRAM);
 
@@ -4315,7 +4320,8 @@ static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base)
 
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-
+	* step = RMT_BANDPOS(bg) - RMT_BANDPOS(0);
+	* count = BANDGROUP_COUNT;
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
@@ -4499,7 +4505,7 @@ enum
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
-		static uint_fast8_t guacplayer = !1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
@@ -8029,7 +8035,7 @@ static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
 	"DIN8    ",
 };
 
-static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base)
+static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned * count, unsigned * step)
 {
 
 	ASSERT(base != MENUNONVRAM);
@@ -8042,6 +8048,8 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base)
     const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
     const uint_fast8_t rxant = geteffrxantenna(gfreqs [bi]);
 
+    * step = 0;
+    * count = 1;
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
@@ -8053,7 +8061,8 @@ enc2savemenuvalue(
 	const FLASHMEM struct enc2menudef * mp
 	)
 {
-	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase);
+	unsigned count, step;
+	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase, & count, & step);
 	const ptrdiff_t offs = mp->valoffs();
 	const uint_fast16_t * const pv16 = mp->apval16 + offs;
 	const uint_fast8_t * const pv8 = mp->apval8 + offs;
@@ -16818,22 +16827,27 @@ loadsettings(void)
 		const struct paramdefdef * const pd = mp->pd;
 		if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 		{
-			const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram);
-			const uint_fast16_t bottom = pd->qbottom;
-			const uint_fast16_t upper = pd->qupper;
-			const ptrdiff_t offs = pd->valoffs();
-			uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-			uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-
+			unsigned element;
+			unsigned count, step;
+			const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, & count, & step);
 			if (nvram == MENUNONVRAM)
 				continue;
-			if (pv16 != NULL)
+			for (element = 0; element < count; ++ element)
 			{
-				* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
-			}
-			else if (pv8 != NULL)
-			{
-				* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
+				const uint_fast16_t bottom = pd->qbottom;
+				const uint_fast16_t upper = pd->qupper;
+				const ptrdiff_t offs = pd->valoffs();
+				uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
+				uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+
+				if (pv16 != NULL)
+				{
+					* pv16 = loadvfy16up(nvram + element * step, bottom, upper, * pv16);
+				}
+				else if (pv8 != NULL)
+				{
+					* pv8 = loadvfy8up(nvram + element * step, bottom, upper, * pv8);
+				}
 			}
 		}
 	}
@@ -17251,7 +17265,8 @@ void display2_menu_valxx(
 	const uint_fast8_t rj = pd->qrj;
 	uint_fast8_t width = pd->qwidth;
 	uint_fast8_t comma = pd->qcomma;
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram);
+	unsigned count, step;
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, & count, & step);
 	const ptrdiff_t offs = pd->valoffs();
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -21278,10 +21293,11 @@ uint_fast8_t hamradio_get_gzoomxpow2(void)
 
 void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
+	unsigned count, step;
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2)), gzoomxpow2);
+	save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2), & count, & step), gzoomxpow2);
 	updateboard(1, 0);
 }
 
@@ -21306,7 +21322,8 @@ uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe)), gtopdbspe);
+		unsigned count, step;
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe), & count, & step), gtopdbspe);
 		updateboard(1, 0);
 	}
 
@@ -21322,7 +21339,8 @@ uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe)), gbottomdbspe);
+		unsigned count, step;
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe), & count, & step), gbottomdbspe);
 		updateboard(1, 0);
 	}
 
@@ -21338,7 +21356,8 @@ uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl)), gtopdbwfl);
+		unsigned count, step;
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl), & count, & step), gtopdbwfl);
 		updateboard(1, 0);
 	}
 
@@ -21354,7 +21373,8 @@ uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl)), gbottomdbwfl);
+		unsigned count, step;
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl), & count, & step), gbottomdbwfl);
 		updateboard(1, 0);
 	}
 
@@ -21758,7 +21778,7 @@ application_initialize(void)
 {
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
-	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */
+	loadsettings();		/* загрузка всех установок из nvram. */
 #endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
 	//extmenu = extmenu || alignmode;
 	loadsavedstate();	// split, lock, s-meter display, see also loadsettings().
