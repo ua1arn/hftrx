@@ -613,6 +613,24 @@ param_getvalue(
 	return 0;
 }
 
+static size_t
+param_format(
+	const FLASHMEM struct paramdefdef * pd,
+	char * buff,
+	size_t width
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		int_fast32_t v = param_getvalue(pd);
+		size_t n = local_snprintf_P(buff, width, "%*" PRIdFAST32, width, v);
+		buff [n] = '\n';
+		return n;
+	}
+	strcpy(buff, "");
+	return 0;
+}
+
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
 /* freq - новая частота, step - шаг */
 static uint_fast32_t
