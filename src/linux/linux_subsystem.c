@@ -1181,14 +1181,14 @@ void server_start(void)
 
 /*************************************************************/
 
-#if WITHALSA
+#if (CODEC1_TYPE == CODEC_TYPE_ALSA)
 
 #include <alsa/asoundlib.h>
 
 pthread_t alsa_t;
 
 snd_pcm_t * pcm_ph = NULL;
-snd_pcm_uframes_t frames = DMABUFFSIZE16TX / 2;
+snd_pcm_uframes_t frames = DMABUFFSIZE16TX / DMABUFFSTEP16TX;
 unsigned int actual_sample_rate = ARMI2SRATE;
 snd_pcm_sframes_t error;
 
@@ -1223,7 +1223,7 @@ void * alsa_thread(void * args)
 
 int alsa_init(void)
 {
-	if ((error = snd_pcm_open(&pcm_ph, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_ASYNC)) < 0) {
+	if ((error = snd_pcm_open(& pcm_ph, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_ASYNC)) < 0) {
 		printf("Cannot open PCM device: %s\n", snd_strerror(error));
 		return 1;
 	}
@@ -1246,12 +1246,12 @@ int alsa_init(void)
 		return 1;
 	}
 
-	if ((error = snd_pcm_hw_params_set_rate_near(pcm_ph, params, &actual_sample_rate, 0)) < 0) {
+	if ((error = snd_pcm_hw_params_set_rate_near(pcm_ph, params, & actual_sample_rate, 0)) < 0) {
 		printf("Cannot set sample rate: %s\n", snd_strerror(error));
 		return 1;
 	}
 
-	if ((error = snd_pcm_hw_params_set_channels(pcm_ph, params, 2)) < 0) {
+	if ((error = snd_pcm_hw_params_set_channels(pcm_ph, params, DMABUFFSTEP16TX)) < 0) {
 		printf("Cannot set channel count: %s\n", snd_strerror(error));
 		return 1;
 	}
@@ -1272,7 +1272,36 @@ int alsa_init(void)
 	return 0;
 }
 
-#endif /* WITHALSA */
+uint_fast8_t dummy_clocksneed(void) {}
+static void dummy_stop (void) {}
+static void alsa_setvolume (uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk) { }
+static void dummy_setlineinput (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain) {}
+static void dummy_setprocparams (uint_fast8_t procenable, const uint_fast8_t * gains) {}
+static void alsa_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master) { ASSERT(! alsa_init()); }
+static void dummy_lineinput(uint_fast8_t v, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain) {}
+
+const codec1if_t *
+board_getaudiocodecif(void)
+{
+
+	static const char codecname [] = "ALSA";
+
+	/* Интерфейс управления кодеком */
+	static const codec1if_t ifc =
+	{
+		dummy_clocksneed,
+		dummy_stop,
+		alsa_initialize,
+		alsa_setvolume,
+		dummy_lineinput,
+		dummy_setprocparams,
+		codecname
+	};
+
+	return & ifc;
+}
+
+#endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) */
 
 /*************************************************************/
 
@@ -1732,9 +1761,6 @@ void linux_subsystem_init(void)
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_iq_init();
 #endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
-#if WITHALSA
-	ASSERT(! alsa_init());
-#endif /* WITHALSA */
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
@@ -2071,9 +2097,9 @@ void linux_exit(void)
 	pcie_close();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
-#if WITHALSA
+#if (CODEC1_TYPE == CODEC_TYPE_ALSA)
 	snd_pcm_close(pcm_ph);
-#endif /* WITHALSA */
+#endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) */
 
 	exit(EXIT_SUCCESS);
 }
