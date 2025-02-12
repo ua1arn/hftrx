@@ -553,15 +553,15 @@ savemenuvalue(
 		if (pv16 != NULL)
 		{
 			// FIXME: mp->label is not null-terminated
-			ASSERT3(pv16 [valoffset] <= pd->qupper, __FILE__, __LINE__, pd->label);
-			ASSERT3(pv16 [valoffset] >= pd->qbottom, __FILE__, __LINE__, pd->label);
+			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd->label);
+			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd->label);
 			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
 			// FIXME: mp->label is not null-terminated
-			ASSERT3(pv8 [valoffset] <= pd->qupper, __FILE__, __LINE__, pd->label);
-			ASSERT3(pv8 [valoffset] >= pd->qbottom, __FILE__, __LINE__, pd->label);
+			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd->label);
+			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd->label);
 			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
 		}
 	}
@@ -611,41 +611,6 @@ param_getvalue(
 		}
 	}
 	return 0;
-}
-
-static size_t
-param_format(
-	const FLASHMEM struct paramdefdef * pd,
-	char * buff,
-	size_t width	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
-	)
-{
-	if (! ismenukinddp(pd, ITEM_VALUE))
-	{
-		memset(buff, ' ', width);
-		buff [width] = '\0';
-		return 0;
-	}
-	switch (pd->qrj)
-	{
-	case RJ_POW2:
-		{
-			int_fast32_t v = param_getvalue(pd);
-			const size_t n = local_snprintf_P(buff, width + 1, "%*" PRIu32, width, UINT32_C(1) << v);
-			buff [n] = '\0';
-			return n;
-		}
-
-	default:
-	case RJ_UNSIGNED:
-		{
-			int_fast32_t v = param_getvalue(pd);
-			const size_t n = local_snprintf_P(buff, width + 1, "%*" PRIdFAST32, width, v);
-			buff [n] = '\0';
-			return n;
-		}
-
-	}
 }
 
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
@@ -16572,6 +16537,64 @@ display_menu_string(
 }
 
 #if WITHMENU
+
+
+static size_t
+param_format(
+	const FLASHMEM struct paramdefdef * pd,
+	char * buff,
+	int width	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
+	)
+{
+	if (! ismenukinddp(pd, ITEM_VALUE))
+	{
+		memset(buff, ' ', width);
+		buff [width] = '\0';
+		return 0;
+	}
+	switch (pd->qrj)
+	{
+	case RJ_POW2:
+		{
+			int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%*" PRIu32, width, UINT32_C(1) << value);
+			buff [n] = '\0';
+			return n;
+		}
+		case RJ_YES:
+		{
+			int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "YES" : "NO");
+			buff [n] = '\0';
+			return n;
+		}
+		case RJ_ON:
+		{
+			int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "ON" : "OFF");
+			buff [n] = '\0';
+			return n;
+		}
+		case RJ_SUBTONE:
+		{
+			int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
+			buff [n] = '\0';
+			return n;
+		}
+
+
+	default:
+	case RJ_UNSIGNED:
+		{
+			int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%*" PRIdFAST32, width, value);
+			buff [n] = '\0';
+			return n;
+		}
+
+	}
+}
 
 const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 {
