@@ -4004,7 +4004,7 @@ static nvramaddress_t nvramoffs_mode(nvramaddress_t base)
 
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	return base + RMT_NR_BASE(mode) - RMT_NR_BASE(mode);
+	return base + RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
 }
 
 static ptrdiff_t valueoffs_mode(void)
