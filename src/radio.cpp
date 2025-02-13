@@ -21412,7 +21412,7 @@ uint_fast8_t hamradio_gtopdbsp(int_least16_t v)
 	{
 		updateboard(1, 0);
 	}
-	return gtopdbspe;
+	return param_getvalue(& xgtopdbspe);
 }
 
 uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
@@ -21421,7 +21421,7 @@ uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
 	{
 		updateboard(1, 0);
 	}
-	return gbottomdbspe;
+	return param_getvalue(& xgbottomdbspe);
 }
 
 uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
@@ -21430,7 +21430,7 @@ uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
 	{
 		updateboard(1, 0);
 	}
-	return gtopdbwfl;
+	return param_getvalue(& xgtopdbwfl);
 }
 
 uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
@@ -21439,7 +21439,7 @@ uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
 	{
 		updateboard(1, 0);
 	}
-	return gbottomdbwfl;
+	return param_getvalue(& xgbottomdbwfl);
 }
 
 #endif /* WITHSPECTRUMWF && WITHMENU */
