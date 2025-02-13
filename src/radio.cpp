@@ -488,8 +488,9 @@ struct paramdefdef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned * count, unsigned * step);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-	ptrdiff_t (* valoffs)(void);		/* индекс для работы с массивом переменных */
+	unsigned (* qselector)(unsigned * count, unsigned * step);
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
 
 	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
@@ -525,8 +526,9 @@ savemenuvalue(
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues, nvstep;
-		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, & nvalues, & nvstep);
-		const ptrdiff_t offs = pd->valoffs();
+		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
@@ -557,7 +559,10 @@ param_setvalue(
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
-		const ptrdiff_t offs = pd->valoffs();
+		unsigned nvalues, nvstep;
+		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
@@ -579,7 +584,10 @@ param_getvalue(
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
-		const ptrdiff_t offs = pd->valoffs();
+		unsigned nvalues, nvstep;
+		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
@@ -677,7 +685,10 @@ calc_delta(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high, int delta)
 static void
 param_keyclick(const struct paramdefdef * pd)
 {
-	const ptrdiff_t offs = pd->valoffs();
+	unsigned nvalues, nvstep;
+	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 	if (pv16)
@@ -693,10 +704,13 @@ static void
 param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
 	/* редактирование паратметра */
-	const uint_fast16_t step = pd->qistep;
-	const ptrdiff_t offs = pd->valoffs();
+	unsigned nvalues, nvstep;
+	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+	const uint_fast16_t step = pd->qistep;
 
 	if (! ismenukinddp(pd, ITEM_VALUE))
 		return;
@@ -745,15 +759,22 @@ static uint_fast16_t gzero;
 //	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 //}
 
-static ptrdiff_t valueoffs0(void)
+static ptrdiff_t valueoffs0(unsigned sel)
 {
+	(void) sel;
 	return 0;
 }
 
-static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned * count, unsigned * step)
+static unsigned getselector0(unsigned * count, unsigned * step)
 {
 	* count = 1;
 	* step = 0;
+	return 0;
+}
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel)
+{
+	(void) sel;
 	return base;
 }
 
@@ -768,7 +789,7 @@ const static struct paramdefdef xgdummy =
 	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	& gzero,
 	NULL,
 	getzerobase,
@@ -3977,26 +3998,28 @@ static uint_fast16_t gstep_ENC1;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
-static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned * count, unsigned * step)
+static unsigned nvramoffs_selector(unsigned * count, unsigned * step)
+{
+	const uint_fast8_t mode = gmode;
+	* count = MODE_COUNT;
+	* step = RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
+	return mode;
+}
+
+static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned mode)
 {
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
 		return MENUNONVRAM;
 
-	const uint_fast8_t mode = gmode;
-	* count = MODE_COUNT;
-	* step = RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
-
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
 }
 
-static ptrdiff_t valueoffs_mode(void)
+static ptrdiff_t valueoffs_mode(unsigned mode)
 {
-	const uint_fast8_t mode = gmode;
-
 	return mode;
 }
 
@@ -4015,7 +4038,7 @@ static const struct paramdefdef xgnoisereduct =
 	ITEM_VALUE,
 	0, 1,
 	RMT_NR_BASE(0),							/* управление режимом NOTCH */
-	nvramoffs_mode, valueoffs_mode,
+	nvramoffs_selector, nvramoffs_mode, valueoffs_mode,
 	NULL,
 	& gnoisereducts [0],
 	getzerobase, /* складывается со смещением и отображается */
@@ -4087,7 +4110,7 @@ static const struct paramdefdef xgcwpitch10 =
 	ITEM_VALUE,
 	CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
 	OFFSETOF(struct nvmap, gcwpitch10),
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gcwpitch10,
 	getzerobase,
@@ -4158,7 +4181,7 @@ static const struct paramdefdef xgnotch =
 	ITEM_VALUE,
 	0, NOTCHMODE_COUNT - 1,
 	RMT_NOTCH_BASE,							/* управление режимом NOTCH */
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gnotch,
 	getzerobase, /* складывается со смещением и отображается */
@@ -4198,7 +4221,7 @@ static const struct paramdefdef xgbandset11m =
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset11m),
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& bandset11m,
 	getzerobase, /* складывается со смещением и отображается */
@@ -4291,18 +4314,23 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
 
-
-static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base, unsigned * count, unsigned * step)
+static unsigned getselector_bandgroup(unsigned * count, unsigned * step)
 {
-	ASSERT(base != MENUNONVRAM);
-
-	if (base == MENUNONVRAM)
-		return MENUNONVRAM;
 
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 	* step = RMT_BANDPOS(bg) - RMT_BANDPOS(0);
 	* count = BANDGROUP_COUNT;
+
+	return bg;
+}
+
+static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base, unsigned bg)
+{
+	ASSERT(base != MENUNONVRAM);
+
+	if (base == MENUNONVRAM)
+		return MENUNONVRAM;
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
@@ -4315,7 +4343,7 @@ static const struct paramdefdef xgviewstyle =
 	ITEM_VALUE,
 	0, VIEW_COUNT - 1,
 	OFFSETOF(struct nvmap, gviewstyle),
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gviewstyle,
 	getzerobase, /* складывается со смещением и отображается */
@@ -4328,7 +4356,7 @@ static const struct paramdefdef xgzoomxpow2 =
 	ITEM_VALUE,
 	0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 	OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
-	nvramoffs_bandgroup, valueoffs0,
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
 	& gzoomxpow2,
 	getzerobase, /* складывается со смещением и отображается */
@@ -4450,7 +4478,7 @@ enum
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX,
 		OFFSETOF(struct nvmap, glineamp),	/* усиление с линейного входа */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& glineamp,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -4497,7 +4525,7 @@ enum
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdatamode),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gdatamode,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4509,7 +4537,7 @@ enum
 			ITEM_VALUE,
 			0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
 			OFFSETOF(struct nvmap, gusb_ft8cn),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gusb_ft8cn,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4521,7 +4549,7 @@ enum
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdatatx),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gdatatx,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4533,7 +4561,7 @@ enum
 			ITEM_VALUE,
 			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			OFFSETOF(struct nvmap, guacplayer),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& guacplayer,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4546,7 +4574,7 @@ enum
 			ITEM_VALUE,
 			0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			OFFSETOF(struct nvmap, gswapiq),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gswapiq,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4576,7 +4604,7 @@ enum
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gmikeequalizer),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gmikeequalizer,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4735,7 +4763,7 @@ enum
 			ITEM_GROUP,
 			0, 0,
 			OFFSETOF(struct nvmap, ggrpctcss),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			NULL,
 			NULL,
@@ -4747,7 +4775,7 @@ enum
 			ITEM_VALUE,
 			0, ARRAY_SIZE(gsubtones) - 1,
 			OFFSETOF(struct nvmap, gsubtonei),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gsubtonei,
 			getzerobase,
@@ -4759,7 +4787,7 @@ enum
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gctssenable),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gctssenable,
 			getzerobase,
@@ -4774,7 +4802,7 @@ enum
 			ITEM_VALUE,
 			0, 100,
 			OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gsubtonelevel,
 			getzerobase, /* складывается со смещением и отображается */
@@ -4858,7 +4886,7 @@ enum
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gvoxenable),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gvoxenable,
 			getzerobase,
@@ -4869,7 +4897,7 @@ enum
 			ITEM_VALUE,
 			WITHVOXLEVELMIN, WITHVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gvoxlevel),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gvoxlevel,
 			getzerobase,
@@ -4880,7 +4908,7 @@ enum
 			ITEM_VALUE,
 			WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gavoxlevel),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gavoxlevel,
 			getzerobase,
@@ -4891,7 +4919,7 @@ enum
 			ITEM_VALUE,
 			WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
 			OFFSETOF(struct nvmap, voxdelay),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& voxdelay,
 			getzerobase,
@@ -4971,7 +4999,7 @@ enum
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		OFFSETOF(struct nvmap, elkeywpm),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeywpm.value,
 		getzerobase,
@@ -4982,7 +5010,7 @@ enum
 		ITEM_VALUE,
 		23, 45,
 		OFFSETOF(struct nvmap, dashratio),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& dashratio,
 		getzerobase,
@@ -4993,7 +5021,7 @@ enum
 		ITEM_VALUE,
 		7, 13,
 		OFFSETOF(struct nvmap, spaceratio),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& spaceratio,
 		getzerobase,
@@ -5004,7 +5032,7 @@ enum
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		OFFSETOF(struct nvmap, elkeyreverse),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeyreverse,
 		getzerobase,
@@ -5015,7 +5043,7 @@ enum
 		ITEM_VALUE,
 		0, ARRAY_SIZE(elkeymodes) - 1,	/* режим электронного ключа */
 		OFFSETOF(struct nvmap, elkeymode),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeymode,
 		getzerobase,
@@ -5026,7 +5054,7 @@ enum
 		ITEM_VALUE,
 		0, 5,		// minimal 0 - без эффекта Виброплекса
 		OFFSETOF(struct nvmap, elkeyslope),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeyslope,
 		getzerobase,
@@ -5038,7 +5066,7 @@ enum
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, bkinenable),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bkinenable,
 		getzerobase,
@@ -5049,7 +5077,7 @@ enum
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
 		OFFSETOF(struct nvmap, bkindelay),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bkindelay,
 		getzerobase,
@@ -5063,7 +5091,7 @@ enum
 		ITEM_VALUE,
 		2, 16,
 		OFFSETOF(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcwedgetime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5077,7 +5105,7 @@ enum
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcwssbtx,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5220,7 +5248,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gmutespkr),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmutespkr,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5316,7 +5344,7 @@ static const struct paramdefdef xgcpufreq =
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	& gzero,
 	NULL,
 	getcpufreqbase,
@@ -5328,7 +5356,7 @@ static const struct paramdefdef xgcputype =
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
-	nvramoffs0, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	& gzero,
 	NULL,
 	getzerobase,
@@ -5398,7 +5426,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5433,7 +5461,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		ITEM_VALUE,
 		90, 300,
 		OFFSETOF(struct nvmap, ggaindigitx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& ggaindigitx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5445,7 +5473,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gamdepth,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5457,7 +5485,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		ITEM_VALUE,
 		0, 120,
 		OFFSETOF(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnfmdeviation,
 		getzerobase, /* складывается со смещением и отображается */
@@ -5469,7 +5497,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		ITEM_VALUE,
 		30, 100,
 		OFFSETOF(struct nvmap, ggaincwtx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& ggaincwtx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8016,7 +8044,15 @@ static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
 	"DIN8    ",
 };
 
-static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned * count, unsigned * step)
+static unsigned getselector_bandgroupant(unsigned * count, unsigned * step)
+{
+    * step = 0;
+    * count = 1;
+
+    return 0;
+}
+
+static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 {
 
 	ASSERT(base != MENUNONVRAM);
@@ -8024,13 +8060,13 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned * cou
 	if (base == MENUNONVRAM)
 		return MENUNONVRAM;
 
+	(void) sel;
+
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
     const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
     const uint_fast8_t rxant = geteffrxantenna(gfreqs [bi]);
 
-    * step = 0;
-    * count = 1;
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
@@ -8039,14 +8075,15 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned * cou
 /* функция для сохранения значения параметра */
 static void
 enc2savemenuvalue(
-	const FLASHMEM struct paramdefdef * mp
+	const FLASHMEM struct paramdefdef * pd
 	)
 {
-	unsigned count, step;
-	const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram, & count, & step);
-	const ptrdiff_t offs = mp->valoffs();
-	const uint_fast16_t * const pv16 = mp->apval16 + offs;
-	const uint_fast8_t * const pv8 = mp->apval8 + offs;
+	unsigned nvalues, nvstep;
+	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
+	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
+	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
 	if (nvram == MENUNONVRAM)
 		return;
@@ -8073,10 +8110,13 @@ enc2menu_adjust(
 	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
-	const uint_fast16_t step = pd->qistep;
-	const ptrdiff_t offs = pd->valoffs();
+	unsigned nvalues, nvstep;
+	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+	const uint_fast16_t step = pd->qistep;
 
 	/* измиенение параметра */
 	if (nrotate < 0)
@@ -8123,7 +8163,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX,
 		OFFSETOF(struct nvmap, afgain1),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8138,7 +8178,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX,
 		OFFSETOF(struct nvmap, rfgain1),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8152,7 +8192,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_cwnarrow.fltsofter,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8167,7 +8207,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		OFFSETOF(struct nvmap, elkeywpm),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeywpm.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8183,7 +8223,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		0, 150,		/* используется при калибровке параметров интерполятора */
 		OFFSETOF(struct nvmap, gdesignscale),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gdesignscale,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8198,7 +8238,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		OFFSETOF(struct nvmap, gnormalpower),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnormalpower.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8213,7 +8253,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1,
 		OFFSETOF(struct nvmap, gsubtonei),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsubtonei,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8228,7 +8268,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8243,7 +8283,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
 		OFFSETOF(struct nvmap, gmikehclip),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8259,7 +8299,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8274,7 +8314,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		0, NRLEVELMAX,
 		OFFSETOF(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8288,7 +8328,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		0, SQUELCHMAX,
 		OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8303,7 +8343,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,	/* диапазон отображаемых значений */
 		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
-		nvramoffs_bandgroup, valueoffs0,
+		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 		NULL,
 		& gbottomdbspe,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8317,7 +8357,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
 		OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
-		nvramoffs_bandgroup, valueoffs0,
+		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
@@ -8331,7 +8371,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		0, VIEW_COUNT - 1,
 		OFFSETOF(struct nvmap, gviewstyle),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gviewstyle,
 		getzerobase,
@@ -8348,7 +8388,7 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		OFFSETOF(struct nvmap, ifshifoffset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, /* складывается со смещением и отображается */
@@ -8378,7 +8418,10 @@ enc2menu_value(
 	)
 {
 	long int value;
-	const ptrdiff_t offs = pd->valoffs();
+	unsigned nvalues, nvstep;
+	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	//const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
@@ -16808,26 +16851,27 @@ loadsettings(void)
 		const struct paramdefdef * const pd = mp->pd;
 		if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 		{
-			unsigned element;
-			unsigned count, step;
-			const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, & count, & step);
-			if (nvram == MENUNONVRAM)
+			unsigned sel;
+			unsigned nvalues, nvstep;
+			pd->qselector(& nvalues, & nvstep);
+			if (pd->qnvram == MENUNONVRAM)
 				continue;
-			for (element = 0; element < count; ++ element)
+			for (sel = 0; sel < nvalues; ++ sel)
 			{
 				const uint_fast16_t bottom = pd->qbottom;
 				const uint_fast16_t upper = pd->qupper;
-				const ptrdiff_t offs = pd->valoffs();
+				const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+				const ptrdiff_t offs = pd->valoffs(sel);
 				uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 				uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
 				if (pv16 != NULL)
 				{
-					* pv16 = loadvfy16up(nvram + element * step, bottom, upper, * pv16);
+					* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
 				}
 				else if (pv8 != NULL)
 				{
-					* pv8 = loadvfy8up(nvram + element * step, bottom, upper, * pv8);
+					* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
 				}
 			}
 		}
@@ -17246,9 +17290,10 @@ void display2_menu_valxx(
 	const uint_fast8_t rj = pd->qrj;
 	uint_fast8_t width = pd->qwidth;
 	uint_fast8_t comma = pd->qcomma;
-	unsigned count, step;
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, & count, & step);
-	const ptrdiff_t offs = pd->valoffs();
+	unsigned nvalues, nvstep;
+	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
@@ -17898,7 +17943,10 @@ static void menu_print(void)
         	const uint_fast8_t rj = mp->pd->qrj;
         	uint_fast8_t width = mp->pd->qwidth;
         	uint_fast8_t comma = mp->pd->qcomma;
-        	const ptrdiff_t offs = pd->valoffs();
+    		unsigned nvalues, nvstep;
+    		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+    		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+    		const ptrdiff_t offs = pd->valoffs(sel);
         	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
         	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
@@ -18211,7 +18259,7 @@ static const struct menudef notchPopUp [] =
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpnotch),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -18221,7 +18269,7 @@ static const struct menudef notchPopUp [] =
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnotchtype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -18232,7 +18280,7 @@ static const struct menudef notchPopUp [] =
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -18242,7 +18290,7 @@ static const struct menudef notchPopUp [] =
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gnotchwidth.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -18254,7 +18302,7 @@ static const struct menudef notchPopUp [] =
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpnotch),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -18264,7 +18312,7 @@ static const struct menudef notchPopUp [] =
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnotch,
 		getzerobase, /* складывается со смещением и отображается */
@@ -20968,10 +21016,12 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 	if (rotate != 0 && ismenukinddp(pd, ITEM_VALUE))
 	{
 		/* редактирование паратметра */
-		const uint_fast16_t step = pd->qistep;
-		const ptrdiff_t offs = pd->valoffs();
+		unsigned nvalues, nvstep;
+		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+		const uint_fast16_t step = pd->qistep;
 
 		if (step == ISTEP_RO)
 		{
@@ -21278,7 +21328,8 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2), & count, & step), gzoomxpow2);
+	const unsigned sel = getselector_bandgroup(& count, & step);
+	save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2), sel), gzoomxpow2);
 	updateboard(1, 0);
 }
 
@@ -21304,7 +21355,8 @@ uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
 	if (v != 0)
 	{
 		unsigned count, step;
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe), & count, & step), gtopdbspe);
+		const unsigned sel = getselector_bandgroup(& count, & step);
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe), sel), gtopdbspe);
 		updateboard(1, 0);
 	}
 
@@ -21321,7 +21373,8 @@ uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 	if (v != 0)
 	{
 		unsigned count, step;
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe), & count, & step), gbottomdbspe);
+		const unsigned sel = getselector_bandgroup(& count, & step);
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe), sel), gbottomdbspe);
 		updateboard(1, 0);
 	}
 
@@ -21338,7 +21391,8 @@ uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 	if (v != 0)
 	{
 		unsigned count, step;
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl), & count, & step), gtopdbwfl);
+		const unsigned sel = getselector_bandgroup(& count, & step);
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl), sel), gtopdbwfl);
 		updateboard(1, 0);
 	}
 
@@ -21355,7 +21409,8 @@ uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 	if (v != 0)
 	{
 		unsigned count, step;
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl), & count, & step), gbottomdbwfl);
+		const unsigned sel = getselector_bandgroup(& count, & step);
+		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl), sel), gbottomdbwfl);
 		updateboard(1, 0);
 	}
 

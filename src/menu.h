@@ -16,7 +16,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrptuner),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -29,7 +29,7 @@ static const FLASHMEM struct menudef menutable [] =
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 			OFFSETOF(struct nvmap, gtunepower),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gtunepower,
 			getzerobase,
@@ -42,7 +42,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		OFFSETOF(struct nvmap, gtunepower),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtunepower,
 		getzerobase,
@@ -54,7 +54,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		LMIN, LMAX,
 		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunerind),
-		nvramoffs_bandgroupant, valueoffs0,
+		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 		& tunerind,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -64,7 +64,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		CMIN, CMAX,
 		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunercap),
-		nvramoffs_bandgroupant, valueoffs0,
+		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 		& tunercap,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -74,7 +74,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
 		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunertype),
-		nvramoffs_bandgroupant, valueoffs0,
+		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 		NULL,
 		& tunertype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -84,7 +84,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		10, 250,
 		OFFSETOF(struct nvmap, gtunerdelay),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtunerdelay,
 		getzerobase, /* складывается со смещением и отображается */
@@ -95,7 +95,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
 		OFFSETOF(struct nvmap, gn7ddclinearC),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gn7ddclinearC,
 		getzerobase, /* складывается со смещением и отображается */
@@ -105,7 +105,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
 		OFFSETOF(struct nvmap, gn7ddclinearL),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gn7ddclinearL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -118,7 +118,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpdisplay),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -130,7 +130,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
 		OFFSETOF(struct nvmap, gbglight),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbglight,
 		getzerobase, /* складывается со смещением и отображается */
@@ -142,7 +142,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, gkblight),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gkblight,
 		getzerobase, /* складывается со смещением и отображается */
@@ -154,7 +154,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 240, 
 		OFFSETOF(struct nvmap, gdimmtime),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdimmtime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -166,7 +166,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 240, 
 		OFFSETOF(struct nvmap, gsleeptime),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsleeptime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -179,7 +179,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		ITEM_VALUE,
 //		0, 1,
 //		OFFSETOF(struct nvmap, gbluebgnd),
-//		nvramoffs0, valueoffs0,
+//		getselector0, nvramoffs0, valueoffs0,
 //		NULL,
 //		& gbluebgnd,
 //		getzerobase, /* складывается со смещением и отображается */
@@ -190,7 +190,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gshowdbm),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gshowdbm,
 		getzerobase, /* складывается со смещением и отображается */
@@ -200,7 +200,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
 		OFFSETOF(struct nvmap, gdisplayfreqsfps),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdisplayfreqsfps,
 		getzerobase, /* складывается со смещением и отображается */
@@ -211,7 +211,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
 		OFFSETOF(struct nvmap, gdisplaybarsfps),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdisplaybarsfps,
 		getzerobase, /* складывается со смещением и отображается */
@@ -225,7 +225,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 		OFFSETOF(struct nvmap, gview3dss_mark),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gview3dss_mark,
 		getzerobase, /* складывается со смещением и отображается */
@@ -236,7 +236,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 		OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
-		nvramoffs_bandgroup, valueoffs0,
+		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 		NULL,
 		& gtopdbspe,
 		getzerobase, /* складывается со смещением и отображается */
@@ -246,7 +246,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
-		nvramoffs_bandgroup, valueoffs0,
+		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 		NULL,
 		& gbottomdbspe,
 		getzerobase, /* складывается со смещением и отображается */
@@ -256,7 +256,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* водопад отдельными папаметрами */
 		OFFSETOF(struct nvmap, gwflevelsep),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gwflevelsep,
 		getzerobase, /* складывается со смещением и отображается */
@@ -266,7 +266,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 		OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
-		nvramoffs_bandgroup, valueoffs0,
+		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 		NULL,
 		& gtopdbwfl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -276,7 +276,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),
-		nvramoffs_bandgroup, valueoffs0,
+		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 		NULL,
 		& gbottomdbwfl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -286,7 +286,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		OFFSETOF(struct nvmap, glvlgridstep),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
@@ -296,7 +296,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 		OFFSETOF(struct nvmap, grxbwsatu),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grxbwsatu,
 		getzerobase, /* складывается со смещением и отображается */
@@ -309,7 +309,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
 		OFFSETOF(struct nvmap, gtxloopback),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxloopback,
 		getzerobase, /* складывается со смещением и отображается */
@@ -319,7 +319,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра спектра */
 		OFFSETOF(struct nvmap, gspecbeta100),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gspecbeta100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -329,7 +329,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
 		OFFSETOF(struct nvmap, gwflbeta100),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gwflbeta100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -340,7 +340,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		OFFSETOF(struct nvmap, gsmetertype),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsmetertype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -353,7 +353,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
 		OFFSETOF(struct nvmap, gshowovf),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gshowovf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -366,7 +366,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpclock),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -377,7 +377,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		2015, 2099, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& grtcyear,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -387,7 +387,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		1, 12, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grtcmonth,
 		getzerobase, /* складывается со смещением и отображается */
@@ -397,7 +397,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		1, 31, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grtcday,
 		getzerobase, /* складывается со смещением и отображается */
@@ -407,7 +407,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, 23, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grtchour,
 		getzerobase, /* складывается со смещением и отображается */
@@ -417,7 +417,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, 59, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grtcminute,
 		getzerobase, /* складывается со смещением и отображается */
@@ -427,7 +427,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, 1, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grtcstrobe,
 		getzerobase, /* складывается со смещением и отображается */
@@ -439,7 +439,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpfilters),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -451,7 +451,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, NRLEVELMAX, 
 		OFFSETOF(struct nvmap, gnoisereductvl),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -463,7 +463,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 		RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_cwwide.left10_width10,
 		getzerobase, 
@@ -473,7 +473,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_cwwide.fltsofter,
 		getzerobase,
@@ -483,7 +483,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 		RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_cwnarrow.left10_width10,
 		getzerobase, 
@@ -493,7 +493,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_cwnarrow.fltsofter,
 		getzerobase,
@@ -503,7 +503,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -513,7 +513,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -523,7 +523,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbwide.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -533,7 +533,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbmedium.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -543,7 +543,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbmedium.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -553,7 +553,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbmedium.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -563,7 +563,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbnarrow.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -573,7 +573,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -583,7 +583,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbnarrow.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -593,7 +593,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_amwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -603,7 +603,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_amwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -613,7 +613,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_amwide.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -623,7 +623,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_amnarrow.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -633,7 +633,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_amnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -643,7 +643,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_amnarrow.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -653,7 +653,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbtx.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -663,7 +663,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbtx.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -673,7 +673,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbtx.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -683,7 +683,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_digiwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -693,7 +693,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_digiwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -707,7 +707,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		OFFSETOF(struct nvmap, ifshifoffset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, 
@@ -720,7 +720,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lo4offset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lo4offset,
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -731,7 +731,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lo4offsets [0]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lo4offsets [0],
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -741,7 +741,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lo4offsets [1]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lo4offsets [1],
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -752,7 +752,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lo4offset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lo4offset,
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -762,7 +762,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, glo4lsb),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& glo4lsb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -778,7 +778,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, /* 0 - off, 1 - on */
 		OFFSETOF(struct nvmap, dctxmodecw),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& dctxmodecw,
 		getzerobase, /* складывается со смещением и отображается */
@@ -792,7 +792,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, usbe2p4),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_2p4.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -802,7 +802,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lsbe2p4),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_2p4.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -814,7 +814,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, usbe2p7),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_2p7.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -824,7 +824,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lsbe2p7),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_2p7.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -835,7 +835,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, usbe2p7tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_2p7_tx.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -845,7 +845,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lsbe2p7tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_2p7_tx.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -859,7 +859,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, usbe3p1),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_3p1.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -869,7 +869,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lsbe3p1),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_3p1.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -880,7 +880,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, usbe3p1tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_3p1_tx.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -890,7 +890,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lsbe3p1tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_3p1_tx.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -904,7 +904,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw0p3),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_0p3.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -914,7 +914,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, carr0p3),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_0p3.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -927,7 +927,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw0p5),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_0p5.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -937,7 +937,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, carr0p5),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_0p5.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -950,7 +950,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw1p8),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_1p8.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -960,7 +960,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		OFFSETOF(struct nvmap, usbe1p8),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_1p8.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -970,7 +970,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		OFFSETOF(struct nvmap, lsbe1p8),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_1p8.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -983,7 +983,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw2p4),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_2p4.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -996,7 +996,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw2p4_tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_2p4_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1009,7 +1009,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw2p7_tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_2p7_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1022,7 +1022,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw3p1_tx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_3p1_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1035,7 +1035,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, hascw6p0),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& fi_6p0.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1046,7 +1046,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq6k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_6p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1060,7 +1060,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq7p8k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_7p8.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1074,7 +1074,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq8k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_8p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1087,7 +1087,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq9k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_9p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1101,7 +1101,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq15k_nfm),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_15p0_tx_nfm.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1113,7 +1113,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq15k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_15p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1127,7 +1127,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		OFFSETOF(struct nvmap, cfreq17k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& fi_17p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -1143,7 +1143,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpnotch),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1154,7 +1154,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnotchtype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1165,7 +1165,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1175,7 +1175,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gnotchwidth.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1188,7 +1188,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpnotch),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1199,7 +1199,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnotch,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1214,7 +1214,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrppbts),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1225,7 +1225,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
 		OFFSETOF(struct nvmap, pbtoffset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gpbtoffset,
 		NULL,
 		getpbtbase, 
@@ -1240,7 +1240,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpelkey),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1276,7 +1276,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrprfadc),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1288,7 +1288,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gadcrand),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gadcrand,
 		getzerobase, 
@@ -1299,7 +1299,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gdither),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdither,
 		getzerobase, 
@@ -1309,7 +1309,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		ITEM_VALUE,
 //		0, 1,
 //		OFFSETOF(struct nvmap, gadcfifo),
-//		nvramoffs0, valueoffs0,
+//		getselector0, nvramoffs0, valueoffs0,
 //		NULL,
 //		& gadcfifo,
 //		getzerobase,
@@ -1319,7 +1319,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		ITEM_VALUE,
 //		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
 //		OFFSETOF(struct nvmap, gadcoffset),
-//		nvramoffs0, valueoffs0,
+//		getselector0, nvramoffs0, valueoffs0,
 //		& gadcoffset,
 //		NULL,
 //		getadcoffsbase,	/* складывается со смещением и отображается */
@@ -1333,7 +1333,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpvox),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1352,7 +1352,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpcat),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1363,7 +1363,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, catenable),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& catenable,
 		getzerobase,
@@ -1374,7 +1374,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, BOARD_CATMUX_count - 1,
 		OFFSETOF(struct nvmap, gcatmux),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcatmux,
 		getzerobase,
@@ -1386,7 +1386,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, ARRAY_SIZE(catbr2int) - 1,
 		OFFSETOF(struct nvmap, catbaudrate),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& catbaudrate,
 		getzerobase,
@@ -1398,7 +1398,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigptt),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& catsigptt,
 		getzerobase,
@@ -1409,7 +1409,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigkey),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& catsigkey,
 		getzerobase, 
@@ -1432,7 +1432,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpaudio),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1445,7 +1445,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		OFFSETOF(struct nvmap, afgain1),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1457,7 +1457,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		OFFSETOF(struct nvmap, rfgain1),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1470,7 +1470,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 		OFFSETOF(struct nvmap, gkeybeep10),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gkeybeep10,
 		getzerobase, 
@@ -1482,7 +1482,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, gmuteall),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmuteall,
 		getzerobase, 
@@ -1494,7 +1494,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, SQUELCHMAX, 
 		OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsquelch.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1505,7 +1505,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, SQUELCHMAX,
 		OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1516,7 +1516,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100, 
 		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsidetonelevel,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1526,7 +1526,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmoniflag,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1539,7 +1539,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, ARRAY_SIZE(loopnames) - 1,
 		OFFSETOF(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gloopmsg,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1549,7 +1549,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		15, 240,
 		OFFSETOF(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gloopsec,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1566,7 +1566,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_SSB],
 		getzerobase, /* складывается со смещением и отображается */
@@ -1576,7 +1576,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_DIGI],
 		getzerobase, /* складывается со смещением и отображается */
@@ -1586,7 +1586,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_AM],
 		getzerobase, /* складывается со смещением и отображается */
@@ -1596,7 +1596,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_NFM],
 		getzerobase, /* складывается со смещением и отображается */
@@ -1606,7 +1606,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		OFFSETOF(struct nvmap, gmikeagc),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeagc,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1616,7 +1616,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		OFFSETOF(struct nvmap, gmikeagcgain),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeagcgain,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1626,7 +1626,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
 		OFFSETOF(struct nvmap, gmikehclip),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1637,7 +1637,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
 		OFFSETOF(struct nvmap, gcompressor_attack),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcompressor_attack,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1647,7 +1647,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
 		OFFSETOF(struct nvmap, gcompressor_release),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcompressor_release,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1657,7 +1657,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
 		OFFSETOF(struct nvmap, gcompressor_hold),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcompressor_hold,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1667,7 +1667,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		WITHCOMPGAINMIN, WITHCOMPGAINMAX,
 		OFFSETOF(struct nvmap, gcompressor_gain),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcompressor_gain,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1677,7 +1677,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
 		OFFSETOF(struct nvmap, gcompressor_threshold),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gcompressor_threshold,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1689,7 +1689,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 					/* ревербератор */
 		OFFSETOF(struct nvmap, greverb),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& greverb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1699,7 +1699,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 		OFFSETOF(struct nvmap, greverbdelay),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& greverbdelay,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1709,7 +1709,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
 		OFFSETOF(struct nvmap, greverbloss),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& greverbloss,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1720,7 +1720,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		OFFSETOF(struct nvmap, gmikeboost20db),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeboost20db,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1733,7 +1733,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeequalizerparams [0],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -1743,7 +1743,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeequalizerparams [1],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -1753,7 +1753,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeequalizerparams [2],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -1763,7 +1763,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeequalizerparams [3],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -1773,7 +1773,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeequalizerparams [4],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -1785,7 +1785,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, geqrx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqrx,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1795,7 +1795,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
 		OFFSETOF(struct nvmap, geqrxparams [0]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqrxparams [0],
 		hamradio_get_af_equalizer_base,
@@ -1805,7 +1805,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
 		OFFSETOF(struct nvmap, geqrxparams [1]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqrxparams [1],
 		hamradio_get_af_equalizer_base,
@@ -1815,7 +1815,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
 		OFFSETOF(struct nvmap, geqrxparams [2]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqrxparams [2],
 		hamradio_get_af_equalizer_base,
@@ -1825,7 +1825,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, geqtx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqtx,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1835,7 +1835,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
 		OFFSETOF(struct nvmap, geqtxparams [0]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqtxparams [0],
 		hamradio_get_af_equalizer_base,
@@ -1845,7 +1845,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
 		OFFSETOF(struct nvmap, geqtxparams [1]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqtxparams [1],
 		hamradio_get_af_equalizer_base,
@@ -1855,7 +1855,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
 		OFFSETOF(struct nvmap, geqtxparams [2]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& geqtxparams [2],
 		hamradio_get_af_equalizer_base,
@@ -1873,7 +1873,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& ALCNEN,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1883,7 +1883,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 7,
 		OFFSETOF(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& ALCNTH,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1893,7 +1893,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, ALCEN),	/* ALC enabled */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& ALCEN,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1903,7 +1903,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 7,
 		OFFSETOF(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& ALCMXGAIN,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1913,7 +1913,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 7,
 		OFFSETOF(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& ALCMNGAIN,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1925,7 +1925,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, recmode),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& recmode,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1938,7 +1938,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpusb),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1951,7 +1951,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		OFFSETOF(struct nvmap, gusbbt),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gusbbt,
 		getzerobase, /* складывается со смещением и отображается */
@@ -1979,7 +1979,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpagc),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -1990,7 +1990,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		OFFSETOF(struct nvmap, gfsadcpower10 [0]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gfsadcpower10 [0],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
@@ -2000,7 +2000,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		OFFSETOF(struct nvmap, gfsadcpower10 [1]),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gfsadcpower10 [1],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
@@ -2010,7 +2010,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		OFFSETOF(struct nvmap, gagcoff),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagcoff,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2020,7 +2020,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		40, 120, 		// 40..120 dB
 		OFFSETOF(struct nvmap, gdigigainmax),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
@@ -2031,7 +2031,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpagcssb),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -2042,7 +2042,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].rate,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2052,7 +2052,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].thung10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2062,7 +2062,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].t1,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2072,7 +2072,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].release10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2082,7 +2082,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].t4,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2093,7 +2093,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpagccw),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -2104,7 +2104,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].rate,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2114,7 +2114,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].thung10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2124,7 +2124,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].t1,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2134,7 +2134,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].release10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2144,7 +2144,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].t4,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2155,7 +2155,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpagcdigi),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -2166,7 +2166,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].rate,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2176,7 +2176,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].thung10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2186,7 +2186,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].t1,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2196,7 +2196,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].release10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2206,7 +2206,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].t4,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2219,7 +2219,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpmodem),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -2230,7 +2230,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,			/* 0: BPSK, 1: QPSK */
 		OFFSETOF(struct nvmap, gmodemmode),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmodemmode,
 		getzerobase, 
@@ -2240,7 +2240,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, ARRAY_SIZE(modembr2int100) - 1,
 		OFFSETOF(struct nvmap, gmodemspeed),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmodemspeed,
 		getzerobase, 
@@ -2253,7 +2253,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrplfm),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -2264,7 +2264,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		OFFSETOF(struct nvmap, lfmmode),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& lfmmode,
 		getzerobase, 
@@ -2274,7 +2274,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
 		OFFSETOF(struct nvmap, lfmstart100k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lfmstart100k,
 		NULL,
 		getzerobase, 
@@ -2284,7 +2284,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
 		OFFSETOF(struct nvmap, lfmstop100k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lfmstop100k,
 		NULL,
 		getzerobase, 
@@ -2294,7 +2294,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
 		OFFSETOF(struct nvmap, lfmspeed1k),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lfmspeed1k,
 		NULL,
 		getzerobase, 
@@ -2305,7 +2305,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 60 * 60 - 1,			/* 0..59:59 */
 		OFFSETOF(struct nvmap, lfmtoffset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lfmtoffset,
 		NULL,
 		getzerobase, 
@@ -2316,7 +2316,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, 60 * 60 - 1,			/* 00:01..59:59 */
 		OFFSETOF(struct nvmap, lfmtinterval),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lfmtinterval,
 		NULL,
 		getzerobase,
@@ -2326,7 +2326,7 @@ static const FLASHMEM struct menudef menutable [] =
         ITEM_VALUE,
         0, 2 * LFMFREQBIAS,            /*  */
         OFFSETOF(struct nvmap, lfmfreqbias),
-        nvramoffs0, valueoffs0,
+        getselector0, nvramoffs0, valueoffs0,
         & lfmfreqbias,
         NULL,
         getlfmbias,
@@ -2341,7 +2341,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrptxadj),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -2355,7 +2355,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdacscale,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2367,7 +2367,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [0].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2378,7 +2378,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [1].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2389,7 +2389,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [2].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2400,7 +2400,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [3].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2411,7 +2411,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [4].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2422,7 +2422,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [5].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2433,7 +2433,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [6].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2444,7 +2444,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [7].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2455,7 +2455,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [8].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2466,7 +2466,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [9].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2477,7 +2477,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [10].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2488,7 +2488,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [11].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2499,7 +2499,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [12].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2510,7 +2510,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [13].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2521,7 +2521,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [14].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2532,7 +2532,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [15].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2544,7 +2544,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [0].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2555,7 +2555,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [1].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2566,7 +2566,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [2].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2577,7 +2577,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [3].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2588,7 +2588,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [4].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2599,7 +2599,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [5].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2610,7 +2610,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [6].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2621,7 +2621,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [7].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2632,7 +2632,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [8].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2643,7 +2643,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [9].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2654,7 +2654,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [10].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2665,7 +2665,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [11].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2676,7 +2676,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [12].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2687,7 +2687,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [13].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2698,7 +2698,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [14].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2709,7 +2709,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [15].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2721,7 +2721,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [0].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2732,7 +2732,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [1].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2743,7 +2743,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [2].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2754,7 +2754,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [3].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2765,7 +2765,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [4].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2776,7 +2776,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [5].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2787,7 +2787,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [6].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2798,7 +2798,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [7].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2809,7 +2809,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [8].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2820,7 +2820,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [9].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2831,7 +2831,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [10].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2842,7 +2842,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [11].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2853,7 +2853,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [12].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2864,7 +2864,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [13].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2875,7 +2875,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [14].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2886,7 +2886,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandf2adj [15].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2905,7 +2905,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
 		OFFSETOF(struct nvmap, gfanpatime),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gfanpatime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2916,7 +2916,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHFANPWMMIN, WITHFANPWMMAX,
 		OFFSETOF(struct nvmap, gfanpapwm),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gfanpapwm,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -2931,7 +2931,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		OFFSETOF(struct nvmap, gnormalpower),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnormalpower.value,
 		getzerobase,
@@ -2943,7 +2943,7 @@ static const FLASHMEM struct menudef menutable [] =
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gclassamode),
-			nvramoffs0, valueoffs0,
+			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gclassamode,
 			getzerobase,
@@ -2957,7 +2957,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		OFFSETOF(struct nvmap, gpwri),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gpwri,
 		getzerobase,
@@ -2971,7 +2971,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gtxgate),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxgate,
 		getzerobase, 
@@ -2984,7 +2984,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHPABIASMIN, WITHPABIASMAX,
 		OFFSETOF(struct nvmap, gpabias),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gpabias,
 		getzerobase, 
@@ -2996,7 +2996,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gdactest),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gdactest,
 		getzerobase,
@@ -3012,7 +3012,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpsecial),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -3026,7 +3026,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, userfsg),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& userfsg,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3038,7 +3038,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, ARRAY_SIZE(encresols) - 1,
 		OFFSETOF(struct nvmap, genc1pulses),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& genc1pulses,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3048,7 +3048,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, genc1dynamic),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& genc1dynamic,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3058,7 +3058,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
 		OFFSETOF(struct nvmap, genc1div),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& genc1div,
 		getzerobase,
@@ -3068,7 +3068,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gbigstep),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbigstep,
 		getzerobase,
@@ -3079,7 +3079,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, 8, 	/* /1 ... /8 */
 		OFFSETOF(struct nvmap, genc2div),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& genc2div,
 		getzerobase,
@@ -3094,7 +3094,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, 100,
 		OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& ggainnfmrx10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3106,7 +3106,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
 		OFFSETOF(struct nvmap, grgbeep),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& grgbeep,
 		getzerobase,
@@ -3117,7 +3117,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		ITEM_VALUE,
 //		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
 //		OFFSETOF(struct nvmap, rptroffshf1k),
-//		nvramoffs0, valueoffs0,
+//		getselector0, nvramoffs0, valueoffs0,
 //		& rptroffshf1k,
 //		NULL,
 //		getrptoffsbase,
@@ -3127,7 +3127,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		ITEM_VALUE,
 //		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
 //		OFFSETOF(struct nvmap, rptroffsuhf1k),
-//		nvramoffs0, valueoffs0,
+//		getselector0, nvramoffs0, valueoffs0,
 //		& rptroffsuhf1k,
 //		NULL,
 //		getrptoffsbase,
@@ -3141,7 +3141,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHDAC1VALMIN, WITHDAC1VALMAX, 
 		OFFSETOF(struct nvmap, dac1level),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,	/* подстройка опорника */
 		& dac1level,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3152,7 +3152,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		OFFSETOF(struct nvmap, refbias),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& refbias,	/* подстройка частоты опорника */
 		NULL,
 		getrefbase, 	/* складывается со смещением и отображается */
@@ -3164,7 +3164,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		LO2AMIN, LO2AMAX, 
 		OFFSETOF(struct nvmap, lo3offset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& lo3offset,	/* подстройка частоты гетеродина */
 		NULL,
 		getlo3base, 	/* складывается со смещением и отображается */
@@ -3176,7 +3176,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		OFFSETOF(struct nvmap, si570_xtall_offset),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& si570_xtall_offset,	/* подстройка опорника */
 		NULL,
 		si570_get_xtall_base, 	/* складывается со смещением и отображается */
@@ -3188,7 +3188,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, withonlybands),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& withonlybands,
 		getzerobase, 
@@ -3199,7 +3199,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, stayfreq),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& stayfreq,
 		getzerobase, 
@@ -3210,7 +3210,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
 		OFFSETOF(struct nvmap, voltcalibr100mV),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& voltcalibr100mV,
 		getzerobase,
@@ -3222,7 +3222,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, IPACALI_RANGE,
 		OFFSETOF(struct nvmap, gipacali),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gipacali,
 		NULL,
 		getipacalibase,
@@ -3235,7 +3235,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, swrmode),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& swrmode,
 		getzerobase, 
@@ -3246,7 +3246,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		50, 200, //80, 120, 
 		OFFSETOF(struct nvmap, swrcalibr),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& swrcalibr,
 		getzerobase, 
@@ -3257,7 +3257,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1, 
 		OFFSETOF(struct nvmap, minforward),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& minforward,
 		NULL,
 		getzerobase, 
@@ -3267,7 +3267,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, 255,
 		OFFSETOF(struct nvmap, maxpwrcali),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& maxpwrcali,
 		getzerobase,
@@ -3277,7 +3277,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,						/* защита от превышения КСВ */
 		OFFSETOF(struct nvmap, gswrprot),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gswrprot,
 		getzerobase,
@@ -3289,7 +3289,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		10, 255,
 		OFFSETOF(struct nvmap, maxpwrcali),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& maxpwrcali,
 		getzerobase,
@@ -3301,7 +3301,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		20, 85,						/* порог срабатывания защиты по температуре */
 		OFFSETOF(struct nvmap, gtempvmax),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtempvmax,
 		getzerobase,
@@ -3311,7 +3311,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,						/* защита от перегрева */
 		OFFSETOF(struct nvmap, gheatprot),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gheatprot,
 		getzerobase,
@@ -3323,7 +3323,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, rxtxdelay),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& rxtxdelay,
 		getzerobase, 
@@ -3333,7 +3333,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, txrxdelay),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& txrxdelay,
 		getzerobase, 
@@ -3346,7 +3346,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 100, 		/* уровень (амплитуда) LO1 в процентах */
 		OFFSETOF(struct nvmap, lo1level),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& lo1level,
 		getzerobase, 
@@ -3358,7 +3358,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		OFFSETOF(struct nvmap, phaserx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& phasesmap [0],
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3369,7 +3369,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		OFFSETOF(struct nvmap, phasetx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& phasesmap [1],
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3383,7 +3383,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, alignmode),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& alignmode,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3396,7 +3396,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gforcexvrtr),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gforcexvrtr,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3409,7 +3409,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		OFFSETOF(struct nvmap, lo1powrx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& lo1powmap [0],
 		getzerobase, /* складывается со смещением и отображается */
@@ -3419,7 +3419,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		OFFSETOF(struct nvmap, lo1powtx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& lo1powmap [1],
 		getzerobase, /* складывается со смещением и отображается */
@@ -3431,7 +3431,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		OFFSETOF(struct nvmap, lo4powrx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& lo4powmap [0],
 		getzerobase, /* складывается со смещением и отображается */
@@ -3441,7 +3441,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		OFFSETOF(struct nvmap, lo4powtx),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& lo4powmap [1],
 		getzerobase, /* складывается со смещением и отображается */
@@ -3454,7 +3454,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		OFFSETOF(struct nvmap, s9level),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9level,
 		getzerobase, 
@@ -3464,7 +3464,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		OFFSETOF(struct nvmap, s9delta),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9delta,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3474,7 +3474,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		OFFSETOF(struct nvmap, s9_60_delta),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9_60_delta,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3484,7 +3484,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gattpresh),	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gattpresh,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3497,7 +3497,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		TUNE_BOTTOM / 1000000, (TUNE_TOP - 1) / 1000000,
 		OFFSETOF(struct nvmap, hffreqswitch),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& hffreqswitch,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3511,7 +3511,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, gbandsetbcast),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gbandsetbcast,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3525,7 +3525,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, bandset6m),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bandset6m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3537,7 +3537,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, bandset4m),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bandset4m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3549,7 +3549,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, bandset2m),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bandset2m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -3563,7 +3563,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpabout),
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -3574,7 +3574,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gzero,
 		NULL,
 		getzerobase,
@@ -3584,7 +3584,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gzero,
 		NULL,
 		getzerobase,
@@ -3597,7 +3597,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gzero,
 		NULL,
 		getddrfreqbase,
@@ -3607,7 +3607,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
-		nvramoffs0, valueoffs0,
+		getselector0, nvramoffs0, valueoffs0,
 		& gzero,
 		NULL,
 		getaxissfreqbase,
