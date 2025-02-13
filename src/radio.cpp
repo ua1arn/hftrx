@@ -255,6 +255,24 @@ getstablev16(const volatile uint_fast16_t * p)
 	}
 }
 
+
+#define BRSCALE 1200U
+
+/* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
+   при частоте генератора 8 МГц
+   */
+static const FLASHMEM uint_fast8_t catbr2int [] =
+{
+	1200u / BRSCALE,	// 1200
+	2400u / BRSCALE,	// 2400
+	4800u / BRSCALE,	// 4800
+	9600u / BRSCALE,	// 9600
+	19200u / BRSCALE,	// 19200
+	38400u / BRSCALE,	// 38400
+	57600u / BRSCALE,	// 57600
+	115200u / BRSCALE,	// 115200
+};
+
 static void
 display2_redrawbarstimed(
 	uint_fast8_t immed,	// Безусловная перерисовка изображения
@@ -4314,7 +4332,6 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 
 static unsigned getselector_bandgroup(unsigned * count)
 {
-
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 	* count = BANDGROUP_COUNT;
@@ -4492,23 +4509,6 @@ enum
 
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
-
-#define BRSCALE 1200U
-
-/* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
-   при частоте генератора 8 МГц
-   */
-static const FLASHMEM uint_fast8_t catbr2int [] =
-{
-	1200u / BRSCALE,	// 1200
-	2400u / BRSCALE,	// 2400
-	4800u / BRSCALE,	// 4800
-	9600u / BRSCALE,	// 9600
-	19200u / BRSCALE,	// 19200
-	38400u / BRSCALE,	// 38400
-	57600u / BRSCALE,	// 57600
-	115200u / BRSCALE,	// 115200
-};
 
 static const struct paramdefdef xcatenable =
 {
@@ -8239,10 +8239,10 @@ static const FLASHMEM struct paramdefdef * enc2menus [] =
 {
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
-	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
+	& xafgain1,	// Громкость в процентах
 #endif /* ! WITHPOTAFGAIN */
 #if ! WITHPOTIFGAIN
-	& xafgain1,	// Громкость в процентах
+	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 #endif /* ! WITHPOTIFGAIN */
 	(const struct paramdefdef [1]) {
 		QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
