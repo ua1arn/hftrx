@@ -4493,10 +4493,62 @@ enum
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
+#define BRSCALE 1200U
+
+/* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
+   при частоте генератора 8 МГц
+   */
+static const FLASHMEM uint_fast8_t catbr2int [] =
+{
+	1200u / BRSCALE,	// 1200
+	2400u / BRSCALE,	// 2400
+	4800u / BRSCALE,	// 4800
+	9600u / BRSCALE,	// 9600
+	19200u / BRSCALE,	// 19200
+	38400u / BRSCALE,	// 38400
+	57600u / BRSCALE,	// 57600
+	115200u / BRSCALE,	// 115200
+};
+
+static const struct paramdefdef xcatenable =
+{
+	QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, catenable),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& catenable,
+	getzerobase,
+};
+
 	#if WITHCAT_MUX
 		enum { nopttsig = BOARD_CATSIG_NONE };
 		enum { nokeysig = BOARD_CATSIG_NONE };
 		static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
+		static const struct paramdefdef xgcatmux =
+		{
+			QLABEL("CAT SEL "), 8, 3, RJ_CATMUX,	ISTEP1,
+			ITEM_VALUE,
+			0, BOARD_CATMUX_count - 1,
+			OFFSETOF(struct nvmap, gcatmux),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gcatmux,
+			getzerobase,
+		};
+		static const struct paramdefdef xcatbaudrate =
+		{
+			QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
+			ITEM_VALUE,
+			0, ARRAY_SIZE(catbr2int) - 1,
+			OFFSETOF(struct nvmap, catbaudrate),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& catbaudrate,
+			getzerobase,
+		};
+
 	#elif WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
 			enum { nopttsig = BOARD_CATSIG_NONE /*BOARD_CATSIG_SER1_DTR */};		// устройство без органов управления и индикации
@@ -4512,8 +4564,30 @@ enum
 
 #if WITHTX
 	static uint_fast8_t catsigptt = nopttsig;	/* Выбраный сигнал для перехода на передачу по CAT */
+	static const struct paramdefdef xcatsigptt =
+	{
+		QLABEL("CAT PTT "), 8, 8, RJ_CATSIG,	ISTEP1,
+		ITEM_VALUE,
+		0, BOARD_CATSIG_count - 1,
+		OFFSETOF(struct nvmap, catsigptt),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& catsigptt,
+		getzerobase,
+	};
 #endif /* WITHTX */
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
+	static const struct paramdefdef xcatsigkey =
+	{
+		QLABEL("CAT KEY "), 8, 8, RJ_CATSIG,	ISTEP1,
+		ITEM_VALUE,
+		0, BOARD_CATSIG_count - 1,
+		OFFSETOF(struct nvmap, catsigkey),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& catsigkey,
+		getzerobase,
+	};
 
 #else /* WITHCAT */
 
@@ -9062,25 +9136,6 @@ gsubmodechange(
 #endif /* defined (RTC1_TYPE) */
 
 
-
-#define BRSCALE 1200UL
-
-/* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
-   при частоте генератора 8 МГц
-   */
-static const FLASHMEM uint_fast8_t catbr2int [] =
-{
-	1200uL / BRSCALE,	// 1200
-	2400uL / BRSCALE,	// 2400
-	4800uL / BRSCALE,	// 4800
-	9600uL / BRSCALE,	// 9600
-	19200uL / BRSCALE,	// 19200
-	38400uL / BRSCALE,	// 38400
-	57600uL / BRSCALE,	// 57600
-//#if CPU_FREQ >= 10000000
-	115200uL / BRSCALE,	// 115200
-//#endif /* CPUSTYLE_ARM */
-};
 
 static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
 {

@@ -1313,62 +1313,17 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, catenable),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& catenable,
-		getzerobase,
-	},
+	& xcatenable,
 #if WITHCAT_MUX
-	(const struct paramdefdef [1]) {
-		QLABEL("CAT SEL "), 8, 3, RJ_CATMUX,	ISTEP1,
-		ITEM_VALUE,
-		0, BOARD_CATMUX_count - 1,
-		OFFSETOF(struct nvmap, gcatmux),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gcatmux,
-		getzerobase,
-	},
+	& xgcatmux,
 #endif /* WITHCAT_MUX */
 #if WITHUSBCDCACM == 0 || WITHCAT_MUX
-	(const struct paramdefdef [1]) {
-		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
-		ITEM_VALUE,
-		0, ARRAY_SIZE(catbr2int) - 1,
-		OFFSETOF(struct nvmap, catbaudrate),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& catbaudrate,
-		getzerobase,
-	},
+	& xcatbaudrate,
 #endif /* WITHUSBCDCACM == 0 || WITHCAT_MUX */
 #if WITHTX
-	(const struct paramdefdef [1]) {
-		QLABEL("CAT PTT "), 8, 8, RJ_CATSIG,	ISTEP1,
-		ITEM_VALUE,
-		0, BOARD_CATSIG_count - 1,
-		OFFSETOF(struct nvmap, catsigptt),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& catsigptt,
-		getzerobase,
-	},
+	& xcatsigptt,
 #endif /* WITHTX */
-	(const struct paramdefdef [1]) {
-		QLABEL("CAT KEY "), 8, 8, RJ_CATSIG,	ISTEP1,
-		ITEM_VALUE,
-		0, BOARD_CATSIG_count - 1,
-		OFFSETOF(struct nvmap, catsigkey),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& catsigkey,
-		getzerobase, 
-	},
+	& xcatsigkey,
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
