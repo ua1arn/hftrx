@@ -474,10 +474,11 @@ enum
 #define QLABEL(s1) (s1), (s1), (s1)
 #define QLABEL2(s1, s2) (s1), (s2), (s2)
 #define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
+#define QLABELENC2(s1) (s1), (s1), (s1)
 
 struct paramdefdef
 {
-	char qlabel [LABELW + 1 + 1];		/* текст - название пункта меню */
+	const char * qlabel;		/* текст - название пункта меню */
 	const char * label;
 	const char * enc2label;
 
@@ -526,7 +527,7 @@ savemenuvalue(
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -536,14 +537,12 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
-			// FIXME: mp->label is not null-terminated
 			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd->label);
 			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd->label);
 			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
-			// FIXME: mp->label is not null-terminated
 			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd->label);
 			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd->label);
 			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
@@ -561,7 +560,7 @@ param_setvalue(
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -587,7 +586,7 @@ param_getvalue(
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -688,7 +687,7 @@ static void
 param_keyclick(const struct paramdefdef * pd)
 {
 	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -707,7 +706,7 @@ param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
 	/* редактирование паратметра */
 	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -4359,7 +4358,7 @@ static const struct paramdefdef xgviewstyle =
 /* уменьшение отображаемого участка спектра */
 static const struct paramdefdef xgzoomxpow2 =
 {
-	QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
+	QLABEL3("ZOOM PAN", "ZOOM PAN", "ZOOM PAN "), 7, 0, RJ_POW2,	ISTEP1,
 	ITEM_VALUE,
 	0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 	OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
@@ -8142,91 +8141,14 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
 }
 
-/* функция для сохранения значения параметра */
-static void
-enc2savemenuvalue(
-	const FLASHMEM struct paramdefdef * pd
-	)
-{
-	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep);
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
-	const ptrdiff_t offs = pd->valoffs(sel);
-	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-
-	if (nvram == MENUNONVRAM)
-		return;
-
-	if (pv16 != NULL)
-	{
-		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
-	}
-	else if (pv8 != NULL)
-	{
-		save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
-	}
-	else
-	{
-		ASSERT(0);
-	}
-}
-
-/* функция для изменения значения параметра */
-static
-void
-enc2menu_adjust(
-	const FLASHMEM struct paramdefdef * pd,
-	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
-	)
-{
-	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep);
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
-	const ptrdiff_t offs = pd->valoffs(sel);
-	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-	const uint_fast16_t step = pd->qistep;
-
-	/* измиенение параметра */
-	if (nrotate < 0)
-	{
-		// negative change value
-		const uint_fast32_t bottom = pd->qbottom;
-		if (pv16 != NULL)
-		{
-			* pv16 = prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
-		}
-		else if (pv8 != NULL)
-		{
-			* pv8 = prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
-		}
-		enc2savemenuvalue(pd);
-	}
-	else if (nrotate > 0)
-	{
-		// positive change value
-		const uint_fast32_t upper = pd->qupper;
-		if (pv16 != NULL)
-		{
-			* pv16 = nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
-		}
-		else
-		{
-			* pv8 = nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
-		}
-		enc2savemenuvalue(pd);
-	}
-}
-
 #if WITHENCODER2
 
-static const FLASHMEM struct paramdefdef enc2menus [] =
+static const FLASHMEM struct paramdefdef * enc2menus [] =
 {
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
-	{
-		QLABEL("VOLUME   "),				// Громкость в процентах
+	(const struct paramdefdef [1]) {
+		QLABELENC2("VOLUME   "),				// Громкость в процентах
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -8240,8 +8162,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* ! WITHPOTAFGAIN */
 #if ! WITHPOTIFGAIN
-	{
-		QLABEL("RF GAIN  "),			// Усиление ПЧ/ВЧ в процентах
+	(const struct paramdefdef [1]) {
+		QLABELENC2("RF GAIN  "),			// Усиление ПЧ/ВЧ в процентах
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -8254,8 +8176,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* ! WITHPOTIFGAIN */
-	{
-		QLABEL("CW N SOFT"),	// CW filter edges for NARROW
+	(const struct paramdefdef [1]) {
+		QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -8269,24 +8191,12 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
-	{
-		QLABEL("CW SPEED "),		// WPM
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,
-		ITEM_VALUE,
-		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
-		OFFSETOF(struct nvmap, elkeywpm),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& elkeywpm.value,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgelkeywpm,
 #endif /* WITHELKEY && ! WITHPOTWPM */
 #if WITHTX
 #if WITHTXCPATHCALIBRATE
-	{
-		QLABEL("TX CALIBR"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("TX CALIBR"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
@@ -8300,8 +8210,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM && ! WITHPOTPOWER
-	{
-		QLABEL("TX POWER "),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("TX POWER "),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP5,
@@ -8315,23 +8225,11 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
 #if WITHSUBTONES
-	{
-		QLABEL("CTCSS FRQ"),
-		0, 0,
-		RJ_SUBTONE,		// rj
-		ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
-		ITEM_VALUE,
-		0, sizeof gsubtones / sizeof gsubtones [0] - 1,
-		OFFSETOF(struct nvmap, gsubtonei),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsubtonei,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #endif /* WITHPOWERTRIM */
 #if WITHMIC1LEVEL
-	{
-		QLABEL("MIKE LEVL"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("MIKE LEVL"),
 		0, 0,
 		RJ_UNSIGNED,
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
@@ -8345,8 +8243,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* ITHMIC1LEVEL */
 #if WITHIF4DSP
-	{
-		QLABEL("MIKE CLIP"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("MIKE CLIP"),
 		0, 0,
 		RJ_UNSIGNED,
 		ISTEP1,
@@ -8361,8 +8259,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 #endif /* WITHIF4DSP */
 #endif /* WITHTX */
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
-	{
-		QLABEL("NOTCH FRQ"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("NOTCH FRQ"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP50,
@@ -8376,8 +8274,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHIF4DSP
-	{
-		QLABEL("NR LEVEL "),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("NR LEVEL "),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* nr level */
@@ -8390,8 +8288,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if ! WITHPOTNFMSQL
-	{
-		QLABEL("SQUELCHFM"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("SQUELCHFM"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* squelch level */
@@ -8405,8 +8303,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 	},
 #endif /* ! WITHPOTNFMSQL */
 #if WITHSPECTRUMWF
-	{
-		QLABEL("BOTTOM DB"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("BOTTOM DB"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
@@ -8419,22 +8317,10 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if BOARD_FFTZOOM_POW2MAX > 0
-	{
-		QLABEL("ZOOM PAN "),
-		0, 0,
-		RJ_POW2,		// rj
-		ISTEP1,		/* spectrum range */
-		ITEM_VALUE,
-		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
-		OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
-		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-		NULL,
-		& gzoomxpow2,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
-	{
-		QLABEL("VIEW STLE"),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("VIEW STLE"),
 		0, 0,
 		RJ_VIEW,
 		ISTEP1,
@@ -8450,8 +8336,8 @@ static const FLASHMEM struct paramdefdef enc2menus [] =
 #endif /* WITHIF4DSP */
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
 	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-	{
-		QLABEL("IF SHIFT "),
+	(const struct paramdefdef [1]) {
+		QLABELENC2("IF SHIFT "),
 		0, 0,
 		RJ_SIGNED,		// rj
 		ISTEP50,
@@ -8475,7 +8361,7 @@ enc2menu_label_P(
 	const FLASHMEM struct paramdefdef * const mp
 	)
 {
-	return mp->label;
+	return mp->enc2label;
 }
 
 /* получение значения редактируемого параметра */
@@ -8489,7 +8375,7 @@ enc2menu_value(
 {
 	long int value;
 	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 	//const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -8691,8 +8577,7 @@ uif_encoder2_rotate(
 	case ENC2STATE_EDITITEM:
 		if (nrotate != 0)
 		{
-			const FLASHMEM struct paramdefdef * const mp = & enc2menus [enc2pos];
-			enc2menu_adjust(mp, nrotate);	// изменение и сохранение значения параметра
+			param_rotate(enc2menus [enc2pos], nrotate);	// изменение и сохранение значения параметра
 			updateboard(1, 0);
 			return 1;
 		}
@@ -8725,7 +8610,7 @@ void display2_fnlabel9(
 	)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
-	const char FLASHMEM * const text = enc2menu_label_P(& enc2menus [enc2pos]);
+	const char FLASHMEM * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
@@ -8752,7 +8637,7 @@ void display2_fnvalue9(
 	enum { WDTH = 9 };	// ширина поля для отображения
 	char b [WDTH + 1];	// тут формируется текст для отображения
 
-	enc2menu_value(& enc2menus [enc2pos], WDTH, b, ARRAY_SIZE(b));
+	enc2menu_value(enc2menus [enc2pos], WDTH, b, ARRAY_SIZE(b));
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
@@ -17360,7 +17245,7 @@ void display2_menu_valxx(
 	uint_fast8_t width = pd->qwidth;
 	uint_fast8_t comma = pd->qcomma;
 	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep);
+	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -18013,7 +17898,7 @@ static void menu_print(void)
         	uint_fast8_t width = mp->pd->qwidth;
         	uint_fast8_t comma = mp->pd->qcomma;
     		unsigned nvalues, nvstep;
-    		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+    		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
     		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
     		const ptrdiff_t offs = pd->valoffs(sel);
         	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -21085,7 +20970,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
 	{
 		/* редактирование паратметра */
 		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep);
+		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -21587,9 +21472,9 @@ void hamradio_save_gui_settings(const void * ptrv)
 #if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
-	const char FLASHMEM * const text = enc2menu_label_P(& enc2menus [enc2pos]);
+	const char FLASHMEM * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-	enc2menu_value(& enc2menus [enc2pos], INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	enc2menu_value(enc2menus [enc2pos], INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
