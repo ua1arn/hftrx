@@ -489,7 +489,7 @@ struct paramdefdef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	unsigned (* qselector)(unsigned * count, unsigned * step);
+	unsigned (* qselector)(unsigned * count);
 	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
 
@@ -526,8 +526,8 @@ savemenuvalue(
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
-		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+		unsigned nvalues;
+		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -559,8 +559,8 @@ param_setvalue(
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
-		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+		unsigned nvalues;
+		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -585,8 +585,8 @@ param_getvalue(
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
-		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+		unsigned nvalues;
+		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -686,8 +686,8 @@ calc_delta(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high, int delta)
 static void
 param_keyclick(const struct paramdefdef * pd)
 {
-	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+	unsigned nvalues;
+	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -705,8 +705,8 @@ static uint_fast8_t
 param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
 	/* редактирование паратметра */
-	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+	unsigned nvalues;
+	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -765,10 +765,9 @@ static ptrdiff_t valueoffs0(unsigned sel)
 	return 0;
 }
 
-static unsigned getselector0(unsigned * count, unsigned * step)
+static unsigned getselector0(unsigned * count)
 {
 	* count = 1;
-	* step = 0;
 	return 0;
 }
 
@@ -3998,11 +3997,10 @@ static uint_fast16_t gstep_ENC1;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
-static unsigned nvramoffs_selector(unsigned * count, unsigned * step)
+static unsigned nvramoffs_selector(unsigned * count)
 {
 	const uint_fast8_t mode = gmode;
 	* count = MODE_COUNT;
-	* step = RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
 	return mode;
 }
 
@@ -4314,12 +4312,11 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
 
-static unsigned getselector_bandgroup(unsigned * count, unsigned * step)
+static unsigned getselector_bandgroup(unsigned * count)
 {
 
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-	* step = RMT_BANDPOS(bg) - RMT_BANDPOS(0);
 	* count = BANDGROUP_COUNT;
 
 	return bg;
@@ -8107,9 +8104,8 @@ static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
 	"DIN8    ",
 };
 
-static unsigned getselector_bandgroupant(unsigned * count, unsigned * step)
+static unsigned getselector_bandgroupant(unsigned * count)
 {
-    * step = 0;
     * count = 1;
 
     return 0;
@@ -8368,8 +8364,8 @@ enc2menu_value(
 	)
 {
 	long int value;
-	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+	unsigned nvalues;
+	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 	//const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -16800,8 +16796,8 @@ loadsettings(void)
 		if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 		{
 			unsigned sel;
-			unsigned nvalues, nvstep;
-			pd->qselector(& nvalues, & nvstep);
+			unsigned nvalues;
+			pd->qselector(& nvalues);
 			if (pd->qnvram == MENUNONVRAM)
 				continue;
 			for (sel = 0; sel < nvalues; ++ sel)
@@ -17238,8 +17234,8 @@ void display2_menu_valxx(
 	const uint_fast8_t rj = pd->qrj;
 	uint_fast8_t width = pd->qwidth;
 	uint_fast8_t comma = pd->qcomma;
-	unsigned nvalues, nvstep;
-	const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+	unsigned nvalues;
+	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -17891,8 +17887,8 @@ static void menu_print(void)
         	const uint_fast8_t rj = mp->pd->qrj;
         	uint_fast8_t width = mp->pd->qwidth;
         	uint_fast8_t comma = mp->pd->qcomma;
-    		unsigned nvalues, nvstep;
-    		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
+    		unsigned nvalues;
+    		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
     		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
     		const ptrdiff_t offs = pd->valoffs(sel);
         	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
