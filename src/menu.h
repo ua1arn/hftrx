@@ -1350,28 +1350,10 @@ static const FLASHMEM struct menudef menutable [] =
 /* group name --- */
 #if WITHIF4DSP
 	#if ! WITHPOTAFGAIN
-	(const struct paramdefdef [1]) {
-		QLABEL("AF GAIN "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
-		OFFSETOF(struct nvmap, afgain1),
-		getselector0, nvramoffs0, valueoffs0,
-		& afgain1.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xafgain1,	// Громкость в процентах
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
-	(const struct paramdefdef [1]) {
-		QLABEL("RF GAIN "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
-		OFFSETOF(struct nvmap, rfgain1),
-		getselector0, nvramoffs0, valueoffs0,
-		& rfgain1.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 	#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
 #if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP

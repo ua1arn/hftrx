@@ -4375,7 +4375,7 @@ static const struct paramdefdef xgtopdbspe =
 /* верхний предел FFT */
 static const struct paramdefdef xgbottomdbspe =
 {
-	QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
+	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, 0,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
@@ -4604,6 +4604,34 @@ static const struct paramdefdef xcatenable =
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
+	#if ! WITHPOTAFGAIN
+		// Громкость в процентах
+		static const struct paramdefdef xafgain1 =
+		{
+			QLABEL2("AF GAIN ", "VOLUME   "), 7, 0, 0,	ISTEP1,
+			ITEM_VALUE,
+			BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
+			OFFSETOF(struct nvmap, afgain1),
+			getselector0, nvramoffs0, valueoffs0,
+			& afgain1.value,
+			NULL,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+	#endif /* ! WITHPOTAFGAIN */
+	#if ! WITHPOTIFGAIN
+		// Усиление ПЧ/ВЧ в процентах
+		static const struct paramdefdef xrfgain1 =
+		{
+			QLABEL2("RF GAIN ", "RF GAIN  "), 7, 0, 0,	ISTEP1,
+			ITEM_VALUE,
+			BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
+			OFFSETOF(struct nvmap, rfgain1),
+			getselector0, nvramoffs0, valueoffs0,
+			& rfgain1.value,
+			NULL,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+	#endif /* ! WITHPOTIFGAIN */
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	/* подстройка усиления с линейного входа через меню. */
 	static const struct paramdefdef xglineamp =
@@ -8211,34 +8239,10 @@ static const FLASHMEM struct paramdefdef * enc2menus [] =
 {
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
-	(const struct paramdefdef [1]) {
-		QLABELENC2("VOLUME   "),				// Громкость в процентах
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,
-		ITEM_VALUE,
-		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX,
-		OFFSETOF(struct nvmap, afgain1),
-		getselector0, nvramoffs0, valueoffs0,
-		& afgain1.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 #endif /* ! WITHPOTAFGAIN */
 #if ! WITHPOTIFGAIN
-	(const struct paramdefdef [1]) {
-		QLABELENC2("RF GAIN  "),			// Усиление ПЧ/ВЧ в процентах
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,
-		ITEM_VALUE,
-		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX,
-		OFFSETOF(struct nvmap, rfgain1),
-		getselector0, nvramoffs0, valueoffs0,
-		& rfgain1.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xafgain1,	// Громкость в процентах
 #endif /* ! WITHPOTIFGAIN */
 	(const struct paramdefdef [1]) {
 		QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
@@ -8367,19 +8371,7 @@ static const FLASHMEM struct paramdefdef * enc2menus [] =
 	},
 #endif /* ! WITHPOTNFMSQL */
 #if WITHSPECTRUMWF
-	(const struct paramdefdef [1]) {
-		QLABELENC2("BOTTOM DB"),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,		/* spectrum range */
-		ITEM_VALUE,
-		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,	/* диапазон отображаемых значений */
-		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
-		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-		NULL,
-		& gbottomdbspe,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgbottomdbspe,
 #if BOARD_FFTZOOM_POW2MAX > 0
 	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
