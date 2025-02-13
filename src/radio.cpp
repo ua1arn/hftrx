@@ -477,7 +477,7 @@ enum
 
 struct paramdefdef
 {
-	char qlabel [LABELW + 1];		/* текст - название пункта меню */
+	char qlabel [LABELW + 1 + 1];		/* текст - название пункта меню */
 	const char * label;
 	const char * enc2label;
 
@@ -493,25 +493,6 @@ struct paramdefdef
 
 	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
-	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
-};
-
-struct enc2menudef
-{
-	char label [10];
-	const char * label2;
-	const char * label3;
-
-	uint8_t qwidth, qcomma, rj;
-	uint8_t istep;
-	uint8_t qspecial;	/* признак к какому меню относится */
-	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
-
-	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* nvramoffs)(nvramaddress_t base, unsigned * count, unsigned * step);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-	ptrdiff_t (* valoffs)(void);		/* индекс для работы с массивом переменных */
-	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
-	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
 
@@ -8058,11 +8039,11 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned * cou
 /* функция для сохранения значения параметра */
 static void
 enc2savemenuvalue(
-	const FLASHMEM struct enc2menudef * mp
+	const FLASHMEM struct paramdefdef * mp
 	)
 {
 	unsigned count, step;
-	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase, & count, & step);
+	const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram, & count, & step);
 	const ptrdiff_t offs = mp->valoffs();
 	const uint_fast16_t * const pv16 = mp->apval16 + offs;
 	const uint_fast8_t * const pv8 = mp->apval8 + offs;
@@ -8088,11 +8069,11 @@ enc2savemenuvalue(
 static
 void
 enc2menu_adjust(
-	const FLASHMEM struct enc2menudef * pd,
+	const FLASHMEM struct paramdefdef * pd,
 	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
-	const uint_fast16_t step = pd->istep;
+	const uint_fast16_t step = pd->qistep;
 	const ptrdiff_t offs = pd->valoffs();
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -8101,7 +8082,7 @@ enc2menu_adjust(
 	if (nrotate < 0)
 	{
 		// negative change value
-		const uint_fast32_t bottom = pd->bottom;
+		const uint_fast32_t bottom = pd->qbottom;
 		if (pv16 != NULL)
 		{
 			* pv16 = prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
@@ -8115,7 +8096,7 @@ enc2menu_adjust(
 	else if (nrotate > 0)
 	{
 		// positive change value
-		const uint_fast32_t upper = pd->upper;
+		const uint_fast32_t upper = pd->qupper;
 		if (pv16 != NULL)
 		{
 			* pv16 = nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
@@ -8130,7 +8111,7 @@ enc2menu_adjust(
 
 #if WITHENCODER2
 
-static const FLASHMEM struct enc2menudef enc2menus [] =
+static const FLASHMEM struct paramdefdef enc2menus [] =
 {
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
@@ -8381,7 +8362,7 @@ static const FLASHMEM struct enc2menudef enc2menus [] =
 static
 const FLASHMEM char *
 enc2menu_label_P(
-	const FLASHMEM struct enc2menudef * const mp
+	const FLASHMEM struct paramdefdef * const mp
 	)
 {
 	return mp->label;
@@ -8390,7 +8371,7 @@ enc2menu_label_P(
 /* получение значения редактируемого параметра */
 static void
 enc2menu_value(
-	const FLASHMEM struct enc2menudef * const pd,
+	const FLASHMEM struct paramdefdef * const pd,
 	int WDTH,	// ширина поля для отображения (в GUI не используется)
 	char * buff,	// буфер для текста значения параметра
 	size_t sz		// размер буфера
@@ -8412,11 +8393,11 @@ enc2menu_value(
 	else
 	{
 		ASSERT(0);
-		value = pd->bottom;	/* чтобы не ругался компилятор */
+		value = pd->qbottom;	/* чтобы не ругался компилятор */
 	}
 
 #if WITHTOUCHGUI
-	switch (pd->rj)
+	switch (pd->qrj)
 	{
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
@@ -8452,7 +8433,7 @@ enc2menu_value(
 		break;
 	}
 #else
-	switch (pd->rj)
+	switch (pd->qrj)
 		{
 	#if WITHSUBTONES && WITHTX
 		case RJ_SUBTONE:
@@ -8597,7 +8578,7 @@ uif_encoder2_rotate(
 	case ENC2STATE_EDITITEM:
 		if (nrotate != 0)
 		{
-			const FLASHMEM struct enc2menudef * const mp = & enc2menus [enc2pos];
+			const FLASHMEM struct paramdefdef * const mp = & enc2menus [enc2pos];
 			enc2menu_adjust(mp, nrotate);	// изменение и сохранение значения параметра
 			updateboard(1, 0);
 			return 1;
