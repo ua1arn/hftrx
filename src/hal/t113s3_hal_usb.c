@@ -889,18 +889,18 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 		volatile uint32_t * dest = (volatile uint32_t *) dest_addr;
 		for (; count >= 32; count -= 32)
 		{
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
-			* dest ++ = get_wvalue(pipe);
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
 		}
 		for (; count >= 4; count -= 4)
 		{
-			* dest ++ = get_wvalue(pipe);
+			__UNALIGNED_UINT32_WRITE(dest ++, get_wvalue(pipe));
 		}
 		dest_addr = (uintptr_t) dest;
 	}
@@ -909,7 +909,7 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 		volatile uint16_t * dest = (volatile uint16_t *) dest_addr;
 		for (; count >= 2; count -= 2)
 		{
-			* dest ++ = get_hvalue(pipe);
+			__UNALIGNED_UINT16_WRITE(dest ++, get_hvalue(pipe));
 		}
 		dest_addr = (uintptr_t) dest;
 	}
@@ -942,18 +942,18 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 		volatile const uint32_t * src = (volatile uint32_t *) src_addr;
 		for (; count >= 32; count -= 32)
 		{
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
-			put_wvalue(pipe, * src ++);
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
 		}
 		for (; count >= 4; count -= 4)
 		{
-			put_wvalue(pipe, * src ++);
+			put_wvalue(pipe, __UNALIGNED_UINT32_READ(src ++));
 		}
 		src_addr = (uintptr_t) src;
 	}
@@ -962,7 +962,7 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 		volatile const uint16_t * src = (volatile uint16_t *) src_addr;
 		for (; count >= 2; count -= 2)
 		{
-			put_hvalue(pipe, * src ++);
+			put_hvalue(pipe, __UNALIGNED_UINT16_READ(src ++));
 		}
 		src_addr = (uintptr_t) src;
 	}
