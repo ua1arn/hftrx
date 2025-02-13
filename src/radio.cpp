@@ -700,7 +700,7 @@ param_keyclick(const struct paramdefdef * pd)
 	savemenuvalue(pd);
 }
 
-/* модификация паметра по валкодеру - возврат не-0  в случае модификации */
+/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 static uint_fast8_t
 param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
@@ -758,12 +758,6 @@ param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 }
 
 static uint_fast16_t gzero;
-
-//
-//static unsigned valoffset_bi_a(void)
-//{
-//	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
-//}
 
 static ptrdiff_t valueoffs0(unsigned sel)
 {
@@ -20966,7 +20960,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
 	const struct paramdefdef * const pd = menutable [index].pd;
-	if (param_rotate(pd, rotate))
+	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard(1, 0);
 		display_redrawfreqstimed(1);
@@ -21210,7 +21204,7 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 #if WITHSPECTRUMWF && WITHMENU
 const char * hamradio_change_view_style(uint_fast8_t v)
 {
-	param_rotate(& xgviewstyle, v);	// модификация и сохранение параметра
+	param_rotate(& xgviewstyle, v);	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 
 	return view_types [param_getvalue(& xgviewstyle)];
 }
@@ -21251,7 +21245,7 @@ void hamradio_set_gwflevelsep(uint_fast8_t v)
 
 uint_fast8_t hamradio_gtopdbsp(int_least16_t v)
 {
-	if (param_rotate(& xgtopdbspe, v))	// модификация и сохранение параметра
+	if (param_rotate(& xgtopdbspe, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard(1, 0);
 	}
@@ -21260,7 +21254,7 @@ uint_fast8_t hamradio_gtopdbsp(int_least16_t v)
 
 uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
 {
-	if (param_rotate(& xgbottomdbspe, v))	// модификация и сохранение параметра
+	if (param_rotate(& xgbottomdbspe, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard(1, 0);
 	}
@@ -21269,7 +21263,7 @@ uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
 
 uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
 {
-	if (param_rotate(& xgtopdbwfl, v))	// модификация и сохранение параметра
+	if (param_rotate(& xgtopdbwfl, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard(1, 0);
 	}
@@ -21278,7 +21272,7 @@ uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
 
 uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
 {
-	if (param_rotate(& xgbottomdbwfl, v))	// модификация и сохранение параметра
+	if (param_rotate(& xgbottomdbwfl, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard(1, 0);
 	}
