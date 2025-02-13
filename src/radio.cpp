@@ -20963,58 +20963,16 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 	}
 }
 
-const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate)
+const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
 	const struct paramdefdef * const pd = menutable [index].pd;
-	if (rotate != 0 && ismenukinddp(pd, ITEM_VALUE))
+	if (param_rotate(pd, rotate))
 	{
-		/* редактирование паратметра */
-		unsigned nvalues, nvstep;
-		const unsigned sel = pd->qselector(& nvalues, & nvstep); // индекс параметра в массиве
-		const ptrdiff_t offs = pd->valoffs(sel);
-		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-		const uint_fast16_t step = pd->qistep;
-
-		if (step == ISTEP_RO)
-		{
-
-		}
-		else if (rotate < 0)
-		{
-			// negative change value
-			const uint_fast32_t bottom = pd->qbottom;
-			if (pv16 != NULL)
-			{
-				* pv16 =
-					prevfreq(* pv16, * pv16 - (- rotate * step), step, bottom);
-			}
-			else
-			{
-				* pv8 =
-					prevfreq(* pv8, * pv8 - (- rotate * step), step, bottom);
-			}
-		}
-		else
-		{
-			// positive change value
-			const uint_fast32_t upper = pd->qupper;
-			if (pv16 != NULL)
-			{
-				* pv16 =
-					nextfreq(* pv16, * pv16 + (rotate * step), step, upper + (uint_fast32_t) step);
-			}
-			else
-			{
-				* pv8 =
-					nextfreq(* pv8, * pv8 + (rotate * step), step, upper + (uint_fast32_t) step);
-			}
-		}
 		updateboard(1, 0);
 		display_redrawfreqstimed(1);
 		display2_needupdate();
-		savemenuvalue(pd);		/* сохраняем отредактированное значение */
-		}
+	}
+
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
 	dctx.pv = & menutable [index];
