@@ -874,8 +874,6 @@ static uint32_t aw_module(uint32_t x, uint32_t y)
 
 static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_addr, unsigned count)
 {
-	uint8_t temp;
-
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
 
 	if (count >= 4)
