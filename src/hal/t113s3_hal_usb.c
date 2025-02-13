@@ -875,16 +875,10 @@ static uint32_t aw_module(uint32_t x, uint32_t y)
 static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_addr, unsigned count)
 {
 	uint8_t temp;
-	//uint8_t saved;
-
-//	if (ep_no>USB_MAX_EP_NO)
-//	{
-//		return;
-//	}
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
 
-	if ((dest_addr % 4) == 0 && count >= 4)
+	if (count >= 4)
 	{
 		volatile uint32_t * dest = (volatile uint32_t *) dest_addr;
 		for (; count >= 32; count -= 32)
@@ -904,7 +898,7 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 		}
 		dest_addr = (uintptr_t) dest;
 	}
-	if ((dest_addr % 2) == 0 && count >= 2)
+	if (count >= 2)
 	{
 		volatile uint16_t * dest = (volatile uint16_t *) dest_addr;
 		for (; count >= 2; count -= 2)
@@ -927,17 +921,11 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 
 static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, unsigned count)
 {
-	//uint8_t  saved;
-
-//	if (ep_no>USB_MAX_EP_NO)
-//	{
-//		return;
-//	}
 	if (count == 0)
 		return;
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
-	if ((src_addr % 4) == 0 && count >= 4)
+	if (count >= 4)
 	{
 		volatile const uint32_t * src = (volatile uint32_t *) src_addr;
 		for (; count >= 32; count -= 32)
@@ -957,7 +945,7 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 		}
 		src_addr = (uintptr_t) src;
 	}
-	if ((src_addr % 2) == 0 && count >= 2)
+	if (count >= 2)
 	{
 		volatile const uint16_t * src = (volatile uint16_t *) src_addr;
 		for (; count >= 2; count -= 2)
