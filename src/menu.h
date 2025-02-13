@@ -231,56 +231,11 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHVIEW_3DSS */
-	(const struct paramdefdef [1]) {
-		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
-		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-		NULL,
-		& gtopdbspe,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
-		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-		NULL,
-		& gbottomdbspe,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("WFPARAMS"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* водопад отдельными папаметрами */
-		OFFSETOF(struct nvmap, gwflevelsep),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gwflevelsep,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
-		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-		NULL,
-		& gtopdbwfl,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),
-		getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-		NULL,
-		& gbottomdbwfl,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgtopdbspe,	/* нижний предел FFT */
+	& xgbottomdbspe,	/* верхний предел FFT */
+	& xgwflevelsep,	// чувствительность водопада регулируется отдельной парой параметровs
+	& xgtopdbwfl,	/* нижний предел FFT waterflow */
+	& xgbottomdbwfl,	/* верхний предел FFT waterflow */
 	(const struct paramdefdef [1]) {
 		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,

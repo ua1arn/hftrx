@@ -551,6 +551,7 @@ savemenuvalue(
 	}
 }
 
+// Установить значение параметра и сохранить в nvram
 static void
 param_setvalue(
 	const FLASHMEM struct paramdefdef * pd,
@@ -574,6 +575,7 @@ param_setvalue(
 		{
 			* pv8 = v - pd->funcoffs();
 		}
+		savemenuvalue(pd);
 	}
 }
 
@@ -699,8 +701,8 @@ param_keyclick(const struct paramdefdef * pd)
 	savemenuvalue(pd);
 }
 
-/* модификация паметра по валкодеру */
-static void
+/* модификация паметра по валкодеру - возврат не-0  в случае модификации */
+static uint_fast8_t
 param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
 	/* редактирование паратметра */
@@ -713,12 +715,16 @@ param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 	const uint_fast16_t step = pd->qistep;
 
 	if (! ismenukinddp(pd, ITEM_VALUE))
-		return;
+		return 0;
 	if (step == ISTEP_RO)
 	{
-
+		return 0;
 	}
-	else if (nrotate < 0)
+	if (nrotate == 0)
+	{
+		return 0;
+	}
+	if (nrotate < 0)
 	{
 		// negative change value
 		const uint_fast32_t bottom = pd->qbottom;
@@ -749,6 +755,7 @@ param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 		}
 	}
 	savemenuvalue(pd);
+	return 1;
 }
 
 static uint_fast16_t gzero;
@@ -4361,6 +4368,69 @@ static const struct paramdefdef xgzoomxpow2 =
 	& gzoomxpow2,
 	getzerobase, /* складывается со смещением и отображается */
 };
+
+
+/* нижний предел FFT */
+static const struct paramdefdef xgtopdbspe =
+{
+	QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
+	ITEM_VALUE,
+	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+	OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	NULL,
+	& gtopdbspe,
+	getzerobase, /* складывается со смещением и отображается */
+};
+/* верхний предел FFT */
+static const struct paramdefdef xgbottomdbspe =
+{
+	QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
+	ITEM_VALUE,
+	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	NULL,
+	& gbottomdbspe,
+	getzerobase, /* складывается со смещением и отображается */
+};
+/* нижний предел FFT waterflow */
+static const struct paramdefdef xgtopdbwfl =
+{
+	QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
+	ITEM_VALUE,
+	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+	OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	NULL,
+	& gtopdbwfl,
+	getzerobase, /* складывается со смещением и отображается */
+};
+/* верхний предел FFT waterflow */
+static const struct paramdefdef xgbottomdbwfl =
+{
+	QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
+	ITEM_VALUE,
+	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	NULL,
+	& gbottomdbwfl,
+	getzerobase, /* складывается со смещением и отображается */
+};
+// чувствительность водопада регулируется отдельной парой параметровs
+static const struct paramdefdef xgwflevelsep =
+{
+	QLABEL("WFPARAMS"), 7, 3, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,							/* водопад отдельными папаметрами */
+	OFFSETOF(struct nvmap, gwflevelsep),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gwflevelsep,
+	getzerobase, /* складывается со смещением и отображается */
+};
+
 #endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 
 #endif /* WITHSPECTRUMWF */
@@ -13499,8 +13569,7 @@ static uint_fast8_t processencoders(void)
 		const struct paramdefdef * const pd = mdt [mode].getmiddlemenu(& nitems) [gmiddlepos [mode]];
 
 		int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
-		param_rotate(pd, delta);
-		changed = changed || (delta != 0);
+		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
 			bring_enc4f();
 //		switch (enc4f_sel)
@@ -17823,7 +17892,7 @@ modifysettings(
 
 		if (nrotate != 0 && ismenukind(mp, ITEM_VALUE))
 		{
-			param_rotate(mp->pd, nrotate);
+			param_rotate(mp->pd, nrotate);	// модификация и сохранение параметра
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
@@ -20604,8 +20673,7 @@ uint_fast8_t hamradio_get_gmikeequalizer(void)
 
 void hamradio_set_gmikeequalizer(uint_fast8_t v)
 {
-	param_setvalue(& xgmikeequalizer, v != 0);
-	savemenuvalue(& xgmikeequalizer);
+	param_setvalue(& xgmikeequalizer, v != 0);	// Установить значение параметра и сохранить в nvram
 	updateboard(1, 0);
 }
 
@@ -21299,15 +21367,14 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 #if WITHSPECTRUMWF && WITHMENU
 const char * hamradio_change_view_style(uint_fast8_t v)
 {
-	param_rotate(& xgviewstyle, v);
-	savemenuvalue(& xgviewstyle);		/* сохраняем отредактированное значение */
+	param_rotate(& xgviewstyle, v);	// модификация и сохранение параметра
 
-	return view_types [gviewstyle];
+	return view_types [param_getvalue(& xgviewstyle)];
 }
 
 uint_fast8_t hamradio_get_viewstyle(void)
 {
-	return gviewstyle;
+	return param_getvalue(& xgviewstyle);
 }
 
 void hamradio_settemp_viewstyle(uint_fast8_t v)
@@ -21319,101 +21386,59 @@ void hamradio_settemp_viewstyle(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)
 {
-	return gzoomxpow2;
+	return param_getvalue(& xgzoomxpow2);
 }
 
 void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
-	unsigned count, step;
-	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
-	gzoomxpow2 = v;
-	// сохранение зависит от текущего диапазона
-	const unsigned sel = getselector_bandgroup(& count, & step);
-	save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2), sel), gzoomxpow2);
+	param_setvalue(& xgzoomxpow2, v);	// Установить значение параметра и сохранить в nvram
 	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_gwflevelsep(void)
 {
-	return gwflevelsep;
+	return param_getvalue(& xgwflevelsep);
 }
 
 void hamradio_set_gwflevelsep(uint_fast8_t v)
 {
-	gwflevelsep = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gwflevelsep), gwflevelsep);
+	param_setvalue(& xgwflevelsep, v != 0);
 	updateboard(1, 0);
 }
 
-uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
+uint_fast8_t hamradio_gtopdbsp(int_least16_t v)
 {
-	if (v > 0)
-		gtopdbspe = calc_next(gtopdbspe, WITHTOPDBMIN, WITHTOPDBMAX);
-	else if (v < 0)
-		gtopdbspe = calc_prev(gtopdbspe, WITHTOPDBMIN, WITHTOPDBMAX);
-
-	if (v != 0)
+	if (param_rotate(& xgtopdbspe, v))	// модификация и сохранение параметра
 	{
-		unsigned count, step;
-		const unsigned sel = getselector_bandgroup(& count, & step);
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe), sel), gtopdbspe);
 		updateboard(1, 0);
 	}
-
 	return gtopdbspe;
 }
 
-uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
+uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
 {
-	if (v > 0)
-		gbottomdbspe = calc_next(gbottomdbspe, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
-	else if (v < 0)
-		gbottomdbspe = calc_prev(gbottomdbspe, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
-
-	if (v != 0)
+	if (param_rotate(& xgbottomdbspe, v))	// модификация и сохранение параметра
 	{
-		unsigned count, step;
-		const unsigned sel = getselector_bandgroup(& count, & step);
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe), sel), gbottomdbspe);
 		updateboard(1, 0);
 	}
-
 	return gbottomdbspe;
 }
 
-uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
+uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
 {
-	if (v > 0)
-		gtopdbwfl = calc_next(gtopdbwfl, WITHTOPDBMIN, WITHTOPDBMAX);
-	else if (v < 0)
-		gtopdbwfl = calc_prev(gtopdbwfl, WITHTOPDBMIN, WITHTOPDBMAX);
-
-	if (v != 0)
+	if (param_rotate(& xgtopdbwfl, v))	// модификация и сохранение параметра
 	{
-		unsigned count, step;
-		const unsigned sel = getselector_bandgroup(& count, & step);
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl), sel), gtopdbwfl);
 		updateboard(1, 0);
 	}
-
 	return gtopdbwfl;
 }
 
-uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
+uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
 {
-	if (v > 0)
-		gbottomdbwfl = calc_next(gbottomdbwfl, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
-	else if (v < 0)
-		gbottomdbwfl = calc_prev(gbottomdbwfl, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
-
-	if (v != 0)
+	if (param_rotate(& xgbottomdbwfl, v))	// модификация и сохранение параметра
 	{
-		unsigned count, step;
-		const unsigned sel = getselector_bandgroup(& count, & step);
-		save_i8(nvramoffs_bandgroup(OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl), sel), gbottomdbwfl);
 		updateboard(1, 0);
 	}
-
 	return gbottomdbwfl;
 }
 
