@@ -12288,23 +12288,19 @@ void hightests(void)
 		PRINTF("Ethernet RGMII test started.\n");
 		{
 			// The working clock of EMAC is from AHB3.
-			const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
-			CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
-			CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
-			CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
-			PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
 
 //			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (31));	// SCLK_GATING
 //			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (30));	// PLL_PERI0_GATING
 			unsigned addr;
 			for (addr = 0; addr <= 31; ++ addr)
 			{
-				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-				local_delay_ms(15);
-				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-				local_delay_ms(15);
+//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
+//				local_delay_ms(15);
+//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
+//				local_delay_ms(15);
 				PRINTF("ADDR=%u\n", addr);
 				//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 27);	// 0: Internal SMI and MII
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 18);	// 0: 25 MHz
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 16);	// 0: Power up
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 15);	// 0: External PHY
@@ -12318,13 +12314,19 @@ void hightests(void)
 				HARDWARE_EMAC_EPHY_CLK_REG |= addr * (UINT32_C(1) << 20);		// 0x00..0x1F: PHY Address
 				PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
 
+
+				const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
+				CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
+				CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+				CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+				//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
+
+//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
+//				local_delay_ms(15);
+//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
+//				local_delay_ms(15);
+
 				PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-
-				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-				local_delay_ms(15);
-				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-				local_delay_ms(15);
-
 				HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 = 0x08 * (UINT32_C(1) << 24);
 				//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
 				HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
