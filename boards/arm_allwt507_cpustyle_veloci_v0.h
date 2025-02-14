@@ -1465,6 +1465,7 @@
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* PI14 MDC */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* PI15 MDIO */ \
 		\
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
 	} while (0)
 	// T507:
