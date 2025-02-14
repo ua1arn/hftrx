@@ -12270,7 +12270,7 @@ void hightests(void)
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && WITHETHHW && CPUSTYLE_ALLWINNER
+#if 0 && WITHETHHW && CPUSTYLE_ALLWINNER && CPUSTYLE_T507
 	{
 		PRINTF("Ethernet RGMII test started.\n");
 		{
@@ -12290,9 +12290,10 @@ void hightests(void)
 			PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
 
 			//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, sizeof * HARDWARE_EMAC_PTR);
-//			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << (0));	// Soft reset
-//			while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << (0))) != 0)
-//				;
+			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << (0));	// Soft reset
+			while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << (0))) != 0)
+				;
+			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
 		}
 		PRINTF("Ethernet RGMII test done.\n");
 	}

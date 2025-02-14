@@ -11475,6 +11475,7 @@ updateboardZZZ(
 			{
 				mixXlsbs [i] = getlsbloX(alsbmode, i, sides, sizeof sides / sizeof sides [0]);
 			}
+			ASSERT(pamodetempl != NULL);
 			// расчёт частот в тракте
 			//
 		#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX)

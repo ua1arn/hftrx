@@ -366,7 +366,7 @@
 #endif /* WITHENCODER */
 
 #define I2S0HW_INITIALIZE(master) do { \
-	/*arm_hardware_pioi_altfn50(UINT32_C(1) << 6,	GPIO_CFG_AF3); *//* PA6 H_I2S0_MCLK	*/ \
+	/*arm_hardware_pioa_altfn50(UINT32_C(1) << 6,	GPIO_CFG_AF3); *//* PA6 H_I2S0_MCLK	*/ \
 	arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA8 H_I2S0_LRCK	*/ \
 	arm_hardware_pioa_altfn50(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PA7 H_I2S0_BCLK	*/ \
 	arm_hardware_pioa_altfn50(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PA5 H_I2S0_DOUT0 to FPGA */ \
