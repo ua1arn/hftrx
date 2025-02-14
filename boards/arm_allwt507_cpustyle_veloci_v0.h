@@ -27,7 +27,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 
 #if WITHDEBUG
@@ -115,6 +114,8 @@
 	} while (0)
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHC0HW	1		/* TF CARD */
@@ -1466,6 +1467,10 @@
 		\
 		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
 	} while (0)
+
+	#define HARDWARE_EMAC_IX 0	// 0: EMAC0, 1: EMAC1
+	#define HARDWARE_EMAC_PTR EMAC0
+	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 
 #else /* WITHETHHW */
 

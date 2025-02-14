@@ -12270,6 +12270,33 @@ void hightests(void)
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
+#if 0 && WITHETHHW && CPUSTYLE_ALLWINNER
+	{
+		PRINTF("Ethernet RGMII test started.\n");
+		{
+			// The working clock of EMAC is from AHB3.
+			const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
+			CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
+			CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+
+			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (31));	// SCLK_GATING
+			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (30));	// PLL_PERI0_GATING
+
+			PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << (18));	// 0: 25 MHz
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << (15));	// 0: External PHY
+			HARDWARE_EMAC_EPHY_CLK_REG |= (UINT32_C(1) << (2));		// 1: RGMII
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << (16));	// 0: Power up
+			PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+
+			//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, sizeof * HARDWARE_EMAC_PTR);
+//			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << (0));	// Soft reset
+//			while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << (0))) != 0)
+//				;
+		}
+		PRINTF("Ethernet RGMII test done.\n");
+	}
+#endif
 #if 0 && WITHETHHW && CPUSTYLE_XC7Z
 	{
 		PRINTF("GEM0 test:\n");
