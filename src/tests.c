@@ -4155,7 +4155,8 @@ static void diskio_test(BYTE drv)
 
 			case 'W':
 				{
-					unsigned nsect = 256 * 1024 * 2;	// 10M
+					unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
+					//unsigned nsect = 256 * 1024 * 2;	// 10M
 					// Wipe SD
 					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
 					char c = 0;
@@ -4173,7 +4174,19 @@ static void diskio_test(BYTE drv)
 					if (c == 'y')
 					{
 						unsigned sector;
-
+						sector = 0;
+						if (mmcWriteSector(drv, sector, sectbuffw) != MMC_SUCCESS2)
+						{
+							PRINTF(PSTR("Write error ar sector %u\n"), sector);
+							break;
+						}
+						sector = nsect - 1;
+						if (mmcWriteSector(drv, sector, sectbuffw) != MMC_SUCCESS2)
+						{
+							PRINTF(PSTR("Write error ar sector %u\n"), sector);
+							break;
+						}
+						PRINTF("GPT sectors erased\n");
 						for (sector = 0; sector < nsect; )
 						{
 							/* Обеспечение работы USER MODE DPC */
