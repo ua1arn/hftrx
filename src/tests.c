@@ -12291,16 +12291,19 @@ void hightests(void)
 			const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
 			CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
 			CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+			PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
 
-			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (31));	// SCLK_GATING
-			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (30));	// PLL_PERI0_GATING
+//			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (31));	// SCLK_GATING
+//			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (30));	// PLL_PERI0_GATING
 
 			PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
 			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << (18));	// 0: 25 MHz
 			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << (15));	// 0: External PHY
 			HARDWARE_EMAC_EPHY_CLK_REG |= (UINT32_C(1) << (2));		// 1: RGMII
 			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << (16));	// 0: Power up
+			HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
 			PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 
 			//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, sizeof * HARDWARE_EMAC_PTR);
 			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << (0));	// Soft reset
