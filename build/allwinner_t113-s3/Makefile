@@ -61,8 +61,8 @@ CORE = -mcpu=cortex-a7 --specs=nosys.specs -mfloat-abi=hard -mfpu=neon-vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Ofast -flto
-OPT = -Ofast
+OPT = -Ofast -flto
+#OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
