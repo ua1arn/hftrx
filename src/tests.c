@@ -12294,25 +12294,23 @@ void hightests(void)
 			unsigned addr;
 			for (addr = 0; addr <= 31; ++ addr)
 			{
-//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-//				local_delay_ms(15);
-//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-//				local_delay_ms(15);
-				PRINTF("ADDR=%u\n", addr);
+				//PRINTF("ADDR=%u\n", addr);
 				//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 27);	// 0: Internal SMI and MII
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 18);	// 0: 25 MHz
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 16);	// 0: Power up
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 15);	// 0: External PHY
+
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 13);	// 0: Disable RMII Module
 				HARDWARE_EMAC_EPHY_CLK_REG |= (UINT32_C(1) << 2);		// 1: RGMII
+
 				//HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (0x03 * (UINT32_C(1) << 0));
-				HARDWARE_EMAC_EPHY_CLK_REG |= 0x01 * (UINT32_C(1) << 0);	// 01: External transmit clock source for GMII and RGMII
+				HARDWARE_EMAC_EPHY_CLK_REG |= 0x02 * (UINT32_C(1) << 0);	// 01: External transmit clock source for GMII and RGMII
 
 				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (0x1F * (UINT32_C(1) << 20));
 				HARDWARE_EMAC_EPHY_CLK_REG |= addr * (UINT32_C(1) << 20);		// 0x00..0x1F: PHY Address
-				PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+				//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
 
 
 				const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
@@ -12321,22 +12319,21 @@ void hightests(void)
 				CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
 				//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
 
-//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-//				local_delay_ms(15);
-//				arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */
-//				local_delay_ms(15);
-
-				PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+				//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 				HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 = 0x08 * (UINT32_C(1) << 24);
 				//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
 				HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-				unsigned w = 1000;
+				unsigned w = 100;
 				while (w -- && (HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
 					local_delay_ms(1);
-				PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+				//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 				//PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
 				if ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) == 0)
+				{
+					PRINTF("ADDR=%u\n", addr);
+					PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 					break;
+				}
 			}
 		}
 		PRINTF("Ethernet RGMII test done.\n");
