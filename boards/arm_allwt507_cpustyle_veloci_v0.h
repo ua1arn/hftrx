@@ -117,10 +117,11 @@
 
 	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	// Also need WITHUSESDCARD
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHC0HW	1		/* TF CARD */
 	//#define WITHSDHC1HW	1		/* SDIO */
-	//#define WITHSDHC2HW	1		/* EMMC */
+	#define WITHSDHC2HW	1		/* EMMC */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
 	#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
@@ -1447,7 +1448,19 @@
 
 #if WITHETHHW
 	#define ETHERNET_INITIALIZE() do { \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
+		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
+		\
+		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 RGMII_RXD2 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 RGMII_RXD1 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RGMII_RXD0 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 RGMII_RXCK */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 RGMII_RXCTL */ \
+		\
+		arm_hardware_pioi_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		arm_hardware_pioi_outputs(NRSTB, 1 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		\
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII_RXD3 */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII_RXD2 */ \
@@ -1467,8 +1480,6 @@
 		arm_hardware_pioi_updown(UINT32_C(1) << 14, UINT32_C(1) << 14, 0); /* PI14 MDC */ \
 		arm_hardware_pioi_updown(UINT32_C(1) << 15, UINT32_C(1) << 15, 0); /*  PI15 MDIO */ \
 		\
-		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
 	} while (0)
 	// T507:
 	// 	EMAC0: 10/100/1000 Mbps Ethernet port with RGMII and RMII interfaces;
