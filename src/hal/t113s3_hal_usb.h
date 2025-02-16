@@ -113,11 +113,11 @@ typedef struct {
 	#define USB_EP0_DATA					1
 	//#define USB_EP0_STATUS				2
 	uint32_t ep0_xfer_state;
-	uintptr_t ep0_xfer_srcaddr;
+	uintptr_t ep0_xfer_addr;
 	uint32_t ep0_xfer_residue;
-	uint32_t ep0_xfer_tranferred;
+	uint32_t ep0_xfer_tranferred;	// byte count in OUT direction
 	//uSetupPKG ep0_setup;
-	USB_RETVAL ep0_ret;
+	//USB_RETVAL ep0_ret;
 
 	USB_RETVAL eptx_ret[USB_MAX_EP_NO];
 	USB_RETVAL eprx_ret[USB_MAX_EP_NO];

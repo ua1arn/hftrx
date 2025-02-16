@@ -963,12 +963,20 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 }
 
 
+static void usb_ep0_start_receieve(pusb_struct pusb, uint8_t * addr, uint32_t len)
+{
+	pusb->ep0_xfer_addr = (uintptr_t) addr;
+	pusb->ep0_xfer_residue = len;
+	pusb->ep0_xfer_tranferred = 0;
+	pusb->ep0_xfer_state = USB_EP0_DATA;
+}
+
 static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t len)
 {
 	uint32_t is_last;
 	uint32_t byte_trans;
 
-	pusb->ep0_xfer_srcaddr = (uintptr_t) addr;
+	pusb->ep0_xfer_addr = (uintptr_t) addr;
 	pusb->ep0_xfer_residue = len;
 
 	if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
@@ -990,7 +998,7 @@ static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t 
 		pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
 	}
 
- 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
+ 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_addr, byte_trans);
 
  	if (is_last || (!byte_trans))
  	{
@@ -1026,7 +1034,7 @@ static void usb_ep0_complete_send_data(pusb_struct pusb)
 		uint32_t is_last;
 		uint32_t byte_trans;
 
- 		pusb->ep0_xfer_srcaddr += pusb->ep0_maxpktsz;
+ 		pusb->ep0_xfer_addr += pusb->ep0_maxpktsz;
  		if (pusb->ep0_xfer_residue == UINT32_MAX)
 	  	{
 		  	is_last = 1;
@@ -1054,7 +1062,7 @@ static void usb_ep0_complete_send_data(pusb_struct pusb)
 				pusb->ep0_xfer_residue -= pusb->ep0_maxpktsz;
 	   		}
 	 	}
-	 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_srcaddr, byte_trans);
+	 	usb_write_ep_fifo(pusb, 0, pusb->ep0_xfer_addr, byte_trans);
 	 	if (is_last || (!byte_trans))
 	 	{
 	 		usb_set_ep0_csr(pusb, 0x0a);	// USB_TXCSR_FLUSHFIFO | USB_TXCSR_FIFONOTEMP
@@ -2649,7 +2657,8 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 // see UAC1_AudioFeatureUnit
 static unsigned USBD_UAC1_FeatureUnit_req(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	/* значения для немодифицируемых управляющих элементов громкости */
@@ -2716,7 +2725,8 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 // see UAC1_AudioFeatureUnit
 static unsigned USBD_UAC1_Selector_req(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
@@ -2756,16 +2766,17 @@ static unsigned USBD_UAC1_Selector_req(
 // see UAC2_AudioFeatureUnit
 static unsigned USBD_UAC2_FeatureUnit_req(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 
-	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
+		//PRINTF("%s: IN bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 		// IN
 		switch (req->bRequest)
 		{
@@ -2810,7 +2821,8 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	else
 	{
 		// OUT
-		printhex(0, buff, 16);
+		//PRINTF("%s: OUT bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
+		//printhex(0, buff, count);
 	}
 	return 0;
 }
@@ -2820,7 +2832,8 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 // UAC2: Выполнение запроса CURR
 static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
@@ -2859,7 +2872,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	else
 	{
 		// OUT
-		printhex(0, buff, 16);
+		//printhex(0, buff, count);
 	}
 	return 0;
 }
@@ -2867,7 +2880,8 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 // UAC2: Выполнение запроса CURR
 static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
@@ -2902,7 +2916,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	else
 	{
 		// OUT
-		printhex(0, buff, 16);
+		//printhex(0, buff, count);
 	}
 	return 0;
 }
@@ -2911,7 +2925,8 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 // UAC2: Выполнение запроса CURR/RANGE
 static unsigned USBD_UAC2_ClockSource_req_48k(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
@@ -2958,7 +2973,7 @@ static unsigned USBD_UAC2_ClockSource_req_48k(
 	else
 	{
 		// OUT
-		printhex(0, buff, 16);
+		printhex(0, buff, count);
 	}
 	return 0;
 }
@@ -2966,7 +2981,8 @@ static unsigned USBD_UAC2_ClockSource_req_48k(
 // UAC2: Выполнение запроса CURR/RANGE
 static unsigned USBD_UAC2_ClockSource_req_rts(
 	const uSetupPKG *req,
-	uint8_t * buff
+	uint8_t * buff,
+	uint32_t count
 	)
 {
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
@@ -3013,7 +3029,7 @@ static unsigned USBD_UAC2_ClockSource_req_rts(
 	else
 	{
 		// OUT
-		printhex(0, buff, 16);
+		printhex(0, buff, count);
 	}
 	return 0;
 }
@@ -3054,6 +3070,7 @@ static uint8_t dfu_dev_status [6];
 static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
+	const uint32_t count = sizeof buff;
 	uint32_t temp = 0;
 
 	switch (ep0_setup->bmRequest & 0x1F)
@@ -3267,21 +3284,21 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48):
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48):
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_OUT48):
-				len = USBD_UAC2_CloclMultiplier_req_48k(ep0_setup, buff);
+				len = USBD_UAC2_CloclMultiplier_req_48k(ep0_setup, buff, count);
 					break;
 
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_INRTS):
-					len = USBD_UAC2_CloclMultiplier_req_96k(ep0_setup, buff);
+					len = USBD_UAC2_CloclMultiplier_req_96k(ep0_setup, buff, count);
 					break;
 
 				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48):
 				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_OUT48):
 				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_OUT48):
-					len = USBD_UAC2_ClockSource_req_48k(ep0_setup, buff);
+					len = USBD_UAC2_ClockSource_req_48k(ep0_setup, buff, count);
 					break;
 				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_INRTS):
 				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_INRTS):
-					len = USBD_UAC2_ClockSource_req_rts(ep0_setup, buff);
+					len = USBD_UAC2_ClockSource_req_rts(ep0_setup, buff, count);
 					break;
 
 				case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_IN48):
@@ -3294,7 +3311,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_IN48_OUT48):
 				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_IN48_INRTS):
 				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_INRTS):
-					len = USBD_UAC2_FeatureUnit_req(ep0_setup, buff);
+					len = USBD_UAC2_FeatureUnit_req(ep0_setup, buff, count);
 					break;
 #endif /* WITHUAC2 */
 				case UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_IN48):
@@ -3307,16 +3324,19 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_IN48_OUT48):
 				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_IN48_INRTS):
 				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_INRTS):
-					len = USBD_UAC1_FeatureUnit_req(ep0_setup, buff);
+					len = USBD_UAC1_FeatureUnit_req(ep0_setup, buff, count);
 					break;
 
 				case TERMINAL_ID_SELECTOR_6:
-					len = USBD_UAC1_Selector_req(ep0_setup, buff);
+					len = USBD_UAC1_Selector_req(ep0_setup, buff, count);
 					break;
 				}
-				ASSERT(len != 0);
-				ASSERT(ep0_setup->wLength != 0);
-				usb_ep0_start_send(pusb, buff, ulmin16(len, ep0_setup->wLength));
+				if (ep0_setup->bmRequest & 0x80) //in
+				{
+					ASSERT(len != 0);
+					ASSERT(ep0_setup->wLength != 0);
+					usb_ep0_start_send(pusb, buff, ulmin16(len, ep0_setup->wLength));
+				}
 				break;
 
 			}
@@ -3463,6 +3483,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	}
 }
 
+// обработка setup пакетов без DATA STAGE
 static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static const uint8_t TestPkt [54] =
@@ -3618,16 +3639,12 @@ static void usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 	return;
 }
 
-static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
+// обработка setup пакетов при наличии DATA STAGE
+static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup, uint8_t * buff, uint32_t count)
 {
-	const uint32_t ep0_count = usb_get_ep0_count(pusb);
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	// OUT
-	static uint8_t buff [512];
-	// Семь байт
-	//PRINTF("8:%u\n", (unsigned) usb_get_ep0_count(pusb));
-	usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, AWUSB_MIN(sizeof buff, ep0_count));
-
+	//printhex(0, buff, count);
   	// Parse setup packet on output
   	switch (interfacev)
   	{
@@ -3694,14 +3711,14 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	  		break;
 	  	default:
 	  		// work
-			PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
+			PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT: ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) count);
 			//printhex(0, buff, ep0_count);
 	  		break;
 	  	}
   		break;
 #endif /* WITHUSBCDCACM */
 
-#if WITHWAWXXUSB && WITHUSBUAC
+#if WITHWAWXXUSB && WITHUSBUAC && 0
 #if WITHUSBUACOUT
 	case INTERFACE_AUDIO_CONTROL_SPK:
 #endif /* WITHUSBUACOUT */
@@ -3719,15 +3736,102 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	  		break;
 	  	default:
 	  		// work
-			PRINTF("AUDIO: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
-			//printhex(0, buff, ep0_count);
+			PRINTF("AUDIO: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) count);
+			//printhex(0, buff, count);
 	  		break;
 	  	}
   		break;
 #endif /* WITHWAWXXUSB && WITHUSBUAC */
 
+#if WITHUSBUAC
+#if WITHUSBUACIN
+		#if WITHUSBUACIN2
+			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
+		#endif /* WITHUSBUACIN2 */
+			case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+			case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+#endif /* WITHUSBUACOUT */
+			{
+				unsigned len = 0;
+				const uint_fast8_t terminalID = HI_BYTE(ep0_setup->wIndex);
+				const uint_fast8_t controlID = HI_BYTE(ep0_setup->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
+				const uint_fast8_t channelNumber = LO_BYTE(ep0_setup->wValue);
+				switch (terminalID)
+				{
+				default:
+					TP();
+					PRINTF(PSTR("USBD_UAC_Setup OUT: default: terminalID=%02X: interfacev=%02X\n"), terminalID, interfacev);
+					len = 0;
+					break;
+#if WITHUAC2
+				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_INRTS):
+						//ASSERT(0);	// not supported
+				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48):
+				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48):
+				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_OUT48):
+				len = USBD_UAC2_CloclMultiplier_req_48k(ep0_setup, buff, count);
+					break;
+
+				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_INRTS):
+					len = USBD_UAC2_CloclMultiplier_req_96k(ep0_setup, buff, count);
+					break;
+
+				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48):
+				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_OUT48):
+				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_OUT48):
+					len = USBD_UAC2_ClockSource_req_48k(ep0_setup, buff, count);
+					break;
+				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_INRTS):
+				case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_INRTS):
+					len = USBD_UAC2_ClockSource_req_rts(ep0_setup, buff, count);
+					break;
+
+				case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_IN48):
+				case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_OUT48):
+				case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_IN48_OUT48):
+				case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_IN48_INRTS):
+				case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_INRTS):
+				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_IN48):
+				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_OUT48):
+				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_IN48_OUT48):
+				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_IN48_INRTS):
+				case UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_INRTS):
+					len = USBD_UAC2_FeatureUnit_req(ep0_setup, buff, count);
+					break;
+#endif /* WITHUAC2 */
+				case UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_IN48):
+				case UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_OUT48):
+				case UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_IN48_OUT48):
+				case UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_IN48_INRTS):
+				case UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_INRTS):
+				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_IN48):
+				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_OUT48):
+				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_IN48_OUT48):
+				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_IN48_INRTS):
+				case UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_INRTS):
+					len = USBD_UAC1_FeatureUnit_req(ep0_setup, buff, count);
+					break;
+
+				case TERMINAL_ID_SELECTOR_6:
+					len = USBD_UAC1_Selector_req(ep0_setup, buff, count);
+					break;
+				}
+				if (ep0_setup->bmRequest & 0x80) //in
+				{
+					ASSERT(len != 0);
+					ASSERT(ep0_setup->wLength != 0);
+					usb_ep0_start_send(pusb, buff, ulmin16(len, ep0_setup->wLength));
+				}
+				break;
+
+			}
+				break;
+#endif /* WITHUSBUAC */
+
 	default:
-		PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
+		PRINTF("xxx: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, count=%u\n", (unsigned) interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) count);
   		break;
 
   	}
@@ -3764,6 +3868,7 @@ static void __USBC_Dev_ep0_ReadDataComplete(usb_struct * pusb)
 /* отсюда начинается разбор, что же пришло в EP0 */
 static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 {
+	static uint8_t buff [512];
 	usb_struct * const pusb = & hpcd->awxx_usb;
 #if WITHWAWXXUSB
 	pSetupPKG ep0_setup = & pusb->setup_packet;
@@ -3820,7 +3925,6 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				//printhex(0, ep0_setup, 8);
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
-				    pusb->ep0_xfer_residue = ep0_setup->wLength;
 					if (ep0_setup->wLength == 0)
 					{
 						__USBC_Dev_ep0_ReadDataComplete(pusb);
@@ -3830,7 +3934,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 						// Будет ответ IN данных в DATA STAGE
 						////PRINTF("co_in\n");
 						__USBC_Dev_ep0_ReadDataHalf(pusb);
-						pusb->ep0_xfer_state = USB_EP0_DATA;
+						usb_ep0_start_receieve(pusb, buff, AWUSB_MIN(sizeof buff, ep0_setup->wLength));
 					}
 #if WITHWAWXXUSB
 					ep0_setup_in_handler(pusb, ep0_setup);
@@ -3840,7 +3944,6 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				}
 				else                         //out
 				{
-				    pusb->ep0_xfer_residue = ep0_setup->wLength;
 
 				    if (ep0_setup->wLength == 0)
 					{
@@ -3851,11 +3954,11 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 						// Будет продолжение OUT данных в DATA STAGE
 						////PRINTF("co_out\n");
 						__USBC_Dev_ep0_ReadDataHalf(pusb);
-						pusb->ep0_xfer_state = USB_EP0_DATA;
+						usb_ep0_start_receieve(pusb, buff, AWUSB_MIN(sizeof buff, ep0_setup->wLength));
 					}
 				    // Обработчик тут - невозможность установить алрес
 //#if WITHWAWXXUSB
-//					ep0_out_handler(pusb, ep0_setup);
+//					ep0_out_handler(pusb, ep0_setup);	// обработка setup пакетов без DATA STAGE
 //#else
 //					HAL_PCD_SetupStageCallback(hpcd);
 //#endif
@@ -3871,15 +3974,29 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				}
 				else
 				{
-					////PRINTF("eX\n");
+					//PRINTF("eX, ep0_count=%u\n", (unsigned) ep0_count);
+					const uint32_t len = AWUSB_MIN(pusb->ep0_maxpktsz, ep0_count);
+					usb_read_ep_fifo(pusb, 0, pusb->ep0_xfer_addr, AWUSB_MIN(sizeof buff, len));
+					pusb->ep0_xfer_addr += len;
+					pusb->ep0_xfer_residue -= len;
+					pusb->ep0_xfer_tranferred += len;
+					const int is_last = ep0_count < pusb->ep0_maxpktsz || pusb->ep0_xfer_residue == 0;
+					if (is_last)
+						__USBC_Dev_ep0_ReadDataComplete(pusb);
+					else
+						__USBC_Dev_ep0_ReadDataHalf(pusb);
 
-#if WITHWAWXXUSB
-					usb_dev_ep0_out(pusb, ep0_setup);
-#else
-					HAL_PCD_SetupStageCallback(hpcd);
-#endif
-					pusb->ep0_xfer_residue = 0;
-					__USBC_Dev_ep0_ReadDataComplete(pusb);
+					if (is_last)
+					{
+	#if WITHWAWXXUSB
+						usb_dev_ep0_out(pusb, ep0_setup, buff, pusb->ep0_xfer_tranferred);	// обработка setup пакетов при наличии DATA STAGE
+	#else
+						HAL_PCD_SetupStageCallback(hpcd);
+	#endif
+//						pusb->ep0_xfer_residue = 0;
+//						pusb->ep0_xfer_tranferred = 0;
+//						pusb->ep0_xfer_addr = (uintptr_t) buff;
+					}
 				}
 			}
 		}
@@ -3888,7 +4005,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			////PRINTF("fX\n");
 			/// ep0_count тут 0
 #if WITHWAWXXUSB
-			ep0_out_handler(pusb, ep0_setup);
+			ep0_out_handler(pusb, ep0_setup);	// обработка setup пакетов без DATA STAGE
 #else
 			HAL_PCD_SetupStageCallback(hpcd);
 #endif
@@ -4074,7 +4191,7 @@ static void usb_struct_init(usb_struct * const pusb)
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
 	pusb->ep0_maxpktsz = 64;
-	pusb->ep0_ret = USB_RETVAL_COMPOK;
+	//pusb->ep0_ret = USB_RETVAL_COMPOK;
 
 	for(i = 0; i < USB_MAX_EP_NO; ++ i)
 	{
@@ -4951,7 +5068,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 //#endif /* WITHNEWUSBHAL */
 		usb_struct * const pusb = & hpcd->awxx_usb;
 
-		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
+		pusb->ep0_xfer_addr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
@@ -5000,7 +5117,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
   {
     //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
 
-		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
+		pusb->ep0_xfer_addr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
 		usb_ep0_start_send(pusb, pBuf, len);
