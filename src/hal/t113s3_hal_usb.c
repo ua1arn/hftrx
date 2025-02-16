@@ -351,6 +351,31 @@ static void usb_clear_bus_interrupt_enable(pusb_struct pusb, uint32_t bm)
 	WITHUSBHW_DEVICE->USB_INTUSBE &= ~ (bm & 0xFF);
 }
 
+static uint32_t usb_get_dma_interrupt_status(pusb_struct pusb)
+{
+	return WITHUSBHW_DEVICE->USB_DMA_INTS & UINT32_C(0xFF);
+}
+
+static void usb_clear_dma_interrupt_status(pusb_struct pusb, uint32_t bm)
+{
+	WITHUSBHW_DEVICE->USB_DMA_INTS = bm & UINT32_C(0xFF);
+}
+
+static void usb_set_dma_interrupt_enable(pusb_struct pusb, uint32_t bm)
+{
+	WITHUSBHW_DEVICE->USB_DMA_INTE |= (bm & UINT32_C(0xFF));
+}
+
+static uint32_t usb_get_dma_interrupt_enable(pusb_struct pusb)
+{
+	return WITHUSBHW_DEVICE->USB_DMA_INTE & UINT32_C(0xFF);
+}
+
+static void usb_clear_dma_interrupt_enable(pusb_struct pusb, uint32_t bm)
+{
+	WITHUSBHW_DEVICE->USB_DMA_INTE &= ~ (bm & UINT32_C(0xFF));
+}
+
 static uint32_t usb_get_frame_number(pusb_struct pusb)
 {
 	return WITHUSBHW_DEVICE->USB_FNUM & 0x7FF;	// 10:0
@@ -4483,17 +4508,17 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	{
 		//tx interrupt
-		uint32_t temp;
-		uint32_t i;
-		temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
+		const uint32_t temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
+
 		usb_clear_eptx_interrupt_status(pusb, temp);
-		if (temp&0x01)
+		if (temp & 0x01)
 		{
 			usb_dev_ep0xfer_handler(hpcd);		// Все обмены по EP0
 		}
-		if (temp&0xfffe)
+		if (temp & 0xfffe)
 		{
-			for(i=0; i<USB_MAX_EP_NO; ++ i)
+			uint32_t i;
+			for(i = 0; i < USB_MAX_EP_NO; ++ i)
 			{
 				if (temp & (0x2<<i))
 				{
@@ -4506,13 +4531,13 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	{
 		//rx interrupt
-		uint32_t temp;
+		const uint32_t temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
 		uint32_t i;
-		temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
+
 		usb_clear_eprx_interrupt_status(pusb, temp);
-		if (temp&0xfffe)
+		if (temp & 0xfffe)
 		{
-			for(i=0; i<USB_MAX_EP_NO; ++ i)
+			for(i = 0; i < USB_MAX_EP_NO; ++ i)
 			{
 				if (temp & (0x2<<i))
 				{
@@ -4520,6 +4545,22 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				}
 			}
 			//eprx_irq_count ++;
+		}
+	}
+
+	{
+		// DMA interrupt
+		const uint32_t temp = usb_get_dma_interrupt_status(pusb)  & usb_get_dma_interrupt_enable(pusb);
+		uint32_t i;
+
+		usb_clear_dma_interrupt_status(pusb, temp);
+		if (temp != 0)
+		{
+			TP();
+			for (i = 0; i < 8; ++ i)
+			{
+
+			}
 		}
 	}
   	//usb_select_ep(pusb, ep_save);
