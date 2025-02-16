@@ -3070,7 +3070,6 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	}
 
 	//PRINTF("qX\n");
-	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_STANDARD)
 	{
 		//PRINTF("q1\n");
@@ -3175,7 +3174,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 				break;
 
 	      	default   :
-	        	PRINTF("usb_device: Unknown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+	        	PRINTF("usb_device: Unknown Standard Request: bRequest=0x%02X\n", ep0_setup->bRequest);
 				usb_ep0_ctl_error(pusb);
 		    	break;
 		}
@@ -3183,6 +3182,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_CLASS)
 	{
 		//PRINTF("q2\n");
+		const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 		// class
 		switch (interfacev)
 		{
@@ -3591,7 +3591,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
     		// Ошибочный приход сюда
     		// work (стадия 1, сюда доходит всегда)
     		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
-	  		PRINTF("1\n");
+	  		//PRINTF("1\n");
 //	  		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler
 //			pusb->ep0_xfer_residue = 0;
 //	  		PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
@@ -3624,7 +3624,8 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	// OUT
 	static uint8_t buff [512];
-	PRINTF("8:%u\n", (unsigned) usb_get_ep0_count(pusb));
+	// Семь байт
+	//PRINTF("8:%u\n", (unsigned) usb_get_ep0_count(pusb));
 	usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, AWUSB_MIN(sizeof buff, ep0_count));
 
   	// Parse setup packet on output
@@ -3632,16 +3633,20 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
   	{
 #if WITHUSBDFU && WITHWAWXXUSB
   	case INTERFACE_DFU_CONTROL:
-		PRINTF("usb_dev_ep0xfer_handler: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
-		printhex(0, buff, ep0_count);
+		//PRINTF("usb_dev_ep0xfer_handler: DFU: EP0 OUT (not 8): ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X, ep0_count=%u\n", interfacev, (unsigned) ep0_setup->bRequest, (unsigned) ep0_setup->wValue, (unsigned) ep0_setup->wIndex, (unsigned) ep0_setup->wLength, (unsigned) ep0_count);
+		//printhex(0, buff, ep0_count);
 
 		switch (ep0_setup->bRequest)
 		{
 		case DFU_DETACH:
 			TP();
+			usb_ep0_ctl_status_send(pusb);
 			break;
 		case DFU_DNLOAD:
 			TP();
+			dfu_dev_state = DFU_STATE_DNLOAD_BUSY;
+		    dfu_dev_status[4] = dfu_dev_state;
+		    usb_ep0_start_send(pusb, dfu_dev_status, AWUSB_MIN(6, ep0_setup->wLength));
 			break;
 		case DFU_UPLOAD:
 			TP();
@@ -3649,20 +3654,22 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 		case DFU_GETSTATUS:
 			dfu_dev_status[0] = 0;
 		    dfu_dev_status[4] = dfu_dev_state;
-			pusb->ep0_xfer_srcaddr = (uintptr_t) dfu_dev_status;
-			pusb->ep0_xfer_residue = AWUSB_MIN(6, ep0_setup->wLength);
+		    usb_ep0_start_send(pusb, dfu_dev_status, AWUSB_MIN(6, ep0_setup->wLength));
 			break;
 		case DFU_CLRSTATUS:
 			TP();
+			usb_ep0_ctl_status_send(pusb);
 			break;
 		case DFU_GETSTATE:
 			TP();
+			usb_ep0_ctl_status_send(pusb);
 			break;
 		case DFU_ABORT:
 			TP();
+			usb_ep0_ctl_status_send(pusb);
 			break;
 		default:
-			pusb->ep0_xfer_residue = 0;
+			usb_ep0_ctl_status_send(pusb);
 			PRINTF("usb_dev_ep0xfer_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, (unsigned) ep0_setup->bRequest);
 			break;
 		}
@@ -3680,9 +3687,8 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	  	switch (ep0_setup->bRequest)
 	  	{
 	  	case CDC_SET_LINE_CODING:
-	  		// work
-	   		// work (стадия 2, сюда доходит не всегда)
-	  		PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+	   		// work (стадия 2)
+	  		//PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
 	  		gbaudrate = USBD_peek_u32(buff);
 	  		//PRINTF("2\n");
 	  		break;
