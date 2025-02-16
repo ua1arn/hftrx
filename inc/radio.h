@@ -2450,10 +2450,10 @@ void spool_0p128(void);	// OPERA support
 	//#define HYBRID_OCTAVE_80_160	1	/* плата с 4 ГУН */
 
 
-	#define TUNE_BOTTOM 470000000L
+	#define TUNE_BOTTOM 470000000
 	#define TUNE_TOP 500000000L
 
-	#define SYNTHLOWFREQ 470000000L
+	#define SYNTHLOWFREQ 470000000
 	#define FREQ_SCALE 120
 	#define FREQ_DENOM 100
 	#define HYBRID_NVFOS 6
@@ -2464,7 +2464,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_63M9_X6
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	63955000L	/* LO2 = 63955 kHz - for 64455 kHz filter from ICOM with 500 kHz IF2 */
+	#define REFERENCE_FREQ	63955000	/* LO2 = 63955 kHz - for 64455 kHz filter from ICOM with 500 kHz IF2 */
 	#define DDS1_CLK_MUL	6 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2472,7 +2472,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_63M9_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	63955000L	/* LO2 = 63955 kHz - for 64455 kHz filter from ICOM with 500 kHz IF2 */
+	#define REFERENCE_FREQ	63955000	/* LO2 = 63955 kHz - for 64455 kHz filter from ICOM with 500 kHz IF2 */
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2480,7 +2480,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_64M0_X6
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	64000000L	/* LO2 = 64000 kHz - for 64455 kHz filter from ICOM with 455 kHz IF2 */
+	#define REFERENCE_FREQ	64000000	/* LO2 = 64000 kHz - for 64455 kHz filter from ICOM with 455 kHz IF2 */
 	#define DDS1_CLK_MUL	6 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2488,7 +2488,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_64M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	64000000L	/* LO2 = 64000 kHz - for 64455 kHz filter from ICOM with 455 kHz IF2 */
+	#define REFERENCE_FREQ	64000000	/* LO2 = 64000 kHz - for 64455 kHz filter from ICOM with 455 kHz IF2 */
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2496,7 +2496,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_44M545_X8
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	44545000L	/* LO2 = 45 MHz 1-st IF with 455 kHz IF2 */
+	#define REFERENCE_FREQ	44545000	/* LO2 = 45 MHz 1-st IF with 455 kHz IF2 */
 	#define DDS1_CLK_MUL	8 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2504,7 +2504,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_44M5_X8
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	44500000L	/* LO2 = for 45000 kHz filter with 500 kHz IF2 */
+	#define REFERENCE_FREQ	44500000	/* LO2 = for 45000 kHz filter with 500 kHz IF2 */
 	#define DDS1_CLK_MUL	8 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2512,7 +2512,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_25M0_X6
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	25000000ul	
+	#define REFERENCE_FREQ	25000000
 	#define DDS1_CLK_MUL	6 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2520,7 +2520,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_72M550_X5
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	72550000L	/* LO2 = 72550 kHz - for 73050 kHz filter from Kenwood with 455 kHz IF2 */
+	#define REFERENCE_FREQ	72550000	/* LO2 = 72550 kHz - for 73050 kHz filter from Kenwood with 455 kHz IF2 */
 	#define DDS1_CLK_MUL	5 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2528,7 +2528,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_40M0_X10
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	40000000ul
+	#define REFERENCE_FREQ	40000000
 	#define DDS1_CLK_MUL	10 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
@@ -2536,7 +2536,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_100M0_X4
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	100000000ul
+	#define REFERENCE_FREQ	100000000
 	#define DDS1_CLK_MUL	4 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
@@ -2544,7 +2544,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_40M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	40000000ul
+	#define REFERENCE_FREQ	40000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
@@ -2552,7 +2552,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_20M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	20000000ul
+	#define REFERENCE_FREQ	20000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
@@ -2560,7 +2560,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_25M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	25000000ul
+	#define REFERENCE_FREQ	25000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1 		/* Умножитель в DDS3 */
@@ -2568,7 +2568,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_26M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	26000000ul
+	#define REFERENCE_FREQ	26000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS2 */
@@ -2576,7 +2576,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_27M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	27000000ul
+	#define REFERENCE_FREQ	27000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS2 */
@@ -2584,7 +2584,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_100M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	100000000ul
+	#define REFERENCE_FREQ	100000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2592,7 +2592,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_125M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	125000000uL
+	#define REFERENCE_FREQ	125000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2600,7 +2600,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_122M88_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	122880000uL
+	#define REFERENCE_FREQ	122880000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2608,7 +2608,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_49M152_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	49152000uL
+	#define REFERENCE_FREQ	49152000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2616,7 +2616,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_96M_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	96000000uL
+	#define REFERENCE_FREQ	96000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2624,7 +2624,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_12M288_X10
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	12288000uL
+	#define REFERENCE_FREQ	12288000
 	#define DDS1_CLK_MUL	10 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	10		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	10		/* Умножитель в DDS3 */
@@ -2632,7 +2632,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_XXXX_X1
 	#define LO1MODE_DIRECT	1
-	//#define REFERENCE_FREQ	122880000ul
+	//#define REFERENCE_FREQ	122880000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2640,7 +2640,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_160M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	160000000ul
+	#define REFERENCE_FREQ	160000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2648,7 +2648,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_16M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	16000000ul
+	#define REFERENCE_FREQ	16000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2656,7 +2656,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_48M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	48000000ul
+	#define REFERENCE_FREQ	48000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2666,7 +2666,7 @@ void spool_0p128(void);	// OPERA support
 	#define LO1MODE_FIXSCALE	1
 	#define SYNTH_N1	256
 	#define SYNTH_R1	1
-	#define REFERENCE_FREQ	48000000ul
+	#define REFERENCE_FREQ	48000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2675,7 +2675,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_44M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	44000000ul
+	#define REFERENCE_FREQ	44000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2683,7 +2683,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_50M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	50000000ul
+	#define REFERENCE_FREQ	50000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
@@ -2691,7 +2691,7 @@ void spool_0p128(void);	// OPERA support
 
 #if DIRECT_75M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	75000000ul
+	#define REFERENCE_FREQ	75000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
