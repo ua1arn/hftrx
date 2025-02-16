@@ -2,8 +2,8 @@ REM Utility files can be downloaded from https://sourceforge.net/projects/dfu-ut
 @echo Press any key for write BOOTLOADERs and APPLICATION sections of FLASH
 @pause
 set FSBLNAME="fsbl.stm32"
-dfu-util --alt 1 --dfuse-address 0x70000000 --download %FSBLNAME%
-dfu-util --alt 1 --dfuse-address 0x70040000 --download %FSBLNAME%
-dfu-util --alt 0 --dfuse-address 0x70080000 --download "tc1_stm32mp157axx_app.stm32"
+dfu-util --device 0xFFFF --alt 1 --dfuse-address 0x70000000 --download %FSBLNAME%
+dfu-util --device 0xFFFF --alt 1 --dfuse-address 0x70040000 --download %FSBLNAME%
+dfu-util --device 0xFFFF --alt 0 --dfuse-address 0x70080000 --download "tc1_stm32mp157axx_app.stm32"
 @pause
 
