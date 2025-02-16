@@ -971,7 +971,7 @@ static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t 
 	pusb->ep0_xfer_srcaddr = (uintptr_t) addr;
 	pusb->ep0_xfer_residue = len;
 
-	if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
+	if (pusb->ep0_xfer_residue < pusb->ep0_maxpktsz)
 	{
 		is_last = 1;
 		byte_trans = pusb->ep0_xfer_residue;
@@ -981,7 +981,7 @@ static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t 
 	{
 		is_last = 0;
 		byte_trans = pusb->ep0_xfer_residue;
-		pusb->ep0_xfer_residue = 0xffffffff;
+		pusb->ep0_xfer_residue = UINT32_MAX;
 	}
 	else
 	{
@@ -1028,7 +1028,7 @@ static void usb_ep0_complete_send_data(pusb_struct pusb)
 		uint32_t byte_trans;
 
  		pusb->ep0_xfer_srcaddr += pusb->ep0_maxpktsz;
- 		if (pusb->ep0_xfer_residue == 0xffffffff)
+ 		if (pusb->ep0_xfer_residue == UINT32_MAX)
 	  	{
 		  	is_last = 1;
 		  	byte_trans = 0;
@@ -1046,7 +1046,7 @@ static void usb_ep0_complete_send_data(pusb_struct pusb)
 			{
 				is_last = 0;
 				byte_trans = pusb->ep0_xfer_residue;
-				pusb->ep0_xfer_residue = 0xffffffff;  //Send a zero packet next time
+				pusb->ep0_xfer_residue = UINT32_MAX;  //Send a zero packet next time
 			}
 			else
 			{
