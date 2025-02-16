@@ -3054,12 +3054,23 @@ static uint8_t dfu_dev_status [6];
 
 // После возврата отсюда ставим
 //	pusb->ep0_xfer_state = USB_EP0_DATA;
-static int32_t ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
+static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
 	uint32_t temp = 0;
 
-	pusb->ep0_xfer_residue = 0;
+	switch (ep0_setup->bmRequest & 0x1F)
+	{
+	case USB_REQ_RECIPIENT_DEVICE:
+	case USB_REQ_RECIPIENT_INTERFACE:
+	case USB_REQ_RECIPIENT_ENDPOINT:
+		break;
+	default:
+		TP();
+		usb_ep0_ctl_error(pusb);
+		return;
+	}
+
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_STANDARD)
 	{
@@ -3444,11 +3455,9 @@ static int32_t ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest & USB_REQ_TYPE_MASK);
 		usb_ep0_ctl_error(pusb);
 	}
-
-	return 0;
 }
 
-static int32_t ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
+static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static const uint8_t TestPkt [54] =
 	{
@@ -3460,6 +3469,17 @@ static int32_t ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		0xFB, 0xFD, 0x7E, 0x00
 	};
 
+	// Сперва проверяется RECIPNENT, потом TYPE
+	switch (ep0_setup->bmRequest & 0x1F)
+	{
+	case USB_REQ_RECIPIENT_DEVICE:
+	case USB_REQ_RECIPIENT_INTERFACE:
+	case USB_REQ_RECIPIENT_ENDPOINT:
+		break;
+	default:
+		TP();
+		return;
+	}
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	switch (ep0_setup->bRequest)
 	{
@@ -3578,14 +3598,12 @@ static int32_t ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 			pusb->ep0_xfer_residue = 0;
 	      	break;
 	}
-
-	return 0;
 }
 
-static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
+static void usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-	return 0;
+	return;
 }
 
 static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
@@ -3788,19 +3806,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 				    pusb->ep0_xfer_residue = 0;
 #if WITHWAWXXUSB
-					// Сперва проверяется RECIPNENT, потом TYPE
-					switch (ep0_setup->bmRequest & 0x1F)
-					{
-					case USB_REQ_RECIPIENT_DEVICE:
-					case USB_REQ_RECIPIENT_INTERFACE:
-					case USB_REQ_RECIPIENT_ENDPOINT:
-						ep0_setup_in_handler(pusb, ep0_setup);
-						break;
-					default:
-						TP();
-						usb_ep0_ctl_error(pusb);
-						break;
-					}
+					ep0_setup_in_handler(pusb, ep0_setup);
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
@@ -3834,18 +3840,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
 		{
 #if WITHWAWXXUSB
-			// Сперва проверяется RECIPNENT, потом TYPE
-			switch (ep0_setup->bmRequest & 0x1F)
-			{
-			case USB_REQ_RECIPIENT_DEVICE:
-			case USB_REQ_RECIPIENT_INTERFACE:
-			case USB_REQ_RECIPIENT_ENDPOINT:
-				ep0_out_handler(pusb, ep0_setup);
-				break;
-			default:
-				TP();
-				break;
-			}
+			ep0_out_handler(pusb, ep0_setup);
 #else
 			HAL_PCD_SetupStageCallback(hpcd);
 #endif
