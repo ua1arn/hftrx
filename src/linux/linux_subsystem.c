@@ -875,7 +875,7 @@ void xcz_dds_ftw_sub(const uint_least64_t * val)
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* ftw_sub = v;
 #elif DDS1_TYPE == DDS_TYPE_XDMA
-
+	xdma_write_user(AXI_LITE_DDS_FTW_SUB, v);
 #endif
 }
 
@@ -1274,6 +1274,12 @@ int alsa_init(void)
 	return 0;
 }
 
+void alsa_close(void)
+{
+	snd_pcm_drain(pcm_ph);
+	snd_pcm_close(pcm_ph);
+}
+
 static void dummy_stop (void) {}
 uint_fast8_t dummy_clocksneed(void) {}
 static void dummy_setprocparams (uint_fast8_t procenable, const uint_fast8_t * gains) {}
@@ -1445,6 +1451,14 @@ void xdma_event(void)
 	save_dmabuffer32rx(addr32rx);
 
 	iq_mutex_unlock();
+
+	const uintptr_t addr32tx = getfilled_dmabuffer32tx();
+	uint32_t * t = (uint32_t *) addr32tx;
+
+	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+		xdma_write_user(AXI_LITE_IQ_FX_FIFO, t[i]);
+
+	release_dmabuffer32tx(addr32tx);
 }
 
 void * xdma_event_thread(void * args)
@@ -2108,7 +2122,7 @@ void linux_exit(void)
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
 #if (CODEC1_TYPE == CODEC_TYPE_ALSA)
-	snd_pcm_close(pcm_ph);
+	alsa_close();
 #endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) */
 
 	exit(EXIT_SUCCESS);
