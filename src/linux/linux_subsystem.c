@@ -1191,6 +1191,7 @@ snd_pcm_t * pcm_ph = NULL;
 snd_pcm_uframes_t frames = DMABUFFSIZE16TX / DMABUFFSTEP16TX;
 unsigned int actual_sample_rate = ARMI2SRATE;
 snd_pcm_sframes_t error;
+uint8_t vol_shift = 0;
 
 void ph(void)
 {
@@ -1199,7 +1200,8 @@ void ph(void)
 #if WITHAUDIOSAMPLESREC
 	as_rx(b);
 #endif /* WITHAUDIOSAMPLESREC */
-	arm_shift_q31(b, -2, b, DMABUFFSIZE16TX);
+
+	arm_shift_q31(b, - vol_shift, b, DMABUFFSIZE16TX);
 
     if ((error = snd_pcm_writei(pcm_ph, b, frames)) != frames) {
     	printf("Write to PCM device failed: %s\n", snd_strerror(error));
@@ -1241,7 +1243,7 @@ int alsa_init(void)
 		return 1;
 	}
 
-	if ((error = snd_pcm_hw_params_set_format(pcm_ph, params, SND_PCM_FORMAT_S32_LE)) < 0) {
+	if ((error = snd_pcm_hw_params_set_format(pcm_ph, params, SND_PCM_FORMAT_S24_LE)) < 0) {
 		printf("Cannot set sample format: %s\n", snd_strerror(error));
 		return 1;
 	}
@@ -1272,13 +1274,21 @@ int alsa_init(void)
 	return 0;
 }
 
-uint_fast8_t dummy_clocksneed(void) {}
 static void dummy_stop (void) {}
-static void alsa_setvolume (uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk) { }
-static void dummy_setlineinput (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain) {}
+uint_fast8_t dummy_clocksneed(void) {}
 static void dummy_setprocparams (uint_fast8_t procenable, const uint_fast8_t * gains) {}
-static void alsa_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master) { ASSERT(! alsa_init()); }
 static void dummy_lineinput(uint_fast8_t v, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain) {}
+static void dummy_setlineinput (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain) {}
+
+static void alsa_setvolume (uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
+{
+	vol_shift = mutespk ? BOARD_AFGAIN_MAX : BOARD_AFGAIN_MAX - gainL;
+}
+
+static void alsa_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
+{
+	ASSERT(! alsa_init());
+}
 
 const codec1if_t *
 board_getaudiocodecif(void)
