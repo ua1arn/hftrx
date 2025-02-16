@@ -3823,13 +3823,13 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				    pusb->ep0_xfer_residue = ep0_setup->wLength;
 					if (ep0_setup->wLength == 0)
 					{
-						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+						__USBC_Dev_ep0_ReadDataComplete(pusb);
 					}
 					else
 					{
 						// Будет ответ IN данных в DATA STAGE
 						////PRINTF("co_in\n");
-						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+						__USBC_Dev_ep0_ReadDataHalf(pusb);
 						pusb->ep0_xfer_state = USB_EP0_DATA;
 					}
 #if WITHWAWXXUSB
@@ -3844,13 +3844,13 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 				    if (ep0_setup->wLength == 0)
 					{
-						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+						__USBC_Dev_ep0_ReadDataComplete(pusb);
 					}
 					else
 					{
 						// Будет продолжение OUT данных в DATA STAGE
 						////PRINTF("co_out\n");
-						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+						__USBC_Dev_ep0_ReadDataHalf(pusb);
 						pusb->ep0_xfer_state = USB_EP0_DATA;
 					}
 				    // Обработчик тут - невозможность установить алрес
@@ -3879,7 +3879,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
 					pusb->ep0_xfer_residue = 0;
-					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+					__USBC_Dev_ep0_ReadDataComplete(pusb);
 				}
 			}
 		}
