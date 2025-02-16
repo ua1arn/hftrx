@@ -998,10 +998,9 @@ static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t 
    	}
    	else
    	{
+   		// Half
    		usb_set_ep0_csr(pusb, USB_CSR0_TXPKTRDY);	// TxPktRdy
    	}
- 	while ((usb_get_ep0_csr(pusb) & USB_CSR0_TXPKTRDY) != 0)
- 		;
 }
 
 static void usb_ep0_ctl_status_send(pusb_struct pusb)
@@ -1015,8 +1014,8 @@ static void usb_ep0_ctl_error(pusb_struct pusb)
 	// stall ep0
 	pusb->ep0_xfer_residue = 0;
 	usb_set_ep0_csr(pusb, USB_CSR0_SENDSTALL);	// SendStall
- 	while ((usb_get_ep0_csr(pusb) & USB_CSR0_SENDSTALL) != 0)
- 		;
+// 	while ((usb_get_ep0_csr(pusb) & USB_CSR0_SENDSTALL) != 0)
+// 		;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
 }
 
@@ -3052,8 +3051,6 @@ static uint8_t dfu_dev_status [6];
 
 #endif /* WITHUSBDFU */
 
-// После возврата отсюда ставим
-//	pusb->ep0_xfer_state = USB_EP0_DATA;
 static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
@@ -3067,13 +3064,16 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		break;
 	default:
 		TP();
+		printhex(0, ep0_setup, 8);
 		usb_ep0_ctl_error(pusb);
 		return;
 	}
 
+	//PRINTF("qX\n");
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_STANDARD)
 	{
+		//PRINTF("q1\n");
 		const uint_fast8_t index = LO_BYTE(ep0_setup->wValue);
 		switch (ep0_setup->bRequest)
 		{
@@ -3182,6 +3182,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	}
 	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_CLASS)
 	{
+		//PRINTF("q2\n");
 		// class
 		switch (interfacev)
 		{
@@ -3193,6 +3194,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
 		case USBD_CDCACM_IFC(INTERFACE_CDC_DATA, 0):
 			{
+				//PRINTF("z\n");
 				switch (ep0_setup->bRequest)
 				{
 					case CDC_SET_LINE_CODING:
@@ -3216,6 +3218,9 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 					{
 						ASSERT(0);
 					}
+					break;
+				default:
+					TP();
 					break;
 				}
 			}
@@ -3420,6 +3425,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	}
 	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_VENDOR)
 	{
+		//PRINTF("q3\n");
 		if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x05)
 		{
 			const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
@@ -3469,6 +3475,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		0xFB, 0xFD, 0x7E, 0x00
 	};
 
+	//PRINTF("oX\n");
 	// Сперва проверяется RECIPNENT, потом TYPE
 	switch (ep0_setup->bmRequest & 0x1F)
 	{
@@ -3478,6 +3485,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		break;
 	default:
 		TP();
+		printhex(0, ep0_setup, 8);
 		return;
 	}
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
@@ -3538,7 +3546,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 
 		case USB_REQ_SET_ADDRESS:
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		//PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
+       		//PRINTF("addr= 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
        		PRINTF("usb_device: Set Descriptor\n");
@@ -3580,17 +3588,21 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	      	break;	// USB_REQ_SET_INTERFACE
 #if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
+    		// Ошибочный приход сюда
     		// work (стадия 1, сюда доходит всегда)
     		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
-    		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler
-			pusb->ep0_xfer_residue = 0;
+	  		PRINTF("1\n");
+//	  		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler
+//			pusb->ep0_xfer_residue = 0;
+//	  		PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+//	  		gbaudrate = USBD_peek_u32(buff);
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
     		// work
     		//PRINTF("ep0_out: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
     		usb_cdc_control_state [USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev)] = LO_BYTE(ep0_setup->wValue);
-       		pusb->ep0_xfer_state = USB_EP0_SETUP;
-			pusb->ep0_xfer_residue = 0;
+//       		pusb->ep0_xfer_state = USB_EP0_SETUP;
+//			pusb->ep0_xfer_residue = 0;
 	      	break;
 #endif /* WITHUSBCDCACM */
     	default   :
@@ -3612,13 +3624,8 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	// OUT
 	static uint8_t buff [512];
-	if ((ep0_setup->bmRequest & 0x80) == 0)
-	{
-		// OUT
-		usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, AWUSB_MIN(sizeof buff, ep0_count));
-		usb_ep0_flush_fifo(pusb);
-
-	}
+	PRINTF("8:%u\n", (unsigned) usb_get_ep0_count(pusb));
+	usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, AWUSB_MIN(sizeof buff, ep0_count));
 
   	// Parse setup packet on output
   	switch (interfacev)
@@ -3630,7 +3637,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 
 		switch (ep0_setup->bRequest)
 		{
-		case DFU_DETACH:
+		case DFU_DETACH:""
 			TP();
 			break;
 		case DFU_DNLOAD:
@@ -3675,8 +3682,9 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	  	case CDC_SET_LINE_CODING:
 	  		// work
 	   		// work (стадия 2, сюда доходит не всегда)
-	  		//PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
+	  		PRINTF("usb_dev_ep0xfer_handler: CDC: EP0 OUT (not 8): CDC_SET_LINE_CODING, baudrate=%u\n", USBD_peek_u32(buff));
 	  		gbaudrate = USBD_peek_u32(buff);
+	  		//PRINTF("2\n");
 	  		break;
 	  	default:
 	  		// work
@@ -3764,11 +3772,13 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
     {
         /* Returned STALL packet to HOST. */
         __USBC_Dev_ep0_ClearStall(pusb);
-        return;
+    	PRINTF("ep0 clear stall\n");
+        //return;
     }
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
+		//PRINTF("3:%u\n", (unsigned) usb_get_ep0_count(pusb));
 		if (ep0_csr & USB_CSR0_RXPKTRDY)	// RxPktRdy - 16rd bit of USB_CSR0
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;	// получили setup пакет
@@ -3780,6 +3790,8 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else if (!(ep0_csr & USB_CSR0_TXPKTRDY))	// ! TxPktRdy - 17th bit of USB_CSR0
 		{
+			const uint32_t ep0_count = usb_get_ep0_count(pusb);
+			//PRINTF("4:%u\n", (unsigned) usb_get_ep0_count(pusb));
 			usb_ep0_complete_send_data(pusb);	// продолжаем пересылать, возможно несколько раз
 		}
 		else
@@ -3790,33 +3802,57 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
+		const uint32_t ep0_count = usb_get_ep0_count(pusb);
+		//PRINTF("5:%u\n", (unsigned) usb_get_ep0_count(pusb));
 		if (ep0_csr & USB_CSR0_RXPKTRDY) // RxPktRdy
 		{
-			const uint32_t ep0_count = usb_get_ep0_count(pusb);
 
 			if (ep0_count == 8)
 			{
 				//pusb->ep0_flag = 0;
 				usb_read_ep_fifo(pusb, 0, (uintptr_t)ep0_setup, 8);
-
+				//printhex(0, ep0_setup, 8);
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
-
-					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
-
-				    pusb->ep0_xfer_residue = 0;
+				    pusb->ep0_xfer_residue = ep0_setup->wLength;
+					if (ep0_setup->wLength == 0)
+					{
+						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+					}
+					else
+					{
+						// Будет ответ IN данных в DATA STAGE
+						////PRINTF("co_in\n");
+						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+						pusb->ep0_xfer_state = USB_EP0_DATA;
+					}
 #if WITHWAWXXUSB
 					ep0_setup_in_handler(pusb, ep0_setup);
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
-
-				   	pusb->ep0_xfer_state = USB_EP0_DATA;
 				}
 				else                         //out
 				{
-					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
-					pusb->ep0_xfer_state = USB_EP0_SETUP;
+				    pusb->ep0_xfer_residue = ep0_setup->wLength;
+
+				    if (ep0_setup->wLength == 0)
+					{
+						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+					}
+					else
+					{
+						// Будет продолжение OUT данных в DATA STAGE
+						////PRINTF("co_out\n");
+						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+						pusb->ep0_xfer_state = USB_EP0_DATA;
+					}
+				    // Обработчик тут - невозможность установить алрес
+//#if WITHWAWXXUSB
+//					ep0_out_handler(pusb, ep0_setup);
+//#else
+//					HAL_PCD_SetupStageCallback(hpcd);
+//#endif
 				}
 			}
 			else
@@ -3824,21 +3860,27 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				// Not 8 bytes
 				if (ep0_setup->bmRequest & 0x80)//in
 				{
+					PRINTF("9:%u\n", (unsigned) usb_get_ep0_count(pusb));
 				  	usb_ep0_flush_fifo(pusb);
 				}
 				else
 				{
+					////PRINTF("eX\n");
+
 #if WITHWAWXXUSB
 					usb_dev_ep0_out(pusb, ep0_setup);
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
 					pusb->ep0_xfer_residue = 0;
+					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
 				}
 			}
 		}
 		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
 		{
+			////PRINTF("fX\n");
+			/// ep0_count тут 0
 #if WITHWAWXXUSB
 			ep0_out_handler(pusb, ep0_setup);
 #else
@@ -4125,6 +4167,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
+	TP();
   PCD_EPTypeDef *ep;
 
   if (((uint32_t)ep_addr & EP_ADDR_MSK) > hpcd->Init.dev_endpoints)
@@ -4355,9 +4398,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_clear_eptx_interrupt_status(pusb, temp);
 		if (temp&0x01)
 		{
-			//pusb->ep0_flag ++;
-			usb_dev_ep0xfer_handler(hpcd);
-			//ep0_irq_count ++;
+			usb_dev_ep0xfer_handler(hpcd);		// Все обмены по EP0
 		}
 		if (temp&0xfffe)
 		{
