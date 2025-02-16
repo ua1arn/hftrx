@@ -412,30 +412,30 @@ static void usb_ep0_flush_fifo(pusb_struct pusb)
 	WITHUSBHW_DEVICE->USB_TXCSRHI |= USB_CSR0_FLUSHFIFO;	// CSR0 bit 24
 }
 
-static uint32_t usb_ep0_is_naktimeout(pusb_struct pusb)
-{
-	return (WITHUSBHW_DEVICE->USB_TXCSRHI >> 7) & 0x1;
-}
+//static uint32_t usb_ep0_is_naktimeout(pusb_struct pusb)
+//{
+//	return (WITHUSBHW_DEVICE->USB_TXCSRHI >> 7) & 0x1;
+//}
+//
+//static void usb_ep0_clear_naktimeout(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 7);
+//}
+//
+//static void usb_ep0_set_statuspkt(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);
+//}
 
-static void usb_ep0_clear_naktimeout(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 7);
-}
-
-static void usb_ep0_set_statuspkt(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);
-}
-
-static void usb_ep0_clear_statuspkt(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 6);
-}
-
-static void usb_ep0_set_reqpkt(pusb_struct pusb)
-{
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 5);
-}
+//static void usb_ep0_clear_statuspkt(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 6);
+//}
+//
+//static void usb_ep0_set_reqpkt(pusb_struct pusb)
+//{
+//	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 5);
+//}
 
 static void usb_ep0_clear_setupend(pusb_struct pusb)
 {
@@ -2198,15 +2198,18 @@ void usbd_cdc_send(const void * buff, size_t length)
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
 {
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
 	{
 		usb_struct * const pusb = gpusb;
 		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
-		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
-			return 0;
-		return 1;
+		uint_fast8_t ready = (pusb->eptx_ret[bo_ep_in-1] == USB_RETVAL_COMPOK);
+		IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
+		return ready;
 	}
+	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 	return 0;
 }
 
@@ -4063,17 +4066,17 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 //static uint32_t eptx_irq_count = 0;
 //static uint32_t eprx_irq_count = 0;
 
-void usb_device_function0(USBD_HandleTypeDef * pdev)
-{
-	PCD_HandleTypeDef * hpcd = (PCD_HandleTypeDef*) pdev->pData;
-	ASSERT(hpcd != NULL);
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
-
-	usb_device_function(hpcd);
-
-	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
-}
+//void usb_device_function0(USBD_HandleTypeDef * pdev)
+//{
+//	PCD_HandleTypeDef * hpcd = (PCD_HandleTypeDef*) pdev->pData;
+//	ASSERT(hpcd != NULL);
+//	IRQL_t oldIrql;
+//	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+//
+//	//usb_device_function(hpcd);
+//
+//	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
+//}
 
 void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 {

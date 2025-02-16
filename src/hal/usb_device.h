@@ -165,7 +165,7 @@ uint_fast16_t usbd_getuacinmaxpacket(void);
 uint_fast16_t usbd_getuacoutmaxpacket(void);
 
 void usbd_pipes_initialize(struct _USBD_HandleTypeDef * hpcd);
-void usb_device_function0(struct _USBD_HandleTypeDef * hpcd);
+//void usb_device_function0(struct _USBD_HandleTypeDef * hpcd);
 
 /* USER CODE END FD */
 /**
