@@ -98,7 +98,7 @@ typedef struct {
 //	volatile uint32_t reset;
 	#define USB_OTG_A_DEVICE			0
 	#define USB_OTG_B_DEVICE			1
-	volatile uint32_t otg_dev;
+	//volatile uint32_t otg_dev;
 
 	//Signals for usb debug
 //	uint32_t rst_cnt;

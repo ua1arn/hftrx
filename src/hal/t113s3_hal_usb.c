@@ -3808,7 +3808,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 #endif /* WITHWAWXXUSB */
 
-		if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
+	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
 		if (ep0_csr & USB_CSR0_RXPKTRDY) // RxPktRdy
 		{
@@ -4030,20 +4030,26 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 static void usb_struct_init(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-	uint32_t i=0;
+	unsigned i=0;
 
 	//pusb->sof_count = 0;
 
 //	pusb->rst_cnt = 0;
 //	pusb->cur_fsm = 0;
 //	pusb->fsm_cnt = 0;
+	/* When bmRequestType is REQUEST_TYPE_INVALID(0xFF),
+	* a control transfer state is SETUP or STATUS stage. */
+	pusb->setup_packet.bmRequest = REQUEST_TYPE_INVALID;
+	pusb->status_out = 0;
+	/* When pipe0.buf has not NULL, DATA stage works in progress. */
+	pusb->pipe0.buf = NULL;
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
 	pusb->ep0_maxpktsz = 64;
 	pusb->ep0_ret = USB_RETVAL_COMPOK;
 
-	for(i=0; i<USB_MAX_EP_NO; ++ i)
+	for(i = 0; i < USB_MAX_EP_NO; ++ i)
 	{
 		pusb->eptx_flag[i] = 0;
 		pusb->eprx_flag[i] = 0;
@@ -4125,7 +4131,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	usb_set_eptx_interrupt_enable(pusb, (1u << 0));	// EP0 interrupts
 	ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << 0));
 
-	pusb->otg_dev = USB_OTG_B_DEVICE;
+	//pusb->otg_dev = USB_OTG_B_DEVICE;
 
   	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 
@@ -4315,12 +4321,19 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	if (irqstatus & USB_BUSINT_RESET)
 	{
+		unsigned i;
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
-		uint32_t temp;
-		uint32_t i;
+
+		/* When bmRequestType is REQUEST_TYPE_INVALID(0xFF),
+		* a control transfer state is SETUP or STATUS stage. */
+		pusb->setup_packet.bmRequest = REQUEST_TYPE_INVALID;
+		pusb->status_out = 0;
+		/* When pipe0.buf has not NULL, DATA stage works in progress. */
+		pusb->pipe0.buf = NULL;
+
 		//Device Reset Service Subroutine
 		//pusb->rst_cnt ++;
-		for(i=0; i<USB_MAX_EP_NO; ++ i)
+		for(i = 0; i < USB_MAX_EP_NO; ++ i)
 		{
 			pusb->eptx_flag[i] = 0;
 			pusb->eprx_flag[i] = 0;
