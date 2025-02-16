@@ -4260,13 +4260,20 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	usb_ep0_flush_fifo(pusb);
 
 	//PRINTF("USB Device!!\n");
-
-	usb_clear_bus_interrupt_enable(pusb, 0xff);
+//	{
+//		WITHUSBHW_DEVICE->USB_DMA [1].SDRAM_ADD = 0xDEADBEEF;
+//		usb_set_dma_interrupt_enable(pusb, 0x33);
+//		PRINTF("usb_get_dma_interrupt_enable()=%08X\n", (unsigned) usb_get_dma_interrupt_enable(pusb));
+//		PRINTF("WITHUSBHW_DEVICE->USB_DMA [1].SDRAM_ADD=%08X\n", (unsigned) WITHUSBHW_DEVICE->USB_DMA [1].SDRAM_ADD);
+//	}
+	usb_clear_bus_interrupt_enable(pusb, 0xFF);
 	usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
 	usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
+	usb_clear_dma_interrupt_enable(pusb, 0xFF);
+
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-	usb_set_eptx_interrupt_enable(pusb, (1u << 0));	// EP0 interrupts
-	ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << 0));
+	usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << 0));	// EP0 interrupts
+	ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << 0));
 
 	//pusb->otg_dev = USB_OTG_B_DEVICE;
 
@@ -4470,9 +4477,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_clear_bus_interrupt_enable(pusb, 0xff);
 		usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
 		usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
+		usb_clear_dma_interrupt_enable(pusb, 0xFF);
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-		usb_set_eptx_interrupt_enable(pusb, (1u << 0));	// EP0 interrupts
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << 0));
+		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << 0));	// EP0 interrupts
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << 0));
 
 #if WITHUSBUACOUT
 		buffers_set_uacoutalt(0);
@@ -4531,7 +4539,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	{
 		//rx interrupt
-		const uint32_t temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
+		const uint32_t temp = usb_get_eprx_interrupt_status(pusb) & usb_get_eprx_interrupt_enable(pusb);
 		uint32_t i;
 
 		usb_clear_eprx_interrupt_status(pusb, temp);
@@ -4550,7 +4558,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 	{
 		// DMA interrupt
-		const uint32_t temp = usb_get_dma_interrupt_status(pusb)  & usb_get_dma_interrupt_enable(pusb);
+		const uint32_t temp = usb_get_dma_interrupt_status(pusb) & usb_get_dma_interrupt_enable(pusb);
 		uint32_t i;
 
 		usb_clear_dma_interrupt_status(pusb, temp);
