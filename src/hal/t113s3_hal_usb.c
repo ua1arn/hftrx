@@ -3637,7 +3637,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 
 		switch (ep0_setup->bRequest)
 		{
-		case DFU_DETACH:""
+		case DFU_DETACH:
 			TP();
 			break;
 		case DFU_DNLOAD:
