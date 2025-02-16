@@ -43,6 +43,8 @@
 #define	AXI_LITE_DDS_RTS			0x00003000
 #define	AXI_LITE_MODEM_CONTROL		0x00004000
 #define	AXI_LITE_WNB_CONFIG			0x00005000
+#define	AXI_LITE_DDS_FTW_SUB		0x00006000
+#define	AXI_LITE_IQ_FX_FIFO			0x00007000
 
 /*
 enum {
@@ -79,8 +81,8 @@ enum {
 */
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
-#define CALIBRATION_IQ_CIC_RX_SHIFT		62
-#define CALIBRATION_TX_SHIFT			28
+#define CALIBRATION_IQ_CIC_RX_SHIFT		59
+#define CALIBRATION_TX_SHIFT			31
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUART2HW_FIFO	1	/* испольование FIFO */
