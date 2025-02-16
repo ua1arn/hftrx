@@ -21249,7 +21249,7 @@
      <register>
       <name>SDRAM_ADD</name>
       <displayName>SDRAM_ADD</displayName>
-      <description>USB DMA Channel Configuration Register</description>
+      <description>USB DMA SDRAM Start Address Register </description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
