@@ -4027,9 +4027,8 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 
 }
 
-static void usb_struct_init(PCD_HandleTypeDef *hpcd)
+static void usb_struct_init(usb_struct * const pusb)
 {
-	usb_struct * const pusb = & hpcd->awxx_usb;
 	unsigned i=0;
 
 	//pusb->sof_count = 0;
@@ -4099,7 +4098,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
-  	usb_struct_init(hpcd);	// так же сбрасывается адрес в регистрах
+  	usb_struct_init(pusb);	// так же сбрасывается адрес в регистрах
 
 	//usb_set_phytune(pusb);
 	//usb_drive_vbus(pusb, 0, pusb->index);
@@ -4324,27 +4323,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		unsigned i;
 		usb_clear_bus_interrupt_status(pusb, USB_BUSINT_RESET);
 
-		/* When bmRequestType is REQUEST_TYPE_INVALID(0xFF),
-		* a control transfer state is SETUP or STATUS stage. */
-		pusb->setup_packet.bmRequest = REQUEST_TYPE_INVALID;
-		pusb->status_out = 0;
-		/* When pipe0.buf has not NULL, DATA stage works in progress. */
-		pusb->pipe0.buf = NULL;
-
-		//Device Reset Service Subroutine
-		//pusb->rst_cnt ++;
-		for(i = 0; i < USB_MAX_EP_NO; ++ i)
-		{
-			pusb->eptx_flag[i] = 0;
-			pusb->eprx_flag[i] = 0;
-			pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
-			pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
-			pusb->eprx_ret[i] = USB_RETVAL_COMPOK;
-			pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
-		}
-		//Reset Function Address
-		usb_set_dev_addr(pusb, 0x00);
-		usb_struct_idle(pusb);
+		usb_struct_init(pusb);
 
 		//pusb->timer = USB_IDLE_TIMER;
 
@@ -4806,7 +4785,7 @@ HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
 //  __HAL_LOCK(hpcd);
 	pusb_struct pusb = & hpcd->awxx_usb;
 
-	usb_struct_init(hpcd);
+	usb_struct_init(pusb);
 
 	usb_init(hpcd);
 
