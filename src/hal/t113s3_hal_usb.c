@@ -1009,6 +1009,7 @@ static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t 
    		// Half
    		usb_set_ep0_csr(pusb, USB_CSR0_TXPKTRDY);	// TxPktRdy
    	}
+ 	pusb->ep0_xfer_state = USB_EP0_DATA;
 }
 
 static void usb_ep0_ctl_status_send(pusb_struct pusb)
@@ -3019,11 +3020,6 @@ static unsigned USBD_UAC2_ClockSource_req_rts(
 
 #if WITHWAWXXUSB
 
-static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
-{
-	return 1;
-}
-
 static unsigned gbaudrate = 115200;
 
 #if WITHUSBDFU
@@ -3045,7 +3041,7 @@ static uint8_t dfu_dev_status [6];
 
 #endif /* WITHUSBDFU */
 
-static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
+static void ep0_setup_in_handler(pusb_struct pusb, const uSetupPKG * ep0_setup)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
 	const uint32_t count = sizeof buff;
@@ -3462,7 +3458,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 }
 
 // обработка setup пакетов без DATA STAGE
-static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
+static void ep0_out_handler(pusb_struct pusb, const uSetupPKG *  ep0_setup)
 {
 	static const uint8_t TestPkt [54] =
 	{
@@ -3508,20 +3504,20 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	          		switch (HI_BYTE(ep0_setup->wIndex))
 	          		{
 	           			case 0x01:
-	             			usb_set_test_mode(pusb, 1u << 1);	// Test_J
+	             			usb_set_test_mode(pusb, UINT32_C(1) << 1);	// Test_J
 	             			PRINTF("usb_device: Send Test J Now...\n");
 	            			break;
 						case 0x02:
-							usb_set_test_mode(pusb, 1u << 2);	// Test_K
+							usb_set_test_mode(pusb, UINT32_C(1) << 2);	// Test_K
 							PRINTF("usb_device: Send Test K Now...\n");
 							break;
 						case 0x03:
-							usb_set_test_mode(pusb, 1u << 0);	// Test_SE0_NAK
+							usb_set_test_mode(pusb, UINT32_C(1) << 0);	// Test_SE0_NAK
 							PRINTF("usb_device: Test SE0_NAK Now...\n");
 							break;
 						case 0x04:
 							usb_write_ep_fifo(pusb, 0, (uintptr_t)TestPkt, 53);
-							usb_set_ep0_csr(pusb, 0x02);
+							usb_set_ep0_csr(pusb, USB_CSR0_TXPKTRDY);
 							usb_set_test_mode(pusb, 0x08);
 
 	          				PRINTF("usb_device: Send Test Packet Now...\n");
@@ -3548,11 +3544,10 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
        		//PRINTF("addr= 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
-       		PRINTF("usb_device: Set Descriptor\n");
+       		//PRINTF("usb_device: Set Descriptor\n");
       		break;
     	case USB_REQ_SET_CONFIGURATION:
        		//PRINTF("usb_device: Set Config\n");
-     		ep0_set_config_handler_dev(pusb);
     		break;
     	case USB_REQ_SET_INTERFACE:
     		switch (interfacev)
@@ -3896,9 +3891,9 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 			if (ep0_count == 8)
 			{
-				//pusb->ep0_flag = 0;
 				usb_read_ep_fifo(pusb, 0, (uintptr_t)ep0_setup, 8);
 				//printhex(0, ep0_setup, 8);
+
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
 					if (ep0_setup->wLength == 0)
@@ -3907,20 +3902,20 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					}
 					else
 					{
-						// Будет ответ IN данных в DATA STAGE
+						// Будет ответ в виде IN данных в DATA STAGE
 						////PRINTF("co_in\n");
 						__USBC_Dev_ep0_ReadDataHalf(pusb);
-						usb_ep0_start_receieve(pusb, buff, AWUSB_MIN(sizeof buff, ep0_setup->wLength));
 					}
 #if WITHWAWXXUSB
-					ep0_setup_in_handler(pusb, ep0_setup);
+					ep0_setup_in_handler(pusb, ep0_setup);	// тут формируются ответы через usb_ep0_start_send
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
+					//ASSERT(pusb->ep0_xfer_state == USB_EP0_DATA);
 				}
-				else                         //out
+				else
 				{
-
+					// out
 				    if (ep0_setup->wLength == 0)
 					{
 						__USBC_Dev_ep0_ReadDataComplete(pusb);
@@ -3973,6 +3968,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 			//PRINTF("fX, ep0_csr=%02X\n", (unsigned) ep0_csr);
 			/// ep0_count тут 0
 			/// set_address тут
+			/// set_interface тут
 #if WITHWAWXXUSB
 			ep0_out_handler(pusb, ep0_setup);	// обработка setup пакетов без DATA STAGE
 #else
