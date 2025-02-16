@@ -3811,7 +3811,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				//printhex(0, ep0_setup, 8);
 				if (ep0_setup->bmRequest & 0x80) //in
 				{
-				    pusb->ep0_xfer_residue = 0;
+				    pusb->ep0_xfer_residue = ep0_setup->wLength;
 					if (ep0_setup->wLength == 0)
 					{
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
@@ -3833,18 +3833,8 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				else                         //out
 				{
 				    pusb->ep0_xfer_residue = ep0_setup->wLength;
-//					PRINTF("aX\n");
-//				    printhex(0, ep0_setup, 8);
-				    static const uint8_t pattern0 [] = { 0x21, 0x20, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, };
-				    if (memcmp(ep0_setup, pattern0, sizeof pattern0) == 0)
-				    {
-				    	PRINTF("vX\n");
-						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
-						//usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
-					    //usb_ep0_ctl_status_send(pusb);
-						pusb->ep0_xfer_state = USB_EP0_DATA;
-				    }
-				    else if (ep0_setup->wLength == 0)
+
+				    if (ep0_setup->wLength == 0)
 					{
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
 						//pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -3853,9 +3843,8 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					{
 						// Будет ответ
 						//PRINTF("cont\n");
-						//usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
-						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
-						pusb->ep0_xfer_state = USB_EP0_DATA;
+						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+						//pusb->ep0_xfer_state = USB_EP0_DATA;
 					}
 //#if WITHWAWXXUSB
 //					ep0_out_handler(pusb, ep0_setup);
