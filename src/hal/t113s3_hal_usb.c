@@ -3051,8 +3051,6 @@ static uint8_t dfu_dev_status [6];
 
 #endif /* WITHUSBDFU */
 
-// После возврата отсюда ставим
-//	pusb->ep0_xfer_state = USB_EP0_DATA;
 static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
@@ -3066,15 +3064,16 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		break;
 	default:
 		TP();
+		printhex(0, ep0_setup, 8);
 		usb_ep0_ctl_error(pusb);
 		return;
 	}
 
-	PRINTF("qX\n");
+	//PRINTF("qX\n");
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_STANDARD)
 	{
-		PRINTF("q1\n");
+		//PRINTF("q1\n");
 		const uint_fast8_t index = LO_BYTE(ep0_setup->wValue);
 		switch (ep0_setup->bRequest)
 		{
@@ -3183,7 +3182,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	}
 	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_CLASS)
 	{
-		PRINTF("q2\n");
+		//PRINTF("q2\n");
 		// class
 		switch (interfacev)
 		{
@@ -3195,7 +3194,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		case USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, 0):
 		case USBD_CDCACM_IFC(INTERFACE_CDC_DATA, 0):
 			{
-				PRINTF("z\n");
+				//PRINTF("z\n");
 				switch (ep0_setup->bRequest)
 				{
 					case CDC_SET_LINE_CODING:
@@ -3426,7 +3425,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 	}
 	else if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_VENDOR)
 	{
-		PRINTF("q3\n");
+		//PRINTF("q3\n");
 		if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x05)
 		{
 			const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
@@ -3476,7 +3475,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		0xFB, 0xFD, 0x7E, 0x00
 	};
 
-	PRINTF("oX\n");
+	//PRINTF("oX\n");
 	// Сперва проверяется RECIPNENT, потом TYPE
 	switch (ep0_setup->bmRequest & 0x1F)
 	{
@@ -3486,6 +3485,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 		break;
 	default:
 		TP();
+		printhex(0, ep0_setup, 8);
 		return;
 	}
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
@@ -3546,7 +3546,7 @@ static void ep0_out_handler(pusb_struct pusb, pSetupPKG ep0_setup)
 
 		case USB_REQ_SET_ADDRESS:
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
-       		//PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
+       		//PRINTF("addr= 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
        		PRINTF("usb_device: Set Descriptor\n");
@@ -3622,7 +3622,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 	// OUT
 	static uint8_t buff [512];
 	usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, AWUSB_MIN(sizeof buff, ep0_count));
-	PRINTF("8:%u\n", (unsigned) usb_get_ep0_count(pusb));
+	//PRINTF("8:%u\n", (unsigned) usb_get_ep0_count(pusb));
 
   	// Parse setup packet on output
   	switch (interfacev)
@@ -3634,7 +3634,7 @@ static void usb_dev_ep0_out(usb_struct * const pusb, pSetupPKG ep0_setup)
 
 		switch (ep0_setup->bRequest)
 		{
-		case DFU_DETACH:
+		case DFU_DETACH:""
 			TP();
 			break;
 		case DFU_DNLOAD:
@@ -3775,7 +3775,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
-		PRINTF("3:%u\n", (unsigned) usb_get_ep0_count(pusb));
+		//PRINTF("3:%u\n", (unsigned) usb_get_ep0_count(pusb));
 		if (ep0_csr & USB_CSR0_RXPKTRDY)	// RxPktRdy - 16rd bit of USB_CSR0
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;	// получили setup пакет
@@ -3788,7 +3788,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else if (!(ep0_csr & USB_CSR0_TXPKTRDY))	// ! TxPktRdy - 17th bit of USB_CSR0
 		{
 			const uint32_t ep0_count = usb_get_ep0_count(pusb);
-			PRINTF("4:%u\n", (unsigned) usb_get_ep0_count(pusb));
+			//PRINTF("4:%u\n", (unsigned) usb_get_ep0_count(pusb));
 			usb_ep0_complete_send_data(pusb);	// продолжаем пересылать, возможно несколько раз
 		}
 		else
@@ -3800,7 +3800,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
 		const uint32_t ep0_count = usb_get_ep0_count(pusb);
-		PRINTF("5:%u\n", (unsigned) usb_get_ep0_count(pusb));
+		//PRINTF("5:%u\n", (unsigned) usb_get_ep0_count(pusb));
 		if (ep0_csr & USB_CSR0_RXPKTRDY) // RxPktRdy
 		{
 
@@ -3832,11 +3832,20 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				}
 				else                         //out
 				{
-					PRINTF("aX\n");
 				    pusb->ep0_xfer_residue = ep0_setup->wLength;
-					if (ep0_setup->wLength == 0)
+//					PRINTF("aX\n");
+//				    printhex(0, ep0_setup, 8);
+				    static const uint8_t pattern0 [] = { 0x21, 0x20, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, };
+				    if (memcmp(ep0_setup, pattern0, sizeof pattern0) == 0)
+				    {
+				    	PRINTF("vX\n");
+						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
+						//usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
+					    //usb_ep0_ctl_status_send(pusb);
+						pusb->ep0_xfer_state = USB_EP0_DATA;
+				    }
+				    else if (ep0_setup->wLength == 0)
 					{
-					    usb_ep0_ctl_status_send(pusb);
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
 						//pusb->ep0_xfer_state = USB_EP0_SETUP;
 					}
@@ -3860,12 +3869,12 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				// Not 8 bytes
 				if (ep0_setup->bmRequest & 0x80)//in
 				{
-					PRINTF("9:%u\n", (unsigned) usb_get_ep0_count(pusb));
+					//PRINTF("9:%u\n", (unsigned) usb_get_ep0_count(pusb));
 				  	usb_ep0_flush_fifo(pusb);
 				}
 				else
 				{
-					PRINTF("eX\n");
+					//PRINTF("eX\n");
 
 #if WITHWAWXXUSB
 					usb_dev_ep0_out(pusb, ep0_setup);
@@ -3873,6 +3882,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
 					pusb->ep0_xfer_residue = 0;
+					usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
 				}
 			}
 		}
