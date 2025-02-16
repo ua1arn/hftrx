@@ -1001,8 +1001,6 @@ static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t 
    		// Half
    		usb_set_ep0_csr(pusb, USB_CSR0_TXPKTRDY);	// TxPktRdy
    	}
-// 	while ((usb_get_ep0_csr(pusb) & USB_CSR0_TXPKTRDY) != 0)
-// 		;
 }
 
 static void usb_ep0_ctl_status_send(pusb_struct pusb)
