@@ -3815,12 +3815,11 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					if (ep0_setup->wLength == 0)
 					{
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
-						//pusb->ep0_xfer_state = USB_EP0_SETUP;
 					}
 					else
 					{
-						// Будет ответ
-						//PRINTF("cont\n");
+						// Будет ответ IN данных в DATA STAGE
+						PRINTF("co_in\n");
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
 						pusb->ep0_xfer_state = USB_EP0_DATA;
 					}
@@ -3837,15 +3836,15 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				    if (ep0_setup->wLength == 0)
 					{
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY | USB_CSR0_DATAEND);	// ServicedRxPktRdy, DataEnd
-						//pusb->ep0_xfer_state = USB_EP0_SETUP;
 					}
 					else
 					{
-						// Будет ответ
-						//PRINTF("cont\n");
+						// Будет продолжение OUT данных в DATA STAGE
+						PRINTF("co_out\n");
 						usb_set_ep0_csr(pusb, USB_CSR0_SERVICERXPKTRDY);	// ServicedRxPktRdy
-						//pusb->ep0_xfer_state = USB_EP0_DATA;
+						pusb->ep0_xfer_state = USB_EP0_DATA;
 					}
+				    // Обработчик тут - невозможность установить алрес
 //#if WITHWAWXXUSB
 //					ep0_out_handler(pusb, ep0_setup);
 //#else
@@ -3858,12 +3857,12 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				// Not 8 bytes
 				if (ep0_setup->bmRequest & 0x80)//in
 				{
-					//PRINTF("9:%u\n", (unsigned) usb_get_ep0_count(pusb));
+					PRINTF("9:%u\n", (unsigned) usb_get_ep0_count(pusb));
 				  	usb_ep0_flush_fifo(pusb);
 				}
 				else
 				{
-					//PRINTF("eX\n");
+					PRINTF("eX\n");
 
 #if WITHWAWXXUSB
 					usb_dev_ep0_out(pusb, ep0_setup);
@@ -3877,6 +3876,7 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
 		{
+			PRINTF("fX\n");
 #if WITHWAWXXUSB
 			ep0_out_handler(pusb, ep0_setup);
 #else
