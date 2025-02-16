@@ -1122,7 +1122,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			pusb->eprx_xfer_residuev[ep_no-1] = byte_count;
 			pusb->eprx_xfer_tranferredv[ep_no-1] = 0;
 
-
 			if (!maxpkt)
 			{
 				return USB_RETVAL_COMPOK;
@@ -1349,27 +1348,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			break;
 	}
 
-	return ret;
-}
-
-static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
-{
-  	USB_RETVAL ret = USB_RETVAL_COMPOK;
-	usb_select_ep(pusb, ep_no);
-    if ((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
-    {
-		//uint32_t saved = usb_get_fifo_access_config(pusb);
-		//usb_fifo_accessed_by_cpu(pusb);
-        usb_write_ep_fifo(pusb, ep_no, src_addr, byte_count);
-    	usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO | USB_TXCSR_TXPKTRDY | (usb_get_eptx_csr(pusb) & USB_TXCSR_ISO));
-    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
-    		;
-    	//usb_set_fifo_access_config(pusb, saved);
-    }
-    else
-    {
-    	ret = USB_RETVAL_NOTCOMP;
-    }
 	return ret;
 }
 
@@ -3901,8 +3879,6 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		}
 		else if (!(ep0_csr & USB_CSR0_TXPKTRDY))	// ! TxPktRdy - 17th bit of USB_CSR0
 		{
-			const uint32_t ep0_count = usb_get_ep0_count(pusb);
-			//PRINTF("4:%u\n", (unsigned) usb_get_ep0_count(pusb));
 			usb_ep0_complete_send_data(pusb);	// продолжаем пересылать, возможно несколько раз
 		}
 		else
@@ -3956,12 +3932,6 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 						__USBC_Dev_ep0_ReadDataHalf(pusb);
 						usb_ep0_start_receieve(pusb, buff, AWUSB_MIN(sizeof buff, ep0_setup->wLength));
 					}
-				    // Обработчик тут - невозможность установить алрес
-//#if WITHWAWXXUSB
-//					ep0_out_handler(pusb, ep0_setup);	// обработка setup пакетов без DATA STAGE
-//#else
-//					HAL_PCD_SetupStageCallback(hpcd);
-//#endif
 				}
 			}
 			else
@@ -3993,17 +3963,16 @@ static void usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	#else
 						HAL_PCD_SetupStageCallback(hpcd);
 	#endif
-//						pusb->ep0_xfer_residue = 0;
-//						pusb->ep0_xfer_tranferred = 0;
-//						pusb->ep0_xfer_addr = (uintptr_t) buff;
 					}
 				}
 			}
 		}
-		else	// (ep0_csr & USB_CSR0_RXPKTRDY)
+		else
 		{
-			////PRINTF("fX\n");
+			// Тут нет (ep0_csr & USB_CSR0_RXPKTRDY)
+			//PRINTF("fX, ep0_csr=%02X\n", (unsigned) ep0_csr);
 			/// ep0_count тут 0
+			/// set_address тут
 #if WITHWAWXXUSB
 			ep0_out_handler(pusb, ep0_setup);	// обработка setup пакетов без DATA STAGE
 #else
