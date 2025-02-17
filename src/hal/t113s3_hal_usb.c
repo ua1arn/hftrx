@@ -2105,7 +2105,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 enum
 {
-	cdc_pipeindma = 4,
+	cdc_pipeindma = 0,
 	cdc_pipeoutdma,
 	//
 	cdc_pipe_count
@@ -2213,21 +2213,33 @@ void usbd_cdc_send(const void * buff, size_t length)
 	IRQL_t oldIrql;
 
 #if WITHCDCINDMA
-	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
 	printhex(0, buff, count);
 	memcpy(tdata, buff, count);
 	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
+	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+
+	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	if (gpusb != NULL)
+	{
+		usb_select_ep(gpusb, bo_ep_in);
+		usb_set_eptx_maxpkt(gpusb, count, 1);
+
+	}
+	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
+
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) tdata;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = count;
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].RESIDUAL_BC = 0;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
-			VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+			count * (UINT32_C(1) << 16) |	// DMA Burst Length
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
 		bo_ep_in * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
+
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+
 #else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
@@ -2542,8 +2554,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 //				BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
 //				BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
 //				BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);
-//				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
-//				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
+////		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
+////		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
 				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// 31 AutoSet
 				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// 28 DMAReqEnab
 				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// 26 DMAReqMode
