@@ -405,7 +405,7 @@ static void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t 
 	uint32_t reg_val;
 
 	reg_val = (maxpayload & 0x7FF);
-	reg_val |= ((pktcnt-1) & 0x1F) << 11;
+	reg_val |= ((pktcnt-1) & 0x1F) * (UINT32_C(1) << 11);
 	WITHUSBHW_DEVICE->USB_TXMAXP = reg_val;	// TXCSR bits 15..0
 }
 
@@ -2213,7 +2213,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 	IRQL_t oldIrql;
 
 #if WITHCDCINDMA
-	const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
+	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
 	printhex(0, buff, count);
@@ -2223,8 +2223,8 @@ void usbd_cdc_send(const void * buff, size_t length)
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = count;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
 		count * (UINT32_C(1) << 16) |	// DMA Burst Length
-		0x00 * (UINT32_C(1) << 4) |	// 0: SDRAM to USB FIFO
-		pipein * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
+		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
+		bo_ep_in * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 #else
@@ -2523,7 +2523,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				usb_select_ep(pusb, pipe);
 				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoClear
 				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqMode
+				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// DMAReqMode
 				usb_fifo_accessed_by_dma(pusb, pipe, 0);
 
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
