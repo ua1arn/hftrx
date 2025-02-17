@@ -2111,8 +2111,7 @@ enum
 	cdc_pipe_count
 };
 
-static uint8_t cdc_out_data [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
-//static uint8_t cdc_in_data [VIRTUAL_COM_PORT_IN_DATA_SIZE];
+static __ALIGNED(4) uint8_t cdc_out_data [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
@@ -2210,20 +2209,27 @@ static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество дан
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
 {
+	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
 
 #if WITHCDCINDMA
+	const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
-	printhex(0, buff, length);
-	memcpy(tdata, buff, length);
+	const unsigned count = AWUSB_MIN(sizeof tdata, length);
+	printhex(0, buff, count);
+	memcpy(tdata, buff, count);
 	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) tdata;
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = length;
+	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = count;
+	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
+		count * (UINT32_C(1) << 16) |	// DMA Burst Length
+		0x00 * (UINT32_C(1) << 4) |	// 0: SDRAM to USB FIFO
+		pipein * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
+		0;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 #else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
-	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
 	{
 		usb_struct * const pusb = gpusb;
