@@ -2103,14 +2103,14 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 enum
 {
-	cdc_pipeoutdma = 1,
+	cdc_pipeoutdma = 0,
 	cdc_pipeindma,
 	//
 	cdc_pipe_count
 };
 
 static uint8_t cdc_out_data [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
-static uint8_t cdc_in_data [VIRTUAL_COM_PORT_IN_DATA_SIZE];
+//static uint8_t cdc_in_data [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
@@ -2204,11 +2204,21 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+//#define WITHCDCINDMA 1
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
 {
 	IRQL_t oldIrql;
+
+#if WITHCDCINDMA
+	static uint8_t tdata [64];
+	printhex(0, buff, length);
+	memcpy(tdata, buff, length);
+	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
+	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) tdata;
+	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+#else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	const unsigned offset = MAIN_CDC_OFFSET;
@@ -2232,11 +2242,15 @@ void usbd_cdc_send(const void * buff, size_t length)
 //  		while(ret == USB_RETVAL_NOTCOMP);
 	}
 	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
+#endif
 }
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
 {
 	IRQL_t oldIrql;
+#if WITHCDCINDMA
+	return ! (WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG & (UINT32_C(1) << 31));
+#else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
@@ -2249,6 +2263,7 @@ uint_fast8_t usbd_cdc_ready(void)	/* временное решение для п
 	}
 	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 	return 0;
+#endif
 }
 
 /* Разрешение/запрещение прерывания по передаче символа */
@@ -2494,13 +2509,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 
 			//PRINTF("USBCDCACM: offset=%u, pipein=%d, pipeout=%d, pipeint=%d\n", offset, pipein, pipeout, pipeint);
 			// Transfer data from device to host
-			if (1)
-			{
-				usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
-				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
-
-			}
-			else
+#if WITHCDCINDMA
 			{
 				const uint_fast8_t pipe = pipein;
 				usb_select_ep(pusb, pipe);
@@ -2509,20 +2518,27 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 				usb_fifo_accessed_by_dma(pusb, pipe, 0);
 
-				memset(cdc_in_data, 0xE5, sizeof cdc_in_data);
-				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = sizeof cdc_in_data;
-				dcache_clean_invalidate((uintptr_t) cdc_in_data, sizeof cdc_in_data);
-				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) cdc_in_data;
+//				memset(cdc_in_data, 0xE5, sizeof cdc_in_data);
+//				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = sizeof cdc_in_data;
+//				dcache_clean_invalidate((uintptr_t) cdc_in_data, sizeof cdc_in_data);
+//				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) cdc_in_data;
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
 					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 					0x00 * (UINT32_C(1) << 4) |	// 0: SDRAM to USB FIFO
 					pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 					0;
-				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-				usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeindma));
+				//WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+				//usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeindma));
 			}
+#else
+			{
+				usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
+				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
+
+			}
+#endif
 			// Transfer data from host to device
-			if (0)
+			if (1)
 			{
 				usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
 				ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
