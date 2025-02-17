@@ -2278,8 +2278,17 @@
      <register>
       <name>BC</name>
       <displayName>BC</displayName>
-      <description>USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register</description>
+      <description>USB DMA Byte Counter Register</description>
       <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>RESIDUAL_BC</name>
+      <displayName>RESIDUAL_BC</displayName>
+      <description>USB DMA RESIDUAL Byte Counter Register</description>
+      <addressOffset>0x00C</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>

@@ -2417,18 +2417,6 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 
 static const uint8_t pipeoutdma = 1;
 static RAMNC uint8_t testdata [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
-//	USB0_REG_DMA_CFG
-#define  BIT_USB_DMA_EN						31
-#define  BIT_USB_DMA_BST_LEN				16
-#define  BIT_USB_DMA_DIR					4
-#define  BIT_USB_DMA_EP						0
-
-typedef enum
-{
-	USB_DMA_SDRAM_TO_FIFO = 0,
-	USB_DMA_FIFO_TO_SDRAM = 1
-
-} EUSBDMADIR;
 
 static void awxx_setup_fifo(pusb_struct pusb)
 {
@@ -2530,13 +2518,14 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].BC = sizeof testdata;
 //				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC = sizeof testdata - 1;
 //				ASSERT(WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC == sizeof testdata - 1);
+				dcache_clean_invalidate((uintptr_t) testdata, sizeof testdata);
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].SDRAM_ADD = (uintptr_t) testdata;
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG =
-					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << BIT_USB_DMA_BST_LEN) |
-					USB_DMA_FIFO_TO_SDRAM * (UINT32_C(1) << BIT_USB_DMA_DIR) |
-					pipe * (UINT32_C(1) << BIT_USB_DMA_EP) |
+					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+					0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
+					pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 					0;
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= (UINT32_C(1) << BIT_USB_DMA_EN);
+				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 				usb_set_dma_interrupt_enable(pusb, (1u << pipeoutdma));
 			}
 			usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
@@ -4623,7 +4612,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			{
 				if (temp & (1u << i))
 				{
-					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> BIT_USB_DMA_EP) & 0x0F;
+					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 0) & 0x0F; // DMA Channel for Endpoint
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
 					printhex((unsigned) testdata, testdata, sizeof testdata);
@@ -4632,8 +4621,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
 							//(unsigned) WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG);
-					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << BIT_USB_DMA_EN);
-				}
+					printhex32(0, & WITHUSBHW_DEVICE->USB_DMA [i], 16);
+					dcache_clean_invalidate((uintptr_t) testdata, sizeof testdata);
+					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+					printhex32(0, & WITHUSBHW_DEVICE->USB_DMA [i], 16);
+					}
 			}
 		}
 	}
