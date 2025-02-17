@@ -2101,6 +2101,10 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
+
+static const uint8_t cdc_pipeoutdma = 1;
+static uint8_t cdc_out_data [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
+
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
 
@@ -2415,9 +2419,6 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	return fifo_addr;
 }
 
-static const uint8_t pipeoutdma = 1;
-static RAMNC uint8_t testdata [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
-
 static void awxx_setup_fifo(pusb_struct pusb)
 {
     const uint32_t fifo_base = 64;
@@ -2514,17 +2515,17 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 				usb_fifo_accessed_by_dma(pusb, pipe, 0);
 
-				memset(testdata, 0xE5, sizeof testdata);
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].BC = sizeof testdata;
-				dcache_clean_invalidate((uintptr_t) testdata, sizeof testdata);
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].SDRAM_ADD = (uintptr_t) testdata;
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG =
+				memset(cdc_out_data, 0xE5, sizeof cdc_out_data);
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].BC = sizeof cdc_out_data;
+				dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].SDRAM_ADD = (uintptr_t) cdc_out_data;
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].CHAN_CFG =
 					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 					0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
 					pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 					0;
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-				usb_set_dma_interrupt_enable(pusb, (1u << pipeoutdma));
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+				usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeoutdma));
 			}
 			usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
 			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
@@ -4613,13 +4614,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 0) & 0x0F; // DMA Channel for Endpoint
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
-					printhex((unsigned) testdata, testdata, sizeof testdata);
-					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X\n",
-							pipeoutdma,
+					printhex((unsigned) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
+					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X, n=%u\n",
+							cdc_pipeoutdma,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
-							(unsigned) WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC,
-							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG);
-					dcache_clean_invalidate((uintptr_t) testdata, sizeof testdata);
+							(unsigned) WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].RESIDUAL_BC,
+							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG,
+							count);
+					dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
 					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 					}
 			}
