@@ -2103,7 +2103,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 enum
 {
-	cdc_pipeoutdma,
+	cdc_pipeoutdma = 1,
 	cdc_pipeindma,
 	//
 	cdc_pipe_count
@@ -2493,6 +2493,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
 
 			//PRINTF("USBCDCACM: offset=%u, pipein=%d, pipeout=%d, pipeint=%d\n", offset, pipein, pipeout, pipeint);
+			// Transfer data from device to host
 			if (1)
 			{
 				usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
@@ -2514,12 +2515,13 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) cdc_in_data;
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
 					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
-					0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
+					0x00 * (UINT32_C(1) << 4) |	// 0: SDRAM to USB FIFO
 					pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 					0;
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 				usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeindma));
 			}
+			// Transfer data from host to device
 			if (1)
 			{
 				usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
@@ -2546,6 +2548,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 				usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeoutdma));
 			}
+			// Transfer interrupt data from device to host
 			usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
 			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
 		}
