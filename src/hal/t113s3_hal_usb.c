@@ -2101,7 +2101,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
-#define WITHCDCINDMA 1
+//#define WITHCDCINDMA 1
 
 enum
 {
