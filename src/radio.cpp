@@ -475,6 +475,7 @@ enum
 	RJ_VIEW,		/* стиль отображения спектра и панорамы */
 	RJ_COMPILED,		/* текст даты компиляции */
 	RJ_SERIALNR,		/* текст серийного номера */
+	RJ_DUAL,			/* режим двойного прима */
 	//
 	RJ_notused
 };
@@ -1407,6 +1408,7 @@ static const FLASHMEM struct {
 	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
 };
 
+static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 
 #if WITHIF4DSP && 0
@@ -4060,6 +4062,20 @@ static const struct paramdefdef xgnoisereduct =
 	getzerobase, /* складывается со смещением и отображается */
 };
 #endif /* WITHIF4DSP */
+#if WITHUSEDUALWATCH
+// Левый/правый, A - main RX, B - sub RX
+static const struct paramdefdef xmainsubrxmode =
+{
+	QLABEL("DUAL    "), 7, 0, RJ_DUAL,	ISTEP1,
+	ITEM_VALUE,
+	0, MAINSUBRXMODE_COUNT - 1,
+	OFFSETOF(struct nvmap, mainsubrxmode),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& mainsubrxmode,
+	getzerobase, /* складывается со смещением и отображается */
+};
+#endif /* WITHUSEDUALWATCH */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if WITHAFSPECTRE
@@ -4131,10 +4147,6 @@ static const struct paramdefdef xgcwpitch10 =
 	& gcwpitch10,
 	getzerobase,
 };
-
-#if WITHUSEDUALWATCH
-	uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
-#endif /* WITHUSEDUALWATCH */
 
 #if WITHENCODER
 	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
@@ -8473,6 +8485,11 @@ enc2menu_value(
 	case RJ_ON:
 		local_snprintf_P(buff, sz, PSTR("%s"), value ? "ON" : "OFF");
 		break;
+#if WITHUSEDUALWATCH
+	case RJ_DUAL:
+		local_snprintf_P(buff, sz, PSTR("%s"), mainsubrxmodes [value].label);
+		break;
+#endif /* WITHUSEDUALWATCH */
 	case RJ_POW2:
 		local_snprintf_P(buff, sz, PSTR("%u"), 1U << value);
 		break;
@@ -8509,6 +8526,11 @@ enc2menu_value(
 		case RJ_ON:
 			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
 			break;
+	#if WITHUSEDUALWATCH
+		case RJ_DUAL:
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, mainsubrxmodes [value].label);
+			break;
+	#endif /* WITHUSEDUALWATCH */
 		case RJ_POW2:
 			local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
 			break;
@@ -13283,15 +13305,14 @@ const FLASHMEM char * hamradio_get_hplp_value_P(void)
 static void
 uif_key_mainsubrx(void)
 {
-	mainsubrxmode = calc_next(mainsubrxmode, 0, MAINSUBRXMODE_COUNT - 1);
-	save_i8(RMT_MAINSUBRXMODE_BASE, mainsubrxmode);	// Левый/правый, A - main RX, B - sub RX
+	param_keyclick(& xmainsubrxmode);		// Левый/правый, A - main RX, B - sub RX
 	updateboard(1, 0);
 }
 
 // текущее состояние DUAL WATCH
 const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void)
 {
-	return mainsubrxmodes [mainsubrxmode].label;
+	return mainsubrxmodes [param_getvalue(& xmainsubrxmode)].label;
 }
 
 
@@ -16600,6 +16621,13 @@ param_format(
 			buff [n] = '\0';
 			return n;
 		}
+		case RJ_DUAL:
+		{
+			int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%*s", width, mainsubrxmodes [value].label);
+			buff [n] = '\0';
+			return n;
+		}
 		case RJ_SUBTONE:
 		{
 			int_fast32_t value = param_getvalue(pd);
@@ -16635,6 +16663,9 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+	#if WITHUSEDUALWATCH
+		& xmainsubrxmode,
+	#endif /* WITHUSEDUALWATCH */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -16658,6 +16689,9 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 	#if WITHIF4DSP
 		& xgnoisereduct,
 	#endif /* WITHIF4DSP */
+	#if WITHUSEDUALWATCH
+		& xmainsubrxmode,
+	#endif /* WITHUSEDUALWATCH */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17431,6 +17465,14 @@ void display2_menu_valxx(
 		}
 		break;
 
+#if WITHUSEDUALWATCH
+	case RJ_DUAL:
+		width = VALUEW;
+		comma = 3;
+		display_menu_string_P(x, y, mainsubrxmodes [value].label, width, comma);
+		break;
+#endif /* WITHUSEDUALWATCH */
+
 	case RJ_ENCRES:
 		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
@@ -18098,6 +18140,14 @@ static void menu_print(void)
         			print_menu_string_P(x, y, value ? msg_on : msg_off, width, comma);
         		}
         		break;
+
+#if WITHUSEDUALWATCH
+			case RJ_DUAL:
+        		width = comma ? VALUEW - 1 : VALUEW;
+				comma = 3;
+				print_menu_string_P(x, y, mainsubrxmodes [value].label, width, comma);
+				break;
+#endif /* WITHUSEDUALWATCH */
 
         	case RJ_ENCRES:
         		width = comma ? VALUEW - 1 : VALUEW;
