@@ -2531,10 +2531,11 @@ static void awxx_setup_fifo(pusb_struct pusb)
 //				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC = sizeof testdata - 1;
 //				ASSERT(WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC == sizeof testdata - 1);
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].SDRAM_ADD = (uintptr_t) testdata;
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG = 0;
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << BIT_USB_DMA_BST_LEN);
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= USB_DMA_FIFO_TO_SDRAM * (UINT32_C(1) << BIT_USB_DMA_DIR);
-				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= pipe * (UINT32_C(1) << BIT_USB_DMA_EP);
+				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG =
+					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << BIT_USB_DMA_BST_LEN) |
+					USB_DMA_FIFO_TO_SDRAM * (UINT32_C(1) << BIT_USB_DMA_DIR) |
+					pipe * (UINT32_C(1) << BIT_USB_DMA_EP) |
+					0;
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG |= (UINT32_C(1) << BIT_USB_DMA_EN);
 				usb_set_dma_interrupt_enable(pusb, (1u << pipeoutdma));
 			}
