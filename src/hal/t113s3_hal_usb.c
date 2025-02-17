@@ -2522,7 +2522,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeindma));
 			}
 			// Transfer data from host to device
-			if (1)
+			if (0)
 			{
 				usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
 				ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
