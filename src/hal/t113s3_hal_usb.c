@@ -2101,10 +2101,12 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
+//#define WITHCDCINDMA 1
+
 enum
 {
-	cdc_pipeoutdma = 0,
 	cdc_pipeindma,
+	cdc_pipeoutdma,
 	//
 	cdc_pipe_count
 };
@@ -2204,7 +2206,6 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
-//#define WITHCDCINDMA 1
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
@@ -2212,11 +2213,12 @@ void usbd_cdc_send(const void * buff, size_t length)
 	IRQL_t oldIrql;
 
 #if WITHCDCINDMA
-	static uint8_t tdata [64];
+	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	printhex(0, buff, length);
 	memcpy(tdata, buff, length);
 	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) tdata;
+	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = length;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 #else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
@@ -2358,7 +2360,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
    		}
 	} while (0);
-
+#if ! WITHCDCINDMA
 	do
 	{
 		switch (pusb->eptx_ret[bo_ep_in-1])
@@ -2381,7 +2383,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 	 	//TP();
 
 	} while (0);
-
+#endif
 }
 
 #endif /* WITHUSBCDCACM */
@@ -2513,17 +2515,13 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			{
 				const uint_fast8_t pipe = pipein;
 				usb_select_ep(pusb, pipe);
-				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
-				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
+				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoClear
+				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqMode
 				usb_fifo_accessed_by_dma(pusb, pipe, 0);
 
-//				memset(cdc_in_data, 0xE5, sizeof cdc_in_data);
-//				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = sizeof cdc_in_data;
-//				dcache_clean_invalidate((uintptr_t) cdc_in_data, sizeof cdc_in_data);
-//				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) cdc_in_data;
 				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
-					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+					VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 					0x00 * (UINT32_C(1) << 4) |	// 0: SDRAM to USB FIFO
 					pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 					0;
