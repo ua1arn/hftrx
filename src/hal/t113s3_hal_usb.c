@@ -2101,9 +2101,16 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
+enum
+{
+	cdc_pipeoutdma,
+	cdc_pipeindma,
+	//
+	cdc_pipe_count
+};
 
-static const uint8_t cdc_pipeoutdma = 1;
 static uint8_t cdc_out_data [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
+static uint8_t cdc_in_data [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
@@ -2498,8 +2505,20 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				usb_select_ep(pusb, pipe);
 				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 1*USB_RXCSR_DMAREQMODE);	// DMAReqMode
+				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 				usb_fifo_accessed_by_dma(pusb, pipe, 0);
+
+				memset(cdc_in_data, 0xE5, sizeof cdc_in_data);
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = sizeof cdc_in_data;
+				dcache_clean_invalidate((uintptr_t) cdc_in_data, sizeof cdc_in_data);
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) cdc_in_data;
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
+					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+					0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
+					pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
+					0;
+				WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+				usb_set_dma_interrupt_enable(pusb, (1u << cdc_pipeindma));
 			}
 			if (1)
 			{
@@ -4615,7 +4634,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
 					printhex((unsigned) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
-					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X, n=%u\n",
+					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X, n=%04X\n",
 							cdc_pipeoutdma,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [cdc_pipeoutdma].RESIDUAL_BC,
