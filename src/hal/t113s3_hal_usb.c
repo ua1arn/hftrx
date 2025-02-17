@@ -633,8 +633,8 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 //		return;
 	ASSERT(ep_no >= 1 && ep_no <= 8);
 	reg_val = 0;
-	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
-	reg_val |= !! is_rx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
+//	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
+//	reg_val |= !! is_rx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
 	reg_val |= UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
 
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
@@ -2516,8 +2516,6 @@ static void awxx_setup_fifo(pusb_struct pusb)
 
 				memset(testdata, 0xE5, sizeof testdata);
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].BC = sizeof testdata;
-//				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC = sizeof testdata - 1;
-//				ASSERT(WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC == sizeof testdata - 1);
 				dcache_clean_invalidate((uintptr_t) testdata, sizeof testdata);
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].SDRAM_ADD = (uintptr_t) testdata;
 				WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].CHAN_CFG =
@@ -4616,15 +4614,13 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
 					printhex((unsigned) testdata, testdata, sizeof testdata);
-					PRINTF("DMA%u: BC=%u, CHAN_CFG=%08X\n",
+					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X\n",
 							pipeoutdma,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
-							//(unsigned) WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC,
+							(unsigned) WITHUSBHW_DEVICE->USB_DMA [pipeoutdma].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG);
-					printhex32(0, & WITHUSBHW_DEVICE->USB_DMA [i], 16);
 					dcache_clean_invalidate((uintptr_t) testdata, sizeof testdata);
 					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-					printhex32(0, & WITHUSBHW_DEVICE->USB_DMA [i], 16);
 					}
 			}
 		}

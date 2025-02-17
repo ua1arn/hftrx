@@ -47,7 +47,7 @@
 #regdef; CHAN_CFG; 0x00; USB DMA Channel Configuration Register
 #regdef; SDRAM_ADD; 0x04; USB DMA SDRAM Start Address Register 
 #regdef; BC; 0x08; USB DMA Byte Counter Register
-#regdef; RESIDUAL_BC; 0x0C; USB DMA RESIDUAL Byte Counter Register
+#regdefr; RESIDUAL_BC; 0x0C; USB DMA RESIDUAL Byte Counter Register
 #aggregend;
 
 #typeend;

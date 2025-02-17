@@ -557,7 +557,7 @@ typedef struct USBOTG_Type
         __IO uint32_t CHAN_CFG;                       /*!< Offset 0x540 USB DMA Channel Configuration Register */
         __IO uint32_t SDRAM_ADD;                      /*!< Offset 0x544 USB DMA SDRAM Start Address Register  */
         __IO uint32_t BC;                             /*!< Offset 0x548 USB DMA Byte Counter Register */
-        __IO uint32_t RESIDUAL_BC;                    /*!< Offset 0x54C USB DMA RESIDUAL Byte Counter Register */
+        __I  uint32_t RESIDUAL_BC;                    /*!< Offset 0x54C USB DMA RESIDUAL Byte Counter Register */
     } USB_DMA [0x008];                                /*!< Offset 0x540  */
 } USBOTG_TypeDef; /* size of structure = 0x5C0 */
 /*
