@@ -2217,6 +2217,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
+	unsigned ccount4 = (count + 3) / 4 * 4;
 	memcpy(tdata, buff, count);
 	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
@@ -2226,13 +2227,13 @@ void usbd_cdc_send(const void * buff, size_t length)
 	if (gpusb != NULL)
 	{
 		usb_select_ep(gpusb, bo_ep_in);
-		usb_set_eptx_maxpkt(gpusb, count, 1);
+		usb_set_eptx_maxpkt(gpusb, ccount4, 1);
 
 	}
 	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) tdata;
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = count;
+	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = ccount4;
 	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
 		VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
