@@ -9940,7 +9940,9 @@ void SystemCoreClockUpdate(void)
 
 void dcdcsynctest(void)
 {
+#if defined (PWMTICKSFREQ)
 	PRINTF("PWMTICKSFREQ=%u\n", (unsigned) PWMTICKSFREQ);
+#endif
 }
 
 struct DCDCFREQ
