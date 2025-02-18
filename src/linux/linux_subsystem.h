@@ -181,5 +181,7 @@ int sdl2_render_init(void);
 void sdl2_render_update(uintptr_t frame);
 void sdl2_render_close(void);
 
+void nvram_sync(void);
+
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

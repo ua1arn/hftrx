@@ -18,7 +18,7 @@ void load_memory_cells(uint32_t * mem, uint8_t cnt)
 	sqlite3 * db = NULL;
 	sqlite3_stmt * stmt;
 
-	int rc = sqlite3_open("/mnt/sd-mmcblk0p1/hftrx_data/memory_cells.db", & db);
+	int rc = sqlite3_open(MEMORYCELLS_DB_FILE, & db);
 	if (rc != SQLITE_OK)
 	{
 		printf("sqlite3_open: %d\n", rc);
@@ -81,5 +81,153 @@ void write_memory_cells(uint32_t * mem, uint8_t cnt)
 	sqlite3_finalize(stmt);
 	sqlite3_close(db);
 }
+
+#if NVRAM_TYPE == NVRAM_TYPE_LINUX
+
+#define BITFIELD_SIZE NVRAM_END
+
+static uint8_t bitfield[BITFIELD_SIZE];
+static sqlite3 *db = NULL;
+
+int init_database() {
+    int rc = sqlite3_open(NVRAM_DB_FILE, &db);
+    if (rc) {
+        fprintf(stderr, "Error opening database: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    const char *create_table_sql =
+        "CREATE TABLE IF NOT EXISTS BitField ("
+        "id INTEGER PRIMARY KEY,"
+        "data BLOB"
+        ");";
+
+    char *err_msg = NULL;
+    rc = sqlite3_exec(db, create_table_sql, NULL, NULL, &err_msg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Error creating table: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+        db = NULL;
+        return rc;
+    }
+
+    // Check if a record exists in the table
+    sqlite3_stmt *stmt;
+    const char *select_sql = "SELECT data FROM BitField WHERE id = 1;";
+    rc = sqlite3_prepare_v2(db, select_sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Error preparing query: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        db = NULL;
+        return rc;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        // If the record exists, load the data
+        const void *blob = sqlite3_column_blob(stmt, 0);
+        int blob_size = sqlite3_column_bytes(stmt, 0);
+        memcpy(bitfield, blob, blob_size);
+    } else {
+        // If the record does not exist, create a new one with a bitfield filled with 0xFF
+        memset(bitfield, 0xFF, BITFIELD_SIZE); // Fill the bitfield with 0xFF
+
+        const char *insert_sql = "INSERT INTO BitField (id, data) VALUES (1, ?);";
+        rc = sqlite3_prepare_v2(db, insert_sql, -1, &stmt, NULL);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Error preparing query: %s\n", sqlite3_errmsg(db));
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            db = NULL;
+            return rc;
+        }
+
+        sqlite3_bind_blob(stmt, 1, bitfield, BITFIELD_SIZE, SQLITE_STATIC);
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE) {
+            fprintf(stderr, "Error executing query: %s\n", sqlite3_errmsg(db));
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            db = NULL;
+            return rc;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return SQLITE_OK;
+}
+
+void nvram_sync(void) {
+    if (db == NULL) {
+        return;
+    }
+
+    sqlite3_stmt *stmt;
+    const char *update_sql = "UPDATE BitField SET data = ? WHERE id = 1;";
+    int rc = sqlite3_prepare_v2(db, update_sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Error preparing query: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_blob(stmt, 1, bitfield, BITFIELD_SIZE, SQLITE_STATIC);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "Error executing query: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void nvram_close(void) {
+    if (db != NULL) {
+        sqlite3_close(db);
+        db = NULL;
+    }
+}
+
+uint8_t restore_i8(uint16_t addr) {
+    return bitfield[addr];
+}
+
+uint16_t restore_i16(uint16_t addr) {
+    uint16_t value = *(uint16_t *)(bitfield + addr);
+    return value; // Little endian
+}
+
+uint32_t restore_i24(uint16_t addr) {
+    uint32_t value = *(uint32_t *)(bitfield + addr);
+    return value & 0x00FFFFFF; // Mask for 24 bits
+}
+
+uint32_t restore_i32(uint16_t addr) {
+    uint32_t value = *(uint32_t *)(bitfield + addr);
+    return value; // Little endian
+}
+
+void save_i8(uint16_t addr, uint8_t v) {
+    bitfield[addr] = v;
+}
+
+void save_i16(uint16_t addr, uint16_t v) {
+    *(uint16_t *)(bitfield + addr) = v; // Little endian
+}
+
+void save_i24(uint16_t addr, uint32_t v) {
+    *(uint32_t *)(bitfield + addr) = v & 0x00FFFFFF; // Mask for 24 bits
+}
+
+void save_i32(uint16_t addr, uint32_t v) {
+    *(uint32_t *)(bitfield + addr) = v; // Little endian
+}
+
+void nvram_initialize(void)
+{
+	init_database();
+}
+
+#endif /* NVRAM_TYPE == NVRAM_TYPE_LINUX */
 
 #endif /* LINUX_SUBSYSTEM */

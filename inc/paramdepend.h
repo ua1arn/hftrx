@@ -1021,6 +1021,7 @@ extern "C" {
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
 // поддерживаются только FRAM или EEPROM. FLASH не поддерживаются.
+#define NVRAM_TYPE_LINUX		69	/* SQLite3 database for NVRAM */
 #define NVRAM_TYPE_FM25XXXX		70	/* SERIAL FRAM AUTODETECT	*/
 #define NVRAM_TYPE_FM25L04		71	/* SERIAL FRAM 4KBit	*/
 #define NVRAM_TYPE_FM25L16		72	/* SERIAL FRAM 16Kbit	*/
@@ -1059,6 +1060,8 @@ extern "C" {
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25L64)
 		#define NVRAM_END 8191U
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25L256)
+		#define NVRAM_END 32767U
+	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 		#define NVRAM_END 32767U
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_AT25256A)
 

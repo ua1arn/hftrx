@@ -13,7 +13,7 @@
 #include <string.h>		// for memcpy
 
 
-#if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
+#if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) && (NVRAM_TYPE != NVRAM_TYPE_LINUX)
 
 #include "spi.h"
 
@@ -624,7 +624,8 @@ save_i32(nvramaddress_t addr, uint_fast32_t v)
 	nvram_write(addr, & vb [0], sizeof vb);
 }
 
-#else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
+//#else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
+#elif NVRAM_TYPE != NVRAM_TYPE_LINUX
 
 #if 1
 /* выборка по указанному индексу из FRAM одного байта */

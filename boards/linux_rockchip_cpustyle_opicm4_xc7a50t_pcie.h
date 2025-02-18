@@ -100,6 +100,8 @@ enum {
 #define LINUX_STREAM_INT_FILE	"/dev/uio2"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
 #define TOUCH_EVENT_NAME		"Touch2USB"
+#define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
+#define NVRAM_DB_FILE			"hftrx_data/nvram.db"
 
 #if WITHISBOOTLOADER
 

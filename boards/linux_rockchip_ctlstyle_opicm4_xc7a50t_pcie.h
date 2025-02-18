@@ -219,8 +219,8 @@
 		#define WITHVIEW_3DSS		1
 		#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHVIEW_3DSS_MARK	1
-		#define WITHDISPLAY_FPS		40
-		#define WITHDISPLAYSWR_FPS	40
+		#define WITHDISPLAY_FPS		30
+		#define WITHDISPLAYSWR_FPS	30
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
@@ -329,8 +329,9 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_LINUX
 
 	#define RTC1_TYPE RTC_TYPE_LINUX
 
