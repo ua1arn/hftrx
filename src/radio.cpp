@@ -16171,9 +16171,9 @@ static void dpc_1s_timer_fn(void * arg)
 	PRINTF(PSTR("CPU temp: %dC\n"), c);
 #endif
 
-#if NVRAM_TYPE == NVRAM_TYPE_LINUX
+#if defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 	nvram_sync();
-#endif /* NVRAM_TYPE == NVRAM_TYPE_LINUX */
+#endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 int board_islfmmode(void)

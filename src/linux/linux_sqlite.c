@@ -82,7 +82,7 @@ void write_memory_cells(uint32_t * mem, uint8_t cnt)
 	sqlite3_close(db);
 }
 
-#if NVRAM_TYPE == NVRAM_TYPE_LINUX
+#if defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 
 #define BITFIELD_SIZE NVRAM_END
 
@@ -228,6 +228,6 @@ void nvram_initialize(void)
 	init_database();
 }
 
-#endif /* NVRAM_TYPE == NVRAM_TYPE_LINUX */
+#endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 
 #endif /* LINUX_SUBSYSTEM */
