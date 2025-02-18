@@ -16629,7 +16629,8 @@ param_format(
 			buff [n] = '\0';
 			return n;
 		}
-#endif /* WITHUSEDUALWATCH*/
+#endif /* WITHUSEDUALWATCH */
+#if WITHSUBTONES && WITHTX
 		case RJ_SUBTONE:
 		{
 			int_fast32_t value = param_getvalue(pd);
@@ -16637,6 +16638,7 @@ param_format(
 			buff [n] = '\0';
 			return n;
 		}
+#endif /* WITHSUBTONES && WITHTX */
 
 
 	default:
