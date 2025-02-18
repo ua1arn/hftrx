@@ -2101,7 +2101,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
-//#define WITHCDCINDMA 1
+//#define WITHCDCINDMA 1	// эксперементальная опция, пока в работе не использовать
 
 enum
 {
@@ -2215,12 +2215,12 @@ void usbd_cdc_send(const void * buff, size_t length)
 		return;
 #if WITHCDCINDMA
 
+	const uint_fast8_t dmach = cdc_pipeindma;
+	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
 	unsigned ccount4 = (count + 3) / 4 * 4;
 	memcpy(tdata, buff, count);
-	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
-	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	printhex((uintptr_t) tdata, tdata, count);
 
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
@@ -2232,15 +2232,16 @@ void usbd_cdc_send(const void * buff, size_t length)
 	}
 	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].SDRAM_ADD = (uintptr_t) tdata;
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].BC = ccount4;
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG =
+	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
+	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) tdata;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = ccount4;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
 		VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
 		bo_ep_in * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
 
-	WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 
 #else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
