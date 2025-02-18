@@ -6547,17 +6547,17 @@ static void tuner_eventrestart(void)
 
 static void fillrelaxedsign(uint8_t * tsign)
 {
+	const uint_fast32_t key = sizeof (struct nvmap);
 	ASSERT(sizeof nvramsign == 8);
 
-	memset(tsign, 0xe5, 8);
-	tsign [0] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 24);
-	tsign [1] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 16);
-	tsign [2] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 8);
-	tsign [3] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 0);
-	tsign [4] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 24);
-	tsign [5] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 16);
-	tsign [6] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 8);
-	tsign [7] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 0);
+	tsign [0] = (uint8_t) (key >> 24);
+	tsign [1] = (uint8_t) (key >> 16);
+	tsign [2] = (uint8_t) (key >> 8);
+	tsign [3] = (uint8_t) (key >> 0);
+	tsign [4] = (uint8_t) ~ (key >> 24);
+	tsign [5] = (uint8_t) ~ (key >> 16);
+	tsign [6] = (uint8_t) ~ (key >> 8);
+	tsign [7] = (uint8_t) ~ (key >> 0);
 }
 
 /* проверка совпадения сигнатуры в энергонезависимой памяти.
@@ -16922,6 +16922,7 @@ static void
 defaultsettings(void)
 {
 	uint_fast8_t i;
+	PRINTF("Loading NVRAM default settings\n");
 
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
@@ -19623,6 +19624,7 @@ void initialize2(void)
 
 	//PRINTF(PSTR("initialize2: NVRAM autodetection start.\n"));
 
+	const uint_fast8_t erasekey = geterasekey();
 	uint_fast8_t ab = 0;
 	const uint_fast8_t ABMAX = 2;
 	// проверка сигнатуры привсех возможных ab
@@ -19656,9 +19658,12 @@ void initialize2(void)
 			for (;;)
 			{
 				while (kbd_scan(& kbch) == 0)
-					local_delay_ms(20);	// FIXME: разобраться почему не работает без
+				{
+					kbd_pass();
+					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
+				}
 				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
-				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG)
+				if (kbch == erasekey)
 					break;
 			}
 			display2_needupdate();
@@ -19707,6 +19712,7 @@ void initialize2(void)
 
 	//PRINTF(PSTR("initialize2: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
 
+	const uint_fast8_t erasekey = geterasekey();
 	if (verifynvramsignature())
 		mclearnvram = 2;
 
@@ -19732,19 +19738,11 @@ void initialize2(void)
 				while (kbd_scan(& kbch) == 0)
 				{
 					kbd_pass();
-					local_delay_ms(1000 / TICKS_FREQUENCY);
+					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
 				}
 				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
-				switch (kbch)
-				{
-				case KBD_CODE_SPLIT:
-				case KBD_CODE_ERASECONFIG:
-				case KBD_ENC2_PRESS:
+				if (kbch == erasekey)
 					break;
-				default:
-					continue;
-				}
-				break;
 			}
 			display2_needupdate();
 		}

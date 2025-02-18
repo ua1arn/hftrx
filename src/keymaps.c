@@ -52,6 +52,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_7BUTTONS
 	// Коды для случая работы с семью кнопками, подключёнными прямо на ADC7 и ADC6
 
@@ -79,6 +84,11 @@ uint_fast8_t getexitkey(void)
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2013SF
@@ -116,6 +126,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2013SF_US2IT
 
 // Кнопки на передней панели SW-2012-SF
@@ -149,6 +164,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_BW;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2016RDX && WITHAUTOTUNER
@@ -186,6 +206,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2013RDX && WITHAUTOTUNER
 
 // Кнопки на передней панели SW-2012-SF с индикатором RDX0154
@@ -219,6 +244,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_BW;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2016RDX
@@ -256,6 +286,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2018XVR
 
 // Кнопки на передней панели SW2016 с индикатором RDX0154
@@ -291,6 +326,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2016RDX_UY5UM_WO240
 
 // Кнопки на передней панели SW2016 с индикатором WO240128
@@ -324,6 +364,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_BW;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2016RDX_UY5UM
@@ -363,6 +408,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2013RDX
 
 // Кнопки на передней панели SW-2012-SF с индикатором RDX0154
@@ -399,6 +449,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2013RDX_UT7LC
 
 // Кнопки на передней панели SW-2012-SF с индикатором RDX0154
@@ -432,6 +487,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_MENU;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2013RDX_LTIYUR
@@ -470,6 +530,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2012_MINI || KEYBSTYLE_SW2012MC || KEYBSTYLE_SW2012CN
 // Кнопки на передней панели SW-2012-MINI
 // сделано - вместо кнопки BAND UP в режиме автоповтора
@@ -499,6 +564,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2012CN5
 // Кнопки на передней панели SW-2012-MINI-V5
 //
@@ -524,6 +594,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_BW;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2012CN5_UY5UM
@@ -557,6 +632,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_MENU;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2012CN5_RN3ZOB_V2
 // Кнопки на передней панели SW-2012-MINI-V5
 //
@@ -587,6 +667,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_BW;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBSTYLE_SW2011RDX
@@ -626,6 +711,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBSTYLE_SW2011N
 
 // раскладка под Станислав Гончар UT4UA
@@ -663,6 +753,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_BW;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_VERTICAL
 
 // повернутое на 90 градусов - 4 строки по 3 кнопки
@@ -694,6 +789,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_RAVEN24
@@ -743,6 +843,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_RAVEN24_RA1AGO
 
 /* расположение кнопок для плат "Воробей" с DSP обработкой - выстаочный экземпляр */
@@ -786,6 +891,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_RAVEN20_V5
@@ -834,6 +944,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_FPANEL20_V0
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
@@ -878,6 +993,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_FPANEL20_V0A_UY5UM
@@ -926,6 +1046,12 @@ uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
 }
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_FPANEL20_V0A
 
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
@@ -975,6 +1101,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBOARD_SINGLE	// кнопка только на энкодере
 
 const struct qmkey qmdefs [NQMKEYS] =
@@ -987,6 +1118,10 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
 
 #elif KEYB_FPANEL20_V0B
 
@@ -1044,6 +1179,10 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
 
 #elif KEYB_VELOCI24_V0
 
@@ -1067,9 +1206,9 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
 	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
-	{ KIF_NONE,		KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// 17 RIT
+	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// 17 RIT
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_MAX,			' ', },		// 18 A/B
-	{ KIF_NONE,		KBD_ENC1F_PRESS,		KBD_ENC1F_HOLD,			' ', },		// 19 RF/SPD - 1st small encoder (encoder_ENC1F object)
+	{ KIF_NONE,	KBD_ENC1F_PRESS,		KBD_ENC1F_HOLD,			' ', },		// 19 RF/SPD - 1st small encoder (encoder_ENC1F object)
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/IPO ATT/PRE
 	{ KIF_NONE,		KBD_CODE_ANTENNA_HOLDED,		KBD_CODE_MAX,' ', },		// 21 ANT1/ANT2
 	//{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// 21 ANT1/ANT2
@@ -1084,6 +1223,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_FPANEL20_V0A_RA4ASN
@@ -1134,6 +1278,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYBOARD_MATRIX_4x4
 
 const struct qmkey qmdefs [NQMKEYS] =
@@ -1169,6 +1318,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_FPANEL20_V0A_PLAYFILE
@@ -1216,6 +1370,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_FPANEL30_V3_BASE
@@ -1274,6 +1433,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_FPANEL30_V3
 
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
@@ -1330,6 +1494,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_FPANEL20_V0A_RA1AGO
 
 /* 20 кнопок на 5 линий - перевернутые */
@@ -1382,6 +1551,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_FPANEL20_V0A_AVB
@@ -1438,6 +1612,10 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
 
 #elif KEYB_FPANEL20_V0A_AVB_NIKULSKI
 
@@ -1493,6 +1671,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_FPANEL20_V0A_UA1CEI
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
@@ -1540,6 +1723,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_VERTICAL_REV
 
 /* расположение кнопок для плат "Воробей" и "Колибри" */
@@ -1570,6 +1758,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_VERTICAL_REV_SIMPLEFREQ
@@ -1604,6 +1797,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_MAX;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_VERTICAL_VALERY
 
 /* расположение кнопок для плат "Воробей" и "Колибри" */
@@ -1633,6 +1831,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_VERTICAL_REV_IGOR
@@ -1665,6 +1868,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_ERASECONFIG;
 }
 
 #elif KEYB18_RK4CI
@@ -1719,6 +1927,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_LOCK;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB18_GENERIC
@@ -1779,6 +1992,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_VERTICAL_REV_RU6BK
 
 /* Новый рисунок = '0' в левом ряду снизу. */
@@ -1807,6 +2025,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_VERTICAL_REV_RU6BK_TOPDOWN
@@ -1839,6 +2062,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_VERTICAL_REV_TOPDOWN
 
 /* расположение кнопок для ПЕРЕВЁРНУТЫХ плат "Воробей" и "Колибри" */
@@ -1867,6 +2095,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_M0SERG
@@ -1902,6 +2135,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_RA1AGG
 
 // три группы по четыре линейки кнопок друг за другом в один ряд.
@@ -1930,6 +2168,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_RA1AGO
@@ -1963,6 +2206,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_UA1CEI
 
 const struct qmkey qmdefs [NQMKEYS] =
@@ -1990,6 +2238,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYBOARD_6BTN
@@ -2023,6 +2276,11 @@ uint_fast8_t getexitkey(void)
 		return KBD_CODE_DISPMODE;
 	}
 
+	uint_fast8_t geterasekey(void)
+	{
+		return KBD_CODE_SPLIT;
+	}
+
 #elif REQUEST_BA
 
 const struct qmkey qmdefs [NQMKEYS] =
@@ -2050,6 +2308,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_UA3DKC
@@ -2091,6 +2354,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_V8S_DK1VS
 // Расположение для контроллера DK1VS
 // KI2 - верхний ряд
@@ -2122,6 +2390,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_DISPMODE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_V8S_HORISONTAL_UA3DKC
@@ -2157,6 +2430,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
 
 // базовое расположение клавиш (в соответствии с тем, что в .xls документе описано).
@@ -2185,6 +2463,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_MAX;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_LADVABEST
@@ -2223,6 +2506,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
 #elif KEYB_RA3APW
 
 const struct qmkey qmdefs [NQMKEYS] =
@@ -2247,6 +2535,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_MAX;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_VERTICAL_UR3VBM
@@ -2276,6 +2569,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_TXTUNE;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #elif KEYB_RV9CQQ
@@ -2327,6 +2625,11 @@ const struct qmkey qmdefs [NQMKEYS] =
 uint_fast8_t getexitkey(void)
 {
 	return KBD_CODE_MAX;
+}
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
 }
 
 #endif

@@ -204,6 +204,7 @@ struct qmkey
 };
 extern const struct qmkey qmdefs [];
 uint_fast8_t getexitkey(void);
+uint_fast8_t geterasekey(void);
 
 
 #define KEYBOARD_NOKEY UINT8_MAX
