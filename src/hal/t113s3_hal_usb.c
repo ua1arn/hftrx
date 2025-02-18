@@ -4702,14 +4702,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		{
 			for (i = 0; i < 8; ++ i)
 			{
-				if (temp & (1u << i))
+				if (temp & (UINT32_C(1) << i))
 				{
 					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 0) & 0x0F; // DMA Channel for Endpoint
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
 					printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
 					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X, n=%04X\n",
-							i,
+							(unsigned) i,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG,
