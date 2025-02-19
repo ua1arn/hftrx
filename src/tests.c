@@ -10700,6 +10700,36 @@ static void lidar_parse(unsigned char c)
 	}
 }
 #endif
+
+#if WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+
+enum { EMAC_FRAMESZ = 2048 - 4 };
+static RAMNC __ALIGNED(4) uint8_t rxbuff [EMAC_FRAMESZ];
+static RAMNC __ALIGNED(4) uint32_t rxdesc [1] [4];
+
+static void EMAC_Handler(void)
+{
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	if (sta & ((UINT32_C(1) << 8)))
+	{
+		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+
+		// Results
+		PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+		PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+		printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
+		printhex(0, rxbuff, 128);
+		unsigned i = 0;
+		rxdesc [i][0] =
+			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+			0;
+	}
+
+}
+#endif
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
@@ -12283,7 +12313,7 @@ void hightests(void)
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && WITHETHHW && CPUSTYLE_ALLWINNER && CPUSTYLE_T507
+#if 0 && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 	{
 
 		const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
@@ -12332,10 +12362,7 @@ void hightests(void)
 			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
 		}
 		{
-			enum { FRAMESZ = 2048 - 4 };
-			static RAMNC __ALIGNED(4) uint8_t rxbuff [FRAMESZ];
-			static RAMNC __ALIGNED(4) uint32_t rxdesc [1] [4];
-			unsigned len = FRAMESZ;
+			unsigned len = EMAC_FRAMESZ;
 			unsigned i = 0;
 			rxdesc [i][0] =
 				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
@@ -12352,6 +12379,8 @@ void hightests(void)
 			// ether 1A:0C:74:06:AF:64
 			HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
 			HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+
+			arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
 			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
 //					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
@@ -12370,8 +12399,11 @@ void hightests(void)
 					1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
 					1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
 					0;
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
 
+			HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
+#if 0
 			// Wait interrupt
 			while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
 				;
@@ -12382,6 +12414,7 @@ void hightests(void)
 			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
 			printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
 			printhex(0, rxbuff, 128);
+#endif
 		}
 		PRINTF("Ethernet RGMII test done.\n");
 	}
