@@ -12285,56 +12285,89 @@ void hightests(void)
 #endif
 #if 0 && WITHETHHW && CPUSTYLE_ALLWINNER && CPUSTYLE_T507
 	{
+
+		const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
+		CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
+		CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+		CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+		//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
+
 		PRINTF("Ethernet RGMII test started.\n");
 		{
 			// The working clock of EMAC is from AHB3.
 
 //			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (31));	// SCLK_GATING
 //			CCU->EPHY_25M_CLK_REG |= (UINT32_C(1) << (30));	// PLL_PERI0_GATING
-			unsigned addr;
-			for (addr = 0; addr <= 31; ++ addr)
-			{
-				//PRINTF("ADDR=%u\n", addr);
-				//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 27);	// 0: Internal SMI and MII
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 18);	// 0: 25 MHz
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 16);	// 0: Power up
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 15);	// 0: External PHY
+			unsigned addr = 0;
+			//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 27);	// 0: Internal SMI and MII
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 18);	// 0: 25 MHz
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 16);	// 0: Power up
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 15);	// 0: External PHY
 
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 13);	// 0: Disable RMII Module
-				HARDWARE_EMAC_EPHY_CLK_REG |= (UINT32_C(1) << 2);		// 1: RGMII
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (UINT32_C(1) << 13);	// 0: Disable RMII Module
+			HARDWARE_EMAC_EPHY_CLK_REG |= (UINT32_C(1) << 2);		// 1: RGMII
 
-				//HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (0x03 * (UINT32_C(1) << 0));
-				HARDWARE_EMAC_EPHY_CLK_REG |= 0x02 * (UINT32_C(1) << 0);	// 01: External transmit clock source for GMII and RGMII
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (0x03 * (UINT32_C(1) << 0));
+			HARDWARE_EMAC_EPHY_CLK_REG |= 0x01 * (UINT32_C(1) << 0);	// 01: External transmit clock source for GMII and RGMII
 
-				HARDWARE_EMAC_EPHY_CLK_REG &= ~ (0x1F * (UINT32_C(1) << 20));
-				HARDWARE_EMAC_EPHY_CLK_REG |= addr * (UINT32_C(1) << 20);		// 0x00..0x1F: PHY Address
-				//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+			HARDWARE_EMAC_EPHY_CLK_REG &= ~ (0x1F * (UINT32_C(1) << 20));
+			HARDWARE_EMAC_EPHY_CLK_REG |= addr * (UINT32_C(1) << 20);		// 0x00..0x1F: PHY Address
+			//PRINTF("EMAC_EPHY_CLK_REG=%08X\n", (unsigned) HARDWARE_EMAC_EPHY_CLK_REG);
+
+			//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 = 0x08 * (UINT32_C(1) << 24);
+
+			HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
+			//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
+			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
+			while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
+				;
+
+			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 = 0x0000000D;
+			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 = 0x00000000;
+
+			PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
+			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
+		}
+		{
+			enum { FRAMESZ = 2048 - 4 };
+			static RAMNC __ALIGNED(4) uint8_t rxbuff [FRAMESZ];
+			static RAMNC __ALIGNED(4) uint32_t rxdesc [1] [4];
+			unsigned len = FRAMESZ;
+			unsigned i = 0;
+			rxdesc [i][0] =
+				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+				0;
+			rxdesc [i][1] =
+					len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+				0;
+			rxdesc [i][2] = (uintptr_t) rxbuff;	// BUF_ADDR
+			rxdesc [i][3] = (uintptr_t) rxdesc [0];	// NEXT_DESC_ADDR
+			printhex32((uintptr_t) rxdesc, rxdesc, sizeof rxdesc);
+
+			// ether 1A:0C:74:06:AF:64
+			HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
+			HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
 
 
-				const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
-				CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
-				CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
-				CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
-				//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
+			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT |= (UINT32_C(1) << 31);	// DIS_ADDR_FILTER
+			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT |= (UINT32_C(1) << 0);	// RX_ALL
 
-				//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-				HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 = 0x08 * (UINT32_C(1) << 24);
-				//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
-				HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-				unsigned w = 100;
-				while (w -- && (HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
-					local_delay_ms(1);
-				//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-				//PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
-				if ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) == 0)
-				{
-					PRINTF("ADDR=%u\n", addr);
-					PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-					break;
-				}
-			}
+			HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) rxdesc;
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 1);	// 1: RX start read after RX DMA FIFO located a full frame
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 30);	// RX_DMA_EN
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START
+
+			while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
+				;
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
+			printhex(0, rxbuff, 128);
 		}
 		PRINTF("Ethernet RGMII test done.\n");
 	}
