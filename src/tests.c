@@ -12358,13 +12358,20 @@ void hightests(void)
 			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT |= (UINT32_C(1) << 0);	// RX_ALL
 
 			HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) rxdesc;
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
+			//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL0 =
+				1 * (UINT32_C(1) << 31) |	// RX_EN
+				//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
+				//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
+				1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
+				0;
 			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 1);	// 1: RX start read after RX DMA FIFO located a full frame
 			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 30);	// RX_DMA_EN
 			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START
 
 			while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
 				;
+			HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
 			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
 			printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
 			printhex(0, rxbuff, 128);
