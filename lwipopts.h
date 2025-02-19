@@ -319,4 +319,6 @@ void board_update_time(uint32_t sec);
 
 #define ETH_RX_BUFFER_SIZE 32768
 
+#define ETH_PAD_SIZE                    0
+
 #endif /* __LWIPOPTS_H__ */

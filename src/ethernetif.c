@@ -1006,6 +1006,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
 		pbuf_header(p, - ETH_PAD_SIZE);
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
+		size += 4;
 
 		emac_txdesc [i][0] =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
@@ -1040,35 +1041,6 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
-
-static err_t emac_output_fn(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
-{
-	err_t e = etharp_output(netif, q, ipaddr);
-	if (e == ERR_OK)
-	{
-#if 0
-		emac_data_packet_t * hdr;
-		unsigned size = q->len;
-		// добавляем свои заголовки требуеющиеся для физического уповня
-		  /* make room for EMAC header - should not fail */
-		  if (pbuf_header(q, EMAC_HEADER_SIZE) != 0) {
-		    /* bail out */
-		    LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
-		      ("emac_output_fn: could not allocate room for header.\n"));
-		    return ERR_BUF;
-		  }
-
-		  hdr = (emac_data_packet_t *) q->payload;
-		  memset(hdr, 0, EMAC_HEADER_SIZE);
-		  hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
-		  hdr->MessageLength = EMAC_HEADER_SIZE + size;
-		  hdr->DataOffset = EMAC_HEADER_SIZE - offsetof(emac_data_packet_t, DataOffset);
-		  hdr->DataLength = size;
-#endif
-	}
-	return e;
-}
-
 static err_t netif_init_cb(struct netif *netif)
 {
 	PRINTF("emac netif_init_cb\n");
@@ -1078,12 +1050,11 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->hostname = "storch";
 #endif /* LWIP_NETIF_HOSTNAME */
 	netif->mtu = EMAC_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP | NETIF_FLAG_MLD6 | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';
-	netif->output = emac_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
-												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->output = etharp_output;
 	netif->linkoutput = emac_linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }
