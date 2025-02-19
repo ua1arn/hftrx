@@ -902,9 +902,9 @@ void ethernet_link_check_state(struct netif *netif)
 
 
 enum { EMAC_FRAMESZ = 2048 - 4 };
-static RAMNC __ALIGNED(4) uint8_t rxbuff [EMAC_FRAMESZ];
+static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
-static RAMNC __ALIGNED(4) uint8_t txbuff [EMAC_FRAMESZ];
+static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_txdesc [1] [4];
 
 static void EMAC_Handler(void)

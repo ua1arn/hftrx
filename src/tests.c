@@ -10704,7 +10704,7 @@ static void lidar_parse(unsigned char c)
 #if WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 enum { EMAC_FRAMESZ = 2048 - 4 };
-static RAMNC __ALIGNED(4) uint8_t rxbuff [EMAC_FRAMESZ];
+static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
 
 static void EMAC_Handler(void)
