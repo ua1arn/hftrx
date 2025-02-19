@@ -1240,6 +1240,56 @@ void init_netif(void)
 // user-mode function
 void network_spool(void)
 {
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	// Wait interrupt
+	if ((sta & (UINT32_C(1) << 8)) == 0)	// RX_P
+		return;
+	HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+	if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	{
+		// Results
+#if 0
+		PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+		PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+		printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+		printhex(0, rxbuff, 128);
+#endif
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, EMAC_FRAMESZ, PBUF_POOL);
+		if (frame != NULL)
+		{
+			pbuf_header(frame, - ETH_PAD_SIZE);
+			err_t e = pbuf_take(frame, rxbuff, sizeof rxbuff);	// Copy application supplied data into a pbuf.
+			pbuf_header(frame, + ETH_PAD_SIZE);
+			if (e == ERR_OK)
+			{
+				err_t e = ethernet_input(frame, & emac_netif_data);
+				if (e != ERR_OK)
+				{
+					  /* This means the pbuf is freed or consumed,
+					     so the caller doesn't have to free it again */
+				}
+			}
+			else
+			{
+				pbuf_free(frame);
+				//rndis_buffers_release(p);
+			}
+		}
+		else
+		{
+			TP();
+		}
+
+
+		unsigned i = 0;
+		emac_rxdesc [i][0] =
+			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+			0;
+
+	}
 //	rndisbuf_t * p;
 //	if (rndis_buffers_ready_user(& p) != 0)
 //	{

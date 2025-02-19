@@ -899,7 +899,7 @@ void network_initialize(void)
 	  init_lwip();
 	  init_netif();
 
-#if 1//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
+#if 0//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
 	  PRINTF("network_initialize: start DHCP & DNS\n");
 	#if DHCP_SERVER
 		  init_dhserv();
