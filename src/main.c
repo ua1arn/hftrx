@@ -81,8 +81,8 @@ main(void)
 	midtests();
 
 	initialize2();	/* вызывается при разрешённых прерываниях. */
-#if WITHLWIP
-	//network_initialize();
+#if WITHLWIP && CPUSTYLE_ALLWINNER
+	network_initialize();
 #endif /* WITHLWIP */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */

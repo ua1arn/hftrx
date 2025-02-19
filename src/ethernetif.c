@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
 
-#if 0 //WITHETHHW
+#if WITHETHHW && CPUSTYLE_ALLWINNER
 
 #include "lwip/opt.h"
 #include "lwip/mem.h"
@@ -887,9 +887,16 @@ void ethernet_link_check_state(struct netif *netif)
 //
 }
 /* USER CODE BEGIN 8 */
-#endif /* defined (ETH) && WITHLWIP */
 /* USER CODE END 8 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#elif  WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+
+void init_netif(void)
+{
+
+}
+
+#endif /* defined (ETH) && WITHLWIP */
 
 #endif /* WITHETHHW */
 

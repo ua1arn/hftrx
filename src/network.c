@@ -318,7 +318,7 @@ void network_spool(void)
 #include "../lib/dns-server/dnserver.h"
 #include "lwip/apps/httpd.h"
 
-#define DHCP_SERVER 1
+//#define DHCP_SERVER 1
 /*
  *  В конфигурации описано имя и размер
  *
@@ -401,12 +401,12 @@ static void init_dnserv(void)
 
 static void init_lwip()
 {
-	//	PRINTF("init_lwip start\n");
+	PRINTF("init_lwip start\n");
 
 
 	lwip_init();
 	//stmr_add(&tcp_timer);
-	//	PRINTF("init_lwip done\n");
+	PRINTF("init_lwip done\n");
 }
 
 #if LWIP_HTTPD_CGI
