@@ -12353,9 +12353,10 @@ void hightests(void)
 			HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
 			HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
 
-
-			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT |= (UINT32_C(1) << 31);	// DIS_ADDR_FILTER
-			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT |= (UINT32_C(1) << 0);	// RX_ALL
+			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
+//					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
+					1 * (UINT32_C(1) << 0) |	// RX_ALL
+					0;
 
 			HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) rxdesc;
 			//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
@@ -12365,14 +12366,20 @@ void hightests(void)
 				//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
 				1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
 				0;
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 1);	// 1: RX start read after RX DMA FIFO located a full frame
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 30);	// RX_DMA_EN
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 =
+					1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
+					1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
+					0;
+			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
 
+			// Wait interrupt
 			while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
 				;
 			HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+
+			// Results
 			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
 			printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
 			printhex(0, rxbuff, 128);
 		}
