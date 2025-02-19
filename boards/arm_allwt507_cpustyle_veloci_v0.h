@@ -247,7 +247,7 @@
 	#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
 
 
-	#if WITHLWIP && 0
+	#if WITHLWIP && ! WITHETHHW
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
