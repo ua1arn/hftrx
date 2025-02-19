@@ -1276,6 +1276,7 @@ int alsa_init(void)
 
 void alsa_close(void)
 {
+	linux_cancel_thread(alsa_t);
 	snd_pcm_drain(pcm_ph);
 	snd_pcm_close(pcm_ph);
 }
@@ -1500,6 +1501,12 @@ void xdma_iq_init(void)
 
 	xcz_resetn_modem(1);
 	linux_init_cond(& ct_iq);
+}
+
+void xdma_close(void)
+{
+	linux_cancel_thread(xdma_t);
+	pcie_close();
 }
 
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
@@ -2118,12 +2125,12 @@ void linux_exit(void)
 #endif
 
 #if DDS1_TYPE == DDS_TYPE_XDMA
-	pcie_close();
+	xdma_close();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
-#if (CODEC1_TYPE == CODEC_TYPE_ALSA)
+#if CODEC1_TYPE == CODEC_TYPE_ALSA
 	alsa_close();
-#endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) */
+#endif /* CODEC1_TYPE == CODEC_TYPE_ALSA */
 
 	exit(EXIT_SUCCESS);
 }
