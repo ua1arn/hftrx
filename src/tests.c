@@ -10705,32 +10705,39 @@ static void lidar_parse(unsigned char c)
 
 enum { EMAC_FRAMESZ = 2048 - 4 };
 static RAMNC __ALIGNED(4) uint8_t rxbuff [EMAC_FRAMESZ];
-static RAMNC __ALIGNED(4) uint32_t rxdesc [1] [4];
+static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
 
 static void EMAC_Handler(void)
 {
 	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
-	if (sta & ((UINT32_C(1) << 8)))
+	if (sta & ((UINT32_C(1) << 8)))	// RX_P
 	{
 		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-
-		PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
-		// Results
-		PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-		PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-		// 0..5 - Destination MAC (multicast)
-		// 6..11 - Source MAC [38:D5:47:82:A4:78]
-		unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
-		unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
-		printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
-		printhex(0, rxbuff, 128);
-		memset(rxbuff, 0xE5, sizeof rxbuff);
-		unsigned i = 0;
-		rxdesc [i][0] =
-			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
+		if ((HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA & 0x07) == 0x03)
+		{
+			//PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
+			// Results
+			//PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			//PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+			// 0..5 - Destination MAC (multicast)
+			// 6..11 - Source MAC [38:D5:47:82:A4:78]
+			unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
+			unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
+			//printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+			//printhex(0, rxbuff, 128);
+			//memset(rxbuff, 0xE5, sizeof rxbuff);
+			unsigned i = 0;
+			emac_rxdesc [i][0] =
+				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+				0;
+		}
+		else
+		{
+			TP();
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+		}
 	}
 
 }
@@ -12355,30 +12362,30 @@ void hightests(void)
 		{
 			unsigned len = EMAC_FRAMESZ;
 			unsigned i = 0;
-			rxdesc [i][0] =
+			emac_rxdesc [i][0] =
 				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 				0;
-			rxdesc [i][1] =
+			emac_rxdesc [i][1] =
 					len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 				0;
-			rxdesc [i][2] = (uintptr_t) rxbuff;	// BUF_ADDR
-			rxdesc [i][3] = (uintptr_t) rxdesc [0];	// NEXT_DESC_ADDR
-			//printhex32((uintptr_t) rxdesc, rxdesc, sizeof rxdesc);
+			emac_rxdesc [i][2] = (uintptr_t) rxbuff;	// BUF_ADDR
+			emac_rxdesc [i][3] = (uintptr_t) emac_rxdesc [0];	// NEXT_DESC_ADDR
+			//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
 			// ether 1A:0C:74:06:AF:64
 			HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
 			HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
 
-			arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+			//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
 			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
 //					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
 					1 * (UINT32_C(1) << 0) |	// RX_ALL
 					0;
 
-			HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) rxdesc;
+			HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
 			//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
 			HARDWARE_EMAC_PTR->EMAC_RX_CTL0 =
 				1 * (UINT32_C(1) << 31) |	// RX_EN
@@ -12399,12 +12406,14 @@ void hightests(void)
 			while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
 				;
 			HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-
-			// Results
-			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-			printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
-			printhex(0, rxbuff, 128);
+			if (sta & ((UINT32_C(1) << 8)))	// RX_P
+			{
+				// Results
+				PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+				PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+				printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+				printhex(0, rxbuff, 128);
+			}
 #endif
 		}
 		PRINTF("Ethernet RGMII test done.\n");

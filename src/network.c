@@ -926,7 +926,7 @@ void network_initialize(void)
 
 #if 1
 
-uint8_t myIP [4] = { 192, 168, 17, 33 };
+uint8_t myIP [4] = { 192, 168, 16, 33 };
 uint8_t myNETMASK [4] = {255, 255, 255, 0};
 uint8_t myGATEWAY [4] = { 0, 0, 0, 0 };
 
