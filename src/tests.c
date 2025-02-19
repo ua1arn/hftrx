@@ -10717,6 +10717,10 @@ static void EMAC_Handler(void)
 		// Results
 		PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
 		PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+		// 0..5 - Destination MAC (multicast)
+		// 6..11 - Source MAC
+		unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
+		unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
 		printhex32((uintptr_t) 0, rxdesc, sizeof rxdesc);
 		printhex(0, rxbuff, 128);
 		unsigned i = 0;
