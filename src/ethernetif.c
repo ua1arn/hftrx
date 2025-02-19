@@ -997,28 +997,32 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
 	//PRINTF("emac_linkoutput_fn\n");
     int i = 0;
-    struct pbuf *q;
+    //struct pbuf *q;
 	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
-	PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);
-	if (sta & ((UINT32_C(1) << 0)))	// TX_P
+	printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
+	//if ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0)
 	{
-		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 0);	// TX_P
+		PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
+		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
 		pbuf_header(p, - ETH_PAD_SIZE);
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
 
-		emac_txdesc [i][0] =
+		emac_txdesc [i][0] =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 			0;
-		emac_txdesc [i][1] =
-			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+		emac_txdesc [i][1] =	// ctl
+			//1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+			1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+			//1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 			size * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
 		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
 
-	    //printhex(0, txbuff, size);
+		printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
 
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
@@ -1105,7 +1109,7 @@ void init_netif(void)
 
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
-			0x03 * (UINT32_C(1) << 2) |	// 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
+			//0x03 * (UINT32_C(1) << 2) |	// 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
 			0x01 * (UINT32_C(1) << 0) | // 1: Full-duplex
 			0;
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
@@ -1200,7 +1204,7 @@ void init_netif(void)
 			0;
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 =
 				1 * (UINT32_C(1) << 30) |	// TX_DMA_EN
-				1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+				//1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
 				0;
 
 		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
