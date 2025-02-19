@@ -995,12 +995,33 @@ static void on_packet(const uint8_t *data, int size)
 // Transceiving Ethernet packets
 static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	PRINTF("emac_linkoutput_fn\n");
-    int i;
+	//PRINTF("emac_linkoutput_fn\n");
+    int i = 0;
     struct pbuf *q;
-    //static char data [EMAC_HEADER_SIZE + EMAC_MTU + 14 + 4];
-    int size;
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);
+	if (sta & ((UINT32_C(1) << 0)))	// TX_P
+	{
+		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 0);	// TX_P
+		pbuf_header(p, - ETH_PAD_SIZE);
+		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
 
+		emac_txdesc [i][0] =
+			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
+			0;
+		emac_txdesc [i][1] =
+			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			size * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+			0;
+		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
+		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
+
+	    //printhex(0, txbuff, size);
+
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+	}
 //    for (i = 0; i < 200; i++)
 //    {
 //        if (emac_can_send()) break;
@@ -1011,11 +1032,6 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 //    {
 //		return ERR_MEM;
 //    }
-    static RAMNC __ALIGNED(4) uint8_t data [4096];
-	pbuf_header(p, - ETH_PAD_SIZE);
-    size = pbuf_copy_partial(p, data, sizeof data, 0);
-    printhex(0, data, size);
-    //emac_send(data, size);
 
     return ERR_OK;
 }
@@ -1187,9 +1203,9 @@ void init_netif(void)
 				1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
 				0;
 
-		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
 
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 #if 0
 		// Wait interrupt
 		while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
