@@ -272,6 +272,30 @@ static err_t netif_init_cb(struct netif *netif)
 	return ERR_OK;
 }
 
+
+
+
+// Receiving Ethernet packets
+// user-mode function
+static void rndis_polling(void * ctx)
+{
+	(void) ctx;
+	rndisbuf_t * p;
+	if (rndis_buffers_ready_user(& p) != 0)
+	{
+		struct pbuf *frame = p->frame;
+		rndis_buffers_release_user(p);
+
+		err_t e = ethernet_input(frame, & rndis_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
+}
+
 void init_netif(void)
 {
 	rndis_buffers_initialize();
@@ -301,28 +325,12 @@ void init_netif(void)
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
-}
-
-
-
-// Receiving Ethernet packets
-// user-mode function
-void usb_polling(void)
-{
-	rndisbuf_t * p;
-	if (rndis_buffers_ready_user(& p) != 0)
-	{
-		struct pbuf *frame = p->frame;
-		rndis_buffers_release_user(p);
-
-		err_t e = ethernet_input(frame, & rndis_netif_data);
-		if (e != ERR_OK)
 		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
+			static dpcobj_t dpcobj;
 
-	}
+			dpcobj_initialize(& dpcobj, rndis_polling, NULL);
+			board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		}
 }
 
 struct netif  * getNetifData(void)

@@ -16192,15 +16192,6 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
-
-#if WITHLWIP
-	/* LWIP */
-	//usb_polling();     // usb device polling
-	network_spool();
-	//stmr();            // call software timers
-#endif /* WITHLWIP */
-
-
 	if (inmenu)
 	{
 		dctx_t dctx;

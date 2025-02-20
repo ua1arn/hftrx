@@ -899,6 +899,85 @@ void ethernet_link_check_state(struct netif *netif)
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 
+//////////////
+typedef struct emacbuf_tag
+{
+	LIST_ENTRY item;
+	struct pbuf *frame;
+} emacbuf_t;
+
+
+static LIST_ENTRY emac_free;
+static LIST_ENTRY emac_ready;
+
+static void emac_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF emacbuf_t buffers [64];
+	unsigned i;
+
+	InitializeListHead(& emac_free);	// Незаполненные
+	InitializeListHead(& emac_ready);	// Для обработки
+
+	for (i = 0; i < ARRAY_SIZE(buffers); ++ i)
+	{
+		emacbuf_t * const p = & buffers [i];
+		InsertHeadList(& emac_free, & p->item);
+	}
+}
+
+static int emac_buffers_alloc(emacbuf_t * * tp)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	if (! IsListEmpty(& emac_free))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& emac_free);
+		emacbuf_t * const p = CONTAINING_RECORD(t, emacbuf_t, item);
+		* tp = p;
+		LowerIrql(oldIrql);
+		return 1;
+	}
+	if (! IsListEmpty(& emac_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& emac_ready);
+		emacbuf_t * const p = CONTAINING_RECORD(t, emacbuf_t, item);
+		* tp = p;
+		LowerIrql(oldIrql);
+		return 1;
+	}
+	LowerIrql(oldIrql);
+	return 0;
+}
+
+static int emac_buffers_ready(emacbuf_t * * tp)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	if (! IsListEmpty(& emac_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& emac_ready);
+		LowerIrql(oldIrql);
+		emacbuf_t * const p = CONTAINING_RECORD(t, emacbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	LowerIrql(oldIrql);
+	return 0;
+}
+
+static void emac_buffers_release(emacbuf_t * p)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	InsertHeadList(& emac_free, & p->item);
+	LowerIrql(oldIrql);
+}
+
+// сохранить принятый
+static void emac_buffers_rx(emacbuf_t * p)
+{
+	InsertHeadList(& emac_ready, & p->item);
+}
 
 
 enum { EMAC_FRAMESZ = 2048 - 4 };
@@ -906,43 +985,6 @@ static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
 static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_txdesc [1] [4];
-
-static void EMAC_Handler(void)
-{
-	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
-	if (sta & ((UINT32_C(1) << 8)))	// RX_P
-	{
-		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-		if ((HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA & 0x07) == 0x03)
-		{
-			//PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
-			// Results
-			//PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-			//PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-			// 0..5 - Destination MAC (multicast)
-			// 6..11 - Source MAC [38:D5:47:82:A4:78]
-			unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
-			unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
-			//printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			//printhex(0, rxbuff, 128);
-			//memset(rxbuff, 0xE5, sizeof rxbuff);
-			unsigned i = 0;
-			emac_rxdesc [i][0] =
-				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-				0;
-			dcache_clean_invalidate((uintptr_t) rxbuff, sizeof rxbuff);
-			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-		}
-		else
-		{
-			TP();
-			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-		}
-	}
-
-}
 
 static struct netif emac_netif_data;
 
@@ -1080,9 +1122,90 @@ static err_t netif_init_cb(struct netif *netif)
 	return ERR_OK;
 }
 
+static void EMAC_Handler(void)
+{
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	{
+		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+		if (1) //((HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA & 0x07) == 0x03)
+		{
+			// 0..5 - Destination MAC (multicast)
+			// 6..11 - Source MAC [38:D5:47:82:A4:78]
+			unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
+			unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
+			//printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+			//printhex(0, rxbuff, 128);
+			emacbuf_t * p;
+			if (emac_buffers_alloc(& p) != 0)
+			{
+				struct pbuf *frame;
+				frame = pbuf_alloc(PBUF_RAW, sizeof rxbuff, PBUF_POOL);
+				if (frame == NULL)
+				{
+					TP();
+					emac_buffers_release(p);
+				}
+				else
+				{
+					pbuf_header(frame, - ETH_PAD_SIZE);
+					err_t e = pbuf_take(frame, rxbuff, sizeof rxbuff);	// Copy application supplied data into a pbuf.
+					pbuf_header(frame, + ETH_PAD_SIZE);
+					if (e == ERR_OK)
+					{
+						p->frame = frame;
+						emac_buffers_rx(p);
+					}
+					else
+					{
+						pbuf_free(frame);
+						emac_buffers_release(p);
+					}
+				}
+			}
+			unsigned i = 0;
+			emac_rxdesc [i][0] =
+				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+				0;
+			dcache_clean_invalidate((uintptr_t) rxbuff, sizeof rxbuff);
+			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
+		}
+		else
+		{
+			TP();
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+		}
+	}
+}
+
+// Receiving Ethernet packets
+// user-mode function
+static void emac_network_spool(void * ctx)
+{
+	(void) ctx;
+	emacbuf_t * p;
+	while (emac_buffers_ready(& p) != 0)
+	{
+		struct pbuf *frame = p->frame;
+		emac_buffers_release(p);
+
+		err_t e = ethernet_input(frame, & emac_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
+}
+
 void init_netif(void)
 {
 	PRINTF("init_netif start\n");
+	emac_buffers_initialize();
+
 	const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
 	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
 	CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
@@ -1132,7 +1255,7 @@ void init_netif(void)
 		emac_rxdesc [i][3] = (uintptr_t) emac_rxdesc [0];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
-		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
 		HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
 //					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
@@ -1152,7 +1275,7 @@ void init_netif(void)
 				1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
 				0;
 
-		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
 		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
 #if 0
@@ -1245,81 +1368,17 @@ void init_netif(void)
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
-	PRINTF("init_netif done\n");
+
+	static dpcobj_t dpcobj;
+
+	dpcobj_initialize(& dpcobj, emac_network_spool, NULL);
+	board_dpc_addentry(& dpcobj, board_dpc_coreid());
+
+	  PRINTF("init_netif done\n");
 }
 u32_t sys_jiffies(void)
 {
 	return 33;
-}
-
-// Receiving Ethernet packets
-// user-mode function
-void network_spool(void)
-{
-	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
-	// Wait interrupt
-	if ((sta & (UINT32_C(1) << 8)) == 0)	// RX_P
-		return;
-	HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-	if (sta & ((UINT32_C(1) << 8)))	// RX_P
-	{
-		// Results
-#if 0
-		PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-		PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-		printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-		printhex(0, rxbuff, 128);
-#endif
-		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, EMAC_FRAMESZ, PBUF_POOL);
-		if (frame != NULL)
-		{
-			pbuf_header(frame, - ETH_PAD_SIZE);
-			err_t e = pbuf_take(frame, rxbuff, sizeof rxbuff);	// Copy application supplied data into a pbuf.
-			pbuf_header(frame, + ETH_PAD_SIZE);
-			if (e == ERR_OK)
-			{
-				err_t e = ethernet_input(frame, & emac_netif_data);
-				if (e != ERR_OK)
-				{
-					  /* This means the pbuf is freed or consumed,
-					     so the caller doesn't have to free it again */
-				}
-			}
-			else
-			{
-				pbuf_free(frame);
-				//rndis_buffers_release(p);
-			}
-		}
-		else
-		{
-			TP();
-		}
-
-
-		unsigned i = 0;
-		emac_rxdesc [i][0] =
-			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
-
-	}
-//	rndisbuf_t * p;
-//	if (rndis_buffers_ready_user(& p) != 0)
-//	{
-//		struct pbuf *frame = p->frame;
-//		rndis_buffers_release_user(p);
-//
-//		err_t e = ethernet_input(frame, & emac_netif_data);
-//		if (e != ERR_OK)
-//		{
-//			  /* This means the pbuf is freed or consumed,
-//			     so the caller doesn't have to free it again */
-//		}
-//
-//	}
 }
 
 #endif /* defined (ETH) && WITHLWIP */
