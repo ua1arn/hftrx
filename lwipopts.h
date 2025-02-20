@@ -194,7 +194,7 @@ void board_update_time(uint32_t sec);
 
 //#define NO_SYS_NO_TIMERS 			1
 
-#define LWIP_TCP_KEEPALIVE 			0
+//#define LWIP_TCP_KEEPALIVE 			0
 
 #define MEM_SIZE                    131072
 #define MEM_ALIGNMENT               64 //8
@@ -228,8 +228,8 @@ void board_update_time(uint32_t sec);
 //#define LWIP_HAVE_SLIPIF				1
 #define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
-#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
-#define TCP_SND_BUF                     (2 * TCP_MSS)
+//#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
+//#define TCP_SND_BUF                     (2 * TCP_MSS)
 
 #define MEMP_SEPARATE_POOLS 		1
 #define MEMP_NUM_FRAG_PBUF 			256
@@ -237,7 +237,7 @@ void board_update_time(uint32_t sec);
 #define TCP_OVERSIZE 				CP_MSS
 
 #define LWIP_DHCP 					1
-#define DHCP_DOES_ARP_CHECK 		1
+//#define DHCP_DOES_ARP_CHECK 		1
 
 #define SNTP_SUPPORT      			1
 #define SNTP_UPDATE_DELAY 			8640000
@@ -246,10 +246,36 @@ void board_update_time(uint32_t sec);
 #define LWIP_ARP 					1
 #define LWIP_ETHERNET				1
 
-//#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
-//#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; /*display_vtty_printf mmsg; */} while (0)
+#define LWIP_ARP                    1
+#define LWIP_ETHERNET               1
+#define LWIP_ICMP                   1
+#define LWIP_RAW                    1
+#define TCP_WND                     (8 * TCP_MSS)
+#define TCP_MSS                     1460
+#define TCP_SND_BUF                 (8 * TCP_MSS)
+#define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
+#define LWIP_NETIF_STATUS_CALLBACK  1
+#define LWIP_NETIF_LINK_CALLBACK    1
+#define LWIP_NETIF_HOSTNAME         1
+#define LWIP_NETCONN                0
+#define MEM_STATS                   0
+#define SYS_STATS                   0
+#define MEMP_STATS                  0
+#define LINK_STATS                  0
+// #define ETH_PAD_SIZE                2
+#define LWIP_CHKSUM_ALGORITHM       3
+#define LWIP_DHCP                   1
+#define LWIP_IPV4                   1
+#define LWIP_TCP                    1
+#define LWIP_UDP                    1
+#define LWIP_DNS                    1
+#define LWIP_TCP_KEEPALIVE          1
+//#define LWIP_NETIF_TX_SINGLE_PBUF   1
+#define DHCP_DOES_ARP_CHECK         0
+#define LWIP_DHCP_DOES_ACD_CHECK    0
 
-//#define LWIP_DEBUG             		1
+
+#define LWIP_DEBUG             		1
 #define LWIP_DBG_MIN_LEVEL     		LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
@@ -260,7 +286,7 @@ void board_update_time(uint32_t sec);
 //#define API_LIB_DEBUG          LWIP_DBG_ON
 //#define API_MSG_DEBUG          LWIP_DBG_ON
 //#define SOCKETS_DEBUG          LWIP_DBG_ON
-//#define ICMP_DEBUG             LWIP_DBG_ON
+#define ICMP_DEBUG             LWIP_DBG_ON
 //#define IGMP_DEBUG             LWIP_DBG_ON
 //#define INET_DEBUG             LWIP_DBG_ON
 //#define IP_DEBUG               LWIP_DBG_ON
@@ -300,5 +326,5 @@ void board_update_time(uint32_t sec);
 #define ETH_RX_BUFFER_SIZE 32768
 
 #define ETH_PAD_SIZE                    0
-
+#define LWIP_RAND() (4)
 #endif /* __LWIPOPTS_H__ */
