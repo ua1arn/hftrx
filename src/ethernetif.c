@@ -1028,8 +1028,8 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-			1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+//			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+//			1 * (UINT3a2_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
 			//1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
