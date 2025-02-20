@@ -932,6 +932,8 @@ static void EMAC_Handler(void)
 		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 				0;
+			dcache_clean_invalidate((uintptr_t) rxbuff, sizeof rxbuff);
+			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 		}
 		else
 		{
@@ -1006,7 +1008,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
 		pbuf_header(p, - ETH_PAD_SIZE);
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
-		size += 4;
+		//size += 4;
 
 		emac_txdesc [i][0] =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
@@ -1023,6 +1025,8 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
 		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
 
+		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
+		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 		printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
 
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
@@ -1050,7 +1054,8 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->hostname = "storch";
 #endif /* LWIP_NETIF_HOSTNAME */
 	netif->mtu = EMAC_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP | NETIF_FLAG_MLD6 | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP
+			| NETIF_FLAG_UP | NETIF_FLAG_ETHERNET;
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';
@@ -1225,6 +1230,10 @@ void init_netif(void)
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
 	PRINTF("init_netif done\n");
+}
+u32_t sys_jiffies(void)
+{
+	return 33;
 }
 
 // Receiving Ethernet packets

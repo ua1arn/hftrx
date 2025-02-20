@@ -16,3 +16,6 @@
 [submodule "lib/litehtml"]
 	path = lib/litehtml
 	url = https://github.com/litehtml/litehtml.git
+[submodule "lib/lwip"]
+	path = lib/lwip
+	url = https://github.com/lwip-tcpip/lwip.git

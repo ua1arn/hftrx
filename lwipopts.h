@@ -218,38 +218,18 @@ void board_update_time(uint32_t sec);
 #define ARP_TABLE_SIZE 				10
 #define ARP_QUEUEING 				1
 
-#define IP_OPTIONS 					0
-#define IP_FORWARD 					0
-#define IP_REASSEMBLY 				1
-#define IP_FRAG 					1
-#define IP_REASS_MAX_PBUFS 			128
-#define IP_FRAG_MAX_MTU 			1500
-#define IP_DEFAULT_TTL 				255
-#define LWIP_CHKSUM_ALGORITHM 		3
+#define NO_SYS                          1
+#define LWIP_RAW                        1
+#define LWIP_NETCONN                    0
+#define LWIP_SOCKET                     0
+#define LWIP_ICMP                       1
+#define LWIP_UDP                        1
+#define LWIP_TCP                        1
+//#define LWIP_HAVE_SLIPIF				1
+#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
-#define CONFIG_LINKSPEED_AUTODETECT 1
-#define LWIP_TCP_KEEPALIVE 			0
-
-#define LWIP_UDP 					1
-#define UDP_TTL 					55
-
-#define LWIP_TCP 					1
-#define TCP_MSS 					1460
-#define TCP_SND_BUF 				8192
-#define TCP_WND 					2048
-#define TCP_TTL 					255
-#define TCP_MAXRTX 					12
-#define TCP_SYNMAXRTX				4
-#define TCP_QUEUE_OOSEQ 			1
-#define TCP_SND_QUEUELEN   			16 * TCP_SND_BUF/TCP_MSS
-#define CHECKSUM_GEN_TCP 			0
-#define CHECKSUM_GEN_UDP 			0
-#define CHECKSUM_GEN_IP  			0
-#define CHECKSUM_CHECK_TCP  		0
-#define CHECKSUM_CHECK_UDP  		0
-#define CHECKSUM_CHECK_IP 			0
-#define LWIP_FULL_CSUM_OFFLOAD_RX	1
-#define LWIP_FULL_CSUM_OFFLOAD_TX	1
+#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
+#define TCP_SND_BUF                     (2 * TCP_MSS)
 
 #define MEMP_SEPARATE_POOLS 		1
 #define MEMP_NUM_FRAG_PBUF 			256
@@ -269,7 +249,7 @@ void board_update_time(uint32_t sec);
 //#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
 //#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; /*display_vtty_printf mmsg; */} while (0)
 
-#define LWIP_DEBUG             		1
+//#define LWIP_DEBUG             		1
 #define LWIP_DBG_MIN_LEVEL     		LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
