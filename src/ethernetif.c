@@ -1004,7 +1004,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
 	if ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0)
 	{
-		PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
+		//PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
 
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
 		pbuf_header(p, - ETH_PAD_SIZE);
@@ -1039,7 +1039,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
 		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 		//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
-		printhex((uintptr_t) txbuff, txbuff, size);
+		//printhex((uintptr_t) txbuff, txbuff, size);
 
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
