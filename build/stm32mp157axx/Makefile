@@ -166,13 +166,16 @@ DINCDIR += $(LUPNGDIR)
 endif
 
 ifeq (1, 0)
-# LwIP
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+# LWIP
+LWIPDIR = $(PRJROOT)/lib/lwip
 DINCDIR += \
 	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http
+SRCDIRS += \
+	$(LWIPDIR)/src/api \
+	$(LWIPDIR)/src/core \
+	$(LWIPDIR)/src/netif \
+	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
 ifeq (1, 0)

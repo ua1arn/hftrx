@@ -325,6 +325,8 @@ void board_update_time(uint32_t sec);
 
 #define ETH_RX_BUFFER_SIZE 32768
 
+#define HTTPD_FSDATA_FILE "src/fsdata.txt"
+
 #define ETH_PAD_SIZE                    0
 #define LWIP_RAND() (4)
 #endif /* __LWIPOPTS_H__ */
