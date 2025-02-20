@@ -327,6 +327,20 @@ void board_update_time(uint32_t sec);
 
 #define HTTPD_FSDATA_FILE "src/fsdata.txt"
 
-#define ETH_PAD_SIZE                    0
+//#define ETH_PAD_SIZE                    16
 #define LWIP_RAND() (4)
+
+#if 0
+
+	#define LWIP_HTTPD_CGI                  1
+	#define LWIP_HTTPD_SSI                  1
+	#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
+	#define LWIP_HTTPD_SUPPORT_POST			1
+	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
+
+#endif /* WITHHTTPUPDATE || WITHISBOOTLOADER */
+
+	#define LWIP_NETIF_LOOPBACK 1
+
+
 #endif /* __LWIPOPTS_H__ */
