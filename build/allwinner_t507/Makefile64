@@ -180,9 +180,12 @@ ifeq (1, 1)
 LWIPDIR = $(PRJROOT)/lib/lwip
 DINCDIR += \
 	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http
-SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+SRCDIRS += \
+	$(LWIPDIR)/src/api \
+	$(LWIPDIR)/src/core \
+	$(LWIPDIR)/src/netif \
+	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
 ifeq (1, 0)

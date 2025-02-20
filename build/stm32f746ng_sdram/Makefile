@@ -58,7 +58,6 @@ OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 USBXDIR = $(PRJROOT)/src/hal

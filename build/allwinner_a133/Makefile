@@ -177,7 +177,6 @@ endif
 
 ifeq (1, 0)
 # LWIP
-# LWIP
 LWIPDIR = $(PRJROOT)/lib/lwip
 DINCDIR += \
 	$(LWIPDIR)/src/include \
