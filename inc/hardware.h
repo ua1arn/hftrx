@@ -931,9 +931,7 @@ void stpmic1_dump_regulators(void);
 void network_initialize(void);
 void init_netif(void);
 
-void usb_polling(void);	/* LWIP support */
 void sys_check_timeouts(void);	/* LWIP support */
-void network_spool(void);
 void cpptest(void);
 
 #define USBALIGN_BEGIN

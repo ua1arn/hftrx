@@ -81,7 +81,7 @@ main(void)
 	midtests();
 
 	initialize2();	/* вызывается при разрешённых прерываниях. */
-#if WITHLWIP && CPUSTYLE_ALLWINNER
+#if WITHLWIP
 	network_initialize();
 #endif /* WITHLWIP */
 	application_initialize();

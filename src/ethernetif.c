@@ -988,38 +988,6 @@ static RAMNC __ALIGNED(4) uint32_t emac_txdesc [1] [4];
 
 static struct netif emac_netif_data;
 
-#if 0
-static void on_packet(const uint8_t *data, int size)
-{
-	//emacbuf_t * p;
-	if (emac_buffers_alloc(& p) != 0)
-	{
-		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
-		if (frame == NULL)
-		{
-			TP();
-			emac_buffers_release(p);
-			return;
-		}
-		pbuf_header(frame, - ETH_PAD_SIZE);
-		err_t e = pbuf_take(frame, data, size);
-		pbuf_header(frame, + ETH_PAD_SIZE);
-		if (e == ERR_OK)
-		{
-			p->frame = frame;
-			emac_buffers_rx(p);
-		}
-		else
-		{
-			pbuf_free(frame);
-			emac_buffers_release(p);
-		}
-
-	}
-}
-#endif
-
 /**
  * This function should do the actual transmission of the packet. The packet is
  * contained in the pbuf that is passed to the function. This pbuf
@@ -1081,7 +1049,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
 		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 		//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
-		//printhex((uintptr_t) txbuff, txbuff, size);
+		//emac_free(uintptr_t) txbuff, txbuff, size);
 
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
@@ -1135,7 +1103,7 @@ static void EMAC_Handler(void)
 			unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
 			unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
 			//printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			//printhex(0, rxbuff, 128);
+			//emac_free0, rxbuff, 128);
 			emacbuf_t * p;
 			if (emac_buffers_alloc(& p) != 0)
 			{
@@ -1182,7 +1150,7 @@ static void EMAC_Handler(void)
 
 // Receiving Ethernet packets
 // user-mode function
-static void emac_network_spool(void * ctx)
+static void netif_polling(void * ctx)
 {
 	(void) ctx;
 	emacbuf_t * p;
@@ -1199,6 +1167,12 @@ static void emac_network_spool(void * ctx)
 		}
 
 	}
+}
+
+static void lwip_1s_spool(void * ctx)
+{
+	(void) ctx;
+	sys_check_timeouts();
 }
 
 void init_netif(void)
@@ -1289,7 +1263,7 @@ void init_netif(void)
 			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
 			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
 			printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			printhex(0, rxbuff, 128);
+			emac_free0, rxbuff, 128);
 		}
 #endif
 	}
@@ -1336,7 +1310,7 @@ void init_netif(void)
 			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
 			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
 			printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			printhex(0, rxbuff, 128);
+			emac_free0, rxbuff, 128);
 		}
 #endif
 	}
@@ -1369,12 +1343,22 @@ void init_netif(void)
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
 
-	static dpcobj_t dpcobj;
+	{
+		static dpcobj_t dpcobj;
 
-	dpcobj_initialize(& dpcobj, emac_network_spool, NULL);
-	board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		dpcobj_initialize(& dpcobj, netif_polling, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
 
-	  PRINTF("init_netif done\n");
+		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+	PRINTF("init_netif done\n");
 }
 u32_t sys_jiffies(void)
 {

@@ -4260,9 +4260,6 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	InitializeIrql(IRQL_USER);	// nested interrupts support
 
-#if WITHLWIP && ! CPUSTYLE_ALLWINNER
-	network_initialize();
-#endif /* WITHLWIP */
 #if CPUSTYLE_VM14
 	{
 		unsigned mask = 1u << 24; // GC24 - DBGLED1

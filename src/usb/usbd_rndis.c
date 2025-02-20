@@ -277,7 +277,7 @@ static err_t netif_init_cb(struct netif *netif)
 
 // Receiving Ethernet packets
 // user-mode function
-static void rndis_polling(void * ctx)
+static void netif_polling(void * ctx)
 {
 	(void) ctx;
 	rndisbuf_t * p;
@@ -294,6 +294,12 @@ static void rndis_polling(void * ctx)
 		}
 
 	}
+}
+
+static void lwip_1s_spool(void * ctx)
+{
+	(void) ctx;
+	sys_check_timeouts();
 }
 
 void init_netif(void)
@@ -328,8 +334,16 @@ void init_netif(void)
 		{
 			static dpcobj_t dpcobj;
 
-			dpcobj_initialize(& dpcobj, rndis_polling, NULL);
+			dpcobj_initialize(& dpcobj, netif_polling, NULL);
 			board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		}
+		{
+			static ticker_t ticker;
+			static dpcobj_t dpcobj;
+
+			dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
+			ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+			ticker_add(& ticker);
 		}
 }
 

@@ -1797,8 +1797,9 @@ static void on_packet(const uint8_t *data, int size)
 
 // Receiving Ethernet packets
 // user-mode function
-void usb_polling(void)
+static void netif_polling(void * ctx)
 {
+	(void) ctx;
 	cdceembuf_t * p;
 	if (cdceem_buffers_ready_user(& p) != 0)
 	{
@@ -1815,6 +1816,12 @@ void usb_polling(void)
 	}
 }
 
+
+static void lwip_1s_spool(void * ctx)
+{
+	(void) ctx;
+	sys_check_timeouts();
+}
 
 void init_netif(void)
 {
@@ -1844,6 +1851,21 @@ void init_netif(void)
 
 	while (!netif_is_up(netif))
 		;
+
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, netif_polling, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
 
 }
 
