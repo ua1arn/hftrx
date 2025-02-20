@@ -16154,7 +16154,7 @@ static void dpc_1s_timer_fn(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-//	sys_check_timeouts();
+	sys_check_timeouts();
 #endif /* WITHLWIP */
 
 #if 0 && CPUSTYLE_XC7Z
@@ -16196,7 +16196,7 @@ void app_processing(
 #if WITHLWIP
 	/* LWIP */
 	//usb_polling();     // usb device polling
-	//network_spool();
+	network_spool();
 	//stmr();            // call software timers
 #endif /* WITHLWIP */
 

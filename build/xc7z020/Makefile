@@ -98,13 +98,6 @@ DINCDIR = \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/include/lwip \
-	$(LWIPDIR)/src/apps/http \
-	$(LWIPDIR)/ports/xilinx/include \
-	$(LWIPDIR)/ports/xilinx/include/netif \
-	$(LWIPDIR)/ports/xilinx/include/arch \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \

@@ -891,9 +891,435 @@ void ethernet_link_check_state(struct netif *netif)
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 #elif  WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 
+#define EMAC_MTU                                       1500                           // MTU value
+
+#define ETH_HEADER_SIZE                 14
+#define ETH_MIN_PACKET_SIZE             60
+#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + EMAC_MTU)
+//#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
+//#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
+
+
+
+enum { EMAC_FRAMESZ = 2048 - 4 };
+static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
+static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
+static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
+static RAMNC __ALIGNED(4) uint32_t emac_txdesc [1] [4];
+
+static void EMAC_Handler(void)
+{
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	{
+		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+		if ((HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA & 0x07) == 0x03)
+		{
+			//PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
+			// Results
+			//PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			//PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+			// 0..5 - Destination MAC (multicast)
+			// 6..11 - Source MAC [38:D5:47:82:A4:78]
+			unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
+			unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
+			//printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+			//printhex(0, rxbuff, 128);
+			//memset(rxbuff, 0xE5, sizeof rxbuff);
+			unsigned i = 0;
+			emac_rxdesc [i][0] =
+				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+				0;
+			dcache_clean_invalidate((uintptr_t) rxbuff, sizeof rxbuff);
+			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
+		}
+		else
+		{
+			TP();
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+		}
+	}
+
+}
+
+static struct netif emac_netif_data;
+
+#if 0
+static void on_packet(const uint8_t *data, int size)
+{
+	//emacbuf_t * p;
+	if (emac_buffers_alloc(& p) != 0)
+	{
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
+		if (frame == NULL)
+		{
+			TP();
+			emac_buffers_release(p);
+			return;
+		}
+		pbuf_header(frame, - ETH_PAD_SIZE);
+		err_t e = pbuf_take(frame, data, size);
+		pbuf_header(frame, + ETH_PAD_SIZE);
+		if (e == ERR_OK)
+		{
+			p->frame = frame;
+			emac_buffers_rx(p);
+		}
+		else
+		{
+			pbuf_free(frame);
+			emac_buffers_release(p);
+		}
+
+	}
+}
+#endif
+
+/**
+ * This function should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
+ * @return ERR_OK if the packet could be sent
+ *         an err_t value if the packet couldn't be sent
+ *
+ * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
+ *       strange results. You might consider waiting for space in the DMA queue
+ *       to become availale since the stack doesn't retry to send a packet
+ *       dropped because of memory failure (except for the TCP timers).
+ */
+
+// Transceiving Ethernet packets
+static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
+{
+	//PRINTF("emac_linkoutput_fn\n");
+    int i = 0;
+    //struct pbuf *q;
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
+	if ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0)
+	{
+		//PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
+
+		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
+		pbuf_header(p, - ETH_PAD_SIZE);
+		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
+		// test data
+//		memset(txbuff, 0xE5, sizeof txbuff);
+//		size = 128;
+		size += 4;
+		emac_txdesc [i][0] =	// status
+			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
+			0;
+		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт на 7 менше от заказанного
+		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт на 7 менше от заказанного
+		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=1 и CHECKSUM_CTL=3: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=2: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=1: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=0: просто передаёт на 4 менше от заказанного
+		emac_txdesc [i][1] =	// ctl
+			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+//			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+//			1 * (UINT3a2_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+			//1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+			0;
+		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
+		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
+
+		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
+		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
+		//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
+		//printhex((uintptr_t) txbuff, txbuff, size);
+
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+		while (HARDWARE_EMAC_PTR->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
+			;
+	}
+//    for (i = 0; i < 200; i++)
+//    {
+//        if (emac_can_send()) break;
+//        local_delay_ms(1);
+//    }
+//
+//    if (!emac_can_send())
+//    {
+//		return ERR_MEM;
+//    }
+
+    return ERR_OK;
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+	PRINTF("emac netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
+	netif->mtu = EMAC_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP
+			| NETIF_FLAG_UP | NETIF_FLAG_ETHERNET;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = etharp_output;
+	netif->linkoutput = emac_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
+}
+
 void init_netif(void)
 {
+	PRINTF("init_netif start\n");
+	const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
+	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
+	CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
+	//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
 
+	{
+		// The working clock of EMAC is from AHB3.
+
+		HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
+		//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+		//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
+		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
+		while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
+			;
+
+
+		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
+			//0x03 * (UINT32_C(1) << 2) |	// 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
+			0x01 * (UINT32_C(1) << 0) | // 1: Full-duplex
+			0;
+		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
+			0x08 * (UINT32_C(1) << 24) |
+			0;
+
+//			PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
+//			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+//			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
+
+		// ether 1A:0C:74:06:AF:64
+		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
+		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+	}
+	// RX init
+	{
+		unsigned len = EMAC_FRAMESZ;
+		unsigned i = 0;
+		emac_rxdesc [i][0] =
+			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+			0;
+		emac_rxdesc [i][1] =
+				len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+			0;
+		emac_rxdesc [i][2] = (uintptr_t) rxbuff;	// BUF_ADDR
+		emac_rxdesc [i][3] = (uintptr_t) emac_rxdesc [0];	// NEXT_DESC_ADDR
+		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
+
+		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+
+		HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
+//					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
+				1 * (UINT32_C(1) << 0) |	// RX_ALL
+				0;
+
+		HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
+		//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
+		HARDWARE_EMAC_PTR->EMAC_RX_CTL0 =
+			1 * (UINT32_C(1) << 31) |	// RX_EN
+			//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
+			//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
+			1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
+			0;
+		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 =
+				1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
+				1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
+				0;
+
+		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+
+		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
+#if 0
+		// Wait interrupt
+		while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
+			;
+		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+		if (sta & ((UINT32_C(1) << 8)))	// RX_P
+		{
+			// Results
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+			printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+			printhex(0, rxbuff, 128);
+		}
+#endif
+	}
+	// TX init
+	{
+		unsigned len = EMAC_FRAMESZ;
+		unsigned i = 0;
+		emac_txdesc [i][0] =
+			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
+//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+			0;
+		emac_txdesc [i][1] =
+				len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+			0;
+		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
+		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
+		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
+
+		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+
+		HARDWARE_EMAC_PTR->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
+		//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL0 =
+			1 * (UINT32_C(1) << 31) |	// TX_EN
+			//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
+			0;
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 =
+				1 * (UINT32_C(1) << 30) |	// TX_DMA_EN
+				//1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+				0;
+
+		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+
+		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+#if 0
+		// Wait interrupt
+		while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
+			;
+		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+		if (sta & ((UINT32_C(1) << 8)))	// RX_P
+		{
+			// Results
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+			printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+			printhex(0, rxbuff, 128);
+		}
+#endif
+	}
+
+	//emac_buffers_initialize();
+	//emac_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
+
+	static const  uint8_t hwaddrv [6]  = { HWADDR };
+
+	static ip_addr_t netmask;// [4] = NETMASK;
+	static ip_addr_t gateway;// [4] = GATEWAY;
+
+	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
+	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
+
+	static ip_addr_t vaddr;// [4]  = IPADDR;
+	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
+
+	struct netif  *netif = &emac_netif_data;
+	netif->hwaddr_len = 6;
+	memcpy(netif->hwaddr, hwaddrv, 6);
+
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+	netif_set_default(netif);
+
+	while (!netif_is_up(netif))
+		;
+
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
+	PRINTF("init_netif done\n");
+}
+u32_t sys_jiffies(void)
+{
+	return 33;
+}
+
+// Receiving Ethernet packets
+// user-mode function
+void network_spool(void)
+{
+	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	// Wait interrupt
+	if ((sta & (UINT32_C(1) << 8)) == 0)	// RX_P
+		return;
+	HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+	if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	{
+		// Results
+#if 0
+		PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+		PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
+		printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
+		printhex(0, rxbuff, 128);
+#endif
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, EMAC_FRAMESZ, PBUF_POOL);
+		if (frame != NULL)
+		{
+			pbuf_header(frame, - ETH_PAD_SIZE);
+			err_t e = pbuf_take(frame, rxbuff, sizeof rxbuff);	// Copy application supplied data into a pbuf.
+			pbuf_header(frame, + ETH_PAD_SIZE);
+			if (e == ERR_OK)
+			{
+				err_t e = ethernet_input(frame, & emac_netif_data);
+				if (e != ERR_OK)
+				{
+					  /* This means the pbuf is freed or consumed,
+					     so the caller doesn't have to free it again */
+				}
+			}
+			else
+			{
+				pbuf_free(frame);
+				//rndis_buffers_release(p);
+			}
+		}
+		else
+		{
+			TP();
+		}
+
+
+		unsigned i = 0;
+		emac_rxdesc [i][0] =
+			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+			0;
+
+	}
+//	rndisbuf_t * p;
+//	if (rndis_buffers_ready_user(& p) != 0)
+//	{
+//		struct pbuf *frame = p->frame;
+//		rndis_buffers_release_user(p);
+//
+//		err_t e = ethernet_input(frame, & emac_netif_data);
+//		if (e != ERR_OK)
+//		{
+//			  /* This means the pbuf is freed or consumed,
+//			     so the caller doesn't have to free it again */
+//		}
+//
+//	}
 }
 
 #endif /* defined (ETH) && WITHLWIP */
