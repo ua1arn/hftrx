@@ -1009,18 +1009,29 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
 		pbuf_header(p, - ETH_PAD_SIZE);
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
-
+		// test data
+//		memset(txbuff, 0xE5, sizeof txbuff);
+//		size = 128;
+		size += 4;
 		emac_txdesc [i][0] =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 			0;
+		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт на 7 менше от заказанного
+		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт на 7 менше от заказанного
+		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=1 и CHECKSUM_CTL=3: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=2: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=1: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=0: просто передаёт на 4 менше от заказанного
 		emac_txdesc [i][1] =	// ctl
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-			1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+//			1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
 			//1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
-			(size + 4) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
 		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
@@ -1028,7 +1039,10 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
 		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 		//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
+		printhex((uintptr_t) txbuff, txbuff, size);
 
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		while (HARDWARE_EMAC_PTR->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
 			;
@@ -1185,7 +1199,7 @@ void init_netif(void)
 				//1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
 				0;
 
-		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
 
 		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 #if 0
