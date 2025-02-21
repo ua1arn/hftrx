@@ -527,7 +527,7 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
     switch (index)
     {
     case 0: /* systick */
-        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)++ ttt);
+        res = local_snprintf_P(insert, ins_len, "%u", hamradio_get_freq_a());
         break;
     case 1: /* btn */
         res = local_snprintf_P(insert, ins_len, "%i", 1);
