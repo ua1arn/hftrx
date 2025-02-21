@@ -1012,6 +1012,13 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
     //struct pbuf *q;
 	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
 	//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
+	unsigned w = 10;
+	while (w -- && (emac_txdesc [i][0] & (UINT32_C(1) << 31)) != 0)
+	{
+		local_delay_ms(1);
+		//board_dpc_processing();
+	}
+
 	if ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0)
 	{
 		//PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
@@ -1019,10 +1026,14 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
 		pbuf_header(p, - ETH_PAD_SIZE);
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
+		unsigned add = 4;
+		memset(txbuff + size, 0x00, add);
+		size += add;
+#if 0
 		// test data
-//		memset(txbuff, 0xE5, sizeof txbuff);
-//		size = 128;
-		size += 4;
+		memset(txbuff, 0xE5, sizeof txbuff);
+		size = 128;
+#endif
 		emac_txdesc [i][0] =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 			0;
@@ -1038,9 +1049,9 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-//			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-//			1 * (UINT3a2_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-			//1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+//			1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+			1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
