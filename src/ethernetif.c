@@ -1029,23 +1029,27 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		pbuf_header(p, - ETH_PAD_SIZE);
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
 
+		// test data
+//		memset(txbuff, 0xE5, sizeof txbuff);
+//		size = 128;
+
 		emac_txdesc [i][0] =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 			0;
 		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт на 7 менше от заказанного
-		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт на 7 менше от заказанного
+		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
 		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=1 и CHECKSUM_CTL=3: просто передаёт на 4 менше от заказанного
-		// CRC_CTL=1 и CHECKSUM_CTL=2: просто передаёт на 4 менше от заказанного
-		// CRC_CTL=1 и CHECKSUM_CTL=1: просто передаёт на 4 менше от заказанного
-		// CRC_CTL=1 и CHECKSUM_CTL=0: просто передаёт на 4 менше от заказанного
+		// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
+		// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
+		// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
+		// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
 		emac_txdesc [i][1] =	// ctl
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-//			0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-//			1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
 			1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;

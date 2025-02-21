@@ -339,5 +339,6 @@ void board_update_time(uint32_t sec);
 
 	#define LWIP_NETIF_LOOPBACK 1
 
+	//#define ETH_PAD_SIZE                    16
 
 #endif /* __LWIPOPTS_H__ */
