@@ -243,9 +243,6 @@ void board_update_time(uint32_t sec);
 #define SNTP_UPDATE_DELAY 			8640000
 #define SNTP_DEBUG                  LWIP_DBG_ON
 
-#define LWIP_ARP 					1
-#define LWIP_ETHERNET				1
-
 #define LWIP_ARP                    1
 #define LWIP_ETHERNET               1
 #define LWIP_ICMP                   1
