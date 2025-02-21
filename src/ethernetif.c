@@ -1047,9 +1047,18 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
 
 		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
+
 		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
-		//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
-		//emac_free(uintptr_t) txbuff, txbuff, size);
+		HARDWARE_EMAC_PTR->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
+
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL0 =
+			1 * (UINT32_C(1) << 31) |	// TX_EN
+			//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
+			0;
+//		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 =
+//				1 * (UINT32_C(1) << 30) |	// TX_DMA_EN
+//				//1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+//				0;
 
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
@@ -1252,20 +1261,6 @@ void init_netif(void)
 		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
 		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
-#if 0
-		// Wait interrupt
-		while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
-			;
-		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-		if (sta & ((UINT32_C(1) << 8)))	// RX_P
-		{
-			// Results
-			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-			printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			emac_free0, rxbuff, 128);
-		}
-#endif
 	}
 	// TX init
 	{
@@ -1285,34 +1280,11 @@ void init_netif(void)
 
 		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
-		HARDWARE_EMAC_PTR->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
 		//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL0 =
-			1 * (UINT32_C(1) << 31) |	// TX_EN
-			//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
-			0;
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 =
-				1 * (UINT32_C(1) << 30) |	// TX_DMA_EN
-				//1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-				0;
 
 		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
 
 		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-#if 0
-		// Wait interrupt
-		while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
-			;
-		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-		if (sta & ((UINT32_C(1) << 8)))	// RX_P
-		{
-			// Results
-			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-			PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-			printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			emac_free0, rxbuff, 128);
-		}
-#endif
 	}
 
 	//emac_buffers_initialize();
