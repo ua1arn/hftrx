@@ -1022,7 +1022,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 
 	if ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0)
 	{
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 		//PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
 
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
@@ -1061,36 +1061,14 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 			1 * (UINT32_C(1) << 31) |	// TX_EN
 			//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
 			0;
-//		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 =
-//				1 * (UINT32_C(1) << 30) |	// TX_DMA_EN
-//				//1 * (UINT32_C(1) << 1) |	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-//				0;
 
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD !!! важно
+		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
 		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		while (HARDWARE_EMAC_PTR->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
 			;
-//		w = 10000;
-//		while (w -- && (emac_txdesc [i][0] & (UINT32_C(1) << 31)) != 0)
-//		{
-//			local_delay_ms(1);
-//			//board_dpc_processing();
-//		}
-//		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 	}
-//    for (i = 0; i < 200; i++)
-//    {
-//        if (emac_can_send()) break;
-//        local_delay_ms(1);
-//    }
-//
-//    if (!emac_can_send())
-//    {
-//		return ERR_MEM;
-//    }
-
     return ERR_OK;
 }
 
