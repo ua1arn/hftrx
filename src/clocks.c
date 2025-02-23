@@ -5171,6 +5171,33 @@ uint_fast32_t allwnr_t113_get_dsp_freq(void)
 	}
 }
 
+// T113
+#if 0
+uint_fast32_t allwnr_t113_get_hdmi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
+//	switch ((clkreg >> 24) & 0x07)	/* G2D_CLK_REG */
+//	{
+//	default:
+//	case 0x00:
+//		/* 000: HOSC */
+//		return allwnr_t113_get_hosc_freq() / M;
+//	case 0x01:
+//		/* 001: CLK32K */
+//		return allwnr_t113_get_32k_freq() / M;
+//	case 0x02:
+//		/* 010: CLK16M_RC */
+//		return allwnr_t113_get_16M_freq() / M;
+//	case 0x03:
+//		/* 011: PLL_PERI(2X) */
+//		return allwnr_t113_get_peripll2x_freq() / M;
+//	case 0x04:
+//		/* 100: PLL_AUDIO1(DIV2) */
+//		return allwnr_t113_get_audio1pll_div2_freq() / M;
+//	}
+}
+#endif
+
 void allwnr_t113_pll_initialize(int N)
 {
 #if CPUSTYLE_T113

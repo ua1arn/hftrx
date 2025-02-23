@@ -5732,6 +5732,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 #endif /* defined (TCONTV_PTR) */
 }
 
+#if WITHHDMITVHW
 static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
@@ -5747,6 +5748,7 @@ static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
 #endif /* defined (TCONTV_PTR) */
 	return display_getdotclock(vdmode);
 }
+#endif
 
 static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 {
