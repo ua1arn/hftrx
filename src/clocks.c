@@ -4183,6 +4183,22 @@ static void t113_set_psi_ahb(void)
 }
 
 // T113
+// APB0 frequency set
+static void t113_set_apb0(void)
+{
+	// Automatic divisors calculation
+	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
+	uint_fast32_t needfreq = UINT32_C(100) * 1000 * 1000;
+	unsigned dvalue;
+	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 2 | 1), & dvalue, 1);
+	CCU->APB0_CLK_REG =
+		clksrc * (UINT32_C(1) << 24) |
+		prei * (UINT32_C(1) << 8) |
+		dvalue * (UINT32_C(1) << 0) |
+		0;
+}
+
+// T113
 // APB1 frequency set
 static void t113_set_apb1(void)
 {
@@ -4190,7 +4206,7 @@ static void t113_set_apb1(void)
 	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
 	uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
 	unsigned dvalue;
-	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 1 | 2), & dvalue, 1);
+	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 2 | 1), & dvalue, 1);
 	CCU->APB1_CLK_REG =
 		(UINT32_C(1) << 31) |
 		clksrc * (UINT32_C(1) << 24) |
@@ -5229,7 +5245,7 @@ void allwnr_t113_pll_initialize(int N)
 
 	t113_set_mbus();
 	t113_set_psi_ahb();
-	CCU->APB0_CLK_REG = 0x03000102;	// 100 MHz
+	t113_set_apb0();	// 100 MHz
 	t113_set_apb1();	// 200 MHz
 }
 
