@@ -5206,8 +5206,9 @@ void allwnr_t113_pll_initialize(int N)
 	f133_set_axi(0x00);	// OSC24
 #endif
 	local_delay_initialize();
-
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
+	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
+	CCU->APB1_CLK_REG = (UINT32_C(1) << 31);	// переключаем источник APB1 на HOSC
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
@@ -5228,7 +5229,8 @@ void allwnr_t113_pll_initialize(int N)
 
 	t113_set_mbus();
 	t113_set_psi_ahb();
-	t113_set_apb1();
+	CCU->APB0_CLK_REG = 0x03000102;	// 100 MHz
+	t113_set_apb1();	// 200 MHz
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
