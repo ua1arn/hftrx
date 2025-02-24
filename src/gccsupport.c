@@ -164,7 +164,7 @@ int __attribute__((used)) (_getpid)(int id)
 	return (-1);
 }
 
-int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
+_READ_WRITE_RETURN_TYPE __attribute__((used)) (_read)(int fd, char * ptr, size_t len) {
 	char c;
 	int i;
 
@@ -172,22 +172,21 @@ int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
 		c = SER_GetChar();
 		if (c == 0x0D)
 			break;
-		*ptr++ = c;
+		((char *) ptr) [i] = c;
 		while (dbg_putchar(c) == 0)
 			;
 	}
 	return (len - i);
 }
 
-int __attribute__((used)) (_write)(int fd, char * ptr, int len)
+_READ_WRITE_RETURN_TYPE __attribute__((used)) (_write)(int fd, const void * ptr, size_t len)
 {
 	int i;
 
 	for (i = 0; i < len; i++)
 	{
-		const char c = * ptr ++;
-		while (dbg_writechar(c) == 0)
-			;
+		const char c = ((const char *) ptr) [i];
+		dbg_writechar(c);
 	}
 	return (i);
 }

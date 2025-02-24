@@ -327,7 +327,7 @@ void board_update_time(uint32_t sec);
 //#define ETH_PAD_SIZE                    16
 #define LWIP_RAND() (4)
 
-#if 0
+#if 0 && ! WITHISBOOTLOADER
 
 	#define LWIP_HTTPD_CGI                  1
 	#define LWIP_HTTPD_SSI                  1
