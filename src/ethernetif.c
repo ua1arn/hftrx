@@ -1078,7 +1078,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 
 static err_t netif_init_cb(struct netif *netif)
 {
-	PRINTF("emac netif_init_cb\n");
+	//PRINTF("emac netif_init_cb\n");
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
 #if LWIP_NETIF_HOSTNAME
 	/* Initialize interface hostname */
@@ -1182,7 +1182,7 @@ static void lwip_1s_spool(void * ctx)
 
 void init_netif(void)
 {
-	PRINTF("init_netif start\n");
+	//PRINTF("init_netif start\n");
 	emac_buffers_initialize();
 
 	const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
@@ -1203,7 +1203,7 @@ void init_netif(void)
 
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
-			0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
+			//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
 			0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
 			0;
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
@@ -1283,9 +1283,6 @@ void init_netif(void)
 		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
 
-	//emac_buffers_initialize();
-	//emac_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
-
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
 	static ip_addr_t netmask;// [4] = NETMASK;
@@ -1326,7 +1323,7 @@ void init_netif(void)
 		ticker_add(& ticker);
 	}
 
-	PRINTF("init_netif done\n");
+	//PRINTF("init_netif done\n");
 }
 u32_t sys_jiffies(void)
 {
