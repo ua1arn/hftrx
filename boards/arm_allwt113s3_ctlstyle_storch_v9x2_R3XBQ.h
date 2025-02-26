@@ -6,12 +6,12 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-// rmainunit_sv9f.pc
-// rmainunit_sv9u.pc
+// rmainunit_sv9x1.pcb
+// rmainunit_sv9x2.pcb
+// rmainunit_sv9x3.pcb
 
-#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
+#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9X2_H_INCLUDED
+#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9X2_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -61,7 +61,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
+    #define CTLREGMODE_STORCH_V9A    1    /* STM32MP1, Allwinner t113-s3  */
 	//#define CTLREGMODE_NOCTLREG 1
 
 	#define WITHPABIASMIN		0
@@ -88,9 +88,9 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
-	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
-	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
+	#define KEYB_FPANEL20_V0B	1	/* 20 кнопок на 6 линий - KI5 соединен с кнопкой второго валкодера */
+	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -275,9 +275,11 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
+	//#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_RED	1
+	//#define COLORSTYLE_BLUE	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
@@ -288,7 +290,7 @@
 		#define WITHSPECBETA_DEFAULT	30
 		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 0
+		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHGUIDEBUG		1	/* вывод отладочной информации на экран по удержанию Break-In */
 			//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -371,7 +373,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
-	#elif 1
+	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
@@ -411,10 +413,10 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
+	#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -645,13 +647,16 @@
 		KI1 = BOARD_ADCXKIN(4),
 		KI2 = BOARD_ADCXKIN(5),
 		KI3 = BOARD_ADCXKIN(6),
-		KI4 = BOARD_ADCXKIN(7)
+		KI4 = BOARD_ADCXKIN(7),
+		KI5 = BOARD_ADCX1IN(3)		// другой АЦП - сейчас кнопка второго валкодера
 	};
 
-	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
-	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+	#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП
+	#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+	//#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
+	//#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9X2_H_INCLUDED */

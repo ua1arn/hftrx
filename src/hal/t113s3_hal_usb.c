@@ -4704,6 +4704,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			{
 				if (temp & (UINT32_C(1) << i))
 				{
+#if WITHUSBCDCACM && WITHWAWXXUSB
 					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 0) & 0x0F; // DMA Channel for Endpoint
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
@@ -4716,6 +4717,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 							count);
 					dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
 					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+#endif
 					}
 			}
 		}
