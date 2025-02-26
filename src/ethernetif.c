@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
 
-#if WITHETHHW && CPUSTYLE_ALLWINNER
+#if WITHETHHW && CPUSTYLE_ALLWINNER && WITHLWIP
 
 #include "lwip/opt.h"
 #include "lwip/mem.h"

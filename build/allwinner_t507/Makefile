@@ -176,7 +176,7 @@ SRCDIRS += $(OPENVGDIR)/src
 UDEFS += -D"EGL_STATIC_LIBRARY"=1
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # LWIP
 LWIPDIR = $(PRJROOT)/lib/lwip
 DINCDIR += \
@@ -186,6 +186,8 @@ SRCDIRS += \
 	$(LWIPDIR)/src/api \
 	$(LWIPDIR)/src/core \
 	$(LWIPDIR)/src/netif \
+	$(LWIPDIR)/src/http \
+	$(LWIPDIR)/src/apps/http \
 	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
