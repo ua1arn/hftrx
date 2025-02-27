@@ -300,8 +300,8 @@ bootloader: BOOT2
 # Take from tc1_t507_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x000332d0
-SystemExecAARCH64 = 0x000313f8
+SystemDRAMInit = 0x0002e98c
+SystemExecAARCH64 = 0x0002bf4c
 # H616
 else
 SystemDRAMInit = 0x00032a84
@@ -309,8 +309,8 @@ SystemExecAARCH64 = 0x00031560
 endif
 
 # Invoke SystemInit 
-ddrinit_h616: h616_fsbl_frz.alw32
-	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
+ddrinit_h616: ddrinit_h616.bin
+	$(XFEL) write 0x00028000 ddrinit_h616.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 ddrinit_t507_:
@@ -318,7 +318,7 @@ ddrinit_t507_:
 	busybox sleep 1s
 
 ddrinit_t507:
-	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
+	$(XFEL) write 0x00028000 ddrinit_t507.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 app_run: $(PROJECT)_app.alw32 ddrinit_t507

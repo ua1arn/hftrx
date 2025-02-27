@@ -306,16 +306,16 @@ SystemExecAARCH64 = 0x00031560
 endif
 
 # Invoke SystemInit 
-ddrinit_h616: h616_fsbl_frz.alw32
-	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
+ddrinit_a133__: ddrinit_a133.bin
+	$(XFEL) write 0x00028000 ddrinit_a133.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 ddrinit_a133_:
 	$(XFEL) ddr lpddr4
 	busybox sleep 1s
 
-ddrinit_a133:
-	$(XFEL) write 0x00028000 a133_fsbl_frz.alw32
+ddrinit_a133: ddrinit_a133.bin
+	$(XFEL) write 0x00028000 ddrinit_a133.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 app_run: $(PROJECT)_app.alw32 ddrinit_a133
