@@ -290,7 +290,7 @@
 		#define WITHSPECBETA_DEFAULT	30
 		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 1
+		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHGUIDEBUG		1	/* вывод отладочной информации на экран по удержанию Break-In */
 			//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -373,7 +373,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
-	#elif 0
+	#elif 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
