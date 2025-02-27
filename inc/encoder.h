@@ -107,7 +107,8 @@ extern encoder_t encoder_kbd;
 
 void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterruptsRev(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts4(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts4_dirA(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts4_dirB(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
 void hardware_encoders_initialize(void);
 
 #define GETENCBIT_A 0x02
