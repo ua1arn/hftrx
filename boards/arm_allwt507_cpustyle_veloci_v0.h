@@ -346,28 +346,28 @@
 		arm_hardware_piod_altfn20(BOARD_ENC1F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC1F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, 0); \
-		einthandler_initialize(& enc1fh, BOARD_ENC1F_BITS, spool_encinterrupts4_dirA, & encoder_ENC1F); \
+		einthandler_initialize(& enc1fh, ENC1F_BITB, spool_encinterrupts4_dirA, & encoder_ENC1F); \
 		arm_hardware_piod_onchangeinterrupt(ENC1F_BITB, ENC1F_BITB, 0 * ENC1F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc1fh); \
 		/* */ \
 		/* ENC2F - прерывания на обе фазы */ \
 		arm_hardware_piod_altfn20(BOARD_ENC2F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC2F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, 0); \
-		einthandler_initialize(& enc2fh, BOARD_ENC2F_BITS, spool_encinterrupts4_dirA, & encoder_ENC2F); \
+		einthandler_initialize(& enc2fh, ENC2F_BITB, spool_encinterrupts4_dirA, & encoder_ENC2F); \
 		arm_hardware_piod_onchangeinterrupt(ENC2F_BITB, ENC2F_BITB, 0 * ENC2F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc2fh); \
 		/* */ \
 		/* ENC3F - прерывания на обе фазы */ \
 		arm_hardware_piod_altfn20(BOARD_ENC3F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC3F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, 0); \
-		einthandler_initialize(& enc3fh, BOARD_ENC3F_BITS, spool_encinterrupts4_dirA, & encoder_ENC3F); \
+		einthandler_initialize(& enc3fh, ENC3F_BITB, spool_encinterrupts4_dirA, & encoder_ENC3F); \
 		arm_hardware_piod_onchangeinterrupt(ENC3F_BITB, ENC3F_BITB, 0 * ENC3F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc3fh); \
 		/* */ \
 		/* ENC4F - прерывания на обе фазы */ \
 		arm_hardware_piod_altfn20(BOARD_ENC4F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC4F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, 0); \
-		einthandler_initialize(& enc4fh, BOARD_ENC4F_BITS, spool_encinterrupts4_dirA, & encoder_ENC4F); \
+		einthandler_initialize(& enc4fh, ENC4F_BITB, spool_encinterrupts4_dirA, & encoder_ENC4F); \
 		arm_hardware_piod_onchangeinterrupt(ENC4F_BITB, ENC4F_BITB, 0 * ENC4F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc4fh); \
 	} while (0)
 
