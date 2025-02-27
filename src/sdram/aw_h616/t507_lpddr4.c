@@ -779,13 +779,15 @@ static int mctl_mem_matches0(uint32_t offset, uint32_t value)
 	writel(value, (uintptr_t) CONFIG_SYS_SDRAM_BASE + offset);
 	__DSB();
 	/* Check if the same value is actually observed when reading back */
-	return readl(CONFIG_SYS_SDRAM_BASE) ==
+	return readl(CONFIG_SYS_SDRAM_BASE + 0) ==
 	       readl((uintptr_t)CONFIG_SYS_SDRAM_BASE + offset);
 }
 
+// return 1: wrapped at offset
+// Test if memory at offset offset matches memory at begin of DRAM
 int mctl_mem_matches(uint32_t offset)
 {
-	return mctl_mem_matches0(offset, 0xaa55aa55) && mctl_mem_matches0(offset, 0xdeadbeef);
+	return mctl_mem_matches0(offset, 0xaa55aa55) || mctl_mem_matches0(offset, 0xdeadbeef);
 }
 #endif
 // SPDX-License-Identifier: GPL-2.0+

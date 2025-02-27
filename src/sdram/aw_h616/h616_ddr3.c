@@ -718,6 +718,8 @@ void mctl_set_timing_params(struct h616_dram_para *para)
  * Note: dsb() is not available on ARMv5 in Thumb mode
  */
 #ifndef CONFIG_MACH_SUNIV
+// return 1: wrapped at offset
+// Test if memory at offset offset matches memory at begin of DRAM
 int mctl_mem_matches(uint32_t offset)
 {
 	/* Try to write different values to RAM at two addresses */

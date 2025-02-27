@@ -338,7 +338,8 @@ static int mctl_mem_matches0(uint32_t offset, uint32_t v)
 	return (read32(CONFIG_DRAM_BASE) == read32(CONFIG_DRAM_BASE + offset)) ? 1 : 0;
 }
 
-// 1: wrapped
+// return 1: wrapped at offset
+// Test if memory at offset offset matches memory at begin of DRAM
 static int mctl_mem_matches(uint32_t offset)
 {
 	return mctl_mem_matches0(offset, 0xaa55aa55) || mctl_mem_matches0(offset, 0xdeadbeef);

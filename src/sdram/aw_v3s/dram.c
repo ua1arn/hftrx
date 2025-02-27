@@ -304,6 +304,8 @@ static void mctl_await_completion(uint32_t * reg, uint32_t mask, uint32_t val)
 	}
 }
 
+// return 1: wrapped at offset
+// Test if memory at offset offset matches memory at begin of DRAM
 static int mctl_mem_matches(uint32_t offset)
 {
 	write32(CONFIG_DRAM_BASE, 0);
