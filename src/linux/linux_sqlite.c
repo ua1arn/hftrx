@@ -88,6 +88,7 @@ void write_memory_cells(uint32_t * mem, uint8_t cnt)
 
 static uint8_t bitfield[BITFIELD_SIZE];
 static sqlite3 *db = NULL;
+volatile int need_sync = 0;
 
 int init_database() {
     int rc = sqlite3_open(NVRAM_DB_FILE, &db);
@@ -162,6 +163,9 @@ void nvram_sync(void) {
         return;
     }
 
+    if (! need_sync)
+    	return;
+
     sqlite3_stmt *stmt;
     const char *update_sql = "UPDATE BitField SET data = ? WHERE id = 1;";
     int rc = sqlite3_prepare_v2(db, update_sql, -1, &stmt, NULL);
@@ -179,6 +183,8 @@ void nvram_sync(void) {
     }
 
     sqlite3_finalize(stmt);
+
+    need_sync = 0;
 }
 
 void nvram_close(void) {
@@ -209,18 +215,22 @@ uint32_t restore_i32(uint16_t addr) {
 
 void save_i8(uint16_t addr, uint8_t v) {
     bitfield[addr] = v;
+    need_sync = 1;
 }
 
 void save_i16(uint16_t addr, uint16_t v) {
     *(uint16_t *)(bitfield + addr) = v; // Little endian
+    need_sync = 1;
 }
 
 void save_i24(uint16_t addr, uint32_t v) {
     *(uint32_t *)(bitfield + addr) = v & 0x00FFFFFF; // Mask for 24 bits
+    need_sync = 1;
 }
 
 void save_i32(uint16_t addr, uint32_t v) {
     *(uint32_t *)(bitfield + addr) = v; // Little endian
+    need_sync = 1;
 }
 
 void nvram_initialize(void)
