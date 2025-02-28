@@ -48,7 +48,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
 }
 
-/* прерывание по спаду сигнала на входе B от валкодера - направление по A */
+/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
 void spool_encinterrupts4_dirA_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -62,7 +62,7 @@ void spool_encinterrupts4_dirA_cw(void * ctx)
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
-/* прерывание по спаду сигнала на входе B от валкодера - направление по A */
+/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
 void spool_encinterrupts4_dirA_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -76,7 +76,7 @@ void spool_encinterrupts4_dirA_ccw(void * ctx)
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
-/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
 void spool_encinterrupts4_dirB_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -90,7 +90,7 @@ void spool_encinterrupts4_dirB_cw(void * ctx)
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
-/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
 void spool_encinterrupts4_dirB_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -132,7 +132,7 @@ static const int8_t graydecoder [4][4] =
 	},
 };
 
-/* прерывание по изменению сигнала на входах от валкодера */
+/* прерывание по любому перепаду сигнала на входах от валкодера */
 void spool_encinterrupts(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -149,7 +149,7 @@ void spool_encinterrupts(void * ctx)
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
-/* прерывание по изменению сигнала на входах от валкодера */
+/* прерывание по любому перепаду сигнала на входах от валкодера */
 void spool_encinterrupts_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
