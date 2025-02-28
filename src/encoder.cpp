@@ -49,7 +49,21 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 }
 
 /* прерывание по спаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirA(void * ctx)
+void spool_encinterrupts4_dirA_cw(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
+
+	e->position += step;
+
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+}
+
+/* прерывание по спаду сигнала на входе B от валкодера - направление по A */
+void spool_encinterrupts4_dirA_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
@@ -63,7 +77,21 @@ void spool_encinterrupts4_dirA(void * ctx)
 }
 
 /* прерывание по изменению сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB(void * ctx)
+void spool_encinterrupts4_dirB_cw(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
+
+	e->position += step;
+
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+}
+
+/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts4_dirB_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
@@ -122,18 +150,18 @@ void spool_encinterrupts(void * ctx)
 }
 
 /* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterruptsRev(void * ctx)
+void spool_encinterrupts_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	// dimensions are:
 	// old_bits new_bits
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = graydecoder [e->old_val][new_val];
+	const int_fast8_t step = - graydecoder [e->old_val][new_val];
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-	e->position -= step;
+	e->position += step;
 	e->old_val = new_val;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
