@@ -20,9 +20,7 @@
 #undef WITHKBDENCODER
 /* обработчики прерывания от валкодера */
 
-#if WITHKBDENCODER
 static int position_kbd;	/* накопитель от клавиатуры - знаковое число */
-#endif /* WITHKBDENCODER */
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 {
@@ -211,6 +209,10 @@ void encoderB_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 {
 }
 
+static int local_iabs(int v)
+{
+	return v < 0 ? - v : v;
+}
 // вызывается с ENC_TICKS_PERIOD с запрещенными прерываниями.
 // Расчёт средней скорости вращения валкодера (подготовка данных для расчёта вне прерываний).
 static void
@@ -218,7 +220,7 @@ encspeed_spool(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int p1 = encoder_get_delta(e, 1);
-	const int p1kbd = 0;//safegetposition_kbd();
+	const int p1kbd = safegetposition_kbd();
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
@@ -233,7 +235,7 @@ encspeed_spool(void * ctx)
 	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
-	e->enchist [e->enchistindex] += abs(p1) + 0;//abs(p1kbd);
+	e->enchist [e->enchistindex] += local_iabs(p1) + 0;//local_iabs(p1kbd);
 	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
 		e->tichist  = 0;
