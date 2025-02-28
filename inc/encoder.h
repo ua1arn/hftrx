@@ -107,10 +107,10 @@ extern encoder_t encoder_kbd;
 
 void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts_ccw(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts4_dirA_ccw(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB_ccw(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirA_cw(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB_cw(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts4_dirA_ccw(void * ctx);	/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
+void spool_encinterrupts4_dirB_ccw(void * ctx);	/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts4_dirA_cw(void * ctx);	/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
+void spool_encinterrupts4_dirB_cw(void * ctx);	/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
 
 void hardware_encoders_initialize(void);
 
