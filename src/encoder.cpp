@@ -20,13 +20,6 @@
 #undef WITHKBDENCODER
 /* обработчики прерывания от валкодера */
 
-#if WITHHARDINTERLOCK
-static volatile uint32_t position1;		/* накопитель от валкодера - знаковое число */
-static volatile uint32_t position2;		/* накопитель от валкодера - знаковое число */
-#else /* WITHHARDINTERLOCK */
-static volatile int position1;		/* накопитель от валкодера - знаковое число */
-static volatile int position2;		/* накопитель от валкодера - знаковое число */
-#endif /* WITHHARDINTERLOCK */
 #if WITHKBDENCODER
 static int position_kbd;	/* накопитель от клавиатуры - знаковое число */
 #endif /* WITHKBDENCODER */
