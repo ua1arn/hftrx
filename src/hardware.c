@@ -4151,7 +4151,7 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	The Soft Entry Address Register of CPU0 is 0x070005C4
 //	The Soft Entry Address Register of CPU1 is 0x070005C8
 
-#define HARDWARE_HOTPLUG_FLAG 0xFA50392F	// CPU Hotplug Flag value
+//#define HARDWARE_HOTPLUG_FLAG 0xFA50392F	// CPU Hotplug Flag value
 
 // In Allwinner h133 this i/o block named R_CPUCFG
 
@@ -4160,14 +4160,14 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
-	ASSERT(startfunc != 0);
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+	//ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
 	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;
-	//R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
-	* rvaddr = startfunc;
-	ASSERT(* rvaddr == startfunc);
+	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	//* rvaddr = startfunc;
+	//ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;
 }
