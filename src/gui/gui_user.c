@@ -162,19 +162,19 @@ void load_settings(void)
 		gui_nvram.freq_swipe_step = freq_swipe_step_default;
 
 #if WITHFT8
-	if (gui_nvram.ft8_callsign [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_callsign [0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_callsign, ARRAY_SIZE(gui_nvram.ft8_callsign), "RA4ASN");
 
-	if (gui_nvram.ft8_snr [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_snr [0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_snr, ARRAY_SIZE(gui_nvram.ft8_snr), "-20");
 
-	if (gui_nvram.ft8_qth [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_qth [0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_qth, ARRAY_SIZE(gui_nvram.ft8_qth), "LO10");
 
-	if (gui_nvram.ft8_end [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_end [0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_end, ARRAY_SIZE(gui_nvram.ft8_end), "RR73");
 
-	if (gui_nvram.ft8_band == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_band == UINT8_MAX)
 		gui_nvram.ft8_band = ft8_band_default;
 
 	if (gui_nvram.ft8_txfreq_val == UINT32_MAX)
@@ -4624,9 +4624,10 @@ static void window_ft8_settings_process(void)
 static void window_ft8_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8);
-	static unsigned win_x = 0, win_y = 0, x, y, update = 0, selected_label_cq = 255, selected_label_tx = 0, backup_mode = 0, work = 0, labels_tx_update = 0, backup_freq = 0;
-	static lh_array_t lh_array_cq [6];
-	static lh_array_t lh_array_tx [4];
+	static unsigned win_x = 0, win_y = 0, x, y, update = 0, selected_label_cq = 255, selected_label_tx = 0;
+	static unsigned backup_mode = 0, work = 0, labels_tx_update = 0, backup_freq = 0, backup_zoom = 0;
+	static label_t * lh_array_cq [6];
+	static label_t * lh_array_tx [4];
 	static const int snr = -10;
 	static uint8_t viewtemp;
 
@@ -4694,10 +4695,10 @@ static void window_ft8_process(void)
 			lh->y = y;
 			lh->index = i;
 			y += interval;
-			lh_array_cq [i].ptr = lh;
+			lh_array_cq [i] = lh;
 		}
 
-		lbl_tx_title->x = lbl_cq_title->x + get_label_width(lh_array_cq [0].ptr) + 10;
+		lbl_tx_title->x = lbl_cq_title->x + get_label_width(lh_array_cq [0]) + 10;
 		lbl_tx_title->y = 0;
 		lbl_tx_title->state = DISABLED;
 		lbl_tx_title->visible = VISIBLE;
@@ -4715,13 +4716,13 @@ static void window_ft8_process(void)
 			lh->index = 10 + i;
 			lh->visible = VISIBLE;
 			y += interval;
-			lh_array_tx [i].ptr = lh;
+			lh_array_tx [i] = lh;
 		}
 
-		local_snprintf_P(lh_array_tx [0].ptr->text, ARRAY_SIZE(lh_array_tx [0].ptr->text), "CQ %s %s", gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+		local_snprintf_P(lh_array_tx [0]->text, ARRAY_SIZE(lh_array_tx [0]->text), "CQ %s %s", gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
 
-		btn_tx->x1 = lh_array_tx [3].ptr->x;
-		btn_tx->y1 = lh_array_tx [3].ptr->y + get_label_height(lh_array_tx [3].ptr) * 3;
+		btn_tx->x1 = lh_array_tx [3]->x;
+		btn_tx->y1 = lh_array_tx [3]->y + get_label_height(lh_array_tx [3]) * 3;
 		btn_tx->visible = VISIBLE;
 #if ! WITHTX
 		btn_tx->state = DISABLED;
@@ -4746,11 +4747,13 @@ static void window_ft8_process(void)
 		{
 			backup_freq = hamradio_get_freq_rx();
 			backup_mode = hamradio_get_submode();
+			backup_zoom = hamradio_get_gzoomxpow2();
 			viewtemp = hamradio_get_viewstyle();
 			hamradio_settemp_viewstyle(VIEW_LINE);
 
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
 			hamradio_change_submode(ft8_mode, 0);
+			hamradio_set_gzoomxpow2(BOARD_FFTZOOM_POW2MAX);
 			memset(ft8.rx_text, '\0', ft8_text_records * ft8_text_length);
 			ft8_set_state(1);
 		}
@@ -4771,6 +4774,8 @@ static void window_ft8_process(void)
 		for (unsigned i = 0; i < ft8.decoded_messages; i ++)
 		{
 			char * msg = ft8.rx_text [i];
+			remove_end_line_spaces(msg);
+			if (! strlen(msg)) break;
 			COLORPIP_T colorline;
 			unsigned cq_flag = 0;
 			parse_ft8_answer(msg, & colorline, & cq_flag);
@@ -4800,7 +4805,7 @@ static void window_ft8_process(void)
 
 			if (bh == btn_tx)
 			{
-				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx].ptr->text);
+				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx]->text);
 				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
 				ft8_do_encode();
 			}
@@ -4844,6 +4849,7 @@ static void window_ft8_process(void)
 			hamradio_set_freq(backup_freq);
 			hamradio_change_submode(backup_mode, 0);
 			hamradio_settemp_viewstyle(viewtemp);
+			hamradio_set_gzoomxpow2(backup_zoom);
 			ft8_set_state(0);
 			save_settings();
 		}
@@ -4867,7 +4873,7 @@ static void window_ft8_process(void)
 
 		for (unsigned i = 0; i < 6; i ++)
 		{
-			label_t * lh = lh_array_cq [i].ptr;
+			label_t * lh = lh_array_cq [i];
 			lh->visible = NON_VISIBLE;
 			lh->color = COLORPIP_WHITE;
 			if (strlen(cq_call [i]))
@@ -4882,7 +4888,7 @@ static void window_ft8_process(void)
 
 		for (unsigned i = 0; i < 4; i ++)
 		{
-			label_t * lh = lh_array_tx [i].ptr;
+			label_t * lh = lh_array_tx [i];
 
 			if (i == selected_label_tx)
 				lh->color = COLORPIP_YELLOW;
@@ -4893,9 +4899,9 @@ static void window_ft8_process(void)
 		if (labels_tx_update)
 		{
 			labels_tx_update = 0;
-			local_snprintf_P(lh_array_tx [1].ptr->text, ARRAY_SIZE(lh_array_tx [1].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
-			local_snprintf_P(lh_array_tx [2].ptr->text, ARRAY_SIZE(lh_array_tx [2].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
-			local_snprintf_P(lh_array_tx [3].ptr->text, ARRAY_SIZE(lh_array_tx [3].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
+			local_snprintf_P(lh_array_tx [1]->text, ARRAY_SIZE(lh_array_tx [1]->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+			local_snprintf_P(lh_array_tx [2]->text, ARRAY_SIZE(lh_array_tx [2]->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
+			local_snprintf_P(lh_array_tx [3]->text, ARRAY_SIZE(lh_array_tx [3]->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
 		}
 
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);

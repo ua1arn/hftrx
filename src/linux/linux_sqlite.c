@@ -53,7 +53,7 @@ void write_memory_cells(uint32_t * mem, uint8_t cnt)
 	sqlite3 * db = NULL;
 	sqlite3_stmt * stmt;
 
-	int rc = sqlite3_open("/mnt/sd-mmcblk0p1/hftrx_data/memory_cells.db", & db);
+	int rc = sqlite3_open(MEMORYCELLS_DB_FILE, & db);
 	if (rc != SQLITE_OK)
 	{
 		printf("sqlite3_open: %d\n", rc);
