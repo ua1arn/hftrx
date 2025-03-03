@@ -124,24 +124,6 @@ typedef struct {
 
 #endif /* #if WITHFT8 */
 
-#if WITHLWIP
-
-#include "lwip/opt.h"
-#include "lwip/init.h"
-#include "lwip/ip.h"
-#include "lwip/udp.h"
-#include "lwip/dhcp.h"
-#include "lwip/ip_addr.h"
-#include "lwip/err.h"
-#include "lwip/tcp.h"
-#include "lwip/priv/tcp_priv.h"
-#include "lwip/timeouts.h"
-
-int ping_check_response(void);
-int ping_send_ip(const char * ip_str);
-
-#endif
-
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
 	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
@@ -284,9 +266,6 @@ static window_t windows [] = {
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_process, },
 	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_process, },
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_process, },
-#if WITHLWIP
-	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_process, },
-#endif /* WITHLWIP */
 	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_process, },
 #if WITHLFM
 	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X,  "LFM",			 		 1, window_lfm_process, },
@@ -2110,9 +2089,6 @@ static void window_utilites_process(void)
 		add_element("btn_SWRscan", 100, 44, 0, 0, "SWR|scanner");
 #endif /* WITHSWRSCAN */
 		add_element("btn_3d", 100, 44, 0, 0, "Donut|3d");
-#if WITHLWIP
-		add_element("btn_pingtest", 100, 44, 0, 0, "IP ping|test");
-#endif /* WITHLWIP */
 #if WITHLFM
 		add_element("btn_lfm", 100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
@@ -2168,12 +2144,6 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_SWR_SCANNER));
 			}
 #endif /* WITHSWRSCAN */
-#if WITHLWIP
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_pingtest"))
-			{
-				open_window(get_win(WINDOW_PING));
-			}
-#endif /* WITHLWIP */
 #if WITHLFM
 			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_lfm"))
 			{
@@ -5895,137 +5865,6 @@ static void window_kbd_test_process(void)
 	default:
 	break;
 	}
-}
-
-// *****************************************************************************************************************************
-
-static void window_ping_process(void)
-{
-#if WITHLWIP
-	window_t * const win = get_win(WINDOW_PING);
-	static unsigned is_ping = 0, ping_delay = 0, update = 0;
-	static char ip_str [20] = "8.8.8.8";
-	static text_field_t * tf_ping = NULL;
-
-	if (win->first_call)
-	{
-		win->first_call = 0;
-		uint_fast8_t interval = 20;
-		is_ping = 0;
-		ping_delay = 0;
-		update = 0;
-
-		add_element("btn_edit", 86, 30, 0, 0, "Set IP");
-		add_element("btn_ping", 86, 30, 0, 0, "Ping");
-		add_element("lbl_ip", 0, FONT_MEDIUM, COLORPIP_WHITE, 16);
-		add_element("tf_ping", 35, 20, UP, & gothic_11x13);
-
-		tf_ping = (text_field_t*) find_gui_element(TYPE_TEXT_FIELD, win, "tf_ping");
-		textfield_update_size(tf_ping);
-		tf_ping->x1 = 0;
-		tf_ping->y1 = 0;
-		tf_ping->visible = VISIBLE;
-
-		label_t * lbl_ip =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_ip");
-		lbl_ip->x = tf_ping->x1 + tf_ping->w + interval;
-		lbl_ip->y = 0;
-		lbl_ip->visible = VISIBLE;
-
-		button_t * btn_edit = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_edit");
-		btn_edit->x1 = lbl_ip->x;
-		btn_edit->y1 = lbl_ip->y + get_label_height(lbl_ip) + interval;
-		btn_edit->visible = VISIBLE;
-
-		button_t * btn_ping = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ping");
-		btn_ping->x1 = btn_edit->x1;
-		btn_ping->y1 = btn_edit->y1 + btn_edit->h + interval;
-		btn_ping->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		local_snprintf_P(lbl_ip->text, ARRAY_SIZE(lbl_ip->text), PSTR("%s"), ip_str);
-	}
-
-	GET_FROM_WM_QUEUE
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_edit = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_edit");
-			button_t * btn_ping = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ping");
-
-			if (bh == btn_ping)
-			{
-				if(is_ping)
-					is_ping = 0;
-				else
-				{
-					int val = ping_send_ip(ip_str);
-					if (val)
-					{
-						char str[30];
-						local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, val);
-						textfield_add_string(tf_ping, str, COLORPIP_RED);
-					}
-					else
-					{
-						is_ping = 1;
-						ping_delay = 0;
-						textfield_clean(tf_ping);
-					}
-				}
-				update = 1;
-			}
-			else if (bh == btn_edit)
-			{
-				keyboard_edit_string((uintptr_t) & ip_str, 20, 0);
-			}
-		}
-		break;
-
-	default:
-
-		break;
-	}
-
-	if (is_ping)
-	{
-		if (ping_delay > 80)
-		{
-			ping_delay = 0;
-			int resp = ping_check_response();
-
-			if (resp)
-			{
-				char str[30];
-				local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Answer from %s: %d ms"), ip_str, resp);
-				textfield_add_string(tf_ping, str, COLORPIP_WHITE);
-
-				int send = ping_send_ip(ip_str);
-				if(send)
-				{
-					char str[30];
-					local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, send);
-					textfield_add_string(tf_ping, str, COLORPIP_RED);
-					is_ping = 0;
-					update = 1;
-				}
-			}
-		}
-
-		ping_delay ++;
-	}
-
-	if (update)
-	{
-		update = 0;
-		button_t * btn_edit = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_edit");
-		button_t * btn_ping = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ping");
-		btn_ping->is_locked = is_ping;
-		btn_edit->state = is_ping ? DISABLED : CANCELLED;
-	}
-#endif
 }
 
 // *****************************************************************************************************************************

@@ -41,7 +41,6 @@ static void window_menu_params_process(void);
 static void window_time_process(void);
 static void window_kbd_process(void);
 static void window_kbd_test_process(void);
-static void window_ping_process(void);
 static void window_3d_process(void);
 static void window_lfm_process(void);
 static void window_lfm_spectre_process(void);
@@ -92,9 +91,6 @@ enum {
 	WINDOW_TIME,
 	WINDOW_KBD,
 	WINDOW_KBD_TEST,
-#if WITHLWIP
-	WINDOW_PING,
-#endif /* WITHLWIP */
 	WINDOW_3D,
 #if WITHLFM
 	WINDOW_LFM,

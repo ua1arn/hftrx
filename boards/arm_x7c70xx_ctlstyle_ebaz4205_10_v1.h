@@ -296,7 +296,7 @@
 		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
