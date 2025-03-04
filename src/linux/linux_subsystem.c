@@ -1967,6 +1967,29 @@ void board_rtc_setdatetime(
 		perror("settimeofday");
 }
 
+void board_rtc_settime(
+	uint_fast8_t hour,
+	uint_fast8_t minute,
+	uint_fast8_t seconds
+	)
+{
+	struct tm * tm;
+	struct timeval tv;
+
+	time_t lt = time(NULL);
+	tm = localtime (& lt);
+
+	tm->tm_sec = seconds;
+	tm->tm_min = minute;
+	tm->tm_hour = hour;
+
+	tv.tv_sec = mktime(tm);
+	tv.tv_usec = 0;
+
+	if (settimeofday(& tv, NULL) == -1)
+		perror("settimeofday");
+}
+
 #endif /* RTC1_TYPE == RTC_TYPE_LINUX */
 
 uint_fast8_t board_rtc_chip_initialize(void)

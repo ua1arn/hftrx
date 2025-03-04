@@ -4575,7 +4575,7 @@ static void window_ft8_settings_process(void)
 				uint_fast8_t hour, minute, seconds;
 				board_rtc_cached_gettime(& hour, & minute, & seconds);
 				seconds = 0;
-				//board_rtc_settime(hour, minute, seconds);
+				board_rtc_settime(hour, minute, seconds);
 			}
 			else if (bh->payload == 1)
 				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
@@ -6001,6 +6001,7 @@ static void window_menu_params_process(void)
 		btn_p->x1 = xmax + 130 + interval;
 		btn_p->y1 = 0;
 		btn_p->visible = VISIBLE;
+		btn_p->is_repeating = 1;
 		btn_p->payload = 1;
 		btn_p->index = 90;
 
@@ -6008,6 +6009,7 @@ static void window_menu_params_process(void)
 		btn_m->x1 = xmax + 130 + interval;
 		btn_m->y1 = 40;
 		btn_m->visible = VISIBLE;
+		btn_m->is_repeating = 1;
 		btn_m->payload = -1;
 		btn_m->index = 91;
 #endif
