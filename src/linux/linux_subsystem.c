@@ -43,6 +43,9 @@ void ft8_thread(void);
 void lvgl_init(void);
 void lvgl_test(void);
 
+#define PIDFILE 		"/var/run/hftrx.pid"
+#define MAX_WAIT_TIME 	5
+
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
 
@@ -1677,6 +1680,50 @@ void zynq_pl_init(void)
 
 /*************************************************************/
 
+int check_and_terminate_existing_instance(void)
+{
+
+    FILE *pidfile = fopen(PIDFILE, "r");
+    if (pidfile == NULL) {
+        return 0;
+    }
+
+    pid_t pid;
+    if (fscanf(pidfile, "%d", &pid) != 1) {
+        fprintf(stderr, "Invalid PID in file %s\n", PIDFILE);
+        fclose(pidfile);
+        unlink(PIDFILE);
+        return -1;
+    }
+    fclose(pidfile);
+
+    if (kill(pid, 0) == 0) {
+        printf("HFTRX is already running with PID %d. Terminating it...\n", pid);
+
+        if (kill(pid, SIGTERM) != 0) {
+            perror("Failed to send SIGTERM");
+            return -1;
+        }
+
+        int wait_time = 0;
+        while (wait_time < MAX_WAIT_TIME && kill(pid, 0) == 0) {
+            sleep(1);
+            wait_time++;
+        }
+
+        if (kill(pid, 0) == 0) {
+            printf("Process did not terminate gracefully. Sending SIGKILL...\n");
+            if (kill(pid, SIGKILL) != 0) {
+                perror("Failed to send SIGKILL");
+                return -1;
+            }
+        }
+    }
+
+    unlink(PIDFILE);
+    return 0;
+}
+
 void linux_run_shell_cmd(const char * argv [])
 {
 	if (access(argv[0], F_OK) != 0)
@@ -1779,12 +1826,26 @@ static void handle_sig(int sig)
 
 void linux_subsystem_init(void)
 {
+    if (check_and_terminate_existing_instance() != 0) {
+        fprintf(stderr, "Failed to terminate existing instance.\n");
+        return;
+    }
+
+    FILE *pidfile = fopen(PIDFILE, "w");
+    if (pidfile == NULL) {
+        perror("Cannot create PID file");
+        return;
+    }
+	fprintf(pidfile, "%d", getpid());
+	fclose(pidfile);
+
 	char spid[6];
 	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
 	const char * argv [] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
 	linux_run_shell_cmd(argv);
 
 	signal(SIGINT, handle_sig);
+	signal(SIGTERM, handle_sig);
 	linux_xgpio_init();
 #if WITHSPIDEV
 	spidev_init();
@@ -2155,6 +2216,7 @@ void linux_exit(void)
 	alsa_close();
 #endif /* CODEC1_TYPE == CODEC_TYPE_ALSA */
 
+	unlink(PIDFILE);
 	exit(EXIT_SUCCESS);
 }
 
