@@ -450,7 +450,9 @@ void framebuffer_close(void)
 	uint32_t * xgpo, * xgpi;
 	pthread_mutex_t gpiolock;
 #elif CPUSTYLE_RK356X
-
+	#include <gpiod.h>
+	struct gpiod_chip * gpiochip3 = NULL;
+	struct gpiod_chip * gpiochip4 = NULL;
 #endif
 void linux_xgpio_init(void)
 {
@@ -470,7 +472,10 @@ void linux_xgpio_init(void)
 	gpiops_ptr = (uint32_t *) get_highmem_ptr(gpiocfg->BaseAddr);
 	XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, (uintptr_t) gpiops_ptr);
 #elif CPUSTYLE_RK356X
-
+	gpiochip3 = gpiod_chip_open_by_name("gpiochip3");
+	gpiochip4 = gpiod_chip_open_by_name("gpiochip4");
+	ASSERT(gpiochip3);
+	ASSERT(gpiochip4);
 #endif
 }
 
@@ -1680,6 +1685,88 @@ void zynq_pl_init(void)
 
 /*************************************************************/
 
+#if WITHENCODER2_LINUX
+
+pthread_t encoders_t;
+
+int is_debounced(struct timespec * last_event_time)
+{
+    struct timespec current_time;
+    clock_gettime(CLOCK_MONOTONIC, & current_time);
+
+    long elapsed_ms = (current_time.tv_sec - last_event_time->tv_sec) * 1000 +
+                      (current_time.tv_nsec - last_event_time->tv_nsec) / 1000000;
+
+    return elapsed_ms > DEBOUNCE_TIME_MS;
+}
+
+void * encoders_thread(void * args)
+{
+    unsigned int line_a = ENCODER2_LINE_A;
+    unsigned int line_b = ENCODER2_LINE_B;
+
+    struct gpiod_line * line_a_ptr = gpiod_chip_get_line(gpiochip3, line_a);
+    struct gpiod_line * line_b_ptr = gpiod_chip_get_line(gpiochip3, line_b);
+    ASSERT(line_a_ptr);
+    ASSERT(line_b_ptr);
+
+    const char * consumer = "encoder2";
+
+    struct gpiod_line * interrupt_line_ptr = (INTERRUPT_LINE == ENCODER2_LINE_A) ? line_a_ptr : line_b_ptr;
+    struct gpiod_line * read_line_ptr = (READ_LINE == ENCODER2_LINE_A) ? line_a_ptr : line_b_ptr;
+
+    struct gpiod_line_request_config req_interrupt;
+    memset(& req_interrupt, 0, sizeof(req_interrupt));
+    req_interrupt.consumer = consumer;
+    req_interrupt.request_type = GPIOD_LINE_REQUEST_EVENT_RISING_EDGE;
+
+    ASSERT(! gpiod_line_request(interrupt_line_ptr, & req_interrupt, 0));
+
+    struct gpiod_line_request_config req_read;
+    memset(& req_read, 0, sizeof(req_read));
+    req_read.consumer = consumer;
+    req_read.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
+
+    ASSERT(! gpiod_line_request(read_line_ptr, & req_read, 0));
+
+    int fd_interrupt = gpiod_line_event_get_fd(interrupt_line_ptr);
+
+    struct pollfd fds[1];
+    fds[0].fd = fd_interrupt;
+    fds[0].events = POLLIN;
+
+    struct timespec last_event_time = {0};
+
+    while (1) {
+        int ret = poll(fds, 1, -1); // Wait for events on the interrupt line
+        if (ret < 0) {
+            perror("Error waiting for events");
+            break;
+        }
+
+        if (fds[0].revents & POLLIN) { // Event on the interrupt line
+            // Clear the event queue by reading all remaining events
+            struct gpiod_line_event event;
+            while (gpiod_line_event_read_fd(fd_interrupt, & event) == 0) {
+                // Process only the first valid event after debounce
+                if (is_debounced(& last_event_time)) {
+                    // Read the state of the read line to determine the direction
+                    int value_read = gpiod_line_get_value(read_line_ptr);
+                    gui_set_encoder2_rotate(value_read ? +1 : -1);
+
+                    clock_gettime(CLOCK_MONOTONIC, & last_event_time);
+                }
+            }
+        }
+    }
+
+	return NULL;
+}
+
+#endif /* WITHENCODER2_LINUX */
+
+/*************************************************************/
+
 int check_and_terminate_existing_instance(void)
 {
 
@@ -1861,6 +1948,9 @@ void linux_subsystem_init(void)
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 #endif /* WITHIQSHIFT */
+#if WITHENCODER2_LINUX
+	linux_create_thread(& encoders_t, encoders_thread, 50, 1);
+#endif /* WITHENCODER2_LINUX */
 }
 
 void linux_user_init(void)
