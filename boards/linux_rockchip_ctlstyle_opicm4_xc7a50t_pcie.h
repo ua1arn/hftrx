@@ -145,7 +145,7 @@
 	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	
-	//#define WITHENCODER2	1		/* есть второй валкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_ALSA
@@ -253,7 +253,6 @@
 //			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
 			#define REALREFERENCE_FREQ 		61443000L
-			#define WITHENCODER2_LINUX		1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

@@ -533,7 +533,7 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * GETENCBIT_A + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_RK356X)
+#elif WITHENCODER2 && CPUSTYLE_XC7Z
 	return (gpio_readpin(ENCODER2_BITA) != 0) * GETENCBIT_A + (gpio_readpin(ENCODER2_BITB) != 0) * GETENCBIT_B;
 #else /* WITHENCODER2 */
 	return 0;

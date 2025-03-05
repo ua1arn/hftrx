@@ -1685,7 +1685,7 @@ void zynq_pl_init(void)
 
 /*************************************************************/
 
-#if WITHENCODER2_LINUX
+#if WITHENCODER2 && CPUSTYLE_RK356X
 
 pthread_t encoders_t;
 
@@ -1705,8 +1705,8 @@ void * encoders_thread(void * args)
     unsigned int line_a = ENCODER2_LINE_A;
     unsigned int line_b = ENCODER2_LINE_B;
 
-    struct gpiod_line * line_a_ptr = gpiod_chip_get_line(gpiochip3, line_a);
-    struct gpiod_line * line_b_ptr = gpiod_chip_get_line(gpiochip3, line_b);
+    struct gpiod_line * line_a_ptr = gpiod_chip_get_line(ENCODER2_GPIOCHIP, line_a);
+    struct gpiod_line * line_b_ptr = gpiod_chip_get_line(ENCODER2_GPIOCHIP, line_b);
     ASSERT(line_a_ptr);
     ASSERT(line_b_ptr);
 
@@ -1763,7 +1763,7 @@ void * encoders_thread(void * args)
 	return NULL;
 }
 
-#endif /* WITHENCODER2_LINUX */
+#endif /* WITHENCODER2 && CPUSTYLE_RK356X */
 
 /*************************************************************/
 
@@ -1948,9 +1948,9 @@ void linux_subsystem_init(void)
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 #endif /* WITHIQSHIFT */
-#if WITHENCODER2_LINUX
+#if WITHENCODER2
 	linux_create_thread(& encoders_t, encoders_thread, 50, 1);
-#endif /* WITHENCODER2_LINUX */
+#endif /* WITHENCODER2 */
 }
 
 void linux_user_init(void)
