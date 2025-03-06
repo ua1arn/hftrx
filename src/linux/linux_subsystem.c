@@ -472,10 +472,10 @@ void linux_xgpio_init(void)
 	gpiops_ptr = (uint32_t *) get_highmem_ptr(gpiocfg->BaseAddr);
 	XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, (uintptr_t) gpiops_ptr);
 #elif CPUSTYLE_RK356X
-	gpiochip3 = gpiod_chip_open_by_name("gpiochip3");
-	gpiochip4 = gpiod_chip_open_by_name("gpiochip4");
-	ASSERT(gpiochip3);
-	ASSERT(gpiochip4);
+//	gpiochip3 = gpiod_chip_open_by_name("gpiochip3");
+//	gpiochip4 = gpiod_chip_open_by_name("gpiochip4");
+//	ASSERT(gpiochip3);
+//	ASSERT(gpiochip4);
 #endif
 }
 
@@ -1685,88 +1685,6 @@ void zynq_pl_init(void)
 
 /*************************************************************/
 
-#if WITHENCODER2 && CPUSTYLE_RK356X
-
-pthread_t encoders_t;
-
-int is_debounced(struct timespec * last_event_time)
-{
-    struct timespec current_time;
-    clock_gettime(CLOCK_MONOTONIC, & current_time);
-
-    long elapsed_ms = (current_time.tv_sec - last_event_time->tv_sec) * 1000 +
-                      (current_time.tv_nsec - last_event_time->tv_nsec) / 1000000;
-
-    return elapsed_ms > DEBOUNCE_TIME_MS;
-}
-
-void * encoders_thread(void * args)
-{
-    unsigned int line_a = ENCODER2_LINE_A;
-    unsigned int line_b = ENCODER2_LINE_B;
-
-    struct gpiod_line * line_a_ptr = gpiod_chip_get_line(ENCODER2_GPIOCHIP, line_a);
-    struct gpiod_line * line_b_ptr = gpiod_chip_get_line(ENCODER2_GPIOCHIP, line_b);
-    ASSERT(line_a_ptr);
-    ASSERT(line_b_ptr);
-
-    const char * consumer = "encoder2";
-
-    struct gpiod_line * interrupt_line_ptr = (INTERRUPT_LINE == ENCODER2_LINE_A) ? line_a_ptr : line_b_ptr;
-    struct gpiod_line * read_line_ptr = (READ_LINE == ENCODER2_LINE_A) ? line_a_ptr : line_b_ptr;
-
-    struct gpiod_line_request_config req_interrupt;
-    memset(& req_interrupt, 0, sizeof(req_interrupt));
-    req_interrupt.consumer = consumer;
-    req_interrupt.request_type = GPIOD_LINE_REQUEST_EVENT_RISING_EDGE;
-
-    ASSERT(! gpiod_line_request(interrupt_line_ptr, & req_interrupt, 0));
-
-    struct gpiod_line_request_config req_read;
-    memset(& req_read, 0, sizeof(req_read));
-    req_read.consumer = consumer;
-    req_read.request_type = GPIOD_LINE_REQUEST_DIRECTION_INPUT;
-
-    ASSERT(! gpiod_line_request(read_line_ptr, & req_read, 0));
-
-    int fd_interrupt = gpiod_line_event_get_fd(interrupt_line_ptr);
-
-    struct pollfd fds[1];
-    fds[0].fd = fd_interrupt;
-    fds[0].events = POLLIN;
-
-    struct timespec last_event_time = {0};
-
-    while (1) {
-        int ret = poll(fds, 1, -1); // Wait for events on the interrupt line
-        if (ret < 0) {
-            perror("Error waiting for events");
-            break;
-        }
-
-        if (fds[0].revents & POLLIN) { // Event on the interrupt line
-            // Clear the event queue by reading all remaining events
-            struct gpiod_line_event event;
-            while (gpiod_line_event_read_fd(fd_interrupt, & event) == 0) {
-                // Process only the first valid event after debounce
-                if (is_debounced(& last_event_time)) {
-                    // Read the state of the read line to determine the direction
-                    int value_read = gpiod_line_get_value(read_line_ptr);
-                    gui_set_encoder2_rotate(value_read ? +1 : -1);
-
-                    clock_gettime(CLOCK_MONOTONIC, & last_event_time);
-                }
-            }
-        }
-    }
-
-	return NULL;
-}
-
-#endif /* WITHENCODER2 && CPUSTYLE_RK356X */
-
-/*************************************************************/
-
 int check_and_terminate_existing_instance(void)
 {
 
@@ -1948,9 +1866,6 @@ void linux_subsystem_init(void)
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 #endif /* WITHIQSHIFT */
-#if WITHENCODER2
-	linux_create_thread(& encoders_t, encoders_thread, 50, 1);
-#endif /* WITHENCODER2 */
 }
 
 void linux_user_init(void)
@@ -1970,6 +1885,7 @@ void linux_user_init(void)
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
+	evdev_initialize();
 }
 
 /****************************************************************/
@@ -2160,18 +2076,18 @@ uint_fast8_t dummy_getchar(char * cp)
 	return 1;
 }
 
-// ********************** EVDEV Touch ******************************
+// ********************** EVDEV Events ******************************
 
 #if (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL
 
-int evdev_fd = -1;
+int evdev_touch_fd = -1;
 
 uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	struct input_event in;
 	static uint_fast16_t xx = 0, yy = 0, pr = 0;
 
-	while (read(evdev_fd, &in, sizeof(struct input_event)) > 0)
+	while (read(evdev_touch_fd, &in, sizeof(struct input_event)) > 0)
 	{
 		if(in.type == EV_ABS && in.code == ABS_X)
 		{
@@ -2196,6 +2112,32 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 	return pr;
 }
+
+#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
+
+#if WITHENCODER2 && ENCODER2_EVDEV
+
+int evdev_enc2_fd = -1;
+
+int linux_get_enc2(void)
+{
+	struct input_event in;
+	int step = 0;
+
+	if (! evdev_enc2_fd) return 0;
+
+	while (read(evdev_enc2_fd, &in, sizeof(struct input_event)) > 0)
+	{
+		if(in.type == EV_REL && in.code == REL_X)
+		{
+			step += in.value;
+		}
+	}
+
+	return step;
+}
+
+#endif /* WITHENCODER2 && ENCODER2_EVDEV */
 
 static int is_event_device(const struct dirent * dir) {
 	return strncmp("event", dir->d_name, 5) == 0;
@@ -2231,27 +2173,44 @@ void evdev_initialize(void)
 		close(fd);
 		free(namelist[i]);
 
+#if TSC1_TYPE == TSC_TYPE_EVDEV
 		if (strstr(name, TOUCH_EVENT_NAME))
 		{
 			filename = fname;
 			printf("Use %s for touch events\n", fname);
 
-		    evdev_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
-		    if(evdev_fd == -1) {
+			evdev_touch_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+		    if(evdev_touch_fd == -1) {
 		        perror("unable open evdev interface:");
-		        return;
 		    }
 
-		    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
-		    return;
+		    fcntl(evdev_touch_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
 		}
+#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
+#if ENCODER2_EVDEV
+		if (strstr(name, ENCODER2_EVENT_NAME))
+		{
+			filename = fname;
+			printf("Use %s for encoder2 events\n", fname);
+
+			evdev_enc2_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+		    if(evdev_enc2_fd == -1) {
+		        perror("unable open evdev interface:");
+		    }
+
+		    fcntl(evdev_enc2_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+		}
+#endif /* ENCODER2_EVDEV */
 	}
 
-	printf("Not found %s event devices\n", TOUCH_EVENT_NAME);
+#if TSC1_TYPE == TSC_TYPE_EVDEV
+	if (evdev_touch_fd < 0) printf("Not found %s event devices\n", TOUCH_EVENT_NAME);
+#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
+#if ENCODER2_EVDEV
+	if (evdev_enc2_fd < 0) printf("Not found %s event devices\n", ENCODER2_EVENT_NAME);
+#endif /* ENCODER2_EVDEV */
 	return;
 }
-
-#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
 
 // *****************************************************************
 

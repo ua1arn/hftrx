@@ -100,19 +100,9 @@ enum {
 #define LINUX_STREAM_INT_FILE	"/dev/uio2"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
 #define TOUCH_EVENT_NAME		"Touch2USB"
+#define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
 #define NVRAM_DB_FILE			"hftrx_data/nvram.db"
-
-#if WITHENCODER2
-
-#define ENCODER2_GPIOCHIP 	gpiochip3
-#define ENCODER2_LINE_A 	24 // GPIO3_D0
-#define ENCODER2_LINE_B 	27 // GPIO3_D3
-#define READ_LINE 			ENCODER2_LINE_A
-#define INTERRUPT_LINE 		ENCODER2_LINE_B
-#define DEBOUNCE_TIME_MS 	30
-
-#endif /* WITHENCODER2 */
 
 #if WITHISBOOTLOADER
 

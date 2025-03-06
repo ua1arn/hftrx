@@ -20158,6 +20158,8 @@ hamradio_main_step(void)
 				nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
 				step_main = gstep_ENC1;
 				step_sub = gstep_ENC1;
+			#elif WITHENCODER2 && LINUX_SUBSYSTEM
+				nrotate_sub = linux_get_enc2();
 			#elif WITHENCODER2
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);

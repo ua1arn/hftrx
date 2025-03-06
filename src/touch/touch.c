@@ -504,10 +504,6 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
-#if TSC1_TYPE == TSC_TYPE_EVDEV
-	evdev_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
-
 	/* Тест - печать ненормализованных значений */
 #if WITHDEBUG && 0
 	for (;;)

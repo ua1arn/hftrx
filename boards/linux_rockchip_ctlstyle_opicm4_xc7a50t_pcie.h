@@ -146,6 +146,7 @@
 	
 	
 	#define WITHENCODER2	1		/* есть второй валкодер */
+	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_ALSA

@@ -136,8 +136,8 @@ void linux_init_cond(struct cond_thread * ct);
 int linux_verify_cond(struct cond_thread * ct);
 void linux_destroy_cond(struct cond_thread * ct);
 void linux_wait_iq(void);
-int rpmsg_init(void);
 void evdev_initialize(void);
+int linux_get_enc2(void);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
