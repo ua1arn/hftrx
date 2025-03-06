@@ -46,7 +46,7 @@ void lvgl_test(void);
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	5
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
+pthread_t timer_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
 
 void linux_wait_iq(void)
@@ -285,19 +285,6 @@ void * process_linux_timer_spool(void * args)
 		usleep(5000);
 	}
 }
-
-#if WITHENCODER || WITHENCODER2
-void * linux_encoder_spool(void * args)
-{
-	extern encoder_t encoder2;
-
-	while(1)
-	{
-		spool_encinterrupts(& encoder2);
-		usleep(500);
-	}
-}
-#endif /* WITHENCODER || WITHENCODER2 */
 
 #if WITHNMEA //&& WITHLFM
 
@@ -1871,7 +1858,6 @@ void linux_subsystem_init(void)
 void linux_user_init(void)
 {
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
-//	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
@@ -2139,8 +2125,28 @@ int linux_get_enc2(void)
 
 #endif /* WITHENCODER2 && ENCODER2_EVDEV */
 
+#if WITHKEYBOARD && KEYBOARD_EVDEV
+
+int evdev_keyboard_fd = -1;
+
+#endif /* WITHKEYBOARD && KEYBOARD_EVDEV */
+
 static int is_event_device(const struct dirent * dir) {
 	return strncmp("event", dir->d_name, 5) == 0;
+}
+
+static void check_event(int * fd, char * name, char * fname, const char * event_name)
+{
+	if (strstr(name, event_name)) {
+		printf("Use %s for %s events\n", fname, event_name);
+
+		*fd = open(fname, O_RDWR | O_NOCTTY | O_NDELAY);
+		if (*fd == -1) {
+			perror("unable open evdev interface:");
+		}
+
+		fcntl(*fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+	}
 }
 
 void evdev_initialize(void)
@@ -2174,33 +2180,14 @@ void evdev_initialize(void)
 		free(namelist[i]);
 
 #if TSC1_TYPE == TSC_TYPE_EVDEV
-		if (strstr(name, TOUCH_EVENT_NAME))
-		{
-			filename = fname;
-			printf("Use %s for touch events\n", fname);
-
-			evdev_touch_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
-		    if(evdev_touch_fd == -1) {
-		        perror("unable open evdev interface:");
-		    }
-
-		    fcntl(evdev_touch_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
-		}
+		check_event(& evdev_touch_fd, name, fname, TOUCH_EVENT_NAME);
 #endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
 #if ENCODER2_EVDEV
-		if (strstr(name, ENCODER2_EVENT_NAME))
-		{
-			filename = fname;
-			printf("Use %s for encoder2 events\n", fname);
-
-			evdev_enc2_fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
-		    if(evdev_enc2_fd == -1) {
-		        perror("unable open evdev interface:");
-		    }
-
-		    fcntl(evdev_enc2_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
-		}
+		check_event(& evdev_enc2_fd, name, fname, ENCODER2_EVENT_NAME);
 #endif /* ENCODER2_EVDEV */
+#if KEYBOARD_EVDEV
+		check_event(& evdev_keyboard_fd, name, fname, KEYBOARD_EVENT_NAME);
+#endif /* KEYBOARD_EVDEV */
 	}
 
 #if TSC1_TYPE == TSC_TYPE_EVDEV
@@ -2209,6 +2196,9 @@ void evdev_initialize(void)
 #if ENCODER2_EVDEV
 	if (evdev_enc2_fd < 0) printf("Not found %s event devices\n", ENCODER2_EVENT_NAME);
 #endif /* ENCODER2_EVDEV */
+#if KEYBOARD_EVDEV
+	if (evdev_keyboard_fd < 0) printf("Not found %s event devices\n", KEYBOARD_EVENT_NAME);
+#endif /* KEYBOARD_EVDEV */
 	return;
 }
 
@@ -2228,7 +2218,6 @@ void linux_exit(void)
 
 #if 0
 	linux_cancel_thread(timer_spool_t);
-	linux_cancel_thread(encoder_spool_t);
 	linux_cancel_thread(iq_interrupt_t);
 #if WITHNMEA
 	linux_cancel_thread(nmea_t);

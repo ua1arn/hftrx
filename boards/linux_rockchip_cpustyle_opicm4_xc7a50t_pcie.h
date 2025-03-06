@@ -101,6 +101,7 @@ enum {
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
 #define TOUCH_EVENT_NAME		"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
+#define KEYBOARD_EVENT_NAME		"gpio-keys"
 #define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
 #define NVRAM_DB_FILE			"hftrx_data/nvram.db"
 
