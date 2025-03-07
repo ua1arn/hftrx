@@ -71,6 +71,7 @@ enum {
 	adc_rand_pos 		= 27,
 	iq_test_pos			= 28,
 	wnb_pos				= 29,
+	stream_reset_pos 	= 30,
 };
 
 enum {
@@ -810,7 +811,7 @@ void prog_spi_exchange(
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
-volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0;
+volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
 
@@ -822,7 +823,7 @@ void update_modem_ctrl(void)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
 			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
 			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
-			| (!! wnb_state << wnb_pos)
+			| (!! wnb_state << wnb_pos)							| (!! resetn_stream << stream_reset_pos)
 			| 0;
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
@@ -979,7 +980,43 @@ uint8_t streambuf[4096] = { 0 };
 char strbuf[128];
 static uint8_t stream_state = STREAM_IDLE, auto_restart = 0;
 struct sockaddr_in local_addr;
-volatile uint32_t * stream_rate, * stream_data, * stream_count;
+
+enum {
+	STREAM_RATE_192K = REFERENCE_FREQ / 192000 / 2,
+	STREAM_RATE_384K = REFERENCE_FREQ / 384000 / 2,
+	STREAM_RATE_768K = REFERENCE_FREQ / 768000 / 2,
+};
+
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+volatile uint32_t * stream_rate, * stream_data, * stream_pos;
+#endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
+
+void set_stream_rate(uint32_t v)
+{
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	* stream_rate = v;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_write_user(AXI_LITE_STREAM_RATE, v);
+#endif
+}
+
+uint32_t get_stream_pos(void)
+{
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	return * stream_pos;
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	return xdma_read_user(AXI_LITE_STREAM_POS);
+#endif
+}
+
+void stream_receive(uint8_t * buf, uint16_t offset)
+{
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	memcpy(buf, (uint8_t *) stream_data + offset, 4096);
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_c2h_transfer(AXI_IQ_STREAM_BRAM + offset, 4096, buf);
+#endif
+}
 
 void server_kill(void)
 {
@@ -989,36 +1026,43 @@ void server_kill(void)
 
 void * eth_stream_interrupt_thread(void * args)
 {
+	ssize_t nb;
+
 	int fd = open(LINUX_STREAM_INT_FILE, O_RDWR);
     if (fd < 0) {
         PRINTF("%s open failed\n", LINUX_STREAM_INT_FILE);
         return NULL;
     }
 
+	struct pollfd fds = {
+		.fd = fd,
+		.events = POLLIN,
+	};
+
+	resetn_stream = 1;
+	update_modem_ctrl();
+
     while(1)
     {
     	uint32_t intr = 1; /* unmask */
 
-		ssize_t nb = write(fd, & intr, sizeof(intr));
+#if DDS1_TYPE != DDS_TYPE_XDMA
+		nb = write(fd, & intr, sizeof(intr));
 		if (nb != (ssize_t) sizeof(intr)) {
 			perror("write");
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
-
-		struct pollfd fds = {
-			.fd = fd,
-			.events = POLLIN,
-		};
+#endif /* DDS1_TYPE != DDS_TYPE_XDMA */
 
 		int ret = poll(& fds, 1, -1);
 		if (ret >= 1) {
 			nb = read(fd, & intr, sizeof(intr));
 			if (nb == (ssize_t) sizeof(intr) && stream_state == STREAM_CONNECTED)
 			{
-				uint32_t pos = * stream_count;
+				uint32_t pos = get_stream_pos();
 				uint16_t offset = pos >= 512 ? 0 : 4096;
-				memcpy(streambuf, (uint8_t *) stream_data + offset, 4096);
+				stream_receive(streambuf, offset);
 				safe_cond_signal(& ct_rts);
 			}
 		} else {
@@ -1083,13 +1127,13 @@ void * eth_main_thread(void * args)
 				// Set sample rate
 				switch (command & 3) {
 				case 0:
-					* stream_rate = 320;	// 192k
+					set_stream_rate(STREAM_RATE_192K);
 					break;
 				case 1:
-					* stream_rate = 160;	// 384k
+					set_stream_rate(STREAM_RATE_384K);
 					break;
 				case 2:
-					* stream_rate = 80;		// 768k
+					set_stream_rate(STREAM_RATE_768K);
 					break;
 				}
 				break;
@@ -1399,37 +1443,39 @@ void linux_iq_init(void)
 	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
-
 #if DDS1_TYPE == DDS_TYPE_XDMA
 	pcie_init();
 	if (pcie_open() < 0)
 		perror("pcie init");
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
-
 #if WITHEXTIO_LAN
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	stream_rate = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_RATE);
-	stream_count = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_COUNT);
+	stream_pos = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_COUNT);
 	stream_data = (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_STREAM_DATA, 2);
+#endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
 
-	* stream_rate = 160;
+	resetn_stream = 0;
+	update_modem_ctrl();
+
+	set_stream_rate(STREAM_RATE_192K);
 
 	linux_init_cond(& ct_rts);
 	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, 1);
 #endif /* WITHEXTIO_LAN */
-
 #if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK | RX_ENABLE_MASK);
 #endif /* defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR) */
-
 #if WITHWNB
 	wnb_update();
 #endif /* WITHWNB */
-
+#if WITHIQSHIFT
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
+#endif /* WITHIQSHIFT */
 }
 
 #if DDS1_TYPE == DDS_TYPE_XDMA
@@ -2140,12 +2186,12 @@ static void check_event(int * fd, char * name, char * fname, const char * event_
 	if (strstr(name, event_name)) {
 		printf("Use %s for %s events\n", fname, event_name);
 
-		*fd = open(fname, O_RDWR | O_NOCTTY | O_NDELAY);
-		if (*fd == -1) {
+		* fd = open(fname, O_RDWR | O_NOCTTY | O_NDELAY);
+		if (* fd == -1) {
 			perror("unable open evdev interface:");
 		}
 
-		fcntl(*fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+		fcntl(* fd, F_SETFL, O_ASYNC | O_NONBLOCK);
 	}
 }
 

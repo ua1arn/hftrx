@@ -38,6 +38,7 @@
 #define USERFIRSTSBLOCK 0
 
 #define	AXI_IQ_RX_BRAM				0xC0000000
+#define	AXI_IQ_STREAM_BRAM			0xC0010000
 #define	AXI_LITE_IQ_RX_BRAM_CNT		0x00001000
 #define	AXI_LITE_DDS_FTW			0x00002000
 #define	AXI_LITE_DDS_RTS			0x00003000
@@ -45,6 +46,8 @@
 #define	AXI_LITE_WNB_CONFIG			0x00005000
 #define	AXI_LITE_DDS_FTW_SUB		0x00006000
 #define	AXI_LITE_IQ_FX_FIFO			0x00007000
+#define	AXI_LITE_STREAM_RATE		0x00008000
+#define	AXI_LITE_STREAM_POS			0x00009000
 
 /*
 enum {
@@ -97,7 +100,7 @@ enum {
 #define LINUX_I2C_FILE			"/dev/i2c-3"
 #define LINUX_FB_FILE			"/dev/fb0"
 #define LINUX_TTY_FILE			"/dev/tty0"
-#define LINUX_STREAM_INT_FILE	"/dev/uio2"
+#define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
 #define TOUCH_EVENT_NAME		"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
