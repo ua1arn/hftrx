@@ -3457,9 +3457,7 @@ static void sysinit_smp_initialize(void)
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 53U) && defined(__aarch64__)
-	// TODO
-	//#warning To be done
-	// Всё что надо делается в инициализации cache
+	// Всё что надо делается в sysinit_fpu_initialize
 
 #elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
 	/**
@@ -3470,13 +3468,8 @@ static void sysinit_smp_initialize(void)
 	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
 
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
-	#if WITHSMPSYSTEM
-		// set the CPUECTLR.SMPEN
-		__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-	#else /* WITHSMPSYSTEM */
-		// clear the CPUECTLR.SMPEN
-		__set_CPUECTLR(__get_CPUECTLR() & ~ CPUECTLR_SMPEN_Msk);
-	#endif /* WITHSMPSYSTEM */
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	// 4.5.28 Auxiliary Control Register
 	// bit6: L2ACTLR write access control
 	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
