@@ -943,7 +943,11 @@ static uint32_t threshold = 30;
 
 static void wnb_update(void)
 {
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	reg_write(XPAR_IQ_MODEM_WNB_CONFIG, threshold);
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+	xdma_write_user(AXI_LITE_WNB_CONFIG, threshold);
+#endif
 }
 
 void wnb_set_threshold(uint16_t v)
@@ -985,6 +989,14 @@ enum {
 	STREAM_RATE_192K = REFERENCE_FREQ / 192000 / 2,
 	STREAM_RATE_384K = REFERENCE_FREQ / 384000 / 2,
 	STREAM_RATE_768K = REFERENCE_FREQ / 768000 / 2,
+};
+
+enum {
+#if CPUSTYLE_XC7Z
+	stream_core = 1,
+#elif CPUSTYLE_RK356X
+	stream_core = 3,
+#endif
 };
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
@@ -1190,7 +1202,7 @@ void * eth_main_thread(void * args)
 void server_restart(void)
 {
 	linux_cancel_thread(eth_main_t);
-	linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
+	linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_core);
 }
 
 uint8_t stream_get_state(void)
@@ -1213,7 +1225,7 @@ void server_stop(void)
 void server_start(void)
 {
 	if (stream_state == STREAM_IDLE)
-		linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
+		linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_core);
 }
 
 #endif /* WITHEXTIO_LAN */
@@ -1454,14 +1466,12 @@ void linux_iq_init(void)
 	stream_pos = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_COUNT);
 	stream_data = (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_STREAM_DATA, 2);
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
-
 	resetn_stream = 0;
 	update_modem_ctrl();
 
 	set_stream_rate(STREAM_RATE_192K);
-
 	linux_init_cond(& ct_rts);
-	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, 1);
+	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, stream_core);
 #endif /* WITHEXTIO_LAN */
 #if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
@@ -1861,6 +1871,25 @@ static void handle_sig(int sig)
 }
 
 /*************************************************************/
+
+#if WITHCPUTEMPERATURE
+
+float linux_get_cpu_temp(void)
+{
+	int cpu_temp;
+	const char tpath[] = "/sys/class/thermal/thermal_zone0/temp";
+
+	FILE * tf = fopen(tpath, "r");
+	if (! tf)
+		perror("fopen");
+
+	fscanf(tf, "%d", &cpu_temp);
+	fclose(tf);
+
+	return cpu_temp / 1000.0;
+}
+
+#endif /* WITHCPUTEMPERATURE */
 
 void linux_subsystem_init(void)
 {

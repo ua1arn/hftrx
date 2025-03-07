@@ -24,7 +24,7 @@
 #define htols(x)     __bswap_16(x)
 #endif
 
-#define MAP_SIZE (32*1024UL)
+#define MAP_SIZE (64*1024UL)
 
 /* helper struct to remember the Xdma device names */
 typedef struct {

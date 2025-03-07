@@ -148,7 +148,7 @@ void cs_i2c_assert(spitarget_t target);
 void cs_i2c_deassert(spitarget_t target);
 void cs_i2c_disable(void);
 
-float xczu_get_cpu_temperature(void);
+float linux_get_cpu_temp(void);
 void hamradio_set_hw_vfo(uint_fast8_t v);
 
 void ad936x_set_freq(long long freq);
