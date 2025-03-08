@@ -4627,6 +4627,51 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+#elif CTLREGMODE_RA4ASN_LITE
+
+#define BOARD_NPLANES	1
+
+static void prog_ctrlreg(uint_fast8_t plane)
+{
+	const spitarget_t target = targetctl1;
+	rbtype_t rbbuff [3] = { 0 };
+	const uint_fast8_t txgated = glob_tx && glob_txgate;
+	const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
+
+	enum
+	{
+		HARDWARE_OPA2674I_FULLPOWER = 0x03,
+		HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+		HARDWARE_OPA2674I_SHUTDOWN = 0x00
+	};
+	static const FLASHMEM uint_fast8_t powerxlat [] =
+	{
+		HARDWARE_OPA2674I_IDLEPOWER,
+		HARDWARE_OPA2674I_POWERCUTBACK,
+		HARDWARE_OPA2674I_FULLPOWER,
+	};
+
+	RBBIT(027, 0);					// not use
+	RBBIT(026, 0);					// not use
+	RBVAL(022, glob_attvalue, 4);	// PE4302 attenuator
+	RBBIT(021, glob_attvalue >> 4); // PE4302 attenuator
+	RBBIT(020, 0);					// not use
+
+	RBBIT(017, glob_bandf == 0);	// ~BAND0_RELAY
+	RBBIT(016, 0);					// not use
+	RBBIT(015, glob_bandf == 0); 	// ~BAND0_RELAY_OUT
+	RBBIT(014, ! xvrtr && glob_tx);	// D1: TX ANT relay
+	RBBIT(013, 0);					// not use
+	RBVAL(011, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D
+	RBBIT(010, 0);					// not use
+
+	RBVAL(001, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7); // бит выбора диапазонного фильтра приёмника
+	RBBIT(000, 0);					// not use
+
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+}
+
 #elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */

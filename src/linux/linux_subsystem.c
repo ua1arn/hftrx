@@ -868,9 +868,9 @@ void xcz_dds_ftw_sub(const uint_least64_t * val)
 	uint32_t v = * val;
 	mirror_nco2 = v;
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL && WITHUSEDUALWATCH
 	* ftw_sub = v;
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif DDS1_TYPE == DDS_TYPE_XDMA && WITHUSEDUALWATCH
 	xdma_write_user(AXI_LITE_DDS_FTW_SUB, v);
 #endif
 }

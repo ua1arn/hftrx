@@ -66,8 +66,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
-//	#define CTLREGMODE_AXU2CGA_FULL	1
+//	#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_RA4ASN_LITE	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255

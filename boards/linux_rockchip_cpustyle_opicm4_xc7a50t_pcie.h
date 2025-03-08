@@ -692,15 +692,13 @@ enum {
 	// CS lines
 	enum {
 		cs0,
-//		cs1,
+		cs1,
 //		cs2,
 
 		cs_cnt
 	};
 
-#define targetfpga1	cs0
-//#define targetnvram	cs1
-//#define targetadc2	cs2
+#define targetctl1	cs1
 
 #endif /* WITHSPIHW || WITHSPISW */
 
