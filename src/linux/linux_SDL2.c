@@ -9,13 +9,19 @@
 
 #include "linux_subsystem.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <GLES3/gl32.h>
 
 #if WITHSDL2VIDEO
 
+void get_cursor_pos(uint16_t * x, uint16_t * y);
+uint8_t check_is_mouse_present(void);
+
 SDL_Renderer * renderer;
 SDL_Window * window;
 SDL_Texture * texture;
+SDL_Texture * mouse_cursor;
+int cursor_width, cursor_height;
 
 int sdl2_render_init(void)
 {
@@ -53,6 +59,30 @@ int sdl2_render_init(void)
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, DIM_X, DIM_Y);
     if (! texture) return 0;
 
+#if MOUSE_EVDEV
+	int imgFlags = IMG_INIT_PNG;
+	if (! (IMG_Init(imgFlags) & imgFlags)) {
+		printf("Failed to initialize SDL_image: %s\n", IMG_GetError());
+		SDL_Quit();
+		return 0;
+	}
+
+	SDL_Surface * surface = IMG_Load(MOUSE_CURSOR_PATH);
+	if (! surface) {
+		printf("Failed to load image: %s\n", IMG_GetError());
+		return 0;
+	}
+
+	mouse_cursor = SDL_CreateTextureFromSurface(renderer, surface);
+	if (! mouse_cursor) {
+		printf("Failed to create texture: %s\n", SDL_GetError());
+	}
+
+	SDL_QueryTexture(mouse_cursor, NULL, NULL, & cursor_width, & cursor_height);
+
+	SDL_FreeSurface(surface);
+#endif /* MOUSE_EVDEV */
+
     return 1;
 }
 
@@ -70,6 +100,16 @@ void sdl2_render_update(uintptr_t frame)
 	ASSERT(! SDL_UpdateTexture(texture, NULL, (PACKEDCOLORPIP_T *) frame, DIM_X * sizeof(PACKEDCOLORPIP_T)));
 	SDL_Rect destRect = { 0, 0, DIM_X, DIM_Y };
 	SDL_RenderCopy(renderer, texture, NULL, & destRect);
+
+#if MOUSE_EVDEV
+    if (mouse_cursor && check_is_mouse_present()) {
+    	uint16_t mouse_x, mouse_y;
+    	get_cursor_pos(& mouse_x, & mouse_y);
+        SDL_Rect png_destRect = { mouse_x, mouse_y, cursor_width, cursor_height };
+        SDL_RenderCopy(renderer, mouse_cursor, NULL, & png_destRect);
+    }
+#endif /* MOUSE_EVDEV */
+
 	SDL_RenderPresent(renderer);
 }
 

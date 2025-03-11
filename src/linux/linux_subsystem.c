@@ -2139,14 +2139,68 @@ uint_fast8_t dummy_getchar(char * cp)
 
 // ********************** EVDEV Events ******************************
 
+static int_fast16_t xx = DIM_X / 2, yy = DIM_Y / 2, pr = 0;
+
+#if WITHKEYBOARD && KEYBOARD_EVDEV
+
+int evdev_keyboard_fd = -1;
+
+#endif /* WITHKEYBOARD && KEYBOARD_EVDEV */
+
+#if MOUSE_EVDEV
+
+int evdev_mouse_fd = -1;
+
+void get_cursor_pos(uint16_t * x, uint16_t * y)
+{
+	* x = xx;
+	* y = yy;
+}
+
+uint8_t check_is_mouse_present(void)
+{
+	return evdev_mouse_fd > 0;
+}
+
+void get_mouse_events(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	struct input_event in;
+
+	if (! evdev_mouse_fd) return;
+
+	while (read(evdev_mouse_fd, &in, sizeof(struct input_event)) > 0)
+	{
+		if(in.type == EV_REL && in.code == REL_X)
+		{
+			xx += in.value;
+			if (xx < 0) xx = 0;
+			if (xx > DIM_X) xx = DIM_X;
+		}
+		else if (in.type == EV_REL && in.code == REL_Y)
+		{
+			yy += in.value;
+			if (yy < 0) yy = 0;
+			if (yy > DIM_Y) yy = DIM_Y;
+		}
+		else if(in.type == EV_KEY && in.code == BTN_LEFT)
+			pr = in.value;
+	}
+
+	* xr = xx;
+	* yr = yy;
+}
+
+#endif /* MOUSE_EVDEV */
+
 #if (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL
 
 int evdev_touch_fd = -1;
 
-uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+void get_touch_events(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	struct input_event in;
-	static uint_fast16_t xx = 0, yy = 0, pr = 0;
+
+	if (! evdev_touch_fd) return;
 
 	while (read(evdev_touch_fd, &in, sizeof(struct input_event)) > 0)
 	{
@@ -2170,6 +2224,14 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 	* xr = xx;
 	* yr = yy;
+}
+
+uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	get_touch_events(xr, yr);
+#if MOUSE_EVDEV
+	get_mouse_events(xr, yr);
+#endif /* MOUSE_EVDEV */
 
 	return pr;
 }
@@ -2199,12 +2261,6 @@ int linux_get_enc2(void)
 }
 
 #endif /* WITHENCODER2 && ENCODER2_EVDEV */
-
-#if WITHKEYBOARD && KEYBOARD_EVDEV
-
-int evdev_keyboard_fd = -1;
-
-#endif /* WITHKEYBOARD && KEYBOARD_EVDEV */
 
 static int is_event_device(const struct dirent * dir) {
 	return strncmp("event", dir->d_name, 5) == 0;
@@ -2263,6 +2319,9 @@ void evdev_initialize(void)
 #if KEYBOARD_EVDEV
 		check_event(& evdev_keyboard_fd, name, fname, KEYBOARD_EVENT_NAME);
 #endif /* KEYBOARD_EVDEV */
+#if MOUSE_EVDEV
+		check_event(& evdev_mouse_fd, name, fname, MOUSE_EVENT_NAME);
+#endif /* MOUSE_EVDEV */
 	}
 
 #if TSC1_TYPE == TSC_TYPE_EVDEV
@@ -2274,6 +2333,9 @@ void evdev_initialize(void)
 #if KEYBOARD_EVDEV
 	if (evdev_keyboard_fd < 0) printf("Not found %s event devices\n", KEYBOARD_EVENT_NAME);
 #endif /* KEYBOARD_EVDEV */
+#if MOUSE_EVDEV
+	if (evdev_mouse_fd < 0) printf("Not found %s event devices\n", MOUSE_EVENT_NAME);
+#endif /* MOUSE_EVDEV */
 	return;
 }
 

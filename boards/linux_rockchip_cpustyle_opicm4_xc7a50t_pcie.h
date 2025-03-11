@@ -105,6 +105,7 @@ enum {
 #define TOUCH_EVENT_NAME		"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
+#define MOUSE_EVENT_NAME		"Mouse"
 #define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
 #define NVRAM_DB_FILE			"hftrx_data/nvram.db"
 

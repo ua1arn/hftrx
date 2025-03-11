@@ -250,6 +250,8 @@
 			#define WITHWNB					1	// Simple noise blanker
 			#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
 			#define REALREFERENCE_FREQ 		61443000L
+			#define MOUSE_EVDEV				1
+			#define MOUSE_CURSOR_PATH		"./arrow.png"
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
