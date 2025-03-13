@@ -1494,6 +1494,10 @@ pthread_t xdma_t;
 
 void xdma_event(void)
 {
+#if WITHAD936XIIO
+	if (get_ad936x_stream_status()) return;
+#endif /* WITHAD936XIIO */
+
 	uint16_t position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
 	uint16_t offset = position >= DMABUFFSIZE32RX ? 0 : SIZERX8;
 	xdma_c2h_transfer(AXI_IQ_RX_BRAM + offset, SIZERX8, rxbuf);
@@ -1516,7 +1520,6 @@ void xdma_event(void)
 void * xdma_event_thread(void * args)
 {
 	uint32_t events_user;
-	int read_fd;
 	int fd = open(LINUX_XDMA_EVENT_FILE, O_RDONLY);
 	if (fd < 0) {
 		perror(LINUX_XDMA_EVENT_FILE);
@@ -1533,13 +1536,9 @@ void * xdma_event_thread(void * args)
 			perror("poll");
 		} else {
 			if (fds[0].revents & POLLIN) {
-				read_fd = fd;
+				pread(fd, & events_user, sizeof(events_user), 0);
+				xdma_event(); // iq interrupt from FPGA via XDMA
 			}
-
-			xdma_event(); // iq interrupt from FPGA via XDMA
-
-			/* read and clear the interrupt so we can detect future interrupts */
-			pread(read_fd, & events_user, sizeof(events_user), 0);
 		}
 	}
 }
@@ -2139,6 +2138,42 @@ uint_fast8_t dummy_getchar(char * cp)
 
 // ********************** EVDEV Events ******************************
 
+#if WITHENCODER2 && ENCODER2_EVDEV
+
+int evdev_enc2_fd = -1;
+int mouse_wheel_rotate = 0;
+
+int get_enc2_rotate(void)
+{
+	struct input_event in;
+	int step = 0;
+
+	if (! evdev_enc2_fd) return 0;
+
+	while (read(evdev_enc2_fd, &in, sizeof(struct input_event)) > 0)
+	{
+		if(in.type == EV_REL && in.code == REL_X)
+		{
+			step += in.value;
+		}
+	}
+
+	return step;
+}
+
+int linux_get_enc2(void)
+{
+	int s = 0;
+	s += get_enc2_rotate();
+#if MOUSE_EVDEV
+	s += mouse_wheel_rotate;
+	mouse_wheel_rotate = 0;
+#endif /* MOUSE_EVDEV */
+	return s;
+}
+
+#endif /* WITHENCODER2 && ENCODER2_EVDEV */
+
 static int_fast16_t xx = DIM_X / 2, yy = DIM_Y / 2, pr = 0;
 
 #if WITHKEYBOARD && KEYBOARD_EVDEV
@@ -2168,7 +2203,7 @@ void get_mouse_events(uint_fast16_t * xr, uint_fast16_t * yr)
 
 	if (! evdev_mouse_fd) return;
 
-	while (read(evdev_mouse_fd, &in, sizeof(struct input_event)) > 0)
+	while (read(evdev_mouse_fd, & in, sizeof(struct input_event)) > 0)
 	{
 		if(in.type == EV_REL && in.code == REL_X)
 		{
@@ -2184,6 +2219,10 @@ void get_mouse_events(uint_fast16_t * xr, uint_fast16_t * yr)
 		}
 		else if(in.type == EV_KEY && in.code == BTN_LEFT)
 			pr = in.value;
+#if ENCODER2_EVDEV
+		else if(in.type == EV_REL && in.code == REL_WHEEL)
+			mouse_wheel_rotate = in.value;
+#endif /* ENCODER2_EVDEV */
 	}
 
 	* xr = xx;
@@ -2202,7 +2241,7 @@ void get_touch_events(uint_fast16_t * xr, uint_fast16_t * yr)
 
 	if (! evdev_touch_fd) return;
 
-	while (read(evdev_touch_fd, &in, sizeof(struct input_event)) > 0)
+	while (read(evdev_touch_fd, & in, sizeof(struct input_event)) > 0)
 	{
 		if(in.type == EV_ABS && in.code == ABS_X)
 		{
@@ -2237,30 +2276,6 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 }
 
 #endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
-
-#if WITHENCODER2 && ENCODER2_EVDEV
-
-int evdev_enc2_fd = -1;
-
-int linux_get_enc2(void)
-{
-	struct input_event in;
-	int step = 0;
-
-	if (! evdev_enc2_fd) return 0;
-
-	while (read(evdev_enc2_fd, &in, sizeof(struct input_event)) > 0)
-	{
-		if(in.type == EV_REL && in.code == REL_X)
-		{
-			step += in.value;
-		}
-	}
-
-	return step;
-}
-
-#endif /* WITHENCODER2 && ENCODER2_EVDEV */
 
 static int is_event_device(const struct dirent * dir) {
 	return strncmp("event", dir->d_name, 5) == 0;
@@ -2404,6 +2419,8 @@ unsigned long xc7z_get_arm_freq(void)
 
 #if WITHAD936XIIO
 
+void iio_start_stream(void);
+
 pthread_t iio_t;
 static char iio_uri[30];
 
@@ -2413,16 +2430,33 @@ void * iio_stream_thread(void * args)
 	return NULL;
 }
 
-void iio_start_stream(void);
+void iq_stream_start(void)
+{
+#if DDS1_TYPE == DDS_TYPE_XDMA
+	linux_create_thread(& xdma_t, xdma_event_thread, 95, 2);
+#elif DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+#endif
+}
+
+void iq_stream_stop(void)
+{
+#if DDS1_TYPE == DDS_TYPE_XDMA
+	linux_cancel_thread(xdma_t);
+#elif DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+	linux_cancel_thread(iq_interrupt_t);
+#endif
+}
+
 
 uint8_t iio_ad936x_start(const char * uri)
 {
 	strncpy(iio_uri, uri, 30);
 
-	linux_cancel_thread(iq_interrupt_t);
+	iq_stream_stop();
 	if (! get_status_iio())
 	{
-		linux_create_thread(& iio_t, iio_stream_thread, 95, 1);
+		linux_create_thread(& iio_t, iio_stream_thread, 50, 3);
 		while(! get_ad936x_stream_status()) ;
 	}
 	iio_start_stream();
@@ -2435,7 +2469,7 @@ uint8_t iio_ad936x_stop(void)
 {
 	//while(get_ad936x_stream_status()) ;
 	//linux_cancel_thread(iio_t);
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+	iq_stream_start();
 	iio_stop_stream();
 	hamradio_set_freq(7012000);
 
