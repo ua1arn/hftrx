@@ -716,7 +716,6 @@ void nmeatuner_initialize(void)
 	#elif \
 		CTLSTYLE_RAVENDSP_V3 || \
 		CTLSTYLE_RAVENDSP_V4 || \
-		CTLSTYLE_RAVENDSP_V5 || \
 		CTLSTYLE_RAVENDSP_V6 || \
 		CTLSTYLE_RAVENDSP_V7 || \
 		CTLSTYLE_RAVENDSP_V8 || \
@@ -8622,9 +8621,6 @@ static const uint8_t adcinputs [] =
 	POTAUX2,		// PC4 AUX2
 	ALCINIX,		// PC5 ALC IN
 #endif /* CTLSTYLE_RAVENDSP_V4 */
-#if CTLSTYLE_RAVENDSP_V5
-	ALCINIX,		// PB1 ALC IN
-#endif /* CTLSTYLE_RAVENDSP_V5 */
 #if CTLSTYLE_RAVENDSP_V6
 	ALCINIX,		// PB1 ALC IN
 #endif /* CTLSTYLE_RAVENDSP_V6 */

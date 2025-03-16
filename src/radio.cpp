@@ -13158,22 +13158,23 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #elif WITHCURRLEVEL2
 
-	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);
+	const adcvalholder_t FSval = board_getadc_fsval(PASENSEIX2);
+	const adcvalholder_t midp = board_getadc_unfiltered_truevalue(PAREFERIX2);	// 2.5 voltage reference code
 	const adcvalholder_t sense = board_getadc_unfiltered_truevalue(PASENSEIX2);
 
-	const long curr10 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * board_getadc_fsval(PAREFERIX2));
+	const long curr10 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * FSval);
 
 #else /* WITHCURRLEVEL2 */
 
-	const long vsense = board_getadc_filtered_u32(PASENSEMRRIX, 0, (uint_fast32_t) Vref_mV * scale);
+	const long vsense = board_getadc_filtered_u32(adci, 0, (uint_fast32_t) Vref_mV);
 
-#if CTLSTYLE_RAVENDSP_V5
-	const long midpoint = (gtx ? 2472uL : 2442uL) * scale; // tx=247200, rx=244200
-#else
-	static const long midpoint = 2516uL * scale;
-#endif
+	static const long midpoint = 2500L;
 
-	int curr10 = ((long) midpoint - (long) vsense + sens / 2) / sens;
+	const adcvalholder_t FSval = board_getadc_fsval(adci);
+	const adcvalholder_t midp = midpoint * FSval / Vref_mV;	// 2.5 voltage reference code
+	const adcvalholder_t sense = board_getadc_filtered_truevalue(adci);
+
+	const long curr10 = ((long) midp - (long) sense) * (int_fast64_t) Vref_mV * scale / ((long) sens * FSval);
 
 #endif /* WITHCURRLEVEL2 */
 
