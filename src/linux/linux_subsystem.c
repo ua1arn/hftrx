@@ -80,6 +80,22 @@ enum {
 	SIZERX8 = DMABUFFSIZE32RX * 4,
 };
 
+enum {
+#if CPUSTYLE_XC7Z
+	stream_core = 1,
+	alsa_thread_core = 1,
+	iq_thread_core = 1,
+	iio_thread_core = 1,
+	spool_thread_core = 0,
+#elif CPUSTYLE_RK356X
+	stream_thread_core = 3,
+	alsa_thread_core = 3,
+	iq_thread_core = 2,
+	iio_thread_core = 2,
+	spool_thread_core = 0,
+#endif
+};
+
 #if (DDS1_TYPE == DDS_TYPE_FPGAV1)
 
 void linux_rxtx_state(uint8_t tx)
@@ -241,6 +257,7 @@ void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 
 #endif /* WITHAUDIOSAMPLESREC */
 
+#if CPUSTYLE_XC7Z
 void * get_highmem_ptr(uint32_t addr)
 {
 	int fd;
@@ -276,6 +293,28 @@ void * get_blockmem_ptr(uint32_t addr, uint8_t pages)
 	ASSERT(blkptr);
 	return blkptr;
 }
+
+void reg_write(uint32_t addr, uint32_t val)
+{
+	void * ptr = get_highmem_ptr(addr);
+
+	* (uint32_t *)(ptr) = val;
+
+	//reg_read(addr);
+	//printf("reg_write: 0x%08x, 0x%08x\n", addr, val);
+}
+
+uint32_t reg_read(uint32_t addr)
+{
+	void * ptr = get_highmem_ptr(addr);
+
+	uint32_t res = * (uint32_t *) ptr;
+
+//	printf("reg_read: 0x%08X, 0x%08X\n", addr, res);
+	return res;
+}
+
+#endif /* CPUSTYLE_XC7Z */
 
 void * process_linux_timer_spool(void * args)
 {
@@ -541,26 +580,6 @@ void gpio_writepin(uint8_t pin, uint8_t val)
 uint_fast8_t gpio_readpin(uint8_t pin)
 {
 	return linux_xgpi_read_pin(pin);
-}
-
-void reg_write(uint32_t addr, uint32_t val)
-{
-	void * ptr = get_highmem_ptr(addr);
-
-	* (uint32_t *)(ptr) = val;
-
-	//reg_read(addr);
-	//printf("reg_write: 0x%08x, 0x%08x\n", addr, val);
-}
-
-uint32_t reg_read(uint32_t addr)
-{
-	void * ptr = get_highmem_ptr(addr);
-
-	uint32_t res = * (uint32_t *) ptr;
-
-//	printf("reg_read: 0x%08X, 0x%08X\n", addr, res);
-	return res;
 }
 
 /************* I2C ************************/
@@ -991,14 +1010,6 @@ enum {
 	STREAM_RATE_768K = REFERENCE_FREQ / 768000 / 2,
 };
 
-enum {
-#if CPUSTYLE_XC7Z
-	stream_core = 1,
-#elif CPUSTYLE_RK356X
-	stream_core = 3,
-#endif
-};
-
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 volatile uint32_t * stream_rate, * stream_data, * stream_pos;
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
@@ -1202,7 +1213,7 @@ void * eth_main_thread(void * args)
 void server_restart(void)
 {
 	linux_cancel_thread(eth_main_t);
-	linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_core);
+	linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_thread_core);
 }
 
 uint8_t stream_get_state(void)
@@ -1225,7 +1236,7 @@ void server_stop(void)
 void server_start(void)
 {
 	if (stream_state == STREAM_IDLE)
-		linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_core);
+		linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_thread_core);
 }
 
 #endif /* WITHEXTIO_LAN */
@@ -1237,40 +1248,53 @@ void server_start(void)
 #include <alsa/asoundlib.h>
 
 pthread_t alsa_t;
-
 snd_pcm_t * pcm_ph = NULL;
 snd_pcm_uframes_t frames = DMABUFFSIZE16TX / DMABUFFSTEP16TX;
+snd_pcm_uframes_t alsa_buffer_size = ARMI2SRATE * 50 / 1000; // 50 мс
 unsigned int actual_sample_rate = ARMI2SRATE;
 snd_pcm_sframes_t error;
 uint8_t vol_shift = 0;
 
-void ph(void)
-{
-	const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-	int32_t * b = (int32_t *) addr_ph;
-#if WITHAUDIOSAMPLESREC
-	as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
-
-	arm_shift_q31(b, - vol_shift, b, DMABUFFSIZE16TX);
-
-    if ((error = snd_pcm_writei(pcm_ph, b, frames)) != frames) {
-    	printf("Write to PCM device failed: %s\n", snd_strerror(error));
-        if (error == -EPIPE)
-            snd_pcm_prepare(pcm_ph);
-    }
-
-	release_dmabuffer16tx(addr_ph);
-}
-
 void * alsa_thread(void * args)
 {
+	const snd_pcm_uframes_t half_buf = alsa_buffer_size / 2;
+
 	while(1)
 	{
-		linux_wait_iq();
+		snd_pcm_sframes_t avail = snd_pcm_avail_update(pcm_ph);
 
-		ph();
-		ph();
+		if (avail == -EPIPE)
+		{
+			printf("Buffer overrun, recovering...");
+			snd_pcm_recover(pcm_ph, avail, 0);
+		}
+		else if (avail == -ESTRPIPE)
+		{
+			printf("Threat was freesing, resuming...");
+			snd_pcm_resume(pcm_ph);
+		}
+		else if (avail > 0 && avail < half_buf)
+			usleep(1000);
+		else
+		{
+			const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+			int32_t * b = (int32_t *) addr_ph;
+#if WITHAUDIOSAMPLESREC
+			as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC */
+
+			arm_shift_q31(b, - vol_shift, b, DMABUFFSIZE16TX);
+
+		    if ((error = snd_pcm_writei(pcm_ph, b, frames)) != frames) {
+		    	printf("Write to PCM device failed: %s\n", snd_strerror(error));
+		        if (error == -EPIPE)
+		            snd_pcm_prepare(pcm_ph);
+		        else if (error == -ESTRPIPE)
+		        	snd_pcm_resume(pcm_ph);
+		    }
+
+			release_dmabuffer16tx(addr_ph);
+		}
 	}
 }
 
@@ -1309,8 +1333,7 @@ int alsa_init(void)
 		return 1;
 	}
 
-	snd_pcm_uframes_t buffer_size = ARMI2SRATE * 50 / 1000; // 50 мс
-	if ((error = snd_pcm_hw_params_set_buffer_size_near(pcm_ph, params, & buffer_size)) < 0) {
+	if ((error = snd_pcm_hw_params_set_buffer_size_near(pcm_ph, params, & alsa_buffer_size)) < 0) {
 		printf("Cannot set channel count: %s\n", snd_strerror(error));
 		return 1;
 	}
@@ -1320,7 +1343,11 @@ int alsa_init(void)
 		return 1;
 	}
 
-	linux_create_thread(& alsa_t, alsa_thread, 50, 3);
+	int32_t * s = calloc(alsa_buffer_size, sizeof(int32_t));
+	snd_pcm_writei(pcm_ph, s, alsa_buffer_size);
+	free(s);
+
+	linux_create_thread(& alsa_t, alsa_thread, 50, alsa_thread_core);
 
 	return 0;
 }
@@ -1471,7 +1498,7 @@ void linux_iq_init(void)
 
 	set_stream_rate(STREAM_RATE_192K);
 	linux_init_cond(& ct_rts);
-	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, stream_core);
+	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, stream_thread_core);
 #endif /* WITHEXTIO_LAN */
 #if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
@@ -1547,7 +1574,7 @@ void xdma_iq_init(void)
 {
 	xcz_resetn_modem(0);
 
-	linux_create_thread(& xdma_t, xdma_event_thread, 95, 2);
+	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
 
 	xcz_resetn_modem(1);
 	linux_init_cond(& ct_iq);
@@ -1694,7 +1721,7 @@ void zynq_pl_init(void)
 	pthread_mutex_init(& mutex_as, NULL);
 #endif /* WITHAUDIOSAMPLESREC */
 
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, iq_thread_core);
 //	linux_create_thread(& audio_interrupt_t, audio_interrupt_thread, 50, 1);
 
 #if defined AXI_DCDC_PWM_ADDR
@@ -1931,7 +1958,7 @@ void linux_subsystem_init(void)
 
 void linux_user_init(void)
 {
-	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
+	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
 
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
@@ -2433,9 +2460,9 @@ void * iio_stream_thread(void * args)
 void iq_stream_start(void)
 {
 #if DDS1_TYPE == DDS_TYPE_XDMA
-	linux_create_thread(& xdma_t, xdma_event_thread, 95, 2);
+	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
 #elif DDS1_TYPE == DDS_TYPE_ZYNQ_PL
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, iq_thread_core);
 #endif
 }
 
@@ -2456,7 +2483,7 @@ uint8_t iio_ad936x_start(const char * uri)
 	iq_stream_stop();
 	if (! get_status_iio())
 	{
-		linux_create_thread(& iio_t, iio_stream_thread, 50, 3);
+		linux_create_thread(& iio_t, iio_stream_thread, 50, iio_thread_core);
 		while(! get_ad936x_stream_status()) ;
 	}
 	iio_start_stream();
