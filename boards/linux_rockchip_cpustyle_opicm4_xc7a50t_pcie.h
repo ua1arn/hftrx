@@ -102,7 +102,7 @@ enum {
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
-#define TOUCH_EVENT_NAME		"Touch2USB"
+#define TOUCH_EVENT_NAME		"goodix-ts" //"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
 #define MOUSE_EVENT_NAME		"Mouse"
