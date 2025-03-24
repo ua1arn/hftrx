@@ -1099,7 +1099,7 @@ pix_display2_smeter15(
 				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gswr, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				polar_to_dek(xc, yc, gswr - 1, smpr->r1 - 4, & xx, & yy, 1);
-				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORPIP_BLACK, 1);
+				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORPIP_BLACK);
 			}
 
 			const COLORPIP_T color = COLORPIP_GREEN;
