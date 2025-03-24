@@ -7149,7 +7149,7 @@ void colmain_rounded_rect(
 	if (fill)
 	{
 		PACKEDCOLORPIP_T * oldColor = colpip_mem_at(buffer, bx, by, x1 + r, y1 + r);
-		display_floodfill(buffer, bx, by, x1 + (x2 - x1) / 2, y1 + r, color, * oldColor, 0);
+		display_floodfill(buffer, bx, by, x1 + (x2 - x1) / 2, y1 + r, color, * oldColor);
 	}
 }
 

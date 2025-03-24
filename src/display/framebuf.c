@@ -2012,59 +2012,20 @@ void display_floodfill(
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
 	COLORPIP_T newColor,
-	COLORPIP_T oldColor,
-	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - медленная закраска любого контура
+	COLORPIP_T oldColor
 	)
 {
 	ASSERT(x < dx);
 	ASSERT(y < dy);
 	PACKEDCOLORPIP_T * tgr = colpip_mem_at(buffer, dx, dy, x, y);
 
-	if (type) 	// медленная закраска любого контура
+	if (* tgr == oldColor && * tgr != newColor)
 	{
-
-		if (* tgr == oldColor && * tgr != newColor)
-		{
-			* tgr = newColor;
-			display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor, 1);
-			display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor, 1);
-			display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor, 1);
-			display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor, 1);
-		}
-	}
-	else 		// быстрая закраска (только выпуклый контур)
-	{
-		uint_fast16_t y0 = y, x_l = x, x_p = x;
-
-		while(* tgr != newColor)		// поиск первой строки в контуре для закраски
-		{
-			tgr = colpip_mem_at(buffer, dx, dy, x, --y0);
-		}
-		y0++;
-
-		do
-		{
-			x_l = x;		// добавить проверку на необходимость поиска новых границ
-			x_p = x;
-
-			// поиск левой границы строки
-			do
-			{
-				tgr = colpip_mem_at(buffer, dx, dy, --x_l, y0);
-			} while(* tgr != newColor);
-
-			// поиск правой границы строки
-			do
-			{
-				tgr = colpip_mem_at(buffer, dx, dy, ++x_p, y0);
-			} while(* tgr != newColor);
-
-			// закраска найденной линии
-			colpip_line(buffer, dx, dy, x_l, y0, x_p, y0, newColor, 0);
-
-			// переход на следующую строку
-			tgr = colpip_mem_at(buffer, dx, dy, x, ++y0);
-		} while(* tgr != newColor);
+		* tgr = newColor;
+		display_floodfill(buffer, dx, dy, x + 1, y, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x - 1, y, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x, y + 1, newColor, oldColor);
+		display_floodfill(buffer, dx, dy, x, y - 1, newColor, oldColor);
 	}
 }
 
