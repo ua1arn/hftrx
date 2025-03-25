@@ -408,6 +408,9 @@ void get_gui_tracking(int_fast16_t * x, int_fast16_t * y)
 /* Возврат ссылки на запись в структуре по названию и типу окна */
 void * find_gui_element(element_type_t type, window_t * win, const char * name)
 {
+	ASSERT(win);
+	ASSERT(name);
+
 	switch (type)
 	{
 	case TYPE_BUTTON:
@@ -1136,6 +1139,7 @@ static void draw_button(const button_t * const bh)
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
+		colpip_fillrect(fr, DIM_X, DIM_Y, x1 + 1, y1 + 1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR);
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);

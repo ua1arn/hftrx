@@ -345,7 +345,7 @@ static void window_infobar_menu_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -358,7 +358,7 @@ static void window_infobar_menu_process(void)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
-				button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, btn_name);
+				button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, btn_name);
 				bh->x1 = 0;
 				bh->y1 = yy;
 				bh->visible = VISIBLE;
@@ -390,7 +390,7 @@ static void window_infobar_menu_process(void)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
-				button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, btn_name);
+				button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, btn_name);
 
 #if ! WITHPOTAFGAIN
 				if (i == 0)
@@ -449,7 +449,7 @@ static void window_infobar_menu_process(void)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
-				button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, btn_name);
+				button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, btn_name);
 				bh->x1 = 0;
 				bh->y1 = yy;
 				bh->visible = VISIBLE;
@@ -473,7 +473,7 @@ static void window_infobar_menu_process(void)
 			{
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
-				button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, btn_name);
+				button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, btn_name);
 				bh->x1 = 0;
 				bh->y1 = yy;
 				bh->visible = VISIBLE;
@@ -687,16 +687,16 @@ static void gui_main_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 #if WITHFT8
-		button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+		button_t * btn_ft8 = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 		local_snprintf_P(btn_ft8->text, ARRAY_SIZE(btn_ft8->text), PSTR("FT8"));
 #endif /* WITHFT8 */
 #if WITHAUDIOSAMPLESREC
-		button_t * btn_var = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_var");
+		button_t * btn_var = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_var");
 		local_snprintf_P(btn_var->text, ARRAY_SIZE(btn_var->text), "AF|samples");
 #endif /* WITHAUDIOSAMPLESREC */
 
@@ -809,16 +809,16 @@ static void gui_main_process(void)
 		if (IS_BUTTON_PRESS)	// обработка короткого нажатия кнопок
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_txrx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
-			button_t * btn_notch = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_notch");
-			button_t * btn_Bands = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Bands");
-			button_t * btn_Memory = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Memory");
-			button_t * btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Options");
-			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
-			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
-			button_t * btn_var = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_var");
+			button_t * btn_txrx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
+			button_t * btn_notch = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_notch");
+			button_t * btn_Bands = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Bands");
+			button_t * btn_Memory = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Memory");
+			button_t * btn_Options = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Options");
+			button_t * btn_speaker = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
+			button_t * btn_Receive = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
+			button_t * btn_var = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_var");
 #if WITHFT8
-			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+			button_t * btn_ft8 = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 #endif
 
 			if (bh == btn_notch)
@@ -937,8 +937,8 @@ static void gui_main_process(void)
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_txrx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
-			button_t * btn_notch = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_notch");
+			button_t * btn_txrx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
+			button_t * btn_notch = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_notch");
 #if WITHTX
 			if (bh == btn_txrx)
 			{
@@ -996,7 +996,7 @@ static void gui_main_process(void)
 	{
 		freq_swipe = freq_swipe_step[gui_nvram.freq_swipe_step].step;
 
-		button_t * btn_notch = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_notch");
+		button_t * btn_notch = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_notch");
 		btn_notch->is_locked = hamradio_get_gnotch() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		unsigned notch_type = hamradio_get_gnotchtype();
 		if (notch_type == 1)
@@ -1004,7 +1004,7 @@ static void gui_main_process(void)
 		else if (notch_type == 2)
 			local_snprintf_P(btn_notch->text, ARRAY_SIZE(btn_notch->text), PSTR("Notch|auto"));
 
-		button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
+		button_t * btn_speaker = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 #if WITHSPKMUTE
 		btn_speaker->is_locked = hamradio_get_gmutespkr() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|%s"), btn_speaker->is_locked ? "muted" : "on air");
@@ -1013,7 +1013,7 @@ static void gui_main_process(void)
 		local_snprintf_P(btn_speaker->text, ARRAY_SIZE(btn_speaker->text), PSTR("Speaker|on air"));
 #endif /* #if WITHSPKMUTE */
 
-		button_t * btn_txrx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
+		button_t * btn_txrx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 #if WITHTX
 		unsigned tune = hamradio_tunemode(0);
 		unsigned mox = hamradio_moxmode(0);
@@ -1420,7 +1420,7 @@ static void window_memory_process(void)
 
 		win->bh_count = memory_cells_count;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		add_element("lbl_note1", 0, FONT_MEDIUM, COLORPIP_WHITE, 30);
@@ -1467,7 +1467,7 @@ static void window_memory_process(void)
 		}
 
 		ASSERT(bh != NULL);
-		label_t * lbl_note1 = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_note1");
+		label_t * lbl_note1 = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_note1");
 		lbl_note1->x = 0;
 		lbl_note1->y = bh->y1 + bh->h + get_label_height(lbl_note1);
 		lbl_note1->visible = VISIBLE;
@@ -1547,10 +1547,10 @@ static void window_bands_process(void)
 
 		win->bh_count = bandnum + 1;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t*) calloc(win->bh_count, sizeof (button_t));
+		win->bh_ptr = (button_t *) calloc(win->bh_count, sizeof (button_t));
 		GUI_MEM_ASSERT(win->bh_ptr);
 
-		label_t * lh1 = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_ham");
+		label_t * lh1 = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_ham");
 		lh1->x = 0;
 		lh1->y = 0;
 		lh1->visible = VISIBLE;
@@ -1610,7 +1610,7 @@ static void window_bands_process(void)
 			}
 		}
 
-		label_t * lh2 = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_bcast");
+		label_t * lh2 = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_bcast");
 		lh2->x = max_x + 50;
 		lh2->y = 0;
 		lh2->visible = VISIBLE;
@@ -1662,7 +1662,7 @@ static void window_bands_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_Freq = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq");
+			button_t * btn_Freq = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq");
 
 			if (bh == btn_Freq)
 			{
@@ -1735,7 +1735,7 @@ static void window_options_process(void)
 		}
 
 #if ! (WITHSPECTRUMWF && WITHMENU)
-		button_t * btn_Display = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Display");
+		button_t * btn_Display = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Display");
 		btn_Display->state = DISABLED;
 #endif
 
@@ -1750,14 +1750,14 @@ static void window_options_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_gui = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_gui");
-			button_t * btn_Utils = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Utils");
-			button_t * btn_TXsett = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_TXsett");
-			button_t * btn_AUDsett = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
-			button_t * btn_SysMenu = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
-			button_t * btn_Display = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Display");
+			button_t * btn_gui = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_gui");
+			button_t * btn_Utils = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Utils");
+			button_t * btn_TXsett = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_TXsett");
+			button_t * btn_AUDsett = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
+			button_t * btn_SysMenu = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
+			button_t * btn_Display = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Display");
 #if defined (RTC1_TYPE)
-			button_t * btn_Time = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Time");
+			button_t * btn_Time = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Time");
 			if (bh == btn_Time)
 			{
 				window_t * const win = get_win(WINDOW_TIME);
@@ -1799,13 +1799,13 @@ static void window_options_process(void)
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
 #if LINUX_SUBSYSTEM
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_exit"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_exit"))
 			{
 				linux_exit();		// Terminate all
 			}
 #endif /* LINUX_SUBSYSTEM */
 #if WITHAD936XIIO
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_936x"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_936x"))
 			{
 				open_window(get_win(WINDOW_IIOCONFIG));
 			}
@@ -1849,7 +1849,7 @@ static void window_display_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -1863,29 +1863,29 @@ static void window_display_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		label_t * lbl_sp = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_sp");
-		label_t * lbl_wf = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_wf");
-		label_t * lbl_topSP = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_topSP");
-		label_t * lbl_bottomSP = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
-		label_t * lbl_topWF = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_topWF");
-		label_t * lbl_bottomWF = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_bottomWF");
+		label_t * lbl_sp = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_sp");
+		label_t * lbl_wf = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_wf");
+		label_t * lbl_topSP = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_topSP");
+		label_t * lbl_bottomSP = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
+		label_t * lbl_topWF = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_topWF");
+		label_t * lbl_bottomWF = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_bottomWF");
 
-		button_t * btn_bottomSP_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_m");
-		button_t * btn_bottomSP_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_p");
-		button_t * btn_topSP_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topSP_m");
-		button_t * btn_topSP_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topSP_p");
-		button_t * btn_bottomWF_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_m");
-		button_t * btn_bottomWF_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_p");
-		button_t * btn_topWF_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topWF_m");
-		button_t * btn_topWF_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topWF_p");
+		button_t * btn_bottomSP_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_m");
+		button_t * btn_bottomSP_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_p");
+		button_t * btn_topSP_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topSP_m");
+		button_t * btn_topSP_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topSP_p");
+		button_t * btn_bottomWF_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_m");
+		button_t * btn_bottomWF_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_p");
+		button_t * btn_topWF_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topWF_m");
+		button_t * btn_topWF_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topWF_p");
 
-		button_t * btn_zoom = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_zoom");
-		button_t * btn_view = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_view");
-		button_t * btn_params = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_params");
+		button_t * btn_zoom = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_zoom");
+		button_t * btn_view = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_view");
+		button_t * btn_params = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_params");
 
 		lbl_sp->y = 0;
 		lbl_sp->visible = VISIBLE;
@@ -1952,17 +1952,17 @@ static void window_display_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_bottomSP_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_m");
-			button_t * btn_bottomSP_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_p");
-			button_t * btn_topSP_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topSP_m");
-			button_t * btn_topSP_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topSP_p");
-			button_t * btn_bottomWF_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_m");
-			button_t * btn_bottomWF_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_p");
-			button_t * btn_topWF_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topWF_m");
-			button_t * btn_topWF_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_topWF_p");
-			button_t * btn_zoom = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_zoom");
-			button_t * btn_view = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_view");
-			button_t * btn_params = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_params");
+			button_t * btn_bottomSP_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_m");
+			button_t * btn_bottomSP_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomSP_p");
+			button_t * btn_topSP_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topSP_m");
+			button_t * btn_topSP_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topSP_p");
+			button_t * btn_bottomWF_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_m");
+			button_t * btn_bottomWF_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bottomWF_p");
+			button_t * btn_topWF_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topWF_m");
+			button_t * btn_topWF_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_topWF_p");
+			button_t * btn_zoom = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_zoom");
+			button_t * btn_view = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_view");
+			button_t * btn_params = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_params");
 
 			if (bh == btn_view)
 			{
@@ -2034,14 +2034,14 @@ static void window_display_process(void)
 	{
 		display_t.updated = 0;
 
-		button_t * btn_view = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_view");
+		button_t * btn_view = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_view");
 		local_snprintf_P(btn_view->text, ARRAY_SIZE(btn_view->text), PSTR("View|%s"), hamradio_change_view_style(0));
 		remove_end_line_spaces(btn_view->text);
 
-		button_t * btn_zoom = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_zoom");
+		button_t * btn_zoom = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_zoom");
 		local_snprintf_P(btn_zoom->text, ARRAY_SIZE(btn_zoom->text), PSTR("Zoom|x%d"), 1 << hamradio_get_gzoomxpow2());
 
-		button_t * btn_params = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_params");
+		button_t * btn_params = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_params");
 		local_snprintf_P(btn_params->text, ARRAY_SIZE(btn_params->text), PSTR("WF params|%s"), hamradio_get_gwflevelsep() ? "separate" : "from SP");
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
@@ -2050,10 +2050,10 @@ static void window_display_process(void)
 		ASSERT(display_t.select < win->lh_count);
 		win->lh_ptr [display_t.select].color = COLORPIP_YELLOW;
 
-		label_t * lbl_topSP = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_topSP");
-		label_t * lbl_bottomSP = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
-		label_t * lbl_topWF = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_topWF");
-		label_t * lbl_bottomWF = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_bottomWF");
+		label_t * lbl_topSP = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_topSP");
+		label_t * lbl_bottomSP = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
+		label_t * lbl_topWF = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_topWF");
+		label_t * lbl_bottomWF = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_bottomWF");
 
 		local_snprintf_P(lbl_topSP->text, ARRAY_SIZE(lbl_topSP->text), PSTR("Top    : %3d db"),
 				hamradio_gtopdbsp(display_t.select == TYPE_DISPLAY_SP_TOP ? display_t.change : 0));
@@ -2119,7 +2119,7 @@ static void window_utilites_process(void)
 		}
 
 #if WITHGUIDEBUG
-		button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_debug");
+		button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_debug");
 		bh->is_locked = tf_debug->visible != 0;
 #endif /* WITHGUIDEBUG */
 
@@ -2134,37 +2134,37 @@ static void window_utilites_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_3d"))
+			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
 				open_window(get_win(WINDOW_3D));
 			}
 #if WITHSWRSCAN
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
 			{
 				open_window(get_win(WINDOW_SWR_SCANNER));
 			}
 #endif /* WITHSWRSCAN */
 #if WITHLFM
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_lfm"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_lfm"))
 			{
 				open_window(get_win(WINDOW_LFM));
 			}
 #endif /* WITHLFM  */
 #if WITHGUIDEBUG
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_debug"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_debug"))
 			{
 				gui_open_debug_window();
 				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
 #if WITHIQSHIFT
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_shift"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_shift"))
 			{
 				open_window(get_win(WINDOW_SHIFT));
 			}
 #endif /* WITHIQSHIFT */
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_stream"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_stream"))
 			{
 				open_window(get_win(WINDOW_EXTIOLAN));
 			}
@@ -2216,30 +2216,30 @@ static void window_swrscan_process(void)
 		add_element("lbl_swr_error",  0, FONT_MEDIUM, COLORPIP_WHITE, 16);
 
 		mid_w = 0 + gr_w / 2;
-		btn_swr_start = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
+		btn_swr_start = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
 		btn_swr_start->x1 = mid_w - btn_swr_start->w - interval;
 		btn_swr_start->y1 = 0 + gr_h + 0;
 		strcpy(btn_swr_start->text, "Start");
 		btn_swr_start->visible = VISIBLE;
 
-		btn_swr_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
+		btn_swr_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
 		btn_swr_OK->x1 = mid_w + interval;
 		btn_swr_OK->y1 = btn_swr_start->y1;
 		btn_swr_OK->visible = VISIBLE;
 
-		lbl_swr_error = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_swr_error");
-		btn_Options = (button_t*) find_gui_element(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
+		lbl_swr_error = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_swr_error");
+		btn_Options = (button_t *) find_gui_element(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
 
 		backup_freq = hamradio_get_freq_rx();
 		if (hamradio_verify_freq_bands(backup_freq, & lim_bottom, & lim_top))
 		{
-			label_t * lbl_swr_bottom = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_swr_bottom");
+			label_t * lbl_swr_bottom = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_swr_bottom");
 			local_snprintf_P(lbl_swr_bottom->text, ARRAY_SIZE(lbl_swr_bottom->text), PSTR("%dk"), lim_bottom / 1000);
 			lbl_swr_bottom->x = x0 - get_label_width(lbl_swr_bottom) / 2;
 			lbl_swr_bottom->y = y0 + get_label_height(lbl_swr_bottom) * 2;
 			lbl_swr_bottom->visible = VISIBLE;
 
-			label_t * lbl_swr_top = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_swr_top");
+			label_t * lbl_swr_top = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_swr_top");
 			local_snprintf_P(lbl_swr_top->text, ARRAY_SIZE(lbl_swr_top->text), PSTR("%dk"), lim_top / 1000);
 			lbl_swr_top->x = x1 - get_label_width(lbl_swr_bottom) / 2;
 			lbl_swr_top->y = lbl_swr_bottom->y;
@@ -2279,8 +2279,8 @@ static void window_swrscan_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_swr_start = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
-			button_t * btn_swr_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
+			button_t * btn_swr_start = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
+			button_t * btn_swr_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_swr_OK");
 
 			if (bh == btn_swr_start && ! strcmp(btn_swr_start->text, "Start"))
 			{
@@ -2431,9 +2431,9 @@ static void window_tx_process(void)
 			window_t * const winTX = get_win(WINDOW_TX_SETTINGS);
 			window_t * const winPower = get_win(WINDOW_TX_POWER);
 			window_t * const winVOX = get_win(WINDOW_TX_VOX_SETT);
-			button_t * const btn_tx_vox = (button_t*) find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox");
-			button_t * const btn_tx_power = (button_t*) find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
-			button_t * const btn_tx_vox_settings = (button_t*) find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
+			button_t * const btn_tx_vox = (button_t *) find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox");
+			button_t * const btn_tx_power = (button_t *) find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
+			button_t * const btn_tx_vox_settings = (button_t *) find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
 
 #if WITHPOWERTRIM && WITHTX
 			if (bh == btn_tx_power)
@@ -2465,11 +2465,11 @@ static void window_tx_process(void)
 	if (update)
 	{
 #if ! WITHPOWERTRIM
-		button_t * btn_tx_power= (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_power");
+		button_t * btn_tx_power = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_power");
 		btn_tx_power->state = DISABLED;
 #endif /* ! WITHPOWERTRIM */
 
-		button_t * btn_tx_vox= (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
+		button_t * btn_tx_vox = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
 #if WITHVOX
 		btn_tx_vox->is_locked = hamradio_get_gvoxenable() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX|%s"), btn_tx_vox->is_locked ? "ON" : "OFF");
@@ -2478,7 +2478,7 @@ static void window_tx_process(void)
 		local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX"));
 #endif /* WITHVOX */
 
-		button_t * btn_tx_vox_settings = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_settings");		// vox settings
+		button_t * btn_tx_vox_settings = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_settings");		// vox settings
 #if WITHVOX
 		btn_tx_vox_settings->state = hamradio_get_gvoxenable() ? CANCELLED : DISABLED;
 #else
@@ -2509,7 +2509,7 @@ static void window_tx_vox_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -2537,7 +2537,7 @@ static void window_tx_vox_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -2548,9 +2548,9 @@ static void window_tx_vox_process(void)
 		sl_vox_delay = (slider_t *) find_gui_element(TYPE_SLIDER, win, "sl_vox_delay");
 		sl_vox_level = (slider_t *) find_gui_element(TYPE_SLIDER, win, "sl_vox_level");
 		sl_avox_level = (slider_t *) find_gui_element(TYPE_SLIDER, win, "sl_avox_level");
-		lbl_vox_delay = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_vox_delay");
-		lbl_vox_level = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_vox_level");
-		lbl_avox_level = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_avox_level");
+		lbl_vox_delay = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_vox_delay");
+		lbl_vox_level = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_vox_level");
+		lbl_avox_level = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_avox_level");
 
 		ldiv_t d = ldiv(hamradio_get_vox_delay(), 100);
 		lbl_vox_delay->x = 0;
@@ -2589,44 +2589,44 @@ static void window_tx_vox_process(void)
 		sl_avox_level->step = 3;
 		sl_avox_level->value = normalize(hamradio_get_antivox_level(), alevel_min, alevel_max, 100);
 
-		button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
+		button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 		bh->x1 = (sl_vox_delay->x + sl_vox_delay->size) / 2 - (bh->w / 2);
 		bh->y1 = lbl_avox_level->y + interval;
 		bh->visible = VISIBLE;
 
 		d = ldiv(delay_min, 100);
-		label_t * lbl_vox_delay_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_vox_delay_min");
+		label_t * lbl_vox_delay_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_vox_delay_min");
 		local_snprintf_P(lbl_vox_delay_min->text, ARRAY_SIZE(lbl_vox_delay_min->text), PSTR("%d.%d sec"), (int) d.quot, (int) (d.rem / 10));
 		lbl_vox_delay_min->x = sl_vox_delay->x - get_label_width(lbl_vox_delay_min) / 2;
 		lbl_vox_delay_min->y = sl_vox_delay->y + get_label_height(lbl_vox_delay_min) * 3;
 		lbl_vox_delay_min->visible = VISIBLE;
 
 		d = ldiv(delay_max, 100);
-		label_t * lbl_vox_delay_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_vox_delay_max");
+		label_t * lbl_vox_delay_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_vox_delay_max");
 		local_snprintf_P(lbl_vox_delay_max->text, ARRAY_SIZE(lbl_vox_delay_max->text), PSTR("%d.%d sec"), (int) d.quot, (int) (d.rem / 10));
 		lbl_vox_delay_max->x = sl_vox_delay->x + sl_vox_delay->size - get_label_width(lbl_vox_delay_max) / 2;
 		lbl_vox_delay_max->y = sl_vox_delay->y + get_label_height(lbl_vox_delay_max) * 3;
 		lbl_vox_delay_max->visible = VISIBLE;
 
-		label_t * lbl_vox_level_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_vox_level_min");
+		label_t * lbl_vox_level_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_vox_level_min");
 		local_snprintf_P(lbl_vox_level_min->text, ARRAY_SIZE(lbl_vox_level_min->text), PSTR("%d"), level_min);
 		lbl_vox_level_min->x = sl_vox_level->x - get_label_width(lbl_vox_level_min) / 2;
 		lbl_vox_level_min->y = sl_vox_level->y + get_label_height(lbl_vox_level_min) * 3;
 		lbl_vox_level_min->visible = VISIBLE;
 
-		label_t * lbl_vox_level_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_vox_level_max");
+		label_t * lbl_vox_level_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_vox_level_max");
 		local_snprintf_P(lbl_vox_level_max->text, ARRAY_SIZE(lbl_vox_level_max->text), PSTR("%d"), level_max);
 		lbl_vox_level_max->x = sl_vox_level->x + sl_vox_level->size - get_label_width(lbl_vox_level_max) / 2;
 		lbl_vox_level_max->y = sl_vox_level->y + get_label_height(lbl_vox_level_max) * 3;
 		lbl_vox_level_max->visible = VISIBLE;
 
-		label_t * lbl_avox_level_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_avox_level_min");
+		label_t * lbl_avox_level_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_avox_level_min");
 		local_snprintf_P(lbl_avox_level_min->text, ARRAY_SIZE(lbl_avox_level_min->text), PSTR("%d"), alevel_min);
 		lbl_avox_level_min->x = sl_avox_level->x - get_label_width(lbl_avox_level_min) / 2;
 		lbl_avox_level_min->y = sl_avox_level->y + get_label_height(lbl_avox_level_min) * 3;
 		lbl_avox_level_min->visible = VISIBLE;
 
-		label_t * lbl_avox_level_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_avox_level_max");
+		label_t * lbl_avox_level_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_avox_level_max");
 		local_snprintf_P(lbl_avox_level_max->text, ARRAY_SIZE(lbl_avox_level_max->text), PSTR("%d"), alevel_max);
 		lbl_avox_level_max->x = sl_avox_level->x + sl_vox_level->size - get_label_width(lbl_avox_level_max) / 2;
 		lbl_avox_level_max->y = sl_avox_level->y + get_label_height(lbl_avox_level_max) * 3;
@@ -2643,7 +2643,7 @@ static void window_tx_vox_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			button_t * btn_tx_vox_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
+			button_t * btn_tx_vox_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 			if (bh == btn_tx_vox_OK)
 			{
 				close_all_windows();
@@ -2692,7 +2692,6 @@ static void window_tx_power_process(void)
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
 	static enc_var_t pw;
 	static uint_fast8_t power_min, power_max, power_full, power_tune;
-	slider_t * sl;
 
 	if (win->first_call)
 	{
@@ -2701,27 +2700,15 @@ static void window_tx_power_process(void)
 		pw.change = 0;
 		pw.updated = 1;
 
-		static const button_t buttons [] = {
-			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", 	   "OK", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		add_element("btn_tx_pwr_OK", 44, 44, 0, 0, "OK");
+		add_element("btn_p", 44, 44, 1, 0, "+");
+		add_element("btn_n", 44, 44, 1, 0, "-");
 
-		static const label_t labels [] = {
-			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORPIP_WHITE, 0, },
-			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORPIP_WHITE, 1, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		add_element("lbl_tx_power", 0, FONT_MEDIUM, COLORPIP_WHITE, 16);
+		add_element("lbl_tune_power", 0, FONT_MEDIUM, COLORPIP_WHITE, 16);
 
-		lbl_tx_power = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_tx_power");
-		lbl_tune_power = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_tune_power");
+		lbl_tx_power = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_tx_power");
+		lbl_tune_power = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_tune_power");
 
 		hamradio_get_tx_power_limits(& power_min, & power_max);
 		power_full = hamradio_get_tx_power();
@@ -2730,16 +2717,30 @@ static void window_tx_power_process(void)
 		lbl_tx_power->x = 0;
 		lbl_tx_power->y = 10;
 		lbl_tx_power->visible = VISIBLE;
+		lbl_tx_power->index = 0;
 		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
 
 		lbl_tune_power->x = lbl_tx_power->x;
 		lbl_tune_power->y = lbl_tx_power->y + interval;
 		lbl_tune_power->visible = VISIBLE;
+		lbl_tune_power->index = 1;
 		local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
 
-		button_t * btn_tx_pwr_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		btn_tx_pwr_OK->x1 = 0;
-				btn_tx_pwr_OK->y1 = lbl_tune_power->y + interval;
+		button_t * btn_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_p");
+		btn_p->x1 = 0;
+		btn_p->y1 = lbl_tune_power->y + interval;
+		btn_p->visible = VISIBLE;
+		btn_p->payload = 1;
+
+		button_t * btn_n = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_n");
+		btn_n->x1 = btn_p->x1 + interval;
+		btn_n->y1 = btn_p->y1 ;
+		btn_n->visible = VISIBLE;
+		btn_n->payload = -1;
+
+		button_t * btn_tx_pwr_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+		btn_tx_pwr_OK->x1 = btn_n->x1 + interval;
+		btn_tx_pwr_OK->y1 = btn_n->y1;
 		btn_tx_pwr_OK->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -2752,11 +2753,18 @@ static void window_tx_power_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_tx_pwr_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+			button_t * btn_tx_pwr_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+			button_t * btn_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_p");
+			button_t * btn_n = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_n");
 
 			if (bh == btn_tx_pwr_OK)
 			{
 				close_all_windows();
+			}
+			else if (bh == btn_p || bh == btn_n)
+			{
+				pw.change = bh->payload;
+				pw.updated = 1;
 			}
 		}
 		else if (IS_LABEL_PRESS)
@@ -2853,7 +2861,7 @@ static void window_audiosettings_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -2877,9 +2885,9 @@ static void window_audiosettings_process(void)
 		}
 
 #if ! WITHAFCODEC1HAVEPROC
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
+		bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
 		bh->state = DISABLED;
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
+		bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
 		bh->state = DISABLED;
 #endif /* ! WITHAFCODEC1HAVEPROC */
 
@@ -2898,13 +2906,13 @@ static void window_audiosettings_process(void)
 			window_t * const winRS = get_win(WINDOW_AP_REVERB_SETT);
 			window_t * const winMIC = get_win(WINDOW_AP_MIC_SETT);
 			window_t * const winMICpr = get_win(WINDOW_AP_MIC_PROF);
-			button_t * const btn_reverb = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
-			button_t * const btn_reverb_settings = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_reverb_settings");		// reverb settings
-			button_t * const btn_monitor = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_monitor");						// monitor on/off
-			button_t * const btn_mic_eq = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
-			button_t * const btn_mic_eq_settings = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq_settings");		// MIC EQ settingss
-			button_t * const btn_mic_settings = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
-			button_t * const btn_mic_profiles = (button_t*) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
+			button_t * const btn_reverb = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
+			button_t * const btn_reverb_settings = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_reverb_settings");		// reverb settings
+			button_t * const btn_monitor = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_monitor");						// monitor on/off
+			button_t * const btn_mic_eq = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
+			button_t * const btn_mic_eq_settings = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq_settings");		// MIC EQ settingss
+			button_t * const btn_mic_settings = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
+			button_t * const btn_mic_profiles = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
 			if (bh == btn_monitor)
 			{
@@ -2956,7 +2964,7 @@ static void window_audiosettings_process(void)
 
 	if (update)
 	{
-		button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_reverb"); 			// reverb on/off
+		button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_reverb"); 			// reverb on/off
 #if WITHREVERB
 		bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
@@ -2965,14 +2973,14 @@ static void window_audiosettings_process(void)
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|OFF"));
 #endif /* WITHREVERB */
 
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
+		bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
 #if WITHREVERB
 		bh->state = hamradio_get_greverb() ? CANCELLED : DISABLED;
 #else
 		bh->state = DISABLED;
 #endif /* WITHREVERB */
 
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
+		bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
 		bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
 	}
@@ -2999,7 +3007,7 @@ static void window_ap_reverb_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -3013,7 +3021,7 @@ static void window_ap_reverb_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -3027,12 +3035,12 @@ static void window_ap_reverb_process(void)
 		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		label_t * lbl_reverbDelay_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_min");
-		label_t * lbl_reverbDelay_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_max");
-		label_t * lbl_reverbLoss_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss_min");
-		label_t * lbl_reverbLoss_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss_max");
-		lbl_reverbDelay = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay");
-		lbl_reverbLoss = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss");
+		label_t * lbl_reverbDelay_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_min");
+		label_t * lbl_reverbDelay_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay_max");
+		label_t * lbl_reverbLoss_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss_min");
+		label_t * lbl_reverbLoss_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss_max");
+		lbl_reverbDelay = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_reverbDelay");
+		lbl_reverbLoss = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_reverbLoss");
 		sl_reverbDelay = (slider_t *) find_gui_element(TYPE_SLIDER, win, "reverbDelay");
 		sl_reverbLoss = (slider_t *) find_gui_element(TYPE_SLIDER, win, "reverbLoss");
 
@@ -3083,7 +3091,7 @@ static void window_ap_reverb_process(void)
 		lbl_reverbLoss_max->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_max) * 3;
 		lbl_reverbLoss_max->visible = VISIBLE;
 
-		button_t * bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_REVs_ok");
+		button_t * bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_REVs_ok");
 		bh->x1 = sl_reverbLoss->x + sl_reverbLoss->size + interval / 2;
 		bh->y1 = lbl_reverbLoss->y;
 		bh->visible = VISIBLE;
@@ -3150,7 +3158,7 @@ static void window_ap_mic_eq_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -3168,7 +3176,7 @@ static void window_ap_mic_eq_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -3205,7 +3213,7 @@ static void window_ap_mic_eq_process(void)
 			mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_name"), sl->name);
-			lbl = (label_t*) find_gui_element(TYPE_LABEL, win, buf);
+			lbl = (label_t *) find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%sk"), strchr(sl->name, 'q') + 1);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
@@ -3214,7 +3222,7 @@ static void window_ap_mic_eq_process(void)
 			y = lbl->y + get_label_height(lbl) * 2;
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
-			lbl = (label_t*) find_gui_element(TYPE_LABEL, win, buf);
+			lbl = (label_t *) find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
@@ -3226,7 +3234,7 @@ static void window_ap_mic_eq_process(void)
 			y = 0;
 		}
 
-		btn_EQ_ok = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
+		btn_EQ_ok = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
 		btn_EQ_ok->x1 = sl->x + sliders_width + btn_EQ_ok->w;
 		btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
 		btn_EQ_ok->visible = VISIBLE;
@@ -3252,7 +3260,7 @@ static void window_ap_mic_eq_process(void)
 			hamradio_set_gmikeequalizerparams(id, normalize(sh->value, 100, 0, eq_limit));
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sh->name);
-			lbl = (label_t*) find_gui_element(TYPE_LABEL, win, buf);
+			lbl = (label_t *) find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
 			lbl->x = sh->x + sliders_width / 2 - get_label_width(lbl) / 2;
 		}
@@ -3305,7 +3313,7 @@ static void window_af_eq_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -3319,7 +3327,7 @@ static void window_af_eq_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -3354,7 +3362,7 @@ static void window_af_eq_process(void)
 			mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_name"), sl->name);
-			lbl = (label_t*) find_gui_element(TYPE_LABEL, win, buf);
+			lbl = (label_t *) find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%s"), strchr(sl->name, 'q') + 1);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
@@ -3363,7 +3371,7 @@ static void window_af_eq_process(void)
 			y = lbl->y + get_label_height(lbl) * 2;
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
-			lbl = (label_t*) find_gui_element(TYPE_LABEL, win, buf);
+			lbl = (label_t *) find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_af_equalizer_gain_rx(id) + eq_base);
 			lbl->x = mid_w - get_label_width(lbl) / 2;
 			lbl->y = y;
@@ -3375,12 +3383,12 @@ static void window_af_eq_process(void)
 			y = 0;
 		}
 
-		button_t * btn_EQ_ok = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
+		button_t * btn_EQ_ok = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
 		btn_EQ_ok->x1 = sl->x + sliders_width + btn_EQ_ok->w;
 		btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
 		btn_EQ_ok->visible = VISIBLE;
 
-		button_t * btn_EQ_enable = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_EQ_enable");
+		button_t * btn_EQ_enable = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_EQ_enable");
 		btn_EQ_enable->x1 = btn_EQ_ok->x1;
 		btn_EQ_enable->y1 = btn_EQ_ok->y1 - btn_EQ_enable->h * 2;
 		btn_EQ_enable->visible = VISIBLE;
@@ -3400,8 +3408,8 @@ static void window_af_eq_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_EQ_ok = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
-			button_t * btn_EQ_enable = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_EQ_enable");
+			button_t * btn_EQ_ok = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
+			button_t * btn_EQ_enable = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_EQ_enable");
 
 			if (bh == btn_EQ_ok)
 			{
@@ -3425,7 +3433,7 @@ static void window_af_eq_process(void)
 			hamradio_set_af_equalizer_gain_rx(id, normalize(sh->value, 100, 0, eq_limit));
 
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sh->name);
-			lbl = (label_t*) find_gui_element(TYPE_LABEL, win, buf);
+			lbl = (label_t *) find_gui_element(TYPE_LABEL, win, buf);
 			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_af_equalizer_gain_rx(id) + eq_base);
 			lbl->x = sh->x + sliders_width / 2 - get_label_width(lbl) / 2;
 		}
@@ -3476,7 +3484,7 @@ static void window_ap_mic_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -3493,7 +3501,7 @@ static void window_ap_mic_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -3515,9 +3523,9 @@ static void window_ap_mic_process(void)
 		sl_micLevel = (slider_t *) find_gui_element(TYPE_SLIDER, win, "sl_micLevel");
 		sl_micClip = (slider_t *) find_gui_element(TYPE_SLIDER, win, "sl_micClip");
 		sl_micAGC = (slider_t *) find_gui_element(TYPE_SLIDER, win, "sl_micAGC");
-		lbl_micLevel = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micLevel");
-		lbl_micClip = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micClip");
-		lbl_micAGC = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micAGC");
+		lbl_micLevel = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micLevel");
+		lbl_micClip = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micClip");
+		lbl_micAGC = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micAGC");
 
 		lbl_micLevel->x = 0;
 		lbl_micLevel->y = 10;
@@ -3555,7 +3563,7 @@ static void window_ap_mic_process(void)
 		sl_micAGC->step = 3;
 		sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), agc_min, agc_max, 100);
 
-		button_t * bh2 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
+		button_t * bh2 = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
 		bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
 		bh2->y1 = lbl_micAGC->y + interval;
 #if WITHAFCODEC1HAVEPROC
@@ -3566,49 +3574,49 @@ static void window_ap_mic_process(void)
 		local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
 		bh2->visible = VISIBLE;
 
-		button_t * bh1 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
+		button_t * bh1 = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
 		bh1->x1 = bh2->x1 - bh1->w - interval;
 		bh1->y1 = bh2->y1;
 		bh1->is_locked = hamradio_get_gmikeagc() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh1->text, ARRAY_SIZE(bh1->text), PSTR("AGC|%s"), bh1->is_locked ? "ON" : "OFF");
 		bh1->visible = VISIBLE;
 
-		bh1 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
+		bh1 = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
 		bh1->x1 = bh2->x1 + bh2->w + interval;
 		bh1->y1 = bh2->y1;
 		bh1->visible = VISIBLE;
 
-		label_t * lbl_micLevel_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micLevel_min");
+		label_t * lbl_micLevel_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micLevel_min");
 		local_snprintf_P(lbl_micLevel_min->text, ARRAY_SIZE(lbl_micLevel_min->text), PSTR("%d"), level_min);
 		lbl_micLevel_min->x = sl_micLevel->x - get_label_width(lbl_micLevel_min) / 2;
 		lbl_micLevel_min->y = sl_micLevel->y + get_label_height(lbl_micLevel_min) * 3;
 		lbl_micLevel_min->visible = VISIBLE;
 
-		label_t * lbl_micLevel_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micLevel_max");
+		label_t * lbl_micLevel_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micLevel_max");
 		local_snprintf_P(lbl_micLevel_max->text, ARRAY_SIZE(lbl_micLevel_max->text), PSTR("%d"), level_max);
 		lbl_micLevel_max->x = sl_micLevel->x + sl_micLevel->size - get_label_width(lbl_micLevel_max) / 2;
 		lbl_micLevel_max->y = sl_micLevel->y + get_label_height(lbl_micLevel_max) * 3;
 		lbl_micLevel_max->visible = VISIBLE;
 
-		label_t * lbl_micClip_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micClip_min");
+		label_t * lbl_micClip_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micClip_min");
 		local_snprintf_P(lbl_micClip_min->text, ARRAY_SIZE(lbl_micClip_min->text), PSTR("%d"), clip_min);
 		lbl_micClip_min->x = sl_micClip->x - get_label_width(lbl_micClip_min) / 2;
 		lbl_micClip_min->y = sl_micClip->y + get_label_height(lbl_micClip_min) * 3;
 		lbl_micClip_min->visible = VISIBLE;
 
-		label_t * lbl_micClip_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micClip_max");
+		label_t * lbl_micClip_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micClip_max");
 		local_snprintf_P(lbl_micClip_max->text, ARRAY_SIZE(lbl_micClip_max->text), PSTR("%d"), clip_max);
 		lbl_micClip_max->x = sl_micClip->x + sl_micClip->size - get_label_width(lbl_micClip_max) / 2;
 		lbl_micClip_max->y = sl_micClip->y + get_label_height(lbl_micClip_max) * 3;
 		lbl_micClip_max->visible = VISIBLE;
 
-		label_t * lbl_micAGC_min = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micAGC_min");
+		label_t * lbl_micAGC_min = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micAGC_min");
 		local_snprintf_P(lbl_micAGC_min->text, ARRAY_SIZE(lbl_micAGC_min->text), PSTR("%d"), agc_min);
 		lbl_micAGC_min->x = sl_micAGC->x - get_label_width(lbl_micAGC_min) / 2;
 		lbl_micAGC_min->y = sl_micAGC->y + get_label_height(lbl_micAGC_min) * 3;
 		lbl_micAGC_min->visible = VISIBLE;
 
-		label_t * lbl_micAGC_max = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_micAGC_max");
+		label_t * lbl_micAGC_max = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_micAGC_max");
 		local_snprintf_P(lbl_micAGC_max->text, ARRAY_SIZE(lbl_micAGC_max->text), PSTR("%d"), agc_max);
 		lbl_micAGC_max->x = sl_micAGC->x + sl_micClip->size - get_label_width(lbl_micAGC_max) / 2;
 		lbl_micAGC_max->y = sl_micAGC->y + get_label_height(lbl_micAGC_max) * 3;
@@ -3624,9 +3632,9 @@ static void window_ap_mic_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_mic_boost = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
-			button_t * btn_mic_agc = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
-			button_t * btn_mic_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
+			button_t * btn_mic_boost = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
+			button_t * btn_mic_agc = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_agc");
+			button_t * btn_mic_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mic_OK");
 
 			if (bh == btn_mic_boost)
 			{
@@ -3696,7 +3704,7 @@ static void window_ap_mic_prof_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -3802,7 +3810,7 @@ static void window_notch_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -3813,13 +3821,13 @@ static void window_notch_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		label_t * lbl_freq = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_freq");
-		label_t * lbl_width = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_width");
-		label_t * lbl_type = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_type");
+		label_t * lbl_freq = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		label_t * lbl_width = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_width");
+		label_t * lbl_type = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_type");
 
 		lbl_freq->x = 0;
 		lbl_freq->y = 15;
@@ -3833,12 +3841,12 @@ static void window_notch_process(void)
 		lbl_type->y = lbl_width->y + interval;
 		lbl_type->visible = VISIBLE;
 
-		button_t * btn_freqm = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq-");
-		button_t * btn_freqp = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq+");
-		button_t * btn_widthm = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_width-");
-		button_t * btn_widthp = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_width+");
-		button_t * btn_Auto = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Auto");
-		button_t * btn_Manual = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Manual");
+		button_t * btn_freqm = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq-");
+		button_t * btn_freqp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq+");
+		button_t * btn_widthm = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_width-");
+		button_t * btn_widthp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_width+");
+		button_t * btn_Auto = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+		button_t * btn_Manual = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Manual");
 
 		btn_freqm->x1 = lbl_freq->x + get_label_width(lbl_freq);
 		btn_freqm->y1 = lbl_freq->y + get_label_height(lbl_freq) / 2 - btn_freqm->h / 2;
@@ -3874,12 +3882,12 @@ static void window_notch_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_freqm = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq-");
-			button_t * btn_freqp = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq+");
-			button_t * btn_widthm = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_width-");
-			button_t * btn_widthp = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_width+");
-			button_t * btn_Auto = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Auto");
-			button_t * btn_Manual = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Manual");
+			button_t * btn_freqm = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq-");
+			button_t * btn_freqp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq+");
+			button_t * btn_widthm = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_width-");
+			button_t * btn_widthp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_width+");
+			button_t * btn_Auto = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+			button_t * btn_Manual = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Manual");
 
 			if (bh == btn_freqm || bh == btn_freqp)
 			{
@@ -3903,8 +3911,8 @@ static void window_notch_process(void)
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-			label_t * lbl_freq = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_freq");
-			label_t * lbl_width = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_width");
+			label_t * lbl_freq = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_freq");
+			label_t * lbl_width = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_width");
 
 			if (lh == lbl_freq)
 				notch.select = TYPE_NOTCH_FREQ;
@@ -3935,10 +3943,10 @@ static void window_notch_process(void)
 
 	if (notch.updated)
 	{
-		button_t * btn_Auto = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Auto");
-		button_t * btn_Manual = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Manual");
-		label_t * lbl_freq = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_freq");
-		label_t * lbl_width = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_width");
+		button_t * btn_Auto = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+		button_t * btn_Manual = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_Manual");
+		label_t * lbl_freq = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		label_t * lbl_width = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_width");
 
 		notch.updated = 0;
 
@@ -3976,7 +3984,7 @@ static void window_gui_settings_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -4007,9 +4015,9 @@ static void window_gui_settings_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_enc2_step = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
-			button_t * btn_freq_swipe = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe");
-			button_t * btn_freq_swipe_step = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe_step");
+			button_t * btn_enc2_step = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+			button_t * btn_freq_swipe = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe");
+			button_t * btn_freq_swipe_step = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe_step");
 
 			if (bh == btn_enc2_step)
 			{
@@ -4042,14 +4050,14 @@ static void window_gui_settings_process(void)
 	if (update)
 	{
 		update = 0;
-		button_t * btn_enc2_step = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+		button_t * btn_enc2_step = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
 		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step [gui_nvram.enc2step_pos].label);
 
-		button_t * btn_freq_swipe = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe");
+		button_t * btn_freq_swipe = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe");
 		btn_freq_swipe->is_locked = gui_nvram.freq_swipe_enable != 0;
 		local_snprintf_P(btn_freq_swipe->text, ARRAY_SIZE(btn_freq_swipe->text), "Freq swipe|%s", btn_freq_swipe->is_locked ? "enable" : "disable");
 
-		button_t * btn_freq_swipe_step = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe_step");
+		button_t * btn_freq_swipe_step = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe_step");
 		btn_freq_swipe_step->state = btn_freq_swipe->is_locked ? CANCELLED : DISABLED;
 		local_snprintf_P(btn_freq_swipe_step->text, ARRAY_SIZE(btn_freq_swipe_step->text), "Swipe step|%s", freq_swipe_step[gui_nvram.freq_swipe_step].label);
 	}
@@ -4096,7 +4104,7 @@ static void window_shift_process(void)
 			y += get_label_height(lh) + interval * 3;
 		}
 
-		label_t * lh = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
+		label_t * lh = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
 		x = lh->x + get_label_width(lh) + interval * 2;
 
 		for (unsigned i = 0; i < win->bh_count; i ++)
@@ -4110,7 +4118,7 @@ static void window_shift_process(void)
 			x += bh->w + interval * 2;
 		}
 
-		label_t * lbl_iq_test = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
+		label_t * lbl_iq_test = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
 		local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test:");
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -4129,18 +4137,18 @@ static void window_shift_process(void)
 		else if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_test"))
+			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_test"))
 			{
 				cic_test = ! cic_test;
 				iq_cic_test(cic_test);
 				bh->is_locked = cic_test;
 			}
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_p"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_p"))
 			{
 				enc.change = 1;
 				enc.updated = 1;
 			}
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_m"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_m"))
 			{
 				enc.change = -1;
 				enc.updated = 1;
@@ -4199,19 +4207,19 @@ static void window_shift_process(void)
 	{
 		update = 0;
 
-		label_t * lbl_rx_cic_shift = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
+		label_t * lbl_rx_cic_shift = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
 		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC: %d", (int) iq_shift_cic_rx(0));
-		label_t * lbl_rx_fir_shift = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift");
+		label_t * lbl_rx_fir_shift = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift");
 		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR: %d", (int) iq_shift_fir_rx(0));
-		label_t * lbl_tx_shift = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
+		label_t * lbl_tx_shift = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
 		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC: %d", (int) iq_shift_tx(0));
 
-		button_t * btn_test = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_test");
+		button_t * btn_test = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_test");
 		btn_test->is_locked = cic_test;
 
 		if (cic_test)
 		{
-			label_t * lbl_iq_test = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
+			label_t * lbl_iq_test = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
 			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", iq_cic_test_process());
 		}
 	}
@@ -4261,7 +4269,7 @@ static void window_uif_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -4270,13 +4278,13 @@ static void window_uif_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		button_down = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_UIF-");
-		button_up = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_UIF+");
-		lbl_uif_val = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
+		button_down = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_UIF-");
+		button_up = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_UIF+");
+		lbl_uif_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
 
 		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 		strcpy(lbl_uif_val->text, v);
@@ -4425,7 +4433,7 @@ static void window_ft8_bands_process(void)
 
 		win->bh_count = ft8_bands_count;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		unsigned freq = hamradio_get_freq_rx();
@@ -4499,14 +4507,14 @@ static void window_ft8_settings_process(void)
 		add_element("lbl_qth", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
 		add_element("lbl_txfreq", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
 
-		label_t * lbl_callsign = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_callsign");
-		label_t * lbl_qth = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_qth");
-		label_t * lbl_txfreq = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_txfreq");
-		button_t * btn_callsign = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_callsign");
-		button_t * btn_qth = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_qth");
-		button_t * btn_freq = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq");
-		button_t * btn_OK = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_OK");
-		button_t * btn_time0 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_time0");
+		label_t * lbl_callsign = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_callsign");
+		label_t * lbl_qth = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_qth");
+		label_t * lbl_txfreq = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_txfreq");
+		button_t * btn_callsign = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_callsign");
+		button_t * btn_qth = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_qth");
+		button_t * btn_freq = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq");
+		button_t * btn_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_OK");
+		button_t * btn_time0 = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_time0");
 
 		unsigned lbllen = get_label_width(lbl_callsign);
 
@@ -4558,11 +4566,11 @@ static void window_ft8_settings_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_OK"))
+			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_OK"))
 			{
 				close_window(OPEN_PARENT_WINDOW);
 			}
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_freq"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq"))
 			{
 				uint32_t f = gui_nvram.ft8_txfreq_val;
 				keyboard_edit_digits(& f);
@@ -4570,7 +4578,7 @@ static void window_ft8_settings_process(void)
 				uint32_t h = hamradio_get_high_bp(0) * 10;
 				gui_nvram.ft8_txfreq_val = (f >= l && f <= h) ? f : gui_nvram.ft8_txfreq_val;
 			}
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_time0"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_time0"))
 			{
 				uint_fast8_t hour, minute, seconds;
 				board_rtc_cached_gettime(& hour, & minute, & seconds);
@@ -4639,12 +4647,12 @@ static void window_ft8_process(void)
 		tf_ft8->visible = VISIBLE;
 
 		label_t * lh = NULL;
-		label_t * lbl_cq_title = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_cq_title");
-		label_t * lbl_tx_title = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_tx_title");
-		button_t * btn_tx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx");
-		button_t * btn_filter = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_filter");
-		button_t * btn_bands = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bands");
-		button_t * btn_settings = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_settings");
+		label_t * lbl_cq_title = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_cq_title");
+		label_t * lbl_tx_title = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_tx_title");
+		button_t * btn_tx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx");
+		button_t * btn_filter = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_filter");
+		button_t * btn_bands = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bands");
+		button_t * btn_settings = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_settings");
 
 		unsigned interval = get_label_height(lbl_cq_title) * 2;
 
@@ -4660,7 +4668,7 @@ static void window_ft8_process(void)
 		{
 			char lh_name [15];
 			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_cq%d", i);
-			lh = (label_t*) find_gui_element(TYPE_LABEL, win, lh_name);
+			lh = (label_t *) find_gui_element(TYPE_LABEL, win, lh_name);
 			lh->x = x;
 			lh->y = y;
 			lh->index = i;
@@ -4680,7 +4688,7 @@ static void window_ft8_process(void)
 		{
 			char lh_name [15];
 			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_txmsg%d", i);
-			lh = (label_t*) find_gui_element(TYPE_LABEL, win, lh_name);
+			lh = (label_t *) find_gui_element(TYPE_LABEL, win, lh_name);
 			lh->x = x;
 			lh->y = y;
 			lh->index = 10 + i;
@@ -4768,10 +4776,10 @@ static void window_ft8_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_tx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_tx");
-			button_t * btn_filter = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_filter");
-			button_t * btn_bands = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_bands");
-			button_t * btn_settings = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_settings");
+			button_t * btn_tx = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx");
+			button_t * btn_filter = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_filter");
+			button_t * btn_bands = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_bands");
+			button_t * btn_settings = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_settings");
 
 			if (bh == btn_tx)
 			{
@@ -4906,7 +4914,7 @@ static void window_af_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -4918,14 +4926,14 @@ static void window_af_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		label_t * lbl_low = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_low");
-		label_t * lbl_high = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_high");
-		label_t * lbl_afr = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_afr");
-		label_t * lbl_ifshift = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+		label_t * lbl_low = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_low");
+		label_t * lbl_high = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_high");
+		label_t * lbl_afr = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_afr");
+		label_t * lbl_ifshift = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
 
 		button_t * bh = & win->bh_ptr [0];
 
@@ -4975,14 +4983,14 @@ static void window_af_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_low_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_low_m");
-			button_t * btn_low_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_low_p");
-			button_t * btn_high_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_high_m");
-			button_t * btn_high_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_high_p");
-			button_t * btn_afr_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_afr_m");
-			button_t * btn_afr_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_afr_p");
-			button_t * btn_ifshift_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ifshift_m");
-			button_t * btn_ifshift_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ifshift_p");
+			button_t * btn_low_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_low_m");
+			button_t * btn_low_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_low_p");
+			button_t * btn_high_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_high_m");
+			button_t * btn_high_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_high_p");
+			button_t * btn_afr_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_afr_m");
+			button_t * btn_afr_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_afr_p");
+			button_t * btn_ifshift_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_ifshift_m");
+			button_t * btn_ifshift_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_ifshift_p");
 
 			if (bh == btn_low_m || bh == btn_low_p)
 			{
@@ -5058,10 +5066,10 @@ static void window_af_process(void)
 		ASSERT(bp_t.select < win->lh_count);
 		win->lh_ptr [bp_t.select].color = COLORPIP_YELLOW;
 
-		label_t * const lbl_low = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_low");
-		label_t * const lbl_high = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_high");
-		label_t * const lbl_afr = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_afr");
-		label_t * const lbl_ifshift = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+		label_t * const lbl_low = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_low");
+		label_t * const lbl_high = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_high");
+		label_t * const lbl_afr = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_afr");
+		label_t * const lbl_ifshift = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
 
 		unsigned val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
 		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4u"), str_low, val_low * 10);
@@ -5105,7 +5113,7 @@ static void window_mode_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -5178,7 +5186,7 @@ static void window_receive_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -5211,14 +5219,14 @@ static void window_receive_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_att = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_att");
-			button_t * btn_preamp = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_preamp");
-			button_t * btn_AF = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AF");
-			button_t * btn_AGC = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
-			button_t * btn_mode = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_mode");
-			button_t * btn_DNR = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
+			button_t * btn_att = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_att");
+			button_t * btn_preamp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_preamp");
+			button_t * btn_AF = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_AF");
+			button_t * btn_AGC = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
+			button_t * btn_mode = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_mode");
+			button_t * btn_DNR = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
 #if WITHWNB
-			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
+			button_t * btn_WNB = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 #endif /* WITHWNB */
 
 			if (bh == btn_att)
@@ -5259,7 +5267,7 @@ static void window_receive_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 #if WITHWNB
-			button_t * btn_WNB = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
+			button_t * btn_WNB = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 			if (bh == btn_WNB)
 			{
 				open_window(get_win(WINDOW_WNBCONFIG));
@@ -5280,18 +5288,18 @@ static void window_receive_process(void)
 
 	if (update)
 	{
-		button_t * btn_att = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_att");
+		button_t * btn_att = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_att");
 		const char * a = remove_start_line_spaces(hamradio_get_att_value());
 		local_snprintf_P(btn_att->text, ARRAY_SIZE(btn_att->text), PSTR("Att|%s"), a == NULL ? "off" : a);
 
-		button_t * btn_preamp = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_preamp");
+		button_t * btn_preamp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_preamp");
 		const char * p = remove_start_line_spaces(hamradio_get_preamp_value());
 		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p == NULL ? "off" : "on");
 
-		button_t * btn_AGC = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
+		button_t * btn_AGC = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
 
-		button_t * btn_DNR = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
+		button_t * btn_DNR = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
 		int_fast32_t grade = 0;
 		btn_DNR->is_locked = hamradio_get_nrvalue(& grade) != 0;
 	}
@@ -5329,7 +5337,7 @@ static void window_freq_process (void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -5349,7 +5357,7 @@ static void window_freq_process (void)
 			}
 		}
 
-		bh = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_FreqOK");
+		bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_FreqOK");
 		bh->is_locked = BUTTON_LOCKED;
 
 		editfreq.val = 0;
@@ -5456,7 +5464,7 @@ static void window_time_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -5478,7 +5486,7 @@ static void window_time_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -5515,7 +5523,7 @@ static void window_time_process(void)
 			}
 		}
 
-		button_t * btn_set =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_set");
+		button_t * btn_set =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_set");
 		btn_set->is_locked = BUTTON_LOCKED;
 
 		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& second);
@@ -5529,20 +5537,20 @@ static void window_time_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_yearp =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_year+");
-			button_t * btn_yearn =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_year-");
-			button_t * btn_monthp =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_month+");
-			button_t * btn_monthn =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_month-");
-			button_t * btn_dayp =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_day+");
-			button_t * btn_dayn =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_day-");
-			button_t * btn_hourp =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_hour+");
-			button_t * btn_hourn =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_hour-");
-			button_t * btn_minutep =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_minute+");
-			button_t * btn_minuten =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_minute-");
-			button_t * btn_secondp =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_second+");
-			button_t * btn_secondn =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_second-");
-			button_t * btn_sec0 =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_sec0");
-			button_t * btn_set =  (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_set");
+			button_t * btn_yearp =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_year+");
+			button_t * btn_yearn =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_year-");
+			button_t * btn_monthp =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_month+");
+			button_t * btn_monthn =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_month-");
+			button_t * btn_dayp =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_day+");
+			button_t * btn_dayn =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_day-");
+			button_t * btn_hourp =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_hour+");
+			button_t * btn_hourn =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_hour-");
+			button_t * btn_minutep =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_minute+");
+			button_t * btn_minuten =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_minute-");
+			button_t * btn_secondp =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_second+");
+			button_t * btn_secondn =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_second-");
+			button_t * btn_sec0 =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_sec0");
+			button_t * btn_set =  (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_set");
 
 			if (bh == btn_yearp || bh == btn_yearn)
 				year += bh->payload;
@@ -5578,22 +5586,22 @@ static void window_time_process(void)
 	{
 		update = 0;
 
-		label_t * lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_year");
+		label_t * lh =  (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_year");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%d", year);
 
-		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_month");
+		lh =  (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_month");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", month);
 
-		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_day");
+		lh =  (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_day");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", day);
 
-		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_hour");
+		lh =  (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_hour");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", hour);
 
-		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_minute");
+		lh =  (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_minute");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", minute);
 
-		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_second");
+		lh =  (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_second");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", second);
 	}
 #endif /* defined (RTC1_TYPE) */
@@ -5624,7 +5632,7 @@ static void window_kbd_process(void)
 
 		win->bh_count = kbd_len + 5;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		for (; i < win->bh_count; i ++)
@@ -5665,7 +5673,7 @@ static void window_kbd_process(void)
 			x += bh->w + interval;
 		}
 
-		button_t * btn_kbd_caps = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_caps");
+		button_t * btn_kbd_caps = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_caps");
 		btn_kbd_caps->x1 = 0;
 		btn_kbd_caps->y1 = btn_size * 3 + interval * 3;
 		btn_kbd_caps->w = 75;
@@ -5673,13 +5681,13 @@ static void window_kbd_process(void)
 		btn_kbd_caps->is_locked = is_shift ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		btn_kbd_caps->state = gui_keyboard.digits_only ? DISABLED : CANCELLED;
 
-		button_t * btn_kbd_backspace = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
+		button_t * btn_kbd_backspace = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
 		btn_kbd_backspace->x1 = btn_size * len1 + interval * len1;
 		btn_kbd_backspace->y1 = 0;
 		btn_kbd_backspace->is_repeating = 1;
 		local_snprintf_P(btn_kbd_backspace->text, ARRAY_SIZE(btn_kbd_backspace->text), "<-");
 
-		button_t * btn_kbd_space = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
+		button_t * btn_kbd_space = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
 		btn_kbd_space->x1 = btn_kbd_caps->x1 + btn_kbd_caps->w + interval * 8 + btn_size * len4;
 		btn_kbd_space->y1 = btn_kbd_caps->y1;
 		btn_kbd_space->w = 95;
@@ -5687,14 +5695,14 @@ static void window_kbd_process(void)
 		btn_kbd_space->payload = (char) ' ';
 		btn_kbd_space->state = gui_keyboard.digits_only ? DISABLED : CANCELLED;
 
-		button_t * btn_kbd_esc = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
+		button_t * btn_kbd_esc = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
 		btn_kbd_esc->x1 = btn_kbd_backspace->x1 + btn_kbd_backspace->w + interval * 3;
 		btn_kbd_esc->y1 = btn_kbd_backspace->y1 + btn_kbd_backspace->h / 2;
 		btn_kbd_esc->w = 50;
 		btn_kbd_esc->h = 50;
 		local_snprintf_P(btn_kbd_esc->text, ARRAY_SIZE(btn_kbd_esc->text), "Esc");
 
-		button_t * btn_kbd_enter = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_enter");
+		button_t * btn_kbd_enter = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_enter");
 		btn_kbd_enter->x1 = btn_kbd_esc->x1;
 		btn_kbd_enter->y1 = btn_kbd_esc->y1 + btn_kbd_esc->h + interval * 3;
 		btn_kbd_enter->w = 50;
@@ -5714,11 +5722,11 @@ static void window_kbd_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_kbd_esc = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
-			button_t * btn_kbd_caps = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_caps");
-			button_t * btn_kbd_enter = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_enter");
-			button_t * btn_kbd_space = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
-			button_t * btn_kbd_backspace = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
+			button_t * btn_kbd_esc = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
+			button_t * btn_kbd_caps = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_caps");
+			button_t * btn_kbd_enter = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_enter");
+			button_t * btn_kbd_space = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
+			button_t * btn_kbd_backspace = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
 
 			if ((bh->index < kbd_len || bh == btn_kbd_space))
 			{
@@ -5810,7 +5818,7 @@ static void window_kbd_test_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -5820,14 +5828,14 @@ static void window_kbd_test_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		button_t * btn_text = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_text");
-		button_t * btn_num = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_num");
-		label_t * lbl_text = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_text");
-		label_t * lbl_num = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_num");
+		button_t * btn_text = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_text");
+		button_t * btn_num = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_num");
+		label_t * lbl_text = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_text");
+		label_t * lbl_num = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_num");
 
 		lbl_text->x = 0;
 		lbl_text->y = 0;
@@ -5855,9 +5863,9 @@ static void window_kbd_test_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_text"))
+			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_text"))
 				keyboard_edit_string((uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_num"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_num"))
 				keyboard_edit_digits(& num_lbl1);
 		}
 		break;
@@ -5961,7 +5969,7 @@ static void window_menu_params_process(void)
 
 		win->bh_count = count;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		for (unsigned i = 0; i < win->bh_count; i ++)
@@ -5997,7 +6005,7 @@ static void window_menu_params_process(void)
 		add_element("btn_p", 35, 35, 0, 0, "+");
 		add_element("btn_m", 35, 35, 0, 0, "-");
 
-		button_t * btn_p = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_p");
+		button_t * btn_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_p");
 		btn_p->x1 = xmax + 130 + interval;
 		btn_p->y1 = 0;
 		btn_p->visible = VISIBLE;
@@ -6005,7 +6013,7 @@ static void window_menu_params_process(void)
 		btn_p->payload = 1;
 		btn_p->index = 90;
 
-		button_t * btn_m = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_m");
+		button_t * btn_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_m");
 		btn_m->x1 = xmax + 130 + interval;
 		btn_m->y1 = 40;
 		btn_m->visible = VISIBLE;
@@ -6079,7 +6087,7 @@ static void window_menu_process(void)
 
 		win->bh_count = count;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		for (unsigned i = 0; i < win->bh_count; i ++)
@@ -6159,7 +6167,7 @@ static void window_lfm_process(void)
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
@@ -6407,7 +6415,7 @@ static void window_stream_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_state"))
+			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_state"))
 			{
 				uint8_t state = stream_get_state();
 
@@ -6461,7 +6469,7 @@ static void window_wnbconfig_process(void)
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t*) malloc(buttons_size);
+		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
@@ -6472,7 +6480,7 @@ static void window_wnbconfig_process(void)
 
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t*) malloc(labels_size);
+		win->lh_ptr = (label_t *) malloc(labels_size);
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
