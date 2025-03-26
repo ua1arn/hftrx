@@ -2807,12 +2807,12 @@
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI0</name>
+   <name>S_TWI0</name>
    <value>145</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI1</name>
+   <name>S_TWI1</name>
    <value>146</value>
    <description></description>
   </interrupt>
@@ -3014,12 +3014,12 @@
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI0</name>
+   <name>S_TWI0</name>
    <value>145</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI1</name>
+   <name>S_TWI1</name>
    <value>146</value>
    <description></description>
   </interrupt>
@@ -3048,12 +3048,12 @@
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI0</name>
+   <name>S_TWI0</name>
    <value>145</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI1</name>
+   <name>S_TWI1</name>
    <value>146</value>
    <description></description>
   </interrupt>
@@ -3082,18 +3082,18 @@
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI0</name>
+   <name>S_TWI0</name>
    <value>145</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI1</name>
+   <name>S_TWI1</name>
    <value>146</value>
    <description></description>
   </interrupt>
   </peripheral>
   <peripheral derivedFrom="TWI0">
-  <name>R_TWI0</name>
+  <name>S_TWI0</name>
   <baseAddress>0x07081400</baseAddress>
   <interrupt>
    <name>TWI0</name>
@@ -3116,18 +3116,18 @@
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI0</name>
+   <name>S_TWI0</name>
    <value>145</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI1</name>
+   <name>S_TWI1</name>
    <value>146</value>
    <description></description>
   </interrupt>
   </peripheral>
   <peripheral derivedFrom="TWI0">
-  <name>R_TWI1</name>
+  <name>S_TWI1</name>
   <baseAddress>0x07081800</baseAddress>
   <interrupt>
    <name>TWI0</name>
@@ -3150,12 +3150,12 @@
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI0</name>
+   <name>S_TWI0</name>
    <value>145</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>R_TWI1</name>
+   <name>S_TWI1</name>
    <value>146</value>
    <description></description>
   </interrupt>

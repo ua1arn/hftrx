@@ -68,8 +68,8 @@ typedef enum IRQn
     R_TWD_IRQn = 142,                                 /*!< TIMER Trust watchdog interrupt in CPU */
     R_GPIOL_IRQn = 143,                               /*!< GPIOINT GPIOL interrupt in CPUS */
     R_UART_IRQn = 144,                                /*!< UART R_UART */
-    R_TWI0_IRQn = 145,                                /*!< TWI  */
-    R_TWI1_IRQn = 146,                                /*!< TWI  */
+    S_TWI0_IRQn = 145,                                /*!< TWI  */
+    S_TWI1_IRQn = 146,                                /*!< TWI  */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -133,8 +133,8 @@ typedef enum IRQn
 #define R_TIMER_BASE ((uintptr_t) 0x07029000)         /*!< TIMER  Base */
 #define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< UART  Base */
 #define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< UART  Base */
-#define R_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
-#define R_TWI1_BASE ((uintptr_t) 0x07081800)          /*!< TWI  Base */
+#define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
+#define S_TWI1_BASE ((uintptr_t) 0x07081800)          /*!< TWI  Base */
 
 #if __aarch64__
     #include <core_ca53.h>
@@ -799,8 +799,8 @@ typedef struct USB_OHCI_Capability_Type
 #define R_TIMER ((TIMER_TypeDef *) R_TIMER_BASE)      /*!< R_TIMER  register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
-#define R_TWI0 ((TWI_TypeDef *) R_TWI0_BASE)          /*!< R_TWI0  register set access pointer */
-#define R_TWI1 ((TWI_TypeDef *) R_TWI1_BASE)          /*!< R_TWI1  register set access pointer */
+#define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
+#define S_TWI1 ((TWI_TypeDef *) S_TWI1_BASE)          /*!< S_TWI1  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */
