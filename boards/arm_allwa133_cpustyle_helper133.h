@@ -674,11 +674,11 @@
 // WITHUART0HW
 // Используется периферийный контроллер последовательного порта UART0 */
 #define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0_TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0_RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
+		const portholder_t TXMASK = UINT32_C(1) << 9; /* PB9 UART0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 10; /* PB10 UART0_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 
