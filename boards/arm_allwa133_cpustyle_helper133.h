@@ -8,8 +8,8 @@
 
 // Helperboard A133
 
-#ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED
-#define ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED 1
+#ifndef ARM_ALW_A133_CPU_HELPERBOARD_H_INCLUDED
+#define ARM_ALW_A133_CPU_HELPERBOARD_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1139,7 +1139,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-		BOARD_BLINK_INITIALIZE(); \
+		/*BOARD_BLINK_INITIALIZE(); */\
 		HARDWARE_KBD_INITIALIZE(); \
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		/*HARDWARE_BL_INITIALIZE(); */\
@@ -1153,4 +1153,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED */
+#endif /* ARM_ALW_A133_CPU_HELPERBOARD_H_INCLUDED */
