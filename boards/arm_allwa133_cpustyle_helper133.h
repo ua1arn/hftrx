@@ -1098,7 +1098,7 @@
 	#endif
 
 
-#if 1
+#if 0
 
 	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 12)	// PC12 PWR-LED - RED to ground
 	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 13)	// PC13 STATUS-LED - Green - to ground
