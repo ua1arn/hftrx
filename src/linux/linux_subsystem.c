@@ -1298,9 +1298,9 @@ void * alsa_thread(void * args)
 	}
 }
 
-int alsa_init(void)
+int alsa_init(const char * card_name)
 {
-	if ((error = snd_pcm_open(& pcm_ph, "default", SND_PCM_STREAM_PLAYBACK, SND_PCM_ASYNC)) < 0) {
+	if ((error = snd_pcm_open(& pcm_ph, card_name, SND_PCM_STREAM_PLAYBACK, SND_PCM_ASYNC)) < 0) {
 		printf("Cannot open PCM device: %s\n", snd_strerror(error));
 		return 1;
 	}
@@ -1359,6 +1359,33 @@ void alsa_close(void)
 	snd_pcm_close(pcm_ph);
 }
 
+#if BLUETOOTH_ALSA
+
+char alsa_cards[2][10] = { "default", "bluealsa" };
+char names[2][10] = { "speaker", "bluetooth" };
+uint8_t card_id = 0;
+
+char * get_alsa_out(void)
+{
+	ASSERT(card_id < 2);
+	return names[card_id];
+}
+
+void alsa_switch_out(void)
+{
+	card_id = (card_id + 1) % 2;
+
+	alsa_close();
+	if(alsa_init(alsa_cards[card_id]))
+	{
+		// если bluetooth audio не доступно, повторить инициализацию по умолчанию
+		card_id = 0;
+		alsa_init(alsa_cards[card_id]);
+	}
+}
+
+#endif /* BLUETOOTH_ALSA */
+
 static void dummy_stop (void) {}
 uint_fast8_t dummy_clocksneed(void) {}
 static void dummy_setprocparams (uint_fast8_t procenable, const uint_fast8_t * gains) {}
@@ -1372,7 +1399,7 @@ static void alsa_setvolume (uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8
 
 static void alsa_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
-	ASSERT(! alsa_init());
+	ASSERT(! alsa_init("default"));
 }
 
 const codec1if_t *
