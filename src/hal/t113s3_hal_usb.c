@@ -2574,11 +2574,13 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		unsigned offset;
 		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		{
+#if ! WITHUSBCDCACM_NOINT
 			const uint_fast8_t pipeint =  USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset) & 0x0F;
+			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, 1, fifo_addr);
+#endif /* ! WITHUSBCDCACM_NOINT */
 			const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
 			const uint_fast8_t pipeout = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F;
 
-			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
 
@@ -2619,9 +2621,11 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				}
 				usb_set_dma_interrupt_enable(pusb, (1u << dmach));
 			}
+#if ! WITHUSBCDCACM_NOINT
 			// Transfer interrupt data from device to host
 			usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
 			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
+#endif /* ! WITHUSBCDCACM_NOINT */
 		}
 	}
 #endif /* WITHUSBCDCACM */
@@ -3758,7 +3762,7 @@ static void ep0_out_handler(pusb_struct pusb, const uSetupPKG *  ep0_setup)
     	case CDC_SET_CONTROL_LINE_STATE:
     		// work
     		//PRINTF("ep0_out: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-    		usb_cdc_control_state [USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev)] = LO_BYTE(ep0_setup->wValue);
+    		usb_cdc_control_state [USBD_CDCACM_OFFSET_BY_IFV(interfacev)] = LO_BYTE(ep0_setup->wValue);
 //       		pusb->ep0_xfer_state = USB_EP0_SETUP;
 //			pusb->ep0_xfer_residue = 0;
 	      	break;

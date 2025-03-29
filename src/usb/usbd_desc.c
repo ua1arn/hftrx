@@ -3164,6 +3164,7 @@ static unsigned CDCACM_InterfaceDescDataIf_a(
 	return length;
 }
 
+#if ! WITHUSBCDCACM_NOINT
 /* ACM Functional Descriptor */
 // Abstract Control Management Functional Descriptor
 static unsigned CDCACM_ACMFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
@@ -3205,7 +3206,7 @@ static unsigned CDCACM_Control_EP(uint_fast8_t fill, uint8_t * buff, unsigned ma
 	}
 	return length;
 }
-
+#endif /* ! WITHUSBCDCACM_NOINT */
 /* Data Out Endpoint Descriptor*/
 static unsigned CDCACM_Data_EP_OUT(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
 {
@@ -3256,16 +3257,26 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	unsigned n = 0;
 	const uint8_t inep = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset);
 	const uint8_t outnep = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset);
+#if ! WITHUSBCDCACM_NOINT
 	const uint8_t intnep = USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset);;
+#endif /* ! WITHUSBCDCACM_NOINT */
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDesc_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
+#if ! WITHUSBCDCACM_NOINT
 	n += CDCACM_InterfaceDescControlIf_a(fill, p + n, maxsize - n, offset, 0x01);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+#else /* ! WITHUSBCDCACM_NOINT */
+	n += CDCACM_InterfaceDescControlIf_a(fill, p + n, maxsize - n, offset, 0x00);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+#endif /* ! WITHUSBCDCACM_NOINT */
 	n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCACM_CallManagementDesc(fill, p + n, maxsize - n, offset);	/* Call Managment Functional Descriptor*/
+#if ! WITHUSBCDCACM_NOINT
 	n += CDCACM_ACMFunctionalDesc(fill, p + n, maxsize - n);	/* ACM Functional Descriptor */
+#endif /* ! WITHUSBCDCACM_NOINT */
 	n += CDC_UnionFunctionalDesc_a(fill, p + n, maxsize - n, offset);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
+#if ! WITHUSBCDCACM_NOINT
 	n += CDCACM_Control_EP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
+#endif /* ! WITHUSBCDCACM_NOINT */
 
 	n += CDCACM_InterfaceDescDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	n += CDCACM_Data_EP_OUT(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */

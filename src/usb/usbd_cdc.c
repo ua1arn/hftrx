@@ -400,7 +400,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 		case CDC_SET_LINE_CODING:
 			{
 				const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-				const unsigned offset = USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev);
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
 				ASSERT(req->wLength == 7);
 				dwDTERate [offset] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
 				//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [offset], cdc_epXdatabuffout [6]);
@@ -472,7 +472,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
-				const unsigned offset = USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev);
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
 				switch (req->bRequest)
 				{
 				case CDC_GET_LINE_CODING:
@@ -524,7 +524,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
-				const unsigned offset = USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev);
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
@@ -599,7 +599,9 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 		/* cdc Open EP OUT */
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		/* CDC Open EP interrupt */
+#if ! WITHUSBCDCACM_NOINT
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset), USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
+#endif /* ! WITHUSBCDCACM_NOINT */
 		/* CDC Prepare Out endpoint to receive 1st packet */
 		USBD_LL_PrepareReceive(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), cdcXbuffout [offset],  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 	}
@@ -615,7 +617,9 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	gpdev = NULL;
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
+#if ! WITHUSBCDCACM_NOINT
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset));
+#endif /* ! WITHUSBCDCACM_NOINT */
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset));
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset));
 	}
