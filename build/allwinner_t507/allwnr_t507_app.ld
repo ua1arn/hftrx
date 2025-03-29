@@ -194,6 +194,7 @@ SECTIONS
 		__bss2_end__ = .;
 		. = ALIGN(1M);
 		PROVIDE(__RAMNC_TOP = .);
+		
 		. = ALIGN(64);
 		__end__ = .;
 		PROVIDE(end = __end__);
