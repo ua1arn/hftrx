@@ -2477,7 +2477,19 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 static uintptr_t
 ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
-	const uint32_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
+	const uintptr_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
+
+#if ! CPUSTYLE_R7S721020
+	// На Renesas RZA1 недостаточно памяти для выделения выровненной на 1 мегабайт некешируесой области.
+	// Все сравнения должны быть не точнее 2 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+#endif
 
 #if CPUSTYLE_R7S721020
 
@@ -2498,13 +2510,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_STM32MP1
 
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
-
 	// Все сравнения должны быть не точнее 1 MB
 	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2518,10 +2523,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
-#if WITHLWIP
-	if (a == (uintptr_t) bd_space)
-		return addrbase | TTB_PARA_NCACHED(ro, 0);
-#endif /* WITHLWIP */
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2547,13 +2548,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
-
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
@@ -2567,13 +2561,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_F133
 
 	// Все сравнения должны быть не точнее 2 MB
-
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
 
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2589,13 +2576,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
-
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
@@ -2610,13 +2590,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
-
 	if (a < 0x01000000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
 
@@ -2630,14 +2603,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_A64
 
-	// Все сравнения должны быть не точнее 1 MB
-
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x01000000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2649,14 +2615,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	// Все сравнения должны быть не точнее 1 MB
-
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2668,14 +2627,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_A133 || CPUSTYLE_R818
 
-	// Все сравнения должны быть не точнее 1 MB
-
-	extern uint32_t __RAMNC_BASE;
-	extern uint32_t __RAMNC_TOP;
-	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
 		return addrbase | TTB_PARA_CACHED(ro, 0);
