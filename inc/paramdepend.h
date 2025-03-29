@@ -408,7 +408,7 @@ extern "C" {
 	#define CPU_FREQ	(xc7z_get_arm_freq())
 	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
-	#define TICKS_FREQUENCY 200	// Hz
+	#define TICKS_FREQUENCY 1000	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
 	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
@@ -434,7 +434,7 @@ extern "C" {
 	#define CPU_PL1_FREQ (allwnr_a64_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_a64_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 200	// Hz
+	#define TICKS_FREQUENCY 1000	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
 	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
@@ -612,7 +612,7 @@ extern "C" {
 	#define CPU_PL1_FREQ (allwnr_h3_get_hosc_freq())	/* PL1 times source frequency */
 	#define HARDWARE_HOSC_FREQ (allwnr_h3_get_hosc_freq())	/* PL1 times source frequency */
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 1000	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
 	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
@@ -735,7 +735,7 @@ extern "C" {
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
 	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 1000	// Hz
 
 	#define SEQ_TICKS_PERIOD    5    // 5 ms
 	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
