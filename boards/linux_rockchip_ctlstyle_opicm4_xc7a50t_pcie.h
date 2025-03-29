@@ -252,6 +252,7 @@
 			#define REALREFERENCE_FREQ 		61443000L
 			#define MOUSE_EVDEV				1
 			#define MOUSE_CURSOR_PATH		"./arrow.png"
+			#define BLUETOOTH_ALSA			1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
