@@ -275,6 +275,7 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint */
 
 
 	#if WITHLWIP

@@ -194,6 +194,7 @@
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint */
 
 
 	#if WITHLWIP
@@ -656,6 +657,15 @@
 		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PG7 UART1-RX - pull-up RX data */  \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+
+// WITHUART4HW
+#define HARDWARE_UART4_INITIALIZE() do { \
+		const portholder_t TXMASK = (UINT32_C(1) << 2); /* PG2 UART4-TX  */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 3); /* PG3 UART4-RX  - pull-up RX data */  \
+		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF5); \
 		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
