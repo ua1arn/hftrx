@@ -10756,7 +10756,7 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		unsigned core;
 		for (core = 0; core < arm_hardware_clustersize(); ++ core)
@@ -10764,6 +10764,26 @@ void hightests(void)
 			const uintptr_t base = (uintptr_t) (GICV + core);
 			PRINTF("GICV%u:\n", core);
 			printhex32(base, (void *) base, 512);
+		}
+	}
+#endif
+#if 0
+	{
+		// Test PD0..PD13 relays
+		const portholder_t allmask = UINT32_C(0x03FFF);
+		arm_hardware_piod_outputs(allmask, 0 * allmask);
+		for (;;)
+		{
+			unsigned i;
+			for (i = 0; i < 14; ++ i)
+			{
+				const portholder_t mask = UINT32_C(1) << i;
+				gpioX_setstate(GPIOD, allmask, mask);
+				local_delay_ms(500);
+				gpioX_setstate(GPIOD, allmask, 0);
+				local_delay_ms(500);
+				TP();
+			}
 		}
 	}
 #endif
