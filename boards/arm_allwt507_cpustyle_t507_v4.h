@@ -10,8 +10,8 @@
 // v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 // HelperBoard T507 Core Board
 
-#ifndef ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_CPU_T507_V4_H_INCLUDED
+#define ARM_ALW_CPU_T507_V4_H_INCLUDED 1
 
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
@@ -37,49 +37,43 @@
 
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта UART1 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART2 */
-#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта UART3 */
-#define WITHUART4HW	1	/* Используется периферийный контроллер последовательного порта UART4 */
-#define WITHUART5HW	1	/* Используется периферийный контроллер последовательного порта UART5 */
-
-void user_uart0_onrxchar(uint_fast8_t c);
-void user_uart1_onrxchar(uint_fast8_t c);
-void user_uart2_onrxchar(uint_fast8_t c);
-void user_uart3_onrxchar(uint_fast8_t c);
-void user_uart4_onrxchar(uint_fast8_t c);
-void user_uart5_onrxchar(uint_fast8_t c);
-
-void user_uart0_ontxchar(void * ctx);
-void user_uart1_ontxchar(void * ctx);
-void user_uart2_ontxchar(void * ctx);
-void user_uart3_ontxchar(void * ctx);
-void user_uart4_ontxchar(void * ctx);
-void user_uart5_ontxchar(void * ctx);
-
-#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar((c)); } while (0)
-#define HARDWARE_UART1_ONRXCHAR(c) do { user_uart1_onrxchar((c)); } while (0)
-#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar((c)); } while (0)
-#define HARDWARE_UART3_ONRXCHAR(c) do { user_uart3_onrxchar((c)); } while (0)
-#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar((c)); } while (0)
-
-#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar((ctx)); } while (0)
-#define HARDWARE_UART1_ONTXCHAR(ctx) do { user_uart1_ontxchar((ctx)); } while (0)
-#define HARDWARE_UART2_ONTXCHAR(ctx) do { user_uart2_ontxchar((ctx)); } while (0)
-#define HARDWARE_UART3_ONTXCHAR(ctx) do { user_uart3_ontxchar((ctx)); } while (0)
-#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar((ctx)); } while (0)
+//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта UART1 */
+//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART2 */
+//#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта UART3 */
+//#define WITHUART4HW	1	/* Используется периферийный контроллер последовательного порта UART4 */
+//#define WITHUART5HW	1	/* Используется периферийный контроллер последовательного порта UART5 */
+//
+//void user_uart0_onrxchar(uint_fast8_t c);
+//void user_uart1_onrxchar(uint_fast8_t c);
+//void user_uart2_onrxchar(uint_fast8_t c);
+//void user_uart3_onrxchar(uint_fast8_t c);
+//void user_uart4_onrxchar(uint_fast8_t c);
+//void user_uart5_onrxchar(uint_fast8_t c);
+//
+//void user_uart0_ontxchar(void * ctx);
+//void user_uart1_ontxchar(void * ctx);
+//void user_uart2_ontxchar(void * ctx);
+//void user_uart3_ontxchar(void * ctx);
+//void user_uart4_ontxchar(void * ctx);
+//void user_uart5_ontxchar(void * ctx);
+//
+//#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar((c)); } while (0)
+//#define HARDWARE_UART1_ONRXCHAR(c) do { user_uart1_onrxchar((c)); } while (0)
+//#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar((c)); } while (0)
+//#define HARDWARE_UART3_ONRXCHAR(c) do { user_uart3_onrxchar((c)); } while (0)
+//#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar((c)); } while (0)
+//
+//#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar((ctx)); } while (0)
+//#define HARDWARE_UART1_ONTXCHAR(ctx) do { user_uart1_ontxchar((ctx)); } while (0)
+//#define HARDWARE_UART2_ONTXCHAR(ctx) do { user_uart2_ontxchar((ctx)); } while (0)
+//#define HARDWARE_UART3_ONTXCHAR(ctx) do { user_uart3_ontxchar((ctx)); } while (0)
+//#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar((ctx)); } while (0)
 
 #if WITHDEBUG
-
-	#define WITHDEBUG_UART4	1
-
-#else
-
-	#define HARDWARE_UART4_ONTXCHAR(ctx) do { user_uart4_ontxchar((ctx)); } while (0)
-	#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar((c)); } while (0)
-
-#endif
+	#define WITHDEBUG_UART0	1
+	#define WITHUART0HW	1		/* отлдочный порт */
+#endif /* WITHDEBUG */
 
 
 #if WITHISBOOTLOADER
@@ -765,58 +759,56 @@ void user_uart5_ontxchar(void * ctx);
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
-// WITHUART1HW
-// Используется периферийный контроллер последовательного порта UART1 (BT BOX) */
-#define HARDWARE_UART1_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 6; /* PG6 UART1-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 7; /* PG7 UART1-RX - pull-up RX data */  \
-		/*arm_hardware_pioh_outputs(UINT32_C(1) << 4, 0); *//* PH4 BT_RESETN */ \
-		/*arm_hardware_piog_outputs(UINT32_C(1) << 14, 0); *//* PG14 AP_WKE */ \
-		/*arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); *//* PG12 BT_WAKE */ \
-		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_updown(RXMASK | TXMASK, RXMASK, 0); \
+#if WITHETHHW
+	#define ETHERNET_INITIALIZE() do { \
+		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
+		\
+		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 RGMII_RXD2 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 RGMII_RXD1 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RGMII_RXD0 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 RGMII_RXCK */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 RGMII_RXCTL */ \
+		\
+		arm_hardware_pioi_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		arm_hardware_pioi_outputs(NRSTB, 1 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		\
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII_RXD3 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII_RXD2 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* PI2 RGMII_RXD1 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* PI3 RGMII_RXD0 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* PI4 RGMII_RXCK */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* PI5 RGMII_RXCTL */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* PI7 RGMII_TXD3 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* PI8 RGMII_TXD2 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* PI9 RGMII_TXD1 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* PI10 RGMII_TXD0 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* PI11 RGMII_TXCK */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* PI12 RGMII_TXCTL */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* PI13 RGMII_CLKIN */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* PI14 MDC */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* PI15 MDIO */ \
+		arm_hardware_pioi_updown(UINT32_C(1) << 14, UINT32_C(1) << 14, 0); /* PI14 MDC */ \
+		arm_hardware_pioi_updown(UINT32_C(1) << 15, UINT32_C(1) << 15, 0); /*  PI15 MDIO */ \
+		\
+	} while (0)
+	// T507:
+	// 	EMAC0: 10/100/1000 Mbps Ethernet port with RGMII and RMII interfaces;
+	// 	EMAC1: 10/100 Mbps Ethernet port with RMII interface
+	#define HARDWARE_EMAC_IX 0	// 0: EMAC0, 1: EMAC1
+	#define HARDWARE_EMAC_PTR EMAC0
+	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
+	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+
+#else /* WITHETHHW */
+
+	#define ETHERNET_INITIALIZE() do { \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
 	} while (0)
 
-// WITHUART2HW
-// Используется периферийный контроллер последовательного порта UART2 */
-#define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 5; /* PI5 UART2-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 6; /* PI6 UART2-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
-	} while (0)
-
-// WITHUART3HW
-// Используется периферийный контроллер последовательного порта UART3 */
-#define HARDWARE_UART3_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 9; /* PI9 UART3-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 10; /* PI10 UART3-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
-	} while (0)
-// WITHUART4HW
-// Используется периферийный контроллер последовательного порта UART4 */
-#define HARDWARE_UART4_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 13; /* PI13 UART4-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 14; /* PI14 UART4-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
-	} while (0)
-
-// WITHUART5HW
-// Используется периферийный контроллер последовательного порта UART5 */
-#define HARDWARE_UART5_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 2; /* PH2 UART5-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
-	} while (0)
-
+#endif /* WITHETHHW */
 
 #define BOARD_GPIOA_ENC2BTN_BIT (UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
 
@@ -1171,6 +1163,7 @@ void user_uart5_ontxchar(void * ctx);
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+			ETHERNET_INITIALIZE(); \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
@@ -1181,4 +1174,4 @@ void user_uart5_ontxchar(void * ctx);
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_CPU_T507_V4_H_INCLUDED */
