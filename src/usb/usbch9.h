@@ -308,8 +308,6 @@ enum interfaces_tag
 
 #else /* ! WITHUSBCDCACM_NOINT */
 
-#define USBD_CDCACM_OFFSET_BY_IFV(ifv) (((ifv) - INTERFACE_CDC_base) / 2)	/* получить номер порта по номеру интерфейса */
-
 #define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 1)
 #define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 1)
 
@@ -317,6 +315,7 @@ enum interfaces_tag
 
 #define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
 #define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
+#define USBD_CDCACM_OFFSET_BY_IFV(ifv) (((ifv) - INTERFACE_CDC_base) / 2)	/* получить номер порта по номеру интерфейса */
 
 #define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)
 
