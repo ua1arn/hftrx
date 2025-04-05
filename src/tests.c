@@ -10759,7 +10759,7 @@ void hightests(void)
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		unsigned core;
-		for (core = 0; core < HARDWARE_NCORES; ++ core)
+		for (core = 0; core < arm_hardware_clustersize(); ++ core)
 		{
 			const uintptr_t base = (uintptr_t) (GICV + core);
 			PRINTF("GICV%u:\n", core);
