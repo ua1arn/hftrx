@@ -2019,6 +2019,10 @@ void i2c_initialize(void)
 
 }
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+
 #else
 	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
 
@@ -2678,8 +2682,11 @@ void hardware_twi_master_configure(void)
 	}
 #endif /* defined (TWIHARD_PTR) */
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
-	#warning Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 #endif
 }
 

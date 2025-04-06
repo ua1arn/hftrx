@@ -116,6 +116,9 @@
 		}
 	}
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
@@ -152,6 +155,9 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 		UART2->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
 		UART2->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -190,6 +196,9 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		UART2->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -220,6 +229,9 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	UART2->UART_RBR_THR_DLL = c;
+
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -302,6 +314,9 @@ hardware_uart2_getchar(char * cp)
 		return 0;
 	* cp = UART2->UART_RBR_THR_DLL;
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -361,6 +376,9 @@ hardware_uart2_putchar(uint_fast8_t c)
 	if ((UART2->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
 	UART2->UART_RBR_THR_DLL = c;
+
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -650,6 +668,9 @@ xxxx!;
 	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
 	}
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -734,8 +755,11 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART2->UART_LCR &= ~ (1 << 7);
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
-	#warning Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 #endif
 
 }

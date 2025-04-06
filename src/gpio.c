@@ -1388,6 +1388,14 @@ void gpioX_setstate(
 
 
 
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+void sysinit_gpio_initialize(void)
+{
+
+}
+
 #endif
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
