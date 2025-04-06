@@ -14,9 +14,9 @@
 #define ARM_RK_CPU_OPI3B_H_INCLUDED 1
 
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
@@ -35,11 +35,11 @@
 //#define WITHSDHC2HW	1		/* EMMC */
 
 
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHDEBUG_UART0	1
-	#define WITHUART0HW	1		/* отлдочный порт */
+	#define WITHDEBUG_UART2	1	// GPIO0_D1 (UART2_TX_M0) GPIO0_D0 (UART2_RX_M0)
+	#define WITHUART2HW	1		/* отлдочный порт */
 #endif /* WITHDEBUG */
 
 
@@ -157,41 +157,41 @@
 	//#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 
-//	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-//	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
-	//#define WITHUSBDEV_DMAENABLE 1
-
-//	#define WITHUSBHW_HOST		USBOTG0
+////	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+////	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+//	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+//	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+//	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
-//	#define WITHUSBHOST_DMAENABLE 1
-
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-
-	#define WITHTINYUSB 1
-	
-	
-	#if WITHTINYUSB
-		#define BOARD_TUH_RHPORT 1
-		#define CFG_TUH_ENABLED 1
-		//#define TUP_USBIP_OHCI 1
-		#define TUP_USBIP_EHCI 1
-	#endif /* WITHTINYUSB */
-
-	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
-	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	3
-
-	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
-	#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	3
-
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
-	#define WITHOHCIHW_OHCIPORT 0
+//	//#define WITHUSBDEV_DMAENABLE 1
+//
+////	#define WITHUSBHW_HOST		USBOTG0
+////	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
+////	#define WITHUSBHOST_DMAENABLE 1
+//
+//	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+//
+//	#define WITHTINYUSB 1
+//
+//
+//	#if WITHTINYUSB
+//		#define BOARD_TUH_RHPORT 1
+//		#define CFG_TUH_ENABLED 1
+//		//#define TUP_USBIP_OHCI 1
+//		#define TUP_USBIP_EHCI 1
+//	#endif /* WITHTINYUSB */
+//
+//	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
+//	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
+//	#define WITHUSBHW_EHCI_IX	3
+//
+//	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
+//	#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
+//	#define WITHUSBHW_OHCI_IX	3
+//
+//	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
+//	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+//	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -255,20 +255,6 @@
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #endif /* WITHISBOOTLOADER */
-
-#define LS020_RS				(0 * UINT32_C(1) << 9)			// PA9 signal
-#define LS020_RS_SET(v) 		do { gpioX_setstate(GPIOA, LS020_RS, !! (v) * LS020_RS); } while (0)
-
-#define LS020_RS_INITIALIZE() do { \
-		arm_hardware_pioa_outputs2m(LS020_RS, LS020_RS); /* PA9 */ \
-	} while (0)
-
-#define LS020_RESET				(UINT32_C(1) << 10)			// PA10 signal
-#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOA, LS020_RESET, !! (v) * LS020_RESET); } while (0)
-
-#define LS020_RESET_INITIALIZE() do { \
-		arm_hardware_pioa_outputs2m(LS020_RESET, LS020_RESET); /* PA10 */ \
-	} while (0)
 
 #if WITHENCODER
 
@@ -716,11 +702,11 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-// WITHUART0HW
-// Используется периферийный контроллер последовательного порта UART0 */
-#define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
+// WITHUART2HW
+// Используется периферийный контроллер последовательного порта UART2 */
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 0; /* GPIO0_D1 (UART2_TX_M0) */ \
+		const portholder_t RXMASK = UINT32_C(1) << 1; /*GPIO0_D0 (UART2_RX_M0) - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
@@ -1107,10 +1093,9 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 10)	// PA10 - VD24 - active "1"
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 11)	// PA11 - VD25 - active "1"
+	#define BOARD_BLINK_BIT0 0*(UINT32_C(1) << 0)	// GPIO0_C0GPIO0_C0GPIO0_C0 - "work_led" - active "1"
 
-#if 1
+#if 0
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_pioa_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_pioa_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
@@ -1131,7 +1116,7 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			ETHERNET_INITIALIZE(); \
-			BOARD_BLINK_INITIALIZE(); \
+			/*BOARD_BLINK_INITIALIZE(); */\
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			USBD_EHCI_INITIALIZE(); \

@@ -256,20 +256,6 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#define LS020_RS				(0 * UINT32_C(1) << 9)			// PA9 signal
-#define LS020_RS_SET(v) 		do { gpioX_setstate(GPIOA, LS020_RS, !! (v) * LS020_RS); } while (0)
-
-#define LS020_RS_INITIALIZE() do { \
-		arm_hardware_pioa_outputs2m(LS020_RS, LS020_RS); /* PA9 */ \
-	} while (0)
-
-#define LS020_RESET				(UINT32_C(1) << 10)			// PA10 signal
-#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOA, LS020_RESET, !! (v) * LS020_RESET); } while (0)
-
-#define LS020_RESET_INITIALIZE() do { \
-		arm_hardware_pioa_outputs2m(LS020_RESET, LS020_RESET); /* PA10 */ \
-	} while (0)
-
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1

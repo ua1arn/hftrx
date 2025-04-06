@@ -233,53 +233,6 @@
 
 #endif /* WITHISBOOTLOADER */
 
-
-#define LS020_RS_INITIALIZE() do { \
-		/*arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); *//* PD3 */ \
-	} while (0)
-
-#define LS020_RESET_INITIALIZE() do { \
-		/*arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); *//* PD4 */ \
-	} while (0)
-
-#define LS020_RS_SET(v) do { \
-		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
-		else  LS020_RS_PORT_C(LS020_RS); \
-	} while (0)
-
-#define LS020_RESET_SET(v) do { \
-		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
-		else  LS020_RESET_PORT_C(LS020_RESET); \
-	} while (0)
-
-#if LCDMODE_SPI_NA
-	// эти контроллеры требуют только RS
-
-	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS			(UINT32_C(1) << 3)			// PD3 signal
-
-#elif LCDMODE_SPI_RN
-	// эти контроллеры требуют только RESET
-
-	#define LS020_RESET_PORT_S(v)		do { } while (0) //do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET_PORT_C(v)		do { } while (0) //do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET			0//(UINT32_C(1) << 4)			// PD4 signal
-
-#elif LCDMODE_SPI_RA
-	// Эти контроллеры требуют RESET и RS
-	// LCDMODE_UC1608
-
-	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS			(UINT32_C(1) << 3)			// PD3 signal
-
-	#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET			(UINT32_C(1) << 2)			// PD4 signal
-
-#endif
-
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
