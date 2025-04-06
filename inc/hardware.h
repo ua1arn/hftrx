@@ -457,6 +457,25 @@ extern "C" {
 	#define ALIGNX_BEGIN //__ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
+
+#elif CPUSTYLE_RK356X && ! LINUX_SUBSYSTEM
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ROCKCHIP	1		/* */
+
+	#include "rk3566.h"
+	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
+	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
+	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
+	//	Unified-Cache L2: 1024 KB, 1024 Sets, 64 Bytes/Line, 16-Way
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 64
+
+	#define ALIGNX_BEGIN __ALIGNED(64)
+	#define ALIGNX_END /* nothing */
+
 #elif \
 	defined (__TMS320C28X__) || \
 	0
