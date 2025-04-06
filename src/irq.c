@@ -2057,11 +2057,7 @@ void InitializeIrql(IRQL_t newIRQL)
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
-#if CPUSTYLE_AT91SAM7S
-
-	return 1;
-
-#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
 
 	return ((GIC_DistributorInfo() >> 5) & 0x07) + 1;	// CPUNumber Indicates the number of implemented processors:
@@ -2076,9 +2072,9 @@ uint_fast8_t arm_hardware_clustersize(void)
 // This processor index (0..n-1)
 uint_fast8_t arm_hardware_cpuid(void)
 {
-#if CPUSTYLE_AT91SAM7S
+#if CPUSTYLE_RISCV
 
-	return 0;
+	return csr_read_mhartid();
 
 #elif defined(__aarch64__)
 	// Cortex-A53 computers
@@ -2093,10 +2089,6 @@ uint_fast8_t arm_hardware_cpuid(void)
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0x03;
-
-#elif CPUSTYLE_RISCV
-
-	return csr_read_mhartid();
 
 #else
 
