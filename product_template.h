@@ -219,9 +219,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7
-	#include "boards/linux_rockchip_ctlstyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
+	#include "boards/arm_rockchip_ctlstyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/linux_rockchip_cpustyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
+	#include "boards/arm_rockchip_cpustyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7
 	#include "boards/linux_rockchip_ctlstyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
