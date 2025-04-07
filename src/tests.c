@@ -10756,7 +10756,7 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		unsigned core;
 		for (core = 0; core < arm_hardware_clustersize(); ++ core)
@@ -10795,9 +10795,11 @@ void hightests(void)
 //			;
 	}
 #endif
-#if LINUX_SUBSYSTEM && WITHAD9363IIO && 0
-	int ad9363_iio_test (const char * uri);
-	ad9363_iio_test("usb:");
+#if 0 && LINUX_SUBSYSTEM && WITHAD9363IIO
+	{
+		int ad9363_iio_test (const char * uri);
+		ad9363_iio_test("usb:");
+	}
 #endif
 #if 0 && (CFG_TUH_ENABLED && CFG_TUH_HID)
 	{
@@ -10953,7 +10955,6 @@ void hightests(void)
 			;
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-
 #if 0
 	{
 		// V3s clocks information print
@@ -11226,7 +11227,8 @@ void hightests(void)
 		PRINTF("I2C_2 bus scan done\n");
 	}
 #endif
-#if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
+#if 0 && CPUSTYLE_T507
+	// Allwinner T507 Thermal sensor test
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
 
@@ -11303,7 +11305,7 @@ void hightests(void)
 
 	}
 #endif
-#if CPUSTYLE_STM32MP1 && WITHETHHW && 0
+#if 0 && CPUSTYLE_STM32MP1 && WITHETHHW
 	{
 		// Ethernet controller tests
 		ethhw_initialize();
@@ -11362,7 +11364,7 @@ void hightests(void)
 		ethhw_deinitialize();
 	}
 #endif
-#if CPUSTYLE_T113 && 0
+#if 0 && CPUSTYLE_T113
 	{
 		// HiFI4 DSP start test
 
@@ -11454,19 +11456,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if CPUSTYLE_VM14 && 0
-	{
-		unsigned mask = UINT32_C(1) << 24; // GC24 - DBGLED1
-		for (;;)
-		{
-			arm_hardware_pioc_outputs(mask, 1 * mask);
-			local_delay_ms(200);
-			arm_hardware_pioc_outputs(mask, 0 * mask);
-			local_delay_ms(200);
-		}
-	}
-#endif
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
 		CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16); 	// 1: De-assert reset  HOSC
 		CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0); 	// 1: Pass clock
@@ -11628,7 +11618,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if 1 && (CPUSTYLE_H3)
+#if 0 && (CPUSTYLE_H3)
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_axi_freq() / 1000 / 1000));
