@@ -72,54 +72,6 @@
 			HARDWARE_UART1_ONTXCHAR(AT91C_BASE_US1);
 	}
 
-#elif CPUSTYLE_ATMEGA328
-
-	ISR(USART_RX_vect)
-	{
-		HARDWARE_UART1_ONRXCHAR(UDR1);
-	}
-
-	ISR(USART_TX_vect)
-	{
-		HARDWARE_UART1_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	ISR(USART1_RX_vect)
-	{
-		HARDWARE_UART1_ONRXCHAR(UDR1);
-	}
-
-	ISR(USART1_TX_vect)
-	{
-		HARDWARE_UART1_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA128
-
-	ISR(USART1_RX_vect)
-	{
-		HARDWARE_UART1_ONRXCHAR(UDR0);
-	}
-
-	ISR(USART1_TX_vect)
-	{
-		HARDWARE_UART1_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	ISR(USARTE1_RXC_vect)
-	{
-		HARDWARE_UART1_ONRXCHAR(USARTE1.DATA);
-	}
-
-	ISR(USARTE1_DRE_vect)
-	{
-		HARDWARE_UART1_ONTXCHAR(& USARTE1);
-	}
-
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
@@ -167,7 +119,7 @@
 		}
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 	{
@@ -219,17 +171,11 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 
 	#if HARDWARE_ARM_USEUSART1
 
-		if (state)
-			USART1->US_IER = US_IER_TXRDY;
-		else
-			USART1->US_IDR = US_IDR_TXRDY;
+		hardware_uartx_enabletx(USART1, state);
 
 	#elif HARDWARE_ARM_USEUART1
 
-		if (state)
-			UART1->UART_IER = UART_IER_TXRDY;
-		else
-			UART1->UART_IDR = UART_IDR_TXRDY;
+		hardware_uartx_enabletx(UART1, state);
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -237,95 +183,27 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if (state)
-		AT91C_BASE_US1->US_IER = AT91C_US_TXRDY;
-	else
-		AT91C_BASE_US1->US_IDR = AT91C_US_TXRDY;
+	hardware_uartx_enabletx(AT91C_BASE_US1, state);
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-	if (state)
-		USART1->CR1 |= USART_CR1_TXEIE;
-	else
-		USART1->CR1 &= ~ USART_CR1_TXEIE;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	/* Used USART 1 */
-	if (state)
-	{
-		UCSR1B |= (1U << TXCIE0);
-		HARDWARE_UART1_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSR1B &= ~ (1U << TXCIE0);
-	}
-
-#elif CPUSTYLE_ATMEGA32
-
-	if (state)
-	{
-		UCSRB |= (1U << TXCIE);
-		HARDWARE_UART1_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSRB &= ~ (1U << TXCIE);
-	}
-
-#elif CPUSTYLE_ATMEGA128
-
-	/* Used USART 1 */
-	if (state)
-	{
-		UCSR1B |= (1U << TXCIE0);
-		HARDWARE_UART1_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSR1B &= ~ (1U << TXCIE0);
-	}
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if (state)
-		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_LO_gc;
-	else
-		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
+	hardware_uartx_enabletx(USART1, state);
 
 #elif CPUSTYLE_R7S721
 
-	if (state)
-		SCIF1.SCSCR |= SCIF1_SCSCR_TIE;	// TIE Transmit Interrupt Enable
-	else
-		SCIF1.SCSCR &= ~ SCIF1_SCSCR_TIE;	// TIE Transmit Interrupt Enable
+	hardware_uartx_enabletx(& SCIF1, state);
 
 #elif CPUSTYLE_XC7Z
 
-	const uint32_t mask = (UINT32_C(1) << 3);	// TEMPTY Enable Transmit Holding Register Empty Interrupt
-	if (state)
-	{
-		 UART1->IER = mask;
-	}
-	else
-	{
-		 UART1->IDR = mask;
-	}
+	hardware_uartx_enabletx(UART1, state);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if (state)
-		UART1->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-	else
-		UART1->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	hardware_uartx_enabletx(UART1, state);
 
 #elif CPUSTYLE_VM14
 
-	if (state)
-		 UART1->UART_DLH_IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-	else
-		 UART1->UART_DLH_IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	hardware_uartx_enabletx(UART1, state);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -340,17 +218,11 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 	#if HARDWARE_ARM_USEUSART1
 
-		if (state)
-			USART1->US_IER = US_IER_RXRDY;
-		else
-			USART1->US_IDR = US_IDR_RXRDY;
+		hardware_uartx_enablerx(USART1, state);
 
 	#elif HARDWARE_ARM_USEUART1
 
-		if (state)
-			UART1->UART_IER = UART_IER_RXRDY;
-		else
-			UART1->UART_IDR = UART_IDR_RXRDY;
+		hardware_uartx_enablerx(UART1, state);
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -358,81 +230,27 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if (state)
-		AT91C_BASE_US1->US_IER = AT91C_US_RXRDY;
-	else
-		AT91C_BASE_US1->US_IDR = AT91C_US_RXRDY;
-
-
-#elif CPUSTYLE_ATMEGA_XXX4
-	/* Used USART 0 */
-	if (state)
-		UCSR1B |= (1U << RXCIE0);
-	else
-		UCSR1B &= ~ (1U << RXCIE0);
-
-#elif CPUSTYLE_ATMEGA32
-
-	if (state)
-		UCSRB |= (1U << RXCIE);
-	else
-		UCSRB &= ~ (1U << RXCIE);
-
-#elif CPUSTYLE_ATMEGA128
-
-	/* Used USART 1 */
-	if (state)
-		UCSR1B |= (1U << RXCIE0);
-	else
-		UCSR1B &= ~ (1U << RXCIE0);
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if (state)
-		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_LO_gc;
-	else
-		USARTE1.CTRLA = (USARTE1.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
+	hardware_uartx_enablerx(AT91C_BASE_US1, state);
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-	if (state)
-		USART1->CR1 |= USART_CR1_RXNEIE;
-	else
-		USART1->CR1 &= ~ USART_CR1_RXNEIE;
+	hardware_uartx_enablerx(USART1, state);
 
 #elif CPUSTYLE_R7S721
 
-	if (state)
-		SCIF1.SCSCR |= SCIF1_SCSCR_RIE;	// RIE Receive Interrupt Enable
-	else
-		SCIF1.SCSCR &= ~ SCIF1_SCSCR_RIE;	// RIE Receive Interrupt Enable
+	hardware_uartx_enablerx(& SCIF1, state);
 
 #elif CPUSTYLE_XC7Z
 
-	UART1->RXWM = 16; 							/* set RX FIFO Trigger Level */
-	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
-	if (state)
-	{
-		 UART1->IER = mask;
-	}
-	else
-	{
-		 UART1->IDR = mask;
-	}
+	hardware_uartx_enablerx(UART1, state);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if (state)
-		 UART1->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
-	else
-		 UART1->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	hardware_uartx_enablerx(UART1, state);
 
 #elif CPUSTYLE_VM14
 
-	if (state)
-		 UART1->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
-	else
-		 UART1->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	hardware_uartx_enablerx(UART1, state);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -446,61 +264,44 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART1
-		USART1->US_THR = c;
+		hardware_uartx_tx(USART1, c);
 	#elif HARDWARE_ARM_USEUART1
-		UART1->UART_THR = c;
+		hardware_uartx_tx(UART1, c);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
 
 #elif CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_US1->US_THR = c;
-
-#elif CPUSTYLE_ATMEGA128
-
-	UDR1 = c;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	UDR1 = c;
-
-#elif CPUSTYLE_ATMEGA32
-
-	UDR = c;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	USARTE1.DATA = c;
+	hardware_uartx_tx(AT91C_BASE_US1, c);
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	USART1->DR = c;
+	hardware_uartx_tx(USART1, c);
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
-	USART1->TDR = c;
+	hardware_uartx_tx(UART1, c);
 
 #elif CPUSTYLE_R7S721
 
-	(void) SCIF1.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-	SCIF1.SCFTDR = c;
-	SCIF1.SCFSR = (uint16_t) ~ (1U << SCIF1_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	hardware_uartx_tx(& SCIF1, c);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+
+	hardware_uartx_tx(UART1, c);
 
 #elif CPUSTYLE_XC7Z
 
-	UART1->FIFO = c;
+	hardware_uartx_tx(UART1, c);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	UART1->UART_RBR_THR_DLL = c;
+	hardware_uartx_tx(UART1, c);
 
 #elif CPUSTYLE_VM14
 
-	UART1->UART_RBR_THR_DLL = c;
+	hardware_uartx_tx(UART1, c);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -510,28 +311,17 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 /* дождаться, когда буде все передано */
 void hardware_uart1_flush(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#if CPUSTYLE_ALLWINNER
 
-	while ((UART1->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
-		;
+	hardware_uartx_flush(UART1);
 
 #elif CPUSTYLE_VM14
 
-	for (;;)
-	{
-		if ((UART1->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
-			continue;
-		if ((UART1->UART_USR & (1u << 2)) == 0)	// TFE TX FIFO empty
-			continue;
-		if ((UART1->UART_TFL & 0xFF) != 0)
-			continue;
-	}
+	hardware_uartx_flush(UART1);
 
 #else
 	//#error Undefined CPUSTYLE_XXX
 #endif
-
-
 }
 
 
@@ -542,87 +332,32 @@ hardware_uart1_getchar(char * cp)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART1
-		if ((USART1->US_CSR & US_CSR_RXRDY) == 0)
-			return 0;
-		* cp = USART1->US_RHR;
+		return hardware_uartx_getchar(USART1, cp);
 	#elif HARDWARE_ARM_USEUART1
-		if ((UART1->UART_SR & UART_SR_RXRDY) == 0)
-			return 0;
-		* cp = UART1->UART_RHR;
+		return hardware_uartx_getchar(UART1, cp);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if ((AT91C_BASE_US1->US_CSR & AT91C_US_RXRDY) == 0)
-		return 0;
-	* cp = AT91C_BASE_US1->US_RHR;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if ((USARTE1.STATUS & (1 << USART_RXCIF_bp)) == 0)
-			return 0;
-	* cp = USARTE1.DATA;
-
-#elif CPUSTYLE_ATMEGA128
-
-	if ((UCSR1A & (1 << RXC0)) == 0)
-			return 0;
-	* cp = UDR0;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	if ((UCSR1A & (1 << RXC0)) == 0)
-			return 0;
-	* cp = UDR1;
-
-#elif CPUSTYLE_ATMEGA32
-
-	if ((UCSRA & (1 << RXC)) == 0)
-			return 0;
-	* cp = UDR;
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	if ((USART1->SR & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE)) == 0)
-		return 0;
-	* cp = USART1->DR;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
-	const uint_fast32_t isr = USART1->ISR;
-	if (isr & USART_ISR_ORE)
-		USART1->ICR = USART_ICR_ORECF;
-	if (isr & USART_ISR_FE)
-		USART1->ICR = USART_ICR_FECF;
-	if ((isr & USART_ISR_RXNE) == 0)
-		return 0;
-	* cp = USART1->RDR;
+	return hardware_uartx_getchar(AT91C_BASE_US1, cp);
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF1.SCFSR & (1U << 1)) == 0)	// RDF
-		return 0;
-	* cp = SCIF1.SCFRDR;
-	SCIF1.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+	return hardware_uartx_getchar(SCIF1, cp);
 
 #elif CPUSTYLE_XC7Z
 
-	if ((UART1->SR & XUARTPS_SR_RXEMPTY) != 0)
-		return 0;
-	* cp = UART1->FIFO;
+	return hardware_uartx_getchar(UART1, cp);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
-		return 0;
-	* cp = UART1->UART_RBR_THR_DLL;
+	return hardware_uartx_getchar(UART1, cp);
 
 #elif CPUSTYLE_VM14
 
-	if ((UART1->UART_USR & (1u << 3)) == 0)	// RFNE - RX FIFO Not Empty
-		return 0;
-	* cp = UART1->UART_RBR_THR_DLL;
+	return hardware_uartx_getchar(UART1, cp);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -638,83 +373,32 @@ hardware_uart1_putchar(uint_fast8_t c)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART1
-		if ((USART1->US_CSR & US_CSR_TXRDY) == 0)
-			return 0;
-		USART1->US_THR = c;
+		return hardware_uartx_putchar(USART1, c);
 	#elif HARDWARE_ARM_USEUART1
-		if ((UART1->UART_SR & UART_SR_TXRDY) == 0)
-			return 0;
-		UART1->UART_THR = c;
+		return hardware_uartx_putchar(UART1, c);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if ((AT91C_BASE_US1->US_CSR & AT91C_US_TXRDY) == 0)
-		return 0;
-	AT91C_BASE_US1->US_THR = c;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if ((USARTE1.STATUS & USART_DREIF_bm) == 0)
-		return 0;
-	USARTE1.DATA = c;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	if ((UCSR1A & (1 << UDRE0)) == 0)
-		return 0;
-	UDR1 = c;
-
-#elif CPUSTYLE_ATMEGA128
-
-	if ((UCSR1A & (1 << UDRE0)) == 0)
-		return 0;
-	UDR1 = c;
-
-#elif CPUSTYLE_ATMEGA32
-
-	if ((UCSRA & (1 << UDRE)) == 0)
-		return 0;
-	UDR = c;
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	if ((USART1->SR & USART_SR_TXE) == 0)
-		return 0;
-	USART1->DR = c;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
-
-	if ((USART1->ISR & USART_ISR_TXE) == 0)
-		return 0;
-	USART1->TDR = c;
+	return hardware_uartx_putchar(AT91C_BASE_US1, c);
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF1.SCFSR & (1U << SCIF1_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-		return 0;
-	SCIF1.SCFTDR = c;
-	SCIF1.SCFSR = (uint16_t) ~ (1U << SCIF1_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	return hardware_uartx_putchar(& SCIF1, c);
 
 #elif CPUSTYLE_XC7Z
 
-	if ((UART1->SR & XUARTPS_SR_TNFUL) != 0)
-		return 0;
-	UART1->FIFO = c;
+	return hardware_uartx_putchar(UART1, c);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if ((UART1->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		return 0;
-	UART1->UART_RBR_THR_DLL = c;
+	return hardware_uartx_putchar(UART1, c);
 
 #elif CPUSTYLE_VM14
 
-	if ((UART1->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
-		return 0;
-	UART1->UART_RBR_THR_DLL = c;
+	return hardware_uartx_putchar(UART1, c);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -725,6 +409,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 
 void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
 {
+	int fifo = 1;
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART1

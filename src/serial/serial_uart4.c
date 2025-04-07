@@ -407,6 +407,7 @@ hardware_uart4_putchar(uint_fast8_t c)
 
 void hardware_uart4_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
 {
+	int fifo = 1;
 #if CPUSTYLE_STM32F1XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_UART4EN; // Включение тактирования UART4.

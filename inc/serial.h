@@ -59,7 +59,7 @@ void modem_sendchar(void * ctx);							/* вызывается из обрабо
 void nmea_format(const char * format, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int nmea_putc(int c);
 
-void hardware_uartx_initialize(UART_t * uart, uint_fast8_t debug, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo);
+void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo);
 void hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t baudrate);
 void hardware_uartx_tx(UART_t * uart, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uartx_enabletx(UART_t * uart, uint_fast8_t state);	/* вызывается из обработчика прерываний */

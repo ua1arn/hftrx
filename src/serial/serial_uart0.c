@@ -44,66 +44,6 @@
 			HARDWARE_UART0_ONTXCHAR(AT91C_BASE_US0);
 	}
 
-#elif CPUSTYLE_ATMEGA328
-
-	ISR(USART_RX_vect)
-	{
-		HARDWARE_UART0_ONRXCHAR(UDR0);
-	}
-
-	ISR(USART_TX_vect)
-	{
-		HARDWARE_UART0_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	ISR(USART0_RX_vect)
-	{
-		HARDWARE_UART0_ONRXCHAR(UDR0);
-	}
-
-	ISR(USART0_TX_vect)
-	{
-		HARDWARE_UART0_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA32
-
-	ISR(USART_RXC_vect)
-	{
-		HARDWARE_UART0_ONRXCHAR(UDR);
-	}
-
-	ISR(USART_TXC_vect)
-	{
-		HARDWARE_UART0_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA128
-
-	ISR(USART0_RX_vect)
-	{
-		HARDWARE_UART0_ONRXCHAR(UDR0);
-	}
-
-	ISR(USART0_TX_vect)
-	{
-		HARDWARE_UART0_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	ISR(USARTE0_RXC_vect)
-	{
-		HARDWARE_UART0_ONRXCHAR(USARTE0.DATA);
-	}
-
-	ISR(USARTE0_DRE_vect)
-	{
-		HARDWARE_UART0_ONTXCHAR(& USARTE0);
-	}
-
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
@@ -151,7 +91,7 @@
 		}
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
@@ -202,107 +142,32 @@ void hardware_uart0_enabletx(uint_fast8_t state)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-
-		if (state)
-			USART0->US_IER = US_IER_TXRDY;
-		else
-			USART0->US_IDR = US_IDR_TXRDY;
-
+		hardware_uartx_enabletx(USART0, state);
 	#elif HARDWARE_ARM_USEUART0
-
-		if (state)
-			UART0->UART_IER = UART_IER_TXRDY;
-		else
-			UART0->UART_IDR = UART_IDR_TXRDY;
-
+		hardware_uartx_enabletx(UART0, state);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if (state)
-		AT91C_BASE_US0->US_IER = AT91C_US_TXRDY;
-	else
-		AT91C_BASE_US0->US_IDR = AT91C_US_TXRDY;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	/* Used USART 0 */
-	if (state)
-	{
-		UCSR0B |= (1U << TXCIE0);
-		HARDWARE_UART0_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSR0B &= ~ (1U << TXCIE0);
-	}
-
-#elif CPUSTYLE_ATMEGA32
-
-	if (state)
-	{
-		UCSRB |= (1U << TXCIE);
-		HARDWARE_UART0_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSRB &= ~ (1U << TXCIE);
-	}
-
-#elif CPUSTYLE_ATMEGA128
-
-	/* Used USART 0 */
-	if (state)
-	{
-		UCSR0B |= (1U << TXCIE0);
-		HARDWARE_UART0_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSR0B &= ~ (1U << TXCIE0);
-	}
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if (state)
-		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_LO_gc;
-	else
-		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
+	hardware_uartx_enabletx(AT91C_BASE_US0, state);
 
 #elif CPUSTYLE_R7S721
 
-	if (state)
-		SCIF0.SCSCR |= SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
-	else
-		SCIF0.SCSCR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
+	hardware_uartx_enabletx(& SCIF0, state);
 
 #elif CPUSTYLE_XC7Z
 
-	const uint32_t mask = (UINT32_C(1) << 3);	// TEMPTY Enable Transmit Holding Register Empty Interrupt
-	if (state)
-	{
-		 UART0->IER = mask;
-	}
-	else
-	{
-		 UART0->IDR = mask;
-	}
+	hardware_uartx_enabletx(UART0, state);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if (state)
-		 UART0->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-	else
-		 UART0->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	hardware_uartx_enabletx(UART0, state);
 
 #elif CPUSTYLE_VM14
 
-	if (state)
-		 UART0->UART_DLH_IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-	else
-		 UART0->UART_DLH_IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	hardware_uartx_enabletx(UART0, state);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -316,99 +181,37 @@ void hardware_uart0_enablerx(uint_fast8_t state)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-
-		if (state)
-			USART0->US_IER = US_IER_RXRDY;
-		else
-			USART0->US_IDR = US_IDR_RXRDY;
-
+		hardware_uartx_enablerx(USART0, state);
 	#elif HARDWARE_ARM_USEUART0
-
-		if (state)
-			UART0->UART_IER = UART_IER_RXRDY;
-		else
-			UART0->UART_IDR = UART_IDR_RXRDY;
-
+		hardware_uartx_enablerx(UART0, state);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif /* HARDWARE_ARM_USEUSART0 */
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if (state)
-		AT91C_BASE_US0->US_IER = AT91C_US_RXRDY;
-	else
-		AT91C_BASE_US0->US_IDR = AT91C_US_RXRDY;
-
-
-#elif CPUSTYLE_ATMEGA_XXX4
-	/* Used USART 0 */
-	if (state)
-		UCSR0B |= (1U << RXCIE0);
-	else
-		UCSR0B &= ~ (1U << RXCIE0);
-
-#elif CPUSTYLE_ATMEGA32
-
-	if (state)
-		UCSRB |= (1U << RXCIE);
-	else
-		UCSRB &= ~ (1U << RXCIE);
-
-#elif CPUSTYLE_ATMEGA128
-
-	/* Used USART 0 */
-	if (state)
-		UCSR0B |= (1U << RXCIE0);
-	else
-		UCSR0B &= ~ (1U << RXCIE0);
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if (state)
-		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_LO_gc;
-	else
-		USARTE0.CTRLA = (USARTE0.CTRLA & ~ USART_RXCINTLVL_gm) | USART_RXCINTLVL_OFF_gc;
+	hardware_uartx_enablerx(AT91C_BASE_US0, state);
 
 #elif CPUSTYLE_R7S721
 
-	if (state)
-		SCIF0.SCSCR |= SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
-	else
-		SCIF0.SCSCR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
+	hardware_uartx_enablerx(& SCIF0, state);
 
 #elif CPUSTYLE_XC7Z
 
-	UART0->RXWM = 16; 							/* set RX FIFO Trigger Level */
-	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
-	if (state)
-	{
-		 UART0->IER = mask;
-	}
-	else
-	{
-		 UART0->IDR = mask;
-	}
+	hardware_uartx_enablerx(UART0, state);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if (state)
-		 UART0->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
-	else
-		 UART0->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	hardware_uartx_enablerx(UART0, state);
 
 #elif CPUSTYLE_VM14
 
-	if (state)
-		 UART0->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
-	else
-		 UART0->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	hardware_uartx_enablerx(UART0, state);
 
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
 }
-
 
 /* передача символа из обработчика прерывания готовности передатчика */
 void hardware_uart0_tx(void * ctx, uint_fast8_t c)
@@ -416,53 +219,44 @@ void hardware_uart0_tx(void * ctx, uint_fast8_t c)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-		USART0->US_THR = c;
+		hardware_uartx_tx(USART0, c);
 	#elif HARDWARE_ARM_USEUART0
-		UART0->UART_THR = c;
+		hardware_uartx_tx(UART0, c);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
 
 #elif CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_US0->US_THR = c;
+	hardware_uartx_tx(AT91C_BASE_US0, c);
 
-#elif CPUSTYLE_ATMEGA128
+#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	UDR0 = c;
+	hardware_uartx_tx(USART0, c);
 
-#elif CPUSTYLE_ATMEGA_XXX4
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
-	UDR0 = c;
-
-#elif CPUSTYLE_ATMEGA32
-
-	UDR = c;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	USARTE0.DATA = c;
+	hardware_uartx_tx(UART0, c);
 
 #elif CPUSTYLE_R7S721
 
-	(void) SCIF0.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-	SCIF0.SCFTDR = c;
-	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	hardware_uartx_tx(& SCIF0, c);
 
 #elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+
+	hardware_uartx_tx(UART0, c);
 
 #elif CPUSTYLE_XC7Z
 
-	UART0->FIFO = c;
+	hardware_uartx_tx(UART0, c);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	UART0->UART_RBR_THR_DLL = c;
+	hardware_uartx_tx(UART0, c);
 
 #elif CPUSTYLE_VM14
 
-	UART0->UART_RBR_THR_DLL = c;
+	hardware_uartx_tx(UART0, c);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -472,22 +266,13 @@ void hardware_uart0_tx(void * ctx, uint_fast8_t c)
 /* дождаться, когда буде все передано */
 void hardware_uart0_flush(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#if CPUSTYLE_ALLWINNER
 
-	while ((UART0->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
-		;
+	hardware_uartx_flush(UART0);
 
 #elif CPUSTYLE_VM14
 
-	for (;;)
-	{
-		if ((UART0->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
-			continue;
-		if ((UART0->UART_USR & (1u << 2)) == 0)	// TFE TX FIFO empty
-			continue;
-		if ((UART0->UART_TFL & 0xFF) != 0)
-			continue;
-	}
+	hardware_uartx_flush(UART0);
 
 #else
 	//#error Undefined CPUSTYLE_XXX
@@ -501,71 +286,32 @@ hardware_uart0_getchar(char * cp)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-		if ((USART0->US_CSR & US_CSR_RXRDY) == 0)
-			return 0;
-		* cp = USART0->US_RHR;
+		hardware_uartx_getchar(USART0, cp);
 	#elif HARDWARE_ARM_USEUART0
-		if ((UART0->UART_SR & UART_SR_RXRDY) == 0)
-			return 0;
-		* cp = UART0->UART_RHR;
+		hardware_uartx_getchar(UART0, cp);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if ((AT91C_BASE_US0->US_CSR & AT91C_US_RXRDY) == 0)
-		return 0;
-	* cp = AT91C_BASE_US0->US_RHR;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if ((USARTE0.STATUS & (1 << USART_RXCIF_bp)) == 0)
-			return 0;
-	* cp = USARTE0.DATA;
-
-#elif CPUSTYLE_ATMEGA128
-
-	if ((UCSR0A & (1 << RXC0)) == 0)
-			return 0;
-	* cp = UDR0;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	if ((UCSR0A & (1 << RXC0)) == 0)
-			return 0;
-	* cp = UDR0;
-
-#elif CPUSTYLE_ATMEGA32
-
-	if ((UCSRA & (1 << RXC)) == 0)
-			return 0;
-	* cp = UDR;
+	return hardware_uartx_getchar(AT91C_BASE_US0, cp);
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF0.SCFSR & (1U << 1)) == 0)	// RDF
-		return 0;
-	* cp = SCIF0.SCFRDR;
-	SCIF0.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
+	return hardware_uartx_getchar(SCIF0, cp);
 
 #elif CPUSTYLE_XC7Z
 
-	if ((UART0->SR & XUARTPS_SR_RXEMPTY) != 0)
-		return 0;
-	* cp = UART0->FIFO;
+	return hardware_uartx_getchar(UART0, cp);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if ((UART0->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
-		return 0;
-	* cp = UART0->UART_RBR_THR_DLL;
+	return hardware_uartx_getchar(UART0, cp);
 
 #elif CPUSTYLE_VM14
 
-	if ((UART0->UART_USR & (1u << 3)) == 0)	// RFNE - RX FIFO Not Empty
-		return 0;
-	* cp = UART0->UART_RBR_THR_DLL;
+	return hardware_uartx_getchar(UART0, cp);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -581,71 +327,32 @@ hardware_uart0_putchar(uint_fast8_t c)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
-		if ((USART0->US_CSR & US_CSR_TXRDY) == 0)
-			return 0;
-		USART0->US_THR = c;
+		return hardware_uartx_putchar(USART0, c);
 	#elif HARDWARE_ARM_USEUART0
-		if ((UART0->UART_SR & UART_SR_TXRDY) == 0)
-			return 0;
-		UART0->UART_THR = c;
+		return hardware_uartx_putchar(UART0, c);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
 
 #elif CPUSTYLE_AT91SAM7S
 
-	if ((AT91C_BASE_US0->US_CSR & AT91C_US_TXRDY) == 0)
-		return 0;
-	AT91C_BASE_US0->US_THR = c;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if ((USARTE0.STATUS & USART_DREIF_bm) == 0)
-		return 0;
-	USARTE0.DATA = c;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	if ((UCSR0A & (1 << UDRE0)) == 0)
-		return 0;
-	UDR0 = c;
-
-#elif CPUSTYLE_ATMEGA128
-
-	if ((UCSR0A & (1 << UDRE0)) == 0)
-		return 0;
-	UDR0 = c;
-
-#elif CPUSTYLE_ATMEGA32
-
-	if ((UCSRA & (1 << UDRE)) == 0)
-		return 0;
-	UDR = c;
+	return hardware_uartx_putchar(AT91C_BASE_US0, c);
 
 #elif CPUSTYLE_R7S721
 
-	if ((SCIF0.SCFSR & (1U << SCIF0_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-		return 0;
-	SCIF0.SCFTDR = c;
-	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	return hardware_uartx_putchar(& SCIF0, c);
 
 #elif CPUSTYLE_XC7Z
 
-	if ((UART0->SR & XUARTPS_SR_TNFUL) != 0)
-		return 0;
-	UART0->FIFO = c;
+	return hardware_uartx_putchar(UART0, c);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	if ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		return 0;
-	UART0->UART_RBR_THR_DLL = c;
+	return hardware_uartx_putchar(UART0, c);
 
 #elif CPUSTYLE_VM14
 
-	if ((UART0->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
-		return 0;
-	UART0->UART_RBR_THR_DLL = c;
+	return hardware_uartx_putchar(UART0, c);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -656,6 +363,7 @@ hardware_uart0_putchar(uint_fast8_t c)
 
 void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
 {
+	int fifo = 1;
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
@@ -664,24 +372,12 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 		HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
 
-		// reset the UART
-		USART0->US_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
-		// set serial line mode
-		USART0->US_MR =
-			US_MR_CHMODE_NORMAL |// Normal Mode
-			US_MR_USCLKS_MCK |   // Clock = MCK
-			US_MR_CHRL_8_BIT |
-			US_MR_PAR_NO |
-			US_MR_NBSTOP_1_BIT;
-
-		USART0->US_IDR = (US_IDR_RXRDY | US_IDR_TXRDY);
+		hardware_uartx_initialize(USART0, busfreq, defbaudrate, bits, parity, odd, fifo);
 
 		if (debug == 0)
 		{
 			serial_set_handler(USART0_IRQn, & USART0_IRQHandler);
 		}
-
-		USART0->US_CR = US_CR_RXEN | US_CR_TXEN;	// разрешаем приёмник и передатчик.
 
 	#elif HARDWARE_ARM_USEUART0
 		// enable the clock of UART0
@@ -689,25 +385,12 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 		HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
 
-		// reset the UART
-		UART0->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
-		// set serial line mode
-		UART0->UART_MR =
-			UART_MR_CHMODE_NORMAL |// Normal Mode
-			//UART_MR_USCLKS_MCK |   // Clock = MCK
-			//UART_MR_CHRL_8_BIT |
-			UART_MR_PAR_NO |
-			//UART_MR_NBSTOP_1_BIT |
-			0;
-
-		UART0->UART_IDR = (UART_IDR_RXRDY | UART_IDR_TXRDY);
+		hardware_uartx_initialize(UART0, busfreq, defbaudrate, bits, parity, odd, fifo);
 
 		if (debug == 0)
 		{
 			serial_set_handler(UART0_IRQn, & UART0_IRQHandler);
 		}
-
-		UART0->UART_CR = UART_CR_RXEN | UART_CR_TXEN;	// разрешаем приёмник и передатчик.
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -720,70 +403,13 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
 
-	// disable I/O pullup
-	// reset the UART
-	AT91C_BASE_US0->US_CR = AT91C_US_RSTRX | AT91C_US_RSTTX | AT91C_US_RXDIS | AT91C_US_TXDIS;
-	// set serial line mode
-	AT91C_BASE_US0->US_MR =
-						AT91C_US_OVER |
-						AT91C_US_USMODE_NORMAL |// Normal Mode
-					   AT91C_US_CLKS_CLOCK |   // Clock = MCK
-					   AT91C_US_CHRL_8_BITS |
-					   AT91C_US_PAR_NONE |
-					   AT91C_US_NBSTOP_1_BIT;
-	AT91C_BASE_US0->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
+	hardware_uartx_initialize(AT91C_BASE_US0, busfreq, defbaudrate, bits, parity, odd, fifo);
 
 	if (debug == 0)
 	{
 		serial_set_handler(AT91C_ID_US0, AT91F_US0Handler);
 	}
 
-	AT91C_BASE_US0->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// USART initialization
-	UCSR0B = (1U << RXEN0) | (1U << TXEN0) /* | (1U << UCSZ02) */;
-	UCSR0C = (1U << UCSZ01) | (1U << UCSZ00);	// asynchronious mode, 8 bit.
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	PORTD |= ((1U << PD0) | (1U << PD1));
-#if defined (DDRD0) && defined (DDRD1)
-	DDRD &= ~ ((1U << DDRD0) | (1U << DDRD1));
-#else
-	DDRD &= ~ ((1U << DDD0) | (1U << DDD1));
-#endif
-
-#elif CPUSTYLE_ATMEGA128
-
-	// USART initialization
-	UCSR0B = (1U << RXEN0) | (1U << TXEN0) /* | (1U << UCSZ02) */;
-	UCSR0C = (1U << UCSZ01) | (1U << UCSZ00);	// asynchronious mode, 8 bit.
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	//PORTE |= ((1U << PE0) | (1U << PE1));
-
-#elif CPUSTYLE_ATMEGA
-
-	// USART initialization
-	UCSRB = (1U << RXEN) | (1U << TXEN) /* | (1U << UCSZ2) */;
-	UCSRC = (1U << URSEL) | (1U << UCSZ1) | (1U << UCSZ0);	// asynchronious mode, 8 bit
-
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	PORTD |= ((1U << PD0) | (1U << PD1));
-
-#if defined (DDRD0) && defined (DDRD1)
-	DDRD &= ~ ((1U << DDRD0) | (1U << DDRD1));
-#else
-	DDRD &= ~ ((1U << DDD0) | (1U << DDD1));
-#endif
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	PORTE.DIRSET = PIN3_bm; // PE3 (TXD0) as output
-	PORTE.DIRCLR = PIN2_bm; // PE2 (RXD0) as input
-	PORTE_PIN2CTRL = (PORTE_PIN2CTRL & ~ PORT_OPC_gm) | PORT_OPC_PULLUP_gc;							// pin is pulled high
-
-	USARTE0.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
-	USARTE0.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 
 #elif CPUSTYLE_R7S721
 
@@ -791,39 +417,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	CPG.STBCR4 &= ~ CPG_STBCR4_BIT_MSTP47;	// Module Stop 47 SCIF0
 	(void) CPG.STBCR4;			/* Dummy read */
 
-	SCIF0.SCSCR = 0x0000;	/* SCIF transmitting and receiving operations stop, internal clock */
-
-	SCIF0.SCSCR = (SCIF0.SCSCR & ~ 0x03) |
-		0x00 |						// internal clock
-		0;
-
-	/* ---- Serial status register(SCFSR2) setting ---- */
-	/* ER,BRK,DR bit clear */
-	(void) SCIF0.SCFSR;						// Перед сбросом бита xxx должно произойти его чтение в ненулевом состоянии
-	SCIF0.SCFSR = ~ 0x0091;	// 0xFF6E;
-
-	/* ---- Line status register (SCLSR2) setting ---- */
-	/* ORER bit clear */
-	//SCIF0.SCLSR.BIT.ORER  = 0;
-	SCIF0.SCLSR &= ~ 0x0001;
-
-	SCIF0.SCSMR =
-		0x00 |	/* 8-N-1 format */
-		0;
-
-	/* ---- FIFO control register (SCFCR2) setting ---- */
-	/*  RTS output active trigger        :Initial value	*/
-	/*  Receive FIFO data trigger        :1-data		*/
-	/*  Transmit FIFO data trigger       :0-data		*/
-	/*  Modem control enable             :Disabled		*/
-	/*  Receive FIFO data register reset :Disabled		*/
-	/*  Loop-back test                   :Disabled 		*/
-	SCIF0.SCFCR = 0x0030;
-
-	/* ---- Serial port register (SCSPTR2) setting ---- */
-	/* Serial port  break output(SPB2IO)  1: Enabled */
-	/* Serial port break data(SPB2DT)  1: High-level */
-	//SCIF0.SCSPTR |= 0x0003;
+	hardware_uartx_initialize(UART0, busfreq, defbaudrate, bits, parity, odd, fifo);
 
 	if (debug == 0)
 	{
@@ -831,8 +425,6 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(SCIFTXI0_IRQn, SCIFTXI0_IRQHandler);
 	}
 	HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
-
-	SCIF0.SCSCR |= 0x0030;	// TE RE - SCIF0 transmitting and receiving operations are enabled */
 
 #elif CPUSTYLE_XC7Z
 
@@ -846,20 +438,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 			(0x01 << ix) |	// CLKACT0 - UART 0 reference clock active
 			0;
 
-	uint32_t r; // Temporary value variable
-	r = UART0->CR;
-	r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
-	r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	UART0->CR = r;
-
-	UART0->MR = 0;
-	UART0->MR &= ~XUARTPS_MR_CLKSEL; // Clear "Input clock selection" - 0: clock source is uart_ref_clk
-	UART0->MR |= XUARTPS_MR_CHARLEN_8_BIT; 	// Set "8 bits data"
-	UART0->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
-	UART0->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
-	UART0->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
-
-	UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+	hardware_uartx_initialize(UART0, busfreq, defbaudrate, bits, parity, odd, fifo);
 
 	HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -867,11 +446,6 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	{
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
-
-	r = UART0->CR;
-	r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
-	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	UART0->CR = r;
 
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
 
@@ -883,24 +457,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART0_RST
 
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART0->UART_DLH_IER = 0;
-	UART0->UART_IIR_FCR = 0xf7;
-	UART0->UART_MCR = 0x00;
-
-	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART0->UART_LCR &= ~ 0x3f;
-	UART0->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
+	hardware_uartx_initialize(UART0, HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 
 	HARDWARE_UART0_INITIALIZE();
 
@@ -919,24 +476,8 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
-	UART0->UART_DLH_IER = 0;
-	UART0->UART_IIR_FCR = 0xf7;
-	UART0->UART_MCR = 0x00;
-
-	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART0->UART_LCR &= ~ 0x3f;
-	UART0->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
+	hardware_uartx_initialize(UART0, HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 
 	HARDWARE_UART0_INITIALIZE();
 
@@ -955,24 +496,8 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
-	UART0->UART_DLH_IER = 0;
-	UART0->UART_IIR_FCR = 0xf7;
-	UART0->UART_MCR = 0x00;
-
-	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART0->UART_LCR &= ~ 0x3f;
-	UART0->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
+	hardware_uartx_initialize(UART0, HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 
 	HARDWARE_UART0_INITIALIZE();
 
@@ -991,24 +516,8 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
-	UART0->UART_DLH_IER = 0;
-	UART0->UART_IIR_FCR = 0xf7;
-	UART0->UART_MCR = 0x00;
-
-	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART0->UART_LCR &= ~ 0x3f;
-	UART0->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
+	hardware_uartx_initialize(UART0, HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 
 	HARDWARE_UART0_INITIALIZE();
 
@@ -1023,26 +532,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	CMCTR->GATE_SYS_CTR |= ((1u << 12) << ix); // UART0_EN Enable CLK
 
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = elveesvm14_get_usart_freq() / ((defbaudrate) * 16);
-
-	UART0->UART_DLH_IER = 0;
-	UART0->UART_IIR_FCR = 0xf7;
-	UART0->UART_MCR = 0x00;
-
-	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART0->UART_RBR_THR_DLL = divisor & 0xff;
-	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART0->UART_LCR &= ~ 0x3f;
-	UART0->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(! odd << 4) |	// bit4 0 – нечетность,
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
-	(void) UART0->UART_LCR;
+	hardware_uartx_initialize(UART0, elveesvm14_get_usart_freq(), defbaudrate, bits, parity, odd, fifo);
 
 	HARDWARE_UART0_INITIALIZE();
 

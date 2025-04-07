@@ -59,7 +59,7 @@ void hardware_uartx_enabletx(UART_t * uart, uint_fast8_t state)
 		 uart->IDR = mask;
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	if (state)
 		 uart->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -127,7 +127,7 @@ void hardware_uartx_enablerx(UART_t * uart, uint_fast8_t state)
 		 uart->IDR = mask;
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	if (state)
 		 uart->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -184,7 +184,7 @@ void hardware_uartx_tx(UART_t * uart, uint_fast8_t c)
 
 	uart->FIFO = c;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	uart->UART_RBR_THR_DLL = c;
 
@@ -203,7 +203,7 @@ void hardware_uartx_tx(UART_t * uart, uint_fast8_t c)
 /* дождаться, когда буде все передано */
 void hardware_uartx_flush(UART_t * uart)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#if CPUSTYLE_ALLWINNER
 
 	while ((uart->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
 		;
@@ -269,30 +269,6 @@ hardware_uartx_getchar(UART_t * uart, char * cp)
 		return 0;
 	* cp = uart->US_RHR;
 
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if ((USARTE0.STATUS & (1 << USART_RXCIF_bp)) == 0)
-			return 0;
-	* cp = USARTE0.DATA;
-
-#elif CPUSTYLE_ATMEGA128
-
-	if ((UCSR0A & (1 << RXC0)) == 0)
-			return 0;
-	* cp = UDR0;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	if ((UCSR0A & (1 << RXC0)) == 0)
-			return 0;
-	* cp = UDR0;
-
-#elif CPUSTYLE_ATMEGA32
-
-	if ((UCSRA & (1 << RXC)) == 0)
-			return 0;
-	* cp = UDR;
-
 #elif CPUSTYLE_R7S721
 
 	if ((uart->SCFSR & (1U << 1)) == 0)	// RDF
@@ -306,7 +282,7 @@ hardware_uartx_getchar(UART_t * uart, char * cp)
 		return 0;
 	* cp = uart->FIFO;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	if ((uart->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -336,30 +312,30 @@ hardware_uartx_putchar(UART_t * uart, uint_fast8_t c)
 
 	if ((uart->SR & USART_SR_TXE) == 0)
 		return 0;
-	uart->DR = c;
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	if ((uart->ISR & USART_ISR_TXE_TXFNF) == 0)
 		return 0;
-	uart->TDR = c;
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
 
 	if ((uart->ISR & USART_ISR_TXE) == 0)
 		return 0;
-	uart->TDR = c;
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART0
 		if ((uart->US_CSR & US_CSR_TXRDY) == 0)
 			return 0;
-		uart->US_THR = c;
+		hardware_uartx_tx(uart, c);
 	#elif HARDWARE_ARM_USEUART0
 		if ((uart->UART_SR & UART_SR_TXRDY) == 0)
 			return 0;
-		uart->UART_THR = c;
+		hardware_uartx_tx(uart, c);
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
 	#endif
@@ -368,56 +344,31 @@ hardware_uartx_putchar(UART_t * uart, uint_fast8_t c)
 
 	if ((uart->US_CSR & AT91C_US_TXRDY) == 0)
 		return 0;
-	uart->US_THR = c;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if ((USARTE0.STATUS & USART_DREIF_bm) == 0)
-		return 0;
-	USARTE0.DATA = c;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	if ((UCSR0A & (1 << UDRE0)) == 0)
-		return 0;
-	UDR0 = c;
-
-#elif CPUSTYLE_ATMEGA128
-
-	if ((UCSR0A & (1 << UDRE0)) == 0)
-		return 0;
-	UDR0 = c;
-
-#elif CPUSTYLE_ATMEGA32
-
-	if ((UCSRA & (1 << UDRE)) == 0)
-		return 0;
-	UDR = c;
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_R7S721
 
 	if ((uart->SCFSR & (1U << SCIF0_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 		return 0;
-	uart->SCFTDR = c;
-	uart->SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_XC7Z
 
 	if ((uart->SR & XUARTPS_SR_TNFUL) != 0)
 		return 0;
-	uart->FIFO = c;
+	hardware_uartx_tx(uart, c);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	if ((uart->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
-	uart->UART_RBR_THR_DLL = c;
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_VM14
 
 	if ((uart->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
 		return 0;
-	uart->UART_RBR_THR_DLL = c;
+	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_ROCKCHIP
 	#warning Unimplemented CPUSTYLE_ROCKCHIP
@@ -429,7 +380,7 @@ hardware_uartx_putchar(UART_t * uart, uint_fast8_t c)
 	return 1;
 }
 
-void hardware_uartx_initialize(UART_t * uart, uint_fast8_t debug, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo)
+void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo)
 {
 #if CPUSTYLE_STM32MP1
 
@@ -443,12 +394,12 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast8_t debug, uint_fast32_t 
 		uart->CR1 &= ~ USART_CR1_FIFOEN_Msk;
 	}
 	uart->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-	uart->CR1 |= USART_CR1_UE; // Включение USART1.
+	uart->CR1 |= USART_CR1_UE; // Включение USART.
 
 #elif CPUSTYLE_STM32F1XX
 
 	uart->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-	uart->CR1 |= USART_CR1_UE; // Включение USART2.
+	uart->CR1 |= USART_CR1_UE; // Включение USART.
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -490,12 +441,12 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast8_t debug, uint_fast32_t 
 	uart->US_CR = AT91C_US_RSTRX | AT91C_US_RSTTX | AT91C_US_RXDIS | AT91C_US_TXDIS;
 	// set serial line mode
 	uart->US_MR =
-						AT91C_US_OVER |
-						AT91C_US_USMODE_NORMAL |// Normal Mode
-					   AT91C_US_CLKS_CLOCK |   // Clock = MCK
-					   AT91C_US_CHRL_8_BITS |
-					   AT91C_US_PAR_NONE |
-					   AT91C_US_NBSTOP_1_BIT;
+		AT91C_US_OVER |
+		AT91C_US_USMODE_NORMAL |// Normal Mode
+		AT91C_US_CLKS_CLOCK |   // Clock = MCK
+		AT91C_US_CHRL_8_BITS |
+		AT91C_US_PAR_NONE |
+		AT91C_US_NBSTOP_1_BIT;
 	uart->US_IDR = (AT91C_US_RXRDY | AT91C_US_TXRDY);
 	uart->US_CR = AT91C_US_RXEN  | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
 
@@ -559,7 +510,7 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast8_t debug, uint_fast32_t 
 	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	uart->CR = r;
 
-#elif CPUSTYLE_A64 || CPUSTYLE_H3
+#elif CPUSTYLE_ALLWINNER
 
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = busfreq / ((defbaudrate) * 16);
@@ -568,77 +519,13 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast8_t debug, uint_fast32_t 
 	uart->UART_IIR_FCR = 0xf7;
 	uart->UART_MCR = 0x00;
 
-	uart->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	uart->UART_LCR |= (UINT32_C(1) << 7);	// Divisor Latch Access Bit
 	uart->UART_RBR_THR_DLL = divisor & 0xff;
 	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
-	uart->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	uart->UART_LCR &= ~ (UINT32_C(1) << 7);	// Divisor Latch Access Bit
 	//
-	uart->UART_LCR &= ~ 0x3f;
-	uart->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
-
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	uart->UART_DLH_IER = 0;
-	uart->UART_IIR_FCR = 0xf7;
-	uart->UART_MCR = 0x00;
-
-	uart->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	uart->UART_RBR_THR_DLL = divisor & 0xff;
-	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
-	uart->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	uart->UART_LCR &= ~ 0x3f;
-	uart->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
-
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = busfreq / ((defbaudrate) * 16);
-
-	uart->UART_DLH_IER = 0;
-	uart->UART_IIR_FCR = 0xf7;
-	uart->UART_MCR = 0x00;
-
-	uart->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	uart->UART_RBR_THR_DLL = divisor & 0xff;
-	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
-	uart->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	uart->UART_LCR &= ~ 0x3f;
-	uart->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
-#elif CPUSTYLE_V3S
-
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = busfreq / ((defbaudrate) * 16);
-
-	uart->UART_DLH_IER = 0;
-	uart->UART_IIR_FCR = 0xf7;
-	uart->UART_MCR = 0x00;
-
-	uart->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	uart->UART_RBR_THR_DLL = divisor & 0xff;
-	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
-	uart->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	uart->UART_LCR &= ~ 0x3f;
-	uart->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+	uart->UART_LCR = (uart->UART_LCR & ~ UINT32_C(0x3F)) |
+			((UINT32_C(0x03) & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
 			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
 			(!! parity << 3) |	// bit3 1: parity enable
 			0;
@@ -753,7 +640,7 @@ hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t bau
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  uart->CR = r;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	unsigned divisor = calcdivround2(busfreq, baudrate * 16);
 
