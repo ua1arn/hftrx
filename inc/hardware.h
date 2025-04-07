@@ -1005,6 +1005,7 @@ void xcz_adcrand_set(uint8_t val);
 void xcz_dds_ftw(const uint_least64_t * value);	// Установка центральной частоты тракта основного приёмника
 void xcz_dds_ftw_sub(const uint_least64_t * value);// Установка центральной частоты тракта дополнительного приёмника
 void xcz_dds_rts(const uint_least64_t * value);// Установка центральной частоты панорамного индикатора
+void xcz_rxtx_state(uint8_t tx);
 
 #endif /* CPUSTYLE_XC7Z */
 

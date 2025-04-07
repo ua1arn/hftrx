@@ -3469,12 +3469,10 @@ sysinit_cache_initialize(void)
 
 	#endif /* __DCACHE_PRESENT */
 
-	//dcache_clean_all();
-	L1C_InvalidateDCacheAll();
-	L1C_InvalidateICacheAll();
-	L1C_InvalidateBTAC();
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
+	#if 0
+		SCB_InvalidateBTAC();
+		SCB_EnableBTAC();
+	#endif
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	L1C_InvalidateDCacheAll();
