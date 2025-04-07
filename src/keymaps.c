@@ -2647,5 +2647,12 @@ uint_fast8_t kbd_getnumpad(uint_fast8_t key)
 	return 0;
 }
 
+#else /* WITHKEYBOARD */
+
+uint_fast8_t geterasekey(void)
+{
+	return KBD_CODE_MAX;
+}
+
 #endif /* WITHKEYBOARD */
 
