@@ -89,7 +89,7 @@
 	#include "boards/arm_stm32mp1xx_ctlstyle_PanGuBoard_v1p2.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_PanGuBoard_v1p2.h"
-#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 0	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
