@@ -15,6 +15,8 @@
 #include <math.h>
 #include "clocks.h"
 
+#if ! LINUX_SUBSYSTEM
+
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uartx_enabletx(UART_t * uart, uint_fast8_t state)
@@ -642,7 +644,7 @@ hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t bau
 
 #elif CPUSTYLE_ALLWINNER
 
-	unsigned divisor = calcdivround2(busfreq, baudrate * 16);
+	const unsigned divisor = calcdivround2(busfreq, baudrate * 16);
 
 	uart->UART_LCR |= (1 << 7);
 	uart->UART_RBR_THR_DLL = divisor & 0xff;
@@ -651,7 +653,7 @@ hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t bau
 
 #elif CPUSTYLE_VM14
 
-	unsigned divisor = calcdivround2(busfreq, baudrate * 16);
+	const unsigned divisor = calcdivround2(busfreq, baudrate * 16);
 
 	while ((uart->UART_USR & (1u << 2)) == 0)	/* TFE - FIFO передатчика пуст. */
 		;
@@ -673,3 +675,5 @@ hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t bau
 #endif
 
 }
+
+#endif /* ! LINUX_SUBSYSTEM */

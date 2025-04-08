@@ -235,7 +235,7 @@ USBD_peek_u16_BE(
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
-	return __bswap16(__UNALIGNED_UINT16_READ(buff));
+	return 0xFFFF & (__REV16(__UNALIGNED_UINT16_READ(buff)));
 #else
 	return
 		((uint_fast32_t) buff [0] << 8) +
@@ -251,7 +251,7 @@ USBD_peek_u32_BE(
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
-	return __bswap32(__UNALIGNED_UINT32_READ(buff));
+	return __REV(__UNALIGNED_UINT32_READ(buff));
 #else
 	return
 		((uint_fast32_t) buff [0] << 24) +
@@ -284,7 +284,7 @@ USBD_peek_u64_BE(
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
-	__UNALIGNED_UINT32_WRITE(buff, __bswap32(v));
+	__UNALIGNED_UINT32_WRITE(buff, __REV(v));
 #else
 	buff [3] = LO_BYTE(v);
 	buff [2] = HI_BYTE(v);
@@ -346,7 +346,7 @@ unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
-	__UNALIGNED_UINT16_WRITE(buff, __bswap16(v));
+	__UNALIGNED_UINT16_WRITE(buff, __REV16(v));
 #else
 	buff [1] = LO_BYTE(v);
 	buff [0] = HI_BYTE(v);

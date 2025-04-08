@@ -3633,7 +3633,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	return __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
+	return 0xFFFF & (__REV16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD));
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3681,7 +3681,7 @@ void RAMFUNC hardware_spi_b16_p1(
 		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);	/* 16bit access */
+	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __REV16(v);	/* 16bit access */
 
 	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
@@ -3796,7 +3796,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	return __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
+	return __REV(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3828,7 +3828,7 @@ void hardware_spi_b32_p1(
 		4 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
+	SPIHARD_PTR->SPI_TXD = __REV(v);	/* 32bit access */
 
 	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
