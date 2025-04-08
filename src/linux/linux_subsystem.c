@@ -318,11 +318,13 @@ uint32_t reg_read(uint32_t addr)
 
 void * process_linux_timer_spool(void * args)
 {
+	const int delay = (1000 / TICKS_FREQUENCY) * 1000;
+
 	while(1)
 	{
 		spool_systimerbundle1();
 		spool_systimerbundle2();
-		usleep(5000);
+		usleep(delay);
 	}
 }
 
@@ -2337,7 +2339,7 @@ static int is_event_device(const struct dirent * dir) {
 
 static void check_event(int * fd, char * name, char * fname, const char * event_name)
 {
-	if (strstr(name, event_name)) {
+	if (* fd < 0 && strstr(name, event_name)) {
 		printf("Use %s for %s events\n", fname, event_name);
 
 		* fd = open(fname, O_RDWR | O_NOCTTY | O_NDELAY);

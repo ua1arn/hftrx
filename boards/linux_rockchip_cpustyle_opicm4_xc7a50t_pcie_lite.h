@@ -5,12 +5,13 @@
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
  *
- * Плата на основе вычислительного модуля Orange Pi CM4 (Rockchip RK3566 + 2Гб DDR4) и FPGA Artix-7 XC7A50T, интерфейс связи - PCI Express x1, by RA4ASN
+ * Плата на основе вычислительного модуля Orange Pi CM4 (Rockchip RK3566 + 2Гб DDR4)
+ * и FPGA Artix-7 XC7A50T, интерфейс связи - PCI Express x1, AD9226 и DAC904E, by RA4ASN
  *
  */
 
-#ifndef LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED
-#define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED 1
+#ifndef LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_LITE_H_INCLUDED
+#define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_LITE_H_INCLUDED 1
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1072,4 +1073,4 @@ enum {
 
 #define HARDWARE_DEBUG_FLUSH()	do {} while(0)
 
-#endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_H_INCLUDED */
+#endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_LITE_H_INCLUDED */
