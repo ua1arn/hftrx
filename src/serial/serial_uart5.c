@@ -19,6 +19,11 @@
 
 #define thisPORT 5
 
+#if CPUSTYLE_STM32MP1
+	#undef UARTBASENAME
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
+#endif
+
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 void RAMFUNC_NONILINE USART5_Handler(void)
@@ -115,23 +120,41 @@ static void SCIFTXI5_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART5_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART5->UART_DLH_IER;
-	const uint_fast32_t usr = UART5->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART5_ONRXCHAR(UART5->UART_RBR_THR_DLL);
+			HARDWARE_UART5_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART5_ONTXCHAR(UART5);
+			HARDWARE_UART5_ONTXCHAR(uart);
 	}
 }
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+static RAMFUNC_NONILINE void UART5_IRQHandler(void)
+{
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART5_ONRXCHAR(uart->UART_RBR_THR_DLL);
+	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART5_ONTXCHAR(uart);
+	}
+}
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -301,24 +324,13 @@ void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_UART5RST; // Снять брос UART5.
 	(void) RCC->APB1RSTCLRR;
 
-	UART5->CR1 = 0;
-
-#if WITHUART5HW_FIFO
-	UART5->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUART5HW_FIFO */
-	UART5->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUART5HW_FIFO */
-
-	UART5->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart3_5_get_freq(), defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
 		serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
-
-	UART5->CR1 |= USART_CR1_UE; // Включение USART1.
 
 
 #elif CPUSTYLE_A64
@@ -366,13 +378,11 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 {
 #if CPUSTYLE_STM32MP1
 
-	// uart5
-	UART5->BRR = calcdivround2(BOARD_UART5_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), stm32mp1_uart3_5_get_freq(), baudrate);
 
 #elif CPUSTYLE_STM32F
 
-	// uart5 on apb1
-	USART5->BRR = calcdivround2(BOARD_UART5_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), BOARD_UART5_FREQ, baudrate);
 
 #elif CPUSTYLE_R7S721
 

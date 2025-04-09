@@ -125,18 +125,19 @@ static void UART1_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART1->UART_DLH_IER;
-	const uint_fast32_t usr = UART1->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART1_ONRXCHAR(UART1->UART_RBR_THR_DLL);
+			HARDWARE_UART1_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART1_ONTXCHAR(UART1);
+			HARDWARE_UART1_ONTXCHAR(uart);
 	}
 }
 
@@ -161,7 +162,24 @@ static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 }
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+static RAMFUNC_NONILINE void UART1_IRQHandler(void)
+{
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART1_ONRXCHAR(uart->UART_RBR_THR_DLL);
+	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART1_ONTXCHAR(uart);
+	}
+}
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -404,7 +422,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	RCC->APB5RSTCLRR = RCC_APB5RSTCLRR_USART1RST; // Снять брос USART1.
 	(void) RCC->APB5RSTCLRR;
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), BOARD_USART1_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 	if (debug == 0)
 	{

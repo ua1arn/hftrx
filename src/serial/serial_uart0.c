@@ -26,6 +26,7 @@
 
 void RAMFUNC_NONILINE USART0_Handler(void)
 {
+	UART_t * const uart = UARTBASENAME(thisPORT);
 	const uint_fast32_t csr = USART0->US_CSR;
 
 	if (csr & US_CSR_RXRDY)
@@ -38,6 +39,7 @@ void RAMFUNC_NONILINE USART0_Handler(void)
 
 static RAMFUNC_NONILINE void AT91F_US0Handler(void)
 {
+	UART_t * const uart = UARTBASENAME(thisPORT);
 	const uint_fast32_t csr = AT91C_BASE_US0->US_CSR;
 
 	if (csr & AT91C_US_RXRDY)
@@ -49,25 +51,34 @@ static RAMFUNC_NONILINE void AT91F_US0Handler(void)
 #elif CPUSTYLE_R7S721
 
 // Приём символа он последовательного порта
-static RAMFUNC_NONILINE void SCIFRXI0_IRQHandler(void)
+static void SCIFRXI0_IRQHandler(void)
 {
-	(void) SCIF0.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-	SCIF0.SCFSR = (uint16_t) ~ SCIF0_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-	uint_fast8_t n = (SCIF0.SCFDR & SCIF0_SCFDR_R) >> SCIF0_SCFDR_R_SHIFT;
-	while (n --)
-		HARDWARE_UART0_ONRXCHAR(SCIF0.SCFRDR & SCIF0_SCFRDR_D);
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	(void) uart->SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+	uart->SCFSR = (uint16_t) ~ SCIF0_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+	if (uart->SCSCR & SCIF0_SCSCR_RIE)	// RIE Receive Interrupt Enable
+	{
+		uint_fast8_t n = (uart->SCFDR & SCIF0_SCFDR_R) >> SCIF0_SCFDR_R_SHIFT;
+		while (n --)
+			HARDWARE_UART0_ONRXCHAR(uart->SCFRDR & SCIF0_SCFRDR_D);
+	}
 }
 
 // Передача символа в последовательный порт
-static RAMFUNC_NONILINE void SCIFTXI0_IRQHandler(void)
+static void SCIFTXI0_IRQHandler(void)
 {
-	HARDWARE_UART0_ONTXCHAR(& SCIF0);
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	if (uart->SCSCR & SCIF0_SCSCR_TIE)	// TIE Transmit Interrupt Enable
+	{
+		HARDWARE_UART0_ONTXCHAR(uart);
+	}
 }
 
 #elif CPUSTYLE_XC7Z
 
 static void UART0_IRQHandler(void)
 {
+	UART_t * const uart = UARTBASENAME(thisPORT);
 	char c;
 	const uint_fast32_t sts = UART0->ISR & UART0->IMR;
 	if (sts & (1u << 5))	// RXOVR
@@ -97,18 +108,19 @@ static void UART0_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART0->UART_DLH_IER;
-	const uint_fast32_t usr = UART0->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART0_ONRXCHAR(UART0->UART_RBR_THR_DLL);
+			HARDWARE_UART0_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART0_ONTXCHAR(UART0);
+			HARDWARE_UART0_ONTXCHAR(uart);
 	}
 }
 
@@ -116,6 +128,7 @@ static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 {
+	UART_t * const uart = UARTBASENAME(thisPORT);
 	const uint_fast32_t ier = UART0->UART_DLH_IER;
 	const uint_fast32_t usr = UART0->UART_USR;
 
@@ -133,7 +146,24 @@ static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 }
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+static RAMFUNC_NONILINE void UART0_IRQHandler(void)
+{
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART0_ONRXCHAR(uart->UART_RBR_THR_DLL);
+	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART0_ONTXCHAR(uart);
+	}
+}
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -395,61 +425,6 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 	{
 		AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
 	}
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR0A |= (1U << U2X0);
-	else
-		UCSR0A &= ~ (1U << U2X0);
-
-	UBRR0 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR0A |= (1U << U2X0);
-	else
-		UCSR0A &= ~ (1U << U2X0);
-
-	UBRR0H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR0L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSRA |= (1U << U2X);
-	else
-		UCSRA &= ~ (1U << U2X);
-
-	UBRRH = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRRL = value & 0xff;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE0.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE0.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
 
 #elif CPUSTYLE_R7S721
 

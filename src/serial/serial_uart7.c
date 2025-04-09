@@ -19,6 +19,11 @@
 
 #define thisPORT 7
 
+#if CPUSTYLE_STM32MP1
+	#undef UARTBASENAME
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
+#endif
+
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 void RAMFUNC_NONILINE USART7_Handler(void)
@@ -98,40 +103,66 @@ void RAMFUNC_NONILINE UART7_IRQHandler(void)
 // Приём символа он последовательного порта
 static void SCIFRXI7_IRQHandler(void)
 {
-	(void) SCIF7.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-	SCIF7.SCFSR = (uint16_t) ~ SCIF7_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-	uint_fast8_t n = (SCIF7.SCFDR & SCIF7_SCFDR_R) >> SCIF7_SCFDR_R_SHIFT;
-	while (n --)
-		HARDWARE_UART7_ONRXCHAR(SCIF7.SCFRDR & SCIF7_SCFRDR_D);
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	(void) uart->SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+	uart->SCFSR = (uint16_t) ~ SCIF7_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+	if (uart->SCSCR & SCIF7_SCSCR_RIE)	// RIE Receive Interrupt Enable
+	{
+		uint_fast8_t n = (uart->SCFDR & SCIF7_SCFDR_R) >> SCIF7_SCFDR_R_SHIFT;
+		while (n --)
+			HARDWARE_UART7_ONRXCHAR(uart->SCFRDR & SCIF7_SCFRDR_D);
+	}
 }
 
 // Передача символа в последовательный порт
 static void SCIFTXI7_IRQHandler(void)
 {
-	HARDWARE_UART7_ONTXCHAR(& SCIF7);
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	if (uart->SCSCR & SCIF7_SCSCR_TIE)	// TIE Transmit Interrupt Enable
+	{
+		HARDWARE_UART7_ONTXCHAR(uart);
+	}
 }
 
 #elif CPUSTYLE_ALLWINNER
 
 static RAMFUNC_NONILINE void UART7_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART7->UART_DLH_IER;
-	const uint_fast32_t usr = UART7->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART7_ONRXCHAR(UART7->UART_RBR_THR_DLL);
+			HARDWARE_UART7_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART7_ONTXCHAR(UART7);
+			HARDWARE_UART7_ONTXCHAR(uart);
 	}
 }
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+static RAMFUNC_NONILINE void UART7_IRQHandler(void)
+{
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART7_ONRXCHAR(uart->UART_RBR_THR_DLL);
+	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART7_ONTXCHAR(uart);
+	}
+}
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -301,24 +332,12 @@ void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
 	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_UART7RST; // Снять брос UART7.
 	(void) RCC->APB1RSTCLRR;
 
-	UART7->CR1 = 0;
-
-#if WITHUART7HW_FIFO
-	UART7->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUART7HW_FIFO */
-	UART7->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUART7HW_FIFO */
-
-	UART7->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart7_8_get_freq(), defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
-
 	if (debug == 0)
 	{
 		serial_set_handler(UART7_IRQn, UART7_IRQHandler);
 	}
-
-	UART7->CR1 |= USART_CR1_UE; // Включение USART1.
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -332,7 +351,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 #if CPUSTYLE_STM32MP1
 
 	// uart7
-	hardware_uartx_set_speed(UARTBASENAME(thisPORT), BOARD_UART7_FREQ, baudrate);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), stm32mp1_uart7_8_get_freq(), baudrate);
 
 #elif CPUSTYLE_STM32F
 

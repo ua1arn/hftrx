@@ -103,18 +103,19 @@ static void SCIFTXI2_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART2_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART2->UART_DLH_IER;
-	const uint_fast32_t usr = UART2->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART2_ONRXCHAR(UART2->UART_RBR_THR_DLL);
+			HARDWARE_UART2_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART2_ONTXCHAR(UART2);
+			HARDWARE_UART2_ONTXCHAR(uart);
 	}
 }
 
@@ -122,18 +123,19 @@ static RAMFUNC_NONILINE void UART2_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART2_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART2->UART_DLH_IER;
-	const uint_fast32_t usr = UART2->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART2_ONRXCHAR(UART2->UART_RBR_THR_DLL);
+			HARDWARE_UART2_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART2_ONTXCHAR(UART2);
+			HARDWARE_UART2_ONTXCHAR(uart);
 	}
 }
 
@@ -245,37 +247,6 @@ void hardware_uart2_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
 
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// USART initialization
-	UCSR2B = (1U << RXEN1) | (1U << TXEN1) /* | (1U << UCSZ12) */;
-	UCSR2C = (1U << UCSZ11) | (1U << UCSZ10);	// asynchronious mode, 8 bit.
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	PORTD |= ((1U << PD2) | (1U << PD3));
-#if defined (DDRD2) && defined (DDRD3)
-	DDRD &= ~ ((1U << DDRD2) | (1U << DDRD3));
-#else
-	DDRD &= ~ ((1U << DDD2) | (1U << DDD3));
-#endif
-
-#elif CPUSTYLE_ATMEGA128
-
-	// USART initialization
-	UCSR2B = (1U << RXEN1) | (1U << TXEN1) /* | (1U << UCSZ12) */;
-	UCSR2C = (1U << UCSZ11) | (1U << UCSZ10);	// asynchronious mode, 8 bit.
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	//PORTE |= ((1U << PE0) | (1U << PE1));
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-xxxx!;
-	PORTE.DIRSET = PIN3_bm; // PE3 (TXD0) as output
-	PORTE.DIRCLR = PIN2_bm; // PE2 (RXD0) as input
-	PORTE_PIN2CTRL = (PORTE_PIN2CTRL & ~ PORT_OPC_gm) | PORT_OPC_PULLUP_gc;							// pin is pulled high
-
-	USARTE1.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
-	USARTE1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
-
 #elif CPUSTYLE_R7S721
 
     /* ---- Supply clock to the SCIF(channel 2) ---- */
@@ -336,24 +307,11 @@ xxxx!;
 	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_USART2RST; // Снять брос USART2.
 	(void) RCC->APB1RSTCLRR;
 
-	USART2->CR1 = 0;
-
-#if WITHUART2HW_FIFO
-	USART2->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUART2HW_FIFO */
-	USART2->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUART2HW_FIFO */
-
-	USART2->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-
-	HARDWARE_UART2_INITIALIZE();	/* Присоединить периферию к выводам */
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart2_4_get_freq(), defbaudrate, bits, parity, odd, fifo);
 	if (debug == 0)
 	{
 		serial_set_handler(USART2_IRQn, USART2_IRQHandler);
 	}
-
-	USART2->CR1 |= USART_CR1_UE; // Включение USART2.
 
 #elif CPUSTYLE_A64
 
@@ -365,27 +323,8 @@ xxxx!;
 	/* De-assert uart2 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART0_RST
 
-	/* Config uart2 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART2->UART_DLH_IER = 0;
-	UART2->UART_IIR_FCR = 0xf7;
-	UART2->UART_MCR = 0x00;
-
-	UART2->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART2->UART_RBR_THR_DLL = divisor & 0xff;
-	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART2->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART2->UART_LCR &= ~ 0x3f;
-	UART2->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART2_INITIALIZE();
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
@@ -401,32 +340,12 @@ xxxx!;
 	/* De-assert uart2 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart2 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART2->UART_DLH_IER = 0;
-	UART2->UART_IIR_FCR = 0xf7;
-	UART2->UART_MCR = 0x00;
-
-	UART2->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART2->UART_RBR_THR_DLL = divisor & 0xff;
-	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART2->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART2->UART_LCR &= ~ 0x3f;
-	UART2->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART2_INITIALIZE();
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
 	}
-
 
 #elif CPUSTYLE_V3S
 
@@ -438,25 +357,7 @@ xxxx!;
 	/* De-assert uart2 reset */
 	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
-	/* Config uart2 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART2->UART_DLH_IER = 0;
-	UART2->UART_IIR_FCR = 0xf7;
-	UART2->UART_MCR = 0x00;
-
-	UART2->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART2->UART_RBR_THR_DLL = divisor & 0xff;
-	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART2->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART2->UART_LCR &= ~ 0x3f;
-	UART2->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART2_INITIALIZE();
 	if (debug == 0)
 	{
@@ -504,7 +405,6 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
-
 }
 
 #endif /* WITHUART2HW */

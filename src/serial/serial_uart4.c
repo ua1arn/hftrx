@@ -19,6 +19,11 @@
 
 #define thisPORT 4
 
+#if CPUSTYLE_STM32MP1
+	#undef UARTBASENAME
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
+#endif
+
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
 void RAMFUNC_NONILINE UART4_IRQHandler(void)
@@ -140,23 +145,41 @@ static void SCIFTXI4_IRQHandler(void)
 
 static RAMFUNC_NONILINE void UART4_IRQHandler(void)
 {
-	const uint_fast32_t ier = UART4->UART_DLH_IER;
-	const uint_fast32_t usr = UART4->UART_USR;
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
 
 	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
 		if (usr & (1u << 3))	// RX FIFO Not Empty
-			HARDWARE_UART4_ONRXCHAR(UART4->UART_RBR_THR_DLL);
+			HARDWARE_UART4_ONRXCHAR(uart->UART_RBR_THR_DLL);
 	}
 	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	{
 		if (usr & (1u << 1))	// TX FIFO Not Full
-			HARDWARE_UART4_ONTXCHAR(UART4);
+			HARDWARE_UART4_ONTXCHAR(uart);
 	}
 }
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+static RAMFUNC_NONILINE void UART4_IRQHandler(void)
+{
+	UART_t * const uart = UARTBASENAME(thisPORT);
+	const uint_fast32_t ier = uart->UART_DLH_IER;
+	const uint_fast32_t usr = uart->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART4_ONRXCHAR(uart->UART_RBR_THR_DLL);
+	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART4_ONTXCHAR(uart);
+	}
+}
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -325,24 +348,12 @@ void hardware_uart4_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_UART4RST; // Снять брос UART4.
 	(void) RCC->APB1RSTCLRR;
 
-	UART4->CR1 = 0;
-
-#if WITHUART4HW_FIFO
-	UART4->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUART4HW_FIFO */
-	UART4->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUART4HW_FIFO */
-
-	UART4->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart2_4_get_freq(), defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART4_INITIALIZE();	/* Присоединить периферию к выводам */
-
 	if (debug == 0)
 	{
 		serial_set_handler(UART4_IRQn, UART4_IRQHandler);
 	}
-
-	UART4->CR1 |= USART_CR1_UE; // Включение USART1.
 
 #elif CPUSTYLE_A64
 
@@ -387,55 +398,13 @@ void hardware_uart4_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 void
 hardware_uart4_set_speed(uint_fast32_t baudrate)
 {
-#if CPUSTYLE_ATMEGA_XXX4
+#if CPUSTYLE_STM32MP1
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR4A |= (1U << U2X1);
-	else
-		UCSR4A &= ~ (1U << U2X1);
-
-	UBRR4 = value;	/* Значение получено уже уменьшенное на 1 */
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR4A |= (1U << U2X1);
-	else
-		UCSR4A &= ~ (1U << U2X1);
-
-	UBRR4H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR4L = value & 0xff;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE4.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE4.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE4.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE4.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
-
-	// uart4
-	UART4->BRR = calcdivround2(stm32mp1_uart2_4_get_freq(), baudrate);		// младшие 4 бита - это дробная часть.
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), stm32mp1_uart2_4_get_freq(), baudrate);
 
 #elif CPUSTYLE_STM32F
 
-	// uart4 on apb1
-	UART4->BRR = calcdivround2(BOARD_UART4_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), BOARD_USART4_FREQ, baudrate);
 
 #elif CPUSTYLE_R7S721
 
@@ -454,9 +423,8 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), baudrate);
 
 #else
-	#warning Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 #endif
-
 }
 
 #endif /* WITHUART4HW */
