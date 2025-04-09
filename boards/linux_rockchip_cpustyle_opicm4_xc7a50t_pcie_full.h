@@ -700,7 +700,7 @@ enum {
 		cs_cnt
 	};
 
-#define targetctl1	cs1
+#define targetctl1	cs0
 
 #endif /* WITHSPIHW || WITHSPISW */
 

@@ -222,10 +222,14 @@
 	#include "boards/arm_rockchip_ctlstyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_rockchip_cpustyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
-#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/linux_rockchip_ctlstyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
+	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_lite.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/linux_rockchip_cpustyle_orangepicm4.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_lite.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
+	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_full.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 #else
 	#define LCDMODE_DUMMY	1
 	#define BANDSELSTYLERE_NOTHING	1
