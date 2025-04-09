@@ -17,394 +17,194 @@
 #include <math.h>
 #include "clocks.h"
 
+#define thisPORT 1
+
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	void RAMFUNC_NONILINE USART1_IRQHandler(void)
-	{
-		const uint_fast32_t sr = USART1->SR;
+void RAMFUNC_NONILINE USART1_IRQHandler(void)
+{
+	const uint_fast32_t sr = USART1->SR;
 
-		if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART1_ONRXCHAR(USART1->DR);
-		if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART1_ONOVERFLOW();
-		if (sr & USART_SR_TXE)
-			HARDWARE_UART1_ONTXCHAR(USART1);
-	}
+	if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
+		HARDWARE_UART1_ONRXCHAR(USART1->DR);
+	if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
+		HARDWARE_UART1_ONOVERFLOW();
+	if (sr & USART_SR_TXE)
+		HARDWARE_UART1_ONTXCHAR(USART1);
+}
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
 
-	void RAMFUNC_NONILINE USART1_IRQHandler(void)
-	{
-		const uint_fast32_t isr = USART1->ISR;
-		const uint_fast32_t cr1 = USART1->CR1;
+void RAMFUNC_NONILINE USART1_IRQHandler(void)
+{
+	const uint_fast32_t isr = USART1->ISR;
+	const uint_fast32_t cr1 = USART1->CR1;
 
-		if (cr1 & USART_CR1_RXNEIE)
+	if (cr1 & USART_CR1_RXNEIE)
+	{
+		if (isr & USART_ISR_RXNE_RXFNE)
 		{
-			if (isr & USART_ISR_RXNE_RXFNE)
-			{
-				const uint_fast8_t c = USART1->RDR;
-				HARDWARE_UART1_ONRXCHAR(c);
-			}
-			if (isr & USART_ISR_ORE)
-			{
-				USART1->ICR = USART_ICR_ORECF;
-				HARDWARE_UART1_ONOVERFLOW();
-			}
-			if (isr & USART_ISR_FE)
-				USART1->ICR = USART_ICR_FECF;
+			const uint_fast8_t c = USART1->RDR;
+			HARDWARE_UART1_ONRXCHAR(c);
 		}
-		if (cr1 & USART_CR1_TXEIE)
+		if (isr & USART_ISR_ORE)
 		{
-			if (isr & USART_ISR_TXE_TXFNF)
-				HARDWARE_UART1_ONTXCHAR(USART1);
+			USART1->ICR = USART_ICR_ORECF;
+			HARDWARE_UART1_ONOVERFLOW();
 		}
+		if (isr & USART_ISR_FE)
+			USART1->ICR = USART_ICR_FECF;
 	}
+	if (cr1 & USART_CR1_TXEIE)
+	{
+		if (isr & USART_ISR_TXE_TXFNF)
+			HARDWARE_UART1_ONTXCHAR(USART1);
+	}
+}
 
 #elif CPUSTYLE_AT91SAM7S
 
-	static RAMFUNC_NONILINE void AT91F_US1Handler(void)
-	{
-		const uint_fast32_t csr = AT91C_BASE_US1->US_CSR;
+static RAMFUNC_NONILINE void AT91F_US1Handler(void)
+{
+	const uint_fast32_t csr = AT91C_BASE_US1->US_CSR;
 
-		if (csr & AT91C_US_RXRDY)
-			HARDWARE_UART1_ONRXCHAR(AT91C_BASE_US1->US_RHR);
-		if (csr & AT91C_US_TXRDY)
-			HARDWARE_UART1_ONTXCHAR(AT91C_BASE_US1);
-	}
+	if (csr & AT91C_US_RXRDY)
+		HARDWARE_UART1_ONRXCHAR(AT91C_BASE_US1->US_RHR);
+	if (csr & AT91C_US_TXRDY)
+		HARDWARE_UART1_ONTXCHAR(AT91C_BASE_US1);
+}
 
 #elif CPUSTYLE_R7S721
 
-	// Приём символа он последовательного порта
-	static RAMFUNC_NONILINE void SCIFRXI1_IRQHandler(void)
-	{
-		(void) SCIF1.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF1.SCFSR = (uint16_t) ~ SCIF1_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-		uint_fast8_t n = (SCIF1.SCFDR & SCIF1_SCFDR_R) >> SCIF1_SCFDR_R_SHIFT;
-		while (n --)
-			HARDWARE_UART1_ONRXCHAR(SCIF1.SCFRDR & SCIF1_SCFRDR_D);
-	}
+// Приём символа он последовательного порта
+static RAMFUNC_NONILINE void SCIFRXI1_IRQHandler(void)
+{
+	(void) SCIF1.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+	SCIF1.SCFSR = (uint16_t) ~ SCIF1_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+	uint_fast8_t n = (SCIF1.SCFDR & SCIF1_SCFDR_R) >> SCIF1_SCFDR_R_SHIFT;
+	while (n --)
+		HARDWARE_UART1_ONRXCHAR(SCIF1.SCFRDR & SCIF1_SCFRDR_D);
+}
 
-	// Передача символа в последовательный порт
-	static RAMFUNC_NONILINE void SCIFTXI1_IRQHandler(void)
-	{
-		HARDWARE_UART1_ONTXCHAR(& SCIF1);
-	}
+// Передача символа в последовательный порт
+static RAMFUNC_NONILINE void SCIFTXI1_IRQHandler(void)
+{
+	HARDWARE_UART1_ONTXCHAR(& SCIF1);
+}
 
 #elif CPUSTYLE_XC7Z
 
-	static void UART1_IRQHandler(void)
+static void UART1_IRQHandler(void)
+{
+	char c;
+	const uint_fast32_t sts = UART1->ISR & UART1->IMR;
+	if (sts & (1u << 5))	// RXOVR
 	{
-		char c;
-		const uint_fast32_t sts = UART1->ISR & UART1->IMR;
-		if (sts & (1u << 5))	// RXOVR
-		{
-			UART1->ISR = (1u << 5);	// RXOVR
-			HARDWARE_UART1_ONOVERFLOW();
-		}
-		if (sts & (1u << 7))	// PARE
-		{
-			UART1->ISR = (1u << 7);	// PARE
-		}
-		if (sts & (1u << 6))	// FRAME
-		{
-			UART1->ISR = (1u << 6);	// FRAME
-		}
-		if (sts & (1u << 3))	// TEMPTY
-		{
-			HARDWARE_UART1_ONTXCHAR(UART1);
-		}
-		while (hardware_uart1_getchar(& c))
-		{
-			HARDWARE_UART1_ONRXCHAR(c);
-		}
+		UART1->ISR = (1u << 5);	// RXOVR
+		HARDWARE_UART1_ONOVERFLOW();
 	}
+	if (sts & (1u << 7))	// PARE
+	{
+		UART1->ISR = (1u << 7);	// PARE
+	}
+	if (sts & (1u << 6))	// FRAME
+	{
+		UART1->ISR = (1u << 6);	// FRAME
+	}
+	if (sts & (1u << 3))	// TEMPTY
+	{
+		HARDWARE_UART1_ONTXCHAR(UART1);
+	}
+	while (hardware_uart1_getchar(& c))
+	{
+		HARDWARE_UART1_ONRXCHAR(c);
+	}
+}
 
 #elif CPUSTYLE_ALLWINNER
 
-	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
-	{
-		const uint_fast32_t ier = UART1->UART_DLH_IER;
-		const uint_fast32_t usr = UART1->UART_USR;
+static RAMFUNC_NONILINE void UART1_IRQHandler(void)
+{
+	const uint_fast32_t ier = UART1->UART_DLH_IER;
+	const uint_fast32_t usr = UART1->UART_USR;
 
-		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
-		{
-			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART1_ONRXCHAR(UART1->UART_RBR_THR_DLL);
-		}
-		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
-		{
-			if (usr & (1u << 1))	// TX FIFO Not Full
-				HARDWARE_UART1_ONTXCHAR(UART1);
-		}
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
+	{
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART1_ONRXCHAR(UART1->UART_RBR_THR_DLL);
 	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART1_ONTXCHAR(UART1);
+	}
+}
 
 #elif CPUSTYLE_VM14
 
-	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
+static RAMFUNC_NONILINE void UART1_IRQHandler(void)
+{
+	const uint_fast32_t ier = UART1->UART_DLH_IER;
+	const uint_fast32_t usr = UART1->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
-		const uint_fast32_t ier = UART1->UART_DLH_IER;
-		const uint_fast32_t usr = UART1->UART_USR;
-
-		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
-		{
-			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART1_ONRXCHAR(UART1->UART_RBR_THR_DLL);
-		}
-		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
-		{
-			if (usr & (1u << 1))	// TX FIFO Not Full
-				HARDWARE_UART1_ONTXCHAR(UART1);
-		}
-
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART1_ONRXCHAR(UART1->UART_RBR_THR_DLL);
 	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART1_ONTXCHAR(UART1);
+	}
+
+}
+
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
 
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 
-
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart1_enabletx(uint_fast8_t state)
 {
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART1
-
-		hardware_uartx_enabletx(USART1, state);
-
-	#elif HARDWARE_ARM_USEUART1
-
-		hardware_uartx_enabletx(UART1, state);
-
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif /* HARDWARE_ARM_USEUSART0 */
-
-#elif CPUSTYLE_AT91SAM7S
-
-	hardware_uartx_enabletx(AT91C_BASE_US1, state);
-
-#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	hardware_uartx_enabletx(USART1, state);
-
-#elif CPUSTYLE_R7S721
-
-	hardware_uartx_enabletx(& SCIF1, state);
-
-#elif CPUSTYLE_XC7Z
-
-	hardware_uartx_enabletx(UART1, state);
-
-#elif CPUSTYLE_ALLWINNER
-
-	hardware_uartx_enabletx(UART1, state);
-
-#elif CPUSTYLE_VM14
-
-	hardware_uartx_enabletx(UART1, state);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_enabletx(UARTBASENAME(thisPORT), state);
 }
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерываний про приёму символа */
 void hardware_uart1_enablerx(uint_fast8_t state)
 {
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART1
-
-		hardware_uartx_enablerx(USART1, state);
-
-	#elif HARDWARE_ARM_USEUART1
-
-		hardware_uartx_enablerx(UART1, state);
-
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif /* HARDWARE_ARM_USEUSART0 */
-
-#elif CPUSTYLE_AT91SAM7S
-
-	hardware_uartx_enablerx(AT91C_BASE_US1, state);
-
-#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	hardware_uartx_enablerx(USART1, state);
-
-#elif CPUSTYLE_R7S721
-
-	hardware_uartx_enablerx(& SCIF1, state);
-
-#elif CPUSTYLE_XC7Z
-
-	hardware_uartx_enablerx(UART1, state);
-
-#elif CPUSTYLE_ALLWINNER
-
-	hardware_uartx_enablerx(UART1, state);
-
-#elif CPUSTYLE_VM14
-
-	hardware_uartx_enablerx(UART1, state);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_enablerx(UARTBASENAME(thisPORT), state);
 }
-
 
 /* передача символа из обработчика прерывания готовности передатчика */
 void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 {
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART1
-		hardware_uartx_tx(USART1, c);
-	#elif HARDWARE_ARM_USEUART1
-		hardware_uartx_tx(UART1, c);
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	hardware_uartx_tx(AT91C_BASE_US1, c);
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	hardware_uartx_tx(USART1, c);
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
-
-	hardware_uartx_tx(UART1, c);
-
-#elif CPUSTYLE_R7S721
-
-	hardware_uartx_tx(& SCIF1, c);
-
-#elif CPUSTYLE_STM32MP1
-
-	hardware_uartx_tx(UART1, c);
-
-#elif CPUSTYLE_XC7Z
-
-	hardware_uartx_tx(UART1, c);
-
-#elif CPUSTYLE_ALLWINNER
-
-	hardware_uartx_tx(UART1, c);
-
-#elif CPUSTYLE_VM14
-
-	hardware_uartx_tx(UART1, c);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_tx(UARTBASENAME(thisPORT), c);
 }
 
 /* дождаться, когда буде все передано */
 void hardware_uart1_flush(void)
 {
-#if CPUSTYLE_ALLWINNER
-
-	hardware_uartx_flush(UART1);
-
-#elif CPUSTYLE_VM14
-
-	hardware_uartx_flush(UART1);
-
-#else
-	//#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_flush(UARTBASENAME(thisPORT));
 }
-
 
 /* приём символа, если готов порт */
 uint_fast8_t
 hardware_uart1_getchar(char * cp)
 {
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART1
-		return hardware_uartx_getchar(USART1, cp);
-	#elif HARDWARE_ARM_USEUART1
-		return hardware_uartx_getchar(UART1, cp);
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	return hardware_uartx_getchar(AT91C_BASE_US1, cp);
-
-#elif CPUSTYLE_R7S721
-
-	return hardware_uartx_getchar(SCIF1, cp);
-
-#elif CPUSTYLE_XC7Z
-
-	return hardware_uartx_getchar(UART1, cp);
-
-#elif CPUSTYLE_ALLWINNER
-
-	return hardware_uartx_getchar(UART1, cp);
-
-#elif CPUSTYLE_VM14
-
-	return hardware_uartx_getchar(UART1, cp);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-
-	return 1;
+	return hardware_uartx_getchar(UARTBASENAME(thisPORT), cp);
 }
 
 /* передача символа если готов порт */
 uint_fast8_t
 hardware_uart1_putchar(uint_fast8_t c)
 {
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART1
-		return hardware_uartx_putchar(USART1, c);
-	#elif HARDWARE_ARM_USEUART1
-		return hardware_uartx_putchar(UART1, c);
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	return hardware_uartx_putchar(AT91C_BASE_US1, c);
-
-#elif CPUSTYLE_R7S721
-
-	return hardware_uartx_putchar(& SCIF1, c);
-
-#elif CPUSTYLE_XC7Z
-
-	return hardware_uartx_putchar(UART1, c);
-
-#elif CPUSTYLE_ALLWINNER
-
-	return hardware_uartx_putchar(UART1, c);
-
-#elif CPUSTYLE_VM14
-
-	return hardware_uartx_putchar(UART1, c);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-
-	return 1;
+	return hardware_uartx_putchar(UARTBASENAME(thisPORT), c);
 }
 
 void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
@@ -465,7 +265,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
-	#endif /* HARDWARE_ARM_USEUSART0 */
+	#endif /* HARDWARE_ARM_USEUSARTx */
 
 
 #elif CPUSTYLE_STM32F1XX
@@ -670,7 +470,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif CPUSTYLE_XC7Z
 
-	const unsigned ix = 1;
+	const unsigned ix = thisPORT;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
     SCLR->APER_CLK_CTRL |= (1u << (20 + ix));    // APER_CLK_CTRL.UART1_CPU_1XCLKACT
     //EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
@@ -709,15 +509,15 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif CPUSTYLE_A64
 
-	const unsigned ix = 1;
+	const unsigned ix = thisPORT;
 
-	/* Open the clock gate for uart0 */
+	/* Open the clock gate for uart1 */
 	CCU->BUS_CLK_GATING_REG3 |= (1u << (ix + 16));	// UART1_GATING
 
-	/* De-assert uart0 reset */
+	/* De-assert uart1 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART1_RST
 
-	/* Config uart0 to 115200-8-1-0 */
+	/* Config uart1 to 115200-8-1-0 */
 	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART1->UART_DLH_IER = 0;
@@ -745,7 +545,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	const unsigned ix = 1;
+	const unsigned ix = thisPORT;
 
 	/* Open the clock gate for uart1 */
 	CCU->UART_BGR_REG |= (1u << (ix + 0));
@@ -753,7 +553,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
+	/* Config uart1 to 115200-8-1-0 */
 	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART1->UART_DLH_IER = 0;
@@ -782,7 +582,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif CPUSTYLE_V3S
 
-	const unsigned ix = 1;
+	const unsigned ix = thisPORT;
 
 	/* Open the clock gate for uart1 */
 	CCU->BUS_CLK_GATING_REG3 |= (1u << (ix + 16));
@@ -790,7 +590,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
+	/* Config uart1 to 115200-8-1-0 */
 	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART1->UART_DLH_IER = 0;
@@ -818,11 +618,11 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif CPUSTYLE_VM14
 
-	const unsigned ix = 1;	// UART1
+	const unsigned ix = thisPORT;	// UART1
 
 	CMCTR->GATE_SYS_CTR |= ((1u << 12) << ix); // UART1_EN Enable CLK
 
-	/* Config uart0 to 115200-8-1-0 */
+	/* Config uart1 to 115200-8-1-0 */
 	uint32_t divisor = elveesvm14_get_usart_freq() / ((defbaudrate) * 16);
 
 	UART1->UART_DLH_IER = 0;

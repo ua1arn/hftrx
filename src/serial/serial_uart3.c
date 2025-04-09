@@ -17,57 +17,36 @@
 #include <math.h>
 #include "clocks.h"
 
+#define thisPORT 3
+
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	void RAMFUNC_NONILINE USART3_IRQHandler(void)
-	{
-		const uint_fast32_t sr = USART3->SR;
+void RAMFUNC_NONILINE USART3_IRQHandler(void)
+{
+	const uint_fast32_t sr = USART3->SR;
 
-		if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART3_ONRXCHAR(USART3->DR);
-		if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART3_ONOVERFLOW();
-		if (sr & USART_SR_TXE)
-			HARDWARE_UART3_ONTXCHAR(USART3);
-	}
+	if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
+		HARDWARE_UART3_ONRXCHAR(USART3->DR);
+	if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
+		HARDWARE_UART3_ONOVERFLOW();
+	if (sr & USART_SR_TXE)
+		HARDWARE_UART3_ONTXCHAR(USART3);
+}
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-	void RAMFUNC_NONILINE USART3_IRQHandler(void)
+void RAMFUNC_NONILINE USART3_IRQHandler(void)
+{
+	const uint_fast32_t isr = USART3->ISR;
+	const uint_fast32_t cr1 = USART3->CR1;
+
+	if (cr1 & USART_CR1_RXNEIE)
 	{
-		const uint_fast32_t isr = USART3->ISR;
-		const uint_fast32_t cr1 = USART3->CR1;
-
-		if (cr1 & USART_CR1_RXNEIE)
+		if (isr & USART_ISR_RXNE_RXFNE)
 		{
-			if (isr & USART_ISR_RXNE_RXFNE)
-			{
-				const uint_fast8_t c = UART3->RDR;
-				HARDWARE_UART3_ONRXCHAR(c);
-			}
-			if (isr & USART_ISR_ORE)
-			{
-				USART3->ICR = USART_ICR_ORECF;
-				HARDWARE_UART3_ONOVERFLOW();
-			}
-			if (isr & USART_ISR_FE)
-				USART3->ICR = USART_ICR_FECF;
+			const uint_fast8_t c = UART3->RDR;
+			HARDWARE_UART3_ONRXCHAR(c);
 		}
-		if (cr1 & USART_CR1_TXEIE)
-		{
-			if (isr & USART_ISR_TXE_TXFNF)
-				HARDWARE_UART3_ONTXCHAR(USART3);
-		}
-	}
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	void RAMFUNC_NONILINE USART3_IRQHandler(void)
-	{
-		const uint_fast32_t isr = USART3->ISR;
-
-		if (isr & USART_ISR_RXNE)
-			HARDWARE_UART3_ONRXCHAR(USART3->RDR);
 		if (isr & USART_ISR_ORE)
 		{
 			USART3->ICR = USART_ICR_ORECF;
@@ -75,257 +54,116 @@
 		}
 		if (isr & USART_ISR_FE)
 			USART3->ICR = USART_ICR_FECF;
-		if (isr & USART_ISR_TXE)
+	}
+	if (cr1 & USART_CR1_TXEIE)
+	{
+		if (isr & USART_ISR_TXE_TXFNF)
 			HARDWARE_UART3_ONTXCHAR(USART3);
 	}
+}
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
+
+void RAMFUNC_NONILINE USART3_IRQHandler(void)
+{
+	const uint_fast32_t isr = USART3->ISR;
+
+	if (isr & USART_ISR_RXNE)
+		HARDWARE_UART3_ONRXCHAR(USART3->RDR);
+	if (isr & USART_ISR_ORE)
+	{
+		USART3->ICR = USART_ICR_ORECF;
+		HARDWARE_UART3_ONOVERFLOW();
+	}
+	if (isr & USART_ISR_FE)
+		USART3->ICR = USART_ICR_FECF;
+	if (isr & USART_ISR_TXE)
+		HARDWARE_UART3_ONTXCHAR(USART3);
+}
 
 #elif CPUSTYLE_R7S721
 
-	// Приём символа он последовательного порта
-	static void SCIFRXI3_IRQHandler(void)
-	{
-		(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-		uint_fast8_t n = (SCIF3.SCFDR & SCIF3_SCFDR_R) >> SCIF3_SCFDR_R_SHIFT;
-		while (n --)
-			HARDWARE_UART3_ONRXCHAR(SCIF3.SCFRDR & SCIF3_SCFRDR_D);
-	}
+// Приём символа он последовательного порта
+static void SCIFRXI3_IRQHandler(void)
+{
+	(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+	SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+	uint_fast8_t n = (SCIF3.SCFDR & SCIF3_SCFDR_R) >> SCIF3_SCFDR_R_SHIFT;
+	while (n --)
+		HARDWARE_UART3_ONRXCHAR(SCIF3.SCFRDR & SCIF3_SCFRDR_D);
+}
 
-	// Передача символа в последовательный порт
-	static void SCIFTXI3_IRQHandler(void)
-	{
-		HARDWARE_UART3_ONTXCHAR(& SCIF3);
-	}
+// Передача символа в последовательный порт
+static void SCIFTXI3_IRQHandler(void)
+{
+	HARDWARE_UART3_ONTXCHAR(& SCIF3);
+}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
-	static RAMFUNC_NONILINE void UART3_IRQHandler(void)
+#elif CPUSTYLE_ALLWINNER
+
+static RAMFUNC_NONILINE void UART3_IRQHandler(void)
+{
+	const uint_fast32_t ier = UART3->UART_DLH_IER;
+	const uint_fast32_t usr = UART3->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
-		const uint_fast32_t ier = UART3->UART_DLH_IER;
-		const uint_fast32_t usr = UART3->UART_USR;
-		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
-		{
-			if (usr & (1u << 3))	// RX FIFO Not Empty
-				HARDWARE_UART3_ONRXCHAR(UART3->UART_RBR_THR_DLL);
-		}
-		if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
-		{
-			if (usr & (1u << 1))	// TX FIFO Not Full
-				HARDWARE_UART3_ONTXCHAR(UART3);
-		}
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART3_ONRXCHAR(UART3->UART_RBR_THR_DLL);
 	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART3_ONTXCHAR(UART3);
+	}
+}
+
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
-
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart3_enabletx(uint_fast8_t state)
 {
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	if (state)
-		USART3->CR1 |= USART_CR1_TXEIE;
-	else
-		USART3->CR1 &= ~ USART_CR1_TXEIE;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	/* Used USART 1 */
-	if (state)
-	{
-		UCSR3B |= (1U << TXCIE1);
-		HARDWARE_UART3_ONTXCHAR(NULL);	// initiate 1-st character sending
-	}
-	else
-	{
-		UCSR3B &= ~ (1U << TXCIE1);
-	}
-
-#elif CPUSTYLE_R7S721
-
-	if (state)
-		SCIF3.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
-	else
-		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	if (state)
-		UART3->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-	else
-		UART3->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_enabletx(UARTBASENAME(thisPORT), state);
 }
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерываний про приёму символа */
 void hardware_uart3_enablerx(uint_fast8_t state)
 {
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	if (state)
-		USART3->CR1 |= USART_CR1_RXNEIE;
-	else
-		USART3->CR1 &= ~ USART_CR1_RXNEIE;
-
-#elif CPUSTYLE_R7S721
-
-	if (state)
-		SCIF3.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
-	else
-		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	if (state)
-		UART3->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
-	else
-		UART3->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_enablerx(UARTBASENAME(thisPORT), state);
 }
-
 
 /* передача символа из обработчика прерывания готовности передатчика */
 void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 {
-#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	USART3->DR = c;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
-
-	USART3->TDR = c;
-
-#elif CPUSTYLE_R7S721
-
-	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-	SCIF3.SCFTDR = c;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	UART3->UART_RBR_THR_DLL = c;
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_tx(UARTBASENAME(thisPORT), c);
 }
 
 /* дождаться, когда буде все передано */
 void hardware_uart3_flush(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	while ((UART3->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
-		;
-
-#else
-	//#error Undefined CPUSTYLE_XXX
-#endif
-
-
+	hardware_uartx_flush(UARTBASENAME(thisPORT));
 }
 
 /* приём символа, если готов порт */
 uint_fast8_t
 hardware_uart3_getchar(char * cp)
 {
-#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	if ((USART3->SR & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE)) == 0)
-		return 0;
-	* cp = USART3->DR;
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	const uint_fast32_t isr = USART3->ISR;
-	if (isr & USART_ISR_ORE)
-		USART3->ICR = USART_ICR_ORECF;
-	if (isr & USART_ISR_FE)
-		USART3->ICR = USART_ICR_FECF;
-	if ((isr & USART_ISR_RXNE_RXFNE) == 0)
-		return 0;
-	* cp = USART3->RDR;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	const uint_fast32_t isr = USART3->ISR;
-	if (isr & USART_ISR_ORE)
-		USART3->ICR = USART_ICR_ORECF;
-	if (isr & USART_ISR_FE)
-		USART3->ICR = USART_ICR_FECF;
-	if ((isr & USART_ISR_RXNE) == 0)
-		return 0;
-	* cp = USART3->RDR;
-
-#elif CPUSTYLE_R7S721
-
-	if ((SCIF3.SCFSR & (1U << 1)) == 0)	// RDF
-		return 0;
-	* cp = SCIF3.SCFRDR;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	if ((UART3->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
-		return 0;
-	* cp = UART3->UART_RBR_THR_DLL;
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-
-	return 1;
+	return hardware_uartx_getchar(UARTBASENAME(thisPORT), cp);
 }
 
 /* передача символа если готов порт */
 uint_fast8_t
 hardware_uart3_putchar(uint_fast8_t c)
 {
-#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	if ((USART3->SR & USART_SR_TXE) == 0)
-		return 0;
-	USART3->DR = c;
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	if ((USART3->ISR & USART_ISR_TXE_TXFNF) == 0)
-		return 0;
-	USART3->TDR = c;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	if ((USART3->ISR & USART_ISR_TXE) == 0)
-		return 0;
-	USART3->TDR = c;
-
-#elif CPUSTYLE_R7S721
-
-	if ((SCIF3.SCFSR & (1U << SCIF3_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-		return 0;
-	SCIF3.SCFTDR = c;
-	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	if ((UART3->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
-		return 0;
-	UART3->UART_RBR_THR_DLL = c;
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-
-	return 1;
+	return hardware_uartx_putchar(UARTBASENAME(thisPORT), c);
 }
 
 void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
@@ -472,7 +310,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif CPUSTYLE_A64
 
-	const unsigned ix = 3;
+	const unsigned ix = thisPORT;
 
 	/* Open the clock gate for uart3 */
 	CCU->BUS_CLK_GATING_REG3 |= (1u << (ix + 16));	// UART3_GATING
@@ -480,7 +318,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart3 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART3_RST
 
-	/* Config uart0 to 115200-8-1-0 */
+	/* Config uart3 to 115200-8-1-0 */
 	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART3->UART_DLH_IER = 0;
@@ -508,7 +346,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	const unsigned ix = 3;
+	const unsigned ix = thisPORT;
 
 	/* Open the clock gate for uart3 */
 	CCU->UART_BGR_REG |= (1u << (ix + 0));
@@ -516,7 +354,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart3 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
+	/* Config uart3 to 115200-8-1-0 */
 	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
 
 	UART3->UART_DLH_IER = 0;

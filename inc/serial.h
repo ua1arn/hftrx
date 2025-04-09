@@ -15,18 +15,26 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define UARTBASEconcat(base, index) base ## index
+
 #if CPUSTYLE_R7S721
 	typedef struct st_scif UART_t;
+	#define UARTBASENAME(port) UARTBASEconcat(& SCIF, port)
 #elif CPUSTYLE_ALLWINNER
 	typedef UART_TypeDef UART_t;
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
 #elif CPUSTYLE_STM32F
 	typedef USART_TypeDef UART_t;
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
 #elif CPUSTYLE_STM32MP1
 	typedef USART_TypeDef UART_t;
+	#define UARTBASENAME(port) UARTBASEconcat(USART, port)
 #elif CPUSTYLE_ROCKCHIP
 	typedef UART_TypeDef UART_t;
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
 #elif CPUSTYLE_XC7Z
 	typedef XUARTPS_Registers UART_t;
+	#define UARTBASENAME(port) UARTBASEconcat(UART, port)
 #else
 	typedef void UART_t;
 #endif

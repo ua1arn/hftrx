@@ -17,69 +17,48 @@
 #include <math.h>
 #include "clocks.h"
 
+#define thisPORT 7
+
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	void RAMFUNC_NONILINE USART7_Handler(void)
-	{
-		const uint_fast32_t csr = USART7->US_CSR;
+void RAMFUNC_NONILINE USART7_Handler(void)
+{
+	const uint_fast32_t csr = USART7->US_CSR;
 
-		if (csr & US_CSR_RXRDY)
-			HARDWARE_UART7_ONRXCHAR(USART7->US_RHR);
-		if (csr & US_CSR_TXRDY)
-			HARDWARE_UART7_ONTXCHAR(USART7);
-	}
+	if (csr & US_CSR_RXRDY)
+		HARDWARE_UART7_ONRXCHAR(USART7->US_RHR);
+	if (csr & US_CSR_TXRDY)
+		HARDWARE_UART7_ONTXCHAR(USART7);
+}
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	void RAMFUNC_NONILINE UART7_IRQHandler(void)
-	{
-		const uint_fast32_t sr = UART7->SR;
+void RAMFUNC_NONILINE UART7_IRQHandler(void)
+{
+	const uint_fast32_t sr = UART7->SR;
 
-		if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART7_ONRXCHAR(UART7->DR);
-		if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART7_ONOVERFLOW();
-		if (sr & USART_SR_TXE)
-			HARDWARE_UART7_ONTXCHAR(UART7);
-	}
+	if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
+		HARDWARE_UART7_ONRXCHAR(UART7->DR);
+	if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
+		HARDWARE_UART7_ONOVERFLOW();
+	if (sr & USART_SR_TXE)
+		HARDWARE_UART7_ONTXCHAR(UART7);
+}
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-	void RAMFUNC_NONILINE UART7_IRQHandler(void)
+void RAMFUNC_NONILINE UART7_IRQHandler(void)
+{
+	const uint_fast32_t isr = UART7->ISR;
+	const uint_fast32_t cr1 = UART7->CR1;
+
+	if (cr1 & USART_CR1_RXNEIE)
 	{
-		const uint_fast32_t isr = UART7->ISR;
-		const uint_fast32_t cr1 = UART7->CR1;
-
-		if (cr1 & USART_CR1_RXNEIE)
+		if (isr & USART_ISR_RXNE_RXFNE)
 		{
-			if (isr & USART_ISR_RXNE_RXFNE)
-			{
-				const uint_fast8_t c = UART7->RDR;
-				HARDWARE_UART7_ONRXCHAR(c);
-			}
-			if (isr & USART_ISR_ORE)
-			{
-				UART7->ICR = USART_ICR_ORECF;
-				HARDWARE_UART7_ONOVERFLOW();
-			}
-			if (isr & USART_ISR_FE)
-				UART7->ICR = USART_ICR_FECF;
+			const uint_fast8_t c = UART7->RDR;
+			HARDWARE_UART7_ONRXCHAR(c);
 		}
-		if (cr1 & USART_CR1_TXEIE)
-		{
-			if (isr & USART_ISR_TXE_TXFNF)
-				HARDWARE_UART7_ONTXCHAR(UART7);
-		}
-	}
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	void RAMFUNC_NONILINE UART7_IRQHandler(void)
-	{
-		const uint_fast32_t isr = UART7->ISR;
-
-		if (isr & USART_ISR_RXNE)
-			HARDWARE_UART7_ONRXCHAR(UART7->RDR);
 		if (isr & USART_ISR_ORE)
 		{
 			UART7->ICR = USART_ICR_ORECF;
@@ -87,27 +66,72 @@
 		}
 		if (isr & USART_ISR_FE)
 			UART7->ICR = USART_ICR_FECF;
-		if (isr & USART_ISR_TXE)
+	}
+	if (cr1 & USART_CR1_TXEIE)
+	{
+		if (isr & USART_ISR_TXE_TXFNF)
 			HARDWARE_UART7_ONTXCHAR(UART7);
 	}
+}
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
+
+void RAMFUNC_NONILINE UART7_IRQHandler(void)
+{
+	const uint_fast32_t isr = UART7->ISR;
+
+	if (isr & USART_ISR_RXNE)
+		HARDWARE_UART7_ONRXCHAR(UART7->RDR);
+	if (isr & USART_ISR_ORE)
+	{
+		UART7->ICR = USART_ICR_ORECF;
+		HARDWARE_UART7_ONOVERFLOW();
+	}
+	if (isr & USART_ISR_FE)
+		UART7->ICR = USART_ICR_FECF;
+	if (isr & USART_ISR_TXE)
+		HARDWARE_UART7_ONTXCHAR(UART7);
+}
 
 #elif CPUSTYLE_R7S721
 
-	// Приём символа он последовательного порта
-	static void SCIFRXI7_IRQHandler(void)
-	{
-		(void) SCIF7.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF7.SCFSR = (uint16_t) ~ SCIF7_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-		uint_fast8_t n = (SCIF7.SCFDR & SCIF7_SCFDR_R) >> SCIF7_SCFDR_R_SHIFT;
-		while (n --)
-			HARDWARE_UART7_ONRXCHAR(SCIF7.SCFRDR & SCIF7_SCFRDR_D);
-	}
+// Приём символа он последовательного порта
+static void SCIFRXI7_IRQHandler(void)
+{
+	(void) SCIF7.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+	SCIF7.SCFSR = (uint16_t) ~ SCIF7_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+	uint_fast8_t n = (SCIF7.SCFDR & SCIF7_SCFDR_R) >> SCIF7_SCFDR_R_SHIFT;
+	while (n --)
+		HARDWARE_UART7_ONRXCHAR(SCIF7.SCFRDR & SCIF7_SCFRDR_D);
+}
 
-	// Передача символа в последовательный порт
-	static void SCIFTXI7_IRQHandler(void)
+// Передача символа в последовательный порт
+static void SCIFTXI7_IRQHandler(void)
+{
+	HARDWARE_UART7_ONTXCHAR(& SCIF7);
+}
+
+#elif CPUSTYLE_ALLWINNER
+
+static RAMFUNC_NONILINE void UART7_IRQHandler(void)
+{
+	const uint_fast32_t ier = UART7->UART_DLH_IER;
+	const uint_fast32_t usr = UART7->UART_USR;
+
+	if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 	{
-		HARDWARE_UART7_ONTXCHAR(& SCIF7);
+		if (usr & (1u << 3))	// RX FIFO Not Empty
+			HARDWARE_UART7_ONRXCHAR(UART7->UART_RBR_THR_DLL);
 	}
+	if (ier & (1u << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		if (usr & (1u << 1))	// TX FIFO Not Full
+			HARDWARE_UART7_ONTXCHAR(UART7);
+	}
+}
+
+#elif CPUSTYLE_ROCKCHIP
+	#warning Unimplemented CPUSTYLE_ROCKCHIP
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -118,173 +142,40 @@
 /* Разрешение/запрещение прерывания по передаче символа */
 void hardware_uart7_enabletx(uint_fast8_t state)
 {
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	if (state)
-		UART7->CR1 |= USART_CR1_TXEIE;
-	else
-		UART7->CR1 &= ~ USART_CR1_TXEIE;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	if (state)
-		USARTE7.CTRLA = (USARTE7.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_LO_gc;
-	else
-		USARTE7.CTRLA = (USARTE7.CTRLA & ~ USART_DREINTLVL_gm) | USART_DREINTLVL_OFF_gc;
-
-#elif CPUSTYLE_R7S721
-
-	if (state)
-		SCIF7.SCSCR |= (1U << 7);	// TIE Transmit Interrupt Enable
-	else
-		SCIF7.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_enabletx(UARTBASENAME(thisPORT), state);
 }
 
 /* вызывается из обработчика прерываний или при запрещённых прерываниях. */
 /* Разрешение/запрещение прерываний про приёму символа */
 void hardware_uart7_enablerx(uint_fast8_t state)
 {
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	if (state)
-		UART7->CR1 |= USART_CR1_RXNEIE;
-	else
-		UART7->CR1 &= ~ USART_CR1_RXNEIE;
-
-#elif CPUSTYLE_R7S721
-
-	if (state)
-		SCIF4.SCSCR |= (1U << 6);	// RIE Receive Interrupt Enable
-	else
-		SCIF4.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_enablerx(UARTBASENAME(thisPORT), state);
 }
-
 
 /* передача символа из обработчика прерывания готовности передатчика */
 void hardware_uart7_tx(void * ctx, uint_fast8_t c)
 {
-#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	UART7->DR = c;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32MP1
-
-	UART7->TDR = c;
-
-#elif CPUSTYLE_R7S721
-
-	(void) SCIF7.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-	SCIF7.SCFTDR = c;
-	SCIF7.SCFSR = (uint16_t) ~ (1U << SCIF7_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
+	hardware_uartx_tx(UARTBASENAME(thisPORT), c);
 }
 
 /* дождаться, когда буде все передано */
 void hardware_uart7_flush(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
-
-	while ((UART7->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
-		;
-
-#else
-	//#error Undefined CPUSTYLE_XXX
-#endif
-
-
+	hardware_uartx_flush(UARTBASENAME(thisPORT));
 }
 
 /* приём символа, если готов порт */
 uint_fast8_t
 hardware_uart7_getchar(char * cp)
 {
-#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	if ((UART7->SR & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE)) == 0)
-		return 0;
-	* cp = UART7->DR;
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	const uint_fast32_t isr = UART7->ISR;
-	if (isr & USART_ISR_ORE)
-		UART7->ICR = USART_ICR_ORECF;
-	if (isr & USART_ISR_FE)
-		UART7->ICR = USART_ICR_FECF;
-	if ((isr & USART_ISR_RXNE_RXFNE) == 0)
-		return 0;
-	* cp = UART7->RDR;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	const uint_fast32_t isr = UART7->ISR;
-	if (isr & USART_ISR_ORE)
-		UART7->ICR = USART_ICR_ORECF;
-	if (isr & USART_ISR_FE)
-		UART7->ICR = USART_ICR_FECF;
-	if ((isr & USART_ISR_RXNE) == 0)
-		return 0;
-	* cp = UART7->RDR;
-
-#elif CPUSTYLE_R7S721
-
-	if ((SCIF7.SCFSR & (1U << 1)) == 0)	// RDF
-		return 0;
-	* cp = SCIF7.SCFRDR;
-	SCIF7.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-
-	return 1;
+	return hardware_uartx_getchar(UARTBASENAME(thisPORT), cp);
 }
 
 /* передача символа если готов порт */
 uint_fast8_t
 hardware_uart7_putchar(uint_fast8_t c)
 {
-#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	if ((UART7->SR & USART_SR_TXE) == 0)
-		return 0;
-	UART7->DR = c;
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	if ((UART7->ISR & USART_ISR_TXE_TXFNF) == 0)
-		return 0;
-	UART7->TDR = c;
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	if ((UART7->ISR & USART_ISR_TXE) == 0)
-		return 0;
-	UART7->TDR = c;
-
-#elif CPUSTYLE_R7S721
-
-	if ((SCIF7.SCFSR & (1U << SCIF7_SCFSR_TDFE_SHIFT)) == 0)	// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
-		return 0;
-	SCIF7.SCFTDR = c;
-	SCIF7.SCFSR = (uint16_t) ~ (1U << SCIF7_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-
-	return 1;
+	return hardware_uartx_putchar(UARTBASENAME(thisPORT), c);
 }
 
 void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)

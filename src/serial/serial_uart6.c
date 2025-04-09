@@ -17,4 +17,6 @@
 #include <math.h>
 #include "clocks.h"
 
+#define thisPORT 6
+
 #endif /* WITHUART6HW */
