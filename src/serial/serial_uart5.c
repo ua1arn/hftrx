@@ -331,27 +331,8 @@ void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART5_RST
 
-	/* Config uart5 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART5->UART_DLH_IER = 0;
-	UART5->UART_IIR_FCR = 0xf7;
-	UART5->UART_MCR = 0x00;
-
-	UART5->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART5->UART_RBR_THR_DLL = divisor & 0xff;
-	UART5->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART5->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART5->UART_LCR &= ~ 0x3f;
-	UART5->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
@@ -367,27 +348,8 @@ void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart5 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart0 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART5->UART_DLH_IER = 0;
-	UART5->UART_IIR_FCR = 0xf7;
-	UART5->UART_MCR = 0x00;
-
-	UART5->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART5->UART_RBR_THR_DLL = divisor & 0xff;
-	UART5->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART5->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART5->UART_LCR &= ~ 0x3f;
-	UART5->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
@@ -414,27 +376,19 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), P1CLOCK_FREQ, baudrate);
 
-	SCIF5.SCSMR = (SCIF5.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF5.SCEMR = (SCIF5.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF5.SCBRR = value;	/* Bit rate register */
+#elif CPUSTYLE_ALLWINNER
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 
-	unsigned divisor = calcdivround2(HARDWARE_UART_FREQ, baudrate * 16);
+#elif CPUSTYLE_ROCKCHIP
 
-	UART5->UART_LCR |= (1 << 7);
-	UART5->UART_RBR_THR_DLL = divisor & 0xff;
-	UART5->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART5->UART_LCR &= ~ (1 << 7);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
+
+#elif CPUSTYLE_VM14
+
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), baudrate);
 
 #else
 	#warning Undefined CPUSTYLE_XXX

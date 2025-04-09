@@ -443,27 +443,19 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), P1CLOCK_FREQ, baudrate);
 
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF3.SCEMR = (SCIF4.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
+#elif CPUSTYLE_ALLWINNER
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 
-	unsigned divisor = calcdivround2(HARDWARE_UART_FREQ, baudrate * 16);
+#elif CPUSTYLE_ROCKCHIP
 
-	UART3->UART_LCR |= (1 << 7);
-	UART3->UART_RBR_THR_DLL = divisor & 0xff;
-	UART3->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART3->UART_LCR &= ~ (1 << 7);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
+
+#elif CPUSTYLE_VM14
+
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), baudrate);
 
 #else
 	#warning Undefined CPUSTYLE_XXX

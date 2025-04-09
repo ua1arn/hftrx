@@ -329,71 +329,31 @@ void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
 void
 hardware_uart7_set_speed(uint_fast32_t baudrate)
 {
-#if CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR7A |= (1U << U2X1);
-	else
-		UCSR7A &= ~ (1U << U2X1);
-
-	UBRR7 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR7A |= (1U << U2X1);
-	else
-		UCSR7A &= ~ (1U << U2X1);
-
-	UBRR7H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR7L = value & 0xff;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE7.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE7.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE7.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE7.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1
 
 	// uart7
-	UART7->BRR = calcdivround2(BOARD_UART7_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), BOARD_UART7_FREQ, baudrate);
 
 #elif CPUSTYLE_STM32F
 
 	// uart7 on apb1
-	USART7->BRR = calcdivround2(BOARD_UART7_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), BOARD_UART7_FREQ, baudrate);
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), P1CLOCK_FREQ, baudrate);
 
-	SCIF7.SCSMR = (SCIF7.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF7.SCEMR = (SCIF7.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF7.SCBRR = value;	/* Bit rate register */
+#elif CPUSTYLE_ALLWINNER
+
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
+
+#elif CPUSTYLE_ROCKCHIP
+
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
+
+#elif CPUSTYLE_VM14
+
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), baudrate);
 
 #else
 	#warning Undefined CPUSTYLE_XXX

@@ -453,18 +453,7 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF0.SCSMR = (SCIF0.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF0.SCEMR = (SCIF0.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF0.SCBRR = value;	/* Bit rate register */
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), P1CLOCK_FREQ, baudrate);
 
 #elif CPUSTYLE_XC7Z
 

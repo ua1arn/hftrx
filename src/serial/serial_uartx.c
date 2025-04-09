@@ -76,7 +76,11 @@ void hardware_uartx_enabletx(UART_t * uart, uint_fast8_t state)
 		 uart->UART_DLH_IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	if (state)
+		 uart->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	else
+		 uart->UART_DLH_IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -144,7 +148,11 @@ void hardware_uartx_enablerx(UART_t * uart, uint_fast8_t state)
 		 uart->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	if (state)
+		 uart->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
+	else
+		 uart->UART_DLH_IER &= ~ (1u << 0);	// ERBFI Enable Received Data Available Interrupt
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -195,7 +203,8 @@ void hardware_uartx_tx(UART_t * uart, uint_fast8_t c)
 	uart->UART_RBR_THR_DLL = c;
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	uart->UART_RBR_THR_DLL = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -297,7 +306,10 @@ hardware_uartx_getchar(UART_t * uart, char * cp)
 	* cp = uart->UART_RBR_THR_DLL;
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	if ((uart->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
+		return 0;
+	* cp = uart->UART_RBR_THR_DLL;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -373,7 +385,10 @@ hardware_uartx_putchar(UART_t * uart, uint_fast8_t c)
 	hardware_uartx_tx(uart, c);
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	if ((uart->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		return 0;
+	hardware_uartx_tx(uart, c);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -514,7 +529,6 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32
 
 #elif CPUSTYLE_ALLWINNER
 
-	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = busfreq / ((defbaudrate) * 16);
 
 	uart->UART_DLH_IER = 0;
@@ -556,7 +570,23 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32
 	(void) uart->UART_LCR;
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	uint32_t divisor = busfreq / ((defbaudrate) * 16);
+
+	uart->UART_DLH_IER = 0;
+	uart->UART_IIR_FCR = 0xf7;
+	uart->UART_MCR = 0x00;
+
+	uart->UART_LCR |= (UINT32_C(1) << 7);	// Divisor Latch Access Bit
+	uart->UART_RBR_THR_DLL = divisor & 0xff;
+	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
+	uart->UART_LCR &= ~ (UINT32_C(1) << 7);	// Divisor Latch Access Bit
+	//
+	uart->UART_LCR = (uart->UART_LCR & ~ UINT32_C(0x3F)) |
+			((UINT32_C(0x03) & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
+			(!! parity << 3) |	// bit3 1: parity enable
+			0;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -611,7 +641,7 @@ hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t bau
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(busfreq, baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
 	uart->SCSMR = (uart->SCSMR & ~ 0x03) |
 		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
@@ -668,7 +698,13 @@ hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t bau
 	(void) uart->UART_LCR;
 
 #elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
+
+	const unsigned divisor = calcdivround2(busfreq, baudrate * 16);
+
+	uart->UART_LCR |= (1 << 7);
+	uart->UART_RBR_THR_DLL = divisor & 0xff;
+	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
+	uart->UART_LCR &= ~ (1 << 7);
 
 #else
 	#error Undefined CPUSTYLE_XXX

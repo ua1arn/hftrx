@@ -344,51 +344,6 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	AT91C_BASE_US1->US_CR = AT91C_US_RXEN | AT91C_US_TXEN;	// разрешаем приёмник и передатчик.
 
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// USART initialization
-	UCSR1B = (1U << RXEN1) | (1U << TXEN1) /* | (1U << UCSZ02) */;
-	UCSR1C = (1U << UCSZ01) | (1U << UCSZ00);	// asynchronious mode, 8 bit.
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	PORTD |= ((1U << PD0) | (1U << PD1));
-#if defined (DDRD0) && defined (DDRD1)
-	DDRD &= ~ ((1U << DDRD0) | (1U << DDRD1));
-#else
-	DDRD &= ~ ((1U << DDD0) | (1U << DDD1));
-#endif
-
-#elif CPUSTYLE_ATMEGA128
-
-	// USART initialization
-	UCSR1B = (1U << RXEN1) | (1U << TXEN1) /* | (1U << UCSZ02) */;
-	UCSR1C = (1U << UCSZ01) | (1U << UCSZ00);	// asynchronious mode, 8 bit.
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	//PORTE |= ((1U << PE0) | (1U << PE1));
-
-#elif CPUSTYLE_ATMEGA
-
-	// USART initialization
-	UCSRB = (1U << RXEN) | (1U << TXEN) /* | (1U << UCSZ2) */;
-	UCSRC = (1U << URSEL) | (1U << UCSZ1) | (1U << UCSZ0);	// asynchronious mode, 8 bit
-
-	// enable pull-up registers for RXD and TXD pins: then rx or tx disabled, these pins disconnected fron UART
-	PORTD |= ((1U << PD0) | (1U << PD1));
-
-#if defined (DDRD0) && defined (DDRD1)
-	DDRD &= ~ ((1U << DDRD0) | (1U << DDRD1));
-#else
-	DDRD &= ~ ((1U << DDD0) | (1U << DDD1));
-#endif
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	PORTE.DIRSET = PIN3_bm; // PE3 (TXD0) as output
-	PORTE.DIRCLR = PIN2_bm; // PE2 (RXD0) as input
-	PORTE_PIN2CTRL = (PORTE_PIN2CTRL & ~ PORT_OPC_gm) | PORT_OPC_PULLUP_gc;							// pin is pulled high
-
-	USARTE1.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
-	USARTE1.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
-
 #elif CPUSTYLE_R7S721
 
     /* ---- Supply clock to the SCIF(channel 1) ---- */
@@ -449,18 +404,8 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	RCC->APB5RSTCLRR = RCC_APB5RSTCLRR_USART1RST; // Снять брос USART1.
 	(void) RCC->APB5RSTCLRR;
 
-	USART1->CR1 = 0;
-
-#if WITHUART1HW_FIFO
-	USART1->CR1 |= USART_CR1_FIFOEN_Msk;
-#else /* WITHUART1HW_FIFO */
-	USART1->CR1 &= ~ USART_CR1_FIFOEN_Msk;
-#endif /* WITHUART1HW_FIFO */
-
-	USART1->CR1 |= (USART_CR1_RE | USART_CR1_TE); // Transmitter Enable & Receiver Enables
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
-
 	if (debug == 0)
 	{
 	   serial_set_handler(USART1_IRQn, USART1_IRQHandler);
@@ -517,27 +462,8 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART1_RST
 
-	/* Config uart1 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART1->UART_DLH_IER = 0;
-	UART1->UART_IIR_FCR = 0xf7;
-	UART1->UART_MCR = 0x00;
-
-	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART1->UART_RBR_THR_DLL = divisor & 0xff;
-	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART1->UART_LCR &= ~ 0x3f;
-	UART1->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
@@ -553,25 +479,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	/* Config uart1 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART1->UART_DLH_IER = 0;
-	UART1->UART_IIR_FCR = 0xf7;
-	UART1->UART_MCR = 0x00;
-
-	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART1->UART_RBR_THR_DLL = divisor & 0xff;
-	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART1->UART_LCR &= ~ 0x3f;
-	UART1->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();
 
 	if (debug == 0)
@@ -590,27 +498,8 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
-	/* Config uart1 to 115200-8-1-0 */
-	uint32_t divisor = HARDWARE_UART_FREQ / ((defbaudrate) * 16);
-
-	UART1->UART_DLH_IER = 0;
-	UART1->UART_IIR_FCR = 0xf7;
-	UART1->UART_MCR = 0x00;
-
-	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART1->UART_RBR_THR_DLL = divisor & 0xff;
-	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART1->UART_LCR &= ~ 0x3f;
-	UART1->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
@@ -622,29 +511,8 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	CMCTR->GATE_SYS_CTR |= ((1u << 12) << ix); // UART1_EN Enable CLK
 
-	/* Config uart1 to 115200-8-1-0 */
-	uint32_t divisor = elveesvm14_get_usart_freq() / ((defbaudrate) * 16);
-
-	UART1->UART_DLH_IER = 0;
-	UART1->UART_IIR_FCR = 0xf7;
-	UART1->UART_MCR = 0x00;
-
-	UART1->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
-	UART1->UART_RBR_THR_DLL = divisor & 0xff;
-	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART1->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
-	//
-	UART1->UART_LCR &= ~ 0x3f;
-	UART1->UART_LCR |=
-			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(! odd << 4) |	// bit4 0 – нечетность,
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
-
-	(void) UART1->UART_LCR;
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
@@ -700,47 +568,6 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 		AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
 	}
 
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X0);
-	else
-		UCSR1A &= ~ (1U << U2X0);
-
-	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X0);
-	else
-		UCSR1A &= ~ (1U << U2X0);
-
-	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR1L = value & 0xff;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE1.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
 #elif CPUSTYLE_STM32MP1
 
 	// usart1
@@ -754,18 +581,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_R7S721
 
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF1.SCSMR = (SCIF1.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF1.SCEMR = (SCIF1.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF1.SCBRR = value;	/* Bit rate register */
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), P1CLOCK_FREQ, baudrate);
 
 #elif CPUSTYLE_XC7Z
 
@@ -787,30 +603,17 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
-	unsigned divisor = calcdivround2(HARDWARE_UART_FREQ, baudrate * 16);
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 
-	UART1->UART_LCR |= (1 << 7);
-	UART1->UART_RBR_THR_DLL = divisor & 0xff;
-	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART1->UART_LCR &= ~ (1 << 7);
+#elif CPUSTYLE_ROCKCHIP
+
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 
 #elif CPUSTYLE_VM14
 
-	unsigned divisor = calcdivround2(elveesvm14_get_usart_freq(), baudrate * 16);
-
-	while ((UART1->UART_USR & (1u << 2)) == 0)	/* TFE - FIFO передатчика пуст. */
-		;
-	while ((UART1->UART_USR & (1u << 0)) != 0)	/* BUSY - UART занят. */
-	{
-		/* todo: решить проблему с принимаемыми символами */
-	}
-	UART1->UART_LCR |= (1 << 7);
-	UART1->UART_RBR_THR_DLL = divisor & 0xff;
-	UART1->UART_DLH_IER = (divisor >> 8) & 0xff;
-	UART1->UART_LCR &= ~ (1 << 7);
-	(void) UART1->UART_LCR;
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), baudrate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
