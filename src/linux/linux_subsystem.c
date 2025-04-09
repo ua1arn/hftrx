@@ -322,8 +322,7 @@ void * process_linux_timer_spool(void * args)
 
 	while(1)
 	{
-		spool_systimerbundle1();
-		spool_systimerbundle2();
+		spool_systimerbundle();
 		usleep(delay);
 	}
 }

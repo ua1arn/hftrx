@@ -448,7 +448,7 @@ uint32_t hal_time_ms(void){
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом - отсчитывание времени.
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-RAMFUNC void spool_systimerbundle1(void)
+RAMFUNC void spool_systimerbundle(void)
 {
 	//beacon_255();
 #ifdef USE_HAL_DRIVER
@@ -458,13 +458,6 @@ RAMFUNC void spool_systimerbundle1(void)
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 
 	tickers_event();
-}
-
-/* Машинно-независимый обработчик прерываний. */
-// Функции с побочным эффектом редиспетчеризации.
-// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-RAMFUNC void spool_systimerbundle2(void)
-{
 }
 
 #if WITHCPUADCHW

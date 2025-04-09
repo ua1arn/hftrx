@@ -5729,8 +5729,7 @@ void hardware_spi_io_delay(void)
 		if ((st & TIM_SR_UIF) != 0)
 		{
 			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
 		else
 		{
@@ -5746,8 +5745,7 @@ void hardware_spi_io_delay(void)
 		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
 		PL1_SetLoadValue(gtimloadvalue);
 
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 
@@ -5776,8 +5774,7 @@ void hardware_spi_io_delay(void)
 		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
 		{
 			// timebase
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 
 			TIMER->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		}
@@ -5788,8 +5785,7 @@ void hardware_spi_io_delay(void)
 	// Таймер "тиков"
 	void OSTMI0TINT_IRQHandler(void)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 	// Таймер электронного ключа
@@ -5807,8 +5803,7 @@ void hardware_spi_io_delay(void)
 	GTC_Handler(void)
 	{
 		GTC->GTISR = 0x0001;	// ckear interrupt
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 	#if (__CORTEX_A == 5U) || (__CORTEX_A == 9U)
@@ -5817,8 +5812,7 @@ void hardware_spi_io_delay(void)
 		PTIM_Handler(void)
 		{
 			PTIM_ClearEventFlag();
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
 	#endif
 
@@ -5832,8 +5826,7 @@ void hardware_spi_io_delay(void)
 	void
 	SysTick_Handler_Active(void)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 	#if WITHELKEY
@@ -5878,8 +5871,7 @@ void hardware_spi_io_delay(void)
 			// Обработчик Periodic Interval Timer (PIT)
 			uint_fast32_t cnt = (AT91C_BASE_PITC->PITC_PIVR & AT91C_PITC_PICNT) >> 20;	// Reset interrupt request from Periodic interval timer.
 			while (cnt --)
-				spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();
+				spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
 	}
 
@@ -5893,8 +5885,7 @@ void hardware_spi_io_delay(void)
 	void RAMFUNC_NONILINE
 	SysTick_Handler_Active(void)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 	// AT91C_ID_TC2 - 1/20 dot length interval timer
@@ -5929,20 +5920,17 @@ void hardware_spi_io_delay(void)
 	#if CPUSTYLE_ATMEGA328
 		ISR(TIMER2_COMPA_vect)
 		{
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
 	#elif CPUSTYLE_ATMEGA_XXX4
 		ISR(TIMER0_COMPA_vect)
 		{
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
 	#else /* CPUSTYLE_ATMEGA_XXX4 */
 		ISR(TIMER0_COMP_vect)
 		{
-			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
 	#endif /* CPUSTYLE_ATMEGA_XXX4 */
 
@@ -5962,8 +5950,7 @@ void hardware_spi_io_delay(void)
 
 	ISR(TCC0_CCA_vect)
 	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 	// Timer 1 output compare A interrupt service routine
@@ -5980,8 +5967,7 @@ void hardware_spi_io_delay(void)
 	PTIM_Handler(void)
 	{
 		PTIM_ClearEventFlag();
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 	}
 
 #elif CPUSTYLE_STM32F30X

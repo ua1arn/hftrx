@@ -505,8 +505,7 @@ uint_fast32_t cpu_getdebugticksfreq(void);	// получение частоты,
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);
-void spool_systimerbundle1(void);
-void spool_systimerbundle2(void);
+void spool_systimerbundle(void);
 void spool_elkeybundle(void);
 void sysinit_pll_initialize(int forced);	// PLL initialize
 void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
