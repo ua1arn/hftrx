@@ -2185,7 +2185,7 @@ struct modetempl
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
-	const struct paramdefdef * const * (* getmiddlemenu)(unsigned * size);
+	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
 	char label [4];					// для контроля правильности инициализации структуры
 };
 
@@ -8790,7 +8790,7 @@ loadsavedstate(void)
 	for (mode = 0; mode < MODE_COUNT; ++ mode)
 	{
 		unsigned middlerowsize;
-		mdt [mode].getmiddlemenu(& middlerowsize);
+		mdt [mode].middlemenu(& middlerowsize);
 		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
 	#if WITHIF4DSP
 		// источник звука
@@ -13489,7 +13489,7 @@ static uint_fast8_t processencoders(void)
 		if (delta)
 		{
 			unsigned middlerowsize;
-			mdt [mode].getmiddlemenu(& middlerowsize);
+			mdt [mode].middlemenu(& middlerowsize);
 			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
 			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
 			changed = 1;
@@ -13511,7 +13511,7 @@ static uint_fast8_t processencoders(void)
 	{
 		unsigned nitems;
 		const unsigned apos = gmiddlepos [mode];
-		const struct paramdefdef * const pd = mdt [mode].getmiddlemenu(& nitems) [gmiddlepos [mode]];
+		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
 		int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
@@ -16786,7 +16786,7 @@ static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8
 	const uint_fast8_t bi = getbankindex_ab(0);
 	const uint_fast8_t submode = getsubmode(bi);
 	const uint_fast8_t mode = submodes [submode].mode;
-	const struct paramdefdef * const * mpd = mdt [mode].getmiddlemenu(& nitems);
+	const struct paramdefdef * const * mpd = mdt [mode].middlemenu(& nitems);
 	const unsigned apos = gmiddlepos [mode];
 	if (section >= nitems)
 	{
