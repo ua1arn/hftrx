@@ -814,8 +814,6 @@ void prog_spi_exchange(
 		.len = size,
 	};
 
-	ASSERT(target < cs_cnt);
-
 	int ret = ioctl(spidev_fd[target], SPI_IOC_MESSAGE(1), & tr);
 	if (ret < 1)
 		perror("can't send spi message");
@@ -2298,14 +2296,14 @@ void get_touch_events(uint_fast16_t * xr, uint_fast16_t * yr)
 
 	while (read(evdev_touch_fd, & in, sizeof(struct input_event)) > 0)
 	{
-		if(in.type == EV_ABS && in.code == ABS_X)
+		if(in.type == EV_ABS && (in.code == ABS_X || in.code == ABS_MT_POSITION_X))
 		{
 			xx = in.value;
 #if defined (TSC_EVDEV_RAWX)
 			xx = normalize(xx, 0, TSC_EVDEV_RAWX, DIM_X - 1);
 #endif /* defined (TSC_EVDEV_RAWX)*/
 		}
-		else if (in.type == EV_ABS && in.code == ABS_Y)
+		else if (in.type == EV_ABS && (in.code == ABS_Y || in.code == ABS_MT_POSITION_Y))
 		{
 			yy = in.value;
 #if defined (TSC_EVDEV_RAWY)

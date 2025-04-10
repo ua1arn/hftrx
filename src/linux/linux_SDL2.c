@@ -30,6 +30,9 @@ int sdl2_render_init(void)
         return 0;
     }
 
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0, & display_mode);
+
     // Установить атрибуты для настройки аппаратного ускорения графики
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -37,7 +40,7 @@ int sdl2_render_init(void)
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DIM_X, DIM_Y, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DIM_X, DIM_Y, SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
@@ -52,8 +55,13 @@ int sdl2_render_init(void)
     printf("OpenGL Version: %s\n", glVersion);
     printf("OpenGL Renderer: %s\n", glRenderer);
 
-    SDL_RenderSetScale(renderer, 1.28f, 1.25f); 				// 800x480 -> 1024x600
-    ASSERT(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"));	// Antialiasing для масштабированных объектов
+    if ((display_mode.w > DIM_X) && (display_mode.h > DIM_Y))
+    {
+    	float d_x = (float) display_mode.w / DIM_X;
+    	float d_y = (float) display_mode.h / DIM_Y;
+    	SDL_RenderSetScale(renderer, d_x, d_y); 					// масштабирование до размеров экрана
+    	ASSERT(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"));	// Antialiasing для масштабированных объектов
+    }
 
     // Текстура для отрисовки фреймбуфера
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, DIM_X, DIM_Y);
