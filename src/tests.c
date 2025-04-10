@@ -10756,6 +10756,21 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		for (;;)
+		{
+			unsigned adci;
+			for (adci = 0; adci < 8; ++ adci)
+			{
+				uint_fast8_t valid;
+				unsigned v = mcp3208_read(targetadc2, 0, adci, & valid);
+				PRINTF("%4u ", v);
+			}
+			PRINTF("\n");
+		}
+	}
+#endif
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		unsigned core;
