@@ -500,12 +500,26 @@ void linux_xgpio_init(void)
 	gpiops_ptr = (uint32_t *) get_highmem_ptr(gpiocfg->BaseAddr);
 	XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, (uintptr_t) gpiops_ptr);
 #elif CPUSTYLE_RK356X
-//	gpiochip3 = gpiod_chip_open_by_name("gpiochip3");
+	gpiochip3 = gpiod_chip_open_by_name("gpiochip3");
 //	gpiochip4 = gpiod_chip_open_by_name("gpiochip4");
-//	ASSERT(gpiochip3);
+	ASSERT(gpiochip3);
 //	ASSERT(gpiochip4);
 #endif
 }
+
+#if CPUSTYLE_RK356X
+void rk356x_gpio3_set(uint8_t pin, uint8_t val)
+{
+	struct gpiod_line *line = gpiod_chip_get_line(gpiochip3, pin);
+    if (! line) {
+        perror("gpiod_chip_get_line");
+        ASSERT(0);
+    }
+
+    gpiod_line_request_output(line, "", !val);
+    gpiod_line_set_value(line, !val);
+}
+#endif /* CPUSTYLE_RK356X */
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {

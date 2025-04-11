@@ -150,6 +150,8 @@ void cs_i2c_assert(spitarget_t target);
 void cs_i2c_deassert(spitarget_t target);
 void cs_i2c_disable(void);
 
+void rk356x_gpio3_set(uint8_t pin, uint8_t val);
+
 float linux_get_cpu_temp(void);
 void hamradio_set_hw_vfo(uint_fast8_t v);
 

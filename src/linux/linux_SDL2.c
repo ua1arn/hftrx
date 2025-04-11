@@ -59,8 +59,8 @@ int sdl2_render_init(void)
     {
     	float d_x = (float) display_mode.w / DIM_X;
     	float d_y = (float) display_mode.h / DIM_Y;
-    	SDL_RenderSetScale(renderer, d_x, d_y); 					// масштабирование до размеров экрана
-    	ASSERT(SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"));	// Antialiasing для масштабированных объектов
+    	SDL_RenderSetScale(renderer, d_x, d_y); 			// масштабирование до размеров экрана
+    	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");	// Antialiasing для масштабированных объектов
     }
 
     // Текстура для отрисовки фреймбуфера

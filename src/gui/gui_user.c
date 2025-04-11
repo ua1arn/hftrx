@@ -2905,7 +2905,6 @@ static void window_audiosettings_process(void)
 			button_t * const bh = (button_t *) ptr;
 			window_t * const winAP = get_win(WINDOW_AUDIOSETTINGS);
 			window_t * const winEQ = get_win(WINDOW_AP_MIC_EQ);
-			window_t * const winRS = get_win(WINDOW_AP_REVERB_SETT);
 			window_t * const winMIC = get_win(WINDOW_AP_MIC_SETT);
 			window_t * const winMICpr = get_win(WINDOW_AP_MIC_PROF);
 			button_t * const btn_reverb = (button_t *) find_gui_element(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
@@ -2924,7 +2923,7 @@ static void window_audiosettings_process(void)
 #if WITHREVERB
 			else if (bh == btn_reverb_settings)
 			{
-				open_window(winRS);
+				open_window(get_win(WINDOW_AP_REVERB_SETT));
 			}
 #endif /* WITHREVERB */
 #if WITHAFCODEC1HAVEPROC
