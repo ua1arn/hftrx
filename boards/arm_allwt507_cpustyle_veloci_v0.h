@@ -1507,6 +1507,7 @@
 
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE() do { \
+	arm_hardware_pioh_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PH4 - BT-RST-N		- pin 34 (tied to +3.3) - from host */ \
 	BOARD_BLINK_INITIALIZE(); \
 	HARDWARE_KBD_INITIALIZE(); \
 	/*HARDWARE_DAC_INITIALIZE(); */\
