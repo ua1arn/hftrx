@@ -1193,7 +1193,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1  MH31 FST
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 2  MH31 UP
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
-	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 4  BAND DOWN
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP,	 	' ', },		// 4  BAND UP on front panel
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// 5  LOCK
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
 	{ KIF_NONE,		KBD_CODE_CWMSG4,		KBD_CODE_MAX, 			' ', },		// 7  F4
@@ -1202,7 +1202,7 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_MAX,			' ', },		// 10 F1
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_ENC2F_HOLD, 		' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// 12 DISPLAY/MENU
-	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 13 BAND UP
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
 	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
