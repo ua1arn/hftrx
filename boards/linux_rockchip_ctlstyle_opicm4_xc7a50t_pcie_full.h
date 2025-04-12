@@ -92,7 +92,7 @@
 	#define WITHTOUCHGUI			1
 //	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
-	#define WITHALPHA				24
+	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		14
 	#define WITHALTERNATIVEFONTS	1
@@ -127,7 +127,7 @@
 	#endif /* WITHTX */
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
-
+	#define WITHFANTIMER	1
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */

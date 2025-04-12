@@ -4610,7 +4610,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0013, glob_antenna);			/* D3: antenna 1-2 */
+		RBBIT(0013, glob_fanflag);
 		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
 		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе

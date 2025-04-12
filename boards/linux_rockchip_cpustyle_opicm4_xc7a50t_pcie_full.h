@@ -65,7 +65,7 @@ enum {
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		59
-#define CALIBRATION_TX_SHIFT			31
+#define CALIBRATION_TX_SHIFT			27
 
 #define LINUX_NMEA_FILE			"/dev/ttyPS1"
 #define LINUX_XDMA_EVENT_FILE	"/dev/xdma0_events_0"
@@ -103,6 +103,8 @@ enum {
 	#define HARDWARE_GET_TXDISABLE() 	(0)
 	#define HARDWARE_GET_PTT() 			(0)
 	#define HARDWARE_GET_TUNE() 		(0)
+
+	#define DAC_SLEEP_GPIO_SETSTATE(v)	do { rk356x_gpio3_set(25, ! v); } while (0)
 
 #endif /* WITHTX */
 

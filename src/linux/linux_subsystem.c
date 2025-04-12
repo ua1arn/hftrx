@@ -1952,6 +1952,22 @@ float linux_get_cpu_temp(void)
 	fscanf(tf, "%d", &cpu_temp);
 	fclose(tf);
 
+#if WITHFANTIMER
+
+	const int t_on = 63, t_gyst = 3;
+	static int fanState = 0;
+	int temp = cpu_temp / 1000;
+
+	if (fanState == 0 && temp >= t_on)
+		fanState = 1;
+	else if (fanState == 1 && temp < (t_on - t_gyst))
+		fanState = 0;
+
+	board_setfanflag(fanState);
+	board_update();
+
+#endif /* WITHFANTIMER */
+
 	return cpu_temp / 1000.0;
 }
 
