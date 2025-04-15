@@ -4237,7 +4237,7 @@ static const struct paramdefdef xgnotch =
 #if defined (WITHBOTTOMDBVAL)
 #define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
 #else
-#define WITHBOTTOMDBDEFAULT 130
+#define WITHBOTTOMDBDEFAULT 140
 #endif /* WITHBOTTOMDBVAL */
 
 //static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
@@ -8974,7 +8974,7 @@ catchangefreq(
 {
 	const uint_fast8_t bi = getbankindex_ab(ab);
 	const vindex_t b = getfreqband(f);	/* определяем по частоте, в какоq диапазон переходим */
-	const uint_fast8_t bg = bandsmap [b].bandgroup;
+//	const uint_fast8_t bg = bandsmap [b].bandgroup;
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
@@ -8989,10 +8989,10 @@ catchangefreq(
 		cat_answer_request(CAT_RA_INDEX);
 		cat_answer_request(CAT_PA_INDEX);
 	}
-	loadantenna(bi, bg);
-	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
-	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
-	loadbandgroup(bg, effantenna, effrxantenna);
+//	loadantenna(bi, bg);
+//	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
+//	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+//	loadbandgroup(bg, effantenna, effrxantenna);
 }
 
 static void catchangesplit(
