@@ -105,7 +105,7 @@ void linux_rxtx_state(uint8_t tx)
 
 #endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
-#if WITHAUDIOSAMPLESREC
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 
 enum {
 	as_max_length = 10,
@@ -255,7 +255,7 @@ void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 		d [i] = normalize(abs(as_buf [i * step]), 0, d_max, lim);
 }
 
-#endif /* WITHAUDIOSAMPLESREC */
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI*/
 
 #if CPUSTYLE_XC7Z
 void * get_highmem_ptr(uint32_t addr)
@@ -1292,9 +1292,9 @@ void * alsa_thread(void * args)
 		{
 			const uintptr_t addr_ph = getfilled_dmabuffer16tx();
 			int32_t * b = (int32_t *) addr_ph;
-#if WITHAUDIOSAMPLESREC
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 			as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI*/
 
 			arm_shift_q31(b, - vol_shift, b, DMABUFFSIZE16TX);
 

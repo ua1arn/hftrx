@@ -153,9 +153,9 @@ void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
 	uintptr_t addr_ph = getfilled_dmabuffer16tx();
 	b = (uint32_t *) addr_ph;
 
-#if WITHAUDIOSAMPLESREC
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 	as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI*/
 
 	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 		* ph_fifo = b[i];
@@ -171,9 +171,9 @@ uint16_t iq_proc_tx(int32_t * buf_i, int32_t * buf_q, uint16_t idx, uint16_t lim
 
 	memset(mic, 0, DMABUFFSIZE16RX * 4);
 
-#if WITHAUDIOSAMPLESREC
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 	as_tx(mic);
-#endif /* WITHAUDIOSAMPLESREC */
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI*/
 
 	save_dmabuffer16rx(addr_mic);
 
