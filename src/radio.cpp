@@ -8990,7 +8990,12 @@ catchangefreq(
 		cat_answer_request(CAT_RA_INDEX);
 		cat_answer_request(CAT_PA_INDEX);
 	}
+#if WITHKEYBOARD || WITHTOUCHGUI
+	// не должно быть при удаленном управлении
 	loadantenna(bi, bg);
+#else
+	//#warning No automatic antenna select - manual only
+#endif /* WITHKEYBOARD || WITHTOUCHGUI */
 //	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 //	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
 //	loadbandgroup(bg, effantenna, effrxantenna);
