@@ -8969,12 +8969,11 @@ modemchangemode(
 static void
 catchangefreq(
 	uint_fast32_t f,		// частота, которую устанавливаем по команде от CAT
-	uint_fast8_t ab
+	uint_fast8_t bi
 	)
 {
-	const uint_fast8_t bi = getbankindex_ab(ab);
 	const vindex_t b = getfreqband(f);	/* определяем по частоте, в какоq диапазон переходим */
-//	const uint_fast8_t bg = bandsmap [b].bandgroup;
+	const uint_fast8_t bg = bandsmap [b].bandgroup;
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
@@ -8989,7 +8988,7 @@ catchangefreq(
 		cat_answer_request(CAT_RA_INDEX);
 		cat_answer_request(CAT_PA_INDEX);
 	}
-//	loadantenna(bi, bg);
+	loadantenna(bi, bg);
 //	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 //	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
 //	loadbandgroup(bg, effantenna, effrxantenna);
@@ -15238,8 +15237,7 @@ processcatmsg(
 			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 			vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
-			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
+			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
 			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
@@ -15255,8 +15253,7 @@ processcatmsg(
 			const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
 			vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
-			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
+			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
 			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
@@ -15355,11 +15352,6 @@ processcatmsg(
 			{
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
 			}
-			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
-			//const uint_fast32_t v = catparam;
-			//storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
-			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
 		else
@@ -15389,11 +15381,6 @@ processcatmsg(
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			}
-
-			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
-			//const uint_fast32_t v = catparam;
-			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
-			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
 		else
@@ -15420,11 +15407,6 @@ processcatmsg(
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			}
-
-			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
-			//const uint_fast32_t v = catparam;
-			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
-			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
 		else
@@ -15796,13 +15778,6 @@ processcatmsg(
 			{
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
 			}
-//			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-//			vindex_t vi = getvfoindex(bi);
-//			const uint_fast32_t v = catparam;
-//			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-//			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
-//			updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-//			rc = 1;
 		}
 		else
 		{
@@ -15880,11 +15855,6 @@ processcatmsg(
 			{
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
 			}
-			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
-			//const uint_fast32_t v = catparam;
-			//storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
-			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
-			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		}
 		else
 		{
@@ -15929,10 +15899,6 @@ processcatmsg(
 			{
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
 			}
-			//const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
-			//const uint_fast32_t v = catparam;
-			//catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), gtx);
-			//updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 		}
 		else
 		{
