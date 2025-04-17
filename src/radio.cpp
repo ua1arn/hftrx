@@ -5222,6 +5222,7 @@ static const struct paramdefdef xcatenable =
 		& elkeymode,
 		getzerobase,
 	};
+#if WITHVIBROPLEX
 	static const struct paramdefdef xgelkeyslope =
 	{
 		QLABEL("VIBROPLX"), 7, 0, 0,	ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
@@ -5233,6 +5234,7 @@ static const struct paramdefdef xcatenable =
 		& elkeyslope,
 		getzerobase,
 	};
+#endif /* WITHVIBROPLEX */
 #if WITHTX
 	static const struct paramdefdef xgbkinenable =
 	{
