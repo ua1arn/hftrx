@@ -14784,19 +14784,22 @@ static void paanswer(uint_fast8_t arg)
 
 static void ananswer(uint_fast8_t arg)
 {
+	const uint_fast32_t f = gfreqs [getbankindex_tx(gtx)];
+	const int p1 = (geteffantenna(f) != 0) ? 2 : 1;
+	const int p2 = (geteffrxantenna(f) != 0) ? 1 : 0;
+	const int p3 = gtxgate ? 1 : 0;
 	//const uint_fast8_t pathi = 0;	// A or B path
 	// Antenna information answer
 	static const FLASHMEM char fmt_1 [] =
 		"AN"				// 2 characters - status information code
 		"%01d"				// 1 chars - 0: ant 1, 1: : ant 2
-		"0"					// 1 chars - 0: RX ANT is not used
-		"1"					// 1 chars - 1: : Drive Out ON
+		"%01d"					// 1 chars - 0: RX ANT is not used
+		"%01d"					// 1 chars - 1: : Drive Out ON
 		";";				// 1 char - line terminator
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((geteffantenna(gfreqs [getbankindex_tx(gtx)]) != 0) + 1)
-
+		p1, p2, p3
 		);
 	cat_answer(len);
 }
@@ -15579,20 +15582,47 @@ processcatmsg(
 		// antenna selection set/query
 		if (cathasparam)
 		{
-			const uint_fast8_t p1 = catparam / 100;
-			if (p1 != 9)
+			if (catpcount == 3)
 			{
-				const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-				gantenna = vfy32up(p1, 1, ANTMODE_COUNT, 1) - 1;	/* 0..1 */;	// one step or fully attenuated
-				const uint_fast32_t freq = gfreqs [bi];
-				const uint_fast8_t bg = getfreqbandgroup(freq);
-				const uint_fast8_t ant = geteffantenna(freq);
-			#if WITHAUTOTUNER
-				loadtuner(bg, ant);
-			#endif /* WITHAUTOTUNER */
-				updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
+				const uint_fast8_t p1 = catscanint(catp + 0, 1);	// 1 - ANT1, 2 - ANT2, 9 - NO CHANGE
+				const uint_fast8_t p2 = catscanint(catp + 1, 1);	// 0: RX ANT is not used, 1: RX ANT is used, 9 - NO CHANGE
+				const uint_fast8_t p3 = catscanint(catp + 2, 1);	// 0: Drive Out OFF, 1: Drive Out ON, 9: No change
+				if (p1 != 9)
+				{
+	#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT
+					gantenna = vfy32up(p1, 1, ANTMODE_COUNT, 1) - 1;	/* 0..1 */;	// one step or fully attenuated
+	#endif /* WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT */
+				}
+				if (p2 != 9)
+				{
+	#if WITHANTSELECTRX || WITHANTSELECT1RX
+					grxantenna = p2 == 1;
+	#endif /* WITHANTSELECTRX || WITHANTSELECT1RX */
+				}
+				if (p3 != 9)
+				{
+	#if WITHTX
+					gtxgate = p3 == 1;
+	#endif /* WITHTX */
+
+				}
+				{
+					const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+					const uint_fast32_t freq = gfreqs [bi];
+					const uint_fast8_t bg = getfreqbandgroup(freq);
+					const uint_fast8_t ant = geteffantenna(freq);
+				#if WITHAUTOTUNER
+					loadtuner(bg, ant);
+				#endif /* WITHAUTOTUNER */
+					updateboard(1, 0);	/* полная перенастройка (как после смены режима) */
+
+				}
+				cat_answer_request(CAT_AN_INDEX);
 			}
-			cat_answer_request(CAT_AN_INDEX);
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
 			rc = 1;
 		}
 		else
@@ -15760,9 +15790,9 @@ processcatmsg(
 		{
 			if (catpcount == 3)
 			{
-				const uint_fast32_t p1 = catp [0] == '1';
-				const uint_fast32_t p2 = catp [1] == '1';
-				const uint_fast32_t p3 = catp [2] == '1';
+				const uint_fast32_t p1 = !! catscanint(catp + 0, 1);
+				const uint_fast32_t p2 = !! catscanint(catp + 1, 1);
+				const uint_fast32_t p3 = !! catscanint(catp + 2, 1);
 //				catautotuner_p1 = p1;
 //				catautotuner_p2 = p2;
 //				catautotuner_p3 = p3;
