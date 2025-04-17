@@ -14634,7 +14634,6 @@ scaletopointssmeter(
 static uint_fast8_t kenwoodswrmeter(void)
 {
 	//const uint_fast8_t pathi = 0;	// A or B path
-
 	//enum { FS = SWRMIN * 15 / 10 };	// swr=1.0..4.0
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrmeter_cached(& r, swrcalibr);
@@ -14648,6 +14647,8 @@ static uint_fast8_t kenwoodswrmeter(void)
 		swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
 	// v = 10..40 for swr 1..4
 	// swr10 = 0..30 for swr 1..4
+	if (swr10 > 30)
+		swr10 = 30;
 	return swr10;	// tested with ARCP950. 0: SWR=1.0, 5: SWR=1.3, 10: SWR=1.8, 15: SWR=3.0
 }
 
@@ -16174,6 +16175,24 @@ static void dpc_1s_timer_fn(void * arg)
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 	nvram_sync();
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
+
+#if WITHCAT
+	if (aistate != 0)
+	{
+		// parameter a
+		cat_answerparam_map [CAT_SM_INDEX] = 0;
+		cat_answer_request(CAT_SM_INDEX);
+		// parameter a
+		cat_answerparam_map [CAT_RM1_INDEX] = 0;
+		cat_answer_request(CAT_RM1_INDEX);
+		// parameter a
+		cat_answerparam_map [CAT_RM2_INDEX] = 0;
+		cat_answer_request(CAT_RM2_INDEX);
+		// parameter a
+		cat_answerparam_map [CAT_RM3_INDEX] = 0;
+		cat_answer_request(CAT_RM3_INDEX);
+	}
+#endif /* WITHCAT */
 }
 
 int board_islfmmode(void)
