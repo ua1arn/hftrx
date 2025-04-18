@@ -14637,13 +14637,15 @@ static uint_fast8_t kenwoodswrmeter(void)
 	//return swrsim;
 	// tested with ARCP950.
 	// 0: SWR=1.0, 5: SWR=1.3,  7: SWR=1.5, 10: SWR=1.8, 12: SWR=2, 15: SWR=3.0, 22: SWR=4.0
-	static const uint8_t swrmap [31] =
+	static const uint8_t swrmap [] =
 	{
-			0, 1, 2, 5, 6, 7, 8, 9, 10, 11,				// measured SWR 1
-			12, 12, 12, 13, 13, 13, 14, 14, 14, 14,		// measured SWR 2
-			15, 15, 16, 17, 17, 18, 19, 20, 21, 22,		// measured swr 3
-			30											// measured swr 4
+			0, 1, 2, 5, 6, 7, 8, 9, 10, 11,				// measured SWR >= 1.0
+			12, 12, 12, 13, 13, 13, 14, 14, 14, 14,		// measured SWR >= 2.0
+			15, 15, 16, 15, 17, 15, 18, 18, 19, 19,		// measured swr >= 3.0
+			20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 	// measured swr >= 4.0
+			30											// measured swr >= 5.0
 	};
+	enum { N = ARRAY_SIZE(swrmap) - 1 };	// максимальный индекс для получения данных из таблицы
 	//const uint_fast8_t pathi = 0;	// A or B path
 	//enum { FS = SWRMIN * 15 / 10 };	// swr=1.0..4.0
 	adcvalholder_t r;
@@ -14653,13 +14655,13 @@ static uint_fast8_t kenwoodswrmeter(void)
 	if (f < minforward)
 		swr10 = 0;	// SWR=1
 	else if (f <= r)
-		swr10 = 30;		// SWR is infinite
+		swr10 = N;		// SWR is infinite
 	else
-		swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
+		swr10 = (f + r) * 10 / (f - r) - 10;	// точность 0.1
 	// v = 10..40 for swr 1..4
 	// swr10 = 0..30 for swr 1..4
-	if (swr10 > 30)
-		swr10 = 30;
+	if (swr10 > N)
+		swr10 = N;
 	return swrmap [swr10];
 }
 
