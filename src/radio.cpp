@@ -14633,6 +14633,13 @@ scaletopointssmeter(
 // 0000 ~ 0030: Meter value in dots
 static uint_fast8_t kenwoodswrmeter(void)
 {
+	static const uint8_t swrmap [31] =
+	{
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9,				// measured SWR 1
+			10, 11, 12, 13, 14, 15, 16, 17, 18, 19,		// measured SWR 2
+			20, 21, 22, 23, 24, 25, 26, 27, 28, 29,		// measured swr 3
+			30											// measured swr 4
+	};
 	//const uint_fast8_t pathi = 0;	// A or B path
 	//enum { FS = SWRMIN * 15 / 10 };	// swr=1.0..4.0
 	adcvalholder_t r;
@@ -14649,7 +14656,7 @@ static uint_fast8_t kenwoodswrmeter(void)
 	// swr10 = 0..30 for swr 1..4
 	if (swr10 > 30)
 		swr10 = 30;
-	return swr10;	// tested with ARCP950. 0: SWR=1.0, 5: SWR=1.3, 10: SWR=1.8, 15: SWR=3.0
+	return swrmap [swr10];	// tested with ARCP950. 0: SWR=1.0, 5: SWR=1.3, 10: SWR=1.8, 15: SWR=3.0
 }
 
 // COMP report
