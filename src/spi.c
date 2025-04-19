@@ -7398,16 +7398,16 @@ restart:
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(10);
+		local_delay_ms(1);
 		/* 1) Выставить "1" на nCONFIG */
 		PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-		local_delay_ms(10);
+		local_delay_ms(1);
 		/* x) Дождаться "0" на nSTATUS */
 		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
 		while (board_fpga_get_NSTATUS() != 0)
 		{
-			local_delay_ms(10);
+			local_delay_ms(1);
 			if (-- w == 0)
 			{
 				FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -7422,12 +7422,12 @@ restart:
 			goto restart;
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-		local_delay_ms(10);
+		local_delay_ms(1);
 		/* 2) Дождаться "1" на nSTATUS */
 		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1\n");
 		while (board_fpga_get_NSTATUS() == 0)
 		{
-			local_delay_ms(10);
+			local_delay_ms(1);
 			if (-- w == 0)
 				goto restart;
 		}
@@ -7452,7 +7452,7 @@ restart:
 				static const uint8_t fill [16];
 				++ wcd;
 				prog_spi_io(targetnone, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE, fill, ARRAY_SIZE(fill), NULL, 0, NULL, 0);
-				local_delay_ms(10);
+				local_delay_ms(1);
 			}
 
 			PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
@@ -7469,7 +7469,7 @@ restart:
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
 	{
-		local_delay_ms(10);
+		local_delay_ms(1);
 		if (-- w == 0)
 			goto restart;
 	}
