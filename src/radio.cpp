@@ -842,7 +842,8 @@ enum
 	CAT_KS_INDEX,		// ksanswer()
 #endif /* WITHELKEY */
 	CAT_PS_INDEX,		// psanswer()
-	CAT_SM_INDEX,		// smanswer()
+	CAT_SM0_INDEX,		// smanswer()
+	CAT_SM9_INDEX,		// smanswer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
@@ -14703,15 +14704,27 @@ static uint_fast8_t kenwoodpowermeter(void)
 
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 
-static void smanswer(uint_fast8_t arg)
+static void sm0answer(uint_fast8_t arg)
 {
 	// s-meter state answer
-	// код SM9 введен для получения "сырого" уровня.
 	static const FLASHMEM char fmt0_1 [] =
 		"SM"			// 2 characters - status information code
 		"0"				// 1 char - Always 0
 		"%04d"				// 4 chars - s-meter points (0000..0030)
 		";";				// 1 char - line terminator
+
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, arg == 9);
+
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_1,
+		(int) (gtx ? kenwoodpowermeter() : scaletopointssmeter(v, 0, UINT8_MAX))
+		);
+	cat_answer(len);
+
+}
+
+static void sm9answer(uint_fast8_t arg)
+{
 	// s-meter state answer
 	// код SM9 введен для получения "сырого" уровня.
 	static const FLASHMEM char fmt9_1 [] =
@@ -14723,34 +14736,16 @@ static void smanswer(uint_fast8_t arg)
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, arg == 9);
 
-	switch (arg)
-	{
-	default:
-	case 0:
-		{
-			// answer mode
-			const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_1,
-				(int) (gtx ? kenwoodpowermeter() : scaletopointssmeter(v, 0, UINT8_MAX))
-				);
-			cat_answer(len);
-		}
-		break;
-
-	case 9:
-		{
-			// answer mode
-			int level = ((int) v - (int) UINT8_MAX);
-			if (level < - 170)
-				level = - 170;
-			else if (level > 20)
-				level = 20;
-			const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt9_1,
-				(int) level
-				);
-			cat_answer(len);
-		}
-		break;
-	}
+	// answer mode
+	int level = ((int) v - (int) UINT8_MAX);
+	if (level < - 170)
+		level = - 170;
+	else if (level > 20)
+		level = 20;
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt9_1,
+		(int) level
+		);
+	cat_answer(len);
 
 }
 
@@ -15077,7 +15072,8 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	ksanswer,
 #endif /* WITHELKEY */
 	psanswer,
-	smanswer,
+	sm0answer,
+	sm9answer,
 	raanswer,
 	paanswer,
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
@@ -15664,15 +15660,11 @@ processcatmsg(
 		// Get S-neter information
 		if (cathasparam && catparam == 0)
 		{
-			// parameter a
-			cat_answerparam_map [CAT_SM_INDEX] = 0;
-			cat_answer_request(CAT_SM_INDEX);
+			cat_answer_request(CAT_SM0_INDEX);
 		}
 		else if (cathasparam && catparam == 9)
 		{
-			// parameter a
-			cat_answerparam_map [CAT_SM_INDEX] = 9;
-			cat_answer_request(CAT_SM_INDEX);
+			cat_answer_request(CAT_SM9_INDEX);
 		}
 		else
 		{
@@ -16192,17 +16184,9 @@ static void dpc_1s_timer_fn(void * arg)
 #if WITHCAT
 	if (aistate != 0)
 	{
-		// parameter a
-		cat_answerparam_map [CAT_SM_INDEX] = 0;
-		cat_answer_request(CAT_SM_INDEX);
-		// parameter a
-		cat_answerparam_map [CAT_RM1_INDEX] = 0;
+		cat_answer_request(CAT_SM0_INDEX);
 		cat_answer_request(CAT_RM1_INDEX);
-		// parameter a
-		cat_answerparam_map [CAT_RM2_INDEX] = 0;
 		cat_answer_request(CAT_RM2_INDEX);
-		// parameter a
-		cat_answerparam_map [CAT_RM3_INDEX] = 0;
 		cat_answer_request(CAT_RM3_INDEX);
 	}
 #endif /* WITHCAT */
