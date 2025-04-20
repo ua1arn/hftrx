@@ -5223,9 +5223,9 @@ static __ALIGN_BEGIN uint8_t alldescbuffer [256 * 13] __ALIGN_END;
 
 struct descholder MsftStringDescr [1];
 struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
+struct descholder DeviceDescrTbl [1];	// Только одно
 struct descholder StringDescrTbl [STRING_ID_count];
 struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
-struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
 
 struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
 struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];

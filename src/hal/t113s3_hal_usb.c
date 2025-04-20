@@ -3252,7 +3252,7 @@ static void ep0_setup_in_handler(pusb_struct pusb, const uSetupPKG * ep0_setup)
 				{
 					case USB_DESC_TYPE_DEVICE:              //Get Device Desc
 						pusb->ep0_maxpktsz = USB_OTG_MAX_EP0_SIZE; // *((uint8_t*)(pusb->device.dev_desc+7));
-						usb_ep0_start_send(pusb, DeviceDescrTbl [temp].data, AWUSB_MIN(DeviceDescrTbl [temp].size, ep0_setup->wLength));
+						usb_ep0_start_send(pusb, DeviceDescrTbl [0].data, AWUSB_MIN(DeviceDescrTbl [0].size, ep0_setup->wLength));
 						break;
 					case USB_DESC_TYPE_CONFIGURATION:              //Get Configuration Desc
 					   	if (index < USBD_CONFIGCOUNT)

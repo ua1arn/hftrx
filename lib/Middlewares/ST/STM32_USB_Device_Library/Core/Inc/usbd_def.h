@@ -421,8 +421,8 @@ struct descholder
 extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
 extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
 extern struct descholder StringDescrTbl [];
+extern struct descholder DeviceDescrTbl [1];	// Только одно
 extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
-extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
 extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
 extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
 extern struct descholder BinaryDeviceObjectStoreTbl [1];
