@@ -838,12 +838,13 @@ enum
 {
 #if WITHCATEXT
 #if WITHELKEY
-	CAT_KY_INDEX,		// kyanswer()	// обрабатыаем первой для ускорения реакции
+	CAT_KY0_INDEX,		// ky0answer()	// обрабатыаем первой для ускорения реакции
+	CAT_KY1_INDEX,		// ky1answer()	// обрабатыаем первой для ускорения реакции
 	CAT_KS_INDEX,		// ksanswer()
 #endif /* WITHELKEY */
 	CAT_PS_INDEX,		// psanswer()
-	CAT_SM0_INDEX,		// smanswer()
-	CAT_SM9_INDEX,		// smanswer()
+	CAT_SM0_INDEX,		// sm0answer()
+	CAT_SM9_INDEX,		// sm1answer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
@@ -14014,8 +14015,7 @@ cat_set_kyanswer(uint_fast8_t force)
 	// Это была команда KY; (без параметров) - запрос состояния
 	// KEYER BUFFER STATUS: 0 - BUFFER SPACE AVALIABLE, 1 - BUFFER FULL
 	if (force)
-		cat_answer_map [CAT_KY_INDEX] = 1;
-	cat_answerparam_map [CAT_KY_INDEX] = '0' + f;
+		cat_answer_map [f ? CAT_KY1_INDEX : CAT_KY0_INDEX] = 1;
 }
 
 /* вызывается из обработчика прерываний */
@@ -14520,7 +14520,7 @@ static void pcanswer(uint_fast8_t arg)
 
 #if WITHCATEXT && WITHELKEY
 
-static void kyanswer(uint_fast8_t arg)
+static void ky0answer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
 		"KY"			// 2 characters - status information code
@@ -14529,7 +14529,21 @@ static void kyanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(char) arg
+		(char) '0'
+		);
+	cat_answer(len);
+}
+
+static void ky1answer(uint_fast8_t arg)
+{
+	static const FLASHMEM char fmt_1 [] =
+		"KY"			// 2 characters - status information code
+		"%c"			// P44 1 character - KEYER BUFFER STATUS: 0 - BUFFER SPACE AVALIABLE, 1 - BUFFER FULL
+		";";				// 1 char - line terminator
+
+	// answer mode
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
+		(char) '1'
 		);
 	cat_answer(len);
 }
@@ -15068,7 +15082,8 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 {
 #if WITHCATEXT
 #if WITHELKEY
-	kyanswer,	// обрабатыаем первой для ускорения реакции,
+	ky0answer,	// обрабатыаем первой для ускорения реакции,
+	ky1answer,	// обрабатыаем первой для ускорения реакции,
 	ksanswer,
 #endif /* WITHELKEY */
 	psanswer,
