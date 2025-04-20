@@ -3439,6 +3439,8 @@ static unsigned CDCECM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buf
 	{
 		// 0x02/0x02/0x01 - cdc
 		// 0x02/0x0c/0x07 - CDC Ethernet Emulation Model
+		// 0x02/0x06/0x00 - ECM
+		// 0x02/0x0D/0x00 - (Network Control Model - NCM)
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
