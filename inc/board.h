@@ -294,6 +294,8 @@ void board_get_serialnr(uint_fast32_t * sn);
 
 #endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
+#define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
+
 void save_i32(nvramaddress_t addr, uint_fast32_t v);	/* сохранение по указанному индексу в FRAM одного 32-битного слова */
 uint_fast32_t restore_i32(nvramaddress_t addr); /* выборка по указанному индексу из FRAM одного 32-битного слова */
 void save_i24(nvramaddress_t addr, uint_fast32_t v);	/* сохранение по указанному индексу в FRAM одного 24-битного слова */

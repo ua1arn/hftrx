@@ -544,6 +544,7 @@ uint_fast8_t
 restore_i8(nvramaddress_t addr)
 {
 	uint8_t vb [1];
+	ASSERT(addr != MENUNONVRAM);
 	nvram_read(addr, & vb [0], sizeof vb);
 	return vb [0];
 }
@@ -555,6 +556,7 @@ save_i8(nvramaddress_t addr, uint_fast8_t v)
 {
 	uint8_t vb [1];
 	vb [0] = v;
+	ASSERT(addr != MENUNONVRAM);
 	nvram_write(addr, & vb [0], sizeof vb);
 }
 
@@ -565,6 +567,7 @@ restore_i16(nvramaddress_t addr)
 {
 	uint8_t vb [2];
 
+	ASSERT(addr != MENUNONVRAM);
 	nvram_read(addr, & vb [0], sizeof vb);
 	return USBD_peek_u16(vb);
 }
@@ -577,6 +580,7 @@ save_i16(nvramaddress_t addr, uint_fast16_t v)
 	uint8_t vb [2];
 
 	USBD_poke_u16(vb, v);
+	ASSERT(addr != MENUNONVRAM);
 	nvram_write(addr, & vb [0], sizeof vb);
 }
 
@@ -588,6 +592,7 @@ restore_i24(nvramaddress_t addr)
 	uint8_t vb [3];
 
 	nvram_read(addr, vb, sizeof vb);
+	ASSERT(addr != MENUNONVRAM);
 	return USBD_peek_u24(vb);
 }
 
@@ -599,6 +604,7 @@ save_i24(nvramaddress_t addr, uint_fast32_t v)
 	uint8_t vb [3];
 
 	USBD_poke_u24(vb, v);
+	ASSERT(addr != MENUNONVRAM);
 	nvram_write(addr, & vb [0], sizeof vb);
 }
 
@@ -609,6 +615,7 @@ restore_i32(nvramaddress_t addr)
 {
 	uint8_t vb [4];
 
+	ASSERT(addr != MENUNONVRAM);
 	nvram_read(addr, vb, sizeof vb);
 	return USBD_peek_u32(vb);
 }
@@ -621,6 +628,7 @@ save_i32(nvramaddress_t addr, uint_fast32_t v)
 	uint8_t vb [4];
 
 	USBD_poke_u32(vb, v);
+	ASSERT(addr != MENUNONVRAM);
 	nvram_write(addr, & vb [0], sizeof vb);
 }
 

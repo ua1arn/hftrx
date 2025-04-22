@@ -524,8 +524,6 @@ struct menudef
 	const struct paramdefdef * pd;
 };
 
-#define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
-
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t
 //NOINLINEAT
@@ -699,16 +697,15 @@ param_load(
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-		if (nvram != MENUNONVRAM)
+		if (pv16 != NULL)
 		{
-			if (pv16 != NULL)
-			{
-				* pv16 = loadvfy16up(nvram, pd->qbottom, pd->qupper, * pv16);
-			}
-			else if (pv8 != NULL)
-			{
-				* pv8 = loadvfy8up(nvram, pd->qbottom, pd->qupper, * pv8);
-			}
+			// проверка на MENUNONVRAM уже внутри есть
+			* pv16 = loadvfy16up(nvram, pd->qbottom, pd->qupper, * pv16);
+		}
+		else if (pv8 != NULL)
+		{
+			// проверка на MENUNONVRAM уже внутри есть
+			* pv8 = loadvfy8up(nvram, pd->qbottom, pd->qupper, * pv8);
 		}
 	}
 }
