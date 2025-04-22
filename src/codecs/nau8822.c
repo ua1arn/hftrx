@@ -94,14 +94,16 @@ void nau8822_setreg(
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
 
-static void nau8822_input_config(void)
-{
-	nau8822_setreg(NAU8822_INPUT_CONTROL, NAU8822_INPUT_CONTROL_VAL);
-}
-
 /* Установка громкости на наушники */
 static void nau8822_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
+	//gainL = gainR = BOARD_AFGAIN_MAX / 2;
+//	{
+//		static int pass;
+//		if (pass)
+//			return;
+//		pass = 1;
+//	}
 	//PRINTF("nau8822_setvolume: gain=%d, mute=%d, mutespk=%d\n", (int) gain, (int) mute, (int) mutespk);
 	uint_fast16_t vmutehp = 0;
 	uint_fast16_t vmutespk = 0;
@@ -157,7 +159,6 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, u
 		const uint_fast8_t adcboostcontrol = (linegain - WITHLINEINGAINMIN) * (0x07) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x00;
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, adcboostcontrol);	// LLINEIN disconnected, LAUXIN connected w/o gain
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, adcboostcontrol);	// RLINEIN disconnected, RAUXIN connected w/o gain
-		nau8822_input_config();
 	}
 	else
 	{
@@ -170,7 +171,6 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, u
 		// 
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikeboost20db != 0));	// 0x100 - 20 dB boost ON
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
-		nau8822_input_config();
 	}
 }
 
@@ -438,7 +438,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	nau8822_setreg(NAU8822_LEFT_MIXER_CONTROL, 0x001);
 	nau8822_setreg(NAU8822_RIGHT_MIXER_CONTROL, 0x001);
 
-	nau8822_input_config();
+	nau8822_setreg(NAU8822_INPUT_CONTROL, NAU8822_INPUT_CONTROL_VAL);
 
 	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
 	// но на всякий случай для понятности програмируем.
