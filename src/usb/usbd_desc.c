@@ -351,7 +351,7 @@ static unsigned usbd_get_vendorId(const desc_options_t * opts)
 // 5.9 High-Speed, High Bandwidth Endpoints
 // 9.6.6 Endpoint
 // Table 9-14. Allowed wMaxPacketSize Values for Different Numbers of Transactions per Microframe
-static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
+static uint_fast16_t encodeMaxPacketSize(int highspeed, uint_fast32_t size)
 {
 	// For all endpoints, bits 10..0 specify the maximum
 	// packet size (in bytes).
@@ -1299,7 +1299,7 @@ static unsigned UAC2_EP_Desc_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacoutmaxpacket());
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, usbd_getuacoutmaxpacket());
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -1392,7 +1392,7 @@ static unsigned UAC2_EP_Desc_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacinmaxpacket()); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, usbd_getuacinmaxpacket()); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1439,7 +1439,7 @@ static unsigned UAC2_EP_Desc_IN_RTS96(uint_fast8_t fill, uint8_t * buff, unsigne
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacinrtsmaxpacket()); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, usbd_getuacinrtsmaxpacket()); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1480,7 +1480,7 @@ static unsigned UAC2_AS_FormatTypeDesc_RTS192(uint_fast8_t fill, uint8_t * buff,
 
 /* USB Microphone Standard Endpoint Descriptor (CODE == 8)*/ //Standard AS Isochronous Audio Data Endpoint Descriptor
 // Endpoint Descriptor 82 2 In, Isochronous, 125 us
-static unsigned UAC2_EP_Desc_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress, uint8_t offset)
+static unsigned UAC2_EP_Desc_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const desc_options_t * opts, uint_fast8_t bEndpointAddress, uint8_t offset)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -1488,7 +1488,7 @@ static unsigned UAC2_EP_Desc_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_RTS192_DATASIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, UACIN_RTS192_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1563,7 +1563,7 @@ static unsigned UAC1_EP_Desc_IN48(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_AUDIO48_DATASIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, UACIN_AUDIO48_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1617,7 +1617,7 @@ static unsigned UAC1_EP_Desc_RTS96(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacinrtsmaxpacket()); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, usbd_getuacinrtsmaxpacket()); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -1665,7 +1665,7 @@ static unsigned UAC1_FormatTypeDesc_RTS192(uint_fast8_t fill, uint8_t * buff, un
 
 /* USB Microphone Standard Endpoint Descriptor (CODE == 8)*/ //Standard AS Isochronous Audio Data Endpoint Descriptor
 // Endpoint Descriptor 82 2 In, Isochronous, 125 us
-static unsigned UAC1_EP_Desc_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress, uint8_t offset)
+static unsigned UAC1_EP_Desc_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const desc_options_t * opts, uint_fast8_t bEndpointAddress, uint8_t offset)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -1673,7 +1673,7 @@ static unsigned UAC1_EP_Desc_RTS192(uint_fast8_t fill, uint8_t * buff, unsigned 
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACIN_RTS192_DATASIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, UACIN_RTS192_DATASIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -2465,7 +2465,7 @@ static unsigned UAC1_EP_Desc_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacoutmaxpacket());
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, usbd_getuacoutmaxpacket());
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -3194,7 +3194,7 @@ static unsigned CDCACM_Control_EP(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_COM_PORT_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, VIRTUAL_COM_PORT_INT_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3208,7 +3208,7 @@ static unsigned CDCACM_Control_EP(uint_fast8_t fill, uint8_t * buff, unsigned ma
 }
 #endif /* ! WITHUSBCDCACM_NOINT */
 /* Data Out Endpoint Descriptor*/
-static unsigned CDCACM_Data_EP_OUT(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+static unsigned CDCACM_Data_EP_OUT(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, const desc_options_t * opts)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3216,7 +3216,7 @@ static unsigned CDCACM_Data_EP_OUT(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
@@ -3230,7 +3230,7 @@ static unsigned CDCACM_Data_EP_OUT(uint_fast8_t fill, uint8_t * buff, unsigned m
 }
 
 /* Data In Endpoint Descriptor*/
-static unsigned CDCACM_Data_EP_IN(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+static unsigned CDCACM_Data_EP_IN(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, const desc_options_t * opts)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3238,7 +3238,7 @@ static unsigned CDCACM_Data_EP_IN(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(VIRTUAL_COM_PORT_IN_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, VIRTUAL_COM_PORT_IN_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
@@ -3279,8 +3279,8 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 #endif /* ! WITHUSBCDCACM_NOINT */
 
 	n += CDCACM_InterfaceDescDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA Data class interface descriptor */
-	n += CDCACM_Data_EP_OUT(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
-	n += CDCACM_Data_EP_IN(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
+	n += CDCACM_Data_EP_OUT(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep), opts);	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
+	n += CDCACM_Data_EP_IN(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep), opts);	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
 
 	return n;
 }
@@ -3366,7 +3366,7 @@ static unsigned CDCEEM_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCEEM_BUFSIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, USBD_CDCEEM_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
@@ -3389,7 +3389,7 @@ static unsigned CDCEEM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCEEM_BUFSIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, USBD_CDCEEM_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
@@ -3544,7 +3544,7 @@ static unsigned CDCECM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCECM_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, USBD_CDCECM_INT_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3566,7 +3566,7 @@ static unsigned CDCECM_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCECM_OUT_BUFSIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, USBD_CDCECM_OUT_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
@@ -3589,7 +3589,7 @@ static unsigned CDCECM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_CDCECM_IN_BUFSIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, USBD_CDCECM_IN_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
@@ -3770,7 +3770,7 @@ static unsigned RNDIS_UnionFunctionalDesc(uint_fast8_t fill, uint8_t * buff, uns
 /* Endpoint 3 Descriptor */
 // Endpoint Descriptor 86 6 In, Interrupt
 
-static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
+static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, const desc_options_t * opts)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3778,7 +3778,7 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_RNDIS_INT_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3786,7 +3786,7 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = highspeed ? HSINTERVAL_1MS : FSINTERVAL_1MS;   		/* bInterval: 1 mS */
+		* buff ++ = opts->hsdesc ? HSINTERVAL_1MS : FSINTERVAL_1MS;   		/* bInterval: 1 mS */
 	}
 	return length;
 }
@@ -3817,7 +3817,7 @@ static unsigned RNDIS_InterfaceDescDataIf(uint_fast8_t fill, uint8_t * buff, uns
 
 /*Endpoint 2 IN Descriptor*/
 // Endpoint Descriptor 84 4 In, Bulk, 64 bytes
-static unsigned RNDIS_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+static unsigned RNDIS_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, const desc_options_t * opts)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3825,7 +3825,7 @@ static unsigned RNDIS_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_IN_BUFSIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_RNDIS_IN_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
@@ -3839,7 +3839,7 @@ static unsigned RNDIS_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 }
 
 // Endpoint Descriptor
-static unsigned RNDIS_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress)
+static unsigned RNDIS_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bEndpointAddress, const desc_options_t * opts)
 {
 	const uint_fast8_t length = 7;
 	ASSERT(maxsize >= length);
@@ -3847,7 +3847,7 @@ static unsigned RNDIS_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(USBD_RNDIS_OUT_BUFSIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_RNDIS_OUT_BUFSIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
@@ -3864,6 +3864,7 @@ static unsigned RNDIS_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 /* CDC Ethernet Control Model */
 static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, const desc_options_t * opts)
 {
+	const int highspeed = opts->hsdesc;
 	unsigned n = 0;
 	// Interface Association Descriptor RF Controller
 	// Configuration descriptor           https://msdn.microsoft.com/en-US/library/ee482887(v=winembedded.60).aspx
@@ -3881,13 +3882,13 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	// Union Functional Descriptor
 	n += RNDIS_UnionFunctionalDesc(fill, p + n, maxsize - n);
 	// Endpoint descriptors for Communication Class Interface     https://msdn.microsoft.com/en-US/library/ee482509(v=winembedded.60).aspx
-	n += RNDIS_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_RNDIS_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
+	n += RNDIS_fill_35(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_RNDIS_INT), opts);	/* Endpoint Descriptor 86 6 In, Interrupt */
 	//  Data Class INTERFACE descriptor           https://msdn.microsoft.com/en-US/library/ee481260(v=winembedded.60).aspx
 	n += RNDIS_InterfaceDescDataIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	// IN Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee484483(v=winembedded.60).aspx
-	n += RNDIS_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_RNDIS_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
+	n += RNDIS_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_RNDIS_IN), opts);	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	// OUT Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee482464(v=winembedded.60).aspx
-	n += RNDIS_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
+	n += RNDIS_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT), opts);	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
 
 	return n;
 }
@@ -3965,7 +3966,7 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(HIDMOUSE_INT_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, HIDMOUSE_INT_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3989,7 +3990,7 @@ static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsig
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(HIDKEYBOARD_INT_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, HIDKEYBOARD_INT_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -4572,7 +4573,7 @@ static unsigned MTP_EndpointIn(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_DATA_MAX_PACKET_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, MTP_DATA_MAX_PACKET_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -4593,7 +4594,7 @@ static unsigned MTP_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_DATA_MAX_PACKET_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, MTP_DATA_MAX_PACKET_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -4614,7 +4615,7 @@ static unsigned MTP_EndpointInt(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(MTP_CMD_PACKET_SIZE); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, MTP_CMD_PACKET_SIZE); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength: Endpoint Descriptor size */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -4705,7 +4706,7 @@ static unsigned MSC_EndpointIn(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed ? MSC_DATA_MAX_PACKET_SIZE_HS : MSC_DATA_MAX_PACKET_SIZE_FS); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, highspeed ? MSC_DATA_MAX_PACKET_SIZE_HS : MSC_DATA_MAX_PACKET_SIZE_FS); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
@@ -4726,7 +4727,7 @@ static unsigned MSC_EndpointOut(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed ? MSC_DATA_MAX_PACKET_SIZE_HS : MSC_DATA_MAX_PACKET_SIZE_FS); // was: 0x300
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(highspeed, highspeed ? MSC_DATA_MAX_PACKET_SIZE_HS : MSC_DATA_MAX_PACKET_SIZE_FS); // was: 0x300
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	// bDescriptorType
