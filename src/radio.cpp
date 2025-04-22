@@ -11216,6 +11216,40 @@ FLOAT_t local_log(FLOAT_t x)
 
 #endif /* WITHINTEGRATEDDSP */
 
+static void codec1_directupdate(void)
+{
+//	{
+//		static int pass;
+//		if (pass)
+//			return;
+//		pass = 1;
+//	}
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+// nau8822 experements
+
+	// ALC
+//			unsigned ALCEN = 0;	// only left channel ALC enabled
+//			unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+//			unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+	unsigned alcctl1 =
+			((ALCEN ? 0x02 : 0x00) << 7) |	// only left channel ALC enabled
+			(ALCMXGAIN << 3) |
+			(ALCMNGAIN << 0) |
+			0;
+	nau8822_setreg(NAU8822_ALC_CONTROL_1, alcctl1);
+
+	// Noise gate
+//			unsigned ALCNEN = 0;	// ALC noise gate function control bit
+//			unsigned ALCNTH = 0;	// ALC noise gate threshold level
+	unsigned ngctl1 =
+			(1 << 4) |	// reserved
+			(ALCNEN << 3) |
+			(ALCNTH << 0) |
+			0;
+	nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
+}
+
 #if WITHDEBUG
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
@@ -12017,33 +12051,7 @@ updateboardZZZ(
 		display2_set_smetertype(gsmetertype);
 	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
-		{
-			// nau8822 experements
-
-			// ALC
-//			unsigned ALCEN = 0;	// only left channel ALC enabled
-//			unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
-//			unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-			unsigned alcctl1 =
-					((ALCEN ? 0x02 : 0x00) << 7) |	// only left channel ALC enabled
-					(ALCMXGAIN << 3) |
-					(ALCMNGAIN << 0) |
-					0;
-			nau8822_setreg(NAU8822_ALC_CONTROL_1, alcctl1);
-
-			// Noise gate
-//			unsigned ALCNEN = 0;	// ALC noise gate function control bit
-//			unsigned ALCNTH = 0;	// ALC noise gate threshold level
-			unsigned ngctl1 =
-					(1 << 4) |	// reserved
-					(ALCNEN << 3) |
-					(ALCNTH << 0) |
-					0;
-			nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
-
-		}
-#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
+		codec1_directupdate();
 		board_update();		/* вывести забуферированные изменения в регистры */
 	} // full2 != 0
 

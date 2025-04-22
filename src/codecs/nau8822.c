@@ -50,6 +50,7 @@ void nau8822_setreg(
 	)
 {
 	const uint_fast16_t fulldata = regv * 512 + (datav & 0x1ff);
+	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
 	// кодек управляется по SPI
