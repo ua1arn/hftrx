@@ -11338,38 +11338,19 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
 /* модификация параметра с учетом границ изменения значения */
 static uint_fast8_t
-encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr, uint_fast8_t catindex, void (* updcb)(void))
+encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t catindex, void (* updcb)(void))
 {
-	uint_fast16_t v = c->value;
-
-	if (d != 0 && updcb != NULL)
+	if (delta != 0 && updcb != NULL)
 		(* updcb)();
 
-	if (d == 0)
-		return 0;
-	else if (d < 0)
+	if (param_rotate(pd, delta))
 	{
-		if (- d >= (int) v)
-			v = 0;
-		else
-			v += d;
-		if (v < lower)
-			v = lower;
-	}
-	else
-	{
-		if (d > (int) upper)
-			v = upper;
-		else
+#if WITHCAT
+		if (aistate != 0)
 		{
-			v += d;
-			if (v > upper)
-				v = upper;
+			cat_answer_request(catindex);
 		}
-	}
-	if (FLAGNE_U16_CAT(c, v, catindex))
-	{
-		save_i16(addr, c->value);
+#endif /* WITHCAT */
 		return 1;
 	}
 	return 0;
@@ -13496,11 +13477,11 @@ static uint_fast8_t processencoders(void)
 			break;
 		case 0:
 			/* установка громкости */
-			changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1), CAT_AG_INDEX, bring_afvolume);
+			changed |= encoder_flagne(& xafgain1, delta, CAT_AG_INDEX, bring_afvolume);
 			break;
 		case 1:
 			/* установка IF GAIN */
-			changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1), CAT_RG_INDEX, bring_rfvolume);
+			changed |= encoder_flagne(& xrfgain1, delta, CAT_RG_INDEX, bring_rfvolume);
 			break;
 		}
 	}
