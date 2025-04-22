@@ -20,6 +20,18 @@
 #include "audio.h"
 #include "nau8822.h"
 
+//#define CODEC_TYPE_NAU8822_NO_BTL 1		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
+
+// Зависит от аппаратуры - может быть переопределено в custom configuration
+#ifndef NAU8822_INPUT_CONTROL_VAL
+	// Микрофон подключен к LMICN, LMICP=common
+	// LLIN отключен от PGA
+	// 0x02 = LMICN connected to PGA negative input
+	// 0x01 = LMICP connected to PGA positive input
+	#define NAU8822_INPUT_CONTROL_VAL 0x03
+	//#define NAU8822_INPUT_CONTROL_VAL 0x01
+#endif
+
 // Clock period, SCLK no less then 80 nS (частота не выше 12.5 МГц)
 #define NAU8822_SPIMODE			SPIC_MODE3
 #define NAU8822_SPISPEED 		SPIC_SPEED10M
@@ -81,15 +93,6 @@ void nau8822_setreg(
 
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
-
-#ifndef NAU8822_INPUT_CONTROL_VAL
-	// Микрофон подключен к LMICN, LMICP=common
-	// LLIN отключен от PGA
-	// 0x02 = LMICN connected to PGA negative input
-	// 0x01 = LMICP connected to PGA positive input
-	#define NAU8822_INPUT_CONTROL_VAL 0x03
-	//#define NAU8822_INPUT_CONTROL_VAL 0x01
-#endif
 
 static void nau8822_input_config(void)
 {
