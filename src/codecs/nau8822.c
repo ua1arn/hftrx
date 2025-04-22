@@ -25,9 +25,6 @@
 #define NAU8822_SPISPEED 		SPIC_SPEED10M
 #define NAU8822_ADDRESS_W		0x34	// I2C address: 0x34
 
-// Условие использования оптимизированных функций обращения к SPI
-#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
-
 /* data is
 *   D15..D9 NAU8822 register offset
 *   D8...D0 register data
@@ -56,9 +53,17 @@ void nau8822_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
+#if WITHSPIHW && WITHSPI32BIT
+	const uint32_t txbuf [] = { fulldata };
+	uint32_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	prog_spi_exchange32(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+#else
 	const uint8_t txbuf [] = { fulldata >> 8, fulldata >> 0, };
 
 	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+#endif
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
 
