@@ -11327,11 +11327,15 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 #define FLAGNE_U16_CAT(a,b,c) flagne_u16_cat((a), (b), (c))
 #define FLAGNE_U32_CAT(a,b,c) flagne_u32_cat((a), (b), (c))
 
+#define CATINDEX(v)	(v)
+
 #else /* WITHCAT */
 
 #define FLAGNE_U8_CAT(a,b,c) flagne_u8(& (a)->value, (b))
 #define FLAGNE_U16_CAT(a,b,c) flagne_u16(& (a)->value, (b))
 #define FLAGNE_U32_CAT(a,b,c) flagne_u32(& (a)->value, (b))
+
+#define CATINDEX(v)	(0)
 
 #endif /* WITHCAT */
 
@@ -13477,11 +13481,11 @@ static uint_fast8_t processencoders(void)
 			break;
 		case 0:
 			/* установка громкости */
-			changed |= encoder_flagne(& xafgain1, delta, CAT_AG_INDEX, bring_afvolume);
+			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
 			break;
 		case 1:
 			/* установка IF GAIN */
-			changed |= encoder_flagne(& xrfgain1, delta, CAT_RG_INDEX, bring_rfvolume);
+			changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), bring_rfvolume);
 			break;
 		}
 	}
