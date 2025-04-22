@@ -526,6 +526,62 @@ struct menudef
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
+// Интерфейсные функции доступа к NVRAM
+static uint_fast8_t
+//NOINLINEAT
+loadvfy8up(
+	nvramaddress_t place,
+	uint_fast8_t bottom, uint_fast8_t upper, uint_fast8_t def)	// upper - inclusive limit
+{
+#if HARDWARE_IGNORENONVRAM
+	return def;
+#endif /* HARDWARE_IGNORENONVRAM */
+
+	if (place == MENUNONVRAM)
+		return def;
+
+	const uint_fast8_t v = restore_i8(place);
+
+	// pre-chechk default value added for mode row switching with same column as default
+	if (def > upper || def < bottom)
+		def = bottom;
+
+	if (v > upper || v < bottom)
+	{
+		save_i8(place, def);
+		return def;
+	}
+	return v;
+}
+
+// Интерфейсные функции доступа к NVRAM
+
+static uint_fast16_t
+//NOINLINEAT
+loadvfy16up(
+	nvramaddress_t place,
+	uint_fast16_t bottom, uint_fast16_t upper, uint_fast16_t def)	// upper - inclusive limit
+{
+#if HARDWARE_IGNORENONVRAM
+	return def;
+#endif /* HARDWARE_IGNORENONVRAM */
+
+	if (place == MENUNONVRAM)
+		return def;
+
+	const uint_fast16_t v = restore_i16(place);
+
+	if (def > upper || def < bottom)
+		def = bottom;
+
+	if (v > upper || v < bottom)
+	{
+		save_i16(place, def);
+		return def;
+	}
+	return v;
+}
+
 /* входит ли данный пункт меню в группу разрешённых для показа */
 static uint_fast8_t
 ismenukinddp(
@@ -584,14 +640,20 @@ param_setvalue(
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+		// new value validation
+		v = v - pd->funcoffs();
+		if (v < pd->qbottom)
+			v = pd->qbottom;
+		else if (v > pd->qupper)
+			v = pd->qupper;
 
 		if (pv16 != NULL)
 		{
-			* pv16 = v - pd->funcoffs();
+			* pv16 = v;
 		}
 		else if (pv8 != NULL)
 		{
-			* pv8 = v - pd->funcoffs();
+			* pv8 = v;
 		}
 		savemenuvalue(pd);
 	}
@@ -621,6 +683,31 @@ param_getvalue(
 		}
 	}
 	return 0;
+}
+
+// Считать значение параметра из nvram
+static void
+param_load(
+	const FLASHMEM struct paramdefdef * pd
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		unsigned nvalues;
+		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const ptrdiff_t offs = pd->valoffs(sel);
+		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
+		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+		if (pv16 != NULL)
+		{
+			* pv16 = loadvfy16up(nvram, pd->qbottom, pd->qupper, * pv16);
+		}
+		else if (pv8 != NULL)
+		{
+			* pv8 = loadvfy8up(nvram, pd->qbottom, pd->qupper, * pv8);
+		}
+	}
 }
 
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
@@ -1449,62 +1536,6 @@ static const FLASHMEM struct {
 #else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
 	#define ANTMODE_COUNT 1
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
-
-// Интерфейсные функции доступа к NVRAM
-static uint_fast8_t
-//NOINLINEAT
-loadvfy8up(
-	nvramaddress_t place,
-	uint_fast8_t bottom, uint_fast8_t upper, uint_fast8_t def)	// upper - inclusive limit
-{
-#if HARDWARE_IGNORENONVRAM
-	return def;
-#endif /* HARDWARE_IGNORENONVRAM */
-
-	if (place == MENUNONVRAM)
-		return def;
-
-	const uint_fast8_t v = restore_i8(place);
-
-	// pre-chechk default value added for mode row switching with same column as default
-	if (def > upper || def < bottom)
-		def = bottom;
-
-	if (v > upper || v < bottom)
-	{
-		save_i8(place, def);
-		return def;
-	}
-	return v;
-}
-
-// Интерфейсные функции доступа к NVRAM
-
-static uint_fast16_t
-//NOINLINEAT
-loadvfy16up(
-	nvramaddress_t place,
-	uint_fast16_t bottom, uint_fast16_t upper, uint_fast16_t def)	// upper - inclusive limit
-{
-#if HARDWARE_IGNORENONVRAM
-	return def;
-#endif /* HARDWARE_IGNORENONVRAM */
-
-	if (place == MENUNONVRAM)
-		return def;
-
-	const uint_fast16_t v = restore_i16(place);
-
-	if (def > upper || def < bottom)
-		def = bottom;
-
-	if (v > upper || v < bottom)
-	{
-		save_i16(place, def);
-		return def;
-	}
-	return v;
-}
 
 // проверка и приведение в допустимый диапазон значений, считанных из eeprom или принятых по CAT. Или при autosplit
 static uint_fast32_t
@@ -3919,7 +3950,6 @@ struct nvmap
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 #define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
 #define RMT_USEFAST_BASE OFFSETOF(struct nvmap, gusefast)		/* переключение в режим крупного шага */
-#define RMT_MUTELOUDSP_BASE OFFSETOF(struct nvmap, gmutespkr)		/* включение ФНЧ на приёме в аппарате RA4YBO */
 
 #define RMT_SPLITMODE_BASE OFFSETOF(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
 #define RMT_VFOAB_BASE OFFSETOF(struct nvmap, vfoab)		/* (vfoa/vfob) */
@@ -8766,7 +8796,7 @@ loadsavedstate(void)
 	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
 #endif /* WITHSPLIT */
 #if WITHSPKMUTE
-	gmutespkr = loadvfy8up(RMT_MUTELOUDSP_BASE, 0, 1, gmutespkr);	/*  выключение динамика */
+	param_load(& xgmutespkr);	/*  выключение динамика */
 #endif /* WITHSPKMUTE */
 	// тюнер запоминается подиапазонно
 //#if WITHAUTOTUNER
@@ -11807,8 +11837,8 @@ updateboardZZZ(
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
-		board_set_afgain(sleepflag == 0 ? afgain1.value : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
-		board_set_ifgain(sleepflag == 0  ? rfgain1.value : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
+		board_set_afgain(sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 
 		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
@@ -12797,14 +12827,13 @@ uif_key_usefast(void)
 static void
 uif_key_loudsp(void)
 {
-	gmutespkr = calc_next(gmutespkr, 0, 1);
-	save_i8(RMT_MUTELOUDSP_BASE, gmutespkr);
+	param_keyclick(& xgmutespkr);
 	updateboard(1, 0);
 }
 
 uint_fast8_t hamradio_get_spkon_value(void)
 {
-	return ! gmutespkr;
+	return ! param_getvalue(& xgmutespkr);
 }
 
 #endif /* WITHSPKMUTE */
@@ -14445,11 +14474,12 @@ static void aganswer(uint_fast8_t arg)
 		"%1d"			// P1 always 0
 		"%03d"			// P2 0..255 Squelch level
 		";";				// 1 char - line terminator
+	const int p2 = (param_getvalue(& xafgain1) - BOARD_AFGAIN_MIN) * 255 / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN);
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_2,
 		(int) arg,
-		(int) ((afgain1.value - BOARD_AFGAIN_MIN) * 255 / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN))
+		(int) p2
 		);
 	cat_answer(len);
 }
@@ -14461,10 +14491,11 @@ static void rganswer(uint_fast8_t arg)
 		"RG"			// 2 characters - status information code
 		"%03d"			// P1 0..255 RF Gain status
 		";";				// 1 char - line terminator
+	const int p1 = ((param_getvalue(& xrfgain1) - BOARD_IFGAIN_MIN) * 255 / (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN));
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((rfgain1.value - BOARD_IFGAIN_MIN) * 255 / (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN))
+		(int) p1
 		);
 	cat_answer(len);
 }
@@ -19332,18 +19363,14 @@ processkeyboard(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #if ! WITHPOTAFGAIN
 	case KBD_CODE_PLAYLOUD:	// громче
-		if (afgain1.value != BOARD_AFGAIN_MAX)
+		if (param_rotate(& xafgain1, + 1))
 		{
-			afgain1.value = calc_next(afgain1.value, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
-			save_i8(OFFSETOF(struct nvmap, afgain1), afgain1.value);
 			updateboard(1, 0);
 		}
 		return 1;
 	case KBD_CODE_PLAYQUITE:	// тише
-		if (afgain1.value != BOARD_AFGAIN_MIN)
+		if (param_rotate(& xafgain1, - 1))
 		{
-			afgain1.value = calc_prev(afgain1.value, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX);
-			save_i8(OFFSETOF(struct nvmap, afgain1), afgain1.value);
 			updateboard(1, 0);
 		}
 		return 1;
@@ -20334,13 +20361,12 @@ hamradio_main_step(void)
 #if WITHSPKMUTE
 uint_fast8_t hamradio_get_gmutespkr(void)
 {
-	return gmutespkr;
+	return param_getvalue(& xgmutespkr);
 }
 
 void hamradio_set_gmutespkr(uint_fast8_t v)
 {
-	gmutespkr = v != 0;
-	save_i8(RMT_MUTELOUDSP_BASE, gmutespkr);
+	param_setvalue(& xgmutespkr, v);
 	updateboard(1, 0);
 }
 #endif /* WITHSPKMUTE */
@@ -20349,17 +20375,13 @@ void hamradio_set_gmutespkr(uint_fast8_t v)
 
 uint_fast16_t hamradio_get_afgain(void)
 {
-	return afgain1.value;
+	return param_getvalue(& xafgain1);
 }
 
 #if ! WITHPOTAFGAIN
 void hamradio_set_afgain(uint_fast16_t v)
 {
-	if (v <= BOARD_AFGAIN_MIN || v >= BOARD_AFGAIN_MAX)
-		return;
-
-	afgain1.value = v;
-	save_i16(OFFSETOF(struct nvmap, afgain1), afgain1.value);
+	param_setvalue(& xafgain1, v);
 	updateboard(1, 0);
 }
 
