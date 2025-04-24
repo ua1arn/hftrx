@@ -46,7 +46,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
