@@ -26,6 +26,7 @@ XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 
 PRJROOT := ../..
 OBJDIR = obj
+OBJDIR64 = obj64
 
 # Define project name here
 PROJECT = tc1_a64
@@ -347,6 +348,7 @@ $(OBJSA_APP) $(ZOBJSA):
 
 clean: version
 	-$(RM) -R $(OBJDIR)
+	-$(RM) -R $(OBJDIR64)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0 $(PROJECT)_app.bin $(PROJECT)_boot.bin 

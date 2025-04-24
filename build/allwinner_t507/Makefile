@@ -28,6 +28,7 @@ XFEL = ./xfel_lpddr4
 
 PRJROOT := ../..
 OBJDIR = obj
+OBJDIR64 = obj64
 
 # Define project name here
 PROJECT = tc1_awt507
@@ -383,6 +384,7 @@ $(OBJSA_APP) $(ZOBJSA):
 
 clean: version
 	-$(RM) -R $(OBJDIR)
+	-$(RM) -R $(OBJDIR64)
 	-$(RM) fsbl.bt0
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map

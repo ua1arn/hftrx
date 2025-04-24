@@ -27,6 +27,7 @@ XROCK = ../../tools/xrock-windows-v1.1.2/xrock
 
 PRJROOT := ../..
 OBJDIR = obj
+OBJDIR64 = obj64
 
 # Define project name here
 PROJECT = tc1_rk3566
@@ -382,6 +383,7 @@ $(OBJSA_APP) $(ZOBJSA):
 
 clean: version
 	-$(RM) -R $(OBJDIR)
+	-$(RM) -R $(OBJDIR64)
 	-$(RM) fsbl.bt0
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
