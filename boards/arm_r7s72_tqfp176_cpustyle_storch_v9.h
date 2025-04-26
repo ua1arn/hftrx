@@ -155,7 +155,7 @@
 
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
-		//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint */
+		//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
 
 		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
