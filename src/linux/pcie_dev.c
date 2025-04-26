@@ -8,7 +8,7 @@
 
 #include "pcie_dev.h"
 
-#define ONE_MB (1024UL * 1024UL)
+#define MAP_SIZE	(8UL * 1024UL * 1024UL)
 
 /* ltoh: little to host */
 /* htol: little to host */
@@ -24,14 +24,12 @@
 #define htols(x)     __bswap_16(x)
 #endif
 
-#define MAP_SIZE (64*1024UL)
-
 /* helper struct to remember the Xdma device names */
 typedef struct {
     char * base_path;  /* path to first found Xdma device */
-	char * c2h0_path;     /* card to host DMA 0 */
-    char * h2c0_path;     /* host to card DMA 0 */
-	char * user_path;     /* XDMA AXI Lite interface */
+	const char * c2h0_path;     /* card to host DMA 0 */
+	const char * h2c0_path;     /* host to card DMA 0 */
+	const char * user_path;     /* XDMA AXI Lite interface */
     char * buffer_c2h;   /* pointer to the allocated buffer card to host*/
     char * buffer_h2c;   /* pointer to the allocated buffer host to card*/
     void * user_map_base; /* XDMA AXI Lite interface map base address */
@@ -53,7 +51,7 @@ int pcie_init()
 	xdma.user_path = "/dev/xdma0_user";
 
     /* allocate buffer */
-    xdma.buf_c2h_size = 8 * ONE_MB;     // buffer card to host size
+    xdma.buf_c2h_size = MAP_SIZE;     // buffer card to host size
     if(posix_memalign((void **)&xdma.buffer_c2h, 1024, xdma.buf_c2h_size)) //512 | 1024
         if (xdma.buffer_c2h) {
             status = -1;

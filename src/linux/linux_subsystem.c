@@ -1571,7 +1571,7 @@ void linux_iq_init(void)
 
 pthread_t xdma_t;
 
-void xdma_event(void)
+void xdma_iq_event(void)
 {
 #if WITHAD936XIIO
 	if (get_ad936x_stream_status()) return;
@@ -1585,16 +1585,26 @@ void xdma_event(void)
 	memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
 	save_dmabuffer32rx(addr32rx);
 
-	iq_mutex_unlock();
-
 #if CODEC1_FPGA
-	const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-	uint32_t * b = (uint32_t *) addr_ph;
+#if WITHFT8
+	if (! ft8_get_state())
+#endif /* WITHFT8 */
+	{
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
 
-	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-		xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
+#if WITHAUDIOSAMPLESREC
+#if WITHAD936XIIO
+		if (! get_ad936x_stream_status())
+#endif /* WITHAD936XIIO */
+			as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC */
 
-	release_dmabuffer16tx(addr_ph);
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
+
+		release_dmabuffer16tx(addr_ph);
+	}
 #endif /* CODEC1_FPGA */
 
 	const uintptr_t addr32tx = getfilled_dmabuffer32tx();
@@ -1604,30 +1614,69 @@ void xdma_event(void)
 		xdma_write_user(AXI_LITE_IQ_FX_FIFO, t[i]);
 
 	release_dmabuffer32tx(addr32tx);
+
+	iq_mutex_unlock();
 }
 
 void * xdma_event_thread(void * args)
 {
 	uint32_t events_user;
-	int fd = open(LINUX_XDMA_EVENT_FILE, O_RDONLY);
-	if (fd < 0) {
-		perror(LINUX_XDMA_EVENT_FILE);
+
+	int fd0 = open(LINUX_XDMA_IQ_EVENT_FILE, O_RDONLY);
+	if (fd0 < 0) {
+		perror(LINUX_XDMA_IQ_EVENT_FILE);
 		return NULL;
 	}
 
-	pread(fd, & events_user, sizeof(events_user), 0);
+	pread(fd0, & events_user, sizeof(events_user), 0);
 
-	struct pollfd fds[] = { { fd, POLLIN }, };
+#if CODEC1_FPGA
+	int fd1 = open(LINUX_XDMA_MIC_EVENT_FILE, O_RDONLY);
+	if (fd1 < 0) {
+		perror(LINUX_XDMA_MIC_EVENT_FILE);
+		return NULL;
+	}
+
+	pread(fd1, & events_user, sizeof(events_user), 0);
+#endif /* CODEC1_FPGA */
+
+	struct pollfd fds[] = {
+			{ fd0, POLLIN },
+#if CODEC1_FPGA
+			{ fd1, POLLIN },
+#endif /* CODEC1_FPGA */
+	};
+	enum {
+		fds_cnt = ARRAY_SIZE(fds),
+		SIZEMIC8 = DMABUFFSIZE16RX * 4,
+	};
 
 	while (1) {
-		int r = poll(fds, 1, 0);
+		int r = poll(fds, fds_cnt, 0);
 		if (r < 0) {
 			perror("poll");
 		} else {
 			if (fds[0].revents & POLLIN) {
-				pread(fd, & events_user, sizeof(events_user), 0);
-				xdma_event(); // iq interrupt from FPGA via XDMA
+				pread(fds[0].fd, & events_user, sizeof(events_user), 0);
+				xdma_iq_event(); // iq interrupt from FPGA via XDMA
 			}
+#if CODEC1_FPGA
+			else if (fds[1].revents & POLLIN) {
+				pread(fds[1].fd, & events_user, sizeof(events_user), 0);
+
+				uint8_t bufm[SIZEMIC8] = { 0 };
+				uint16_t mic_pos = xdma_read_user(AXI_LITE_MIC_POS);
+				uint16_t offs = mic_pos >= DMABUFFSIZE16RX ? 0 : SIZEMIC8;
+				xdma_c2h_transfer(AXI_BRAM_MIC + offs, SIZEMIC8, bufm);
+
+				uintptr_t addrm = allocate_dmabuffer16rx();
+				memcpy((uint8_t *) addrm, bufm, SIZEMIC8);
+#if WITHAUDIOSAMPLESREC
+				as_tx((uint32_t *) bufm);
+#endif /* WITHAUDIOSAMPLESREC */
+				save_dmabuffer16rx(addrm);
+			}
+#endif /* CODEC1_FPGA */
 		}
 	}
 }
