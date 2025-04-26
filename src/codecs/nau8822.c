@@ -33,7 +33,7 @@
 	//#define NAU8822_INPUT_CONTROL_VAL 0x01
 #endif
 
-#define NAU8822_USE_SPI4_ACTUAL (NAU8822_USE_SPI4 && WITHSPIHW && WITHSPI32BIT && CODEC_TYPE_NAU8822_USE_SPI)
+#define NAU8822_USE_SPI4_ACTUAL (NAU8822_USE_SPI4 && WITHSPIHW && CODEC_TYPE_NAU8822_USE_SPI)
 
 // Clock period, SCLK no less then 80 nS (частота не выше 12.5 МГц)
 #define NAU8822_SPIMODE			SPIC_MODE3
@@ -68,13 +68,7 @@ static void nau8822_setreg_16(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-#if WITHSPIHW && WITHSPI32BIT
-	const uint32_t txbuf [] = { fulldata };
-	uint32_t rxbuf [ARRAY_SIZE(txbuf)];
-
-	prog_spi_exchange32(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-
-#else
+#if WITHSPIHW || WITHSPISW
 	const uint8_t txbuf [] = { fulldata >> 8, fulldata >> 0, };
 
 	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
@@ -97,7 +91,7 @@ static void nau8822_setreg_16(
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
 
-#if NAU8822_USE_SPI4_ACTUAL
+#if CODEC_TYPE_NAU8822_USE_SPI
 // SPI 4-Wire 24-bit Write and 32-bit Read Operation
 
 static void nau8822_setreg_24(
@@ -107,10 +101,9 @@ static void nau8822_setreg_24(
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 	const uint_fast32_t fulldata = regv * (UINT32_C(1) << 9) | (datav & 0x1ff);
-	const uint32_t txbuf [] = { 0x100000 | fulldata };
-	uint32_t rxbuf [ARRAY_SIZE(txbuf)];
+	const uint8_t txbuf [3] = { 0x10, fulldata >> 8, fulldata >> 0, };
 
-	prog_spi_exchange32(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 }
 
 static uint_fast16_t nau8822_getreg_32(
@@ -118,14 +111,28 @@ static uint_fast16_t nau8822_getreg_32(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint32_t txbuf [] = { 0x20000000 | regv * (UINT32_C(1) << 17) };
-	uint32_t rxbuf [ARRAY_SIZE(txbuf)];
+	const uint_fast32_t fulldata = regv * (UINT32_C(1) << 9);
+	const uint8_t txbuf [4] = { 0x20, fulldata >> 8, fulldata >> 0, 0x00, };
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	prog_spi_exchange32(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-	return rxbuf [0] & 0x01FF;
+	prog_spi_exchange(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	return USBD_peek_u16(rxbuf) & 0x01FF;
 }
 
-#endif /* NAU8822_USE_SPI4_ACTUAL */
+#endif /* CODEC_TYPE_NAU8822_USE_SPI */
+
+static void nau8822_setreg_universal(
+	uint_fast8_t regv,			/* 7 bit register address */
+	uint_fast16_t datav			/* 9 bit value */
+	)
+{
+#if CODEC_TYPE_NAU8822_USE_SPI
+	nau8822_setreg_24(regv, datav);
+#else /* CODEC_TYPE_NAU8822_USE_SPI */
+	nau8822_setreg_16(regv, datav);
+#endif /* CODEC_TYPE_NAU8822_USE_SPI */
+}
 
 void nau8822_setreg(
 	uint_fast8_t regv,			/* 7 bit register address */
@@ -403,13 +410,15 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	io_control(0);
 
-	nau8822_setreg_16(NAU8822_RESET, 0x00);	// RESET
-	nau8822_setreg_16(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 0xFF);	// RESET off (write value ignored)
-	nau8822_setreg_16(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 0x00);	// RESET off (write value ignored)
+	nau8822_setreg_universal(NAU8822_RESET, 0x00);	// RESET
+	nau8822_setreg_universal(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 0xFF);	// RESET off (write value ignored)
+	nau8822_setreg_universal(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 0x00);	// RESET off (write value ignored)
 
 #if NAU8822_USE_SPI4_ACTUAL
 	// Enable SPI 4-Wire 24-bit Write and 32-bit Read Operation
-	nau8822_setreg_16(0x49, 0x100);	// 4WSPIENA
+	nau8822_setreg_universal(0x49, 0x100);	// 4WSPIENA=1
+#else
+	nau8822_setreg_universal(0x49, 0x000);	// 4WSPIENA=0
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 
 	//nau8822_pll(0, 8u << 24);
