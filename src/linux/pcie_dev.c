@@ -4,7 +4,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && (DDS1_TYPE == DDS_TYPE_XDMA)
 
 #include "pcie_dev.h"
 
@@ -191,4 +191,4 @@ uint32_t xdma_read_user(long offset)
 	return v;
 }
 
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM  && (DDS1_TYPE == DDS_TYPE_XDMA) */

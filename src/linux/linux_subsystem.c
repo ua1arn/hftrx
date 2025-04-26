@@ -314,6 +314,18 @@ uint32_t reg_read(uint32_t addr)
 	return res;
 }
 
+#elif DDS1_TYPE == DDS_TYPE_XDMA
+
+void reg_write(uint32_t addr, uint32_t val)
+{
+	xdma_write_user(addr, val);
+}
+
+uint32_t reg_read(uint32_t addr)
+{
+	return xdma_read_user(addr);
+}
+
 #endif /* CPUSTYLE_XC7Z */
 
 void * process_linux_timer_spool(void * args)
@@ -1574,6 +1586,16 @@ void xdma_event(void)
 	save_dmabuffer32rx(addr32rx);
 
 	iq_mutex_unlock();
+
+#if CODEC1_FPGA
+	const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+	uint32_t * b = (uint32_t *) addr_ph;
+
+	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+		xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
+
+	release_dmabuffer16tx(addr_ph);
+#endif /* CODEC1_FPGA */
 
 	const uintptr_t addr32tx = getfilled_dmabuffer32tx();
 	uint32_t * t = (uint32_t *) addr32tx;
