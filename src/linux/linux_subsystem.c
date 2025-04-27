@@ -96,14 +96,14 @@ enum {
 #endif
 };
 
-#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
 
 void linux_rxtx_state(uint8_t tx)
 {
 
 }
 
-#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) */
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
 #if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 
@@ -314,7 +314,7 @@ uint32_t reg_read(uint32_t addr)
 	return res;
 }
 
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 
 void reg_write(uint32_t addr, uint32_t val)
 {
@@ -872,7 +872,7 @@ void update_modem_ctrl(void)
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* modem_ctrl = v;
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_MODEM_CONTROL, v);
 #endif
 }
@@ -890,7 +890,7 @@ void xcz_dds_rts(const uint_least64_t * val)
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* rts = v;
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_DDS_RTS, v);
 #endif
 }
@@ -902,7 +902,7 @@ void xcz_dds_ftw(const uint_least64_t * val)
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
     * ftw = v;
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
     xdma_write_user(AXI_LITE_DDS_FTW, v);
 #endif
 }
@@ -914,7 +914,7 @@ void xcz_dds_ftw_sub(const uint_least64_t * val)
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL && WITHUSEDUALWATCH
 	* ftw_sub = v;
-#elif DDS1_TYPE == DDS_TYPE_XDMA && WITHUSEDUALWATCH
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) && WITHUSEDUALWATCH
 	xdma_write_user(AXI_LITE_DDS_FTW_SUB, v);
 #endif
 }
@@ -989,7 +989,7 @@ static void wnb_update(void)
 {
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	reg_write(XPAR_IQ_MODEM_WNB_CONFIG, threshold);
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_WNB_CONFIG, threshold);
 #endif
 }
@@ -1043,7 +1043,7 @@ void set_stream_rate(uint32_t v)
 {
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* stream_rate = v;
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_STREAM_RATE, v);
 #endif
 }
@@ -1052,7 +1052,7 @@ uint32_t get_stream_pos(void)
 {
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	return * stream_pos;
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	return xdma_read_user(AXI_LITE_STREAM_POS);
 #endif
 }
@@ -1061,7 +1061,7 @@ void stream_receive(uint8_t * buf, uint16_t offset)
 {
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	memcpy(buf, (uint8_t *) stream_data + offset, 4096);
-#elif DDS1_TYPE == DDS_TYPE_XDMA
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_c2h_transfer(AXI_IQ_STREAM_BRAM + offset, 4096, buf);
 #endif
 }
@@ -1534,7 +1534,7 @@ void linux_iq_init(void)
 	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
-#if DDS1_TYPE == DDS_TYPE_XDMA
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	pcie_init();
 	if (pcie_open() < 0)
 		perror("pcie init");
@@ -1567,7 +1567,7 @@ void linux_iq_init(void)
 #endif /* WITHIQSHIFT */
 }
 
-#if DDS1_TYPE == DDS_TYPE_XDMA
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 
 pthread_t xdma_t;
 
@@ -2554,7 +2554,7 @@ void linux_exit(void)
 
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_close();
-#endif /* DDS1_TYPE == DDS_TYPE_XDMA */
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
 
 #if defined(CODEC1_TYPE) && CODEC1_TYPE == CODEC_TYPE_ALSA
 	alsa_close();
@@ -2586,16 +2586,16 @@ void * iio_stream_thread(void * args)
 
 void iq_stream_start(void)
 {
-#if DDS1_TYPE == DDS_TYPE_XDMA
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
-#elif DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, iq_thread_core);
 #endif
 }
 
 void iq_stream_stop(void)
 {
-#if DDS1_TYPE == DDS_TYPE_XDMA
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_cancel_thread(xdma_t);
 #elif DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	linux_cancel_thread(iq_interrupt_t);
