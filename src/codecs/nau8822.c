@@ -420,8 +420,26 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	// 1 = force SPI 4-wire mode regardless of state of Mode pin
 	// 0 = normal operation (default)
 	nau8822_setreg_universal(NAU8822_MISC_CONTROLS, 0x100);	// 4WSPIENA=1
+
+	//	en-us--DS_NAU8822A_NAU88U22A_DataSheet_EN_Rev2.2.pdf:
+	//	REG SPI3 0x73	0x129
+	//	REG SPI1 0x57	0x115
+	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	//	REG GPIO 0x08	0x100
+
+	//	en-us--DS_NAU8822A_NAU88U22A_DataSheet_EN_Rev2.2.pdf:
+	nau8822_setreg_universal(0x73, 0x129);	//	REG SPI3 0x73	0x129
+	nau8822_setreg_universal(0x57, 0x115);	//	REG SPI1 0x57	0x115
+	nau8822_setreg_universal(0x6C, 0x03B);	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	nau8822_setreg_universal(0x08, 0x100);	//	REG GPIO 0x08	0x100
+
 #else
 	nau8822_setreg_universal(NAU8822_MISC_CONTROLS, 0x000);	// 4WSPIENA=0
+
+	nau8822_setreg_universal(0x73, 0x000);	//	REG SPI3 0x73	0x129
+	nau8822_setreg_universal(0x57, 0x000);	//	REG SPI1 0x57	0x115
+	nau8822_setreg_universal(0x6C, 0x000);	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	nau8822_setreg_universal(0x08, 0x000);	//	REG GPIO 0x08	0x100
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 
 	//nau8822_pll(0, 8u << 24);
