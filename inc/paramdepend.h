@@ -937,7 +937,6 @@ extern "C" {
 
 	#define ATTRPACKED __attribute__ ((packed))
 	#define ATTRNORETURN __attribute__ ((__noreturn__))
-	#define KEYWORDPACKED __packed
 
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
@@ -953,7 +952,6 @@ extern "C" {
 
 	#define ATTRPACKED __attribute__ ((packed))
 	#define ATTRNORETURN __attribute__ ((__noreturn__))
-	#define KEYWORDPACKED __packed
 
 #endif /* __GNUC__ */
 
