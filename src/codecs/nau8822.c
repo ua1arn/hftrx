@@ -416,9 +416,12 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 #if NAU8822_USE_SPI4_ACTUAL
 	// Enable SPI 4-Wire 24-bit Write and 32-bit Read Operation
-	nau8822_setreg_universal(0x49, 0x100);	// 4WSPIENA=1
+	// 4WSPIENA:
+	// 1 = force SPI 4-wire mode regardless of state of Mode pin
+	// 0 = normal operation (default)
+	nau8822_setreg_universal(NAU8822_MISC_CONTROLS, 0x100);	// 4WSPIENA=1
 #else
-	nau8822_setreg_universal(0x49, 0x000);	// 4WSPIENA=0
+	nau8822_setreg_universal(NAU8822_MISC_CONTROLS, 0x000);	// 4WSPIENA=0
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 
 	//nau8822_pll(0, 8u << 24);
