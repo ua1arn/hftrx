@@ -191,7 +191,7 @@ static void nau8822_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fas
 		vmutespk = 0x40;
 		vmuteaux12 = 0x40;
 	}
-	//debug_printf_P(PSTR("nau8822_setvolume: level=%02x start\n"), level);
+	//PRINTF(PSTR("nau8822_setvolume: level=%02x start\n"), level);
 
 	// Установка уровня вывода на наушники
 	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhpL & 0x3F) | 0);
@@ -303,7 +303,7 @@ static void nau8822_setprocparams(
 	const uint_fast8_t * gains		/* массив с параметрами */
 	)
 {
-	//debug_printf_P(PSTR("codec: procenable=%d, gains={ %2d,%2d,%2d,%2d,%2d }\n"), procenable, gains [0], gains [1], gains [2], gains [3], gains [4]);
+	//PRINTF(PSTR("codec: procenable=%d, gains={ %2d,%2d,%2d,%2d,%2d }\n"), procenable, gains [0], gains [1], gains [2], gains [3], gains [4]);
 	//enum { wide = 0, freq = 1 }; // default settings
 	enum { wide = 1, freq = 0 };
 
@@ -376,7 +376,7 @@ static void nau8822_pll(
 
 static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
 {
-	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
+	//PRINTF(PSTR("nau8822_initialize_fullduplex start\n"));
 	uint_fast16_t NAU8822_AUDIO_INTERFACE_WLEN_val;
 	uint_fast16_t NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	switch (WITHADAPTERCODEC1WIDTH)
@@ -404,7 +404,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	const uint_fast32_t framebits = CODEC1_FRAMEBITS;
 	const uint_fast32_t bclk = ws * framebits;
 	const unsigned divider = mclk / bclk;
-	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
+	//PRINTF(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
 
 	const uint_fast32_t imclk = 256 * ws;
 
@@ -545,7 +545,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	nau8822_setreg(NAU8822_ADC_CONTROL, 0x108);	// HP filter enable, 128x oversampling for better SNR
 
-	//debug_printf_P(PSTR("nau8822_initialize_fullduplex done\n"));
+	//PRINTF(PSTR("nau8822_initialize_fullduplex done\n"));
 }
 
 static void nau8822_stop(void)
