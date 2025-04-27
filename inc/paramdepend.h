@@ -820,7 +820,7 @@ extern "C" {
 
 #elif (__GIC_PRESENT == 1)
 
-	typedef uint_fast32_t IRQL_t;
+	typedef uint8_t IRQL_t;
 
 	enum
 	{

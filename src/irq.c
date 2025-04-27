@@ -2103,9 +2103,9 @@ static RAMDTCM LCLSPINLOCK_t gicdistrib_lock = LCLSPINLOCK_INIT;
 
 static RAMDTCM LCLSPINLOCK_t populate_lock = LCLSPINLOCK_INIT;
 
-//static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
-//static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
+//static uint8_t gicshadow_target [1024];
+//static uint8_t gicshadow_config [1024];
+static uint8_t gicshadow_prio [1024];
 
 /* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных ядрах */
 static void arm_hardware_gicsfetch(void)

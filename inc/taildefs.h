@@ -151,7 +151,7 @@ typedef enum
 #if ! LINUX_SUBSYSTEM
 
 typedef struct lclspinlock_tag {
-	USBALIGN_BEGIN volatile uint8_t lock USBALIGN_END;
+	ALIGNX_BEGIN volatile uint8_t lock ALIGNX_END;
 #if WITHDEBUG
 	const char * file;
 	int line;
