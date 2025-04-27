@@ -1268,7 +1268,7 @@ void server_start(void)
 
 /*************************************************************/
 
-#if (CODEC1_TYPE == CODEC_TYPE_ALSA)
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA)
 
 #include <alsa/asoundlib.h>
 
@@ -2552,11 +2552,11 @@ void linux_exit(void)
 #endif /* WITHDSPEXTFIR */
 #endif
 
-#if DDS1_TYPE == DDS_TYPE_XDMA
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_close();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
-#if CODEC1_TYPE == CODEC_TYPE_ALSA
+#if defined(CODEC1_TYPE) && CODEC1_TYPE == CODEC_TYPE_ALSA
 	alsa_close();
 #endif /* CODEC1_TYPE == CODEC_TYPE_ALSA */
 

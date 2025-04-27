@@ -149,7 +149,7 @@ void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
 
 	save_dmabuffer32rx(addr32rx);
 
-#if (CODEC1_TYPE != CODEC_TYPE_ALSA)
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE != CODEC_TYPE_ALSA)
 	uintptr_t addr_ph = getfilled_dmabuffer16tx();
 	b = (uint32_t *) addr_ph;
 
@@ -161,7 +161,7 @@ void iq_proc(int32_t * buf_i, int32_t * buf_q, uint16_t * count)
 		* ph_fifo = b[i];
 
 	release_dmabuffer16tx(addr_ph);
-#endif /* (CODEC1_TYPE != CODEC_TYPE_ALSA) */
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE != CODEC_TYPE_ALSA) */
 }
 
 uint16_t iq_proc_tx(int32_t * buf_i, int32_t * buf_q, uint16_t idx, uint16_t lim)

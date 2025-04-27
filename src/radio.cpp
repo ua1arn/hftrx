@@ -21899,7 +21899,7 @@ application_initialize(void)
 
 	// TODO: у аудио кодека и IF кодека могут быть раные требования
 #if defined(CODEC1_TYPE)
-	/* требуется ли подача тактирования для инициадизации кодека */
+	/* требуется ли подача тактирования для инициализации кодека */
 	const int reqclk = board_getaudiocodecif()->clocksneed();
 #else /* defined(CODEC1_TYPE) */
 	const int reqclk = 1;

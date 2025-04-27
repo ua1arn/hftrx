@@ -2857,9 +2857,9 @@ static void window_audiosettings_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb_settings", "Reverb|settings",  },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq_settings", "MIC EQ|settings",  },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_settings", 	 "MIC|settings", 	 },
-#if (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_audio_switch", 	 "", 	 },
-#endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		unsigned buttons_size = sizeof(buttons);
@@ -2955,13 +2955,13 @@ static void window_audiosettings_process(void)
 				update = 1;
 			}
 #endif /* WITHREVERB */
-#if (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_audio_switch"))
 			{
 				alsa_switch_out();
 				update = 1;
 			}
-#endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
 		}
 		break;
 
@@ -2992,10 +2992,10 @@ static void window_audiosettings_process(void)
 		bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
 
-#if (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
 		bh = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_audio_switch");
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Audio|%s"), get_alsa_out());
-#endif /* (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
 	}
 }
 
