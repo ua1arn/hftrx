@@ -1437,19 +1437,20 @@
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */
 
-#define BOARD_BLINK_BIT0 (UINT32_C(1) << 4)	// PE4 BOOT_LED
-#define BOARD_BLINK_BIT1 (UINT32_C(1) << 5)	// PE5 FRONTLED_RED
-#define BOARD_BLINK_BIT2 (UINT32_C(1) << 6)	// PE6 FRONTLED_GREEN
+#define BOARD_BLINK_BIT (UINT32_C(1) << 4)	// PE4 BOOT_LED
+#define BOARD_FRONT_RED_BIT (UINT32_C(1) << 5)	// PE5 FRONTLED_RED
+#define BOARD_FRONT_GREEN_BIT (UINT32_C(1) << 6)	// PE6 FRONTLED_GREEN
 
 #define BOARD_BLINK_INITIALIZE() do { \
-	arm_hardware_pioe_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-	arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
-	arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
+	arm_hardware_pioe_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+	arm_hardware_pioe_outputs(BOARD_FRONT_RED_BIT, 1 * BOARD_FRONT_RED_BIT); \
+	arm_hardware_pioe_outputs(BOARD_FRONT_GREEN_BIT, 1 * BOARD_FRONT_GREEN_BIT); \
 } while (0)
+
 #define BOARD_BLINK_SETSTATE(state) do { \
-	gpioX_setstate(GPIOE, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-	gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
-	gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
+	gpioX_setstate(GPIOE, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
+	gpioX_setstate(GPIOE, 0*BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
+	gpioX_setstate(GPIOE, 0*BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
 } while (0)
 
 /* запрос на вход в режим загрузчика */
