@@ -666,23 +666,10 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define targetadc2		(UINT32_C(1) << 6) 		// PH6 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(UINT32_C(1) << 14)		// PH14 FPGA control registers CS1
 
-	// Здесь должны быть перечислены все биты формирования CS в устройстве.
-	#define SPI_ALLCS_BITS ( \
-		targetext1		| 	/* PH7 ext1 on front panel */ \
-		targetxad2		|	/* PH2 PA100W on-board ADC (not connected on this board) */ \
-		targetnvram		| 	/* PH8 nvmem FM25L16B */ \
-		targetctl1		| 	/* PH5 board control registers chain */ \
-		targetcodec1	| 	/* PH3 on-board codec1 NAU8822L */ \
-		targetadc2		| 	/* PH6 ADC MCP3208-BI/SL chip select (potentiometers) */ \
-		targetfpga1		| 	/* PH14 FPGA control registers CS1 */ \
-		0)
-
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 	#define targetnone 0				/* FPGA image loader pseudo chip select signal */
-
-	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
 	//#define SPI_NAEN_PORT_S(v)	do { GPIOx->BSRR = BSRR_S(v); (void) GPIOx->BSRR; } while (0)
 	//#define SPI_NAEN_PORT_C(v)	do { GPIOx->BSRR = BSRR_C(v); (void) GPIOx->BSRR; } while (0)
@@ -698,11 +685,35 @@ void user_uart4_onrxchar(uint_fast8_t c);
 		} \
 	} while (0)
 
+	/* Select specified chip. */
+	#define SPI_CS_ASSERT(target) do { \
+		switch (target) { \
+		default: { gpioX_setstate(GPIOH, (target), 0 * (target)); } break; \
+		case targetnone: break; \
+		} \
+	} while (0)
+
+	/* Unelect specified chip. */
+	#define SPI_CS_DEASSERT(target)	do { \
+		switch (target) { \
+		default: { gpioX_setstate(GPIOH, (target), 1 * (target)); } break; \
+		case targetnone: break; \
+		} \
+	} while (0)
+
 	/* инициализация лиий выбора периферийных микросхем */
-	#define SPI_ALLCS_INITIALIZE() \
-		do { \
-			arm_hardware_pioh_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
-		} while (0)
+	#define SPI_ALLCS_INITIALIZE()  do { \
+		const uint_fast32_t all_cs = \
+		targetext1		| 	/* PH7 ext1 on front panel */ \
+		targetxad2		|	/* PH2 PA100W on-board ADC (not connected on this board) */ \
+		targetnvram		| 	/* PH8 nvmem FM25L16B */ \
+		targetctl1		| 	/* PH5 board control registers chain */ \
+		targetcodec1	| 	/* PH3 on-board codec1 NAU8822L */ \
+		targetadc2		| 	/* PH6 ADC MCP3208-BI/SL chip select (potentiometers) */ \
+		targetfpga1		| 	/* PH14 FPGA control registers CS1 */ \
+		0; \
+		arm_hardware_pioh_outputs2m(all_cs, all_cs); \
+	} while (0)
 
 	// MOSI & SCK port
 	// SPI1
