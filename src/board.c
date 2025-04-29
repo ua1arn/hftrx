@@ -842,6 +842,14 @@ prog_gpioreg(void)
 	OPA2674_GPIO_SETSTATE(! glob_tx);
 #endif
 
+#if defined (BOARD_FRONT_RED_SETSTATE)
+	BOARD_FRONT_RED_SETSTATE(glob_tx);
+#endif
+
+#if defined (BOARD_FRONT_GREEN_SETSTATE)
+	//BOARD_FRONT_GREEN_SETSTATE(! glob_tx);
+#endif
+
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xcz_rxtx_state(glob_tx);
 #if defined (PREAMP_MIO)

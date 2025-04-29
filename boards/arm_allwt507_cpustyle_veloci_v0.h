@@ -1453,6 +1453,14 @@
 	gpioX_setstate(GPIOE, 0*BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
 } while (0)
 
+#define BOARD_FRONT_RED_SETSTATE(state) do { \
+	gpioX_setstate(GPIOE, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
+} while (0)
+
+#define BOARD_FRONT_GREEN_SETSTATE(state) do { \
+	gpioX_setstate(GPIOE, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
+} while (0)
+
 /* запрос на вход в режим загрузчика */
 #define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
