@@ -4724,7 +4724,7 @@ static const struct paramdefdef xcatenable =
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
-		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
@@ -14746,20 +14746,23 @@ static uint_fast8_t kenwoodpowermeter(void)
 
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 
+// The SM command reads the S-meter during reception and the RF (power) meter during transmission.
 static void sm0answer(uint_fast8_t arg)
 {
 	// s-meter state answer
-	static const FLASHMEM char fmt0_1 [] =
+	static const FLASHMEM char fmt0_2 [] =
 		"SM"			// 2 characters - status information code
-		"0"				// 1 char - Always 0
+		"%1d"				// 1 char - Always 0
 		"%04d"				// 4 chars - s-meter points (0000..0030)
 		";";				// 1 char - line terminator
 
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, arg == 9);
+	const int p1 = 0;
+	const int p2 = gtx ? kenwoodpowermeter() : scaletopointssmeter(board_getsmeter(& tracemax, 0, UINT8_MAX, 0), 0, UINT8_MAX);
 
-	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_1,
-		(int) (gtx ? kenwoodpowermeter() : scaletopointssmeter(v, 0, UINT8_MAX))
+	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_2,
+		p1,
+		p2
 		);
 	cat_answer(len);
 
@@ -14776,7 +14779,7 @@ static void sm9answer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, arg == 9);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 1);
 
 	// answer mode
 	int level = ((int) v - (int) UINT8_MAX);
