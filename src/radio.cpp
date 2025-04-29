@@ -15703,7 +15703,7 @@ processcatmsg(
 	}
 	else if (match2('S', 'M'))
 	{
-		// Get S-neter information
+		// The SM command reads the S-meter during reception and the RF (power) meter during transmission.
 		if (cathasparam && catparam == 0)
 		{
 			cat_answer_request(CAT_SM0_INDEX);
