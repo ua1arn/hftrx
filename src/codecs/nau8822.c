@@ -424,7 +424,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	//	en-us--DS_NAU8822A_NAU88U22A_DataSheet_EN_Rev2.2.pdf:
 	//	REG SPI3 0x73	0x129
 	//	REG SPI1 0x57	0x115
-	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	//	REG SPI2 0x6C	0x008	0x3b ???
 	//	REG GPIO 0x08	0x100
 
 	//en-us--DS_NAU8822A_NAU88U22A_DataSheet_EN_Rev2.2.pdf:
@@ -432,7 +432,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	nau8822_setreg_universal(0x73, 0x129);	//	REG SPI3 0x73	0x129
 	nau8822_setreg_universal(0x57, 0x115);	//	REG SPI1 0x57	0x115
-	nau8822_setreg_universal(0x6C, 0x03B);	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	nau8822_setreg_universal(0x6C, 0x008);	//	REG SPI2 0x6C	0x008	0x3b as default value in registers description, 0x008 in table.
 	nau8822_setreg_universal(0x08, 0x100);	//	REG GPIO 0x08	0x100
 
 #else
