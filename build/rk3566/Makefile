@@ -321,16 +321,25 @@ ddrinit_t507:
 	$(XROCK) write 0x00028000 ddrinit_t507.bin
 	$(XROCK) exec $(SystemDRAMInit)
 
-app_run: $(PROJECT)_app.alw32 ddrinit_t507
+
+_app_run:
+	$(XROCK) maskrom rk3566_ddr_1056MHz_v1.16.bin rk356x_usbplug_v1.17.bin --rc4-off
+	$(XROCK) version
+
+app_run:
+	$(XROCK) extra maskrom --rc4 off --sram rk3566_ddr_1056MHz_v1.16.bin --delay 10 --rc4 off --dram rk356x_usbplug_v1.17.bin --delay 10
+	$(XROCK) version
+
+___app_run: $(PROJECT)_app.alw32 ddrinit_t507
 	$(XROCK) write 0x40000000 $(PROJECT)_app.alw32
 	$(XROCK) exec 0x40000100 
 
-app_run64: $(PROJECT)_app.alw32 ddrinit_t507
+_app_run64: $(PROJECT)_app.alw32 ddrinit_t507
 	$(XROCK) write 0x40000000 $(PROJECT)_app.alw32
 	$(XROCK) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
-_app_run: bootloader
+__app_run: bootloader
 	$(XROCK) write 0x00028000 fsbl.bt0
 	$(XROCK) exec 0x00028000 
 
