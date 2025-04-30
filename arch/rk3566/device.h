@@ -81,20 +81,20 @@ typedef struct GICV_Type
     __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
     __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
     __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
-         uint32_t reserved_0x00C;
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t);
     __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
-         uint32_t reserved_0x014 [0x0003];
+         RESERVED(0x014[0x0020 - 0x0014], uint8_t);
     __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
-         uint32_t reserved_0x024 [0x0003];
+         RESERVED(0x024[0x0030 - 0x0024], uint8_t);
     __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
-         uint32_t reserved_0x034 [0x002F];
+         RESERVED(0x034[0x00F0 - 0x0034], uint8_t);
     __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
-         uint32_t reserved_0x0F4 [0x0003];
+         RESERVED(0x0F4[0x0100 - 0x00F4], uint8_t);
     __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
     __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
     __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
     __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
-         uint32_t reserved_0x110 [0x003C];
+         RESERVED(0x110[0x0200 - 0x0110], uint8_t);
 } GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief UART
@@ -110,9 +110,9 @@ typedef struct UART_Type
     __IO uint32_t UART_LSR;                           /*!< Offset 0x014 UART Line Status Register */
     __IO uint32_t UART_MSR;                           /*!< Offset 0x018 UART Modem Status Register */
     __IO uint32_t UART_SCH;                           /*!< Offset 0x01C UART Scratch Register */
-         uint32_t reserved_0x020 [0x0004];
+         RESERVED(0x020[0x0030 - 0x0020], uint8_t);
     __IO uint32_t UART_SRBR_STHR;                     /*!< Offset 0x030 W 0x00000000 Shadow Receive Buffer Register, Shadow Transmit Holding Register */
-         uint32_t reserved_0x034 [0x000F];
+         RESERVED(0x034[0x0070 - 0x0034], uint8_t);
     __IO uint32_t UART_FAR;                           /*!< Offset 0x070 W 0x00000000 FIFO Access Register */
     __IO uint32_t UART_TFR;                           /*!< Offset 0x074 W 0x00000000 Transmit FIFO Read */
     __IO uint32_t UART_RFW;                           /*!< Offset 0x078 W 0x00000000 Receive FIFO write */
@@ -128,7 +128,7 @@ typedef struct UART_Type
     __IO uint32_t UART_STET;                          /*!< Offset 0x0A0 W 0x00000000 Shadow TX Empty Trigger */
     __IO uint32_t UART_HTX;                           /*!< Offset 0x0A4 W 0x00000000 Halt TX */
     __IO uint32_t UART_DMASA;                         /*!< Offset 0x0A8 W 0x00000000 DMA Software Acknowledge */
-         uint32_t reserved_0x0AC [0x0012];
+         RESERVED(0x0AC[0x00F4 - 0x00AC], uint8_t);
     __IO uint32_t UART_CPR;                           /*!< Offset 0x0F4 W 0x00043FF2 Component Parameter Register */
     __IO uint32_t UART_UCV;                           /*!< Offset 0x0F8 W 0x3330382A UART Component Version */
     __IO uint32_t UART_CTR;                           /*!< Offset 0x0FC W 0x44570110 Component Type Register */
