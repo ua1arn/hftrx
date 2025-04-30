@@ -760,7 +760,6 @@
 #else /* WITHETHHW */
 
 	#define ETHERNET_INITIALIZE() do { \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
 	} while (0)
 
 #endif /* WITHETHHW */
