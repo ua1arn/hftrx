@@ -135,25 +135,51 @@
 
 
 
-  __STATIC_INLINE void __DMB(void)
-  {
-  	asm volatile ("FENCE" ::: "memory");
-  }
+__STATIC_INLINE void __DMB(void)
+{
+	asm volatile ("FENCE" ::: "memory");
+}
 
-  __STATIC_INLINE void __DSB(void)
-  {
-  	asm volatile ("FENCE" ::: "memory");
-  }
+__STATIC_INLINE void __DSB(void)
+{
+	asm volatile ("FENCE" ::: "memory");
+}
 
-  __STATIC_INLINE void __WFI(void)
-  {
-  	__asm volatile ("wfi":::);
-  }
+__STATIC_INLINE void __WFI(void)
+{
+	__asm volatile ("wfi":::);
+}
 
-  __STATIC_INLINE void __NOP(void)
-  {
-  	__asm volatile ("nop":::);
-  }
+__STATIC_INLINE void __NOP(void)
+{
+	__asm volatile ("nop":::);
+}
+
+/**
+ \brief   Reverse byte order (32 bit)
+ \details Reverses the byte order in unsigned integer value. For example, 0x12345678 becomes 0x78563412.
+ \param [in]    value  Value to reverse
+ \return               Reversed value
+ */
+__STATIC_INLINE uint32_t __REV(uint32_t value)
+{
+	// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+	// https://gcc.gnu.org/onlinedocs/gcc/Byte-Swapping-Builtins.html
+	return __builtin_bswap32(value);
+}
+
+/**
+ \brief   Reverse byte order (16 bit)
+ \details Reverses the byte order within each halfword of a word. For example, 0x12345678 becomes 0x34127856.
+ \param [in]    value  Value to reverse
+ \return               Reversed value
+ */
+__STATIC_INLINE uint32_t __REV16(uint32_t value)
+{
+	// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+	// https://gcc.gnu.org/onlinedocs/gcc/Byte-Swapping-Builtins.html
+	return __builtin_bswap16(value);
+}
 
 
 #endif /* __CMSIS_GCC_H */
