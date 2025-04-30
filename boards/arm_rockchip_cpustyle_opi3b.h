@@ -45,13 +45,13 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	#define WITHSDHC0HW	1		/* TF CARD */
-
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-#define BOARD_CONFIG_DRAM_CLK 672//792
-	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
+//	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//	#define WITHSDHC0HW	1		/* TF CARD */
+//
+//	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+//	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
+//	#define BOARD_CONFIG_DRAM_CLK 672//792
+//	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -65,7 +65,7 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 	
 	
 	#if WITHTINYUSB
@@ -75,13 +75,13 @@
 		#define TUP_USBIP_EHCI 1
 	#endif /* WITHTINYUSB */
 
-	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
-	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	3
-
-	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
-	#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	3
+//	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
+//	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
+//	#define WITHUSBHW_EHCI_IX	3
+//
+//	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
+//	#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
+//	#define WITHUSBHW_OHCI_IX	3
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 
@@ -110,7 +110,7 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
+#if 0
 	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
 	// AXP853T on HelperBoard T507 Core Board
 	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
@@ -123,6 +123,7 @@
 	#define BOARD_PMIC_INITIALIZE() do { \
 		axp853_initialize(); /* Voltages are set here */ \
 	} while (0)
+#endif
 
 #else /* WITHISBOOTLOADER */
 

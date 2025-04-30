@@ -734,6 +734,8 @@ extern "C" {
 
 	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
 	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+	#define HARDWARE_UART_FREQ (24000000)
+	#define HARDWARE_HOSC_FREQ (24000000)	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 1000	// Hz
 

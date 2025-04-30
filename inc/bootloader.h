@@ -120,6 +120,33 @@ void ctlboardt507_mainloop(void);
 
 #endif /* CPUSTYLE_ALLWINNER */
 
+#if CPUSTYLE_ROCKCHIP
+	// Bootloader parameters
+	// stub
+	#if WITHSDRAMHW
+		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMSIZE (1024uL * 1024 * 128)	// 256M
+		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define USBD_DFU_RAM_XFER_SIZE 4096
+		#define USBD_DFU_RAM_LOADER BOOTLOADER_RAMAREA//(BOOTLOADER_RAMAREA + 0x4000uL)	/* адрес ОЗУ, куда DFU загрузчиком помещаем первую страницу образа */
+	#endif /* WITHSDRAMHW */
+
+	/* DFU device разделяет по приходящему адресу куда писать */
+	#define BOOTLOADER_FLASHSIZE (1024L * 1024 * 16)	// 16M FLASH CHIP
+	#define BOOTLOADER_SELFBASE 0x30000000	/* Воображаемый адрес, где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFSIZE (1024L * 256)	// 256k - начиная отсюда находится образ application
+	#define EMMC_EGON_OFFSET 0x00002000	// смещение, на котором в eMMC или SD CARD должен находиться загрузчик
+
+	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* Воображаемый адрес, адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
+
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+
+	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
+	#define USBD_DFU_FLASHNAME "W25Q128JV"
+
+#endif /* CPUSTYLE_ALLWINNER */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
