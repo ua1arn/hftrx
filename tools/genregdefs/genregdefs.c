@@ -261,7 +261,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			// reserving
 			const unsigned sz = regp->fldoffs - offs;
 			// Use CMSIS define
-			emitline(indent + INDENT + 5, "RESERVED(0x%03X[0x%04X - 0x%04X], uint8_t);\n", offs, regp->fldoffs, offs);
+			emitline(indent + INDENT + 5, "RESERVED(0x%03X[0x%04X - 0x%04X], uint8_t)\n", offs, regp->fldoffs, offs);
 			//emitline(indent + INDENT + 5, "uint8_t reserved_0x%03X [0x%04X - 0x%04X];\n", offs, regp->fldoffs, offs);
 			offs = regp->fldoffs;
 		}

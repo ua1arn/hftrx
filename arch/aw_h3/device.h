@@ -157,22 +157,22 @@ typedef enum IRQn
 typedef struct CCU_Type
 {
     __IO uint32_t PLL_CPUX_CTRL_REG;                  /*!< Offset 0x000 PLL_CPUX Control Register */
-         RESERVED(0x004[0x0008 - 0x0004], uint8_t);
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
     __IO uint32_t PLL_AUDIO_CTRL_REG;                 /*!< Offset 0x008 PLL_AUDIO Control Register */
-         RESERVED(0x00C[0x0010 - 0x000C], uint8_t);
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     __IO uint32_t PLL_VIDEO_CTRL_REG;                 /*!< Offset 0x010 PLL_VIDEO Control Register */
-         RESERVED(0x014[0x0018 - 0x0014], uint8_t);
+         RESERVED(0x014[0x0018 - 0x0014], uint8_t)
     __IO uint32_t PLL_VE_CTRL_REG;                    /*!< Offset 0x018 PLL_VE Control Register */
-         RESERVED(0x01C[0x0020 - 0x001C], uint8_t);
+         RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     __IO uint32_t PLL_DDR_CTRL_REG;                   /*!< Offset 0x020 PLL_DDR Control Register */
-         RESERVED(0x024[0x0028 - 0x0024], uint8_t);
+         RESERVED(0x024[0x0028 - 0x0024], uint8_t)
     __IO uint32_t PLL_PERIPH0_CTRL_REG;               /*!< Offset 0x028 PLL_PERIPH0 Control Register */
-         RESERVED(0x02C[0x0038 - 0x002C], uint8_t);
+         RESERVED(0x02C[0x0038 - 0x002C], uint8_t)
     __IO uint32_t PLL_GPU_CTRL_REG;                   /*!< Offset 0x038 PLL_GPU Control Register */
-         RESERVED(0x03C[0x0044 - 0x003C], uint8_t);
+         RESERVED(0x03C[0x0044 - 0x003C], uint8_t)
     __IO uint32_t PLL_PERIPH1_CTRL_REG;               /*!< Offset 0x044 PLL_PERIPH1_CTRL_REG */
     __IO uint32_t PLL_DE_CTRL_REG;                    /*!< Offset 0x048 PLL_DE Control Register */
-         RESERVED(0x04C[0x0050 - 0x004C], uint8_t);
+         RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
     __IO uint32_t CPUX_AXI_CFG_REG;                   /*!< Offset 0x050 CPUX/AXI Configuration Register */
     __IO uint32_t AHB1_APB1_CFG_REG;                  /*!< Offset 0x054 AHB1/APB1 Configuration Register */
     __IO uint32_t APB2_CFG_REG;                       /*!< Offset 0x058 APB2 Configuration Register */
@@ -183,93 +183,93 @@ typedef struct CCU_Type
     __IO uint32_t BUS_CLK_GATING_REG3;                /*!< Offset 0x06C Bus Clock Gating Register 3 */
     __IO uint32_t BUS_CLK_GATING_REG4;                /*!< Offset 0x070 Bus Clock Gating Register4 */
     __IO uint32_t THS_CLK_REG;                        /*!< Offset 0x074 THS Clock Register */
-         RESERVED(0x078[0x0080 - 0x0078], uint8_t);
+         RESERVED(0x078[0x0080 - 0x0078], uint8_t)
     __IO uint32_t NAND_CLK_REG;                       /*!< Offset 0x080 NAND Clock Register */
-         RESERVED(0x084[0x0088 - 0x0084], uint8_t);
+         RESERVED(0x084[0x0088 - 0x0084], uint8_t)
     __IO uint32_t SDMMC0_CLK_REG;                     /*!< Offset 0x088 SDMMC0 Clock Register */
     __IO uint32_t SDMMC1_CLK_REG;                     /*!< Offset 0x08C SDMMC1 Clock Register */
     __IO uint32_t SDMMC2_CLK_REG;                     /*!< Offset 0x090 SDMMC2 Clock Register */
-         RESERVED(0x094[0x009C - 0x0094], uint8_t);
+         RESERVED(0x094[0x009C - 0x0094], uint8_t)
     __IO uint32_t CE_CLK_REG;                         /*!< Offset 0x09C CE Clock Register */
     __IO uint32_t SPI0_CLK_REG;                       /*!< Offset 0x0A0 SPI0 Clock Register */
     __IO uint32_t SPI1_CLK_REG;                       /*!< Offset 0x0A4 SPI1 Clock Register */
-         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t);
+         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
     __IO uint32_t I2S_PCM0_CLK_REG;                   /*!< Offset 0x0B0 I2S/PCM0 Clock Register */
     __IO uint32_t I2S_PCM1_CLK_REG;                   /*!< Offset 0x0B4 I2S/PCM1 Clock Register */
     __IO uint32_t I2S_PCM2_CLK_REG;                   /*!< Offset 0x0B8 I2S/PCM2 Clock Register */
-         RESERVED(0x0BC[0x00C0 - 0x00BC], uint8_t);
+         RESERVED(0x0BC[0x00C0 - 0x00BC], uint8_t)
     __IO uint32_t OWA_CLK_REG;                        /*!< Offset 0x0C0 OWA Clock Register */
-         RESERVED(0x0C4[0x00CC - 0x00C4], uint8_t);
+         RESERVED(0x0C4[0x00CC - 0x00C4], uint8_t)
     __IO uint32_t USBPHY_CFG_REG;                     /*!< Offset 0x0CC USBPHY Configuration Register */
-         RESERVED(0x0D0[0x00F4 - 0x00D0], uint8_t);
+         RESERVED(0x0D0[0x00F4 - 0x00D0], uint8_t)
     __IO uint32_t DRAM_CFG_REG;                       /*!< Offset 0x0F4 DRAM Configuration Register */
-         RESERVED(0x0F8[0x00FC - 0x00F8], uint8_t);
+         RESERVED(0x0F8[0x00FC - 0x00F8], uint8_t)
     __IO uint32_t MBUS_RST_REG;                       /*!< Offset 0x0FC MBUS Reset Register */
     __IO uint32_t DRAM_CLK_GATING_REG;                /*!< Offset 0x100 DRAM Clock Gating Register */
     __IO uint32_t DE_CLK_REG;                         /*!< Offset 0x104 DE Clock Register */
-         RESERVED(0x108[0x0118 - 0x0108], uint8_t);
+         RESERVED(0x108[0x0118 - 0x0108], uint8_t)
     __IO uint32_t TCON0_CLK_REG;                      /*!< Offset 0x118 TCON0 Clock Register */
-         RESERVED(0x11C[0x0120 - 0x011C], uint8_t);
+         RESERVED(0x11C[0x0120 - 0x011C], uint8_t)
     __IO uint32_t TVE_CLK_REG;                        /*!< Offset 0x120 TVE Clock Register */
     __IO uint32_t DEINTERLACE_CLK_REG;                /*!< Offset 0x124 DEINTERLACE Clock Register */
-         RESERVED(0x128[0x0130 - 0x0128], uint8_t);
+         RESERVED(0x128[0x0130 - 0x0128], uint8_t)
     __IO uint32_t CSI_MISC_CLK_REG;                   /*!< Offset 0x130 CSI_MISC Clock Register */
     __IO uint32_t CSI_CLK_REG;                        /*!< Offset 0x134 CSI Clock Register */
-         RESERVED(0x138[0x013C - 0x0138], uint8_t);
+         RESERVED(0x138[0x013C - 0x0138], uint8_t)
     __IO uint32_t VE_CLK_REG;                         /*!< Offset 0x13C VE Clock Register */
     __IO uint32_t AC_DIG_CLK_REG;                     /*!< Offset 0x140 AC Digital Clock Register */
     __IO uint32_t AVS_CLK_REG;                        /*!< Offset 0x144 AVS Clock Register */
-         RESERVED(0x148[0x0150 - 0x0148], uint8_t);
+         RESERVED(0x148[0x0150 - 0x0148], uint8_t)
     __IO uint32_t HDMI_CLK_REG;                       /*!< Offset 0x150 HDMI Clock Register */
     __IO uint32_t HDMI_SLOW_CLK_REG;                  /*!< Offset 0x154 HDMI Slow Clock Register */
-         RESERVED(0x158[0x015C - 0x0158], uint8_t);
+         RESERVED(0x158[0x015C - 0x0158], uint8_t)
     __IO uint32_t MBUS_CLK_REG;                       /*!< Offset 0x15C MBUS Clock Register */
-         RESERVED(0x160[0x01A0 - 0x0160], uint8_t);
+         RESERVED(0x160[0x01A0 - 0x0160], uint8_t)
     __IO uint32_t GPU_CLK_REG;                        /*!< Offset 0x1A0 GPU Clock Register */
-         RESERVED(0x1A4[0x0200 - 0x01A4], uint8_t);
+         RESERVED(0x1A4[0x0200 - 0x01A4], uint8_t)
     __IO uint32_t PLL_STABLE_TIME_REG0;               /*!< Offset 0x200 PLL Stable Time Register 0 */
     __IO uint32_t PLL_STABLE_TIME_REG1;               /*!< Offset 0x204 PLL Stable Time Register 1 */
-         RESERVED(0x208[0x0220 - 0x0208], uint8_t);
+         RESERVED(0x208[0x0220 - 0x0208], uint8_t)
     __IO uint32_t PLL_CPUX_BIAS_REG;                  /*!< Offset 0x220 PLL_CPUX Bias Register */
     __IO uint32_t PLL_AUDIO_BIAS_REG;                 /*!< Offset 0x224 PLL_AUDIO Bias Register */
     __IO uint32_t PLL_VIDEO_BIAS_REG;                 /*!< Offset 0x228 PLL_VIDEO Bias Register */
     __IO uint32_t PLL_VE_BIAS_REG;                    /*!< Offset 0x22C PLL_VE Bias Register */
     __IO uint32_t PLL_DDR_BIAS_REG;                   /*!< Offset 0x230 PLL_DDR Bias Register */
     __IO uint32_t PLL_PERIPH0_BIAS_REG;               /*!< Offset 0x234 PLL_PERIPH0 Bias Register */
-         RESERVED(0x238[0x023C - 0x0238], uint8_t);
+         RESERVED(0x238[0x023C - 0x0238], uint8_t)
     __IO uint32_t PLL_GPU_BIAS_REG;                   /*!< Offset 0x23C PLL_GPU Bias Register */
-         RESERVED(0x240[0x0244 - 0x0240], uint8_t);
+         RESERVED(0x240[0x0244 - 0x0240], uint8_t)
     __IO uint32_t PLL_PERIPH1_BIAS_REG;               /*!< Offset 0x244 PLL_PERIPH1 Bias Register */
     __IO uint32_t PLL_DE_BIAS_REG;                    /*!< Offset 0x248 PLL_DE Bias Register */
-         RESERVED(0x24C[0x0250 - 0x024C], uint8_t);
+         RESERVED(0x24C[0x0250 - 0x024C], uint8_t)
     __IO uint32_t PLL_CPUX_TUN_REG;                   /*!< Offset 0x250 PLL_CPUX Tuning Register */
-         RESERVED(0x254[0x0260 - 0x0254], uint8_t);
+         RESERVED(0x254[0x0260 - 0x0254], uint8_t)
     __IO uint32_t PLL_DDR_TUN_REG;                    /*!< Offset 0x260 PLL_DDR Tuning Register */
-         RESERVED(0x264[0x0280 - 0x0264], uint8_t);
+         RESERVED(0x264[0x0280 - 0x0264], uint8_t)
     __IO uint32_t PLL_CPUX_PAT_CTRL_REG;              /*!< Offset 0x280 PLL_CPUX Pattern Control Register */
     __IO uint32_t PLL_AUDIO_PAT_CTRL_REG0;            /*!< Offset 0x284 PLL_AUDIO Pattern Control Register */
     __IO uint32_t PLL_VIDEO_PAT_CTRL_REG0;            /*!< Offset 0x288 PLL_VIDEO Pattern Control Register */
     __IO uint32_t PLL_VE_PAT_CTRL_REG;                /*!< Offset 0x28C PLL_VE Pattern Control Register */
     __IO uint32_t PLL_DDR_PAT_CTRL_REG0;              /*!< Offset 0x290 PLL_DDR Pattern Control Register */
-         RESERVED(0x294[0x029C - 0x0294], uint8_t);
+         RESERVED(0x294[0x029C - 0x0294], uint8_t)
     __IO uint32_t PLL_GPU_PAT_CTRL_REG;               /*!< Offset 0x29C PLL_GPU Pattern Control Register */
-         RESERVED(0x2A0[0x02A4 - 0x02A0], uint8_t);
+         RESERVED(0x2A0[0x02A4 - 0x02A0], uint8_t)
     __IO uint32_t PLL_PERIPH1_PAT_CTRL_REG1;          /*!< Offset 0x2A4 PLL_PERIPH1 Pattern Control Register */
     __IO uint32_t PLL_DE_PAT_CTRL_REG;                /*!< Offset 0x2A8 PLL_DE Pattern Control Register */
-         RESERVED(0x2AC[0x02C0 - 0x02AC], uint8_t);
+         RESERVED(0x2AC[0x02C0 - 0x02AC], uint8_t)
     __IO uint32_t BUS_SOFT_RST_REG0;                  /*!< Offset 0x2C0 Bus Software Reset Register 0 */
     __IO uint32_t BUS_SOFT_RST_REG1;                  /*!< Offset 0x2C4 Bus Software Reset Register 1 */
     __IO uint32_t BUS_SOFT_RST_REG2;                  /*!< Offset 0x2C8 Bus Software Reset Register 2 */
-         RESERVED(0x2CC[0x02D0 - 0x02CC], uint8_t);
+         RESERVED(0x2CC[0x02D0 - 0x02CC], uint8_t)
     __IO uint32_t BUS_SOFT_RST_REG3;                  /*!< Offset 0x2D0 Bus Software Reset Register 3 */
-         RESERVED(0x2D4[0x02D8 - 0x02D4], uint8_t);
+         RESERVED(0x2D4[0x02D8 - 0x02D4], uint8_t)
     __IO uint32_t BUS_SOFT_RST_REG4;                  /*!< Offset 0x2D8 Bus Software Reset Register 4 */
-         RESERVED(0x2DC[0x02F0 - 0x02DC], uint8_t);
+         RESERVED(0x2DC[0x02F0 - 0x02DC], uint8_t)
     __IO uint32_t CCU_SEC_SWITCH_REG;                 /*!< Offset 0x2F0 CCU Security Switch Register */
-         RESERVED(0x2F4[0x0300 - 0x02F4], uint8_t);
+         RESERVED(0x2F4[0x0300 - 0x02F4], uint8_t)
     __IO uint32_t PS_CTRL_REG;                        /*!< Offset 0x300 PS Control Register */
     __IO uint32_t PS_CNT_REG;                         /*!< Offset 0x304 PS Counter Register */
-         RESERVED(0x308[0x0400 - 0x0308], uint8_t);
+         RESERVED(0x308[0x0400 - 0x0308], uint8_t)
 } CCU_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief CPUCFG
@@ -278,22 +278,22 @@ typedef struct CCU_Type
 typedef struct CPUCFG_Type
 {
     __IO uint32_t CPUS_RST_CTRL_REG;                  /*!< Offset 0x000 CPUS reset control register */
-         RESERVED(0x004[0x0040 - 0x0004], uint8_t);
+         RESERVED(0x004[0x0040 - 0x0004], uint8_t)
     struct
     {
         __IO uint32_t CPU_RST_CTRL_REG;               /*!< Offset 0x040 CPU0 reset control */
         __IO uint32_t CPU_CTRL_REG;                   /*!< Offset 0x044 CPU0 control register */
         __IO uint32_t CPU_STATUS_REG;                 /*!< Offset 0x048 CPU0 status register */
-             RESERVED(0x00C[0x0040 - 0x000C], uint8_t);
+             RESERVED(0x00C[0x0040 - 0x000C], uint8_t)
     } CPU [0x004];                                    /*!< Offset 0x040 CPU control [0..3] */
     __IO uint32_t CPU_SYS_RST_REG;                    /*!< Offset 0x140 CPU System Reset Register */
     __IO uint32_t CPU_CLK_GATING_REG;                 /*!< Offset 0x144 CPU clock gating Register */
-         RESERVED(0x148[0x0184 - 0x0148], uint8_t);
+         RESERVED(0x148[0x0184 - 0x0148], uint8_t)
     __IO uint32_t GENER_CTRL_REG;                     /*!< Offset 0x184 General Control Register */
-         RESERVED(0x188[0x01A0 - 0x0188], uint8_t);
+         RESERVED(0x188[0x01A0 - 0x0188], uint8_t)
     __IO uint32_t SUP_STAN_FLAG_REG;                  /*!< Offset 0x1A0 Super Standby Flag Register */
     __IO uint32_t RVADDR;                             /*!< Offset 0x1A4 Hot plugin start address */
-         RESERVED(0x1A8[0x0280 - 0x01A8], uint8_t);
+         RESERVED(0x1A8[0x0280 - 0x01A8], uint8_t)
     __IO uint32_t CNT64_CTRL_REG;                     /*!< Offset 0x280 64-bit Counter Control Register */
     __IO uint32_t CNT64_LOW_REG;                      /*!< Offset 0x284 64-bit Counter Low Register */
     __IO uint32_t CNT64_HIGH_REG;                     /*!< Offset 0x288 64-bit Counter High Register */
@@ -310,22 +310,22 @@ typedef struct DE_BLD_Type
         __IO uint32_t BLD_FILL_COLOR;                 /*!< Offset 0x004 BLD fill color register */
         __IO uint32_t BLD_CH_ISIZE;                   /*!< Offset 0x008 BLD input memory size register */
         __IO uint32_t BLD_CH_OFFSET;                  /*!< Offset 0x00C BLD input memory offset register */
-             RESERVED(0x00C[0x0010 - 0x000C], uint8_t);
+             RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..5] */
-         RESERVED(0x064[0x0080 - 0x0064], uint8_t);
+         RESERVED(0x064[0x0080 - 0x0064], uint8_t)
     __IO uint32_t ROUTE;                              /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
     __IO uint32_t PREMULTIPLY;                        /*!< Offset 0x084 BLD pre-multiply control register */
     __IO uint32_t BKCOLOR;                            /*!< Offset 0x088  */
     __IO uint32_t OUTPUT_SIZE;                        /*!< Offset 0x08C  */
     __IO uint32_t BLD_MODE [0x006];                   /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more) */
-         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t);
+         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
     __IO uint32_t CK_CTL;                             /*!< Offset 0x0B0  */
     __IO uint32_t CK_CFG;                             /*!< Offset 0x0B4  */
-         RESERVED(0x0B8[0x00C0 - 0x00B8], uint8_t);
+         RESERVED(0x0B8[0x00C0 - 0x00B8], uint8_t)
     __IO uint32_t CK_MAX [0x004];                     /*!< Offset 0x0C0  */
-         RESERVED(0x0D0[0x00E0 - 0x00D0], uint8_t);
+         RESERVED(0x0D0[0x00E0 - 0x00D0], uint8_t)
     __IO uint32_t CK_MIN [0x004];                     /*!< Offset 0x0E0  */
-         RESERVED(0x0F0[0x00FC - 0x00F0], uint8_t);
+         RESERVED(0x0F0[0x00FC - 0x00F0], uint8_t)
     __IO uint32_t OUT_CTL;                            /*!< Offset 0x0FC  */
 } DE_BLD_TypeDef; /* size of structure = 0x100 */
 /*
@@ -336,27 +336,27 @@ typedef struct DE_CSR_Type
 {
     __IO uint32_t CSR_CTL;                            /*!< Offset 0x000 (null) */
     __IO uint32_t INT;                                /*!< Offset 0x004 Interrupt register */
-         RESERVED(0x008[0x0020 - 0x0008], uint8_t);
+         RESERVED(0x008[0x0020 - 0x0008], uint8_t)
     __IO uint32_t IFMT;                               /*!< Offset 0x020 Input data attribute register */
     __IO uint32_t IDATA_SIZE;                         /*!< Offset 0x024 Input data size register */
-         RESERVED(0x028[0x0030 - 0x0028], uint8_t);
+         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
     __IO uint32_t IDATA_MEN_PITCH0;                   /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
     __IO uint32_t IDATA_MEN_PITCH1;                   /*!< Offset 0x034 Input U/UV memory pitch register */
     __IO uint32_t IDATA_MEN_PITCH2;                   /*!< Offset 0x038 Input V memory pitch register */
-         RESERVED(0x03C[0x0040 - 0x003C], uint8_t);
+         RESERVED(0x03C[0x0040 - 0x003C], uint8_t)
     __IO uint32_t IMEN_LADD0;                         /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
     __IO uint32_t IMEN_HADD0;                         /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
     __IO uint32_t IMEN_LADD1;                         /*!< Offset 0x048 Input U/UV memory address register0 */
     __IO uint32_t IMEN_HADD1;                         /*!< Offset 0x04C Input U/UV memory address register1 */
     __IO uint32_t IMEN_LADD2;                         /*!< Offset 0x050 Input V memory address register0 */
     __IO uint32_t IMEN_HADD2;                         /*!< Offset 0x054 Input V memory address register1 */
-         RESERVED(0x058[0x0084 - 0x0058], uint8_t);
+         RESERVED(0x058[0x0084 - 0x0058], uint8_t)
     __IO uint32_t ODATA_SIZE;                         /*!< Offset 0x084 Output data size register */
-         RESERVED(0x088[0x0090 - 0x0088], uint8_t);
+         RESERVED(0x088[0x0090 - 0x0088], uint8_t)
     __IO uint32_t ODATA_MEN_PITCH0;                   /*!< Offset 0x090 (null) */
     __IO uint32_t ODATA_MEN_PITCH1;                   /*!< Offset 0x094 (null) */
     __IO uint32_t ODATA_MEN_PITCH2;                   /*!< Offset 0x098 (null) */
-         RESERVED(0x09C[0x00A0 - 0x009C], uint8_t);
+         RESERVED(0x09C[0x00A0 - 0x009C], uint8_t)
     __IO uint32_t OMEN_LADD0;                         /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
     __IO uint32_t OMEN_HADD0;                         /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
     __IO uint32_t OMEN_LADD1;                         /*!< Offset 0x0A8 Output U/UV memory address register0 */
@@ -403,7 +403,7 @@ typedef struct DE_UI_Type
         __IO uint32_t TOP_LADDR;                      /*!< Offset 0x010  */
         __IO uint32_t BOT_LADDR;                      /*!< Offset 0x014  */
         __IO uint32_t FCOLOR;                         /*!< Offset 0x018  */
-             RESERVED(0x01C[0x0020 - 0x001C], uint8_t);
+             RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     } CFG [0x004];                                    /*!< Offset 0x000  */
     __IO uint32_t TOP_HADDR;                          /*!< Offset 0x080  */
     __IO uint32_t BOT_HADDR;                          /*!< Offset 0x084  */
@@ -416,22 +416,22 @@ typedef struct DE_UI_Type
 typedef struct DE_UIS_Type
 {
     __IO uint32_t UIS_CTRL_REG;                       /*!< Offset 0x000 Control register */
-         RESERVED(0x004[0x0008 - 0x0004], uint8_t);
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
     __IO uint32_t UIS_STATUS_REG;                     /*!< Offset 0x008 Status register */
     __IO uint32_t UIS_FIELD_CTRL_REG;                 /*!< Offset 0x00C Field control register */
     __IO uint32_t UIS_BIST_REG;                       /*!< Offset 0x010 BIST control register */
-         RESERVED(0x014[0x0040 - 0x0014], uint8_t);
+         RESERVED(0x014[0x0040 - 0x0014], uint8_t)
     __IO uint32_t UIS_OUTSIZE_REG;                    /*!< Offset 0x040 Output size register */
-         RESERVED(0x044[0x0080 - 0x0044], uint8_t);
+         RESERVED(0x044[0x0080 - 0x0044], uint8_t)
     __IO uint32_t UIS_INSIZE_REG;                     /*!< Offset 0x080 Input size register */
-         RESERVED(0x084[0x0088 - 0x0084], uint8_t);
+         RESERVED(0x084[0x0088 - 0x0084], uint8_t)
     __IO uint32_t UIS_HSTEP_REG;                      /*!< Offset 0x088 Horizontal step register */
     __IO uint32_t UIS_VSTEP_REG;                      /*!< Offset 0x08C Vertical step register */
     __IO uint32_t UIS_HPHASE_REG;                     /*!< Offset 0x090 Horizontal initial phase register */
-         RESERVED(0x094[0x0098 - 0x0094], uint8_t);
+         RESERVED(0x094[0x0098 - 0x0094], uint8_t)
     __IO uint32_t UIS_VPHASE0_REG;                    /*!< Offset 0x098 Vertical initial phase 0 register */
     __IO uint32_t UIS_VPHASE1_REG;                    /*!< Offset 0x09C Vertical initial phase 1 register */
-         RESERVED(0x0A0[0x0200 - 0x00A0], uint8_t);
+         RESERVED(0x0A0[0x0200 - 0x00A0], uint8_t)
     __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15)#typeend */
 } DE_UIS_TypeDef; /* size of structure = 0x240 */
 /*
@@ -463,11 +463,11 @@ typedef struct DE_VI_Type
 typedef struct DE_VSU_Type
 {
     __IO uint32_t VSU_CTRL_REG;                       /*!< Offset 0x000 VSU Module Control Register */
-         RESERVED(0x004[0x0008 - 0x0004], uint8_t);
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
     __IO uint32_t VSU_STATUS_REG;                     /*!< Offset 0x008 VSU Status Register */
     __IO uint32_t VSU_FIELD_CTRL_REG;                 /*!< Offset 0x00C VSU Field Control Register */
     __IO uint32_t VSU_SCALE_MODE_REG;                 /*!< Offset 0x010 VSU Scale Mode Setting Register */
-         RESERVED(0x014[0x0020 - 0x0014], uint8_t);
+         RESERVED(0x014[0x0020 - 0x0014], uint8_t)
     __IO uint32_t VSU_DIRECTION_THR_REG;              /*!< Offset 0x020 VSU Direction Detection Threshold Register */
     __IO uint32_t VSU_EDGE_THR_REG;                   /*!< Offset 0x024 VSU Edge Detection Setting Register */
     __IO uint32_t VSU_EDSCALER_CTRL_REG;              /*!< Offset 0x028 VSU Edge-Direction Scaler Control Register */
@@ -478,35 +478,35 @@ typedef struct DE_VSU_Type
     __IO uint32_t VSU_SHARP_GAIN1_REG;                /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
     __IO uint32_t VSU_OUT_SIZE_REG;                   /*!< Offset 0x040 VSU Output Size Register */
     __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 (null) */
-         RESERVED(0x048[0x0080 - 0x0048], uint8_t);
+         RESERVED(0x048[0x0080 - 0x0048], uint8_t)
     __IO uint32_t VSU_Y_SIZE_REG;                     /*!< Offset 0x080 VSU Y Channel Size Register */
-         RESERVED(0x084[0x0088 - 0x0084], uint8_t);
+         RESERVED(0x084[0x0088 - 0x0084], uint8_t)
     __IO uint32_t VSU_Y_HSTEP_REG;                    /*!< Offset 0x088 VSU Y Channel Horizontal Step Register */
     __IO uint32_t VSU_Y_VSTEP_REG;                    /*!< Offset 0x08C VSU Y Channel Vertical Step Register */
     __IO uint32_t VSU_Y_HPHASE_REG;                   /*!< Offset 0x090 VSU Y Channel Horizontal Initial Phase Register */
-         RESERVED(0x094[0x0098 - 0x0094], uint8_t);
+         RESERVED(0x094[0x0098 - 0x0094], uint8_t)
     __IO uint32_t VSU_Y_VPHASE0_REG;                  /*!< Offset 0x098 VSU Y Channel Vertical Initial Phase 0 Register */
     __IO uint32_t VSU_Y_VPHASE1_REG;                  /*!< Offset 0x09C VSU Y Channel Vertical Initial Phase 1 Register */
-         RESERVED(0x0A0[0x00C0 - 0x00A0], uint8_t);
+         RESERVED(0x0A0[0x00C0 - 0x00A0], uint8_t)
     __IO uint32_t VSU_C_SIZE_REG;                     /*!< Offset 0x0C0 VSU C Channel Size Register */
-         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t);
+         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
     __IO uint32_t VSU_C_HSTEP_REG;                    /*!< Offset 0x0C8 VSU C Channel Horizontal Step Register */
     __IO uint32_t VSU_C_VSTEP_REG;                    /*!< Offset 0x0CC VSU C Channel Vertical Step Register */
     __IO uint32_t VSU_C_HPHASE_REG;                   /*!< Offset 0x0D0 VSU C Channel Horizontal Initial Phase Register */
-         RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t);
+         RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
     __IO uint32_t VSU_C_VPHASE0_REG;                  /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
     __IO uint32_t VSU_C_VPHASE1_REG;                  /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
-         RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t);
+         RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t)
     __IO uint32_t VSU_Y_HCOEF0_REGN [0x020];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x280[0x0300 - 0x0280], uint8_t);
+         RESERVED(0x280[0x0300 - 0x0280], uint8_t)
     __IO uint32_t VSU_Y_HCOEF1_REGN [0x020];          /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
-         RESERVED(0x380[0x0400 - 0x0380], uint8_t);
+         RESERVED(0x380[0x0400 - 0x0380], uint8_t)
     __IO uint32_t VSU_Y_VCOEF_REGN [0x020];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
-         RESERVED(0x480[0x0600 - 0x0480], uint8_t);
+         RESERVED(0x480[0x0600 - 0x0480], uint8_t)
     __IO uint32_t VSU_C_HCOEF0_REGN [0x020];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x680[0x0700 - 0x0680], uint8_t);
+         RESERVED(0x680[0x0700 - 0x0680], uint8_t)
     __IO uint32_t VSU_C_HCOEF1_REGN [0x020];          /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
-         RESERVED(0x780[0x0800 - 0x0780], uint8_t);
+         RESERVED(0x780[0x0800 - 0x0780], uint8_t)
     __IO uint32_t VSU_C_VCOEF_REGN [0x020];           /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
 } DE_VSU_TypeDef; /* size of structure = 0x880 */
 /*
@@ -529,26 +529,26 @@ typedef struct DE_WB_Type
     __IO uint32_t WB_B_HIGH_ADDR_REG;                 /*!< Offset 0x02C Write-back Group B address high bit register */
     __IO uint32_t WB_CH0_PITCH_REG;                   /*!< Offset 0x030 Write-back channel 0 pitch register */
     __IO uint32_t WB_CH12_PITCH_REG;                  /*!< Offset 0x034 Write-back channel 1/2 pitch register */
-         RESERVED(0x038[0x0040 - 0x0038], uint8_t);
+         RESERVED(0x038[0x0040 - 0x0038], uint8_t)
     __IO uint32_t WB_ADDR_SWITCH_REG;                 /*!< Offset 0x040 Write-back address switch setting register */
     __IO uint32_t WB_FORMAT_REG;                      /*!< Offset 0x044 Output format register */
     __IO uint32_t WB_INT_REG;                         /*!< Offset 0x048 Interrupt control register */
     __IO uint32_t WB_STATUS_REG;                      /*!< Offset 0x04C Module status register */
-         RESERVED(0x050[0x0054 - 0x0050], uint8_t);
+         RESERVED(0x050[0x0054 - 0x0050], uint8_t)
     __IO uint32_t WB_BYPASS_REG;                      /*!< Offset 0x054 Bypass control register */
-         RESERVED(0x058[0x0070 - 0x0058], uint8_t);
+         RESERVED(0x058[0x0070 - 0x0058], uint8_t)
     __IO uint32_t WB_CS_HORZ_REG;                     /*!< Offset 0x070 Coarse scaling horizontal setting register */
     __IO uint32_t WB_CS_VERT_REG;                     /*!< Offset 0x074 Coarse scaling vertical setting register */
-         RESERVED(0x078[0x0080 - 0x0078], uint8_t);
+         RESERVED(0x078[0x0080 - 0x0078], uint8_t)
     __IO uint32_t WB_FS_INSIZE_REG;                   /*!< Offset 0x080 Fine scaling input size register */
     __IO uint32_t WB_FS_OUTSIZE_REG;                  /*!< Offset 0x084 Fine scaling output size register */
     __IO uint32_t WB_FS_HSTEP_REG;                    /*!< Offset 0x088 Fine scaling horizontal step registe */
     __IO uint32_t WB_FS_VSTEP_REG;                    /*!< Offset 0x08C Fine scaling vertical step register */
-         RESERVED(0x090[0x00FC - 0x0090], uint8_t);
+         RESERVED(0x090[0x00FC - 0x0090], uint8_t)
     __IO uint32_t WB_DEBUG_REG;                       /*!< Offset 0x0FC Debug register */
-         RESERVED(0x100[0x0200 - 0x0100], uint8_t);
+         RESERVED(0x100[0x0200 - 0x0100], uint8_t)
     __IO uint32_t WB_CH0_HCOEF_REGN [0x010];          /*!< Offset 0x200 0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15) */
-         RESERVED(0x240[0x0280 - 0x0240], uint8_t);
+         RESERVED(0x240[0x0280 - 0x0240], uint8_t)
     __IO uint32_t WB_CH1_HCOEF_REGN [0x010];          /*!< Offset 0x280 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15) */
 } DE_WB_TypeDef; /* size of structure = 0x2C0 */
 /*
@@ -560,20 +560,20 @@ typedef struct GICV_Type
     __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
     __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
     __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
-         RESERVED(0x00C[0x0010 - 0x000C], uint8_t);
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
-         RESERVED(0x014[0x0020 - 0x0014], uint8_t);
+         RESERVED(0x014[0x0020 - 0x0014], uint8_t)
     __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
-         RESERVED(0x024[0x0030 - 0x0024], uint8_t);
+         RESERVED(0x024[0x0030 - 0x0024], uint8_t)
     __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
-         RESERVED(0x034[0x00F0 - 0x0034], uint8_t);
+         RESERVED(0x034[0x00F0 - 0x0034], uint8_t)
     __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
-         RESERVED(0x0F4[0x0100 - 0x00F4], uint8_t);
+         RESERVED(0x0F4[0x0100 - 0x00F4], uint8_t)
     __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
     __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
     __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
     __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
-         RESERVED(0x110[0x0200 - 0x0110], uint8_t);
+         RESERVED(0x110[0x0200 - 0x0110], uint8_t)
 } GICV_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief GPIO
@@ -598,16 +598,16 @@ typedef struct GPIOBLOCK_Type
         __IO uint32_t DATA;                           /*!< Offset 0x010 Data Register */
         __IO uint32_t DRV [0x002];                    /*!< Offset 0x014 Multi_Driving Register */
         __IO uint32_t PULL [0x002];                   /*!< Offset 0x01C Pull Register */
-             RESERVED(0x024[0x0024 - 0x0024], uint8_t);
+             RESERVED(0x024[0x0024 - 0x0024], uint8_t)
     } GPIO_PINS [0x008];                              /*!< Offset 0x000 GPIO pin control */
-         RESERVED(0x120[0x0200 - 0x0120], uint8_t);
+         RESERVED(0x120[0x0200 - 0x0120], uint8_t)
     struct
     {
         __IO uint32_t EINT_CFG [0x004];               /*!< Offset 0x200 External Interrupt Configure Registers */
         __IO uint32_t EINT_CTL;                       /*!< Offset 0x210 External Interrupt Control Register */
         __IO uint32_t EINT_STATUS;                    /*!< Offset 0x214 External Interrupt Status Register */
         __IO uint32_t EINT_DEB;                       /*!< Offset 0x218 External Interrupt Debounce Register */
-             RESERVED(0x01C[0x0020 - 0x001C], uint8_t);
+             RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     } GPIO_INTS [0x002];                              /*!< Offset 0x200 GPIOA & GPIOG interrupt control */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x240 */
 /*
@@ -620,7 +620,7 @@ typedef struct GPIOINT_Type
     __IO uint32_t EINT_CTL;                           /*!< Offset 0x010 External Interrupt Control Register */
     __IO uint32_t EINT_STATUS;                        /*!< Offset 0x014 External Interrupt Status Register */
     __IO uint32_t EINT_DEB;                           /*!< Offset 0x018 External Interrupt Debounce Register */
-         RESERVED(0x01C[0x0020 - 0x001C], uint8_t);
+         RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief HDMI_PHY
@@ -629,10 +629,10 @@ typedef struct GPIOINT_Type
 typedef struct HDMI_PHY_Type
 {
     __IO uint32_t HDMI_PHY_POL;                       /*!< Offset 0x000 tbd */
-         RESERVED(0x004[0x0010 - 0x0004], uint8_t);
+         RESERVED(0x004[0x0010 - 0x0004], uint8_t)
     __IO uint32_t HDMI_PHY_READ_EN;                   /*!< Offset 0x010 tbd */
     __IO uint32_t HDMI_PHY_UNSCRAMBLE;                /*!< Offset 0x014 tbd */
-         RESERVED(0x018[0x0020 - 0x0018], uint8_t);
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
     __IO uint32_t HDMI_PHY_CFG1;                      /*!< Offset 0x020 tbd */
     __IO uint32_t HDMI_PHY_CFG2;                      /*!< Offset 0x024 tbd */
     __IO uint32_t HDMI_PHY_CFG3;                      /*!< Offset 0x028 tbd */
@@ -641,7 +641,7 @@ typedef struct HDMI_PHY_Type
     __IO uint32_t HDMI_PHY_PLL3;                      /*!< Offset 0x034 tbd */
     __IO uint32_t HDMI_PHY_STS;                       /*!< Offset 0x038 tbd */
     __IO uint32_t HDMI_PHY_CEC;                       /*!< Offset 0x03C tbd */
-         RESERVED(0x040[0x0FF8 - 0x0040], uint8_t);
+         RESERVED(0x040[0x0FF8 - 0x0040], uint8_t)
     __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
     __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
 } HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
@@ -659,7 +659,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
     __IO uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
     __IO uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
-         RESERVED(0x008[0x0100 - 0x0008], uint8_t);
+         RESERVED(0x008[0x0100 - 0x0008], uint8_t)
     __IO uint8_t  HDMI_IH_FC_STAT0;                   /*!< Offset 0x100  */
     __IO uint8_t  HDMI_IH_FC_STAT1;                   /*!< Offset 0x101  */
     __IO uint8_t  HDMI_IH_FC_STAT2;                   /*!< Offset 0x102  */
@@ -670,7 +670,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_IH_VP_STAT0;                   /*!< Offset 0x107  */
     __IO uint8_t  HDMI_IH_I2CMPHY_STAT0;              /*!< Offset 0x108  */
     __IO uint8_t  HDMI_IH_AHBDMAAUD_STAT0;            /*!< Offset 0x109  */
-         RESERVED(0x10A[0x0180 - 0x010A], uint8_t);
+         RESERVED(0x10A[0x0180 - 0x010A], uint8_t)
     __IO uint8_t  HDMI_IH_MUTE_FC_STAT0;              /*!< Offset 0x180  */
     __IO uint8_t  HDMI_IH_MUTE_FC_STAT1;              /*!< Offset 0x181  */
     __IO uint8_t  HDMI_IH_MUTE_FC_STAT2;              /*!< Offset 0x182  */
@@ -681,7 +681,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_IH_MUTE_VP_STAT0;              /*!< Offset 0x187  */
     __IO uint8_t  HDMI_IH_MUTE_I2CMPHY_STAT0;         /*!< Offset 0x188  */
     __IO uint8_t  HDMI_IH_MUTE_AHBDMAAUD_STAT0;       /*!< Offset 0x189  */
-         RESERVED(0x18A[0x01FF - 0x018A], uint8_t);
+         RESERVED(0x18A[0x01FF - 0x018A], uint8_t)
     __IO uint8_t  HDMI_IH_MUTE;                       /*!< Offset 0x1FF  */
     __IO uint8_t  HDMI_TX_INVID0;                     /*!< Offset 0x200  */
     __IO uint8_t  HDMI_TX_INSTUFFING;                 /*!< Offset 0x201  */
@@ -691,7 +691,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_TX_RCRDATA1;                   /*!< Offset 0x205  */
     __IO uint8_t  HDMI_TX_BCBDATA0;                   /*!< Offset 0x206  */
     __IO uint8_t  HDMI_TX_BCBDATA1;                   /*!< Offset 0x207  */
-         RESERVED(0x208[0x0800 - 0x0208], uint8_t);
+         RESERVED(0x208[0x0800 - 0x0208], uint8_t)
     __IO uint8_t  HDMI_VP_STATUS;                     /*!< Offset 0x800  */
     __IO uint8_t  HDMI_VP_PR_CD;                      /*!< Offset 0x801  */
     __IO uint8_t  HDMI_VP_STUFF;                      /*!< Offset 0x802  */
@@ -701,7 +701,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_VP_INT;                        /*!< Offset 0x806  */
     __IO uint8_t  HDMI_VP_MASK;                       /*!< Offset 0x807  */
     __IO uint8_t  HDMI_VP_POL;                        /*!< Offset 0x808  */
-         RESERVED(0x809[0x1000 - 0x0809], uint8_t);
+         RESERVED(0x809[0x1000 - 0x0809], uint8_t)
     __IO uint8_t  HDMI_FC_INVIDCONF;                  /*!< Offset 0x1000  */
     __IO uint8_t  HDMI_FC_INHACTV0;                   /*!< Offset 0x1001  */
     __IO uint8_t  HDMI_FC_INHACTV1;                   /*!< Offset 0x1002  */
@@ -745,7 +745,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_FC_AUDICONF3;                  /*!< Offset 0x1028  */
     __IO uint8_t  HDMI_FC_VSDIEEEID0;                 /*!< Offset 0x1029  */
     __IO uint8_t  HDMI_FC_VSDSIZE;                    /*!< Offset 0x102A  */
-         RESERVED(0x102B[0x1030 - 0x102B], uint8_t);
+         RESERVED(0x102B[0x1030 - 0x102B], uint8_t)
     __IO uint8_t  HDMI_FC_VSDIEEEID1;                 /*!< Offset 0x1030  */
     __IO uint8_t  HDMI_FC_VSDIEEEID2;                 /*!< Offset 0x1031  */
     __IO uint8_t  HDMI_FC_VSDPAYLOAD0;                /*!< Offset 0x1032  */
@@ -799,7 +799,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_FC_SPDDEVICEINF;               /*!< Offset 0x1062  */
     __IO uint8_t  HDMI_FC_AUDSCONF;                   /*!< Offset 0x1063  */
     __IO uint8_t  HDMI_FC_AUDSSTAT;                   /*!< Offset 0x1064  */
-         RESERVED(0x1065[0x1070 - 0x1065], uint8_t);
+         RESERVED(0x1065[0x1070 - 0x1065], uint8_t)
     __IO uint8_t  HDMI_FC_DATACH0FILL;                /*!< Offset 0x1070  */
     __IO uint8_t  HDMI_FC_DATACH1FILL;                /*!< Offset 0x1071  */
     __IO uint8_t  HDMI_FC_DATACH2FILL;                /*!< Offset 0x1072  */
@@ -880,7 +880,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_FC_RDRB5;                      /*!< Offset 0x10BD  */
     __IO uint8_t  HDMI_FC_RDRB6;                      /*!< Offset 0x10BE  */
     __IO uint8_t  HDMI_FC_RDRB7;                      /*!< Offset 0x10BF  */
-         RESERVED(0x10C0[0x10D0 - 0x10C0], uint8_t);
+         RESERVED(0x10C0[0x10D0 - 0x10C0], uint8_t)
     __IO uint8_t  HDMI_FC_STAT0;                      /*!< Offset 0x10D0  */
     __IO uint8_t  HDMI_FC_INT0;                       /*!< Offset 0x10D1  */
     __IO uint8_t  HDMI_FC_MASK0;                      /*!< Offset 0x10D2  */
@@ -893,9 +893,9 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_FC_INT2;                       /*!< Offset 0x10D9  */
     __IO uint8_t  HDMI_FC_MASK2;                      /*!< Offset 0x10DA  */
     __IO uint8_t  HDMI_FC_POL2;                       /*!< Offset 0x10DB  */
-         RESERVED(0x10DC[0x10E0 - 0x10DC], uint8_t);
+         RESERVED(0x10DC[0x10E0 - 0x10DC], uint8_t)
     __IO uint8_t  HDMI_FC_PRCONF;                     /*!< Offset 0x10E0  */
-         RESERVED(0x10E1[0x1100 - 0x10E1], uint8_t);
+         RESERVED(0x10E1[0x1100 - 0x10E1], uint8_t)
     __IO uint8_t  HDMI_FC_GMD_STAT;                   /*!< Offset 0x1100  */
     __IO uint8_t  HDMI_FC_GMD_EN;                     /*!< Offset 0x1101  */
     __IO uint8_t  HDMI_FC_GMD_UP;                     /*!< Offset 0x1102  */
@@ -929,7 +929,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_FC_GMD_PB25;                   /*!< Offset 0x111E  */
     __IO uint8_t  HDMI_FC_GMD_PB26;                   /*!< Offset 0x111F  */
     __IO uint8_t  HDMI_FC_GMD_PB27;                   /*!< Offset 0x1120  */
-         RESERVED(0x1121[0x1200 - 0x1121], uint8_t);
+         RESERVED(0x1121[0x1200 - 0x1121], uint8_t)
     __IO uint8_t  HDMI_FC_DBGFORCE;                   /*!< Offset 0x1200  */
     __IO uint8_t  HDMI_FC_DBGAUD0CH0;                 /*!< Offset 0x1201  */
     __IO uint8_t  HDMI_FC_DBGAUD1CH0;                 /*!< Offset 0x1202  */
@@ -958,7 +958,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_FC_DBGTMDS0;                   /*!< Offset 0x1219  */
     __IO uint8_t  HDMI_FC_DBGTMDS1;                   /*!< Offset 0x121A  */
     __IO uint8_t  HDMI_FC_DBGTMDS2;                   /*!< Offset 0x121B  */
-         RESERVED(0x121C[0x3000 - 0x121C], uint8_t);
+         RESERVED(0x121C[0x3000 - 0x121C], uint8_t)
     __IO uint8_t  HDMI_PHY_CONF0;                     /*!< Offset 0x3000  */
     __IO uint8_t  HDMI_PHY_TST0;                      /*!< Offset 0x3001  */
     __IO uint8_t  HDMI_PHY_TST1;                      /*!< Offset 0x3002  */
@@ -967,7 +967,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_PHY_INT0;                      /*!< Offset 0x3005  */
     __IO uint8_t  HDMI_PHY_MASK0;                     /*!< Offset 0x3006  */
     __IO uint8_t  HDMI_PHY_POL0;                      /*!< Offset 0x3007  */
-         RESERVED(0x3008[0x3020 - 0x3008], uint8_t);
+         RESERVED(0x3008[0x3020 - 0x3008], uint8_t)
     __IO uint8_t  HDMI_PHY_I2CM_SLAVE_ADDR;           /*!< Offset 0x3020  */
     __IO uint8_t  HDMI_PHY_I2CM_ADDRESS_ADDR;         /*!< Offset 0x3021  */
     __IO uint8_t  HDMI_PHY_I2CM_DATAO_1_ADDR;         /*!< Offset 0x3022  */
@@ -987,12 +987,12 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR;   /*!< Offset 0x3030  */
     __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR;   /*!< Offset 0x3031  */
     __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR;   /*!< Offset 0x3032  */
-         RESERVED(0x3033[0x3100 - 0x3033], uint8_t);
+         RESERVED(0x3033[0x3100 - 0x3033], uint8_t)
     __IO uint8_t  HDMI_AUD_CONF0;                     /*!< Offset 0x3100  */
     __IO uint8_t  HDMI_AUD_CONF1;                     /*!< Offset 0x3101  */
     __IO uint8_t  HDMI_AUD_INT;                       /*!< Offset 0x3102  */
     __IO uint8_t  HDMI_AUD_CONF2;                     /*!< Offset 0x3103  */
-         RESERVED(0x3104[0x3200 - 0x3104], uint8_t);
+         RESERVED(0x3104[0x3200 - 0x3104], uint8_t)
     __IO uint8_t  HDMI_AUD_N1;                        /*!< Offset 0x3200  */
     __IO uint8_t  HDMI_AUD_N2;                        /*!< Offset 0x3201  */
     __IO uint8_t  HDMI_AUD_N3;                        /*!< Offset 0x3202  */
@@ -1000,15 +1000,15 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_AUD_CTS2;                      /*!< Offset 0x3204  */
     __IO uint8_t  HDMI_AUD_CTS3;                      /*!< Offset 0x3205  */
     __IO uint8_t  HDMI_AUD_INPUTCLKFS;                /*!< Offset 0x3206  */
-         RESERVED(0x3207[0x3302 - 0x3207], uint8_t);
+         RESERVED(0x3207[0x3302 - 0x3207], uint8_t)
     __IO uint8_t  HDMI_AUD_SPDIFINT;                  /*!< Offset 0x3302  */
-         RESERVED(0x3303[0x3400 - 0x3303], uint8_t);
+         RESERVED(0x3303[0x3400 - 0x3303], uint8_t)
     __IO uint8_t  HDMI_AUD_CONF0_HBR;                 /*!< Offset 0x3400  */
     __IO uint8_t  HDMI_AUD_HBR_STATUS;                /*!< Offset 0x3401  */
     __IO uint8_t  HDMI_AUD_HBR_INT;                   /*!< Offset 0x3402  */
     __IO uint8_t  HDMI_AUD_HBR_POL;                   /*!< Offset 0x3403  */
     __IO uint8_t  HDMI_AUD_HBR_MASK;                  /*!< Offset 0x3404  */
-         RESERVED(0x3405[0x3500 - 0x3405], uint8_t);
+         RESERVED(0x3405[0x3500 - 0x3405], uint8_t)
     __IO uint8_t  HDMI_GP_CONF0;                      /*!< Offset 0x3500  */
     __IO uint8_t  HDMI_GP_CONF1;                      /*!< Offset 0x3501  */
     __IO uint8_t  HDMI_GP_CONF2;                      /*!< Offset 0x3502  */
@@ -1016,7 +1016,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_GP_INT;                        /*!< Offset 0x3504  */
     __IO uint8_t  HDMI_GP_MASK;                       /*!< Offset 0x3505  */
     __IO uint8_t  HDMI_GP_POL;                        /*!< Offset 0x3506  */
-         RESERVED(0x3507[0x3600 - 0x3507], uint8_t);
+         RESERVED(0x3507[0x3600 - 0x3507], uint8_t)
     __IO uint8_t  HDMI_AHB_DMA_CONF0;                 /*!< Offset 0x3600  */
     __IO uint8_t  HDMI_AHB_DMA_START;                 /*!< Offset 0x3601  */
     __IO uint8_t  HDMI_AHB_DMA_STOP;                  /*!< Offset 0x3602  */
@@ -1044,7 +1044,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_AHB_DMA_BUFFINT;               /*!< Offset 0x3618  */
     __IO uint8_t  HDMI_AHB_DMA_BUFFMASK;              /*!< Offset 0x3619  */
     __IO uint8_t  HDMI_AHB_DMA_BUFFPOL;               /*!< Offset 0x361A  */
-         RESERVED(0x361B[0x4000 - 0x361B], uint8_t);
+         RESERVED(0x361B[0x4000 - 0x361B], uint8_t)
     __IO uint8_t  HDMI_MC_SFRDIV;                     /*!< Offset 0x4000  */
     __IO uint8_t  HDMI_MC_CLKDIS;                     /*!< Offset 0x4001  */
     __IO uint8_t  HDMI_MC_SWRSTZ;                     /*!< Offset 0x4002  */
@@ -1053,7 +1053,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_MC_PHYRSTZ;                    /*!< Offset 0x4005  */
     __IO uint8_t  HDMI_MC_LOCKONCLOCK;                /*!< Offset 0x4006  */
     __IO uint8_t  HDMI_MC_HEACPHY_RST;                /*!< Offset 0x4007  */
-         RESERVED(0x4008[0x4100 - 0x4008], uint8_t);
+         RESERVED(0x4008[0x4100 - 0x4008], uint8_t)
     __IO uint8_t  HDMI_CSC_CFG;                       /*!< Offset 0x4100  */
     __IO uint8_t  HDMI_CSC_SCALE;                     /*!< Offset 0x4101  */
     __IO uint8_t  HDMI_CSC_COEF_A1_MSB;               /*!< Offset 0x4102  */
@@ -1080,7 +1080,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_CSC_COEF_C3_LSB;               /*!< Offset 0x4117  */
     __IO uint8_t  HDMI_CSC_COEF_C4_MSB;               /*!< Offset 0x4118  */
     __IO uint8_t  HDMI_CSC_COEF_C4_LSB;               /*!< Offset 0x4119  */
-         RESERVED(0x411A[0x5000 - 0x411A], uint8_t);
+         RESERVED(0x411A[0x5000 - 0x411A], uint8_t)
     __IO uint8_t  HDMI_A_HDCPCFG0;                    /*!< Offset 0x5000  */
     __IO uint8_t  HDMI_A_HDCPCFG1;                    /*!< Offset 0x5001  */
     __IO uint8_t  HDMI_A_HDCPOBS0;                    /*!< Offset 0x5002  */
@@ -1108,9 +1108,9 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_A_I2CHSETUP;                   /*!< Offset 0x5018  */
     __IO uint8_t  HDMI_A_INTSETUP;                    /*!< Offset 0x5019  */
     __IO uint8_t  HDMI_A_PRESETUP;                    /*!< Offset 0x501A  */
-         RESERVED(0x501B[0x5020 - 0x501B], uint8_t);
+         RESERVED(0x501B[0x5020 - 0x501B], uint8_t)
     __IO uint8_t  HDMI_A_SRM_BASE;                    /*!< Offset 0x5020  */
-         RESERVED(0x5021[0x7D00 - 0x5021], uint8_t);
+         RESERVED(0x5021[0x7D00 - 0x5021], uint8_t)
     __IO uint8_t  HDMI_CEC_CTRL;                      /*!< Offset 0x7D00  */
     __IO uint8_t  HDMI_CEC_STAT;                      /*!< Offset 0x7D01  */
     __IO uint8_t  HDMI_CEC_MASK;                      /*!< Offset 0x7D02  */
@@ -1120,7 +1120,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_CEC_ADDR_H;                    /*!< Offset 0x7D06  */
     __IO uint8_t  HDMI_CEC_TX_CNT;                    /*!< Offset 0x7D07  */
     __IO uint8_t  HDMI_CEC_RX_CNT;                    /*!< Offset 0x7D08  */
-         RESERVED(0x7D09[0x7D10 - 0x7D09], uint8_t);
+         RESERVED(0x7D09[0x7D10 - 0x7D09], uint8_t)
     __IO uint8_t  HDMI_CEC_TX_DATA0;                  /*!< Offset 0x7D10  */
     __IO uint8_t  HDMI_CEC_TX_DATA1;                  /*!< Offset 0x7D11  */
     __IO uint8_t  HDMI_CEC_TX_DATA2;                  /*!< Offset 0x7D12  */
@@ -1155,7 +1155,7 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_CEC_RX_DATA15;                 /*!< Offset 0x7D2F  */
     __IO uint8_t  HDMI_CEC_LOCK;                      /*!< Offset 0x7D30  */
     __IO uint8_t  HDMI_CEC_WKUPCTRL;                  /*!< Offset 0x7D31  */
-         RESERVED(0x7D32[0x7E00 - 0x7D32], uint8_t);
+         RESERVED(0x7D32[0x7E00 - 0x7D32], uint8_t)
     __IO uint8_t  HDMI_I2CM_SLAVE;                    /*!< Offset 0x7E00  */
     __IO uint8_t  HDMI_I2CM_ADDRESS;                  /*!< Offset 0x7E01  */
     __IO uint8_t  HDMI_I2CM_DATAO;                    /*!< Offset 0x7E02  */
@@ -1185,30 +1185,30 @@ typedef struct RTC_Type
     __IO uint32_t LOSC_CTRL_REG;                      /*!< Offset 0x000 Low Oscillator Control Register */
     __IO uint32_t LOSC_AUTO_SWT_STA_REG;              /*!< Offset 0x004 LOSC Auto Switch Status Register */
     __IO uint32_t INTOSC_CLK_PRESCAL_REG;             /*!< Offset 0x008 Internal OSC Clock Prescalar Register */
-         RESERVED(0x00C[0x0010 - 0x000C], uint8_t);
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     __IO uint32_t RTC_YY_MM_DD_REG;                   /*!< Offset 0x010 RTC Year-Month-Day Register */
     __IO uint32_t RTC_HH_MM_SS_REG;                   /*!< Offset 0x014 RTC Hour-Minute-Second Register */
-         RESERVED(0x018[0x0020 - 0x0018], uint8_t);
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
     __IO uint32_t ALARM0_COUNTER_REG;                 /*!< Offset 0x020 Alarm 0 Counter Register  */
     __IO uint32_t ALARM0_CUR_VLU_REG;                 /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
     __IO uint32_t ALARM0_ENABLE_REG;                  /*!< Offset 0x028 Alarm 0 Enable Register */
     __IO uint32_t ALARM0_IRQ_EN;                      /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
     __IO uint32_t ALARM0_IRQ_STA_REG;                 /*!< Offset 0x030 Alarm 0 IRQ Status Register */
-         RESERVED(0x034[0x0040 - 0x0034], uint8_t);
+         RESERVED(0x034[0x0040 - 0x0034], uint8_t)
     __IO uint32_t ALARM1_WK_HH_MM_SS;                 /*!< Offset 0x040 Alarm 1 Week HMS Register  */
     __IO uint32_t ALARM1_ENABLE_REG;                  /*!< Offset 0x044 Alarm 1 Enable Register */
     __IO uint32_t ALARM1_IRQ_EN;                      /*!< Offset 0x048 Alarm 1 IRQ Enable Register */
     __IO uint32_t ALARM1_IRQ_STA_REG;                 /*!< Offset 0x04C (null) */
     __IO uint32_t ALARM_CONFIG_REG;                   /*!< Offset 0x050 Alarm Config Register */
-         RESERVED(0x054[0x0060 - 0x0054], uint8_t);
+         RESERVED(0x054[0x0060 - 0x0054], uint8_t)
     __IO uint32_t LOSC_OUT_GATING_REG;                /*!< Offset 0x060 LOSC output gating register */
-         RESERVED(0x064[0x0100 - 0x0064], uint8_t);
+         RESERVED(0x064[0x0100 - 0x0064], uint8_t)
     __IO uint32_t GP_DATA_REG [0x008];                /*!< Offset 0x100 General Purpose Register (N=0~3) */
-         RESERVED(0x120[0x0180 - 0x0120], uint8_t);
+         RESERVED(0x120[0x0180 - 0x0120], uint8_t)
     __IO uint32_t GPL_HOLD_OUTPUT_REG;                /*!< Offset 0x180 GPL Hold Output Register */
-         RESERVED(0x184[0x0190 - 0x0184], uint8_t);
+         RESERVED(0x184[0x0190 - 0x0184], uint8_t)
     __IO uint32_t VDD_RTC_REG;                        /*!< Offset 0x190 VDD RTC Regulate Register */
-         RESERVED(0x194[0x01F0 - 0x0194], uint8_t);
+         RESERVED(0x194[0x01F0 - 0x0194], uint8_t)
     __IO uint32_t IC_CHARA_REG;                       /*!< Offset 0x1F0 IC Characteristic Register */
 } RTC_TypeDef; /* size of structure = 0x1F4 */
 /*
@@ -1218,26 +1218,26 @@ typedef struct RTC_Type
 typedef struct R_PRCM_Type
 {
     __IO uint32_t CPUS_CLK_REG;                       /*!< Offset 0x000 CPUS Clock Register */
-         RESERVED(0x004[0x000C - 0x0004], uint8_t);
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
     __IO uint32_t APB0_CFG_REG;                       /*!< Offset 0x00C APB0 Configuration Register */
-         RESERVED(0x010[0x0028 - 0x0010], uint8_t);
+         RESERVED(0x010[0x0028 - 0x0010], uint8_t)
     __IO uint32_t APB0_CLK_GATING_REG;                /*!< Offset 0x028 APB0 Clock Gating Register */
-         RESERVED(0x02C[0x0044 - 0x002C], uint8_t);
+         RESERVED(0x02C[0x0044 - 0x002C], uint8_t)
     __IO uint32_t PLL_CTRL_REG1;                      /*!< Offset 0x044 PLL Control Register 1 */
-         RESERVED(0x048[0x0054 - 0x0048], uint8_t);
+         RESERVED(0x048[0x0054 - 0x0048], uint8_t)
     __IO uint32_t R_CIR_RX_CLK_REG;                   /*!< Offset 0x054 R_CIR_RX Clock Register */
-         RESERVED(0x058[0x00B0 - 0x0058], uint8_t);
+         RESERVED(0x058[0x00B0 - 0x0058], uint8_t)
     __IO uint32_t APB0_SOFT_RST_REG;                  /*!< Offset 0x0B0 APB0 Software Reset Register */
-         RESERVED(0x0B4[0x0100 - 0x00B4], uint8_t);
+         RESERVED(0x0B4[0x0100 - 0x00B4], uint8_t)
     __IO uint32_t C0CPUX_PWROFF_GATING_REG;           /*!< Offset 0x100 Cluster0 CPUX Power Off Gating Register */
     __IO uint32_t C1CPUX_PWROFF_GATING_REG;           /*!< Offset 0x104 Cluster1 CPUX Power Off Gating Register */
-         RESERVED(0x108[0x0110 - 0x0108], uint8_t);
+         RESERVED(0x108[0x0110 - 0x0108], uint8_t)
     __IO uint32_t VDD_SYS_PWROFF_GATING_REG;          /*!< Offset 0x110 VDD_SYS Power Off Gating Register */
-         RESERVED(0x114[0x0118 - 0x0114], uint8_t);
+         RESERVED(0x114[0x0118 - 0x0114], uint8_t)
     __IO uint32_t GPU_PWROFF_GATING_REG;              /*!< Offset 0x118 GPU Power Off Gating Register */
-         RESERVED(0x11C[0x0120 - 0x011C], uint8_t);
+         RESERVED(0x11C[0x0120 - 0x011C], uint8_t)
     __IO uint32_t VDD_SYS_PWROFF_RST_REG;             /*!< Offset 0x120 VDD_SYS Power Domain Reset Register */
-         RESERVED(0x124[0x0140 - 0x0124], uint8_t);
+         RESERVED(0x124[0x0140 - 0x0124], uint8_t)
     __IO uint32_t C0_CPU0_PWR_SWITCH_CTRL;            /*!< Offset 0x140 C0_CPU0 Power Switch Control Register */
     __IO uint32_t C0_CPU1_PWR_SWITCH_CTRL;            /*!< Offset 0x144 C0_CPU1 Power Switch Control Register */
     __IO uint32_t C0_CPU2_PWR_SWITCH_CTRL;            /*!< Offset 0x148 C0_CPU2 Power Switch Control Register */
@@ -1246,7 +1246,7 @@ typedef struct R_PRCM_Type
     __IO uint32_t C1_CPU1_PWR_SWITCH_CTRL;            /*!< Offset 0x154 C1_CPU1 Power Switch Control Register */
     __IO uint32_t C1_CPU2_PWR_SWITCH_CTRL;            /*!< Offset 0x158 C1_CPU2 Power Switch Control Register */
     __IO uint32_t C1_CPU3_PWR_SWITCH_CTRL;            /*!< Offset 0x15C C1_CPU3 Power Switch Control Register */
-         RESERVED(0x160[0x01F0 - 0x0160], uint8_t);
+         RESERVED(0x160[0x01F0 - 0x0160], uint8_t)
     __IO uint32_t RPIO_HOLD_CTRL_REG;                 /*!< Offset 0x1F0 R_PIO Hold Control Register */
     __IO uint32_t OSC24M_CTRL_REG;                    /*!< Offset 0x1F4 OSC24M Control Register */
 } R_PRCM_TypeDef; /* size of structure = 0x1F8 */
@@ -1256,9 +1256,9 @@ typedef struct R_PRCM_Type
 /*!< SYSCTRL  */
 typedef struct SYSCTRL_Type
 {
-         RESERVED(0x000[0x0024 - 0x0000], uint8_t);
+         RESERVED(0x000[0x0024 - 0x0000], uint8_t)
     __I  uint32_t VER_REG;                            /*!< Offset 0x024 Version Register */
-         RESERVED(0x028[0x0030 - 0x0028], uint8_t);
+         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
     __IO uint32_t EMAC_EPHY_CLK_REG;                  /*!< Offset 0x030 EMAC-EPHY Clock Register */
 } SYSCTRL_TypeDef; /* size of structure = 0x034 */
 /*
@@ -1270,7 +1270,7 @@ typedef struct TCON_Type
     __IO uint32_t TCON_GCTL_REG;                      /*!< Offset 0x000 TCON global control register */
     __IO uint32_t TCON_GINT0_REG;                     /*!< Offset 0x004 TCON global interrupt register0 */
     __IO uint32_t TCON_GINT1_REG;                     /*!< Offset 0x008 TCON global interrupt register1 */
-         RESERVED(0x00C[0x0090 - 0x000C], uint8_t);
+         RESERVED(0x00C[0x0090 - 0x000C], uint8_t)
     __IO uint32_t TCON1_CTL_REG;                      /*!< Offset 0x090 TCON1 control register */
     __IO uint32_t TCON1_BASIC0_REG;                   /*!< Offset 0x094 TCON1 basic timing register0 */
     __IO uint32_t TCON1_BASIC1_REG;                   /*!< Offset 0x098 TCON1 basic timing register1 */
@@ -1278,32 +1278,32 @@ typedef struct TCON_Type
     __IO uint32_t TCON1_BASIC3_REG;                   /*!< Offset 0x0A0 TCON1 basic timing register3 */
     __IO uint32_t TCON1_BASIC4_REG;                   /*!< Offset 0x0A4 TCON1 basic timing register4 */
     __IO uint32_t TCON1_BASIC5_REG;                   /*!< Offset 0x0A8 TCON1 basic timing register5 */
-         RESERVED(0x0AC[0x00B0 - 0x00AC], uint8_t);
+         RESERVED(0x0AC[0x00B0 - 0x00AC], uint8_t)
     __IO uint32_t TCON1_PS_SYNC_REG;                  /*!< Offset 0x0B0 TCON1 sync register */
-         RESERVED(0x0B4[0x00F0 - 0x00B4], uint8_t);
+         RESERVED(0x0B4[0x00F0 - 0x00B4], uint8_t)
     __IO uint32_t TCON1_IO_POL_REG;                   /*!< Offset 0x0F0 TCON1 IO polarity register */
     __IO uint32_t TCON1_IO_TRI_REG;                   /*!< Offset 0x0F4 TCON1 IO control register */
     __IO uint32_t TCON_ECC_FIFO_REG;                  /*!< Offset 0x0F8 TCON ECC FIFO register */
-         RESERVED(0x0FC[0x0100 - 0x00FC], uint8_t);
+         RESERVED(0x0FC[0x0100 - 0x00FC], uint8_t)
     __IO uint32_t TCON_CEU_CTL_REG;                   /*!< Offset 0x100 TCON CEU control register */
-         RESERVED(0x104[0x0110 - 0x0104], uint8_t);
+         RESERVED(0x104[0x0110 - 0x0104], uint8_t)
     __IO uint32_t TCON_CEU_COEF_MUL_REG [0x00B];      /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
-         RESERVED(0x13C[0x0140 - 0x013C], uint8_t);
+         RESERVED(0x13C[0x0140 - 0x013C], uint8_t)
     __IO uint32_t TCON_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 TCON CEU coefficient register2 (N=0,1,2) */
-         RESERVED(0x14C[0x01F0 - 0x014C], uint8_t);
+         RESERVED(0x14C[0x01F0 - 0x014C], uint8_t)
     __IO uint32_t TCON_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 TCON safe period register */
-         RESERVED(0x1F4[0x0300 - 0x01F4], uint8_t);
+         RESERVED(0x1F4[0x0300 - 0x01F4], uint8_t)
     __IO uint32_t TCON1_FILL_CTL_REG;                 /*!< Offset 0x300 TCON1 fill data control register */
     struct
     {
         __IO uint32_t TCON1_FILL_BEGIN_REG;           /*!< Offset 0x304 TCON1 fill data begin register (N=0,1,2) */
         __IO uint32_t TCON1_FILL_END_REG;             /*!< Offset 0x308 TCON1 fill data end register (N=0,1,2) */
         __IO uint32_t TCON1_FILL_DATA0_REG;           /*!< Offset 0x30C TCON1 fill data value register (N=0,1,2) */
-             RESERVED(0x00C[0x000C - 0x000C], uint8_t);
+             RESERVED(0x00C[0x000C - 0x000C], uint8_t)
     } TCON1_FILL [0x003];                             /*!< Offset 0x304 TCON1 fill data (N=0,1,2) */
-         RESERVED(0x328[0x0400 - 0x0328], uint8_t);
+         RESERVED(0x328[0x0400 - 0x0328], uint8_t)
     __IO uint32_t TCON1_GAMMA_TABLE_REG [0x100];      /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
-         RESERVED(0x800[0x0FFC - 0x0800], uint8_t);
+         RESERVED(0x800[0x0FFC - 0x0800], uint8_t)
     __IO uint32_t TCON_ECC_FIFO_BIST_REG;             /*!< Offset 0xFFC tbd */
 } TCON_TypeDef; /* size of structure = 0x1000 */
 /*
@@ -1314,26 +1314,26 @@ typedef struct TIMER_Type
 {
     __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
     __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
-         RESERVED(0x008[0x0010 - 0x0008], uint8_t);
+         RESERVED(0x008[0x0010 - 0x0008], uint8_t)
     struct
     {
         __IO uint32_t CTRL_REG;                       /*!< Offset 0x010 Timer n Control Register */
         __IO uint32_t INTV_VALUE_REG;                 /*!< Offset 0x014 Timer n Interval Value Register */
         __IO uint32_t CUR_VALUE_REG;                  /*!< Offset 0x018 Timer n Current Value Register */
-             RESERVED(0x00C[0x0010 - 0x000C], uint8_t);
+             RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     } TMR [0x002];                                    /*!< Offset 0x010 Timer */
-         RESERVED(0x030[0x0080 - 0x0030], uint8_t);
+         RESERVED(0x030[0x0080 - 0x0030], uint8_t)
     __IO uint32_t AVS_CNT_CTL_REG;                    /*!< Offset 0x080 AVS Control Register */
     __IO uint32_t AVS_CNT0_REG;                       /*!< Offset 0x084 AVS Counter 0 Register */
     __IO uint32_t AVS_CNT1_REG;                       /*!< Offset 0x088 AVS Counter 1 Register */
-         RESERVED(0x08C[0x00A0 - 0x008C], uint8_t);
+         RESERVED(0x08C[0x00A0 - 0x008C], uint8_t)
     __IO uint32_t WDOG_IRQ_EN_REG;                    /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
     __IO uint32_t WDOG_IRQ_STA_REG;                   /*!< Offset 0x0A4 Watchdog Status Register */
-         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t);
+         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
     __IO uint32_t WDOG_CTRL_REG;                      /*!< Offset 0x0B0 Watchdog Control Register */
     __IO uint32_t WDOG_CFG_REG;                       /*!< Offset 0x0B4 Watchdog Configuration Register */
     __IO uint32_t WDOG_MODE_REG;                      /*!< Offset 0x0B8 Watchdog Mode Register */
-         RESERVED(0x0BC[0x0400 - 0x00BC], uint8_t);
+         RESERVED(0x0BC[0x0400 - 0x00BC], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief UART
@@ -1349,15 +1349,15 @@ typedef struct UART_Type
     __IO uint32_t UART_LSR;                           /*!< Offset 0x014 UART Line Status Register */
     __IO uint32_t UART_MSR;                           /*!< Offset 0x018 UART Modem Status Register */
     __IO uint32_t UART_SCH;                           /*!< Offset 0x01C UART Scratch Register */
-         RESERVED(0x020[0x007C - 0x0020], uint8_t);
+         RESERVED(0x020[0x007C - 0x0020], uint8_t)
     __IO uint32_t UART_USR;                           /*!< Offset 0x07C UART Status Register */
     __IO uint32_t UART_TFL;                           /*!< Offset 0x080 UART Transmit FIFO Level Register */
     __IO uint32_t UART_RFL;                           /*!< Offset 0x084 UART Receive FIFO Level Register */
-         RESERVED(0x088[0x008C - 0x0088], uint8_t);
+         RESERVED(0x088[0x008C - 0x0088], uint8_t)
     __IO uint32_t UART_DMA_REQ_EN;                    /*!< Offset 0x08C UART DMA Request Enable Register */
-         RESERVED(0x090[0x00A4 - 0x0090], uint8_t);
+         RESERVED(0x090[0x00A4 - 0x0090], uint8_t)
     __IO uint32_t UART_HALT;                          /*!< Offset 0x0A4 UART Halt TX Register */
-         RESERVED(0x0A8[0x0400 - 0x00A8], uint8_t);
+         RESERVED(0x0A8[0x0400 - 0x00A8], uint8_t)
 } UART_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief USBOTG
@@ -1366,7 +1366,7 @@ typedef struct UART_Type
 typedef struct USBOTG_Type
 {
     __IO uint32_t USB_EPFIFO [0x006];                 /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
-         RESERVED(0x018[0x0040 - 0x0018], uint8_t);
+         RESERVED(0x018[0x0040 - 0x0018], uint8_t)
     __IO uint32_t USB_GCS;                            /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
     __IO uint16_t USB_INTTX;                          /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
     __IO uint16_t USB_INTRX;                          /*!< Offset 0x046 USB_INTRX USB_EPINTF */
@@ -1375,7 +1375,7 @@ typedef struct USBOTG_Type
     __IO uint32_t USB_INTUSB;                         /*!< Offset 0x04C USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register */
     __IO uint32_t USB_INTUSBE;                        /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register */
     __IO uint32_t USB_FNUM;                           /*!< Offset 0x054 USB Frame Number Register */
-         RESERVED(0x058[0x007C - 0x0058], uint8_t);
+         RESERVED(0x058[0x007C - 0x0058], uint8_t)
     __IO uint32_t USB_TESTC;                          /*!< Offset 0x07C USB_TESTC USB Test Control Register */
     __IO uint16_t USB_TXMAXP;                         /*!< Offset 0x080 USB_TXMAXP USB EP1~5 Tx Control and Status Register */
     __IO uint16_t USB_TXCSRHI;                        /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
@@ -1392,24 +1392,24 @@ typedef struct USBOTG_Type
         __IO uint8_t  USB_TXHADDR;                    /*!< Offset 0x09A USB_TXHADDR */
         __IO uint8_t  USB_TXHUBPORT;                  /*!< Offset 0x09B USB_TXHUBPORT */
         __IO uint8_t  USB_RXFADDR;                    /*!< Offset 0x09C USB_RXFADDR */
-             RESERVED(0x005[0x0006 - 0x0005], uint8_t);
+             RESERVED(0x005[0x0006 - 0x0005], uint8_t)
         __IO uint8_t  USB_RXHADDR;                    /*!< Offset 0x09E USB_RXHADDR */
         __IO uint8_t  USB_RXHUBPORT;                  /*!< Offset 0x09F USB_RXHUBPORT */
     } FIFO [0x010];                                   /*!< Offset 0x098 FIFOs [0..5] */
-         RESERVED(0x118[0x0400 - 0x0118], uint8_t);
+         RESERVED(0x118[0x0400 - 0x0118], uint8_t)
     __IO uint32_t USB_ISCR;                           /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
     __IO uint32_t USBPHY_PHYCTL;                      /*!< Offset 0x404 USBPHY_PHYCTL */
     __IO uint32_t HCI_CTRL3;                          /*!< Offset 0x408 HCI Control 3 Register (bist) */
-         RESERVED(0x40C[0x0410 - 0x040C], uint8_t);
+         RESERVED(0x40C[0x0410 - 0x040C], uint8_t)
     __IO uint32_t PHY_CTRL;                           /*!< Offset 0x410 PHY Control Register (PHY_Control) */
-         RESERVED(0x414[0x0420 - 0x0414], uint8_t);
+         RESERVED(0x414[0x0420 - 0x0414], uint8_t)
     __IO uint32_t PHY_OTGCTL;                         /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
     __IO uint32_t PHY_STATUS;                         /*!< Offset 0x424 PHY Status Register */
     __IO uint32_t USB_SPDCR;                          /*!< Offset 0x428 HCI SIE Port Disable Control Register */
-         RESERVED(0x42C[0x0500 - 0x042C], uint8_t);
+         RESERVED(0x42C[0x0500 - 0x042C], uint8_t)
     __IO uint32_t USB_DMA_INTE;                       /*!< Offset 0x500 USB DMA Interrupt Enable Register */
     __IO uint32_t USB_DMA_INTS;                       /*!< Offset 0x504 USB DMA Interrupt Status Register */
-         RESERVED(0x508[0x0540 - 0x0508], uint8_t);
+         RESERVED(0x508[0x0540 - 0x0508], uint8_t)
     struct
     {
         __IO uint32_t CHAN_CFG;                       /*!< Offset 0x540 USB DMA Channel Configuration Register */
