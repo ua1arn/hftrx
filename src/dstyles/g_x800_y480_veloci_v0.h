@@ -210,6 +210,19 @@ static const FLASHMEM struct dzone dzones [] =
 #endif
 
 	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
+
+#if WITHHDMITVHW && 1
+	// Второй дисплей с отличающимся дизайном
+	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
+
+	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
+	{	0,	20,	0,	0,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
+	{	0,	20,	0,	0,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
+
+	{	0,	0,	0, 0, display2_showhdmi,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
+#endif
 };
 
 #if WITHMENU

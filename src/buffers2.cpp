@@ -3887,7 +3887,7 @@ void colmain_nextfb(void)
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
 	//	display_at(0, 0, s);
-#if WITHHDMITVHW
+#if WITHHDMITVHW && 0
 		// дублирование буфера
 		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
 		ASSERT(fbtv);
@@ -3910,6 +3910,38 @@ void colmain_nextfb(void)
 #if WITHOPENVG
 	openvg_next(colmain_getindexbyaddr(fb0));
 #endif /* WITHOPENVG */
+}
+/* поставить на отображение этот буфер, запросить следующий */
+void colmain_nextfb_sub(void)
+{
+	if (fb0 != 0)
+	{
+	//	char s [32];
+	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
+	//	display_at(0, 0, s);
+#if WITHHDMITVHW && 1
+		// дублирование буфера
+		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
+		ASSERT(fbtv);
+		colpip_bitblt(
+			(uintptr_t) fbtv, datasize_dmabuffercolmain1fb(),
+			(PACKEDCOLORPIP_T *) fbtv, TVD_WIDTH, TVD_HEIGHT,
+			0, 0,			/* позиция прямоугольника - получателя */
+			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
+			(PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y,
+			0, 0, DIM_X, DIM_Y,
+			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
+			);
+		tvout_nextfb();
+#endif /* WITHHDMITVHW */
+//		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
+//		save_dmabuffercolmain0fb(fb0);
+	}
+	else
+	{
+		fb0 = allocate_dmabuffercolmain0fb();
+		ASSERT(fb0);
+	}
 }
 
 // Update framebuffer if needed

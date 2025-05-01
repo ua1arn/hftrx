@@ -100,6 +100,16 @@ static void display2_showmain(
 	colmain_nextfb();
 }
 
+// запись подготовленного изображения на второй дисплей (REDRSUBSET_SHOW)
+static void display2_showhdmi(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	colmain_nextfb_sub();
+}
+
 void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg);
 
 #if WITHALTERNATIVELAYOUT
@@ -3664,9 +3674,6 @@ static const uint_fast8_t BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX - 10;    // ве�
 #else /* WITHTOUCHGUI */
 static const uint_fast8_t BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX;	// вертикальный размер водопада в ячейках
 #endif /* WITHTOUCHGUI */
-static const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
-static const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
-static const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 
 #define ALLDX 	(GRID2X(CHARS2GRID(BDTH_ALLRX)))
 #define ALLDY 	(GRID2Y(BDCV_ALLRX))
@@ -5530,6 +5537,9 @@ static void display2_spectrum(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
+	const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -5761,6 +5771,7 @@ static void display2_latchwaterfall(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
+	const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
@@ -5848,11 +5859,14 @@ static void display2_latchwaterfall(
 
 // Подготовка изображения водопада
 static void display2_waterfall(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
+	uint_fast8_t x0s,
+	uint_fast8_t y0s,
 	dctx_t * pctx
 	)
 {
+	const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 #if ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
@@ -5962,8 +5976,8 @@ static void display2_waterfall(
 	}
 
 #endif /*  */
-	(void) x0;
-	(void) y0;
+	(void) x0s;
+	(void) y0s;
 	(void) pctx;
 }
 
