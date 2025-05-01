@@ -52,7 +52,7 @@ static struct dzitem dzi_default;
 /* специальные биты */
 #define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
 #define REDRSUBSET_LATCH	REDRSUBSET(PAGELATCH)
-#define REDRSUBSET_SHOW		(~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT))
+#define REDRSUBSET_SHOW		((uint16_t) (~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT)))
 
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
