@@ -36,7 +36,7 @@ LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 ARCHDIR = $(PRJROOT)/arch/stm32mp1xx
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1
 UDEFS += -D"STM32MP157Axx"=1 -D"STM32MP1"=1 -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -189,6 +189,7 @@ DINCDIR += \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
 	$(OPENVGDIR)/src
+UDEFS += -D"EGL_STATIC_LIBRARY"=1
 endif
 
 ifeq (1, 0)
