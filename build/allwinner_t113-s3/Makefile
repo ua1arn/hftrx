@@ -27,7 +27,7 @@ XFEL = ./xfel_fixed_t113-s3
 
 PRJROOT := ../..
 OBJDIR = obj
-OBJDIR64 = obj
+OBJDIR64 = obj64
 
 # Define project name here
 PROJECT = tc1_t113s3
