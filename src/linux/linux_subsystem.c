@@ -72,6 +72,7 @@ enum {
 	iq_test_pos			= 28,
 	wnb_pos				= 29,
 	stream_reset_pos 	= 30,
+	fir_load_reset_pos 	= 31,
 };
 
 enum {
@@ -855,7 +856,8 @@ void prog_spi_exchange(
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
-volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
+volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
+volatile static uint8_t fir_load_rst = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
 
@@ -868,13 +870,19 @@ void update_modem_ctrl(void)
 			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
 			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
 			| (!! wnb_state << wnb_pos)							| (!! resetn_stream << stream_reset_pos)
-			| 0;
+			| (!! fir_load_rst << fir_load_reset_pos)			| 0;
 
 #if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
 	* modem_ctrl = v;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_MODEM_CONTROL, v);
 #endif
+}
+
+void fir_load_reset(uint8_t val)
+{
+	fir_load_rst = val != 0;
+	update_modem_ctrl();
 }
 
 void xcz_resetn_modem(uint8_t val)
@@ -2116,7 +2124,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 	pthread_mutex_unlock(p);
 }
 
-#if WITHDSPEXTFIR && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+#if WITHDSPEXTFIR && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 volatile uint32_t * fir_reload = NULL;
 static adapter_t plfircoefsout;		/* параметры прербразования к PL */
 
@@ -2160,6 +2168,50 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 			int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
 			* fir_reload = coeff << bits;
 		}
+	}
+}
+#elif WITHDSPEXTFIR && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
+static adapter_t plfircoefsout;		/* параметры прербразования к PL */
+
+void board_fpga_fir_initialize(void)
+{
+	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
+}
+
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+	const int iHalfLen = (Ntap - 1) / 2;
+	int i = 0, m = 0, bits = 0;
+
+	fir_load_reset(0);
+
+	// Приведение разрядности значений коэффициентов к CWidth
+	for (; i <= iHalfLen; ++ i)
+	{
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		m = coeff > m ? coeff : m;
+	}
+
+	while(m > 0)
+	{
+		m  = m >> 1;
+		bits ++;
+	}
+
+	bits = CWidth - bits - 1;
+	fir_load_reset(1);
+
+	for (i = 0; i <= iHalfLen; ++ i)
+	{
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		xdma_write_user(AXI_LITE_FIR_COEFFS, coeff << bits);
+	}
+
+	i -= 1;
+	for (; -- i >= 0;)
+	{
+		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		xdma_write_user(AXI_LITE_FIR_COEFFS, coeff << bits);
 	}
 }
 #endif /* WITHDSPEXTFIR && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
