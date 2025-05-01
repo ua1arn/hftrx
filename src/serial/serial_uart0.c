@@ -283,7 +283,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 			(0x01 << ix) |	// CLKACT0 - UART 0 reference clock active
 			0;
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), busfreq, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
 	if (debug == 0)
 	{
