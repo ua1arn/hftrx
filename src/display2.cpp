@@ -5538,7 +5538,7 @@ static void display2_spectrum(
 	(void) y0;
 	(void) pctx;
 	const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
-	const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
+	//const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
@@ -5866,7 +5866,7 @@ static void display2_waterfall(
 {
 	const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
-	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
+	//const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 #if ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
