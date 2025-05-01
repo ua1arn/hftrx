@@ -84,6 +84,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0,	0,	2,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 		{	3,	0,	5,	0,	display2_ant5,		REDRM_MODE, PGALL, },
@@ -165,7 +166,7 @@
 		{	5,	25,	12,	0,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	5,	0,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
-
+		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 
 #if WITHMENU

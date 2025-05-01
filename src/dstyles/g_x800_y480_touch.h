@@ -79,6 +79,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PGALL, },	// RX BW value
 		{	17,	0,	2,	0,	display_txrxstate2, & dzi_default, PGALL, },
@@ -156,6 +157,7 @@
 
 		{	0,	0, 0,	0,	display2_keyboard_menu, & dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
+		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 
 #if WITHMENU

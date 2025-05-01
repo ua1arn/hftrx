@@ -47,6 +47,7 @@
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
+				{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 			{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 			{	0, 0,	2,	0,	display_txrxstate2, & dzi_default, REDRSUBSET(DPAGE0), },
 			{	3, 0,	3,	0,	display2_voxtune3,	& dzi_default, REDRSUBSET(DPAGE0), },
@@ -73,6 +74,7 @@
 			{	1 + LABELW * 1 + 1,	18,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
+			{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 		};
 
 	#if WITHMENU
@@ -150,6 +152,7 @@
 		#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 		static const FLASHMEM struct dzone dzones [] =
 		{
+				{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 			{	2,	0,	display_txrxstate2, & dzi_default, PGALL, },
 			{	3,	0,	display2_voxtune3,	& dzi_default, PGALL, },
 			{	7,	0,	display2_att4,		& dzi_default, PGALL, },
@@ -200,6 +203,7 @@
 			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 		#endif /* WITHMENU */
+			{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 		};
 
 		/* получить координаты окна с панорамой и/или водопадом. */

@@ -76,6 +76,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
 		{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
@@ -172,7 +173,7 @@
 		{	0,	(DIM_Y - GRID2Y(5)) / 5, 0, 0, display2_freqsof9,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
-
+		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 
 #if WITHMENU

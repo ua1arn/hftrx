@@ -87,6 +87,7 @@ void wait_iq(
 	static const FLASHMEM struct dzone dzones [] =
 	{
 #if ! WITHLVGL
+			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PG0, },	// RX BW value
 		{	17,	0,	5,	0,	display_txrxstate5alt, & dzi_default, PG0, },
@@ -139,6 +140,7 @@ void wait_iq(
 		{	0,	DLES,	50,	0,	display2_waterfall,	& dzi_default, PG0_1, },// подготовка изображения водопада
 		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	& dzi_default, PG0_1, },
 
+		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 #endif /* ! WITHLVGL */
 	};
 

@@ -82,6 +82,7 @@
 	// Main frequency indicator 56 lines height = 12 cells
 	static const FLASHMEM struct dzone dzones [] =
 	{
+			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0,	0,	2,	5,	display_txrxstate2, & dzi_default, PGALL, },
 		{	3,	0,	5,	5,	display2_ant5,		& dzi_default, PGALL, },
@@ -160,6 +161,7 @@
 		{	0,  		51,	22,	0,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 		#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
+		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 
 #if WITHMENU

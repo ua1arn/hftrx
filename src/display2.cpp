@@ -47,17 +47,12 @@ static struct dzitem dzi_default;
 
 #define REDRSUBSET(page)		(UINT16_C(1) << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
 
-#define REDRSUBSET_ALL ( \
-		REDRSUBSET(0) | \
-		REDRSUBSET(1) | \
-		REDRSUBSET(2) | \
-		REDRSUBSET(3) | \
-		0)
-
 #define REDRSUBSET_MENU		REDRSUBSET(PAGEMENU)
 #define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
+/* специальные биты */
 #define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
 #define REDRSUBSET_LATCH	REDRSUBSET(PAGELATCH)
+#define REDRSUBSET_SHOW		(~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT))
 
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
@@ -83,6 +78,27 @@ static struct dzitem dzi_default;
 
 static const COLORPIP_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
 static const COLORPIP_T color_alt_red = COLORPIP_RED;
+
+// Стирание фона (REDRSUBSET_SHOW)
+static void display2_preparebg(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+}
+
+// запись подготовленного изображения на главный дисплей (REDRSUBSET_SHOW)
+static void display2_showmain(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
+	colmain_nextfb();
+}
 
 void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg);
 
@@ -6679,10 +6695,7 @@ void display2_bgprocess(
 	return;
 
 #elif LINUX_SUBSYSTEM
-	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display_walktrough(REDRSUBSET(menuset), pctx);
-	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
-	colmain_nextfb();
 
 #elif ! LCDMODE_LTDC
 	return;
@@ -6758,10 +6771,7 @@ void display2_bgprocess(
 	colmain_nextfb();
 
 #else
-	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
-	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
-	colmain_nextfb();
 #endif
 }
 
