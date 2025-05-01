@@ -730,7 +730,8 @@ void display_snapshot_req(void);
 #endif /* WITHLTDCHWVBLANKIRQ */
 
 PACKEDCOLORPIP_T * colmain_fb_draw(void);		// буфер для построения изображения
-void colmain_nextfb(void);	// переключиться на использование для DRAW следующего фреймбуфера
+void colmain_nextfb(void);	// переключиться на использование для DRAW следующего фреймбуфера, текущий отобразить на основном дисплее
+void colmain_nextfb_sub(void);	// переключиться на использование для DRAW следующего фреймбуфера, текущий отобразить на дополнительном дисплее
 uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);	// получить индекс видеобуфера по его адресу
 void colmain_fb_list(uintptr_t * frames);	// получение массива планирующихся для работы framebuffers
 
