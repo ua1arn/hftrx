@@ -9,7 +9,7 @@
 
 1. **Компиляторы:**
   - [ARM GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)  
-    Проверенная версия: `arm-none-eabi-gcc 13.2.1`
+    Проверенная версия: `arm-none-eabi-gcc 14.2.1`
   - [RISC-V Toolchain](https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/)  
     ⚠️ Для RISC-V требуется патч: применить `cmsis_5_riscv_patch.diff` к файлу  
     `CMSIS_5/CMSIS/Core_A/Include/cmsis_gcc.h`
@@ -65,10 +65,20 @@ cp product_template.h product.h
 
 ## Для Linux
 
+### Подготовка
+Для начала необходимо установить утилиты `git`, `binutils` и `gcc`
+```
+sudo apt install git-all
+sudo apt install binutils
+sudo apt install build-essential
+```
+
 ### Установка зависимостей
 
 ```bash
 sudo apt install gcc-arm-none-eabi libnewlib-arm-none-eabi dfu-util
+sudo apt install pkg-config
+sudo apt install libusb-1.0-0-dev
 ```
 
 ---
