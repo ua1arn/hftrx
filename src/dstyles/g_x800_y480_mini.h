@@ -32,8 +32,10 @@
 		BDTH_SPACEPWR = 0,
 
 		/* совмещение на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(27)	// вертикальный размер спектра в ячейках
+//		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
+//		BDCV_SPMRX = ROWS2GRID(27)	// вертикальный размер спектра в ячейках
+		//
+		B_unused
 	};
 	enum {
 		DLES = 35,		// spectrum window upper line
@@ -133,8 +135,7 @@
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50,	BDCV_ALLRX,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	DLES,	50,	BDCV_ALLRX,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_combo,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	0,	0,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print

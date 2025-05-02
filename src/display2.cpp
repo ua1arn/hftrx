@@ -3866,9 +3866,7 @@ static void display2_legend(
 
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
-
 static const uint_fast16_t ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX));
-static const uint_fast16_t ALLDY = GRID2Y(BDCV_ALLRX);
 
 // Параметры фильтров данных спектра и водопада
 // устанавливаются через меню
@@ -3964,17 +3962,6 @@ enum {
 	MAX_3DSS_STEP = 42,
 #endif /* #if CPUSTYLE_XC7Z || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 */
 	Y_STEP = 2,
-	DEPTH_ATTENUATION = 2,
-	MAX_DELAY_3DSS = 1,
-	HALF_ALLDX = ALLDX / 2,
-	SPY_3DSS = GRID2Y(BDCV_SPMRX),	// was: SPDY
-	SPY_3DSS_H = SPY_3DSS / 4,
-#if WITHTOUCHGUI
-	SPY = ALLDY - FOOTER_HEIGHT - 15,
-#else
-	SPY = ALLDY - 15,
-#endif
-	HORMAX_3DSS = SPY - MAX_3DSS_STEP * Y_STEP - 2,
 };
 
 #endif /* WITHVIEW_3DSS */
@@ -5646,6 +5633,8 @@ display_colorgrid_3dss(
 
 static void init_depth_map_3dss(void)
 {
+	const uint_fast16_t HALF_ALLDX = ALLDX / 2;
+
 	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
 		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
@@ -5712,18 +5701,25 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 #endif
 }
 
+#if WITHVIEW_3DSS
 
 // подготовка изображения спектра
 static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
-	(void) pctx;
-	const uint_fast16_t WFDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной водопаду
-	//const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
-	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
-	const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
-
-
+	const uint_fast16_t SPY_3DSS = GRID2Y(yspan);	// was: SPDY
+	const uint_fast16_t SPY_3DSS_H = SPY_3DSS / 4;
+#if WITHTOUCHGUI
+	const uint_fast16_t SPY = GRID2Y(yspan) - FOOTER_HEIGHT - 15;
+#else
+	const uint_fast16_t SPY = GRID2Y(yspan) - 15;
+#endif
+	const uint_fast16_t HORMAX_3DSS = SPY - MAX_3DSS_STEP * Y_STEP - 2;
+	enum
+	{
+		DEPTH_ATTENUATION = 2,
+		MAX_DELAY_3DSS = 1
+	};
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
 	uint_fast16_t xleft = latched_dm.xleft [0];		// левый край шторки
@@ -5832,15 +5828,17 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 	}
 
 	display_colorgrid_3dss(colorpip, SPY - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
+	(void) pctx;
 }
+#endif /* WITHVIEW_3DSS */
 
 // подготовка изображения спектра
 static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
 	(void) pctx;
-	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
-	const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t SPY0 = 0;//GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t SPDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -6054,11 +6052,11 @@ static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8
 // Подготовка изображения водопада
 static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	const uint_fast8_t xBDCO_WFLRX = BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
+	const uint_fast8_t xBDCO_WFLRX = 0;//BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
 	#if WITHTOUCHGUI
-	const uint_fast8_t xBDCV_WFLRX = yspan - BDCV_SPMRX - 10;    // вертикальный размер водопада в ячейках - GUI version
+	const uint_fast8_t xBDCV_WFLRX = yspan - 10;    // вертикальный размер водопада в ячейках - GUI version
 	#else /* WITHTOUCHGUI */
-	const uint_fast8_t xBDCV_WFLRX = yspan - BDCV_SPMRX;	// вертикальный размер водопада в ячейках
+	const uint_fast8_t xBDCV_WFLRX = yspan;	// вертикальный размер водопада в ячейках
 	#endif /* WITHTOUCHGUI */
 	const uint_fast16_t WFDY = GRID2Y(xBDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t WFY0 = GRID2Y(xBDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
@@ -6177,9 +6175,10 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 	(void) pctx;
 }
 
-// // подготовка изображения спектра и волрада
+// подготовка изображения спектра и волрада
 static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+	const uint_fast8_t hspectrum = yspan / 2;
 	switch (glob_view_style)
 	{
 #if WITHVIEW_3DSS
@@ -6189,8 +6188,8 @@ static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan
 #endif /* WITHVIEW_3DSS */
 	default:
 		// TODO: Делим отведённый размер между двумя панелями отображения
-		display2_spectrum(x0, y0, xspan, yspan, pctx);
-		display2_waterfall(x0, y0, xspan, yspan, pctx);
+		display2_spectrum(x0, y0 + 0, xspan, yspan - 0, pctx);
+		display2_waterfall(x0, y0 + hspectrum, xspan, yspan - hspectrum, pctx);
 		break;
 	}
 }
@@ -6220,38 +6219,27 @@ PACKEDCOLORPIP_T * getscratchwnd(
 }
 
 // Stub
-static void display2_latchwaterfall(
-	uint_fast8_t x0, 
-	uint_fast8_t y0, 
-	dctx_t * pctx
-	)
+static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 }
 
 // Stub
-static void display2_spectrum(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	dctx_t * pctx
-	)
+static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 }
 
 // Stub
-static void display2_waterfall(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	dctx_t * pctx
-	)
+static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 }
 
 // Stub
-static void display2_wfl_init(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+static void display2_combo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+}
+
+// Stub
+static void display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 
 }
@@ -6459,8 +6447,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	{
 		uint_fast8_t x = layer.border_box.left() / 16;
 		uint_fast8_t y = layer.border_box.top() / 5;
-		display2_spectrum(x, y, NULL);
-		display2_waterfall(x, y, NULL);
+		display2_gcombo(x, y, NULL);
 
 	}
 	else
@@ -7533,7 +7520,7 @@ uint32_t * wfl_proccess(void)
 	display2_getpipparams(& pip);
 	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display2_latchwaterfall(0, 0, NULL);
-	display2_spectrum(pip.x, pip,y, NULL);
+	display2_gcombo(pip.x, pip,y, NULL);
 	return getscratchwnd(pip.x, pip,y);
 }
 

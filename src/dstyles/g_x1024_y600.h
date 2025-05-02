@@ -27,8 +27,10 @@
 		BDTH_SPACEPWR = 0,
 
 		/* совмещение на одном экрание водопада и панорамы */
-		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-		BDCV_SPMRX = ROWS2GRID(39)	// вертикальный размер спектра в ячейках
+//		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
+//		BDCV_SPMRX = ROWS2GRID(39)	// вертикальный размер спектра в ячейках
+		//
+		B_unused
 	};
 
 
@@ -139,8 +141,7 @@
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	0,	0, 0, display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_combo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	12, 0, display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
