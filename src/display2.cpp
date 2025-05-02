@@ -6032,14 +6032,14 @@ static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8
 // Подготовка изображения водопада
 static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	const uint_fast8_t BDCO_WFLRX = BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
+	const uint_fast8_t xBDCO_WFLRX = BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
 	#if WITHTOUCHGUI
-	const uint_fast8_t BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX - 10;    // вертикальный размер водопада в ячейках - GUI version
+	const uint_fast8_t xBDCV_WFLRX = yspan - BDCV_SPMRX - 10;    // вертикальный размер водопада в ячейках - GUI version
 	#else /* WITHTOUCHGUI */
-	const uint_fast8_t BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX;	// вертикальный размер водопада в ячейках
+	const uint_fast8_t xBDCV_WFLRX = yspan - BDCV_SPMRX;	// вертикальный размер водопада в ячейках
 	#endif /* WITHTOUCHGUI */
-	const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
-	const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t WFDY = GRID2Y(xBDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t WFY0 = GRID2Y(xBDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
 	//const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 #if ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
