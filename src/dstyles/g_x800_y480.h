@@ -134,8 +134,8 @@
 		{	37, 30,	8, 4, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	0, 0, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	0, 0, display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	0, 0, 					display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_default, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 

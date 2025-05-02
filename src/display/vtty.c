@@ -60,11 +60,7 @@ static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);
 void display_vtty_printf_irq(const char * format, ...);
-void display2_vtty(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	dctx_t * pctx
-	);
+void display2_vtty(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 void display_vtty_clrscr(void);
 void display_vtty_gotoxy(unsigned x, unsigned y);
 
@@ -156,11 +152,7 @@ static void display_vtty_show(
 	}
 }
 
-void display2_vtty(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	dctx_t * pctx
-	)
+void display2_vtty(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	const uint_fast16_t x = GRID2X(x0);
 	const uint_fast16_t y = GRID2Y(y0);
@@ -182,11 +174,7 @@ void display2_vtty(
 	display_vtty_show(x, y);
 }
 
-void display2_vtty_init(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	dctx_t * pctx
-	)
+void display2_vtty_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	display_vtty_initialize();
 }

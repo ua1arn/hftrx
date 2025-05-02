@@ -398,6 +398,8 @@ void bootloader_fatfs_mainloop(void)
 //void display2_keyboard_screen0(
 //	uint_fast8_t x,
 //	uint_fast8_t y,
+//	uint_fast8_t xspan,
+//	uint_fast8_t yspan,
 //	dctx_t * pctx
 //	)
 //{

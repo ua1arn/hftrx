@@ -6081,11 +6081,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 }
 
 // Отображение КСВ в меню
-void display2_swrsts22(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void display2_swrsts22(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
@@ -8719,11 +8715,7 @@ uif_encoder2_rotate(
 
 
 // FUNC item label
-void display2_fnlabel9(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void display2_fnlabel9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
 	const char FLASHMEM * const text = enc2menu_label_P(enc2menus [enc2pos]);
@@ -8743,11 +8735,7 @@ void display2_fnlabel9(
 }
 
 // FUNC item value
-void display2_fnvalue9(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void display2_fnvalue9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
 	enum { WDTH = 9 };	// ширина поля для отображения
@@ -13393,11 +13381,7 @@ uif_key_click_xxxx(void)
 /* отображение S-метра или SWR-метра на приёме или передаче */
 // Функция вызывается из display2.c
 void
-display2_bars(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+display2_bars(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHBARS
 	if (userfsg)
@@ -13405,11 +13389,11 @@ display2_bars(
 	}
 	else if (gtx)
 	{
-		display2_bars_tx(x, y, pctx);
+		display2_bars_tx(x, y, xspan, yspan, pctx);
 	}
 	else
 	{
-		display2_bars_rx(x, y, pctx);
+		display2_bars_rx(x, y, xspan, yspan, pctx);
 	}
 #endif /* WITHBARS */
 }
@@ -17002,7 +16986,7 @@ defaultsettings(void)
 
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17065,7 +17049,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_group(x, y_position_groups, & dctx); // название группы
+			display2_menu_group(x, y_position_groups, xspan, yspan, & dctx); // название группы
 
 			y_position_groups += window.ystep;
 		}
@@ -17086,7 +17070,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 }
 
 // Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17158,7 +17142,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_lblng(x, y_position_params, & dctx); // название редактируемого параметра
+			display2_menu_lblng(x, y_position_params, xspan, yspan, & dctx); // название редактируемого параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17178,7 +17162,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 }
 
 // Отображение многострочного меню для больших экранов (значения)
-void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
+void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17238,7 +17222,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * 
             dctx_t dctx;
             dctx.type = DCTX_MENU;
             dctx.pv = mv;
-            display2_menu_valxx(x, y_position_params, & dctx); // значение параметра
+            display2_menu_valxx(x, y_position_params, xspan, yspan, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17291,10 +17275,12 @@ void display2_menu_lblc3(
 // название редактируемого параметра
 // если группа - ничего не отображаем
 void display2_menu_lblng(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17308,10 +17294,12 @@ void display2_menu_lblng(
 // Вызывается из display2.c
 // название редактируемого параметра или группы
 void display2_menu_lblst(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17323,10 +17311,12 @@ void display2_menu_lblst(
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
 void display2_menu_group(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17342,10 +17332,12 @@ void display2_menu_group(
 // Вызывается из display2.c
 // значение параметра
 void display2_menu_valxx(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
 {
 	static const FLASHMEM char months [13] [4] =
 	{
@@ -18434,11 +18426,7 @@ static size_t sizePopUp = 0;
 #endif
 
 // всплывающее меню
-void display2_popup(
-	uint_fast8_t xcell,
-	uint_fast8_t ycell,
-	dctx_t * pctx
-	)
+void display2_popup(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 
 	if (thisPopUp == NULL)
@@ -18763,21 +18751,19 @@ process_key_menuset0(uint_fast8_t kbch)
 
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void display2_keyboard_screen0(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 }
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 void display2_keyboard_menu(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
 {
 
 }
@@ -21109,7 +21095,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_valxx(0, 0, & dctx);
+			display2_menu_valxx(0, 0, 0, 0, & dctx);
 			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
 			vals->index = el;
 			return;
@@ -21130,7 +21116,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
 	dctx.pv = & menutable [index];
-	display2_menu_valxx(0, 0, & dctx);
+	display2_menu_valxx(0, 0, 0, 0, & dctx);
 	return menuw;
 }
 #endif /* WITHMENU */

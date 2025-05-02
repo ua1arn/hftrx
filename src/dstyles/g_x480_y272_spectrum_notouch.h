@@ -121,7 +121,7 @@
 		{	0,	24,	0,	0,	display2_bars,		& dzi_default, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, 0,	5,	display2_smeors5, 	& dzi_default, PGSWR, },	// уровень сигнала в баллах S или dBm
 
-		{	0,	28,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	28,	30,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	30,	0,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
 		{	0,	28,	30,	0,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
