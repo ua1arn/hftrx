@@ -113,10 +113,10 @@
 	        {	0,  28,	0,	0,	display2_legend_tx, & dzi_default, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
 	        {	0,  32,	0,	0,	display2_bars_tx,   & dzi_default, PGSWR, },    // S-METER, SWR-METER, POWER-METER
 
-//			{	0,	28,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+//			{	0,	28,	0,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 //			{	0,	28,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-//			{	0,	28,	0,	30,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
-//			{	0,	28,	0,	30,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
+//			{	0,	28,	0,	BDCV_ALLRX,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
+//			{	0,	28,	0,	BDCV_ALLRX,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
 	#else
 			{	0,	20,	0,	0,	display2_adctest,	& dzi_default, PGSWR, },	// ADC raw data print
 	#endif

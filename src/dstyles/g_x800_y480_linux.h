@@ -2,15 +2,6 @@
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
-void wait_iq(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-	linux_wait_iq();
-}
-
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123456789"
 		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
@@ -134,10 +125,10 @@ void wait_iq(
 #endif /* WITHAFSPECTRE */
 
 		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
-		{	0,	DLES,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50,	0,	display2_spectrum,	& dzi_default, PG0_1, },// подготовка изображения спектра
-		{	0,	DLES,	50,	0,	display2_waterfall,	& dzi_default, PG0_1, },// подготовка изображения водопада
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_spectrum,	& dzi_default, PG0_1, },// подготовка изображения спектра
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_waterfall,	& dzi_default, PG0_1, },// подготовка изображения водопада
 		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	& dzi_default, PG0_1, },
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей

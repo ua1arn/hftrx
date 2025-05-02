@@ -125,6 +125,7 @@
 	//#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 	//#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
+	//#define BOARD_DSTYLE "g_x800_y480_linux.h"
 
 #elif 1
 

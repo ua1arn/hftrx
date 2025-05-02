@@ -131,10 +131,10 @@
 		{	36, 30,	8,	0,	display2_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 		{	46, 30,	3,	0,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	0,	0,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	50,	0,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	DLES,	50,	0,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	DLES,	50,	BDCV_ALLRX,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	0,	0,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print

@@ -132,10 +132,10 @@
 		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PGSWR, },	// signal level dBm
 //		{	36, 30,	8,	0,	display2_freqdelta8, & dzi_default, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF || WITHAFSPECTRE
-		{	0,	DLES,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	0,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH | PGGUI, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	0,	0,	display2_spectrum,	& dzi_default, PGSPE | PGGUI, },// подготовка изображения спектра
-		{	0,	DLES,	0,	0,	display2_waterfall,	& dzi_default, PGWFL | PGGUI, },// подготовка изображения водопада
+		{	0,	DLES,	0,	BDCV_ALLRX,	display2_spectrum,	& dzi_default, PGSPE | PGGUI, },// подготовка изображения спектра
+		{	0,	DLES,	0,	BDCV_ALLRX,	display2_waterfall,	& dzi_default, PGWFL | PGGUI, },// подготовка изображения водопада
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	0,	0,	display2_adctest,	& dzi_default, PGSWR, },	// ADC raw data print
@@ -147,7 +147,7 @@
 		// sleep mode display
 		{	5,	25,	12,	0,	display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	5,	0,	display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
-		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	& dzi_default, PGWFL | PGSPE | PGGUI, },
+		{	0,	DLES,	0,	BDCV_ALLRX,	gui_WM_walkthrough,	& dzi_default, PGWFL | PGSPE | PGGUI, },
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};

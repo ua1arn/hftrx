@@ -41,116 +41,52 @@ typedef struct dctx_tag
 } dctx_t;
 
 // копирование растра в видеобуфер отображения
-void display2_vtty(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	dctx_t * pctx
-	);
-void display2_vtty_init(
-	uint_fast8_t x0,
-	uint_fast8_t y0,
-	dctx_t * pctx
-	);
+void display2_vtty(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_vtty_init(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 
 // FUNC item label
-void display2_fnlabel9(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_fnlabel9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // FUNC item value
-void display2_fnvalue9(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_fnvalue9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-void display2_swrsts22(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_swrsts22(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 //Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 //Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 //Отображение многострочного меню для больших экранов (значения)
-void display2_multilinemenu_block_vals(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display2_menu_group(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_menu_group(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // значение параметра
-void display2_menu_valxx(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_menu_valxx(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // название редактируемого параметра или группы
-void display2_menu_lblst(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_menu_lblst(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display2_menu_lblng(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_menu_lblng(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // код редактируемого параметра
-void display2_menu_lblc3(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_menu_lblc3(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-void display2_keyboard_menu(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_keyboard_menu(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_keyboard_screen0(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_keyboard_menu(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
@@ -166,39 +102,21 @@ void display2_needupdate(void);
 
 // Вызывается из display2.c
 void
-display2_bars(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+display2_bars(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 void
-display2_bars_rx(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+display2_bars_rx(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 void
-display2_bars_tx(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+display2_bars_tx(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 void
-display2_adctest(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+display2_adctest(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // всплывающее меню
-void display2_popup(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	);
+void display2_popup(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+
+void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 
 // Параметры отображения многострочного меню для больших экранов
 typedef struct multimenuwnd_tag
