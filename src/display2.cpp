@@ -3869,7 +3869,6 @@ static void display2_legend(
 
 static const uint_fast16_t ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX));
 static const uint_fast16_t ALLDY = GRID2Y(BDCV_ALLRX);
-static const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
 
 // Параметры фильтров данных спектра и водопада
 // устанавливаются через меню
@@ -3968,7 +3967,7 @@ enum {
 	DEPTH_ATTENUATION = 2,
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
-	SPY_3DSS = SPDY,
+	SPY_3DSS = GRID2Y(BDCV_SPMRX),	// was: SPDY
 	SPY_3DSS_H = SPY_3DSS / 4,
 #if WITHTOUCHGUI
 	SPY = ALLDY - FOOTER_HEIGHT - 15,
@@ -5721,6 +5720,7 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	const uint_fast16_t WFDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной водопаду
 	//const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -5775,7 +5775,10 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 							if (x > xleft && x < xrightv && gview3dss_mark)
 								colpip_point(colorpip, DIM_X, DIM_Y, x, dy, DSGN_SPECTRUMFG);
 							else
-								colpip_point(colorpip, DIM_X, DIM_Y, x, dy, gvars.color_scale [j]);
+							{
+								const uint_fast16_t ix = normalize(j, 0, SPY - 1, PALETTESIZE - 1);
+								colpip_point(colorpip, DIM_X, DIM_Y, x, dy, wfpalette [ix]);
+							}
 						}
 
 						if (x)
@@ -5809,8 +5812,8 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 								/* предотвращение отрисовки по ранее закрашенной области*/
 								if (* colpip_mem_at(colorpip, DIM_X, DIM_Y, x_d, y0 - h) != bgcolor)
 									break;
-
-								colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, gvars.color_scale [h]);
+                                const uint_fast16_t ix = normalize(h, 0, SPY - 1, PALETTESIZE - 1);
+								colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, wfpalette [ix]);
 							}
 							x_old = x_d;
 						}
