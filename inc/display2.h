@@ -246,6 +246,8 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 COLORPIP_T display2_getbgcolor(void);
 void display2_setbgcolor(COLORPIP_T c);
 
+COLORPIP_T display2_get_spectrum(int x);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 #ifdef __cplusplus

@@ -4052,7 +4052,7 @@ static RAMBIGDTCM struct ustates gvars;
 // Получить цвет запослнен6ия водопада при перестройке
 static COLORPIP_T display2_bgcolorwfl(void)
 {
-	return gvars.color_scale [0];
+	return wfpalette [0];
 }
 
 
@@ -5416,14 +5416,15 @@ display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fas
 #endif /* !  defined (COLORPIP_SHADED) */
 
 	{
+		const uint_fast16_t N = ARRAY_SIZE(gvars.color_scale);
 		uint_fast16_t i;
 		/* массив значений для раскраски спектра */
-		for (i = 0; i < SPDY; ++ i)
+		for (i = 0; i < N; ++ i)
 		{
 	#if LCDMODE_MAIN_L8
-			gvars.color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+			gvars.color_scale [i] = normalize(i, 0, N - 1, PALETTESIZE - 1);
 	#else /* LCDMODE_MAIN_L8 */
-			gvars.color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
+			gvars.color_scale [i] = wfpalette [normalize(i, 0, N - 1, PALETTESIZE - 1)];
 	#endif /* LCDMODE_MAIN_L8 */
 		}
 	}

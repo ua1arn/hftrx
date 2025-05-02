@@ -107,7 +107,6 @@ void hamradio_split_vfo_swap(void);
 void hamradio_split_mode_toggle(void);
 uint_fast8_t hamradio_get_gvfoab(void);
 void display2_set_page_temp(uint_fast8_t page);
-COLORPIP_T display2_get_spectrum(int x);
 uint_fast8_t display_getpage0(void);
 uint_fast8_t display_getpagegui(void);
 uint_fast8_t hamradio_get_lfmmode(void);
