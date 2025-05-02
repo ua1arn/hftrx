@@ -16231,9 +16231,11 @@ static void dpc_1s_timer_fn(void * arg)
 	if (aistate != 0)
 	{
 		cat_answer_request(CAT_SM0_INDEX);
+#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 		cat_answer_request(CAT_RM1_INDEX);
 		cat_answer_request(CAT_RM2_INDEX);
 		cat_answer_request(CAT_RM3_INDEX);
+#endif
 	}
 #endif /* WITHCAT */
 }
