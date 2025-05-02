@@ -4407,6 +4407,20 @@ static const struct paramdefdef xgviewstyle =
 	& gviewstyle,
 	getzerobase, /* складывается со смещением и отображается */
 };
+
+/* Часть отведенной под спектр высоты экрана 0..100 */
+static const struct paramdefdef xgspectrumpart =
+{
+	QLABEL2("SPEC PRT", "Spectrum part"), 7, 0, 0,	ISTEP1,
+	ITEM_VALUE,
+	20, 80,			/* Часть отведенной под спектр высоты экрана 0..100 */
+	OFFSETOF(struct nvmap, gspectrumpart),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gspectrumpart,
+	getzerobase, /* складывается со смещением и отображается */
+};
+
 #if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 /* уменьшение отображаемого участка спектра */
 static const struct paramdefdef xgzoomxpow2 =

@@ -219,16 +219,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	& xgviewstyle,	/* стиль отображения спектра и панорамы */
-	(const struct paramdefdef [1]) {
-		QLABEL2("SPEC PRT", "Spectrum part"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		20, 80,			/* Часть отведенной под спектр высоты экрана 0..100 */
-		OFFSETOF(struct nvmap, gspectrumpart),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gspectrumpart,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgspectrumpart,	/* Часть отведенной под спектр высоты экрана 0..100 */
 #if WITHVIEW_3DSS
 	(const struct paramdefdef [1]) {
 		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
