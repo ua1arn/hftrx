@@ -174,9 +174,9 @@ static const FLASHMEM struct dzone dzones [] =
 #if WITHSPECTRUMWF
 	{	0,	DLES,	0,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 	{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-	{	0,	DLES,	0,	0,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
-	{	0,	DLES,	0,	0,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
-//		{	0,	DLES,	0,	0,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
+//	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
+//	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
+	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 
 	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
@@ -218,8 +218,8 @@ static const FLASHMEM struct dzone dzones [] =
 	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	0,	20,	0,	0,	display2_spectrum,	& dzi_default, PGSPE, },// подготовка изображения спектра
-	{	0,	20,	0,	0,	display2_waterfall,	& dzi_default, PGWFL, },// подготовка изображения водопада
+	{	0,	20,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_spectrum,	& dzi_default, PGALL, },// подготовка изображения спектра
+	{	0,	20,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_waterfall,	& dzi_default, PGALL, },// подготовка изображения водопада
 
 	{	0,	0,	0, 0, display2_showhdmi,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 #endif
