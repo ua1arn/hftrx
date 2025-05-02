@@ -3929,7 +3929,7 @@ typedef struct {
 
 #endif /* WITHAFSPECTRE */
 
-enum { WFROWS = DIM_Y };
+enum { WFROWS = GRID2Y(BDCV_ALLRX) };
 
 #if defined (COLORPIP_SHADED)
 
