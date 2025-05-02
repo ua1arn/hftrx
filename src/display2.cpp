@@ -567,9 +567,9 @@ static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT);
 
 uint_fast16_t normalize(
 	uint_fast16_t raw,
-	uint_fast16_t rawmin,
-	uint_fast16_t rawmax,
-	uint_fast16_t range
+	uint_fast16_t rawmin,	// включает интервал входного raw
+	uint_fast16_t rawmax,	// включает интервал входного raw
+	uint_fast16_t range		// включает выходное значение
 	)
 {
 	if (rawmin < rawmax)
@@ -3867,9 +3867,9 @@ static void display2_legend(
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
 
-#define ALLDX 	(GRID2X(CHARS2GRID(BDTH_ALLRX)))
-#define ALLDY 	(GRID2Y(BDCV_ALLRX))
-#define SPDY 	(GRID2Y(BDCV_SPMRX))				// размер по вертикали в пикселях части отведенной спектру
+static const uint_fast16_t ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX));
+static const uint_fast16_t ALLDY = GRID2Y(BDCV_ALLRX);
+static const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
 
 // Параметры фильтров данных спектра и водопада
 // устанавливаются через меню
@@ -3930,11 +3930,11 @@ typedef struct {
 
 #endif /* WITHAFSPECTRE */
 
+enum { WFROWS = DIM_Y };
 
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = ALLDY };
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
@@ -3942,7 +3942,6 @@ typedef struct {
 #elif WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возможности динамисеского изменения высоты отображаемого водопада
 	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
@@ -3950,7 +3949,6 @@ typedef struct {
 #elif LCDMODE_LTDC
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = DIM_Y };	// буфер больше чем WFDY - для возможности динамисеского изменения высоты отображаемого водопада
 	enum { PALETTESIZE = 256 };
 
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
@@ -4006,7 +4004,6 @@ struct ustates
 		WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
 #endif /* WITHVIEW_3DSS */
 	} u;
-	PACKEDCOLORPIP_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 #if WITHAFSPECTRE
 	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
@@ -5415,20 +5412,6 @@ display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fas
 	}
 #endif /* !  defined (COLORPIP_SHADED) */
 
-	{
-		const uint_fast16_t N = ARRAY_SIZE(gvars.color_scale);
-		uint_fast16_t i;
-		/* массив значений для раскраски спектра */
-		for (i = 0; i < N; ++ i)
-		{
-	#if LCDMODE_MAIN_L8
-			gvars.color_scale [i] = normalize(i, 0, N - 1, PALETTESIZE - 1);
-	#else /* LCDMODE_MAIN_L8 */
-			gvars.color_scale [i] = wfpalette [normalize(i, 0, N - 1, PALETTESIZE - 1)];
-	#endif /* LCDMODE_MAIN_L8 */
-		}
-	}
-
 	wflclear();	// Очистка водопада
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
@@ -5907,9 +5890,10 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 
 				if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
 				{
-					for (uint_fast16_t dy = SPY0 + SPDY - 1, i = 0; dy > ynew; dy --, i ++)
+					for (uint_fast16_t y = SPY0 + SPDY - 1, i = 0; y > ynew; y --, i ++)
 					{
-						colpip_point(colorpip, DIM_X, DIM_Y, x, dy, gvars.color_scale [i]);
+						const uint_fast16_t ix = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+						colpip_point(colorpip, DIM_X, DIM_Y, x, y, wfpalette [ix]);
 					}
 				}
 				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
@@ -7504,9 +7488,7 @@ uint_fast8_t display_getpage0(void)
 
 COLORPIP_T display2_get_spectrum(int x)
 {
-	//int v = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
-	int v = dsp_mag2y(gvars.spavgarray [x], SPDY - 1, glob_topdb, glob_bottomdb);
-	return gvars.color_scale [v];
+	return wfpalette [dsp_mag2y(gvars.spavgarray [x], PALETTESIZE - 1, glob_topdb, glob_bottomdb)];
 }
 
 #endif /* WITHTOUCHGUI */

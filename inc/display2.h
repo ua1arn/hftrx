@@ -161,10 +161,10 @@ void display_pwrmeter_amvo(
 uint_fast8_t display2_getswrmax(void);
 
 uint_fast16_t normalize(
-	uint_fast16_t raw,
-	uint_fast16_t rawmin,
-	uint_fast16_t rawmax,
-	uint_fast16_t range
+		uint_fast16_t raw,
+		uint_fast16_t rawmin,	// включает интервал входного raw
+		uint_fast16_t rawmax,	// включает интервал входного raw
+		uint_fast16_t range		// включает выходное значение
 	);
 
 #define BGCOLOR (display2_getbgcolor())
