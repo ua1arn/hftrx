@@ -94,7 +94,9 @@ static void display2_preparebg(uint_fast8_t x, uint_fast8_t y, uint_fast8_t cols
 // запись подготовленного изображения на главный дисплей (REDRSUBSET_SHOW)
 static void display2_showmain(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
+#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
+#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 	colmain_nextfb();
 }
 
