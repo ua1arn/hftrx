@@ -3526,7 +3526,7 @@ struct nvmap
 	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
 	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
 	uint8_t grxbwsatu;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-
+	uint8_t gspectrumpart;	/* Часть отведенной под спектр высоты экрана 0..100 */
 #endif /* WITHSPECTRUMWF */
 
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
@@ -4373,6 +4373,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
+static uint_fast8_t gspectrumpart = 50;	/* Часть отведенной под спектр высоты экрана 0..100 */
 
 static unsigned getselector_bandgroup(unsigned * count)
 {
@@ -11922,6 +11923,7 @@ updateboardZZZ(
 			display2_set_rxbwsatu(grxbwsatu);	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
+			display2_set_spectrumpart(gspectrumpart);	/* Часть отведенной под спектр высоты экрана 0..100 */
 		#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */

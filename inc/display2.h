@@ -242,6 +242,7 @@ void board_set_afspeclow(int_fast16_t v);		// нижняя частота ото
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 void display2_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
 void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+void display2_set_spectrumpart(uint_fast8_t v); /* Часть отведенной под спектр высоты экрана 0..100 */
 
 COLORPIP_T display2_getbgcolor(void);
 void display2_setbgcolor(COLORPIP_T c);

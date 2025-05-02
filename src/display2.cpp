@@ -561,6 +561,8 @@ static int_fast16_t glob_afspechigh = 3400;	// верхняя частота о�
 
 static uint_fast8_t glob_lvlgridstep = 12;	// Шаг сетки уровней в децибелах. (0-отключаем отображение сетки уровней)
 
+static uint_fast8_t glob_spectrumpart = 50;
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT);
@@ -6178,7 +6180,7 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 // подготовка изображения спектра и волрада
 static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	const uint_fast8_t hspectrum = yspan / 2;
+	const uint_fast8_t hspectrum = yspan * glob_spectrumpart / 100;
 	switch (glob_view_style)
 	{
 #if WITHVIEW_3DSS
@@ -6188,7 +6190,7 @@ static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan
 #endif /* WITHVIEW_3DSS */
 	default:
 		// TODO: Делим отведённый размер между двумя панелями отображения
-		display2_spectrum(x0, y0 + 0, xspan, yspan - 0, pctx);
+		display2_spectrum(x0, y0, xspan, hspectrum, pctx);
 		display2_waterfall(x0, y0 + hspectrum, xspan, yspan - hspectrum, pctx);
 		break;
 	}
@@ -7423,6 +7425,13 @@ void
 display2_set_lvlgridstep(uint_fast8_t v)
 {
 	glob_lvlgridstep = v;
+}
+
+/* Часть отведенной под спектр высоты экрана 0..100 */
+void
+display2_set_spectrumpart(uint_fast8_t v)
+{
+	glob_spectrumpart = v;
 }
 
 /* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
