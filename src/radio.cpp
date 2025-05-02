@@ -4648,38 +4648,38 @@ static const struct paramdefdef xcatenable =
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
-		// Громкость в процентах
-		static const struct paramdefdef xafgain1 =
-		{
-			QLABEL2("AF GAIN ", "VOLUME   "), 7, 0, 0,	ISTEP1,
-			ITEM_VALUE,
-			BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
-#if WITHPOTIFGAIN
-			MENUNONVRAM,
-#else /* WITHPOTIFGAIN */
-			OFFSETOF(struct nvmap, afgain1),
+	// Громкость в процентах
+	static const struct paramdefdef xafgain1 =
+	{
+		QLABEL2("AF GAIN ", "VOLUME   "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
+#if WITHPOTAFGAIN
+		MENUNONVRAM,
+#else /* WITHPOTAFGAIN */
+		OFFSETOF(struct nvmap, afgain1),
 #endif /* WITHPOTAFGAIN */
-			getselector0, nvramoffs0, valueoffs0,
-			& afgain1.value,
-			NULL,
-			getzerobase, /* складывается со смещением и отображается */
-		};
-		// Усиление ПЧ/ВЧ в процентах
-		static const struct paramdefdef xrfgain1 =
-		{
-			QLABEL2("RF GAIN ", "RF GAIN  "), 7, 0, 0,	ISTEP1,
-			ITEM_VALUE,
-			BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
+		getselector0, nvramoffs0, valueoffs0,
+		& afgain1.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+	// Усиление ПЧ/ВЧ в процентах
+	static const struct paramdefdef xrfgain1 =
+	{
+		QLABEL2("RF GAIN ", "RF GAIN  "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
-			MENUNONVRAM,
+		MENUNONVRAM,
 #else /* WITHPOTIFGAIN */
-			OFFSETOF(struct nvmap, rfgain1),
+		OFFSETOF(struct nvmap, rfgain1),
 #endif /* WITHPOTIFGAIN */
-			getselector0, nvramoffs0, valueoffs0,
-			& rfgain1.value,
-			NULL,
-			getzerobase, /* складывается со смещением и отображается */
-		};
+		getselector0, nvramoffs0, valueoffs0,
+		& rfgain1.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	/* подстройка усиления с линейного входа через меню. */
 	static const struct paramdefdef xglineamp =
