@@ -112,6 +112,7 @@ static void display2_showhdmi(
 
 void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg);
 
+
 #if WITHALTERNATIVELAYOUT
 
 #if SMALLCHARW2
@@ -133,7 +134,7 @@ static label_bg_t label_bg [] = {
 		{ 7, & colors_2state_alt [1], },
 };
 
-static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
+void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	uint_fast8_t i = 0;
 
@@ -201,6 +202,10 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 
 }
 #endif /* SMALLCHARW2 */
+#else
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
+{
+}
 #endif /* WITHALTERNATIVELAYOUT */
 
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);		// вызывать после display2_smeter15_init
@@ -3606,6 +3611,19 @@ static uint_fast8_t display_mapbar(
 }
 
 
+void wait_iq(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
+{
+#if LINUX_SUBSYSTEM
+	linux_wait_iq();
+#endif
+}
+
 /* Описания расположения элементов на дисплеях */
 
 #include "dstyles/dstyles.h"
@@ -5368,6 +5386,7 @@ static void wfsetupnew(void)
 #if ! LINUX_SUBSYSTEM
 	#include "dsp/window_functions.h"
 #endif /* ! LINUX_SUBSYSTEM */
+
 
 static void
 display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)

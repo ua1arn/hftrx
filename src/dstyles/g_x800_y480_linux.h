@@ -2,15 +2,6 @@
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
-void wait_iq(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-	linux_wait_iq();
-}
-
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123456789"
 		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"

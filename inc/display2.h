@@ -116,6 +116,9 @@ display2_adctest(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast
 // всплывающее меню
 void display2_popup(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
+void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx);
+void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+
 // Параметры отображения многострочного меню для больших экранов
 typedef struct multimenuwnd_tag
 {
