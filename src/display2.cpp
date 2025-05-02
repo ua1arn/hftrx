@@ -5296,7 +5296,7 @@ static void wflshiftleft(uint_fast16_t pixels)
     {
 #if WITHVIEW_3DSS
     case VIEW_3DSS:
-         for (y = 0; y < MAX_3DSS_STEP; ++ y)
+        for (y = 0; y < MAX_3DSS_STEP; ++ y)
      	{
      		memmove(
      				atwfj3dss(0, y),			// to
@@ -5712,13 +5712,133 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 #endif
 }
 
+
 // подготовка изображения спектра
-static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
 	(void) pctx;
 	const uint_fast16_t WFDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной водопаду
 	//const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
+
+
+	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
+	const int_fast32_t bw = latched_dm.bw;
+	uint_fast16_t xleft = latched_dm.xleft [0];		// левый край шторки
+	uint_fast16_t xright = latched_dm.xright [0];	// правый край шторки
+	if (xleft == UINT16_MAX || xright == UINT16_MAX)
+		return;
+	if (xleft > xright)
+		xleft = 0;
+	if (xright == xleft)
+		xright = xleft + 1;
+	if (xright >= ALLDX)
+		xright = ALLDX - 1;
+
+	const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+	static uint_fast8_t current_3dss_step = 0;
+	static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
+
+	uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
+	uint_fast16_t ylast_sp = 0;
+	int i;
+	const COLORPIP_T bgcolor = display2_getbgcolor();
+	for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
+	{
+		uint_fast16_t y0 = SPY - 5 - i * Y_STEP;
+		uint_fast16_t x;
+
+		for (x = 0; x < ALLDX; ++ x)
+		{
+			if (i == 0)
+			{
+				const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS, glob_topdb, glob_bottomdb);
+				uint_fast16_t ynew = SPY - 1 - val;
+				uint_fast16_t dy, j;
+				wfj3dss_poke(x, current_3dss_step, val);
+
+				for (dy = SPY - 1, j = 0; dy > ynew; dy --, j ++)
+				{
+					if (x > xleft && x < xrightv && gview3dss_mark)
+						colpip_point(colorpip, DIM_X, DIM_Y, x, dy, DSGN_SPECTRUMFG);
+					else
+					{
+						const uint_fast16_t ix = normalize(j, 0, SPY - 1, PALETTESIZE - 1);
+						colpip_point(colorpip, DIM_X, DIM_Y, x, dy, wfpalette [ix]);
+					}
+				}
+
+				if (x)
+				{
+					colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast_sp, x, ynew, COLORPIP_WHITE, 1);
+				}
+
+				gvars.envelope_y [x] = ynew - 2;
+				ylast_sp = ynew;
+			}
+			else
+			{
+				static uint_fast16_t x_old = UINT16_MAX;
+				uint_fast16_t x_d = gvars.depth_map_3dss [i - 1][x];
+
+				if (x_d >= ALLDX)
+					return;
+
+				if (x_old != x_d)
+				{
+					const uint_fast16_t t0 = wfj3dss_peek(x, draw_step);
+					ASSERT(y0 >= t0);
+					uint_fast16_t y1 = y0 - t0;
+					int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
+					h = h < 0 ? 0 : h;
+					h = h > (int) y0 ? y0 : h;
+
+					for (; h > 0; h --)
+					{
+						ASSERT((int) y0 >= h);
+						/* предотвращение отрисовки по ранее закрашенной области*/
+						if (* colpip_mem_at(colorpip, DIM_X, DIM_Y, x_d, y0 - h) != bgcolor)
+							break;
+                        const uint_fast16_t ix = normalize(h, 0, SPY - 1, PALETTESIZE - 1);
+						colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, wfpalette [ix]);
+					}
+					x_old = x_d;
+				}
+			}
+		}
+		draw_step = calcprev(draw_step, MAX_3DSS_STEP);
+	}
+
+	// прожвижение по истории (должно быть в latch)
+	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+	if (! delay_3dss)
+		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
+
+	// увеличение контрастности спектра на фоне панорамы
+	ylast_sp = SPY;
+	for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+	{
+		uint_fast16_t y1 = gvars.envelope_y [x];
+
+		if (y1 >= DIM_Y)
+			return;
+
+		if (x)
+			colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast_sp, x, y1, COLORPIP_BLACK, 0);
+
+		ylast_sp = y1;
+	}
+
+	display_colorgrid_3dss(colorpip, SPY - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
+}
+
+// подготовка изображения спектра
+static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
+	(void) pctx;
 	const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
 	const uint_fast16_t SPDY = GRID2Y(BDCV_SPMRX);				// размер по вертикали в пикселях части отведенной спектру
 
@@ -5735,114 +5855,7 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 #if WITHVIEW_3DSS
 		else if (glob_view_style == VIEW_3DSS)
 		{
-			const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
-			const int_fast32_t bw = latched_dm.bw;
-			uint_fast16_t xleft = latched_dm.xleft [0];		// левый край шторки
-			uint_fast16_t xright = latched_dm.xright [0];	// правый край шторки
-			if (xleft == UINT16_MAX || xright == UINT16_MAX)
-				return;
-			if (xleft > xright)
-				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
-			if (xright >= ALLDX)
-				xright = ALLDX - 1;
-
-			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-			static uint_fast8_t current_3dss_step = 0;
-			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
-
-			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
-			uint_fast16_t ylast_sp = 0;
-			int i;
-			const COLORPIP_T bgcolor = display2_getbgcolor();
-			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
-			{
-				uint_fast16_t y0 = SPY - 5 - i * Y_STEP;
-				uint_fast16_t x;
-
-				for (x = 0; x < ALLDX; ++ x)
-				{
-					if (i == 0)
-					{
-						const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS, glob_topdb, glob_bottomdb);
-						uint_fast16_t ynew = SPY - 1 - val;
-						uint_fast16_t dy, j;
-						wfj3dss_poke(x, current_3dss_step, val);
-
-						for (dy = SPY - 1, j = 0; dy > ynew; dy --, j ++)
-						{
-							if (x > xleft && x < xrightv && gview3dss_mark)
-								colpip_point(colorpip, DIM_X, DIM_Y, x, dy, DSGN_SPECTRUMFG);
-							else
-							{
-								const uint_fast16_t ix = normalize(j, 0, SPY - 1, PALETTESIZE - 1);
-								colpip_point(colorpip, DIM_X, DIM_Y, x, dy, wfpalette [ix]);
-							}
-						}
-
-						if (x)
-						{
-							colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast_sp, x, ynew, COLORPIP_WHITE, 1);
-						}
-
-						gvars.envelope_y [x] = ynew - 2;
-						ylast_sp = ynew;
-					}
-					else
-					{
-						static uint_fast16_t x_old = UINT16_MAX;
-						uint_fast16_t x_d = gvars.depth_map_3dss [i - 1][x];
-
-						if (x_d >= ALLDX)
-							return;
-
-						if (x_old != x_d)
-						{
-							const uint_fast16_t t0 = wfj3dss_peek(x, draw_step);
-							ASSERT(y0 >= t0);
-							uint_fast16_t y1 = y0 - t0;
-							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
-							h = h < 0 ? 0 : h;
-							h = h > (int) y0 ? y0 : h;
-
-							for (; h > 0; h --)
-							{
-								ASSERT((int) y0 >= h);
-								/* предотвращение отрисовки по ранее закрашенной области*/
-								if (* colpip_mem_at(colorpip, DIM_X, DIM_Y, x_d, y0 - h) != bgcolor)
-									break;
-                                const uint_fast16_t ix = normalize(h, 0, SPY - 1, PALETTESIZE - 1);
-								colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, wfpalette [ix]);
-							}
-							x_old = x_d;
-						}
-					}
-				}
-				draw_step = calcprev(draw_step, MAX_3DSS_STEP);
-			}
-
-			// прожвижение по истории (должно быть в latch)
-			delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
-			if (! delay_3dss)
-				current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
-
-			// увеличение контрастности спектра на фоне панорамы
-			ylast_sp = SPY;
-			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
-			{
-				uint_fast16_t y1 = gvars.envelope_y [x];
-
-				if (y1 >= DIM_Y)
-					return;
-
-				if (x)
-					colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast_sp, x, y1, COLORPIP_BLACK, 0);
-
-				ylast_sp = y1;
-			}
-
-			display_colorgrid_3dss(colorpip, SPY - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
+			display2_3dss(x0, y0, xspan, yspan, pctx);
 		}
 #endif /* WITHVIEW_3DSS */
 		else
@@ -6167,8 +6180,19 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 // // подготовка изображения спектра и волрада
 static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	display2_spectrum(x0, y0, xspan, yspan, pctx);
-	display2_waterfall(x0, y0, xspan, yspan, pctx);
+	switch (glob_view_style)
+	{
+#if WITHVIEW_3DSS
+	case VIEW_3DSS:
+		display2_3dss(x0, y0, xspan, yspan, pctx);
+		break;
+#endif /* WITHVIEW_3DSS */
+	default:
+		// TODO: Делим отведённый размер между двумя панелями отображения
+		display2_spectrum(x0, y0, xspan, yspan, pctx);
+		display2_waterfall(x0, y0, xspan, yspan, pctx);
+		break;
+	}
 }
 
 static
