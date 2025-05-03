@@ -7338,7 +7338,7 @@ void display2_set_smetertype(uint_fast8_t v)
 
 uint_fast8_t display_getpagegui(void)
 {
-	return DPAGE0;
+	return DPAGE1;
 }
 
 uint_fast8_t display_getpage0(void)
