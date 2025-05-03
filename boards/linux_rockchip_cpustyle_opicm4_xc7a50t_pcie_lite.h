@@ -28,6 +28,7 @@
 #define	AXI_LITE_IQ_FX_FIFO			0x00007000
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
+#define	AXI_LITE_FIR_COEFFS			0x0000A000
 
 /*
 enum {
@@ -63,12 +64,12 @@ enum {
 };
 */
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
+#define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		59
 #define CALIBRATION_TX_SHIFT			27
 
 #define LINUX_NMEA_FILE			"/dev/ttyPS1"
-#define LINUX_XDMA_EVENT_FILE	"/dev/xdma0_events_0"
+#define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
 #define LINUX_I2C_FILE			"/dev/i2c-3"
 #define LINUX_FB_FILE			"/dev/fb0"
 #define LINUX_TTY_FILE			"/dev/tty0"
