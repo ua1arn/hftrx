@@ -182,7 +182,11 @@ void UB_Font_DrawPStringDbg(
 	savewhere = __func__;
 	if (x >= dx)
 	{
-		PRINTF("%s called from %s/%d\n", __func__, file, line);
+		PRINTF("%s called from %s/%d: x/dx=%d/%d\n", __func__, file, line, (int) x, (int) dx);
+	}
+	if (y >= dy)
+	{
+		PRINTF("%s called from %s/%d: y/dy=%d/%d\n", __func__, file, line, (int) y, (int) dy);
 	}
 	ASSERT(y < dy);
 	while (*ptr != '\0')

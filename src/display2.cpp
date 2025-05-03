@@ -195,12 +195,16 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
 	}
 
+	//ASSERT(width_p >= width_str);
+	if (width_p >= width_str)
+	{
 #if WITHALTERNATIVEFONTS
-	//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
-	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
+		//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
+		UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
 #else
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
 #endif /* WITHALTERNATIVEFONTS */
+	}
 
 }
 #endif /* SMALLCHARW2 */
@@ -5560,6 +5564,7 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
+	const uint_fast16_t alldx = GRID2X(xspan);
 	const uint_fast16_t SPY_3DSS = GRID2Y(yspan);	// was: SPDY
 	const uint_fast16_t SPY_3DSS_H = SPY_3DSS / 4;
 #if WITHTOUCHGUI
@@ -5583,8 +5588,8 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		xleft = 0;
 	if (xright == xleft)
 		xright = xleft + 1;
-	if (xright >= ALLDX)
-		xright = ALLDX - 1;
+	if (xright >= alldx)
+		xright = alldx - 1;
 
 	const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 	static uint_fast8_t current_3dss_step = 0;
@@ -5599,7 +5604,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		uint_fast16_t y0 = SPY - 5 - i * Y_STEP;
 		uint_fast16_t x;
 
-		for (x = 0; x < ALLDX; ++ x)
+		for (x = 0; x < alldx; ++ x)
 		{
 			if (i == 0)
 			{
@@ -5638,20 +5643,23 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 				if (x_old != x_d)
 				{
 					const uint_fast16_t t0 = wfj3dss_peek(x, draw_step);
-					ASSERT(y0 >= t0);
-					uint_fast16_t y1 = y0 - t0;
-					int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
-					h = h < 0 ? 0 : h;
-					h = h > (int) y0 ? y0 : h;
-
-					for (; h > 0; h --)
+					//ASSERT(y0 >= t0);
+					if (y0 >= t0)
 					{
-						ASSERT((int) y0 >= h);
-						/* предотвращение отрисовки по ранее закрашенной области*/
-						if (* colpip_mem_at(colorpip, DIM_X, DIM_Y, x_d, y0 - h) != bgcolor)
-							break;
-                        const uint_fast16_t ix = normalize(h, 0, SPY - 1, PALETTESIZE - 1);
-						colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, wfpalette [ix]);
+						uint_fast16_t y1 = y0 - t0;
+						int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
+						h = h < 0 ? 0 : h;
+						h = h > (int) y0 ? y0 : h;
+
+						for (; h > 0; h --)
+						{
+							ASSERT((int) y0 >= h);
+							/* предотвращение отрисовки по ранее закрашенной области*/
+							if (* colpip_mem_at(colorpip, DIM_X, DIM_Y, x_d, y0 - h) != bgcolor)
+								break;
+	                        const uint_fast16_t ix = normalize(h, 0, SPY - 1, PALETTESIZE - 1);
+							colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, wfpalette [ix]);
+						}
 					}
 					x_old = x_d;
 				}
@@ -5667,7 +5675,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 
 	// увеличение контрастности спектра на фоне панорамы
 	ylast_sp = SPY;
-	for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+	for (uint_fast16_t x = 0; x < alldx; ++ x)
 	{
 		uint_fast16_t y1 = gvars.envelope_y [x];
 
@@ -7330,7 +7338,7 @@ void display2_set_smetertype(uint_fast8_t v)
 
 uint_fast8_t display_getpagegui(void)
 {
-	return DPAGE1;
+	return DPAGE0;
 }
 
 uint_fast8_t display_getpage0(void)
