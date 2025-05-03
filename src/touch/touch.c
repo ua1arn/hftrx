@@ -513,14 +513,14 @@ void board_tsc_initialize(void)
 		{
 			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
 			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
-			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u xc=%-5u, yc=%-5u\n", x, y, xc, yc);
+			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u -> xc=%-5u, yc=%-5u\n", x, y, xc, yc);
 		}
 	}
 #endif
 
 }
 
-#if ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV
+#if ! LINUX_SUBSYSTEM && defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV
 
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -530,6 +530,7 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	{
 		* xr = board_tsc_normalize_x(x, y, NULL);
 		* yr = board_tsc_normalize_y(x, y, NULL);
+		//PRINTF("board_tsc_getxy: x=%-5u, y=%-5u -> xc=%-5u, yc=%-5u\n", x, y, * xr, * yr);
 		return 1;
 	}
 	* xr = 0;	/* зачем ? */
@@ -537,7 +538,7 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
-#endif /* ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV */
+#endif /* ! LINUX_SUBSYSTEM && defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV */
 
 #if WITHLVGL && 0
 
