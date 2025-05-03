@@ -5802,7 +5802,7 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	const int_fast32_t bw = latched_dm.bw;
 	/* рисуем спектр ломанной линией */
 	/* стираем старый фон */
-	colpip_fillrect(colorpip, DIM_X, DIM_Y, x0, y0pix, GRID2X(xspan), SPDY, DSGN_SPECTRUMBG);
+	colpip_fillrect(colorpip, DIM_X, DIM_Y, x0pix, y0pix, alldx, SPDY, DSGN_SPECTRUMBG);
 
 	if (! colpip_hasalpha())
 	{
@@ -5821,8 +5821,8 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 				xleft = 0;
 			if (xright == xleft)
 				xright = xleft + 1;
-			if (xright >= ALLDX)
-				xright = ALLDX - 1;
+			if (xright >= alldx)
+				xright = alldx - 1;
 
 			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 			// Изображение "шторки" под спектром.
@@ -5836,7 +5836,7 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	uint_fast16_t ylast = 0;
 	display_colorgrid_set(colorpip, x0pix, y0pix, alldx, SPDY, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
-	for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+	for (uint_fast16_t x = 0; x < alldx; ++ x)
 	{
 		// ломанная
 		const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
@@ -5847,17 +5847,17 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 			for (uint_fast16_t y = y0pix + SPDY - 1, i = 0; y > ynew; y --, i ++)
 			{
 				const uint_fast16_t ix = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
-				colpip_point(colorpip, DIM_X, DIM_Y, x, y, wfpalette [ix]);
+				colpip_point(colorpip, DIM_X, DIM_Y, x0pix + x, y, wfpalette [ix]);
 			}
 		}
 		else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
 		{
-			colpip_set_vline(colorpip, DIM_X, DIM_Y, x, ynew + y0pix, SPDY - ynew, DSGN_SPECTRUMFG);
+			colpip_set_vline(colorpip, DIM_X, DIM_Y, x0pix + x, ynew, SPDY + y0pix - ynew, DSGN_SPECTRUMFG);
 		}
 
 		if (x)
 		{
-			colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast, x, ynew, DSGN_SPECTRUMLINE, 1);
+			colpip_line(colorpip, DIM_X, DIM_Y, x0pix + x - 1, ylast, x0pix + x, ynew, DSGN_SPECTRUMLINE, 1);
 		}
 		ylast = ynew;
 	}
@@ -5878,12 +5878,12 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 				xleft = 0;
 			if (xright == xleft)
 				xright = xleft + 1;
-			if (xright >= ALLDX)
-				xright = ALLDX - 1;
+			if (xright >= alldx)
+				xright = alldx - 1;
 			unsigned picalpha = 128;	// Полупрозрачность
 			colpip_fillrect2(
 					colorpip, DIM_X, DIM_Y,
-					xleft, y0pix,
+					xleft + x0pix, y0pix,
 					xright + 1 - xleft, SPDY, // размер окна источника
 					TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
 					FILL_FLAG_NONE | FILL_FLAG_MIXBG
