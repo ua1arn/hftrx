@@ -20,10 +20,6 @@ enum
 {
 	BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
 	BDCV_ALLRX = ROWS2GRID(DLEB - DLES) - 1,	// количество cells, отведенное под панораму и волопад.
-
-	/* совмещение на одном экрание водопада и панорамы */
-//	BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-//	BDCV_SPMRX = ROWS2GRID(25),	// вертикальный размер спектра в ячейках
 	//
 	B_unused
 };
@@ -173,7 +169,7 @@ static const FLASHMEM struct dzone dzones [] =
 
 #if WITHSPECTRUMWF
 	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-	{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 

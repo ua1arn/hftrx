@@ -510,7 +510,7 @@ display2_testvidget(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_f
 
 // формирование данных спектра для последующего отображения
 // спектра или водопада
-static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 static void display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
@@ -5532,7 +5532,9 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 static void
 display_colorgrid_set(
 	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
+	uint_fast16_t x,
+	uint_fast16_t y,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
+	uint_fast16_t w,	// ширина
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
 	int_fast32_t bw,		// span
@@ -5554,9 +5556,9 @@ display_colorgrid_set(
 		int_fast16_t lvl;
 		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
 		{
-			const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
-
-			colpip_set_hline(buffer, DIM_X, DIM_Y, 0, valy, ALLDX, color);	// Level marker
+			const int yval = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
+			if (yval > 0 && yval < (int) h)
+				colpip_set_hline(buffer, DIM_X, DIM_Y, x, y + yval, w, color);	// Level marker
 		}
 	}
 
@@ -5575,17 +5577,17 @@ display_colorgrid_set(
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(DIM_X, xtext, freqw))
 				{
-					colpip_string3_tbg(buffer, DIM_X, DIM_Y, xtext, row0, buf2, colordigits);
-					colpip_set_vline(buffer, DIM_X, DIM_Y, xmarker, row0 + markerh, h - markerh, color);
+					colpip_string3_tbg(buffer, DIM_X, DIM_Y, xtext, y, buf2, colordigits);
+					colpip_set_vline(buffer, DIM_X, DIM_Y, xmarker, y + markerh, h - markerh, color);
 				}
 				else
-					colpip_set_vline(buffer, DIM_X, DIM_Y, xmarker, row0, h, color);
+					colpip_set_vline(buffer, DIM_X, DIM_Y, xmarker, y, h, color);
 			}
 		}
 	}
 	if (dm->xcenter != UINT16_MAX)
 	{
-		colpip_set_vline(buffer, DIM_X, DIM_Y, dm->xcenter, row0, h, color0);	// center frequency marker
+		colpip_set_vline(buffer, DIM_X, DIM_Y, x + dm->xcenter, y, h, color0);	// center frequency marker
 	}
 }
 
@@ -5834,138 +5836,12 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 }
 #endif /* WITHVIEW_3DSS */
 
-// подготовка изображения спектра
-static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
-	(void) pctx;
-	const uint_fast16_t SPY0 = 0;//GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
-	const uint_fast16_t SPDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
-
-	// Спектр на цветных дисплеях, не поддерживающих ускоренного
-	// построения изображения по bitmap с раскрашиванием
-	if (1 || hamradio_get_tx() == 0)
-	{
-		uint_fast8_t pathi = 0;	// RX A
-
-		if (0)
-		{
-
-		}
-#if WITHVIEW_3DSS
-		else if (glob_view_style == VIEW_3DSS)
-		{
-			display2_3dss(x0, y0, xspan, yspan, pctx);
-		}
-#endif /* WITHVIEW_3DSS */
-		else
-		{
-			const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
-			const int_fast32_t bw = latched_dm.bw;
-			/* рисуем спектр ломанной линией */
-			/* стираем старый фон */
-			colpip_fillrect(colorpip, DIM_X, DIM_Y, 0, SPY0, ALLDX, SPDY, DSGN_SPECTRUMBG);
-
-			if (! colpip_hasalpha())
-			{
-				// Изображение "шторки" на спектре.
-				uint_fast8_t splitflag;
-				uint_fast8_t pathi;
-				hamradio_get_vfomode3_value(& splitflag);
-				for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
-				{
-					const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-					uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
-					uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
-					if (xleft == UINT16_MAX || xright == UINT16_MAX)
-						continue;
-					if (xleft > xright)
-						xleft = 0;
-					if (xright == xleft)
-						xright = xleft + 1;
-					if (xright >= ALLDX)
-						xright = ALLDX - 1;
-
-					const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-					// Изображение "шторки" под спектром.
-					if (xleft < xrightv)
-					{
-						colpip_fillrect(colorpip, DIM_X, DIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
-					}
-				}
-			}
-
-			uint_fast16_t ylast = 0;
-			display_colorgrid_set(colorpip, SPY0, SPDY, f0, bw, & latched_dm);	// отрисовка маркеров частот
-
-			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
-			{
-				// ломанная
-				const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
-				uint_fast16_t ynew = SPY0 + SPDY - 1 - val;
-
-				if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
-				{
-					for (uint_fast16_t y = SPY0 + SPDY - 1, i = 0; y > ynew; y --, i ++)
-					{
-						const uint_fast16_t ix = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
-						colpip_point(colorpip, DIM_X, DIM_Y, x, y, wfpalette [ix]);
-					}
-				}
-				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
-				{
-					colpip_set_vline(colorpip, DIM_X, DIM_Y, x, ynew + SPY0, SPDY - ynew, DSGN_SPECTRUMFG);
-				}
-
-				if (x)
-				{
-					colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast, x, ynew, DSGN_SPECTRUMLINE, 1);
-				}
-				ylast = ynew;
-			}
-
-			if (colpip_hasalpha())
-			{
-				// Изображение "шторки" на спектре.
-				uint_fast8_t splitflag;
-				uint_fast8_t pathi;
-				hamradio_get_vfomode3_value(& splitflag);
-				for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
-				{
-					uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
-					uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
-					if (xleft == UINT16_MAX || xright == UINT16_MAX)
-						continue;
-					if (xleft > xright)
-						xleft = 0;
-					if (xright == xleft)
-						xright = xleft + 1;
-					if (xright >= ALLDX)
-						xright = ALLDX - 1;
-					unsigned picalpha = 128;	// Полупрозрачность
-					colpip_fillrect2(
-							colorpip, DIM_X, DIM_Y,
-							xleft, SPY0,
-							xright + 1 - xleft, SPDY, // размер окна источника
-							TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
-							FILL_FLAG_NONE | FILL_FLAG_MIXBG
-						);
-				}
-			}
-
-		}
-	}
-}
-
 // формирование данных спектра для последующего отображения
 // спектра или водопада
-static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	uint_fast16_t x, y;
-	(void) x0;
-	(void) y0;
-	(void) pctx;
-	//const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t alldx = GRID2X(xspan);
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
 	const uint_fast8_t pathi = 0;	// RX A
@@ -5987,7 +5863,7 @@ static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8
 	{
 		// частота уменьшилась - надо сдвигать картинку вправо
 		const uint_fast32_t deltapix = wffreqpix - latched_dm.f0pix;
-		if (deltapix < ALLDX / 2)
+		if (deltapix < alldx / 2)
 		{
 			hscroll = (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
@@ -6003,7 +5879,7 @@ static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8
 	{
 		// частота увеличилась - надо сдвигать картинку влево
 		const uint_fast32_t deltapix = latched_dm.f0pix - wffreqpix;
-		if (deltapix < ALLDX / 2)
+		if (deltapix < alldx / 2)
 		{
 			hscroll = - (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
@@ -6017,13 +5893,10 @@ static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8
 	}
 
 	// запоминание информации спектра для спектрограммы
-	if (! dsp_getspectrumrow(gvars.spavgarray, ALLDX, glob_zoomxpow2))
+	if (! dsp_getspectrumrow(gvars.spavgarray, alldx, glob_zoomxpow2))
 		return;	// еще нет новых данных.
 
-#if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
-#else
 	wfrow = (wfrow == 0) ? (WFROWS - 1) : (wfrow - 1);
-#endif
 
 #if WITHVIEW_3DSS
 	if (glob_view_style != VIEW_3DSS)
@@ -6049,106 +5922,213 @@ static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8
 	wfhscroll += hscroll;
 	wfvscroll = wfvscroll < WFROWS ? wfvscroll + 1 : WFROWS;
 	wfclear = hclear;
+	(void) x0;
+	(void) y0;
+	(void) yspan;
+	(void) pctx;
+}
+// подготовка изображения спектра
+static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
+	const uint_fast16_t x0pix = GRID2X(x0);
+	const uint_fast16_t y0pix = GRID2Y(y0);				// смещение по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t alldx = GRID2X(xspan);
+	const uint_fast16_t SPDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
+	// Спектр на цветных дисплеях, не поддерживающих ускоренного
+	// построения изображения по bitmap с раскрашиванием
+
+	uint_fast8_t pathi = 0;	// RX A
+
+
+	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
+	const int_fast32_t bw = latched_dm.bw;
+	/* рисуем спектр ломанной линией */
+	/* стираем старый фон */
+	colpip_fillrect(colorpip, DIM_X, DIM_Y, x0, y0pix, GRID2X(xspan), SPDY, DSGN_SPECTRUMBG);
+
+	if (! colpip_hasalpha())
+	{
+		// Изображение "шторки" на спектре.
+		uint_fast8_t splitflag;
+		uint_fast8_t pathi;
+		hamradio_get_vfomode3_value(& splitflag);
+		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+		{
+			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
+			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+				continue;
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= ALLDX)
+				xright = ALLDX - 1;
+
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+			// Изображение "шторки" под спектром.
+			if (xleft < xrightv)
+			{
+				colpip_fillrect(colorpip, DIM_X, DIM_Y, x0pix + xleft, y0pix, xrightv - xleft, SPDY, rxbwcolor);
+			}
+		}
+	}
+
+	uint_fast16_t ylast = 0;
+	display_colorgrid_set(colorpip, x0pix, y0pix, alldx, SPDY, f0, bw, & latched_dm);	// отрисовка маркеров частот
+
+	for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+	{
+		// ломанная
+		const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+		uint_fast16_t ynew = y0pix + SPDY - 1 - val;
+
+		if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
+		{
+			for (uint_fast16_t y = y0pix + SPDY - 1, i = 0; y > ynew; y --, i ++)
+			{
+				const uint_fast16_t ix = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+				colpip_point(colorpip, DIM_X, DIM_Y, x, y, wfpalette [ix]);
+			}
+		}
+		else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
+		{
+			colpip_set_vline(colorpip, DIM_X, DIM_Y, x, ynew + y0pix, SPDY - ynew, DSGN_SPECTRUMFG);
+		}
+
+		if (x)
+		{
+			colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast, x, ynew, DSGN_SPECTRUMLINE, 1);
+		}
+		ylast = ynew;
+	}
+
+	if (colpip_hasalpha())
+	{
+		// Изображение "шторки" на спектре.
+		uint_fast8_t splitflag;
+		uint_fast8_t pathi;
+		hamradio_get_vfomode3_value(& splitflag);
+		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+		{
+			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
+			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+				continue;
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= ALLDX)
+				xright = ALLDX - 1;
+			unsigned picalpha = 128;	// Полупрозрачность
+			colpip_fillrect2(
+					colorpip, DIM_X, DIM_Y,
+					xleft, y0pix,
+					xright + 1 - xleft, SPDY, // размер окна источника
+					TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
+					FILL_FLAG_NONE | FILL_FLAG_MIXBG
+				);
+		}
+	}
+	(void) pctx;
 }
 
 // Подготовка изображения водопада
 static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	const uint_fast8_t xBDCO_WFLRX = 0;//BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
+	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
+	const uint_fast16_t x0pix = GRID2X(x0);				// смещение по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t y0pix = GRID2Y(y0);				// смещение по вертикали в пикселях части отведенной водопаду
 	#if WITHTOUCHGUI
 	const uint_fast8_t xBDCV_WFLRX = yspan - 10;    // вертикальный размер водопада в ячейках - GUI version
 	#else /* WITHTOUCHGUI */
 	const uint_fast8_t xBDCV_WFLRX = yspan;	// вертикальный размер водопада в ячейках
 	#endif /* WITHTOUCHGUI */
-	const uint_fast16_t WFDY = GRID2Y(xBDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
-	const uint_fast16_t WFY0 = GRID2Y(xBDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
-	//const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t wfdy = GRID2Y(xBDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t wfdx = GRID2X(xspan);
+
 #if ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 
-#if WITHVIEW_3DSS
-	if (glob_view_style != VIEW_3DSS)
-#endif /* WITHVIEW_3DSS */
+	const uint_fast16_t p1h = ulmin16(WFROWS - wfrow, wfdy);	// высота верхней части в результируюшем изображении
+	const uint_fast16_t p2h = ulmin16(wfrow, wfdy - p1h);		// высота нижней части в результируюшем изображении
+	const uint_fast16_t p1y = y0pix;
+	const uint_fast16_t p2y = y0pix + p1h;
+
 	{
+		/* перенос свежей части растра */
+		ASSERT(atwflj(0, wfrow) != NULL);
+		colpip_bitblt(
+				(uintptr_t) colorpip, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
+				colorpip, DIM_X, DIM_Y,
+				0, p1y,	// координаты получателя
+				(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
+				atwflj(0, 0),	// начальный адрес источника
+				ALLDX, WFROWS, 	// размеры источника
+				0, wfrow,	// координаты окна источника
+				wfdx, p1h, 	// размеры окна источника
+				BITBLT_FLAG_NONE, 0);
+	}
+	if (p2h != 0)
+	{
+		ASSERT(atwflj(0, 0) != NULL);
+		/* перенос старой части растра */
+		colpip_bitblt(
+				(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
+				colorpip, DIM_X, DIM_Y,
+				0, p2y,		// координаты получателя
+				(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
+				atwflj(0, 0),	// начальный адрес источника
+				ALLDX, WFROWS, 	// размеры источника
+				0, 0,	// координаты окна источника
+				wfdx, p2h, 	// размеры окна источника
+				BITBLT_FLAG_NONE, 0);
+	}
 
-		PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
-		const uint_fast16_t p1h = ulmin16(WFROWS - wfrow, WFDY);	// высота верхней части в результируюшем изображении
-		const uint_fast16_t p2h = ulmin16(wfrow, WFDY - p1h);		// высота нижней части в результируюшем изображении
-		const uint_fast16_t p1y = WFY0;
-		const uint_fast16_t p2y = WFY0 + p1h;
+	if (hamradio_get_bringtuneA())
+	{
+		uint_fast8_t splitflag;
+		uint_fast8_t pathi;
+		hamradio_get_vfomode3_value(& splitflag);
+		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+		{
+			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
 
-		{
-			/* перенос свежей части растра */
-			ASSERT(atwflj(0, wfrow) != NULL);
-			colpip_bitblt(
-					(uintptr_t) colorpip, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-					colorpip, DIM_X, DIM_Y,
-					0, p1y,	// координаты получателя
-					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
-					atwflj(0, 0),	// начальный адрес источника
-					ALLDX, WFROWS, 	// размеры источника
-					0, wfrow,	// координаты окна источника
-					ALLDX, p1h, 	// размеры окна источника
-					BITBLT_FLAG_NONE, 0);
-		}
-		if (p2h != 0)
-		{
-			ASSERT(atwflj(0, 0) != NULL);
-			/* перенос старой части растра */
-			colpip_bitblt(
-					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
-					colorpip, DIM_X, DIM_Y,
-					0, p2y,		// координаты получателя
-					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
-					atwflj(0, 0),	// начальный адрес источника
-					ALLDX, WFROWS, 	// размеры источника
-					0, 0,	// координаты окна источника
-					ALLDX, p2h, 	// размеры окна источника
-					BITBLT_FLAG_NONE, 0);
-		}
-
-		if (hamradio_get_bringtuneA())
-		{
-			uint_fast8_t splitflag;
-			uint_fast8_t pathi;
-			hamradio_get_vfomode3_value(& splitflag);
-			for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+			if (xleft != UINT16_MAX && xright != UINT16_MAX)
 			{
-				uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
-				uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
-
-				if (xleft != UINT16_MAX && xright != UINT16_MAX)
+				if (colpip_hasalpha())
 				{
-					if (colpip_hasalpha())
-					{
-						if (xleft > xright)
-							xleft = 0;
-						if (xright == xleft)
-							xright = xleft + 1;
-						if (xright >= ALLDX)
-							xright = ALLDX - 1;
+					if (xleft > xright)
+						xleft = 0;
+					if (xright == xleft)
+						xright = xleft + 1;
+					if (xright >= wfdx)
+						xright = wfdx - 1;
 
-						const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-						/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
-						unsigned picalpha = 128;	// Полупрозрачность
-						colpip_fillrect2(
-								colorpip, DIM_X, DIM_Y,
-								xleft, WFY0,
-								xrightv - xleft, WFDY, // размер окна источника
-								TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
-								FILL_FLAG_NONE | FILL_FLAG_MIXBG
-							);
+					const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+					/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+					unsigned picalpha = 128;	// Полупрозрачность
+					colpip_fillrect2(
+							colorpip, DIM_X, DIM_Y,
+							xleft, y0pix,
+							xrightv - xleft, wfdy, // размер окна источника
+							TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
+							FILL_FLAG_NONE | FILL_FLAG_MIXBG
+						);
 
-					}
-					else
-					{
-						const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-						// Изображение двух вертикальных линий по краям "шторки".
-						colpip_set_vline(colorpip, DIM_X, DIM_Y, xleft, WFY0, WFDY, rxbwcolor);
-						colpip_set_vline(colorpip, DIM_X, DIM_Y, xright, WFY0, WFDY, rxbwcolor);
-						//colpip_fillrect(colorpip, DIM_X, DIM_Y, xleft, WFY0, xrightv - xleft, WFDY, COLORPIP_WHITE);
-					}
+				}
+				else
+				{
+					const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+					// Изображение двух вертикальных линий по краям "шторки".
+					colpip_set_vline(colorpip, DIM_X, DIM_Y, xleft, y0pix, wfdy, rxbwcolor);
+					colpip_set_vline(colorpip, DIM_X, DIM_Y, xright, y0pix, wfdy, rxbwcolor);
+					//colpip_fillrect(colorpip, DIM_X, DIM_Y, xleft, y0pix, xrightv - xleft, wfdy, COLORPIP_WHITE);
 				}
 			}
 		}
@@ -6157,21 +6137,21 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 #else /* */
 
 	// следы спектра ("водопад") на цветных дисплеях
-	PACKEDCOLORPIP_T * const colorpip = getscratchwnd(x0, y0);
 	uint_fast16_t y;
 
 	// формирование растра
 	// следы спектра ("водопад")
-	for (y = 0; y < WFDY; ++ y)
+	for (y = 0; y < wfdy; ++ y)
 	{
 		uint_fast16_t x;
-		for (x = 0; x < ALLDX; ++ x)
+		for (x = 0; x < wfdx; ++ x)
 		{
-			colpip_point(colorpip, DIM_X, DIM_Y, x, y + WFY0, wfpalette [* atwflj(x, (wfrow + y) % WFDY)]);
+			colpip_point(colorpip, DIM_X, DIM_Y, x0pix + x, y0pix + y, wfpalette [* atwflj(x, (wfrow + y) % WFROWS)]);
 		}
 	}
 
 #endif /*  */
+
 	(void) x0;
 	(void) y0;
 	(void) pctx;
@@ -6221,7 +6201,7 @@ PACKEDCOLORPIP_T * getscratchwnd(
 }
 
 // Stub
-static void display2_latchwaterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 }
 
@@ -7528,9 +7508,9 @@ uint32_t * wfl_proccess(void)
 	pipparams_t pip;
 	display2_getpipparams(& pip);
 	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-	display2_latchwaterfall(0, 0, NULL);
-	display2_gcombo(pip.x, pip,y, NULL);
-	return getscratchwnd(pip.x, pip,y);
+	display2_latchcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_gcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	return getscratchwnd(pip.x, pip.y);
 }
 
 #endif /* LINUX_SUBSYSTEM && WITHLVGL */

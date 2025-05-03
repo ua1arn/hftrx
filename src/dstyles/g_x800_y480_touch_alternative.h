@@ -15,7 +15,6 @@
 	{
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 		BDTH_ALLRX = 50, //DIM_X / GRID2X(1),	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(61),	// количество строк, отведенное под S-метр, панораму, иные отображения
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -25,9 +24,8 @@
 		BDTH_ALLPWR = 12,
 		BDTH_SPACEPWR = 0,
 
-		/* совмещение на одном экрание водопада и панорамы */
-//		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-//		BDCV_SPMRX = ROWS2GRID(27)	// вертикальный размер спектра в ячейках
+		BDCH_ALLRX = 50, //DIM_X / GRID2X(1),	// ширина зоны для отображение графического окна на индикаторе
+		BDCV_ALLRX = ROWS2GRID(61),	// количество строк, отведенное под S-метр, панораму, иные отображения
 		//
 		B_unused
 	};
@@ -134,9 +132,9 @@
 		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PGSWR, },	// signal level dBm
 //		{	36, 30,	8,	0,	display2_freqdelta8, & dzi_default, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF || WITHAFSPECTRE
-		{	0,	DLES,	0,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH | PGGUI, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	0,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE | PGGUI, },// подготовка изображения спектра
+		{	0,	DLES,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH | PGGUI, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	BDCH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE | PGGUI, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	0,	0,	display2_adctest,	& dzi_default, PGSWR, },	// ADC raw data print

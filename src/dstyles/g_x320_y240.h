@@ -177,7 +177,7 @@
 			{	0,	18,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP
 			{	0,	18,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-			{	0,	18,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+			{	0,	18,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	18,	display2_combo,	& dzi_default, PG1, },// подготовка изображения спектра
 
 			{	27, 18,	display_smeter5,	& dzi_default, PGNOMEMU, },	// signal level

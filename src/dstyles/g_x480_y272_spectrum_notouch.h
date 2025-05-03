@@ -33,10 +33,7 @@
 	#endif /* WITHSHOWSWRPWR */
 
 		BDCV_ALLRX = ROWS2GRID(22),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
-
-		/* совмещение на одном экрание водопада и панорамы */
-//		BDCO_SPMRX = ROWS2GRID(0),	// смещение спектра по вертикали в ячейках от начала общего поля
-//		BDCV_SPMRX = ROWS2GRID(12)	// вертикальный размер спектра в ячейках		};
+		BDCH_ALLRX = CHARS2GRID(30),	// количество колонок (ячееек), отведенное под S-метр, панораму, иные отображения
 		//
 		B_unused
 	};
@@ -123,9 +120,9 @@
 		{	0,	24,	0,	0,	display2_bars,		& dzi_default, PGSWR, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, 0,	5,	display2_smeors5, 	& dzi_default, PGSWR, },	// уровень сигнала в баллах S или dBm
 
-		{	0,	28,	BDCV_ALLRX,	0,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	28,	0,	0,	display2_latchwaterfall,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	28,	BDCV_ALLRX,	0,	display2_combo,	& dzi_default, PGSPE, },// подготовка изображения спектра
+		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_combo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 #else
 		{	0,	20,	0,	0,	display2_adctest,	& dzi_default, PGSWR, },	// ADC raw data print
 #endif

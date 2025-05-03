@@ -1351,6 +1351,8 @@ extern "C" {
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)
 #endif
 
+#define X2GRID(pix) ((pix) / GRID2X(1))	// переход от пикселей к ячейкам разметки экрана
+#define Y2GRID(pix) ((pix) / GRID2Y(1))	// переход от пикселей к ячейкам разметки экрана
 
 
 #define HALFCOUNT_FREQA 1
