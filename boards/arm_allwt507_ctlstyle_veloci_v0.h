@@ -344,12 +344,12 @@
 			#define WITHVIEW_3DSS		1
 			#define WITHVIEW_3DSS_MARK	1
 		#else
+//			#define WITHDEFAULTVIEW		VIEW_3DSS
+			#define WITHVIEW_3DSS		1
+			#define WITHVIEW_3DSS_MARK	1
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
 		#endif
-//		#define WITHDEFAULTVIEW		VIEW_3DSS
-//		#define WITHVIEW_3DSS		1
-//		#define WITHVIEW_3DSS_MARK	1
 	#elif LCDMODE_LQ043T3DX02K
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
