@@ -1741,7 +1741,7 @@ void display2_midvalueX(
 	display_2states(x, y, active, label, label);
 }
 
-void display2_midlabel0(
+void display2_midlabel(
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -1749,10 +1749,12 @@ void display2_midlabel0(
 		dctx_t * pctx
 		)
 {
-	display2_midlabelX(x, y, pctx, 0);
+	uint_fast8_t section;
+	for (section = 0; section < 8; ++ section)
+		display2_midlabelX(x + CHARS2GRID(6) * section, y, pctx, section);
 }
 
-void display2_midlabel1(
+void display2_midvalue(
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -1760,162 +1762,9 @@ void display2_midlabel1(
 		dctx_t * pctx
 		)
 {
-	display2_midlabelX(x, y, pctx, 1);
-}
-
-void display2_midlabel2(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midlabelX(x, y, pctx, 2);
-}
-
-void display2_midlabel3(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midlabelX(x, y, pctx, 3);
-}
-
-void display2_midlabel4(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midlabelX(x, y, pctx, 4);
-}
-
-void display2_midlabel5(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midlabelX(x, y, pctx, 5);
-}
-
-void display2_midlabel6(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midlabelX(x, y, pctx, 6);
-}
-
-void display2_midlabel7(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midlabelX(x, y, pctx, 7);
-}
-
-
-void display2_midvalue0(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 0);
-}
-
-void display2_midvalue1(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 1);
-}
-
-void display2_midvalue2(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 2);
-}
-
-void display2_midvalue3(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 3);
-}
-
-void display2_midvalue4(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 4);
-}
-
-void display2_midvalue5(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 5);
-}
-
-void display2_midvalue6(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 6);
-}
-
-void display2_midvalue7(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	display2_midvalueX(x, y, pctx, 7);
+	uint_fast8_t section;
+	for (section = 0; section < 8; ++ section)
+		display2_midvalueX(x + CHARS2GRID(6) * section, y, pctx, section);
 }
 
 //////////////

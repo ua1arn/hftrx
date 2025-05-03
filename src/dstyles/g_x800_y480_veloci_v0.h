@@ -18,7 +18,7 @@ enum {
 /* параметры спектра/водопада */
 enum
 {
-	BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
+	BDTH_ALLRX = CHARS2GRID(50), 		// ширина зоны для отображение графического окна на индикаторе
 	BDCV_ALLRX = ROWS2GRID(DLEB - DLES) - 1,	// количество cells, отведенное под панораму и волопад.
 	//
 	B_unused
@@ -148,29 +148,14 @@ static const FLASHMEM struct dzone dzones [] =
 
 #if 1
 	// Middle bar
-	{	0 + CHARS2GRID(6) * 0, MIDLABEL,	8,	4,	display2_midlabel0,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 1, MIDLABEL,	8,	4,	display2_midlabel1,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 2, MIDLABEL,	8,	4,	display2_midlabel2,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 3, MIDLABEL,	8,	4,	display2_midlabel3,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 4, MIDLABEL,	8,	4,	display2_midlabel4,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 5, MIDLABEL,	8,	4,	display2_midlabel5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 6, MIDLABEL,	8,	4,	display2_midlabel6,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 7, MIDLABEL,	8,	4,	display2_midlabel7,  & dzi_default, PG0, },
-
-	{	0 + CHARS2GRID(6) * 0, MIDVALUE,	8,	4,	display2_midvalue0,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 1, MIDVALUE,	8,	4,	display2_midvalue1,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 2, MIDVALUE,	8,	4,	display2_midvalue2,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 3, MIDVALUE,	8,	4,	display2_midvalue3,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 4, MIDVALUE,	8,	4,	display2_midvalue4,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 5, MIDVALUE,	8,	4,	display2_midvalue5,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 6, MIDVALUE,	8,	4,	display2_midvalue6,  & dzi_default, PG0, },
-	{	0 + CHARS2GRID(6) * 7, MIDVALUE,	8,	4,	display2_midvalue7,  & dzi_default, PG0, },
+	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_default, PG0, },
+	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_default, PG0, },
 #endif
 
 #if WITHSPECTRUMWF
-	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-	{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
+	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 
 	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
@@ -212,7 +197,7 @@ static const FLASHMEM struct dzone dzones [] =
 	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	0,	20,	CHARS2GRID(BDTH_ALLRX),	DLEB - 20,	display2_gcombo,	& dzi_default, PGALL, },// подготовка изображения спектра
+	{	0,	20,	BDTH_ALLRX,	DLEB - 20,	display2_gcombo,	& dzi_default, PGALL, },// подготовка изображения спектра
 
 	{	0,	0,	0, 0, display2_showhdmi,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 #endif
