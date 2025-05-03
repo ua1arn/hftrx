@@ -5619,7 +5619,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 						colpip_point(colorpip, DIM_X, DIM_Y, x, dy, DSGN_SPECTRUMFG);
 					else
 					{
-						const uint_fast16_t ix = normalize(j, 0, SPY - 1, PALETTESIZE - 1);
+						const uint_fast16_t ix = normalize(j, 0, HORMAX_3DSS - 1, PALETTESIZE - 1);
 						colpip_point(colorpip, DIM_X, DIM_Y, x, dy, wfpalette [ix]);
 					}
 				}
@@ -5657,7 +5657,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 							/* предотвращение отрисовки по ранее закрашенной области*/
 							if (* colpip_mem_at(colorpip, DIM_X, DIM_Y, x_d, y0 - h) != bgcolor)
 								break;
-	                        const uint_fast16_t ix = normalize(h, 0, SPY - 1, PALETTESIZE - 1);
+	                        const uint_fast16_t ix = normalize(h, 0, HORMAX_3DSS - 1, PALETTESIZE - 1);
 							colpip_point(colorpip, DIM_X, DIM_Y, x_d, y0 - h, wfpalette [ix]);
 						}
 					}
