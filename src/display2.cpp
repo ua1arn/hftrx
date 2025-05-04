@@ -3838,19 +3838,17 @@ struct ustates
 	FLOAT_t Yold_spe [ALLDX];
 
 	PACKEDCOLORPIP_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+
 #if WITHVIEW_3DSS
 	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
+	uint16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
+	uint16_t envelope_y [ALLDX];
 #endif /* WITHVIEW_3DSS */
 
 #if WITHAFSPECTRE
 	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
 	afsp_t afsp;
 #endif /* WITHAFSPECTRE */
-
-#if WITHVIEW_3DSS
-	uint16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
-	uint16_t envelope_y [ALLDX];
-#endif /* WITHVIEW_3DSS */
 };
 
 #define SIZEOF_WFL3DSS (sizeof gvars.wfj3dss)
@@ -5781,6 +5779,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		{
 			if (i == 0)
 			{
+				// Самый ближний к зрителю (самый свежий)
 				const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY - 1 - val;
 				uint_fast16_t dy, j;
@@ -5807,6 +5806,8 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 			}
 			else
 			{
+				// Не самый ближний к зрителю (самый свежий)
+				// i > 0
 				static uint_fast16_t x_old = UINT16_MAX;
 				uint_fast16_t x_d = gvars.depth_map_3dss [i - 1][x];
 
