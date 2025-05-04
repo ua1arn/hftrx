@@ -1487,22 +1487,22 @@ display2_text_P(
 static void
 NOINLINEAT
 display2_text_alt_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	const FLASHMEM char * const * labels,	// массив указателей на текст
 	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
 	)
 {
-	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(xcell, ycell, labels [state], strlen_P(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 }
 
 // отображение текста с атрибутами по состоянию
 static void
 NOINLINEAT
 display2_text(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	const char * const * labels,	// массив указателей на текст
 	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
@@ -1511,9 +1511,12 @@ display2_text(
 	#if LCDMODE_COLORED
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
-
+#if WITHALTERNATIVELAYOUT
+	layout_label1_medium(xcell, ycell, labels [state], strlen(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
+#else
 	colmain_setcolors(colors [state].fg, colors [state].bg);
-	display_at(x, y, labels [state]);
+	display_at(xcell, ycell, labels [state]);
+#endif /* WITHALTERNATIVELAYOUT */
 }
 
 // Отображение режимов TX / RX

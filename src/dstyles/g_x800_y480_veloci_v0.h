@@ -6,10 +6,10 @@
 #define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
 
 enum {
-	DLEM = 35,		// Menu window upper line
-	DLES = 35 + GRID2Y(2),		// spectrum window upper line
+	DLEM = 30,		// Menu window upper line
+	DLES = 30 + GRID2Y(2),		// spectrum window upper line
 	DLEB = 96 - GRID2Y(1),		// 96-5	- bottom line
-	MIDLABEL = 35,
+	MIDLABEL = 30,
 	MIDVALUE = MIDLABEL + GRID2Y(1),
 	//
 	DLE_unused
@@ -144,7 +144,7 @@ static const FLASHMEM struct dzone dzones [] =
 	{	45,	25,	4,	4,	display2_lockstate4, & dzi_default, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
-	{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
+	//{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 #if 1
 	// Middle bar
