@@ -5884,6 +5884,9 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 	const uint_fast16_t p1y = y0pix;
 	const uint_fast16_t p2y = y0pix + p1h;
 
+	if (yspan == 0)
+		return;
+	if (p1h != 0)	// всегда есть хоть одна строка
 	{
 		/* перенос свежей части растра */
 		ASSERT(atwflj(0, wfrow) != NULL);
