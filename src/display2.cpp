@@ -5817,7 +5817,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		{
 			if (i == 0)
 			{
-				const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS, glob_topdb, glob_bottomdb);
+				const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY - 1 - val;
 				uint_fast16_t dy, j;
 				wfj3dss_poke(x, current_3dss_step, val);
