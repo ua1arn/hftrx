@@ -250,7 +250,8 @@ bootloader_launch_app(uintptr_t startfunc)
 
 #else
 	/* Обычный запуск, в 32-бит режиме. */
-
+	__ISB();
+	__DSB();
 	(* (void (*)(void)) startfunc)();
 	for (;;)
 	{
