@@ -344,7 +344,8 @@
 			#define WITHVIEW_3DSS		1
 			#define WITHVIEW_3DSS_MARK	1
 		#else
-//			#define WITHDEFAULTVIEW		VIEW_3DSS
+//			#define WITHALTERNATIVEFONTS	1
+//			#define WITHALTERNATIVELAYOUT	1
 			#define WITHVIEW_3DSS		1
 			#define WITHVIEW_3DSS_MARK	1
 			#define WITHDISPLAY_FPS		15
