@@ -5079,6 +5079,28 @@ static void wfj3dss_poke(uint_fast16_t x, uint_fast16_t y, WFL3DSS_T val)
 {
 	* atwfj3dss(x, y) = val;
 }
+
+static void init_depth_map_3dss(void)
+{
+	const uint_fast16_t HALF_ALLDX = ALLDX / 2;
+
+	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
+	{
+		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP_3DSS;
+
+		for (uint_fast16_t x = 0; x < ALLDX; ++ x)
+		{
+			uint_fast16_t x1;
+
+			if (x <= HALF_ALLDX)
+				x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
+			else
+				x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
+
+			gvars.depth_map_3dss [i][x] = x1;
+		}
+	}
+}
 #endif /* WITHVIEW_3DSS */
 
 static
@@ -5232,6 +5254,9 @@ display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fas
 	wflclear();	// Очистка водопада
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
+#if WITHVIEW_3DSS
+	init_depth_map_3dss();
+#endif /* WITHVIEW_3DSS */
 }
 
 // Получить абсолюьный пиксель горизонтальной позиции для заданой частоты
@@ -5462,30 +5487,6 @@ display_colorgrid_3dss(
 	colpip_set_vline(buffer, DIM_X, DIM_Y, ALLDX / 2, row0, h, colorcenter);	// center frequency marker
 }
 
-#if WITHVIEW_3DSS
-
-static void init_depth_map_3dss(void)
-{
-	const uint_fast16_t HALF_ALLDX = ALLDX / 2;
-
-	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
-	{
-		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP_3DSS;
-
-		for (uint_fast16_t x = 0; x < ALLDX; ++ x)
-		{
-			uint_fast16_t x1;
-
-			if (x <= HALF_ALLDX)
-				x1 = HALF_ALLDX - normalize(HALF_ALLDX - x, 0, HALF_ALLDX, range);
-			else
-				x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
-
-			gvars.depth_map_3dss [i][x] = x1;
-		}
-	}
-}
-#endif /* WITHVIEW_3DSS */
 
 uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
 {
@@ -5775,6 +5776,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		uint_fast16_t y0 = SPY - 5 - i * Y_STEP_3DSS;
 		uint_fast16_t x;
 
+		uint_fast16_t x_old = UINT16_MAX;
 		for (x = 0; x < alldx; ++ x)
 		{
 			if (i == 0)
@@ -5808,7 +5810,6 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 			{
 				// Не самый ближний к зрителю (самый свежий)
 				// i > 0
-				static uint_fast16_t x_old = UINT16_MAX;
 				uint_fast16_t x_d = gvars.depth_map_3dss [i - 1][x];
 
 				if (x_d >= ALLDX)
@@ -7199,9 +7200,6 @@ board_set_view_style(uint_fast8_t v)
 	{
 		glob_view_style = n;
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
-#if WITHVIEW_3DSS
-		init_depth_map_3dss();
-#endif /* WITHVIEW_3DSS */
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
