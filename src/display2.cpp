@@ -3808,20 +3808,14 @@ enum { WFROWS = GRID2Y(BDCV_ALLRX) };
 
 #endif
 
-
-#if WITHVIEW_3DSS
-enum {
 #if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_RK356X
-	MAX_3DSS_STEP = 70,
+	#define	MAX_3DSS_STEP 70
 #else
-	MAX_3DSS_STEP = 42,
+	#define	MAX_3DSS_STEP = 42,
 #endif /* #if CPUSTYLE_XC7Z || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 */
-	Y_STEP = 2,
-};
+#define	Y_STEP_3DSS 2
 
 typedef int16_t WFL3DSS_T;
-
-#endif /* WITHVIEW_3DSS */
 
 
 struct ustates
@@ -3839,13 +3833,11 @@ struct ustates
 	FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 	FLOAT_t Yold_wtf [ALLDX];
 	FLOAT_t Yold_spe [ALLDX];
-	union
-	{
-		PACKEDCOLORPIP_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+
+	PACKEDCOLORPIP_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
 #if WITHVIEW_3DSS
-		WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
+	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
 #endif /* WITHVIEW_3DSS */
-	} u;
 
 #if WITHAFSPECTRE
 	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
@@ -3857,6 +3849,10 @@ struct ustates
 	uint16_t envelope_y [ALLDX];
 #endif /* WITHVIEW_3DSS */
 };
+
+#define SIZEOF_WFL3DSS (sizeof gvars.wfj3dss)
+#define ADDR_WFL3DSS (gvars.wfj3dss)
+#define ADDR_WFJARRAY (gvars.wfjarray)
 
 union states
 {
@@ -5066,15 +5062,11 @@ enum
 static uint_fast8_t current_3dss_step = 0;
 static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
-#define SIZEOF_WFL3DSS (sizeof gvars.u.wfj3dss)
-#define ADDR_WFL3DSS (gvars.u.wfj3dss)
-
 static WFL3DSS_T * atwfj3dss(uint_fast16_t x, uint_fast16_t y)
 {
-	ASSERT(glob_view_style == VIEW_3DSS);
 	ASSERT(x < ALLDX);
 	ASSERT(y < MAX_3DSS_STEP);
-	return & gvars.u.wfj3dss [y][x];
+	return & ADDR_WFL3DSS [y][x];
 }
 
 static uint_fast16_t wfj3dss_peek(uint_fast16_t x, uint_fast16_t y)
@@ -5092,10 +5084,7 @@ static
 PACKEDCOLORPIP_T *
 atwflj(uint_fast16_t x, uint_fast16_t y)
 {
-#if WITHVIEW_3DSS
-	ASSERT(glob_view_style != VIEW_3DSS);
-#endif /* WITHVIEW_3DSS */
-	return colpip_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, y);
+	return colpip_mem_at(ADDR_WFJARRAY, ALLDX, WFROWS, x, y);
 }
 
 // стираем буфер усреднения FFT
@@ -5113,18 +5102,10 @@ static void wfl_avg_clear(void)
 // стираем целиком старое изображение водопада
 static void wflclear(void)
 {
-    switch (glob_view_style)
-    {
 #if WITHVIEW_3DSS
-    case VIEW_3DSS:
-     	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
-    	break;
+	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
 #endif /* WITHVIEW_3DSS */
-
-    default:
-    	colpip_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
-    	break;
-    }
+	colpip_fillrect(ADDR_WFJARRAY, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
 }
 
 // частота увеличилась - надо сдвигать картинку влево
@@ -5143,35 +5124,28 @@ static void wflshiftleft(uint_fast16_t pixels)
 	memmove(& gvars.Yold_wtf [0], & gvars.Yold_wtf [pixels], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
 	ARM_MORPH(arm_fill)(0, & gvars.Yold_wtf [ALLDX - pixels], pixels);
 
-    switch (glob_view_style)
-    {
 #if WITHVIEW_3DSS
-    case VIEW_3DSS:
-        for (y = 0; y < MAX_3DSS_STEP; ++ y)
-     	{
-     		memmove(
-     				atwfj3dss(0, y),			// to
-					atwfj3dss(pixels, y),		// from
-     				(ALLDX - pixels) * sizeof (WFL3DSS_T)
-     		);
-     		memset(atwfj3dss(ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
-    	}
- 		break;
+    for (y = 0; y < MAX_3DSS_STEP; ++ y)
+ 	{
+ 		memmove(
+ 				atwfj3dss(0, y),			// to
+				atwfj3dss(pixels, y),		// from
+ 				(ALLDX - pixels) * sizeof (WFL3DSS_T)
+ 		);
+ 		memset(atwfj3dss(ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
+	}
 #endif /* WITHVIEW_3DSS */
 
-    default:
-        for (y = 0; y < WFROWS; ++ y)
-    	{
-    		memmove(
-    				atwflj(0, y),		// to
-    				atwflj(pixels, y),	// from
-    				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
-    		);
-    	}
-        // заполнение вновь появившегося прямоугольника
-    	colpip_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
-     	break;
-    }
+    for (y = 0; y < WFROWS; ++ y)
+	{
+		memmove(
+				atwflj(0, y),		// to
+				atwflj(pixels, y),	// from
+				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
+		);
+	}
+    // заполнение вновь появившегося прямоугольника
+	colpip_fillrect(ADDR_WFJARRAY, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
 }
 
 // частота уменьшилась - надо сдвигать картинку вправо
@@ -5190,36 +5164,28 @@ static void wflshiftright(uint_fast16_t pixels)
 	memmove(& gvars.Yold_wtf [pixels], & gvars.Yold_wtf [0], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
 	ARM_MORPH(arm_fill)(0, & gvars.Yold_wtf [0], pixels);
 
-
-    switch (glob_view_style)
-    {
 #if WITHVIEW_3DSS
-    case VIEW_3DSS:
-       	for (y = 0; y < MAX_3DSS_STEP; ++ y)
-		{
-       		memmove(
-       				atwfj3dss(pixels, y),	// to
-					atwfj3dss(0, y),		// from
-					(ALLDX - pixels) * sizeof (WFL3DSS_T)
-        		);
-     		memset(atwfj3dss(0, y), 0, pixels * sizeof (WFL3DSS_T));
-       	}
-        break;
+   	for (y = 0; y < MAX_3DSS_STEP; ++ y)
+	{
+   		memmove(
+   				atwfj3dss(pixels, y),	// to
+				atwfj3dss(0, y),		// from
+				(ALLDX - pixels) * sizeof (WFL3DSS_T)
+    		);
+ 		memset(atwfj3dss(0, y), 0, pixels * sizeof (WFL3DSS_T));
+   	}
 #endif /* WITHVIEW_3DSS */
 
-    default:
-    	for (y = 0; y < WFROWS; ++ y)
-    	{
-			memmove(
-					atwflj(pixels, y),	// to
-					atwflj(0, y),		// from
-					(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
-				);
-    	}
-        // заполнение вновь появившегося прямоугольника
-    	colpip_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
-     	break;
-    }
+	for (y = 0; y < WFROWS; ++ y)
+	{
+		memmove(
+				atwflj(pixels, y),	// to
+				atwflj(0, y),		// from
+				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
+			);
+	}
+    // заполнение вновь появившегося прямоугольника
+	colpip_fillrect(ADDR_WFJARRAY, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
 }
 
 // при смене диапазона или частот  при отсутствии необзодимости сохранять часть старого изображения водопада
@@ -5268,7 +5234,7 @@ display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fas
 }
 
 // Получить абсолюьный пиксель горизонтальной позиции для заданой частоты
-// Значения в пикселях меньше чем частота в герцах - тип шире, чем uint_fast32_t не требуется
+// Значения в пикселях меньше, чем частота в герцах - тип шире, чем uint_fast32_t не требуется
 static
 int_fast32_t
 deltafreq2abspix(
@@ -5503,7 +5469,7 @@ static void init_depth_map_3dss(void)
 
 	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
-		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
+		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP_3DSS;
 
 		for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 		{
@@ -5629,35 +5595,25 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 
 	wfrow = (wfrow == 0) ? (WFROWS - 1) : (wfrow - 1);
 
-	if (0)
-	{
-
-	}
 #if WITHVIEW_3DSS
-	else if (glob_view_style == VIEW_3DSS)
-	{
-		// прожвижение по истории
-		delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
-		if (! delay_3dss)
-			current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
-
-	}
+	// продвижение по истории
+	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+	if (! delay_3dss)
+		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 #endif /* WITHVIEW_3DSS */
-	else
+
+	// запоминание информации спектра для водопада
+	for (x = 0; x < ALLDX; ++ x)
 	{
-		// запоминание информации спектра для водопада
-		for (x = 0; x < ALLDX; ++ x)
-		{
-			// для водопада
-			const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-		#if LCDMODE_MAIN_L8
-			colpip_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
-		#else /* LCDMODE_MAIN_L8 */
-			ASSERT(val >= 0);
-			ASSERT(val < (int) ARRAY_SIZE(wfpalette));
-			colpip_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
-		#endif /* LCDMODE_MAIN_L8 */
-		}
+		// для водопада
+		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+	#if LCDMODE_MAIN_L8
+		colpip_putpixel(ADDR_WFJARRAY, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
+	#else /* LCDMODE_MAIN_L8 */
+		ASSERT(val >= 0);
+		ASSERT(val < (int) ARRAY_SIZE(wfpalette));
+		colpip_putpixel(ADDR_WFJARRAY, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
+	#endif /* LCDMODE_MAIN_L8 */
 	}
 
 	wffreqpix = latched_dm.f0pix;
@@ -5793,7 +5749,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 #else
 	const uint_fast16_t SPY = GRID2Y(yspan) - 15;
 #endif
-	const uint_fast16_t HORMAX_3DSS = SPY - MAX_3DSS_STEP * Y_STEP - 2;
+	const uint_fast16_t HORMAX_3DSS = SPY - MAX_3DSS_STEP * Y_STEP_3DSS - 2;
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
 	uint_fast16_t xleft = latched_dm.xleft [0];		// левый край шторки
@@ -5815,7 +5771,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 	{
-		uint_fast16_t y0 = SPY - 5 - i * Y_STEP;
+		uint_fast16_t y0 = SPY - 5 - i * Y_STEP_3DSS;
 		uint_fast16_t x;
 
 		for (x = 0; x < alldx; ++ x)
@@ -5932,7 +5888,7 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 				(uintptr_t) colorpip, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				colorpip, DIM_X, DIM_Y,
 				0, p1y,	// координаты получателя
-				(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
+				(uintptr_t) ADDR_WFJARRAY, sizeof (* ADDR_WFJARRAY) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 				atwflj(0, 0),	// начальный адрес источника
 				ALLDX, WFROWS, 	// размеры источника
 				0, wfrow,	// координаты окна источника
@@ -5947,7 +5903,7 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 				(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
 				colorpip, DIM_X, DIM_Y,
 				0, p2y,		// координаты получателя
-				(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
+				(uintptr_t) ADDR_WFJARRAY, 0 * sizeof (* ADDR_WFJARRAY) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 				atwflj(0, 0),	// начальный адрес источника
 				ALLDX, WFROWS, 	// размеры источника
 				0, 0,	// координаты окна источника
@@ -7235,11 +7191,9 @@ board_set_view_style(uint_fast8_t v)
 	if (glob_view_style != n)
 	{
 		glob_view_style = n;
-#if WITHVIEW_3DSS
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
-
-		if (glob_view_style == VIEW_3DSS)
-			init_depth_map_3dss();
+#if WITHVIEW_3DSS
+		init_depth_map_3dss();
 #endif /* WITHVIEW_3DSS */
 	}
 #endif /* WITHINTEGRATEDDSP */
