@@ -3811,7 +3811,7 @@ enum { WFROWS = GRID2Y(BDCV_ALLRX) };
 
 #if WITHVIEW_3DSS
 enum {
-#if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_RK356X
+#if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_RK356X
 	MAX_3DSS_STEP = 70,
 #else
 	MAX_3DSS_STEP = 42,
@@ -3819,9 +3819,10 @@ enum {
 	Y_STEP = 2,
 };
 
+typedef int16_t WFL3DSS_T;
+
 #endif /* WITHVIEW_3DSS */
 
-typedef int16_t WFL3DSS_T;
 
 struct ustates
 {
@@ -3929,7 +3930,7 @@ static int raster2fftsingle(
 	)
 {
 	ASSERT(leftfft < rightfft);
-	return x * (rightfft - leftfft) / dx + leftfft;
+	return x * (rightfft - leftfft) / (dx - 1) + leftfft;
 }
 
 // RT context function
@@ -5635,6 +5636,10 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 #if WITHVIEW_3DSS
 	else if (glob_view_style == VIEW_3DSS)
 	{
+		// прожвижение по истории
+		delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+		if (! delay_3dss)
+			current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 
 	}
 #endif /* WITHVIEW_3DSS */
@@ -5877,11 +5882,6 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		draw_step = calcprev(draw_step, MAX_3DSS_STEP);
 	}
 
-	// прожвижение по истории (должно быть в latch)
-	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
-	if (! delay_3dss)
-		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
-
 	// увеличение контрастности спектра на фоне панорамы
 	ylast_sp = SPY;
 	for (uint_fast16_t x = 0; x < alldx; ++ x)
@@ -5889,7 +5889,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 		uint_fast16_t y1 = gvars.envelope_y [x];
 
 		if (y1 >= DIM_Y)
-			return;
+			break;
 
 		if (x)
 			colpip_line(colorpip, DIM_X, DIM_Y, x - 1, ylast_sp, x, y1, COLORPIP_BLACK, 0);
