@@ -324,13 +324,32 @@ static volatile unsigned eemtxready;
 static volatile unsigned eemtxleft;
 static uint8_t  * volatile eemtxpointer;
 static uint8_t eemtxbuffer [8192];
+static USBD_HandleTypeDef *gpdev;
+static ALIGNX_BEGIN uint8_t dbd [2] ALIGNX_END;
 
-static int cdceem_can_send(void)
+static int nic_can_send(void)
 {
 	return eemtxready;
 }
 
-static void cdceem_send(const uint8_t *data, int size)
+
+static void pump_tx(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+{
+	if (eemtxready == 0 && eemtxleft != 0)
+	{
+		const unsigned eemtxsize = ulmin32(eemtxleft, USBD_CDCEEM_BUFSIZE);
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), eemtxpointer, eemtxsize);
+		eemtxpointer += eemtxsize;
+		eemtxleft -= eemtxsize;
+	}
+	else
+	{
+		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
+		eemtxready = 1;
+	}
+}
+
+static void nic_send(const uint8_t *data, int size)
 {
 	// прербразуем пакет в CDC EEM пакеты
 	uint8_t * tg = & eemtxbuffer [0];
@@ -362,6 +381,10 @@ static void cdceem_send(const uint8_t *data, int size)
 	eemtxleft = tg - eemtxbuffer;
 	eemtxpointer = eemtxbuffer;
 	eemtxready = 0;
+	if (gpdev)
+	{
+		pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+	}
 	LowerIrql(oldIrql);
 }
 
@@ -476,8 +499,6 @@ static void cdceemout_buffer_print2(
 
 }
 
-static ALIGNX_BEGIN uint8_t dbd [2] ALIGNX_END;
-
 // called in context of interrupt
 static void cdceemout_buffer_save(
 	const uint8_t * data,
@@ -579,20 +600,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 	switch (epnum)
 	{
 	case (USBD_EP_CDCEEM_IN & 0x7F):
-		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdceem1buffin, cdceem1buffinlevel);
-		//cdceem1buffinlevel = 0;
-		if (eemtxready == 0 && eemtxleft != 0)
-		{
-			const unsigned eemtxsize = ulmin32(eemtxleft, USBD_CDCEEM_BUFSIZE);
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), eemtxpointer, eemtxsize);
-			eemtxpointer += eemtxsize;
-			eemtxleft -= eemtxsize;
-		}
-		else
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
-			eemtxready = 1;
-		}
+		//pump_tx(pdev, epnum);
 		break;
 	}
 	return USBD_OK;
@@ -791,7 +799,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
 {
 	/* CDC EEM Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_IN, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
-	USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
+	//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
 	/* CDC EEM Open EP OUT */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
     /* CDC EEM Prepare Out endpoint to receive 1st packet */
@@ -799,11 +807,13 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
 
     cdceemoutstate = CDCEEMOUT_COMMAND;
 
+    gpdev = pdev;
 	return USBD_OK;
 }
 
 static USBD_StatusTypeDef USBD_CDCEEM_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
+    gpdev = NULL;
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_IN);
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_OUT);
 	return USBD_OK;
@@ -1631,23 +1641,32 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
-    //static uint8_t data [8192];
+    //static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
+    static uint8_t data [8192];
     int size = 0;
 
     for (i = 0; i < 200; i++)
     {
-        if (cdceem_can_send()) break;
+        if (nic_can_send()) break;
         local_delay_ms(1);
+        {
+            IRQL_t oldIrql;
+            RiseIrql(IRQL_SYSTEM, & oldIrql);
+            if (gpdev)
+            {
+                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+            }
+            LowerIrql(oldIrql);
+        }
     }
 
-    if (!cdceem_can_send())
+    if (!nic_can_send())
     {
 		return ERR_MEM;
     }
 
-	PRINTF("cdceem_linkoutput_fn:\n");
-	printhex(0, p->payload, p->len);
+	//PRINTF("cdceem_linkoutput_fn:\n");
+	//printhex(0, p->payload, p->len);
     VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
     size = pbuf_copy_partial(p, data, sizeof data, 0);
 //    if (size > sizeof dataX)
@@ -1656,7 +1675,21 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 //    	ASSERT(0);
 //    }
 
-    cdceem_send(data, size);
+    nic_send(data, size);
+    for (i = 0; i < 200; i++)
+    {
+        if (nic_can_send()) break;
+        local_delay_ms(1);
+        {
+            IRQL_t oldIrql;
+            RiseIrql(IRQL_SYSTEM, & oldIrql);
+            if (gpdev)
+            {
+                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+            }
+            LowerIrql(oldIrql);
+        }
+    }
 
     return ERR_OK;
 }
@@ -1766,7 +1799,6 @@ static int nic_buffer_ready(nic_buffer_t * * tp)
 		nicbuff_unlock(oldIrql);
 		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
-		TP();
 		return 1;
 	}
 	nicbuff_unlock(oldIrql);
@@ -1792,6 +1824,20 @@ static void nic_buffer_rx(nic_buffer_t * p)
 
 static void on_packet(const uint8_t *data, int size)
 {
+    for (int i = 0; i < 200; i++)
+    {
+        if (nic_can_send()) break;
+        local_delay_ms(1);
+        {
+            IRQL_t oldIrql;
+            RiseIrql(IRQL_SYSTEM, & oldIrql);
+            if (gpdev)
+            {
+                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+            }
+            LowerIrql(oldIrql);
+        }
+    }
 	nic_buffer_t * p;
 	if (nic_buffer_alloc(& p) != 0)
 	{
@@ -1835,15 +1881,43 @@ static void netif_polling(void * ctx)
 		struct pbuf *frame = p->frame;
 		nic_buffer_release(p);
 		PRINTF("ethernet_input:\n");
-		printhex(0, frame->payload, frame->len);
+		//printhex(0, frame->payload, frame->len);
+		//local_delay_ms(20);
 		err_t e = ethernet_input(frame, getNetifData());
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
 			     so the caller doesn't have to free it again */
 		}
-
+		for (int i = 0; i < 3; ++ i)
+        {
+            if (nic_can_send()) break;
+            local_delay_ms(1);
+            {
+                IRQL_t oldIrql;
+                RiseIrql(IRQL_SYSTEM, & oldIrql);
+                if (gpdev)
+                {
+                    pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+                }
+                LowerIrql(oldIrql);
+            }
+        }
 	}
+    for (int i = 0; i < 200; i++)
+    {
+        if (nic_can_send()) break;
+        local_delay_ms(1);
+        {
+            IRQL_t oldIrql;
+            RiseIrql(IRQL_SYSTEM, & oldIrql);
+            if (gpdev)
+            {
+                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+            }
+            LowerIrql(oldIrql);
+        }
+    }
 }
 
 
