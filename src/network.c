@@ -529,83 +529,17 @@ void httpd_post_data_recved(void *connection, u16_t recved_len);
 
 #if SYS_LIGHTWEIGHT_PROT
 
-#if defined (__CORTEX_M)
-
 sys_prot_t sys_arch_protect(void)
 {
-	const uint32_t primask =__get_PRIMASK();
-	__disable_irq();
-	return primask & 0x01;
-}
-
-void sys_arch_unprotect(sys_prot_t c)
-{
-	if (c)
-	{
-		global_enableIRQ();
-	}
-	else
-	{
-		global_disableIRQ();
-	}
-}
-
-#elif (__CORTEX_A != 0)
-
-// Taken from https://github.com/kslemb/ARM-K/blob/master/vic/isr.c
-
-
-#define IRQ_MASK	0x00000080
-#define FIQ_MASK	0x00000040
-#define INT_MASK	(IRQ_MASK | FIQ_MASK)
-
-unsigned Restore_INT (unsigned oldCPSR)
-{
-	unsigned cpsr;
-
-	cpsr = __get_CPSR();
-	__set_CPSR((cpsr & ~INT_MASK) | (oldCPSR & INT_MASK));
-	return cpsr;
-}
-
-unsigned Disable_IRQ (void)
-{
-	unsigned cpsr;
-
-	cpsr = __get_CPSR();
-	__set_CPSR(cpsr | IRQ_MASK);
-	return cpsr;
-}
-
-unsigned Restore_IRQ (unsigned oldCPSR)
-{
-	unsigned cpsr;
-
-	cpsr = __get_CPSR();
-	__set_CPSR((cpsr & ~ IRQ_MASK) | (oldCPSR & IRQ_MASK));
-	return cpsr;
-}
-
-unsigned Enable_IRQ (void)
-{
-	unsigned cpsr;
-
-	cpsr = __get_CPSR();
-	__set_CPSR(cpsr & ~ IRQ_MASK);
-	return cpsr;
-}
-
-sys_prot_t sys_arch_protect(void)
-{
-
-	return Disable_IRQ();
+	IRQL_t irql;
+	RiseIrql(IRQL_SYSTEM, & irql);
+	return (sys_prot_t) irql;
 }
 
 void sys_arch_unprotect(sys_prot_t pval)
 {
-	Restore_IRQ(pval);
+	LowerIrql((IRQL_t) pval);
 }
-#endif
 
 #endif /* SYS_LIGHTWEIGHT_PROT */
 
