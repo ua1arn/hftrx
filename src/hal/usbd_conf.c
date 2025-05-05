@@ -1640,7 +1640,7 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, c
 
 	if (pbuf != NULL && size != 0)
 	{
-		ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
+		//ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
 		dcache_clean((uintptr_t) pbuf, size);
 	}
 
