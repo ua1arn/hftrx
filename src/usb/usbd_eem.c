@@ -575,6 +575,7 @@ static void cdceemout_buffer_save(
  */
 static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
+	TP();
 	//PRINTF("USBD_CDCEEM_DataIn: epnum=%d\n", (int) epnum);
 	switch (epnum)
 	{
@@ -600,6 +601,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 
 static USBD_StatusTypeDef USBD_CDCEEM_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
+	TP();
 	switch (epnum)
 	{
 	case USBD_EP_CDCEEM_OUT:
@@ -655,6 +657,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
+	TP();
 	static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
@@ -1100,6 +1103,7 @@ static USBD_StatusTypeDef  USBD_CDC_EEM_DeInit (USBD_HandleTypeDef *pdev,
 static USBD_StatusTypeDef  USBD_CDC_EEM_Setup (USBD_HandleTypeDef *pdev,
                                 const USBD_SetupReqTypedef *req)
 {
+	TP();
   //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
   USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
 
@@ -1171,7 +1175,7 @@ break;
   * @retval status
   */
 static USBD_StatusTypeDef USBD_CDC_EEM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum) {
-
+TP();
   uint32_t tx_len;
   uint8_t *tx_buf;
   //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
@@ -1247,6 +1251,7 @@ static USBD_StatusTypeDef USBD_CDC_EEM_DataIn (USBD_HandleTypeDef *pdev, uint_fa
 static uint32_t eem_packet_type, eem_packet_size, eem_cmd;
 
 static USBD_StatusTypeDef  USBD_CDC_EEM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum) {
+	TP();
 
 	  //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
 	  USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
@@ -1553,8 +1558,9 @@ USBD_StatusTypeDef  USBD_CDC_EEM_ReceivePacket(USBD_HandleTypeDef *pdev,
 static void USBD_CDCEEM_ColdInit(void)
 {
 }
-#if 0
-const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
+#if 1
+// ST version
+const USBD_ClassTypeDef USBD_CLASS_CDC_EEMz =
 {
 	USBD_CDCEEM_ColdInit,
 	USBD_CDC_EEM_Init,	// Init
@@ -1570,6 +1576,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
 };
 #endif
 
+// MGS version
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 {
 	USBD_CDCEEM_ColdInit,
@@ -1771,6 +1778,8 @@ static void cdceem_buffers_rx(cdceembuf_t * p)
 
 static void on_packet(const uint8_t *data, int size)
 {
+	PRINTF("rx:\n");
+	printhex(0, data, size);
 	cdceembuf_t * p;
 	if (cdceem_buffers_alloc(& p) != 0)
 	{

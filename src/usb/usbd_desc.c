@@ -3411,7 +3411,7 @@ static unsigned fill_CDCEEM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 	// iadclasscode_r10.pdf
 	// InterfaceAssociationDesc требуется только для многоинтерфейсных
-	// Провда, там написано что iadclasscode_r10.pdf
+	// Правда, там написано что iadclasscode_r10.pdf
 	n += CDCEEM_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA, INTERFACE_CDCEEM_count);	/* CDC EEM: Interface Association Descriptor Abstract Control Model */
 	n += CDCEEM_fill_24(fill, p + n, maxsize - n, INTERFACE_CDCEEM_DATA, 0x00, 2);	/* INTERFACE_CDCEEM_DATA Data class interface descriptor */
 	n += CDCEEM_fill_38(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
