@@ -6313,11 +6313,11 @@ int prepareDATAFLASH(void)
 		spidf_write(& v, 1, SPDFIO_1WIRE);
 		spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
-		PRINTF("prepareDATAFLASH: r/o clear\n");
+		//PRINTF("prepareDATAFLASH: r/o clear\n");
 	}
 	else
 	{
-		PRINTF("prepareDATAFLASH: r/o already clear\n");
+		//PRINTF("prepareDATAFLASH: r/o already clear\n");
 	}
 
 	const uint_fast8_t rv = timed_dataflash_read_status();

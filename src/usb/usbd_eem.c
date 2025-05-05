@@ -24,7 +24,7 @@
 
 typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
 
-static cdcdeem_rxproc_t cdceem_rxproc = NULL;
+static cdcdeem_rxproc_t nic_rxproc = NULL;
 
 #define BPOOL_FLAG_BPOOL_FULL 0x00000001
 
@@ -551,8 +551,8 @@ static void cdceemout_buffer_save(
 #if WITHLWIP
 				// Save to LWIP
 				{
-					if (cdceem_rxproc != NULL)
-						cdceem_rxproc(cdceemrxbuff, cdceematcrc);
+					if (nic_rxproc != NULL)
+						nic_rxproc(cdceemrxbuff, cdceematcrc);
 
 				}
 
@@ -1628,11 +1628,10 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 // Transceiving Ethernet packets
 static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	PRINTF("cdceem_linkoutput_fn\n");
+	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
-    int size = 0;
+    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];    int size = 0;
 
     for (i = 0; i < 200; i++)
     {
@@ -1640,13 +1639,14 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
         local_delay_ms(1);
     }
 
-    if (! cdceem_can_send())
+    if (!cdceem_can_send())
     {
 		return ERR_MEM;
     }
 
     VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
     size = pbuf_copy_partial(p, data, sizeof data, 0);
+
     cdceem_send(data, size);
 
     return ERR_OK;
@@ -1676,7 +1676,7 @@ static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, const ip4_add
 
 static err_t netif_init_cb(struct netif *netif)
 {
-	//PRINTF("cdc eem netif_init_cb\n");
+	PRINTF("cdc eem netif_init_cb\n");
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
 #if LWIP_NETIF_HOSTNAME
 	/* Initialize interface hostname */
@@ -1694,102 +1694,103 @@ static err_t netif_init_cb(struct netif *netif)
 }
 
 
-typedef struct cdceembuf_tag
+typedef struct nic_buffer_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
-} cdceembuf_t;
+} nic_buffer_t;
 
+static IRQLSPINLOCK_t nicbufflock = IRQLSPINLOCK_INIT;
+#define NICBUFFLOCK_IRQL IRQL_SYSTEM
 
-static LIST_ENTRY cdceem_free;
-static LIST_ENTRY cdceem_ready;
-
-static void cdceem_buffers_initialize(void)
+static void nicbuff_lock(IRQL_t * oldIrql)
 {
-	static RAMFRAMEBUFF cdceembuf_t sliparray [64];
+	IRQLSPIN_LOCK(& nicbufflock, oldIrql, NICBUFFLOCK_IRQL);
+}
+
+static void nicbuff_unlock(IRQL_t irql)
+{
+	IRQLSPIN_UNLOCK(& nicbufflock, irql);
+}
+
+static LIST_ENTRY nic_buffers_free;
+static LIST_ENTRY nic_buffers_ready;
+
+static void nic_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF nic_buffer_t sliparray [64];
 	unsigned i;
 
-	InitializeListHead(& cdceem_free);	// Незаполненные
-	InitializeListHead(& cdceem_ready);	// Для обработки
+	InitializeListHead(& nic_buffers_free);	// Незаполненные
+	InitializeListHead(& nic_buffers_ready);	// Для обработки
 
 	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
 	{
-		cdceembuf_t * const p = & sliparray [i];
-		InsertHeadList(& cdceem_free, & p->item);
+		nic_buffer_t * const p = & sliparray [i];
+		InsertHeadList(& nic_buffers_free, & p->item);
 	}
 }
 
-static int cdceem_buffers_alloc(cdceembuf_t * * tp)
+static int nic_buffer_alloc(nic_buffer_t * * tp)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	if (! IsListEmpty(& cdceem_free))
+	nicbuff_lock(& oldIrql);
+	if (! IsListEmpty(& nic_buffers_free))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& cdceem_free);
-		LowerIrql(oldIrql);
-		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		const PLIST_ENTRY t = RemoveTailList(& nic_buffers_free);
+		nicbuff_unlock(oldIrql);
+		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
 		return 1;
 	}
-//	if (! IsListEmpty(& cdceem_ready))
-//	{
-//		LowerIrql(oldIrql);
-//		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
-//		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
-//		* tp = p;
-//		TP();
-//		return 1;
-//	}
-	LowerIrql(oldIrql);
+	nicbuff_unlock(oldIrql);
 	return 0;
 }
 
-static int cdceem_buffers_ready(cdceembuf_t * * tp)
+static int nic_buffer_ready(nic_buffer_t * * tp)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	if (! IsListEmpty(& cdceem_ready))
+	nicbuff_lock(& oldIrql);
+	if (! IsListEmpty(& nic_buffers_ready))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
-		LowerIrql(oldIrql);
-		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		const PLIST_ENTRY t = RemoveTailList(& nic_buffers_ready);
+		nicbuff_unlock(oldIrql);
+		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
 		return 1;
 	}
-	LowerIrql(oldIrql);
+	nicbuff_unlock(oldIrql);
 	return 0;
 }
 
-static void cdceem_buffers_release(cdceembuf_t * p)
+static void nic_buffer_release(nic_buffer_t * p)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	InsertHeadList(& cdceem_free, & p->item);
-	LowerIrql(oldIrql);
+	nicbuff_lock(& oldIrql);
+	InsertHeadList(& nic_buffers_free, & p->item);
+	nicbuff_unlock(oldIrql);
 }
 
 // сохранить принятый
-static void cdceem_buffers_rx(cdceembuf_t * p)
+static void nic_buffer_rx(nic_buffer_t * p)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	InsertHeadList(& cdceem_ready, & p->item);
-	LowerIrql(oldIrql);
+	nicbuff_lock(& oldIrql);
+	InsertHeadList(& nic_buffers_ready, & p->item);
+	nicbuff_unlock(oldIrql);
 }
 
 static void on_packet(const uint8_t *data, int size)
 {
-//	PRINTF("rx:\n");
-//	printhex(0, data, size);
-	cdceembuf_t * p;
-	if (cdceem_buffers_alloc(& p) != 0)
+	nic_buffer_t * p;
+	if (nic_buffer_alloc(& p) != 0)
 	{
 		struct pbuf *frame;
 		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 		if (frame == NULL)
 		{
 			TP();
-			cdceem_buffers_release(p);
+			nic_buffer_release(p);
 			return;
 		}
 		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
@@ -1797,20 +1798,17 @@ static void on_packet(const uint8_t *data, int size)
 		VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
 		if (e == ERR_OK)
 		{
+//			PRINTF("on_packet:\n");
+//			printhex(0, frame->payload, frame->len);
 			p->frame = frame;
-			cdceem_buffers_rx(p);
-			TP();
+			nic_buffer_rx(p);
 		}
 		else
 		{
-			TP();
 			pbuf_free(frame);
-			cdceem_buffers_release(p);
+			nic_buffer_release(p);
 		}
-	}
-	else
-	{
-		TP();
+
 	}
 }
 
@@ -1821,15 +1819,14 @@ static void on_packet(const uint8_t *data, int size)
 static void netif_polling(void * ctx)
 {
 	(void) ctx;
-	cdceembuf_t * p;
-	while (cdceem_buffers_ready(& p) != 0)
+	nic_buffer_t * p;
+	while (nic_buffer_ready(& p) != 0)
 	{
-		struct pbuf * const frame = p->frame;
-		cdceem_buffers_release(p);
-		PRINTF("rx:\n");
+		struct pbuf *frame = p->frame;
+		nic_buffer_release(p);
+		PRINTF("ethernet_input:\n");
 		printhex(0, frame->payload, frame->len);
-
-		err_t e = ethernet_input(p->frame, & cdceem_netif_data);
+		err_t e = ethernet_input(frame, getNetifData());
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
@@ -1845,8 +1842,9 @@ void init_netif(void)
 #if ETH_PAD_SIZE != 0
 	#error Wrong ETH_PAD_SIZE value
 #endif
-	cdceem_buffers_initialize();
-	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
+	nic_buffers_initialize();
+	nic_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
+
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
 	static ip_addr_t netmask;// [4] = NETMASK;
@@ -1858,7 +1856,7 @@ void init_netif(void)
 	static ip_addr_t vaddr;// [4]  = IPADDR;
 	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
-	struct netif  *netif = & cdceem_netif_data;
+	struct netif  *netif = getNetifData();
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
@@ -1871,12 +1869,12 @@ void init_netif(void)
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
-		{
-			static dpcobj_t dpcobj;
+	{
+		static dpcobj_t dpcobj;
 
-			dpcobj_initialize(& dpcobj, netif_polling, NULL);
-			board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		}
+		dpcobj_initialize(& dpcobj, netif_polling, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
 }
 
 #endif /* WITHLWIP */

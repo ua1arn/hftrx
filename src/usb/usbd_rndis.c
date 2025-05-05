@@ -213,7 +213,7 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
+    static uint8_t data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
     int size = 0;
 
     for (i = 0; i < 200; i++)
@@ -339,12 +339,12 @@ void init_netif(void)
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
-		{
-			static dpcobj_t dpcobj;
+	{
+		static dpcobj_t dpcobj;
 
-			dpcobj_initialize(& dpcobj, netif_polling, NULL);
-			board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		}
+		dpcobj_initialize(& dpcobj, netif_polling, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
 }
 
 static void USBD_RNDIS_ColdInit(void)
