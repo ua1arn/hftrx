@@ -935,7 +935,7 @@ static void EMAC_Handler(void)
 			if (emac_buffers_alloc(& p) != 0)
 			{
 				struct pbuf *frame;
-				frame = pbuf_alloc(PBUF_RAW, sizeof rxbuff, PBUF_POOL);
+				frame = pbuf_alloc(PBUF_RAW, sizeof rxbuff + ETH_PAD_SIZE, PBUF_POOL);
 				if (frame == NULL)
 				{
 					TP();

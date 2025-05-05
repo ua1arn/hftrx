@@ -1711,20 +1711,25 @@ static void cdceem_buffers_initialize(void)
 
 static int cdceem_buffers_alloc(cdceembuf_t * * tp)
 {
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (! IsListEmpty(& cdceem_free))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& cdceem_free);
+		LowerIrql(oldIrql);
 		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
 		* tp = p;
 		return 1;
 	}
 	if (! IsListEmpty(& cdceem_ready))
 	{
+		LowerIrql(oldIrql);
 		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
 		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
 		* tp = p;
 		return 1;
 	}
+	LowerIrql(oldIrql);
 	return 0;
 }
 

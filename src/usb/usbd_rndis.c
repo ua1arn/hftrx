@@ -92,9 +92,12 @@ static void rndis_buffers_initialize(void)
 
 static int rndis_buffers_alloc(rndisbuf_t * * tp)
 {
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (! IsListEmpty(& rndis_free))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& rndis_free);
+		LowerIrql(oldIrql);
 		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
 		* tp = p;
 		return 1;
@@ -102,10 +105,12 @@ static int rndis_buffers_alloc(rndisbuf_t * * tp)
 	if (! IsListEmpty(& rndis_ready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
+		LowerIrql(oldIrql);
 		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
 		* tp = p;
 		return 1;
 	}
+	LowerIrql(oldIrql);
 	return 0;
 }
 
