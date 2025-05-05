@@ -15,7 +15,7 @@
     `CMSIS_5/CMSIS/Core_A/Include/cmsis_gcc.h`
 
 2. **Вспомогательные утилиты:**
-  - [Windows Build Tools](https://xpack.github.io/dev-tools/windows-build-tools/releases/)
+  - [Windows Build Tools](https://xpack-dev-tools.github.io/windows-build-tools-xpack/docs/releases/)
   - [Git](https://git-scm.com/downloads)
 
 ---
