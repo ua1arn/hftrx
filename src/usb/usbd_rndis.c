@@ -65,102 +65,103 @@ static int rndis_can_send(void);
 static void rndis_send(const void *data, int size);
 
 
-typedef struct rndisbuf_tag
+typedef struct nic_buffer_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
-} rndisbuf_t;
+} nic_buffer_t;
 
+static IRQLSPINLOCK_t nicbufflock = IRQLSPINLOCK_INIT;
+#define NICBUFFLOCK_IRQL IRQL_SYSTEM
 
-static LIST_ENTRY rndis_free;
-static LIST_ENTRY rndis_ready;
-
-static void rndis_buffers_initialize(void)
+static void nicbuff_lock(IRQL_t * oldIrql)
 {
-	static RAMFRAMEBUFF rndisbuf_t sliparray [64];
+	IRQLSPIN_LOCK(& nicbufflock, oldIrql, NICBUFFLOCK_IRQL);
+}
+
+static void nicbuff_unlock(IRQL_t irql)
+{
+	IRQLSPIN_UNLOCK(& nicbufflock, irql);
+}
+
+static LIST_ENTRY nic_buffers_free;
+static LIST_ENTRY nic_buffers_ready;
+
+static void nic_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF nic_buffer_t sliparray [64];
 	unsigned i;
 
-	InitializeListHead(& rndis_free);	// Незаполненные
-	InitializeListHead(& rndis_ready);	// Для обработки
+	InitializeListHead(& nic_buffers_free);	// Незаполненные
+	InitializeListHead(& nic_buffers_ready);	// Для обработки
 
 	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
 	{
-		rndisbuf_t * const p = & sliparray [i];
-		InsertHeadList(& rndis_free, & p->item);
+		nic_buffer_t * const p = & sliparray [i];
+		InsertHeadList(& nic_buffers_free, & p->item);
 	}
 }
 
-static int rndis_buffers_alloc(rndisbuf_t * * tp)
+static int nic_buffer_alloc(nic_buffer_t * * tp)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	if (! IsListEmpty(& rndis_free))
+	nicbuff_lock(& oldIrql);
+	if (! IsListEmpty(& nic_buffers_free))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& rndis_free);
-		LowerIrql(oldIrql);
-		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		const PLIST_ENTRY t = RemoveTailList(& nic_buffers_free);
+		nicbuff_unlock(oldIrql);
+		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
 		return 1;
 	}
-	if (! IsListEmpty(& rndis_ready))
-	{
-		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
-		LowerIrql(oldIrql);
-		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
-		* tp = p;
-		return 1;
-	}
-	LowerIrql(oldIrql);
+	nicbuff_unlock(oldIrql);
 	return 0;
 }
 
-static int rndis_buffers_ready_user(rndisbuf_t * * tp)
+static int nic_buffer_ready(nic_buffer_t * * tp)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	if (! IsListEmpty(& rndis_ready))
+	nicbuff_lock(& oldIrql);
+	if (! IsListEmpty(& nic_buffers_ready))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
-		LowerIrql(oldIrql);
-		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		const PLIST_ENTRY t = RemoveTailList(& nic_buffers_ready);
+		nicbuff_unlock(oldIrql);
+		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
 		return 1;
 	}
-	LowerIrql(oldIrql);
+	nicbuff_unlock(oldIrql);
 	return 0;
 }
 
-
-static void rndis_buffers_release(rndisbuf_t * p)
-{
-	InsertHeadList(& rndis_free, & p->item);
-}
-
-static void rndis_buffers_release_user(rndisbuf_t * p)
+static void nic_buffer_release(nic_buffer_t * p)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	rndis_buffers_release(p);
-	LowerIrql(oldIrql);
+	nicbuff_lock(& oldIrql);
+	InsertHeadList(& nic_buffers_free, & p->item);
+	nicbuff_unlock(oldIrql);
 }
 
 // сохранить принятый
-static void rndis_buffers_rx(rndisbuf_t * p)
+static void nic_buffer_rx(nic_buffer_t * p)
 {
-	InsertHeadList(& rndis_ready, & p->item);
+	IRQL_t oldIrql;
+	nicbuff_lock(& oldIrql);
+	InsertHeadList(& nic_buffers_ready, & p->item);
+	nicbuff_unlock(oldIrql);
 }
 
 static void on_packet(const uint8_t *data, int size)
 {
-	rndisbuf_t * p;
-	if (rndis_buffers_alloc(& p) != 0)
+	nic_buffer_t * p;
+	if (nic_buffer_alloc(& p) != 0)
 	{
 		struct pbuf *frame;
 		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 		if (frame == NULL)
 		{
 			TP();
-			rndis_buffers_release(p);
+			nic_buffer_release(p);
 			return;
 		}
 		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
@@ -169,12 +170,12 @@ static void on_packet(const uint8_t *data, int size)
 		if (e == ERR_OK)
 		{
 			p->frame = frame;
-			rndis_buffers_rx(p);
+			nic_buffer_rx(p);
 		}
 		else
 		{
 			pbuf_free(frame);
-			rndis_buffers_release(p);
+			nic_buffer_release(p);
 		}
 
 	}
@@ -285,11 +286,11 @@ static err_t netif_init_cb(struct netif *netif)
 static void netif_polling(void * ctx)
 {
 	(void) ctx;
-	rndisbuf_t * p;
-	while (rndis_buffers_ready_user(& p) != 0)
+	nic_buffer_t * p;
+	while (nic_buffer_ready(& p) != 0)
 	{
 		struct pbuf *frame = p->frame;
-		rndis_buffers_release_user(p);
+		nic_buffer_release(p);
 
 		err_t e = ethernet_input(frame, & rndis_netif_data);
 		if (e != ERR_OK)
@@ -306,7 +307,7 @@ void init_netif(void)
 #if ETH_PAD_SIZE != 0
 	#error Wrong ETH_PAD_SIZE value
 #endif
-	rndis_buffers_initialize();
+	nic_buffers_initialize();
 	rndis_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
