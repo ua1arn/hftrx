@@ -7193,7 +7193,7 @@ void colmain_rounded_rect(
 void
 board_set_view_style(uint_fast8_t v)
 {
-#if WITHINTEGRATEDDSP
+#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY)
 	const uint_fast8_t n = v;
 
 	if (glob_view_style != n)
@@ -7201,7 +7201,7 @@ board_set_view_style(uint_fast8_t v)
 		glob_view_style = n;
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 	}
-#endif /* WITHINTEGRATEDDSP */
+#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) */
 }
 
 /* Для VIEW_3DSS - индикация полосы пропускания на спектре */
