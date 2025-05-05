@@ -1151,14 +1151,16 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	{
 		/* полнофункциональное устройство */
 		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
-
 		numoutendpoints += 1;
-		const int ncdceemindatapackets = 1 * mul2 + 1, ncdceemoutdatapackets = 3;
+		const int
+			neemindatapackets = 3,
+			neemintdatapackets = 3,
+			neemoutdatapackets = 3;
 
-		maxoutpacketsize4 = MAX(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, neemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
 
 
-		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_CDCEEM_BUFSIZE) + add3tx);
+		const uint_fast16_t size4 = neemindatapackets * (size2buff4(USBD_CDCEEM_BUFSIZE) + add3tx);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
