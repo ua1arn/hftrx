@@ -324,7 +324,6 @@ typedef unsigned sys_prot_t;
 
 #define HTTPD_FSDATA_FILE "src/fsdata.txt"
 
-//#define ETH_PAD_SIZE                    16
 #define LWIP_RAND() (4)
 
 #if 1 && ! WITHISBOOTLOADER
@@ -339,6 +338,6 @@ typedef unsigned sys_prot_t;
 
 	#define LWIP_NETIF_LOOPBACK 1
 
-//#define ETH_PAD_SIZE                    64
+#define ETH_PAD_SIZE                    0
 
 #endif /* __LWIPOPTS_H__ */

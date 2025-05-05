@@ -997,14 +997,11 @@ static void netif_polling(void * ctx)
 	}
 }
 
-static void lwip_1s_spool(void * ctx)
-{
-	(void) ctx;
-	sys_check_timeouts();
-}
-
 void init_netif(void)
 {
+#if ETH_PAD_SIZE != 0
+	#error Wrong ETH_PAD_SIZE value
+#endif
 	//PRINTF("init_netif start\n");
 	emac_buffers_initialize();
 
@@ -1136,14 +1133,6 @@ void init_netif(void)
 
 		dpcobj_initialize(& dpcobj, netif_polling, NULL);
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
-		ticker_add(& ticker);
 	}
 
 	//PRINTF("init_netif done\n");

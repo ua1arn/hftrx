@@ -370,10 +370,10 @@ static void cdceem_send(const uint8_t *data, int size)
 // see Table 45 for info about the specific requests.
 #define CDC_SET_CONTROL_LINE_STATE              0x22
 
-static USBALIGN_BEGIN uint8_t cdceem1buffout [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
+static ALIGNX_BEGIN uint8_t cdceem1buffout [USBD_CDCEEM_BUFSIZE] ALIGNX_END;
+static ALIGNX_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] ALIGNX_END;
 static RAMDTCM uint_fast16_t cdceem1buffinlevel;
-static USBALIGN_BEGIN uint8_t cdceem_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+static ALIGNX_BEGIN uint8_t cdceem_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] ALIGNX_END;
 
 
 
@@ -476,7 +476,7 @@ static void cdceemout_buffer_print2(
 
 }
 
-static USBALIGN_BEGIN uint8_t dbd [2] USBALIGN_END;
+static ALIGNX_BEGIN uint8_t dbd [2] ALIGNX_END;
 
 // called in context of interrupt
 static void cdceemout_buffer_save(
@@ -655,7 +655,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	static USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
+	static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
@@ -705,7 +705,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 					{
 						case USB_REQ_GET_INTERFACE:
 						{
-							static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
+							static ALIGNX_BEGIN uint8_t buff [64] ALIGNX_END;
 							//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
 							buff [0] = 0;
 							USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
@@ -1817,14 +1817,11 @@ static void netif_polling(void * ctx)
 }
 
 
-static void lwip_1s_spool(void * ctx)
-{
-	(void) ctx;
-	sys_check_timeouts();
-}
-
 void init_netif(void)
 {
+#if ETH_PAD_SIZE != 0
+	#error Wrong ETH_PAD_SIZE value
+#endif
 	cdceem_buffers_initialize();
 	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 
@@ -1857,14 +1854,6 @@ void init_netif(void)
 
 		dpcobj_initialize(& dpcobj, netif_polling, NULL);
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
-		ticker_add(& ticker);
 	}
 
 }

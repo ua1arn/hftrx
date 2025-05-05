@@ -543,10 +543,17 @@ void sys_arch_unprotect(sys_prot_t pval)
 
 #endif /* SYS_LIGHTWEIGHT_PROT */
 
+
+static void lwip_1s_spool(void * ctx)
+{
+	(void) ctx;
+	sys_check_timeouts();
+}
+
 void network_initialize(void)
 {
-	  init_lwip();
-	  init_netif();
+	init_lwip();
+	init_netif();
 
 #if 1//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
 	  PRINTF("network_initialize: start DHCP & DNS\n");
@@ -562,6 +569,14 @@ void network_initialize(void)
 #endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
 
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
 }
 
 #else
