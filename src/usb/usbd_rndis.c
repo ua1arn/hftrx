@@ -286,7 +286,7 @@ static void netif_polling(void * ctx)
 {
 	(void) ctx;
 	rndisbuf_t * p;
-	if (rndis_buffers_ready_user(& p) != 0)
+	while (rndis_buffers_ready_user(& p) != 0)
 	{
 		struct pbuf *frame = p->frame;
 		rndis_buffers_release_user(p);

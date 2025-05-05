@@ -575,7 +575,6 @@ static void cdceemout_buffer_save(
  */
 static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	TP();
 	//PRINTF("USBD_CDCEEM_DataIn: epnum=%d\n", (int) epnum);
 	switch (epnum)
 	{
@@ -601,7 +600,6 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 
 static USBD_StatusTypeDef USBD_CDCEEM_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	TP();
 	switch (epnum)
 	{
 	case USBD_EP_CDCEEM_OUT:
@@ -657,9 +655,10 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	TP();
 	static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	if (interfacev != INTERFACE_CDCEEM_DATA)
+		   return USBD_OK;
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -1103,7 +1102,9 @@ static USBD_StatusTypeDef  USBD_CDC_EEM_DeInit (USBD_HandleTypeDef *pdev,
 static USBD_StatusTypeDef  USBD_CDC_EEM_Setup (USBD_HandleTypeDef *pdev,
                                 const USBD_SetupReqTypedef *req)
 {
-	TP();
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	if (interfacev != INTERFACE_CDCEEM_DATA)
+		   return USBD_OK;
   //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
   USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
 
@@ -1175,13 +1176,14 @@ break;
   * @retval status
   */
 static USBD_StatusTypeDef USBD_CDC_EEM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum) {
-TP();
   uint32_t tx_len;
   uint8_t *tx_buf;
   //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
   USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
   USBD_StatusTypeDef ret_code;
 
+  if (epnum != (USBD_EP_CDCEEM_IN & 0x7F))
+	  return USBD_OK;
   if(/* pdev->pClassData != NULL */ 1) {
 
     if (hcdc->tx_state == EEM_TRANSMITTER_SEND_DATA){
@@ -1251,11 +1253,12 @@ TP();
 static uint32_t eem_packet_type, eem_packet_size, eem_cmd;
 
 static USBD_StatusTypeDef  USBD_CDC_EEM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum) {
-	TP();
 
 	  //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
 	  USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
   uint32_t rx_data_size;
+  if (epnum != USBD_EP_CDCEEM_OUT)
+	  return USBD_OK;
 
   if(/* pdev->pClassData != NULL */ 1) {
     rx_data_size  = USBD_LL_GetRxDataSize (pdev, epnum);
@@ -1558,9 +1561,9 @@ USBD_StatusTypeDef  USBD_CDC_EEM_ReceivePacket(USBD_HandleTypeDef *pdev,
 static void USBD_CDCEEM_ColdInit(void)
 {
 }
-#if 1
+
 // ST version
-const USBD_ClassTypeDef USBD_CLASS_CDC_EEMz =
+const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
 {
 	USBD_CDCEEM_ColdInit,
 	USBD_CDC_EEM_Init,	// Init
@@ -1574,7 +1577,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEMz =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
-#endif
+
 
 // MGS version
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
@@ -1625,7 +1628,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 // Transceiving Ethernet packets
 static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	//PRINTF("cdceem_linkoutput_fn\n");
+	PRINTF("cdceem_linkoutput_fn\n");
     int i;
     struct pbuf *q;
     static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
@@ -1728,19 +1731,20 @@ static int cdceem_buffers_alloc(cdceembuf_t * * tp)
 		* tp = p;
 		return 1;
 	}
-	if (! IsListEmpty(& cdceem_ready))
-	{
-		LowerIrql(oldIrql);
-		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
-		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
-		* tp = p;
-		return 1;
-	}
+//	if (! IsListEmpty(& cdceem_ready))
+//	{
+//		LowerIrql(oldIrql);
+//		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
+//		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+//		* tp = p;
+//		TP();
+//		return 1;
+//	}
 	LowerIrql(oldIrql);
 	return 0;
 }
 
-static int cdceem_buffers_ready_user(cdceembuf_t * * tp)
+static int cdceem_buffers_ready(cdceembuf_t * * tp)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -1755,31 +1759,28 @@ static int cdceem_buffers_ready_user(cdceembuf_t * * tp)
 	LowerIrql(oldIrql);
 	return 0;
 }
-
 
 static void cdceem_buffers_release(cdceembuf_t * p)
 {
-	InsertHeadList(& cdceem_free, & p->item);
-}
-
-static void cdceem_buffers_release_user(cdceembuf_t * p)
-{
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	cdceem_buffers_release(p);
+	InsertHeadList(& cdceem_free, & p->item);
 	LowerIrql(oldIrql);
 }
 
 // сохранить принятый
 static void cdceem_buffers_rx(cdceembuf_t * p)
 {
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	InsertHeadList(& cdceem_ready, & p->item);
+	LowerIrql(oldIrql);
 }
 
 static void on_packet(const uint8_t *data, int size)
 {
-	PRINTF("rx:\n");
-	printhex(0, data, size);
+//	PRINTF("rx:\n");
+//	printhex(0, data, size);
 	cdceembuf_t * p;
 	if (cdceem_buffers_alloc(& p) != 0)
 	{
@@ -1798,12 +1799,18 @@ static void on_packet(const uint8_t *data, int size)
 		{
 			p->frame = frame;
 			cdceem_buffers_rx(p);
+			TP();
 		}
 		else
 		{
+			TP();
 			pbuf_free(frame);
 			cdceem_buffers_release(p);
 		}
+	}
+	else
+	{
+		TP();
 	}
 }
 
@@ -1815,10 +1822,12 @@ static void netif_polling(void * ctx)
 {
 	(void) ctx;
 	cdceembuf_t * p;
-	if (cdceem_buffers_ready_user(& p) != 0)
+	while (cdceem_buffers_ready(& p) != 0)
 	{
 		struct pbuf * const frame = p->frame;
-		cdceem_buffers_release_user(p);
+		cdceem_buffers_release(p);
+		PRINTF("rx:\n");
+		printhex(0, frame->payload, frame->len);
 
 		err_t e = ethernet_input(p->frame, & cdceem_netif_data);
 		if (e != ERR_OK)
@@ -1838,7 +1847,6 @@ void init_netif(void)
 #endif
 	cdceem_buffers_initialize();
 	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
-
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
 	static ip_addr_t netmask;// [4] = NETMASK;
@@ -1855,21 +1863,20 @@ void init_netif(void)
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
 	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
-#if LWIP_AUTOIP
-	  autoip_start(netif);
-#endif /* LWIP_AUTOIP */
 	netif_set_default(netif);
 
 	while (!netif_is_up(netif))
 		;
 
-	{
-		static dpcobj_t dpcobj;
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
+		{
+			static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, netif_polling, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-
+			dpcobj_initialize(& dpcobj, netif_polling, NULL);
+			board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		}
 }
 
 #endif /* WITHLWIP */
