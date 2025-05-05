@@ -54,7 +54,7 @@
 
 typedef void (*rndis_rxproc_t)(const uint8_t *data, int size);
 static rndis_state_t rndis_state;
-static rndis_rxproc_t rndis_rxproc = NULL;
+static rndis_rxproc_t nic_rxproc = NULL;
 
 static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
 
@@ -186,6 +186,11 @@ static void on_packet(const uint8_t *data, int size)
 static struct netif rndis_netif_data;
 
 
+struct netif  * getNetifData(void)
+{
+	return &rndis_netif_data;
+}
+
 /**
  * This function should do the actual transmission of the packet. The packet is
  * contained in the pbuf that is passed to the function. This pbuf
@@ -292,7 +297,7 @@ static void netif_polling(void * ctx)
 		struct pbuf *frame = p->frame;
 		nic_buffer_release(p);
 
-		err_t e = ethernet_input(frame, & rndis_netif_data);
+		err_t e = ethernet_input(frame, getNetifData());
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
@@ -308,7 +313,7 @@ void init_netif(void)
 	#error Wrong ETH_PAD_SIZE value
 #endif
 	nic_buffers_initialize();
-	rndis_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
+	nic_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
@@ -321,7 +326,7 @@ void init_netif(void)
 	static ip_addr_t vaddr;// [4]  = IPADDR;
 	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
-	struct netif  *netif = &rndis_netif_data;
+	struct netif  *netif = getNetifData();
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
@@ -340,11 +345,6 @@ void init_netif(void)
 			dpcobj_initialize(& dpcobj, netif_polling, NULL);
 			board_dpc_addentry(& dpcobj, board_dpc_coreid());
 		}
-}
-
-struct netif  * getNetifData(void)
-{
-	return &rndis_netif_data;
 }
 
 static void USBD_RNDIS_ColdInit(void)
@@ -940,8 +940,8 @@ static void handle_rxpacket(const uint8_t *data, int size)
 		return;
 	}
 	usb_eth_stat.rxok++;
-	if (rndis_rxproc != NULL)
-		rndis_rxproc(&rndis_rx_buffer[p->DataOffset + offsetof(rndis_data_packet_t, DataOffset)], p->DataLength);
+	if (nic_rxproc != NULL)
+		nic_rxproc(&rndis_rx_buffer[p->DataOffset + offsetof(rndis_data_packet_t, DataOffset)], p->DataLength);
 	/*
   if (size < RNDIS_HEADER_SIZE)
   {
