@@ -848,7 +848,7 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		//PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
 
 		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
-		pbuf_header(p, - ETH_PAD_SIZE);
+		VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
 		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
 
 		// test data
@@ -943,9 +943,9 @@ static void EMAC_Handler(void)
 				}
 				else
 				{
-					pbuf_header(frame, - ETH_PAD_SIZE);
+					VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
 					err_t e = pbuf_take(frame, rxbuff, sizeof rxbuff);	// Copy application supplied data into a pbuf.
-					pbuf_header(frame, + ETH_PAD_SIZE);
+					VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
 					if (e == ERR_OK)
 					{
 						p->frame = frame;
