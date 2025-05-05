@@ -1635,7 +1635,7 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		return ERR_MEM;
     }
 
-	pbuf_header(p, - ETH_PAD_SIZE);
+    VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
     size = pbuf_copy_partial(p, data, sizeof data, 0);
     cdceem_send(data, size);
 
@@ -1777,9 +1777,9 @@ static void on_packet(const uint8_t *data, int size)
 			cdceem_buffers_release(p);
 			return;
 		}
-		pbuf_header(frame, - ETH_PAD_SIZE);
+		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
 		err_t e = pbuf_take(frame, data, size);
-		pbuf_header(frame, + ETH_PAD_SIZE);
+		VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
 		if (e == ERR_OK)
 		{
 			p->frame = frame;

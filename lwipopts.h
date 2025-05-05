@@ -317,8 +317,8 @@ void board_update_time(uint32_t sec);
  * critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT 0
-//typedef unsigned sys_prot_t;
+#define SYS_LIGHTWEIGHT_PROT 1
+typedef unsigned sys_prot_t;
 
 #define ETH_RX_BUFFER_SIZE 32768
 
@@ -327,7 +327,7 @@ void board_update_time(uint32_t sec);
 //#define ETH_PAD_SIZE                    16
 #define LWIP_RAND() (4)
 
-#if 0 && ! WITHISBOOTLOADER
+#if 1 && ! WITHISBOOTLOADER
 
 	#define LWIP_HTTPD_CGI                  1
 	#define LWIP_HTTPD_SSI                  1
@@ -339,6 +339,6 @@ void board_update_time(uint32_t sec);
 
 	#define LWIP_NETIF_LOOPBACK 1
 
-	//#define ETH_PAD_SIZE                    16
+//#define ETH_PAD_SIZE                    64
 
 #endif /* __LWIPOPTS_H__ */
