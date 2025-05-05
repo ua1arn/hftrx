@@ -33,7 +33,7 @@
 #include "../lib/dns-server/dnserver.h"
 #include "lwip/apps/httpd.h"
 
-//#define DHCP_SERVER 1
+#define DHCP_SERVER 1
 /*
  *  В конфигурации описано имя и размер
  *
@@ -548,7 +548,7 @@ void network_initialize(void)
 	  init_lwip();
 	  init_netif();
 
-#if 0//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
+#if 1//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
 	  PRINTF("network_initialize: start DHCP & DNS\n");
 	#if DHCP_SERVER
 		  init_dhserv();

@@ -828,7 +828,8 @@ static struct netif emac_netif_data;
 // Transceiving Ethernet packets
 static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	//PRINTF("emac_linkoutput_fn\n");
+//	PRINTF("emac_linkoutput_fn\n");
+//	printhex(0, p->payload, p->len);
     int i = 0;
     //struct pbuf *q;
 	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
@@ -984,7 +985,8 @@ static void netif_polling(void * ctx)
 	{
 		struct pbuf *frame = p->frame;
 		emac_buffers_release(p);
-
+//		PRINTF("rx:\n");
+//		printhex(0, frame->payload, frame->len);
 		err_t e = ethernet_input(frame, & emac_netif_data);
 		if (e != ERR_OK)
 		{
