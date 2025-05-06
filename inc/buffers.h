@@ -683,7 +683,7 @@ extern "C" {
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	#define USBD_CDCECM_INT_SIZE	8	// interrupt data
+	#define USBD_CDCECM_INT_SIZE	64	// interrupt data - AN00131:-USB-CDC-ECM-Class-for-Ethernet-over-USB(2.0.2rc1).pdf says 64
 	#if WITHUSBDEV_HSDESC
 		#define USBD_CDCECM_IN_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
 		#define USBD_CDCECM_OUT_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
