@@ -130,9 +130,11 @@ static USBD_StatusTypeDef USBD_ECM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
 
 static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	  PRINTF("USBD_ECM_Setup: ");
-	  printhex(0, req, sizeof req);
-	  PRINTF("\n");
+	PRINTF("USBD_ECM_Setup: ");
+	// SBD_ECM_Setup: 00000000: 01 0B 00 00 01 00 00 00
+	printhex(0, req, sizeof * req);
+	PRINTF("\n");
+
   if (0x43 /* SET_ETHERNET_PACKET_FILTER */ == req->bRequest)
   {
     notify.wIndex = req->wIndex;
