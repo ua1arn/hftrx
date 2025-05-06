@@ -337,10 +337,11 @@ static void pump_tx(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	if (eemtxready == 0 && eemtxleft != 0)
 	{
-		const unsigned eemtxsize = ulmin32(eemtxleft, USBD_CDCEEM_BUFSIZE);
+		const unsigned eemtxsize = eemtxleft; //ulmin32(eemtxleft, USBD_CDCEEM_BUFSIZE);
 		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), eemtxpointer, eemtxsize);
 		eemtxpointer += eemtxsize;
 		eemtxleft -= eemtxsize;
+		eemtxready = 1;
 	}
 	else
 	{
@@ -383,9 +384,12 @@ static void nic_send(const uint8_t *data, int size)
 	eemtxready = 0;
 	if (gpdev)
 	{
-		pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+		//pump_tx(gpdev, USBD_EP_CDCEEM_IN);
+		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft);
+		//printhex(0, eemtxpointer, eemtxleft);
 	}
 	LowerIrql(oldIrql);
+	local_delay_ms(50);
 }
 
 // CDC class-specific request codes
@@ -538,6 +542,14 @@ static void cdceemout_buffer_save(
 					const uint_fast8_t bmEEMCmd = (w >> 11) & 0x0007;	// 0: Ethernet Frame CRC is set to 0xdeadbeef
 					const uint_fast16_t bmEEMCmdParam = (w >> 11) & 0x07FF;
 					PRINTF(PSTR("Command: bmEEMCmd=%02X, bmEEMCmdParam=%u\n"), bmEEMCmd, bmEEMCmdParam);
+//					ethernet_input:
+//					ethernet_input:
+//					Command: bmEEMCmd=00, bmEEMCmdParam=24
+//					Command: bmEEMCmd=07, bmEEMCmdParam=31
+//					Command: bmEEMCmd=07, bmEEMCmdParam=31
+//					Command: bmEEMCmd=01, bmEEMCmdParam=17
+//					Command: bmEEMCmd=01, bmEEMCmdParam=17
+//					ethernet_input:
 				}
 			}
 			break;
@@ -600,7 +612,13 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 	switch (epnum)
 	{
 	case (USBD_EP_CDCEEM_IN & 0x7F):
-		//pump_tx(pdev, epnum);
+		if (eemtxready == 0)
+		{
+			if (USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft) == USBD_BUSY)
+				;
+			else
+				eemtxready = 1;
+		}
 		break;
 	}
 	return USBD_OK;
@@ -799,14 +817,14 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
 {
 	/* CDC EEM Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_IN, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
-	//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, NULL, 0);
+	//USBD_LL_Transmit(pdev, USBD_EP_CDCEEM_IN, dbd, sizeof dbd);
 	/* CDC EEM Open EP OUT */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCEEM_OUT, USBD_EP_TYPE_BULK, USBD_CDCEEM_BUFSIZE);
     /* CDC EEM Prepare Out endpoint to receive 1st packet */
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceem1buffout,  USBD_CDCEEM_BUFSIZE);
 
     cdceemoutstate = CDCEEMOUT_COMMAND;
-
+    eemtxready = 1;
     gpdev = pdev;
 	return USBD_OK;
 }
@@ -1638,7 +1656,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 // Transceiving Ethernet packets
 static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	//PRINTF("rndis_linkoutput_fn\n");
+	PRINTF("cdceem_linkoutput_fn\n");
     int i;
     struct pbuf *q;
     //static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
@@ -1649,15 +1667,6 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
     {
         if (nic_can_send()) break;
         local_delay_ms(1);
-        {
-            IRQL_t oldIrql;
-            RiseIrql(IRQL_SYSTEM, & oldIrql);
-            if (gpdev)
-            {
-                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
-            }
-            LowerIrql(oldIrql);
-        }
     }
 
     if (!nic_can_send())
@@ -1665,7 +1674,7 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		return ERR_MEM;
     }
 
-	//PRINTF("cdceem_linkoutput_fn:\n");
+	//PRINTF("cdceem_linkoutput_fn: 2\n");
 	//printhex(0, p->payload, p->len);
     VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
     size = pbuf_copy_partial(p, data, sizeof data, 0);
@@ -1680,17 +1689,7 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
     {
         if (nic_can_send()) break;
         local_delay_ms(1);
-        {
-            IRQL_t oldIrql;
-            RiseIrql(IRQL_SYSTEM, & oldIrql);
-            if (gpdev)
-            {
-                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
-            }
-            LowerIrql(oldIrql);
-        }
     }
-
     return ERR_OK;
 }
 
@@ -1824,20 +1823,6 @@ static void nic_buffer_rx(nic_buffer_t * p)
 
 static void on_packet(const uint8_t *data, int size)
 {
-    for (int i = 0; i < 200; i++)
-    {
-        if (nic_can_send()) break;
-        local_delay_ms(1);
-        {
-            IRQL_t oldIrql;
-            RiseIrql(IRQL_SYSTEM, & oldIrql);
-            if (gpdev)
-            {
-                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
-            }
-            LowerIrql(oldIrql);
-        }
-    }
 	nic_buffer_t * p;
 	if (nic_buffer_alloc(& p) != 0)
 	{
@@ -1889,35 +1874,7 @@ static void netif_polling(void * ctx)
 			  /* This means the pbuf is freed or consumed,
 			     so the caller doesn't have to free it again */
 		}
-		for (int i = 0; i < 3; ++ i)
-        {
-            if (nic_can_send()) break;
-            local_delay_ms(1);
-            {
-                IRQL_t oldIrql;
-                RiseIrql(IRQL_SYSTEM, & oldIrql);
-                if (gpdev)
-                {
-                    pump_tx(gpdev, USBD_EP_CDCEEM_IN);
-                }
-                LowerIrql(oldIrql);
-            }
-        }
 	}
-    for (int i = 0; i < 200; i++)
-    {
-        if (nic_can_send()) break;
-        local_delay_ms(1);
-        {
-            IRQL_t oldIrql;
-            RiseIrql(IRQL_SYSTEM, & oldIrql);
-            if (gpdev)
-            {
-                pump_tx(gpdev, USBD_EP_CDCEEM_IN);
-            }
-            LowerIrql(oldIrql);
-        }
-    }
 }
 
 
