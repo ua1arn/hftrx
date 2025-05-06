@@ -377,7 +377,6 @@ static void nic_send(const uint8_t *data, int size)
 		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft);
 	}
 	LowerIrql(oldIrql);
-	local_delay_ms(50);
 }
 
 // CDC class-specific request codes
