@@ -614,9 +614,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 	case (USBD_EP_CDCEEM_IN & 0x7F):
 		if (eemtxready == 0)
 		{
-			if (USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft) == USBD_BUSY)
-				;
-			else
+			if (USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft) != USBD_BUSY)
 				eemtxready = 1;
 		}
 		break;
