@@ -340,23 +340,6 @@ static int nic_can_send(void)
 }
 
 
-static void pump_tx(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	if (eemtxready == 0 && eemtxleft != 0)
-	{
-		const unsigned eemtxsize = eemtxleft; //ulmin32(eemtxleft, USBD_CDCEEM_BUFSIZE);
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), eemtxpointer, eemtxsize);
-		eemtxpointer += eemtxsize;
-		eemtxleft -= eemtxsize;
-		eemtxready = 1;
-	}
-	else
-	{
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
-		eemtxready = 1;
-	}
-}
-
 static void nic_send(const uint8_t *data, int size)
 {
 	// прербразуем пакет в CDC EEM пакеты
@@ -391,9 +374,7 @@ static void nic_send(const uint8_t *data, int size)
 	eemtxready = 0;
 	if (gpdev)
 	{
-		//pump_tx(gpdev, USBD_EP_CDCEEM_IN);
 		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft);
-		//printhex(0, eemtxpointer, eemtxleft);
 	}
 	LowerIrql(oldIrql);
 	local_delay_ms(50);

@@ -555,13 +555,13 @@ void network_initialize(void)
 	init_lwip();
 	init_netif();
 
-#if 1//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
+#if 1
 	  PRINTF("network_initialize: start DHCP & DNS\n");
 	#if DHCP_SERVER
 		  init_dhserv();
 	#endif /* DHCP_SERVER */
 	  init_dnserv();
-#endif /* WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM) */
+#endif
 
 #if LWIP_HTTPD_CGI
 	  PRINTF("network_initialize: start HTTP server\n");

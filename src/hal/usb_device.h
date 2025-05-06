@@ -154,6 +154,7 @@
 extern const USBD_ClassTypeDef USBD_CLASS_UAC;
 extern const USBD_ClassTypeDef USBD_CLASS_CDCACM;
 extern const USBD_ClassTypeDef USBD_CLASS_DFU;
+extern const USBD_ClassTypeDef USBD_CLASS_CDC_ECM;
 extern const USBD_ClassTypeDef USBD_CLASS_CDC_EEM;
 extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
 extern const USBD_ClassTypeDef USBD_CLASS_HID;
