@@ -327,6 +327,13 @@ static uint8_t eemtxbuffer [8192];
 static USBD_HandleTypeDef *gpdev;
 static ALIGNX_BEGIN uint8_t dbd [2] ALIGNX_END;
 
+static volatile int eemusele = 1;
+
+static uint_fast16_t condrev(uint_fast16_t v)
+{
+	return eemusele ? __REV16(v) : v;
+}
+
 static int nic_can_send(void)
 {
 	return eemtxready;
@@ -365,8 +372,8 @@ static void nic_send(const uint8_t *data, int size)
 			0;
 	uint_fast32_t crc = 0xDEADBEEF;
 
-	* tg ++ = (header >> 8) & 0xFF;
-	* tg ++ = (header >> 0) & 0xFF;
+	* tg ++ = (condrev(header) >> 8) & 0xFF;
+	* tg ++ = (condrev(header) >> 0) & 0xFF;
 
 	memcpy(tg, data, size);
 	tg += size;
@@ -398,8 +405,8 @@ static void nic_send(const uint8_t *data, int size)
 #define CDC_SET_CONTROL_LINE_STATE              0x22
 
 static ALIGNX_BEGIN uint8_t cdceem1buffout [USBD_CDCEEM_BUFSIZE] ALIGNX_END;
-static ALIGNX_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] ALIGNX_END;
-static RAMDTCM uint_fast16_t cdceem1buffinlevel;
+//static ALIGNX_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] ALIGNX_END;
+//static RAMDTCM uint_fast16_t cdceem1buffinlevel;
 static ALIGNX_BEGIN uint8_t cdceem_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] ALIGNX_END;
 
 
@@ -510,7 +517,8 @@ static void cdceemout_buffer_save(
 	)
 {
 	uint_fast16_t pos;
-	//PRINTF("cdceemout_buffer_save: EP len=%u\n", length);
+	//PRINTF("cdceemout_buffer_save: EP len=%u, (st=%d)\n", length, cdceemoutstate);
+	//printhex(0, data, length);
 	for (pos = 0; pos < length; )
 	{
 		switch (cdceemoutstate)
@@ -519,7 +527,12 @@ static void cdceemout_buffer_save(
 			cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
 			if (++ cdceemoutscore >= 2)
 			{
-				const uint_fast8_t w = (cdceemoutacc & 0xFFFF);
+
+				const uint_fast8_t wraw = (cdceemoutacc & 0xFFFF);
+				//PRINTF("wraw=%04X\n", wraw);
+				if (wraw == 0)
+					eemusele = 0;	// Windows computer host
+				const uint_fast8_t w = condrev(wraw);
 				cdceemoutscore = 0;
 				// разбор команды
 				const uint_fast8_t bmType = (w >> 15) & 0x0001;	// 0: EEM data payload 1: EEM Command
@@ -539,8 +552,9 @@ static void cdceemout_buffer_save(
 				}
 				else
 				{
+					const uint_fast8_t bmReserved = (w >> 14) & 0x0001;	// bmReserved: 0: DefaultS
 					const uint_fast8_t bmEEMCmd = (w >> 11) & 0x0007;	// 0: Ethernet Frame CRC is set to 0xdeadbeef
-					const uint_fast16_t bmEEMCmdParam = (w >> 11) & 0x07FF;
+					const uint_fast16_t bmEEMCmdParam = (w >> 0) & 0x07FF;
 					PRINTF(PSTR("Command: bmEEMCmd=%02X, bmEEMCmdParam=%u\n"), bmEEMCmd, bmEEMCmdParam);
 //					ethernet_input:
 //					ethernet_input:
@@ -550,6 +564,17 @@ static void cdceemout_buffer_save(
 //					Command: bmEEMCmd=01, bmEEMCmdParam=17
 //					Command: bmEEMCmd=01, bmEEMCmdParam=17
 //					ethernet_input:
+					unsigned len;
+					switch (bmEEMCmd)
+					{
+					case 0x00:	// Echo
+						cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
+						cdceemoutacc = cdceemoutacc * 256 + data [pos ++];
+						len = cdceemoutacc & 0x7FF;
+						break;
+					default:
+						break;
+					}
 				}
 			}
 			break;
@@ -821,7 +846,9 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
     /* CDC EEM Prepare Out endpoint to receive 1st packet */
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceem1buffout,  USBD_CDCEEM_BUFSIZE);
 
-    cdceemoutstate = CDCEEMOUT_COMMAND;
+	cdceemoutscore = 0;
+	cdceemoutstate = CDCEEMOUT_COMMAND;
+	eemusele = 1;
     eemtxready = 1;
     gpdev = pdev;
 	return USBD_OK;
@@ -832,6 +859,9 @@ static USBD_StatusTypeDef USBD_CDCEEM_DeInit(USBD_HandleTypeDef *pdev, uint_fast
     gpdev = NULL;
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_IN);
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCEEM_OUT);
+	cdceemoutscore = 0;
+	cdceemoutstate = CDCEEMOUT_COMMAND;
+	eemusele = 1;
 	return USBD_OK;
 }
 
@@ -1654,7 +1684,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 // Transceiving Ethernet packets
 static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	PRINTF("cdceem_linkoutput_fn\n");
+	//PRINTF("cdceem_linkoutput_fn\n");
     int i;
     struct pbuf *q;
     //static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
@@ -1863,7 +1893,7 @@ static void netif_polling(void * ctx)
 	{
 		struct pbuf *frame = p->frame;
 		nic_buffer_release(p);
-		PRINTF("ethernet_input:\n");
+		//PRINTF("ethernet_input:\n");
 		//printhex(0, frame->payload, frame->len);
 		//local_delay_ms(20);
 		err_t e = ethernet_input(frame, getNetifData());
