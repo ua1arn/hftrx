@@ -321,15 +321,12 @@ void set_eem_pkt_size(uint8_t *buffer, uint32_t pkt_size){
 #define CDCEEM_MTU 1500  // MTU value
 
 static volatile unsigned eemtxready;
-static volatile unsigned eemtxleft;
-static uint8_t  * volatile eemtxpointer;
 static uint8_t eemtxbuffer [8192];
 static USBD_HandleTypeDef *gpdev;
-static ALIGNX_BEGIN uint8_t dbd [2] ALIGNX_END;
 
 static volatile int eemusele = 1;
 
-static uint_fast16_t condrev(uint_fast16_t v)
+static uint_fast16_t condrev16(uint_fast16_t v)
 {
 	return eemusele ? __REV16(v) : v;
 }
@@ -355,8 +352,8 @@ static void nic_send(const uint8_t *data, int size)
 			0;
 	uint_fast32_t crc = 0xDEADBEEF;
 
-	* tg ++ = (condrev(header) >> 8) & 0xFF;
-	* tg ++ = (condrev(header) >> 0) & 0xFF;
+	* tg ++ = (condrev16(header) >> 8) & 0xFF;
+	* tg ++ = (condrev16(header) >> 0) & 0xFF;
 
 	memcpy(tg, data, size);
 	tg += size;
@@ -369,12 +366,10 @@ static void nic_send(const uint8_t *data, int size)
 	// а теперь передаем
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	eemtxleft = tg - eemtxbuffer;
-	eemtxpointer = eemtxbuffer;
-	eemtxready = 0;
 	if (gpdev)
 	{
-		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft);
+		USBD_LL_Transmit(gpdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxbuffer, tg - eemtxbuffer);
+		eemtxready = 0;
 	}
 	LowerIrql(oldIrql);
 }
@@ -510,9 +505,13 @@ static void cdceemout_buffer_save(
 
 				const uint_fast8_t wraw = (cdceemoutacc & 0xFFFF);
 				//PRINTF("wraw=%04X\n", wraw);
-				if (wraw == 0)
+				if (wraw == 0 && length == 2)
+				{
 					eemusele = 0;	// Windows computer host
-				const uint_fast8_t w = condrev(wraw);
+					PRINTF("CDC EEM: Switched to Windows10 host mode\n");
+					continue;
+				}
+				const uint_fast8_t w = condrev16(wraw);
 				cdceemoutscore = 0;
 				// разбор команды
 				const uint_fast8_t bmType = (w >> 15) & 0x0001;	// 0: EEM data payload 1: EEM Command
@@ -617,11 +616,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 	switch (epnum)
 	{
 	case (USBD_EP_CDCEEM_IN & 0x7F):
-		if (eemtxready == 0)
-		{
-			if (USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(USBD_EP_CDCEEM_IN), eemtxpointer, eemtxleft) != USBD_BUSY)
-				eemtxready = 1;
-		}
+		eemtxready = 1;
 		break;
 	}
 	return USBD_OK;
@@ -1693,11 +1688,11 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 //    }
 
     nic_send(data, size);
-    for (i = 0; i < 200; i++)
-    {
-        if (nic_can_send()) break;
-        local_delay_ms(1);
-    }
+//    for (i = 0; i < 200; i++)
+//    {
+//        if (nic_can_send()) break;
+//        local_delay_ms(1);
+//    }
     return ERR_OK;
 }
 
@@ -1875,7 +1870,6 @@ static void netif_polling(void * ctx)
 		nic_buffer_release(p);
 		//PRINTF("ethernet_input:\n");
 		//printhex(0, frame->payload, frame->len);
-		//local_delay_ms(20);
 		err_t e = ethernet_input(frame, getNetifData());
 		if (e != ERR_OK)
 		{
