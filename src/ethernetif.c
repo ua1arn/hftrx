@@ -898,25 +898,6 @@ static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
-static err_t netif_init_cb(struct netif *netif)
-{
-	//PRINTF("emac netif_init_cb\n");
-	LWIP_ASSERT("netif != NULL", (netif != NULL));
-#if LWIP_NETIF_HOSTNAME
-	/* Initialize interface hostname */
-	netif->hostname = "storch";
-#endif /* LWIP_NETIF_HOSTNAME */
-	netif->mtu = EMAC_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP
-			| NETIF_FLAG_UP | NETIF_FLAG_ETHERNET;
-	netif->state = NULL;
-	netif->name[0] = 'E';
-	netif->name[1] = 'X';
-	netif->output = etharp_output;
-	netif->linkoutput = emac_linkoutput_fn;	// используется внутри etharp_output
-	return ERR_OK;
-}
-
 static void EMAC_Handler(void)
 {
 	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
@@ -975,36 +956,8 @@ static void EMAC_Handler(void)
 	}
 }
 
-// Receiving Ethernet packets
-// user-mode function
-static void netif_polling(void * ctx)
+static void emac_hw_initialize(void)
 {
-	(void) ctx;
-	emacbuf_t * p;
-	while (emac_buffers_ready(& p) != 0)
-	{
-		struct pbuf *frame = p->frame;
-		emac_buffers_release(p);
-//		PRINTF("rx:\n");
-//		printhex(0, frame->payload, frame->len);
-		err_t e = ethernet_input(frame, & emac_netif_data);
-		if (e != ERR_OK)
-		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
-
-	}
-}
-
-void init_netif(void)
-{
-#if ETH_PAD_SIZE != 0
-	#error Wrong ETH_PAD_SIZE value
-#endif
-	//PRINTF("init_netif start\n");
-	emac_buffers_initialize();
-
 	const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
 	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
 	CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
@@ -1102,6 +1055,57 @@ void init_netif(void)
 
 		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
+}
+
+// Receiving Ethernet packets
+// user-mode function
+static void netif_polling(void * ctx)
+{
+	(void) ctx;
+	emacbuf_t * p;
+	while (emac_buffers_ready(& p) != 0)
+	{
+		struct pbuf *frame = p->frame;
+		emac_buffers_release(p);
+//		PRINTF("rx:\n");
+//		printhex(0, frame->payload, frame->len);
+		err_t e = ethernet_input(frame, & emac_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+	//PRINTF("emac netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
+	netif->mtu = EMAC_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP
+			| NETIF_FLAG_UP | NETIF_FLAG_ETHERNET;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = etharp_output;
+	netif->linkoutput = emac_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
+}
+
+void init_netif(void)
+{
+#if ETH_PAD_SIZE != 0
+	#error Wrong ETH_PAD_SIZE value
+#endif
+	//PRINTF("init_netif start\n");
+	emac_buffers_initialize();
+	emac_hw_initialize();
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
