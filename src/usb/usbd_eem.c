@@ -397,6 +397,8 @@ enum
 	CDCEEMOUT_nstates
 };
 
+#define ETH_PAD_SIZE 0
+
 static uint_fast8_t cdceemoutstate = CDCEEMOUT_COMMAND;
 static uint_fast32_t cdceemoutscore = 0;
 static uint_fast32_t cdceemoutacc;
@@ -404,7 +406,7 @@ static uint_fast32_t cdceematcrc;
 static uint_fast32_t cdceemnpackets;
 
 // see SIZEOF_ETHARP_PACKET
-static uint8_t cdceemrxbuff [1514];
+static uint8_t cdceemrxbuff [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
 
 static void cdceemout_initialize(void)
 {
@@ -803,7 +805,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 
 				default:
 					// Другие интерфейсы - ничего не отправляем.
-					//TP();
+					TP();
 					break;
 				}
 			}
@@ -826,6 +828,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Init(USBD_HandleTypeDef *pdev, uint_fast8_
     /* CDC EEM Prepare Out endpoint to receive 1st packet */
     USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(USBD_EP_CDCEEM_OUT), cdceem1buffout,  USBD_CDCEEM_BUFSIZE);
 
+    PRINTF("USBD_CDCEEM_Init\n");
 	cdceemoutscore = 0;
 	cdceemoutstate = CDCEEMOUT_COMMAND;
 	eemusele = 1;
@@ -1667,8 +1670,8 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	//PRINTF("cdceem_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    //static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
-    static uint8_t data [8192];
+    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
+    //static uint8_t data [8192];
     int size = 0;
 
     for (i = 0; i < 200; i++)
