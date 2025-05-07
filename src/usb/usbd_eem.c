@@ -400,7 +400,6 @@ enum
 static uint_fast8_t cdceemoutstate = CDCEEMOUT_COMMAND;
 static uint_fast32_t cdceemoutscore = 0;
 static uint_fast32_t cdceemoutacc;
-static uint_fast32_t cdceemlength;
 static uint_fast32_t cdceematcrc;
 static uint_fast32_t cdceemnpackets;
 
@@ -492,7 +491,7 @@ static void cdceemout_buffer_save(
 	)
 {
 	uint_fast16_t pos;
-	//PRINTF("cdceemout_buffer_save: EP len=%u, (st=%d)\n", length, cdceemoutstate);
+	//PRINTF("cdceemout_buffer_save: len=%u, (st=%d)\n", length, cdceemoutstate);
 	//printhex(0, data, length);
 	for (pos = 0; pos < length; )
 	{
@@ -508,8 +507,7 @@ static void cdceemout_buffer_save(
 				if (wraw == 0 && length == 2)
 				{
 					eemusele = 0;	// Windows computer host
-					PRINTF("CDC EEM: Switched to Windows10 host mode\n");
-					continue;
+					//PRINTF("CDC EEM: Switched to Windows10 host mode\n");
 				}
 				const uint_fast8_t w = condrev16(wraw);
 				cdceemoutscore = 0;
@@ -518,13 +516,18 @@ static void cdceemout_buffer_save(
 				if (bmType == 0)
 				{
 					const uint_fast8_t bmCRC = (w >> 14) & 0x0001;	// 0: Ethernet Frame CRC is set to 0xdeadbeef
-					cdceemlength = (w >> 0) & 0x3FFF;					// размер включая 4 байта СКС
+					uint_fast16_t cdceemlength = (w >> 0) & 0x3FFF;					// размер включая 4 байта СКС
 					if (cdceemlength > 0)
 					{
 						if (cdceemlength >= 4)
 						{
 							cdceematcrc = cdceemlength - 4;
 							cdceemoutstate = CDCEEMOUT_DATA;
+							//PRINTF("CDC EEM: Switch to data mode, expected position of CRC 0x%03X\n", (unsigned) cdceematcrc);
+						}
+						else
+						{
+							TP();
 						}
 					}
 					//PRINTF(PSTR("Data: bmCRC=%02X, cdceemlength=%u, pyload=0x%04X\n"), bmCRC, cdceemlength, cdceematcrc);
@@ -567,6 +570,7 @@ static void cdceemout_buffer_save(
 				{
 					cdceemoutscore = 0;
 					cdceemoutstate = CDCEEMOUT_CRC;
+					//PRINTF("CDC EEM: Switch to CRC mode\n");
 				}
 			}
 			break;
@@ -579,6 +583,7 @@ static void cdceemout_buffer_save(
 				cdceemoutstate = CDCEEMOUT_COMMAND;
 
 				++ cdceemnpackets;
+				//PRINTF("CDC EEM: Switch to command mode\n");
 				//PRINTF(PSTR("CDCEEMOUT packets=%lu\n"), (unsigned long) cdceemnpackets);
 
 				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
