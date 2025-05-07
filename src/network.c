@@ -60,7 +60,8 @@ static void init_dhserv(void)
 	{
 		{ {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 },
 		{ {0}, {192, 168, 7, 3}, {255, 255, 255, 0}, 24 * 60 * 60 },
-		{ {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 }
+		{ {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 },
+		{ {0}, {192, 168, 7, 5}, {255, 255, 255, 0}, 24 * 60 * 60 },
 	};
 
 	static dhcp_config_t dhcp_config =
@@ -76,7 +77,7 @@ static void init_dhserv(void)
 	{
 		memcpy(dhcpentries [i].addr, myIP, 4);
 		memcpy(dhcpentries [i].subnet, myNETMASK, 4);
-		dhcpentries [i].addr [3] += i + 10;
+		dhcpentries [i].addr [3] += i + 5;
 	}
 	memcpy(dhcp_config.addr, myIP, 4);
 	memcpy(dhcp_config.dns, myIP, 4);
