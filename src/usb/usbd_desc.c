@@ -3140,8 +3140,8 @@ static unsigned CDC_UnionFunctionalDesc_a(uint_fast8_t fill, uint8_t * buff, uns
 // USBLyzer: Interface Descriptor 4/0 CDC Data, 2 Endpoints
 static unsigned CDCACM_InterfaceDescDataIf_a(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
-	uint_fast8_t bAlternateSetting, uint_fast8_t bNumEndpoints, 
-	uint_fast8_t offset
+	uint_fast8_t bInterfaceNumber,
+	uint_fast8_t bNumEndpoints
 	)
 {
 	const uint_fast8_t length = 9;
@@ -3153,8 +3153,8 @@ static unsigned CDCACM_InterfaceDescDataIf_a(
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
-		* buff ++ = USBD_CDCACM_IFC(INTERFACE_CDC_DATA, offset);   /* bInterfaceNumber: Number of Interface */
-		* buff ++ = bAlternateSetting;		/* bAlternateSetting: Alternate setting  - zero-based index  */
+		* buff ++ = bInterfaceNumber;   /* bInterfaceNumber: Number of Interface */
+		* buff ++ = 0x00;		/* bAlternateSetting: Alternate setting  - zero-based index  */
 		* buff ++ = bNumEndpoints;   /* bNumEndpoints: Two endpoints used: data in and data out */
 		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
 		* buff ++ = 0x00;   /* bInterfaceSubClass: */
@@ -3278,7 +3278,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_Control_EP(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 #endif /* ! WITHUSBCDCACM_NOINT */
 
-	n += CDCACM_InterfaceDescDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA Data class interface descriptor */
+	n += CDCACM_InterfaceDescDataIf_a(fill, p + n, maxsize - n, USBD_CDCACM_IFC(INTERFACE_CDC_DATA, offset), 2);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	n += CDCACM_Data_EP_OUT(fill, p + n, maxsize - n, opts, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
 	n += CDCACM_Data_EP_IN(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
 
@@ -3605,7 +3605,6 @@ static unsigned CDCECM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 static unsigned CDCECM_InterfaceDescDataIf(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bInterfaceNumber, 
-	uint_fast8_t bAlternateSetting, 
 	uint_fast8_t bNumEndpoints
 	)
 {
@@ -3619,7 +3618,7 @@ static unsigned CDCECM_InterfaceDescDataIf(
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;    // INTERFACE descriptor type (bDescriptorType) 0x04
 		* buff ++ = bInterfaceNumber; // Index of this interface. (bInterfaceNumber) ?????????? (3<) (1<<) (1<M)
-		* buff ++ = bAlternateSetting;				// 0 Index of this alternate setting. (bAlternateSetting) - zero-based index 
+		* buff ++ = 0x00;				// 0 Index of this alternate setting. (bAlternateSetting) - zero-based index
 		* buff ++ = bNumEndpoints;							// 2 endpoints.   (bNumEndpoints)
 		* buff ++ = CDC_DATA_INTERFACE_CLASS;		// 10 CDC Data (bInterfaceClass)
 		* buff ++ = 0x00;							// bInterfaceSubclass)
@@ -3633,7 +3632,6 @@ static unsigned CDCECM_InterfaceDescDataIf(
 /* CDC Ethernet Control Model */
 static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, const desc_options_t * opts)
 {
-	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 
 	n += CDCECM_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_CDCECM_CONTROL, INTERFACE_CDCECM_count);	/* CDC: Interface Association Descriptor Abstract Control Model */
@@ -3643,9 +3641,7 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	n += CDCECM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCECM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCECM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
-	//n += CDCECM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 0);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
-
-	n += CDCECM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, ialt ++, 2);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
+	n += CDCECM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, 2);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
 	n += CDCECM_fill_37(fill, p + n, maxsize - n, opts, USB_ENDPOINT_OUT(USBD_EP_CDCECM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
 	n += CDCECM_fill_38(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCECM_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 
@@ -3793,7 +3789,10 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 
 /* Data class interface descriptor*/
 // USBLyzer: Interface Descriptor 1/0 CDC Data, 2 Endpoints
-static unsigned RNDIS_InterfaceDescDataIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+static unsigned RNDIS_InterfaceDescDataIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bInterfaceNumber,
+	uint_fast8_t bNumEndpoints
+	)
 {
 	const uint_fast8_t length = 9;
 	ASSERT(maxsize >= length);
@@ -3804,9 +3803,9 @@ static unsigned RNDIS_InterfaceDescDataIf(uint_fast8_t fill, uint8_t * buff, uns
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: */
-		* buff ++ = INTERFACE_RNDIS_DATA;			 /* bInterfaceNumber: Number of Interface */
+		* buff ++ = bInterfaceNumber;			 /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index  */
-		* buff ++ = 0x02;   /* bNumEndpoints: Two endpoints used: data in and data out */
+		* buff ++ = bNumEndpoints;   /* bNumEndpoints: Two endpoints used: data in and data out */
 		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
 		* buff ++ = 0x00;   /* bInterfaceSubClass: */
 		* buff ++ = 0x00;   /* bInterfaceProtocol: */
@@ -3884,7 +3883,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	// Endpoint descriptors for Communication Class Interface     https://msdn.microsoft.com/en-US/library/ee482509(v=winembedded.60).aspx
 	n += RNDIS_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_RNDIS_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
 	//  Data Class INTERFACE descriptor           https://msdn.microsoft.com/en-US/library/ee481260(v=winembedded.60).aspx
-	n += RNDIS_InterfaceDescDataIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_DATA Data class interface descriptor */
+	n += RNDIS_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_RNDIS_DATA, 2);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	// IN Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee484483(v=winembedded.60).aspx
 	n += RNDIS_fill_38(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_RNDIS_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	// OUT Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee482464(v=winembedded.60).aspx
