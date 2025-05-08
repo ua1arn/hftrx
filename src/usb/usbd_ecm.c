@@ -75,7 +75,7 @@ static int OutboundTransferNeedsRenewal;
 //static int ecm_tx_remaining;
 //static int ecm_tx_busy;
 //static int copy_length;
-static int ecmsendnotifyrequest;
+static volatile int ecmsendnotifyrequest;
 
 void usb_ecm_recv_renew(void)
 {
@@ -201,6 +201,9 @@ static USBD_StatusTypeDef USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	case USBD_EP_CDCECM_INT:
 		PRINTF("Notify sent\n");
 		break;
+	default:
+		TP();
+		break;
 	}
   return USBD_OK;
 }
@@ -211,7 +214,7 @@ static USBD_StatusTypeDef USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 
   if (USBD_EP_CDCECM_OUT != epnum)
     return USBD_OK;
-
+  TP();
   /* Get the received data length */
   RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
 
@@ -333,7 +336,7 @@ USBD_ClassTypeDef USBD_CLASS_CDC_ECM =
 	USBD_ECM_EP0_RxReady,
 	USBD_ECM_DataIn,
 	USBD_ECM_DataOut,
-	USBD_ECM_SOF,	//USBD_XXX_SOF,	// SOF
+	NULL, //USBD_ECM_SOF,	//USBD_XXX_SOF,	// SOF
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
