@@ -130,10 +130,32 @@ static USBD_StatusTypeDef USBD_ECM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
 
 static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
+	USBD_StatusTypeDef ret = USBD_OK;
 	PRINTF("USBD_ECM_Setup: ");
 	// SBD_ECM_Setup: 00000000: 01 0B 00 00 01 00 00 00
+//	typedef  struct  usb_setup_req
+//	{
+//	  uint8_t   bmRequest; 0x01 USB_H2D USB_REQ_TYPE_STANDARD USB_REQ_RECIPIENT_INTERFACE
+//	  uint8_t   bRequest; 0x0b	USB_REQ_SET_INTERFACE
+//	  uint16_t  wValue; 0x0000
+//	  uint16_t  wIndex; 0x0001
+//	  uint16_t  wLength; 0x0000
+//	} USBD_SetupReqTypedef;
 	printhex(0, req, sizeof * req);
 	PRINTF("\n");
+
+	switch (req->bRequest)
+	{
+	case USB_REQ_SET_INTERFACE:
+		if (pdev->dev_state == USBD_STATE_CONFIGURED) {
+			//hhid->AltSetting = LO_BYTE(req->wValue);
+			USBD_CtlSendStatus(pdev);
+		} else {
+			USBD_CtlError(pdev, req);
+			ret = USBD_FAIL;
+		}
+		break;
+	}
 
   if (0x43 /* SET_ETHERNET_PACKET_FILTER */ == req->bRequest)
   {
@@ -141,7 +163,7 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
     USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
   }
 
-  return USBD_OK;
+  return ret;
 }
 
 static void ecm_incoming_attempt(void)
