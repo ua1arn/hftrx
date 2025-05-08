@@ -44,18 +44,7 @@ typedef enum
 extern USBD_HandleTypeDef USBD_Device;
 #define ECM_MAX_SEGMENT_SIZE           1514
 
-extern void ECM_ReceivePacket(unsigned index, uint8_t *data, uint16_t length);
-
 /* local function prototyping */
-
-//static uint8_t USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx);
-//static uint8_t USBD_ECM_DeInit (USBD_HandleTypeDef *pdev, uint8_t cfgidx);
-//static uint8_t USBD_ECM_Setup (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-//static uint8_t USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum);
-//static uint8_t USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum);
-//static uint8_t USBD_ECM_EP0_RxReady (USBD_HandleTypeDef *pdev);
-//static const uint8_t *USBD_ECM_GetFSCfgDesc (uint16_t *length);
-//static uint8_t USBD_ECM_SOF (USBD_HandleTypeDef *pdev);
 
 static USBD_StatusTypeDef USBD_ECM_ReceivePacket (USBD_HandleTypeDef *pdev, unsigned index);
 
@@ -66,26 +55,38 @@ __ALIGN_BEGIN static uint8_t ecm_tx_buffer[ECM_MAX_SEGMENT_SIZE] __ALIGN_END;
 __ALIGN_BEGIN static USBD_SetupReqTypedef notify __ALIGN_END =
 {
   .bmRequest = 0x21,
-  .bRequest = 0 /* NETWORK_CONNECTION */,
+  .bRequest = NETWORK_CONNECTION /* NETWORK_CONNECTION */,
   .wValue = 1 /* Connected */,
   .wLength = 0,
 };
 
+//__ALIGN_BEGIN static USBD_SetupReqTypedef notifyRespAvaliable __ALIGN_END =
+//{
+//  .bmRequest = 0x21,
+//  .bRequest = RESPONSE_AVAILABLE /* RESPONSE_AVAILABLE */,
+//  .wValue = 0 /* Connected */,
+//  .wLength = 0,
+//};
+
 static int ecm_rx_index;
 static int can_xmit;
 static int OutboundTransferNeedsRenewal;
-static uint8_t *ecm_tx_ptr;
-static int ecm_tx_remaining;
-static int ecm_tx_busy;
-static int copy_length;
+//static uint8_t *ecm_tx_ptr;
+//static int ecm_tx_remaining;
+//static int ecm_tx_busy;
+//static int copy_length;
+static int ecmsendnotifyrequest;
 
 void usb_ecm_recv_renew(void)
 {
-  USBD_StatusTypeDef outcome;
+	if (registered_pdev)
+	{
+		  USBD_StatusTypeDef outcome;
 
-  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer + ecm_rx_index, USBD_CDCECM_OUT_BUFSIZE);
+		  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer + ecm_rx_index, USBD_CDCECM_OUT_BUFSIZE);
 
-  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
+		  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
+	}
 }
 
 static USBD_StatusTypeDef USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
@@ -104,8 +105,8 @@ static USBD_StatusTypeDef USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
   usb_ecm_recv_renew();
   can_xmit = 1 /* true */;
   OutboundTransferNeedsRenewal = 0 /* false */;
-  ecm_tx_busy = 0;
-  ecm_tx_remaining = 0;
+//  ecm_tx_busy = 0;
+//  ecm_tx_remaining = 0;
 
   return USBD_OK;
 }
@@ -132,15 +133,6 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 {
 	USBD_StatusTypeDef ret = USBD_OK;
 	PRINTF("USBD_ECM_Setup: ");
-	// SBD_ECM_Setup: 00000000: 01 0B 00 00 01 00 00 00
-//	typedef  struct  usb_setup_req
-//	{
-//	  uint8_t   bmRequest; 0x01 USB_H2D USB_REQ_TYPE_STANDARD USB_REQ_RECIPIENT_INTERFACE
-//	  uint8_t   bRequest; 0x0b	USB_REQ_SET_INTERFACE
-//	  uint16_t  wValue; 0x0000
-//	  uint16_t  wIndex; 0x0001
-//	  uint16_t  wLength; 0x0000
-//	} USBD_SetupReqTypedef;
 	printhex(0, req, sizeof * req);
 
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
@@ -151,6 +143,7 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 	switch (req->bRequest)
 	{
 	case USB_REQ_SET_INTERFACE:
+		// SBD_ECM_Setup: 00000000: 01 0B 00 00 01 00 00 00
 		// For INTERFACE_CDCECM_DATA
 		if (pdev->dev_state == USBD_STATE_CONFIGURED) {
 			//hhid->AltSetting = LO_BYTE(req->wValue);
@@ -162,9 +155,12 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		break;
 
 	case 0x43 /* SET_ETHERNET_PACKET_FILTER */:
+		//	USBD_ECM_Setup: 00000000: 21 43 0E 00 00 00 00 00
 		// For INTERFACE_CDCECM_CONTROL
-	    notify.wIndex = interfacev;
-	    USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
+		TP();
+		//USBD_CtlSendStatus(pdev);
+	    notify.wIndex = INTERFACE_CDCECM_CONTROL;
+	    ecmsendnotifyrequest = 1;
 	    break;
 
 	default:
@@ -175,34 +171,32 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
   return ret;
 }
 
-static void ecm_incoming_attempt(void)
-{
-  int chunk_size;
-
-  if (!ecm_tx_remaining || ecm_tx_busy)
-    return;
-
-  chunk_size = ecm_tx_remaining;
-  if (chunk_size > USBD_CDCECM_IN_BUFSIZE)
-    chunk_size = USBD_CDCECM_IN_BUFSIZE;
-
-  /* ST stack always returns a success code, so reading the return value is pointless */
-  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_IN, ecm_tx_ptr, chunk_size);
-
-  ecm_tx_ptr += chunk_size;
-  ecm_tx_remaining -= chunk_size;
-  ecm_tx_busy = 1;
-}
+//static void ecm_incoming_attempt(void)
+//{
+//  int chunk_size;
+//
+//  if (!ecm_tx_remaining || ecm_tx_busy)
+//    return;
+//
+//  chunk_size = ecm_tx_remaining;
+//  if (chunk_size > USBD_CDCECM_IN_BUFSIZE)
+//    chunk_size = USBD_CDCECM_IN_BUFSIZE;
+//
+//  /* ST stack always returns a success code, so reading the return value is pointless */
+//  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_IN, ecm_tx_ptr, chunk_size);
+//
+//  ecm_tx_ptr += chunk_size;
+//  ecm_tx_remaining -= chunk_size;
+//  ecm_tx_busy = 1;
+//}
 
 static USBD_StatusTypeDef USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	switch ((epnum | 0x80))
 	{
 	case USBD_EP_CDCECM_IN:
-		ecm_tx_busy = 0;
-		if (0 == ecm_tx_remaining)
-			can_xmit = 1 /* true */;
-		ecm_incoming_attempt();
+		PRINTF("Data sent\n");
+		can_xmit = 1;
 		break;
 	case USBD_EP_CDCECM_INT:
 		PRINTF("Notify sent\n");
@@ -246,22 +240,28 @@ static USBD_StatusTypeDef USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 
 static USBD_StatusTypeDef USBD_ECM_SOF (USBD_HandleTypeDef *pdev)
 {
-  /* mop up for any failed USBD_LL_PrepareReceive() call */
-  if (OutboundTransferNeedsRenewal)
-    usb_ecm_recv_renew();
-
-  if (ecm_tx_busy)
-  {
-    /* ugly hack for ST stack sometimes not providing the DataOut callback */
-    if (++ecm_tx_busy > 32)
-    {
-      ecm_tx_busy = 0;
-      if (0 == ecm_tx_remaining)
-        can_xmit = 1 /* true */;
-    }
-  }
-
-  ecm_incoming_attempt();
+//	TP();
+//	if (ecmsendnotifyrequest)
+//	{
+//		ecmsendnotifyrequest = 0;
+//	    USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
+//	}
+//  /* mop up for any failed USBD_LL_PrepareReceive() call */
+//  if (OutboundTransferNeedsRenewal)
+//    usb_ecm_recv_renew();
+//
+//  if (ecm_tx_busy)
+//  {
+//    /* ugly hack for ST stack sometimes not providing the DataOut callback */
+//    if (++ecm_tx_busy > 32)
+//    {
+//      ecm_tx_busy = 0;
+//      if (0 == ecm_tx_remaining)
+//        can_xmit = 1 /* true */;
+//    }
+//  }
+//
+//  ecm_incoming_attempt();
 
   return USBD_OK;
 }
@@ -296,6 +296,7 @@ static int nic_can_send(void)
 
 static void nic_send(const uint8_t *data, int size)
 {
+	  TP();
 
 	if (!registered_pdev || !can_xmit)
 		return;
@@ -306,9 +307,12 @@ static void nic_send(const uint8_t *data, int size)
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	can_xmit = 0 /* false */;
-	ecm_tx_ptr = ecm_tx_buffer;
-	ecm_tx_remaining = packet_size;
-	copy_length = packet_size;
+//	ecm_tx_ptr = ecm_tx_buffer;
+//	ecm_tx_remaining = packet_size;
+//	copy_length = packet_size;
+
+	  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_IN, ecm_tx_buffer, packet_size);
+	  TP();
 	LowerIrql(oldIrql);
 
 }
@@ -570,6 +574,18 @@ static void on_packet(const uint8_t *data, int size)
 // user-mode function
 static void netif_polling(void * ctx)
 {
+	{
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		if (ecmsendnotifyrequest)
+		{
+			ecmsendnotifyrequest = 0;
+			if (registered_pdev)
+				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
+		}
+		LowerIrql(oldIrql);
+
+	}
 	(void) ctx;
 	nic_buffer_t * p;
 	while (nic_buffer_ready(& p) != 0)
