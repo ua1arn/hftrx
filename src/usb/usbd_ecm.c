@@ -142,11 +142,16 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 //	  uint16_t  wLength; 0x0000
 //	} USBD_SetupReqTypedef;
 	printhex(0, req, sizeof * req);
-	PRINTF("\n");
+
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+
+	if (interfacev != INTERFACE_CDCECM_CONTROL && interfacev != INTERFACE_CDCECM_DATA)
+		return USBD_OK;
 
 	switch (req->bRequest)
 	{
 	case USB_REQ_SET_INTERFACE:
+		// For INTERFACE_CDCECM_DATA
 		if (pdev->dev_state == USBD_STATE_CONFIGURED) {
 			//hhid->AltSetting = LO_BYTE(req->wValue);
 			USBD_CtlSendStatus(pdev);
@@ -155,13 +160,17 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 			ret = USBD_FAIL;
 		}
 		break;
-	}
 
-  if (0x43 /* SET_ETHERNET_PACKET_FILTER */ == req->bRequest)
-  {
-    notify.wIndex = req->wIndex;
-    USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
-  }
+	case 0x43 /* SET_ETHERNET_PACKET_FILTER */:
+		// For INTERFACE_CDCECM_CONTROL
+	    notify.wIndex = interfacev;
+	    USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
+	    break;
+
+	default:
+		TP();
+		break;
+	}
 
   return ret;
 }
@@ -187,14 +196,18 @@ static void ecm_incoming_attempt(void)
 
 static USBD_StatusTypeDef USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-  if (USBD_EP_CDCECM_IN == (epnum | 0x80))
-  {
-    ecm_tx_busy = 0;
-    if (0 == ecm_tx_remaining)
-      can_xmit = 1 /* true */;
-    ecm_incoming_attempt();
-  }
-
+	switch ((epnum | 0x80))
+	{
+	case USBD_EP_CDCECM_IN:
+		ecm_tx_busy = 0;
+		if (0 == ecm_tx_remaining)
+			can_xmit = 1 /* true */;
+		ecm_incoming_attempt();
+		break;
+	case USBD_EP_CDCECM_INT:
+		PRINTF("Notify sent\n");
+		break;
+	}
   return USBD_OK;
 }
 
@@ -216,7 +229,10 @@ static USBD_StatusTypeDef USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
   if (RxLength < USBD_CDCECM_OUT_BUFSIZE)
   {
 	  if (nic_rxproc)
+	  {
+		  TP();
 		  nic_rxproc(ecm_rx_buffer, ecm_rx_index);
+	  }
     ecm_rx_index = 0;
   }
   else
@@ -361,7 +377,7 @@ struct netif  * getNetifData(void)
 // Transceiving Ethernet packets
 static err_t cdcecm_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	//PRINTF("cdceem_linkoutput_fn\n");
+	PRINTF("cdcecm_linkoutput_fn\n");
     int i;
     struct pbuf *q;
     //static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
@@ -379,13 +395,13 @@ static err_t cdcecm_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		return ERR_MEM;
     }
 
-	//PRINTF("cdceem_linkoutput_fn: 2\n");
-	//printhex(0, p->payload, p->len);
+	PRINTF("cdcecm_linkoutput_fn: 2\n");
+	printhex(0, p->payload, p->len);
     VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
     size = pbuf_copy_partial(p, data, sizeof data, 0);
 //    if (size > sizeof dataX)
 //    {
-//    	PRINTF("************************ cdceem_linkoutput_fn: size = %d\n", size);
+//    	PRINTF("************************ cdcecm_linkoutput_fn: size = %d\n", size);
 //    	ASSERT(0);
 //    }
 

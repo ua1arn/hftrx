@@ -957,7 +957,7 @@ void cpptest(void);
 
 #define  ARRAY_SIZE(a)  (sizeof (a) / sizeof (a) [0])
 
-
+// Bit zero of the first octet of any Ethernet address associated with the device must always be zero. (See section 6.4.2.3.)
 #define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
 
 extern uint8_t myIP [4];
