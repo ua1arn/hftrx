@@ -22,7 +22,6 @@
 #include "usbch9.h"
 
 #define CDCECM_MTU 1500
-extern  USBD_HandleTypeDef hUsbDeviceHS;
 
 
 typedef void (*cdcecm_rxproc_t)(const uint8_t *data, int size);
@@ -41,7 +40,6 @@ typedef enum
   */
 
 /* USB handle declared in main.c */
-extern USBD_HandleTypeDef USBD_Device;
 #define ECM_MAX_SEGMENT_SIZE           1514
 
 /* local function prototyping */

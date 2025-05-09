@@ -168,6 +168,7 @@ uint_fast16_t usbd_getuacoutmaxpacket(void);
 void usbd_pipes_initialize(struct _USBD_HandleTypeDef * hpcd);
 //void usb_device_function0(struct _USBD_HandleTypeDef * hpcd);
 
+extern  USBD_HandleTypeDef hUsbDeviceHS;
 
 #define USBALIGN_BEGIN
 #define USBALIGN_END __attribute__ ((aligned (64))) /* nothing */
