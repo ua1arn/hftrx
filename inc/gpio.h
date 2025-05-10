@@ -245,28 +245,34 @@ typedef struct encoder_tag encoder_t;
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 	} while (0)
 
-	// set pin mode (no thread-safe)
+	// set pin mode
 	#define gpio_output2(pin, state, pinmode) do { \
+		IRQL_t irql; \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
+		gpiobank_lock(bank, & irql); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 		GPIO_BANK_SET_OEN(bank, mask, mask); \
 		GPIO_BANK_SET_DIRM(bank, mask, mask); \
+		gpiobank_unlock(bank, irql); \
 	} while (0)
 
 	#define gpio_input2(pin, pinmode) do { \
+		IRQL_t irql; \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
+		gpiobank_lock(bank, & irql); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OEN(bank, mask, 0); \
 		GPIO_BANK_SET_DIRM(bank, mask, 0); \
+		gpiobank_unlock(bank, irql); \
 	} while (0)
 
 	void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
@@ -278,12 +284,14 @@ typedef struct encoder_tag encoder_t;
 		if (!(tri_enable)) { SCLR->MIO_PIN [(pin)] &= ~ 0x01; } else { SCLR->MIO_PIN [(pin)] |= 0x01; } \
 	} while (0)
 
-	// set pin mode (no thread-safe)
+	// set pin mode
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define gpio_opendrain2(pin, drive, pinmode) do { \
+		IRQL_t irql; \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
+		gpiobank_lock(bank, & irql); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
@@ -291,6 +299,7 @@ typedef struct encoder_tag encoder_t;
 		} \
 		GPIO_BANK_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OEN(bank, mask, mask); \
+		gpiobank_unlock(bank, irql); \
 	} while (0)
 
 	// Enable output drive for pin (thread-safe, for different pins)
@@ -300,22 +309,28 @@ typedef struct encoder_tag encoder_t;
 		} \
 	} while (0)
 
-	// set pin mode (no thread-safe)
+	// set pin mode
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define emio_opendrain2(pin, drive) do { \
+		IRQL_t irql; \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
+		gpiobank_lock(bank, & irql); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		GPIO_BANK_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
+		gpiobank_unlock(bank, irql); \
 	} while (0)
 
-	// Enable output drive for pin (no thread-safe)
+	// Enable output drive for pin
 	#define emio_drive(pin, drive) do { \
+		IRQL_t irql; \
+		gpiobank_lock(bank, & irql); \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
+		gpiobank_unlock(bank, irql); \
 	} while (0)
 
 	#define gpio_peripherial(pin, pinmode) do { \
