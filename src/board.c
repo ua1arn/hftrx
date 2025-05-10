@@ -6545,7 +6545,7 @@ static void zynq_slcr_unlock(void) {
 }
 
 static void zynq_slcr_lock(void) {
-	SCLR->SLCR_LOCK = 0x767b;
+	//SCLR->SLCR_LOCK = 0x767b;
 }
 
 #if 0

@@ -9147,24 +9147,30 @@ static void xc7z_arm_pll_initialize(void)
 	SCLR->ARM_PLL_CFG = (SCLR->ARM_PLL_CFG & ~ (0x003FFFF0U)) |
 			0x000FA220U |
 			0;
+	(void) SCLR->ARM_PLL_CFG;
 	//	EMIT_MASKWRITE(0XF8000100, 0x0007F000U ,0x00028000U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL = (SCLR->ARM_PLL_CTRL & ~ (0x0007F000U)) |
 			(arm_pll_mul << 12) |	// PLL_FDIV (multiplier)
 			0;
+	(void) SCLR->ARM_PLL_CTRL;
 
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000010U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL |= 0x0010uL;	// PLL_BYPASS_FORCE
+	(void) SCLR->ARM_PLL_CTRL;
 
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000001U ,0x00000001U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL |= 0x0001uL;	// PLL_RESET
+	(void) SCLR->ARM_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000001U ,0x00000000U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL &= ~ 0x0001uL;	// PLL_RESET
+	(void) SCLR->ARM_PLL_CTRL;
 
 	//	EMIT_MASKPOLL(0XF800010C, 0x00000001U),					// PLL_STATUS
 	while ((SCLR->PLL_STATUS & (UINT32_C(1) << 0)) == 0)	// ARM_PLL_LOCK
 		;
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000000U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL &= ~ 0x0010uL;	// PLL_BYPASS_FORCE
+	(void) SCLR->ARM_PLL_CTRL;
 
 	//	////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
 	SCLR->ARM_CLK_CTRL = (SCLR->ARM_CLK_CTRL & ~ (0x1F003F30U)) |
@@ -9176,6 +9182,7 @@ static void xc7z_arm_pll_initialize(void)
 			(arm_pll_div << 8) |	// DIVISOR - Frequency divisor for the CPU clock source.
 			(0x00uL << 4) |	// SRCSEL: 0x: ARM PLL
 			0;
+	(void) SCLR->ARM_CLK_CTRL;
 }
 
 static void xc7z_ddr_pll_initialize(void)
@@ -9185,22 +9192,27 @@ static void xc7z_ddr_pll_initialize(void)
 	SCLR->DDR_PLL_CFG = (SCLR->DDR_PLL_CFG & ~ (0x003FFFF0U)) |
 			0x0012C220U |
 			0;
+	(void) SCLR->DDR_PLL_CFG;
 	//	EMIT_MASKWRITE(0XF8000104, 0x0007F000U ,0x00020000U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x0007F000U)) |
 			((uint_fast32_t) DDR_PLL_MUL << 12) |
 			0;
+	(void) SCLR->DDR_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000010U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000010U)) |
 			0x00000010U |
 			0;
+	(void) SCLR->DDR_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000104, 0x00000001U ,0x00000001U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000001U)) |
 			0x00000001U |
 			0;
+	(void) SCLR->DDR_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000104, 0x00000001U ,0x00000000U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000001U)) |
 			0x00000000U |
 			0;
+	(void) SCLR->DDR_PLL_CTRL;
 
 	//	EMIT_MASKPOLL(0XF800010C, 0x00000002U),					// PLL_STATUS
 	while ((SCLR->PLL_STATUS & (UINT32_C(1) << 1)) == 0)	// DDR_PLL_LOCK
@@ -9209,6 +9221,7 @@ static void xc7z_ddr_pll_initialize(void)
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000010U)) |
 			0x00000000U |
 			0;
+	(void) SCLR->DDR_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000124, 0xFFF00003U ,0x0C200003U),	// DDR_CLK_CTRL
 	SCLR->DDR_CLK_CTRL = (SCLR->DDR_CLK_CTRL & ~ (0xFFF00003U)) |
 			((uint_fast32_t) DDR_2XCLK_DIVISOR << 26) |	// DDR_2XCLK_DIVISOR
@@ -9216,6 +9229,7 @@ static void xc7z_ddr_pll_initialize(void)
 			(UINT32_C(1) << 1) |	// DDR_2XCLKACT
 			(UINT32_C(1) << 0) | // DDR_3XCLKACT
 			0;
+	(void) SCLR->DDR_PLL_CTRL;
 }
 
 static void xc7z_io_pll_initialize(void)
@@ -9225,22 +9239,27 @@ static void xc7z_io_pll_initialize(void)
 	SCLR->IO_PLL_CFG = (SCLR->IO_PLL_CFG & ~ (0x003FFFF0U)) |
 			0x000FA240uL |
 			0;
+	(void) SCLR->IO_PLL_CFG;
 	//	EMIT_MASKWRITE(0XF8000108, 0x0007F000U ,0x00030000U),	// IO_PLL_CTRL
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x0007F000U)) |	// PLL_FDIV
 			((uint_fast32_t) IO_PLL_MUL << 12) |
 			0;
+	(void) SCLR->IO_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000010U),	// IO_PLL_CTRL
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
 			0x00000010U |
 			0;
+	(void) SCLR->IO_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000108, 0x00000001U ,0x00000001U),	// IO_PLL_CTRL
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000001U)) |
 			0x00000001U |
 			0;
+	(void) SCLR->IO_PLL_CTRL;
 	//	EMIT_MASKWRITE(0XF8000108, 0x00000001U ,0x00000000U),	// IO_PLL_CTRL
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000001U)) |
 			0x00000000U |
 			0;
+	(void) SCLR->IO_PLL_CTRL;
 
 	//	EMIT_MASKPOLL(0XF800010C, 0x00000004U),					// PLL_STATUS
 	while ((SCLR->PLL_STATUS & (UINT32_C(1) << 2)) == 0)	// IO_PLL_LOCK
@@ -9249,6 +9268,7 @@ static void xc7z_io_pll_initialize(void)
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
 			0x00000000U |
 			0;
+	(void) SCLR->IO_PLL_CTRL;
 }
 
 static unsigned long xc7z_get_pllsreference_freq(void)
@@ -9683,6 +9703,8 @@ sysinit_pll_initialize(int forced)
 
 		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 	}
+	local_delay_initialize();
+	local_delay_ms(50);
 
 	#endif /* WITHISBOOTLOADER */
 
