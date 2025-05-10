@@ -9649,6 +9649,7 @@ sysinit_pll_initialize(int forced)
 	if (! forced)
 	{
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
 		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
 

@@ -53,7 +53,7 @@ CORE += -mfpu=neon-vfpv3
 # only -Og for app
 # Application
 #OPT = -Og
-OPT = -Ofast -flto
+OPT = -Ofast
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
