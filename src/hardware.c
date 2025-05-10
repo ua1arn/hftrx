@@ -3715,7 +3715,6 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
-	sysinit_debug_initialize();
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	sysinit_debug_initialize();
 	local_delay_initialize();

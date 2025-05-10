@@ -435,40 +435,20 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	const unsigned ix = thisPORT;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-    SCLR->APER_CLK_CTRL |= (1u << (20 + ix));    // APER_CLK_CTRL.UART1_CPU_1XCLKACT
+    SCLR->APER_CLK_CTRL |= (UINT32_C(1) << (20 + ix));    // APER_CLK_CTRL.UART1_CPU_1XCLKACT
     //EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
-	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
+	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ UINT32_C(0x00003F30)) |
 			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
 			(0x00u << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01 << ix) |	// CLKACT1 - UART 1 reference clock active
 			0;
 
-	uint32_t r; // Temporary value variable
-	r = UART1->CR;
-	r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
-	r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	UART1->CR = r;
-
-	UART1->MR = 0;
-	UART1->MR &= ~XUARTPS_MR_CLKSEL; // Clear "Input clock selection" - 0: clock source is uart_ref_clk
-	UART1->MR |= XUARTPS_MR_CHARLEN_8_BIT; 	// Set "8 bits data"
-	UART1->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
-	UART1->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
-	UART1->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
-
-	UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
-
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
-
 	if (debug == 0)
 	{
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
 	}
-
-	r = UART1->CR;
-	r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
-	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	UART1->CR = r;
 
 #elif CPUSTYLE_A64
 
@@ -603,23 +583,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_XC7Z
 
-	  uint32_t r; // Temporary value variable
-	  r = UART1->CR;
-	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
-	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	  UART1->CR = r;
-	  const unsigned long sel_clk = xc7z_get_uart_freq();
-	  const unsigned long bdiv = 8;
-	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
-	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
-	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
-
-	  r = UART1->CR;
-	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
-	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	  UART1->CR = r;
+	hardware_uartx_set_speed(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), baudrate);
 
 #elif CPUSTYLE_ALLWINNER
 

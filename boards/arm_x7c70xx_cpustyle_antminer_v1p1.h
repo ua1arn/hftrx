@@ -1169,7 +1169,8 @@
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0); \
-		gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode_output); \
+		gpio_output2(ZYNQBOARD_LED_RED, 0, pinmode_output); \
+		gpio_output2(ZYNQBOARD_LED_GREEN, 0, pinmode_output); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		if (state) \

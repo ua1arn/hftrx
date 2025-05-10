@@ -268,6 +268,53 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 	//arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR, xcz_fifo_phones_inthandler);
 }
 
+#else /* WITHRTS96 */
+
+// Stub
+void xcz_ah_preinit(void)
+{
+}
+
+// Stub
+void xcz_if_rx_init(void)
+{
+}
+
+// Stub
+void xcz_if_tx_init(void)
+{
+}
+
+// Stub
+void xcz_if_rx_enable(uint_fast8_t state)
+{
+}
+
+// Stub
+void xcz_if_tx_enable(uint_fast8_t state)
+{
+}
+
+// Stub
+void xcz_audio_rx_init(void)
+{
+}
+
+// Stub
+void xcz_audio_tx_init(void)
+{
+}
+
+// Stub
+void xcz_audio_rx_enable(uint_fast8_t state)
+{
+}
+
+// Stub
+void xcz_audio_tx_enable(uint_fast8_t state)
+{
+}
+
 #endif /* WITHRTS96 */
 
 #elif ! LINUX_SUBSYSTEM // заглушки для бутлоадера

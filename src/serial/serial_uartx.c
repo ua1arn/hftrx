@@ -527,6 +527,12 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32
 	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	uart->CR = r;
 
+	r = (UINT32_C(1) << 3);	// TEMPTY Enable Transmit Holding Register Empty Interrupt
+	uart->IDR = r;
+	uart->RXWM = 16; 							/* set RX FIFO Trigger Level */
+	r = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
+	uart->IDR = r;
+
 #elif CPUSTYLE_ALLWINNER
 
 	uint32_t divisor = busfreq / ((defbaudrate) * 16);

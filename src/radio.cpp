@@ -20094,7 +20094,7 @@ static void keyspoolprocess(void * ctx)
 			}
 			break;
 #endif /* __riscv */
-#if WITHUSBHOST_HIGHSPEEDULPI
+#if WITHUSBHOST_HIGHSPEEDULPI && 0
 		case 'u':
 			PRINTF("hkey:\n");
 			ulpi_chip_debug();

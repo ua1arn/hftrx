@@ -9626,6 +9626,8 @@ sysinit_pll_initialize(int forced)
 #elif CPUSTYLE_XC7Z
 	#if WITHISBOOTLOADER
 
+	if (! forced)
+	{
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
 		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
@@ -9680,6 +9682,7 @@ sysinit_pll_initialize(int forced)
 				0;
 
 		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+	}
 
 	#endif /* WITHISBOOTLOADER */
 
