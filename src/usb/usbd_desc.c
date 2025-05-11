@@ -3892,6 +3892,7 @@ static unsigned CDCNCM_InterfaceDescDataIf(
 /* CDC Ethernet Control Model */
 static unsigned fill_CDCNCM_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, const desc_options_t * opts)
 {
+	uint_fast8_t bAlt = 0;
 	unsigned n = 0;
 
 	n += CDCNCM_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_CDCNCM_CONTROL, INTERFACE_CDCNCM_count);	/* CDC: Interface Association Descriptor Abstract Control Model */
@@ -3902,9 +3903,9 @@ static unsigned fill_CDCNCM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	n += CDCNCM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* CDC Network Control Model Functional Descriptor */
 	n += CDCNCM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCNCM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
-	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, 0x00, INTERFACE_CDCNCM_DATA, 0);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
+	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCNCM_DATA, bAlt ++, 0);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
 
-	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, 0x01, INTERFACE_CDCNCM_DATA, 2);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
+	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCNCM_DATA, bAlt ++, 2);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
 	n += CDCNCM_fill_37(fill, p + n, maxsize - n, opts, USB_ENDPOINT_OUT(USBD_EP_CDCNCM_OUT));	/* Endpoint Descriptor USBD_EP_CDCNCM_OUT Out, Bulk, 64 bytes */
 	n += CDCNCM_fill_38(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCNCM_IN));	/* Endpoint Descriptor USBD_EP_CDCNCM_IN In, Bulk, 64 bytes */
 
