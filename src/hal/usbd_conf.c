@@ -1262,10 +1262,37 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
-		//PRINTF(PSTR("usbd_fifo_initialize4 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize4 ECM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 
 #endif /* WITHUSBCDCECM */
+
+#if WITHUSBCDCNCM
+	{
+		/* полнофункциональное устройство */
+		const uint_fast8_t pipe = (USBD_EP_CDCNCM_IN + 0) & 0x7F;
+		const uint_fast8_t pipeint = (USBD_EP_CDCNCM_INT + 0) & 0x7F;
+		numoutendpoints += 1;
+		const int
+			nrndisindatapackets = 3,
+			nrndisintdatapackets = 3,
+			nrndisoutdatapackets = 3;
+
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, nrndisoutdatapackets * size2buff4(USBD_CDCNCM_OUT_BUFSIZE));
+
+
+		const uint_fast16_t size4 = nrndisindatapackets * (size2buff4(USBD_CDCNCM_IN_BUFSIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_CDCNCM_INT_SIZE) + add3tx);
+		ASSERT(last4 >= size4int);
+		last4 -= size4int;
+		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
+		//PRINTF(PSTR("usbd_fifo_initialize4 NCM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+
+#endif /* WITHUSBCDCNCM */
 
 #if WITHUSBHID
 	{

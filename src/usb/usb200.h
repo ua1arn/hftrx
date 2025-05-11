@@ -476,6 +476,7 @@
 #define CDC_ETHERNET_NETWORKING_CONTROL_MODEL   0x06
 #define CDC_ATM_NETWORKING_CONTROL_MODEL        0x07
 #define CDC_ETHERNET_EMULATION_MODEL			0x0C
+#define CDC_NETWORK_CONTROL_MODEL				0x0D
 
 // Communication interface class control protocol codes
 // (usbcdc11.pdf, 4.4, Table 17)

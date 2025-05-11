@@ -82,6 +82,11 @@ enum
 	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBCDCNCM
+	USBD_EP_CDCNCM_INT,	// CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDCNCM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
+#endif /* WITHUSBCDCNCM */
+
 #if WITHUSBHID
 	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
 	USBD_EP_HIDKEYBOARD_INT,	// HID INT События манипулятора в компьютер из TRX
@@ -132,6 +137,10 @@ enum
 #if WITHUSBCDCECM
 	USBD_EP_CDCECM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
 #endif /* WITHUSBCDCECM */
+
+#if WITHUSBCDCNCM
+	USBD_EP_CDCNCM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
+#endif /* WITHUSBCDNECM */
 
 #if WITHUSBHID
 #endif /* WITHUSBHID */
@@ -282,6 +291,12 @@ enum interfaces_tag
 	INTERFACE_CDCECM_DATA,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBCDCNCM
+	// функция сетевой платы
+	INTERFACE_CDCNCM_CONTROL,	/* CDC ECM control Interface */
+	INTERFACE_CDCNCM_DATA,	/* CDC ECM/CDC EEM data Interface */
+#endif /* WITHUSBCDCNCM */
+
 #if WITHUSBHID
 	// функция HID
 	INTERFACE_HID_CONTROL,	/* HID control Interface */
@@ -400,6 +415,15 @@ enum interfaces_tag
 			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBCDCECM */
+	#if WITHUSBCDCNCM
+		enum
+		{
+			INTERFACE_CDCNCM_CONTROL,	/* CDC ECM control Interface */
+			INTERFACE_CDCNCM_DATA,		/* CDC ECM/CDC EEM data Interface */
+			//
+			INTERFACE_count				/* Значение для configuration descriptor */
+		};
+	#endif /* WITHUSBCDCNCM */
 	#if WITHUSBHID
 		enum
 		{
@@ -452,6 +476,7 @@ enum interfaces_tag
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
 #define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
+#define INTERFACE_CDCNCM_count 2	/* количество интерфейсов в одном CDC NCM */
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 #define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */

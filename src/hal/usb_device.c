@@ -160,6 +160,9 @@ void MX_USB_DEVICE_Init(void)
 #if WITHUSBCDCECM
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_CDC_ECM);
 #endif /* WITHUSBCDCECM */
+#if WITHUSBCDCNCM
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_CDC_NCM);
+#endif /* WITHUSBCDCNCM */
 #if WITHUSBRNDIS
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_RNDIS);
 #endif /* WITHUSBRNDIS */

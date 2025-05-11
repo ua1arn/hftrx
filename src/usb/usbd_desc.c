@@ -179,7 +179,7 @@ enum
 #endif /* WITHUSBCDCACM */
 	STRING_ID_5,
 	STRING_ID_5a,
-#if WITHUSBCDCECM
+#if WITHUSBCDCECM || WITHUSBCDCNCM
 	STRING_ID_MACADDRESS,	// iMacAddress
 #endif /* WITHUSBCDCECM */
 
@@ -230,10 +230,17 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_manuf, "MicroGenSF", },		// Manufacturer
 	{ STRING_ID_prod, PRODUCTSTR, },	// Product
 
+#if WITHUSBCDCECM
 	{ STRING_ID_5, PRODUCTSTR " CDC EEM", },
 	{ STRING_ID_5a, PRODUCTSTR " CDC ECM", },
+#endif /* WITHUSBCDCECM */
+#if WITHUSBCDCNCM
+	{ STRING_ID_5, PRODUCTSTR " CDC NCM", },
+	{ STRING_ID_5a, PRODUCTSTR " CDC NCM", },
+#endif /* WITHUSBCDCNCM */
+#if WITHUSBRNDIS
 	{ STRING_ID_RNDIS, PRODUCTSTR " Remote NDIS", },
-
+#endif /* WITHUSBRNDIS */
 	{ STRING_ID_DFU, PRODUCTSTR " DFU", },
 #if WITHUSBDMTP
 	{ STRING_ID_MTP, PRODUCTSTR " MTP", },
@@ -326,9 +333,9 @@ static unsigned usbd_get_productId(const desc_options_t * opts)
 	#if WITHUSBHID
 		v |= (1u << 4);
 	#endif /* WITHUSBDMSC */
-	#if (WITHUSBCDCEEM || WITHUSBCDCECM || WITHUSBRNDIS)
+	#if (WITHUSBCDCEEM || WITHUSBCDCECM || WITHUSBCDCNCM || WITHUSBRNDIS)
 		v |= (1u << 3);
-	#endif /* (WITHUSBCDCEEM || WITHUSBCDCECM || WITHUSBRNDIS) */
+	#endif /* (WITHUSBCDCEEM || WITHUSBCDCECM || WITHUSBCDCNCM || WITHUSBRNDIS) */
 
 #endif /* WITHISBOOTLOADER */
 
@@ -3650,6 +3657,262 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBCDCNCM
+
+// ISBLyzer: Interface Association Descriptor Abstract Control Model
+// documented in USB ECN : Interface Association Descriptor - InterfaceAssociationDesc_ecn.pdf
+static unsigned CDCNCM_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bFirstInterface,
+	uint_fast8_t bInterfaceCount
+	)
+{
+	const uint_fast8_t length = 8;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// 0x02/0x02/0x01 - cdc
+		// 0x02/0x0c/0x07 - CDC Ethernet Emulation Model
+		// 0x02/0x06/0x00 - NCM
+		// 0x02/0x0D/0x00 - (Network Control Model - NCM)
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_ASSOC_DESCRIPTOR_TYPE;	// bDescriptorType: IAD
+		* buff ++ = bFirstInterface;				// bFirstInterface
+		* buff ++ = bInterfaceCount;	// bInterfaceCount
+		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
+		* buff ++ = CDC_NETWORK_CONTROL_MODEL;						// bFunctionSubClass - Ethernet Networking
+		* buff ++ = 0x00;						// bFunctionProtocol
+		* buff ++ = STRING_ID_5a;				// iFunction - CDC Ethernet Control Model (NCM)
+	}
+	return length;
+}
+
+
+/*Interface Descriptor*/
+// USBLyzer: Interface Descriptor 3/0 CDC Control, 1 Endpoint
+static unsigned CDCNCM_InterfaceDescControlIf(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 9;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;  /* bDescriptorType: Interface */  /* Interface descriptor type */
+		* buff ++ = INTERFACE_CDCNCM_CONTROL;   /* bInterfaceNumber: Number of Interface */
+		* buff ++ = 0;		/* bAlternateSetting: Alternate setting  - zero-based index */
+		* buff ++ = 0x01;   /* bNumEndpoints: One endpoints used (interrupt type) */
+		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
+		* buff ++ = CDC_NETWORK_CONTROL_MODEL;   /* bInterfaceSubClass: Ethernet Networking */
+		* buff ++ = 0x00;   /* bInterfaceProtocol */
+		* buff ++ = STRING_ID_0;   /* iInterface */
+	}
+	return length;
+}
+
+
+/* Union Functional Descriptor */
+// Union Functional Descriptor
+static unsigned CDCNCM_UnionFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 5;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						/* bFunctionLength */
+		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
+		* buff ++ = CDC_UNION;						/* bDescriptorSubtype: Union func desc */
+		* buff ++ = INTERFACE_CDCNCM_CONTROL;	/* bMasterInterface: Communication class interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+		* buff ++ = INTERFACE_CDCNCM_DATA;	/* bSlaveInterface0: Data Class Interface -  Zero based index of the interface in this configuration (bInterfaceNum) */
+	}
+	return length;
+}
+
+// CDC Ethernet Networking Functional Descriptor
+static unsigned CDCECM_EthernetNetworkingFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 13;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast32_t bmEthernetStatistics = 0;
+		const uint_fast16_t wMaxSegmentSize = 1514;
+		const uint_fast16_t wNumberMCFilters = 0;
+		const uint_fast8_t bNumberPowerFilters = 0;
+
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						/* bFunctionLength */
+		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
+		* buff ++ = 0x0F;						/* bDescriptorSubtype: Ethernet Networking Functional Descriptor */
+		* buff ++ = STRING_ID_MACADDRESS;		/* iMacAddress */
+		* buff ++ = LO_BYTE(bmEthernetStatistics);	/* bmEthernetStatistics */
+		* buff ++ = HI_BYTE(bmEthernetStatistics);
+		* buff ++ = HI_24BY(bmEthernetStatistics);
+		* buff ++ = HI_32BY(bmEthernetStatistics);
+		* buff ++ = LO_BYTE(wMaxSegmentSize);	/* wMaxSegmentSize */
+		* buff ++ = HI_BYTE(wMaxSegmentSize);
+		* buff ++ = LO_BYTE(wNumberMCFilters);	/* wNumberMCFilters */
+		* buff ++ = HI_BYTE(wNumberMCFilters);
+		* buff ++ = bNumberPowerFilters;	/* bNumberPowerFilters */
+	}
+	return length;
+}
+
+// CDC Network Control Model Functional Descriptor
+static unsigned CDCNCM_EthernetNetworkingFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsigned maxsize)
+{
+	const uint_fast8_t length = 6;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast32_t bcdNcmVersion = 0x0100;
+		const uint_fast8_t bmNetworkCapabilities = 0x2B;
+
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						/* bFunctionLength */
+		* buff ++ = CS_INTERFACE;				/* bDescriptorType: CS_INTERFACE */
+		* buff ++ = 0x1A;						/* bDescriptorSubtype: Ethernet Networking Functional Descriptor */
+		* buff ++ = STRING_ID_MACADDRESS;		/* iMacAddress */
+		* buff ++ = LO_BYTE(bcdNcmVersion);	/* bmEthernetStatistics */
+		* buff ++ = HI_BYTE(bcdNcmVersion);
+		* buff ++ = bmNetworkCapabilities;	/* bNumberPowerFilters */
+	}
+	return length;
+}
+
+
+/* Endpoint 3 Descriptor */
+// Endpoint Descriptor 86 6 In, Interrupt
+
+static unsigned CDCNCM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const desc_options_t * opts, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCNCM_INT_SIZE);
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
+		* buff ++ = bEndpointAddress;			/* bEndpointAddress: (IN) */
+		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = opts->hsdesc ? HSINTERVAL_32MS : FSINTERVAL_32MS;   		/* bInterval: 32 mS */
+	}
+	return length;
+}
+
+// Endpoint Descriptor
+static unsigned CDCNCM_fill_37(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const desc_options_t * opts, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCNCM_OUT_BUFSIZE);
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;   /* bDescriptorType: Endpoint */
+		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (OUT2) */
+		* buff ++ = USB_ENDPOINT_TYPE_BULK;   		/* bmAttributes: Bulk */
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = 0x00;    						/* bInterval: ignore for Bulk transfer */
+	}
+	return length;
+}
+
+/*Endpoint 2 IN Descriptor*/
+// Endpoint Descriptor 84 4 In, Bulk, 64 bytes
+static unsigned CDCNCM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, const desc_options_t * opts, uint_fast8_t bEndpointAddress)
+{
+	const uint_fast8_t length = 7;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCNCM_IN_BUFSIZE);
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;							/* bLength */
+		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;	/* bDescriptorType: Endpoint */
+		* buff ++ = bEndpointAddress;				/* bEndpointAddress: (IN2) */
+		* buff ++ = USB_ENDPOINT_TYPE_BULK;   		/* bmAttributes: Bulk */
+		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
+		* buff ++ = HI_BYTE(wMaxPacketSize);
+		* buff ++ = 0x00;    						/* bInterval: ignore for Bulk transfer */
+	}
+	return length;
+}
+
+static unsigned CDCNCM_InterfaceDescDataIf(
+	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
+	uint_fast8_t bInterfaceNumber,
+	uint_fast8_t bAlternateSetting,
+	uint_fast8_t bNumEndpoints
+	)
+{
+	const uint_fast8_t length = 9;
+	ASSERT(maxsize >= length);
+	if (maxsize < length)
+		return 0;
+	if (fill != 0 && buff != NULL)
+	{
+		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
+		* buff ++ = length;						  /* bLength */
+		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;    // INTERFACE descriptor type (bDescriptorType) 0x04
+		* buff ++ = bInterfaceNumber; // Index of this interface. (bInterfaceNumber) ?????????? (3<) (1<<) (1<M)
+		* buff ++ = bAlternateSetting;				// 0 Index of this alternate setting. (bAlternateSetting) - zero-based index
+		* buff ++ = bNumEndpoints;							// 2 endpoints.   (bNumEndpoints)
+		* buff ++ = CDC_DATA_INTERFACE_CLASS;		// 10 CDC Data (bInterfaceClass)
+		* buff ++ = 0x00;							// bInterfaceSubclass)
+		* buff ++ = 0x00;             /* 0 bInterfaceProtocol */
+		* buff ++ = STRING_ID_0;                   /* 0 Unused iInterface */
+		/* 9 byte*/
+	}
+	return length;
+}
+
+/* CDC Ethernet Control Model */
+static unsigned fill_CDCNCM_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, const desc_options_t * opts)
+{
+	unsigned n = 0;
+
+	n += CDCNCM_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_CDCNCM_CONTROL, INTERFACE_CDCNCM_count);	/* CDC: Interface Association Descriptor Abstract Control Model */
+	n += CDCNCM_InterfaceDescControlIf(fill, p + n, maxsize - n);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
+	n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
+	n += CDCNCM_UnionFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
+	n += CDCECM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* CDC Ethernet Networking Functional Descriptor */
+	n += CDCNCM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* CDC Network Control Model Functional Descriptor */
+	n += CDCNCM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCNCM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
+
+	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, 0x00, INTERFACE_CDCNCM_DATA, 0);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
+
+	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, 0x01, INTERFACE_CDCNCM_DATA, 2);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
+	n += CDCNCM_fill_37(fill, p + n, maxsize - n, opts, USB_ENDPOINT_OUT(USBD_EP_CDCNCM_OUT));	/* Endpoint Descriptor USBD_EP_CDCNCM_OUT Out, Bulk, 64 bytes */
+	n += CDCNCM_fill_38(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCNCM_IN));	/* Endpoint Descriptor USBD_EP_CDCNCM_IN In, Bulk, 64 bytes */
+
+	return n;
+}
+
+#endif /* WITHUSBCDCNCM */
+
 #if WITHUSBRNDIS
 
 
@@ -4787,6 +5050,10 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 	n += fill_CDCECM_function(fill, p + n, maxsize - n, opts);
 #endif /* WITHUSBCDCECM */
 
+#if WITHUSBCDCNCM
+	n += fill_CDCNCM_function(fill, p + n, maxsize - n, opts);
+#endif /* WITHUSBCDCNCM */
+
 #if WITHUSBHID
 	n += fill_HID_XXXX_function(fill, p + n, maxsize - n, opts);
 #endif /* WITHUSBHID */
@@ -5624,7 +5891,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 	}
 #endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 #endif /* WITHUSBDFU */
-#if WITHUSBCDCECM
+#if WITHUSBCDCECM || WITHUSBCDCNCM
 	{
 		static const  uint8_t hw [6]  = { HWADDR };
 		unsigned partlen;
