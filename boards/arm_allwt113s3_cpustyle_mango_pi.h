@@ -661,6 +661,16 @@
 		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
+// WITHUART3HW
+// PE8/PE9
+#define HARDWARE_UART3_INITIALIZE() do { \
+		const portholder_t TXMASK = (UINT32_C(1) << 8); /* PE8 UART3-TX */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 9); /* PE3 UART3-RX - pull-up RX data */  \
+		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF5); \
+		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF5); \
+		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+
 // WITHUART4HW
 #define HARDWARE_UART4_INITIALIZE() do { \
 		const portholder_t TXMASK = (UINT32_C(1) << 2); /* PG2 UART4-TX  */ \
