@@ -64,9 +64,81 @@ typedef enum
 /* USB handle declared in main.c */
 #define NCM_MAX_SEGMENT_SIZE           1514
 
-/* local function prototyping */
 
-static USBD_StatusTypeDef USBD_NCM_ReceivePacket (USBD_HandleTypeDef *pdev, unsigned index);
+#define CFG_TUD_NCM_IN_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
+#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
+
+
+typedef struct __PACKED
+{
+	uint16_t wLength;
+	uint16_t bmNtbFormatsSupported;
+	uint32_t dwNtbInMaxSize;
+	uint16_t wNdbInDivisor;
+	uint16_t wNdbInPayloadRemainder;
+	uint16_t wNdbInAlignment;
+	uint16_t wReserved;
+	uint32_t dwNtbOutMaxSize;
+	uint16_t wNdbOutDivisor;
+	uint16_t wNdbOutPayloadRemainder;
+	uint16_t wNdbOutAlignment;
+	uint16_t wNtbOutMaxDatagrams;
+} Ntb_parameters_t;
+
+typedef struct __PACKED
+{
+	uint32_t dwSignature;
+	uint16_t wHeaderLength;
+	uint16_t wSequence;
+	uint16_t wBlockLength;
+	uint16_t wNdpIndex;
+} nth16_t;
+
+typedef struct __PACKED
+{
+	uint16_t wDatagramIndex;
+	uint16_t wDatagramLength;
+} ndp16_datagram_t;
+
+typedef struct __PACKED
+{
+	uint32_t dwSignature;
+	uint16_t wLength;
+	uint16_t wNextNdpIndex;
+	ndp16_datagram_t datagram[];
+} ndp16_t;
+
+typedef union __PACKED {
+	struct {
+		nth16_t nth;
+		ndp16_t ndp;
+	};
+	uint8_t data[CFG_TUD_NCM_IN_NTB_MAX_SIZE];
+} transmit_ntb_t;
+
+//struct ecm_notify_struct
+//{
+//	tusb_control_request_t header;
+//	uint32_t downlink, uplink;
+//};
+
+__ALIGN_BEGIN static Ntb_parameters_t ntbParams __ALIGN_END =
+{
+    .wLength                 = sizeof(Ntb_parameters_t),
+    .bmNtbFormatsSupported   = 0x01,
+    .dwNtbInMaxSize          = CFG_TUD_NCM_IN_NTB_MAX_SIZE,
+    .wNdbInDivisor           = 4,
+    .wNdbInPayloadRemainder  = 0,
+    .wNdbInAlignment         = 4, //CFG_TUD_NCM_ALIGNMENT,
+    .wReserved               = 0,
+    .dwNtbOutMaxSize         = CFG_TUD_NCM_OUT_NTB_MAX_SIZE,
+    .wNdbOutDivisor          = 4,
+    .wNdbOutPayloadRemainder = 0,
+    .wNdbOutAlignment        = 4, //CFG_TUD_NCM_ALIGNMENT,
+    .wNtbOutMaxDatagrams     = 0
+};
+
+/* local function prototyping */
 
 static USBD_HandleTypeDef *registered_pdev;
 
@@ -150,40 +222,6 @@ static USBD_StatusTypeDef USBD_NCM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
   return USBD_OK;
 }
 
-typedef struct TU_ATTR_PACKED
-{
-  uint16_t wLength;
-  uint16_t bmNtbFormatsSupported;
-  uint32_t dwNtbInMaxSize;
-  uint16_t wNdbInDivisor;
-  uint16_t wNdbInPayloadRemainder;
-  uint16_t wNdbInAlignment;
-  uint16_t wReserved;
-  uint32_t dwNtbOutMaxSize;
-  uint16_t wNdbOutDivisor;
-  uint16_t wNdbOutPayloadRemainder;
-  uint16_t wNdbOutAlignment;
-  uint16_t wNtbOutMaxDatagrams;
-} Ntb_parameters_t;
-
-#define CFG_TUD_NCM_IN_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
-#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
-
-__ALIGN_BEGIN static Ntb_parameters_t ntbParams __ALIGN_END =
-{
-    .wLength                 = sizeof(Ntb_parameters_t),
-    .bmNtbFormatsSupported   = 0x01,
-    .dwNtbInMaxSize          = CFG_TUD_NCM_IN_NTB_MAX_SIZE,
-    .wNdbInDivisor           = 4,
-    .wNdbInPayloadRemainder  = 0,
-    .wNdbInAlignment         = 4, //CFG_TUD_NCM_ALIGNMENT,
-    .wReserved               = 0,
-    .dwNtbOutMaxSize         = CFG_TUD_NCM_OUT_NTB_MAX_SIZE,
-    .wNdbOutDivisor          = 4,
-    .wNdbOutPayloadRemainder = 0,
-    .wNdbOutAlignment        = 4, //CFG_TUD_NCM_ALIGNMENT,
-    .wNtbOutMaxDatagrams     = 0
-};
 
 static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
