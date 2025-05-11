@@ -62,7 +62,7 @@ typedef enum
   */
 
 /* USB handle declared in main.c */
-#define NCM_MAX_SEGMENT_SIZE           1514
+//#define NCM_MAX_SEGMENT_SIZE           1514
 
 
 #define CFG_TUD_NCM_IN_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
@@ -142,8 +142,8 @@ __ALIGN_BEGIN static Ntb_parameters_t ntbParams __ALIGN_END =
 
 static USBD_HandleTypeDef *registered_pdev;
 
-__ALIGN_BEGIN static uint8_t ncm_rx_buffer[NCM_MAX_SEGMENT_SIZE] __ALIGN_END;
-__ALIGN_BEGIN static uint8_t ncm_tx_buffer[NCM_MAX_SEGMENT_SIZE] __ALIGN_END;
+__ALIGN_BEGIN static uint8_t ncm_rx_buffer[CFG_TUD_NCM_OUT_NTB_MAX_SIZE] __ALIGN_END;
+__ALIGN_BEGIN static uint8_t ncm_tx_buffer[CFG_TUD_NCM_IN_NTB_MAX_SIZE] __ALIGN_END;
 
 __ALIGN_BEGIN static USBD_SetupReqTypedef notify __ALIGN_END =
 {
@@ -174,18 +174,6 @@ static int can_xmit;
 //static int copy_length;
 static volatile int ncmsendnotifyrequest;
 static volatile int ncmsendnotifyrequestData;
-//
-//void usb_ncm_recv_renew(void)
-//{
-//	if (registered_pdev)
-//	{
-//		  USBD_StatusTypeDef outcome;
-//
-//		  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer + ncm_rx_index, USBD_CDCNCM_OUT_BUFSIZE - ncm_rx_index);
-//
-//		  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
-//	}
-//}
 
 static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
@@ -197,7 +185,7 @@ static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
 
   //ncm_rx_index = 0;
   //usb_ncm_recv_renew();
-  USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, USBD_CDCNCM_OUT_BUFSIZE);
+  USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
   can_xmit = 1 /* true */;
   //OutboundTransferNeedsRenewal = 0 /* false */;
 //  ncm_tx_busy = 0;
@@ -413,7 +401,7 @@ static USBD_StatusTypeDef USBD_NCM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 //	printhex(0, ncm_rx_buffer, RxLength);
 
 	ncm_parse(ncm_rx_buffer, RxLength);	// last in transaction
-	USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, USBD_CDCNCM_OUT_BUFSIZE);
+	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
 
 	return USBD_OK;
 }
