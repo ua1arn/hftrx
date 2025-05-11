@@ -50,21 +50,24 @@ static USBD_HandleTypeDef *registered_pdev;
 
 __ALIGN_BEGIN static uint8_t ecm_rx_buffer[ECM_MAX_SEGMENT_SIZE] __ALIGN_END;
 __ALIGN_BEGIN static uint8_t ecm_tx_buffer[ECM_MAX_SEGMENT_SIZE] __ALIGN_END;
+
 __ALIGN_BEGIN static USBD_SetupReqTypedef notify __ALIGN_END =
 {
   .bmRequest = 0x21,
   .bRequest = NETWORK_CONNECTION /* NETWORK_CONNECTION */,
+  .wIndex = INTERFACE_CDCECM_CONTROL,
   .wValue = 1 /* Connected */,
   .wLength = 0,
 };
 
-//__ALIGN_BEGIN static USBD_SetupReqTypedef notifyRespAvaliable __ALIGN_END =
-//{
-//  .bmRequest = 0x21,
-//  .bRequest = RESPONSE_AVAILABLE /* RESPONSE_AVAILABLE */,
-//  .wValue = 0 /* Connected */,
-//  .wLength = 0,
-//};
+__ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
+{
+  .bmRequest = 0x21,
+  .bRequest = RESPONSE_AVAILABLE /* NETWORK_CONNECTION */,
+  .wIndex = INTERFACE_CDCECM_CONTROL,
+  .wValue = 0 /* Connected */,
+  .wLength = 0,
+};
 
 static int ecm_rx_index;
 static int can_xmit;
@@ -74,6 +77,7 @@ static int OutboundTransferNeedsRenewal;
 //static int ecm_tx_busy;
 //static int copy_length;
 static volatile int ecmsendnotifyrequest;
+static volatile int ecmsendnotifyrequestData;
 
 void usb_ecm_recv_renew(void)
 {
@@ -91,14 +95,9 @@ static USBD_StatusTypeDef USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
 {
   registered_pdev = pdev;
 
-  /* Open EP IN */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_IN, USBD_EP_TYPE_BULK, USBD_CDCECM_IN_BUFSIZE);
-
-  /* Open EP OUT */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_OUT, USBD_EP_TYPE_BULK, USBD_CDCECM_OUT_BUFSIZE);
-
-  /* Open Command IN EP */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_INT, USBD_EP_TYPE_INTR, USBD_CDCECM_INT_SIZE);
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_IN, USBD_EP_TYPE_BULK, USBD_CDCECM_IN_BUFSIZE); /* Open EP IN */
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_OUT, USBD_EP_TYPE_BULK, USBD_CDCECM_OUT_BUFSIZE); /* Open EP OUT */
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_INT, USBD_EP_TYPE_INTR, USBD_CDCECM_INT_SIZE);	/* Open Command IN EP */
 
   usb_ecm_recv_renew();
   can_xmit = 1 /* true */;
@@ -130,8 +129,8 @@ static USBD_StatusTypeDef USBD_ECM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
 static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	USBD_StatusTypeDef ret = USBD_OK;
-	PRINTF("USBD_ECM_Setup: ");
-	printhex(0, req, sizeof * req);
+//	PRINTF("USBD_ECM_Setup: ");
+//	printhex(0, req, sizeof * req);
 
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
@@ -155,7 +154,7 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 	case 0x43 /* SET_ETHERNET_PACKET_FILTER */:
 		//	USBD_ECM_Setup: 00000000: 21 43 0E 00 00 00 00 00
 		// For INTERFACE_CDCECM_CONTROL
-		TP();
+		//TP();
 		//USBD_CtlSendStatus(pdev);
 	    notify.wIndex = INTERFACE_CDCECM_CONTROL;
 	    ecmsendnotifyrequest = 1;
@@ -193,11 +192,11 @@ static USBD_StatusTypeDef USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 	switch ((epnum | 0x80))
 	{
 	case USBD_EP_CDCECM_IN:
-		PRINTF("Data sent\n");
+		//PRINTF("Data sent\n");
 		can_xmit = 1;
 		break;
 	case USBD_EP_CDCECM_INT:
-		PRINTF("Notify sent\n");
+		//PRINTF("Notify sent\n");
 		break;
 	default:
 		TP();
@@ -212,23 +211,22 @@ static USBD_StatusTypeDef USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 
   if (USBD_EP_CDCECM_OUT != epnum)
     return USBD_OK;
-  TP();
   /* Get the received data length */
   RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
 
   ecm_rx_index += RxLength;
 
-  PRINTF("USBD_ECM_DataOut:\n");
-  printhex(0, ecm_rx_buffer, RxLength);
+//  PRINTF("USBD_ECM_DataOut:\n");
+//  printhex(0, ecm_rx_buffer, RxLength);
 
   if (RxLength < USBD_CDCECM_OUT_BUFSIZE)
   {
 	  if (nic_rxproc)
 	  {
-		  TP();
 		  nic_rxproc(ecm_rx_buffer, ecm_rx_index);
 	  }
     ecm_rx_index = 0;
+    usb_ecm_recv_renew();
   }
   else
   {
@@ -239,81 +237,31 @@ static USBD_StatusTypeDef USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
   return USBD_OK;
 }
 
-static USBD_StatusTypeDef USBD_ECM_SOF (USBD_HandleTypeDef *pdev)
-{
-//	TP();
-//	if (ecmsendnotifyrequest)
-//	{
-//		ecmsendnotifyrequest = 0;
-//	    USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
-//	}
-//  /* mop up for any failed USBD_LL_PrepareReceive() call */
-//  if (OutboundTransferNeedsRenewal)
-//    usb_ecm_recv_renew();
-//
-//  if (ecm_tx_busy)
-//  {
-//    /* ugly hack for ST stack sometimes not providing the DataOut callback */
-//    if (++ecm_tx_busy > 32)
-//    {
-//      ecm_tx_busy = 0;
-//      if (0 == ecm_tx_remaining)
-//        can_xmit = 1 /* true */;
-//    }
-//  }
-//
-//  ecm_incoming_attempt();
-
-  return USBD_OK;
-}
-
-static USBD_StatusTypeDef USBD_ECM_EP0_RxReady (USBD_HandleTypeDef *pdev)
-{
-  return USBD_OK;
-}
-
-//void USBD_ECM_PMAConfig(PCD_HandleTypeDef *hpcd, uint32_t *pma_address)
-//{
-//  /* allocate PMA memory for all endpoints associated with ECM */
-//  HAL_PCDEx_PMAConfig(hpcd, USBD_EP_CDCECM_IN,  PCD_SNG_BUF, *pma_address);
-//  *pma_address += USBD_CDCECM_IN_BUFSIZE;
-//  HAL_PCDEx_PMAConfig(hpcd, USBD_EP_CDCECM_OUT, PCD_SNG_BUF, *pma_address);
-//  *pma_address += USBD_CDCECM_OUT_BUFSIZE;
-//  HAL_PCDEx_PMAConfig(hpcd, USBD_EP_CDCECM_INT,  PCD_SNG_BUF, *pma_address);
-//  *pma_address += USBD_CDCECM_INT_SIZE;
-//}
-
 static int nic_can_send(void)
 {
-  int outcome;
+	int outcome;
 
-  __disable_irq();
-  outcome = can_xmit;
-  __enable_irq();
+	__disable_irq();
+	outcome = can_xmit;
+	__enable_irq();
 
-  return outcome;
+	return outcome;
 }
 
 
 static void nic_send(const uint8_t *data, int size)
 {
-	  TP();
-
 	if (!registered_pdev || !can_xmit)
 		return;
 	int packet_size = ulmin16(size, sizeof ecm_tx_buffer);
 	memcpy(ecm_tx_buffer, data, packet_size);
+	ASSERT(packet_size == size);
 
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	can_xmit = 0 /* false */;
-//	ecm_tx_ptr = ecm_tx_buffer;
-//	ecm_tx_remaining = packet_size;
-//	copy_length = packet_size;
-
-	  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_IN, ecm_tx_buffer, packet_size);
-	  TP();
+	USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_IN, ecm_tx_buffer, packet_size);
 	LowerIrql(oldIrql);
 
 }
@@ -331,7 +279,7 @@ USBD_ClassTypeDef USBD_CLASS_CDC_ECM =
 	USBD_ECM_DeInit,
 	USBD_ECM_Setup,
 	NULL,                 /* EP0_TxSent, */
-	USBD_ECM_EP0_RxReady,
+	NULL,	/* USBD_ECM_EP0_RxReady, */
 	USBD_ECM_DataIn,
 	USBD_ECM_DataOut,
 	NULL, //USBD_ECM_SOF,	//USBD_XXX_SOF,	// SOF
@@ -382,11 +330,11 @@ struct netif  * getNetifData(void)
 // Transceiving Ethernet packets
 static err_t cdcecm_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	PRINTF("cdcecm_linkoutput_fn\n");
+//	PRINTF("cdcecm_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    //static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
-    static uint8_t data [8192];
+    static uint8_t data [ETH_PAD_SIZE + CDCECM_MTU + 14 + 4];
+    //static uint8_t data [8192];
     int size = 0;
 
     for (i = 0; i < 200; i++)
@@ -400,22 +348,15 @@ static err_t cdcecm_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		return ERR_MEM;
     }
 
-	PRINTF("cdcecm_linkoutput_fn: 2\n");
-	printhex(0, p->payload, p->len);
     VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
     size = pbuf_copy_partial(p, data, sizeof data, 0);
-//    if (size > sizeof dataX)
-//    {
-//    	PRINTF("************************ cdcecm_linkoutput_fn: size = %d\n", size);
-//    	ASSERT(0);
-//    }
 
     nic_send(data, size);
-    for (i = 0; i < 200; i++)
-    {
-        if (nic_can_send()) break;
-        local_delay_ms(1);
-    }
+//    for (i = 0; i < 200; i++)
+//    {
+//        if (nic_can_send()) break;
+//        local_delay_ms(1);
+//    }
     return ERR_OK;
 }
 
@@ -582,7 +523,19 @@ static void netif_polling(void * ctx)
 		{
 			ecmsendnotifyrequest = 0;
 			if (registered_pdev)
-				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_INT, (uint8_t *)&notify, sizeof(notify));
+				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_INT, (uint8_t *) & notify, sizeof notify);
+		}
+		LowerIrql(oldIrql);
+
+	}
+	{
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		if (ecmsendnotifyrequestData)
+		{
+			ecmsendnotifyrequestData = 0;
+			if (registered_pdev)
+				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_INT, (uint8_t *) & notifyData, sizeof notifyData);
 		}
 		LowerIrql(oldIrql);
 
@@ -593,8 +546,8 @@ static void netif_polling(void * ctx)
 	{
 		struct pbuf *frame = p->frame;
 		nic_buffer_release(p);
-		//PRINTF("ethernet_input:\n");
-		//printhex(0, frame->payload, frame->len);
+//		PRINTF("ethernet_input:\n");
+//		printhex(0, frame->payload, frame->len);
 		//local_delay_ms(20);
 		err_t e = ethernet_input(frame, getNetifData());
 		if (e != ERR_OK)

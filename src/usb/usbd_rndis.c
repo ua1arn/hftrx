@@ -1023,7 +1023,7 @@ static void response_available(USBD_HandleTypeDef *pdev)
 	uint_fast32_t code = 0x01;
 	uint_fast32_t reserved0 = 0x09;
 
-	ASSERT(USBD_RNDIS_INT_SIZE == sizeof sendState);
+	ASSERT(USBD_RNDIS_INT_SIZE >= sizeof sendState);
 	sendState [0] = LO_BYTE(code);
 	sendState [1] = HI_BYTE(code);
 	sendState [2] = HI_24BY(code);
