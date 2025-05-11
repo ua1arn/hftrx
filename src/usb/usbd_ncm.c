@@ -163,29 +163,29 @@ __ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
   .wLength = 0,
 };
 
-static unsigned ncmheadersz = 0x00BA;
+//static unsigned ncmheadersz = 0x00BA;
 
-static int ncm_rx_index;
+//static int ncm_rx_index;
 static int can_xmit;
-static int OutboundTransferNeedsRenewal;
+//static int OutboundTransferNeedsRenewal;
 //static uint8_t *ncm_tx_ptr;
 //static int ncm_tx_remaining;
 //static int ncm_tx_busy;
 //static int copy_length;
 static volatile int ncmsendnotifyrequest;
 static volatile int ncmsendnotifyrequestData;
-
-void usb_ncm_recv_renew(void)
-{
-	if (registered_pdev)
-	{
-		  USBD_StatusTypeDef outcome;
-
-		  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer + ncm_rx_index, USBD_CDCNCM_OUT_BUFSIZE);
-
-		  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
-	}
-}
+//
+//void usb_ncm_recv_renew(void)
+//{
+//	if (registered_pdev)
+//	{
+//		  USBD_StatusTypeDef outcome;
+//
+//		  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer + ncm_rx_index, USBD_CDCNCM_OUT_BUFSIZE - ncm_rx_index);
+//
+//		  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
+//	}
+//}
 
 static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
@@ -195,9 +195,11 @@ static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
   USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_OUT, USBD_EP_TYPE_BULK, USBD_CDCNCM_OUT_BUFSIZE); /* Open EP OUT */
   USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_INT, USBD_EP_TYPE_INTR, USBD_CDCNCM_INT_SIZE);	/* Open Command IN EP */
 
-  usb_ncm_recv_renew();
+  //ncm_rx_index = 0;
+  //usb_ncm_recv_renew();
+  USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, USBD_CDCNCM_OUT_BUFSIZE);
   can_xmit = 1 /* true */;
-  OutboundTransferNeedsRenewal = 0 /* false */;
+  //OutboundTransferNeedsRenewal = 0 /* false */;
 //  ncm_tx_busy = 0;
 //  ncm_tx_remaining = 0;
 
@@ -312,36 +314,108 @@ static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
   return USBD_OK;
 }
 
+static void ncm_parse(const uint8_t * data, unsigned length)
+{
+
+	static uint_fast32_t ecm_blocklength;	// Накоплено входных данных
+	static uint_fast32_t ecm_blockscore;		// Входные данные
+
+	static uint_fast32_t ecm_outdatalength;	// Накоплено входных данных
+	static uint_fast32_t ecm_outdatascore;	// Накапливаем для пердачи в LwIP
+
+//	PRINTF("ncm_parse:\n");
+//	PRINTF("ncm_parse: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+//	printhex(0, data, length);
+
+	static uint8_t out_data [2048];
+	if (ecm_blocklength == 0)
+	{
+
+		const uint8_t * parser = data;
+
+		// Parse h1
+		const nth16_t * h1 = (const nth16_t *) parser;
+		ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D48);	// NCMH
+
+//		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
+//		PRINTF("h1->wNdpIndex=%04X\n", h1->wNdpIndex);
+//		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
+
+		ecm_blocklength = h1->wBlockLength;
+		ecm_blockscore = 0;
+
+		parser += h1->wNdpIndex;
+
+		// Parse h2
+		ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0
+		const ndp16_t * h2 = (const ndp16_t *) parser;
+
+//		PRINTF("h2->wNextNdpIndex=%04X\n", h2->wNextNdpIndex);
+//		PRINTF("h2->datagram [0].wDatagramLength=%04X\n", h2->datagram [0].wDatagramLength);
+//		PRINTF("h2->wLength=%04X\n", h2->wLength);
+
+		parser = data + h2->datagram [0].wDatagramIndex;
+		ecm_outdatalength = h2->datagram [0].wDatagramLength;
+		ecm_outdatascore = 0;
+
+		unsigned chunk = ulmin32(sizeof out_data - ecm_outdatascore, length - h2->datagram [0].wDatagramIndex);
+		//PRINTF("1 chunk=%03X\n", chunk);
+
+//		PRINTF("use data 1:\n");
+//		printhex(0, parser, chunk);
+
+		memcpy(out_data + ecm_outdatascore, parser, chunk);
+		ecm_outdatascore += chunk;
+		ecm_outdatalength -= chunk;
+	}
+	else if (ecm_outdatalength >= 0)
+	{
+		//PRINTF("ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+		unsigned chunk = ulmin32(sizeof out_data - ecm_outdatascore, ulmin32(ecm_outdatalength, length));
+		//PRINTF("2 chunk=%03X\n", chunk);
+//		PRINTF("use data 2:\n");
+//		printhex(0, data, chunk);
+
+		memcpy(out_data + ecm_outdatascore, data, chunk);
+		ecm_outdatascore += chunk;
+		ecm_outdatalength -= chunk;
+	}
+
+	//PRINTF("1 post corr: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+	{
+		ecm_blocklength -= length;
+		ecm_blockscore += length;
+	}
+	//PRINTF("2 post corr: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+
+	if (ecm_blocklength == 0)
+	{
+		//PRINTF("eth data:\n");
+		//printhex(0, out_data, ecm_outdatascore);
+		nic_rxproc(out_data, ecm_outdatascore);
+		ecm_blockscore = 0;
+		ecm_blocklength = 0;
+		ecm_outdatascore = 0;
+		ecm_outdatalength = 0;
+	}
+}
+
 static USBD_StatusTypeDef USBD_NCM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-  uint32_t RxLength;
+	uint32_t RxLength;
 
-  if (USBD_EP_CDCNCM_OUT != epnum)
-    return USBD_OK;
-  /* Get the received data length */
-  RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
+	if (USBD_EP_CDCNCM_OUT != epnum)
+		return USBD_OK;
+	/* Get the received data length */
+	RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
 
-  ncm_rx_index += RxLength;
+//	PRINTF("USBD_NCM_DataOut:\n");
+//	printhex(0, ncm_rx_buffer, RxLength);
 
-//  PRINTF("USBD_NCM_DataOut:\n");
-//  printhex(0, ncm_rx_buffer, RxLength);
+	ncm_parse(ncm_rx_buffer, RxLength);	// last in transaction
+	USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, USBD_CDCNCM_OUT_BUFSIZE);
 
-  if (RxLength < USBD_CDCNCM_OUT_BUFSIZE)
-  {
-	  if (ncm_rx_index >= ncmheadersz && nic_rxproc)
-	  {
-		  nic_rxproc(ncm_rx_buffer + ncmheadersz, ncm_rx_index - ncmheadersz);
-	  }
-    ncm_rx_index = 0;
-    usb_ncm_recv_renew();
-  }
-  else
-  {
-    /* Initiate next USB packet transfer */
-    usb_ncm_recv_renew();
-  }
-
-  return USBD_OK;
+	return USBD_OK;
 }
 
 static int nic_can_send(void)
