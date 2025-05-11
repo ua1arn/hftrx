@@ -91,6 +91,8 @@ __ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
   .wLength = 0,
 };
 
+static unsigned ncmheadersz = 0x00BA;
+
 static int ncm_rx_index;
 static int can_xmit;
 static int OutboundTransferNeedsRenewal;
@@ -164,8 +166,8 @@ typedef struct TU_ATTR_PACKED
   uint16_t wNtbOutMaxDatagrams;
 } Ntb_parameters_t;
 
-#define CFG_TUD_NCM_IN_NTB_MAX_SIZE (CDCNCM_MTU + 14) //3200
-#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE (CDCNCM_MTU + 14) //3200
+#define CFG_TUD_NCM_IN_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
+#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
 
 __ALIGN_BEGIN static Ntb_parameters_t ntbParams __ALIGN_END =
 {
@@ -288,9 +290,9 @@ static USBD_StatusTypeDef USBD_NCM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8
 
   if (RxLength < USBD_CDCNCM_OUT_BUFSIZE)
   {
-	  if (nic_rxproc)
+	  if (ncm_rx_index >= ncmheadersz && nic_rxproc)
 	  {
-		  nic_rxproc(ncm_rx_buffer, ncm_rx_index);
+		  nic_rxproc(ncm_rx_buffer + ncmheadersz, ncm_rx_index - ncmheadersz);
 	  }
     ncm_rx_index = 0;
     usb_ncm_recv_renew();
