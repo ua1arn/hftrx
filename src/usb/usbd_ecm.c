@@ -69,27 +69,27 @@ __ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
   .wLength = 0,
 };
 
-static int ecm_rx_index;
+//static int ecm_rx_index;
 static int can_xmit;
-static int OutboundTransferNeedsRenewal;
+//static int OutboundTransferNeedsRenewal;
 //static uint8_t *ecm_tx_ptr;
 //static int ecm_tx_remaining;
 //static int ecm_tx_busy;
 //static int copy_length;
-static volatile int ecmsendnotifyrequest;
+//static volatile int ecmsendnotifyrequest;
 static volatile int ecmsendnotifyrequestData;
 
-void usb_ecm_recv_renew(void)
-{
-	if (registered_pdev)
-	{
-		  USBD_StatusTypeDef outcome;
-
-		  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer + ecm_rx_index, USBD_CDCECM_OUT_BUFSIZE);
-
-		  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
-	}
-}
+//void usb_ecm_recv_renew(void)
+//{
+//	if (registered_pdev)
+//	{
+//		  USBD_StatusTypeDef outcome;
+//
+//		  outcome = USBD_LL_PrepareReceive(registered_pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer + ecm_rx_index, USBD_CDCECM_OUT_BUFSIZE);
+//
+//		  OutboundTransferNeedsRenewal = (USBD_OK != outcome); /* set if the HAL was busy so that we know to retry it */
+//	}
+//}
 
 static USBD_StatusTypeDef USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
@@ -99,11 +99,8 @@ static USBD_StatusTypeDef USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
   USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_OUT, USBD_EP_TYPE_BULK, USBD_CDCECM_OUT_BUFSIZE); /* Open EP OUT */
   USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_INT, USBD_EP_TYPE_INTR, USBD_CDCECM_INT_SIZE);	/* Open Command IN EP */
 
-  usb_ecm_recv_renew();
+  USBD_LL_PrepareReceive(pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer, sizeof ecm_rx_buffer);
   can_xmit = 1 /* true */;
-  OutboundTransferNeedsRenewal = 0 /* false */;
-//  ecm_tx_busy = 0;
-//  ecm_tx_remaining = 0;
 
   return USBD_OK;
 }
@@ -158,9 +155,10 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		// For INTERFACE_CDCECM_CONTROL
 		//TP();
 		//USBD_CtlSendStatus(pdev);
-	    notify.wIndex = INTERFACE_CDCECM_CONTROL;
-	    ecmsendnotifyrequest = 1;
+	    //notify.wIndex = INTERFACE_CDCECM_CONTROL;
+	    //ecmsendnotifyrequest = 1;
 		USBD_CtlSendStatus(pdev);
+		USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *) & notify, sizeof notify);
 	    break;
 
 	default:
@@ -210,34 +208,15 @@ static USBD_StatusTypeDef USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 
 static USBD_StatusTypeDef USBD_ECM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-  uint32_t RxLength;
+	if (USBD_EP_CDCECM_OUT != epnum)
+		return USBD_OK;
+	if (nic_rxproc)
+	{
+		nic_rxproc(ecm_rx_buffer, USBD_LL_GetRxDataSize (pdev, epnum));
+	}
+	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer, sizeof ecm_rx_buffer);
 
-  if (USBD_EP_CDCECM_OUT != epnum)
-    return USBD_OK;
-  /* Get the received data length */
-  RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
-
-  ecm_rx_index += RxLength;
-
-//  PRINTF("USBD_ECM_DataOut:\n");
-//  printhex(0, ecm_rx_buffer, RxLength);
-
-  if (RxLength < USBD_CDCECM_OUT_BUFSIZE)
-  {
-	  if (nic_rxproc)
-	  {
-		  nic_rxproc(ecm_rx_buffer, ecm_rx_index);
-	  }
-    ecm_rx_index = 0;
-    usb_ecm_recv_renew();
-  }
-  else
-  {
-    /* Initiate next USB packet transfer */
-    usb_ecm_recv_renew();
-  }
-
-  return USBD_OK;
+	return USBD_OK;
 }
 
 static int nic_can_send(void)
@@ -519,18 +498,18 @@ static void on_packet(const uint8_t *data, int size)
 // user-mode function
 static void netif_polling(void * ctx)
 {
-	{
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		if (ecmsendnotifyrequest)
-		{
-			ecmsendnotifyrequest = 0;
-			if (registered_pdev)
-				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_INT, (uint8_t *) & notify, sizeof notify);
-		}
-		LowerIrql(oldIrql);
-
-	}
+//	{
+//		IRQL_t oldIrql;
+//		RiseIrql(IRQL_SYSTEM, & oldIrql);
+//		if (ecmsendnotifyrequest)
+//		{
+//			ecmsendnotifyrequest = 0;
+//			if (registered_pdev)
+//				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCECM_INT, (uint8_t *) & notify, sizeof notify);
+//		}
+//		LowerIrql(oldIrql);
+//
+//	}
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);

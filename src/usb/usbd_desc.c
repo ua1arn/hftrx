@@ -3604,7 +3604,7 @@ static unsigned CDCECM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		* buff ++ = USB_ENDPOINT_TYPE_BULK;   		/* bmAttributes: Bulk */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = 0x00;    						/* bInterval: ignore for Bulk transfer */
+		* buff ++ = 0x01;    						/* bInterval: ignore for Bulk transfer */
 	}
 	return length;
 }
@@ -3856,7 +3856,7 @@ static unsigned CDCNCM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		* buff ++ = USB_ENDPOINT_TYPE_BULK;   		/* bmAttributes: Bulk */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize);
-		* buff ++ = 0x00;    						/* bInterval: ignore for Bulk transfer */
+		* buff ++ = 0x01;    						/* bInterval: ignore for Bulk transfer */
 	}
 	return length;
 }
