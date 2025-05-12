@@ -175,141 +175,10 @@ static int can_xmit;
 static volatile int ncmsendnotifyrequest;
 static volatile int ncmsendnotifyrequestData;
 
-static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
-{
-  registered_pdev = pdev;
-
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_IN, USBD_EP_TYPE_BULK, USBD_CDCNCM_IN_BUFSIZE); /* Open EP IN */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_OUT, USBD_EP_TYPE_BULK, USBD_CDCNCM_OUT_BUFSIZE); /* Open EP OUT */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_INT, USBD_EP_TYPE_INTR, USBD_CDCNCM_INT_SIZE);	/* Open Command IN EP */
-
-  //ncm_rx_index = 0;
-  //usb_ncm_recv_renew();
-  USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
-  can_xmit = 1 /* true */;
-  //OutboundTransferNeedsRenewal = 0 /* false */;
-//  ncm_tx_busy = 0;
-//  ncm_tx_remaining = 0;
-
-  return USBD_OK;
-}
-
-static USBD_StatusTypeDef USBD_NCM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
-{
-  registered_pdev = NULL;
-
-  /* Close EP IN */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_IN);
-
-  /* Close EP OUT */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_OUT);
-
-  /* Close Command IN EP */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_INT);
-
-  can_xmit = 0 /* false */;
-
-  return USBD_OK;
-}
-
-
-static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
-{
-	USBD_StatusTypeDef ret = USBD_OK;
-//	PRINTF("USBD_NCM_Setup: ");
-//	printhex(0, req, sizeof * req);
-
-// Android log:
-//	USBD_NCM_Setup: 00000000: 01 0B 01 00 01 00 00 00                          ........
-//	USBD_NCM_Setup: 00000000: 01 0B 00 00 01 00 00 00                          ........
-//	USBD_NCM_Setup: 00000000: A1 80 00 00 00 00 1C 00                          ........
-
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-
-	if (interfacev != INTERFACE_CDCNCM_CONTROL && interfacev != INTERFACE_CDCNCM_DATA)
-		return USBD_OK;
-
-	switch (req->bRequest)
-	{
-	case USB_REQ_SET_INTERFACE:
-		// For INTERFACE_CDCNCM_DATA
-		if (pdev->dev_state == USBD_STATE_CONFIGURED) {
-			//hhid->AltSetting = LO_BYTE(req->wValue);
-			USBD_CtlSendStatus(pdev);
-		} else {
-			USBD_CtlError(pdev, req);
-			ret = USBD_FAIL;
-		}
-		break;
-
-	case 0x43 /* SET_ETHERNET_PACKET_FILTER */:
-		//	USBD_NCM_Setup: 00000000: 21 43 0E 00 00 00 00 00
-		// For INTERFACE_CDCNCM_CONTROL
-		//TP();
-		//USBD_CtlSendStatus(pdev);
-	    notify.wIndex = INTERFACE_CDCNCM_CONTROL;
-	    ncmsendnotifyrequest = 1;
-	    break;
-
-	case GET_NTB_PARAMETERS:
-		TP();
-		USBD_CtlSendData(pdev, (const uint8_t *) & ntbParams, ulmin16(sizeof ntbParams, req->wLength));
-		break;
-
-	case SET_NTB_INPUT_SIZE:
-		TP();
-		USBD_CtlSendStatus(pdev);
-		break;
-
-	default:
-		TP();
-		break;
-	}
-
-  return ret;
-}
-
-//static void ncm_incoming_attempt(void)
-//{
-//  int chunk_size;
-//
-//  if (!ncm_tx_remaining || ncm_tx_busy)
-//    return;
-//
-//  chunk_size = ncm_tx_remaining;
-//  if (chunk_size > USBD_CDCNCM_IN_BUFSIZE)
-//    chunk_size = USBD_CDCNCM_IN_BUFSIZE;
-//
-//  /* ST stack always returns a success code, so reading the return value is pointless */
-//  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_ptr, chunk_size);
-//
-//  ncm_tx_ptr += chunk_size;
-//  ncm_tx_remaining -= chunk_size;
-//  ncm_tx_busy = 1;
-//}
-
-static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	switch ((epnum | 0x80))
-	{
-	case USBD_EP_CDCNCM_IN:
-		//PRINTF("Data sent\n");
-		can_xmit = 1;
-		break;
-	case USBD_EP_CDCNCM_INT:
-		//PRINTF("Notify sent\n");
-		break;
-	default:
-		TP();
-		break;
-	}
-  return USBD_OK;
-}
+static uint_fast32_t ecm_blocklength;	// Накоплено входных данных
 
 static void ncm_parse(const uint8_t * data, unsigned length)
 {
-
-	static uint_fast32_t ecm_blocklength;	// Накоплено входных данных
 	static uint_fast32_t ecm_blockscore;		// Входные данные
 
 	static uint_fast32_t ecm_outdatalength;	// Накоплено входных данных
@@ -422,21 +291,193 @@ static int nic_can_send(void)
 }
 
 
+static uint8_t ncm_txheader [] =
+{
+	0x4E, 0x43, 0x4D, 0x48, 0x0C, 0x00, 0x01, 0x00, 0x28, 0x01, 0x0C, 0x00, 0x4E, 0x43, 0x4D, 0x30,
+	0x10, 0x00, 0x00, 0x00, 0xBA, 0x00, 0x6E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
 static void nic_send(const uint8_t *data, int size)
 {
 	if (!registered_pdev || !can_xmit)
 		return;
-	int packet_size = ulmin16(size, sizeof ncm_tx_buffer);
-	memcpy(ncm_tx_buffer, data, packet_size);
+
+	memcpy(ncm_tx_buffer + 0, ncm_txheader, sizeof ncm_txheader);
+	int packet_size = ulmin16(size, sizeof ncm_tx_buffer - sizeof ncm_txheader);
+	memcpy(ncm_tx_buffer + sizeof ncm_txheader, data, packet_size);
+
 	ASSERT(packet_size == size);
 
+
+	uint8_t * parser = ncm_tx_buffer;
+
+	// Parse h1
+	nth16_t * h1 = (nth16_t *) parser;
+	ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D48);	// NCMH
+
+//		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
+//		PRINTF("h1->wNdpIndex=%04X\n", h1->wNdpIndex);
+//		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
+
+	h1->wBlockLength = sizeof ncm_txheader + packet_size;
+
+	parser += h1->wNdpIndex;
+
+	// Parse h2
+	ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0
+	ndp16_t * h2 = (ndp16_t *) parser;
+
+//		PRINTF("h2->wNextNdpIndex=%04X\n", h2->wNextNdpIndex);
+//		PRINTF("h2->datagram [0].wDatagramLength=%04X\n", h2->datagram [0].wDatagramLength);
+//		PRINTF("h2->wLength=%04X\n", h2->wLength);
+
+	//parser = data + h2->datagram [0].wDatagramIndex;
+	h2->datagram [0].wDatagramLength = packet_size;
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	can_xmit = 0 /* false */;
-	USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_buffer, packet_size);
+	USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_buffer, sizeof ncm_txheader + packet_size);
 	LowerIrql(oldIrql);
 
+}
+
+static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
+{
+  registered_pdev = pdev;
+
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_IN, USBD_EP_TYPE_BULK, USBD_CDCNCM_IN_BUFSIZE); /* Open EP IN */
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_OUT, USBD_EP_TYPE_BULK, USBD_CDCNCM_OUT_BUFSIZE); /* Open EP OUT */
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_INT, USBD_EP_TYPE_INTR, USBD_CDCNCM_INT_SIZE);	/* Open Command IN EP */
+
+  //ncm_rx_index = 0;
+  //usb_ncm_recv_renew();
+  USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
+  can_xmit = 1 /* true */;
+  ecm_blocklength = 0;
+  //OutboundTransferNeedsRenewal = 0 /* false */;
+//  ncm_tx_busy = 0;
+//  ncm_tx_remaining = 0;
+
+  return USBD_OK;
+}
+
+static USBD_StatusTypeDef USBD_NCM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
+{
+  registered_pdev = NULL;
+
+  /* Close EP IN */
+  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_IN);
+
+  /* Close EP OUT */
+  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_OUT);
+
+  /* Close Command IN EP */
+  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_INT);
+
+  can_xmit = 0 /* false */;
+
+  return USBD_OK;
+}
+
+
+static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
+{
+	USBD_StatusTypeDef ret = USBD_OK;
+	PRINTF("USBD_NCM_Setup: ");
+	printhex(0, req, sizeof * req);
+
+// Android log:
+//	USBD_NCM_Setup: 00000000: 01 0B 01 00 01 00 00 00                          ........
+//	USBD_NCM_Setup: 00000000: 01 0B 00 00 01 00 00 00                          ........
+//	USBD_NCM_Setup: 00000000: A1 80 00 00 00 00 1C 00                          ........
+
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+
+	if (interfacev != INTERFACE_CDCNCM_CONTROL && interfacev != INTERFACE_CDCNCM_DATA)
+		return USBD_OK;
+
+	switch (req->bRequest)
+	{
+	case USB_REQ_SET_INTERFACE:
+		// For INTERFACE_CDCNCM_DATA
+		if (pdev->dev_state == USBD_STATE_CONFIGURED) {
+			//hhid->AltSetting = LO_BYTE(req->wValue);
+			USBD_CtlSendStatus(pdev);
+		} else {
+			USBD_CtlError(pdev, req);
+			ret = USBD_FAIL;
+		}
+		break;
+
+	case 0x43 /* SET_ETHERNET_PACKET_FILTER */:
+		//	USBD_NCM_Setup: 00000000: 21 43 0E 00 00 00 00 00
+		// For INTERFACE_CDCNCM_CONTROL
+	    ncmsendnotifyrequest = 1;
+	    break;
+
+	case GET_NTB_PARAMETERS:
+		USBD_CtlSendData(pdev, (const uint8_t *) & ntbParams, ulmin16(sizeof ntbParams, req->wLength));
+		break;
+
+	case SET_NTB_INPUT_SIZE:
+		TP();
+		USBD_CtlSendStatus(pdev);
+		break;
+
+	default:
+		TP();
+		break;
+	}
+
+  return ret;
+}
+
+//static void ncm_incoming_attempt(void)
+//{
+//  int chunk_size;
+//
+//  if (!ncm_tx_remaining || ncm_tx_busy)
+//    return;
+//
+//  chunk_size = ncm_tx_remaining;
+//  if (chunk_size > USBD_CDCNCM_IN_BUFSIZE)
+//    chunk_size = USBD_CDCNCM_IN_BUFSIZE;
+//
+//  /* ST stack always returns a success code, so reading the return value is pointless */
+//  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_ptr, chunk_size);
+//
+//  ncm_tx_ptr += chunk_size;
+//  ncm_tx_remaining -= chunk_size;
+//  ncm_tx_busy = 1;
+//}
+
+static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+{
+	switch ((epnum | 0x80))
+	{
+	case USBD_EP_CDCNCM_IN:
+		//PRINTF("Data sent\n");
+		can_xmit = 1;
+		break;
+	case USBD_EP_CDCNCM_INT:
+		//PRINTF("Notify sent\n");
+		break;
+	default:
+		//TP();
+		break;
+	}
+  return USBD_OK;
 }
 
 static void USBD_CDC_NCM_Cold_Init(void)
@@ -731,6 +772,11 @@ static void netif_polling(void * ctx)
 	}
 }
 
+
+void req(void)
+{
+	ncmsendnotifyrequestData = 1;
+}
 
 void init_netif(void)
 {
