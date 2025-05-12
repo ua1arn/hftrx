@@ -548,7 +548,7 @@ static void cdceemout_buffer_save(
 //					Command: bmEEMCmd=01, bmEEMCmdParam=17
 //					Command: bmEEMCmd=01, bmEEMCmdParam=17
 //					ethernet_input:
-					unsigned len;
+					unsigned len = 0;
 					switch (bmEEMCmd)
 					{
 					case 0x00:	// Echo
@@ -559,6 +559,7 @@ static void cdceemout_buffer_save(
 					default:
 						break;
 					}
+					(void) len;
 				}
 			}
 			break;
@@ -647,48 +648,11 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataOut(USBD_HandleTypeDef *pdev, uint_fas
 	return USBD_OK;
 }
 
-// При возврате из этой функции в usbd_core.c происходит вызов USBD_CtlSendStatus
-static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
-{
-	const USBD_SetupReqTypedef * const req = & pdev->request;
-
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-
-	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	switch (interfacev)
-	{
-	case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
-		{
-			switch (req->bRequest)
-			{
-//			case CDC_SET_LINE_CODING:
-//				{
-////					const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-////					ASSERT(req->wLength == 7);
-////					dwDTERate [interfacev] = USBD_peek_u32(& cdceem_epXdatabuffout [0]);
-//					//PRINTF(PSTR("USBD_CDCEEM_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdceem_epXdatabuffout [6]);
-//				}
-//				break;
-			default:
-				// непонятно, для чего эти данные?
-				TP();
-				break;
-			}
-		}
-		break;
-
-	default:
-		break;
-	}
-	return USBD_OK;
-}
-
-
 static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 //	PRINTF("USBD_CDCEEM_Setup: ");
 //	printhex(0, req, sizeof * req);
-	static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
+	//static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	if (interfacev != INTERFACE_CDCEEM_DATA)
 		   return USBD_OK;
@@ -1628,7 +1592,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 	USBD_CDCEEM_DeInit,	// DeInit
 	USBD_CDCEEM_Setup,		// Setup
 	NULL,	// EP0_TxSent
-	USBD_CDCEEM_EP0_RxReady,	// EP0_RxReady
+	NULL,	// USBD_CDCEEM_EP0_RxReady,	// EP0_RxReady
 	USBD_CDCEEM_DataIn,	// DataIn
 	USBD_CDCEEM_DataOut,	// DataOut
 	NULL,	//USBD_XXX_SOF,	// SOF

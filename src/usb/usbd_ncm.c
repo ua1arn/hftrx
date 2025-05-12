@@ -445,25 +445,6 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
   return ret;
 }
 
-//static void ncm_incoming_attempt(void)
-//{
-//  int chunk_size;
-//
-//  if (!ncm_tx_remaining || ncm_tx_busy)
-//    return;
-//
-//  chunk_size = ncm_tx_remaining;
-//  if (chunk_size > USBD_CDCNCM_IN_BUFSIZE)
-//    chunk_size = USBD_CDCNCM_IN_BUFSIZE;
-//
-//  /* ST stack always returns a success code, so reading the return value is pointless */
-//  USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_ptr, chunk_size);
-//
-//  ncm_tx_ptr += chunk_size;
-//  ncm_tx_remaining -= chunk_size;
-//  ncm_tx_busy = 1;
-//}
-
 static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	switch ((epnum | 0x80))
