@@ -216,8 +216,13 @@ static USBD_StatusTypeDef USBD_NCM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
 static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	USBD_StatusTypeDef ret = USBD_OK;
-	PRINTF("USBD_NCM_Setup: ");
-	printhex(0, req, sizeof * req);
+//	PRINTF("USBD_NCM_Setup: ");
+//	printhex(0, req, sizeof * req);
+
+// Android log:
+//	USBD_NCM_Setup: 00000000: 01 0B 01 00 01 00 00 00                          ........
+//	USBD_NCM_Setup: 00000000: 01 0B 00 00 01 00 00 00                          ........
+//	USBD_NCM_Setup: 00000000: A1 80 00 00 00 00 1C 00                          ........
 
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
@@ -227,7 +232,6 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 	switch (req->bRequest)
 	{
 	case USB_REQ_SET_INTERFACE:
-		// SBD_NCM_Setup: 00000000: 01 0B 00 00 01 00 00 00
 		// For INTERFACE_CDCNCM_DATA
 		if (pdev->dev_state == USBD_STATE_CONFIGURED) {
 			//hhid->AltSetting = LO_BYTE(req->wValue);
@@ -312,8 +316,8 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 	static uint_fast32_t ecm_outdatascore;	// Накапливаем для пердачи в LwIP
 
 //	PRINTF("ncm_parse:\n");
-//	PRINTF("ncm_parse: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
 //	printhex(0, data, length);
+//	PRINTF("ncm_parse: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
 
 	static uint8_t out_data [2048];
 	if (ecm_blocklength == 0)

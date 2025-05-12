@@ -131,7 +131,9 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 	USBD_StatusTypeDef ret = USBD_OK;
 //	PRINTF("USBD_ECM_Setup: ");
 //	printhex(0, req, sizeof * req);
-
+	// Android log:
+	//	USBD_ECM_Setup: 00000000: 01 0B 00 00 01 00 00 00                          ........
+	//	USBD_ECM_Setup: 00000000: 21 43 0C 00 00 00 00 00                          !C......
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	if (interfacev != INTERFACE_CDCECM_CONTROL && interfacev != INTERFACE_CDCECM_DATA)

@@ -557,6 +557,8 @@ static USBD_StatusTypeDef  usbd_rndis_deinit(USBD_HandleTypeDef  *pdev, uint_fas
 
 static USBD_StatusTypeDef usbd_rndis_setup(USBD_HandleTypeDef  *pdev, const USBD_SetupReqTypedef *req)
 {
+//	PRINTF("usbd_rndis_setup:\n");
+//	printhex(0, req, sizeof * req);
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	if (interfacev != INTERFACE_RNDIS_CONTROL && interfacev != INTERFACE_RNDIS_DATA)
 		   return USBD_OK;

@@ -686,6 +686,8 @@ static USBD_StatusTypeDef USBD_CDCEEM_EP0_RxReady(USBD_HandleTypeDef *pdev)
 
 static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
+//	PRINTF("USBD_CDCEEM_Setup: ");
+//	printhex(0, req, sizeof * req);
 	static ALIGNX_BEGIN uint8_t buff [32] ALIGNX_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	if (interfacev != INTERFACE_CDCEEM_DATA)
