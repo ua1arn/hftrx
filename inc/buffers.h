@@ -522,6 +522,9 @@ extern "C" {
 
   */
 
+#define CDC_NOTIFY_PERIOD_FS	255
+#define CDC_NOTIFY_PERIOD_HS	255
+
 #define HSINTERVAL_1MS 4    // endpoint descriptor parameters - для обеспечения 1 ms периода
 #define FSINTERVAL_1MS 1
 
@@ -694,7 +697,7 @@ extern "C" {
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBCDCNCM
-	#define USBD_CDCNCM_INT_SIZE	64	// interrupt data - AN00131:-USB-CDC-NCM-Class-for-Ethernet-over-USB(2.0.2rc1).pdf says 64
+	#define USBD_CDCNCM_INT_SIZE	64
 	#if WITHUSBDEV_HSDESC
 		#define USBD_CDCNCM_IN_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
 		#define USBD_CDCNCM_OUT_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
@@ -710,8 +713,8 @@ extern "C" {
 		#define USBD_RNDIS_IN_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
 		#define USBD_RNDIS_OUT_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
 	#else /* WITHUSBDEV_HSDESC */
-		#define USBD_RNDIS_IN_BUFSIZE			USB_OTG_FS_MAX_PACKET_SIZE	// bulk data
-		#define USBD_RNDIS_OUT_BUFSIZE			USB_OTG_FS_MAX_PACKET_SIZE	// bulk data
+		#define USBD_RNDIS_IN_BUFSIZE			USB_OTG_FS_MAX_PACKET_SIZE
+		#define USBD_RNDIS_OUT_BUFSIZE			USB_OTG_FS_MAX_PACKET_SIZE
 	#endif /* WITHUSBDEV_HSDESC */
 #endif /* WITHUSBRNDIS */
 

@@ -3209,7 +3209,7 @@ static unsigned CDCACM_Control_EP(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = opts->hsdesc ? HSINTERVAL_256MS : FSINTERVAL_255MS;   						/* bInterval: 255 mS */
+		* buff ++ = opts->hsdesc ? CDC_NOTIFY_PERIOD_HS : CDC_NOTIFY_PERIOD_FS;   						/* bInterval: 255 mS */
 	}
 	return length;
 }
@@ -3559,7 +3559,7 @@ static unsigned CDCECM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = opts->hsdesc ? HSINTERVAL_32MS : FSINTERVAL_32MS;   		/* bInterval: 32 mS */
+		* buff ++ = opts->hsdesc ? CDC_NOTIFY_PERIOD_HS : CDC_NOTIFY_PERIOD_FS;   						/* bInterval: 255 mS */
 	}
 	return length;
 }
@@ -3811,7 +3811,7 @@ static unsigned CDCNCM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize);
-		* buff ++ = opts->hsdesc ? HSINTERVAL_32MS : FSINTERVAL_32MS;   		/* bInterval: 32 mS */
+		* buff ++ = opts->hsdesc ? CDC_NOTIFY_PERIOD_HS : CDC_NOTIFY_PERIOD_FS;   						/* bInterval: 255 mS */
 	}
 	return length;
 }

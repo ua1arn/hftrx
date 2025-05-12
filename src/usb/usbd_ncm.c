@@ -159,7 +159,7 @@ __ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
   .bmRequest = 0x21,
   .bRequest = RESPONSE_AVAILABLE /* NETWORK_CONNECTION */,
   .wIndex = INTERFACE_CDCNCM_CONTROL,
-  .wValue = 0 /* Connected */,
+  .wValue = 1 /* Connected */,
   .wLength = 0,
 };
 
@@ -172,7 +172,7 @@ static int can_xmit;
 //static int ncm_tx_remaining;
 //static int ncm_tx_busy;
 //static int copy_length;
-static volatile int ncmsendnotifyrequest;
+//static volatile int ncmsendnotifyrequest;
 static volatile int ncmsendnotifyrequestData;
 
 static uint_fast32_t ecm_blocklength;	// Накоплено входных данных
@@ -188,7 +188,7 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 //	printhex(0, data, length);
 //	PRINTF("ncm_parse: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
 
-	static uint8_t out_data [2048];
+	static uint8_t out_data [CFG_TUD_NCM_IN_NTB_MAX_SIZE];
 	if (ecm_blocklength == 0)
 	{
 
@@ -423,7 +423,9 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 	case 0x43 /* SET_ETHERNET_PACKET_FILTER */:
 		//	USBD_NCM_Setup: 00000000: 21 43 0E 00 00 00 00 00
 		// For INTERFACE_CDCNCM_CONTROL
-	    ncmsendnotifyrequest = 1;
+		USBD_CtlSendStatus(pdev);
+	    //ncmsendnotifyrequest = 1;
+		USBD_LL_Transmit(pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
 	    break;
 
 	case GET_NTB_PARAMETERS:
@@ -471,7 +473,7 @@ static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 		can_xmit = 1;
 		break;
 	case USBD_EP_CDCNCM_INT:
-		//PRINTF("Notify sent\n");
+		PRINTF("Notify sent\n");
 		break;
 	default:
 		//TP();
@@ -730,18 +732,18 @@ static void on_packet(const uint8_t *data, int size)
 // user-mode function
 static void netif_polling(void * ctx)
 {
-	{
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		if (ncmsendnotifyrequest)
-		{
-			ncmsendnotifyrequest = 0;
-			if (registered_pdev)
-				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
-		}
-		LowerIrql(oldIrql);
-
-	}
+//	{
+//		IRQL_t oldIrql;
+//		RiseIrql(IRQL_SYSTEM, & oldIrql);
+//		if (ncmsendnotifyrequest)
+//		{
+//			ncmsendnotifyrequest = 0;
+//			if (registered_pdev)
+//				USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
+//		}
+//		LowerIrql(oldIrql);
+//
+//	}
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -776,6 +778,11 @@ static void netif_polling(void * ctx)
 void req(void)
 {
 	ncmsendnotifyrequestData = 1;
+}
+
+void req2(void)
+{
+	//ncmsendnotifyrequest = 1;
 }
 
 void init_netif(void)

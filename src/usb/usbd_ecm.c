@@ -160,6 +160,7 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		//USBD_CtlSendStatus(pdev);
 	    notify.wIndex = INTERFACE_CDCECM_CONTROL;
 	    ecmsendnotifyrequest = 1;
+		USBD_CtlSendStatus(pdev);
 	    break;
 
 	default:

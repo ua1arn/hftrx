@@ -272,21 +272,21 @@ void board_update_time(uint32_t sec);
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 
 
-#define LWIP_DEBUG             		1
+//#define LWIP_DEBUG             		1
 #define LWIP_DBG_MIN_LEVEL     		LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
 //#define HTTPD_DEBUG           LWIP_DBG_ON
-//#define ETHARP_DEBUG           LWIP_DBG_ON
+#define ETHARP_DEBUG           LWIP_DBG_ON
 #define NETIF_DEBUG            LWIP_DBG_ON
 //#define PBUF_DEBUG             LWIP_DBG_ON
 //#define API_LIB_DEBUG          LWIP_DBG_ON
 //#define API_MSG_DEBUG          LWIP_DBG_ON
 //#define SOCKETS_DEBUG          LWIP_DBG_ON
 #define ICMP_DEBUG             LWIP_DBG_ON
-//#define IGMP_DEBUG             LWIP_DBG_ON
-//#define INET_DEBUG             LWIP_DBG_ON
-//#define IP_DEBUG               LWIP_DBG_ON
+#define IGMP_DEBUG             LWIP_DBG_ON
+#define INET_DEBUG             LWIP_DBG_ON
+#define IP_DEBUG               LWIP_DBG_ON
 //#define IP_REASS_DEBUG         LWIP_DBG_ON
 //#define RAW_DEBUG              LWIP_DBG_ON
 //#define MEM_DEBUG              LWIP_DBG_ON
