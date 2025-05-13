@@ -807,95 +807,56 @@ static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
 static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_txdesc [1] [4];
 
-static struct netif emac_netif_data;
-
-/**
- * This function should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
- * @return ERR_OK if the packet could be sent
- *         an err_t value if the packet couldn't be sent
- *
- * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
- *       strange results. You might consider waiting for space in the DMA queue
- *       to become availale since the stack doesn't retry to send a packet
- *       dropped because of memory failure (except for the TCP timers).
- */
-
-// Transceiving Ethernet packets
-static err_t emac_linkoutput_fn(struct netif *netif, struct pbuf *p)
+int nic_can_send(void)
 {
-//	PRINTF("emac_linkoutput_fn\n");
-//	printhex(0, p->payload, p->len);
     int i = 0;
-    //struct pbuf *q;
-	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
-	//printhex32((uintptr_t) emac_txdesc [i], emac_txdesc [i], sizeof emac_txdesc [i]);
-	unsigned w;
-	w = 100;
-	while (w -- && (emac_txdesc [i][0] & (UINT32_C(1) << 31)) != 0)
-	{
-		local_delay_ms(1);
-		//board_dpc_processing();
-	}
+	return ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0);
+}
 
-	if ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0)
-	{
-		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-		//PRINTF("emac_linkoutput_fn: sta=%08X\n", (unsigned) sta);	// 40000025
+void nic_send(const uint8_t * data, int isize)
+{
+    int i = 0;
+	unsigned size = ulmin32(sizeof txbuff, isize);
 
-		//HARDWARE_EMAC_PTR->EMAC_INT_STA = sta;//(UINT32_C(1) << 0);	// TX_P
-		VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
-		u16_t size = pbuf_copy_partial(p, txbuff, sizeof txbuff, 0);
+	emac_txdesc [i][0] =	// status
+		1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
+		0;
+	// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
+	// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
+	// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
+	// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
+	emac_txdesc [i][1] =	// ctl
+		1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+		1 * (UINT32_C(1) << 30) |	// LAST_DESC
+		1 * (UINT32_C(1) << 29) |	// FIR_DESC
+		//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+		//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+		(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+		0;
+	emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
+	emac_txdesc [i][3] = (uintptr_t) emac_txdesc [i];	// NEXT_DESC_ADDR
 
-		// test data
-//		memset(txbuff, 0xE5, sizeof txbuff);
-//		size = 128;
+	dcache_clean((uintptr_t) txbuff, sizeof txbuff);
 
-		emac_txdesc [i][0] =	// status
-			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-			0;
-		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
-		emac_txdesc [i][1] =	// ctl
-			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
-			1 * (UINT32_C(1) << 30) |	// LAST_DESC
-			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-			1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
-			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-			0;
-		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
-		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [i];	// NEXT_DESC_ADDR
+	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
+	HARDWARE_EMAC_PTR->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
 
-		dcache_clean((uintptr_t) txbuff, sizeof txbuff);
+	HARDWARE_EMAC_PTR->EMAC_TX_CTL0 =
+		1 * (UINT32_C(1) << 31) |	// TX_EN
+		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
+		0;
 
-		dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
-		HARDWARE_EMAC_PTR->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
-
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL0 =
-			1 * (UINT32_C(1) << 31) |	// TX_EN
-			//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
-			0;
-
-		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
-		HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-		while (HARDWARE_EMAC_PTR->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
-			;
-	}
-    return ERR_OK;
+	//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+	HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+	HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
+	HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+	while (HARDWARE_EMAC_PTR->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
+		;
 }
 
 static void EMAC_Handler(void)
@@ -1057,96 +1018,10 @@ static void emac_hw_initialize(void)
 	}
 }
 
-// Receiving Ethernet packets
-// user-mode function
-static void netif_polling(void * ctx)
-{
-	(void) ctx;
-	emacbuf_t * p;
-	while (emac_buffers_ready(& p) != 0)
-	{
-		struct pbuf *frame = p->frame;
-		emac_buffers_release(p);
-//		PRINTF("rx:\n");
-//		printhex(0, frame->payload, frame->len);
-		err_t e = ethernet_input(frame, & emac_netif_data);
-		if (e != ERR_OK)
-		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
-
-	}
-}
-
-static err_t netif_init_cb(struct netif *netif)
-{
-	//PRINTF("emac netif_init_cb\n");
-	LWIP_ASSERT("netif != NULL", (netif != NULL));
-#if LWIP_NETIF_HOSTNAME
-	/* Initialize interface hostname */
-	netif->hostname = "storch";
-#endif /* LWIP_NETIF_HOSTNAME */
-	netif->mtu = EMAC_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP
-			| NETIF_FLAG_UP | NETIF_FLAG_ETHERNET;
-	netif->state = NULL;
-	netif->name[0] = 'E';
-	netif->name[1] = 'X';
-	netif->output = etharp_output;
-	netif->linkoutput = emac_linkoutput_fn;	// используется внутри etharp_output
-	return ERR_OK;
-}
-
 void nic_initialize(void)
 {
 	//PRINTF("init_netif start\n");
 	emac_hw_initialize();
-}
-
-void init_netif(void)
-{
-#if ETH_PAD_SIZE != 0
-	#error Wrong ETH_PAD_SIZE value
-#endif
-
-	static const  uint8_t hwaddrv [6]  = { HWADDR };
-
-	static ip_addr_t netmask;// [4] = NETMASK;
-	static ip_addr_t gateway;// [4] = GATEWAY;
-
-	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
-	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
-
-	static ip_addr_t vaddr;// [4]  = IPADDR;
-	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
-
-	struct netif  *netif = &emac_netif_data;
-	netif->hwaddr_len = 6;
-	memcpy(netif->hwaddr, hwaddrv, 6);
-
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
-	netif_set_default(netif);
-
-	while (!netif_is_up(netif))
-		;
-
-#if LWIP_AUTOIP
-	  autoip_start(netif);
-#endif /* LWIP_AUTOIP */
-
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, netif_polling, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-
-	//PRINTF("init_netif done\n");
-}
-u32_t sys_jiffies(void)
-{
-	return 33;
 }
 
 #endif /* defined (ETH) && WITHLWIP */

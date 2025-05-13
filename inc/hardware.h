@@ -956,9 +956,7 @@ typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
 
 
 void network_initialize(void);
-void init_netif(void);
 
-void sys_check_timeouts(void);	/* LWIP support */
 void cpptest(void);
 
 //#define UNUSED(x) ((void)(x))
@@ -970,10 +968,6 @@ void cpptest(void);
 //#define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
 #define HWADDR                          0x02,0x00,0x00,0x00,0x00,0x00
 
-extern uint8_t myIP [4];
-extern uint8_t myNETMASK [4];
-extern uint8_t myGATEWAY [4];
-
 #if 1 //CPUSTYLE_XC7Z
 
 #define AX_PWM_AXI_SLV_REG0_OFFSET 0
@@ -982,10 +976,10 @@ extern uint8_t myGATEWAY [4];
 #define AX_PWM_AXI_SLV_REG3_OFFSET 12
 
 #define AX_PWM_mWriteReg(BaseAddress, RegOffset, Data) \
-  	Xil_Out32((BaseAddress) + (RegOffset), (u32)(Data))
+  	do { Xil_Out32((BaseAddress) + (RegOffset), (u32)(Data)) } while (0)
 
 #define AX_PWM_mReadReg(BaseAddress, RegOffset) \
-    Xil_In32((BaseAddress) + (RegOffset))
+		do { Xil_In32((BaseAddress) + (RegOffset)) } while (0)
 
 void xcz_dcdc_sync(uint32_t freq);
 void xc7z_hardware_initialize(void);

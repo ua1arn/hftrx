@@ -23,6 +23,7 @@
 #include "lwip/opt.h"
 
 #include "lwip/init.h"
+#include "lwip/timeouts.h"
 #include "lwip/ip.h"
 #include "lwip/udp.h"
 #include "lwip/dhcp.h"
@@ -33,7 +34,13 @@
 #include "../lib/dns-server/dnserver.h"
 #include "lwip/apps/httpd.h"
 
+
 #define DHCP_SERVER 1
+
+static uint8_t myIP [4] = { 192, 168, 17, 33 };
+static uint8_t myNETMASK [4] = {255, 255, 255, 0};
+static uint8_t myGATEWAY [4] = { 0, 0, 0, 0 };
+
 /*
  *  В конфигурации описано имя и размер
  *
@@ -788,7 +795,7 @@ static void netif_polling(void * ctx)
 	}
 }
 
-void init_netif(void)
+static void init_netif(void)
 {
 #if ETH_PAD_SIZE != 0
 	#error Wrong ETH_PAD_SIZE value
@@ -865,18 +872,3 @@ void network_initialize(void)
 }
 
 #endif /*  WITHLWIP */
-
-#if 1
-
-uint8_t myIP [4] = { 192, 168, 17, 33 };
-uint8_t myNETMASK [4] = {255, 255, 255, 0};
-uint8_t myGATEWAY [4] = { 0, 0, 0, 0 };
-
-#else
-
-uint8_t myIP [4] = { 172, 210, 72, 198 };		// ��� �������� ������ � ���������� �� �������� ��������� �������
-//uint8_t myIP [4] = { 192, 168, 7, 1 };		// ������ � ����
-uint8_t myNETMASK [4] = {255, 0, 0, 0};
-uint8_t myGATEWAY [4] = { 172, 171, 242, 248 };
-
-#endif
