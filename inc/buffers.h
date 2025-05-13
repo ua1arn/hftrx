@@ -523,7 +523,7 @@ extern "C" {
   */
 
 #define CDC_NOTIFY_PERIOD_FS	255
-#define CDC_NOTIFY_PERIOD_HS	255
+#define CDC_NOTIFY_PERIOD_HS	0x0B // (1024 microframes)
 
 #define HSINTERVAL_1MS 4    // endpoint descriptor parameters - для обеспечения 1 ms периода
 #define FSINTERVAL_1MS 1
@@ -697,7 +697,7 @@ extern "C" {
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBCDCNCM
-	#define USBD_CDCNCM_INT_SIZE	64
+	#define USBD_CDCNCM_INT_SIZE	8
 	#if WITHUSBDEV_HSDESC
 		#define USBD_CDCNCM_IN_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
 		#define USBD_CDCNCM_OUT_BUFSIZE			USB_OTG_HS_MAX_PACKET_SIZE
