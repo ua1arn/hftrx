@@ -946,6 +946,15 @@ uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz cloc
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
 
+void nic_initialize(void);
+int nic_can_send(void);
+void nic_send(const uint8_t * data, int size);
+
+void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
+typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
+#define NIC_MTU 1500  // MTU value
+
+
 void network_initialize(void);
 void init_netif(void);
 

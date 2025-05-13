@@ -731,7 +731,7 @@ typedef struct emacbuf_tag
 static LIST_ENTRY emac_free;
 static LIST_ENTRY emac_ready;
 
-static void emac_buffers_initialize(void)
+static void nic_buffers_initialize(void)
 {
 	static RAMFRAMEBUFF emacbuf_t buffers [64];
 	unsigned i;
@@ -1098,14 +1098,17 @@ static err_t netif_init_cb(struct netif *netif)
 	return ERR_OK;
 }
 
+void nic_initialize(void)
+{
+	//PRINTF("init_netif start\n");
+	emac_hw_initialize();
+}
+
 void init_netif(void)
 {
 #if ETH_PAD_SIZE != 0
 	#error Wrong ETH_PAD_SIZE value
 #endif
-	//PRINTF("init_netif start\n");
-	emac_buffers_initialize();
-	emac_hw_initialize();
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
