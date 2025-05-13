@@ -6257,6 +6257,99 @@ void board_set_datatx(uint_fast8_t v)
 #endif /* WITHUSBUAC && WITHTX */
 }
 
+#if 1
+
+///--------------------https://analogtrx.com/SMF/index.php?topic=475.0
+
+#define EQ_STAGES 1					 // order of the biquad of the equalizer filter
+#define BIQUAD_COEFF_IN_STAGE 5			 // coefficients in manual Notch filter order
+
+//EQ RX
+static FLOAT_t EQ_RX_LOW_0_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_LOW_1_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_0_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_1_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_2_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_0_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_1_FILTER_State[2 * EQ_STAGES];
+
+static FLOAT_t EQ_RX_LOW_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_LOW_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_2_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_0_FILTER = {EQ_STAGES, EQ_RX_LOW_0_FILTER_State, EQ_RX_LOW_0_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_1_FILTER = {EQ_STAGES, EQ_RX_LOW_1_FILTER_State, EQ_RX_LOW_1_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_0_FILTER = {EQ_STAGES, EQ_RX_MID_0_FILTER_State, EQ_RX_MID_0_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_1_FILTER = {EQ_STAGES, EQ_RX_MID_1_FILTER_State, EQ_RX_MID_1_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_2_FILTER = {EQ_STAGES, EQ_RX_MID_2_FILTER_State, EQ_RX_MID_2_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIG_0_FILTER = {EQ_STAGES, EQ_RX_HIG_0_FILTER_State, EQ_RX_HIG_0_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIG_1_FILTER = {EQ_STAGES, EQ_RX_HIG_1_FILTER_State, EQ_RX_HIG_1_FILTER_Coeffs};
+
+// RX Equalizer
+static void doRX_EQ(FLOAT_t *buffer, uint32_t blockSize)
+{
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_LOW_0_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_LOW_1_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_0_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_1_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_2_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_HIG_0_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_HIG_1_FILTER, buffer, buffer, blockSize);
+}
+
+// automatic calculation of the Biquad filter
+static void calcBiquadR(FLOAT_t FsRatio, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t *outCoeffs)
+{
+	FLOAT_t a0, a1, a2, b1, b2, norm;
+    const FLOAT_t V = db2ratio(FABSF(peakGain));
+    const FLOAT_t K = TANF(M_PI * FsRatio);
+    if (peakGain >= 0) {
+        norm = 1 / (1 + 1 / Q * K + K * K);
+        a0 = (1 + V / Q * K + K * K) * norm;
+        a1 = 2 * (K * K - 1) * norm;
+        a2 = (1 - V / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1 - 1 / Q * K + K * K) * norm;
+    } else {
+        norm = 1 / (1.0f + V / Q * K + K * K);
+        a0 = (1 + 1 / Q * K + K * K) * norm;
+        a1 = 2 * (K * K - 1) * norm;
+        a2 = (1 - 1 / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1 - V / Q * K + K * K) * norm;
+    }
+
+    //save coefficients
+    outCoeffs[0] = a0;
+    outCoeffs[1] = a1;
+    outCoeffs[2] = a2;
+    outCoeffs[3] = -b1;
+    outCoeffs[4] = -b2;
+}
+
+// RX Equalizer
+void rxEqIni(void)
+{
+    ///(частота, 24000Гц, Q, db, коэффиценты)
+    const FLOAT_t sr = ARMI2SRATE;
+
+    calcBiquadR(250 / sr, 0.5f, 0.0f, EQ_RX_LOW_0_FILTER_Coeffs);
+    calcBiquadR(400 / sr, 0.5f, 0.0f, EQ_RX_LOW_1_FILTER_Coeffs);
+    calcBiquadR(1000 / sr, 1.0f, 7.0f, EQ_RX_MID_0_FILTER_Coeffs);
+    calcBiquadR(1350 / sr, 1.0f, 2.0f, EQ_RX_MID_1_FILTER_Coeffs);
+    calcBiquadR(1800 / sr, 1.0f, 1.0f, EQ_RX_MID_2_FILTER_Coeffs);
+    calcBiquadR(2000 / sr, 1.5f, -2.0f, EQ_RX_HIG_0_FILTER_Coeffs);
+    calcBiquadR(2400 / sr, 1.5f, -3.0f, EQ_RX_HIG_1_FILTER_Coeffs);
+
+}
+  ///eq  FRAME_SIZE=1024, pOutLms-массив оцифровки
+ ///      doRX_EQ((float32_t *) pOutLms, FRAME_SIZE);
+#endif
+
 #if WITHAFEQUALIZER
 
 #define EQ_STAGES				1
