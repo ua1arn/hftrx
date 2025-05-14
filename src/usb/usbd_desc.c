@@ -3517,7 +3517,7 @@ static unsigned CDCECM_EthernetNetworkingFunctionalDesc(uint_fast8_t fill, uint8
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t bmEthernetStatistics = 0;
-		const uint_fast16_t wMaxSegmentSize = 1514;
+		const uint_fast16_t wMaxSegmentSize = NIC_MTU + 14;
 		const uint_fast16_t wNumberMCFilters = 0;
 		const uint_fast8_t bNumberPowerFilters = 0;
 
@@ -3745,7 +3745,7 @@ static unsigned CDCECM_EthernetNetworkingFunctionalDesc(uint_fast8_t fill, uint8
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t bmEthernetStatistics = 0;
-		const uint_fast16_t wMaxSegmentSize = 1514;
+		const uint_fast16_t wMaxSegmentSize = NIC_MTU + 14;
 		const uint_fast16_t wNumberMCFilters = 0;
 		const uint_fast8_t bNumberPowerFilters = 0;
 

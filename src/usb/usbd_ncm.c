@@ -43,9 +43,6 @@
 #define 	SET_CRC_MODE   0x8A
 #define 	PACKET_TYPE_MULTICAST   0x10
 
-#define CDCNCM_MTU 1500
-
-
 typedef void (*cdcncm_rxproc_t)(const uint8_t *data, int size);
 
 static cdcncm_rxproc_t nic_rxproc = NULL;
@@ -64,9 +61,8 @@ typedef enum
 /* USB handle declared in main.c */
 //#define NCM_MAX_SEGMENT_SIZE           1514
 
-
-#define CFG_TUD_NCM_IN_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
-#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE 2048//(CDCNCM_MTU + 14) //3200
+#define CFG_TUD_NCM_IN_NTB_MAX_SIZE 2048
+#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE 2048
 
 
 typedef struct __PACKED
