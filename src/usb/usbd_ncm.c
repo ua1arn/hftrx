@@ -250,10 +250,12 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 int nic_can_send(void)
 {
 	int outcome;
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
-	__disable_irq();
 	outcome = can_xmit;
-	__enable_irq();
+
+	LowerIrql(oldIrql);
 
 	return outcome;
 }
