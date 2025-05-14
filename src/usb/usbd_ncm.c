@@ -112,7 +112,7 @@ typedef union __PACKED {
 	uint8_t data[CFG_TUD_NCM_IN_NTB_MAX_SIZE];
 } transmit_ntb_t;
 
-//struct ecm_notify_struct
+//struct ncm_notify_struct
 //{
 //	tusb_control_request_t header;
 //	uint32_t downlink, uplink;
@@ -161,23 +161,21 @@ __ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
 
 static volatile int can_xmit;
 
-static volatile int ncmsendnotifyrequestData;
-
-static uint_fast32_t ecm_blocklength;	// Накоплено входных данных
+static uint_fast32_t ncm_blocklength;	// Накоплено входных данных
 
 static void ncm_parse(const uint8_t * data, unsigned length)
 {
-	static uint_fast32_t ecm_blockscore;		// Входные данные
+	static uint_fast32_t ncm_blockscore;		// Входные данные
 
-	static uint_fast32_t ecm_outdatalength;	// Накоплено входных данных
-	static uint_fast32_t ecm_outdatascore;	// Накапливаем для пердачи в LwIP
+	static uint_fast32_t ncm_outdatalength;	// Накоплено входных данных
+	static uint_fast32_t ncm_outdatascore;	// Накапливаем для пердачи в LwIP
 
 //	PRINTF("ncm_parse:\n");
 //	printhex(0, data, length);
-//	PRINTF("ncm_parse: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+//	PRINTF("ncm_parse: length=%03X, ncm_outdatascore=%03X, ncm_outdatalength=%03X, ncm_blockscore=%03X, ncm_blocklength=%03X\n", length, ncm_outdatascore, ncm_outdatalength, ncm_blockscore, ncm_blocklength);
 
 	static uint8_t out_data [CFG_TUD_NCM_IN_NTB_MAX_SIZE];
-	if (ecm_blocklength == 0)
+	if (ncm_blocklength == 0)
 	{
 
 		const uint8_t * parser = data;
@@ -190,8 +188,8 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 //		PRINTF("h1->wNdpIndex=%04X\n", h1->wNdpIndex);
 //		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
 
-		ecm_blocklength = h1->wBlockLength;
-		ecm_blockscore = 0;
+		ncm_blocklength = h1->wBlockLength;
+		ncm_blockscore = 0;
 
 		parser += h1->wNdpIndex;
 
@@ -204,48 +202,48 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 //		PRINTF("h2->wLength=%04X\n", h2->wLength);
 
 		parser = data + h2->datagram [0].wDatagramIndex;
-		ecm_outdatalength = h2->datagram [0].wDatagramLength;
-		ecm_outdatascore = 0;
+		ncm_outdatalength = h2->datagram [0].wDatagramLength;
+		ncm_outdatascore = 0;
 
-		unsigned chunk = ulmin32(sizeof out_data - ecm_outdatascore, length - h2->datagram [0].wDatagramIndex);
+		unsigned chunk = ulmin32(sizeof out_data - ncm_outdatascore, length - h2->datagram [0].wDatagramIndex);
 		//PRINTF("1 chunk=%03X\n", chunk);
 
 //		PRINTF("use data 1:\n");
 //		printhex(0, parser, chunk);
 
-		memcpy(out_data + ecm_outdatascore, parser, chunk);
-		ecm_outdatascore += chunk;
-		ecm_outdatalength -= chunk;
+		memcpy(out_data + ncm_outdatascore, parser, chunk);
+		ncm_outdatascore += chunk;
+		ncm_outdatalength -= chunk;
 	}
-	else if (ecm_outdatalength >= 0)
+	else if (ncm_outdatalength >= 0)
 	{
-		//PRINTF("ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
-		unsigned chunk = ulmin32(sizeof out_data - ecm_outdatascore, ulmin32(ecm_outdatalength, length));
+		//PRINTF("ncm_outdatascore=%03X, ncm_outdatalength=%03X, ncm_blockscore=%03X, ncm_blocklength=%03X\n", ncm_outdatascore, ncm_outdatalength, ncm_blockscore, ncm_blocklength);
+		unsigned chunk = ulmin32(sizeof out_data - ncm_outdatascore, ulmin32(ncm_outdatalength, length));
 		//PRINTF("2 chunk=%03X\n", chunk);
 //		PRINTF("use data 2:\n");
 //		printhex(0, data, chunk);
 
-		memcpy(out_data + ecm_outdatascore, data, chunk);
-		ecm_outdatascore += chunk;
-		ecm_outdatalength -= chunk;
+		memcpy(out_data + ncm_outdatascore, data, chunk);
+		ncm_outdatascore += chunk;
+		ncm_outdatalength -= chunk;
 	}
 
-	//PRINTF("1 post corr: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+	//PRINTF("1 post corr: length=%03X, ncm_outdatascore=%03X, ncm_outdatalength=%03X, ncm_blockscore=%03X, ncm_blocklength=%03X\n", length, ncm_outdatascore, ncm_outdatalength, ncm_blockscore, ncm_blocklength);
 	{
-		ecm_blocklength -= length;
-		ecm_blockscore += length;
+		ncm_blocklength -= length;
+		ncm_blockscore += length;
 	}
-	//PRINTF("2 post corr: length=%03X, ecm_outdatascore=%03X, ecm_outdatalength=%03X, ecm_blockscore=%03X, ecm_blocklength=%03X\n", length, ecm_outdatascore, ecm_outdatalength, ecm_blockscore, ecm_blocklength);
+	//PRINTF("2 post corr: length=%03X, ncm_outdatascore=%03X, ncm_outdatalength=%03X, ncm_blockscore=%03X, ncm_blocklength=%03X\n", length, ncm_outdatascore, ncm_outdatalength, ncm_blockscore, ncm_blocklength);
 
-	if (ecm_blocklength == 0)
+	if (ncm_blocklength == 0)
 	{
 		//PRINTF("eth data:\n");
-		//printhex(0, out_data, ecm_outdatascore);
-		nic_rxproc(out_data, ecm_outdatascore);
-		ecm_blockscore = 0;
-		ecm_blocklength = 0;
-		ecm_outdatascore = 0;
-		ecm_outdatalength = 0;
+		//printhex(0, out_data, ncm_outdatascore);
+		nic_rxproc(out_data, ncm_outdatascore);
+		ncm_blockscore = 0;
+		ncm_blocklength = 0;
+		ncm_outdatascore = 0;
+		ncm_outdatalength = 0;
 	}
 }
 
@@ -260,7 +258,7 @@ int nic_can_send(void)
 	return outcome;
 }
 
-static uint_fast16_t ecm_tx_seqnumber;
+static uint_fast16_t ncm_tx_seqnumber;
 
 static size_t alignup4(size_t v)
 {
@@ -303,12 +301,12 @@ void nic_send(const uint8_t *data, int size)
 //	nth16_t * h1 = (nth16_t *) parser;
 //	h1->dwSignature = 0x484D434E;	// NCMH
 //	h1->wBlockLength = header_size + packet_size;
-//	h1->wSequence = ecm_tx_seqnumber ++;
+//	h1->wSequence = ncm_tx_seqnumber ++;
 //	h1->wHeaderLength = sizeof (nth16_t);
 //	h1->wNdpIndex = sizeof (nth16_t);
 	USBD_poke_u32(parser + offsetof(nth16_t, dwSignature), 0x484D434E);
 	USBD_poke_u16(parser + offsetof(nth16_t, wBlockLength), alignup4(header_size + packet_size));
-	USBD_poke_u16(parser + offsetof(nth16_t, wSequence), ecm_tx_seqnumber ++);
+	USBD_poke_u16(parser + offsetof(nth16_t, wSequence), ncm_tx_seqnumber ++);
 	USBD_poke_u16(parser + offsetof(nth16_t, wHeaderLength), sizeof (nth16_t));
 	USBD_poke_u16(parser + offsetof(nth16_t, wNdpIndex), sizeof (nth16_t));
 
@@ -357,8 +355,8 @@ static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
 	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
 
 	can_xmit = 1 /* true */;
-	ecm_blocklength = 0;
-	ecm_tx_seqnumber = 0;
+	ncm_blocklength = 0;
+	ncm_tx_seqnumber = 0;
 	registered_pdev = pdev;
 
 	return USBD_OK;
