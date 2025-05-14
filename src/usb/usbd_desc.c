@@ -3708,7 +3708,7 @@ static unsigned CDCNCM_InterfaceDescControlIf(uint_fast8_t fill, uint8_t * buff,
 		* buff ++ = 0x01;   /* bNumEndpoints: One endpoints used (interrupt type) */
 		* buff ++ = CDC_COMMUNICATION_INTERFACE_CLASS;   /* bInterfaceClass: Communication Interface Class */
 		* buff ++ = CDC_NETWORK_CONTROL_MODEL;   /* bInterfaceSubClass: Ethernet Networking */
-		* buff ++ = 0x00;   /* bInterfaceProtocol */
+		* buff ++ = 0x00;   /* bInterfaceProtocol NCM10-20101124-track.pdf Table 4-2 NCM Communications Interface Protocol Code */
 		* buff ++ = STRING_ID_0;   /* iInterface */
 	}
 	return length;
@@ -3882,7 +3882,7 @@ static unsigned CDCNCM_InterfaceDescDataIf(
 		* buff ++ = bNumEndpoints;							// 2 endpoints.   (bNumEndpoints)
 		* buff ++ = CDC_DATA_INTERFACE_CLASS;		// 10 CDC Data (bInterfaceClass)
 		* buff ++ = 0x00;							// bInterfaceSubclass)
-		* buff ++ = 0x00;             /* 0 bInterfaceProtocol */
+		* buff ++ = 0x01;             				/* bInterfaceProtocol 0x01  NCM10-20101124-track.pdf Table 4-3 NCM Data Class Protocol Code */
 		* buff ++ = STRING_ID_0;                   /* 0 Unused iInterface */
 		/* 9 byte*/
 	}
