@@ -163,38 +163,49 @@ static volatile int can_xmit;
 
 static void ncm_parse(const uint8_t * data, unsigned length)
 {
-	const uint8_t * parser = data;
-
-	// Parse h1
-	const nth16_t * h1 = (const nth16_t *) parser;
-	ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D48);	// NCMH
-
-//		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
-//		PRINTF("h1->wNdpIndex=%04X\n", h1->wNdpIndex);
-//		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
-
-	parser = data + h1->wNdpIndex;
-	// Parse datagram header
-	for (;;)
+	unsigned index = 0;
+//	PRINTF("ncm_parse:\n");
+//	printhex(0, data, length);
+	switch (USBD_peek_u32_BE(data + 0))
 	{
+	case 0x4E434D48:
+		index = USBD_peek_u16(data + offsetof(nth16_t, wNdpIndex));
+		break;
+	default:
+		TP();
+		return;
+	}
+	// Parse datagram header
+	while (index != 0)
+	{
+		const uint8_t * const h2 = data + index;
 		// Parse h2
-		ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0 (NCM1 - with CRC32)
-		const ndp16_t * h2 = (const ndp16_t *) parser;
-
-		// Parse datagrams
-		unsigned datagram;
-		for (datagram = 0; ;)
+		switch (USBD_peek_u32_BE(data + index + 0))
 		{
-			unsigned wDatagramIndex = h2->datagram [datagram].wDatagramIndex;
-			unsigned wDatagramLength = h2->datagram [datagram].wDatagramLength;
-			if (wDatagramIndex == 0 || wDatagramLength == 0)
-				break;
-			if (nic_rxproc)
-				nic_rxproc(data + wDatagramIndex, wDatagramLength);
-		}
-		if (h2->wNextNdpIndex == 0)
+		case 0x4E434D30:
+		case 0x4E434D31:
+			// NCM0 (NCM1 - with CRC32)
+			{
+				//const ndp16_t * h2 = (const ndp16_t *) parser;
+
+				// Parse datagrams
+				unsigned datagram;
+				for (datagram = 0; ; ++ datagram)
+				{
+					unsigned wDatagramIndex = USBD_peek_u16(h2 + offsetof(ndp16_t, datagram [datagram].wDatagramIndex));
+					unsigned wDatagramLength = USBD_peek_u16(h2 + offsetof(ndp16_t, datagram [datagram].wDatagramLength));
+					if (wDatagramIndex == 0 || wDatagramLength == 0)
+						break;
+					if (nic_rxproc)
+						nic_rxproc(data + wDatagramIndex, wDatagramLength);
+				}
+				index = USBD_peek_u16(h2 + offsetof(ndp16_t, wNextNdpIndex));
+			}
 			break;
-		parser = data + h2->wNextNdpIndex;
+		default:
+			TP();
+			return;
+		}
 	}
 }
 
