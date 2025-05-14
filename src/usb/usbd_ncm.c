@@ -369,7 +369,6 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		//	USBD_NCM_Setup: 00000000: 21 43 0E 00 00 00 00 00
 		// For INTERFACE_CDCNCM_CONTROL
 		USBD_CtlSendStatus(pdev);
-	    //ncmsendnotifyrequest = 1;
 		USBD_LL_Transmit(pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
 	    break;
 
