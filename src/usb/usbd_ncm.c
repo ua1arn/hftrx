@@ -173,25 +173,28 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 //		PRINTF("h1->wNdpIndex=%04X\n", h1->wNdpIndex);
 //		PRINTF("h1->wBlockLength=%04X\n", h1->wBlockLength);
 
-	parser += h1->wNdpIndex;
-
-	// Parse h2
-	ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0 (NCM1 - with CRC32)
-	const ndp16_t * h2 = (const ndp16_t *) parser;
-
-//		PRINTF("h2->wNextNdpIndex=%04X\n", h2->wNextNdpIndex);
-//		PRINTF("h2->datagram [0].wDatagramLength=%04X\n", h2->datagram [0].wDatagramLength);
-//		PRINTF("h2->wLength=%04X\n", h2->wLength);
-
-	unsigned datagram;
-	for (datagram = 0; ;)
+	parser = data + h1->wNdpIndex;
+	// Parse datagram header
+	for (;;)
 	{
-		unsigned wDatagramIndex = h2->datagram [datagram].wDatagramIndex;
-		unsigned wDatagramLength = h2->datagram [datagram].wDatagramLength;
-		if (wDatagramIndex == 0 || wDatagramLength == 0)
+		// Parse h2
+		ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0 (NCM1 - with CRC32)
+		const ndp16_t * h2 = (const ndp16_t *) parser;
+
+		// Parse datagrams
+		unsigned datagram;
+		for (datagram = 0; ;)
+		{
+			unsigned wDatagramIndex = h2->datagram [datagram].wDatagramIndex;
+			unsigned wDatagramLength = h2->datagram [datagram].wDatagramLength;
+			if (wDatagramIndex == 0 || wDatagramLength == 0)
+				break;
+			if (nic_rxproc)
+				nic_rxproc(data + wDatagramIndex, wDatagramLength);
+		}
+		if (h2->wNextNdpIndex == 0)
 			break;
-		if (nic_rxproc)
-			nic_rxproc(data + wDatagramIndex, wDatagramLength);
+		parser = data + h2->wNextNdpIndex;
 	}
 }
 
