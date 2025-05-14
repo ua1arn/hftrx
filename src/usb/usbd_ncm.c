@@ -163,16 +163,8 @@ __ALIGN_BEGIN static USBD_SetupReqTypedef notifyData __ALIGN_END =
   .wLength = 0,
 };
 
-//static unsigned ncmheadersz = 0x00BA;
+static volatile int can_xmit;
 
-//static int ncm_rx_index;
-static int can_xmit;
-//static int OutboundTransferNeedsRenewal;
-//static uint8_t *ncm_tx_ptr;
-//static int ncm_tx_remaining;
-//static int ncm_tx_busy;
-//static int copy_length;
-//static volatile int ncmsendnotifyrequest;
 static volatile int ncmsendnotifyrequestData;
 
 static uint_fast32_t ecm_blocklength;	// Накоплено входных данных
@@ -208,7 +200,7 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 		parser += h1->wNdpIndex;
 
 		// Parse h2
-		ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0
+		ASSERT(USBD_peek_u32_BE(parser + 0) == 0x4E434D30);	// NCM0 (NCM1 - with CRC32)
 		const ndp16_t * h2 = (const ndp16_t *) parser;
 
 //		PRINTF("h2->wNextNdpIndex=%04X\n", h2->wNextNdpIndex);
@@ -261,24 +253,6 @@ static void ncm_parse(const uint8_t * data, unsigned length)
 	}
 }
 
-static USBD_StatusTypeDef USBD_NCM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	uint32_t RxLength;
-
-	if (USBD_EP_CDCNCM_OUT != epnum)
-		return USBD_OK;
-	/* Get the received data length */
-	RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
-
-//	PRINTF("USBD_NCM_DataOut:\n");
-//	printhex(0, ncm_rx_buffer, RxLength);
-
-	ncm_parse(ncm_rx_buffer, RxLength);	// last in transaction
-	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
-
-	return USBD_OK;
-}
-
 int nic_can_send(void)
 {
 	int outcome;
@@ -291,6 +265,11 @@ int nic_can_send(void)
 }
 
 static uint_fast16_t ecm_tx_seqnumber;
+
+static size_t alignup4(size_t v)
+{
+	return (v + 3) / 4 * 4;
+}
 
 void nic_send(const uint8_t *data, int size)
 {
@@ -309,88 +288,97 @@ void nic_send(const uint8_t *data, int size)
 //		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 //		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 //	};
-	const size_t header_size = 0x18;	// 0x20
+	const size_t header_size =
+			sizeof (nth16_t) +
+			offsetof(ndp16_t, datagram [2]) +	// One element and list terminator
+			0;
+
 	if (!registered_pdev || !can_xmit)
 		return;
 
-	//memcpy(ncm_tx_buffer + 0, ncm_txheader, sizeof ncm_txheader);
 	const size_t packet_size = ulmin32(size, sizeof ncm_tx_buffer - header_size);
 	memcpy(ncm_tx_buffer + header_size, data, packet_size);
 
 	ASSERT(packet_size == size);
 
-
 	uint8_t * parser = ncm_tx_buffer;
 
 	// Prepare h1
-	nth16_t * h1 = (nth16_t *) parser;
-	h1->dwSignature = 0x484D434E;	// NCMH
-	h1->wBlockLength = header_size + packet_size;
-	h1->wSequence = ecm_tx_seqnumber ++;
-	h1->wHeaderLength = sizeof (nth16_t);
-	h1->wNdpIndex = sizeof (nth16_t);
+//	nth16_t * h1 = (nth16_t *) parser;
+//	h1->dwSignature = 0x484D434E;	// NCMH
+//	h1->wBlockLength = header_size + packet_size;
+//	h1->wSequence = ecm_tx_seqnumber ++;
+//	h1->wHeaderLength = sizeof (nth16_t);
+//	h1->wNdpIndex = sizeof (nth16_t);
+	USBD_poke_u32(parser + offsetof(nth16_t, dwSignature), 0x484D434E);
+	USBD_poke_u16(parser + offsetof(nth16_t, wBlockLength), alignup4(header_size + packet_size));
+	USBD_poke_u16(parser + offsetof(nth16_t, wSequence), ecm_tx_seqnumber ++);
+	USBD_poke_u16(parser + offsetof(nth16_t, wHeaderLength), sizeof (nth16_t));
+	USBD_poke_u16(parser + offsetof(nth16_t, wNdpIndex), sizeof (nth16_t));
 
 	parser += sizeof (nth16_t);
 
 	// Prepare h2
-	ndp16_t * h2 = (ndp16_t *) parser;
-	h2->dwSignature = 0x304D434E;	// NCM0
-	h2->wLength = 0x0010;
-	h2->wNextNdpIndex = 0x0000;
+//	ndp16_t * h2 = (ndp16_t *) parser;
+//	h2->dwSignature = 0x304D434E;	// NCM0	- without CRC32
+//	h2->wLength = 0x0010;
+//	h2->wNextNdpIndex = 0x0000;
+	USBD_poke_u32(parser + offsetof(ndp16_t, dwSignature), 0x304D434E);
+	USBD_poke_u16(parser + offsetof(ndp16_t, wLength), 0x0010);
+	USBD_poke_u16(parser + offsetof(ndp16_t, wNextNdpIndex), 0x0000);
 
 //		PRINTF("h2->wNextNdpIndex=%04X\n", h2->wNextNdpIndex);
 //		PRINTF("h2->datagram [0].wDatagramLength=%04X\n", h2->datagram [0].wDatagramLength);
 //		PRINTF("h2->wLength=%04X\n", h2->wLength);
 
-	h2->datagram [0].wDatagramIndex = header_size;
-	h2->datagram [0].wDatagramLength = packet_size;
+//	h2->datagram [0].wDatagramIndex = header_size;
+//	h2->datagram [0].wDatagramLength = packet_size;
+	USBD_poke_u16(parser + offsetof(ndp16_t, datagram [0].wDatagramIndex), header_size);
+	USBD_poke_u16(parser + offsetof(ndp16_t, datagram [0].wDatagramLength), packet_size);
+	// List terminator
+//	h2->datagram [1].wDatagramIndex = 0;
+//	h2->datagram [1].wDatagramLength = 0;
+	USBD_poke_u16(parser + offsetof(ndp16_t, datagram [1].wDatagramIndex), 0);
+	USBD_poke_u16(parser + offsetof(ndp16_t, datagram [1].wDatagramLength), 0);
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	can_xmit = 0 /* false */;
-	USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_buffer, header_size + packet_size);
-	LowerIrql(oldIrql);
 
+	const USBD_StatusTypeDef st = USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_IN, ncm_tx_buffer, header_size + packet_size);
+
+	PRINTF("nic_send: st=%u\n", (unsigned) st);
+	can_xmit = (st == USBD_FAIL || st == USBD_EMEM);
+
+	LowerIrql(oldIrql);
 }
 
 static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
-  registered_pdev = pdev;
+	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_IN, USBD_EP_TYPE_BULK, USBD_CDCNCM_IN_BUFSIZE); /* Open EP IN */
+	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_OUT, USBD_EP_TYPE_BULK, USBD_CDCNCM_OUT_BUFSIZE); /* Open EP OUT */
+	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_INT, USBD_EP_TYPE_INTR, USBD_CDCNCM_INT_SIZE);	/* Open Command IN EP */
 
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_IN, USBD_EP_TYPE_BULK, USBD_CDCNCM_IN_BUFSIZE); /* Open EP IN */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_OUT, USBD_EP_TYPE_BULK, USBD_CDCNCM_OUT_BUFSIZE); /* Open EP OUT */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_INT, USBD_EP_TYPE_INTR, USBD_CDCNCM_INT_SIZE);	/* Open Command IN EP */
+	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
 
-  //ncm_rx_index = 0;
-  //usb_ncm_recv_renew();
-  USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
-  can_xmit = 1 /* true */;
-  ecm_blocklength = 0;
-  //OutboundTransferNeedsRenewal = 0 /* false */;
-//  ncm_tx_busy = 0;
-//  ncm_tx_remaining = 0;
+	can_xmit = 1 /* true */;
+	ecm_blocklength = 0;
+	ecm_tx_seqnumber = 0;
+	registered_pdev = pdev;
 
-  return USBD_OK;
+	return USBD_OK;
 }
 
 static USBD_StatusTypeDef USBD_NCM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
-  registered_pdev = NULL;
+	registered_pdev = NULL;
+	can_xmit = 0 /* false */;
 
-  /* Close EP IN */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_IN);
+	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_IN);
+	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_OUT);
+	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_INT);
 
-  /* Close EP OUT */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_OUT);
-
-  /* Close Command IN EP */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_INT);
-
-  can_xmit = 0 /* false */;
-
-  return USBD_OK;
+	return USBD_OK;
 }
-
 
 static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
@@ -443,7 +431,7 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		break;
 	}
 
-  return ret;
+	return ret;
 }
 
 static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
@@ -461,7 +449,25 @@ static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 		//TP();
 		break;
 	}
-  return USBD_OK;
+	return USBD_OK;
+}
+
+static USBD_StatusTypeDef USBD_NCM_DataOut (USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+{
+	uint32_t RxLength;
+
+	if (USBD_EP_CDCNCM_OUT != epnum)
+		return USBD_OK;
+	/* Get the received data length */
+	RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
+
+//	PRINTF("USBD_NCM_DataOut:\n");
+//	printhex(0, ncm_rx_buffer, RxLength);
+
+	ncm_parse(ncm_rx_buffer, RxLength);	// last in transaction
+	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
+
+	return USBD_OK;
 }
 
 static void USBD_CDC_NCM_Cold_Init(void)
@@ -476,7 +482,7 @@ USBD_ClassTypeDef USBD_CLASS_CDC_NCM =
 	USBD_NCM_Init,
 	USBD_NCM_DeInit,
 	USBD_NCM_Setup,
-	NULL,                 /* EP0_TxSent, */
+	NULL,   /* EP0_TxSent, */
 	NULL,	/* USBD_NCM_EP0_RxReady, */
 	USBD_NCM_DataIn,
 	USBD_NCM_DataOut,
@@ -485,17 +491,28 @@ USBD_ClassTypeDef USBD_CLASS_CDC_NCM =
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
 
-
-
-
-void req(void)
+// Debug function
+void req1(void)
 {
-	ncmsendnotifyrequestData = 1;
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+
+	if (registered_pdev)
+		USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notifyData, sizeof notifyData);
+
+	LowerIrql(oldIrql);
 }
 
+// Debug function
 void req2(void)
 {
-	//ncmsendnotifyrequest = 1;
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+
+	if (registered_pdev)
+		USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
+
+	LowerIrql(oldIrql);
 }
 
 
