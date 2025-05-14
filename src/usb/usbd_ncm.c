@@ -383,7 +383,9 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		break;
 
 	default:
+		//USBD_NCM_Setup: 00000000: 40 01 35 00 01 00 01 00                          @.5.....
 		TP();
+		USBD_CtlSendStatus(pdev);
 		break;
 	}
 
