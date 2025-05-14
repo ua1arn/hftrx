@@ -5259,6 +5259,239 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 #endif /* WITHDSPEXTDDC */
 }
 
+#if 1
+
+///--------------------https://analogtrx.com/SMF/index.php?topic=475.0
+
+#define EQ_STAGES 1					 // order of the biquad of the equalizer filter
+#define BIQUAD_COEFF_IN_STAGE 5			 // coefficients in manual Notch filter order
+
+//EQ RX
+static FLOAT_t EQ_RX_LOW_0_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_LOW_1_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_0_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_1_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_2_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_0_FILTER_State[2 * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_1_FILTER_State[2 * EQ_STAGES];
+
+static FLOAT_t EQ_RX_LOW_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_LOW_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_MID_2_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+static FLOAT_t EQ_RX_HIG_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
+
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_0_FILTER = {EQ_STAGES, EQ_RX_LOW_0_FILTER_State, EQ_RX_LOW_0_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_1_FILTER = {EQ_STAGES, EQ_RX_LOW_1_FILTER_State, EQ_RX_LOW_1_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_0_FILTER = {EQ_STAGES, EQ_RX_MID_0_FILTER_State, EQ_RX_MID_0_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_1_FILTER = {EQ_STAGES, EQ_RX_MID_1_FILTER_State, EQ_RX_MID_1_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_2_FILTER = {EQ_STAGES, EQ_RX_MID_2_FILTER_State, EQ_RX_MID_2_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIG_0_FILTER = {EQ_STAGES, EQ_RX_HIG_0_FILTER_State, EQ_RX_HIG_0_FILTER_Coeffs};
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIG_1_FILTER = {EQ_STAGES, EQ_RX_HIG_1_FILTER_State, EQ_RX_HIG_1_FILTER_Coeffs};
+
+// RX Equalizer
+static void doRX_EQ(FLOAT_t *buffer, uint32_t blockSize)
+{
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_LOW_0_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_LOW_1_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_0_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_1_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_2_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_HIG_0_FILTER, buffer, buffer, blockSize);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_HIG_1_FILTER, buffer, buffer, blockSize);
+}
+
+// automatic calculation of the Biquad filter
+static void calcBiquadR(FLOAT_t FsRatio, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t *outCoeffs)
+{
+	FLOAT_t a0, a1, a2, b1, b2, norm;
+    const FLOAT_t V = db2ratio(FABSF(peakGain));
+    const FLOAT_t K = TANF(M_PI * FsRatio);
+    if (peakGain >= 0) {
+        norm = 1 / (1 + 1 / Q * K + K * K);
+        a0 = (1 + V / Q * K + K * K) * norm;
+        a1 = 2 * (K * K - 1) * norm;
+        a2 = (1 - V / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1 - 1 / Q * K + K * K) * norm;
+    } else {
+        norm = 1 / (1.0f + V / Q * K + K * K);
+        a0 = (1 + 1 / Q * K + K * K) * norm;
+        a1 = 2 * (K * K - 1) * norm;
+        a2 = (1 - 1 / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1 - V / Q * K + K * K) * norm;
+    }
+
+    //save coefficients
+    outCoeffs[0] = a0;
+    outCoeffs[1] = a1;
+    outCoeffs[2] = a2;
+    outCoeffs[3] = -b1;
+    outCoeffs[4] = -b2;
+}
+
+// RX Equalizer
+void rxEqIni(void)
+{
+    ///(частота, 24000Гц, Q, db, коэффиценты)
+    const FLOAT_t sr = ARMI2SRATE;
+
+    calcBiquadR(250 / sr, 0.5f, 0.0f, EQ_RX_LOW_0_FILTER_Coeffs);
+    calcBiquadR(400 / sr, 0.5f, 0.0f, EQ_RX_LOW_1_FILTER_Coeffs);
+    calcBiquadR(1000 / sr, 1.0f, 7.0f, EQ_RX_MID_0_FILTER_Coeffs);
+    calcBiquadR(1350 / sr, 1.0f, 2.0f, EQ_RX_MID_1_FILTER_Coeffs);
+    calcBiquadR(1800 / sr, 1.0f, 1.0f, EQ_RX_MID_2_FILTER_Coeffs);
+    calcBiquadR(2000 / sr, 1.5f, -2.0f, EQ_RX_HIG_0_FILTER_Coeffs);
+    calcBiquadR(2400 / sr, 1.5f, -3.0f, EQ_RX_HIG_1_FILTER_Coeffs);
+
+}
+  ///eq  FRAME_SIZE=1024, pOutLms-массив оцифровки
+ ///      doRX_EQ((float32_t *) pOutLms, FRAME_SIZE);
+#endif
+
+#if WITHAFEQUALIZER
+
+#define EQ_STAGES				1
+#define BIQUAD_COEFF_IN_STAGE 	5
+
+static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
+
+static FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+static FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
+
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
+
+static void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t * outCoeffs)
+{
+	FLOAT_t a0, a1, a2, b1, b2, norm;
+
+	FLOAT_t V = POWF(10.0f, FABSF(peakGain) / 20);
+	FLOAT_t K = TANF(PI * Fc / Fs);
+    if (peakGain >= 0)
+    {
+        norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
+        a0 = (1.0f + V / Q * K + K * K) * norm;
+        a1 = 2.0f * (K * K - 1.0f) * norm;
+        a2 = (1.0f - V / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
+    }
+    else
+    {
+        norm = 1.0f / (1.0f + V / Q * K + K * K);
+        a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
+        a1 = 2.0f * (K * K - 1.0f) * norm;
+        a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
+        b1 = a1;
+        b2 = (1.0f - V / Q * K + K * K) * norm;
+    }
+
+    //save coefficients
+    outCoeffs[0] = a0;
+    outCoeffs[1] = a1;
+    outCoeffs[2] = a2;
+    outCoeffs[3] = - b1;
+    outCoeffs[4] = - b2;
+}
+
+void audio_rx_equalizer_init(void)
+{
+	FLOAT_t base = hamradio_get_af_equalizer_base();
+	FLOAT_t max_coeff = 0;
+
+	for (uint_fast8_t i = 0; i < 3; i ++)
+		max_coeff = max_coeff < glob_equalizer_rx_gains [i] ? glob_equalizer_rx_gains [i] : max_coeff;
+
+	max_coeff += base;
+
+    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
+}
+
+void audio_tx_equalizer_init(void)
+{
+	FLOAT_t base = hamradio_get_af_equalizer_base();
+	FLOAT_t max_coeff = 0;
+
+	for (uint_fast8_t i = 0; i < 3; i ++)
+		max_coeff = max_coeff < glob_equalizer_tx_gains [i] ? glob_equalizer_tx_gains [i] : max_coeff;
+
+	max_coeff += base;
+
+    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_tx_gains [0] + base - max_coeff, EQ_TX_LOW_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_tx_gains [1] + base - max_coeff, EQ_TX_MID_FILTER_Coeffs);
+    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_tx_gains [2] + base - max_coeff, EQ_TX_HIGH_FILTER_Coeffs);
+}
+
+void audio_rx_equalizer(FLOAT_t * buffer, uint_fast16_t size)
+{
+	if (glob_equalizer_rx)
+	{
+		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_LOW_FILTER, buffer, buffer, size);
+		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_MID_FILTER, buffer, buffer, size);
+		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_HIGH_FILTER, buffer, buffer, size);
+	}
+}
+
+void
+board_set_equalizer_rx(uint_fast8_t n)
+{
+	const uint_fast8_t v = n != 0;
+	if (glob_equalizer_rx != v)
+	{
+		glob_equalizer_rx = v;
+	}
+}
+
+void
+board_set_equalizer_tx(uint_fast8_t n)
+{
+	const uint_fast8_t v = n != 0;
+	if (glob_equalizer_tx != v)
+	{
+		glob_equalizer_tx = v;
+	}
+}
+
+void board_set_equalizer_rx_gains(const uint_fast8_t * p)
+{
+	if (memcmp(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains) != 0)
+	{
+		memcpy(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains);
+		audio_rx_equalizer_init();
+	}
+}
+
+void board_set_equalizer_tx_gains(const uint_fast8_t * p)
+{
+	if (memcmp(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains) != 0)
+	{
+		memcpy(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains);
+		audio_tx_equalizer_init();
+	}
+}
+
+#endif /* WITHAFEQUALIZER */
+
 
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
@@ -6256,239 +6489,6 @@ void board_set_datatx(uint_fast8_t v)
 	datavox = v;
 #endif /* WITHUSBUAC && WITHTX */
 }
-
-#if 1
-
-///--------------------https://analogtrx.com/SMF/index.php?topic=475.0
-
-#define EQ_STAGES 1					 // order of the biquad of the equalizer filter
-#define BIQUAD_COEFF_IN_STAGE 5			 // coefficients in manual Notch filter order
-
-//EQ RX
-static FLOAT_t EQ_RX_LOW_0_FILTER_State[2 * EQ_STAGES];
-static FLOAT_t EQ_RX_LOW_1_FILTER_State[2 * EQ_STAGES];
-static FLOAT_t EQ_RX_MID_0_FILTER_State[2 * EQ_STAGES];
-static FLOAT_t EQ_RX_MID_1_FILTER_State[2 * EQ_STAGES];
-static FLOAT_t EQ_RX_MID_2_FILTER_State[2 * EQ_STAGES];
-static FLOAT_t EQ_RX_HIG_0_FILTER_State[2 * EQ_STAGES];
-static FLOAT_t EQ_RX_HIG_1_FILTER_State[2 * EQ_STAGES];
-
-static FLOAT_t EQ_RX_LOW_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-static FLOAT_t EQ_RX_LOW_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-static FLOAT_t EQ_RX_MID_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-static FLOAT_t EQ_RX_MID_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-static FLOAT_t EQ_RX_MID_2_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-static FLOAT_t EQ_RX_HIG_0_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-static FLOAT_t EQ_RX_HIG_1_FILTER_Coeffs[BIQUAD_COEFF_IN_STAGE * EQ_STAGES];
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_0_FILTER = {EQ_STAGES, EQ_RX_LOW_0_FILTER_State, EQ_RX_LOW_0_FILTER_Coeffs};
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_1_FILTER = {EQ_STAGES, EQ_RX_LOW_1_FILTER_State, EQ_RX_LOW_1_FILTER_Coeffs};
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_0_FILTER = {EQ_STAGES, EQ_RX_MID_0_FILTER_State, EQ_RX_MID_0_FILTER_Coeffs};
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_1_FILTER = {EQ_STAGES, EQ_RX_MID_1_FILTER_State, EQ_RX_MID_1_FILTER_Coeffs};
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_2_FILTER = {EQ_STAGES, EQ_RX_MID_2_FILTER_State, EQ_RX_MID_2_FILTER_Coeffs};
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIG_0_FILTER = {EQ_STAGES, EQ_RX_HIG_0_FILTER_State, EQ_RX_HIG_0_FILTER_Coeffs};
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIG_1_FILTER = {EQ_STAGES, EQ_RX_HIG_1_FILTER_State, EQ_RX_HIG_1_FILTER_Coeffs};
-
-// RX Equalizer
-static void doRX_EQ(FLOAT_t *buffer, uint32_t blockSize)
-{
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_LOW_0_FILTER, buffer, buffer, blockSize);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_LOW_1_FILTER, buffer, buffer, blockSize);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_0_FILTER, buffer, buffer, blockSize);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_1_FILTER, buffer, buffer, blockSize);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_MID_2_FILTER, buffer, buffer, blockSize);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_HIG_0_FILTER, buffer, buffer, blockSize);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&EQ_RX_HIG_1_FILTER, buffer, buffer, blockSize);
-}
-
-// automatic calculation of the Biquad filter
-static void calcBiquadR(FLOAT_t FsRatio, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t *outCoeffs)
-{
-	FLOAT_t a0, a1, a2, b1, b2, norm;
-    const FLOAT_t V = db2ratio(FABSF(peakGain));
-    const FLOAT_t K = TANF(M_PI * FsRatio);
-    if (peakGain >= 0) {
-        norm = 1 / (1 + 1 / Q * K + K * K);
-        a0 = (1 + V / Q * K + K * K) * norm;
-        a1 = 2 * (K * K - 1) * norm;
-        a2 = (1 - V / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1 - 1 / Q * K + K * K) * norm;
-    } else {
-        norm = 1 / (1.0f + V / Q * K + K * K);
-        a0 = (1 + 1 / Q * K + K * K) * norm;
-        a1 = 2 * (K * K - 1) * norm;
-        a2 = (1 - 1 / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1 - V / Q * K + K * K) * norm;
-    }
-
-    //save coefficients
-    outCoeffs[0] = a0;
-    outCoeffs[1] = a1;
-    outCoeffs[2] = a2;
-    outCoeffs[3] = -b1;
-    outCoeffs[4] = -b2;
-}
-
-// RX Equalizer
-void rxEqIni(void)
-{
-    ///(частота, 24000Гц, Q, db, коэффиценты)
-    const FLOAT_t sr = ARMI2SRATE;
-
-    calcBiquadR(250 / sr, 0.5f, 0.0f, EQ_RX_LOW_0_FILTER_Coeffs);
-    calcBiquadR(400 / sr, 0.5f, 0.0f, EQ_RX_LOW_1_FILTER_Coeffs);
-    calcBiquadR(1000 / sr, 1.0f, 7.0f, EQ_RX_MID_0_FILTER_Coeffs);
-    calcBiquadR(1350 / sr, 1.0f, 2.0f, EQ_RX_MID_1_FILTER_Coeffs);
-    calcBiquadR(1800 / sr, 1.0f, 1.0f, EQ_RX_MID_2_FILTER_Coeffs);
-    calcBiquadR(2000 / sr, 1.5f, -2.0f, EQ_RX_HIG_0_FILTER_Coeffs);
-    calcBiquadR(2400 / sr, 1.5f, -3.0f, EQ_RX_HIG_1_FILTER_Coeffs);
-
-}
-  ///eq  FRAME_SIZE=1024, pOutLms-массив оцифровки
- ///      doRX_EQ((float32_t *) pOutLms, FRAME_SIZE);
-#endif
-
-#if WITHAFEQUALIZER
-
-#define EQ_STAGES				1
-#define BIQUAD_COEFF_IN_STAGE 	5
-
-static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
-
-static FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
-
-static void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t * outCoeffs)
-{
-	FLOAT_t a0, a1, a2, b1, b2, norm;
-
-	FLOAT_t V = POWF(10.0f, FABSF(peakGain) / 20);
-	FLOAT_t K = TANF(PI * Fc / Fs);
-    if (peakGain >= 0)
-    {
-        norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
-        a0 = (1.0f + V / Q * K + K * K) * norm;
-        a1 = 2.0f * (K * K - 1.0f) * norm;
-        a2 = (1.0f - V / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-    }
-    else
-    {
-        norm = 1.0f / (1.0f + V / Q * K + K * K);
-        a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
-        a1 = 2.0f * (K * K - 1.0f) * norm;
-        a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1.0f - V / Q * K + K * K) * norm;
-    }
-
-    //save coefficients
-    outCoeffs[0] = a0;
-    outCoeffs[1] = a1;
-    outCoeffs[2] = a2;
-    outCoeffs[3] = - b1;
-    outCoeffs[4] = - b2;
-}
-
-void audio_rx_equalizer_init(void)
-{
-	FLOAT_t base = hamradio_get_af_equalizer_base();
-	FLOAT_t max_coeff = 0;
-
-	for (uint_fast8_t i = 0; i < 3; i ++)
-		max_coeff = max_coeff < glob_equalizer_rx_gains [i] ? glob_equalizer_rx_gains [i] : max_coeff;
-
-	max_coeff += base;
-
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
-}
-
-void audio_tx_equalizer_init(void)
-{
-	FLOAT_t base = hamradio_get_af_equalizer_base();
-	FLOAT_t max_coeff = 0;
-
-	for (uint_fast8_t i = 0; i < 3; i ++)
-		max_coeff = max_coeff < glob_equalizer_tx_gains [i] ? glob_equalizer_tx_gains [i] : max_coeff;
-
-	max_coeff += base;
-
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_tx_gains [0] + base - max_coeff, EQ_TX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_tx_gains [1] + base - max_coeff, EQ_TX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_tx_gains [2] + base - max_coeff, EQ_TX_HIGH_FILTER_Coeffs);
-}
-
-void audio_rx_equalizer(FLOAT_t * buffer, uint_fast16_t size)
-{
-	if (glob_equalizer_rx)
-	{
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_LOW_FILTER, buffer, buffer, size);
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_MID_FILTER, buffer, buffer, size);
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_HIGH_FILTER, buffer, buffer, size);
-	}
-}
-
-void
-board_set_equalizer_rx(uint_fast8_t n)
-{
-	const uint_fast8_t v = n != 0;
-	if (glob_equalizer_rx != v)
-	{
-		glob_equalizer_rx = v;
-	}
-}
-
-void
-board_set_equalizer_tx(uint_fast8_t n)
-{
-	const uint_fast8_t v = n != 0;
-	if (glob_equalizer_tx != v)
-	{
-		glob_equalizer_tx = v;
-	}
-}
-
-void board_set_equalizer_rx_gains(const uint_fast8_t * p)
-{
-	if (memcmp(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains) != 0)
-	{
-		memcpy(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains);
-		audio_rx_equalizer_init();
-	}
-}
-
-void board_set_equalizer_tx_gains(const uint_fast8_t * p)
-{
-	if (memcmp(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains) != 0)
-	{
-		memcpy(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains);
-		audio_tx_equalizer_init();
-	}
-}
-
-#endif /* WITHAFEQUALIZER */
 
 #if defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
 // включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
