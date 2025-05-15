@@ -118,10 +118,12 @@ typedef union __PACKED {
 //	uint32_t downlink, uplink;
 //};
 
+#define NTB_DATAGRAM_ALIGNMENT 4
+
 __ALIGN_BEGIN static Ntb_parameters_t ntbParams __ALIGN_END =
 {
     .wLength                 = sizeof(Ntb_parameters_t),
-    .bmNtbFormatsSupported   = 0x01,
+    .bmNtbFormatsSupported   = 0x01,	// Bit 0: 16-bit NTB supported (set to 1), Bit 1: 32-bit NTB supported
     .dwNtbInMaxSize          = CFG_TUD_NCM_IN_NTB_MAX_SIZE,
     .wNdbInDivisor           = 4,
     .wNdbInPayloadRemainder  = 0,
@@ -226,7 +228,7 @@ static uint_fast16_t ncm_tx_seqnumber;
 
 static size_t alignup4(size_t v)
 {
-	return (v + 3) / 4 * 4;
+	return (v + NTB_DATAGRAM_ALIGNMENT - 1) / NTB_DATAGRAM_ALIGNMENT * NTB_DATAGRAM_ALIGNMENT;
 }
 
 void nic_send(const uint8_t *data, int size)
@@ -246,6 +248,7 @@ void nic_send(const uint8_t *data, int size)
 //		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 //		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 //	};
+	// todo: use alignup4
 	const size_t header_size =
 			sizeof (nth16_t) +
 			offsetof(ndp16_t, datagram [2]) +	// One element and list terminator
@@ -268,7 +271,7 @@ void nic_send(const uint8_t *data, int size)
 //	h1->wSequence = ncm_tx_seqnumber ++;
 //	h1->wHeaderLength = sizeof (nth16_t);
 //	h1->wNdpIndex = sizeof (nth16_t);
-	USBD_poke_u32(parser + offsetof(nth16_t, dwSignature), 0x484D434E);
+	USBD_poke_u32(parser + offsetof(nth16_t, dwSignature), 0x484D434E);	// NCMH
 	USBD_poke_u16(parser + offsetof(nth16_t, wBlockLength), alignup4(header_size + packet_size));
 	USBD_poke_u16(parser + offsetof(nth16_t, wSequence), ncm_tx_seqnumber ++);
 	USBD_poke_u16(parser + offsetof(nth16_t, wHeaderLength), sizeof (nth16_t));
@@ -281,8 +284,8 @@ void nic_send(const uint8_t *data, int size)
 //	h2->dwSignature = 0x304D434E;	// NCM0	- without CRC32
 //	h2->wLength = 0x0010;
 //	h2->wNextNdpIndex = 0x0000;
-	USBD_poke_u32(parser + offsetof(ndp16_t, dwSignature), 0x304D434E);
-	USBD_poke_u16(parser + offsetof(ndp16_t, wLength), 0x0010);
+	USBD_poke_u32_BE(parser + offsetof(ndp16_t, dwSignature), 0x4E434D30);
+	USBD_poke_u16(parser + offsetof(ndp16_t, wLength), offsetof(ndp16_t, datagram [2]));
 	USBD_poke_u16(parser + offsetof(ndp16_t, wNextNdpIndex), 0x0000);
 
 //		PRINTF("h2->wNextNdpIndex=%04X\n", h2->wNextNdpIndex);
