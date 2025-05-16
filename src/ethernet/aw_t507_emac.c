@@ -19,8 +19,7 @@
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
 #include "lwip/ip.h"
-#include "ethernetif.h"
-//#include "lan8742.h"
+
 #include <string.h>
 
 static nic_rxproc_t on_packet;

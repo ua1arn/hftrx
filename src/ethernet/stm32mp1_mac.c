@@ -25,8 +25,7 @@
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
 #include "lwip/ip.h"
-#include "ethernetif.h"
-//#include "lan8742.h"
+
 #include <string.h>
 
 /* ETH Setting  */
@@ -57,27 +56,27 @@
        to L1-CACHE line size (32 bytes).
 */
 
-__ALIGN_BEGIN ETH_DMADescTypeDef DMARxDscrTab [ETH_RX_DESC_CNT] __ALIGN_END; /* Ethernet Rx DMA Descriptors */
-__ALIGN_BEGIN ETH_DMADescTypeDef DMATxDscrTab [ETH_TX_DESC_CNT] __ALIGN_END;   /* Ethernet Tx DMA Descriptors */
-__ALIGN_BEGIN uint8_t Rx_Buff [ETH_RX_DESC_CNT][ETH_RX_BUFFER_SIZE] __ALIGN_END; /* Ethernet Receive Buffers */
+static __ALIGN_BEGIN RAMNC ETH_DMADescTypeDef DMARxDscrTab [ETH_RX_DESC_CNT] __ALIGN_END; /* Ethernet Rx DMA Descriptors */
+static __ALIGN_BEGIN RAMNC ETH_DMADescTypeDef DMATxDscrTab [ETH_TX_DESC_CNT] __ALIGN_END;   /* Ethernet Tx DMA Descriptors */
+static __ALIGN_BEGIN RAMNC uint8_t Rx_Buff [ETH_RX_DESC_CNT][ETH_RX_BUFFER_SIZE] __ALIGN_END; /* Ethernet Receive Buffers */
 
 /* USER CODE BEGIN 2 */
 
 /* USER CODE END 2 */
 
 /* Global Ethernet handle */
-ETH_HandleTypeDef heth;
-ETH_TxPacketConfig TxConfig;
+static ETH_HandleTypeDef heth;
+static ETH_TxPacketConfig TxConfig;
 
 /* Memory Pool Declaration */
 LWIP_MEMPOOL_DECLARE(RX_POOL, 10, sizeof(struct pbuf_custom), "Zero-copy RX PBUF pool");
 
 /* Private function prototypes -----------------------------------------------*/
-int32_t ETH_PHY_IO_Init(void);
-int32_t ETH_PHY_IO_DeInit (void);
-int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal);
-int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal);
-int32_t ETH_PHY_IO_GetTick(void);
+static int32_t ETH_PHY_IO_Init(void);
+static int32_t ETH_PHY_IO_DeInit (void);
+static int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal);
+static int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal);
+static int32_t ETH_PHY_IO_GetTick(void);
 //
 //lan8742_Object_t LAN8742;
 //lan8742_IOCtx_t  LAN8742_IOCtx = {ETH_PHY_IO_Init,
@@ -131,61 +130,6 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
 
 /* USER CODE END 4 */
 
-
-/**
- * This function should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
- * @return ERR_OK if the packet could be sent
- *         an err_t value if the packet couldn't be sent
- *
- * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
- *       strange results. You might consider waiting for space in the DMA queue
- *       to become available since the stack doesn't retry to send a packet
- *       dropped because of memory failure (except for the TCP timers).
- */
-
-static err_t low_level_output(struct netif *netif, struct pbuf *p)
-{
-  uint32_t i=0;
-  struct pbuf *q;
-  err_t errval = ERR_OK;
-  ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
-
-  memset(Txbuffer, 0 , ETH_TX_DESC_CNT*sizeof(ETH_BufferTypeDef));
-
-  for(q = p; q != NULL; q = q->next)
-  {
-    if(i >= ETH_TX_DESC_CNT)
-      return ERR_IF;
-
-    Txbuffer[i].buffer = q->payload;
-    Txbuffer[i].len = q->len;
-
-    if(i>0)
-    {
-      Txbuffer[i-1].next = &Txbuffer[i];
-    }
-
-    if(q->next == NULL)
-    {
-      Txbuffer[i].next = NULL;
-    }
-
-    i++;
-  }
-
-  TxConfig.Length =  p->tot_len;
-  TxConfig.TxBuffer = Txbuffer;
-
-  HAL_ETH_Transmit(&heth, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
-
-  return errval;
-}
-
 /**
  * Should allocate a pbuf and transfer the bytes of the incoming
  * packet from the interface into the pbuf.
@@ -235,37 +179,6 @@ static struct pbuf * low_level_input(struct netif *netif)
   }
 }
 
-/**
- * This function should be called when a packet is ready to be read
- * from the interface. It uses the function low_level_input() that
- * should handle the actual reception of bytes from the network
- * interface. Then the type of the received packet is determined and
- * the appropriate input function is called.
- *
- * @param netif the lwip network interface structure for this ethernetif
- */
-void ethernetif_input(struct netif *netif)
-{
-  err_t err;
-  struct pbuf *p;
-
-  /* move received packet into a new pbuf */
-  p = low_level_input(netif);
-
-  /* no packet could be read, silently ignore this */
-  if (p == NULL) return;
-
-  /* entry point to the LwIP stack */
-  err = netif->input(p, netif);
-
-  if (err != ERR_OK)
-  {
-    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-    pbuf_free(p);
-    p = NULL;
-  }
-
-}
 
 #if !LWIP_ARP
 /**
@@ -409,6 +322,23 @@ int nic_can_send(void)
 
 void nic_send(const uint8_t * data, int size)
 {
+	static __ALIGN_BEGIN RAMNC uint8_t buff [4096] __ALIGN_END; /* Ethernet Rx DMA Descriptors */
+	uint32_t i=0;
+
+
+	ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
+	memcpy(buff, data, size);
+	memset(Txbuffer, 0 , ETH_TX_DESC_CNT*sizeof(ETH_BufferTypeDef));
+
+	Txbuffer[i].buffer = buff;
+	Txbuffer[i].len = size;
+
+	Txbuffer[i].next = NULL;
+
+	TxConfig.Length =  size;
+	TxConfig.TxBuffer = Txbuffer;
+
+	HAL_ETH_Transmit(&heth, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
 
 }
 
