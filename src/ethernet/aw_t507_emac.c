@@ -47,6 +47,8 @@ void nic_send(const uint8_t * data, int isize)
     int i = 0;
 	unsigned size = ulmin32(sizeof txbuff, isize);
 
+	memcpy(txbuff, data, size);
+
 	emac_txdesc [i][0] =	// status
 		1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 		0;

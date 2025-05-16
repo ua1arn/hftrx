@@ -647,6 +647,7 @@ static void nic_buffer_rx(nic_buffer_t * p)
 
 void nic_on_packet(const uint8_t *data, int size)
 {
+	//printhex(0, data, size);
 	nic_buffer_t * p;
 	if (nic_buffer_alloc(& p) != 0)
 	{
