@@ -764,7 +764,15 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->hostname = "storch";
 #endif /* LWIP_NETIF_HOSTNAME */
 	netif->mtu = NIC_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->flags = NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+
+	/* Accept broadcast address and ARP traffic */
+	/* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
+	#if LWIP_ARP
+		netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+	#else
+		netif->flags |= NETIF_FLAG_BROADCAST;
+	#endif /* LWIP_ARP */
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';
