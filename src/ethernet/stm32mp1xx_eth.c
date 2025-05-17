@@ -444,16 +444,18 @@ void nic_initialize(void)
 		// CH0: RX & TX
 		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
 		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
-		ETH->DMAC0TXRLR = 1 * ETH_DMAC0TXRLR_TDRL_Pos;	// Channel 0 Tx descriptor ring length register
+		ETH->DMAC0TXRLR =
+			1 * (UINT32_C(1) << ETH_DMAC0TXRLR_TDRL_Pos) |	// Channel 0 Tx descriptor ring length register
+			0;
 		ETH->DMAC0TXCR |= ETH_DMAC0TXCR_ST_Msk;	// Channel 0 transmit control register
 
 		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
 		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
 		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
+			1 * (UINT32_C(1) << ETH_DMAC0RXRLR_RDRL_Pos) |	// RDRL
 			0 * (UINT32_C(17) << 0) |	// ARBS
-			1 * (UINT32_C(1) << 0) |	// RDRL
 			0;
-		ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
+		ETH->DMAC0RXCR |= ETH_DMAC0RXCR_SR_Msk;	// Channel 0 receive control register
 	}
 
 	if (0)
@@ -461,7 +463,9 @@ void nic_initialize(void)
 		// CH1: TX
 		ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
 		ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
-		ETH->DMAC1TXRLR = 1 * ETH_DMAC1TXRLR_TDRL_Pos;	// Channel 1 Tx descriptor ring length register
+		ETH->DMAC1TXRLR =
+			1 * (UINT32_C(1) << ETH_DMAC1TXRLR_TDRL_Pos) |	// Channel 1 Tx descriptor ring length register
+			0;
 		ETH->DMAC1TXCR |= ETH_DMAC1TXCR_ST_Msk;	// Channel 1 transmit control register
 	}
 
