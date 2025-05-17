@@ -9,6 +9,7 @@
 
 #if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 
+#include "gpio.h"
 #include "formats.h"
 
 #include "lwip/opt.h"
