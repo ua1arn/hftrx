@@ -1205,7 +1205,7 @@
 
 	// See Table 16‐10: Ethernet RGMII Interface Signals via MIO Pins
 	// GigE 0
-	#define ETHERNET_INITIALIZE() do { \
+	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0x00, 0x00, 0x00, 0x00, 0); \
 		const portholder_t pinmode_mdio = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x04, 0x00, 0x00, 0x00, 0); \
 		const portholder_t pinmode_rgmii_tx = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 0); \
@@ -1269,7 +1269,6 @@
 			TUNE_INITIALIZE(); \
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
-			/*ETHERNET_INITIALIZE(); */\
 			USB_ULPI_INITIALIZE(); \
 		} while (0)
 

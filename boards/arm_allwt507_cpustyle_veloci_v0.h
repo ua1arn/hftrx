@@ -1465,7 +1465,7 @@
 #define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
 #if WITHETHHW
-	#define ETHERNET_INITIALIZE() do { \
+	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
 		\
 		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
@@ -1507,12 +1507,6 @@
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
 
-#else /* WITHETHHW */
-
-	#define ETHERNET_INITIALIZE() do { \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
-	} while (0)
-
 #endif /* WITHETHHW */
 
 /* макроопределение, которое должно включить в себя все инициализации */
@@ -1526,7 +1520,6 @@
 	TXDISABLE_INITIALIZE(); \
 	TUNE_INITIALIZE(); \
 	USBD_EHCI_INITIALIZE(); \
-	ETHERNET_INITIALIZE(); \
 } while (0)
 
 // TUSB parameters

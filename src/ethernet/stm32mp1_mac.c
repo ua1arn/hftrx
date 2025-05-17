@@ -313,7 +313,7 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
 	return HAL_OK;
 }
 
-void ethhw_initialize(void)
+static void ethhw_initialize(void)
 {
 	RCC->ETHCKSELR =
 			0 |
@@ -334,7 +334,7 @@ void ethhw_initialize(void)
 	HARDWARE_ETH_INITIALIZE();
 }
 
-void ethhw_deinitialize(void)
+static void ethhw_deinitialize(void)
 {
 	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_ETHMACRST_Msk;	// assert reset
 	(void) RCC->AHB6RSTSETR;

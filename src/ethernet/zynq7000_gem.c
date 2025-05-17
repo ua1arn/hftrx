@@ -39,7 +39,7 @@ void nic_initialize(void)
 	//	Net:   ZYNQ GEM: e000b000, phyaddr 7, interface rgmii-id
 	//	eth0: ethernet@e000b000
 	//	U-BOOT for myd_y7z020_10_07
-
+	HARDWARE_ETH_INITIALIZE();
 }
 
 #endif /* #if WITHETHHW && CPUSTYLE_XC7Z && WITHLWIP */

@@ -1230,7 +1230,7 @@
 #if WITHETHHW
 
 	//PA0 - PA9 EMAC RMII
-	#define ETHERNET_INITIALIZE() do { \
+	#define HARDWARE_ETH_INITIALIZE() do { \
 		arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
 		arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
 		arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
@@ -1243,8 +1243,6 @@
 		arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
 	} while (0)
 
-#else
-	#define ETHERNET_INITIALIZE() do { } while (0)
 #endif /* WITHETHHW */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
@@ -1254,7 +1252,6 @@
 		HARDWARE_GPIOREG_INITIALIZE(); \
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		HARDWARE_DCDC_INITIALIZE(); \
-		ETHERNET_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 

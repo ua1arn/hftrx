@@ -217,6 +217,7 @@ static void emac_hw_initialize(void)
 
 		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
+	HARDWARE_ETH_INITIALIZE();
 }
 
 void nic_initialize(void)
