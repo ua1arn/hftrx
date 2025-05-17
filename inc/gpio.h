@@ -326,9 +326,9 @@ typedef struct encoder_tag encoder_t;
 	// Enable output drive for pin
 	#define emio_drive(pin, drive) do { \
 		IRQL_t irql; \
-		gpiobank_lock(bank, & irql); \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		gpiobank_lock(bank, & irql); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
 		gpiobank_unlock(bank, irql); \
 	} while (0)
