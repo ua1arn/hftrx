@@ -439,29 +439,41 @@ void nic_initialize(void)
 	dcache_clean_invalidate((uintptr_t) dmac0rx_buff, sizeof dmac0rx_buff);
 	dcache_clean_invalidate((uintptr_t) dmac1tx_buff, sizeof dmac1tx_buff);
 
-	// CH0: RX & TX
-	ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
-	ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
-	ETH->DMAC0TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 0 Tx descriptor ring length register
-	ETH->DMAC0TXCR |= 0x01;	// Channel 0 transmit control register
+	if (1)
+	{
+		// CH0: RX & TX
+		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
+		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
+		ETH->DMAC0TXRLR = 1 * ETH_DMAC0TXRLR_TDRL_Pos;	// Channel 0 Tx descriptor ring length register
+		ETH->DMAC0TXCR |= ETH_DMAC0TXCR_ST_Msk;	// Channel 0 transmit control register
 
-	ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
-	ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
-	ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
-		0 * (UINT32_C(17) << 0) |	// ARBS
-		1 * (UINT32_C(1) << 0) |	// RDRL
-		0;
-	ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
+		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
+		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
+		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
+			0 * (UINT32_C(17) << 0) |	// ARBS
+			1 * (UINT32_C(1) << 0) |	// RDRL
+			0;
+		ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
+	}
 
-	// CH1: TX
-	ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
-	ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
-	ETH->DMAC1TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 1 Tx descriptor ring length register
-	ETH->DMAC1TXCR |= 0x01;	// Channel 1 transmit control register
+	if (0)
+	{
+		// CH1: TX
+		ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
+		ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
+		ETH->DMAC1TXRLR = 1 * ETH_DMAC1TXRLR_TDRL_Pos;	// Channel 1 Tx descriptor ring length register
+		ETH->DMAC1TXCR |= ETH_DMAC1TXCR_ST_Msk;	// Channel 1 transmit control register
+	}
 
 	ETH->MACCR |= ETH_MACCR_TE_Msk;
 	ETH->MACCR |= ETH_MACCR_RE_Msk;
+
 	arm_hardware_set_handler_system(ETH1_IRQn, ETH1_Handler);
+
+	ETH->MACIER =
+			ETH_MACIER_RXSTSIE_Msk |
+			ETH_MACIER_TXSTSIE_Msk |
+			0;
 	//ethhw_deinitialize();
 	return;
 	  HAL_StatusTypeDef hal_eth_init_status = HAL_OK;
