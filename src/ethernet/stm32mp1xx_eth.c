@@ -313,6 +313,7 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
 	return HAL_OK;
 }
 
+// ETH clocks init
 static void ethhw_initialize(void)
 {
 	RCC->ETHCKSELR =
@@ -349,15 +350,15 @@ static void ethhw_deinitialize(void)
 
 #define ETHHW_BUFFSIZE 4096
 
-void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
+void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2, unsigned buffsize)
 {
 	desc [0] = (uintptr_t) buff1;
 	desc [1] = (uintptr_t) buff2;
 	desc [2] =
 		0 * (UINT32_C(1) << 31) | // IOC
 		0 * (UINT32_C(1) << 30) | // TTSE
-		ETHHW_BUFFSIZE * (UINT32_C(1) << 16) | // B2L = buffer 2 length
-		ETHHW_BUFFSIZE * (UINT32_C(1) << 0) | // B1L = buffer 1 length
+		(0xFFFF & buffsize) * (UINT32_C(1) << 16) | // B2L = buffer 2 length
+		(0xFFFF & buffsize) * (UINT32_C(1) << 0) | // B1L = buffer 1 length
 		0;
 
 	desc [3] =
@@ -393,65 +394,75 @@ void nic_send(const uint8_t * data, int size)
 
 }
 
+static __attribute__((aligned(32))) uint8_t  dmac0tx_buff [2][ETHHW_BUFFSIZE];
+static __attribute__((aligned(32))) uint8_t  dmac0rx_buff [2][ETHHW_BUFFSIZE];
+static __attribute__((aligned(32))) uint8_t  dmac1tx_buff [2][ETHHW_BUFFSIZE];
+
+static RAMNC __attribute__((aligned(32))) volatile uint32_t  dmac0tx_desc [64];
+static RAMNC __attribute__((aligned(32))) volatile uint32_t  dmac0rx_desc [64];
+static RAMNC __attribute__((aligned(32))) volatile uint32_t  dmac1tx_desc [64];
+
+static void ETH1_Handler(void)
+{
+	TP();
+}
+
 void nic_initialize(void)
 {
-	{
-		// Ethernet controller tests
-		ethhw_initialize();
+	const uint8_t hwaddr [6] = { HWADDR };
+	// Ethernet controller tests
+	ethhw_initialize();
 
-		TP();
+	TP();
 
-		ETH->MACCR |= ETH_MACCR_PS_Msk | ETH_MACCR_FES_Msk;	// Select 100 Mbps operation
-		ETH->MACCR |= ETH_MACCR_DM_Msk;	// Select duplex operation
-
-		PRINTF("ETH->MACCR=%08X\n", (unsigned) ETH->MACCR);
-		PRINTF("ETH->DMASBMR=%08X\n", (unsigned) ETH->DMASBMR);
-
-		static __attribute__((aligned(32))) uint8_t  dmac0tx_buff [2][ETHHW_BUFFSIZE];
-		static __attribute__((aligned(32))) uint8_t  dmac0rx_buff [2][ETHHW_BUFFSIZE];
-		static __attribute__((aligned(32))) uint8_t  dmac1tx_buff [2][ETHHW_BUFFSIZE];
-
-		static __attribute__((aligned(32))) volatile uint32_t  dmac0tx_desc [64];
-		static __attribute__((aligned(32))) volatile uint32_t  dmac0rx_desc [64];
-		static __attribute__((aligned(32))) volatile uint32_t  dmac1tx_desc [64];
-
-		ethhw_filldesc(dmac0tx_desc, dmac0tx_buff [0], dmac0tx_buff [1]);
-		ethhw_filldesc(dmac0rx_desc, dmac0rx_buff [0], dmac0rx_buff [1]);
-		ethhw_filldesc(dmac1tx_desc, dmac1tx_buff [0], dmac1tx_buff [1]);
-
-		dcache_clean_invalidate((uintptr_t) dmac0tx_desc, sizeof dmac0tx_desc);
-		dcache_clean_invalidate((uintptr_t) dmac0rx_desc, sizeof dmac0rx_desc);
-		dcache_clean_invalidate((uintptr_t) dmac1tx_desc, sizeof dmac1tx_desc);
-
-		dcache_clean_invalidate((uintptr_t) dmac0tx_buff, sizeof dmac0tx_buff);
-		dcache_clean_invalidate((uintptr_t) dmac0rx_buff, sizeof dmac0rx_buff);
-		dcache_clean_invalidate((uintptr_t) dmac1tx_buff, sizeof dmac1tx_buff);
-
-		// CH0: RX & TX
-		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
-		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
-		ETH->DMAC0TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 0 Tx descriptor ring length register
-		ETH->DMAC0TXCR |= 0x01;	// Channel 0 transmit control register
-
-		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
-		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
-		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
-			0 * (UINT32_C(17) << 0) |	// ARBS
-			1 * (UINT32_C(1) << 0) |	// RDRL
+	ETH->MACCR |=
+			0 * ETH_MACCR_PS_Msk | 	// Select 1000 Mbps operation
+			0 * ETH_MACCR_FES_Msk |	// This bit selects the speed in the 10/100 Mbps mode -  1: 100 Mbps
 			0;
-		ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
+	ETH->MACCR |= ETH_MACCR_DM_Msk;	// Select duplex operation
 
-		// CH1: TX
-		ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
-		ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
-		ETH->DMAC1TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 1 Tx descriptor ring length register
-		ETH->DMAC1TXCR |= 0x01;	// Channel 1 transmit control register
+	ETH->MACA0HR = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
+	ETH->MACA0LR = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
 
-		ETH->MACCR |= ETH_MACCR_TE_Msk;
-		ETH->MACCR |= ETH_MACCR_RE_Msk;
+	PRINTF("ETH->MACCR=%08X\n", (unsigned) ETH->MACCR);
+	PRINTF("ETH->DMASBMR=%08X\n", (unsigned) ETH->DMASBMR);
 
-		ethhw_deinitialize();
-	}
+	ethhw_filldesc(dmac0tx_desc, dmac0tx_buff [0], dmac0tx_buff [1], ETHHW_BUFFSIZE);
+	ethhw_filldesc(dmac0rx_desc, dmac0rx_buff [0], dmac0rx_buff [1], ETHHW_BUFFSIZE);
+	ethhw_filldesc(dmac1tx_desc, dmac1tx_buff [0], dmac1tx_buff [1], ETHHW_BUFFSIZE);
+
+	dcache_clean_invalidate((uintptr_t) dmac0tx_desc, sizeof dmac0tx_desc);
+	dcache_clean_invalidate((uintptr_t) dmac0rx_desc, sizeof dmac0rx_desc);
+	dcache_clean_invalidate((uintptr_t) dmac1tx_desc, sizeof dmac1tx_desc);
+
+	dcache_clean_invalidate((uintptr_t) dmac0tx_buff, sizeof dmac0tx_buff);
+	dcache_clean_invalidate((uintptr_t) dmac0rx_buff, sizeof dmac0rx_buff);
+	dcache_clean_invalidate((uintptr_t) dmac1tx_buff, sizeof dmac1tx_buff);
+
+	// CH0: RX & TX
+	ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
+	ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
+	ETH->DMAC0TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 0 Tx descriptor ring length register
+	ETH->DMAC0TXCR |= 0x01;	// Channel 0 transmit control register
+
+	ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
+	ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
+	ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
+		0 * (UINT32_C(17) << 0) |	// ARBS
+		1 * (UINT32_C(1) << 0) |	// RDRL
+		0;
+	ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
+
+	// CH1: TX
+	ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
+	ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
+	ETH->DMAC1TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 1 Tx descriptor ring length register
+	ETH->DMAC1TXCR |= 0x01;	// Channel 1 transmit control register
+
+	ETH->MACCR |= ETH_MACCR_TE_Msk;
+	ETH->MACCR |= ETH_MACCR_RE_Msk;
+	arm_hardware_set_handler_system(ETH1_IRQn, ETH1_Handler);
+	//ethhw_deinitialize();
 	return;
 	  HAL_StatusTypeDef hal_eth_init_status = HAL_OK;
 	  uint32_t idx = 0;
