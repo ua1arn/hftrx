@@ -951,22 +951,25 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	/* From MYC-YA157C-V3 Product Manual */
 	#define HARDWARE_ETH_INITIALIZE() do { \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH_RX_CLK PA1 */ \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 7), AF_ETH);		/* ETH_RX_DV PA7 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH_RXD0 PC4 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH_RXD1 PC5 */ \
-		arm_hardware_piob_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH_RXD2 PB0 */ \
-		arm_hardware_piob_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH_RXD3 PB1 */ \
-		arm_hardware_piob_altfn50((UINT32_C(1) << 11), AF_ETH);		/* ETH_TX_EN PB11 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 13), AF_ETH);		/* ETH_TXD0 PG13 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 14), AF_ETH);		/* ETH_TXD1 PG14 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH_TXD2 PC2 */ \
-		arm_hardware_pioe_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH_TXD3 PE2 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH_GTX_CLK PG4 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH_RST PG0 */ \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH_MDIO PA2 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH_MDC PC1 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 5), AF_ETH);		/* CLK125_NDO PG5 */ \
+		arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
+		local_delay_ms(50); \
+		SYSCFG->PMCSETR = (SYSCFG->PMCSETR & ~ SYSCFG_PMCSETR_ETH_SEL_Msk) | (0x01 << SYSCFG_PMCSETR_ETH_SEL_Pos); /* RGMII */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_RGMII_RX_CLK PA1 */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 7), AF_ETH);		/* ETH1_RGMII_RX DV PA7 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH1_RGMII_RXD0 PC4 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH1_RGMII_RXD1 PC5 */ \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH1_RGMII_RXD2 PB0 */ \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_RGMII_RXD3 PB1 */ \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 11), AF_ETH);		/* ETH1_RGMII_TX_EN PB11 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 13), AF_ETH);		/* ETH1_RGMII_TXD0 PG13 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 14), AF_ETH);		/* ETH1_RGMII_TXD1 PG14 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH1_RGMII_TXD2 PC2 */ \
+		arm_hardware_pioe_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH1_RGMII_TXD3 PE2 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH1_RGMII_GTX_CLK PG4 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH1_RGMII_CLK125 PG5 */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH1_MDIO PA2 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_MDC PC1 */ \
+		arm_hardware_piog_outputs((UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 	} while (0)
 
 #endif /* WITHETHHW */

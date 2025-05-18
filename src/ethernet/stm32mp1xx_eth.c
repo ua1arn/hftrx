@@ -316,8 +316,12 @@ void pbuf_free_custom(struct pbuf *p)
 // ETH clocks init
 static void ethhw_initialize(void)
 {
+	HARDWARE_ETH_INITIALIZE();
+
 	RCC->ETHCKSELR =
-			0 |
+			0x00 * (UINT32_C(1) << 4) |	// PTP divider: 0x0: bypass (default after reset)
+			//0x0 * (UINT32_C(1) << 0) |	// 0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+			0x1 * (UINT32_C(1) << 0) |	// 0x1: pll3_q_ck clock selected as kernel peripheral clock
 			0;
 
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHMACEN_Msk;
@@ -332,7 +336,6 @@ static void ethhw_initialize(void)
 	RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_ETHMACRST_Msk;	// de-assert reset
 	(void) RCC->AHB6RSTCLRR;
 
-	HARDWARE_ETH_INITIALIZE();
 }
 
 static void ethhw_deinitialize(void)
@@ -413,11 +416,15 @@ void nic_initialize(void)
 	// Ethernet controller tests
 	ethhw_initialize();
 
+	/* Configure the CSR Clock Range */
+	//ETH->MACMDIOAR = ETH_MACMDIOAR_CR_DIV102;
+
+	ETH->MACCR = 0;
 	ETH->MACCR |=
 			0 * ETH_MACCR_PS_Msk | 	// Select 1000 Mbps operation
 			0 * ETH_MACCR_FES_Msk |	// This bit selects the speed in the 10/100 Mbps mode -  1: 100 Mbps
+			1 * ETH_MACCR_DM_Msk |	// Select duplex operation
 			0;
-	ETH->MACCR |= ETH_MACCR_DM_Msk;	// Select duplex operation
 
 	ETH->MACA0HR = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
 	ETH->MACA0LR = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
@@ -476,6 +483,31 @@ void nic_initialize(void)
 			ETH_MACIER_RXSTSIE_Msk |
 			ETH_MACIER_TXSTSIE_Msk |
 			0;
+
+	/* Enable the MAC transmission */
+	ETH->MACCR |= ETH_MACCR_TE;
+
+	/* Enable the MAC reception */
+	ETH->MACCR |= ETH_MACCR_RE;
+
+
+//	for (;;)
+//	{
+//		PRINTF("MACRXTXSR=%08X, MACPHYCSR=%08X\n", (unsigned) ETH->MACRXTXSR, (unsigned) ETH->MACPHYCSR);
+//	}
+
+//	/* Set the Flush Transmit FIFO bit */
+//	ETH->MTLTQOMR |= ETH_MTLTQOMR_FTQ;
+//
+//	/* Enable the DMA transmission */
+//	ETH->DMAC0TXCR |= ETH_DMACTCR_ST;
+//
+//	/* Enable the DMA reception */
+//	ETH->DMAC0RCR |= ETH_DMACRCR_SR;
+//
+//	/* Clear Tx and Rx process stopped flags */
+//	ETH->DMAC0SR |= (ETH_DMACSR_TPS | ETH_DMACSR_RPS);
+
 	//ethhw_deinitialize();
 //	return;
 //	  HAL_StatusTypeDef hal_eth_init_status = HAL_OK;
