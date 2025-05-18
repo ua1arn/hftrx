@@ -912,9 +912,9 @@
 	#define HARDWARE_ETH_INITIALIZE() do { \
 		arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 		local_delay_ms(50); \
-		SYSCFG->PMCSETR = (SYSCFG->PMCSETR & ~ SYSCFG_PMCSETR_ETH_SEL_Msk) | (0x01 << SYSCFG_PMCSETR_ETH_SEL_Pos); /* RGMII */ \
+		SYSCFG->PMCSETR = (SYSCFG->PMCSETR & ~ SYSCFG_PMCSETR_ETH_SEL_Msk & ~ SYSCFG_PMCSETR_ETH_SEL_CONF_Msk) | (0x01 << SYSCFG_PMCSETR_ETH_SEL_Pos); /* RGMII */ \
 		arm_hardware_pioa_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_RGMII_RX_CLK PA1 */ \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 7), AF_ETH);		/* ETH1_RGMII_RX DV PA7 */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 7), AF_ETH);		/* ETH1_RGMII_RX_CTL PA7 */ \
 		arm_hardware_pioc_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH1_RGMII_RXD0 PC4 */ \
 		arm_hardware_pioc_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH1_RGMII_RXD1 PC5 */ \
 		arm_hardware_piob_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH1_RGMII_RXD2 PB0 */ \

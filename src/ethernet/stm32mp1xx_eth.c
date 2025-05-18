@@ -205,7 +205,10 @@ void nic_initialize(void)
 	if (1)
 	{
 		// CH0: RX
-		ETH->DMAC0RXCR = (ETHHW_BUFFSIZE) << ETH_DMAC0RXCR_RBSZ_Pos;
+		ETH->DMAC0RXCR =
+			((ETHHW_BUFFSIZE - 1) << ETH_DMAC0RXCR_RBSZ_Pos) |
+			ETH_DMAC0RXCR_RPF_Msk |
+			0;
 		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
 		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
 		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
@@ -279,7 +282,7 @@ void nic_initialize(void)
 
 	for (;;)
 	{
-		PRINTF("MACRXTXSR=%08X, DMAC0RXCR=%08X, DMAC0SR=%08X ", (unsigned) ETH->MACRXTXSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0SR);
+		PRINTF("DMADSR=%08X, MACRXTXSR=%08X, DMAC0RXCR=%08X, DMAC0SR=%08X ", (unsigned) ETH->DMADSR, (unsigned) ETH->MACRXTXSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0SR);
 		printhex(0, dmac0rx_buff, 16);
 		//printhex(0, (const void *) dmac0rx_desc, 16);
 		local_delay_ms(250);
