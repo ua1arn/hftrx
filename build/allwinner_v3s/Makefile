@@ -160,47 +160,17 @@ SRCDIRS += $(PRJROOT)/lib/LuPng
 DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
-ifeq (1, 0)
 # OpenVG
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
-SRCDIRS += $(OPENVGDIR)/src
-UDEFS += -D"EGL_STATIC_LIBRARY"=1
-endif
+include ../openvg.mak
 
-ifeq (1, 0)
 # LWIP
-LWIPDIR = $(PRJROOT)/lib/lwip
-DINCDIR += \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/apps/http
-SRCDIRS += \
-	$(LWIPDIR)/src/api \
-	$(LWIPDIR)/src/core \
-	$(LWIPDIR)/src/netif \
-	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-endif
+include ../lwip.mak
 
-ifeq (1, 0)
 # FreeRTOS
-RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
-DINCDIR += \
-	$(RTOSDIR)/include \
-	$(RTOSDIR)/portable/GCC/ARM_CA9
-SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
-endif
+include ../freertos.mak
 
-ifeq (1, 0)
 # btstack
-# https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
-endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

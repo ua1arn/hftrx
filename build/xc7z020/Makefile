@@ -74,12 +74,9 @@ ZYNQLIB = zynq7020.a
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -97,10 +94,6 @@ DINCDIR = \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src \
 	$(ZYNQLIBSRC)
 
 # List the default directory to look for the libraries here
@@ -133,30 +126,17 @@ SRCDIRS += $(PRJROOT)/lvgl/src
 DINCDIR += $(PRJROOT)/lvgl/src
 endif
 
-ifeq (1, 0)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
-endif
+include ../lupng.mak
 
-ifeq (1, 0)
 # FreeRTOS
-RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
-DINCDIR += \
-	$(RTOSDIR)/include \
-	$(RTOSDIR)/portable/GCC/ARM_CA9
-SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
-endif
+include ../freertos.mak
 
-ifeq (1, 0)
-# litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
-# http://www.litehtml.com/
-LITEHTMLDIR = $(PRJROOT)/lib/litehtml
-DINCDIR += $(LITEHTMLDIR)/include $(LITEHTMLDIR)/src/gumbo/include $(LITEHTMLDIR)/include/litehtml $(LITEHTMLDIR)/src/gumbo/include/gumbo
-SRCDIRS += $(LITEHTMLDIR)/src
-UDEFS += -D"LITEHTML_NO_THREADS"=1
-endif
+# OpenVG
+include ../openvg.mak
+
+# litehtml
+include ../litehtml.mak
 
 # Define project name here
 PROJECT = tc1_xc7z020

@@ -1,3 +1,4 @@
+ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 # forked to https://github.com/ua1arn/hftrx_btstack.git
@@ -135,3 +136,5 @@ C_INCLUDES += ${BTSTACK_ROOT}/platform/lwip/port
 
 UINCDIR += $(C_INCLUDES)
 CSRC += $(C_SOURCES)
+
+endif
