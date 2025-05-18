@@ -81,8 +81,8 @@ void ethhw_rxfilldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2
 
 	desc [3] =
 		1 * (UINT32_C(1) << 31) | // Own bit
-//		1 * (UINT32_C(1) << 29) | // First Descriptor
-//		1 * (UINT32_C(1) << 28) | // Last Descriptor
+		1 * (UINT32_C(1) << 29) | // First Descriptor
+		1 * (UINT32_C(1) << 28) | // Last Descriptor
 		0;
 //	memset(desc, 0xff, 16);
 }
@@ -100,8 +100,8 @@ void ethhw_txfilldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2
 
 	desc [3] =
 		1 * (UINT32_C(1) << 31) | // Own bit
-//		1 * (UINT32_C(1) << 29) | // First Descriptor
-//		1 * (UINT32_C(1) << 28) | // Last Descriptor
+		1 * (UINT32_C(1) << 29) | // First Descriptor
+		1 * (UINT32_C(1) << 28) | // Last Descriptor
 		0;
 //	memset(desc, 0xff, 16);
 }
@@ -144,6 +144,11 @@ static RAMNC __attribute__((aligned(32))) volatile uint32_t  dmac1tx_desc [64];
 static void ETH1_Handler(void)
 {
 	TP();
+	{
+		const uint_fast32_t macisr = ETH->MACISR;
+		if (macisr & ETH_MACISR_RGSMIIIS_Msk)
+			PRINTF("MACPHYCSR=%08X, macisr=%08X\n", (unsigned) ETH->MACPHYCSR, (unsigned) macisr);
+	}
 }
 
 void nic_initialize(void)
@@ -152,12 +157,13 @@ void nic_initialize(void)
 	// Ethernet controller tests
 	ethhw_initialize();
 
+	memset(dmac0rx_buff, 0xFF, sizeof dmac0rx_buff);
 	/* Configure the CSR Clock Range */
 	//ETH->MACMDIOAR = ETH_MACMDIOAR_CR_DIV102;
 
 	// 63.9.1 DMA initialization
 	ETH->DMAMR |= ETH_DMAMR_SWR_Msk;
-	while ((ETH->DMAMR & ETH_DMAMR_SWR_Msk) != 0)
+	while ((ETH->DMAMR & ETH_DMAMR_SWR_Msk) != 0)	// waiting for reset complete
 		;
 	ETH->DMASBMR = 0x01010000;
 
@@ -199,19 +205,21 @@ void nic_initialize(void)
 	if (1)
 	{
 		// CH0: RX
+		ETH->DMAC0RXCR = (ETHHW_BUFFSIZE) << ETH_DMAC0RXCR_RBSZ_Pos;
 		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
 		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
 		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
-			1 * (UINT32_C(1) << ETH_DMAC0RXRLR_RDRL_Pos) |	// RDRL
+			(1 - 1) * (UINT32_C(1) << ETH_DMAC0RXRLR_RDRL_Pos) |	// RDRL
 			0 * (UINT32_C(17) << 0) |	// ARBS
 			0;
 		ETH->DMAC0RXCR |= ETH_DMAC0RXCR_SR_Msk;	// Channel 0 receive control register
 
 		// CH0: TX
+		//ETH->DMAC0TXCR = (ETHHW_BUFFSIZE) << ETH_DMAC0TXCR_TBSZ_Pos;
 		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
 		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
 		ETH->DMAC0TXRLR =
-			1 * (UINT32_C(1) << ETH_DMAC0TXRLR_TDRL_Pos) |	// Channel 0 Tx descriptor ring length register
+			(1 - 1) * (UINT32_C(1) << ETH_DMAC0TXRLR_TDRL_Pos) |	// Channel 0 Tx descriptor ring length register
 			0;
 		ETH->DMAC0TXCR |= ETH_DMAC0TXCR_ST_Msk;	// Channel 0 transmit control register
 	}
@@ -219,6 +227,7 @@ void nic_initialize(void)
 	if (0)
 	{
 		// CH1: TX
+		//ETH->DMAC1TXCR = (ETHHW_BUFFSIZE) << ETH_DMAC1TXCR_TBSZ_Pos;
 		ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
 		ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
 		ETH->DMAC1TXRLR =
@@ -243,6 +252,11 @@ void nic_initialize(void)
 	ETH->DMAC1IER =
 			ETH_DMAC1IER_TIE_Msk |
 		0;
+
+	ETH->MACIER = 0;
+	ETH->MACIER |= ETH_MACIER_PHYIE_Msk;
+	ETH->MACIER |= ETH_MACIER_RGSMIIIE_Msk;
+
 	/* Enable the MAC transmission */
 	ETH->MACCR |= ETH_MACCR_TE;
 
@@ -265,9 +279,9 @@ void nic_initialize(void)
 
 	for (;;)
 	{
-		PRINTF("MACRXTXSR=%08X, MACPHYCSR=%08X, DMAC0RXCR=%08X, DMAC0TXCR=%08X ", (unsigned) ETH->MACRXTXSR, (unsigned) ETH->MACPHYCSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0TXCR);
-		//printhex(0, dmac0rx_buff, 16);
-		printhex(0, (const void *) dmac0rx_desc, 16);
+		PRINTF("MACRXTXSR=%08X, DMAC0RXCR=%08X, DMAC0SR=%08X ", (unsigned) ETH->MACRXTXSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0SR);
+		printhex(0, dmac0rx_buff, 16);
+		//printhex(0, (const void *) dmac0rx_desc, 16);
 		local_delay_ms(250);
 	}
 }
