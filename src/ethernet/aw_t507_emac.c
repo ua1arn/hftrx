@@ -150,9 +150,12 @@ static void emac_hw_initialize(void)
 //			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 //			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
 
+		const uint8_t hwaddr [6] = { HWADDR };
 		// ether 1A:0C:74:06:AF:64
-		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
-		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+//		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
+//		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
+		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
 	}
 	// RX init
 	{
