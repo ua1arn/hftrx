@@ -734,12 +734,15 @@ static err_t nic_linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
-#if LWIP_SUPPORT_CUSTOM_PBUF
+#if LWIP_SUPPORT_CUSTOM_PBUF && 0
 
 /* Memory Pool Declaration */
 LWIP_MEMPOOL_DECLARE(RX_POOL, 10, sizeof(struct pbuf_custom), "Zero-copy RX PBUF pool");
 
-// See LWIP_SUPPORT_CUSTOM_PBUF
+////    custom_pbuf  = (struct pbuf_custom*)LWIP_MEMPOOL_ALLOC(RX_POOL);
+////    custom_pbuf->custom_free_function = pbuf_free_custom;
+////
+////    p = pbuf_alloced_custom(PBUF_RAW, framelength, PBUF_REF, custom_pbuf, RxBuff->buffer, framelength);
 //	  /* Initialize the RX POOL */
 //	  LWIP_MEMPOOL_INIT(RX_POOL);
 /**
