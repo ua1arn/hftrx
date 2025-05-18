@@ -28,259 +28,6 @@
 
 #include <string.h>
 
-/* ETH Setting  */
-//#define ETH_DMA_TRANSMIT_TIMEOUT               ( 20U )
-/* ETH_RX_BUFFER_SIZE parameter is defined in lwipopts.h */
-
-
-/* Private variables ---------------------------------------------------------*/
-/*
-@Note: This interface is implemented to operate in zero-copy mode only:
-        - Rx buffers are allocated statically and passed directly to the LwIP stack
-          they will return back to ETH DMA after been processed by the stack.
-        - Tx Buffers will be allocated from LwIP stack memory heap,
-          then passed to ETH HAL driver.
-
-@Notes:
-  1.a. ETH DMA Rx descriptors must be contiguous, the default count is 4,
-       to customize it please redefine ETH_RX_DESC_CNT in ETH GUI (Rx Descriptor Length)
-       so that updated value will be generated in stm32xxxx_hal_conf.h
-  1.b. ETH DMA Tx descriptors must be contiguous, the default count is 4,
-       to customize it please redefine ETH_TX_DESC_CNT in ETH GUI (Tx Descriptor Length)
-       so that updated value will be generated in stm32xxxx_hal_conf.h
-
-  2.a. Rx Buffers number must be between ETH_RX_DESC_CNT and 2*ETH_RX_DESC_CNT
-  2.b. Rx Buffers must have the same size: ETH_RX_BUFFER_SIZE, this value must
-       passed to ETH DMA in the init field (heth.Init.RxBuffLen)
-  2.c  The RX Ruffers addresses and sizes must be properly defined to be aligned
-       to L1-CACHE line size (32 bytes).
-*/
-
-//static __ALIGN_BEGIN RAMNC ETH_DMADescTypeDef DMARxDscrTab [ETH_RX_DESC_CNT] __ALIGN_END; /* Ethernet Rx DMA Descriptors */
-//static __ALIGN_BEGIN RAMNC ETH_DMADescTypeDef DMATxDscrTab [ETH_TX_DESC_CNT] __ALIGN_END;   /* Ethernet Tx DMA Descriptors */
-//static __ALIGN_BEGIN RAMNC uint8_t Rx_Buff [ETH_RX_DESC_CNT][ETH_RX_BUFFER_SIZE] __ALIGN_END; /* Ethernet Receive Buffers */
-
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
-
-/* Global Ethernet handle */
-//static ETH_HandleTypeDef heth;
-//static ETH_TxPacketConfig TxConfig;
-
-/* Private function prototypes -----------------------------------------------*/
-//static int32_t ETH_PHY_IO_Init(void);
-//static int32_t ETH_PHY_IO_DeInit (void);
-//static int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal);
-//static int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal);
-//static int32_t ETH_PHY_IO_GetTick(void);
-//
-//lan8742_Object_t LAN8742;
-//lan8742_IOCtx_t  LAN8742_IOCtx = {ETH_PHY_IO_Init,
-//                                  ETH_PHY_IO_DeInit,
-//                                  ETH_PHY_IO_WriteReg,
-//                                  ETH_PHY_IO_ReadReg,
-//                                  ETH_PHY_IO_GetTick};
-
-/* USER CODE BEGIN 3 */
-
-/* USER CODE END 3 */
-
-
-
-//void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
-//{
-//  if(ethHandle->Instance==ETH)
-//  {
-//  /* USER CODE BEGIN ETH_MspDeInit 0 */
-//
-//  /* USER CODE END ETH_MspDeInit 0 */
-//    /* Disable Peripheral clock */
-//    __HAL_RCC_ETH1MAC_CLK_DISABLE();
-//    __HAL_RCC_ETH1TX_CLK_DISABLE();
-//    __HAL_RCC_ETH1RX_CLK_DISABLE();
-//
-//    /**ETH GPIO Configuration
-//    PG11     ------> ETH_TX_EN
-//    PG14     ------> ETH_TXD1
-//    PG13     ------> ETH_TXD0
-//    PC1     ------> ETH_MDC
-//    PA7     ------> ETH_CRS_DV
-//    PA1     ------> ETH_REF_CLK
-//    PC4     ------> ETH_RXD0
-//    PA2     ------> ETH_MDIO
-//    PC5     ------> ETH_RXD1
-//    */
-//    HAL_GPIO_DeInit(GPIOG, GPIO_PIN_11|GPIO_PIN_14|GPIO_PIN_13);
-//
-//    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5);
-//
-//    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_7|GPIO_PIN_1|GPIO_PIN_2);
-//
-//  /* USER CODE BEGIN ETH_MspDeInit 1 */
-//
-//  /* USER CODE END ETH_MspDeInit 1 */
-//  }
-//}
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/**
- * Should allocate a pbuf and transfer the bytes of the incoming
- * packet from the interface into the pbuf.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @return a pbuf filled with the received packet (including MAC header)
- *         NULL on memory error
-   */
-//static struct pbuf * low_level_input(struct netif *netif)
-//{
-//  struct pbuf *p = NULL;
-//  ETH_BufferTypeDef RxBuff[ETH_RX_DESC_CNT];
-//  uint32_t framelength = 0, i = 0;
-//  struct pbuf_custom* custom_pbuf;
-//
-//  memset(RxBuff, 0 , ETH_RX_DESC_CNT*sizeof(ETH_BufferTypeDef));
-//
-//  for(i = 0; i < ETH_RX_DESC_CNT -1; i++)
-//  {
-//    RxBuff[i].next=&RxBuff[i+1];
-//  }
-//
-//  if (HAL_ETH_IsRxDataAvailable(&heth))
-//  {
-//    HAL_ETH_GetRxDataBuffer(&heth, RxBuff);
-//    HAL_ETH_GetRxDataLength(&heth, &framelength);
-//
-//    /* Build Rx descriptor to be ready for next data reception */
-//    HAL_ETH_BuildRxDescriptors(&heth);
-//
-//#if !defined(DUAL_CORE) || defined(CORE_CM7)
-//    /* Invalidate data cache for ETH Rx Buffers */
-//    //SCB_InvalidateDCache_by_Addr((uint32_t *)RxBuff->buffer, framelength);
-//    dcache_invalidate((uintptr_t)RxBuff->buffer, framelength);
-//#endif
-//
-////    custom_pbuf  = (struct pbuf_custom*)LWIP_MEMPOOL_ALLOC(RX_POOL);
-////    custom_pbuf->custom_free_function = pbuf_free_custom;
-////
-////    p = pbuf_alloced_custom(PBUF_RAW, framelength, PBUF_REF, custom_pbuf, RxBuff->buffer, framelength);
-//
-//    return p;
-//  }
-//  else
-//  {
-//    return NULL;
-//  }
-//}
-
-
-#if !LWIP_ARP
-/**
- * This function has to be completed by user in case of ARP OFF.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @return ERR_OK if ...
- */
-static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
-{
-  err_t errval;
-  errval = ERR_OK;
-
-/* USER CODE BEGIN 5 */
-
-/* USER CODE END 5 */
-
-  return errval;
-
-}
-#endif /* LWIP_ARP */
-
-///*******************************************************************************
-//                       PHI IO Functions
-//*******************************************************************************/
-///**
-//  * @brief  Initializes the MDIO interface GPIO and clocks.
-//  * @param  None
-//  * @retval 0 if OK, -1 if ERROR
-//  */
-//int32_t ETH_PHY_IO_Init(void)
-//{
-//  /* We assume that MDIO GPIO configuration is already done
-//     in the ETH_MspInit() else it should be done here
-//  */
-//
-//  /* Configure the MDIO Clock */
-//  HAL_ETH_SetMDIOClockRange(&heth);
-//
-//  return 0;
-//}
-//
-///**
-//  * @brief  De-Initializes the MDIO interface .
-//  * @param  None
-//  * @retval 0 if OK, -1 if ERROR
-//  */
-//int32_t ETH_PHY_IO_DeInit (void)
-//{
-//  return 0;
-//}
-//
-///**
-//  * @brief  Read a PHY register through the MDIO interface.
-//  * @param  DevAddr: PHY port address
-//  * @param  RegAddr: PHY register address
-//  * @param  pRegVal: pointer to hold the register value
-//  * @retval 0 if OK -1 if Error
-//  */
-//int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal)
-//{
-//  if(HAL_ETH_ReadPHYRegister(&heth, DevAddr, RegAddr, pRegVal) != HAL_OK)
-//  {
-//    return -1;
-//  }
-//
-//  return 0;
-//}
-//
-///**
-//  * @brief  Write a value to a PHY register through the MDIO interface.
-//  * @param  DevAddr: PHY port address
-//  * @param  RegAddr: PHY register address
-//  * @param  RegVal: Value to be written
-//  * @retval 0 if OK -1 if Error
-//  */
-//int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal)
-//{
-//  if(HAL_ETH_WritePHYRegister(&heth, DevAddr, RegAddr, RegVal) != HAL_OK)
-//  {
-//    return -1;
-//  }
-//
-//  return 0;
-//}
-//
-///**
-//  * @brief  Get the time in millisecons used for internal PHY driver process.
-//  * @retval Time value
-//  */
-//int32_t ETH_PHY_IO_GetTick(void)
-//{
-//  return HAL_GetTick();
-//}
-//
-//HAL_StatusTypeDef HAL_ETH_DescAssignMemory(ETH_HandleTypeDef *heth, uint32_t Index, uint8_t *pBuffer1,uint8_t *pBuffer2)
-//{
-//	return HAL_OK;
-//}
-//
-//HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
-//{
-//	return HAL_OK;
-//}
-
 // ETH clocks init
 static void ethhw_initialize(void)
 {
@@ -321,21 +68,42 @@ static void ethhw_deinitialize(void)
 
 #define ETHHW_BUFFSIZE 4096
 
-void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2, unsigned buffsize)
+void ethhw_rxfilldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2, unsigned buffsize)
 {
 	desc [0] = (uintptr_t) buff1;
 	desc [1] = (uintptr_t) buff2;
 	desc [2] =
-		0 * (UINT32_C(1) << 31) | // IOC
+		1 * (UINT32_C(1) << 31) | // IOC
 		0 * (UINT32_C(1) << 30) | // TTSE
 		(0xFFFF & buffsize) * (UINT32_C(1) << 16) | // B2L = buffer 2 length
 		(0xFFFF & buffsize) * (UINT32_C(1) << 0) | // B1L = buffer 1 length
 		0;
 
 	desc [3] =
-		1 * (UINT32_C(1) << 29) | // First Descriptor
-		1 * (UINT32_C(1) << 28) | // Last Descriptor
+		1 * (UINT32_C(1) << 31) | // Own bit
+//		1 * (UINT32_C(1) << 29) | // First Descriptor
+//		1 * (UINT32_C(1) << 28) | // Last Descriptor
 		0;
+//	memset(desc, 0xff, 16);
+}
+
+void ethhw_txfilldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2, unsigned buffsize)
+{
+	desc [0] = (uintptr_t) buff1;
+	desc [1] = (uintptr_t) buff2;
+	desc [2] =
+		1 * (UINT32_C(1) << 31) | // IOC
+		0 * (UINT32_C(1) << 30) | // TTSE
+		(0xFFFF & buffsize) * (UINT32_C(1) << 16) | // B2L = buffer 2 length
+		(0xFFFF & buffsize) * (UINT32_C(1) << 0) | // B1L = buffer 1 length
+		0;
+
+	desc [3] =
+		1 * (UINT32_C(1) << 31) | // Own bit
+//		1 * (UINT32_C(1) << 29) | // First Descriptor
+//		1 * (UINT32_C(1) << 28) | // Last Descriptor
+		0;
+//	memset(desc, 0xff, 16);
 }
 
 int nic_can_send(void)
@@ -365,9 +133,9 @@ void nic_send(const uint8_t * data, int size)
 
 }
 
-static __attribute__((aligned(32))) uint8_t  dmac0tx_buff [2][ETHHW_BUFFSIZE];
-static __attribute__((aligned(32))) uint8_t  dmac0rx_buff [2][ETHHW_BUFFSIZE];
-static __attribute__((aligned(32))) uint8_t  dmac1tx_buff [2][ETHHW_BUFFSIZE];
+static RAMNC __attribute__((aligned(32))) uint8_t  dmac0tx_buff [2][ETHHW_BUFFSIZE];
+static RAMNC __attribute__((aligned(32))) uint8_t  dmac0rx_buff [2][ETHHW_BUFFSIZE];
+static RAMNC __attribute__((aligned(32))) uint8_t  dmac1tx_buff [2][ETHHW_BUFFSIZE];
 
 static RAMNC __attribute__((aligned(32))) volatile uint32_t  dmac0tx_desc [64];
 static RAMNC __attribute__((aligned(32))) volatile uint32_t  dmac0rx_desc [64];
@@ -387,6 +155,17 @@ void nic_initialize(void)
 	/* Configure the CSR Clock Range */
 	//ETH->MACMDIOAR = ETH_MACMDIOAR_CR_DIV102;
 
+	// 63.9.1 DMA initialization
+	ETH->DMAMR |= ETH_DMAMR_SWR_Msk;
+	while ((ETH->DMAMR & ETH_DMAMR_SWR_Msk) != 0)
+		;
+	ETH->DMASBMR = 0x01010000;
+
+	// 63.9.2 MTL initialization
+	(void) ETH->MTLOMR;
+
+	// 63.9.3 MAC initialization
+
 	ETH->MACCR = 0;
 	ETH->MACCR |=
 			0 * ETH_MACCR_PS_Msk | 	// Select 1000 Mbps operation
@@ -397,12 +176,17 @@ void nic_initialize(void)
 	ETH->MACA0HR = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
 	ETH->MACA0LR = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
 
+	// Packet filter modes
+	ETH->MACPFR = 0;
+	//ETH->MACPFR |= ETH_MACPFR_PR_Msk;
+	ETH->MACPFR |= ETH_MACPFR_RA_Msk;	// Receive All
+
 	PRINTF("ETH->MACCR=%08X\n", (unsigned) ETH->MACCR);
 	PRINTF("ETH->DMASBMR=%08X\n", (unsigned) ETH->DMASBMR);
 
-	ethhw_filldesc(dmac0tx_desc, dmac0tx_buff [0], dmac0tx_buff [1], ETHHW_BUFFSIZE);
-	ethhw_filldesc(dmac0rx_desc, dmac0rx_buff [0], dmac0rx_buff [1], ETHHW_BUFFSIZE);
-	ethhw_filldesc(dmac1tx_desc, dmac1tx_buff [0], dmac1tx_buff [1], ETHHW_BUFFSIZE);
+	ethhw_txfilldesc(dmac0tx_desc, dmac0tx_buff [0], dmac0tx_buff [1], ETHHW_BUFFSIZE);
+	ethhw_rxfilldesc(dmac0rx_desc, dmac0rx_buff [0], dmac0rx_buff [1], ETHHW_BUFFSIZE);
+	ethhw_txfilldesc(dmac1tx_desc, dmac1tx_buff [0], dmac1tx_buff [1], ETHHW_BUFFSIZE);
 
 	dcache_clean_invalidate((uintptr_t) dmac0tx_desc, sizeof dmac0tx_desc);
 	dcache_clean_invalidate((uintptr_t) dmac0rx_desc, sizeof dmac0rx_desc);
@@ -414,14 +198,7 @@ void nic_initialize(void)
 
 	if (1)
 	{
-		// CH0: RX & TX
-		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
-		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
-		ETH->DMAC0TXRLR =
-			1 * (UINT32_C(1) << ETH_DMAC0TXRLR_TDRL_Pos) |	// Channel 0 Tx descriptor ring length register
-			0;
-		ETH->DMAC0TXCR |= ETH_DMAC0TXCR_ST_Msk;	// Channel 0 transmit control register
-
+		// CH0: RX
 		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
 		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
 		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
@@ -429,6 +206,14 @@ void nic_initialize(void)
 			0 * (UINT32_C(17) << 0) |	// ARBS
 			0;
 		ETH->DMAC0RXCR |= ETH_DMAC0RXCR_SR_Msk;	// Channel 0 receive control register
+
+		// CH0: TX
+		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
+		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
+		ETH->DMAC0TXRLR =
+			1 * (UINT32_C(1) << ETH_DMAC0TXRLR_TDRL_Pos) |	// Channel 0 Tx descriptor ring length register
+			0;
+		ETH->DMAC0TXCR |= ETH_DMAC0TXCR_ST_Msk;	// Channel 0 transmit control register
 	}
 
 	if (0)
@@ -445,24 +230,24 @@ void nic_initialize(void)
 	ETH->MACCR |= ETH_MACCR_TE_Msk;
 	ETH->MACCR |= ETH_MACCR_RE_Msk;
 
-	arm_hardware_set_handler_system(ETH1_IRQn, ETH1_Handler);
-
 	ETH->MACIER =
 			ETH_MACIER_RXSTSIE_Msk |
 			ETH_MACIER_TXSTSIE_Msk |
 			0;
 
+	ETH->DMAC0IER =
+		ETH_DMAC0IER_TIE_Msk |
+		ETH_DMAC0IER_RIE_Msk |
+		0;
+
+	ETH->DMAC1IER =
+			ETH_DMAC1IER_TIE_Msk |
+		0;
 	/* Enable the MAC transmission */
 	ETH->MACCR |= ETH_MACCR_TE;
 
 	/* Enable the MAC reception */
 	ETH->MACCR |= ETH_MACCR_RE;
-
-
-//	for (;;)
-//	{
-//		PRINTF("MACRXTXSR=%08X, MACPHYCSR=%08X\n", (unsigned) ETH->MACRXTXSR, (unsigned) ETH->MACPHYCSR);
-//	}
 
 //	/* Set the Flush Transmit FIFO bit */
 //	ETH->MTLTQOMR |= ETH_MTLTQOMR_FTQ;
@@ -476,73 +261,15 @@ void nic_initialize(void)
 //	/* Clear Tx and Rx process stopped flags */
 //	ETH->DMAC0SR |= (ETH_DMACSR_TPS | ETH_DMACSR_RPS);
 
-	//ethhw_deinitialize();
-//	return;
-//	  HAL_StatusTypeDef hal_eth_init_status = HAL_OK;
-//	  uint32_t idx = 0;
-//	  /* Start ETH HAL Init */
-//
-//	   uint8_t MACAddr[6] ;
-//	  heth.Instance = ETH;
-//	  MACAddr[0] = 0x00;
-//	  MACAddr[1] = 0x80;
-//	  MACAddr[2] = 0xE1;
-//	  MACAddr[3] = 0x00;
-//	  MACAddr[4] = 0x00;
-//	  MACAddr[5] = 0x00;
-//	  heth.Init.MACAddr = &MACAddr[0];
-//	  heth.Init.MediaInterface = HAL_ETH_RMII_MODE;
-//	  heth.Init.TxDesc = DMATxDscrTab;
-//	  heth.Init.RxDesc = DMARxDscrTab;
-//	  heth.Init.RxBuffLen = 1524;
-//
-//	  /* USER CODE BEGIN MACADDRESS */
-//
-//	  /* USER CODE END MACADDRESS */
-//
-//	  hal_eth_init_status = HAL_ETH_Init(&heth);
-//
-//	  memset(&TxConfig, 0 , sizeof(ETH_TxPacketConfig));
-//	  TxConfig.Attributes = ETH_TX_PACKETS_FEATURES_CSUM | ETH_TX_PACKETS_FEATURES_CRCPAD;
-//	  TxConfig.ChecksumCtrl = ETH_CHECKSUM_IPHDR_PAYLOAD_INSERT_PHDR_CALC;
-//	  TxConfig.CRCPadCtrl = ETH_CRC_PAD_INSERT;
-//
-//	  /* End ETH HAL Init */
-//
-//	  /* Initialize the RX POOL */
-//	  LWIP_MEMPOOL_INIT(RX_POOL);
-//
-//	#if LWIP_ARP || LWIP_ETHERNET
-//
-//	  for(idx = 0; idx < ETH_RX_DESC_CNT; idx ++)
-//	  {
-//	    HAL_ETH_DescAssignMemory(&heth, idx, Rx_Buff[idx], NULL);
-//	  }
-//
-//	/* USER CODE BEGIN PHY_PRE_CONFIG */
-//
-//	/* USER CODE END PHY_PRE_CONFIG */
-//	  /* Set PHY IO functions */
-//	//  LAN8742_RegisterBusIO(&LAN8742, &LAN8742_IOCtx);
-//	//
-//	//  /* Initialize the LAN8742 ETH PHY */
-//	//  LAN8742_Init(&LAN8742);
-//	//
-//	//  if (hal_eth_init_status == HAL_OK)
-//	//  {
-//	//  /* Get link state */
-//	//  ethernet_link_check_state(netif);
-//	//  }
-//	//  else
-//	//  {
-//	//    Error_Handler();
-//	//  }
-//	#endif /* LWIP_ARP || LWIP_ETHERNET */
-//
-//	  HARDWARE_ETH_INITIALIZE();
-//
-//	  (void) hal_eth_init_status;
-//
+	arm_hardware_set_handler_system(ETH1_IRQn, ETH1_Handler);
+
+	for (;;)
+	{
+		PRINTF("MACRXTXSR=%08X, MACPHYCSR=%08X, DMAC0RXCR=%08X, DMAC0TXCR=%08X ", (unsigned) ETH->MACRXTXSR, (unsigned) ETH->MACPHYCSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0TXCR);
+		//printhex(0, dmac0rx_buff, 16);
+		printhex(0, (const void *) dmac0rx_desc, 16);
+		local_delay_ms(250);
+	}
 }
 #endif /* WITHETHHW */
 

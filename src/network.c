@@ -734,6 +734,28 @@ static err_t nic_linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
+
+#if ! LWIP_ARP && 0
+/**
+ * This function has to be completed by user in case of ARP OFF.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @return ERR_OK if ...
+ */
+static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
+{
+  err_t errval;
+  errval = ERR_OK;
+
+/* USER CODE BEGIN 5 */
+
+/* USER CODE END 5 */
+
+  return errval;
+
+}
+#endif /* LWIP_ARP */
+
 #if LWIP_SUPPORT_CUSTOM_PBUF && 0
 
 /* Memory Pool Declaration */
