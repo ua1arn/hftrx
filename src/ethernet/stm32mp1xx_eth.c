@@ -413,8 +413,6 @@ void nic_initialize(void)
 	// Ethernet controller tests
 	ethhw_initialize();
 
-	TP();
-
 	ETH->MACCR |=
 			0 * ETH_MACCR_PS_Msk | 	// Select 1000 Mbps operation
 			0 * ETH_MACCR_FES_Msk |	// This bit selects the speed in the 10/100 Mbps mode -  1: 100 Mbps
