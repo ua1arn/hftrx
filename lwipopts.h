@@ -340,6 +340,4 @@ typedef unsigned sys_prot_t;
 
 #define ETH_PAD_SIZE                    0
 
-struct netif  * getNetifData(void);
-
 #endif /* __LWIPOPTS_H__ */

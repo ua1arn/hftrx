@@ -734,15 +734,29 @@ static err_t nic_linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
+#if LWIP_SUPPORT_CUSTOM_PBUF
+
+/* Memory Pool Declaration */
+LWIP_MEMPOOL_DECLARE(RX_POOL, 10, sizeof(struct pbuf_custom), "Zero-copy RX PBUF pool");
+
+// See LWIP_SUPPORT_CUSTOM_PBUF
+//	  /* Initialize the RX POOL */
+//	  LWIP_MEMPOOL_INIT(RX_POOL);
+/**
+  * @brief  Custom Rx pbuf free callback
+  * @param  pbuf: pbuf to be freed
+  * @retval None
+  */
+void pbuf_free_custom(struct pbuf *p)
+{
+  struct pbuf_custom* custom_pbuf = (struct pbuf_custom*)p;
+
+  LWIP_MEMPOOL_FREE(RX_POOL, custom_pbuf);
+}
+#endif
 
 static struct netif nic_netif_data;
 
-
-
-struct netif  * getNetifData(void)
-{
-	return & nic_netif_data;
-}
 
 
 static err_t nic_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
@@ -795,7 +809,7 @@ static void netif_polling(void * ctx)
 		nic_buffer_release(p);
 		//PRINTF("ethernet_input:\n");
 		//printhex(0, frame->payload, frame->len);
-		err_t e = ethernet_input(frame, getNetifData());
+		err_t e = ethernet_input(frame, & nic_netif_data);
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
@@ -821,7 +835,7 @@ static void init_netif(void)
 	static ip_addr_t vaddr;// [4]  = IPADDR;
 	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
-	struct netif  *netif = getNetifData();
+	struct netif  *netif = & nic_netif_data;
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 

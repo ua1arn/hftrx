@@ -68,9 +68,6 @@
 //static ETH_HandleTypeDef heth;
 //static ETH_TxPacketConfig TxConfig;
 
-/* Memory Pool Declaration */
-LWIP_MEMPOOL_DECLARE(RX_POOL, 10, sizeof(struct pbuf_custom), "Zero-copy RX PBUF pool");
-
 /* Private function prototypes -----------------------------------------------*/
 //static int32_t ETH_PHY_IO_Init(void);
 //static int32_t ETH_PHY_IO_DeInit (void);
@@ -200,35 +197,6 @@ static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const
 
 }
 #endif /* LWIP_ARP */
-
-
-/**
-  * @brief  Custom Rx pbuf free callback
-  * @param  pbuf: pbuf to be freed
-  * @retval None
-  */
-void pbuf_free_custom(struct pbuf *p)
-{
-  struct pbuf_custom* custom_pbuf = (struct pbuf_custom*)p;
-
-  LWIP_MEMPOOL_FREE(RX_POOL, custom_pbuf);
-}
-
-/* USER CODE BEGIN 6 */
-
-/**
-* @brief  Returns the current time in milliseconds
-*         when LWIP_TIMERS == 1 and NO_SYS == 1
-* @param  None
-* @retval Current Time value
-*/
-//u32_t sys_jiffies(void)
-//{
-//  return HAL_GetTick();
-//}
-
-
-/* USER CODE END 6 */
 
 ///*******************************************************************************
 //                       PHI IO Functions
