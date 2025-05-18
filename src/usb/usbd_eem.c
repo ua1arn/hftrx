@@ -588,20 +588,10 @@ static void cdceemout_buffer_save(
 				// Тут полностью собран ethernet пакет, используем его (или например печатаем содержимое).
 				//PRINTF("cdceemout_buffer_save: LWIP len=%u\n", cdceematcrc);
 				//cdceemout_buffer_print2(cdceemrxbuff, cdceematcrc);
-#if WITHLWIP
 				// Save to LWIP
-				{
-					if (nic_rxproc != NULL)
-						nic_rxproc(cdceemrxbuff, cdceematcrc);
-
-				}
-
-#elif 0
-				// Отладочная печать
-				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
-				//cdceemout_buffer_print(cdceemrxbuff, cdceematcrc);
-				cdceemout_buffer_print2(cdceemrxbuff, cdceematcrc);
-#endif
+				//PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
+				if (nic_rxproc != NULL)
+					nic_rxproc(cdceemrxbuff, cdceematcrc);
 			}
 		}
 

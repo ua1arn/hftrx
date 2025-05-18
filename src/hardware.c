@@ -426,14 +426,10 @@ static void adcdones_event(void * ctx)
 
 static volatile uint32_t sys_now_counter;
 
-#if 1//! WITHLWIP
-
 uint32_t sys_now(void)
 {
 	return sys_now_counter;
 }
-
-#endif /* WITHLWIP */
 
 uint32_t board_millis(void)
 {
