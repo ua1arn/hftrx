@@ -2437,4 +2437,8 @@ sizeof(data__zepto_min_js) - 16,
 #define FS_ROOT file__zepto_min_js
 #define FS_NUMFILES 5
 
+#else /* WITHLWIP */
+
+#define FS_ROOT NULL
+
 #endif /* WITHLWIP */
