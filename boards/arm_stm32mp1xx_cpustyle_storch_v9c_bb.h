@@ -971,6 +971,10 @@ void user_uart4_onrxchar(uint_fast8_t c);
 		arm_hardware_pioc_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_MDC PC1 */ \
 		arm_hardware_piog_outputs((UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 	} while (0)
+	#define HARDWARE_ETH_RESET() do { \
+		arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
+		local_delay_ms(50); \
+	} while (0)
 
 #endif /* WITHETHHW */
 
@@ -1231,17 +1235,18 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			BOARD_BLINK_INITIALIZE(); \
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_DAC_INITIALIZE(); \
-			HARDWARE_BL_INITIALIZE(); \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-			HOSTBB_INITIALIZE(); \
-		} while (0)
+		HARDWARE_ETH_RESET(); \
+		BOARD_BLINK_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
+		HARDWARE_DCDC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		BOARD_USERBOOT_INITIALIZE(); \
+		USBD_EHCI_INITIALIZE(); \
+		HOSTBB_INITIALIZE(); \
+	} while (0)
 
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9c_2ch.h"
 
