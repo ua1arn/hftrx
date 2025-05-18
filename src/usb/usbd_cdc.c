@@ -384,37 +384,6 @@ usbd_cdc_isisdata_ifc(uint_fast8_t interfacev)
 	}
 	return 0;
 }
-
-// При возврате из этой функции в usbd_core.c происходит вызов USBD_CtlSendStatus
-static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
-{
-	const USBD_SetupReqTypedef * const req = & pdev->request;
-
-	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-
-	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
-	{
-		switch (req->bRequest)
-		{
-		case CDC_SET_LINE_CODING:
-			{
-				const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
-				const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
-				ASSERT(req->wLength == 7);
-				dwDTERate [offset] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
-				//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [offset], cdc_epXdatabuffout [6]);
-			}
-			break;
-		default:
-			// непонятно, для чего эти данные?
-            PRINTF("req->bReques=%02X\n", req->bRequest);
-            TP();
-			break;
-		}
-	}
-	return USBD_OK;
-}
 /*
 * @param  epnum: endpoint index without direction bit
 *
@@ -459,10 +428,100 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	return USBD_OK;
 }
 
+// При возврате из этой функции в usbd_core.c происходит вызов USBD_CtlSendStatus
+static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
+{
+	const USBD_SetupReqTypedef * const req = & pdev->request;
+
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
+	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
+//	switch (req->bmRequest * 256 | req->bRequest)
+//	{
+//	case (1 * USB_REQ_TYPE_DIR | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_DEVICE) * 266 | CDC_SET_LINE_CODING:
+//		if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+//		{
+//			const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
+//			ASSERT(req->wLength == 7);
+//			dwDTERate [offset] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
+//			//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [offset], cdc_epXdatabuffout [6]);
+//		}
+//		break;
+//	}
+
+	if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+	{
+		switch (req->bRequest)
+		{
+		case CDC_SET_LINE_CODING:
+			{
+				const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
+				ASSERT(req->wLength == 7);
+				dwDTERate [offset] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
+				//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [offset], cdc_epXdatabuffout [6]);
+			}
+			break;
+		default:
+			// непонятно, для чего эти данные?
+            PRINTF("req->bReques=%02X\n", req->bRequest);
+            TP();
+			break;
+		}
+	}
+	return USBD_OK;
+}
+
 static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	static __ALIGN_BEGIN uint8_t buff [32] __ALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	const unsigned offset = USBD_CDCACM_OFFSET_BY_IFV(interfacev);
+
+//	switch (req->bmRequest * 256 | req->bRequest)
+//	{
+//	case (1 * USB_REQ_TYPE_DIR | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_DEVICE) * 266 | CDC_GET_LINE_CODING:
+//		if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+//		{
+//			USBD_poke_u32(& buff [0], dwDTERate [offset]); // dwDTERate
+//			buff [4] = 0;	// 1 stop bit
+//			buff [5] = 0;	// parity=none
+//			buff [6] = 8;	// bDataBits
+//
+//			USBD_CtlSendData(pdev, buff, ulmin16(7, req->wLength));
+//		}
+//		break;
+//	case (1 * USB_REQ_TYPE_DIR | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_DEVICE) * 266 | CDC_SET_CONTROL_LINE_STATE:
+//		if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+//		{
+//		}
+//		break;
+//	case (1 * USB_REQ_TYPE_DIR | USB_REQ_TYPE_CLASS | USB_REQ_RECIPIENT_DEVICE) * 266 | CDC_SET_LINE_CODING:
+//		if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+//		{
+//			USBD_CtlPrepareRx(pdev, cdc_epXdatabuffout, ulmin16(ARRAY_SIZE(cdc_epXdatabuffout), req->wLength));
+//		}
+//		break;
+//	case (1 * USB_REQ_TYPE_DIR | USB_REQ_TYPE_STANDARD | USB_REQ_RECIPIENT_DEVICE) * 266 | USB_REQ_GET_INTERFACE:
+//		if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+//		{
+//			static __ALIGN_BEGIN uint8_t buff [64] __ALIGN_END;
+//			//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
+//			buff [0] = 0;
+//			USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+//		}
+//		break;
+//	case (0 * USB_REQ_TYPE_DIR | USB_REQ_TYPE_STANDARD | USB_REQ_RECIPIENT_DEVICE) * 266 | USB_REQ_SET_INTERFACE:
+//		if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
+//		{
+//			// Only zero value here
+//			//altinterfaces [interfacev] = LO_BYTE(req->wValue);
+//			//PRINTF("USBD_CDC_Setup: CDC interface %d set to %d\n", (int) interfacev, (int) altinterfaces [interfacev]);
+//			//bufers_set_cdcalt(altinterfaces [interfacev]);
+//			USBD_CtlSendStatus(pdev);
+//		}
+//		break;
+//	}
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
