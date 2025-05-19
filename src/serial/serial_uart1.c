@@ -96,24 +96,25 @@ static RAMFUNC_NONILINE void SCIFTXI1_IRQHandler(void)
 
 static void UART1_IRQHandler(void)
 {
+	UART_t * const uart = UARTBASENAME(thisPORT);
 	char c;
-	const uint_fast32_t sts = UART1->ISR & UART1->IMR;
+	const uint_fast32_t sts = uart->ISR & uart->IMR;
 	if (sts & (1u << 5))	// RXOVR
 	{
-		UART1->ISR = (1u << 5);	// RXOVR
+		uart->ISR = (1u << 5);	// RXOVR
 		HARDWARE_UART1_ONOVERFLOW();
 	}
 	if (sts & (1u << 7))	// PARE
 	{
-		UART1->ISR = (1u << 7);	// PARE
+		uart->ISR = (1u << 7);	// PARE
 	}
 	if (sts & (1u << 6))	// FRAME
 	{
-		UART1->ISR = (1u << 6);	// FRAME
+		uart->ISR = (1u << 6);	// FRAME
 	}
 	if (sts & (1u << 3))	// TEMPTY
 	{
-		HARDWARE_UART1_ONTXCHAR(UART1);
+		HARDWARE_UART1_ONTXCHAR(uart);
 	}
 	while (hardware_uart1_getchar(& c))
 	{
