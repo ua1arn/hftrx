@@ -1334,15 +1334,54 @@ gpioX_onchangeinterrupt(
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
+
+static LCLSPINLOCK_t gpiodatas_ctx [16];	// GPIOA..GPIOK
+static LCLSPINLOCK_t gpioz_data_ctx;
+
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
 void sysinit_gpio_initialize(void)
 {
 	unsigned i;
+
+#if defined(GPIOZ)
+	LCLSPINLOCK_INITIALIZE(& gpioz_data_ctx);	// PIOZ
+#endif /* defined(GPIOZ) */
+
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
+	{
+		LCLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
+		LCLSPINLOCK_INITIALIZE(lck);
+	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
 		InitializeListHead(& einthead [i]);
 	}
+}
+
+static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
+{
+#if defined(GPIOZ)
+	if (gpio == GPIOZ)
+		return & gpioz_data_ctx;	// PIOZ
+#endif /* defined(GPIOZ) */
+	return & gpiodatas_ctx [((uintptr_t) gpio - GPIOA_BASE) / 0x1000];
+}
+
+static IRQL_t stm32mp1_pio_lock(GPIO_TypeDef * gpio)
+{
+	return IRQL_SYSTEM;
+	IRQL_t irql;
+	RiseIrql(IRQL_SYSTEM, & irql);
+	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));
+	return irql;
+}
+
+static void stm32mp1_pio_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
+{
+	return;
+	LCLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio));
+	LowerIrql(irql);
 }
 
 #elif CPUSTYLE_VM14
@@ -1528,10 +1567,12 @@ void sysinit_gpio_initialize(void)
 		  do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
+			const IRQL_t irql = stm32mp1_pio_lock(gpio); \
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODER0)) | mask3 * (moder) * GPIO_MODER_MODER0_0; \
 			(gpio)->OSPEEDR = ((gpio)->OSPEEDR & ~ (mask3 * GPIO_OSPEEDR_OSPEEDR0)) | mask3 * (speed) * GPIO_OSPEEDR_OSPEEDR0_0; \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (mask3 * GPIO_PUPDR_PUPDR0)) | mask3 * (pupdr) * GPIO_PUPDR_PUPDR0_0; \
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT0)) | (iomask) * (typer); \
+			stm32mp1_pio_unlock(gpio, irql); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		#define tm32mp1_pioX_pupdr(gpio, ipins, up, down) \
@@ -1539,19 +1580,23 @@ void sysinit_gpio_initialize(void)
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			const portholder_t ipins3 = power2(ipins); \
+			const IRQL_t irql = stm32mp1_pio_lock(gpio); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | \
 				up3 * (1) * GPIO_PUPDR_PUPDR0_0 | \
 				down3 * (2) * GPIO_PUPDR_PUPDR0_0 | \
 				0; \
+				stm32mp1_pio_unlock(gpio, irql); \
 		  } while (0)
 
 		#define stm32mp1_pioX_altfn(gpio, opins, afn) \
 			{ \
+				const IRQL_t irql = stm32mp1_pio_lock(gpio); \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
 				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
 				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
+				stm32mp1_pio_unlock(gpio, irql); \
 			} while (0)
 
 	/* разрешение прерывания по изменению состояния указанных групп выводов */
@@ -1565,9 +1610,9 @@ void sysinit_gpio_initialize(void)
 			)
 	{
 		// CPU1 = MPU and CPU2 = MCU
-		RCC->MP_APB3ENSETR |= RCC_MP_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR |= RCC_MP_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3LPENSETR;
 
 		#if 1
