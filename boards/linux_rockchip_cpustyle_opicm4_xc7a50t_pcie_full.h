@@ -131,15 +131,8 @@ enum {
 
 #endif /* WITHSPIDEV */
 
-#if WITHDSPEXTFIR
-#define AXIDMA_FIR_COEFFS_ID	XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID
-
-	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-		} while (0)
-#endif /* WITHDSPEXTFIR */
-
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE()   do {} while (0)
-#define HARDWARE_DEBUG_FLUSH()	do {} while(0)
+#define HARDWARE_DEBUG_FLUSH()	do {} while (0)
 
 #endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_FULL_H_INCLUDED */

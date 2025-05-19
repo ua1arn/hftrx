@@ -2126,7 +2126,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 #if WITHDSPEXTFIR && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 volatile uint32_t * fir_reload = NULL;
-static adapter_t plfircoefsout;		/* параметры прербразования к PL */
+static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
 void board_fpga_fir_initialize(void)
 {
@@ -2171,7 +2171,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	}
 }
 #elif WITHDSPEXTFIR && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
-static adapter_t plfircoefsout;		/* параметры прербразования к PL */
+static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
 void board_fpga_fir_initialize(void)
 {
@@ -2653,7 +2653,6 @@ void iq_stream_stop(void)
 	linux_cancel_thread(iq_interrupt_t);
 #endif
 }
-
 
 uint8_t iio_ad936x_start(const char * uri)
 {
