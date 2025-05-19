@@ -1370,7 +1370,7 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 
 static IRQL_t stm32mp1_pio_lock(GPIO_TypeDef * gpio)
 {
-	return IRQL_SYSTEM;
+	return GPIOIRQL;
 	IRQL_t irql;
 	RiseIrql(GPIOIRQL, & irql);
 	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));

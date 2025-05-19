@@ -258,27 +258,27 @@
 #if LCDMODE_SPI_NA
 	// эти контроллеры требуют только RS
 
-	#define LS020_RS_PORT_S(v)		do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
+	#define LS020_RS_PORT_S(v)		do { gpioX_setstate(GPIOB, (v), 1 * (v)); } while (0)
+	#define LS020_RS_PORT_C(v)		do { gpioX_setstate(GPIOB, (v), 0 * (v)); } while (0)
 	#define LS020_RS			(UINT32_C(1) << 10)			// PB10 signal
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 
-	#define LS020_RESET_PORT_S(v)		do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
+	#define LS020_RESET_PORT_S(v)		do { gpioX_setstate(GPIOB, (v), 1 * (v)); } while (0)
+	#define LS020_RESET_PORT_C(v)		do { gpioX_setstate(GPIOB, (v), 0 * (v)); } while (0)
 	#define LS020_RESET			(UINT32_C(1) << 13)			// PB13 signal
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
 	// LCDMODE_UC1608
 
-	#define LS020_RS_PORT_S(v)		do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
+	#define LS020_RS_PORT_S(v)		do { gpioX_setstate(GPIOB, (v), 1 * (v)); } while (0)
+	#define LS020_RS_PORT_C(v)		do { gpioX_setstate(GPIOB, (v), 0 * (v)); } while (0)
 	#define LS020_RS			(UINT32_C(1) << 10)			// PB10 signal
 
-	#define LS020_RESET_PORT_S(v)		do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
+	#define LS020_RESET_PORT_S(v)		do { gpioX_setstate(GPIOB, (v), 1 * (v)); } while (0)
+	#define LS020_RESET_PORT_C(v)		do { gpioX_setstate(GPIOB, (v), 0 * (v)); } while (0)
 	#define LS020_RESET			(UINT32_C(1) << 13)			// PB13 signal
 
 #endif
@@ -496,8 +496,8 @@
 	} while (0)
 
 	#define HARDWARE_SDIOPOWER_BIT (UINT32_C(1) << 12)	/* PB12 */
-	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
-	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
+	#define HARDWARE_SDIOPOWER_C(v)	do { gpioX_setstate(GPIOB, (v), 0 * (v)); } while (0)
+	#define HARDWARE_SDIOPOWER_S(v)	do { gpioX_setstate(GPIOB, (v), 1 * (v)); } while (0)
 	/* если питание SD CARD управляется прямо с процессора */
 	#define HARDWARE_SDIOPOWER_INITIALIZE()	do { \
 		arm_hardware_piob_outputs2m(HARDWARE_SDIOPOWER_BIT, HARDWARE_SDIOPOWER_BIT); /* питание выключено */ \
@@ -515,8 +515,8 @@
 #if WITHTX
 
 	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
+	////#define TXPATH_TARGET_PORT_S(v)		do { gpioX_setstate(GPIOD, (v), 1 * (v)); } while (0)
+	////#define TXPATH_TARGET_PORT_C(v)		do { gpioX_setstate(GPIOD, (v), 0 * (v)); } while (0)
 	// 
 	#define TXGFV_RX		(UINT32_C(1) << 4)
 	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
@@ -609,14 +609,14 @@
 #endif /* WITHELKEY */
 
 // IOUPDATE = PA15
-//#define SPI_IOUPDATE_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); (void) GPIOA->BSRR; } while (0)
-//#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
+//#define SPI_IOUPDATE_PORT_C(v)	do { gpioX_setstate(GPIOA, (v), 0 * (v)); } while (0)
+//#define SPI_IOUPDATE_PORT_S(v)	do { gpioX_setstate(GPIOA, (v), 1 * (v)); } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); (void) GPIOH->BSRR; } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); (void) GPIOH->BSRR; } while (0)
+	#define SPI_ALLCS_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), 1 * (v)); } while (0)
+	#define SPI_ALLCS_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), 0 * (v)); } while (0)
 
 	#define targetext1		(UINT32_C(1) << 7)		// PH7 ext1 on front panel
 	#define targetxad2		(UINT32_C(1) << 2)		// PH2 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -631,11 +631,6 @@
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 	#define targetnone 0				/* FPGA image loader pseudo chip select signal */
-
-	//#define SPI_NAEN_PORT_S(v)	do { GPIOx->BSRR = BSRR_S(v); (void) GPIOx->BSRR; } while (0)
-	//#define SPI_NAEN_PORT_C(v)	do { GPIOx->BSRR = BSRR_C(v); (void) GPIOx->BSRR; } while (0)
-
-	//#define SPI_NAEN_BIT (UINT32_C(1) << xx7)		// Pxx used
 
 	/* Perform delay after assert or de-assert specific CS line */
 	#define SPI_CS_DELAY(target) do { \
@@ -681,12 +676,12 @@
 	//	SPI1_SCK	PZ0	AF_5
 	//	SPI1_MISO	PZ1 AF_5
 	//	SPI1_MOSI	PZ2 AF_5
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOZ->BSRR = BSRR_C(v); (void) GPIOZ->BSRR; } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOZ->BSRR = BSRR_S(v); (void) GPIOZ->BSRR; } while (0)
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 0)	// PZ0 бит, через который идет синхронизация SPI
 
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOZ->BSRR = BSRR_C(v); (void) GPIOZ->BSRR; } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOZ->BSRR = BSRR_S(v); (void) GPIOZ->BSRR; } while (0)
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 	#define	SPI_MOSI_BIT			(UINT32_C(1) << 2)	// PZ2 бит, через который идет вывод
 
 	#define SPI_TARGET_MISO_PIN		(gpioX_getinputs(GPIOZ))
@@ -778,13 +773,13 @@
 	// I2C2_SCL	PZ4
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 4)		// I2C2_SCL	PZ4
 	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOZ))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOZ->BSRR = BSRR_C(v); (void) GPIOZ->BSRR; } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOZ->BSRR = BSRR_S(v); (void) GPIOZ->BSRR; } while (0)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 5)		// I2C2_SDA	PZ5
 	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOZ))
-	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOZ->BSRR = BSRR_C(v); (void) GPIOZ->BSRR; } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOZ->BSRR = BSRR_S(v); (void) GPIOZ->BSRR; } while (0)
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
@@ -815,8 +810,8 @@
 	//	FPGA ADC OVF	PI8	не мощные
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); (void) GPIOA->BSRR; } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOA, (v), 1 * (v)); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOA, (v), 0 * (v)); } while (0)
 	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 10)	/* PA10 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -854,16 +849,16 @@
 	//	FPGA_FIR2_WE	PG3	не мощные
 	//	FPGA_FIR_CLK	PG8
 
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), 0 * (v)); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), 1 * (v)); } while (0)
 	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 8)	/* PG8 - fir CS ~FPGA_FIR_CLK */
 
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), 0 * (v)); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), 1 * (v)); } while (0)
 	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 2)	/* PG2 - fir1 WE */
 
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), 0 * (v)); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), 1 * (v)); } while (0)
 	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 3)	/* PG3 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
@@ -940,8 +935,8 @@
 
 #if WITHUSBHW
 
-	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); (void) GPIOA->BSRR; } while (0)
-	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
+	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { gpioX_setstate(GPIOA, (v), 0 * (v)); } while (0)
+	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { gpioX_setstate(GPIOA, (v), 1 * (v)); } while (0)
 	#define TARGET_USBFS_VBUSON_BIT (UINT32_C(1) << 11)	// PA11 - нулём включение питания для device
 
 	/**USB_OTG_FS GPIO Configuration    
@@ -1144,8 +1139,8 @@
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() (((gpioX_getinputs(GPIOF)) & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+			#define SPIDF_MOSI(v) do { gpioX_setstate(GPIOF, SPDIF_MOSI_BIT, SPDIF_MOSI_BIT * (v)); } while (0)
+			#define SPIDF_SCLK(v) do { gpioX_setstate(GPIOF, SPDIF_SCLK_BIT, SPDIF_SCLK_BIT * (v)); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
 					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* D2 tie-up */ \
 					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* D3 tie-up */ \
@@ -1159,11 +1154,11 @@
 					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
 					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+					gpioX_setstate(GPIOB, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
+					gpioX_setstate(GPIOB, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); \
 					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
 					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
 					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
@@ -1206,8 +1201,8 @@
 		#define BOARD_GT911_INT_PIN (UINT32_C(1) << 14)		/* PE14 : tsc interrupt XS26, pin 08 */
 		#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 13)	/* PB13 : tsc/LCD reset, XS26, pin 22 */
 
-		#define BOARD_GT911_RESET_SET(v) do { if (v) GPIOB->BSRR = BSRR_S(BOARD_GT911_RESET_PIN); else GPIOB->BSRR = BSRR_C(BOARD_GT911_RESET_PIN); (void) GPIOB->BSRR; } while (0)
-		#define BOARD_GT911_INT_SET(v) do { if (v) GPIOE->BSRR = BSRR_S(BOARD_GT911_INT_PIN); else GPIOE->BSRR = BSRR_C(BOARD_GT911_INT_PIN); (void) GPIOE->BSRR; } while (0)
+		#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOB, BOARD_GT911_RESET_PIN, BOARD_GT911_RESET_PIN * (v)); } while (0)
+		#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, BOARD_GT911_INT_PIN, BOARD_GT911_INT_PIN * (v)); } while (0)
 
 		#define BOARD_GT911_RESET_INITIO_1() do { \
 			arm_hardware_pioe_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
@@ -1229,18 +1224,19 @@
 
 	#endif
 
+#if 1
 	#define BOARD_BLINK_BIT (UINT32_C(1) << 13)	// PA13 - led on Storch board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 			arm_hardware_pioa_opendrain(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
-			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+			gpioX_setstate(GPIOA, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
 		} while (0)
-
+#else
+	#define BOARD_BLINK_INITIALIZE() do { \
+		} while (0)
+#endif
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOG_USERBOOT_BIT	(UINT32_C(1) << 15)	/* PG15: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOG)) & BOARD_GPIOG_USERBOOT_BIT) == 0 || ((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
