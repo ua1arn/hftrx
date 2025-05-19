@@ -199,17 +199,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_zinc20.h"	// 7020 Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
-	#include "boards/arm_x7c70xx_ctlstyle_zm10.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_x7c70xx_cpustyle_zm10.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_storch_sv9.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_storch_sv9.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
-	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_10_v1.h"	// плата EBAZ4205
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v1.h"	// плата EBAZ4205
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
