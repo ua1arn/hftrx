@@ -910,6 +910,7 @@
 
 	/* From MYC-YA157C-V3 Product Manual */
 	#define HARDWARE_ETH_INITIALIZE() do { \
+		arm_hardware_pioc_inputs((UINT32_C(1) << 13));		/* PHY INT - PC13 */ \
 		arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 		local_delay_ms(50); \
 		SYSCFG->PMCSETR = (SYSCFG->PMCSETR & ~ SYSCFG_PMCSETR_ETH_SEL_Msk & ~ SYSCFG_PMCSETR_ETH_SEL_CONF_Msk) | (0x01 << SYSCFG_PMCSETR_ETH_SEL_Pos); /* RGMII */ \
