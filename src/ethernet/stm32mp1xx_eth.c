@@ -280,13 +280,13 @@ void nic_initialize(void)
 
 	arm_hardware_set_handler_system(ETH1_IRQn, ETH1_Handler);
 
-	for (;;)
-	{
-		PRINTF("DMADSR=%08X, MACRXTXSR=%08X, DMAC0RXCR=%08X, DMAC0SR=%08X ", (unsigned) ETH->DMADSR, (unsigned) ETH->MACRXTXSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0SR);
-		printhex(0, dmac0rx_buff, 16);
-		//printhex(0, (const void *) dmac0rx_desc, 16);
-		local_delay_ms(250);
-	}
+//	for (;;)
+//	{
+//		PRINTF("DMADSR=%08X, MACRXTXSR=%08X, DMAC0RXCR=%08X, DMAC0SR=%08X ", (unsigned) ETH->DMADSR, (unsigned) ETH->MACRXTXSR, (unsigned) ETH->DMAC0RXCR, (unsigned) ETH->DMAC0SR);
+//		printhex(0, dmac0rx_buff, 16);
+//		//printhex(0, (const void *) dmac0rx_desc, 16);
+//		local_delay_ms(250);
+//	}
 }
 #endif /* WITHETHHW */
 
