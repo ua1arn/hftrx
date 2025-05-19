@@ -316,7 +316,7 @@ static USBD_StatusTypeDef USBD_NCM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
 {
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_IN, USBD_EP_TYPE_BULK, USBD_CDCNCM_IN_BUFSIZE); /* Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_OUT, USBD_EP_TYPE_BULK, USBD_CDCNCM_OUT_BUFSIZE); /* Open EP OUT */
-	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_INT, USBD_EP_TYPE_INTR, USBD_CDCNCM_INT_SIZE);	/* Open Command IN EP */
+	USBD_LL_OpenEP(pdev, USBD_EP_CDCNCM_NOTIFY, USBD_EP_TYPE_INTR, USBD_CDCNCM_NOTIFY_SIZE);	/* Open Command IN EP */
 
 	USBD_LL_PrepareReceive(pdev, USBD_EP_CDCNCM_OUT, ncm_rx_buffer, CFG_TUD_NCM_OUT_NTB_MAX_SIZE);
 
@@ -334,7 +334,7 @@ static USBD_StatusTypeDef USBD_NCM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
 
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_IN);
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_OUT);
-	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_INT);
+	USBD_LL_CloseEP(pdev, USBD_EP_CDCNCM_NOTIFY);
 
 	return USBD_OK;
 }
@@ -372,7 +372,7 @@ static USBD_StatusTypeDef USBD_NCM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 		//	USBD_NCM_Setup: 00000000: 21 43 0E 00 00 00 00 00
 		// For INTERFACE_CDCNCM_CONTROL
 		USBD_CtlSendStatus(pdev);
-		USBD_LL_Transmit(pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
+		USBD_LL_Transmit(pdev, USBD_EP_CDCNCM_NOTIFY, (uint8_t *) & notify, sizeof notify);
 	    break;
 
 	case GET_NTB_PARAMETERS:
@@ -402,7 +402,7 @@ static USBD_StatusTypeDef USBD_NCM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 		//PRINTF("Data sent\n");
 		can_xmit = 1;
 		break;
-	case USBD_EP_CDCNCM_INT:
+	case USBD_EP_CDCNCM_NOTIFY:
 		PRINTF("Notify sent\n");
 		break;
 	default:
@@ -458,7 +458,7 @@ void req1(void)
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	if (registered_pdev)
-		USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notifyData, sizeof notifyData);
+		USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_NOTIFY, (uint8_t *) & notifyData, sizeof notifyData);
 
 	LowerIrql(oldIrql);
 }
@@ -470,7 +470,7 @@ void req2(void)
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	if (registered_pdev)
-		USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_INT, (uint8_t *) & notify, sizeof notify);
+		USBD_LL_Transmit(registered_pdev, USBD_EP_CDCNCM_NOTIFY, (uint8_t *) & notify, sizeof notify);
 
 	LowerIrql(oldIrql);
 }

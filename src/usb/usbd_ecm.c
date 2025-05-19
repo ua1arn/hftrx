@@ -96,7 +96,7 @@ static USBD_StatusTypeDef USBD_ECM_Init (USBD_HandleTypeDef *pdev, uint_fast8_t 
 
   USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_IN, USBD_EP_TYPE_BULK, USBD_CDCECM_IN_BUFSIZE); /* Open EP IN */
   USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_OUT, USBD_EP_TYPE_BULK, USBD_CDCECM_OUT_BUFSIZE); /* Open EP OUT */
-  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_INT, USBD_EP_TYPE_INTR, USBD_CDCECM_INT_SIZE);	/* Open Command IN EP */
+  USBD_LL_OpenEP(pdev, USBD_EP_CDCECM_NOTIFY, USBD_EP_TYPE_INTR, USBD_CDCECM_NOTIFY_SIZE);	/* Open Command IN EP */
 
   USBD_LL_PrepareReceive(pdev, USBD_EP_CDCECM_OUT, ecm_rx_buffer, sizeof ecm_rx_buffer);
   can_xmit = 1 /* true */;
@@ -115,7 +115,7 @@ static USBD_StatusTypeDef USBD_ECM_DeInit (USBD_HandleTypeDef *pdev, uint_fast8_
   USBD_LL_CloseEP(pdev, USBD_EP_CDCECM_OUT);
 
   /* Close Command IN EP */
-  USBD_LL_CloseEP(pdev, USBD_EP_CDCECM_INT);
+  USBD_LL_CloseEP(pdev, USBD_EP_CDCECM_NOTIFY);
 
   can_xmit = 0 /* false */;
 
@@ -157,7 +157,7 @@ static USBD_StatusTypeDef USBD_ECM_Setup (USBD_HandleTypeDef *pdev, const USBD_S
 	    //notify.wIndex = INTERFACE_CDCECM_CONTROL;
 	    //ecmsendnotifyrequest = 1;
 		USBD_CtlSendStatus(pdev);
-		USBD_LL_Transmit(pdev, USBD_EP_CDCECM_INT, (uint8_t *) & notify, sizeof notify);
+		USBD_LL_Transmit(pdev, USBD_EP_CDCECM_NOTIFY, (uint8_t *) & notify, sizeof notify);
 	    break;
 
 	default:
@@ -195,7 +195,7 @@ static USBD_StatusTypeDef USBD_ECM_DataIn (USBD_HandleTypeDef *pdev, uint_fast8_
 		//PRINTF("Data sent\n");
 		can_xmit = 1;
 		break;
-	case USBD_EP_CDCECM_INT:
+	case USBD_EP_CDCECM_NOTIFY:
 		//PRINTF("Notify sent\n");
 		break;
 	default:

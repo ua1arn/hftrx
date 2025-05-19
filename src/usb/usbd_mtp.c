@@ -1944,7 +1944,7 @@ static uint32_t MTP_build_data_ObjInfo(USBD_HandleTypeDef *pdev, MTP_ObjectInfoT
 
 static const uint8_t MTPInEpAdd = USBD_EP_MTP_IN;
 static const uint8_t MTPOutEpAdd = USBD_EP_MTP_OUT;
-static const uint8_t MTPCmdEpAdd = USBD_EP_MTP_INT;
+static const uint8_t MTPCmdEpAdd = USBD_EP_MTP_NOTIFY;
 
 /* Private variables ---------------------------------------------------------*/
 static MTP_DataLengthTypeDef MTP_DataLength;

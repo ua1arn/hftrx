@@ -1106,7 +1106,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 		{
-			const uint_fast8_t pipeint =  USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset) & 0x7F;
+			const uint_fast8_t pipeint =  USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, offset) & 0x7F;
 			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
 		}
 		{
@@ -1171,7 +1171,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #if WITHUSBDMTP
 	{
 		const uint_fast8_t pipe = USBD_EP_MTP_IN & 0x7F;
-		const uint_fast8_t pipeint = USBD_EP_MTP_INT & 0x7F;
+		const uint_fast8_t pipeint = USBD_EP_MTP_NOTIFY & 0x7F;
 
 		numoutendpoints += 1;
 		const int nmtpindatapackets = 1 * mul2 + 1, nmtpoutdatapackets = 3;
@@ -1217,7 +1217,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	{
 		/* полнофункциональное устройство */
 		const uint_fast8_t pipe = (USBD_EP_RNDIS_IN + 0) & 0x7F;
-		const uint_fast8_t pipeint = (USBD_EP_RNDIS_INT + 0) & 0x7F;
+		const uint_fast8_t pipeint = (USBD_EP_RNDIS_NOTIFY + 0) & 0x7F;
 		numoutendpoints += 1;
 		const int
 			nrndisindatapackets = 3,
@@ -1231,7 +1231,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_RNDIS_INT_SIZE) + add3tx);
+		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_RNDIS_NOTIFY_SIZE) + add3tx);
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
@@ -1244,7 +1244,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	{
 		/* полнофункциональное устройство */
 		const uint_fast8_t pipe = (USBD_EP_CDCECM_IN + 0) & 0x7F;
-		const uint_fast8_t pipeint = (USBD_EP_CDCECM_INT + 0) & 0x7F;
+		const uint_fast8_t pipeint = (USBD_EP_CDCECM_NOTIFY + 0) & 0x7F;
 		numoutendpoints += 1;
 		const int
 			nrndisindatapackets = 3,
@@ -1258,7 +1258,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_CDCECM_INT_SIZE) + add3tx);
+		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_CDCECM_NOTIFY_SIZE) + add3tx);
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
@@ -1271,7 +1271,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	{
 		/* полнофункциональное устройство */
 		const uint_fast8_t pipe = (USBD_EP_CDCNCM_IN + 0) & 0x7F;
-		const uint_fast8_t pipeint = (USBD_EP_CDCNCM_INT + 0) & 0x7F;
+		const uint_fast8_t pipeint = (USBD_EP_CDCNCM_NOTIFY + 0) & 0x7F;
 		numoutendpoints += 1;
 		const int
 			nrndisindatapackets = 3,
@@ -1285,7 +1285,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_CDCNCM_INT_SIZE) + add3tx);
+		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_CDCNCM_NOTIFY_SIZE) + add3tx);
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
@@ -1297,10 +1297,10 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #if WITHUSBHID
 	{
 		/* ... устройство */
-		const uint_fast8_t pipe = USBD_EP_HIDKEYBOARD_INT & 0x7F;
+		const uint_fast8_t pipe = USBD_EP_HIDKEYBOARD_NOTIFY & 0x7F;
 
-		//const uint_fast16_t size4 = size2buff4(HIDMOUSE_INT_DATA_SIZE);
-		const uint_fast16_t size4 = size2buff4(HIDKEYBOARD_INT_DATA_SIZE);
+		//const uint_fast16_t size4 = size2buff4(HIDMOUSE_NOTIFY_DATA_SIZE);
+		const uint_fast16_t size4 = size2buff4(HIDKEYBOARD_NOTIFY_DATA_SIZE);
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);

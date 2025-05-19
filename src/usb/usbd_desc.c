@@ -3201,7 +3201,7 @@ static unsigned CDCACM_Control_EP(uint_fast8_t fill, uint8_t * buff, unsigned ma
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, VIRTUAL_COM_PORT_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, VIRTUAL_COM_PORT_NOTIFY_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3265,7 +3265,7 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	const uint8_t inep = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset);
 	const uint8_t outnep = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset);
 #if ! WITHUSBCDCACM_NOINT
-	const uint8_t intnep = USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset);;
+	const uint8_t intnep = USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, offset);;
 #endif /* ! WITHUSBCDCACM_NOINT */
 
 	// CDC
@@ -3551,7 +3551,7 @@ static unsigned CDCECM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCECM_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCECM_NOTIFY_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3646,7 +3646,7 @@ static unsigned fill_CDCECM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	n += CDC_HeaderFunctionalDesc(fill, p + n, maxsize - n);	/* Header Functional Descriptor*/
 	n += CDCECM_UnionFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCECM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
-	n += CDCECM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCECM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
+	n += CDCECM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCECM_NOTIFY));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
 	n += CDCECM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCECM_DATA, 2);	/* INTERFACE_CDCECM_DATA Data class interface descriptor */
 	n += CDCECM_fill_37(fill, p + n, maxsize - n, opts, USB_ENDPOINT_OUT(USBD_EP_CDCECM_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
@@ -3803,7 +3803,7 @@ static unsigned CDCNCM_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCNCM_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_CDCNCM_NOTIFY_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -3901,7 +3901,7 @@ static unsigned fill_CDCNCM_function(uint_fast8_t fill, uint8_t * p, unsigned ma
 	n += CDCNCM_UnionFunctionalDesc(fill, p + n, maxsize - n);	/* Union Functional Descriptor INTERFACE_CDC_CONTROL & INTERFACE_CDC_DATA */
 	n += CDCECM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* CDC Ethernet Networking Functional Descriptor */
 	n += CDCNCM_EthernetNetworkingFunctionalDesc(fill, p + n, maxsize - n);	/* CDC Network Control Model Functional Descriptor */
-	n += CDCNCM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCNCM_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
+	n += CDCNCM_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_CDCNCM_NOTIFY));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
 	n += CDCNCM_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_CDCNCM_DATA, bAlt ++, 0);	/* INTERFACE_CDCNCM_DATA Data class interface descriptor */
 
@@ -4038,7 +4038,7 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_RNDIS_INT_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, USBD_RNDIS_NOTIFY_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -4145,7 +4145,7 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	// Union Functional Descriptor
 	n += RNDIS_UnionFunctionalDesc(fill, p + n, maxsize - n);
 	// Endpoint descriptors for Communication Class Interface     https://msdn.microsoft.com/en-US/library/ee482509(v=winembedded.60).aspx
-	n += RNDIS_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_RNDIS_INT));	/* Endpoint Descriptor 86 6 In, Interrupt */
+	n += RNDIS_fill_35(fill, p + n, maxsize - n, opts, USB_ENDPOINT_IN(USBD_EP_RNDIS_NOTIFY));	/* Endpoint Descriptor 86 6 In, Interrupt */
 	//  Data Class INTERFACE descriptor           https://msdn.microsoft.com/en-US/library/ee481260(v=winembedded.60).aspx
 	n += RNDIS_InterfaceDescDataIf(fill, p + n, maxsize - n, INTERFACE_RNDIS_DATA, 2);	/* INTERFACE_CDC_DATA Data class interface descriptor */
 	// IN Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee484483(v=winembedded.60).aspx
@@ -4173,12 +4173,12 @@ static unsigned HID_InterfaceDescXXXX(uint_fast8_t fill, uint8_t * buff, unsigne
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType: */
 		* buff ++ = INTERFACE_HID_CONTROL;			// bInterfaceNumber
 		* buff ++ = 0x00;								/* bAlternateSetting */
-#if defined (HIDKEYBOARD_INT_DATA_SIZE)
+#if defined (HIDKEYBOARD_NOTIFY_DATA_SIZE)
 		* buff ++ = 0x01;								/* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_HUMAN_INTERFACE;   /* bInterfaceClass */
 		* buff ++ = 0x01;								/* bInterfaceSubClass = boot interfsce */
 		* buff ++ = 0x01;							    /* bInterfaceProtocol: 1 = keyboard, 2 = mouse */
-#elif defined (HIDMOUSE_INT_DATA_SIZE)
+#elif defined (HIDMOUSE_NOTIFY_DATA_SIZE)
 		* buff ++ = 0x01;								/* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_HUMAN_INTERFACE;   /* bInterfaceClass */
 		* buff ++ = 0;/0x01;								/* bInterfaceSubClass = boot interfsce */
@@ -4219,7 +4219,7 @@ static unsigned HID_Descriptor(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 
 }
 
-#if defined (HIDMOUSE_INT_DATA_SIZE)
+#if defined (HIDMOUSE_NOTIFY_DATA_SIZE)
 // Endpoint Descriptor In, Interrupt
 static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
 {
@@ -4229,7 +4229,7 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, HIDMOUSE_INT_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, HIDMOUSE_NOTIFY_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -4241,9 +4241,9 @@ static unsigned fill_HID_Mouse_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned
 	}
 	return length;
 }
-#endif /* defined (HIDMOUSE_INT_DATA_SIZE) */
+#endif /* defined (HIDMOUSE_NOTIFY_DATA_SIZE) */
 
-#if defined (HIDKEYBOARD_INT_DATA_SIZE)
+#if defined (HIDKEYBOARD_NOTIFY_DATA_SIZE)
 // Endpoint Descriptor In, Interrupt
 static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, int highspeed, uint_fast8_t bEndpointAddress)
 {
@@ -4253,7 +4253,7 @@ static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsig
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, HIDKEYBOARD_INT_DATA_SIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(opts->hsdesc, HIDKEYBOARD_NOTIFY_DATA_SIZE);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;							/* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE; 	/* bDescriptorType: Endpoint */
@@ -4265,7 +4265,7 @@ static unsigned fill_HID_Keyboard_IntEP(uint_fast8_t fill, uint8_t * buff, unsig
 	}
 	return length;
 }
-#endif /* defined (HIDKEYBOARD_INT_DATA_SIZE) */
+#endif /* defined (HIDKEYBOARD_NOTIFY_DATA_SIZE) */
 
 // HID Report Descriptor
 // mouse
@@ -4567,10 +4567,10 @@ static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	//
 	n += HID_InterfaceDescXXXX(fill, p + n, maxsize - n);	/* HID: HID Interface Descriptor */
 	n += HID_Descriptor(fill, p + n, maxsize - n, patternlength);	/* HID Descriptor */
-#if defined (HIDMOUSE_INT_DATA_SIZE)
-	n += fill_HID_Mouse_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDMOUSE_INT));
-#elif defined (HIDKEYBOARD_INT_DATA_SIZE)
-	n += fill_HID_Keyboard_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDKEYBOARD_INT));
+#if defined (HIDMOUSE_NOTIFY_DATA_SIZE)
+	n += fill_HID_Mouse_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDMOUSE_NOTIFY));
+#elif defined (HIDKEYBOARD_NOTIFY_DATA_SIZE)
+	n += fill_HID_Keyboard_IntEP(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(USBD_EP_HIDKEYBOARD_NOTIFY));
 #else
 #endif
 	return n;
@@ -4899,7 +4899,7 @@ static unsigned fill_MTP_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += MTP_InterfaceDescControlIf(fill, p + n, maxsize - n, INTERFACE_MTP_CONTROL, 0);	/* INTERFACE_CDC_CONTROL Interface Descriptor 3/0 CDC Control, 1 Endpoint */
 	n += MTP_EndpointIn(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_IN);
 	n += MTP_EndpointOut(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_OUT);
-	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_INT);
+	n += MTP_EndpointInt(fill, p + n, maxsize - n, highspeed, USBD_EP_MTP_NOTIFY);
 	//
 	return n;
 }

@@ -659,7 +659,7 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		/* CDC Open EP interrupt */
 #if ! WITHUSBCDCACM_NOINT
-		USBD_LL_OpenEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset), USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
+		USBD_LL_OpenEP(pdev, USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, offset), USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_NOTIFY_SIZE);
 #endif /* ! WITHUSBCDCACM_NOINT */
 		/* CDC Prepare Out endpoint to receive 1st packet */
 		USBD_LL_PrepareReceive(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset), cdcXbuffout [offset],  VIRTUAL_COM_PORT_OUT_DATA_SIZE);
@@ -677,7 +677,7 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
 #if ! WITHUSBCDCACM_NOINT
-		USBD_LL_CloseEP(pdev, USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset));
+		USBD_LL_CloseEP(pdev, USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, offset));
 #endif /* ! WITHUSBCDCACM_NOINT */
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset));
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset));
