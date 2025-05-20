@@ -1335,7 +1335,7 @@ gpioX_onchangeinterrupt(
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 
-static LCLSPINLOCK_t gpiodatas_ctx [36];	// GPIOA..GPIOK
+static LCLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
 static LCLSPINLOCK_t gpioz_data_ctx;
 
 // временная подготовка к работе с gpio.
@@ -1365,7 +1365,6 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 	if (gpio == GPIOZ)
 		return & gpioz_data_ctx;	// PIOZ
 #endif /* defined(GPIOZ) */
-	return & gpiodatas_ctx [0];
 	return & gpiodatas_ctx [((uintptr_t) gpio - GPIOA_BASE) / 0x1000];
 }
 
@@ -1587,10 +1586,10 @@ void sysinit_gpio_initialize(void)
 
 		#define stm32mp1_pioX_altfn(gpio, opins, afn) \
 			{ \
-				IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
+				IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
 				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
 				stm32mp1_pio_unlock(gpio, irql); \
