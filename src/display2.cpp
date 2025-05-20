@@ -6800,6 +6800,10 @@ void display2_bgprocess(
 
 void display2_initialize(void)
 {
+#if  WITHLVGL && 0
+	/*LVGL init*/
+	lv_init();
+#endif
 	uint_fast8_t page;
 #if 0
 	PRINTF("+++++++++++++++++++++++\n");
