@@ -1370,14 +1370,14 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 
 static void stm32mp1_pio_lock(GPIO_TypeDef * gpio, IRQL_t * irqlp)
 {
-//	RiseIrql(GPIOIRQL, irqlp);
-//	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));
+	RiseIrql(GPIOIRQL, irqlp);
+	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));
 }
 
 static void stm32mp1_pio_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-//	LCLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio));
-//	LowerIrql(irql);
+	LCLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio));
+	LowerIrql(irql);
 }
 
 #elif CPUSTYLE_VM14
