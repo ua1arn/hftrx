@@ -1335,7 +1335,7 @@ gpioX_onchangeinterrupt(
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 
-static LCLSPINLOCK_t gpiodatas_ctx [16];	// GPIOA..GPIOK
+static LCLSPINLOCK_t gpiodatas_ctx [36];	// GPIOA..GPIOK
 static LCLSPINLOCK_t gpioz_data_ctx;
 
 // временная подготовка к работе с gpio.
@@ -1365,6 +1365,7 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 	if (gpio == GPIOZ)
 		return & gpioz_data_ctx;	// PIOZ
 #endif /* defined(GPIOZ) */
+	return & gpiodatas_ctx [0];
 	return & gpiodatas_ctx [((uintptr_t) gpio - GPIOA_BASE) / 0x1000];
 }
 

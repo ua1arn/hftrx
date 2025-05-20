@@ -1211,6 +1211,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	#endif
 
+#if 1
 	#define BOARD_BLINK_BIT (UINT32_C(1) << 13)	// PA13 - led on Storch board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
@@ -1221,7 +1222,10 @@ void user_uart4_onrxchar(uint_fast8_t c);
 			gpioX_setstate(GPIOA, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
 			gpioX_setstate(GPIOB, HOSTBB_LED1_BIT, ! (state) * HOSTBB_LED1_BIT); \
 		} while (0)
-
+#else
+	#define BOARD_BLINK_INITIALIZE() do { \
+		} while (0)
+#endif
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOG_USERBOOT_BIT	(UINT32_C(1) << 15)	/* PG15: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOG)) & BOARD_GPIOG_USERBOOT_BIT) == 0 || ((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
