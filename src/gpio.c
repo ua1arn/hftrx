@@ -1368,20 +1368,16 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 	return & gpiodatas_ctx [((uintptr_t) gpio - GPIOA_BASE) / 0x1000];
 }
 
-static IRQL_t stm32mp1_pio_lock(GPIO_TypeDef * gpio)
+static void stm32mp1_pio_lock(GPIO_TypeDef * gpio, IRQL_t * irqlp)
 {
-	return GPIOIRQL;
-	IRQL_t irql;
-	RiseIrql(GPIOIRQL, & irql);
-	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));
-	return irql;
+//	RiseIrql(GPIOIRQL, irqlp);
+//	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));
 }
 
 static void stm32mp1_pio_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	return;
-	LCLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio));
-	LowerIrql(irql);
+//	LCLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio));
+//	LowerIrql(irql);
 }
 
 #elif CPUSTYLE_VM14
@@ -1567,7 +1563,7 @@ void sysinit_gpio_initialize(void)
 		  do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
-			const IRQL_t irql = stm32mp1_pio_lock(gpio); \
+			IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODER0)) | mask3 * (moder) * GPIO_MODER_MODER0_0; \
 			(gpio)->OSPEEDR = ((gpio)->OSPEEDR & ~ (mask3 * GPIO_OSPEEDR_OSPEEDR0)) | mask3 * (speed) * GPIO_OSPEEDR_OSPEEDR0_0; \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (mask3 * GPIO_PUPDR_PUPDR0)) | mask3 * (pupdr) * GPIO_PUPDR_PUPDR0_0; \
@@ -1580,7 +1576,7 @@ void sysinit_gpio_initialize(void)
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			const portholder_t ipins3 = power2(ipins); \
-			const IRQL_t irql = stm32mp1_pio_lock(gpio); \
+			IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | \
 				up3 * (1) * GPIO_PUPDR_PUPDR0_0 | \
 				down3 * (2) * GPIO_PUPDR_PUPDR0_0 | \
@@ -1590,7 +1586,7 @@ void sysinit_gpio_initialize(void)
 
 		#define stm32mp1_pioX_altfn(gpio, opins, afn) \
 			{ \
-				const IRQL_t irql = stm32mp1_pio_lock(gpio); \
+				IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
