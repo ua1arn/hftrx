@@ -261,11 +261,11 @@ $(OBJSA_APP) $(ZOBJSA):
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT0) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(OBJSA_APP)
+%_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
