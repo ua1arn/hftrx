@@ -8189,7 +8189,7 @@ static uint_fast8_t gstate [SNDI_SIZE];		/* признак включённог�
 static uint_fast8_t gprei [SNDI_SIZE];
 static unsigned gvalue [SNDI_SIZE];	/* делитель или FTW для синтезатора озвучки */
 static uint_least16_t gtone [SNDI_SIZE];
-static RAMDTCM LCLSPINLOCK_t gpreilock = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t gpreilock = IRQLSPINLOCK_INIT;
 
 /* если параметры для данной частоты уже рассчитывали - просто возврат */
 static uint_fast8_t 
@@ -8207,12 +8207,10 @@ board_calcs_setfreq(
 
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& gpreilock);
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
-	LCLSPIN_UNLOCK(& gpreilock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 
 	return 1;
 }
@@ -8246,11 +8244,9 @@ board_keybeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		LCLSPIN_LOCK(& gpreilock);
+		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
-		LCLSPIN_UNLOCK(& gpreilock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
 }
 
@@ -8265,11 +8261,9 @@ board_errbeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		LCLSPIN_LOCK(& gpreilock);
+		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
-		LCLSPIN_UNLOCK(& gpreilock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
 }
 
@@ -8285,11 +8279,9 @@ board_sidetone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		LCLSPIN_LOCK(& gpreilock);
+		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
-		LCLSPIN_UNLOCK(& gpreilock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 #if WITHIF4DSP
 		dsp_sidetone_setfreq(tonefreq01);
 #endif /* WITHIF4DSP */
@@ -8309,11 +8301,9 @@ board_rgrbeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		LCLSPIN_LOCK(& gpreilock);
+		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
-		LCLSPIN_UNLOCK(& gpreilock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
 }
 
@@ -8323,11 +8313,17 @@ void board_rgrbeep_enable(uint_fast8_t state)
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_RGRBEEP };
 
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 }
 
 #endif /* WITHIF4DSP */
@@ -8339,8 +8335,7 @@ void board_errbeep_enable(uint_fast8_t state)
 	enum { sndi = SNDI_ERRBEEP };
 
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& gpreilock);
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
 	if (gstate [sndi] != v)
 	{
@@ -8348,8 +8343,7 @@ void board_errbeep_enable(uint_fast8_t state)
 		board_sounds_resched();
 	}
 
-	LCLSPIN_UNLOCK(& gpreilock);
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 }
 
 /* подзвучка клавиш (вызывается из обработчика перрываний) */
@@ -8358,11 +8352,16 @@ void board_keybeep_enable(uint_fast8_t state)
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_KEYBEEP };
 
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 }
 
 /* самоконтроль (вызывается из обработчика перрываний) */
@@ -8371,11 +8370,16 @@ void board_sidetone_enable(uint_fast8_t state)
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_SIDETONE };
 
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 }
 
 /* тестовый звук (вызывается из обработчика перрываний или инициализации при запрещённых прерываниях) */
@@ -8385,11 +8389,16 @@ void board_testsound_enable(uint_fast8_t state)
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_DEBUG };
 
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 #endif /* WITHSIDETONEDEBUG */
 }
 
@@ -8405,11 +8414,9 @@ board_subtone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		LCLSPIN_LOCK(& gpreilock);
+		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
-		LCLSPIN_UNLOCK(& gpreilock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
 #endif /* WITHSUBTONES */
 }
@@ -8421,16 +8428,15 @@ void board_subtone_enable_user(uint_fast8_t state)
 	enum { sndi = SNDI_SUBTONE };
 
 	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
-	LCLSPIN_UNLOCK(& gpreilock);
-	LowerIrql(oldIrql);
+
+	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 #endif /* WITHSUBTONES */
 }
 

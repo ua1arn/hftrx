@@ -659,17 +659,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static LCLSPINLOCK_t gpiobank_ctx [8] =
-{
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-};
+static IRQLSPINLOCK_t gpiobank_ctx [8];
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
@@ -679,8 +669,8 @@ void sysinit_gpio_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(gpiobank_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiobank_ctx [i];
-		LCLSPINLOCK_INITIALIZE(lck);
+		IRQLSPINLOCK_t * const lck = & gpiobank_ctx [i];
+		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
@@ -690,16 +680,14 @@ void sysinit_gpio_initialize(void)
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
-	RiseIrql(GPIOIRQL, oldIrql);
-	LCLSPIN_LOCK(lck);
+	IRQLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
+	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
-	LCLSPIN_UNLOCK(lck);
-	LowerIrql(oldIrql);
+	IRQLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
+	IRQLSPIN_UNLOCK(lck, oldIrql);
 }
 
 
@@ -836,7 +824,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 
 typedef struct gpio_ctx
 {
-	LCLSPINLOCK_t lock;
+	IRQLSPINLOCK_t lock;
 	portholder_t data;
 } gpio_ctx_t;
 
@@ -879,12 +867,12 @@ void sysinit_gpio_initialize(void)
 	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
 		gpio_ctx_t * const lck = & gpiodatas_ctx [i];
-		LCLSPINLOCK_INITIALIZE(& lck->lock);
+		IRQLSPINLOCK_INITIALIZE(& lck->lock);
 		lck->data = 0;
 	}
 
 #if defined (GPIOL)
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
+	IRQLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
 	gpiodata_L_ctx.data = 0;
 #endif /* defined (GPIOL) */
 
@@ -918,16 +906,14 @@ typedef uint32_t irqstatus_t;
 
 static void gpioX_lock(const GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
-	RiseIrql(GPIOIRQL, oldIrql);
-	LCLSPIN_LOCK(lck);
+	IRQLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
+	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
 }
 
 static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
-	LCLSPIN_UNLOCK(lck);
-	LowerIrql(irql);
+	IRQLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
+	IRQLSPIN_UNLOCK(lck, irql);
 }
 
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
@@ -1335,8 +1321,8 @@ gpioX_onchangeinterrupt(
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 
-static LCLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
-static LCLSPINLOCK_t gpioz_data_ctx;
+static IRQLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
+static IRQLSPINLOCK_t gpioz_data_ctx;
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
@@ -1345,13 +1331,13 @@ void sysinit_gpio_initialize(void)
 	unsigned i;
 
 #if defined(GPIOZ)
-	LCLSPINLOCK_INITIALIZE(& gpioz_data_ctx);	// PIOZ
+	IRQLSPINLOCK_INITIALIZE(& gpioz_data_ctx);	// PIOZ
 #endif /* defined(GPIOZ) */
 
 	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
-		LCLSPINLOCK_INITIALIZE(lck);
+		IRQLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
+		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
@@ -1359,7 +1345,7 @@ void sysinit_gpio_initialize(void)
 	}
 }
 
-static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
+static IRQLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 {
 #if defined(GPIOZ)
 	if (gpio == GPIOZ)
@@ -1370,14 +1356,12 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 
 static void stm32mp1_pio_lock(GPIO_TypeDef * gpio, IRQL_t * irqlp)
 {
-	RiseIrql(GPIOIRQL, irqlp);
-	LCLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio));
+	IRQLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio), irqlp, GPIOIRQL);
 }
 
 static void stm32mp1_pio_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	LCLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio));
-	LowerIrql(irql);
+	IRQLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio), irql);
 }
 
 #elif CPUSTYLE_VM14
@@ -1398,17 +1382,11 @@ void sysinit_gpio_initialize(void)
 
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-//	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-//	RiseIrql(GPIOIRQL, oldIrql);
-//	LCLSPIN_LOCK(lck);
 	* oldIrql = 0;
 }
 
 static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-//	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-//	LCLSPIN_UNLOCK(lck);
-//	LowerIrql(irql);
 }
 
 void gpioX_setstate(
