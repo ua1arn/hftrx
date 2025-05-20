@@ -120,11 +120,8 @@ SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(OPENVGDIR)/src
 
-ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
-endif
+include ../lvgl.mak
 
 # LuPng
 include ../lupng.mak

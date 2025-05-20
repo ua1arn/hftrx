@@ -130,11 +130,8 @@ DINCDIR += \
 	$(CMSISDSPDIR)/PrivateInclude
 endif
 
-ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
-endif
+include ../lvgl.mak
 
 ifeq (1, 0)
 # ST USB DEVICE
