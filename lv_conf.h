@@ -12,7 +12,6 @@
  */
 
 /* clang-format off */
-#if 0 /*Set it to "1" to enable content*/
 
 #ifndef LV_CONF_H
 #define LV_CONF_H
@@ -23,8 +22,24 @@
    COLOR SETTINGS
  *====================*/
 
-/*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
-#define LV_COLOR_DEPTH 16
+//#if LCDMODE_LTDC_L24
+//	/*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+//	#error LV_COLOR_DEPTH can not be set - unsupported configuration
+//	#define LV_COLOR_DEPTH 32
+//#elif LCDMODE_MAIN_ARGB8888
+//	/*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+//	#define LV_COLOR_DEPTH 32
+//#elif LCDMODE_MAIN_L8
+//	/*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+//	#define LV_COLOR_DEPTH 1
+//#elif LCDMODE_MAIN_RGB565
+//	/*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+//	#define LV_COLOR_DEPTH 16
+//#else
+//	#error LV_COLOR_DEPTH can not be set
+//	#define LV_COLOR_DEPTH 32
+//#endif
+	#define LV_COLOR_DEPTH 16
 
 #define LV_COLOR_CHROMA_KEY lv_color_hex(0x00ff00)
 
@@ -383,7 +398,7 @@
 #define LV_FONT_MONTSERRAT_32 0
 #define LV_FONT_MONTSERRAT_34 0
 #define LV_FONT_MONTSERRAT_36 0
-#define LV_FONT_MONTSERRAT_38 0
+#define LV_FONT_MONTSERRAT_38 1
 #define LV_FONT_MONTSERRAT_40 0
 #define LV_FONT_MONTSERRAT_42 0
 #define LV_FONT_MONTSERRAT_44 0
@@ -807,14 +822,5 @@
 #define LV_USE_DEMO_FLEX_LAYOUT 0
 
 /*--END OF LV_CONF_H--*/
-
-
-
-void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
-void indev_enc2_spool(void);
-void board_tsc_initialize(void);
-void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
-
-#endif /*LV_CONF_H*/
 
 #endif /*End of "Content enable"*/
