@@ -11760,7 +11760,7 @@ updateboardZZZ(
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
-				board_subtone_enable_user(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
+				board_subtone_enable(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
 				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */

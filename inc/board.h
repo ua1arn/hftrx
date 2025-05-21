@@ -196,7 +196,7 @@ void board_errbeep_enable(uint_fast8_t state);	/* сигнал об ошибке
 void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep */
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
-void board_subtone_enable_user(uint_fast8_t state);
+void board_subtone_enable(uint_fast8_t state);
 /* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
 void bandf2_calc_initialize(void);
