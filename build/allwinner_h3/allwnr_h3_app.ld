@@ -44,9 +44,7 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
 		KEEP(*(.startup0))
-
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))

@@ -45,13 +45,12 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(64);
+		KEEP(*(.startup0))
+		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		
 		. = ALIGN(64);
-		KEEP(*(.startup0))
-
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))

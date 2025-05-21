@@ -53,12 +53,11 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
 		KEEP(*(.startup0))
+		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
 
-		*(.text*)
 		. = ALIGN(8);
 	} > RAM
 
@@ -101,10 +100,8 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
-	/*
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
-	*/
 		__zero_table_end__ = .;
 	} > RAM
 
