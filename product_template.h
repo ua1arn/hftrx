@@ -173,6 +173,10 @@
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_mango_pi.h"
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+	#include "boards/arm_allwt113s3_ctlstyle_zentec_v0.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_zentec_v0.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi_dctrx.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
