@@ -287,7 +287,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXADJ(DIM_X);	// размер одной строки в байтах
+	const unsigned MAINROWSIZE = sizeof (PACKEDCOLORPIP_T) * GXSTRIDE(DIM_X);	// размер одной строки в байтах
 	// Таблица используемой при отображении палитры
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
@@ -393,9 +393,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
-	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, GXADJ(pipwnd.w) * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
+	SETREG32_CK(& vdc->GR3_FLM3, 15, 16, GXSTRIDE(pipwnd.w) * sizeof (PACKEDCOLORPIP_T));		// GR3_LN_OFF
 	SETREG32_CK(& vdc->GR3_FLM3, 10, 0, 0x00);			// GR3_FLM_NUM
-	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, GXADJ(pipwnd.w) * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF
+	SETREG32_CK(& vdc->GR3_FLM4, 23, 0, GXSTRIDE(pipwnd.w) * pipwnd.h * sizeof (PACKEDCOLORPIP_T));	// GR3_FLM_OFF
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 16, pipwnd.h - 1);	// GR3_FLM_LNUM Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM5, 11, 0, pipwnd.h - 1);	// GR3_FLM_LOOP Sets the number of lines in a frame
 	SETREG32_CK(& vdc->GR3_FLM6, 11, 16, pipwnd.w - 1);	// GR3_HW Sets the width of the horizontal valid period.
@@ -1242,7 +1242,7 @@ static void LCDx_LayerInit(
 	)
 {
 	const unsigned long ROWSIZE = pixelsize * wnd->w;	// размер одной строки в байтах
-	const unsigned long ROWMEMINC = pixelsize * GXADJ(wnd->w);	// размер одной строки в байтах
+	const unsigned long ROWMEMINC = pixelsize * GXSTRIDE(wnd->w);	// размер одной строки в байтах
 
 	LTDC_Layer_InitTypeDef LTDC_Layer_InitStruct; 
 	/* Windowing configuration */
@@ -1732,7 +1732,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
 	hardware_set_dotclock(display_getdotclock(vdmode));
-	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, frames, (unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE, vdmode);
+	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, frames, (unsigned long) GXSTRIDE(DIM_X) * LCDMODE_PIXELSIZE, vdmode);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("Display Ctrl initialization failed: %d\r\n", Status);
@@ -2676,7 +2676,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 		return;
 	}
 	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
-	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXSTRIDE(DIM_X);
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
@@ -2719,7 +2719,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		return;
 	}
 //	const uint32_t ovl_ui_mbsize = (((vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
-//	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
+//	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXSTRIDE(vdmode_CRT->width);
 	const uint32_t ovl_ui_mbsize = (((TVD_HEIGHT - 1) << 16) | (TVD_WIDTH - 1));
 	const uint32_t uipitch = TVD_WIDTH;
 	const uint_fast32_t attr =
@@ -2773,7 +2773,7 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 		return;
 	}
 	const uint32_t ovl_ui_mbsize = (((DIM_Y - 1) << 16) | (DIM_X - 1));
-	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXADJ(DIM_X);
+	const uint32_t uipitch = LCDMODE_PIXELSIZE * GXSTRIDE(DIM_X);
 	const uint_fast32_t attr =
 		(vram != 0) * (UINT32_C(1) << 0) |	// enable
 		ui_format * (UINT32_C(1) << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы

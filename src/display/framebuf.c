@@ -31,7 +31,7 @@ static void softfill(
 	)
 {
 	// программная реализация
-	const unsigned t = GXADJ(dx) - w;
+	const unsigned t = GXSTRIDE(dx) - w;
 	while (h --)
 	{
 		unsigned n = w;
@@ -298,7 +298,7 @@ static void t113_fillrect(
 	{
 		//const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
-		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
+		hwaccel_rotcopy((uintptr_t) bgscreen, GXSTRIDE(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
 	}
 	else
 	{
@@ -1133,7 +1133,7 @@ hwaccel_rect_u8(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXSTRIDE(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1146,7 +1146,7 @@ hwaccel_rect_u8(
 #else /* WITHMDMAHW */
 	// программная реализация
 
-	const size_t t = GXADJ(dx);
+	const size_t t = GXSTRIDE(dx);
 	while (h --)
 	{
 		memset(buffer, color, w);
@@ -1254,7 +1254,7 @@ hwaccel_rect_u16(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXSTRIDE(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1277,7 +1277,7 @@ hwaccel_rect_u16(
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) buffer;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
+		((GXSTRIDE(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
 
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -1318,7 +1318,7 @@ hwaccel_rect_u16(
 		return;
 	}
 
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
@@ -1399,7 +1399,7 @@ hwaccel_rect_u24(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXSTRIDE(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1421,7 +1421,7 @@ hwaccel_rect_u24(
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) buffer;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
+		((GXSTRIDE(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
 
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -1525,7 +1525,7 @@ hwaccel_rect_u32(
 		0;
 	MDMA_CH->CBRUR =
 		((PIXEL_SIZE * (0)) << MDMA_CBRUR_SUV_Pos) |				// Source address Update Value
-		((PIXEL_SIZE * (GXADJ(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((PIXEL_SIZE * (GXSTRIDE(dx) - w)) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -1547,7 +1547,7 @@ hwaccel_rect_u32(
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) buffer;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((GXADJ(dx) - w) << DMA2D_OOR_LO_Pos) |
+		((GXSTRIDE(dx) - w) << DMA2D_OOR_LO_Pos) |
 		0;
 
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -1580,7 +1580,7 @@ hwaccel_rect_u32(
 #elif WITHGPUHW && 0
 
 	const uintptr_t taddr = (uintptr_t) buffer;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
@@ -1592,7 +1592,7 @@ hwaccel_rect_u32(
 	if (w == 1)
 	{
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		const unsigned t = GXADJ(dx);
+		const unsigned t = GXSTRIDE(dx);
 		while (h --)
 		{
 			* buffer = color;
@@ -1602,7 +1602,7 @@ hwaccel_rect_u32(
 	}
 
 	const uintptr_t taddr = (uintptr_t) buffer;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
@@ -1637,7 +1637,7 @@ colpip_mem_at_debug(
 	ASSERT(y < dy);
 	ASSERT(buffer != NULL);
 
-	return & buffer [y * GXADJ(dx) + x];
+	return & buffer [y * GXSTRIDE(dx) + x];
 }
 
 // получить адрес требуемой позиции в буфере
@@ -1660,7 +1660,7 @@ colpip_const_mem_at_debug(
 	ASSERT(y < dy);
 	ASSERT(buffer != NULL);
 
-	return & buffer [y * GXADJ(dx) + x];
+	return & buffer [y * GXSTRIDE(dx) + x];
 }
 
 
@@ -1835,8 +1835,8 @@ void colpip_copyrotate(
 
 #if WITHMDMAHW && CPUSTYLE_ALLWINNER
 	const uintptr_t saddr = (uintptr_t) colpip_const_mem_at(sbuffer, sdx, sdy, sx, sy);
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(dx) * PIXEL_SIZE;
+	const unsigned sstride = GXSTRIDE(sdx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y);
 	// target size для 4-х квадрантов
 	// похоже, поворот учитывать не требуется. Но просто для "красоты" оставлю четыре варианта.
@@ -2142,8 +2142,8 @@ void hwaccel_bitblt(
 		((sh - 1) << MDMA_CBNDTR_BRC_Pos) |		// Block Repeat Count
 		0;
 	MDMA_CH->CBRUR =
-		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(sdx) - (sw))) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
-		((sizeof (PACKEDCOLORPIP_T) * (GXADJ(tdx) - (sw))) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (GXSTRIDE(sdx) - (sw))) << MDMA_CBRUR_SUV_Pos) |		// Source address Update Value
+		((sizeof (PACKEDCOLORPIP_T) * (GXSTRIDE(tdx) - (sw))) << MDMA_CBRUR_DUV_Pos) |		// Destination address Update Value
 		0;
 
 	MDMA_CH->CTBR = (MDMA_CH->CTBR & ~ (MDMA_CTBR_SBUS_Msk | MDMA_CTBR_DBUS_Msk)) |
@@ -2164,12 +2164,12 @@ void hwaccel_bitblt(
 	//	The line offset used for the foreground image, expressed in pixel when the LOM bit is
 	//	reset and in byte when the LOM bit is set.
 	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		((GXADJ(sdx) - sdx) << DMA2D_FGOR_LO_Pos) |
+		((GXSTRIDE(sdx) - sdx) << DMA2D_FGOR_LO_Pos) |
 		0;
 	/* целевой растр */
 	DMA2D->OMAR = (uintptr_t) dst;
 	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((GXADJ(tdx) - sdx) << DMA2D_OOR_LO_Pos) |
+		((GXSTRIDE(tdx) - sdx) << DMA2D_OOR_LO_Pos) |
 		0;
 	/* размер пересылаемого растра */
 	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
@@ -2201,8 +2201,8 @@ void hwaccel_bitblt(
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
 
 	enum { PIXEL_SIZE = sizeof * src };
-	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(tdx) * PIXEL_SIZE;
+	const unsigned sstride = GXSTRIDE(sdx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
 	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
@@ -2221,8 +2221,8 @@ void hwaccel_bitblt(
 //	ASSERT(sdx > 2 && sdy > 2);
 	const unsigned srcFormat = awxx_get_srcformat(keyflag);
 	enum { PIXEL_SIZE = sizeof * src };
-	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(tdx) * PIXEL_SIZE;
+	const unsigned sstride = GXSTRIDE(sdx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) dst;
 	const uintptr_t saddr = (uintptr_t) src;
 	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
@@ -2374,8 +2374,8 @@ void hwaccel_bitblt(
 		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
 		// работа с color key
 
-		const unsigned stail = GXADJ(sdx) - sw;
-		const unsigned dtail = GXADJ(tdx) - sw;
+		const unsigned stail = GXSTRIDE(sdx) - sw;
+		const unsigned dtail = GXSTRIDE(tdx) - sw;
 		while (sh --)
 		{
 			unsigned w = sw;
@@ -2394,7 +2394,7 @@ void hwaccel_bitblt(
 	{
 		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
 		// и копируется полностью окно
-		if (tdx == sdx && sw == GXADJ(sdx) && tdy == sh)
+		if (tdx == sdx && sw == GXSTRIDE(sdx) && tdy == sh)
 		{
 			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
 			// ширина строки одинаковая в получателе и источнике
@@ -2407,8 +2407,8 @@ void hwaccel_bitblt(
 			while (sh --)
 			{
 				memcpy(dst, src, len);
-				src += GXADJ(sdx);
-				dst += GXADJ(tdx);
+				src += GXSTRIDE(sdx);
+				dst += GXSTRIDE(tdx);
 			}
 		}
 	}
@@ -2444,8 +2444,8 @@ void hwaccel_stretchblt(
 	enum { PIXEL_SIZE = sizeof * dst };
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const unsigned sstride = GXSTRIDE(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(dx) * PIXEL_SIZE;
 	const uintptr_t srclinear = (uintptr_t) src;
 	const uintptr_t dstlinear = (uintptr_t) dst;
 
@@ -2474,8 +2474,8 @@ void hwaccel_stretchblt(
 	enum { PIXEL_SIZE = sizeof * dst };
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const unsigned sstride = GXSTRIDE(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXSTRIDE(dx) * PIXEL_SIZE;
 	const uintptr_t srclinear = (uintptr_t) src;
 	const uintptr_t dstlinear = (uintptr_t) dst;
 
@@ -3485,7 +3485,7 @@ void display_transparency(
 	for (y = y1; y <= y2; y ++)
 	{
 		uint_fast16_t x;
-		const uint_fast32_t yt = (uint_fast32_t) GXADJ(dx) * y;
+		const uint_fast32_t yt = (uint_fast32_t) GXSTRIDE(dx) * y;
 		//ASSERT(y < dy);
 		for (x = x1; x <= x2; x ++)
 		{

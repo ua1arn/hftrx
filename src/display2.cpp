@@ -6813,7 +6813,7 @@ static void vvflush(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
 
 static uint32_t vvdraw_buf_width_to_stride(uint32_t w, lv_color_format_t color_format)
 {
-	return GXADJ(w);
+	return GXSTRIDE(w);
 }
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
@@ -6833,7 +6833,7 @@ void display2_initialize(void)
 
 	/*Initialize a descriptor for the buffer*/
 	static lv_draw_buf_t draw_buf;
-	lv_draw_buf_init(& draw_buf, DIM_X, DIM_Y, LV_COLOR_FORMAT_NATIVE, GXADJ(DIM_X), buf1, sizeof buf1);
+	lv_draw_buf_init(& draw_buf, DIM_X, DIM_Y, LV_COLOR_FORMAT_NATIVE, GXSTRIDE(DIM_X), buf1, sizeof buf1);
 //
 //	/*Initialize and register a display driver*/
 //	static lv_draw_buf_t disp_drv;

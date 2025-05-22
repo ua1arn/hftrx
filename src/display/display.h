@@ -180,8 +180,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 #define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #endif
 
-#define GXADJ(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
-#define GXSIZE(dx, dy)	((uint_fast32_t) GXADJ(dx) * (dy))	// размер буфера для цветного растра
+#define GXSTRIDE(dx) (((dx) + (GXALIGN - 1)) / GXALIGN * GXALIGN)
+#define GXSIZE(dx, dy)	((uint_fast32_t) GXSTRIDE(dx) * (dy))	// размер буфера для цветного растра
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
