@@ -59,6 +59,18 @@
 #define BCLK_DIV_MASK 		 		0x000000FF
 #define LRCLK_DIV_MASK 		 		0x00FF0000
 
+/* AXI UARTLite definitions */
+
+#define UARTLITE_RX_FIFO     0x00
+#define UARTLITE_TX_FIFO     0x04
+#define UARTLITE_STATUS      0x08
+#define UARTLITE_CONTROL     0x0C
+#define CONTROL_RX_ENABLE    (1 << 0)
+#define CONTROL_TX_ENABLE    (1 << 1)
+#define CONTROL_RESET_FIFO   (1 << 2)
+#define STATUS_RXVALID       (1 << 0)
+#define STATUS_TXFULL        (1 << 3)
+
 #if WITHEXTIO_LAN
 
 enum {

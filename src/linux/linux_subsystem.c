@@ -46,6 +46,44 @@ void lvgl_test(void);
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	5
 
+#if defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
+
+int uart_rx_ready(void)
+{
+    uint32_t status = xdma_read_user(AXI_LITE_UARTLITE + UARTLITE_STATUS);
+    return (status & STATUS_RXVALID) != 0;
+}
+
+void uart_write_byte(uint8_t data)
+{
+    while ((xdma_read_user(AXI_LITE_UARTLITE + UARTLITE_STATUS) & STATUS_TXFULL)) {
+        usleep(100);
+    }
+    xdma_write_user(AXI_LITE_UARTLITE + UARTLITE_TX_FIFO, data);
+}
+
+void uart_write_string(const char * str)
+{
+    while (* str) {
+        uart_write_byte(* str ++);
+    }
+}
+
+uint8_t uart_read_byte(void)
+{
+    uint32_t val = xdma_read_user(AXI_LITE_UARTLITE + UARTLITE_RX_FIFO);
+    return (uint8_t)(val & 0xFF);
+}
+
+void uartlite_reset(void)
+{
+	xdma_write_user(AXI_LITE_UARTLITE + UARTLITE_CONTROL, CONTROL_RESET_FIFO);
+	usleep(100);
+	xdma_write_user(AXI_LITE_UARTLITE + UARTLITE_CONTROL, CONTROL_RX_ENABLE | CONTROL_TX_ENABLE);
+}
+
+#endif /* defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
+
 pthread_t timer_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
 
@@ -344,6 +382,34 @@ void * process_linux_timer_spool(void * args)
 
 void * linux_nmea_spool(void * args)
 {
+#if defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
+
+	const int bufsize = 256;
+	char buf[bufsize];
+	int rx_index = 0;
+
+	uartlite_reset();
+	memset(buf, 0, bufsize);
+
+	while(1)
+	{
+		if(uart_rx_ready() && rx_index < bufsize)
+		{
+			buf[rx_index ++] = uart_read_byte();
+		}
+		else if (rx_index > 1)
+		{
+			for (int i = 0; i < rx_index; i ++)
+				nmeagnss_parsechar(buf[i]);
+
+			rx_index = 0;
+			memset(buf, 0, bufsize);
+			usleep(2000);
+		}
+	}
+
+#else
+
 	const char * argv [] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
 	linux_run_shell_cmd(argv);
 
@@ -364,6 +430,8 @@ void * linux_nmea_spool(void * args)
 				nmeagnss_parsechar(buf[i]);		/* USER MODE или SYSTEM-MODE обработчик надо вызывать ? */
 		}
 	}
+
+#endif /* defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
 }
 
 void * linux_pps_thread(void * args)
