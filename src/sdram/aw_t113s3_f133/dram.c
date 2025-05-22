@@ -17,6 +17,7 @@
 
 //#include "spi.h"
 #include "clocks.h"
+#include "gpio.h"
 
 /**
  *
