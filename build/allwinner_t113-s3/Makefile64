@@ -252,8 +252,8 @@ allZ:
 bootloader: BOOT2 fsbl.bt0
 
 # Take from tc1_t113s3_boot.map
-SystemDRAMInit = 0x0002aa20
-SystemExecAARCH64 = 0x00035030
+SystemDRAMInit = 0x0002aa60
+SystemExecAARCH64 = 0x0002f760
 
 #DDR_INIT=ddr_init_s3
 DDR_INIT=ddr_init_s4

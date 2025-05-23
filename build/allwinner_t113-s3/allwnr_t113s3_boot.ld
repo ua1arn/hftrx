@@ -5,7 +5,7 @@
 MEMORY
 {
   RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 	LENGTH = 160k - 256		/*  */
-  debugRAM (rwx) : ORIGIN = 0x00028000 + 256,   LENGTH = 160k - 32k - 256     /* version of parameters for bootloader tests */
+  xfelRAM (rwx) : ORIGIN = 0x00028000 + 256,   LENGTH = 160k - 32k - 256     /* For xfel ddr init or bootloader tests */
   DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 128M - 32M		/*  */
 }
 
