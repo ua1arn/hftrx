@@ -10644,8 +10644,52 @@ static void lidar_parse(unsigned char c)
 }
 #endif
 
+#if WITHLVGL2
+//#include "draw/lv_draw_buf.h"
+#include "../demos/lv_demos.h"
+
+void vvfbdev_flush(struct _lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
+{
+	TP();
+	dcache_clean((uintptr_t) color_p, sizeof (lv_color_t) * GXSIZE(DIM_X, DIM_Y));
+	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) color_p);
+}
+
+#if 0//WITHLVGL && ! LINUX_SUBSYSTEM
+
+//#include "draw/lv_draw_buf.h"
+#include "../demos/lv_demos.h"
+
+//static void vvinvalidate(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
+//{
+//	dcache_invalidate((uintptr_t) draw_buf->data, draw_buf->data_size);
+//}
+//
+//static void vvflush(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
+//{
+//	dcache_clean((uintptr_t) draw_buf->data, draw_buf->data_size);
+//}
+//
+//static uint32_t vvdraw_buf_width_to_stride(uint32_t w, lv_color_format_t color_format)
+//{
+//	return sizeof (PACKEDCOLORPIP_T) * GXSTRIDE(w);
+//}
+//
+//void vv_display_flush_cb_t(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map);
+//void vv_display_flush_wait_cb_t(lv_display_t * disp)
+//		{
+//
+//		}
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+
+void styles_init(void);
+
+#endif /* WITHLVGL2 */
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -10657,6 +10701,48 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if WITHLVGL2 && 0
+	{
+
+		static lv_color_t buf1 [GXSIZE(DIM_X, DIM_Y)];
+		static lv_color_t buf2 [GXSIZE(DIM_X, DIM_Y)];
+
+		/*LVGL init*/
+		lv_init();
+
+	//	lv_draw_buf_handlers_t haddlers;
+	//
+	//	lv_draw_buf_init_with_default_handlers(& haddlers);
+	//	lv_draw_buf_handlers_init(& haddlers, NULL, NULL, NULL, vvinvalidate, vvflush, vvdraw_buf_width_to_stride);
+		/*A small buffer for LittlevGL to draw the screen's content*/
+
+
+		/*Initialize a descriptor for the buffer*/
+		static lv_disp_draw_buf_t disp_buf;
+		lv_disp_draw_buf_init(&disp_buf, buf1, buf2, GXSIZE(DIM_X, DIM_Y));
+
+		/*Initialize and register a display driver*/
+		static lv_disp_drv_t disp_drv;
+		lv_disp_drv_init(& disp_drv);
+		disp_drv.draw_buf   = & disp_buf;
+		disp_drv.flush_cb   = vvfbdev_flush;
+		disp_drv.hor_res    = DIM_X;
+		disp_drv.ver_res    = DIM_Y;
+		lv_disp_drv_register(& disp_drv);
+
+		//styles_init();
+
+	    lv_demo_widgets();
+	    //lv_demo_widgets_start_slideshow();
+
+		TP();
+		while(1)
+		{
+			lv_task_handler();
+			local_delay_ms(10000);
+		}
+	}
+#endif
 #if 0
 	{
 		for (;;)

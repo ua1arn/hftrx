@@ -6798,51 +6798,10 @@ void display2_bgprocess(
 #endif
 }
 
-#if WITHLVGL && ! LINUX_SUBSYSTEM
-
-#include "draw/lv_draw_buf.h"
-static void vvinvalidate(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
-{
-	dcache_invalidate((uintptr_t) draw_buf->data, draw_buf->data_size);
-}
-
-static void vvflush(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
-{
-	dcache_clean((uintptr_t) draw_buf->data, draw_buf->data_size);
-}
-
-static uint32_t vvdraw_buf_width_to_stride(uint32_t w, lv_color_format_t color_format)
-{
-	return GXSTRIDE(w);
-}
-
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void display2_initialize(void)
 {
-#if WITHLVGL && ! LINUX_SUBSYSTEM
-	/*LVGL init*/
-	lv_init();
-
-//	lv_draw_buf_handlers_t haddlers;
-//
-//	lv_draw_buf_init_with_default_handlers(& haddlers);
-//	lv_draw_buf_handlers_init(& haddlers, NULL, NULL, NULL, vvinvalidate, vvflush, vvdraw_buf_width_to_stride);
-	/*A small buffer for LittlevGL to draw the screen's content*/
-	static lv_color_t buf1 [GXSIZE(DIM_X, DIM_Y)];
-
-	/*Initialize a descriptor for the buffer*/
-	static lv_draw_buf_t draw_buf;
-	lv_draw_buf_init(& draw_buf, DIM_X, DIM_Y, LV_COLOR_FORMAT_NATIVE, GXSTRIDE(DIM_X), buf1, sizeof buf1);
-//
-//	/*Initialize and register a display driver*/
-//	static lv_draw_buf_t disp_drv;
-//	lv_draw_buf_init(& disp_drv);
-//	disp_drv.draw_buf   = & disp_buf;
-//	disp_drv.flush_cb   = fbdev_flush;
-//	disp_drv.hor_res    = DIM_X;
-//	disp_drv.ver_res    = DIM_Y;
-//	lv_disp_drv_register(& disp_drv);
+#if WITHLVGL2 && ! LINUX_SUBSYSTEM
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 

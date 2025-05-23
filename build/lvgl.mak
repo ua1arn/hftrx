@@ -1,5 +1,7 @@
 ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
+LVGLDIR = $(PRJROOT)/lvgl
+DINCDIR += $(LVGLDIR)/src
+SRCDIRS += $(LVGLDIR)/src
+SRCDIRS += $(LVGLDIR)/demos/widgets
 endif

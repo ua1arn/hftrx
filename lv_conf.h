@@ -790,9 +790,9 @@
  ====================*/
 
 /*Show some widget. It might be required to increase `LV_MEM_SIZE` */
-#define LV_USE_DEMO_WIDGETS 0
+#define LV_USE_DEMO_WIDGETS 1
 #if LV_USE_DEMO_WIDGETS
-    #define LV_DEMO_WIDGETS_SLIDESHOW 0
+    #define LV_DEMO_WIDGETS_SLIDESHOW 1
 #endif
 
 /*Demonstrate the usage of encoder and keyboard*/
