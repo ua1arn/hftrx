@@ -120,10 +120,10 @@ static uint_fast8_t bootloader_copyapp(
 
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
-static void
+static void __NO_RETURN
 bootloader_launch_app(uintptr_t startfunc)
 {
-	const unsigned targetcore = 0;
+	const unsigned targetcore = 0;	// Номер ядра, на котором будет запущено приложение (aarch64/rv64)
 	dcache_clean_all();
 	global_disableIRQ();
 
@@ -206,10 +206,11 @@ bootloader_launch_app(uintptr_t startfunc)
 		RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32(startfunc);
 		RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32(startfunc);
 		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << targetcore));	/* De-assert rv64 reset */
-		for (;;)
-		{
-			__WFE();
-		}
+		C0_CPUX_CFG->C0_RST_CTRL &= ~ UINT32_C(0x03);		// CORE_RESET assert for aarch32 core1 and core0
+	}
+	for (;;)
+	{
+		__WFE();
 	}
 
 #elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && (WITHISBOOTLOADER_DDR || WITHISBOOTLOADER_RUN64)

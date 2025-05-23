@@ -4093,10 +4093,10 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
 
-	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;
+	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET assert
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	dcache_clean_all();				// startup code should be copied in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;
+	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET de-assert
 }
 
 #elif CPUSTYLE_VM14
