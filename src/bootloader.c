@@ -166,7 +166,7 @@ bootloader_launch_app(uintptr_t startfunc)
 		unsigned i;
 		// 32 - skip SGI handlers (keep enabled for CPU1 start).
 		for (i = 32; i < n; ++ i)
-			IRQ_Disable(i);
+			GIC_DisableIRQ((IRQn_Type) i);
 	}
 #endif
 
