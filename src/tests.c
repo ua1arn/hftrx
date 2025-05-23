@@ -10719,7 +10719,7 @@ void hightests(void)
 
 		/*Initialize a descriptor for the buffer*/
 		static lv_disp_draw_buf_t disp_buf;
-		lv_disp_draw_buf_init(&disp_buf, buf1, buf2, GXSIZE(DIM_X, DIM_Y));
+		lv_disp_draw_buf_init(&disp_buf, buf1, buf2, sizeof (lv_color_t) * GXSIZE(DIM_X, DIM_Y));
 
 		/*Initialize and register a display driver*/
 		static lv_disp_drv_t disp_drv;

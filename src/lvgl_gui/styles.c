@@ -1,6 +1,6 @@
 #include "hardware.h"
 
-#if WITHLVGL || WITHLVGL2
+#if WITHLVGL
 
 #include "styles.h"
 
