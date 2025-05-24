@@ -10665,7 +10665,11 @@ static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
     lv_display_flush_ready(disp);
-	TP();
+}
+
+static uint32_t myhardgeticks(void)
+{
+	return sys_now();
 }
 
 void styles_init(void);
@@ -10690,6 +10694,8 @@ void hightests(void)
 	{
 		/*LVGL init*/
 		lv_init();
+
+		lv_tick_set_cb(myhardgeticks);
 
 	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
 	    lv_display_set_flush_cb(disp, maindisplay_flush);
