@@ -6186,6 +6186,8 @@ static void window_lfm_process(void)
 
 		add_element("btn_state", 86, 40, 0, 0, "");
 		add_element("btn_draw", 86, 40, 0, 0, "Draw|spectre");
+		add_element("btn_p", 35, 35, 0, 0, "+");
+		add_element("btn_m", 35, 35, 0, 0, "-");
 
 		for (unsigned i = 0; i < win->lh_count; i += 2)
 		{
@@ -6212,6 +6214,20 @@ static void window_lfm_process(void)
 		btn_draw->x1 = btn_state->x1 + btn_state->w + interval;
 		btn_draw->y1 = y;
 		btn_draw->visible = VISIBLE;
+
+		button_t * btn_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_p");
+		btn_p->x1 = 230;
+		btn_p->y1 = 35;
+		btn_p->visible = VISIBLE;
+		btn_p->payload = 1;
+		btn_p->index = 90;
+
+		button_t * btn_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_m");
+		btn_m->x1 = btn_p->x1;
+		btn_m->y1 = btn_p->y1 + btn_p->h + 20;
+		btn_m->visible = VISIBLE;
+		btn_m->payload = -1;
+		btn_m->index = 91;
 
 		hamradio_enable_encoder2_redirect();
 		enable_window_move(win);
@@ -6242,6 +6258,8 @@ static void window_lfm_process(void)
 			{
 				open_window(get_win(WINDOW_LFM_SPECTRE));
 			}
+			else if (bh->index == 90 || bh->index == 91)
+				gui_set_encoder2_rotate(bh->payload);
 		}
 		else if (IS_LABEL_PRESS)
 		{
@@ -6332,20 +6350,20 @@ static void window_lfm_process(void)
 static void window_lfm_spectre_process(void)
 {
 #if WITHLFM
-	const unsigned xmax = 600, ymax = 200, x1 = (800 / 2) - 100, x2 = (800 / 2) + 100;
+	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
 	window_t * const win = get_win(WINDOW_LFM_SPECTRE);
-	static COLORPIP_T d[600][200];
+	static COLORPIP_T d[xmax][ymax];
 	static int shift = 0;
 
-	static unsigned x = 0;
+	static unsigned xx = 0;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		x = 0;
+		xx = 0;
 		shift = 0;
 
-		memset(d, 0, sizeof(d));
+		memset(d, GUI_DEFAULTCOLOR, sizeof(d));
 		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, xmax, ymax);
 		return;
 	}
@@ -6361,21 +6379,23 @@ static void window_lfm_spectre_process(void)
 		break;
 	}
 
-	for (int j = 0; j < xmax; j ++)
-		for (int k = 0; k < x2 - x1; k ++)
-			gui_drawpoint(j, k, d[j][k]);
-
-	if (x < xmax)
+	if (xx >= xmax)
 	{
-		for (int i = x1, y = 0; i < x2; i ++, y ++)
-		{
-			COLORPIP_T v = display2_get_spectrum(i + shift);
-			gui_drawpoint(x, y, v);
-			d[x][y] = v;
-		}
+		for (int x = 0; x < xmax - 1; x ++)
+			memmove(d[x], d[x + 1], (xmax - 1) * 4);
 
-		x ++;
+		xx --;
 	}
+
+	for (int i = i1, y = 0; i < i2; i ++, y ++)
+		d[xx][y] = display2_get_spectrum(i + shift);
+
+	xx ++;
+
+	for (int x = 0; x < xmax; x ++)
+		for (int y = 0; y < ymax; y ++)
+			gui_drawpoint(x, y, d[x][y]);
+
 #endif /* WITHLFM  */
 }
 
