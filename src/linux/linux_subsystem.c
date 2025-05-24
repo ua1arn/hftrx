@@ -2202,6 +2202,7 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 #endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
 #if WITHLVGL
+	lvgl_dev_init();	// linux-specific LVGL initialize - lv_deinit and lv_init include
 	lvgl_init();
 #endif /* WITHLVGL */
 #if WITHIQSHIFT

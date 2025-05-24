@@ -6803,6 +6803,7 @@ void display2_bgprocess(
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
+#include "src/lvgl_gui/styles.h"
 
 
 //#define LCDMODE_PIXELSIZE (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)) /*will be 2 for RGB565 */
@@ -6865,6 +6866,10 @@ void display2_initialize(void)
 	#else
 	#endif
 		TP();
+		lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
+		styles_init();
+		lvgl_init();
+		TP();
 		{
 			static dpcobj_t dpcobj;
 
@@ -6873,14 +6878,17 @@ void display2_initialize(void)
 		}
 
 		TP();
+#if LV_BUILD_DEMOS
 	    lv_demo_widgets();
 		TP();
 	    lv_demo_widgets_start_slideshow();
-
+#else
+		lvgl_test();
+#endif
 		TP();
 		//lv_display_delete(disp);
 
-		PRINTF("LVGL demo done\n");
+		//PRINTF("LVGL demo done\n");
 	}
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
@@ -7402,21 +7410,19 @@ COLORPIP_T display2_get_spectrum(int x)
 
 #endif /* WITHTOUCHGUI */
 
-#if LINUX_SUBSYSTEM && WITHLVGL
-
 void wfl_init(void)
 {
-	display2_wfl_init(0, 0, NULL);
+	pipparams_t pip;
+	display2_getpipparams(& pip);
+	display2_wfl_init(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
 }
 
-uint32_t * wfl_proccess(void)
+PACKEDCOLORPIP_T * wfl_proccess(void)
 {
 	pipparams_t pip;
 	display2_getpipparams(& pip);
 	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 	display2_latchcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
 	display2_gcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
-	return getscratchwnd(pip.x, pip.y);
+	return getscratchwnd(X2GRID(pip.x), Y2GRID(pip.y));
 }
-
-#endif /* LINUX_SUBSYSTEM && WITHLVGL */

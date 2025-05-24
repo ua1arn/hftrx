@@ -3,34 +3,37 @@
  */
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+
+#if WITHLVGL
+
 #include "formats.h"	// for debug prints
 #include "display2.h"
 #include "radio.h"
+#include <string.h>
 
-#if LINUX_SUBSYSTEM && WITHLVGL
+#if LINUX_SUBSYSTEM
 
 #include <linux/kd.h>
 
 #include "../linux/linux_subsystem.h"
-#include "lvgl/lvgl.h"
+
 #include "lv_drivers/display/fbdev.h"
 #include "lv_drivers/indev/evdev.h"
-#include "lvgl_gui/styles.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 
-void wfl_init(void);
-uint32_t * wfl_proccess(void);
+#endif /* LINUX_SUBSYSTEM */
+
+#include "lvgl/lvgl.h"
+#include "src/lvgl_gui/styles.h"
+
+
 
 #define DISP_BUF_SIZE	(128 * DIM_X)
 
-pthread_t p_inc, p_h;
-static lv_obj_t * main_page;
+#if LINUX_SUBSYSTEM
 
-typedef struct {
-	char name[30];
-	int32_t payload;
-} el_data_t;
+pthread_t p_inc, p_h;
 
 void * thread_lv_tick_inc(void * p)
 {
@@ -57,25 +60,8 @@ void evdev_read_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
 	evdev_read(drv, data);
 }
 
-lv_obj_t * button_create(lv_obj_t * parent, lv_coord_t x, lv_coord_t y, const char * name, const char * text, lv_style_t * style, void (cb)(lv_event_t *))
-{
-	lv_obj_t * btn = lv_btn_create(parent);
-	lv_obj_set_pos(btn, x, y);
-	lv_obj_add_style(btn, style, 0);
-	lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
 
-	el_data_t * us = (el_data_t *) calloc(1, sizeof(el_data_t));
-	strcpy(us->name, name);
-	lv_obj_set_user_data(btn, us);
-
-	lv_obj_t * lbl = lv_label_create(btn);
-	lv_label_set_text(lbl, text);
-	lv_obj_add_style(lbl, & style_label_btn, 0);
-
-	return btn;
-}
-
-void lvgl_init(void)
+void lvgl_dev_init(void)
 {
 	lv_deinit();
 
@@ -124,14 +110,6 @@ void lvgl_init(void)
 
 	linux_create_thread(& p_inc, thread_lv_tick_inc, 50, 0);
 	linux_create_thread(& p_h, thread_lv_task_handler, 50, 1);
-
-	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
-	styles_init();
-
-	main_page = lv_obj_create(lv_scr_act());
-	lv_obj_set_size(main_page, DIM_X, DIM_Y);
-	lv_obj_clear_flag(main_page, LV_OBJ_FLAG_SCROLLABLE);
-	lv_obj_add_style(main_page, & style_mainscreen, 0);
 }
 
 void lvgl_deinit(void)
@@ -140,6 +118,45 @@ void lvgl_deinit(void)
     ioctl(ttyd, KDSETMODE, KD_TEXT);
     close(ttyd);
     lv_deinit();
+}
+
+#endif
+
+static lv_obj_t * main_page;
+
+typedef struct {
+	char name[30];
+	int32_t payload;
+} el_data_t;
+
+lv_obj_t * button_create(lv_obj_t * parent, lv_coord_t x, lv_coord_t y, const char * name, const char * text, lv_style_t * style, void (cb)(lv_event_t *))
+{
+	lv_obj_t * btn = lv_btn_create(parent);
+	lv_obj_set_pos(btn, x, y);
+	lv_obj_add_style(btn, style, 0);
+	lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
+
+	el_data_t * us = (el_data_t *) calloc(1, sizeof(el_data_t));
+	strcpy(us->name, name);
+	lv_obj_set_user_data(btn, us);
+
+	lv_obj_t * lbl = lv_label_create(btn);
+	lv_label_set_text(lbl, text);
+	lv_obj_add_style(lbl, & style_label_btn, 0);
+
+	return btn;
+}
+
+void lvgl_init(void)
+{
+	PRINTF("lvgl_init:\n");
+	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
+	styles_init();
+
+	main_page = lv_obj_create(lv_scr_act());
+	lv_obj_set_size(main_page, DIM_X, DIM_Y);
+	lv_obj_clear_flag(main_page, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_add_style(main_page, & style_mainscreen, 0);
 }
 
 static lv_img_dsc_t wfl;
@@ -189,9 +206,10 @@ lv_obj_t * window_create(lv_obj_t * parent, lv_coord_t w, lv_coord_t h)
 	return win;
 }
 
+static lv_obj_t * fbtn[9];
+
 void footer_buttons_init(void)
 {
-	static lv_obj_t * fbtn[9];
 	uint16_t x = 1, y = DIM_Y - 45;
 
 	for (int i = 0; i < 9; i ++)
@@ -225,9 +243,11 @@ void lvgl_test(void)
 //	win = window_create(main_page, 300, 200);
 //	lv_obj_t * btn = button_create(win, 0, 0, "Preamp", & style_footer_button, event_handler_btn1);
 
-	wfl.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
-	wfl.header.always_zero = 0;
-	wfl.header.reserved = 0;
+	wfl.header.magic = LV_IMAGE_HEADER_MAGIC,
+	wfl.header.cf = LV_COLOR_FORMAT_ARGB8888,
+	wfl.header.flags = 0,
+//	wfl.header.always_zero = 0;
+//	wfl.header.reserved = 0;
 	wfl.header.w = p.w;
 	wfl.header.h = p.h;
 	wfl.data_size = wfl.header.w * wfl.header.h * 4;
@@ -237,4 +257,4 @@ void lvgl_test(void)
 	lv_timer_set_repeat_count(lvgl_task1, -1);
 }
 
-#endif /* LINUX_SUBSYSTEM && WITHLVGL */
+#endif /* WITHLVGL */
