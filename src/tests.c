@@ -10645,43 +10645,24 @@ static void lidar_parse(unsigned char c)
 #endif
 
 #if WITHLVGL2
-//#include "draw/lv_draw_buf.h"
+
 #include "../demos/lv_demos.h"
 
-void vvfbdev_flush(struct _lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
+
+#define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)) /*will be 2 for RGB565 */
+
+/*Flush the content of the internal buffer the specific area on the display.
+ *`px_map` contains the rendered image as raw pixel map and it should be copied to `area` on the display.
+ *You can use DMA or any hardware acceleration to do this operation in the background but
+ *'lv_display_flush_ready()' has to be called when it's finished.*/
+static void maindisplay_flush(lv_display_t * disp_drv, const lv_area_t * area, uint8_t * px_map)
 {
-	TP();
-	dcache_clean((uintptr_t) color_p, sizeof (lv_color_t) * GXSIZE(DIM_X, DIM_Y));
-	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) color_p);
+	dcache_clean((uintptr_t) px_map, sizeof (lv_color_t) * GXSIZE(DIM_X, DIM_Y));
+	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);
+    /*IMPORTANT!!!
+     *Inform the graphics library that you are ready with the flushing*/
+    lv_display_flush_ready(disp_drv);
 }
-
-#if 0//WITHLVGL && ! LINUX_SUBSYSTEM
-
-//#include "draw/lv_draw_buf.h"
-#include "../demos/lv_demos.h"
-
-//static void vvinvalidate(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
-//{
-//	dcache_invalidate((uintptr_t) draw_buf->data, draw_buf->data_size);
-//}
-//
-//static void vvflush(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
-//{
-//	dcache_clean((uintptr_t) draw_buf->data, draw_buf->data_size);
-//}
-//
-//static uint32_t vvdraw_buf_width_to_stride(uint32_t w, lv_color_format_t color_format)
-//{
-//	return sizeof (PACKEDCOLORPIP_T) * GXSTRIDE(w);
-//}
-//
-//void vv_display_flush_cb_t(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map);
-//void vv_display_flush_wait_cb_t(lv_display_t * disp)
-//		{
-//
-//		}
-
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void styles_init(void);
 
@@ -10703,44 +10684,28 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if WITHLVGL2 && 0
 	{
-
-		static RAMFRAMEBUFF lv_color_t buf1 [GXSIZE(DIM_X, DIM_Y)];
-		static RAMFRAMEBUFF lv_color_t buf2 [GXSIZE(DIM_X, DIM_Y)];
-
 		/*LVGL init*/
 		lv_init();
 
-	//	lv_draw_buf_handlers_t haddlers;
-	//
-	//	lv_draw_buf_init_with_default_handlers(& haddlers);
-	//	lv_draw_buf_handlers_init(& haddlers, NULL, NULL, NULL, vvinvalidate, vvflush, vvdraw_buf_width_to_stride);
-		/*A small buffer for LittlevGL to draw the screen's content*/
+	    lv_display_t * maindisplay = lv_display_create(DIM_X, DIM_Y);
+	    lv_display_set_flush_cb(maindisplay, maindisplay_flush);
 
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_1[GXSIZE(DIM_X, DIM_Y) * BYTE_PER_PIXEL];
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2[GXSIZE(DIM_X, DIM_Y) * BYTE_PER_PIXEL];
 
-		/*Initialize a descriptor for the buffer*/
-		static lv_disp_draw_buf_t disp_buf;
-		lv_disp_draw_buf_init(&disp_buf, buf1, buf2, sizeof (lv_color_t) * GXSIZE(DIM_X, DIM_Y));
-
-		/*Initialize and register a display driver*/
-		static lv_disp_drv_t disp_drv;
-		lv_disp_drv_init(& disp_drv);
-		disp_drv.draw_buf   = & disp_buf;
-		disp_drv.flush_cb   = vvfbdev_flush;
-		disp_drv.hor_res    = DIM_X;
-		disp_drv.ver_res    = DIM_Y;
-		lv_disp_drv_register(& disp_drv);
-
-		//styles_init();
+	    lv_display_set_buffers_with_stride(maindisplay, buf_3_1, buf_3_2, sizeof(buf_3_1), GXSTRIDE(DIM_X) * BYTE_PER_PIXEL, LV_DISPLAY_RENDER_MODE_DIRECT);
 
 	    lv_demo_widgets();
-	    //lv_demo_widgets_start_slideshow();
+	    lv_demo_widgets_start_slideshow();
 
 		TP();
 		while(1)
 		{
 			lv_task_handler();
-			local_delay_ms(10000);
+			local_delay_ms(10);
 		}
+		lv_display_delete(maindisplay);
+
 	}
 #endif
 #if 0
