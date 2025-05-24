@@ -48,8 +48,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
@@ -260,12 +260,12 @@ bootloader: BOOT2
 # Take from tc1_t507_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x0002e98c
-SystemExecAARCH64 = 0x0002bf4c
+SystemDRAMInit = 0x0002ece8
+SystemExecAARCH64 = 0x0002c1f0
 # H616
 else
-SystemDRAMInit = 0x00032a84
-SystemExecAARCH64 = 0x00031560
+SystemDRAMInit = 0x0002d2cc
+SystemExecAARCH64 = 0x0002b3c0
 endif
 
 # Invoke SystemInit 

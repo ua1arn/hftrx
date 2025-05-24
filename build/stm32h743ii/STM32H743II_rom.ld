@@ -173,7 +173,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(8);
+
 		/* All data end */
 		__data_end__ = .;
 

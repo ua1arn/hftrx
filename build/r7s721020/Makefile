@@ -43,8 +43,8 @@ CP   = $(TRGT)objcopy
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3 --specs=nosys.specs

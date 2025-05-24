@@ -146,20 +146,21 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(32);
+
 		/* All data end */
 		__data_end__ = .;
 
 	} > RAM
 
-	.bss (NOLOAD):
+	.bss :
 	{
-		. = ALIGN(32);
 		__bss_start__ = .;
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):

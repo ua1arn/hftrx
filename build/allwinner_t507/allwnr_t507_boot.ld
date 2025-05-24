@@ -4,9 +4,9 @@
 
 MEMORY
 {
-  xRAM (rwx)	 : ORIGIN = 0x00028000 + 256, 	LENGTH = 192k - 256		/* base addres for bootloader tests */
   RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 	LENGTH = 224k - 256		/*  */
-  DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 1024M - 32M		/*  */
+  xfelRAM (rwx)	: ORIGIN = 0x00028000 + 256, 	LENGTH = 192k - 256		/* base addres for bootloader tests */
+  DDR3 (rwx) : ORIGIN = 0x40000000 + 128M, 	LENGTH = 1024M - 128M		/*  */
 }
 
 /* Library configurations */
@@ -150,10 +150,10 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-
-		/* All data end */
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > RAM
 
 	.bss :
@@ -162,9 +162,10 @@ SECTIONS
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-
+		. = ALIGN(64);
 		__bss_end__ = .;
-	} > RAM 
+		LONG(0xDEADBEEF)
+	} > RAM
 
 	.noinit (NOLOAD):
 	{

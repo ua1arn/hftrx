@@ -180,8 +180,9 @@ SECTIONS
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-
+		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM 
 
 	.noinit (NOLOAD):

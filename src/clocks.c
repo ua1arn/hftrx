@@ -9941,12 +9941,12 @@ sysinit_pll_initialize(int forced)
 		0;
 
 #if CPUSTYLE_H616
-	C0_CPUX_CFG_->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	C0_CPUX_CFG_->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#else /* CPUSTYLE_ */
+	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#else /* CPUSTYLE_H616 */
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#endif /* CPUSTYLE_ */
+#endif /* CPUSTYLE_H616 */
 
 #elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 

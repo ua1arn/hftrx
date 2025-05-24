@@ -15,7 +15,6 @@
 MEMORY
 {
   RAM (rwx) 	: ORIGIN = 0xC0000000 + 0x100, LENGTH = 256M - 0x100 	/* DDR3 256 MM - 16 kB - 256 B*/
-  SYSRAM (rwx)	: ORIGIN = 0x2FFC0000 + 9k + 256, LENGTH = 256k - 9k - 0x100	/* SYSRAM - 256 k - 9 k - 256 B */
 }
 
 /* Library configurations */
@@ -57,6 +56,7 @@ SECTIONS
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
+		*(.itcm*)
 
 		. = ALIGN(8);
 	} > RAM
@@ -84,10 +84,10 @@ SECTIONS
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
-	*/
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
+	*/
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -112,6 +112,13 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		. = ALIGN(64);
+		*(.dtcm*)
+		. = ALIGN(32);
+		
 		/* .ctors */
 		*crtbegin.o(.ctors)
 		*crtbegin?.o(.ctors)
@@ -155,32 +162,12 @@ SECTIONS
 
 		KEEP(*(.jcr*))
 		/* All data end */
-		. = ALIGN(64);
+
 		__data_end__ = .;
 
 	} > RAM
 
-	__etext2 = .;
-
-	.sysram : AT (__etext2)
-	{
-		__data2_start__ = .;
-		. = ALIGN(32);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		. = ALIGN(64);
-		*(.itcm*)
-		. = ALIGN(64);
-		*(.dtcm*)
-		. = ALIGN(32);
-		__data2_end__ = .;
-	} > SYSRAM
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
-
-	.bss (NOLOAD):
+	.bss :
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
@@ -188,6 +175,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):

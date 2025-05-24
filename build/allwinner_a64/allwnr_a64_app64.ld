@@ -160,21 +160,20 @@ SECTIONS
 		*(.plt.got)
 		*(.plt.bnd)
 		
-		/* All data end */
-		
-		__data_end__ = .;
-
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > RAM
 
-	.bss (NOLOAD):
+	.bss :
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-
 		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):

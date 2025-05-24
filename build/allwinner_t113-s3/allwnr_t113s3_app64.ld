@@ -151,10 +151,10 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		/* All data end */
-
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > DDR3
 
 	__etext2 = .;
@@ -171,15 +171,15 @@ SECTIONS
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
-
-	.bss (NOLOAD):
+	.bss :
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss* .sbss*)
+		*(.bss*)
 		*(COMMON)
-
+		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > DDR3
 
 	.noinit (NOLOAD):
