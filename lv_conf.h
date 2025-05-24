@@ -18,16 +18,34 @@
 #define LV_CONF_H
 
 /* If you need to include anything here, do it inside the `__ASSEMBLY__` guard */
-#if  0 && defined(__ASSEMBLY__)
-#include "my_include.h"
+#if 1 //defined(__ASSEMBLY__)
+	#include "hardware.h"
+	#include "src/display/display.h"
 #endif
+
 
 /*====================
    COLOR SETTINGS
  *====================*/
 
-/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
-#define LV_COLOR_DEPTH 16
+#if LCDMODE_LTDC
+	#if LCDMODE_LTDC_L24
+		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
+		#define LV_COLOR_DEPTH 24
+	#elif LCDMODE_MAIN_L8
+		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
+		#define LV_COLOR_DEPTH 1
+	#elif LCDMODE_MAIN_ARGB8888
+		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
+		#define LV_COLOR_DEPTH 32
+	#elif LCDMODE_MAIN_RGB565
+		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
+		#define LV_COLOR_DEPTH 16
+	#endif
+#else
+	/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
+	#define LV_COLOR_DEPTH 16
+#endif
 
 /*=========================
    STDLIB WRAPPER SETTINGS
@@ -1328,7 +1346,7 @@
     #define LV_USE_DEMO_KEYPAD_AND_ENCODER 0
 
     /** Benchmark your system */
-    #define LV_USE_DEMO_BENCHMARK 0
+    #define LV_USE_DEMO_BENCHMARK 1
 
     #if LV_USE_DEMO_BENCHMARK
         /** Use fonts where bitmaps are aligned 16 byte and has Nx16 byte stride */
@@ -1353,7 +1371,7 @@
     #endif
 
     /** Vector graphic demo */
-    #define LV_USE_DEMO_VECTOR_GRAPHIC  0
+    #define LV_USE_DEMO_VECTOR_GRAPHIC  1
 
     /*---------------------------
      * Demos from lvgl/lv_demos
@@ -1378,10 +1396,10 @@
     #endif
 
     /** High-resolution demo */
-    #define LV_USE_DEMO_HIGH_RES        0
+    #define LV_USE_DEMO_HIGH_RES        1
 
     /* Smart watch demo */
-    #define LV_USE_DEMO_SMARTWATCH      0
+    #define LV_USE_DEMO_SMARTWATCH      1
 #endif /* LV_BUILD_DEMOS */
 
 /*--END OF LV_CONF_H--*/
