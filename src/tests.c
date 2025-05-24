@@ -10690,8 +10690,9 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if WITHLVGL2 && 1
+#if WITHLVGL2 && 0
 	{
+		PRINTF("LVGL demo start\n");
 		/*LVGL init*/
 		lv_init();
 
@@ -10715,18 +10716,22 @@ void hightests(void)
 		#endif
 	#else
 	#endif
-
+		TP();
 	    lv_demo_widgets();
+		TP();
 	    lv_demo_widgets_start_slideshow();
+		TP();
 
 	    uint32_t d = lv_task_handler();
 		for (;;)
 		{
-			local_delay_ms(d);
+			//local_delay_ms(d);
 			d = lv_task_handler();
 		}
+		TP();
 		lv_display_delete(disp);
 
+		PRINTF("LVGL demo done\n");
 	}
 #endif
 #if 0
