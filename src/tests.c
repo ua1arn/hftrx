@@ -10644,38 +10644,6 @@ static void lidar_parse(unsigned char c)
 }
 #endif
 
-#if WITHLVGL2
-
-#include "../demos/lv_demos.h"
-
-
-//#define LCDMODE_PIXELSIZE (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)) /*will be 2 for RGB565 */
-
-/*Flush the content of the internal buffer the specific area on the display.
- *`px_map` contains the rendered image as raw pixel map and it should be copied to `area` on the display.
- *You can use DMA or any hardware acceleration to do this operation in the background but
- *'lv_display_flush_ready()' has to be called when it's finished.*/
-static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
-{
-	dcache_clean(
-		(uintptr_t) px_map,
-		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
-		);
-	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);
-    /*IMPORTANT!!!
-     *Inform the graphics library that you are ready with the flushing*/
-    lv_display_flush_ready(disp);
-}
-
-static uint32_t myhardgeticks(void)
-{
-	return sys_now();
-}
-
-void styles_init(void);
-
-#endif /* WITHLVGL2 */
-
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 
@@ -10690,50 +10658,6 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if WITHLVGL2 && 0
-	{
-		PRINTF("LVGL demo start\n");
-		/*LVGL init*/
-		lv_init();
-
-		lv_tick_set_cb(myhardgeticks);
-
-	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
-	    lv_display_set_flush_cb(disp, maindisplay_flush);
-
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
-
-	    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXSTRIDE(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
-	#if LCDMODE_LTDC
-		#if LCDMODE_LTDC_L24
-	    	lv_display_set_color_format(disp, LV_COLOR_FORMAT_NATIVE);
-		#elif LCDMODE_MAIN_L8
-		#elif LCDMODE_MAIN_ARGB8888
-			lv_display_set_color_format(disp, LV_COLOR_FORMAT_ARGB8888);
-		#elif LCDMODE_MAIN_RGB565
-			lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
-		#endif
-	#else
-	#endif
-		TP();
-	    lv_demo_widgets();
-		TP();
-	    lv_demo_widgets_start_slideshow();
-		TP();
-
-	    uint32_t d = lv_task_handler();
-		for (;;)
-		{
-			//local_delay_ms(d);
-			d = lv_task_handler();
-		}
-		TP();
-		lv_display_delete(disp);
-
-		PRINTF("LVGL demo done\n");
-	}
-#endif
 #if 0
 	{
 		for (;;)

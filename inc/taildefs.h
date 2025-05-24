@@ -593,16 +593,6 @@ void InitializeIrql(IRQL_t newIRQL);
 
 #endif
 
-#if WITHLVGL
-
-	#include "lvgl.h"
-//	void indev_enc2_spool(void);
-//	void board_tsc_initialize(void);
-//	void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
-//	void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data);
-
-#endif /* WITHLVGL */
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

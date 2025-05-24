@@ -1,6 +1,6 @@
 #include "hardware.h"
 
-#if WITHLVGL
+#if WITHLVGL && LINUX_SUBSYSTEM
 
 #include "styles.h"
 

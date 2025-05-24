@@ -471,7 +471,7 @@
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
-		#define WITHLVGL2 1		/* bare-metal config of LVGL */
+		#define WITHLVGL 1		/* bare-metal config of LVGL */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 
