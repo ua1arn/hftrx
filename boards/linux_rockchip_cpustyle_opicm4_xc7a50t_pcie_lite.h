@@ -17,6 +17,12 @@
 #define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
 
+// GPS receiver Locosys MC-1513: only RMC sentences at 1 Hz
+#define HARDWARE_NMEA_INITIALIZE() do { \
+		uartlite_write_string("$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"); \
+		uartlite_write_string("$PMTK220,1000*1F\r\n"); \
+	} while (0)
+
 #define	AXI_IQ_RX_BRAM				0xC0000000
 #define	AXI_IQ_STREAM_BRAM			0xC0010000
 #define	AXI_LITE_IQ_RX_BRAM_CNT		0x00001000
@@ -75,7 +81,8 @@ enum {
 #define LINUX_FB_FILE			"/dev/fb0"
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
-#define LINUX_AUDIO_INT_FILE	"/dev/uio3"
+#define LINUX_XDMA_UART_FILE	"/dev/xdma0_events_2"
+#define LINUX_XDMA_PPS_FILE		"/dev/xdma0_events_3"
 #define TOUCH_EVENT_NAME		"goodix-ts" //"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"

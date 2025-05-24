@@ -68,6 +68,7 @@
 #define CONTROL_RX_ENABLE    (1 << 0)
 #define CONTROL_TX_ENABLE    (1 << 1)
 #define CONTROL_RESET_FIFO   (1 << 2)
+#define CONTROL_INTR_ENABLE	 (1 << 4)
 #define STATUS_RXVALID       (1 << 0)
 #define STATUS_TXFULL        (1 << 3)
 
@@ -127,7 +128,7 @@ uint_fast8_t dummy_getchar(char * cp);
 
 #define HARDWARE_DEBUG_INITIALIZE() 		do { } while (0)
 #define HARDWARE_DEBUG_SET_SPEED(baudrate) 	do { } while (0)
-#define HARDWARE_DEBUG_PUTCHAR(c)			(dummy_putchar(c))
+#define HARDWARE_DEBUG_PUTCHAR(c)			(printf("%c", c))
 #define HARDWARE_DEBUG_GETCHAR(pc) 			(dummy_getchar(pc))
 
 #define __DMB()	do { } while (0)

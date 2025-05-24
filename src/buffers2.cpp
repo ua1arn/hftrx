@@ -1400,7 +1400,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
 
-#if CPUSTYLE_XC7Z && WITHLFM
+#if (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM
 	if (iflfmactive())
 	{
 		ftw_t v = dspfpga_get_nco1();
@@ -1408,7 +1408,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 		v = dspfpga_get_ncorts();
 		xcz_dds_rts(& v);
 	}
-#endif /* CPUSTYLE_XC7Z && WITHLFM */
+#endif /* (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM */
 
 	return DMABUFFSTEP32TX;
 }
