@@ -926,7 +926,7 @@ typedef buffitem<denoise16_t> denoise16buf_t;
 typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> denoise16dma_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-static denoise16buf_t denoise16buf [SPEEX_CAPACITY];
+static RAMFRAMEBUFF denoise16buf_t denoise16buf [SPEEX_CAPACITY];
 
 static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16", denoise16buf, ARRAY_SIZE(denoise16buf));
 
@@ -1324,8 +1324,8 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 
 typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> moni16txdma_t;
 
-static moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
-static moni16buf_t rx16recbuf [VOICE16TXMONI_CAPACITY];
+static RAMFRAMEBUFF moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
+static RAMFRAMEBUFF moni16buf_t rx16recbuf [VOICE16TXMONI_CAPACITY];
 
 static moni16txdma_t moni16(IRQL_REALTIME, "16moni", moni16buf, ARRAY_SIZE(moni16buf));		// аудиоданные - самоконтроль (ключ, голос).
 static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec", rx16recbuf, ARRAY_SIZE(rx16recbuf));	// аудиоданные - выход приемника
@@ -1818,17 +1818,17 @@ typedef dmahandle<int16_t, btio16kbuf_t, 1, 1, SKIPSAMPLES_BT> btio16kdmaRS_t;
 typedef dmahandle<int16_t, btio8kbuf_t, 0, 1, SKIPSAMPLES_BT> btio8kdma_t;
 typedef dmahandle<int16_t, btio8kbuf_t, 1, 1, SKIPSAMPLES_BT> btio8kdmaRS_t;
 
-static btio44p1kbuf_t  btout44p1kbuf [BTOUT48_CAPACITY];
-static btio32kbuf_t  btout32kbuf [BTOUT48_CAPACITY];
-static btio16kbuf_t  btout16kbuf [BTOUT48_CAPACITY];
-static btio8kbuf_t  btout8kbuf [BTOUT48_CAPACITY];
-static btio48kbuf_t  btout48kbuf [2];
+static RAMFRAMEBUFF btio44p1kbuf_t  btout44p1kbuf [BTOUT48_CAPACITY];
+static RAMFRAMEBUFF btio32kbuf_t  btout32kbuf [BTOUT48_CAPACITY];
+static RAMFRAMEBUFF btio16kbuf_t  btout16kbuf [BTOUT48_CAPACITY];
+static RAMFRAMEBUFF btio8kbuf_t  btout8kbuf [BTOUT48_CAPACITY];
+static RAMFRAMEBUFF btio48kbuf_t  btout48kbuf [2];
 
-static btio44p1kbuf_t  btin44p1kbuf [2];
-static btio32kbuf_t  btin32kbuf [2];
-static btio16kbuf_t  btin16kbuf [2];
-static btio8kbuf_t  btin8kbuf [2];
-static btio48kbuf_t  btin48kbuf [BTIN48_CAPACITY];
+static RAMFRAMEBUFF btio44p1kbuf_t  btin44p1kbuf [2];
+static RAMFRAMEBUFF btio32kbuf_t  btin32kbuf [2];
+static RAMFRAMEBUFF btio16kbuf_t  btin16kbuf [2];
+static RAMFRAMEBUFF btio8kbuf_t  btin8kbuf [2];
+static RAMFRAMEBUFF btio48kbuf_t  btin48kbuf [BTIN48_CAPACITY];
 
 /* Канал из трансивера в BT */
 static btio48kdmaRS_t btin48k(IRQL_REALTIME, "btin48k", btin48kbuf, ARRAY_SIZE(btin48kbuf));
@@ -2612,7 +2612,7 @@ typedef struct
 } message8buff_t;
 
 typedef buffitem<message8buff_t> message8v_t;
-static message8v_t message8v [MESSAGE_CAPACITY];
+static RAMFRAMEBUFF message8v_t message8v [MESSAGE_CAPACITY];
 
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
 typedef blists<message8v_t, 0, 0, SKIPSAMPLES_NORESAMPLER> message8list_t;
@@ -2668,7 +2668,7 @@ typedef struct modems8
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
 typedef blists<modems8_t, MODEM8_CAPACITY> modems8list_t;
 
-static modems8list_t modems8list(MODEM8_IRQL, "mdm8");
+static RAMFRAMEBUFF modems8list_t modems8list(MODEM8_IRQL, "mdm8");
 
 //static RAMBIGDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
 //static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
@@ -2771,7 +2771,7 @@ typedef ALIGNX_BEGIN struct recordswav48
 
 typedef buffitem<recordswav48_t> recordswav48buf_t;
 
-static recordswav48buf_t recordswav48buf [AUDIOREC_CAPACITY];
+static RAMFRAMEBUFF recordswav48buf_t recordswav48buf [AUDIOREC_CAPACITY];
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> recordswav48dma_t;

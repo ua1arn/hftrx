@@ -10704,8 +10704,8 @@ void hightests(void)
 #if WITHLVGL2 && 0
 	{
 
-		static lv_color_t buf1 [GXSIZE(DIM_X, DIM_Y)];
-		static lv_color_t buf2 [GXSIZE(DIM_X, DIM_Y)];
+		static RAMFRAMEBUFF lv_color_t buf1 [GXSIZE(DIM_X, DIM_Y)];
+		static RAMFRAMEBUFF lv_color_t buf2 [GXSIZE(DIM_X, DIM_Y)];
 
 		/*LVGL init*/
 		lv_init();
