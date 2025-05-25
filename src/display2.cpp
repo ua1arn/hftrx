@@ -6865,6 +6865,12 @@ void display2_initialize(void)
 		#endif
 	#else
 	#endif
+
+		TP();
+		// Add custom draw unit
+		//draw_awg2d_init();
+
+		// Приложение
 		TP();
 		lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
 		styles_init();
