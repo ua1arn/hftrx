@@ -1071,6 +1071,9 @@ void arm_hardware_mdma_initialize(void)
 #include "lvgl.h"
 #include "draw/lv_draw_private.h"
 
+#define DRAW_UNIT_ID_AWG2D 77
+#define DRAW_UNIT_ID_AWROT 78
+
 #define LV_DRAW_AWG2D_DRAW_UNIT_CNT 1
 
 typedef struct _draw_awg2d_unit_t {
@@ -1082,8 +1085,17 @@ typedef struct _draw_awg2d_unit_t {
 #endif
 } draw_awg2d_unit_t;
 
+typedef struct _draw_awrot_unit_t {
+    lv_draw_unit_t base_unit;
+#if LV_USE_OS
+    lv_draw_sw_thread_dsc_t thread_dscs[LV_DRAW_AWG2D_DRAW_UNIT_CNT];
+#else
+    lv_draw_task_t * task_act;
+#endif
+} draw_awrot_unit_t;
 
-static void execute_drawing(lv_draw_task_t * t)
+
+static void awg2d_execute_drawing(lv_draw_task_t * t)
 {
     LV_PROFILER_DRAW_BEGIN;
     /*Render the draw task*/
@@ -1135,8 +1147,64 @@ static void execute_drawing(lv_draw_task_t * t)
 }
 
 
-#define DRAW_UNIT_ID_AWG2D 77
+static void awrot_execute_drawing(lv_draw_task_t * t)
+{
+    LV_PROFILER_DRAW_BEGIN;
+    /*Render the draw task*/
+    switch(t->type) {
+//        case LV_DRAW_TASK_TYPE_FILL:
+//            lv_draw_sw_fill(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_BORDER:
+//            lv_draw_sw_border(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
+//            lv_draw_sw_box_shadow(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LETTER:
+//            lv_draw_sw_letter(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LABEL:
+//            lv_draw_sw_label(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_IMAGE:
+//            lv_draw_sw_image(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_ARC:
+//            lv_draw_sw_arc(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LINE:
+//            lv_draw_sw_line(t, t->draw_dsc);
+//            break;
+//        case LV_DRAW_TASK_TYPE_TRIANGLE:
+//            lv_draw_sw_triangle(t, t->draw_dsc);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LAYER:
+//            lv_draw_sw_layer(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
+//            lv_draw_sw_mask_rect(t, t->draw_dsc);
+//            break;
+//#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+//        case LV_DRAW_TASK_TYPE_VECTOR:
+//            lv_draw_sw_vector(t, t->draw_dsc);
+//            break;
+//#endif
+        default:
+            break;
+    }
 
+
+    LV_PROFILER_DRAW_END;
+}
+
+/**
+ * Устанавливает preferred_draw_unit_id в DRAW_UNIT_ID_AWG2D,
+ * если отрисовываем этим блоком
+ * @param draw_unit
+ * @param task
+ * @return
+ */
 static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
@@ -1179,6 +1247,69 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     return 0;
 }
 
+/**
+ * Устанавливает preferred_draw_unit_id в DRAW_UNIT_ID_AWROT
+ * если отрисовываем этим блоком
+ * @param draw_unit
+ * @param task
+ * @return
+ */
+static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
+{
+    LV_UNUSED(draw_unit);
+
+    switch(task->type) {
+        case LV_DRAW_TASK_TYPE_IMAGE:
+        case LV_DRAW_TASK_TYPE_LAYER: {
+                lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
+
+                /* not support skew */
+                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+
+                bool masked = draw_dsc->bitmap_mask_src != NULL;
+
+                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
+                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                    return 0;
+                }
+
+                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+                    return 0;
+                }
+            }
+            break;
+#if LV_USE_3DTEXTURE
+        case LV_DRAW_TASK_TYPE_3D:
+            return 0;
+#endif
+        default:
+            break;
+    }
+
+    if(task->preference_score >= 100) {
+        task->preference_score = 100;
+        task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;
+    }
+
+    return 0;
+}
+
+/**
+ * Called to try to assign a draw task to itself.
+ * `lv_draw_get_next_available_task` can be used to get an independent draw task.
+ * A draw task should be assign only if the draw unit can draw it too
+ * @param draw_unit     pointer to the draw unit
+ * @param layer         pointer to a layer on which the draw task should be drawn
+ * @return              >=0:    The number of taken draw task:
+ *                                  0 means the task has not yet been completed.
+ *                                  1 means a new task has been accepted.
+ *                      -1:     The draw unit wanted to work on a task but couldn't do that
+ *                              due to some errors (e.g. out of memory).
+ *                              It signals that LVGL should call the dispatcher later again
+ *                              to let draw unit try to start the rendering again.
+ */
 static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 {
     LV_PROFILER_DRAW_BEGIN;
@@ -1260,7 +1391,7 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
     draw_awg2d_unit->task_act = t;
 
-    execute_drawing(t);
+    awg2d_execute_drawing(t);
     draw_awg2d_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
     draw_awg2d_unit->task_act = NULL;
 
@@ -1272,6 +1403,57 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 #endif
 
 }
+/**
+ * Called to signal the unit to complete all tasks in order to return their ready status.
+ * This callback can be implemented in case of asynchronous task processing.
+ * Below is an example to show the difference between synchronous and asynchronous:
+ *
+ * Synchronous:
+ * LVGL thread              DRAW thread                 HW
+ *
+ * task1             -->    submit               -->    Receive task1
+ *                          wait_for_finish()
+ *                   <--    task1->state = READY <--    Complete task1
+ * task2             -->    submit               -->    Receive task2
+ *                          wait_for_finish()
+ *                          task2->state = READY <--    Complete task2
+ * task3             -->    submit               -->    Receive task3
+ *                          wait_for_finish()
+ *                   <--    task3->state = READY <--    Complete task3
+ * task4             -->    submit               -->    Receive task4
+ *                          wait_for_finish()
+ *                   <--    task4->state = READY <--    Complete task4
+ * NO MORE TASKS
+ *
+ *
+ * Asynchronous:
+ * LVGL thread              DRAW thread                 HW
+ *                                                      is IDLE
+ * task1             -->    queue task1
+ *                          submit               -->    Receive task1
+ * task2             -->    queue task2                 is BUSY (with task1)
+ * task3             -->    queue task3                 still BUSY (with task1)
+ * task4             -->    queue task4                 becomes IDLE
+ *                   <--    task1->state = READY <--    Complete task1
+ *                          submit               -->    Receive task2, task3, task4
+ * NO MORE TASKS
+ * wait_for_finish_cb()     wait_for_finish()
+ *                                               <--    Complete task2, task3, task4
+ *                   <--    task2->state = READY <--
+ *                   <--    task3->state = READY <--
+ *                   <--    task4->state = READY <--
+ *
+ * @param draw_unit
+ * @return
+ */
+#if LV_USE_OS
+int32_t awg2d_wait_for_finish(lv_draw_unit_t * draw_unit)
+{
+    draw_awg2d_unit_t * draw_awg2d_unit = (draw_awg2d_unit_t *) draw_unit;
+
+	return 0;
+}
+#endif
 
 static int32_t draw_awg2d_delete(lv_draw_unit_t * draw_unit)
 {
@@ -1298,41 +1480,269 @@ static int32_t draw_awg2d_delete(lv_draw_unit_t * draw_unit)
 #endif
 }
 
-// Add custom draw unit
-void draw_awg2d_init(void)
+/**
+ * Called to try to assign a draw task to itself.
+ * `lv_draw_get_next_available_task` can be used to get an independent draw task.
+ * A draw task should be assign only if the draw unit can draw it too
+ * @param draw_unit     pointer to the draw unit
+ * @param layer         pointer to a layer on which the draw task should be drawn
+ * @return              >=0:    The number of taken draw task:
+ *                                  0 means the task has not yet been completed.
+ *                                  1 means a new task has been accepted.
+ *                      -1:     The draw unit wanted to work on a task but couldn't do that
+ *                              due to some errors (e.g. out of memory).
+ *                              It signals that LVGL should call the dispatcher later again
+ *                              to let draw unit try to start the rendering again.
+ */
+static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 {
-
-//#if LV_DRAW_SW_COMPLEX == 1
-//    lv_draw_sw_mask_init();
-//#endif
-
-	draw_awg2d_unit_t * draw_awg2d_unit = lv_draw_create_unit(sizeof(draw_awg2d_unit_t));
-    draw_awg2d_unit->base_unit.dispatch_cb = awg2d_dispatch;
-    draw_awg2d_unit->base_unit.evaluate_cb = awg2d_evaluate;
-    draw_awg2d_unit->base_unit.delete_cb = LV_USE_OS ? draw_awg2d_delete : NULL;
-    draw_awg2d_unit->base_unit.name = "AWG2D";
+    LV_PROFILER_DRAW_BEGIN;
+    draw_awrot_unit_t * draw_awrot_unit = (draw_awrot_unit_t *) draw_unit;
 
 #if LV_USE_OS
     uint32_t i;
+    uint32_t taken_cnt = 0;
+    /* All idle (couldn't take any tasks): return LV_DRAW_UNIT_IDLE;
+     * All busy: return 0; as 0 tasks were taken
+     * Otherwise return taken_cnt;
+     */
+
+    /*If at least one is busy, it's not all idle*/
+    bool all_idle = true;
     for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awg2d_unit->thread_dscs[i];
-        thread_dsc->idx = i;
-        thread_dsc->draw_unit = (void *) draw_awg2d_unit;
-        lv_thread_init(&thread_dsc->thread, "swdraw", LV_DRAW_THREAD_PRIO, render_thread_cb,
-                       LV_DRAW_THREAD_STACK_SIZE, thread_dsc);
+        if(draw_awrot_unit->thread_dscs[i].task_act) {
+            all_idle = false;
+            break;
+        }
     }
+
+    lv_draw_task_t * t = NULL;
+    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
+        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awrot_unit->thread_dscs[i];
+
+        /*Do nothing if busy*/
+        if(thread_dsc->task_act) continue;
+
+        /*Find an available task. Start from the previously taken task.*/
+        t = lv_draw_get_next_available_task(layer, t, DRAW_UNIT_ID_SW);
+
+        /*If there is not available task don't try other threads as there won't be available
+         *tasks for then either*/
+        if(t == NULL) {
+            LV_PROFILER_DRAW_END;
+            if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+            else return taken_cnt;
+        }
+
+        /*Allocate a buffer if not done yet.*/
+        void * buf = lv_draw_layer_alloc_buf(layer);
+        /*Do not return is failed. The other thread might already have a buffer can do something. */
+        if(buf == NULL) continue;
+
+        /*Take the task*/
+        all_idle = false;
+        taken_cnt++;
+        t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
+        thread_dsc->task_act = t;
+
+        /*Let the render thread work*/
+        if(thread_dsc->inited) lv_thread_sync_signal(&thread_dsc->sync);
+    }
+
+    if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+    else return taken_cnt;
+
+#else
+    /*Return immediately if it's busy with draw task*/
+    if(draw_awrot_unit->task_act) {
+        LV_PROFILER_DRAW_END;
+        return 0;
+    }
+
+    lv_draw_task_t * t = NULL;
+    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWG2D);
+    if(t == NULL) {
+        LV_PROFILER_DRAW_END;
+        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+    }
+
+    void * buf = lv_draw_layer_alloc_buf(layer);
+    if(buf == NULL) {
+        LV_PROFILER_DRAW_END;
+        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+    }
+
+    t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
+    draw_awrot_unit->task_act = t;
+
+    awrot_execute_drawing(t);
+    draw_awrot_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
+    draw_awrot_unit->task_act = NULL;
+
+    /*The draw unit is free now. Request a new dispatching as it can get a new task*/
+    lv_draw_dispatch_request();
+
+    LV_PROFILER_DRAW_END;
+    return 1;
 #endif
 
-#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
-//    if(LV_DRAW_AWG2D_DRAW_UNIT_CNT > 1) {
-//        tvg_engine_init(TVG_ENGINE_SW, LV_DRAW_AWG2D_DRAW_UNIT_CNT);
-//    }
-//    else {
-//        tvg_engine_init(TVG_ENGINE_SW, 0);
-//    }
+}
+/**
+ * Called to signal the unit to complete all tasks in order to return their ready status.
+ * This callback can be implemented in case of asynchronous task processing.
+ * Below is an example to show the difference between synchronous and asynchronous:
+ *
+ * Synchronous:
+ * LVGL thread              DRAW thread                 HW
+ *
+ * task1             -->    submit               -->    Receive task1
+ *                          wait_for_finish()
+ *                   <--    task1->state = READY <--    Complete task1
+ * task2             -->    submit               -->    Receive task2
+ *                          wait_for_finish()
+ *                          task2->state = READY <--    Complete task2
+ * task3             -->    submit               -->    Receive task3
+ *                          wait_for_finish()
+ *                   <--    task3->state = READY <--    Complete task3
+ * task4             -->    submit               -->    Receive task4
+ *                          wait_for_finish()
+ *                   <--    task4->state = READY <--    Complete task4
+ * NO MORE TASKS
+ *
+ *
+ * Asynchronous:
+ * LVGL thread              DRAW thread                 HW
+ *                                                      is IDLE
+ * task1             -->    queue task1
+ *                          submit               -->    Receive task1
+ * task2             -->    queue task2                 is BUSY (with task1)
+ * task3             -->    queue task3                 still BUSY (with task1)
+ * task4             -->    queue task4                 becomes IDLE
+ *                   <--    task1->state = READY <--    Complete task1
+ *                          submit               -->    Receive task2, task3, task4
+ * NO MORE TASKS
+ * wait_for_finish_cb()     wait_for_finish()
+ *                                               <--    Complete task2, task3, task4
+ *                   <--    task2->state = READY <--
+ *                   <--    task3->state = READY <--
+ *                   <--    task4->state = READY <--
+ *
+ * @param draw_unit
+ * @return
+ */
+#if LV_USE_OS
+int32_t awrot_wait_for_finish(lv_draw_unit_t * draw_unit)
+{
+    draw_awg2d_unit_t * draw_awg2d_unit = (draw_awg2d_unit_t *) draw_unit;
+
+	return 0;
+}
 #endif
 
-////    lv_ll_init(&LV_GLOBAL_DEFAULT()->draw_sw_blend_handler_ll, sizeof(lv_draw_sw_custom_blend_handler_t));
+static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
+{
+#if LV_USE_OS
+    draw_awrot_unit_t * draw_awrot_unit = (draw_awrot_unit_t *) draw_unit;
+
+    uint32_t i;
+    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
+        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awrot_unit->thread_dscs[i];
+
+        LV_LOG_INFO("cancel software rendering thread");
+        thread_dsc->exit_status = true;
+
+        if(thread_dsc->inited) {
+            lv_thread_sync_signal(&thread_dsc->sync);
+        }
+        lv_thread_delete(&thread_dsc->thread);
+    }
+
+    return 0;
+#else
+    LV_UNUSED(draw_unit);
+    return 0;
+#endif
+}
+
+// Add custom draw unit
+void draw_awg2d_init(void)
+{
+#if CPUSTYLE_T113 || CPUSTYLE_F133
+	{
+
+		//#if LV_DRAW_SW_COMPLEX == 1
+		//    lv_draw_sw_mask_init();
+		//#endif
+
+			draw_awg2d_unit_t * draw_awg2d_unit = lv_draw_create_unit(sizeof(draw_awg2d_unit_t));
+		    draw_awg2d_unit->base_unit.dispatch_cb = awg2d_dispatch;
+		    draw_awg2d_unit->base_unit.evaluate_cb = awg2d_evaluate;
+		    //draw_awg2d_unit->base_unit.wait_for_finish_cb = awg2d_wait_for_finish;
+		    draw_awg2d_unit->base_unit.delete_cb = LV_USE_OS ? draw_awg2d_delete : NULL;
+		    draw_awg2d_unit->base_unit.name = "AWG2D";
+
+		#if LV_USE_OS
+		    uint32_t i;
+		    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
+		        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awg2d_unit->thread_dscs[i];
+		        thread_dsc->idx = i;
+		        thread_dsc->draw_unit = (void *) draw_awg2d_unit;
+		        lv_thread_init(&thread_dsc->thread, "swdraw", LV_DRAW_THREAD_PRIO, render_thread_cb,
+		                       LV_DRAW_THREAD_STACK_SIZE, thread_dsc);
+		    }
+		#endif
+
+		#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+		//    if(LV_DRAW_AWG2D_DRAW_UNIT_CNT > 1) {
+		//        tvg_engine_init(TVG_ENGINE_SW, LV_DRAW_AWG2D_DRAW_UNIT_CNT);
+		//    }
+		//    else {
+		//        tvg_engine_init(TVG_ENGINE_SW, 0);
+		//    }
+		#endif
+
+		////    lv_ll_init(&LV_GLOBAL_DEFAULT()->draw_sw_blend_handler_ll, sizeof(lv_draw_sw_custom_blend_handler_t));
+
+	}
+#endif
+	{
+
+
+		//#if LV_DRAW_SW_COMPLEX == 1
+		//    lv_draw_sw_mask_init();
+		//#endif
+
+			draw_awrot_unit_t * draw_awrot_unit = lv_draw_create_unit(sizeof(draw_awrot_unit_t));
+		    draw_awrot_unit->base_unit.dispatch_cb = awrot_dispatch;
+		    draw_awrot_unit->base_unit.evaluate_cb = awrot_evaluate;
+		    //draw_awrot_unit->base_unit.wait_for_finish_cb = awrot_wait_for_finish;
+		    draw_awrot_unit->base_unit.delete_cb = LV_USE_OS ? draw_awrot_delete : NULL;
+		    draw_awrot_unit->base_unit.name = "AWROT";
+
+		#if LV_USE_OS
+		    uint32_t i;
+		    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
+		        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awrot_unit->thread_dscs[i];
+		        thread_dsc->idx = i;
+		        thread_dsc->draw_unit = (void *) draw_awrot_unit;
+		        lv_thread_init(&thread_dsc->thread, "swdraw", LV_DRAW_THREAD_PRIO, render_thread_cb,
+		                       LV_DRAW_THREAD_STACK_SIZE, thread_dsc);
+		    }
+		#endif
+
+		#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+		//    if(LV_DRAW_AWG2D_DRAW_UNIT_CNT > 1) {
+		//        tvg_engine_init(TVG_ENGINE_SW, LV_DRAW_AWG2D_DRAW_UNIT_CNT);
+		//    }
+		//    else {
+		//        tvg_engine_init(TVG_ENGINE_SW, 0);
+		//    }
+		#endif
+
+		////    lv_ll_init(&LV_GLOBAL_DEFAULT()->draw_sw_blend_handler_ll, sizeof(lv_draw_sw_custom_blend_handler_t));
+
+
+	}
 }
 
 void draw_awg2d_deinit(void)
