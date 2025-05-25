@@ -41,6 +41,7 @@
 - [Схемы](doc/schematic/)
 - [Gerber-файлы](doc/gerber/)
 - [Монтажная документация](doc/assembly/)
+- [Меню настроек трансивера](doc/menu_settings.md/)
 - [Техническое описание проекта](doc/other/project_description.md)
 - [Документация по расчёту полосовых фильтров](doc/schematic/bandf8_order5_paralel_(56M)_200.rar)
 - [Настройка окружения и компиляция программной части](doc/software/storch_software_manual.md)
