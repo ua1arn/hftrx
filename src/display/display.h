@@ -1008,6 +1008,7 @@ void openvg_init(const uintptr_t * frames);
 void openvg_deinit(void);
 void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
 
+void draw_awg2d_init(void);
 
 extern const char * savestring;
 extern const char * savewhere;

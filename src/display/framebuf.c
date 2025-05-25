@@ -1239,10 +1239,7 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
             break;
     }
 
-    if(task->preference_score >= 100) {
-        task->preference_score = 100;
-        task->preferred_draw_unit_id = DRAW_UNIT_ID_AWG2D;
-    }
+    task->preferred_draw_unit_id = DRAW_UNIT_ID_AWG2D;
 
     return 0;
 }
@@ -1288,10 +1285,7 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
             break;
     }
 
-    if(task->preference_score >= 100) {
-        task->preference_score = 100;
-        task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;
-    }
+    task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;
 
     return 0;
 }
