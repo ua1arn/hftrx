@@ -1240,6 +1240,7 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     }
 
     task->preferred_draw_unit_id = DRAW_UNIT_ID_AWG2D;
+    task->preference_score = 0;	// похоже, для разбирательств между разными evaluate
 
     return 0;
 }
@@ -1286,6 +1287,7 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     }
 
     task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;
+    task->preference_score = 0;	// похоже, для разбирательств между разными evaluate
 
     return 0;
 }
@@ -1554,7 +1556,7 @@ static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
     }
 
     lv_draw_task_t * t = NULL;
-    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWG2D);
+    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWROT);
     if(t == NULL) {
         LV_PROFILER_DRAW_END;
         return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
