@@ -1208,7 +1208,7 @@ static void awrot_execute_drawing(lv_draw_task_t * t)
 static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-
+    return 0;
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
         case LV_DRAW_TASK_TYPE_LAYER: {
@@ -1255,7 +1255,7 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-
+    return 0;
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
         case LV_DRAW_TASK_TYPE_LAYER: {

@@ -6858,7 +6858,7 @@ void display2_initialize(void)
 
 		TP();
 		// Add custom draw unit
-		//draw_awg2d_init();
+		draw_awg2d_init();
 
 		// Приложение
 		TP();
