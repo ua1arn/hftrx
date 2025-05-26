@@ -285,7 +285,7 @@ typedef struct filter_tag
 	uint_fast8_t widefilter;	/* 0 - считается "узким", 1 - "широким" */
 	uint_fast16_t ceoffset;		/*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
 	const lo2param_t * lo2set;
-	const FLASHMEM char * labelf3;	/* name of filter - 3 chars width */
+	const char * labelf3;	/* name of filter - 3 chars width */
 } filter_t;
 
 #define IF3OFFS 15000	/* половина перестройки частоты ската через меню - удвоенное значение должно помещаться в uint_fast16_t */
@@ -479,7 +479,7 @@ enum
 //	{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB } // для SSB
 //	{ 0, 0, 0, 0 },	// для SSB
 
-void seq_set_txgate_P(const portholder_t FLASHMEM * txgfp, const uint_fast8_t FLASHMEM * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
+void seq_set_txgate(const portholder_t * txgfp, const uint_fast8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
 
 void hardware_cw_diagnostics_noirq(
 	uint_fast8_t c1,
@@ -3300,24 +3300,24 @@ uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для ото�
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
-const FLASHMEM char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
+const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
-const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
+const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
+const char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
+const char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
 const char * hamradio_get_rxbw_value4(void);	// RX bandwidth - value
-const FLASHMEM char * hamradio_get_pre_value_P(void);	// RX preamplifier
-const FLASHMEM char * hamradio_get_att_value_P(void);	// RX attenuator
-const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
-const FLASHMEM char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
-const FLASHMEM char * hamradio_get_ant5_value_P(void);	// antenna
-const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
+const char * hamradio_get_pre_value_P(void);	// RX preamplifier
+const char * hamradio_get_att_value_P(void);	// RX attenuator
+const char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
+const char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
+const char * hamradio_get_ant5_value_P(void);	// antenna
+const char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
 const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
 uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
 int_fast16_t hamradio_get_PAtemp_value(void);	// Градусы в десятых долях
 int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
-const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP
+const char * hamradio_get_hplp_value_P(void);	// HP/LP
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
@@ -3475,7 +3475,7 @@ enum
 	VIEW_COUNT
 };
 
-static const FLASHMEM char view_types [][6] =
+static const char view_types [][6] =
 	{
 		"LINE ",
 		"FILL ",

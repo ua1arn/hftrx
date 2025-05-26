@@ -19,10 +19,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 3, 4)));
-uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list ap ) __attribute__ ((__format__ (__printf__, 3, 0)));
+uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 3, 4)));
+uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const char * __restrict format, va_list ap ) __attribute__ ((__format__ (__printf__, 3, 0)));
 // Отладочная печать
-void debug_printf_P(const FLASHMEM char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 1, 2)));
+void debug_printf_P(const char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 1, 2)));
 
 char * safestrcpy(char * dst, size_t blen, const char * src);
 void strtrim(char * s);
@@ -32,7 +32,7 @@ void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
 
 // spool-based functions for debug
-int dbg_puts_impl_P(const FLASHMEM char * s);
+int dbg_puts_impl_P(const char * s);
 int dbg_puts_impl(const char * s);
 int dbg_putchar(int c);
 int dbg_writechar(int c);	/* вывод символа без преобразования '\n' в пару символов '\r' '\n' */

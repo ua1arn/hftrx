@@ -34,7 +34,7 @@ enum {
 
 // Значения для выбора из таблицы управления трактом.
 // Последняя размерность в данной таблице: 0: keyup, 1: keydown
-static const FLASHMEM uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
+static const uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 {
 	{ TXGFI_RX,			TXGFI_RX,		},	// SEQST_INITIALIZE,		// ничего не передается - начальное состояние сиквенсора
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_PUSHED_WAIT_ACK_TX,// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
@@ -48,7 +48,7 @@ static const FLASHMEM uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 
 // Значения для выбора из таблицы управления трактом.
 // Последняя размерность в данной таблице: 0: keyup, 1: keydown
-static const FLASHMEM uint_fast8_t seqtxstate [SEQST_MAX] =
+static const uint_fast8_t seqtxstate [SEQST_MAX] =
 {
 	0,	// SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
 	0,	// SEQST_PUSHED_WAIT_ACK_TX,	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
@@ -63,7 +63,7 @@ static const FLASHMEM uint_fast8_t seqtxstate [SEQST_MAX] =
 #if WITHDEBUG
 
 // Названия состояний сиквенсора - для отладочной печати
-static const char * FLASHMEM const seqnames [SEQST_MAX] =
+static const char * const seqnames [SEQST_MAX] =
 {
 	"SEQST_INITIALIZE",			// ничего не передается - начальное состояние сиквенсора
 	"SEQST_PUSHED_WAIT_ACK_TX",	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
@@ -300,20 +300,20 @@ static void keyqueueclear(void)
 }
 
 /* Начальное значение параметров управления трактом - для исключения использования неинициализированных значений. */
-static const FLASHMEM 
+static const
 	portholder_t txgfva0 [TXGFI_SIZE] =	// усостояния выходов для разных режимов
 		{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB }; // для SSB
-static const FLASHMEM 
+static const
 	uint_fast8_t sdtnva0 [TXGFI_SIZE] =	// признаки включения самоконтроля для разных режимов
 		{ 0, 0, 0, 0 };	// для SSB
 
-static const portholder_t FLASHMEM * txgfp = txgfva0;	// параметры управления трактом
-static const uint_fast8_t FLASHMEM * sdtnp = sdtnva0;	// параметры управления самоконтролем
+static const portholder_t * txgfp = txgfva0;	// параметры управления трактом
+static const uint_fast8_t * sdtnp = sdtnva0;	// параметры управления самоконтролем
 
 /* как включать тракт в данном режиме работы из прерываний */
-void seq_set_txgate_P(
-	const portholder_t FLASHMEM * atxgfp, 
-	const uint_fast8_t FLASHMEM * asdtnp
+void seq_set_txgate(
+	const portholder_t * atxgfp,
+	const uint_fast8_t * asdtnp
 	)
 {
 	IRQL_t oldIrql;
@@ -605,7 +605,7 @@ void seq_initialize(void)
 	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
 
 	hardware_txpath_initialize();
-	//seq_set_txgate_P(txgfva0, sdtnva0);	// Сделано статической инициализацией
+	//seq_set_txgate(txgfva0, sdtnva0);	// Сделано статической инициализацией
 	seq_txpath_set(TXGFV_RX, 0);	// - аппаратное управление выдачей несущей - в состояние приём
 	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 

@@ -467,7 +467,7 @@ void display_bar(
 
 void display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
 void display_x2_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
-void display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM char * s); // Выдача строки из ПЗУ в указанное место экрана.
+void display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s); // Выдача строки из ПЗУ в указанное место экрана.
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
@@ -599,7 +599,7 @@ colmain_rounded_rect(
 	uint_fast16_t y1,
 	uint_fast16_t x2,
 	uint_fast16_t y2,
-	uint_fast8_t r,		// радиус закругления углов
+	uint_fast16_t r,		// радиус закругления углов
 	COLORPIP_T color,
 	uint_fast8_t fill
 	);
@@ -795,13 +795,13 @@ void hwaccel_ra90(
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void ltdc_horizontal_pixels(
 	PACKEDCOLORPIP_T * tgr,		// target raster
-	const FLASHMEM uint8_t * raster,
+	const uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
 // Для произвольного шрифта
 void ltdc_put_char_unified(
-	const FLASHMEM uint8_t * fontraster,
+	const uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа

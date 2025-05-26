@@ -540,7 +540,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
-	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
 
 	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
@@ -563,7 +562,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
-	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
 
 	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
@@ -1027,7 +1025,7 @@ processmessages(
 	uint_fast8_t * kbch,
 	uint_fast8_t * kbready,
 	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 	);
 
 

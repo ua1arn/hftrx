@@ -1,5 +1,5 @@
 // https://www.mischianti.org/images-to-byte-array-online-converter-cpp-arduino/
-static const unsigned long pancolor [] FLASHMEM = {
+static const unsigned long pancolor [] = {
 	0x00891127uL,
 	0x008a1127uL,
 	0x008c1227uL,

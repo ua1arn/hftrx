@@ -355,7 +355,7 @@ static uint_fast8_t getbufferbit(uint_fast8_t col, uint_fast8_t row, uint_fast8_
 #if 0
 	const uint_fast8_t c = ascii_decode((unsigned char) eitext [textcol]);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
-	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
+	const uint8_t * p = & ls020_smallfont [c][0];
 	return (p [SMALLCHARH - 1 - charrow] & (128U >> charcol)) ? 3 : 2;
 #else
 	const uint_fast8_t * p = pattern;
@@ -3113,7 +3113,7 @@ typedef struct
 /**************************************************************************//**
  * @brief Working instance of LCD display
  *****************************************************************************/
-static const FLASHMEM MCU_DISPLAY LCD1x9 = {
+static const MCU_DISPLAY LCD1x9 = {
   {
     { /* 1 */
 	{       3,       3,       0,       0,       2,       1,       1,       3,       1,       3,       1,       2,       2,       2,       0,       0}, // com
@@ -3160,7 +3160,7 @@ static const FLASHMEM MCU_DISPLAY LCD1x9 = {
  * Uses bit pattern as defined for text segments above.
  * E.g. a capital O, would have bits 0 1 2 3 4 5 => 0x003f defined
  *****************************************************************************/
-static const FLASHMEM uint16_t LCDAlphabet[] = {
+static const uint16_t LCDAlphabet[] = {
   0x0000, /* space */
   0x1100, /* ! */
   0x0280, /* " */
@@ -5251,7 +5251,7 @@ static uint_fast8_t qempty(void)
 // ---------
 static volatile uint_fast8_t rxcount, txcount, rxerrcount;
 
-static int cat3_puts_impl_P(const FLASHMEM char * s)
+static int cat3_puts_impl_P(const char * s)
 {
 	char c;
 	while ((c = * s ++) != '\0')
@@ -14545,7 +14545,7 @@ void hightests(void)
 				i2c_start(ADDR | 0x01);
 				i2c_read(& v1, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 				
-				static const FLASHMEM char fmt_1 [] = "%02X";
+				static const char fmt_1 [] = "%02X";
 				char buff [17];
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
@@ -14567,7 +14567,7 @@ void hightests(void)
 		i2c_read(& v1, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 
 
-		static const FLASHMEM char fmt_1 [] = "v=%02X";
+		static const char fmt_1 [] = "v=%02X";
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
@@ -14597,7 +14597,7 @@ void hightests(void)
 		//unsigned char v = i2c_readNak();
 		//i2c_waitsend();
 		i2c_stop();
-		static const FLASHMEM char fmt_1 [] = "v=%02X";
+		static const char fmt_1 [] = "v=%02X";
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
@@ -14662,7 +14662,7 @@ void hightests(void)
 		//display_initialize();
 		for (;;)
 		{	
-			static const FLASHMEM char fmt_1 [] = "%08lX";
+			static const char fmt_1 [] = "%08lX";
 			char buff [17];
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);

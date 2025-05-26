@@ -1055,7 +1055,7 @@ struct FREQRZAK {
 
 #if FIXSCALE_48M0_X1_DIV256
 
-static const struct FREQRZAK FLASHMEM freqs [] =
+static const struct FREQRZAK freqs [] =
 {
     { 4, 0x7D,        17975000UL,   20840000UL, }, /* 17.975000..20.840000 */
     { 5, 0x7C,        14380000UL,   16672000UL, }, /* 14.380000..16.672000 */
@@ -1143,7 +1143,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
 	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 #if defined (LO1MODE_HYBRID) || defined (LO1MODE_FIXSCALE)
-	static FLASHMEM const uint_fast8_t vcos [4] =
+	static const uint_fast8_t vcos [4] =
 	{
 		0x01,	// vco 0
 		0x02,	// vco 1
@@ -2753,7 +2753,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -2846,7 +2846,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -2929,7 +2929,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3019,7 +3019,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3101,7 +3101,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3187,7 +3187,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3269,7 +3269,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3355,7 +3355,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3490,7 +3490,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3622,7 +3622,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -3781,13 +3781,13 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
 			HARDWARE_OPA2674I_FULLPOWER,
 		};
-		static const FLASHMEM uint8_t fanspeedcodes [5][4] =
+		static const uint8_t fanspeedcodes [5][4] =
 		{
 				{ 0, 0, 0, 0 },	// off
 				{ 0, 0, 0, 1 },	// minimal speed
@@ -3874,7 +3874,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -4030,7 +4030,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -4388,7 +4388,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 		HARDWARE_OPA2674I_SHUTDOWN = 0x00
 	};
-	static const FLASHMEM uint_fast8_t powerxlat [] =
+	static const uint_fast8_t powerxlat [] =
 	{
 		HARDWARE_OPA2674I_IDLEPOWER,
 		HARDWARE_OPA2674I_POWERCUTBACK,
@@ -4482,7 +4482,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 		HARDWARE_OPA2674I_SHUTDOWN = 0x00
 	};
-	static const FLASHMEM uint_fast8_t powerxlat [] =
+	static const uint_fast8_t powerxlat [] =
 	{
 		HARDWARE_OPA2674I_IDLEPOWER,
 		HARDWARE_OPA2674I_POWERCUTBACK,
@@ -4585,7 +4585,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 			HARDWARE_OPA2674I_SHUTDOWN = 0x00
 		};
-		static const FLASHMEM uint_fast8_t powerxlat [] =
+		static const uint_fast8_t powerxlat [] =
 		{
 			HARDWARE_OPA2674I_IDLEPOWER,
 			HARDWARE_OPA2674I_POWERCUTBACK,
@@ -4652,7 +4652,7 @@ static void prog_ctrlreg(uint_fast8_t plane)
 		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
 		HARDWARE_OPA2674I_SHUTDOWN = 0x00
 	};
-	static const FLASHMEM uint_fast8_t powerxlat [] =
+	static const uint_fast8_t powerxlat [] =
 	{
 		HARDWARE_OPA2674I_IDLEPOWER,
 		HARDWARE_OPA2674I_POWERCUTBACK,
@@ -7345,8 +7345,8 @@ void board_get_compile_datetime(
 	)
 {
 	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
-	static FLASHMEM const char ds [] = __DATE__;
-	static FLASHMEM const char ts [] = __TIME__;
+	static const char ds [] = __DATE__;
+	static const char ts [] = __TIME__;
 
 	* hour = (((ts [0] - '0') * 10) + (ts [1] - '0'));
 	* minute = (((ts [3] - '0') * 10) + (ts [4] - '0'));

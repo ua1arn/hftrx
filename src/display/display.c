@@ -745,7 +745,7 @@ display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 
 // Используется при выводе на графический индикатор,
 static void
-display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
+display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	char c;
 
@@ -759,7 +759,7 @@ display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * 
 // Выдача строки из ПЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM char * s)
+display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do

@@ -513,7 +513,7 @@ calcdivider(
 	};
 	// spcr и spsr - скорость SPI. Индексы соответствуют номерам битов в ATMEGA_SPCR_TAPS
 	// Document: 8272E-AVR-04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
-	static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t spsr, spcr; } spcr_spsr [] =
+	static const struct spcr_spsr_tag { uint_fast8_t spsr, spcr; } spcr_spsr [] =
 	{
 		{ (1U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /2 */
 		{ (0U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /4 */
@@ -536,7 +536,7 @@ calcdivider(
 		//
 		ATXMEGA_fillPAD
 	};
-	static const FLASHMEM uint_fast8_t spi_ctl [] =
+	static const uint_fast8_t spi_ctl [] =
 	{
 		(1U << SPI_CLK2X_bp) | 	SPI_PRESCALER_DIV4_gc,  /* /2 */
 		(0U << SPI_CLK2X_bp) | 	SPI_PRESCALER_DIV4_gc,  /* /4 */
@@ -553,7 +553,7 @@ calcdivider(
 
 	struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; };
 
-	extern const FLASHMEM struct spcr_spsr_tag scemr_scsmr [];
+	extern const struct spcr_spsr_tag scemr_scsmr [];
 
 	enum
 	{

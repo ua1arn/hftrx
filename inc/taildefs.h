@@ -528,19 +528,6 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMNC //__attribute__((section(".ramnc")))
 
-#elif  CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-
-	#define FLASHMEM __flash
-	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMNC //__attribute__((section(".ramnc")))
-
 #elif CPUSTYLE_STM32L0XX
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE //__attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))

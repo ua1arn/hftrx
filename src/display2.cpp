@@ -534,14 +534,14 @@ display2_testvidget(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_f
 	static const int_fast16_t glob_griddigit = 1000;	// 1 kHz - точность отображения частоты на сетке
 	static const int glob_gridwc = 1;
 	static const int_fast32_t glob_gridmod = INT32_MAX;	// 10 ^ glob_gridwc
-	static const char FLASHMEM  gridfmt_2 [] = "%*ld";
+	static const char  gridfmt_2 [] = "%*ld";
 #else
 	// Дестки килогерц без мегагерц
 	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
 	static const int_fast16_t glob_griddigit = 10000;	// 10 kHz - точность отображения частоты на сетке
 	static const int glob_gridwc = 2;
 	static const int_fast32_t glob_gridmod = 1;	// 10 ^ glob_gridwc
-	static const char FLASHMEM  gridfmt_2 [] = ".%0*ld";
+	static const char  gridfmt_2 [] = ".%0*ld";
 #endif
 
 // waterfall/spectrum parameters
@@ -1468,7 +1468,7 @@ NOINLINEAT
 display2_text_P(
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
-	const FLASHMEM char * const * labels,	// массив указателей на текст
+	const char * const * labels,	// массив указателей на текст
 	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
 	)
@@ -1490,7 +1490,7 @@ NOINLINEAT
 display2_text_alt_P(
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
-	const FLASHMEM char * const * labels,	// массив указателей на текст
+	const char * const * labels,	// массив указателей на текст
 	const COLORPAIR_T * colors,			// массив цветов
 	uint_fast8_t state
 	)
@@ -1548,9 +1548,9 @@ static void display_txrxstate2(
 #if WITHTX
 	const uint_fast8_t state = hamradio_get_tx();
 
-	static const FLASHMEM char text0 [] = "RX";
-	static const FLASHMEM char text1 [] = "TX";
-	const FLASHMEM char * const labels [2] = { text0, text1 };
+	static const char text0 [] = "RX";
+	static const char text1 [] = "TX";
+	const char * const labels [2] = { text0, text1 };
 	display2_text_P(xcell, ycell, labels, colors_2rxtx, state);
 #endif /* WITHTX */
 }
@@ -1567,9 +1567,9 @@ static void display_txrxstate5alt(
 #if WITHTX
 	const uint_fast8_t state = hamradio_get_tx();
 
-	static const FLASHMEM char text0 [] = "RX";
-	static const FLASHMEM char text1 [] = "TX";
-	const FLASHMEM char * const labels [2] = { text0, text1 };
+	static const char text0 [] = "RX";
+	static const char text1 [] = "TX";
+	const char * const labels [2] = { text0, text1 };
 	layout_label1_medium(xcell, ycell, labels [state], 2, 5, state ? COLORPIP_WHITE : COLORPIP_BLACK, state ? COLORPIP_RED : COLORPIP_GRAY);
 #endif /* WITHTX */
 }
@@ -1586,9 +1586,9 @@ static void display2_rec3(
 #if WITHUSEAUDIOREC
 
 	const uint_fast8_t state = hamradio_get_rec_value();
-	static const FLASHMEM char text_pau [] = "PAU";
-	static const FLASHMEM char text_rec [] = "REC";
-	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
+	static const char text_pau [] = "PAU";
+	static const char text_rec [] = "REC";
+	const char * const labels [2] = { text_pau, text_rec };
 
 	/* формирование мигающей надписи REC */
 	display2_text_P(xcell, ycell, labels, hamradio_get_blinkphase() ? colors_2state_rec : colors_2state, state);
@@ -1619,8 +1619,8 @@ static void display2_usbsts3(
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	const uint_fast8_t active = hamradio_get_usbh_active();
 	#if LCDMODE_COLORED
-		static const FLASHMEM char text_usb [] = "USB";
-		display_2states_P(x, y, active, text_usb, text_usb);
+		static const char text_usb [] = "USB";
+		display_2states(x, y, active, text_usb, text_usb);
 	#else /* LCDMODE_COLORED */
 		display_at_P(x, y, active ? PSTR("USB") : PSTR("   "));
 	#endif /* LCDMODE_COLORED */
@@ -1628,45 +1628,46 @@ static void display2_usbsts3(
 }
 
 void display_2states(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	uint_fast8_t state,
 	const char * state1,	// активное
 	const char * state0
 	)
 {
-	#if LCDMODE_COLORED
-		const char * const labels [2] = { state1, state1, };
-	#else /* LCDMODE_COLORED */
-		const char * const labels [2] = { state0, state1, };
-	#endif /* LCDMODE_COLORED */
-	display2_text(x, y, labels, colors_2state, state);
-}
+#if LCDMODE_COLORED
+	const char * const labels [2] = { state1, state1, };
+#else /* LCDMODE_COLORED */
+	const char * const labels [2] = { state0, state1, };
+#endif /* LCDMODE_COLORED */
+#if 0
+	const uint_fast16_t x = GRID2X(xcell);
+	const uint_fast16_t y = GRID2Y(ycell);
+	const uint_fast16_t w = SMALLCHARW * strlen(state1);
+	const uint_fast16_t h = SMALLCHARH;
 
-void display_2states_P(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	uint_fast8_t state,
-	const FLASHMEM char * state1,	// активное
-	const FLASHMEM char * state0
-	)
-{
-	#if LCDMODE_COLORED
-		const FLASHMEM char * const labels [2] = { state1, state1, };
-	#else /* LCDMODE_COLORED */
-		const FLASHMEM char * const labels [2] = { state0, state1, };
-	#endif /* LCDMODE_COLORED */
-	display2_text_P(x, y, labels, colors_2state, state);
+	display2_text_P(xcell, ycell, labels, colors_2state, 1);
+
+	colmain_rounded_rect(
+			colmain_fb_draw(), DIM_X, DIM_Y,
+			x, y, x + w - 1, y + h - 1,
+			5,
+			state ? COLORPIP_WHITE : colors_2state [1].bg,
+			0
+			);
+#else
+	display2_text(xcell, ycell, labels, colors_2state, state);
+#endif
 }
 
 // Параметры, не меняющие состояния цветом
-void display_1state_P(
+void display_1state(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
-	const FLASHMEM char * label
+	const char * label
 	)
 {
-	display2_text_P(x, y, & label, colors_1state, 0);
+	display2_text(x, y, & label, colors_1state, 0);
 }
 
 
@@ -1686,22 +1687,6 @@ void display_2fmenus(
 	display2_text(x, y, labels, colors_2fmenu, state);
 }
 
-void display_2fmenus_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t state,
-	const FLASHMEM char * state1,	// активное
-	const FLASHMEM char * state0
-	)
-{
-	#if LCDMODE_COLORED
-		const FLASHMEM char * const labels [2] = { state1, state1, };
-	#else /* LCDMODE_COLORED */
-		const FLASHMEM char * const labels [2] = { state0, state1, };
-	#endif /* LCDMODE_COLORED */
-	display2_text_P(x, y, labels, colors_2fmenu, state);
-}
-
 // Параметры, не меняющие состояния цветом
 void display_1fmenu(
 	uint_fast8_t x, 
@@ -1710,16 +1695,6 @@ void display_1fmenu(
 	)
 {
 	display2_text(x, y, & label, colors_1fmenu, 0);
-}
-
-// Параметры, не меняющие состояния цветом
-void display_1fmenu_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const FLASHMEM char * label
-	)
-{
-	display2_text_P(x, y, & label, colors_1fmenu, 0);
 }
 
 /////////////////
@@ -1791,7 +1766,7 @@ static void display2_ENC1F_9(
 	(void) pctx;
 
 	hamradio_get_label_ENC1F(active, buf2, ARRAY_SIZE(buf2));
-	display_2states_P(x, y, active, buf2, buf2);
+	display_2states(x, y, active, buf2, buf2);
 }
 
 // Отображение остояния ENC2F
@@ -1808,7 +1783,7 @@ static void display2_ENC2F_9(
 	(void) pctx;
 
 	hamradio_get_label_ENC2F(active, buf2, ARRAY_SIZE(buf2));
-	display_2states_P(x, y, active, buf2, buf2);
+	display_2states(x, y, active, buf2, buf2);
 }
 
 // Отображение остояния ENC4F
@@ -1825,7 +1800,7 @@ static void display2_ENC3F_9(
 	(void) pctx;
 
 	hamradio_get_label_ENC3F(active, buf2, ARRAY_SIZE(buf2));
-	display_2states_P(x, y, active, buf2, buf2);
+	display_2states(x, y, active, buf2, buf2);
 }
 
 // Отображение остояния ENC4F
@@ -1842,17 +1817,17 @@ static void display2_ENC4F_9(
 	(void) pctx;
 
 	hamradio_get_label_ENC4F(active, buf2, ARRAY_SIZE(buf2));
-	display_2states_P(x, y, active, buf2, buf2);
+	display_2states(x, y, active, buf2, buf2);
 }
 
 /////////////
 
-static const FLASHMEM char text_nul1_P [] = " ";
-static const FLASHMEM char text_nul2_P [] = "  ";
-static const FLASHMEM char text_nul3_P [] = "   ";
-static const FLASHMEM char text_nul4_P [] = "    ";
-static const FLASHMEM char text_nul5_P [] = "     ";
-//static const FLASHMEM char text_nul9_P [] = "         ";
+static const char text_nul1_P [] = " ";
+static const char text_nul2_P [] = "  ";
+static const char text_nul3_P [] = "   ";
+static const char text_nul4_P [] = "    ";
+static const char text_nul5_P [] = "     ";
+//static const char text_nul9_P [] = "         ";
 static const char text_nul3 [] = "   ";
 static const char text_nul5 [] = "     ";
 
@@ -1868,7 +1843,7 @@ static void display2_nr3(
 #if WITHIF4DSP
 	int_fast32_t grade;
 	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
-	display_2states_P(x, y, state, PSTR("NR "), text_nul3_P);
+	display_2states(x, y, state, PSTR("NR "), text_nul3_P);
 #endif /* WITHIF4DSP */
 }
 
@@ -1883,7 +1858,7 @@ static void display2_bkin3(
 {
 #if WITHELKEY
 	const uint_fast8_t state = hamradio_get_bkin_value();
-	display_2states_P(x, y, state, PSTR("BKN"), text_nul3_P);
+	display_2states(x, y, state, PSTR("BKN"), text_nul3_P);
 	(void) pctx;
 #endif /* WITHELKEY */
 }
@@ -1898,9 +1873,9 @@ static void display2_spk3(
 		)
 {
 #if WITHSPKMUTE
-	static const FLASHMEM char text_spk [] = "SPK";
+	static const char text_spk [] = "SPK";
 	const uint_fast8_t state = hamradio_get_spkon_value();	// не-0: динамик включен
-	display_2states_P(x, y, state, text_spk, text_spk);
+	display_2states(x, y, state, text_spk, text_spk);
 	(void) pctx;
 #endif /* WITHSPKMUTE */
 }
@@ -1936,8 +1911,8 @@ static void display2_notch5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
-	const char FLASHMEM * const labels [2] = { label, label, };
+	const char * const label = hamradio_get_notchtype5_P();
+	const char * const labels [2] = { label, label, };
 	display2_text_P(x, y, labels, colors_2state, state);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
@@ -1954,8 +1929,8 @@ static void display2_notch7alt(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
-	const char FLASHMEM * const labels [2] = { label, label, };
+	const char * const label = hamradio_get_notchtype5_P();
+	const char * const labels [2] = { label, label, };
 	layout_label1_medium(x, y, label, strlen_P(label), 7, COLORPIP_BLACK, colors_2state_alt [state]);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
@@ -1990,8 +1965,8 @@ static void display_notch3(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	static const FLASHMEM char text_nch [] = "NCH";
-	display_2states_P(x, y, state, PSTR("NCH"), text_nul3_P);
+	static const char text_nch [] = "NCH";
+	display_2states(x, y, state, PSTR("NCH"), text_nul3_P);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -2048,7 +2023,7 @@ static void display_XXXXX3(
 {
 #if WITHPLACEHOLDERS
 	const uint_fast8_t state = 0;
-	display_2states_P(x, y, state, text_nul3_P, text_nul3_P);
+	display_2states(x, y, state, text_nul3_P, text_nul3_P);
 #endif /* WITHPLACEHOLDERS */
 }
 
@@ -2062,7 +2037,7 @@ static void display_XXXXX5(
 {
 #if WITHPLACEHOLDERS
 	const uint_fast8_t state = 0;
-	display_2states_P(x, y, state, text_nul5_P, text_nul5_P);
+	display_2states(x, y, state, text_nul5_P, text_nul5_P);
 #endif /* WITHPLACEHOLDERS */
 }
 
@@ -2078,7 +2053,7 @@ static void display_datamode4(
 #if WITHTX
 	#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 		const uint_fast8_t state = hamradio_get_datamode();
-		display_2states_P(x, y, state, PSTR("DATA"), text_nul4_P);
+		display_2states(x, y, state, PSTR("DATA"), text_nul4_P);
 	#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
 #endif /* WITHTX */
 }
@@ -2095,7 +2070,7 @@ static void display2_datamode3(
 #if WITHTX
 	#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 		const uint_fast8_t state = hamradio_get_datamode();
-		display_2states_P(x, y, state, PSTR("DAT"), text_nul3_P);
+		display_2states(x, y, state, PSTR("DAT"), text_nul3_P);
 	#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
 #endif /* WITHTX */
 }
@@ -2112,7 +2087,7 @@ static void display2_atu3(
 #if WITHTX
 	#if WITHAUTOTUNER
 		const uint_fast8_t state = hamradio_get_atuvalue();
-		display_2states_P(x, y, state, PSTR("ATU"), text_nul3_P);
+		display_2states(x, y, state, PSTR("ATU"), text_nul3_P);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -2129,7 +2104,7 @@ static void display2_atu4alt(
 #if WITHTX
 	#if WITHAUTOTUNER
 		const uint_fast8_t state = hamradio_get_atuvalue();
-		display_2states_P(x, y, state, PSTR("ATU"), text_nul3_P);
+		display_2states(x, y, state, PSTR("ATU"), text_nul3_P);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -2148,7 +2123,7 @@ static void display2_genham1(
 
 	const uint_fast8_t state = hamradio_get_genham_value();
 
-	display_2states_P(x, y, state, PSTR("G"), PSTR("H"));
+	display_2states(x, y, state, PSTR("G"), PSTR("H"));
 
 #endif /* WITHBCBANDS */
 }
@@ -2172,7 +2147,7 @@ static void display2_byp3(
 		else
 		{
 			const uint_fast8_t state = hamradio_get_bypvalue();
-			display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+			display_2states(x, y, state, PSTR("BYP"), text_nul3_P);
 		}
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
@@ -2197,7 +2172,7 @@ static void display2_byp4alt(
 	else
 	{
 		const uint_fast8_t state = hamradio_get_bypvalue();
-		display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+		display_2states(x, y, state, PSTR("BYP"), text_nul3_P);
 	}
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
@@ -2215,7 +2190,7 @@ static void display_vox3(
 #if WITHTX
 	#if WITHVOX
 		const uint_fast8_t state = hamradio_get_voxvalue();
-		display_2states_P(x, y, state, PSTR("VOX"), text_nul3_P);
+		display_2states(x, y, state, PSTR("VOX"), text_nul3_P);
 	#endif /* WITHVOX */
 #endif /* WITHTX */
 }
@@ -2232,9 +2207,9 @@ static void display2_voxtune3(
 {
 #if WITHTX
 
-	static const FLASHMEM char text_vox [] = "VOX";
-	static const FLASHMEM char text_tun [] = "TUN";
-	static const FLASHMEM char text_nul [] = "   ";
+	static const char text_vox [] = "VOX";
+	static const char text_tun [] = "TUN";
+	static const char text_nul [] = "   ";
 
 #if WITHVOX
 
@@ -2242,9 +2217,9 @@ static void display2_voxtune3(
 	const uint_fast8_t voxv = hamradio_get_voxvalue();
 
 	#if LCDMODE_COLORED
-		const FLASHMEM char * const labels [4] = { text_vox, text_vox, text_tun, text_tun, };
+		const char * const labels [4] = { text_vox, text_vox, text_tun, text_tun, };
 	#else /* LCDMODE_COLORED */
-		const FLASHMEM char * const labels [4] = { text_nul, text_vox, text_tun, text_tun, };
+		const char * const labels [4] = { text_nul, text_vox, text_tun, text_tun, };
 	#endif /* LCDMODE_COLORED */
 
 	display2_text_P(x, y, labels, colors_4state, tunev * 2 + voxv);
@@ -2253,7 +2228,7 @@ static void display2_voxtune3(
 
 	const uint_fast8_t state = hamradio_get_tunemodevalue();
 
-	display_2states_P(x, y, state, PSTR("TUN"), text_nul3_P);
+	display_2states(x, y, state, PSTR("TUN"), text_nul3_P);
 
 #endif /* WITHVOX */
 #endif /* WITHTX */
@@ -2275,15 +2250,15 @@ static void display_voxtune4(
 
 	const uint_fast8_t tunev = hamradio_get_tunemodevalue();
 	const uint_fast8_t voxv = hamradio_get_voxvalue();
-	static const FLASHMEM char text0 [] = "VOX ";
-	static const FLASHMEM char text1 [] = "TUNE";
-	const FLASHMEM char * const labels [4] = { text0, text0, text1, text1, };
+	static const char text0 [] = "VOX ";
+	static const char text1 [] = "TUNE";
+	const char * const labels [4] = { text0, text0, text1, text1, };
 	display2_text_P(x, y, labels, colors_4state, tunev * 2 + voxv);
 
 #else /* WITHVOX */
 
 	const uint_fast8_t state = hamradio_get_tunemodevalue();
-		display_2states_P(x, y, state, PSTR("TUNE"), text_nul4_P);
+		display_2states(x, y, state, PSTR("TUNE"), text_nul4_P);
 
 #endif /* WITHVOX */
 #endif /* WITHTX */
@@ -2305,16 +2280,16 @@ static void display_voxtune1(
 
 	const uint_fast8_t tunev = hamradio_get_tunemodevalue();
 	const uint_fast8_t voxv = hamradio_get_voxvalue();
-	static const FLASHMEM char textx [] = " ";
-	static const FLASHMEM char text0 [] = "V";
-	static const FLASHMEM char text1 [] = "U";
-	const FLASHMEM char * const labels [4] = { textx, text0, text1, text1, };
+	static const char textx [] = " ";
+	static const char text0 [] = "V";
+	static const char text1 [] = "U";
+	const char * const labels [4] = { textx, text0, text1, text1, };
 	display2_text_P(x, y, labels, colors_4state, tunev * 2 + voxv);
 
 #else /* WITHVOX */
 
 	const uint_fast8_t state = hamradio_get_tunemodevalue();
-	display_2states_P(x, y, state, PSTR("U"), text_nul1_P);
+	display_2states(x, y, state, PSTR("U"), text_nul1_P);
 
 #endif /* WITHVOX */
 #endif /* WITHTX */
@@ -2332,13 +2307,13 @@ static void display_lockstate3(
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
 
-	static const FLASHMEM char text0 [] = "   ";
-	static const FLASHMEM char text1 [] = "LCK";
-	static const FLASHMEM char text2 [] = "FST";
+	static const char text0 [] = "   ";
+	static const char text1 [] = "LCK";
+	static const char text2 [] = "FST";
 #if LCDMODE_COLORED
-	const FLASHMEM char * const labels [4] = { text1, text2, text1, text1, };
+	const char * const labels [4] = { text1, text2, text1, text1, };
 #else /* LCDMODE_COLORED */
-	const FLASHMEM char * const labels [4] = { text0, text2, text1, text1, };
+	const char * const labels [4] = { text0, text2, text1, text1, };
 #endif
 	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 }
@@ -2354,13 +2329,13 @@ static void display2_lockstate4(
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
 
-	static const FLASHMEM char text0 [] = "    ";
-	static const FLASHMEM char text1 [] = "LOCK";
-	static const FLASHMEM char text2 [] = "FAST";
+	static const char text0 [] = "    ";
+	static const char text1 [] = "LOCK";
+	static const char text2 [] = "FAST";
 #if LCDMODE_COLORED
-	const FLASHMEM char * const labels [4] = { text1, text2, text1, text1, };
+	const char * const labels [4] = { text1, text2, text1, text1, };
 #else /* LCDMODE_COLORED */
-	const FLASHMEM char * const labels [4] = { text0, text2, text1, text1, };
+	const char * const labels [4] = { text0, text2, text1, text1, };
 #endif
 	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 }
@@ -2377,9 +2352,9 @@ static void display2_lockstate5alt(
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
 
-	static const FLASHMEM char text0 [] = "    ";
-	static const FLASHMEM char text1 [] = "LOCK";
-	static const FLASHMEM char text2 [] = "FAST";
+	static const char text0 [] = "    ";
+	static const char text1 [] = "LOCK";
+	static const char text2 [] = "FAST";
 
 	layout_label1_medium(x, y, fastv ? text2 : text1, 4, chars_W2, COLORPIP_BLACK, colors_2state_alt [lockv || fastv]);
 }
@@ -2458,7 +2433,7 @@ static void display2_rxbw3(
 		dctx_t * pctx
 		)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_rxbw_label3_P(), };
+	const char * const labels [1] = { hamradio_get_rxbw_label3_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
@@ -2475,9 +2450,9 @@ static void display2_mainsub3(
 #if WITHUSEDUALWATCH
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode5_value(& state);
-	const char FLASHMEM * const label = hamradio_get_mainsubrxmode3_value_P();
+	const char * const label = hamradio_get_mainsubrxmode3_value_P();
 	ASSERT(strlen(label) == 3);
-	display_2states_P(x, y, state, label, label);
+	display_2states(x, y, state, label, label);
 #endif /* WITHUSEDUALWATCH */
 }
 
@@ -2491,7 +2466,7 @@ static void display_pre3(
 		dctx_t * pctx
 		)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
+	const char * const labels [1] = { hamradio_get_pre_value_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
@@ -2506,7 +2481,7 @@ static void display_ovf3(
 		)
 {
 #if WITHDSPEXTDDC
-	//const char FLASHMEM * const labels [1] = { hamradio_get_pre_value_P(), };
+	//const char * const labels [1] = { hamradio_get_pre_value_P(), };
 	//display2_text_P(x, y, labels, colors_1state, 0);
 
 	if (boad_fpga_adcoverflow() != 0)
@@ -2590,11 +2565,11 @@ static void display2_ant5(
 		)
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
-	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
 	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
 #elif WITHANTSELECT
-	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
 	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
 #endif /* WITHANTSELECT */
@@ -2610,10 +2585,10 @@ static void display2_ant7alt(
 		)
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
-	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
 	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #elif WITHANTSELECT
-	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
 	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
 }
@@ -2627,7 +2602,7 @@ static void display2_att4(
 		dctx_t * pctx
 		)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
+	const char * const labels [1] = { hamradio_get_att_value_P(), };
 	ASSERT(strlen(labels [0]) == 4);
 	display2_text_P(x, y, labels, colors_1state, 0);
 }
@@ -2641,7 +2616,7 @@ static void display2_att5alt(
 		dctx_t * pctx
 		)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
+	const char * const labels [1] = { hamradio_get_att_value_P(), };
 	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [1]);
 }
 
@@ -2655,7 +2630,7 @@ static void display_hplp2(
 		)
 {
 #if WITHPOWERLPHP
-	const char FLASHMEM * const labels [1] = { hamradio_get_hplp_value_P(), };
+	const char * const labels [1] = { hamradio_get_hplp_value_P(), };
 	ASSERT(strlen(labels [0]) == 2);
 	display2_text_P(x, y, labels, colors_1state, 0);
 #endif /* WITHPOWERLPHP */
@@ -2671,7 +2646,7 @@ static void display_att_tx3(
 		)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
-	const FLASHMEM char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
+	const char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
 	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	ASSERT(strlen(text) == 3);
@@ -2688,7 +2663,7 @@ static void display2_agc3(
 		)
 {
 	ASSERT(strlen(hamradio_get_agc3_value_P()) == 3);
-	display_1state_P(x, y, hamradio_get_agc3_value_P());
+	display_1state(x, y, hamradio_get_agc3_value_P());
 }
 
 // RX agc
@@ -2701,7 +2676,7 @@ static void display_agc4(
 		)
 {
 	ASSERT(strlen(hamradio_get_agc4_value_P()) == 4);
-	display_1state_P(x, y, hamradio_get_agc4_value_P());
+	display_1state(x, y, hamradio_get_agc4_value_P());
 }
 
 // VFO mode - одним символом (первым от слова SPLIT или пробелом)
@@ -2736,7 +2711,7 @@ static void display2_mode3_a(
 		dctx_t * pctx
 		)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
+	const char * const labels [1] = { hamradio_get_mode_a_value_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1mode, 0);
 }
@@ -2768,8 +2743,8 @@ static void display2_mode3_b(
 		dctx_t * pctx
 		)
 {
-	const char FLASHMEM * const label = hamradio_get_mode_b_value_P();
-	const char FLASHMEM * const labels [2] = { label, label };
+	const char * const label = hamradio_get_mode_b_value_P();
+	const char * const labels [2] = { label, label };
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode3_value(& state);
 	ASSERT(strlen(labels [0]) == 3);
@@ -2992,7 +2967,7 @@ static void display2_classa7(
 	#if LCDMODE_COLORED
 		static const char classa_text [] = "CLASS A";
 		static const char classa_null [] = "       ";
-		display_2states_P(x, y, active, classa_text, classa_text);
+		display_2states(x, y, active, classa_text, classa_text);
 	#else /* LCDMODE_COLORED */
 		display_at_P(x, y, active ? classa_text : classa_null);
 	#endif /* LCDMODE_COLORED */
@@ -3014,8 +2989,8 @@ static void display2_classa3(
 		static const char classa_text [] = "CLA";
 		static const char classb_text [] = "CLB";
 		static const char classa_null [] = "   ";
-		//display_2states_P(x, y, active, classa_text, classb_text);
-		display_2states_P(x, y, 1, active ? classa_text : classb_text, classa_null);
+		//display_2states(x, y, active, classa_text, classb_text);
+		display_2states(x, y, 1, active ? classa_text : classb_text, classa_null);
 	#else /* LCDMODE_COLORED */
 		display_at_P(x, y, active ? classa_text : classa_null);
 	#endif /* LCDMODE_COLORED */
@@ -3899,7 +3874,7 @@ static void printsigwnd(void)
 {
 	int i;
 
-	PRINTF(PSTR("static const FLASHMEM FLOAT_t gvars.ifspec_wndfn [%u] =\n"), (unsigned) NORMALFFT);
+	PRINTF(PSTR("static const FLOAT_t gvars.ifspec_wndfn [%u] =\n"), (unsigned) NORMALFFT);
 	PRINTF(PSTR("{\n"));
 	for (i = 0; i < NORMALFFT; ++ i)
 	{
@@ -6607,7 +6582,7 @@ uint_fast8_t display2_getswrmax(void)
 
 static uint_fast8_t
 validforredraw(
-	const FLASHMEM struct dzone * const dzp,
+	const struct dzone * const dzp,
 	uint_fast16_t subset
 	)
 {
@@ -6646,7 +6621,7 @@ display_walktrough(
 
 	for (i = 0; i < WALKCOUNT; ++ i)
 	{
-		const FLASHMEM struct dzone * const dzp = & dzones [i];
+		const struct dzone * const dzp = & dzones [i];
 
 		if (validforredraw(dzp, subset) == 0)
 			continue;
@@ -6683,7 +6658,7 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 
 	for (i = 0; i < WALKCOUNT; ++ i)
 	{
-		const FLASHMEM struct dzone * const dzp = & dzones [i];
+		const struct dzone * const dzp = & dzones [i];
 		const uint_fast16_t x = GRID2X(dzp->x);
 		const uint_fast16_t y = GRID2Y(dzp->y);
 		const uint_fast16_t w = GRID2X(dzp->colspan);
@@ -6901,7 +6876,7 @@ void display2_initialize(void)
 		PRINTF("<style>\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
 		{
-			const FLASHMEM struct dzone * const dzp = & dzones [i];
+			const struct dzone * const dzp = & dzones [i];
 
 			if (validforredraw(dzp, subset) == 0)
 				continue;
@@ -6918,7 +6893,7 @@ void display2_initialize(void)
 		PRINTF("<body style=\"background-color:orange;\">\n");
 		for (i = 0; i < WALKCOUNT; ++ i)
 		{
-			const FLASHMEM struct dzone * const dzp = & dzones [i];
+			const struct dzone * const dzp = & dzones [i];
 
 			if (validforredraw(dzp, subset) == 0)
 				continue;
@@ -7243,8 +7218,8 @@ void colmain_rounded_rect(
 		return;
 	}
 
-	ASSERT(r << 1 < x2 - x1);
-	ASSERT(r << 1 < y2 - y1);
+	ASSERT((r * 2) < (x2 - x1));
+	ASSERT((r * 2) < (y2 - y1));
 
 	colpip_segm(buffer, bx, by, x1 + r, y1 + r, 180, 270, r, 1, color, 1, 0); // up left
 	colpip_segm(buffer, bx, by, x2 - r, y1 + r, 270, 360, r, 1, color, 1, 0); // up right

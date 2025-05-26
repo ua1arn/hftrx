@@ -6,8 +6,8 @@
 
 static 
 unsigned calcdivround2(
-	unsigned ref,	/* частота на входе делителя, в герцах. */
-	unsigned freq	/* требуемая частота на выходе делителя, в герцах. */
+	unsigned ref,	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. */
+	unsigned freq	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. */
 	)
 {
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
@@ -71,7 +71,7 @@ void buildtable(
     )          /* spectrum width */
 {
     unsigned i;
-    // допустимые делители и результирующие частоты преобразования
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     unsigned divs [DCDCPOINTS];     // in order frequency maximal to minimal
     unsigned dcdcfrequs [DCDCPOINTS];   // in order frequency maximal to minimal
     
@@ -98,7 +98,7 @@ void buildtable(
     fprintf(fp, "/* number of dividers=%u %u..%u */\n", dcdcdivn, dcdcdivmax, dcdcdivmin);
     fprintf(fp, "/* Analyze up to %u harmonics. */\n", MAXHARMONICS);
     fprintf(fp, "#define BOARDDCDCSYNC %u /* DCDC clock frequency */\n", fsync);
-	fprintf(fp, "static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {\n");
+	fprintf(fp, "static const struct DCDCFREQ dcdcfreqtable [] = {\n");
 
     // Fill frequencies tble
     // in order frequency maximal to minimal

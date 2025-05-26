@@ -170,26 +170,12 @@ uint_fast16_t normalize(
 
 #define BGCOLOR (display2_getbgcolor())
 
-void display_2states_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t state,
-	const FLASHMEM char * state1,	// активное
-	const FLASHMEM char * state0
-	);
-
 void display_2states(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	uint_fast8_t state,
 	const char * state1,	// активное
 	const char * state0
-	);
-// параметры, не меняющие состояния цветом
-void display_1state_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const FLASHMEM char * label
 	);
 // параметры, не меняющие состояния цветом
 void display_1state(
@@ -200,14 +186,6 @@ void display_1state(
 
 // FUNC menu
 
-void display_2fmenus_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t state,
-	const FLASHMEM char * state1,	// активное
-	const FLASHMEM char * state0
-	);
-
 void display_2fmenus(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -216,12 +194,6 @@ void display_2fmenus(
 	const char * state0
 	);
 
-// параметры, не меняющие состояния цветом
-void display_1fmenu_P(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const FLASHMEM char * label
-	);
 // параметры, не меняющие состояния цветом
 void display_1fmenu(
 	uint_fast8_t x,

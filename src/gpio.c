@@ -62,7 +62,7 @@ power4(uint_fast8_t v)
 
 	return r;
 #else
-	static const FLASHMEM uint_fast32_t tablepow4 [256] =
+	static const uint_fast32_t tablepow4 [256] =
 	{
 	 0x00000000UL,  0x00000001UL,  0x00000010UL,  0x00000011UL,  0x00000100UL,  0x00000101UL,  0x00000110UL,  0x00000111UL,
 	 0x00001000UL,  0x00001001UL,  0x00001010UL,  0x00001011UL,  0x00001100UL,  0x00001101UL,  0x00001110UL,  0x00001111UL,
