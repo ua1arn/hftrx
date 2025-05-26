@@ -81,6 +81,13 @@ static void softfill(
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
+
+// 0x01: ABGR_8888
+static unsigned awxx_get_srcformat(unsigned keyflag)
+{
+	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
+}
+
 #if defined (G2D_MIXER)
 
 /* Отключаем все источники */
@@ -165,6 +172,8 @@ static void awxx_g2d_rtmix_startandwait(void)
 
 #endif /* defined (G2D_MIXER) */
 
+#if defined (G2D_ROT)
+
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rot_waitdone(void)
@@ -206,11 +215,7 @@ static void awxx_g2d_rot_startandwait(void)
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 }
 
-// 0x01: ABGR_8888
-static unsigned awxx_get_srcformat(unsigned keyflag)
-{
-	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
-}
+#endif /* defined (G2D_ROT) */
 
 /* Коприрование с применением блока G2D_ROT */
 static void
@@ -1095,6 +1100,8 @@ typedef struct _draw_awrot_unit_t {
 } draw_awrot_unit_t;
 
 
+#if defined (G2D_MIXER)
+
 static void awg2d_execute_drawing(lv_draw_task_t * t)
 {
     LV_PROFILER_DRAW_BEGIN;
@@ -1144,152 +1151,6 @@ static void awg2d_execute_drawing(lv_draw_task_t * t)
 
 
     LV_PROFILER_DRAW_END;
-}
-
-
-static void awrot_execute_drawing(lv_draw_task_t * t)
-{
-    LV_PROFILER_DRAW_BEGIN;
-    /*Render the draw task*/
-    switch(t->type) {
-//        case LV_DRAW_TASK_TYPE_FILL:
-//            lv_draw_sw_fill(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BORDER:
-//            lv_draw_sw_border(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
-//            lv_draw_sw_box_shadow(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LETTER:
-//            lv_draw_sw_letter(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LABEL:
-//            lv_draw_sw_label(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_IMAGE:
-//            lv_draw_sw_image(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_ARC:
-//            lv_draw_sw_arc(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LINE:
-//            lv_draw_sw_line(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_TRIANGLE:
-//            lv_draw_sw_triangle(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LAYER:
-//            lv_draw_sw_layer(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
-//            lv_draw_sw_mask_rect(t, t->draw_dsc);
-//            break;
-//#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
-//        case LV_DRAW_TASK_TYPE_VECTOR:
-//            lv_draw_sw_vector(t, t->draw_dsc);
-//            break;
-//#endif
-        default:
-            break;
-    }
-
-
-    LV_PROFILER_DRAW_END;
-}
-
-/**
- * Устанавливает preferred_draw_unit_id в DRAW_UNIT_ID_AWG2D,
- * если отрисовываем этим блоком
- * @param draw_unit
- * @param task
- * @return
- */
-static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
-{
-    LV_UNUSED(draw_unit);
-    return 0;
-    switch(task->type) {
-        case LV_DRAW_TASK_TYPE_IMAGE:
-        case LV_DRAW_TASK_TYPE_LAYER: {
-                lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
-
-                /* not support skew */
-                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
-                    return 0;
-                }
-
-                bool masked = draw_dsc->bitmap_mask_src != NULL;
-
-                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
-                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
-                    return 0;
-                }
-
-                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
-                    return 0;
-                }
-            }
-            break;
-#if LV_USE_3DTEXTURE
-        case LV_DRAW_TASK_TYPE_3D:
-            return 0;
-#endif
-        default:
-            break;
-    }
-
-    task->preferred_draw_unit_id = DRAW_UNIT_ID_AWG2D;
-    task->preference_score = 0;	// похоже, для разбирательств между разными evaluate
-
-    return 0;
-}
-
-/**
- * Устанавливает preferred_draw_unit_id в DRAW_UNIT_ID_AWROT
- * если отрисовываем этим блоком
- * @param draw_unit
- * @param task
- * @return
- */
-static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
-{
-    LV_UNUSED(draw_unit);
-    return 0;
-    switch(task->type) {
-        case LV_DRAW_TASK_TYPE_IMAGE:
-        case LV_DRAW_TASK_TYPE_LAYER: {
-                lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
-
-                /* not support skew */
-                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
-                    return 0;
-                }
-
-                bool masked = draw_dsc->bitmap_mask_src != NULL;
-
-                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
-                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
-                    return 0;
-                }
-
-                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
-                    return 0;
-                }
-            }
-            break;
-#if LV_USE_3DTEXTURE
-        case LV_DRAW_TASK_TYPE_3D:
-            return 0;
-#endif
-        default:
-            break;
-    }
-
-    task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;
-    task->preference_score = 0;	// похоже, для разбирательств между разными evaluate
-
-    return 0;
 }
 
 /**
@@ -1399,6 +1260,55 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 #endif
 
 }
+
+
+/**
+ * Устанавливает preferred_draw_unit_id в DRAW_UNIT_ID_AWG2D,
+ * если отрисовываем этим блоком
+ * @param draw_unit
+ * @param task
+ * @return - LVGL не использует
+ */
+static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
+{
+    LV_UNUSED(draw_unit);
+    return 0;
+    switch(task->type) {
+        case LV_DRAW_TASK_TYPE_IMAGE:
+        case LV_DRAW_TASK_TYPE_LAYER: {
+                lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
+
+                /* not support skew */
+                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+
+                bool masked = draw_dsc->bitmap_mask_src != NULL;
+
+                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
+                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                    return 0;
+                }
+
+                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+                    return 0;
+                }
+            }
+            break;
+#if LV_USE_3DTEXTURE
+        case LV_DRAW_TASK_TYPE_3D:
+            return 0;
+#endif
+        default:
+            break;
+    }
+
+    task->preferred_draw_unit_id = DRAW_UNIT_ID_AWG2D;
+    task->preference_score = 0;	// похоже, для разбирательств между разными evaluate
+
+    return 0;
+}
+
 /**
  * Called to signal the unit to complete all tasks in order to return their ready status.
  * This callback can be implemented in case of asynchronous task processing.
@@ -1474,6 +1384,110 @@ static int32_t draw_awg2d_delete(lv_draw_unit_t * draw_unit)
     LV_UNUSED(draw_unit);
     return 0;
 #endif
+}
+
+#endif /* defined (G2D_MIXER) */
+
+#if defined (G2D_ROT)
+
+static void awrot_execute_drawing(lv_draw_task_t * t)
+{
+    LV_PROFILER_DRAW_BEGIN;
+    /*Render the draw task*/
+    switch(t->type) {
+//        case LV_DRAW_TASK_TYPE_FILL:
+//            lv_draw_sw_fill(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_BORDER:
+//            lv_draw_sw_border(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
+//            lv_draw_sw_box_shadow(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LETTER:
+//            lv_draw_sw_letter(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LABEL:
+//            lv_draw_sw_label(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_IMAGE:
+//            lv_draw_sw_image(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_ARC:
+//            lv_draw_sw_arc(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LINE:
+//            lv_draw_sw_line(t, t->draw_dsc);
+//            break;
+//        case LV_DRAW_TASK_TYPE_TRIANGLE:
+//            lv_draw_sw_triangle(t, t->draw_dsc);
+//            break;
+//        case LV_DRAW_TASK_TYPE_LAYER:
+//            lv_draw_sw_layer(t, t->draw_dsc, &t->area);
+//            break;
+//        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
+//            lv_draw_sw_mask_rect(t, t->draw_dsc);
+//            break;
+//#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+//        case LV_DRAW_TASK_TYPE_VECTOR:
+//            lv_draw_sw_vector(t, t->draw_dsc);
+//            break;
+//#endif
+        default:
+            break;
+    }
+
+
+    LV_PROFILER_DRAW_END;
+}
+
+/**
+ * Устанавливает preferred_draw_unit_id в DRAW_UNIT_ID_AWROT
+ * если отрисовываем этим блоком
+ * Блок позволяет копировать прямоугольники без изменения формата и размеров,
+ * возможен поворот на углы кратные 90 градусам
+ * @param draw_unit
+ * @param task
+ * @return - LVGL не использует
+ */
+static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
+{
+    LV_UNUSED(draw_unit);
+    return 0;
+    switch(task->type) {
+        case LV_DRAW_TASK_TYPE_IMAGE:
+        case LV_DRAW_TASK_TYPE_LAYER: {
+                lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
+
+                /* not support skew */
+                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+
+                bool masked = draw_dsc->bitmap_mask_src != NULL;
+
+                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
+                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                    return 0;
+                }
+
+                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+                    return 0;
+                }
+            }
+            break;
+#if LV_USE_3DTEXTURE
+        case LV_DRAW_TASK_TYPE_3D:
+            return 0;
+#endif
+        default:
+            break;
+    }
+
+    task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;
+    task->preference_score = 0;	// похоже, для разбирательств между разными evaluate
+
+    return 0;
 }
 
 /**
@@ -1660,10 +1674,12 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 #endif
 }
 
+#endif /* defined (G2D_ROT) */
+
 // Add custom draw unit
 void draw_awg2d_init(void)
 {
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if defined (G2D_MIXER)
 	{
 
 		//#if LV_DRAW_SW_COMPLEX == 1
@@ -1700,9 +1716,11 @@ void draw_awg2d_init(void)
 		////    lv_ll_init(&LV_GLOBAL_DEFAULT()->draw_sw_blend_handler_ll, sizeof(lv_draw_sw_custom_blend_handler_t));
 
 	}
-#endif
+#endif /* defined (G2D_MIXER) */
+#if defined (G2D_ROT)
 	{
-
+		// Блок позволяет копировать прямоугольники без изменения формата и размеров,
+		// возможен поворот на углы кратные 90 градусам
 
 		//#if LV_DRAW_SW_COMPLEX == 1
 		//    lv_draw_sw_mask_init();
@@ -1739,6 +1757,7 @@ void draw_awg2d_init(void)
 
 
 	}
+#endif /* defined (G2D_ROT) */
 }
 
 void draw_awg2d_deinit(void)
