@@ -19,6 +19,7 @@ void lvgl_dev_init(void);
 void lvgl_init(void);
 void wfl_init(void);
 PACKEDCOLORPIP_T * wfl_proccess(void);
+uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, испольщуемый в построении  изображений */
 
 #ifdef __cplusplus
 }

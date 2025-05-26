@@ -244,7 +244,7 @@ void lvgl_test(void)
 //	lv_obj_t * btn = button_create(win, 0, 0, "Preamp", & style_footer_button, event_handler_btn1);
 
 	wfl.header.magic = LV_IMAGE_HEADER_MAGIC,
-	wfl.header.cf = LV_COLOR_FORMAT_ARGB8888,
+	wfl.header.cf = display_get_lvformat(),
 	wfl.header.flags = 0,
 //	wfl.header.always_zero = 0;
 //	wfl.header.reserved = 0;

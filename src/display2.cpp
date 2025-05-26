@@ -6854,17 +6854,7 @@ void display2_initialize(void)
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
 
 	    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXADJ(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
-	#if LCDMODE_LTDC
-		#if LCDMODE_LTDC_L24
-	    	lv_display_set_color_format(disp, LV_COLOR_FORMAT_NATIVE);
-		#elif LCDMODE_MAIN_L8
-		#elif LCDMODE_MAIN_ARGB8888
-			lv_display_set_color_format(disp, LV_COLOR_FORMAT_ARGB8888);
-		#elif LCDMODE_MAIN_RGB565
-			lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
-		#endif
-	#else
-	#endif
+	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
 
 		TP();
 		// Add custom draw unit
@@ -7432,3 +7422,23 @@ PACKEDCOLORPIP_T * wfl_proccess(void)
 	display2_gcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
 	return getscratchwnd(X2GRID(pip.x), Y2GRID(pip.y));
 }
+
+#if WITHLVGL
+
+uint32_t display_get_lvformat(void)
+{
+#if LCDMODE_LTDC
+	#if LCDMODE_LTDC_L24
+    	return LV_COLOR_FORMAT_NATIVE;
+	#elif LCDMODE_MAIN_L8
+    	return LV_COLOR_FORMAT_L8;
+	#elif LCDMODE_MAIN_ARGB8888
+    	return LV_COLOR_FORMAT_ARGB8888;
+	#elif LCDMODE_MAIN_RGB565
+    	return LV_COLOR_FORMAT_RGB565;
+	#endif
+#else
+    	return LV_COLOR_FORMAT_ARGB8888;
+#endif
+}
+#endif

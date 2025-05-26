@@ -34,7 +34,7 @@
 		#define LV_COLOR_DEPTH 24
 	#elif LCDMODE_MAIN_L8
 		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
-		#define LV_COLOR_DEPTH 1
+		#define LV_COLOR_DEPTH 8
 	#elif LCDMODE_MAIN_ARGB8888
 		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
 		#define LV_COLOR_DEPTH 32
