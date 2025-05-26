@@ -6853,7 +6853,7 @@ void display2_initialize(void)
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
 
-	    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXSTRIDE(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
+	    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXADJ(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
 	#if LCDMODE_LTDC
 		#if LCDMODE_LTDC_L24
 	    	lv_display_set_color_format(disp, LV_COLOR_FORMAT_NATIVE);

@@ -77,7 +77,7 @@ void openvg_init(const uintptr_t * frames)
 		for (unsigned i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
 		{
 			int maskBits = 0;
-			OpenVGRI::Drawable * d = RI_NEW(OpenVGRI::Drawable, (cds, DIM_X, DIM_Y, GXSTRIDE(DIM_X) * sizeof (PACKEDCOLORPIP_T), (OpenVGRI::RIuint8 *) frames [i], maskBits));	//throws bad_alloc
+			OpenVGRI::Drawable * d = RI_NEW(OpenVGRI::Drawable, (cds, DIM_X, DIM_Y, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), (OpenVGRI::RIuint8 *) frames [i], maskBits));	//throws bad_alloc
 			RI_ASSERT(d);
 			d->addReference();
 			OpenVGRI::d0 [i] = d;

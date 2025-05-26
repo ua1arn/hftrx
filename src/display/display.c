@@ -544,7 +544,7 @@ void render_value_big_initialize(void)
 //
 //	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) BigDigits_png->data;
 //	const COLORPIP_T keycolor = TFTRGB(BigDigits_png->data [0], BigDigits_png->data [1], BigDigits_png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-//	const unsigned picdx = BigDigits_png->width;//GXSTRIDE(png->width);
+//	const unsigned picdx = BigDigits_png->width;//GXADJ(png->width);
 //	const unsigned picw = BigDigits_png->width;
 //	const unsigned pich = BigDigits_png->height;
 //	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
