@@ -214,10 +214,26 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 }
 #endif /* WITHALTERNATIVELAYOUT */
 
+
+// todo: switch off -Wunused-function
+
+// формирование данных спектра для последующего отображения
+// спектра или водопада
+static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+static void display2_latchcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+static void display2_wfl_init(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+static void display2_spectrum(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+static void display2_waterfall(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+// Отображение шкалы S-метра и других измерителей
+static void display2_legend(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+// Отображение шкалы S-метра
+static void display2_legend_rx(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+// Отображение шкалы SWR-метра и других измерителе
+static void display2_legend_tx(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
+
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);		// вызывать после display2_smeter15_init
 static void display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 static void display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 
 #if COLORSTYLE_RED
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_RED;
@@ -509,21 +525,6 @@ display2_testvidget(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_f
 
 }
 #endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
-
-// todo: switch off -Wunused-function
-
-// формирование данных спектра для последующего отображения
-// спектра или водопада
-static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-static void display2_wfl_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-// Отображение шкалы S-метра и других измерителей
-static void display2_legend(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-// Отображение шкалы S-метра
-static void display2_legend_rx(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-// Отображение шкалы SWR-метра и других измерителе
-static void display2_legend_tx(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 
 // Параметры отображения спектра и водопада
 
@@ -5988,20 +5989,20 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 }
 
 // подготовка изображения спектра и волрада
-static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	const uint_fast8_t hspectrum = (uint_fast16_t) yspan * glob_spectrumpart / 100;
 	switch (glob_view_style)
 	{
 #if WITHVIEW_3DSS
 	case VIEW_3DSS:
-		display2_3dss(x0, y0, xspan, yspan, pctx);
+		display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
 		// TODO: Делим отведённый размер между двумя панелями отображения
-		display2_spectrum(x0, y0, xspan, hspectrum, pctx);
-		display2_waterfall(x0, y0 + hspectrum, xspan, yspan - hspectrum, pctx);
+		display2_spectrum(xgrid, ygrid + 0, xspan, hspectrum, pctx);
+		display2_waterfall(xgrid, ygrid + hspectrum, xspan, yspan - hspectrum, pctx);
 		break;
 	}
 }
@@ -6840,52 +6841,40 @@ static void lvgl_polling(void * ctx)
 void display2_initialize(void)
 {
 #if WITHLVGL && ! LINUX_SUBSYSTEM
+	lv_init();
+
+    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
+    lv_display_set_flush_cb(disp, maindisplay_flush);
+
+    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+
+    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXADJ(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
+    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
+
+	lv_tick_set_cb(myhardgeticks);
+
+	// Add custom draw unit
+	//draw_awg2d_init();
+
+	// Приложение
+	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
+	styles_init();
+	lvgl_init();
 	{
-		PRINTF("LVGL demo start\n");
-		/*LVGL init*/
-		lv_init();
+		static dpcobj_t dpcobj;
 
-		lv_tick_set_cb(myhardgeticks);
-
-	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
-	    lv_display_set_flush_cb(disp, maindisplay_flush);
-
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
-
-	    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXADJ(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
-	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
-
-		TP();
-		// Add custom draw unit
-		draw_awg2d_init();
-
-		// Приложение
-		TP();
-		lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
-		styles_init();
-		lvgl_init();
-		TP();
-		{
-			static dpcobj_t dpcobj;
-
-			dpcobj_initialize(& dpcobj, lvgl_polling, NULL);
-			board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		}
-
-		TP();
-#if LV_BUILD_DEMOS
-	    lv_demo_widgets();
-		TP();
-	    lv_demo_widgets_start_slideshow();
-#else
-		lvgl_test();
-#endif
-		TP();
-		//lv_display_delete(disp);
-
-		//PRINTF("LVGL demo done\n");
+		dpcobj_initialize(& dpcobj, lvgl_polling, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
+
+#if LV_BUILD_DEMOS
+    lv_demo_widgets();
+    lv_demo_widgets_start_slideshow();
+#else
+	lvgl_test();
+#endif
+
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 	uint_fast8_t page;

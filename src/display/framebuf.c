@@ -1075,6 +1075,7 @@ void arm_hardware_mdma_initialize(void)
 
 #include "lvgl.h"
 #include "draw/lv_draw_private.h"
+#include "draw/lv_draw_image_private.h"
 
 #define DRAW_UNIT_ID_AWG2D 77
 #define DRAW_UNIT_ID_AWROT 78
@@ -1108,41 +1109,41 @@ static void awg2d_execute_drawing(lv_draw_task_t * t)
     /*Render the draw task*/
     switch(t->type) {
 //        case LV_DRAW_TASK_TYPE_FILL:
-//            lv_draw_sw_fill(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_fill(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_BORDER:
-//            lv_draw_sw_border(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_border(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
-//            lv_draw_sw_box_shadow(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_box_shadow(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LETTER:
-//            lv_draw_sw_letter(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_letter(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LABEL:
-//            lv_draw_sw_label(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_label(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_IMAGE:
-//            lv_draw_sw_image(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_image(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_ARC:
-//            lv_draw_sw_arc(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_arc(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LINE:
-//            lv_draw_sw_line(t, t->draw_dsc);
+//            lv_draw_awg2d_line(t, t->draw_dsc);
 //            break;
 //        case LV_DRAW_TASK_TYPE_TRIANGLE:
-//            lv_draw_sw_triangle(t, t->draw_dsc);
+//            lv_draw_awg2d_triangle(t, t->draw_dsc);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LAYER:
-//            lv_draw_sw_layer(t, t->draw_dsc, &t->area);
+//            lv_draw_awg2d_layer(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
-//            lv_draw_sw_mask_rect(t, t->draw_dsc);
+//            lv_draw_awg2d_mask_rect(t, t->draw_dsc);
 //            break;
 //#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
 //        case LV_DRAW_TASK_TYPE_VECTOR:
-//            lv_draw_sw_vector(t, t->draw_dsc);
+//            lv_draw_awg2d_vector(t, t->draw_dsc);
 //            break;
 //#endif
         default:
@@ -1300,7 +1301,7 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
             return 0;
 #endif
         default:
-            break;
+            return 0;
     }
 
     task->preferred_draw_unit_id = DRAW_UNIT_ID_AWG2D;
@@ -1390,50 +1391,246 @@ static int32_t draw_awg2d_delete(lv_draw_unit_t * draw_unit)
 
 #if defined (G2D_ROT)
 
+lv_result_t lv_draw_sw_image_awrot(
+	bool is_transform,
+	lv_color_format_t src_cf,
+	const uint8_t *src_buf,
+	const lv_area_t * coords,
+	int32_t src_stride,
+	const lv_area_t * des_area,
+	lv_draw_unit_t * draw_unit,
+	const lv_draw_image_dsc_t * draw_dsc)
+{
+//	if (is_transform)
+//	{
+//		PRINTF("transform not supported: rotation=%u, scale_x=%u, scale_y=%u\n", (unsigned) draw_dsc->rotation, (unsigned) draw_dsc->scale_x, (unsigned) draw_dsc->scale_y);
+//		return LV_RESULT_INVALID;
+//	}
+
+	if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE)
+		return LV_RESULT_INVALID;
+
+	if ((draw_dsc->rotation % 900) != 0)
+		return LV_RESULT_INVALID;
+
+	if (src_cf != draw_dsc->header.cf)
+	{
+		PRINTF("color format transform not supported (%u -> %u)\n", (unsigned) src_cf, (unsigned) draw_dsc->header.cf);
+		return LV_RESULT_INVALID;
+	}
+	//TP();
+	return LV_RESULT_INVALID;
+    uint8_t *des_buf = 0;//(uint8_t *)lv_draw_layer_go_to_xy(draw_unit->target_layer, 0, 0);
+	colpip_copyrotate(
+		(uintptr_t) des_buf, GXSIZE(draw_dsc->header.w, draw_dsc->header.h) * LCDMODE_PIXELSIZE,
+		(PACKEDCOLORPIP_T *) des_buf, draw_dsc->header.w, draw_dsc->header.h,
+		des_area->x1, des_area->y1,	// получатель Позиция
+		(uintptr_t) src_buf, 0/*GXSIZE(picx, picy) */ * LCDMODE_PIXELSIZE,
+		(const PACKEDCOLORPIP_T *) src_buf, src_stride / lv_color_format_get_size(draw_dsc->header.cf), lv_area_get_height(coords),	// буфер источника
+		coords->x1, coords->y1, //0, 0,	// координаты окна источника
+		lv_area_get_width(coords), lv_area_get_height(coords), //picx, picy, // размер окна источника
+		0,	// X mirror flag
+		0,	// Y mirror flag
+		(360 - (draw_dsc->rotation / 10)) % 360	// positive CCW angle
+		);
+
+	return LV_RESULT_OK;
+
+}
+
+static void img_draw_core(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc,
+                          const lv_image_decoder_dsc_t * decoder_dsc, lv_draw_image_sup_t * sup,
+                          const lv_area_t * img_coords, const lv_area_t * clipped_img_area)
+{
+//
+//	lv_layer_t * layer_to_draw = (lv_layer_t *) t->draw_dsc->src;
+//
+//	/*It can happen that nothing was draw on a layer and therefore its buffer is not allocated.
+//	 *In this case just return. */
+//	if(layer_to_draw->draw_buf == NULL) return;
+
+//				if(t->draw_dsc->bitmap_mask_src) {
+//					bool visible = apply_mask(t->draw_dsc);
+//					if(!visible) return;
+//				}
+
+//	/*The source should be a draw_buf, not a layer*/
+//	lv_draw_image_dsc_t new_draw_dsc = *draw_dsc;
+//	new_draw_dsc.src = layer_to_draw->draw_buf;
+//
+//	lv_draw_sw_image(t, &new_draw_dsc, coords);
+
+
+//
+//	colpip_copyrotate(
+//		t->(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE,
+//		layer0, DIM_X, DIM_Y,
+//		x + 1, y + 1,	// получатель Позиция
+//		(uintptr_t) fgpic, GXSIZE(picx, picy) * LCDMODE_PIXELSIZE,
+//		fgpic, picx, picy,	// буфер источника
+//		0, 0,	// координаты окна источника
+//		lv_area_get_width(& t->area), lv_area_get_height(& t->area), //picx, picy, // размер окна источника
+//		0,	// X mirror flag
+//		0,	// Y mirror flag
+//		0	// positive CCW angle
+//		);
+}
+
+
+void lv_draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc,
+                      const lv_area_t * coords)
+{
+    if(!draw_dsc->tile) {
+        lv_draw_image_normal_helper(t, draw_dsc, coords, img_draw_core);
+    }
+    else {
+        lv_draw_image_tiled_helper(t, draw_dsc, coords, img_draw_core);
+    }
+}
+
+void lv_draw_awrot_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc, const lv_area_t * coords)
+{
+    lv_layer_t * layer_to_draw = (lv_layer_t *)draw_dsc->src;
+
+    /*It can happen that nothing was draw on a layer and therefore its buffer is not allocated.
+     *In this case just return. */
+    if(layer_to_draw->draw_buf == NULL) return;
+
+//    if(draw_dsc->bitmap_mask_src) {
+//        bool visible = apply_mask(draw_dsc);
+//        if(!visible) return;
+//    }
+
+    /*The source should be a draw_buf, not a layer*/
+    lv_draw_image_dsc_t new_draw_dsc = *draw_dsc;
+    new_draw_dsc.src = layer_to_draw->draw_buf;
+
+    lv_draw_awrot_image(t, &new_draw_dsc, coords);
+
+#if LV_USE_LAYER_DEBUG || LV_USE_PARALLEL_DRAW_DEBUG
+    lv_area_t area_rot;
+    lv_area_copy(&area_rot, coords);
+    if(draw_dsc->rotation || draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
+        int32_t w = lv_area_get_width(coords);
+        int32_t h = lv_area_get_height(coords);
+
+        lv_image_buf_get_transformed_area(&area_rot, w, h, draw_dsc->rotation, draw_dsc->scale_x, draw_dsc->scale_y,
+                                          &draw_dsc->pivot);
+
+        area_rot.x1 += coords->x1;
+        area_rot.y1 += coords->y1;
+        area_rot.x2 += coords->x1;
+        area_rot.y2 += coords->y1;
+    }
+    lv_area_t draw_area;
+    if(!lv_area_intersect(&draw_area, &area_rot, &t->clip_area)) return;
+#endif
+
+#if LV_USE_LAYER_DEBUG
+    {
+        lv_draw_fill_dsc_t fill_dsc;
+        lv_draw_fill_dsc_init(&fill_dsc);
+        fill_dsc.color = lv_color_hex(layer_to_draw->color_format == LV_COLOR_FORMAT_ARGB8888 ? 0xff0000 : 0x00ff00);
+        fill_dsc.opa = LV_OPA_20;
+        lv_draw_awrot_fill(t, &fill_dsc, &area_rot);
+
+        lv_draw_border_dsc_t border_dsc;
+        lv_draw_border_dsc_init(&border_dsc);
+        border_dsc.color = fill_dsc.color;
+        border_dsc.opa = LV_OPA_60;
+        border_dsc.width = 2;
+        lv_draw_awrot_border(t, &border_dsc, &area_rot);
+    }
+
+#endif
+
+#if LV_USE_PARALLEL_DRAW_DEBUG
+    {
+        int32_t idx = t->draw_unit->idx;
+
+        lv_draw_fill_dsc_t fill_dsc;
+        lv_draw_fill_dsc_init(&fill_dsc);
+        fill_dsc.color = lv_palette_main(idx % LV_PALETTE_LAST);
+        fill_dsc.opa = LV_OPA_10;
+        lv_draw_awrot_fill(t, &fill_dsc, &area_rot);
+
+        lv_draw_border_dsc_t border_dsc;
+        lv_draw_border_dsc_init(&border_dsc);
+        border_dsc.color = lv_palette_main(idx % LV_PALETTE_LAST);
+        border_dsc.opa = LV_OPA_60;
+        border_dsc.width = 1;
+        lv_draw_awrot_border(t, &border_dsc, &area_rot);
+
+        lv_point_t txt_size;
+        lv_text_get_size(&txt_size, "W", LV_FONT_DEFAULT, 0, 0, 100, LV_TEXT_FLAG_NONE);
+
+        lv_area_t txt_area;
+        txt_area.x1 = draw_area.x1;
+        txt_area.x2 = draw_area.x1 + txt_size.x - 1;
+        txt_area.y2 = draw_area.y2;
+        txt_area.y1 = draw_area.y2 - txt_size.y + 1;
+
+        lv_draw_fill_dsc_init(&fill_dsc);
+        fill_dsc.color = lv_color_black();
+        lv_draw_awrot_fill(t, &fill_dsc, &txt_area);
+
+        char buf[8];
+        lv_snprintf(buf, sizeof(buf), "%d", idx);
+        lv_draw_label_dsc_t label_dsc;
+        lv_draw_label_dsc_init(&label_dsc);
+        label_dsc.color = lv_color_white();
+        label_dsc.text = buf;
+        lv_draw_awrot_label(t, &label_dsc, &txt_area);
+    }
+#endif
+}
+
 static void awrot_execute_drawing(lv_draw_task_t * t)
 {
     LV_PROFILER_DRAW_BEGIN;
+    TP();
     /*Render the draw task*/
     switch(t->type) {
+        case LV_DRAW_TASK_TYPE_IMAGE:
+            lv_draw_awrot_image(t, t->draw_dsc, &t->area);
+            break;
+        case LV_DRAW_TASK_TYPE_LAYER:
+            lv_draw_awrot_layer(t, t->draw_dsc, &t->area);
+            break;
 //        case LV_DRAW_TASK_TYPE_FILL:
-//            lv_draw_sw_fill(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_fill(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_BORDER:
-//            lv_draw_sw_border(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_border(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
-//            lv_draw_sw_box_shadow(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_box_shadow(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LETTER:
-//            lv_draw_sw_letter(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_letter(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LABEL:
-//            lv_draw_sw_label(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_IMAGE:
-//            lv_draw_sw_image(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_label(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_ARC:
-//            lv_draw_sw_arc(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_arc(t, t->draw_dsc, &t->area);
 //            break;
 //        case LV_DRAW_TASK_TYPE_LINE:
-//            lv_draw_sw_line(t, t->draw_dsc);
+//            lv_draw_awrot_line(t, t->draw_dsc);
 //            break;
 //        case LV_DRAW_TASK_TYPE_TRIANGLE:
-//            lv_draw_sw_triangle(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LAYER:
-//            lv_draw_sw_layer(t, t->draw_dsc, &t->area);
+//            lv_draw_awrot_triangle(t, t->draw_dsc);
 //            break;
 //        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
-//            lv_draw_sw_mask_rect(t, t->draw_dsc);
+//            lv_draw_awrot_mask_rect(t, t->draw_dsc);
 //            break;
 //#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
 //        case LV_DRAW_TASK_TYPE_VECTOR:
-//            lv_draw_sw_vector(t, t->draw_dsc);
+//            lv_draw_awrot_vector(t, t->draw_dsc);
 //            break;
 //#endif
         default:
+        	TP();
             break;
     }
 
@@ -1456,12 +1653,22 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     return 0;
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
-        case LV_DRAW_TASK_TYPE_LAYER: {
+        case LV_DRAW_TASK_TYPE_LAYER:
+        	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
 
                 /* not support skew */
                 if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
                     return 0;
+                }
+
+                /* not support tile */
+                if (draw_dsc->tile) {
+                	return 0;
+                }
+
+                if(draw_dsc->bitmap_mask_src) {
+                	return 0;
                 }
 
                 bool masked = draw_dsc->bitmap_mask_src != NULL;
@@ -1481,7 +1688,7 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
             return 0;
 #endif
         default:
-            break;
+        	return 0;
     }
 
     task->preferred_draw_unit_id = DRAW_UNIT_ID_AWROT;

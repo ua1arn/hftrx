@@ -21,6 +21,40 @@ void wfl_init(void);
 PACKEDCOLORPIP_T * wfl_proccess(void);	/* построить растр с водопадом и спектром */
 uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, используемый в построении  изображений */
 
+#if defined (G2D_ROT) && ! LINUX_SUBSYSTEM
+
+	#include "misc/lv_types.h"
+	#include "misc/lv_color.h"
+	#include "misc/lv_area.h"
+	lv_result_t lv_draw_sw_image_awrot(
+											bool is_transform,
+											lv_color_format_t src_cf,
+											const uint8_t *src_buf,
+											const lv_area_t * coords,
+											int32_t src_stride,
+											const lv_area_t * des_area,
+											lv_draw_unit_t * draw_unit,
+											const lv_draw_image_dsc_t * draw_dsc);
+
+		#define LV_DRAW_SW_IMAGE(__transformed,                                     \
+							 __cf,                                                  \
+							 __src_buf,                                             \
+							 __img_coords,                                          \
+							 __src_stride,                                          \
+							 __blend_area,                                          \
+							 __draw_unit,                                           \
+							 __draw_dsc)                                            \
+				lv_draw_sw_image_awrot(   (__transformed),                            \
+										(__cf),                                     \
+										(uint8_t *)(__src_buf),                     \
+										(__img_coords),                             \
+										(__src_stride),                             \
+										(__blend_area),                             \
+										(__draw_unit),                              \
+										(__draw_dsc))
+
+#endif /* defined (G2D_ROT) && ! LINUX_SUBSYSTEM */
+
 #ifdef __cplusplus
 }
 #endif
