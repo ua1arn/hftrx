@@ -1395,10 +1395,10 @@ lv_result_t lv_draw_sw_image_awrot(
 	bool is_transform,
 	lv_color_format_t src_cf,
 	const uint8_t *src_buf,
-	const lv_area_t * coords,
+	const lv_area_t * img_coords,
 	int32_t src_stride,
-	const lv_area_t * des_area,
-	lv_draw_unit_t * draw_unit,
+	const lv_area_t * des_area,	// __blend_area
+	const lv_draw_task_t * draw_task,
 	const lv_draw_image_dsc_t * draw_dsc)
 {
 //	if (is_transform)
@@ -1420,15 +1420,19 @@ lv_result_t lv_draw_sw_image_awrot(
 	}
 	//TP();
 	return LV_RESULT_INVALID;
-    uint8_t *des_buf = 0;//(uint8_t *)lv_draw_layer_go_to_xy(draw_unit->target_layer, 0, 0);
+	const lv_area_t * const dst_coords = & draw_task->target_layer->buf_area;
+	PRINTF("src coords: x/y=%u/%u, dx/dy=%u/%u\n", (unsigned) img_coords->x1, (unsigned) img_coords->y1, (unsigned) draw_dsc->header.w, (unsigned) draw_dsc->header.h);
+	PRINTF("dst coords: x/y=%u/%u, dx/dy=%u/%u\n", (unsigned) dst_coords->x1, (unsigned) dst_coords->y1, (unsigned) lv_area_get_width(dst_coords), (unsigned) lv_area_get_height(dst_coords));
+	//return LV_RESULT_OK;
+    uint8_t *des_buf = (uint8_t *)lv_draw_layer_go_to_xy(draw_task->target_layer, 0, 0);
 	colpip_copyrotate(
-		(uintptr_t) des_buf, GXSIZE(draw_dsc->header.w, draw_dsc->header.h) * LCDMODE_PIXELSIZE,
-		(PACKEDCOLORPIP_T *) des_buf, draw_dsc->header.w, draw_dsc->header.h,
-		des_area->x1, des_area->y1,	// получатель Позиция
-		(uintptr_t) src_buf, 0/*GXSIZE(picx, picy) */ * LCDMODE_PIXELSIZE,
-		(const PACKEDCOLORPIP_T *) src_buf, src_stride / lv_color_format_get_size(draw_dsc->header.cf), lv_area_get_height(coords),	// буфер источника
-		coords->x1, coords->y1, //0, 0,	// координаты окна источника
-		lv_area_get_width(coords), lv_area_get_height(coords), //picx, picy, // размер окна источника
+		(uintptr_t) des_buf, GXSIZE(lv_area_get_width(dst_coords), lv_area_get_height(dst_coords)) * LCDMODE_PIXELSIZE,
+		(PACKEDCOLORPIP_T *) des_buf, lv_area_get_width(dst_coords), lv_area_get_height(dst_coords),
+		dst_coords->x1, dst_coords->y1,	// получатель Позиция
+		(uintptr_t) src_buf, GXSIZE(draw_dsc->header.w, draw_dsc->header.h) * LCDMODE_PIXELSIZE,
+		(const PACKEDCOLORPIP_T *) src_buf, lv_area_get_width(img_coords), lv_area_get_height(img_coords),	// буфер источника
+		0, 0, //0, 0,	// координаты окна источника
+		lv_area_get_width(img_coords), lv_area_get_height(img_coords), //picx, picy, // размер окна источника
 		0,	// X mirror flag
 		0,	// Y mirror flag
 		(360 - (draw_dsc->rotation / 10)) % 360	// positive CCW angle

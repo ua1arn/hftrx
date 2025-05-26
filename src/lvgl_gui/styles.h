@@ -33,7 +33,7 @@ uint32_t display_get_lvformat(void);	/* получить LVGL код форма�
 											const lv_area_t * coords,
 											int32_t src_stride,
 											const lv_area_t * des_area,
-											lv_draw_unit_t * draw_unit,
+											const lv_draw_task_t * draw_task,
 											const lv_draw_image_dsc_t * draw_dsc);
 
 		#define LV_DRAW_SW_IMAGE(__transformed,                                     \
@@ -42,7 +42,7 @@ uint32_t display_get_lvformat(void);	/* получить LVGL код форма�
 							 __img_coords,                                          \
 							 __src_stride,                                          \
 							 __blend_area,                                          \
-							 __draw_unit,                                           \
+							 __draw_task,                                           \
 							 __draw_dsc)                                            \
 				lv_draw_sw_image_awrot(   (__transformed),                            \
 										(__cf),                                     \
@@ -50,7 +50,7 @@ uint32_t display_get_lvformat(void);	/* получить LVGL код форма�
 										(__img_coords),                             \
 										(__src_stride),                             \
 										(__blend_area),                             \
-										(__draw_unit),                              \
+										(__draw_task),                              \
 										(__draw_dsc))
 
 #endif /* defined (G2D_ROT) && ! LINUX_SUBSYSTEM */
