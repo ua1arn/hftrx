@@ -4053,7 +4053,7 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
-static uint_fast16_t gstep_ENC1;
+static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
@@ -8911,7 +8911,7 @@ getsubmode(
 
 /* функция вызывается из updateboard при измененияя параметров приёма
  * Устанавливает "кэшированные" состояния режима работы -
-   gsubmode, gstep_ENC1, gagcmode, gfi, gmode.
+   gsubmode, gstep_ENC_MAIN, gagcmode, gfi, gmode.
 */
 static void
 //NOINLINEAT
@@ -8931,10 +8931,10 @@ setgsubmode(
 #if ! WITHAGCMODENONE
 	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
 #endif /* ! WITHAGCMODENONE */
-#if ENCODER2_NOSPOOL
+#if WITHENCODER2 && ENCODER2_HIRES
 	// ENCODER2 - тоже высокого разрешения, для перестройки по частоте второго тракта
 	{
-		gstep_ENC1 = pmodet->step10 [0] * 10;
+		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [0] * 10;
 		gencderate = 1;
 
@@ -8942,15 +8942,15 @@ setgsubmode(
 #else
 	if (gusefast || gbigstep)
 	{
-		gstep_ENC1 = pmodet->step10 [1] * 10;
+		gstep_ENC_MAIN = pmodet->step10 [1] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
 		gencderate = 1;
 	}
 	else
 	{
-		gstep_ENC1 = pmodet->step10 [0] * 10;
+		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
-		gencderate = gstep_ENC1 / STEP_MINIMAL;
+		gencderate = gstep_ENC_MAIN / STEP_MINIMAL;
 	}
 #endif
 }
@@ -20246,28 +20246,28 @@ hamradio_main_step(void)
 			uint_fast16_t step_main;
 			uint_fast16_t step_sub;
 
-			/* переход по частоте - шаг берется из gstep_ENC1 */
+			/* переход по частоте - шаг берется из gstep_ENC_MAIN */
 			#if WITHBBOX && defined (WITHBBOXFREQ)
 				nrotate_main = 0;	// ignore encoder
 				nrotate_sub = 0;	// ignore encoder
-				step_main = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
 				step_sub = gstep_ENC2;
 			#elif WITHENCODER_SUB
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
-				step_main = gstep_ENC1;
-				step_sub = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
+				step_sub = gstep_ENC_MAIN;
 			#elif WITHENCODER2 && LINUX_SUBSYSTEM
 				nrotate_sub = linux_get_enc2();
 			#elif WITHENCODER2
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
-				step_main = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
 				step_sub = gstep_ENC2;
 			#else
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = 0;
-				step_main = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
 				step_sub = 0;
 			#endif
 			(void) step_sub;
@@ -20329,7 +20329,7 @@ hamradio_main_step(void)
 					/* Валкодер A: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
 					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize_main * - nrotate_main), gstep_ENC1, TUNE_BOTTOM);
+					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize_main * - nrotate_main), gstep_ENC_MAIN, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
 				else if (nrotate_main > 0)
@@ -20337,7 +20337,7 @@ hamradio_main_step(void)
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
 					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize_main * nrotate_main), gstep_ENC1, TUNE_TOP);
+					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize_main * nrotate_main), gstep_ENC_MAIN, TUNE_TOP);
 					freqchanged = 1;
 				}
 

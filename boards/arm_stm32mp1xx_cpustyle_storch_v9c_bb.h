@@ -323,6 +323,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER2_NOSPOOL 1
+
 	#define ENCODER_INITIALIZE() \
 		do { \
 			static einthandler_t eh1; \
