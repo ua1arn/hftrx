@@ -149,7 +149,6 @@ lv_obj_t * button_create(lv_obj_t * parent, lv_coord_t x, lv_coord_t y, const ch
 
 void lvgl_init(void)
 {
-	PRINTF("lvgl_init:\n");
 	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
 	styles_init();
 
