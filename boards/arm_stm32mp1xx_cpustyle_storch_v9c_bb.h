@@ -299,51 +299,6 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 #endif
 
-#if WITHENCODER
-
-	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOE)) //(gpioX_getinputs(GPIOE))
-	#define ENCODER_BITA		(UINT32_C(1) << 1)		// PE1
-	#define ENCODER_BITB		(UINT32_C(1) << 0)		// PE0
-
-	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(gpioX_getinputs(GPIOE)) //(gpioX_getinputs(GPIOE))
-	#define ENCODER2_BITA		(UINT32_C(1) << 4)		// PE4
-	#define ENCODER2_BITB		(UINT32_C(1) << 6)		// PE6
-
-
-	#define EENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define EENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
-	#define BOARD_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
-	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
-
-	#define ENCODER2_NOSPOOL 1
-
-	#define ENCODER_INITIALIZE() \
-		do { \
-			static einthandler_t eh1; \
-			static einthandler_t eh2; \
-			static ticker_t th2; \
-			arm_hardware_pioe_inputs(EENCODER_BITS); \
-			arm_hardware_pioe_updown(EENCODER_BITS, EENCODER_BITS, 0); \
-			einthandler_initialize(& eh1, EENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_pioe_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh1); \
-			arm_hardware_pioe_inputs(EENCODER2_BITS); \
-			arm_hardware_pioe_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
-			einthandler_initialize(& eh2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_pioe_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
-			/* ticker for spool */ \
-			ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
-			ticker_add(& th2); \
-		} while (0)
-
-#endif
-
 #if WITHI2S2HW
 
 	// Инициализируются I2S2 в дуплексном режиме.
