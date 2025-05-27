@@ -12905,14 +12905,28 @@ uif_key_changefilter(void)
 // обработчики кнопок клавиатуры
 //////////////////////////
 #if WITHTX
+
+// Установить режимы. Вернуть не-ноль если менялись
+static uint_fast8_t setmoxtune(uint_fast8_t mox, uint_fast8_t tune)
+{
+	uint_fast8_t f = 0;
+
+	f = f || moxmode != mox;
+	f = f || tunemode != tune;
+
+	moxmode = mox;
+	tunemode = tune;
+
+	return f;
+}
+
 /* включение режима настройки */
 static void
 uif_key_tuneoff(void)
 {
 	if (getactualtune() || moxmode)
 	{
-		moxmode = 0;
-		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 #if WITHCAT
 		cattunemode = 0;
 		//catautotuner_p3 = 0;
@@ -16508,8 +16522,9 @@ processtxrequest(void)
 #if WITHCAT
 		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
 #endif	/* WITHCAT */
-		moxmode = 0;
-		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		if (f)
+			updateboard(1, 0);
 #if WITHAUTOTUNER
 		reqautotune = 0;
 #endif /* WITHAUTOTUNER */
@@ -21511,8 +21526,9 @@ void hamradio_change_preamp(void)
 
 void hamradio_set_moxmode(uint_fast8_t mode)
 {
-	moxmode = !! mode;
-	updateboard(1, 1);
+	const uint_fast8_t f = setmoxtune(!! mode, tunemode);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+	if (f)
+		updateboard(1, 1);
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
