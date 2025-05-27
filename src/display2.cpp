@@ -6830,7 +6830,7 @@ void display2_initialize(void)
 	lv_tick_set_cb(myhardgeticks);
 
 	// Add custom draw unit
-	//draw_awg2d_init();
+	lvglhw_initialize();
 
 	// Приложение
 	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);

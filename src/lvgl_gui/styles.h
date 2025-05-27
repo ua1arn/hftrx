@@ -21,7 +21,7 @@ void wfl_init(void);
 PACKEDCOLORPIP_T * wfl_proccess(void);	/* построить растр с водопадом и спектром */
 uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, используемый в построении  изображений */
 
-#if defined (G2D_ROT) && ! LINUX_SUBSYSTEM
+#if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 
 	#include "misc/lv_types.h"
 	#include "misc/lv_color.h"

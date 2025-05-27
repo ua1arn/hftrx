@@ -1273,14 +1273,19 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-    return 0;
+    //return 0;
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
-        case LV_DRAW_TASK_TYPE_LAYER: {
+        case LV_DRAW_TASK_TYPE_LAYER:
+        	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
 
                 /* not support skew */
-                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+                /* not support scale */
+                if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
                     return 0;
                 }
 
@@ -1662,7 +1667,11 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
 
                 /* not support skew */
-                if(draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+                /* not support scale */
+                if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
                     return 0;
                 }
 
@@ -1671,18 +1680,18 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 	return 0;
                 }
 
-                if(draw_dsc->bitmap_mask_src) {
+                if (draw_dsc->bitmap_mask_src) {
                 	return 0;
                 }
 
                 bool masked = draw_dsc->bitmap_mask_src != NULL;
 
                 lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
-                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                if (masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
                     return 0;
                 }
 
-                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+                if( cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
                     return 0;
                 }
             }
@@ -1888,9 +1897,10 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 #endif /* defined (G2D_ROT) */
 
 // Add custom draw unit
-void draw_awg2d_init(void)
+void lvglhw_initialize(void)
 {
 #if defined (G2D_MIXER)
+	if (1)
 	{
 
 		//#if LV_DRAW_SW_COMPLEX == 1
@@ -1929,6 +1939,7 @@ void draw_awg2d_init(void)
 	}
 #endif /* defined (G2D_MIXER) */
 #if defined (G2D_ROT)
+	if (0)
 	{
 		// Блок позволяет копировать прямоугольники без изменения формата и размеров,
 		// возможен поворот на углы кратные 90 градусам
