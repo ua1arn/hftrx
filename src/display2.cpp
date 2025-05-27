@@ -6012,7 +6012,7 @@ static void display2_waterfall(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xs
 }
 
 // Stub
-static void display2_combo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_gcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 }
 
