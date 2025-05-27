@@ -16412,8 +16412,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 
 static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 {
-#if defined (HARDWARE_GET_TXDISABLE)
-	if (HARDWARE_GET_TXDISABLE())
+	if (hardware_get_txdisable())
 	{
 		//PRINTF("tx disabled\n");
 		if (txreq)
@@ -16422,7 +16421,6 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 		}
 		return 1;
 	}
-#endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
 	if (gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
