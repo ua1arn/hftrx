@@ -158,7 +158,7 @@
 			{	7,	0,	display2_att4,		& dzi_default, PGALL, },
 			{	12, 0,	display_pre3,		& dzi_default, PGALL, },
 		#if WITHDSPEXTDDC
-			{	16, 0,	display_ovf3,		& dzi_default, PGALL, },	// ovf/pre
+			{	16, 0,	display2_ovf3,		& dzi_default, PGALL, },	// ovf/pre
 		#endif /* WITHDSPEXTDDC */
 			{	20, 0,	display2_lockstate4, & dzi_default, PGALL, },
 			{	25, 0,	display2_agc3,		& dzi_default, PGALL, },

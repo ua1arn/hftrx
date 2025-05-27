@@ -2139,16 +2139,8 @@ static void display2_byp3(
 {
 #if WITHTX
 	#if WITHAUTOTUNER
-		const char * labels [1];
-		if (hamradio_get_bringSWR(labels))
-		{
-			display2_text(x, y, labels, colors_swrerr, 0);
-		}
-		else
-		{
-			const uint_fast8_t state = hamradio_get_bypvalue();
-			display_2states(x, y, state, PSTR("BYP"), text_nul3_P);
-		}
+	const uint_fast8_t state = hamradio_get_bypvalue();
+	display_2states(x, y, state, PSTR("BYP"), text_nul3_P);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -2164,16 +2156,8 @@ static void display2_byp4alt(
 {
 #if WITHTX
 	#if WITHAUTOTUNER
-	const char * labels [1];
-	if (hamradio_get_bringSWR(labels))
-	{
-		display2_text(x, y, labels, colors_swrerr, 0);
-	}
-	else
-	{
-		const uint_fast8_t state = hamradio_get_bypvalue();
-		display_2states(x, y, state, PSTR("BYP"), text_nul3_P);
-	}
+	const uint_fast8_t state = hamradio_get_bypvalue();
+	display_2states(x, y, state, PSTR("BYP"), text_nul3_P);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -2472,7 +2456,7 @@ static void display_pre3(
 }
 
 // переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
-static void display_ovf3(
+static void display2_ovf3(
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2484,7 +2468,12 @@ static void display_ovf3(
 	//const char * const labels [1] = { hamradio_get_pre_value_P(), };
 	//display2_text_P(x, y, labels, colors_1state, 0);
 
-	if (boad_fpga_adcoverflow() != 0)
+	const char * labels [1];
+	if (hamradio_get_bringSWR(labels))
+	{
+        display2_text(x, y, labels, colors_swrerr, 0);
+	}
+	else if (boad_fpga_adcoverflow() != 0)
 	{
 		colmain_setcolors(BGCOLOR, OVFCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
@@ -2511,7 +2500,12 @@ static void display2_preovf3(
 		dctx_t * pctx
 		)
 {
-	if (boad_fpga_adcoverflow() != 0)
+	const char * labels [1];
+	if (hamradio_get_bringSWR(labels))
+	{
+        display2_text(x, y, labels, colors_swrerr, 0);
+	}
+	else if (boad_fpga_adcoverflow() != 0)
 	{
 		colmain_setcolors(OVFCOLOR, BGCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
