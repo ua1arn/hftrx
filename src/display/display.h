@@ -592,14 +592,14 @@ uint_fast8_t colpip_hasalpha(void);
 /* Нарисовать прямоугольник со скругленными углами */
 void
 colmain_rounded_rect(
-	PACKEDCOLORPIP_T * __restrict buffer,
+	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t bx,	// ширина буфера
 	uint_fast16_t by,	// высота буфера
 	uint_fast16_t x1,
 	uint_fast16_t y1,
 	uint_fast16_t x2,
 	uint_fast16_t y2,
-	uint_fast16_t r,		// радиус закругления углов
+	uint_fast8_t r,		// радиус закругления углов
 	COLORPIP_T color,
 	uint_fast8_t fill
 	);
