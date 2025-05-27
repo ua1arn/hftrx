@@ -423,12 +423,6 @@ static const COLORPAIR_T colors_2rxtx [2] =
 	{	COLORPIP_RED,		COLORPIP_BLACK,	},	// TX
 };
 
-// Параметры отображения состояния прием/пеердача
-static const COLORPAIR_T colors_swrerr [1] =
-{
-		{	COLORPIP_RED,		COLORPIP_BLACK,	},	// SWR ERROR
-};
-
 // Параметры отображения состояний из трех вариантов
 static const COLORPAIR_T colors_4state [4] =
 {
@@ -2471,7 +2465,8 @@ static void display2_ovf3(
 	const char * labels [1];
 	if (hamradio_get_bringSWR(labels))
 	{
-        display2_text(x, y, labels, colors_swrerr, 0);
+ 		colmain_setcolors(BGCOLOR, OVFCOLOR);
+		display_at_P(x, y, labels [0]);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
@@ -2503,11 +2498,12 @@ static void display2_preovf3(
 	const char * labels [1];
 	if (hamradio_get_bringSWR(labels))
 	{
-        display2_text(x, y, labels, colors_swrerr, 0);
+ 		colmain_setcolors(BGCOLOR, OVFCOLOR);
+		display_at_P(x, y, labels [0]);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
-		colmain_setcolors(OVFCOLOR, BGCOLOR);
+		colmain_setcolors(BGCOLOR, OVFCOLOR);
 		display_at_P(x, y, PSTR("OVF"));
 	}
 	else if (boad_mike_adcoverflow() != 0)
