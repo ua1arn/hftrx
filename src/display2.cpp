@@ -18,6 +18,13 @@
 #include "dspdefines.h"
 
 
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+#include "lvgl.h"
+#include "../demos/lv_demos.h"
+#include "src/lvgl_gui/styles.h"
+#endif
+
 struct dzone;
 struct dzitem
 {
@@ -6603,10 +6610,6 @@ display_walktrough(
 	dctx_t * pctx
 	)
 {
-#if WITHLVGL
-	return;
-#endif /* WITHLVGL */
-
 	uint_fast8_t i;
 
 	for (i = 0; i < WALKCOUNT; ++ i)
@@ -6681,6 +6684,8 @@ void display2_bgprocess(
 	redrawreq = 0;
 
 #if WITHLVGL
+	// Отрисовка производится диспетчером LVGL
+	lv_task_handler();
 	return;
 
 #elif LINUX_SUBSYSTEM
@@ -6760,17 +6765,13 @@ void display2_bgprocess(
 	colmain_nextfb();
 
 #else
+	// обычное отображение, без LVGL или litehtml
 	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
 #endif
 }
 
 
 #if WITHLVGL && ! LINUX_SUBSYSTEM
-
-#include "lvgl.h"
-#include "../demos/lv_demos.h"
-#include "src/lvgl_gui/styles.h"
-
 
 //#define LCDMODE_PIXELSIZE (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)) /*will be 2 for RGB565 */
 
@@ -6826,6 +6827,7 @@ void display2_initialize(void)
 	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
 	styles_init();
 	lvgl_init();
+	if (0)
 	{
 		static dpcobj_t dpcobj;
 
@@ -6964,7 +6966,9 @@ void display2_fillbg(void)
 
 void display2_latch(void)
 {
+#if ! LINUX_SUBSYSTEM
 	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
+#endif
 }
 
 // последний номер варианта отображения (menuset)
@@ -7362,17 +7366,22 @@ COLORPIP_T display2_get_spectrum(int x)
 
 void wfl_init(void)
 {
+#if LINUX_SUBSYSTEM
 	pipparams_t pip;
 	display2_getpipparams(& pip);
 	display2_wfl_init(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 PACKEDCOLORPIP_T * wfl_proccess(void)
 {
 	pipparams_t pip;
 	display2_getpipparams(& pip);
-	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, pip.x, pip.y, pip.w, pip.h, display2_getbgcolor());
+#if LINUX_SUBSYSTEM
+	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
 	display2_latchcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+#endif /* LINUX_SUBSYSTEM */
 	display2_gcombo(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
 	return getscratchwnd(X2GRID(pip.x), Y2GRID(pip.y));
 }

@@ -1,5 +1,7 @@
 ifeq (1, 0)
-# lvgl
+# Light and Versatile Graphics Library
+# https://lvgl.io/
+# https://github.com/lvgl/lvgl.git
 LVGLDIR = $(PRJROOT)/lvgl
 DINCDIR += $(LVGLDIR)/src
 SRCDIRS += $(LVGLDIR)/src
