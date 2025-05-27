@@ -6,7 +6,7 @@
 	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
 
 	enum {
-		DLES = 35,		// spectrum window upper line
+		DLES = 30,		// spectrum window upper line
         DLE1 = 96 - GRID2Y(1),		// 96-5
 		DLE_unused
 	};
@@ -16,7 +16,7 @@
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 
 		BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(55 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
+		BDCV_ALLRX = ROWS2GRID(60 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -129,7 +129,7 @@
 		{	45,	25,	5, 4, display2_wpm5, 		& dzi_default, PGALL, },	// 22WPM
 
 		//{	24, 30,	10, 4, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
-		{	37, 30,	8, 4, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
+		//{	37, 30,	8, 4, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
