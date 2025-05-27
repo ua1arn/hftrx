@@ -1273,7 +1273,6 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-    //return 0;
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
         case LV_DRAW_TASK_TYPE_LAYER:
@@ -1659,7 +1658,6 @@ static void awrot_execute_drawing(lv_draw_task_t * t)
 static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-    return 0;
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
         case LV_DRAW_TASK_TYPE_LAYER:
@@ -1728,6 +1726,9 @@ static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 {
     LV_PROFILER_DRAW_BEGIN;
     draw_awrot_unit_t * draw_awrot_unit = (draw_awrot_unit_t *) draw_unit;
+    LV_PROFILER_DRAW_END;
+    return 0;
+    return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
 
 #if LV_USE_OS
     uint32_t i;
@@ -1900,7 +1901,7 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 void lvglhw_initialize(void)
 {
 #if defined (G2D_MIXER)
-	if (1)
+	if (0)
 	{
 
 		//#if LV_DRAW_SW_COMPLEX == 1
