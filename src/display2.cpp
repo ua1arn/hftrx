@@ -6966,7 +6966,8 @@ void display2_fillbg(void)
 
 void display2_latch(void)
 {
-#if ! LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && WITHLVGL
+#else
 	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
 #endif
 }
