@@ -6997,11 +6997,7 @@ uint_fast8_t display_getfreqformat(
 /* отображение S-метра на приёме или передаче */
 // Функция вызывается из display2.c
 void
-display2_bars_rx(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+display2_bars_rx(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 #if WITHBARS
 	uint_fast8_t tracemax;
@@ -7014,11 +7010,7 @@ display2_bars_rx(
 /* отображение P-метра и SWR-метра на приёме или передаче */
 // Функция вызывается из display2.c
 void
-display2_bars_tx(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+display2_bars_tx(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 #if WITHBARS
 #if WITHTX
