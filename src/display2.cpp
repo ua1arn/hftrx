@@ -3834,7 +3834,7 @@ mapscene_y(
 	ASSERT(y >= 0 && y < wdy);
 	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
 
-	return y;
+	return z;//y;
 }
 
 struct ustates
@@ -5695,15 +5695,18 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int valwfl = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val3dss = dsp_mag2y(filter_3dss(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 	#if LCDMODE_MAIN_L8
-		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, val);	// запись в буфер водопада индекса палитры
-		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val);	// запись в буфер водопада индекса палитры
+		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
+		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
 	#else /* LCDMODE_MAIN_L8 */
-		ASSERT(val >= 0);
-		ASSERT(val < (int) ARRAY_SIZE(wfpalette));
-		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
-		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val]);	// запись в буфер водопада цветовой точки
+		ASSERT(valwfl >= 0);
+		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
+		ASSERT(val3dss >= 0);
+		ASSERT(val3dss < (int) ARRAY_SIZE(wfpalette));
+		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
+		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val3dss]);	// запись в буфер водопада цветовой точки
 	#endif /* LCDMODE_MAIN_L8 */
 	}
 
@@ -5824,6 +5827,41 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		}
 	}
 	(void) pctx;
+}
+
+// отрисовка изображения спектра в 3В проекции
+static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
+	const int_fast16_t x0pix = GRID2X(x0);
+	const int_fast16_t y0pix = GRID2Y(y0);
+	const int_fast16_t alldx = GRID2X(xspan);
+	const int_fast16_t alldy = GRID2Y(yspan);
+	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
+	const int_fast32_t bw = latched_dm.bw;
+	int_fast16_t zfoward;
+
+	for (zfoward = 0; zfoward < MAX_3DSS_STEP; ++ zfoward)
+	{
+		const int_fast16_t z = MAX_3DSS_STEP - 1 - zfoward;	// начинаем рисовать с самой дальней строки истории
+		const int_fast16_t zrow = (row3dss + zfoward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
+		int_fast16_t x;
+		for (x = 0; x < alldx; ++ x)
+		{
+			int_fast16_t y;
+			for (y = 0; y < alldy; ++ y)
+			{
+				int_fast16_t xmap = mapscene_x(alldx, alldy, x, y, z);
+				int_fast16_t ymap = mapscene_y(alldx, alldy, x, y, z);
+				if (xmap < 0 || xmap >= alldx)
+					continue;
+				if (ymap < 0 || ymap >= alldy)
+					continue;
+				colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, * atskapej(x, zrow));
+			}
+		}
+	}
+	display_colorgrid_3dss(colorpip, y0pix, alldy, f0, bw);
 }
 
 #if WITHVIEW_3DSS
