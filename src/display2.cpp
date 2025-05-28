@@ -3789,7 +3789,7 @@ enum { WFROWS = GRID2Y(BDCV_ALLRX) };
 #else
 	#define	MAX_3DSS_STEP 42
 #endif /* #if CPUSTYLE_XC7Z || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 */
-#define	Y_STEP_3DSS 2
+#define	Z_STEP_3DSS 2
 
 typedef int16_t WFL3DSS_T;
 
@@ -5059,7 +5059,7 @@ static void init_depth_map_3dss(void)
 
 	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
-		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP_3DSS;
+		uint_fast16_t range = HALF_ALLDX - 1 - i * Z_STEP_3DSS;
 
 		for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 		{
@@ -5570,7 +5570,7 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 
 	wfrow = (wfrow == 0) ? (WFROWS - 1) : (wfrow - 1);
 
-#if WITHVIEW_3DSS
+#if 0 //WITHVIEW_3DSS
 	// продвижение по истории
 	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
 	if (! delay_3dss)
@@ -5724,7 +5724,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 #else
 	const uint_fast16_t SPY = GRID2Y(yspan) - 15;
 #endif
-	const uint_fast16_t HORMAX_3DSS = SPY - MAX_3DSS_STEP * Y_STEP_3DSS - 2;
+	const uint_fast16_t HORMAX_3DSS = SPY - MAX_3DSS_STEP * Z_STEP_3DSS - 2;
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
 	uint_fast16_t xleft = latched_dm.xleft [0];		// левый край шторки
@@ -5746,7 +5746,7 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 	{
-		uint_fast16_t y0 = SPY - 5 - i * Y_STEP_3DSS;
+		uint_fast16_t y0 = SPY - 5 - i * Z_STEP_3DSS;
 		uint_fast16_t x;
 
 		uint_fast16_t x_old = UINT16_MAX;
@@ -5833,6 +5833,13 @@ static void display2_3dss(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, 
 
 	display_colorgrid_3dss(colorpip, SPY - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
 	(void) pctx;
+
+#if WITHVIEW_3DSS
+	// продвижение по истории
+	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+	if (! delay_3dss)
+		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
+#endif /* WITHVIEW_3DSS */
 }
 #endif /* WITHVIEW_3DSS */
 

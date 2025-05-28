@@ -1644,28 +1644,6 @@ void xdma_iq_event_handler(void)
 	memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
 	save_dmabuffer32rx(addr32rx);
 
-#if CODEC1_FPGA
-#if WITHFT8
-	if (! ft8_get_state())
-#endif /* WITHFT8 */
-	{
-		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-		uint32_t * b = (uint32_t *) addr_ph;
-
-#if WITHAUDIOSAMPLESREC
-#if WITHAD936XIIO
-		if (! get_ad936x_stream_status())
-#endif /* WITHAD936XIIO */
-			as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
-
-		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-			xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
-
-		release_dmabuffer16tx(addr_ph);
-	}
-#endif /* CODEC1_FPGA */
-
 	const uintptr_t addr32tx = getfilled_dmabuffer32tx();
 	uint32_t * t = (uint32_t *) addr32tx;
 
@@ -1688,10 +1666,30 @@ void codec_event_handler(void)
 
 	uintptr_t addrm = allocate_dmabuffer16rx();
 	memcpy((uint8_t *) addrm, bufm, SIZEMIC8);
-#if WITHAUDIOSAMPLESREC
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 	as_tx((uint32_t *) bufm);
-#endif /* WITHAUDIOSAMPLESREC */
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI */
 	save_dmabuffer16rx(addrm);
+
+#if WITHFT8
+	if (! ft8_get_state())
+#endif /* WITHFT8 */
+	{
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
+
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
+#if WITHAD936XIIO
+		if (! get_ad936x_stream_status())
+#endif /* WITHAD936XIIO */
+			as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI */
+
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
+
+		release_dmabuffer16tx(addr_ph);
+	}
 #endif /* CODEC1_FPGA */
 }
 
