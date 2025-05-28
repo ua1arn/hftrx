@@ -96,9 +96,7 @@
 	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		14
-	#define WITHALTERNATIVEFONTS	1
 //	#define WITHAFEQUALIZER			1
-	#define WITHALTERNATIVELAYOUT	1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	#define WITHGNSS				1
