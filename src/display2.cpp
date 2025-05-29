@@ -5911,7 +5911,7 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		for (x = 0; x < alldx; ++ x)
 		{
 			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
-			const int_fast16_t y = alldy - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
+			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
 			const int_fast16_t xmap = mapscene_x(x, y, z, & vp);
 			const int_fast16_t ymap = mapscene_y(x, y, z, & vp);
 
