@@ -5846,10 +5846,11 @@ typedef struct mapscene_view
  */
 static int_fast16_t
 mapscene_x(
-	int_fast16_t x, 	// координата слева направо (0..wdx-1)
-	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
-	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
-	const mapview_t * vp	// координаты наблюдателя
+	int_fast16_t x, 	// координата слева направо (0..box->y-1)
+	int_fast16_t y, 	// координата сверзу вниз (0..box->y-1)
+	int_fast16_t z,		// удаление от передней стенки (0..box->z-1)
+	const mapview_t * vp,	// координаты наблюдателя
+	const mapview_t * box	// размеры пространства исходных точек
 	)
 {
 	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
@@ -5869,10 +5870,11 @@ mapscene_x(
  */
 static int_fast16_t
 mapscene_y(
-	int_fast16_t x, 	// координата слева направо (0..wdx-1)
-	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
-	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
-	const mapview_t * vp	// координаты наблюдателя
+	int_fast16_t x, 	// координата слева направо (0..box->y-1)
+	int_fast16_t y, 	// координата сверзу вниз (0..box->y-1)
+	int_fast16_t z,		// удаление от передней стенки (0..box->z-1)
+	const mapview_t * vp,	// координаты наблюдателя
+	const mapview_t * box	// размеры пространства исходных точек
 	)
 {
 	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
@@ -5899,9 +5901,16 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	// координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
 	const mapview_t vp =
 	{
-			.x = alldx / 2,	// смотрим с середины окна
-			.y = 0,			// От верхнего края
-			.z = - MAX_3DSS_STEP * 2		// пока от балды - удаление от передней стенки паралеепипеда
+		.x = alldx / 2,	// смотрим с середины окна
+		.y = 0,			// От верхнего края
+		.z = - MAX_3DSS_STEP * 2		// пока от балды - удаление от передней стенки паралеепипеда
+	};
+	// размеры пространства исходных точек
+	static const mapview_t box =
+	{
+		.x = ALLDX,
+		.y = PALETTESIZE,
+		.z = MAX_3DSS_STEP
 	};
 	int_fast16_t zfoward;
 
@@ -5914,8 +5923,8 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		{
 			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
 			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
-			const int_fast16_t xmap = mapscene_x(x, y, z, & vp);
-			const int_fast16_t ymap = mapscene_y(x, y, z, & vp);
+			const int_fast16_t xmap = mapscene_x(x, y, z, & vp, & box);
+			const int_fast16_t ymap = mapscene_y(x, y, z, & vp, & box);
 
 			if (xmap < 0 || xmap >= alldx)
 				continue;
