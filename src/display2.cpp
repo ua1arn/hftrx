@@ -5940,10 +5940,8 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 			const int multiplier = mapscene_calc(x, y, z, & vp, & box, & divisor);
 			const int_fast16_t xmap = mapscene_x(x, y, z, & vp, & box, multiplier, divisor);
 			const int_fast16_t ymap = mapscene_y(x, y, z, & vp, & box, multiplier, divisor);
-
-			if (xmap < 0 || xmap >= alldx)
-				continue;
-			if (ymap < 0 || ymap >= alldy)
+			// координаты выходят за границы окна - не рисуем
+			if (xmap < 0 || xmap >= alldx || ymap < 0 || ymap >= alldy)
 				continue;
 			colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, * atskapej(x, zrow));
 		}
