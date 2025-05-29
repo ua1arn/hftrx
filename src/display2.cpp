@@ -5926,9 +5926,10 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	{
 		const int_fast16_t z = zfoward;//MAX_3DSS_STEP - 1 - zfoward;	// начинаем рисовать с самой дальней строки истории
 		const int_fast16_t zrow = (row3dss + zfoward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
-		int_fast16_t x;	// позиция в окне слева направо
-		for (x = 0; x < alldx; ++ x)
+		int_fast16_t xw;	// позиция в окне слева направо
+		for (xw = 0; xw < alldx; ++ xw)
 		{
+			const int_fast16_t x = normalize(xw, 0, alldx - 1, ALLDX - 1);
 			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
 			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
 			int divisor;
