@@ -5840,6 +5840,30 @@ typedef struct mapscene_view
 	int_fast16_t z;
 } mapview_t;
 
+// Возвращает параметры для преобрахования координат
+static int calctransform3dss(
+	int_fast16_t x, 	// координата слева направо (0..box->y-1)
+	int_fast16_t y, 	// координата сверзу вниз (0..box->y-1)
+	int_fast16_t z,		// удаление от передней стенки (0..box->z-1)
+	const mapview_t * vp,	// координаты наблюдателя
+	const mapview_t * box, 	// размеры пространства исходных точек
+	int * pdiv
+)
+{
+	ASSERT(x >= 0 && x < vp->x);
+	ASSERT(y >= 0 && y < vp->y);
+	ASSERT(z >= 0 && z < vp->z);
+	const int dx = vp->x - x;
+	const int dy = vp->y - y;
+	const int dz = vp->z - z;	// дальность
+	// расчёт масштаба - пока по расстоянию только одной координаты
+	const int multiplier = (vp->z - 1);
+	const int divisor = (dz - 1);
+
+	* pdiv = divisor;
+	return multiplier;
+}
+
 /*
  * Получить горизонтальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
  * находящиеся на переднем плане (z == 0) не корректируются
@@ -5853,15 +5877,8 @@ mapscene_x(
 	const mapview_t * box	// размеры пространства исходных точек
 	)
 {
-	ASSERT(x >= 0 && x < vp->x);
-	ASSERT(y >= 0 && y < vp->y);
-	ASSERT(z >= 0 && z < vp->z);
-	const int dx = vp->x - x;
-	const int dy = vp->y - y;
-	const int dz = vp->z - z;	// дальность
-	// расчёт масштаба - пока по расстоянию только одной координаты
-	const int multiplier = (vp->z - 1);
-	const int divisor = (dz - 1);
+	int divisor;
+	const int multiplier = calctransform3dss(x, y, z, vp, box, & divisor);
 
 	return x * multiplier / divisor;	// скорректированная координата
 }
@@ -5879,15 +5896,8 @@ mapscene_y(
 	const mapview_t * box	// размеры пространства исходных точек
 	)
 {
-	ASSERT(x >= 0 && x < vp->x);
-	ASSERT(y >= 0 && y < vp->y);
-	ASSERT(z >= 0 && z < vp->z);
-	const int dx = vp->x - x;
-	const int dy = vp->y - y;
-	const int dz = vp->z - z;	// дальность
-	// расчёт масштаба - пока по расстоянию только одной координаты
-	const int multiplier = (vp->z - 1);
-	const int divisor = (dz - 1);
+	int divisor;
+	const int multiplier = calctransform3dss(x, y, z, vp, box, & divisor);
 
 	return y * multiplier / divisor;	// скорректированная координата
 }
