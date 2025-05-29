@@ -3795,61 +3795,6 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 typedef int16_t WFL3DSS_T;
 typedef int16_t SCAPEJVAL_T;
 
-static int iabs(int v)
-{
-	return v > 0 ? v : - v;
-}
-
-// координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
-typedef struct mapscene_view
-{
-	int_fast16_t x;
-	int_fast16_t y;
-	int_fast16_t z;
-} mapview_t;
-
-/*
- * Получить горизонтальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
- */
-static int_fast16_t
-mapscene_x(
-	int_fast16_t x, 	// координата слева направо (0..wdx-1)
-	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
-	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
-	const mapview_t * vp	// координаты наблюдателя
-	)
-{
-	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
-	const int dx = vp->x - x;
-	const int dy = vp->y - y;
-	const int dz = vp->z - z;	// дальность
-	const int multiplier = iabs(vp->z);
-	const int divisor = iabs(dz);
-
-	return x * multiplier / divisor;
-}
-
-/*
- * Получить вертикальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
- */
-static int_fast16_t
-mapscene_y(
-	int_fast16_t x, 	// координата слева направо (0..wdx-1)
-	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
-	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
-	const mapview_t * vp	// координаты наблюдателя
-	)
-{
-	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
-	const int dx = vp->x - x;
-	const int dy = vp->y - y;
-	const int dz = vp->z - z;	// дальность
-	const int multiplier = iabs(vp->z);
-	const int divisor = iabs(dz);
-
-	return y * multiplier / divisor;
-}
-
 struct ustates
 {
 #if defined(ARM_MATH_NEON)
@@ -5886,6 +5831,59 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 }
 
 #if WITHVIEW_3DSS
+
+// координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
+typedef struct mapscene_view
+{
+	int_fast16_t x;
+	int_fast16_t y;
+	int_fast16_t z;
+} mapview_t;
+
+/*
+ * Получить горизонтальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
+ */
+static int_fast16_t
+mapscene_x(
+	int_fast16_t x, 	// координата слева направо (0..wdx-1)
+	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
+	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
+	const mapview_t * vp	// координаты наблюдателя
+	)
+{
+	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
+	const int dx = vp->x - x;
+	const int dy = vp->y - y;
+	const int dz = vp->z - z;	// дальность
+	// расчёт масштаба - пока по расстоянию только одной координаты
+	const int multiplier = vp->z;
+	const int divisor = dz;
+
+	return x * multiplier / divisor;
+}
+
+/*
+ * Получить вертикальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
+ */
+static int_fast16_t
+mapscene_y(
+	int_fast16_t x, 	// координата слева направо (0..wdx-1)
+	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
+	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
+	const mapview_t * vp	// координаты наблюдателя
+	)
+{
+	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
+	const int dx = vp->x - x;
+	const int dy = vp->y - y;
+	const int dz = vp->z - z;	// дальность
+	// расчёт масштаба - пока по расстоянию только одной координаты
+	const int multiplier = vp->z;
+	const int divisor = dz;
+
+	return y * multiplier / divisor;
+}
+
 // отрисовка изображения спектра в 3В проекции
 static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
@@ -5901,13 +5899,13 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	{
 			.x = alldx / 2,	// смотрим с середины окна
 			.y = 0,			// От верхнего края
-			.z = - 50		// пока от балды - удаление от передней стенки паралеепипеда
+			.z = - MAX_3DSS_STEP * 2		// пока от балды - удаление от передней стенки паралеепипеда
 	};
 	int_fast16_t zfoward;
 
 	for (zfoward = 0; zfoward < MAX_3DSS_STEP; ++ zfoward)
 	{
-		const int_fast16_t z = MAX_3DSS_STEP - 1 - zfoward;	// начинаем рисовать с самой дальней строки истории
+		const int_fast16_t z = zfoward;//MAX_3DSS_STEP - 1 - zfoward;	// начинаем рисовать с самой дальней строки истории
 		const int_fast16_t zrow = (row3dss + zfoward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
 		int_fast16_t x;	// позиция в окне слева направо
 		for (x = 0; x < alldx; ++ x)
