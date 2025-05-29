@@ -249,6 +249,13 @@ bootloader_launch_app(uintptr_t startfunc)
 		__WFE();
 	}
 
+#elif CPUSTYLE_RISCV
+
+	(* (void (*)(void)) startfunc)();
+	for (;;)
+	{
+	}
+
 #else
 	/* Обычный запуск, в 32-бит режиме. */
 	__ISB();

@@ -5961,12 +5961,14 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, INT16_MAX, alldy - 1);
 			if (xw == 0)
 			{
-				oldx = x0pix + xw, oldy = y0pix + y;
+				oldx = x0pix + x;
+				oldy = y0pix + y;
 			}
 			else
 			{
 				colpip_line(colorpip, DIM_X, DIM_Y, oldx, oldy, x0pix + x, y0pix + y, COLORPIP_YELLOW, 0);
-				oldx = x0pix + xw, oldy = y0pix + y;
+				oldx = x0pix + x;
+				oldy = y0pix + y;
 			}
 		}
 	}
