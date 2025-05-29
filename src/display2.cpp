@@ -5690,7 +5690,7 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 	{
 		// для водопада
 		const int valwfl = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-		const int val3dss = dsp_mag2y(filter_3dss(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val3dss = dsp_mag2y(filter_3dss(x), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 	#if LCDMODE_MAIN_L8
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
 		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
@@ -5702,10 +5702,10 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 		ASSERT(valwfl >= 0);
 		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
 		ASSERT(val3dss >= 0);
-		ASSERT(val3dss < (int) ARRAY_SIZE(wfpalette));
+		ASSERT(val3dss <= INT16_MAX);
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 		#if WITHVIEW_3DSS
-			colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val3dss]);	// запись в буфер водопада цветовой точки
+			colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 			* atskapejval(x, row3dss) = val3dss;
 		#endif /* WITHVIEW_3DSS */
 	#endif /* LCDMODE_MAIN_L8 */
@@ -5935,8 +5935,8 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		for (xw = 0; xw < alldx; ++ xw)
 		{
 			const int_fast16_t x = normalize(xw, 0, alldx - 1, ALLDX - 1);
-			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
-			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
+			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..INT16_MAX)
+			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, INT16_MAX, alldy - 1);
 			int divisor;
 			const int multiplier = mapscene_calc(x, y, z, & vp, & box, & divisor);
 			const int_fast16_t xmap = mapscene_x(x, y, z, & vp, & box, multiplier, divisor);
@@ -5954,8 +5954,8 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		for (xw = 0; xw < alldx; ++ xw)
 		{
 			const int_fast16_t x = normalize(xw, 0, alldx - 1, ALLDX - 1);
-			const SCAPEJVAL_T val3dss = * atskapejval(x, row3dss);	// (0..PALETTESIZE - 1)
-			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
+			const SCAPEJVAL_T val3dss = * atskapejval(x, row3dss);	// (0..INT16_MAX)
+			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, INT16_MAX, alldy - 1);
 			if (xw == 0)
 			{
 				oldx = x0pix + xw, oldy = y0pix + y;
@@ -6237,7 +6237,8 @@ static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t
 	{
 #if WITHVIEW_3DSS
 	case VIEW_3DSS:
-		display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
+		display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
+		//display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
