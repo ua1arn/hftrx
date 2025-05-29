@@ -5915,7 +5915,7 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	{
 		.x = alldx / 2,	// смотрим с середины окна
 		.y = 0,			// От верхнего края
-		.z = - MAX_3DSS_STEP * 2		// пока от балды - удаление от передней стенки паралеепипеда
+		.z = - 500 //- MAX_3DSS_STEP * 2		// пока от балды - удаление от передней стенки паралеепипеда
 	};
 	// размеры пространства исходных точек
 	static const mapview_t box =
@@ -5944,6 +5944,26 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 			if (xmap < 0 || xmap >= alldx || ymap < 0 || ymap >= alldy)
 				continue;
 			colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, * atskapej(x, zrow));
+		}
+	}
+	{
+		// Отрисовать передний план линией
+		int_fast16_t xw;	// позиция в окне слева направо
+		int_fast16_t oldx, oldy;
+		for (xw = 0; xw < alldx; ++ xw)
+		{
+			const int_fast16_t x = normalize(xw, 0, alldx - 1, ALLDX - 1);
+			const SCAPEJVAL_T val3dss = * atskapejval(x, row3dss);	// (0..PALETTESIZE - 1)
+			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
+			if (xw == 0)
+			{
+				oldx = x0pix + xw, oldy = y0pix + y;
+			}
+			else
+			{
+				colpip_line(colorpip, DIM_X, DIM_Y, oldx, oldy, x0pix + x, y0pix + y, COLORPIP_YELLOW, 0);
+				oldx = x0pix + xw, oldy = y0pix + y;
+			}
 		}
 	}
 	// todo: сделать так,, чтобы вписывалось в разрешенный прямоугольник
