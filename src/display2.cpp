@@ -5924,12 +5924,13 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		.y = PALETTESIZE,
 		.z = MAX_3DSS_STEP
 	};
-	int_fast16_t zfoward;
+	int_fast16_t zfofward;
 
-	for (zfoward = 0; zfoward < MAX_3DSS_STEP; ++ zfoward)
+	//colpip_fillrect(colorpip, DIM_X, DIM_Y, x0pix, y0pix, alldx, alldy, display2_getbgcolor());
+	for (zfofward = 0; zfofward < MAX_3DSS_STEP; ++ zfofward)
 	{
-		const int_fast16_t z = zfoward;//MAX_3DSS_STEP - 1 - zfoward;	// начинаем рисовать с самой дальней строки истории
-		const int_fast16_t zrow = (row3dss + zfoward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
+		const int_fast16_t z = zfofward;//MAX_3DSS_STEP - 1 - zfofward;	// начинаем рисовать с самой дальней строки истории
+		const int_fast16_t zrow = (row3dss + zfofward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
 		int_fast16_t xw;	// позиция в окне слева направо
 		for (xw = 0; xw < alldx; ++ xw)
 		{
@@ -6236,7 +6237,7 @@ static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t
 	{
 #if WITHVIEW_3DSS
 	case VIEW_3DSS:
-		display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
+		display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
