@@ -5735,16 +5735,19 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
 		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
 		* atskapejval(x, row3dss) = val3dss;
+		#if WITHVIEW_3DSS
+			* atskapejval(x, row3dss) = val3dss;
+		#endif /* WITHVIEW_3DSS */
 	#else /* LCDMODE_MAIN_L8 */
 		ASSERT(valwfl >= 0);
 		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
 		ASSERT(val3dss >= 0);
 		ASSERT(val3dss < (int) ARRAY_SIZE(wfpalette));
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
-#if WITHVIEW_3DSS
-		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val3dss]);	// запись в буфер водопада цветовой точки
-		* atskapejval(x, row3dss) = val3dss;
-#endif /* WITHVIEW_3DSS */
+		#if WITHVIEW_3DSS
+			colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val3dss]);	// запись в буфер водопада цветовой точки
+			* atskapejval(x, row3dss) = val3dss;
+		#endif /* WITHVIEW_3DSS */
 	#endif /* LCDMODE_MAIN_L8 */
 	}
 
