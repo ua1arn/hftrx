@@ -3795,6 +3795,11 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 typedef int16_t WFL3DSS_T;
 typedef int16_t SCAPEJVAL_T;
 
+static int iabs(int v)
+{
+	return v > 0 ? v : - v;
+}
+
 // координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
 typedef struct mapscene_view
 {
@@ -3804,7 +3809,7 @@ typedef struct mapscene_view
 } mapview_t;
 
 /*
- * Получить горизонтальную координату отображения на переннюю стенку точки с координатами x, y, z в параллелепипеде
+ * Получить горизонтальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
  */
 static int_fast16_t
 mapscene_x(
@@ -3815,12 +3820,17 @@ mapscene_x(
 	)
 {
 	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
+	const int dx = vp->x - x;
+	const int dy = vp->y - y;
+	const int dz = vp->z - z;	// дальность
+	const int multiplier = iabs(vp->z);
+	const int divisor = iabs(dz);
 
-	return x;
+	return x * multiplier / divisor;
 }
 
 /*
- * Получить вертикальную координату отображения на переннюю стенку точки с координатами x, y, z в параллелепипеде
+ * Получить вертикальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
  */
 static int_fast16_t
 mapscene_y(
@@ -3831,8 +3841,13 @@ mapscene_y(
 	)
 {
 	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
+	const int dx = vp->x - x;
+	const int dy = vp->y - y;
+	const int dz = vp->z - z;	// дальность
+	const int multiplier = iabs(vp->z);
+	const int divisor = iabs(dz);
 
-	return z;//y;
+	return y * multiplier / divisor;
 }
 
 struct ustates
@@ -5884,8 +5899,8 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	// координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
 	const mapview_t vp =
 	{
-			.x = alldx / 2,
-			.y = 0,
+			.x = alldx / 2,	// смотрим с середины окна
+			.y = 0,			// От верхнего края
 			.z = - 50		// пока от балды - удаление от передней стенки паралеепипеда
 	};
 	int_fast16_t zfoward;
