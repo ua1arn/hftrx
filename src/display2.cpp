@@ -5857,7 +5857,7 @@ static int mapscene_calc(
 	const int dy = vp->y - y;
 	const int dz = vp->z - z;	// дальность
 	// расчёт масштаба - пока по расстоянию только одной координаты z
-	const int multiplier = (vp->z - 1);
+	const int multiplier = (- vp->z - 1);
 	const int divisor = (dz - 1);
 
 	* pdiv = divisor;
@@ -5873,11 +5873,13 @@ mapscene_x(
 	int_fast16_t x, 	// координата слева направо (0..box->y-1)
 	int_fast16_t y, 	// координата сверзу вниз (0..box->y-1)
 	int_fast16_t z,		// удаление от передней стенки (0..box->z-1)
+	const mapview_t * vp,	// координаты наблюдателя
+	const mapview_t * box, 	// размеры пространства исходных точек
 	int multiplier,
 	int divisor
 	)
 {
-	return x * multiplier / divisor;	// скорректированная координата
+	return vp->x + (vp->x - x) * multiplier / divisor;	// скорректированная координата
 }
 
 /*
@@ -5889,11 +5891,13 @@ mapscene_y(
 	int_fast16_t x, 	// координата слева направо (0..box->y-1)
 	int_fast16_t y, 	// координата сверзу вниз (0..box->y-1)
 	int_fast16_t z,		// удаление от передней стенки (0..box->z-1)
+	const mapview_t * vp,	// координаты наблюдателя
+	const mapview_t * box, 	// размеры пространства исходных точек
 	int multiplier,
 	int divisor
 	)
 {
-	return y * multiplier / divisor;	// скорректированная координата
+	return vp->y + (vp->y - y) * multiplier / divisor;	// скорректированная координата
 }
 
 // отрисовка изображения спектра в 3D проекции
@@ -5934,8 +5938,8 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
 			int divisor;
 			const int multiplier = mapscene_calc(x, y, z, & vp, & box, & divisor);
-			const int_fast16_t xmap = mapscene_x(x, y, z, multiplier, divisor);
-			const int_fast16_t ymap = mapscene_y(x, y, z, multiplier, divisor);
+			const int_fast16_t xmap = mapscene_x(x, y, z, & vp, & box, multiplier, divisor);
+			const int_fast16_t ymap = mapscene_y(x, y, z, & vp, & box, multiplier, divisor);
 
 			if (xmap < 0 || xmap >= alldx)
 				continue;
