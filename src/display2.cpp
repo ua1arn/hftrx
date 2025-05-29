@@ -3793,6 +3793,7 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 	enum { Z_STEP_3DSS = 2 };
 
 typedef int16_t WFL3DSS_T;
+typedef int16_t SCAPEJVAL_T;
 
 // координаты наблюдателя относительно левого верхнего угла паралелепида с 3dss историей
 static int_fast16_t mapscene_view_x = DIM_X / 2;
@@ -3856,6 +3857,7 @@ struct ustates
 
 	PACKEDCOLORPIP_T histcolors [GXSIZE(ALLDX, NROWSWFL)];	// массив цветных пикселей "водопада"
 	PACKEDCOLORPIP_T hist3dss [GXSIZE(ALLDX, MAX_3DSS_STEP)];		// массив цветных пикселей ландшавта
+	SCAPEJVAL_T hist3dssvals [MAX_3DSS_STEP][ALLDX];	// массив высот (0..PALETTESIZE - 1)
 
 #if WITHVIEW_3DSS
 	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
@@ -3873,6 +3875,7 @@ struct ustates
 #define ADDR_WFL3DSS (gvars.wfj3dss)
 #define ADDR_WFJARRAY (gvars.histcolors)
 #define ADDR_SCAPEARRAY (gvars.hist3dss)
+#define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
 
 union states
 {
@@ -5151,6 +5154,14 @@ atskapej(uint_fast16_t x, uint_fast16_t y)
 	return colpip_mem_at(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, x, y);
 }
 
+/* получить адрес значения высоты из массива истории ландшафта */
+static
+SCAPEJVAL_T *
+atskapejval(uint_fast16_t x, uint_fast16_t y)
+{
+	return & ADDR_SCAPEARRAYVALS [y] [x];
+}
+
 // стираем буфер усреднения FFT
 static void avg_clear_spe(void)
 {
@@ -5175,8 +5186,11 @@ static void wflclear(void)
 #if WITHVIEW_3DSS
 	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
 #endif /* WITHVIEW_3DSS */
+	// стирание прямоугольника
 	colpip_fillrect(ADDR_WFJARRAY, ALLDX, NROWSWFL, 0, 0, ALLDX, NROWSWFL, display2_bgcolorwfl());
+	// стирание прямоугольника
 	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, 0, 0, ALLDX, MAX_3DSS_STEP, display2_bgcolorwfl());
+	arm_fill_q15(0, atskapejval(0, 0), ARRAY_SIZE(ADDR_SCAPEARRAYVALS));
 }
 
 // частота увеличилась - надо сдвигать картинку влево
@@ -5232,6 +5246,11 @@ static void wflshiftleft(uint_fast16_t pixels)
 				atskapej(pixels, y),	// from
 				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
 		);
+		memmove(
+				atskapejval(0, y),		// to
+				atskapejval(pixels, y),	// from
+				(ALLDX - pixels) * sizeof (SCAPEJVAL_T)
+		);
 	}
     // заполнение вновь появившегося прямоугольника
 	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, ALLDX - pixels, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
@@ -5273,6 +5292,7 @@ static void wflshiftright(uint_fast16_t pixels)
     // водопад
 	for (y = 0; y < NROWSWFL; ++ y)
 	{
+
 		memmove(
 				atwflj(pixels, y),	// to
 				atwflj(0, y),		// from
@@ -5290,8 +5310,13 @@ static void wflshiftright(uint_fast16_t pixels)
 				atskapej(0, y),		// from
 				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
 			);
+		memmove(
+				atskapejval(pixels, y),	// to
+				atskapejval(0, y),		// from
+				(ALLDX - pixels) * sizeof (SCAPEJVAL_T)
+			);
 	}
-   // заполнение вновь появившегося прямоугольника
+	// заполнение вновь появившегося прямоугольника
 	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, 0, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
 }
 
@@ -5708,6 +5733,7 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val3dss]);	// запись в буфер водопада цветовой точки
 	#endif /* LCDMODE_MAIN_L8 */
+		* atskapejval(x, row3dss) = val3dss;
 	}
 
 	wffreqpix = latched_dm.f0pix;
@@ -5845,23 +5871,22 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	{
 		const int_fast16_t z = MAX_3DSS_STEP - 1 - zfoward;	// начинаем рисовать с самой дальней строки истории
 		const int_fast16_t zrow = (row3dss + zfoward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
-		int_fast16_t x;
+		int_fast16_t x;	// позиция в окне слева направо
 		for (x = 0; x < alldx; ++ x)
 		{
-			int_fast16_t y;
-			for (y = 0; y < alldy; ++ y)
-			{
-				int_fast16_t xmap = mapscene_x(alldx, alldy, x, y, z);
-				int_fast16_t ymap = mapscene_y(alldx, alldy, x, y, z);
-				if (xmap < 0 || xmap >= alldx)
-					continue;
-				if (ymap < 0 || ymap >= alldy)
-					continue;
-				colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, * atskapej(x, zrow));
-			}
+			int_fast16_t val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
+			int_fast16_t y = alldy - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
+			int_fast16_t xmap = mapscene_x(alldx, alldy, x, y, z);
+			int_fast16_t ymap = mapscene_y(alldx, alldy, x, y, z);
+			if (xmap < 0 || xmap >= alldx)
+				continue;
+			if (ymap < 0 || ymap >= alldy)
+				continue;
+			colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, * atskapej(x, zrow));
 		}
 	}
-	display_colorgrid_3dss(colorpip, y0pix, alldy, f0, bw);
+	// todo: сделать так,, чтобы вписывалось в разрешенный прямоугольник
+	//display_colorgrid_3dss(colorpip, y0pix, alldy, f0, bw);
 }
 
 #if WITHVIEW_3DSS
@@ -6129,7 +6154,7 @@ static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t
 	{
 #if WITHVIEW_3DSS
 	case VIEW_3DSS:
-		display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
+		display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
