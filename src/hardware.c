@@ -1535,6 +1535,11 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 		0;
 }
 
+static void sysinit_mmu_tables(void)
+{
+
+}
+
 #endif /* CPUSTYLE_STM32H7XX */
 
 #if (__CORTEX_A != 0) && (! defined(__aarch64__))

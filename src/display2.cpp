@@ -5676,7 +5676,9 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 		return;	// еще нет новых данных.
 
 	wfrow = (wfrow == 0) ? (NROWSWFL - 1) : (wfrow - 1);
+#if WITHVIEW_3DSS
 	row3dss = (row3dss == 0) ? (MAX_3DSS_STEP - 1) : (row3dss - 1);
+#endif /* WITHVIEW_3DSS */
 
 #if 0 //WITHVIEW_3DSS
 	// продвижение по истории
@@ -5693,8 +5695,10 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 		const int val3dss = dsp_mag2y(filter_3dss(x), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 	#if LCDMODE_MAIN_L8
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
+		#if WITHVIEW_3DSS
 		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
 		* atskapejval(x, row3dss) = val3dss;
+		#endif /* WITHVIEW_3DSS */
 		#if WITHVIEW_3DSS
 			* atskapejval(x, row3dss) = val3dss;
 		#endif /* WITHVIEW_3DSS */
@@ -6242,8 +6246,8 @@ static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t
 	{
 #if WITHVIEW_3DSS
 	case VIEW_3DSS:
-		display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
-		//display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
+		//display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
+		display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
