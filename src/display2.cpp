@@ -5930,7 +5930,7 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	for (zfofward = 0; zfofward < MAX_3DSS_STEP; ++ zfofward)
 	{
 		const int_fast16_t z = zfofward;//MAX_3DSS_STEP - 1 - zfofward;	// начинаем рисовать с самой дальней строки истории
-		const int_fast16_t zrow = (row3dss + zfofward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
+		const uint_fast16_t zrow = (row3dss + zfofward) % MAX_3DSS_STEP;	// строка в буфере - c "заворотом"
 		int_fast16_t xw;	// позиция в окне слева направо
 		for (xw = 0; xw < alldx; ++ xw)
 		{
@@ -5944,17 +5944,20 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 			// координаты выходят за границы окна - не рисуем
 			if (xmap < 0 || xmap >= alldx || ymap < 0 || ymap >= alldy)
 				continue;
-			colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, * atskapej(x, zrow));
+			const COLORPIP_T color = * atskapej(x, zrow);
+			colpip_point(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, color);
+			//colpip_set_vline(colorpip, DIM_X, DIM_Y, x0pix + xmap, y0pix + ymap, alldy - 1 - ymap, color);
 		}
 	}
 	{
 		// Отрисовать передний план линией
+		const uint_fast16_t zrow = row3dss;	// строка в буфере - откуда берём информацию о мощности
 		int_fast16_t xw;	// позиция в окне слева направо
 		int_fast16_t oldx, oldy;
 		for (xw = 0; xw < alldx; ++ xw)
 		{
 			const int_fast16_t x = normalize(xw, 0, alldx - 1, ALLDX - 1);
-			const SCAPEJVAL_T val3dss = * atskapejval(x, row3dss);	// (0..INT16_MAX)
+			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..INT16_MAX)
 			const int_fast16_t y = alldy - 1 - normalize(val3dss, 0, INT16_MAX, alldy - 1);
 			if (xw == 0)
 			{
