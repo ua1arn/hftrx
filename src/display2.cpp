@@ -5853,13 +5853,15 @@ mapscene_x(
 	const mapview_t * box	// размеры пространства исходных точек
 	)
 {
-	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
+	ASSERT(x >= 0 && x < vp->x);
+	ASSERT(y >= 0 && y < vp->y);
+	ASSERT(z >= 0 && z < vp->z);
 	const int dx = vp->x - x;
 	const int dy = vp->y - y;
 	const int dz = vp->z - z;	// дальность
 	// расчёт масштаба - пока по расстоянию только одной координаты
-	const int multiplier = vp->z;
-	const int divisor = dz;
+	const int multiplier = (vp->z - 1);
+	const int divisor = (dz - 1);
 
 	return x * multiplier / divisor;	// скорректированная координата
 }
@@ -5877,13 +5879,15 @@ mapscene_y(
 	const mapview_t * box	// размеры пространства исходных точек
 	)
 {
-	ASSERT(z >= 0 && z < MAX_3DSS_STEP);
+	ASSERT(x >= 0 && x < vp->x);
+	ASSERT(y >= 0 && y < vp->y);
+	ASSERT(z >= 0 && z < vp->z);
 	const int dx = vp->x - x;
 	const int dy = vp->y - y;
 	const int dz = vp->z - z;	// дальность
 	// расчёт масштаба - пока по расстоянию только одной координаты
-	const int multiplier = vp->z;
-	const int divisor = dz;
+	const int multiplier = (vp->z - 1);
+	const int divisor = (dz - 1);
 
 	return y * multiplier / divisor;	// скорректированная координата
 }
