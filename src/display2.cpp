@@ -3795,13 +3795,16 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 typedef int16_t WFL3DSS_T;
 typedef int16_t SCAPEJVAL_T;
 
-// координаты наблюдателя относительно левого верхнего угла паралелепида с 3dss историей
-static int_fast16_t mapscene_view_x = DIM_X / 2;
-static int_fast16_t mapscene_view_y = 10;
-static int_fast16_t mapscene_view_z = - 100;
+// координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
+typedef struct mapscene_view
+{
+	int_fast16_t x;
+	int_fast16_t y;
+	int_fast16_t z;
+} mapview_t;
 
 /*
- * Получить горизонтальную координату видимости в окне (0..wdx-1) точки с координатами x, y, z в паралелепиде
+ * Получить горизонтальную координату видимости в окне (0..wdx-1) точки с координатами x, y, z в параллелепипеде
  * Проверять видимость по попаданию возвращённого значения в размер окна
  */
 static int_fast16_t
@@ -3809,7 +3812,8 @@ mapscene_x(
 	int_fast16_t wdx, int_fast16_t wdy,	// размер передней стенки
 	int_fast16_t x, 	// координата слева направо (0..wdx-1)
 	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
-	int_fast16_t z		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
+	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
+	const mapview_t * view
 	)
 {
 	ASSERT(x >= 0 && x < wdx);
@@ -3820,7 +3824,7 @@ mapscene_x(
 }
 
 /*
- * Получить вертикальную координату видимости в окне (0..wdy-1) точки с координатами x, y, z в паралелепиде
+ * Получить вертикальную координату видимости в окне (0..wdy-1) точки с координатами x, y, z в параллелепипеде
  * Проверять видимость по попаданию возвращённого значения в размер окна
  */
 static int_fast16_t
@@ -3828,7 +3832,8 @@ mapscene_y(
 	int_fast16_t wdx, int_fast16_t wdy,	// размер передней стенки
 	int_fast16_t x, 	// координата слева направо (0..wdx-1)
 	int_fast16_t y, 	// координата сверзу вниз (0..wdy-1)
-	int_fast16_t z		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
+	int_fast16_t z,		// удаление от передней стенки (0..MAX_3DSS_STEP-1)
+	const mapview_t * view
 	)
 {
 	ASSERT(x >= 0 && x < wdx);
@@ -5226,6 +5231,7 @@ static void wflshiftleft(uint_fast16_t pixels)
  		memset(atwfj3dss(ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
 	}
 #endif /* WITHVIEW_3DSS */
+
     // водопад
     for (y = 0; y < NROWSWFL; ++ y)
 	{
@@ -5865,6 +5871,13 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	const int_fast16_t alldy = GRID2Y(yspan);
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
+	// координаты наблюдателя относительно левого верхнего угла параллелепипеда с 3dss историей
+	const mapview_t vp =
+	{
+			.x = alldx / 2,
+			.y = 0,
+			.z = - 50		// пока от балды - удаление от передней стенки паралеепипеда
+	};
 	int_fast16_t zfoward;
 
 	for (zfoward = 0; zfoward < MAX_3DSS_STEP; ++ zfoward)
@@ -5874,10 +5887,11 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 		int_fast16_t x;	// позиция в окне слева направо
 		for (x = 0; x < alldx; ++ x)
 		{
-			int_fast16_t val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
-			int_fast16_t y = alldy - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
-			int_fast16_t xmap = mapscene_x(alldx, alldy, x, y, z);
-			int_fast16_t ymap = mapscene_y(alldx, alldy, x, y, z);
+			const SCAPEJVAL_T val3dss = * atskapejval(x, zrow);	// (0..PALETTESIZE - 1)
+			const int_fast16_t y = alldy - normalize(val3dss, 0, PALETTESIZE - 1, alldy - 1);
+			const int_fast16_t xmap = mapscene_x(alldx, alldy, x, y, z, & vp);
+			const int_fast16_t ymap = mapscene_y(alldx, alldy, x, y, z, & vp);
+
 			if (xmap < 0 || xmap >= alldx)
 				continue;
 			if (ymap < 0 || ymap >= alldy)
