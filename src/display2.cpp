@@ -3853,13 +3853,20 @@ struct ustates
 	FLOAT_t Yold_3dss [ALLDX];
 
 	PACKEDCOLORPIP_T histcolors [GXSIZE(ALLDX, NROWSWFL)];	// массив цветных пикселей "водопада"
-	PACKEDCOLORPIP_T hist3dss [GXSIZE(ALLDX, MAX_3DSS_STEP)];		// массив цветных пикселей ландшавта
-	SCAPEJVAL_T hist3dssvals [MAX_3DSS_STEP][ALLDX];	// массив высот (0..PALETTESIZE - 1)
 
 #if WITHVIEW_3DSS
+
 	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
 	uint16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
 	uint16_t envelope_y [ALLDX];
+
+#endif /* WITHVIEW_3DSS */
+
+#if WITHVIEW_3DSS
+
+	PACKEDCOLORPIP_T hist3dss [GXSIZE(ALLDX, MAX_3DSS_STEP)];		// массив цветных пикселей ландшавта
+	SCAPEJVAL_T hist3dssvals [MAX_3DSS_STEP][ALLDX];	// массив высот (0..PALETTESIZE - 1)
+
 #endif /* WITHVIEW_3DSS */
 
 #if WITHAFSPECTRE
@@ -5133,15 +5140,6 @@ static void init_depth_map_3dss(void)
 		}
 	}
 }
-#endif /* WITHVIEW_3DSS */
-
-/* получить адрес пикселя из массива истории водопада */
-static
-PACKEDCOLORPIP_T *
-atwflj(uint_fast16_t x, uint_fast16_t y)
-{
-	return colpip_mem_at(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, y);
-}
 
 /* получить адрес пикселя из массива истории ландшафта */
 static
@@ -5157,6 +5155,16 @@ SCAPEJVAL_T *
 atskapejval(uint_fast16_t x, uint_fast16_t y)
 {
 	return & ADDR_SCAPEARRAYVALS [y] [x];
+}
+
+#endif /* WITHVIEW_3DSS */
+
+/* получить адрес пикселя из массива истории водопада */
+static
+PACKEDCOLORPIP_T *
+atwflj(uint_fast16_t x, uint_fast16_t y)
+{
+	return colpip_mem_at(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, y);
 }
 
 // стираем буфер усреднения FFT
@@ -5185,9 +5193,12 @@ static void wflclear(void)
 #endif /* WITHVIEW_3DSS */
 	// стирание прямоугольника
 	colpip_fillrect(ADDR_WFJARRAY, ALLDX, NROWSWFL, 0, 0, ALLDX, NROWSWFL, display2_bgcolorwfl());
+#if WITHVIEW_3DSS
 	// стирание прямоугольника
 	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, 0, 0, ALLDX, MAX_3DSS_STEP, display2_bgcolorwfl());
 	arm_fill_q15(0, atskapejval(0, 0), ARRAY_SIZE(ADDR_SCAPEARRAYVALS));
+#endif /* WITHVIEW_3DSS */
+
 }
 
 // частота увеличилась - надо сдвигать картинку влево
@@ -5222,6 +5233,23 @@ static void wflshiftleft(uint_fast16_t pixels)
  		);
  		memset(atwfj3dss(ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
 	}
+
+    // ландшафт
+     for (y = 0; y < MAX_3DSS_STEP; ++ y)
+ 	{
+ 		memmove(
+ 				atskapej(0, y),		// to
+ 				atskapej(pixels, y),	// from
+ 				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
+ 		);
+ 		memmove(
+ 				atskapejval(0, y),		// to
+ 				atskapejval(pixels, y),	// from
+ 				(ALLDX - pixels) * sizeof (SCAPEJVAL_T)
+ 		);
+ 	}
+     // заполнение вновь появившегося прямоугольника
+ 	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, ALLDX - pixels, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
 #endif /* WITHVIEW_3DSS */
 
     // водопад
@@ -5235,23 +5263,6 @@ static void wflshiftleft(uint_fast16_t pixels)
 	}
     // заполнение вновь появившегося прямоугольника
 	colpip_fillrect(ADDR_WFJARRAY, ALLDX, NROWSWFL, ALLDX - pixels, 0, pixels, NROWSWFL, display2_bgcolorwfl());
-
-   // ландшафт
-    for (y = 0; y < MAX_3DSS_STEP; ++ y)
-	{
-		memmove(
-				atskapej(0, y),		// to
-				atskapej(pixels, y),	// from
-				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
-		);
-		memmove(
-				atskapejval(0, y),		// to
-				atskapejval(pixels, y),	// from
-				(ALLDX - pixels) * sizeof (SCAPEJVAL_T)
-		);
-	}
-    // заполнение вновь появившегося прямоугольника
-	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, ALLDX - pixels, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
 }
 
 // частота уменьшилась - надо сдвигать картинку вправо
@@ -5285,20 +5296,6 @@ static void wflshiftright(uint_fast16_t pixels)
     		);
  		memset(atwfj3dss(0, y), 0, pixels * sizeof (WFL3DSS_T));
    	}
-#endif /* WITHVIEW_3DSS */
-
-    // водопад
-	for (y = 0; y < NROWSWFL; ++ y)
-	{
-
-		memmove(
-				atwflj(pixels, y),	// to
-				atwflj(0, y),		// from
-				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
-			);
-	}
-    // заполнение вновь появившегося прямоугольника
-	colpip_fillrect(ADDR_WFJARRAY, ALLDX, NROWSWFL, 0, 0, pixels, NROWSWFL, display2_bgcolorwfl());
 
     // ландшафт
 	for (y = 0; y < MAX_3DSS_STEP; ++ y)
@@ -5316,6 +5313,20 @@ static void wflshiftright(uint_fast16_t pixels)
 	}
 	// заполнение вновь появившегося прямоугольника
 	colpip_fillrect(ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP, 0, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
+#endif /* WITHVIEW_3DSS */
+
+    // водопад
+	for (y = 0; y < NROWSWFL; ++ y)
+	{
+
+		memmove(
+				atwflj(pixels, y),	// to
+				atwflj(0, y),		// from
+				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
+			);
+	}
+    // заполнение вновь появившегося прямоугольника
+	colpip_fillrect(ADDR_WFJARRAY, ALLDX, NROWSWFL, 0, 0, pixels, NROWSWFL, display2_bgcolorwfl());
 }
 
 // при смене диапазона или частот  при отсутствии необзодимости сохранять часть старого изображения водопада
@@ -5723,15 +5734,18 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 	#if LCDMODE_MAIN_L8
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
 		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
+		* atskapejval(x, row3dss) = val3dss;
 	#else /* LCDMODE_MAIN_L8 */
 		ASSERT(valwfl >= 0);
 		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
 		ASSERT(val3dss >= 0);
 		ASSERT(val3dss < (int) ARRAY_SIZE(wfpalette));
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
+#if WITHVIEW_3DSS
 		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [val3dss]);	// запись в буфер водопада цветовой точки
-	#endif /* LCDMODE_MAIN_L8 */
 		* atskapejval(x, row3dss) = val3dss;
+#endif /* WITHVIEW_3DSS */
+	#endif /* LCDMODE_MAIN_L8 */
 	}
 
 	wffreqpix = latched_dm.f0pix;
@@ -5853,6 +5867,7 @@ static void display2_spectrum(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	(void) pctx;
 }
 
+#if WITHVIEW_3DSS
 // отрисовка изображения спектра в 3В проекции
 static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
@@ -5894,6 +5909,7 @@ static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xsp
 	// todo: сделать так,, чтобы вписывалось в разрешенный прямоугольник
 	//display_colorgrid_3dss(colorpip, y0pix, alldy, f0, bw);
 }
+#endif /* WITHVIEW_3DSS */
 
 #if WITHVIEW_3DSS
 
