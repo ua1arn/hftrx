@@ -1457,8 +1457,8 @@ static const struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC SSB "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_SSB),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_SSB],
@@ -1467,8 +1467,8 @@ static const struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC DIG "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_DIGI),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_DIGI],
@@ -1477,8 +1477,8 @@ static const struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC AM  "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_AM),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_AM),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_AM],
@@ -1487,8 +1487,8 @@ static const struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC FM  "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_NFM),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_NFM],

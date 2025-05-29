@@ -1480,12 +1480,12 @@ static const struct {
 static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 
-#if WITHIF4DSP && 0
+#if WITHTX && WITHIF4DSP
 // надо бы перейти, но проблема в начальных значениях в таблице mdt - там коды а не индексы в этой таблице
 static const struct {
 	uint_fast8_t code;
 	char label [6];
-}  txaudiosrcs [] =
+}  txaudiosrcs [BOARD_TXAUDIO_count] =	// todo: remove
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
@@ -1500,7 +1500,21 @@ static const struct {
 	{ BOARD_TXAUDIO_MUTE, 	"MUTE ", },
 };
 
-#endif /* WITHIF4DSP */
+#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
+
+static uint_fast8_t findtxaudioindex(uint_fast8_t code)
+{
+	uint_fast8_t i;
+
+	for (i = 0; i < TXAUDIOSRC_COUNT; ++ i)
+	{
+		if (txaudiosrcs [i].code == code)
+			return i;
+	}
+	return 0;
+}
+
+#endif /* WITHTX && WITHIF4DSP */
 
 #define PWRMODE_COUNT (sizeof pwrmodes / sizeof pwrmodes [0])
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
@@ -1508,7 +1522,6 @@ static const struct {
 #define ATTMODE_COUNT (sizeof attmodes / sizeof attmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
-#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
 
 #define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
@@ -2191,7 +2204,7 @@ struct modetempl
 	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
 	uint_fast8_t bwsetis [2];			// индекс банка полос пропускания для данного режима в режиме приёма и передачи
 	int_fast16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
+	uint_fast8_t txaudiocode;			// источник звукового сигнала для данного режима (код BOARD_TXAUDIO_xxx)
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
 	FLOAT_t * (* afproc)(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
@@ -3321,7 +3334,7 @@ struct modeprops
 	//uint16_t step;	/* шаг валкодера в данном режиме */
 
 #if WITHIF4DSP
-	uint8_t txaudio;	/* источник звука для передачи */
+	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
 	uint8_t noisereduct;	/* включение NR для данного режима */
 #endif /* WITHIF4DSP */
 	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
@@ -3955,7 +3968,7 @@ struct nvmap
 
 #define RMT_TXPOWER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txpower)
 #define RMT_TXCOMPR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txcompr)
-#define RMT_TXAUDIO_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudio)
+#define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
@@ -8823,7 +8836,7 @@ loadsavedstate(void)
 		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
 	#if WITHIF4DSP
 		// источник звука
-		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
+		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));
 	#endif /* WITHIF4DSP */
 		/* включение NR */
 	#if WITHIF4DSP
@@ -11865,19 +11878,23 @@ updateboardZZZ(
 
 		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
-		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUACOUT
-			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
-			const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
-		#elif WITHBBOX && defined (WITHBBOXMIKESRC)
-			const uint_fast8_t txaudio = WITHBBOXMIKESRC;
-		#else /* defined (WITHBBOXMIKESRC) */
-			const uint_fast8_t txaudio = gtxaudio [txmode];
-		#endif /* defined (WITHBBOXMIKESRC) */
-#if WITHAFCODEC1HAVELINEINLEVEL
-		board_set_lineinput(txaudio == BOARD_TXAUDIO_LINE);
-#else /* WITHAFCODEC1HAVELINEINLEVEL */
-		board_set_lineinput(0);
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+		#if WITHTX
+			#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUACOUT
+				/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
+				const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
+			#elif WITHBBOX && defined (WITHBBOXMIKESRC)
+				const uint_fast8_t txaudio = WITHBBOXMIKESRC;
+			#else /* defined (WITHBBOXMIKESRC) */
+				const uint_fast8_t txaudio = txaudiosrcs [gtxaudio [txmode]].code;	// Код источника
+			#endif /* defined (WITHBBOXMIKESRC) */
+
+			#if WITHAFCODEC1HAVELINEINLEVEL
+					board_set_lineinput(txaudio == BOARD_TXAUDIO_LINE);
+			#else /* WITHAFCODEC1HAVELINEINLEVEL */
+					board_set_lineinput(0);
+			#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+		#endif /* WITHTX */
+
 		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
@@ -11895,28 +11912,30 @@ updateboardZZZ(
 			#endif /* WITHTX */
 			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
 		#endif /* WITHUSBHW && WITHUSBUAC */
-		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
-		board_set_lineamp(glineamp);	/* усиление с линейного входа */
-#if WITHUSBHW && WITHUSBUACOUT
-		board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
-#else /* WITHUSBUAC */
-		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
-#endif /* WITHUSBUAC */
-		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
-		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
-		board_set_mikehclip(gmikehclip);	/* Ограничитель */
-#if WITHCOMPRESSOR
-		board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
-#endif /* WITHCOMPRESSOR */
-#if WITHREVERB
-		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
-#endif /* WITHREVERB */
-#if WITHELKEY
-		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
-		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
-#endif /* WITHELKEY */
+		#if WITHTX
+			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
+			board_set_lineamp(glineamp);	/* усиление с линейного входа */
+			#if WITHUSBHW && WITHUSBUACOUT
+				board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
+			#else /* WITHUSBUAC */
+				board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
+			#endif /* WITHUSBUAC */
+			board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
+			board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
+			board_set_mikehclip(gmikehclip);	/* Ограничитель */
+			#if WITHCOMPRESSOR
+				board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
+			#endif /* WITHCOMPRESSOR */
+			#if WITHREVERB
+				board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
+			#endif /* WITHREVERB */
+			#if WITHELKEY
+				board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+				board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
+			#endif /* WITHELKEY */
+			board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
+		#endif /* WITHTX */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
@@ -17346,7 +17365,6 @@ void display2_menu_group(
 	display_at_P(x, y, mp->pd->qlabel);
 }
 
-
 // Вызывается из display2.c
 // значение параметра
 void display2_menu_valxx(
@@ -17429,23 +17447,8 @@ void display2_menu_valxx(
 #if WITHTX && WITHIF4DSP
 	case RJ_TXAUDIO:
 		{
-			static const char msg [] [6] =
-			{
- 				"MIKE ",	// BOARD_TXAUDIO_MIKE
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа (rear panel mini-din 6 pin input) */
- 				"LINE ",	// BOARD_TXAUDIO_LINE (rear panel mini-din 6 pin input)
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBHW && WITHUSBUACOUT
-				"USB  ",	// BOARD_TXAUDIO_USB
-#endif /* WITHUSBHW && WITHUSBUACOUT */
-				"2TONE",	// BOARD_TXAUDIO_2TONE
-				"NOISE",	// BOARD_TXAUDIO_NOISE
-				"1TONE",	// BOARD_TXAUDIO_1TONE
-				"MUTE ",	// BOARD_TXAUDIO_MUTE
-			};
-
 			width = VALUEW;
-			display_menu_string_P(x, y, msg [value], width, comma);
+			display_menu_string_P(x, y, txaudiosrcs [value].label, width, comma);
 		}
 		break;
 #endif /* WITHTX && WITHIF4DSP */
@@ -18090,23 +18093,8 @@ static void menu_print(void)
         #if WITHTX && WITHIF4DSP
         	case RJ_TXAUDIO:
         		{
-        			static const char msg [] [6] =
-        			{
-         				"MIKE ",	// BOARD_TXAUDIO_MIKE
-        #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-         				"LINE ",	// BOARD_TXAUDIO_LINE
-        #endif /* WITHAFCODEC1HAVELINEINLEVEL */
-        #if WITHUSBHW && WITHUSBUACOUT
-        				"USB  ",	// BOARD_TXAUDIO_USB
-        #endif /* WITHUSBHW && WITHUSBUACOUT */
-        				"2TONE",	// BOARD_TXAUDIO_2TONE
-        				"NOISE",	// BOARD_TXAUDIO_NOISE
-        				"1TONE",	// BOARD_TXAUDIO_1TONE
-        				"MUTE ",	// BOARD_TXAUDIO_MUTE
-        			};
-
         			width = VALUEW;
-        			print_menu_string_P(x, y, msg [value], width, comma);
+        			print_menu_string_P(x, y, txaudiosrcs [value].label, width, comma);
         		}
         		break;
         #endif /* WITHTX && WITHIF4DSP */
