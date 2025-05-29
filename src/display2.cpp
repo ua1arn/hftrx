@@ -5842,6 +5842,7 @@ typedef struct mapscene_view
 
 /*
  * Получить горизонтальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
+ * находящиеся на переднем плане (z == 0) не корректируются
  */
 static int_fast16_t
 mapscene_x(
@@ -5859,11 +5860,12 @@ mapscene_x(
 	const int multiplier = vp->z;
 	const int divisor = dz;
 
-	return x * multiplier / divisor;
+	return x * multiplier / divisor;	// скорректированная координата
 }
 
 /*
  * Получить вертикальную координату отображения на передннюю стенку точки с координатами x, y, z в параллелепипеде
+ * находящиеся на переднем плане (z == 0) не корректируются
  */
 static int_fast16_t
 mapscene_y(
@@ -5881,10 +5883,10 @@ mapscene_y(
 	const int multiplier = vp->z;
 	const int divisor = dz;
 
-	return y * multiplier / divisor;
+	return y * multiplier / divisor;	// скорректированная координата
 }
 
-// отрисовка изображения спектра в 3В проекции
+// отрисовка изображения спектра в 3D проекции
 static void display2_3dss_alt(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
