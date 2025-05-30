@@ -995,7 +995,7 @@ enum {
 		uint8_t codeatt;	// признак включения аттенюатора
 		uint8_t codepre;	// признак включения предусилителя
 		int16_t atten10;	// результирующее затухание
-		char label [5];
+		const char * label;
 	}  attmodes [] =
 	{
 		{ 0, 0, 0, "    ", },
@@ -1005,7 +1005,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1018,7 +1018,7 @@ enum {
 	static const struct {
 		uint8_t codeatt;	// признак включения аттенюатора
 		uint8_t codepre;	// признак включения предусилителя
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1032,7 +1032,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1047,7 +1047,7 @@ enum {
 
 	static const struct {
 		uint8_t code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1061,7 +1061,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1077,7 +1077,7 @@ enum {
 
 	static const struct {
 		uint8_t code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1091,7 +1091,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1106,7 +1106,7 @@ enum {
 
 	static const struct {
 		uint8_t code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1120,7 +1120,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1134,7 +1134,7 @@ enum {
 
 	static const struct {
 		unsigned char code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1148,7 +1148,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1158,7 +1158,7 @@ enum {
 
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1171,7 +1171,7 @@ enum {
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1439,7 +1439,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label [5];
+	const char * label;
 }  pwrmodes [] =
 {
 	{ BOARDPOWERMIN, "LP" },
@@ -1452,7 +1452,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label [6];
+	const char * label;
 }  notchmodes [] =
 {
 //	{ BOARD_NOTCH_OFF, 		"     " },
@@ -1467,7 +1467,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label [5];
+	const char * label;
 }  mainsubrxmodes [] =
 {
 	{ BOARD_RXMAINSUB_A_B, "A/B", },	// Левый/правый, A - main RX, B - sub RX
@@ -1481,10 +1481,10 @@ static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B -
 #endif /* WITHUSEDUALWATCH */
 
 #if WITHTX && WITHIF4DSP
-// надо бы перейти, но проблема в начальных значениях в таблице mdt - там коды а не индексы в этой таблице
+
 static const struct {
 	uint_fast8_t code;
-	char label [6];
+	const char * label;
 }  txaudiosrcs [BOARD_TXAUDIO_count] =	// todo: remove
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
@@ -2212,7 +2212,7 @@ struct modetempl
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
 	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
-	char label [4];					// для контроля правильности инициализации структуры
+	const char * label;					// для контроля правильности инициализации структуры
 };
 
 // modes
@@ -2856,7 +2856,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint32_t init;
 		uint8_t defsubmode_bandset;
 		uint8_t bandgroup;
-		char label [9];
+		const char * label;
 	};
 
 	#define BMF(a) (a)		/* получение инициализационного элемента */
@@ -4997,7 +4997,7 @@ static const struct paramdefdef xcatenable =
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
 		static const struct paramdefdef xgsubtonei =
 		{
-			QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,
+			QLABEL2("CTCSS FQ", "CTCSS FQ "), 7, 1, RJ_SUBTONE,	ISTEP1,
 			ITEM_VALUE,
 			0, ARRAY_SIZE(gsubtones) - 1,
 			OFFSETOF(struct nvmap, gsubtonei),
@@ -5203,7 +5203,7 @@ static const struct paramdefdef xcatenable =
 	 */
 	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 	}  elkeymodes [] =
 	{
 		{ ELKEY_MODE_ACS, "ACS", },
@@ -5221,7 +5221,7 @@ static const struct paramdefdef xcatenable =
 
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
+		QLABEL2("CW SPEED", "CW SPEED "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		OFFSETOF(struct nvmap, elkeywpm),

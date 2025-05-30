@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHCOMPRESSOR
+#if WITHINTEGRATEDDSP && WITHCOMPRESSOR
 
 #include "audio.h"
 #include "board.h"
@@ -136,4 +136,4 @@ FLOAT_t audio_compressor_calc(FLOAT_t in) {
 
 	return delayed * gain;
 }
-#endif /* WITHCOMPRESSOR */
+#endif /* WITHINTEGRATEDDSP && WITHCOMPRESSOR */

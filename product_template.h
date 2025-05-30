@@ -224,6 +224,7 @@
 	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
 #else
 	#define LCDMODE_DUMMY	1
+	#define	BOARDPOWERMAX 1
 	#define BANDSELSTYLERE_NOTHING	1
 	#define	CTLREGMODE_NOCTLREG	1
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

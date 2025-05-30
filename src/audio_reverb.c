@@ -6,6 +6,9 @@
 //
 
 #include "hardware.h"
+
+#if WITHINTEGRATEDDSP && WITHREVERB
+
 #include "board.h"
 #include "audio_reverb.h"
 
@@ -130,3 +133,4 @@ FLOAT_t audio_reverb_calc(FLOAT_t in) {
 
     return wet0 * result + wet1 * in;
 }
+#endif /* WITHINTEGRATEDDSP && WITHREVERB */
