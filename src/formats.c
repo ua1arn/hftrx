@@ -52,8 +52,8 @@ safestrlen(register const char * s, size_t len)
 
 struct fmt_param
 {
-	size_t pos;
-	size_t count;
+	int pos;
+	int count;
 	char * buffer;
 };
 
@@ -303,9 +303,7 @@ vsputchar(void * param, int ch)
 
 #endif /* ! FORMATFROMLIBRARY */
 
-// Для архитектуры ATMega определена только эта функция -
-// с расположением форматной строкии в памяти программ.
-uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... )
+int local_snprintf_P( char * __restrict buffer, size_t count, const FLASHMEM char * __restrict format, ... )
 {
 	va_list	ap;
 	int n;
@@ -331,9 +329,7 @@ uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, con
 	return n == -1 ? count - 1 : n;	// изменено от стандартного поведения = всегда длинну возвращаем.
 }
 
-// Для архитектуры ATMega определена только эта функция -
-// с расположением форматной строкии в памяти программ.
-uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list	ap)
+int local_vsnprintf_P( char * __restrict buffer, size_t count, const FLASHMEM char * __restrict format, va_list	ap)
 {
 	int n;
 
@@ -382,7 +378,7 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 	va_list	ap;
 
 	va_start(ap, format);
-	vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+	vsnprintf(b, sizeof b / sizeof b [0] - 1, format, ap);
 	va_end(ap);
 	b [ARRAY_SIZE(b) - 1] = '\0';
 

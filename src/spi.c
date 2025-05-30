@@ -29,6 +29,9 @@ void spi_operate_unlock(IRQL_t irql);
 void spidf_operate_lock(IRQL_t * oldIrql);
 void spidf_operate_unlock(IRQL_t irql);
 
+
+char nameDATAFLASH [64] = "NoChip";
+
 #if WITHSPIHW || WITHSPISW
 
 
@@ -6137,8 +6140,6 @@ static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
 static uint_fast32_t sectorSize = (UINT32_C(1) << 16);		// default sectoir size 64kB
 static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
 
-char nameDATAFLASH [64];
-
 int testchipDATAFLASH(void)
 {
 	unsigned mf_id;	// Manufacturer ID
@@ -6566,8 +6567,6 @@ unsigned long sectorsizeDATAFLASH(void)
 {
 	return 4096;
 }
-
-char nameDATAFLASH [] = "NoChip";
 
 int testchipDATAFLASH(void)
 {
