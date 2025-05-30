@@ -43,6 +43,7 @@ SECTIONS
 {
 	.text :
 	{
+		. = ALIGN(64);
 		KEEP(*(.startup0))
 		*(.text*)
 		KEEP(*(.init))
