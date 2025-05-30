@@ -2247,7 +2247,7 @@ static const struct menudef menutable [] =
   #if ! WITHPOTPOWER
     & xgnormalpower,        /* мощность при обычной работе на передачу */
 	#if WITHPACLASSA
-		& gclassamode,	/* использование режима клвсс А при передаче */
+		& xgclassamode,	/* использование режима клвсс А при передаче */
 	#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
 #elif WITHPOWERLPHP
