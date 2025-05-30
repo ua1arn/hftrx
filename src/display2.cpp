@@ -5705,10 +5705,10 @@ static void display2_latchcombo(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t x
 	#else /* LCDMODE_MAIN_L8 */
 		ASSERT(valwfl >= 0);
 		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
-		ASSERT(val3dss >= 0);
-		ASSERT(val3dss <= INT16_MAX);
 		colpip_putpixel(ADDR_WFJARRAY, ALLDX, NROWSWFL, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 		#if WITHVIEW_3DSS
+		ASSERT(val3dss >= 0);
+		ASSERT(val3dss <= INT16_MAX);
 			colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 			* atskapejval(x, row3dss) = val3dss;
 		#endif /* WITHVIEW_3DSS */
@@ -5854,9 +5854,6 @@ static int mapscene_calc(
 	int * pdiv
 )
 {
-	ASSERT(x >= 0 && x < vp->x);
-	ASSERT(y >= 0 && y < vp->y);
-	ASSERT(z >= 0 && z < vp->z);
 	const int dx = vp->x - x;
 	const int dy = vp->y - y;
 	const int dz = vp->z - z;	// дальность
@@ -6251,7 +6248,7 @@ static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
-		// TODO: Делим отведённый размер между двумя панелями отображения
+		// Делим отведённый размер между двумя панелями отображения
 		display2_spectrum(xgrid, ygrid + 0, xspan, hspectrum, pctx);
 		display2_waterfall(xgrid, ygrid + hspectrum, xspan, yspan - hspectrum, pctx);
 		break;
