@@ -927,12 +927,13 @@
 		arm_hardware_pioc_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_MDC PC1 */ \
 		arm_hardware_piog_outputs((UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 	} while (0)
+
+#endif /* WITHETHHW */
+
 	#define HARDWARE_ETH_RESET() do { \
 		arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 		local_delay_ms(50); \
 	} while (0)
-
-#endif /* WITHETHHW */
 
 #if WITHUSBHW
 
