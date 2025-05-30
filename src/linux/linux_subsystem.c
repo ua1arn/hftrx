@@ -86,6 +86,7 @@ void uartlite_reset(void)
 
 pthread_t timer_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
+int pcie_status = 0;
 
 void linux_wait_iq(void)
 {
@@ -1595,7 +1596,8 @@ void linux_iq_init(void)
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	pcie_init();
-	if (pcie_open() < 0)
+	pcie_status = pcie_open();
+	if (pcie_status < 0)
 		perror("pcie init");
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 #if WITHEXTIO_LAN
@@ -1731,7 +1733,9 @@ typedef struct {
 } irq_channel_t;
 
 irq_channel_t channels[] = {
+#if defined (LINUX_XDMA_IQ_EVENT_FILE)
 		{ LINUX_XDMA_IQ_EVENT_FILE, xdma_iq_event_handler, -1 },
+#endif /* defined (LINUX_XDMA_IQ_EVENT_FILE) */
 #if CODEC1_FPGA
 		{ LINUX_XDMA_MIC_EVENT_FILE, codec_event_handler, -1 },
 #endif /* CODEC1_FPGA */
@@ -1750,6 +1754,9 @@ irq_channel_t channels[] = {
 
 void * xdma_event_thread(void * args)
 {
+	if (! NUM_CHANNELS)
+		return NULL;
+
 	int epoll_fd = epoll_create1(0);
 	if (epoll_fd == -1) {
 		perror("epoll_create1");
@@ -1809,6 +1816,9 @@ void * xdma_event_thread(void * args)
 
 void xdma_iq_init(void)
 {
+	if(pcie_status < 0)
+		return;
+
 	xcz_resetn_modem(0);
 
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
