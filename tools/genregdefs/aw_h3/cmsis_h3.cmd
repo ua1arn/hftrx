@@ -1,4 +1,4 @@
-SET CONVERTER=..\Debug\genregdefs.exe
+SET CONVERTER=..\Debug\genregdefs.exe --guid "{BC86EE98-AEBD-4406-AEA7-7519DA69A190}"
 SET OUTFILE=..\..\..\arch\aw_h3\device.h
 SET FILELIST= ^
 	ccu.csv gic.csv cpucfg.csv sysctl.csv ^

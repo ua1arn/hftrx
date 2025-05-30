@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__2F3EAF83_E6C0_48a6_A374_C924EDE2E572__INCLUDED
+#define HEADER__2F3EAF83_E6C0_48a6_A374_C924EDE2E572__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -154,5 +157,8 @@ typedef struct UART_Type
 #define UART8 ((UART_TypeDef *) UART8_BASE)           /*!< UART8  register set access pointer */
 #define UART9 ((UART_TypeDef *) UART9_BASE)           /*!< UART9  register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__2F3EAF83_E6C0_48a6_A374_C924EDE2E572__INCLUDED */
