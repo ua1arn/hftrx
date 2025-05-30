@@ -4852,17 +4852,20 @@ static const struct paramdefdef xcatenable =
 
 		int_fast32_t hamradio_get_af_equalizer_base(void)
 		{
+			ASSERT(4 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
 			return - AF_EQUALIZER_BASE;
 		}
 
 		int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v)
 		{
+			ASSERT(4 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
 			ASSERT(v < AF_EQUALIZER_BANDS);
 			return geqrxparams [v];
 		}
 
 		void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain)
 		{
+			ASSERT(4 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
 			ASSERT(index < AF_EQUALIZER_BANDS);
 			ASSERT(gain <= AF_EQUALIZER_BASE * 2);
 			geqrxparams [index] = gain;
