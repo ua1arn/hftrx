@@ -324,4 +324,19 @@ void xcz_rxtx_state(uint8_t tx)
 
 }
 
+void xcz_dds_ftw(const uint_least64_t * val)
+{
+	mirror_nco2 = 0;
+}
+
+void xcz_dds_ftw_sub(const uint_least64_t * val)
+{
+	mirror_nco2 = 0;
+}
+
+void xcz_dds_rts(const uint_least64_t * val)
+{
+	mirror_ncorts = 0;
+}
+
 #endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
