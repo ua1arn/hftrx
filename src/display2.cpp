@@ -6246,8 +6246,8 @@ static void display2_gcombo(uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t
 	{
 #if WITHVIEW_3DSS
 	case VIEW_3DSS:
-		//display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
-		display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
+		display2_3dss(xgrid, ygrid, xspan, yspan, pctx);
+		//display2_3dss_alt(xgrid, ygrid, xspan, yspan, pctx);
 		break;
 #endif /* WITHVIEW_3DSS */
 	default:
