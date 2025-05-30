@@ -14594,7 +14594,7 @@ static void pcanswer(uint_fast8_t arg)
 	// answer mode
 	// Нормирование значений WITHPOWERTRIMMIN..WITHPOWERTRIMMAX к диапазону Kenwood CAT
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((gnormalpower.value - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
+		(int) ((param_getvalue(& xgnormalpower) - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
 		);
 	cat_answer(len);
 }
@@ -15431,12 +15431,20 @@ processcatmsg(
 		}
 	}
 #if WITHIF4DSP
+	else if (match2('B', 'C'))
+	{
+		// Sets and reads the Beat Cancel function status.
+		// Auto Notch
+		cat_answer_request(CAT_BADCOMMAND_INDEX);
+	}
 	else if (match2('R', 'L'))
 	{
+		// откуда взялось?
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 	else if (match2('N', 'R'))
 	{
+		// откуда взялось?
 		if (cathasparam != 0)
 		{
 			const uint_fast32_t p1 = vfy32up(catparam, 0, 2, 0) != 0;	// RN0; NR1; NR2;
@@ -15634,12 +15642,13 @@ processcatmsg(
 #if WITHPOWERTRIM && WITHTX
 	else if (match2('P', 'C'))
 	{
+		// May be: CG Sets and reads the Carrier Level.
 		// Sets and reads the output power
 		if (cathasparam != 0)
 		{
 			const uint_fast32_t p2 = vfy32up(catparam, 5, 100, 100);
 			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
-			if (flagne_u16(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
+			if (flagne_u8(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
 			{
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
