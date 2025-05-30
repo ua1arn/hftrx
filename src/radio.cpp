@@ -3427,6 +3427,7 @@ struct nvmap
 	/* группы */
 	uint8_t ggroup;			/* последняя группа в менюю, с которой работали */
 	uint8_t	ggrpdisplay;	// последний посещённый пункт группы
+	uint8_t	ggrptxparam;		// последний посещённый пункт группы
 	uint8_t	ggrptxadj;		// последний посещённый пункт группы
 	uint8_t	ggrpsecial;		// последний посещённый пункт группы
 	uint8_t	ggrpaudio;		// последний посещённый пункт группы
@@ -15648,11 +15649,22 @@ processcatmsg(
 		{
 			const uint_fast32_t p2 = vfy32up(catparam, 5, 100, 100);
 			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
-			if (flagne_u8(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
+			const int_fast32_t v = (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN;
+#if 0
+			const int_fast32_t vold = param_getvalue(& xgnormalpower);
+			param_setvalue(& xgnormalpower, v);
+			if (v != vold)
 			{
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
+#else
+			if (flagne_u8(& gnormalpower.value, v))
+			{
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+#endif
 		}
 		else
 		{
