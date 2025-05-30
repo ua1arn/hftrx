@@ -2819,32 +2819,12 @@ static const struct menudef menutable [] =
 
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
-	(const struct paramdefdef [1]) {
-		QLABEL("TX POWER"), 7, 0, 0,	ISTEP5,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		OFFSETOF(struct nvmap, gnormalpower),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnormalpower.value,
-		getzerobase,
-	},
+    & xgnormalpower,        /* мощность при обычной работе на передачу */
 	#if WITHPACLASSA
-		/* усилитель мощности поддерживает переключение в класс А */
-		(const struct paramdefdef [1]) {
-			QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
-			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, gclassamode),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gclassamode,
-			getzerobase,
-		},
+		& gclassamode,	/* использование режима клвсс А при передаче */
 	#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
 #elif WITHPOWERLPHP
-	#if ! CTLSTYLE_SW2011ALL
 	(const struct paramdefdef [1]) {
 		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
@@ -2855,21 +2835,8 @@ static const struct menudef menutable [] =
 		& gpwri,
 		getzerobase,
 	},
-	#endif /* ! CTLSTYLE_SW2011ALL */
 #endif /* WITHPOWERTRIM */
-
-#if ! CTLSTYLE_SW2011ALL
-	(const struct paramdefdef [1]) {
-		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gtxgate),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxgate,
-		getzerobase, 
-	},
-#endif /* ! CTLSTYLE_SW2011ALL */
+	& xgtxgate,
 
 #if WITHPABIASTRIM
 	(const struct paramdefdef [1]) {

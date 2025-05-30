@@ -433,6 +433,7 @@ enum
 // особые случаи отображения значения параметра
 enum
 {
+	RJ_BASE0,
 	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
 	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
 	RJ_CATSPEED,	/* отображение скорости CAT */
@@ -8295,6 +8296,50 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
 }
 
+#if WITHTX
+
+#if WITHPACLASSA
+/* усилитель мощности поддерживает переключение в класс А */
+static const struct paramdefdef xgclassamode =
+{
+	QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gclassamode),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gclassamode,
+	getzerobase,
+};
+#endif
+
+#if WITHPOWERTRIM && ! WITHPOTPOWER
+static const struct paramdefdef xgnormalpower =
+{
+	QLABEL2("TX POWER", "TX POWER "), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
+    ITEM_VALUE,
+    WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+    OFFSETOF(struct nvmap, gnormalpower),
+    getselector0, nvramoffs0, valueoffs0,
+    NULL,
+    & gnormalpower.value,
+    getzerobase, /* складывается со смещением и отображается */
+};
+#endif
+static const struct paramdefdef xgtxgate =
+{
+	QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gtxgate),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gtxgate,
+	getzerobase,
+};
+
+#endif /* WITHTX */
+
 #if WITHENCODER2
 
 static const struct paramdefdef * enc2menus [] =
@@ -8340,19 +8385,7 @@ static const struct paramdefdef * enc2menus [] =
 	},
 #endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM && ! WITHPOTPOWER
-	(const struct paramdefdef [1]) {
-		QLABELENC2("TX POWER "),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP5,
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		OFFSETOF(struct nvmap, gnormalpower),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnormalpower.value,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgnormalpower,
 #endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
 #if WITHSUBTONES
 	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
@@ -16557,6 +16590,9 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
+	if (rj >= RJ_BASE0 && rj <= RJ_UNSIGNED)
+		rj = 0;
+
 #if WITHTOUCHGUI
 	const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
 	const uint_fast32_t ca = ipow10(comma);
@@ -16682,21 +16718,21 @@ param_format(
 	{
 	case RJ_POW2:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*" PRIu32, width, UINT32_C(1) << value);
 			buff [n] = '\0';
 			return n;
 		}
 		case RJ_YES:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "YES" : "NO");
 			buff [n] = '\0';
 			return n;
 		}
 		case RJ_ON:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "ON" : "OFF");
 			buff [n] = '\0';
 			return n;
@@ -16704,7 +16740,7 @@ param_format(
 #if WITHUSEDUALWATCH
 		case RJ_DUAL:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*s", width, mainsubrxmodes [value].label);
 			buff [n] = '\0';
 			return n;
@@ -16713,18 +16749,25 @@ param_format(
 #if WITHSUBTONES && WITHTX
 		case RJ_SUBTONE:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
 			buff [n] = '\0';
 			return n;
 		}
 #endif /* WITHSUBTONES && WITHTX */
 
+	case RJ_SIGNED:
+		{
+			const int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%+*" PRIdFAST32, width, value);
+			buff [n] = '\0';
+			return n;
+		}
 
 	default:
 	case RJ_UNSIGNED:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*" PRIdFAST32, width, value);
 			buff [n] = '\0';
 			return n;
@@ -17684,6 +17727,8 @@ void display2_menu_valxx(
 		}
 		break;
 
+	case RJ_SIGNED:	// учитывается в display_menu_digit
+	case RJ_UNSIGNED:
 	default:
 		if (width & WSIGNFLAG)
 			width = (VALUEW - 1) | WSIGNFLAG;
