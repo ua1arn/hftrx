@@ -713,6 +713,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
+					TP();
 					// Выполнение этого запроса не требует дополнительного чтения данных
 					//PRINTF(PSTR("USBD_CDCEEM_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X, wLength=%04X\n"), req->wValue, (unsigned) req->wLength);
 //					usb_cdc_control_state [interfacev] = req->wValue;
@@ -755,7 +756,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 					break;
 
 				default:
-					// Другие интерфейсы - ничего не отправляем.
+					// Другие интерфейсы (других функций в составном устройстве) - ничего не отправляем.
 					TP();
 					break;
 				}
@@ -763,6 +764,7 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 			break;
 
 		default:
+			TP();
 			break;
 		}
 	}
