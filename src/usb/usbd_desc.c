@@ -650,7 +650,11 @@ static unsigned UAC2_AudioControlIT_IN48(
 	if (fill != 0 && buff != NULL)
 	{
 		// Table 4-9: Input Terminal Descriptor
+#if WITHUSBHEADSET
+		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_MICROPHONE;
+#else /* WITHUSBHEADSET */
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
+#endif /* WITHUSBHEADSET */
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48;
 		const uint_fast16_t bmControls = UAC2_IT_bmControls;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -697,7 +701,11 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 	if (fill != 0 && buff != NULL)
 	{
 		// 4.3.2.1 Input Terminal Descriptor
+#if WITHUSBHEADSET
+		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_MICROPHONE;
+#else /* WITHUSBHEADSET */
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
+#endif /* WITHUSBHEADSET */
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48_INRTS;
 		const uint_fast16_t bmControls = UAC2_IT_bmControls;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -739,7 +747,11 @@ static unsigned UAC2_AudioControlIT_INRTS(
 	if (fill != 0 && buff != NULL)
 	{
 		// 4.3.2.1 Input Terminal Descriptor 
+#if WITHUSBHEADSET
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
+#else /* WITHUSBHEADSET */
+		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
+#endif /* WITHUSBHEADSET */
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_INRTS;
 		const uint_fast16_t bmControls = UAC2_IT_bmControls;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
@@ -1036,7 +1048,11 @@ static unsigned UAC2_AudioControlOT_OUT48(
 	if (fill != 0 && buff != NULL)
 	{
 		// 4.3.2.2 Output Terminal Descriptor 
+#if WITHUSBHEADSET
+		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_HEADPHONES;
+#else /* WITHUSBHEADSET */
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_TRANSMITTER;
+#endif /* WITHUSBHEADSET */
 		const uint_fast16_t bmControls = UAC2_OT_bmControls;
 
 		* buff ++ = length;							/* 0 bLength */
@@ -2301,7 +2317,11 @@ static unsigned UAC1_AC_OT_OUT(
 	if (fill != 0 && buff != NULL)
 	{
 		// 4.3.2.2 Output Terminal Descriptor
+#if WITHUSBHEADSET
+		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_HEADPHONES;
+#else /* WITHUSBHEADSET */
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_TRANSMITTER;
+#endif /* WITHUSBHEADSET */
 
 		* buff ++ = length;							/* 0 bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;/* 1 bDescriptorType */
@@ -5834,7 +5854,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_0;
-		char b [128];
+		char b [256];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
 			(unsigned long) BOOTLOADER_APPBASE,
@@ -5855,7 +5875,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_1;
-		char b [128];
+		char b [256];
 		const int status = testchipDATAFLASH();
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
