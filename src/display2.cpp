@@ -5971,9 +5971,13 @@ static void display2_3dss_alt(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x0
 #if WITHVIEW_3DSS
 
 // подготовка изображения спектра
-static void display2_3dss(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_3dss(PACKEDCOLORPIP_T * const colorpip0, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+	const uint_fast16_t x0pix = GRID2X(x0);
+	const uint_fast16_t y0pix = GRID2Y(y0);
+	PACKEDCOLORPIP_T * const colorpip = colpip_mem_at(colorpip0, DIM_X, DIM_Y, x0pix, y0pix);
 	const uint_fast16_t alldx = GRID2X(xspan);
+	const uint_fast16_t alldy = GRID2Y(yspan);
 	const uint_fast16_t SPY_3DSS = GRID2Y(yspan);	// was: SPDY
 	const uint_fast16_t SPY_3DSS_H = SPY_3DSS / 4;
 #if WITHTOUCHGUI
@@ -6468,7 +6472,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	}
 	else if (! strcmp(url.c_str(), "smeter"))
 	{
-		pix_display2_smeter15(layer.border_box.left(), layer.border_box.top(), NULL);
+		pix_display2_smeter15(buffer, layer.border_box.left(), layer.border_box.top(), NULL);
 	}
 	else if (! strcmp(url.c_str(), "bigfreq"))
 	{
@@ -6486,9 +6490,9 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		do
 		{
 #if WITHPRERENDER
-			pix_render_value_big(layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_render_value_big(buffer, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-			pix_display_value_big(layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_display_value_big(buffer, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
 		} while (lowhalf --);
 	}
@@ -6496,7 +6500,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	{
 		uint_fast8_t x = layer.border_box.left() / 16;
 		uint_fast8_t y = layer.border_box.top() / 5;
-		display2_gcombo(x, y, NULL);
+		display2_gcombo(buffer, x, y, NULL);
 
 	}
 	else
@@ -7623,16 +7627,20 @@ void wfl_init(void)
 
 PACKEDCOLORPIP_T * wfl_proccess(void)
 {
-	static PACKEDCOLORPIP_T fb [GXSIZE(DIM_X, DIM_Y)];
+	static int ix;
+	static PACKEDCOLORPIP_T fb [1][GXSIZE(DIM_X, DIM_Y)];
+	ix = (ix + 1) % ARRAY_SIZE(fb);
+	PACKEDCOLORPIP_T * const fr = & fb [ix][0];
 	pipparams_t pip;
 	display2_getpipparams(& pip);
-	colpip_fillrect(fb, DIM_X, DIM_Y, pip.x, pip.y, pip.w, pip.h, display2_getbgcolor());
+	colpip_fillrect(fr, DIM_X, DIM_Y, pip.x, pip.y, pip.w, pip.h, display2_getbgcolor());
 #if LINUX_SUBSYSTEM
 	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
-	display2_latchcombo(fb, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_latchcombo(fr, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
-	display2_gcombo(fb, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
-	return getscratchwnd(fb, X2GRID(pip.x), Y2GRID(pip.y));
+	display2_gcombo(fr, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	//dcache_clean((uintptr_t) fr, sizeof fb [0]);
+	return getscratchwnd(fr, X2GRID(pip.x), Y2GRID(pip.y));
 }
 
 #if WITHLVGL
