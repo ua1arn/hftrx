@@ -5931,7 +5931,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 	}
 #endif /* WITHUSBCDCECM */
 
-#if CTLSTYLE_SW2011ALL || WITHUSBNOUNIQUE
+#if WITHUSBNOUNIQUE
 	{
 		// на трансиверае SW20xx минимальная привязка к уникальным особенностям трансивера
 		unsigned partlen;

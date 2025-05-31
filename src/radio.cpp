@@ -2743,11 +2743,6 @@ static const uint_fast8_t encresols [] =
 /* BANDMIDDLE - граница, по которой происходит разделение двух обзорных диапазонов */
 #if defined (BANDMIDDLE)
 
-#elif CTLSTYLE_SW2011ALL
-
-	#define BANDMIDDLE	15000000L
-	#define UPPER_DEF	19000000L
-
 #elif TUNE_TOP >= 54000000L
 
 	#define BANDMIDDLE  32000000L //(29700000 + BANDPAD)
@@ -4296,7 +4291,7 @@ static const struct paramdefdef xgbandset11m =
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
-static uint_fast8_t bandset4m = 0;	/* используется ли диапазон 4 метров */
+static uint_fast8_t bandset4m = 1;	/* используется ли диапазон 4 метров */
 #endif /* TUNE_4MBAND */
 #if TUNE_2MBAND
 static uint_fast8_t bandset2m = 1;	/* используется ли диапазон 2 метра */
@@ -5647,11 +5642,7 @@ static int_fast32_t getlfmbias(void)
 	}
 #endif /* defined (REFERENCE_FREQ) */
 
-#if CTLSTYLE_SW2011ALL
-static uint_fast8_t gkeybeep10 = 1850 / 10;	/* озвучка нажатий клавиш - 1850 Гц */
-#else /* CTLSTYLE_SW2011ALL */
 static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - нота ля второй октавы (A5) (аналогично FT1000) */
-#endif /* CTLSTYLE_SW2011ALL */
 
 
 #if WITHMIC1LEVEL
@@ -13122,11 +13113,6 @@ uint_fast8_t hamradio_get_volt_value(void)
 		//PRINTF(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
 		return UINT8_MAX;
 	}
-
-#elif CTLSTYLE_SW2011ALL
-
-	//PRINTF(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
-	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr100mV);
 
 #else /* WITHREFSENSOR */
 
@@ -21906,10 +21892,6 @@ application_initialize(void)
 	bandf_calc_initialize();
 	bandf2_calc_initialize();
 	bandf3_calc_initialize();
-#if CTLSTYLE_SW2011ALL
-	board_set_bandfonhpf(bandf_calc(nyquistadj(14000000L)));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
-	board_set_bandfonuhf(bandf_calc(nyquistadj(85000000L)));
-#endif /* CTLSTYLE_SW2011ALL */
 #if XVTR_R820T2
 	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
 #endif /* XVTR_R820T2 */

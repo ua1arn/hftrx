@@ -727,7 +727,6 @@ static const struct menudef menutable [] =
 #elif (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
 	/* Обычная схема - выбор ПЧ делается перестановкой последнего гетеродина */
 
-#if ! CTLSTYLE_SW2011ALL
 #if WITHTX
 	(const struct paramdefdef [1]) {
 		QLABEL("DC TX CW"), 7, 3, RJ_YES,	ISTEP1,
@@ -740,7 +739,6 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHTX */
-#endif /* ! CTLSTYLE_SW2011ALL */
 
 	#if (IF3_FMASK & IF3_FMASK_2P4)
 	(const struct paramdefdef [1]) {
@@ -3397,7 +3395,6 @@ static const struct menudef menutable [] =
 	},
 #endif /* WITHBCBANDS */
 
-#if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
 	(const struct paramdefdef [1]) {
 		QLABEL("BAND 50 "), 8, 3, RJ_ON,	ISTEP1,
@@ -3434,7 +3431,6 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* TUNE_2MBAND */
-#endif /* CTLSTYLE_SW2011ALL */
 
 /* group name +++ */
 	(const struct paramdefdef [1]) {

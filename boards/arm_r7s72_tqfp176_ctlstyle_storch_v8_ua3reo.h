@@ -255,7 +255,7 @@
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCDIV_DEFAULT	4
-	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4
