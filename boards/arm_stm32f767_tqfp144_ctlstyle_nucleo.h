@@ -351,7 +351,8 @@
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
@@ -461,11 +462,12 @@
 		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
 	#endif /* WITHVOLTLEVEL */
 
-	#if WITHPOTGAIN
+	#if WITHPOTIFGAIN
 		POTIFGAIN = 2,		// PA2 IF GAIN
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
 		POTAFGAIN = 3,		// PA3 AF GAIN
-	#endif /* WITHPOTGAIN */
-
+	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */

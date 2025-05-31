@@ -3523,11 +3523,6 @@ const char * get_band_label3(unsigned b); /* получение человеко
 	#endif
 #endif
 
-#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-#endif /* WITHPOTGAIN */
-
 #define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
 #define CWWPMMAX	60
 
