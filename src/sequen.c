@@ -16,6 +16,16 @@ static ticker_t seqticker;
 static adcdone_t voxoribet;
 
 
+// вызывается из SYSTEM обработчика прерываний
+static void
+seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
+{
+#if WITHINTEGRATEDDSP
+	dsp_txpath_set(txpathstate, keydown);
+#endif
+	hardware_txpath_set(txpathstate);
+}
+
 #if WITHTX
 
 enum {
@@ -360,16 +370,6 @@ seqhastxrequest(void)
 	return 0;
 }
 
-// вызывается из SYSTEM обработчика прерываний
-static void
-seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
-{
-#if WITHINTEGRATEDDSP
-	dsp_txpath_set(txpathstate, keydown);
-#endif
-	hardware_txpath_set(txpathstate);
-}
-
 // 
 // сиквенсор переключения приём-передача и назад.
 // переключение на передачу и приём осуществляется из user-mode программ
@@ -708,6 +708,13 @@ void seq_initialize(void)
 {
 	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL);
 	ticker_add(& seqticker);
+
+	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
+
+	hardware_txpath_initialize();
+	//seq_set_txgate(txgfva0, sdtnva0);	// Сделано статической инициализацией
+	seq_txpath_set(0/*TXGFV_RX*/, 0);	// - аппаратное управление выдачей несущей - в состояние приём
+	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 }
 
 /* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
