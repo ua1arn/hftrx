@@ -3271,14 +3271,6 @@ extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
 
-void display_swrmeter(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	adcvalholder_t forward,
-	adcvalholder_t reflected, // скорректированное
-	uint_fast16_t minforward
-	);
-
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
 uint_fast8_t hamradio_get_atuvalue(void);

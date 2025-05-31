@@ -5571,6 +5571,7 @@ static void display_solidbar(
 	COLORPIP_T color
 	)
 {
+	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
 	if (x2 < x)
 	{
 		const uint_fast16_t t = x;
@@ -5581,7 +5582,7 @@ static void display_solidbar(
 		const uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	display_fillrect(x, y, x2 - x, y2 - y, color);
+	display_fillrect(colorpip, x, y, x2 - x, y2 - y, color);
 }
 
 
@@ -5636,6 +5637,7 @@ static void BarTest(void)
 static  void
 GridTest(void)
 {
+	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
 	PRINTF("GridTest\n");
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
@@ -5677,9 +5679,9 @@ GridTest(void)
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
-	display_fillrect(xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
-	display_fillrect(xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
-	display_fillrect(xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
+	display_fillrect(colorpip, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
+	display_fillrect(colorpip, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
+	display_fillrect(colorpip, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
 /*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
@@ -5693,27 +5695,27 @@ GridTest(void)
 				 );
 */
 
-	display_fillrect(xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
-	display_line(xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
+	display_fillrect(colorpip, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
+	display_line(colorpip, xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
 
 	/* Interlase clocke test.	*/
-	display_line(10,  0,  xm, 10 + 1,  col3);
-	display_line(10,  0,  xm, 10 + 3,  col3);
-	display_line(10,  0,  xm, 10 + 5,  col3);
-	display_line(10,  0,  xm, 10 + 7,  col3);
+	display_line(colorpip, 10,  0,  xm, 10 + 1,  col3);
+	display_line(colorpip, 10,  0,  xm, 10 + 3,  col3);
+	display_line(colorpip, 10,  0,  xm, 10 + 5,  col3);
+	display_line(colorpip, 10,  0,  xm, 10 + 7,  col3);
 
 	/* diagonales test.	*/
-	display_line(xm, 0,  xm, ym, col3);
-	display_line(xm, ym, 0,  ym, col3);
-	display_line(0,  ym, 0,  0,  col3);
-	display_line(0,  0,  xm, ym, col3);
-	display_line(0,  ym, xm, 0,  col3);
+	display_line(colorpip, xm, 0,  xm, ym, col3);
+	display_line(colorpip, xm, ym, 0,  ym, col3);
+	display_line(colorpip, 0,  ym, 0,  0,  col3);
+	display_line(colorpip, 0,  0,  xm, ym, col3);
+	display_line(colorpip, 0,  ym, xm, 0,  col3);
 
 	// тест перестановки байтов при выборке видеоконтроллером
 	const unsigned rctx = DIM_X / 3;
 	const unsigned rcty = DIM_Y / 3;
-	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
-	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
+	display_line(colorpip, rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
+	display_line(colorpip, rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
 
 	colmain_nextfb();
 
@@ -10649,12 +10651,13 @@ static void lidar_parse(unsigned char c)
 
 void hightests(void)
 {
+	PACKEDCOLORPIP_T * const colorpip = colmain_fb_draw();
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		display_fillrect(0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_at(0, 0, "Start...");
+		display_fillrect(colorpip, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+		display_at(colorpip, 0, 0, "Start...");
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */

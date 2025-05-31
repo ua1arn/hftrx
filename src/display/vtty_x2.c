@@ -65,17 +65,7 @@ static COLORPIP_T gbg = COLORPIP_BLACK;
 
 void display_vtty_x2_initialize(void);
 int display_vtty_x2_putchar(char ch);
-// копирование растра в видеобуфер отображения
-void display_vtty_x2_show(
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
-// копирование растра в видеобуфер отображения
-// с поворотом вправо на 90 градусов
-void display_vtty_x2_show_ra90(
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
+
 void display_vtty_x2_printf(const char * format, ...);
 void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
@@ -106,12 +96,11 @@ void display_vtty_x2_gotoxy(unsigned x, unsigned y)
 	ASSERT(vt->col < VTTYx2_COLS);
 }
 // копирование растра в видеобуфер отображения
-void display_vtty_x2_show(
+void display_vtty_x2_show(PACKEDCOLORPIP_T * const tfb,
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
 //	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -155,12 +144,11 @@ void display_vtty_x2_show(
 
 // копирование растра в видеобуфер отображения
 // с поворотом вправо на 90 градусов
-void display_vtty_x2_show_ra90(
+void display_vtty_x2_show_ra90(PACKEDCOLORPIP_T * const tfb,
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
 //	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTYx2_DX, VTTYx2_DY, VTTYx2_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_x2_t * const vt = & vtty_x2_0;

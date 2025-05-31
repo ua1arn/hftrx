@@ -203,7 +203,7 @@ void panel_wakeup(void);
 void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
-void display_clear(void);	// Заполниить цветом фона
+void display_clear(PACKEDCOLORPIP_T * const buffer);	// Заполниить цветом фона
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
@@ -412,7 +412,7 @@ uint_fast16_t strheight(
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
-display_scroll_down(
+display_scroll_down(PACKEDCOLORPIP_T * const tfb,
 	uint_fast16_t x0,	// левый верхний угол окна
 	uint_fast16_t y0,	// левый верхний угол окна
 	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
@@ -423,7 +423,7 @@ display_scroll_down(
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
-display_scroll_up(
+display_scroll_up(PACKEDCOLORPIP_T * const tfb,
 	uint_fast16_t x0,	// левый верхний угол окна
 	uint_fast16_t y0,	// левый верхний угол окна
 	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
@@ -433,7 +433,7 @@ display_scroll_up(
 	);
 
 void
-display_panel(
+display_panel(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t x, // левый верхний угод
 	uint_fast8_t y,
 	uint_fast8_t w, // ширина и высота в знакоместах
@@ -441,7 +441,7 @@ display_panel(
 	);
 
 void
-display2_menu_value(
+display2_menu_value(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	int_fast32_t value,
@@ -453,7 +453,7 @@ display2_menu_value(
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_bar(
+void display_bar(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t xpix,
 	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
@@ -465,13 +465,23 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	);
 
-void display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
-void display_x2_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
-void display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s); // Выдача строки из ПЗУ в указанное место экрана.
+void display_at(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_x2_at(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_at_P(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s); // Выдача строки из ПЗУ в указанное место экрана.
+
+
+void display_swrmeter(PACKEDCOLORPIP_T * const colorpip,
+	uint_fast8_t x,
+	uint_fast8_t y,
+	adcvalholder_t forward,
+	adcvalholder_t reflected, // скорректированное
+	uint_fast16_t minforward
+	);
+
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
-display_fillrect(
+display_fillrect(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORPIP_T color
@@ -479,7 +489,7 @@ display_fillrect(
 /* рисование линии на основном экране произвольным цветом
 */
 void
-display_line(
+display_line(PACKEDCOLORPIP_T * const buffer,
 	int x1, int y1,
 	int x2, int y2,
 	COLORPIP_T color
@@ -703,7 +713,7 @@ colpip_const_mem_at_debug(
 #define colpip_mem_at(a,b,c,d,e) (colpip_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
 #define colpip_const_mem_at(a,b,c,d,e) (colpip_const_mem_at_debug((a), (b), (c), (d), (e), __FILE__, __LINE__))
 
-void display_putpixel(
+void display_putpixel(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
@@ -856,7 +866,7 @@ void colpip_line(
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
-display_value_big(
+display_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -871,7 +881,7 @@ display_value_big(
 	);
 
 void
-pix_display_value_big(
+pix_display_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -888,7 +898,7 @@ pix_display_value_big(
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 /* из предварительно подготовленных буферов */
 void
-render_value_big(
+render_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -903,7 +913,7 @@ render_value_big(
 	);
 
 void
-pix_render_value_big(
+pix_render_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -920,7 +930,7 @@ pix_render_value_big(
 void render_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
-display_value_lower(
+display_value_lower(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -930,7 +940,7 @@ display_value_lower(
 	);
 
 void
-display_value_small(
+display_value_small(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	int_fast32_t freq,
@@ -988,13 +998,13 @@ void display_vtty_gotoxy(unsigned x, unsigned y);
 void display_vtty_x2_initialize(void);
 int display_vtty_x2_putchar(char ch);
 // копирование растра в видеобуфер отображения
-void display_vtty_x2_show(
+void display_vtty_x2_show(PACKEDCOLORPIP_T * const tfb,
 	uint_fast16_t x,
 	uint_fast16_t y
 	);
 // копирование растра в видеобуфер отображения
 // с поворотом вправо на 90 градусов
-void display_vtty_x2_show_ra90(
+void display_vtty_x2_show_ra90(PACKEDCOLORPIP_T * const tfb,
 	uint_fast16_t x,
 	uint_fast16_t y
 	);

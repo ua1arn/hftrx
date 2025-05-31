@@ -60,7 +60,7 @@ static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);
 void display_vtty_printf_irq(const char * format, ...);
-void display2_vtty(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_vtty(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 void display_vtty_clrscr(void);
 void display_vtty_gotoxy(unsigned x, unsigned y);
 
@@ -105,12 +105,12 @@ void display_vtty_gotoxy(unsigned x, unsigned y)
 }
 
 // копирование растра в видеобуфер отображения
-static void display_vtty_show(
+static void display_vtty_show(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
+	PACKEDCOLORPIP_T * const tfb = colorpip;
 //	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, VTTY_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_t * const vt = & vtty0;
@@ -152,7 +152,7 @@ static void display_vtty_show(
 	}
 }
 
-void display2_vtty(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_vtty(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	const uint_fast16_t x = GRID2X(x0);
 	const uint_fast16_t y = GRID2Y(y0);
@@ -171,10 +171,10 @@ void display2_vtty(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_
 		display_vtty_cout(vt, c);
 
 	}
-	display_vtty_show(x, y);
+	display_vtty_show(colorpip, x, y);
 }
 
-void display2_vtty_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_vtty_init(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	display_vtty_initialize();
 }

@@ -1772,12 +1772,11 @@ static void process_gui(void)
 }
 
 /* Запуск state mashine и отрисовка элементов GUI */
-void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx)
+void gui_WM_walkthrough(PACKEDCOLORPIP_T * const fr, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf [TEXT_ARRAY_SIZE];
 	uint_fast8_t str_len = 0;
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	process_gui();
 

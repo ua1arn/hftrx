@@ -168,16 +168,6 @@ void split_freq(uint64_t freq, uint16_t * mhz, uint16_t * khz, uint16_t * hz)
     * hz = freq % 1000;
 }
 
-void lvgl_task1_cb(lv_timer_t * tmr)
-{
-	uint16_t mhz, khz, hz;
-	split_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
-	lv_label_set_text_fmt(lbl, "%i.%03i.%03i", mhz, khz, hz);
-
-	wfl.data = (uint8_t *) wfl_proccess();
-	lv_img_set_src(img1, & wfl);
-}
-
 
 static void event_handler_btn1(lv_event_t * event)
 {
@@ -195,19 +185,16 @@ static void event_handler_btn1(lv_event_t * event)
 
 lv_obj_t * window_create(lv_obj_t * parent, lv_coord_t w, lv_coord_t h)
 {
-	lv_obj_t * win = lv_obj_create(parent);
+	lv_obj_t * const win = lv_obj_create(parent);
 	lv_obj_add_style(win, & style_window, 0);
 	lv_obj_set_size(win, w, h);
-
-
-
 
 	return win;
 }
 
-static lv_obj_t * fbtn[9];
+static lv_obj_t * fbtn [9];
 
-void footer_buttons_init(void)
+static void footer_buttons_init(void)
 {
 	uint16_t x = 1, y = DIM_Y - 45;
 
@@ -218,6 +205,16 @@ void footer_buttons_init(void)
 		fbtn[i] = button_create(main_page, x, y, b, b, & style_footer_button, event_handler_btn1);
 		x = x + 3 + 86;
 	}
+}
+
+void lvgl_task1_cb(lv_timer_t * tmr)
+{
+	uint16_t mhz, khz, hz;
+	split_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
+	lv_label_set_text_fmt(lbl, "%i.%03i.%03i", mhz, khz, hz);
+
+	wfl.data = (uint8_t *) wfl_proccess();
+	lv_img_set_src(img1, & wfl);	// src_type=LV_IMAGE_SRC_VARIABLE
 }
 
 void lvgl_test(void)

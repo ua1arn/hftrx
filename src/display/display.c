@@ -37,13 +37,12 @@ const char * savewhere = "no func";
 	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
 #endif /* WITHALTERNATIVEFONTS */
 
-void display_putpixel(
+void display_putpixel(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	colpip_putpixel(buffer, dx, dy, x, y, color);
@@ -52,13 +51,12 @@ void display_putpixel(
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
-display_fillrect(
+display_fillrect(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -68,13 +66,12 @@ display_fillrect(
 /* рисование линии на основном экране произвольным цветом
 */
 void
-display_line(
+display_line(PACKEDCOLORPIP_T * const buffer,
 	int x1, int y1,
 	int x2, int y2,
 	COLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -83,7 +80,7 @@ display_line(
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
-display_scroll_down(
+display_scroll_down(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x0,	// левый верхний угол окна
 	uint_fast16_t y0,	// левый верхний угол окна
 	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
@@ -92,7 +89,6 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -142,7 +138,7 @@ display_scroll_down(
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
-display_scroll_up(
+display_scroll_up(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x0,	// левый верхний угол окна
 	uint_fast16_t y0,	// левый верхний угол окна
 	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
@@ -151,7 +147,6 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -240,17 +235,16 @@ void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 // Заполниить цветом фона
-void display_clear(void)
+void display_clear(PACKEDCOLORPIP_T * const buffer)
 {
 	const COLORPIP_T bg = display2_getbgcolor();
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
 	colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
 }
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
-void display_bar(
+void display_bar(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x,
 	uint_fast16_t y,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
@@ -262,7 +256,6 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	ASSERT(value <= topvalue);
@@ -296,13 +289,12 @@ void display_wrdata2_end(void)
 
 // Выдать один цветной пиксель
 static void
-ltdc_pix1color(
+ltdc_pix1color(PACKEDCOLORPIP_T * const buffer,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	PACKEDCOLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
@@ -313,19 +305,19 @@ ltdc_pix1color(
 
 // Выдать один цветной пиксель (фон/символ)
 static void
-ltdc_pixel(
+ltdc_pixel(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t v			// 0 - цвет background, иначе - foreground
 	)
 {
-	ltdc_pix1color(x, y, v ? ltdc_fg : ltdc_bg);
+	ltdc_pix1color(colorpip, x, y, v ? ltdc_fg : ltdc_bg);
 }
 
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 static void
-ltdc_vertical_pixN(
+ltdc_vertical_pixN(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t pattern,		// pattern
@@ -334,14 +326,14 @@ ltdc_vertical_pixN(
 {
 
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	ltdc_pixel(x, y + 0, pattern & 0x01);
-	ltdc_pixel(x, y + 1, pattern & 0x02);
-	ltdc_pixel(x, y + 2, pattern & 0x04);
-	ltdc_pixel(x, y + 3, pattern & 0x08);
-	ltdc_pixel(x, y + 4, pattern & 0x10);
-	ltdc_pixel(x, y + 5, pattern & 0x20);
-	ltdc_pixel(x, y + 6, pattern & 0x40);
-	ltdc_pixel(x, y + 7, pattern & 0x80);
+	ltdc_pixel(colorpip, x, y + 0, pattern & 0x01);
+	ltdc_pixel(colorpip, x, y + 1, pattern & 0x02);
+	ltdc_pixel(colorpip, x, y + 2, pattern & 0x04);
+	ltdc_pixel(colorpip, x, y + 3, pattern & 0x08);
+	ltdc_pixel(colorpip, x, y + 4, pattern & 0x10);
+	ltdc_pixel(colorpip, x, y + 5, pattern & 0x20);
+	ltdc_pixel(colorpip, x, y + 6, pattern & 0x40);
+	ltdc_pixel(colorpip, x, y + 7, pattern & 0x80);
 }
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -717,7 +709,7 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 #endif
 // Используется при выводе на графический индикатор,
 static void
-display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
+display_string(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	savestring = s;
 	savewhere = __func__;
@@ -733,19 +725,19 @@ display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast
 // Выдача строки из ОЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
+display_at(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string(xcell, ycell + lowhalf, s, lowhalf);
+		display_string(colorpip, xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
 
 // Используется при выводе на графический индикатор,
 static void
-display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
+display_string_P(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	char c;
 
@@ -759,12 +751,12 @@ display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fa
 // Выдача строки из ПЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
+display_at_P(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string_P(xcell, ycell + lowhalf, s, lowhalf);
+		display_string_P(colorpip, xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
@@ -815,7 +807,7 @@ static const FLASHMEM int32_t vals10 [] =
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-pix_display_value_big(
+pix_display_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -880,7 +872,7 @@ pix_display_value_big(
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-display_value_big(
+display_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -897,7 +889,7 @@ display_value_big(
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
-	pix_display_value_big(xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	pix_display_value_big(colorpip, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
 	display_wrdatabig_end();
 }
 
@@ -908,7 +900,7 @@ display_value_big(
 /* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-pix_render_value_big(
+pix_render_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -975,7 +967,7 @@ pix_render_value_big(
 /* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-render_value_big(
+render_value_big(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -992,7 +984,7 @@ render_value_big(
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = render_wrdatabig_begin(xcell, ycell, & ypix);
-	pix_render_value_big(xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	pix_render_value_big(colorpip, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
 	render_wrdatabig_end();
 }
 
@@ -1000,7 +992,7 @@ render_value_big(
 
 void
 NOINLINEAT
-display_value_lower(
+display_value_lower(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -1043,7 +1035,7 @@ display_value_lower(
 
 void
 NOINLINEAT
-display_value_small(
+display_value_small(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t x,	// x координата начала вывода значения
 	uint_fast8_t y,	// y координата начала вывода значения
 	int_fast32_t freq,

@@ -403,18 +403,6 @@ void bootloader_fatfs_mainloop(void)
 
 #else /* WITHISBOOTLOADERFATFS */
 
-// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-//void display2_keyboard_screen0(
-//	uint_fast8_t x,
-//	uint_fast8_t y,
-//	uint_fast8_t xspan,
-//	uint_fast8_t yspan,
-//	dctx_t * pctx
-//	)
-//{
-//
-//}
-
 #if WITHISBOOTLOADER0
 
 static const uint8_t boot2image [] =

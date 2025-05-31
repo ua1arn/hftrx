@@ -81,6 +81,9 @@
 		{	0,	4,	0, 0, display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
 	#endif /* WITHAFSPECTRE */
 		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+	#if WITHBARS
+		{   0, 	4,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
+	#endif /* WITHBARS */
 
 #if WITHLVGL
 #else /* WITHLVGL */
@@ -96,7 +99,6 @@
 		{	32,	0,	4, 4, display2_att4,		& dzi_default, PGALL, },
 		{	37,	0,	3, 4, display2_preovf3,		& dzi_default, PGALL, },
 	#if WITHBARS
-		{   0, 	4,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	15, 20, display2_smeter15, 	& dzi_default, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
