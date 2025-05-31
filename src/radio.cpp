@@ -3335,7 +3335,9 @@ struct modeprops
 	//uint16_t step;	/* шаг валкодера в данном режиме */
 
 #if WITHIF4DSP
+#if WITHTX
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
+#endif /* WITHTX */
 	uint8_t noisereduct;	/* включение NR для данного режима */
 #endif /* WITHIF4DSP */
 	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
@@ -8146,11 +8148,11 @@ getdefaultbandsubmode(
 }
 
 
-#if WITHIF4DSP
+#if WITHIF4DSP && WITHTX
 
 	static uint_fast8_t gtxaudio [MODE_COUNT];
 
-#endif /* WITHIF4DSP */
+#endif /* WITHIF4DSP && WITHTX */
 
 	static uint_fast8_t gmiddlepos [MODE_COUNT];
 
@@ -8871,10 +8873,10 @@ loadsavedstate(void)
 		unsigned middlerowsize;
 		mdt [mode].middlemenu(& middlerowsize);
 		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
-	#if WITHIF4DSP
+	#if WITHIF4DSP && WITHTX
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));
-	#endif /* WITHIF4DSP */
+	#endif /* WITHIF4DSP && WITHTX */
 		/* включение NR */
 	#if WITHIF4DSP
 		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
