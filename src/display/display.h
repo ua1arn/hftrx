@@ -188,6 +188,8 @@ void display_hardware_initialize(void);	/* вызывается при запр�
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
 void display_uninitialize(void);			/* вызывается при разрешённых прерываниях. */
+void display_lvgl_initialize(void);			/* вызывается при разрешённых прерываниях. */
+uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, используемый в построении  изображений */
 
 void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_wakeup(const videomode_t * vdmode);

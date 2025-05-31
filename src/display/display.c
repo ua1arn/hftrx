@@ -675,6 +675,135 @@ void display_uninitialize(void)
 #endif /* WITHOPENVG */
 }
 
+
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+#include "lvgl.h"
+//#include "../demos/lv_demos.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
+//#include "src/lvgl_gui/styles.h"
+
+/*Flush the content of the internal buffer the specific area on the display.
+ *`px_map` contains the rendered image as raw pixel map and it should be copied to `area` on the display.
+ *You can use DMA or any hardware acceleration to do this operation in the background but
+ *'lv_display_flush_ready()' has to be called when it's finished.*/
+
+#if defined (RTMIXIDLCD)
+
+static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
+{
+	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp))
+	{
+    	dcache_clean(
+    		(uintptr_t) px_map,
+    		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
+    		);
+    	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
+    }
+	/*IMPORTANT!!!
+     *Inform the graphics library that you are ready with the flushing*/
+    lv_display_flush_ready(disp);
+}
+
+#endif /* defined (RTMIXIDLCD) */
+
+#if defined (RTMIXIDTV)
+
+static void subdisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
+{
+	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp))
+	{
+    	dcache_clean(
+    		(uintptr_t) px_map,
+    		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
+    		);
+    	hardware_ltdc_main_set(RTMIXIDTV, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
+    }
+	/*IMPORTANT!!!
+     *Inform the graphics library that you are ready with the flushing*/
+    lv_display_flush_ready(disp);
+}
+
+#endif /* defined (RTMIXIDTV) */
+
+static uint32_t myhardgeticks(void)
+{
+	return sys_now();
+}
+
+struct driverdata
+{
+	int rtmixid;
+};
+void display_lvgl_initialize(void)
+{
+
+
+	lv_init();	// lvgl library initialize
+
+#if defined (RTMIXIDLCD)
+	if (1)
+	{
+		static struct driverdata maindisplay =
+		{
+				.rtmixid = RTMIXIDLCD
+		};
+		// main display
+	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
+	    lv_display_set_driver_data(disp, & maindisplay);
+	    lv_display_set_flush_cb(disp, maindisplay_flush);
+
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
+
+	    lv_display_set_buffers_with_stride(
+	    		disp,
+				dbuf_3_1, dbuf_3_2, sizeof(dbuf_3_1),
+	    		GXADJ(DIM_X) * LCDMODE_PIXELSIZE,
+				LV_DISPLAY_RENDER_MODE_DIRECT);
+	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
+	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
+	    lv_display_set_antialiasing(disp, false);
+	}
+#endif /* defined (RTMIXIDTV) */
+
+#if defined (RTMIXIDTV)
+	if (1)
+	{
+		static struct driverdata subdisplay =
+		{
+				.rtmixid = RTMIXIDTV;
+		};
+		// tv display
+	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
+	    lv_display_set_driver_data(disp, & subdisplay);
+	    lv_display_set_flush_cb(disp, subdisplay_flush);
+
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
+
+	    lv_display_set_buffers_with_stride(
+	    		disp,
+				dbuf_3_1, dbuf_3_2, sizeof(dbuf_3_1),
+	    		GXADJ(DIM_X) * LCDMODE_PIXELSIZE,
+				LV_DISPLAY_RENDER_MODE_DIRECT);
+	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
+	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
+	    lv_display_set_antialiasing(disp, false);
+	}
+#endif /* defined (RTMIXIDTV) */
+
+	// Add custom draw unit
+	lvglhw_initialize();
+
+	// lvgl будет получать тики
+	lv_tick_set_cb(myhardgeticks);
+}
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+
 #endif /* LCDMODE_LTDC */
 
 #if 0
