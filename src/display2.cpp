@@ -7597,6 +7597,7 @@ lv_draw_buf_t * wfl_init(void)
 	return & wfl_buff;
 }
 
+/* построить растр с водопадом и спектром */
 void wfl_proccess(void)
 {
 	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data; //& fb [ix][0];

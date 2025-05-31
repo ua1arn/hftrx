@@ -17,7 +17,7 @@ void styles_init(void);	// инициализация стилей, исполь
 void lvgl_test(void);	// создание элементов на главном окне
 void lvgl_dev_init(void);
 void lvgl_init(void);	// создание главного окна
-lv_draw_buf_t * wfl_init(void);
+lv_draw_buf_t * wfl_init(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
