@@ -3381,7 +3381,6 @@ void hamradio_settemp_viewstyle(uint_fast8_t v);
 int_fast8_t hamradio_afresponce(int_fast8_t v);
 uint_fast8_t hamradio_get_classa(void);
 
-#if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
 uint_fast8_t hamradio_get_greverb(void);
 void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3390,7 +3389,6 @@ uint_fast8_t hamradio_get_reverb_delay(void);
 uint_fast8_t hamradio_get_reverb_loss(void);
 void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
-#endif /* WITHREVERB */
 
 uint_fast16_t hamradio_notch_freq(int_fast8_t step);
 uint_fast16_t hamradio_notch_width(int_fast8_t step);
@@ -3416,7 +3414,6 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v);
 uint32_t hamradio_get_gadcrand(void);
 void hamradio_set_gdactest(uint8_t v);
 
-#if WITHVOX
 void hamradio_set_gvoxenable(uint_fast8_t v);
 uint_fast8_t hamradio_get_gvoxenable(void);
 void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3428,21 +3425,16 @@ void hamradio_set_vox_level(uint_fast8_t v);
 void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
 uint_fast8_t hamradio_get_antivox_level(void);
 void hamradio_set_antivox_level(uint_fast8_t v);
-#endif /* WITHVOX */
 
-#if WITHTX
 void hamradio_set_tune(uint_fast8_t v);
 void hamradio_set_tx_tune_power(uint_fast8_t v);
 uint_fast8_t hamradio_get_tx_tune_power(void);
 void hamradio_set_tx_power(uint_fast8_t v);
 uint_fast8_t hamradio_get_tx_power(void);
 void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
-#endif /* WITHTX */
 
-#if WITHSPKMUTE
 uint_fast8_t hamradio_get_gmutespkr(void);
 void hamradio_set_gmutespkr(uint_fast8_t v);
-#endif /* WITHSPKMUTE */
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 const char * hamradio_get_att_value(void);
