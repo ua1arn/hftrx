@@ -58,16 +58,12 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 ////////////////
 // board specific functions
 
-static uint_fast8_t 	glob_boardagc;
 static uint_fast8_t		glob_loudspeaker_off;
 static uint_fast8_t 	glob_opowerlevel = BOARDPOWERMAX;	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
 static uint_fast8_t 	glob_sleep;			// находимся в режиме минимального потребления
 static uint_fast8_t 	glob_tx_loopback;		// заворот спектра передатчика в траки спектроанализатора
-static uint_fast8_t 	glob_af_input = BOARD_DETECTOR_SSB;		// код детектора - вид модуляции с которым работаем.
-static uint_fast8_t		glob_nfm;			// режим NFM
-static uint_fast8_t		glob_nfmnbon;		// режим NFM с шумоподавителем - SW2014FM
 static uint_fast8_t 	glob_att;			// код аттенюатора
 static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - ANT2)
 static uint_fast8_t 	glob_rxantenna;		//
@@ -4917,51 +4913,6 @@ board_set_filter(uint_fast16_t n)
 		board_ctlreg1changed();
 	}
 }
-
-// Функция должна быть независима от архитектуры управляющенр регистра
-void 
-board_set_detector(uint_fast8_t n)
-{
-	if (glob_af_input != n)
-	{
-		glob_af_input = n;
-		board_ctlreg1changed();
-	}
-}
-
-void 
-board_set_nfm(uint_fast8_t v)
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_nfm != n)
-	{
-		glob_nfm = n;
-		board_ctlreg1changed();
-	}
-}
-
-/* Включние noise blanker на SW2014FM */
-void 
-board_set_nfmnbon(uint_fast8_t v)
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_nfmnbon != n)
-	{
-		glob_nfmnbon = n;
-		board_ctlreg1changed();
-	}
-}
-
-void 
-board_set_boardagc(uint_fast8_t n)
-{
-	if (glob_boardagc != n)
-	{
-		glob_boardagc = n;
-		board_ctlreg1changed();
-	}
-}
-
 
 /* установить выходную мощность BOARDPOWERMIN..BOARDPOWERMAX */
 void 

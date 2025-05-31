@@ -9885,10 +9885,10 @@ getactualdownpower(void)
 
 #if WITHTX
 
-/* возвращаем 0..100 для кода на разъеме ACC */
+/* возвращаем 0..100 для кода на разъеме ACC (bandf3hint) */
 static uint_fast8_t
 makebandf2adjust(
-	uint_fast8_t lpfno, 	// 0..15 - код диапазона
+	uint_fast8_t lpfno, 	// 0..15 - код диапазона bandf3hint
 	int amplitude	// 0..WITHPOWERTRIMMAX 0..100 - относительная мощность
 	)
 {
@@ -11585,9 +11585,10 @@ updateboardZZZ(
 
 		const uint_fast8_t rxbi = getbankindex_tx(0);
 		const uint_fast8_t txbi = getbankindex_tx(1);
+#if WITHTX
 		const uint_fast8_t txsubmode = getsubmode(txbi);		/* код режима, который будет при передаче */
 		const uint_fast8_t txmode = submodes [txsubmode].mode;
-
+#endif /* WITHTX */
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
 			const uint_fast8_t asubmode = getasubmode(pathi);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
@@ -11792,7 +11793,6 @@ updateboardZZZ(
 		#endif /* WITHIF4DSP */
 
 		board_set_filter(workfilter->code [gtx]);	/* В случае WITHDUALFLTR формирование управляющего слова в зависимости от mixXlsbs [4] происходит при выдаче управляющих кодов в аппаратуру. */
-		board_set_nfm(amode == MODE_NFM);
 
 		#if WITHTX
 			/* переносить эти параметры под условие перенастройки в режиме приёма не стал, так как меню может быть вызвано и при передаче */
@@ -11871,10 +11871,8 @@ updateboardZZZ(
 			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
 		#if ! WITHAGCMODENONE
-			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 		#else /* ! WITHAGCMODENONE */
-			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 		#endif /* ! WITHAGCMODENONE */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -11915,26 +11913,25 @@ updateboardZZZ(
 		board_set_afgain(sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 
-		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
-
 		#if WITHTX
+			const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
+
 			#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUACOUT
 				/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
-				const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
+				const uint_fast8_t txaudiocode = BOARD_TXAUDIO_USB;
 			#elif WITHBBOX && defined (WITHBBOXMIKESRC)
-				const uint_fast8_t txaudio = WITHBBOXMIKESRC;
+				const uint_fast8_t txaudiocode = WITHBBOXMIKESRC;
 			#else /* defined (WITHBBOXMIKESRC) */
-				const uint_fast8_t txaudio = txaudiosrcs [gtxaudio [txmode]].code;	// Код источника
+				const uint_fast8_t txaudiocode = txaudiosrcs [gtxaudio [txmode]].code;	// Код источника
 			#endif /* defined (WITHBBOXMIKESRC) */
 
 			#if WITHAFCODEC1HAVELINEINLEVEL
-					board_set_lineinput(txaudio == BOARD_TXAUDIO_LINE);
+					board_set_lineinput(txaudiocode == BOARD_TXAUDIO_LINE);
 			#else /* WITHAFCODEC1HAVELINEINLEVEL */
 					board_set_lineinput(0);
 			#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		#endif /* WITHTX */
 
-		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
 		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10 + gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));	/*	Мощность, соответствующая full scale от IF ADC */
@@ -11955,7 +11952,7 @@ updateboardZZZ(
 			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 			board_set_lineamp(glineamp);	/* усиление с линейного входа */
 			#if WITHUSBHW && WITHUSBUACOUT
-				board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
+				board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudiocode);	// Альтернативные источники сигнала при передаче
 			#else /* WITHUSBUAC */
 				board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
 			#endif /* WITHUSBUAC */
@@ -11972,8 +11969,8 @@ updateboardZZZ(
 				board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 				board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
 			#endif /* WITHELKEY */
-			board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
 		#endif /* WITHTX */
+		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */

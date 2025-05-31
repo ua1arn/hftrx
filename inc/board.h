@@ -76,7 +76,6 @@ void board_set_txlevel(uint_fast8_t n);	/* установить выходную
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
 void board_set_rxantenna(uint_fast8_t v);
-void board_set_boardagc(uint_fast8_t n);
 void board_set_dspagc(uint_fast8_t n);
 void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
 
@@ -85,9 +84,6 @@ void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе
 void board_setfanflag(uint_fast8_t v);	/* включить вентилятор */
 void board_setfanpwm(uint_fast8_t n);	/* скорость ывентилятора 0..255 */
 void board_set_mainsubrxmode(uint_fast8_t v);	// Левый/правый, A - main RX, B - sub RX
-void board_set_detector(uint_fast8_t v);
-void board_set_nfm(uint_fast8_t v);
-void board_set_nfmnbon(uint_fast8_t v);	/* Включние noise blanker на SW2014FM */
 void board_set_filter(uint_fast16_t v);
 void board_set_bandf(uint_fast8_t n);	/*  диапазонный фильтр приёмника */
 void board_set_bandf2(uint_fast8_t n);	/* диапазонный фильтр передатчика */
