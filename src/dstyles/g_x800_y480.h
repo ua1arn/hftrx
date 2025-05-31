@@ -72,7 +72,18 @@
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
+	#if WITHSPECTRUMWF
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+	#endif /* WITHSPECTRUMWF */
+	#if WITHAFSPECTRE
+		{	0,	4,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
+		{	0,	4,	0, 0, display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
+	#endif /* WITHAFSPECTRE */
+		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 
+#if WITHLVGL
+#else /* WITHLVGL */
 		{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
 		{	0,	0, 	7, 4, display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
@@ -89,12 +100,9 @@
 		{   0, 	4,	15, 20, display2_smeter15, 	& dzi_default, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
-		{	0,	4,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
-		{	0,	4,	0, 0, display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
 		{	0,	4,	15, 20, display2_af_spectre15,		& dzi_default, PG0, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	6,	21, 13, display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 4, display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
@@ -132,8 +140,6 @@
 		//{	37, 30,	8, 4, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_default, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
@@ -166,6 +172,7 @@
 		{	0,	0, 0, 0, display2_vtty,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
 		{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
 	#endif
+#endif /* WITHLVGL */
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};

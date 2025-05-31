@@ -249,7 +249,7 @@ void lvgl_test(void)
 //	wfl.header.reserved = 0;
 	wfl.header.w = p.w;
 	wfl.header.h = p.h;
-	wfl.data_size = wfl.header.w * wfl.header.h * 4;
+	wfl.data_size = GXSIZE(wfl.header.w, wfl.header.h) * lv_color_format_get_size(display_get_lvformat());
 
 	static lv_timer_t * lvgl_task1;
 	lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);

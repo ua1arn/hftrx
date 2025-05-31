@@ -7072,12 +7072,6 @@ static uint32_t myhardgeticks(void)
 	return sys_now();
 }
 
-static void lvgl_polling(void * ctx)
-{
-	(void) ctx;
-	lv_task_handler();
-}
-
 #endif /* WITHLVGL */
 
 void display2_initialize(void)
@@ -7103,13 +7097,6 @@ void display2_initialize(void)
 	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
 	styles_init();
 	lvgl_init();
-	if (0)
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, lvgl_polling, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
 
 #if LV_BUILD_DEMOS
     lv_demo_widgets();
@@ -7120,62 +7107,64 @@ void display2_initialize(void)
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
-	uint_fast8_t page;
 #if 0
-	PRINTF("+++++++++++++++++++++++\n");
-	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
-		PRINTF("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n");
-		PRINTF("<html>\n");
-		PRINTF("<head>\n");
-		PRINTF("<meta charset=\"utf-8\">\n");
-		PRINTF("<title>HF TRX 800x480</title>\n");
-		PRINTF("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\">\n");
-		PRINTF("<!--link rel=\"stylesheet\" type=\"text/css\" href=\"hftrx.css\"-->\n");
-		// Формирование шаблона с html элементами
-		const uint_fast16_t subset = REDRSUBSET(page);
-		uint_fast8_t i;
-		// Styles section
-		//		/*----------0---------------*/
-		//		#dbm {position: fixed; top:5px;left:10px;width:80px;height:22px;}
-		//		#filter {position: fixed; top:5px;left:115px;width:48px;height:22px;}
-		//		#smeter {position: fixed; top:25px; left:0px;}
-		//		#rxtx {position: fixed; top:5px;left:170px;width:48px;height:22px;}
-		PRINTF("<style>\n");
-		for (i = 0; i < WALKCOUNT; ++ i)
+		uint_fast8_t page;
+		PRINTF("+++++++++++++++++++++++\n");
+		for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 		{
-			const struct dzone * const dzp = & dzones [i];
+			PRINTF("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n");
+			PRINTF("<html>\n");
+			PRINTF("<head>\n");
+			PRINTF("<meta charset=\"utf-8\">\n");
+			PRINTF("<title>HF TRX 800x480</title>\n");
+			PRINTF("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\">\n");
+			PRINTF("<!--link rel=\"stylesheet\" type=\"text/css\" href=\"hftrx.css\"-->\n");
+			// Формирование шаблона с html элементами
+			const uint_fast16_t subset = REDRSUBSET(page);
+			uint_fast8_t i;
+			// Styles section
+			//		/*----------0---------------*/
+			//		#dbm {position: fixed; top:5px;left:10px;width:80px;height:22px;}
+			//		#filter {position: fixed; top:5px;left:115px;width:48px;height:22px;}
+			//		#smeter {position: fixed; top:25px; left:0px;}
+			//		#rxtx {position: fixed; top:5px;left:170px;width:48px;height:22px;}
+			PRINTF("<style>\n");
+			for (i = 0; i < WALKCOUNT; ++ i)
+			{
+				const struct dzone * const dzp = & dzones [i];
 
-			if (validforredraw(dzp, subset) == 0)
-				continue;
-			if (dzp->colspan == 0 || dzp->rowspan == 0)
-				continue;
-			//
-			PRINTF(" #id%d { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
-					(int) i,
-					(int) GRID2X(dzp->x), (int) GRID2Y(dzp->y), (int) GRID2X(dzp->colspan), (int) GRID2Y(dzp->rowspan));
+				if (validforredraw(dzp, subset) == 0)
+					continue;
+				if (dzp->colspan == 0 || dzp->rowspan == 0)
+					continue;
+				//
+				PRINTF(" #id%d { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
+						(int) i,
+						(int) GRID2X(dzp->x), (int) GRID2Y(dzp->y), (int) GRID2X(dzp->colspan), (int) GRID2Y(dzp->rowspan));
+			}
+			PRINTF("</style>\n");
+			PRINTF("</head>\n");
+
+			PRINTF("<body style=\"background-color:orange;\">\n");
+			for (i = 0; i < WALKCOUNT; ++ i)
+			{
+				const struct dzone * const dzp = & dzones [i];
+
+				if (validforredraw(dzp, subset) == 0)
+					continue;
+				if (dzp->colspan == 0 || dzp->rowspan == 0)
+					continue;
+				PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+						(int) i,
+						dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+						);
+			}
+			PRINTF("</body>\n");
+
+			PRINTF("</html>\n");
+			PRINTF("-------------------------\n");
 		}
-		PRINTF("</style>\n");
-		PRINTF("</head>\n");
-
-		PRINTF("<body style=\"background-color:orange;\">\n");
-		for (i = 0; i < WALKCOUNT; ++ i)
-		{
-			const struct dzone * const dzp = & dzones [i];
-
-			if (validforredraw(dzp, subset) == 0)
-				continue;
-			if (dzp->colspan == 0 || dzp->rowspan == 0)
-				continue;
-			PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
-					(int) i,
-					dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-					);
-		}
-		PRINTF("</body>\n");
-
-		PRINTF("</html>\n");
-		PRINTF("-------------------------\n");
 	}
 #endif
 
@@ -7183,29 +7172,31 @@ void display2_initialize(void)
 	redrawreq = 0;
 
 #if WITHRENDERHTML
-
-	for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 	{
-		TP();
-		hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
-		TP();
-		if (1)
+		uint_fast8_t page;
+		for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 		{
-			litehtml::css_selector sel;
-			sel.parse("#id3", no_quirks_mode);	// select by id
-			//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
-			hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
-			PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
-//			for (litehtml::element::ptr& el : hftrx_timeels)
-//			{
-//				for (const litehtml::element::ptr& el2 : el->children())
-//				{
-//					string t;
-//					el2->get_text(t);
-//					PRINTF(" children: name='%s'\n", el2->dump_get_name().c_str());
-//					PRINTF(" children: text='%s'\n", t.c_str());
-//				}
-//			}
+			TP();
+			hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
+			TP();
+			if (1)
+			{
+				litehtml::css_selector sel;
+				sel.parse("#id3", no_quirks_mode);	// select by id
+				//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
+				hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
+				PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
+	//			for (litehtml::element::ptr& el : hftrx_timeels)
+	//			{
+	//				for (const litehtml::element::ptr& el2 : el->children())
+	//				{
+	//					string t;
+	//					el2->get_text(t);
+	//					PRINTF(" children: name='%s'\n", el2->dump_get_name().c_str());
+	//					PRINTF(" children: text='%s'\n", t.c_str());
+	//				}
+	//			}
+			}
 		}
 	}
 
