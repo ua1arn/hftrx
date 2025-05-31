@@ -7617,7 +7617,7 @@ void wfl_init(void)
 #if LINUX_SUBSYSTEM
 	pipparams_t pip;
 	display2_getpipparams(& pip);
-	display2_wfl_init(X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_wfl_init(NULL, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
 }
 
