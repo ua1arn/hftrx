@@ -10,6 +10,7 @@ lv_style_t style_freq_main;
 lv_style_t style_label_btn;
 lv_style_t style_window;
 
+// инициализация стилей, используемых объектами главного окна
 void styles_init(void)
 {
 	lv_style_init(& style_mainscreen);

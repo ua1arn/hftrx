@@ -7048,15 +7048,13 @@ void display2_initialize(void)
 {
 #if WITHLVGL && ! LINUX_SUBSYSTEM
 
-	display_lvgl_initialize();
-	lvgl_init();
-
 #if LV_BUILD_DEMOS
 	//lv_demo_vector_graphic_not_buffered();
     lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
 #else
-	lvgl_test();
+	lvgl_init();	// создание главного окна
+	lvgl_test();	// создание элементов на главном окне
 #endif
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
@@ -7582,8 +7580,10 @@ COLORPIP_T display2_get_spectrum(int x)
 
 LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_ALLRX), LV_COLOR_FORMAT_ARGB8888);
 
-void wfl_init(void)
+// подготовка lv_draw_buf_t с изображением спектра/водопада
+lv_draw_buf_t * wfl_init(void)
 {
+	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data; //& fb [ix][0];
 	wfl_buff.header.cf = display_get_lvformat();
 	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(wfl_buff.header.w, display_get_lvformat());
 	LV_DRAW_BUF_INIT_STATIC(wfl_buff);
@@ -7591,25 +7591,27 @@ void wfl_init(void)
 #if LINUX_SUBSYSTEM
 	pipparams_t pip;
 	display2_getpipparams(& pip);
-	display2_wfl_init(NULL, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_wfl_init(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
+
+	return & wfl_buff;
 }
 
-lv_draw_buf_t * wfl_proccess(void)
+void wfl_proccess(void)
 {
 	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data; //& fb [ix][0];
 #if 1
 	pipparams_t pip;
 	display2_getpipparams(& pip);
+
+	dcache_invalidate((uintptr_t) fr, wfl_buff.data_size);
 	colpip_fillrect(fr, DIM_X, DIM_Y, 0, 0, pip.w, pip.h, display2_getbgcolor());
 #if LINUX_SUBSYSTEM
 	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
 	display2_latchcombo(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
 	display2_gcombo(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
-	//dcache_clean((uintptr_t) fr, wfl_buff.data_size);
+	dcache_clean((uintptr_t) fr, wfl_buff.data_size);
 #endif
-
-	return & wfl_buff;
 }
 #endif /* WITHLVGL */

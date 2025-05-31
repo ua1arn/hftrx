@@ -147,7 +147,7 @@ lv_obj_t * button_create(lv_obj_t * parent, lv_coord_t x, lv_coord_t y, const ch
 	return btn;
 }
 
-// Приложение
+// создание главного окна
 void lvgl_init(void)
 {
 	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
@@ -222,12 +222,9 @@ void lvgl_task1_cb(lv_timer_t * tmr)
 	}
 }
 
-// application
+// создание элементов на главном окне
 void lvgl_test(void)
 {
-	wfl_init();
-
-
 	lbl_freq = lv_label_create(main_page);
 	lv_obj_add_style(lbl_freq, & style_freq_main, 0);
 
@@ -241,7 +238,7 @@ void lvgl_test(void)
 	lv_obj_set_pos(img1_wfl, p.x, p.y);
 //	lv_img_set_antialias(img1_wfl, true);
 //	lv_img_set_zoom(img1_wfl, 255);
-	lv_img_set_src(img1_wfl, wfl_proccess());	// src_type=LV_IMAGE_SRC_VARIABLE
+	lv_img_set_src(img1_wfl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
 
 	footer_buttons_init();
 

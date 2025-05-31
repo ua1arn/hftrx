@@ -665,6 +665,12 @@ void display_initialize(void)
 	colmain_fb_list(frames);
 	openvg_init(frames);
 #endif /* WITHOPENVG */
+
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+	display_lvgl_initialize();
+
+#endif /* WITHOPENVG */
 }
 
 /* Разряжаем конденсаторы питания */
@@ -735,11 +741,11 @@ struct driverdata
 {
 	int rtmixid;
 };
+
+// Инициадизация нужного количества дисплеев
 void display_lvgl_initialize(void)
 {
-
-
-	lv_init();	// lvgl library initialize
+	lv_init();	// LVGL library initialize
 
 #if defined (RTMIXIDLCD)
 	if (1)

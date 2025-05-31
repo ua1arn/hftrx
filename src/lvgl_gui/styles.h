@@ -13,12 +13,12 @@ extern lv_style_t style_freq_main;
 extern lv_style_t style_label_btn;
 extern lv_style_t style_window;
 
-void styles_init(void);
-void lvgl_test(void);
+void styles_init(void);	// инициализация стилей, используемых объектами главного окна
+void lvgl_test(void);	// создание элементов на главном окне
 void lvgl_dev_init(void);
-void lvgl_init(void);
-void wfl_init(void);
-lv_draw_buf_t * wfl_proccess(void);	/* построить растр с водопадом и спектром */
+void lvgl_init(void);	// создание главного окна
+lv_draw_buf_t * wfl_init(void);
+void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 
