@@ -55,15 +55,6 @@
 
 #if WITHTX
 
-	#define TXGFV_RX		(1u << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(1u << 0)
-	#define TXGFV_TX_CW		(1u << 1)
-	#define TXGFV_TX_AM		(1u << 2)
-	#define TXGFV_TX_NFM	(1u << 3)
-
-	#define TXPATH_INITIALIZE() do { } while (0)
-
 	#define HARDWARE_GET_TXDISABLE() 	(0)
 	#define HARDWARE_GET_PTT() 			(0)
 	#define HARDWARE_GET_TUNE() 		(0)

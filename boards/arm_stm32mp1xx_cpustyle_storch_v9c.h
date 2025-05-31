@@ -515,22 +515,6 @@
 
 #if WITHTX
 
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { gpioX_setstate(GPIOD, (v), 1 * (v)); } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { gpioX_setstate(GPIOD, (v), 0 * (v)); } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-		} while (0)
-
-
 	// +++
 	// TXDISABLE input - PZ3
 	#define TXDISABLE_TARGET_PIN				(gpioX_getinputs(GPIOZ))

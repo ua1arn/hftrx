@@ -6248,40 +6248,6 @@ void hardware_txpath_set(
 void 
 hardware_txpath_initialize(void)
 {
-#if defined (TXPATH_INITIALIZE)
-	TXPATH_INITIALIZE();
-
-#elif CPUSTYLE_ATMEGA
-
-	// Биты управления трактом на передачу
-	#if defined (TXPATH_BITS_ENABLE)
-		// неактивное состояние - запрограммированное на ввод.
-		// В регистре дланных "0".
-		TXPATH_TARGET_PORT &= ~ TXPATH_BITS_ENABLE;
-		TXPATH_TARGET_DDR &= ~ TXPATH_BITS_ENABLE;	/* бит выхода манипуляции - открытый сток */
-
-	#elif defined (TXPATH_BIT_GATE)
-
-		TXPATH_TARGET_PORT &= ~ TXPATH_BIT_GATE;	/* неактивное состояние - "0" */
-		TXPATH_TARGET_DDR |= TXPATH_BIT_GATE;	/* бит выхода манипуляции */
-	
-	#elif TXPATH_BIT_GATE_RX
-		#error TODO: complete TXPATH_BIT_GATE_RX support
-	#endif
-
-#elif CPUSTYLE_ATXMEGA
-
-	TXPATH_INITIALIZE();
-
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
-
-	TXPATH_INITIALIZE();
-
-#else
-
-	#error Undefined CPUSTYLE_XXX
-
-#endif
 }
 
 #else /* WITHTX */

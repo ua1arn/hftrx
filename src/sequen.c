@@ -26,8 +26,6 @@ seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 	hardware_txpath_set(txpathstate);
 }
 
-#if WITHTX
-
 enum {
 	SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
 	// electronic key modes and SSB modes
@@ -671,74 +669,3 @@ uint_fast8_t seq_get_phase(void)
 	return SEQPHASE_INIT;
 }
 
-#else	/* WITHTX */
-
-static void 
-seq_spool_ticks(void * ctc)
-{
-	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
-
-	// Выдача сигнала самоконтроля в зависимости от состояния сиквенсора.
-	// самоконтроль от ключа передается всегда, может добавится тон от состояния TUNE.
-	board_sidetone_enable(keydown); // - выдача сигнала самоконтроля
-}
-
-
-/* заглушки функций для работы в случае только приёмника. */
-void seq_txrequest(uint_fast8_t tune, uint_fast8_t ptt)
-{
-}
-
-/* заглушки функций для работы в случае только приёмника. */
-void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt)
-{
-}
-
-uint_fast8_t seq_get_txstate(void)
-{
-	return 0;
-}
-
-void seq_ask_txstate(uint_fast8_t tx)
-{
-}
-
-/* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
-void seq_initialize(void)
-{
-	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL);
-	ticker_add(& seqticker);
-
-	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
-
-	hardware_txpath_initialize();
-	//seq_set_txgate(txgfva0, sdtnva0);	// Сделано статической инициализацией
-	seq_txpath_set(0/*TXGFV_RX*/, 0);	// - аппаратное управление выдачей несущей - в состояние приём
-	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
-}
-
-/* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
-void seq_purge(void)
-{
-}
-
-void 
-vox_initialize(void)
-{
-}
-
-void 
-seq_set_bkin_enable(
-	uint_fast8_t bkinstate, 			/* разрешение (не-0) или запрещение (0) работы BREAK-IN. */
-	uint_fast8_t bkin_delay_tens	/* задержка отпускания break-in в 1/100 секундных интервалах */
-	)
-{
-}
-
-// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
-uint_fast8_t seq_get_phase(void)
-{
-	return SEQPHASE_INIT;
-}
-
-#endif	/* WITHTX */

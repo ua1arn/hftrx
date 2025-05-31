@@ -447,14 +447,14 @@ void seq_set_bkin_enable(uint_fast8_t bkinstate, uint_fast8_t bkin_delay_tens);	
 void seq_set_cw_enable(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) работы qsk. означает работу CW */
 void seq_set_rgbeep(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 
-// Для управления трактом надо задать управляющие слова для следующих состояний:
+// Для управления трактом надо задать управляющие слова dsp/фппаратуры для следующих состояний:
 //
 // состояние приёма
 // состояние перехода с приёма на передачу и с передачи на приём
 // состояние передачи SSB
 // состояние передачи CW (а так же AM, NFM)
 
-enum 
+enum
 {
 	TXGFI_RX = 0,	// индекс состояния для режима приёма
 	TXGFI_TRANSIENT,	// индекс состояния для режима перехода с приёма на передачу и с передачи на приём
@@ -465,19 +465,13 @@ enum
 };
 
 // Подготовленные управляющие слова
-//#define TXGFV_RX		0
-//#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-//#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
-//#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
 
-//	portholder_t txgfva [TXGFI_SIZE];	// усостояния выходов для разных режимов
-//	uint_fast8_t sdtnva [TXGFI_SIZE];	// признаки включения самоконтроля для разных режимов
-
-//	{ TXGFV_RX, TXGFV_TRANS, TXGFV_TRANS, TXGFV_TX_CW }, // для CW
-//	{ 0, 0, 0, 1 },	// для CW
-
-//	{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB } // для SSB
-//	{ 0, 0, 0, 0 },	// для SSB
+#define TXGFV_RX		(UINT8_C(1) << 0)			// приём
+#define TXGFV_TRANS		(UINT8_C(1) << 1)			// переход между режимами приёма и передачи
+#define TXGFV_TX_SSB	(UINT8_C(1) << 2)
+#define TXGFV_TX_CW		(UINT8_C(1) << 3)
+#define TXGFV_TX_AM		(UINT8_C(1) << 4)
+#define TXGFV_TX_NFM	(UINT8_C(1) << 5)
 
 void seq_set_txgate(const portholder_t * txgfp, const uint_fast8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
 
