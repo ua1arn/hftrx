@@ -4522,9 +4522,7 @@ static const struct paramdefdef xgwflevelsep =
 	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
-#if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
 	static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
-#endif /* WITHPWBUTTON */
 
 #if LCDMODE_COLORED
 	//static uint_fast8_t gbluebgnd;
@@ -5229,7 +5227,11 @@ static const struct paramdefdef xcatenable =
 		QLABEL2("CW SPEED", "CW SPEED "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
+#if WITHPOTWPM
+		MENUNONVRAM,
+#else /* WITHPOTWPM */
 		OFFSETOF(struct nvmap, elkeywpm),
+#endif /* WITHPOTWPM */
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeywpm.value,
@@ -7227,14 +7229,12 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 }
 #endif /* WITHAMHIGHKBDADJ */
 
-#if WITHPWBUTTON
 static void
 uif_pwbutton_press(void)
 {
 	gpoweronhold = 0;
 	updateboard(1, 0);
 }
-#endif /* WITHPWBUTTON */
 
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
@@ -12064,9 +12064,7 @@ updateboardZZZ(
 	#if WITHKBDBACKLIGHT
 		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : gkblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
-	#if WITHPWBUTTON
 		board_set_poweron(gpoweronhold);
-	#endif /* WITHPWBUTTON */
 	#if WITHNBONOFF
 		board_set_nfmnbon(glock);	/* Включние noise blanker на SW2014FM */
 	#endif /* WITHNBONOFF */
@@ -17814,6 +17812,7 @@ modifysettings(
 		uint_fast8_t kbch, kbready;
 
 		processpots();
+		//processencoders(); // решить проблему с енкодером - перемешение по меню.
 		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
@@ -17902,12 +17901,10 @@ modifysettings(
 				continue;	// требуется обновление индикатора
 		#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
-		#if WITHPWBUTTON
 			case KBD_CODE_POWEROFF:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_pwbutton_press();
 				return;
-		#endif /* WITHPWBUTTON */
 
 #if WITHTX
 			case KBD_CODE_MOX:
@@ -19153,11 +19150,9 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_lockencoder();
 		return 1;	/* клавиша уже обработана */
 
-#if WITHPWBUTTON
 	case KBD_CODE_POWEROFF:
 		uif_pwbutton_press();
 		return 1;
-#endif /* WITHPWBUTTON */
 
 	case KBD_CODE_LOCK_HOLDED:
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC

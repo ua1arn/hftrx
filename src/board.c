@@ -86,10 +86,7 @@ static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USB;
 #endif /* WITHLCDBACKLIGHT */
 
 static uint_fast8_t 	glob_kblight = 1;
-
-//#if WITHKEYBOARD
 static uint_fast8_t 	glob_poweron = 1;
-//#endif /* WITHKEYBOARD */
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
 #if WITHFANTIMER
@@ -5167,7 +5164,6 @@ board_set_kblight(uint_fast8_t v)
 }
 #endif /* WITHKBDBACKLIGHT */
 
-#if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
 /* Включение удерхания схемы питания */
 void
 board_set_poweron(uint_fast8_t v)
@@ -5179,7 +5175,6 @@ board_set_poweron(uint_fast8_t v)
 		board_ctlreg1changed();
 	}
 }
-#endif /* WITHPWBUTTON */
 
 /* включение УВЧ */
 void
