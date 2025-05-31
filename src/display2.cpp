@@ -52,6 +52,7 @@ static struct dzitem dzi_default;
 #define PAGEINIT 13
 #define PAGESLEEP 14
 #define PAGEMENU 15
+#define PAGEBITS 16
 
 #define REDRSUBSET(page)		(UINT16_C(1) << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
 
@@ -100,7 +101,11 @@ static const COLORPIP_T color_alt_red = COLORPIP_RED;
 // Стирание фона (REDRSUBSET_SHOW)
 static void display2_preparebg(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
+#if WITHLVGL
+	return;
+#else
 	colpip_fillrect(colorpip, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+#endif
 }
 
 // запись подготовленного изображения на главный дисплей (REDRSUBSET_SHOW)
@@ -109,13 +114,21 @@ static void display2_showmain(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x,
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 	display_snapshot(colorpip, DIM_X, DIM_Y);	/* запись видимого изображения */
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
+#if WITHLVGL
+	return;
+#else
 	colmain_nextfb();
+#endif
 }
 
 // запись подготовленного изображения на второй дисплей (REDRSUBSET_SHOW)
 static void display2_showhdmi(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
+#if WITHLVGL
+	return;
+#else
 	colmain_nextfb_sub();
+#endif
 }
 
 void layout_label1_medium(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg);
@@ -7043,6 +7056,15 @@ void display2_bgprocess(
 #endif
 }
 
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+static lv_style_t xxmainstyle;
+static lv_style_t xxfreqstyle;
+static lv_style_t xxdivstyle;
+
+static lv_obj_t * xxfreqwnd;
+static lv_obj_t * xxmainwnds [DISPLC_MODCOUNT];
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void display2_initialize(void)
 {
@@ -7053,8 +7075,64 @@ void display2_initialize(void)
     lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
 #else
-	lvgl_init();	// создание главного окна
-	lvgl_test();	// создание элементов на главном окне
+// 	lvgl_init();	// создание главного окна
+//	lvgl_test();	// создание элементов на главном окне
+    ASSERT(lv_screen_active());
+
+	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
+	//styles_init();
+	lv_style_init(& xxmainstyle);
+	//lv_style_set_bg_color(& xxmainstyle, lv_palette_main(LV_PALETTE_GREY));
+	//lv_style_set_text_color(& xxmainstyle, lv_palette_main(LV_PALETTE_RED));
+	lv_style_set_border_width(& xxmainstyle, 0);
+	lv_style_set_pad_all(& xxmainstyle, 0);
+	lv_style_set_radius(& xxmainstyle, 0);
+//	lv_style_set_grid_cell_row_span(& xxmainstyle, 5);
+//	lv_style_set_grid_cell_column_span(& xxmainstyle, 16);
+
+	lv_style_init(& xxdivstyle);
+	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_BLUE));
+	lv_style_set_text_color(& xxdivstyle, lv_color_black());
+	lv_style_set_border_width(& xxdivstyle, 1);
+	lv_style_set_pad_all(& xxdivstyle, 0);
+	lv_style_set_radius(& xxdivstyle, 0);
+
+	{
+		uint_fast8_t page = DPAGE0;
+		for (page = 0; page < DISPLC_MODCOUNT; ++ page)
+		{
+			const uint_fast16_t subset = REDRSUBSET(page);
+			if ((subset & REDRSUBSET_SHOW) == 0)
+				continue;	// не треуется создавать элементы на этой странице
+
+			lv_obj_t * wnd;
+			wnd = lv_obj_create(lv_screen_active());
+			lv_obj_set_size(wnd, DIM_X, DIM_Y);
+		//	lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
+		//	lv_obj_add_style(wnd, & xxmainstyle, 0);
+			lv_obj_add_style(wnd, & xxmainstyle, 0);
+			xxmainwnds [page] = wnd;
+
+			unsigned i;
+			for (i = 0; i < WALKCOUNT; ++ i)
+			{
+				const struct dzone * const dzp = & dzones [i];
+
+				if (validforredraw(dzp, subset) == 0)
+					continue;
+				if (dzp->colspan == 0 || dzp->rowspan == 0)
+					continue;
+
+
+				lv_obj_t * lbl = lv_label_create(wnd);
+				lv_obj_add_style(lbl, & xxdivstyle, 0);
+				lv_obj_set_pos(lbl, GRID2X(dzp->x), GRID2Y(dzp->y));
+				lv_obj_set_size(lbl, GRID2X(dzp->colspan), GRID2Y(dzp->rowspan));
+				//lv_obj_set_style_bg_color(lbl, lv_color_black(), 0);
+
+			}
+		}
+	}
 #endif
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */

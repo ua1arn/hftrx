@@ -8,7 +8,7 @@ lv_style_t style_mainscreen;
 lv_style_t style_footer_button;
 lv_style_t style_freq_main;
 lv_style_t style_label_btn;
-lv_style_t style_window;
+lv_style_t style_window;	// unused
 
 // инициализация стилей, используемых объектами главного окна
 void styles_init(void)
@@ -39,6 +39,7 @@ void styles_init(void)
     lv_style_set_text_font(& style_freq_main, & lv_font_montserrat_38);
     lv_style_set_pad_ver(& style_freq_main, 5);
 
+    // unused
     lv_style_init(& style_window);
     lv_style_set_align(& style_window, LV_ALIGN_CENTER);
     lv_style_set_bg_opa(& style_window, LV_OPA_50);

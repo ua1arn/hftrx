@@ -183,6 +183,7 @@ static void event_handler_btn1(lv_event_t * event)
 //	lv_obj_del(win);
 }
 
+// unused
 lv_obj_t * window_create(lv_obj_t * parent, lv_coord_t w, lv_coord_t h)
 {
 	lv_obj_t * const win = lv_obj_create(parent);
