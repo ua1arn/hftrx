@@ -22,6 +22,7 @@
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 #include "src/lvgl_gui/styles.h"
 #endif
 
@@ -75,16 +76,20 @@ static struct dzitem dzi_default;
 
 	#include "display/fontmaps.h"
 
+	// получить адрес в видеобуфере, соответствующий ячей
 	static PACKEDCOLORPIP_T * getscratchwnd(
-			uint_fast8_t x0,
-			uint_fast8_t y0
+		PACKEDCOLORPIP_T * const colorpip,
+		uint_fast8_t x0,
+		uint_fast8_t y0
 	);
 
 #elif WITHSPECTRUMWF
 
+	// получить адрес в видеобуфере, соответствующий ячей
 	static PACKEDCOLORPIP_T * getscratchwnd(
-			uint_fast8_t x0,
-			uint_fast8_t y0
+		PACKEDCOLORPIP_T * const colorpip,
+		uint_fast8_t x0,
+		uint_fast8_t y0
 	);
 
 #endif /* LCDMODE_LTDC */
@@ -7086,11 +7091,12 @@ void display2_initialize(void)
 	lvglhw_initialize();
 
 	// Приложение
-	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_remove_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);	// ?
 	styles_init();
 	lvgl_init();
 
 #if LV_BUILD_DEMOS
+	//lv_demo_vector_graphic_not_buffered();
     lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
 #else
