@@ -7054,12 +7054,14 @@ void display2_bgprocess(
  *'lv_display_flush_ready()' has to be called when it's finished.*/
 static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
 {
-	dcache_clean(
-		(uintptr_t) px_map,
-		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
-		);
-	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);
-    /*IMPORTANT!!!
+	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp)) {
+    	dcache_clean(
+    		(uintptr_t) px_map,
+    		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
+    		);
+    	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);
+    }
+	/*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
     lv_display_flush_ready(disp);
 }
@@ -7069,7 +7071,7 @@ static uint32_t myhardgeticks(void)
 	return sys_now();
 }
 
-#endif /* WITHLVGL */
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void display2_initialize(void)
 {
@@ -7079,20 +7081,24 @@ void display2_initialize(void)
     lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
     lv_display_set_flush_cb(disp, maindisplay_flush);
 
-    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
-    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t buf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
 
-    lv_display_set_buffers_with_stride(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), GXADJ(DIM_X) * LCDMODE_PIXELSIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
+    lv_display_set_buffers_with_stride(
+    		disp,
+			dbuf_3_1, dbuf_3_2, sizeof(dbuf_3_1),
+    		GXADJ(DIM_X) * LCDMODE_PIXELSIZE,
+			LV_DISPLAY_RENDER_MODE_DIRECT);
+    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
     lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
+    lv_display_set_antialiasing(disp, false);
 
 	lv_tick_set_cb(myhardgeticks);
 
 	// Add custom draw unit
 	lvglhw_initialize();
 
-	// Приложение
-	lv_obj_remove_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);	// ?
-	styles_init();
 	lvgl_init();
 
 #if LV_BUILD_DEMOS
@@ -7622,34 +7628,40 @@ COLORPIP_T display2_get_spectrum(int x)
 
 #endif /* WITHTOUCHGUI */
 
+#if WITHLVGL
+
+LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_ALLRX), LV_COLOR_FORMAT_ARGB8888);
+
 void wfl_init(void)
 {
+	wfl_buff.header.cf = display_get_lvformat();
+	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(wfl_buff.header.w, display_get_lvformat());
+	LV_DRAW_BUF_INIT_STATIC(wfl_buff);
+
 #if LINUX_SUBSYSTEM
 	pipparams_t pip;
 	display2_getpipparams(& pip);
-	display2_wfl_init(NULL, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_wfl_init(NULL, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
 }
 
-PACKEDCOLORPIP_T * wfl_proccess(void)
+lv_draw_buf_t * wfl_proccess(void)
 {
-	static int ix;
-	static PACKEDCOLORPIP_T fb [1][GXSIZE(DIM_X, DIM_Y)];
-	ix = (ix + 1) % ARRAY_SIZE(fb);
-	PACKEDCOLORPIP_T * const fr = & fb [ix][0];
+	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data; //& fb [ix][0];
+#if 1
 	pipparams_t pip;
 	display2_getpipparams(& pip);
-	colpip_fillrect(fr, DIM_X, DIM_Y, pip.x, pip.y, pip.w, pip.h, display2_getbgcolor());
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0, 0, pip.w, pip.h, display2_getbgcolor());
 #if LINUX_SUBSYSTEM
 	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
-	display2_latchcombo(fr, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_latchcombo(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
-	display2_gcombo(fr, X2GRID(pip.x), Y2GRID(pip.y), X2GRID(pip.w), Y2GRID(pip.h), NULL);
-	//dcache_clean((uintptr_t) fr, sizeof fb [0]);
-	return getscratchwnd(fr, X2GRID(pip.x), Y2GRID(pip.y));
-}
+	display2_gcombo(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	//dcache_clean((uintptr_t) fr, wfl_buff.data_size);
+#endif
 
-#if WITHLVGL
+	return & wfl_buff;
+}
 
 uint32_t display_get_lvformat(void)
 {
@@ -7667,4 +7679,4 @@ uint32_t display_get_lvformat(void)
     	return LV_COLOR_FORMAT_ARGB8888;
 #endif
 }
-#endif
+#endif /* WITHLVGL */

@@ -140,13 +140,14 @@ lv_obj_t * button_create(lv_obj_t * parent, lv_coord_t x, lv_coord_t y, const ch
 	strcpy(us->name, name);
 	lv_obj_set_user_data(btn, us);
 
-	lv_obj_t * lbl = lv_label_create(btn);
-	lv_label_set_text(lbl, text);
-	lv_obj_add_style(lbl, & style_label_btn, 0);
+	lv_obj_t * lbl_freq = lv_label_create(btn);
+	lv_label_set_text(lbl_freq, text);
+	lv_obj_add_style(lbl_freq, & style_label_btn, 0);
 
 	return btn;
 }
 
+// Приложение
 void lvgl_init(void)
 {
 	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
@@ -158,10 +159,9 @@ void lvgl_init(void)
 	lv_obj_add_style(main_page, & style_mainscreen, 0);
 }
 
-static lv_img_dsc_t wfl;
-static lv_obj_t * lbl, * img1, * btn1, * lbl_btn1, * win;
+static lv_obj_t * lbl_freq, * img1_wfl, * btn1, * lbl_btn1, * win;
 
-void split_freq(uint64_t freq, uint16_t * mhz, uint16_t * khz, uint16_t * hz)
+void split_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
 {
     * mhz = freq / 1000000;
     * khz = (freq / 1000) % 1000;
@@ -209,44 +209,44 @@ static void footer_buttons_init(void)
 
 void lvgl_task1_cb(lv_timer_t * tmr)
 {
-	uint16_t mhz, khz, hz;
-	split_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
-	lv_label_set_text_fmt(lbl, "%i.%03i.%03i", mhz, khz, hz);
-
-	wfl.data = (uint8_t *) wfl_proccess();
-	lv_img_set_src(img1, & wfl);	// src_type=LV_IMAGE_SRC_VARIABLE
+	if (lbl_freq)
+	{
+		unsigned mhz, khz, hz;
+		split_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
+		lv_label_set_text_fmt(lbl_freq, "%u.%03u.%03u", mhz, khz, hz);
+	}
+	if (img1_wfl)
+	{
+		wfl_proccess();
+		lv_obj_invalidate(img1_wfl);
+	}
 }
 
+// application
 void lvgl_test(void)
 {
 	wfl_init();
 
-	img1 = lv_img_create(main_page);
-	lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
 
-	lbl = lv_label_create(main_page);
-	lv_obj_add_style(lbl, & style_freq_main, 0);
+	lbl_freq = lv_label_create(main_page);
+	lv_obj_add_style(lbl_freq, & style_freq_main, 0);
+
+	img1_wfl = lv_img_create(main_page);
+	//lv_obj_align(img1_wfl, LV_ALIGN_CENTER, 0, 0);
 
 	pipparams_t p;
 	display2_getpipparams(& p);
 
-	lv_obj_set_size(img1, p.w, p.h);
-//	lv_img_set_antialias(img1, true);
-//	lv_img_set_zoom(img1, 255);
+	lv_obj_set_size(img1_wfl, p.w, p.h);
+	lv_obj_set_pos(img1_wfl, p.x, p.y);
+//	lv_img_set_antialias(img1_wfl, true);
+//	lv_img_set_zoom(img1_wfl, 255);
+	lv_img_set_src(img1_wfl, wfl_proccess());	// src_type=LV_IMAGE_SRC_VARIABLE
 
 	footer_buttons_init();
 
 //	win = window_create(main_page, 300, 200);
 //	lv_obj_t * btn = button_create(win, 0, 0, "Preamp", & style_footer_button, event_handler_btn1);
-
-	wfl.header.magic = LV_IMAGE_HEADER_MAGIC,
-	wfl.header.cf = display_get_lvformat(),
-	wfl.header.flags = 0,
-//	wfl.header.always_zero = 0;
-//	wfl.header.reserved = 0;
-	wfl.header.w = p.w;
-	wfl.header.h = p.h;
-	wfl.data_size = GXSIZE(wfl.header.w, wfl.header.h) * lv_color_format_get_size(display_get_lvformat());
 
 	static lv_timer_t * lvgl_task1;
 	lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
