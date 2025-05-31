@@ -7054,7 +7054,8 @@ void display2_bgprocess(
  *'lv_display_flush_ready()' has to be called when it's finished.*/
 static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
 {
-	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp)) {
+	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp))
+	{
     	dcache_clean(
     		(uintptr_t) px_map,
     		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
@@ -7071,13 +7072,11 @@ static uint32_t myhardgeticks(void)
 	return sys_now();
 }
 
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
-
-void display2_initialize(void)
+void display2_lvgl_initialize(void)
 {
-#if WITHLVGL && ! LINUX_SUBSYSTEM
-	lv_init();
+	lv_init();	// lvgl library initialize
 
+	// main display
     lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
     lv_display_set_flush_cb(disp, maindisplay_flush);
 
@@ -7094,11 +7093,20 @@ void display2_initialize(void)
     lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
     lv_display_set_antialiasing(disp, false);
 
-	lv_tick_set_cb(myhardgeticks);
-
 	// Add custom draw unit
 	lvglhw_initialize();
 
+	// lvgl будет получать тики
+	lv_tick_set_cb(myhardgeticks);
+}
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+
+void display2_initialize(void)
+{
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+	display2_lvgl_initialize();
 	lvgl_init();
 
 #if LV_BUILD_DEMOS
@@ -7661,22 +7669,5 @@ lv_draw_buf_t * wfl_proccess(void)
 #endif
 
 	return & wfl_buff;
-}
-
-uint32_t display_get_lvformat(void)
-{
-#if LCDMODE_LTDC
-	#if LCDMODE_LTDC_L24
-    	return LV_COLOR_FORMAT_NATIVE;
-	#elif LCDMODE_MAIN_L8
-    	return LV_COLOR_FORMAT_L8;
-	#elif LCDMODE_MAIN_ARGB8888
-    	return LV_COLOR_FORMAT_ARGB8888;
-	#elif LCDMODE_MAIN_RGB565
-    	return LV_COLOR_FORMAT_RGB565;
-	#endif
-#else
-    	return LV_COLOR_FORMAT_ARGB8888;
-#endif
 }
 #endif /* WITHLVGL */

@@ -1994,6 +1994,23 @@ void draw_awg2d_deinit(void)
 #endif
 }
 
+uint32_t display_get_lvformat(void)
+{
+#if LCDMODE_LTDC
+	#if LCDMODE_LTDC_L24
+    	return LV_COLOR_FORMAT_NATIVE;
+	#elif LCDMODE_MAIN_L8
+    	return LV_COLOR_FORMAT_L8;
+	#elif LCDMODE_MAIN_ARGB8888
+    	return LV_COLOR_FORMAT_ARGB8888;
+	#elif LCDMODE_MAIN_RGB565
+    	return LV_COLOR_FORMAT_RGB565;
+	#endif
+#else
+    	return LV_COLOR_FORMAT_ARGB8888;
+#endif
+}
+
 #endif /* WITHLVGL */
 
 #endif /* WITHMDMAHW */
