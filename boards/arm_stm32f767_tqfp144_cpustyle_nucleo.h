@@ -231,8 +231,7 @@
 		} while (0)
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	#define NMEA_INITIALIZE() \
-		do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
 			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)

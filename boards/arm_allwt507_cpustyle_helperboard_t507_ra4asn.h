@@ -1217,7 +1217,8 @@
 		} while (0)
 
 	#define BOARD_PPSIN_BIT	(UINT32_C(1) << 24)		// PD24
-	#define NMEA_INITIALIZE() do { \
+	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
+	#define NMEA_1PPS_INITIALIZE() do { \
 		static einthandler_t h; \
 		arm_hardware_piod_altfn20(BOARD_PPSIN_BIT, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); /* pull-down */ \

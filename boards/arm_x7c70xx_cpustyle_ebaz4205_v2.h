@@ -89,7 +89,7 @@
 		} while (0)
 
 	#define BOARD_PPSIN_BIT	48
-	#define NMEA_INITIALIZE() do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
 		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
 		gpio_onrisinginterrupt(BOARD_PPSIN_BIT, spool_nmeapps, NULL, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);	\

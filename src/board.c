@@ -7774,11 +7774,7 @@ hardware_elkey_ports_initialize(void)
 
 #endif
 
-#if WITHNMEA
-	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	NMEA_INITIALIZE();
-
-#elif WITHTX && WITHCAT && defined (FROMCAT_DTR_INITIALIZE)
+#if WITHTX && WITHCAT && defined (FROMCAT_DTR_INITIALIZE)
 
 	/* манипуляция от порта RS-232 */
 	FROMCAT_DTR_INITIALIZE();

@@ -221,8 +221,7 @@ Free:
 		} while (0)
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	#define NMEA_INITIALIZE() \
-		do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 		} while (0)
 #endif
 

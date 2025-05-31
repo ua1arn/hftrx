@@ -341,8 +341,7 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	#define NMEA_INITIALIZE() \
-		do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 		} while (0)
 
 #if WITHSDHCHW

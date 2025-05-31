@@ -426,7 +426,7 @@
 #if WITHLFM
 		#define BOARD_PPSIN_BIT (UINT32_C(1) << 14)		/* PD7 - PPS signal from GPS */
 
-		#define NMEA_INITIALIZE() do { \
+		#define NMEA_1PPS_INITIALIZE() do { \
 			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_PPSIN_BIT); \
 			arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); \
