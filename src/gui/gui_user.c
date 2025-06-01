@@ -295,14 +295,14 @@ window_t * get_win(uint8_t window_id)
 	return & windows [window_id];
 }
 
-void gui_user_actions_after_close_window(const gxdrawb_t * db)
+void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
 	hamradio_set_lock(0);
 	gui_update();
 }
 
-static void keyboard_edit_string(const gxdrawb_t * db, uintptr_t s, unsigned strlen, unsigned clean)
+static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
 {
 	gui_keyboard.str = (char *) s;
 	gui_keyboard.clean = clean;
@@ -310,21 +310,21 @@ static void keyboard_edit_string(const gxdrawb_t * db, uintptr_t s, unsigned str
 	gui_keyboard.digits_only = 0;
 	window_t * win_kbd = get_win(WINDOW_KBD);
 	win_kbd->parent_id = check_for_parent_window();
-	open_window(db, win_kbd);
+	open_window(win_kbd);
 }
 
-static void keyboard_edit_digits(const gxdrawb_t * db, uint32_t * val)
+static void keyboard_edit_digits(uint32_t * val)
 {
 	gui_keyboard.num = val;
 	gui_keyboard.digits_only = 1;
 	window_t * win_kbd = get_win(WINDOW_KBD);
 	win_kbd->parent_id = check_for_parent_window();
-	open_window(db, win_kbd);
+	open_window(win_kbd);
 }
 
 // *********************************************************************************************************************************************************************
 
-static void window_infobar_menu_process(const gxdrawb_t * db)
+static void window_infobar_menu_process(void)
 {
 #if GUI_SHOW_INFOBAR
 	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
@@ -556,9 +556,9 @@ static void window_infobar_menu_process(const gxdrawb_t * db)
 
 				if (bh->payload == 20)
 				{
-					close_all_windows(db);
+					close_all_windows();
 					window_t * const win2 = get_win(WINDOW_AF_EQ);
-					open_window(db, win2);
+					open_window(win2);
 					footer_buttons_state(DISABLED);
 				}
 			}
@@ -567,7 +567,7 @@ static void window_infobar_menu_process(const gxdrawb_t * db)
 			case INFOBAR_ATT:
 			{
 				hamradio_set_att_db(bh->payload);
-				close_all_windows(db);
+				close_all_windows();
 			}
 				break;
 
@@ -575,15 +575,15 @@ static void window_infobar_menu_process(const gxdrawb_t * db)
 			{
 				if (bh->payload == 255)
 				{
-					close_all_windows(db);
+					close_all_windows();
 					window_t * const win2 = get_win(WINDOW_AF);
-					open_window(db, win2);
+					open_window(win2);
 					footer_buttons_state(DISABLED);
 				}
 				else
 				{
 					hamradio_set_bw(bh->payload);
-					close_all_windows(db);
+					close_all_windows();
 				}
 			}
 				break;
@@ -615,9 +615,9 @@ static void window_infobar_menu_process(const gxdrawb_t * db)
 		{
 		case INFOBAR_TX_POWER:
 		{
-			close_all_windows(db);
+			close_all_windows();
 			window_t * const win2 = get_win(WINDOW_TX_POWER);
-			open_window(db, win2);
+			open_window(win2);
 			footer_buttons_state(DISABLED);
 		}
 			break;
@@ -628,16 +628,17 @@ static void window_infobar_menu_process(const gxdrawb_t * db)
 	}
 
 	if (need_close)
-		close_all_windows(db);
+		close_all_windows();
 #endif /* GUI_SHOW_INFOBAR */
 }
 
 // *********************************************************************************************************************************************************************
 
-static void gui_main_process(const gxdrawb_t * db)
+static void gui_main_process(void)
 {
 	window_t * const win = get_win(WINDOW_MAIN);
 
+	const gxdrawb_t * db = gui_get_drawbuf();
 	char buf [TEXT_ARRAY_SIZE];
 	const unsigned buflen = ARRAY_SIZE(buf);
 	unsigned update = 0;
@@ -792,13 +793,13 @@ static void gui_main_process(const gxdrawb_t * db)
 			{
 				if (check_for_parent_window() == WINDOW_INFOBAR_MENU)
 				{
-					close_window(db, DONT_OPEN_PARENT_WINDOW);
+					close_window(DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 				else if (check_for_parent_window() == NO_PARENT_WINDOW)
 				{
 					window_t * const win = get_win(WINDOW_INFOBAR_MENU);
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED);
 				}
 			}
@@ -830,13 +831,13 @@ static void gui_main_process(const gxdrawb_t * db)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 				else
 				{
 					window_t * const win = get_win(WINDOW_FT8);
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_ft8);
 				}
 			}
@@ -852,13 +853,13 @@ static void gui_main_process(const gxdrawb_t * db)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 				else
 				{
 					window_t * const win = get_win(WINDOW_BANDS);
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_Bands);
 				}
 			}
@@ -867,12 +868,12 @@ static void gui_main_process(const gxdrawb_t * db)
 				window_t * const win = get_win(WINDOW_MEMORY);
 				if (win->state == NON_VISIBLE)
 				{
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_Memory);
 				}
 				else
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 			}
@@ -880,7 +881,7 @@ static void gui_main_process(const gxdrawb_t * db)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					hamradio_set_lock(0);
 					hamradio_disable_keyboard_redirect();
@@ -888,7 +889,7 @@ static void gui_main_process(const gxdrawb_t * db)
 				else
 				{
 					window_t * const win = get_win(WINDOW_OPTIONS);
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_Options);
 				}
 			}
@@ -896,7 +897,7 @@ static void gui_main_process(const gxdrawb_t * db)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					hamradio_set_lock(0);
 					hamradio_disable_keyboard_redirect();
@@ -904,7 +905,7 @@ static void gui_main_process(const gxdrawb_t * db)
 				else
 				{
 					window_t * const win = get_win(WINDOW_RECEIVE);
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_Receive);
 				}
 			}
@@ -914,12 +915,12 @@ static void gui_main_process(const gxdrawb_t * db)
 				window_t * const win = get_win(WINDOW_AS);
 				if (win->state == NON_VISIBLE)
 				{
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_var);
 				}
 				else
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 			}
@@ -952,12 +953,12 @@ static void gui_main_process(const gxdrawb_t * db)
 				window_t * const win = get_win(WINDOW_NOTCH);
 				if (win->state == NON_VISIBLE)
 				{
-					open_window(db, win);
+					open_window(win);
 					footer_buttons_state(DISABLED, btn_notch);
 				}
 				else
 				{
-					close_window(db, OPEN_PARENT_WINDOW);
+					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 			}
@@ -1109,7 +1110,7 @@ static void gui_main_process(const gxdrawb_t * db)
 
 			case INFOBAR_TX_POWER:
 			{
-#if WITHTX
+			#if WITHTX
 				static uint_fast8_t tx_pwr, tune_pwr;
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 
@@ -1123,8 +1124,8 @@ static void gui_main_process(const gxdrawb_t * db)
 				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, PSTR("Tune %d\%%"), (int) tune_pwr);
 				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-#endif /* WITHTX */
-			}
+			#endif /* WITHTX */
+						}
 				break;
 
 			case INFOBAR_DNR:
@@ -1362,7 +1363,7 @@ static void gui_main_process(const gxdrawb_t * db)
 #if WITHGUIDEBUG
 	if (tf_debug->visible)
 	{
-		display_transparency(db, tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
+		display_transparency(tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
 	}
 #endif /* WITHGUIDEBUG */
 }
@@ -1408,7 +1409,7 @@ static void write_mems(uint_fast8_t cell)
 #endif /* LINUX_SUBSYSTEM */
 }
 
-static void window_memory_process(const gxdrawb_t * db)
+static void window_memory_process(void)
 {
 	window_t * const win = get_win(WINDOW_MEMORY);
 
@@ -1489,7 +1490,7 @@ static void window_memory_process(const gxdrawb_t * db)
 				if (bh->payload)
 				{
 					load_mems(cell_id, 1);
-					close_window(db, DONT_OPEN_PARENT_WINDOW);
+					close_window(DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					return;
 				}
@@ -1525,7 +1526,7 @@ static void window_memory_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_bands_process(const gxdrawb_t * db)
+static void window_bands_process(void)
 {
 	window_t * const win = get_win(WINDOW_BANDS);
 	static band_array_t * bands = NULL;
@@ -1666,14 +1667,14 @@ static void window_bands_process(const gxdrawb_t * db)
 			if (bh == btn_Freq)
 			{
 				window_t * const win = get_win(WINDOW_FREQ);
-				open_window(db, win);
+				open_window(win);
 				hamradio_set_lock(1);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
 			{
 				hamradio_goto_band_by_freq(bh->payload);
-				close_all_windows(db);
+				close_all_windows();
 			}
 		}
 		break;
@@ -1692,7 +1693,7 @@ static void window_bands_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_options_process(const gxdrawb_t * db)
+static void window_options_process(void)
 {
 	window_t * const win = get_win(WINDOW_OPTIONS);
 
@@ -1760,41 +1761,41 @@ static void window_options_process(const gxdrawb_t * db)
 			if (bh == btn_Time)
 			{
 				window_t * const win = get_win(WINDOW_TIME);
-				open_window(db, win);
+				open_window(win);
 			}
 			else
 #endif /* defined (RTC1_TYPE) */
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
-				open_window(db, win);
+				open_window(win);
 			}
 			else if (bh == btn_gui)
 			{
 				window_t * const win = get_win(WINDOW_GUI_SETTINGS);
-				open_window(db, win);
+				open_window(win);
 			}
 			else if (bh == btn_TXsett)
 			{
 				window_t * const win = get_win(WINDOW_TX_SETTINGS);
-				open_window(db, win);
+				open_window(win);
 			}
 			else if (bh == btn_AUDsett)
 			{
 				window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
-				open_window(db, win);
+				open_window(win);
 			}
 			else if (bh == btn_SysMenu)
 			{
 				window_t * const win = get_win(WINDOW_MENU);
-				open_window(db, win);
+				open_window(win);
 				hamradio_enable_encoder2_redirect();
 			}
 #if WITHSPECTRUMWF && WITHMENU
 			else if (bh == btn_Display)
 			{
 				window_t * const win = get_win(WINDOW_DISPLAY);
-				open_window(db, win);
+				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
 #if LINUX_SUBSYSTEM
@@ -1806,7 +1807,7 @@ static void window_options_process(const gxdrawb_t * db)
 #if WITHAD936XIIO
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_936x"))
 			{
-				open_window(db, get_win(WINDOW_IIOCONFIG));
+				open_window(get_win(WINDOW_IIOCONFIG));
 			}
 #endif /* WITHAD936XIIO */
 		}
@@ -1820,7 +1821,7 @@ static void window_options_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_display_process(const gxdrawb_t * db)
+static void window_display_process(void)
 {
 #if WITHSPECTRUMWF && WITHMENU
 	window_t * const win = get_win(WINDOW_DISPLAY);
@@ -2073,7 +2074,7 @@ static void window_display_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_utilites_process(const gxdrawb_t * db)
+static void window_utilites_process(void)
 {
 	window_t * const win = get_win(WINDOW_UTILS);
 
@@ -2135,37 +2136,37 @@ static void window_utilites_process(const gxdrawb_t * db)
 
 			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
-				open_window(db, get_win(WINDOW_3D));
+				open_window(get_win(WINDOW_3D));
 			}
 #if WITHSWRSCAN
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
 			{
-				open_window(db, get_win(WINDOW_SWR_SCANNER));
+				open_window(get_win(WINDOW_SWR_SCANNER));
 			}
 #endif /* WITHSWRSCAN */
 #if WITHLFM
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_lfm"))
 			{
-				open_window(db, get_win(WINDOW_LFM));
+				open_window(get_win(WINDOW_LFM));
 			}
 #endif /* WITHLFM  */
 #if WITHGUIDEBUG
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_debug"))
 			{
 				gui_open_debug_window();
-				close_all_windows(db);
+				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
 #if WITHIQSHIFT
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_shift"))
 			{
-				open_window(db, get_win(WINDOW_SHIFT));
+				open_window(get_win(WINDOW_SHIFT));
 			}
 #endif /* WITHIQSHIFT */
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_stream"))
 			{
-				open_window(db, get_win(WINDOW_EXTIOLAN));
+				open_window(get_win(WINDOW_EXTIOLAN));
 			}
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 		}
@@ -2180,10 +2181,9 @@ static void window_utilites_process(const gxdrawb_t * db)
 // *********************************************************************************************************************************************************************
 
 // переделать полностью
-static void window_swrscan_process(const gxdrawb_t * db)
+static void window_swrscan_process(void)
 {
 #if WITHSWRSCAN
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
 	uint_fast8_t interval = 20;
 	uint_fast16_t x0 = edge_step + interval * 2, y0 = edge_step + gr_h - interval * 2;	// нулевые координаты графика
@@ -2291,7 +2291,7 @@ static void window_swrscan_process(const gxdrawb_t * db)
 			}
 			else if (bh == btn_swr_OK)
 			{
-				close_all_windows(db);
+				close_all_windows();
 				free(y_vals);
 				return;
 			}
@@ -2382,7 +2382,7 @@ static void window_swrscan_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_process(const gxdrawb_t * db)
+static void window_tx_process(void)
 {
 	window_t * const win = get_win(WINDOW_TX_SETTINGS);
 	unsigned update = 0;
@@ -2437,7 +2437,7 @@ static void window_tx_process(const gxdrawb_t * db)
 #if WITHPOWERTRIM && WITHTX
 			if (bh == btn_tx_power)
 			{
-				open_window(db, winPower);
+				open_window(winPower);
 				return;
 			}
 #endif /* WITHPOWERTRIM  && WITHTX*/
@@ -2449,7 +2449,7 @@ static void window_tx_process(const gxdrawb_t * db)
 			}
 			else if (bh == btn_tx_vox_settings)
 			{
-				open_window(db, winVOX);
+				open_window(winVOX);
 				return;
 			}
 #endif /* WITHVOX */
@@ -2488,7 +2488,7 @@ static void window_tx_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_vox_process(const gxdrawb_t * db)
+static void window_tx_vox_process(void)
 {
 #if WITHVOX
 	window_t * const win = get_win(WINDOW_TX_VOX_SETT);
@@ -2645,7 +2645,7 @@ static void window_tx_vox_process(const gxdrawb_t * db)
 			button_t * btn_tx_vox_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 			if (bh == btn_tx_vox_OK)
 			{
-				close_all_windows(db);
+				close_all_windows();
 			}
 		}
 		else if (IS_SLIDER_MOVE)
@@ -2683,7 +2683,7 @@ static void window_tx_vox_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_power_process(const gxdrawb_t * db)
+static void window_tx_power_process(void)
 {
 #if WITHPOWERTRIM && WITHTX
 	window_t * const win = get_win(WINDOW_TX_POWER);
@@ -2758,7 +2758,7 @@ static void window_tx_power_process(const gxdrawb_t * db)
 
 			if (bh == btn_tx_pwr_OK)
 			{
-				close_all_windows(db);
+				close_all_windows();
 			}
 			else if (bh == btn_p || bh == btn_n)
 			{
@@ -2836,7 +2836,7 @@ static void window_tx_power_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_audiosettings_process(const gxdrawb_t * db)
+static void window_audiosettings_process(void)
 {
 	window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
 	unsigned update = 0;
@@ -2922,7 +2922,7 @@ static void window_audiosettings_process(const gxdrawb_t * db)
 #if WITHREVERB
 			else if (bh == btn_reverb_settings)
 			{
-				open_window(db, get_win(WINDOW_AP_REVERB_SETT));
+				open_window(get_win(WINDOW_AP_REVERB_SETT));
 			}
 #endif /* WITHREVERB */
 #if WITHAFCODEC1HAVEPROC
@@ -2933,18 +2933,18 @@ static void window_audiosettings_process(const gxdrawb_t * db)
 			}
 			else if (bh == btn_mic_eq_settings)
 			{
-				open_window(db, winEQ);
+				open_window(winEQ);
 				return;
 			}
 #endif /* WITHAFCODEC1HAVEPROC */
 			else if (bh == btn_mic_settings)
 			{
-				open_window(db, winMIC);
+				open_window(winMIC);
 				return;
 			}
 			else if (bh == btn_mic_profiles)
 			{
-				open_window(db, winMICpr);
+				open_window(winMICpr);
 				return;
 			}
 #if WITHREVERB
@@ -3000,7 +3000,7 @@ static void window_audiosettings_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_reverb_process(const gxdrawb_t * db)
+static void window_ap_reverb_process(void)
 {
 #if WITHREVERB
 	window_t * const win = get_win(WINDOW_AP_REVERB_SETT);
@@ -3117,7 +3117,7 @@ static void window_ap_reverb_process(const gxdrawb_t * db)
 
 		if (IS_BUTTON_PRESS)
 		{
-			close_window(db, OPEN_PARENT_WINDOW); // единственная кнопка
+			close_window(OPEN_PARENT_WINDOW); // единственная кнопка
 			return;
 		}
 		else if (IS_SLIDER_MOVE)
@@ -3148,11 +3148,11 @@ static void window_ap_reverb_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_eq_process(const gxdrawb_t * db)
+static void window_ap_mic_eq_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * const win = get_win(WINDOW_AP_MIC_EQ);
+	const gxdrawb_t * db = gui_get_drawbuf();
 
 	label_t * lbl = NULL;
 	static unsigned eq_limit, eq_base = 0, id = 0;
@@ -3261,7 +3261,7 @@ static void window_ap_mic_eq_process(const gxdrawb_t * db)
 
 		if (IS_BUTTON_PRESS)
 		{
-			close_all_windows(db);
+			close_all_windows();
 			return;
 		}
 		else if (IS_SLIDER_MOVE)
@@ -3302,7 +3302,7 @@ static void window_ap_mic_eq_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_eq_process(const gxdrawb_t * db)
+static void window_af_eq_process(void)
 {
 #if WITHAFEQUALIZER
 	window_t * const win = get_win(WINDOW_AF_EQ);
@@ -3425,7 +3425,7 @@ static void window_af_eq_process(const gxdrawb_t * db)
 
 			if (bh == btn_EQ_ok)
 			{
-				close_all_windows(db);
+				close_all_windows();
 				return;
 			}
 
@@ -3476,7 +3476,7 @@ static void window_af_eq_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_process(const gxdrawb_t * db)
+static void window_ap_mic_process(void)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
 
@@ -3664,7 +3664,7 @@ static void window_ap_mic_process(const gxdrawb_t * db)
 			}
 			else if (bh == btn_mic_OK)
 			{
-				close_all_windows(db);
+				close_all_windows();
 				return;
 			}
 		}
@@ -3700,7 +3700,7 @@ static void window_ap_mic_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_prof_process(const gxdrawb_t * db)
+static void window_ap_mic_prof_process(void)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
 
@@ -3762,7 +3762,7 @@ static void window_ap_mic_prof_process(const gxdrawb_t * db)
 				hamradio_load_mic_profile(profile_id, 1);
 				gui_nvram.micprofile = profile_id;
 				save_settings();
-				close_window(db, DONT_OPEN_PARENT_WINDOW);
+				close_window(DONT_OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 				return;
 			}
@@ -3800,7 +3800,7 @@ static void window_ap_mic_prof_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_notch_process(const gxdrawb_t * db)
+static void window_notch_process(void)
 {
 	window_t * const win = get_win(WINDOW_NOTCH);
 	static enc_var_t notch;
@@ -3979,7 +3979,7 @@ static void window_notch_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_gui_settings_process(const gxdrawb_t * db)
+static void window_gui_settings_process(void)
 {
 	window_t * const win = get_win(WINDOW_GUI_SETTINGS);
 	unsigned update = 0;
@@ -4077,7 +4077,7 @@ static void window_gui_settings_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_shift_process(const gxdrawb_t * db)
+static void window_shift_process(void)
 {
 #if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
@@ -4240,13 +4240,13 @@ static void window_shift_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-void gui_uif_editmenu(const gxdrawb_t * db, const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
 {
 	window_t * const win = get_win(WINDOW_UIF);
 	if (win->state == NON_VISIBLE)
 	{
-		close_window(db, DONT_OPEN_PARENT_WINDOW);
-		open_window(db, win);
+		close_window(DONT_OPEN_PARENT_WINDOW);
+		open_window(win);
 		footer_buttons_state(DISABLED, NULL);
 		strcpy(menu_uif.name, name);
 		menu_uif.menupos = menupos;
@@ -4255,13 +4255,13 @@ void gui_uif_editmenu(const gxdrawb_t * db, const char * name, uint_fast16_t men
 	}
 	else if (win->state == VISIBLE)
 	{
-		close_window(db, DONT_OPEN_PARENT_WINDOW);
+		close_window(DONT_OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 		hamradio_disable_encoder2_redirect();
 	}
 }
 
-static void window_uif_process(const gxdrawb_t * db)
+static void window_uif_process(void)
 {
 	static label_t * lbl_uif_val;
 	static button_t * button_up, * button_down;
@@ -4337,7 +4337,7 @@ static void window_uif_process(const gxdrawb_t * db)
 		if (action == menu_uif.exitkey)
 		{
 			hamradio_disable_keyboard_redirect();
-			close_window(db, DONT_OPEN_PARENT_WINDOW);
+			close_window(DONT_OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 			return;
 		}
@@ -4370,17 +4370,17 @@ static void window_uif_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-void gui_open_sys_menu(const gxdrawb_t * db)
+void gui_open_sys_menu(void)
 {
 	if (check_for_parent_window() != NO_PARENT_WINDOW)
 	{
-		close_window(db, OPEN_PARENT_WINDOW);
+		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 	}
 	else
 	{
 		window_t * const win = get_win(WINDOW_MENU);
-		open_window(db, win);
+		open_window(win);
 		footer_buttons_state(DISABLED);
 	}
 }
@@ -4433,7 +4433,7 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 	}
 }
 
-static void window_ft8_bands_process(const gxdrawb_t * db)
+static void window_ft8_bands_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8_BANDS);
 
@@ -4488,7 +4488,7 @@ static void window_ft8_bands_process(const gxdrawb_t * db)
 			button_t * bh = (button_t *) ptr;
 			gui_nvram.ft8_band = bh->index;
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
-			close_window(db, OPEN_PARENT_WINDOW);
+			close_window(OPEN_PARENT_WINDOW);
 		}
 
 		break;
@@ -4499,7 +4499,7 @@ static void window_ft8_bands_process(const gxdrawb_t * db)
 	}
 }
 
-static void window_ft8_settings_process(const gxdrawb_t * db)
+static void window_ft8_settings_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8_SETTINGS);
 
@@ -4580,12 +4580,12 @@ static void window_ft8_settings_process(const gxdrawb_t * db)
 
 			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_OK"))
 			{
-				close_window(db, OPEN_PARENT_WINDOW);
+				close_window(OPEN_PARENT_WINDOW);
 			}
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq"))
 			{
 				uint32_t f = gui_nvram.ft8_txfreq_val;
-				keyboard_edit_digits(db, & f);
+				keyboard_edit_digits(& f);
 				uint32_t l = hamradio_get_low_bp(0) * 10;
 				uint32_t h = hamradio_get_high_bp(0) * 10;
 				gui_nvram.ft8_txfreq_val = (f >= l && f <= h) ? f : gui_nvram.ft8_txfreq_val;
@@ -4598,9 +4598,9 @@ static void window_ft8_settings_process(const gxdrawb_t * db)
 				board_rtc_settime(hour, minute, seconds);
 			}
 			else if (bh->payload == 1)
-				keyboard_edit_string(db, (uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
+				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
 			else if (bh->payload == 2)
-				keyboard_edit_string(db, (uintptr_t) & gui_nvram.ft8_qth, 10, 0);
+				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_qth, 10, 0);
 		}
 
 		break;
@@ -4611,7 +4611,7 @@ static void window_ft8_settings_process(const gxdrawb_t * db)
 	}
 }
 
-static void window_ft8_process(const gxdrawb_t * db)
+static void window_ft8_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8);
 	static unsigned win_x = 0, win_y = 0, x, y, update = 0, selected_label_cq = 255, selected_label_tx = 0;
@@ -4808,13 +4808,13 @@ static void window_ft8_process(const gxdrawb_t * db)
 			{
 				work = 1;
 				window_t * win2 = get_win(WINDOW_FT8_SETTINGS);
-				open_window(db, win2);
+				open_window(win2);
 			}
 			else if (bh == btn_bands)
 			{
 				work = 1;
 				window_t * win2 = get_win(WINDOW_FT8_BANDS);
-				open_window(db, win2);
+				open_window(win2);
 			}
 		}
 		else if (IS_LABEL_PRESS)
@@ -4902,7 +4902,7 @@ static void window_ft8_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_process(const gxdrawb_t * db)
+static void window_af_process(void)
 {
 	window_t * const win = get_win(WINDOW_AF);
 	static enc_var_t bp_t;
@@ -5104,7 +5104,7 @@ static void window_af_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_mode_process(const gxdrawb_t * db)
+static void window_mode_process(void)
 {
 	window_t * const win = get_win(WINDOW_MODES);
 
@@ -5160,7 +5160,7 @@ static void window_mode_process(const gxdrawb_t * db)
 			if (bh->payload != INT32_MAX)
 				hamradio_change_submode(bh->payload, 1);
 
-			close_window(db, DONT_OPEN_PARENT_WINDOW);
+			close_window(DONT_OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 			return;
 		}
@@ -5174,7 +5174,7 @@ static void window_mode_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_receive_process(const gxdrawb_t * db)
+static void window_receive_process(void)
 {
 	window_t * const win = get_win(WINDOW_RECEIVE);
 	unsigned update = 0;
@@ -5252,7 +5252,7 @@ static void window_receive_process(const gxdrawb_t * db)
 			else if (bh == btn_AF)
 			{
 				window_t * const win = get_win(WINDOW_AF);
-				open_window(db, win);
+				open_window(win);
 			}
 			else if (bh == btn_AGC)
 			{
@@ -5262,7 +5262,7 @@ static void window_receive_process(const gxdrawb_t * db)
 			else if (bh == btn_mode)
 			{
 				window_t * const win = get_win(WINDOW_MODES);
-				open_window(db, win);
+				open_window(win);
 			}
 			else if (bh == btn_DNR)
 			{
@@ -5282,7 +5282,7 @@ static void window_receive_process(const gxdrawb_t * db)
 			button_t * btn_WNB = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 			if (bh == btn_WNB)
 			{
-				open_window(db, get_win(WINDOW_WNBCONFIG));
+				open_window(get_win(WINDOW_WNBCONFIG));
 			}
 #endif /* WITHWNB */
 		}
@@ -5319,7 +5319,7 @@ static void window_receive_process(const gxdrawb_t * db)
 
 // *********************************************************************************************
 
-static void window_freq_process (const gxdrawb_t * db)
+static void window_freq_process (void)
 {
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
@@ -5426,7 +5426,7 @@ static void window_freq_process (const gxdrawb_t * db)
 			case BUTTON_CODE_OK:
 				if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
 				{
-					close_all_windows(db);
+					close_all_windows();
 				}
 				else
 					editfreq.error = 1;
@@ -5453,7 +5453,7 @@ static void window_freq_process (const gxdrawb_t * db)
 
 // *****************************************************************************************************************************
 
-static void window_time_process(const gxdrawb_t * db)
+static void window_time_process(void)
 {
 #if defined (RTC1_TYPE)
 	window_t * const win = get_win(WINDOW_TIME);
@@ -5581,7 +5581,7 @@ static void window_time_process(const gxdrawb_t * db)
 			else if (bh == btn_set)
 			{
 				board_rtc_setdatetime(year, month, day, hour, minute, second);
-				close_all_windows(db);
+				close_all_windows();
 				return;
 			}
 
@@ -5619,7 +5619,7 @@ static void window_time_process(const gxdrawb_t * db)
 #endif /* defined (RTC1_TYPE) */
 }
 
-static void window_kbd_process(const gxdrawb_t * db)
+static void window_kbd_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD);
 	static unsigned update = 0, is_shift = 0;
@@ -5782,7 +5782,7 @@ static void window_kbd_process(const gxdrawb_t * db)
 						strcpy(gui_keyboard.str, edit_str);
 				}
 
-				close_window(db, OPEN_PARENT_WINDOW);
+				close_window(OPEN_PARENT_WINDOW);
 				return;
 			}
 
@@ -5812,7 +5812,7 @@ static void window_kbd_process(const gxdrawb_t * db)
 
 // *********************************************************************************************************************************************************************
 
-static void window_kbd_test_process(const gxdrawb_t * db)
+static void window_kbd_test_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static uint32_t num_lbl1 = 12345;
@@ -5876,9 +5876,9 @@ static void window_kbd_test_process(const gxdrawb_t * db)
 			button_t * bh = (button_t *) ptr;
 
 			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_text"))
-				keyboard_edit_string(db, (uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
+				keyboard_edit_string((uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_num"))
-				keyboard_edit_digits(db, & num_lbl1);
+				keyboard_edit_digits(& num_lbl1);
 		}
 		break;
 
@@ -5891,7 +5891,7 @@ static void window_kbd_test_process(const gxdrawb_t * db)
 
 /* https://www.a1k0n.net/2011/07/20/donut-math.html */
 
-static void window_3d_process(const gxdrawb_t * db)
+static void window_3d_process(void)
 {
 	window_t * const win = get_win(WINDOW_3D);
 	static text_field_t * tf_3d = NULL;
@@ -5961,7 +5961,7 @@ static void window_3d_process(const gxdrawb_t * db)
 #define MENU_PARAMS_MAX	50
 static unsigned index_param = 0;
 
-static void window_menu_params_process(const gxdrawb_t * db)
+static void window_menu_params_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
@@ -6082,7 +6082,7 @@ static void window_menu_params_process(const gxdrawb_t * db)
 	}
 }
 
-static void window_menu_process(const gxdrawb_t * db)
+static void window_menu_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU);
 
@@ -6140,7 +6140,7 @@ static void window_menu_process(const gxdrawb_t * db)
 			button_t * bh = (button_t *) ptr;
 			index_param = bh->payload;
 			window_t * const win = get_win(WINDOW_MENU_PARAMS);
-			open_window(db, win);
+			open_window(win);
 		}
 		break;
 
@@ -6151,7 +6151,7 @@ static void window_menu_process(const gxdrawb_t * db)
 
 // *****************************************************************************************************************************
 
-static void window_lfm_process(const gxdrawb_t * db)
+static void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
@@ -6255,7 +6255,7 @@ static void window_lfm_process(const gxdrawb_t * db)
 			}
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_draw"))
 			{
-				open_window(db, get_win(WINDOW_LFM_SPECTRE));
+				open_window(get_win(WINDOW_LFM_SPECTRE));
 			}
 			else if (bh->index == 90 || bh->index == 91)
 				gui_set_encoder2_rotate(bh->payload);
@@ -6346,7 +6346,7 @@ static void window_lfm_process(const gxdrawb_t * db)
 #endif /* WITHLFM  */
 }
 
-static void window_lfm_spectre_process(const gxdrawb_t * db)
+static void window_lfm_spectre_process(void)
 {
 #if WITHLFM
 	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
@@ -6393,7 +6393,7 @@ static void window_lfm_spectre_process(const gxdrawb_t * db)
 
 	for (int x = 0; x < xmax; x ++)
 		for (int y = 0; y < ymax; y ++)
-			gui_drawpoint(db, x, y, d[x][y]);
+			gui_drawpoint(x, y, d[x][y]);
 
 #endif /* WITHLFM  */
 }
@@ -6411,7 +6411,7 @@ void stream_log(char * str)
 	}
 }
 
-static void window_stream_process(const gxdrawb_t * db)
+static void window_stream_process(void)
 {
 	window_t * const win = get_win(WINDOW_EXTIOLAN);
 	static uint8_t update = 0;
@@ -6484,7 +6484,7 @@ static void window_stream_process(const gxdrawb_t * db)
 
 #if WITHWNB
 
-static void window_wnbconfig_process(const gxdrawb_t * db)
+static void window_wnbconfig_process(void)
 {
 	window_t * const win = get_win(WINDOW_WNBCONFIG);
 	static unsigned update = 0;
@@ -6597,7 +6597,7 @@ static void window_wnbconfig_process(const gxdrawb_t * db)
 
 #if WITHAD936XIIO
 
-static void window_iioconfig_process(const gxdrawb_t * db)
+static void window_iioconfig_process(void)
 {
 	window_t * const win = get_win(WINDOW_IIOCONFIG);
 	static unsigned update = 0;
@@ -6689,7 +6689,7 @@ static void window_iioconfig_process(const gxdrawb_t * db)
 
 		if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_uri_edit"))
 		{
-			keyboard_edit_string(db, (uintptr_t) & uri, ARRAY_SIZE(uri), 0);
+			keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
 		}
 		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action"))
 		{
@@ -6773,7 +6773,7 @@ void gui_as_update(void)
 		put_to_wm_queue(get_win(WINDOW_AS), WM_MESSAGE_UPDATE);
 }
 
-static void window_as_process(const gxdrawb_t * db)
+static void window_as_process(void)
 {
 	window_t * const win = get_win(WINDOW_AS);
 	static unsigned update = 0;
@@ -6816,12 +6816,12 @@ static void window_as_process(const gxdrawb_t * db)
 	}
 
 	for (int x = 0; x < len; x ++)
-		gui_drawline(db, x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
+		gui_drawline(x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
 
 	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
 	{
 		uint16_t pos = len * as_get_progress() * 0.01;
-		gui_drawline(db, pos, 0, pos, lim *2, COLORPIP_GREEN);
+		gui_drawline(pos, 0, pos, lim *2, COLORPIP_GREEN);
 	}
 
 

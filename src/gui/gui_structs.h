@@ -242,7 +242,7 @@ typedef struct {
 	window_align_t align_mode;		// вертикаль выравнивания окна
 	char title [NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
-	void (*onVisibleProcess) (const gxdrawb_t * db);
+	void (*onVisibleProcess) (void);
 //	*** служебные и автоматически заполняемые элементы структуры ***
 	button_t * bh_ptr;				// указатели на массивы оконных элементов
 	uint8_t bh_count;

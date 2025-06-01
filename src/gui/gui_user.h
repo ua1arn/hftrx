@@ -8,46 +8,46 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-static void gui_main_process(const gxdrawb_t * db);
-static void window_mode_process(const gxdrawb_t * db);
-static void window_af_process(const gxdrawb_t * db);
-static void window_freq_process (const gxdrawb_t * db);
-static void window_swrscan_process(const gxdrawb_t * db);
-static void window_tx_process(const gxdrawb_t * db);
-static void window_tx_vox_process(const gxdrawb_t * db);
-static void window_tx_power_process(const gxdrawb_t * db);
-static void window_audiosettings_process(const gxdrawb_t * db);
-static void window_ap_reverb_process(const gxdrawb_t * db);
-static void window_ap_mic_eq_process(const gxdrawb_t * db);
-static void window_ap_mic_process(const gxdrawb_t * db);
-static void window_ap_mic_prof_process(const gxdrawb_t * db);
-static void window_menu_process(const gxdrawb_t * db);
-static void window_uif_process(const gxdrawb_t * db);
-static void window_options_process(const gxdrawb_t * db);
-static void window_utilites_process(const gxdrawb_t * db);
-static void window_bands_process(const gxdrawb_t * db);
-static void window_memory_process(const gxdrawb_t * db);
-static void window_display_process(const gxdrawb_t * db);
-static void window_receive_process(const gxdrawb_t * db);
-static void window_notch_process(const gxdrawb_t * db);
-static void window_gui_settings_process(const gxdrawb_t * db);
-static void window_ft8_process(const gxdrawb_t * db);
-static void window_ft8_bands_process(const gxdrawb_t * db);
-static void window_ft8_settings_process(const gxdrawb_t * db);
-static void window_infobar_menu_process(const gxdrawb_t * db);
-static void window_af_eq_process(const gxdrawb_t * db);
-static void window_shift_process(const gxdrawb_t * db);
-static void window_menu_params_process(const gxdrawb_t * db);
-static void window_time_process(const gxdrawb_t * db);
-static void window_kbd_process(const gxdrawb_t * db);
-static void window_kbd_test_process(const gxdrawb_t * db);
-static void window_3d_process(const gxdrawb_t * db);
-static void window_lfm_process(const gxdrawb_t * db);
-static void window_lfm_spectre_process(const gxdrawb_t * db);
-static void window_stream_process(const gxdrawb_t * db);
-static void window_wnbconfig_process(const gxdrawb_t * db);
-static void window_iioconfig_process(const gxdrawb_t * db);
-static void window_as_process(const gxdrawb_t * db);
+static void gui_main_process(void);
+static void window_mode_process(void);
+static void window_af_process(void);
+static void window_freq_process (void);
+static void window_swrscan_process(void);
+static void window_tx_process(void);
+static void window_tx_vox_process(void);
+static void window_tx_power_process(void);
+static void window_audiosettings_process(void);
+static void window_ap_reverb_process(void);
+static void window_ap_mic_eq_process(void);
+static void window_ap_mic_process(void);
+static void window_ap_mic_prof_process(void);
+static void window_menu_process(void);
+static void window_uif_process(void);
+static void window_options_process(void);
+static void window_utilites_process(void);
+static void window_bands_process(void);
+static void window_memory_process(void);
+static void window_display_process(void);
+static void window_receive_process(void);
+static void window_notch_process(void);
+static void window_gui_settings_process(void);
+static void window_ft8_process(void);
+static void window_ft8_bands_process(void);
+static void window_ft8_settings_process(void);
+static void window_infobar_menu_process(void);
+static void window_af_eq_process(void);
+static void window_shift_process(void);
+static void window_menu_params_process(void);
+static void window_time_process(void);
+static void window_kbd_process(void);
+static void window_kbd_test_process(void);
+static void window_3d_process(void);
+static void window_lfm_process(void);
+static void window_lfm_spectre_process(void);
+static void window_stream_process(void);
+static void window_wnbconfig_process(void);
+static void window_iioconfig_process(void);
+static void window_as_process(void);
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -112,7 +112,7 @@ enum {
 	WINDOWS_COUNT
 };
 
-void gui_user_actions_after_close_window(const gxdrawb_t * db);
+void gui_user_actions_after_close_window(void);
 
 enum {
 	MENU_OFF,

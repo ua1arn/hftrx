@@ -18004,7 +18004,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		return;
 	}
 #if WITHTOUCHGUI
-	gui_uif_editmenu(& dbv, name, menupos, exitkey);
+	gui_uif_editmenu(name, menupos, exitkey);
 #else
 
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
@@ -19302,7 +19302,7 @@ processkeyboard(uint_fast8_t kbch)
 		display2_needupdate();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #elif WITHTOUCHGUI
-		gui_open_sys_menu(& dbv);
+		gui_open_sys_menu();
 		return 0;
 #else
 		return 0;
