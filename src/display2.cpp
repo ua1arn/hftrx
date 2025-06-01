@@ -7780,7 +7780,6 @@ lv_draw_buf_t * wfl_init(void)
 /* построить растр с водопадом и спектром */
 void wfl_proccess(void)
 {
-#if 1
 	pipparams_t pip;
 	display2_getpipparams(& pip);
     gxdrawb_t tdbv;
@@ -7794,6 +7793,5 @@ void wfl_proccess(void)
 #endif /* LINUX_SUBSYSTEM */
 	display2_gcombo(& tdbv, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 	dcache_clean(tdbv.cachebase, tdbv.cachesize);
-#endif
 }
 #endif /* WITHLVGL */

@@ -83,7 +83,7 @@
 		{	22, 0,	3, 5, display2_byp3,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
 		{	26,	0,	5, 5, display2_ant5,		& dzi_default, PGALL, },
 		{	32,	0,	5, 5, display2_att4,		& dzi_default, PGALL, },
-		{	37,	0,	4, 5, display2_preovf3,		& dzi_default, PGALL, },
+		{	36,	0,	5, 5, display2_preovf3,		& dzi_default, PGALL, },
 	#if WITHBARS
 		{   0, 	5,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_default, PGALL, },	// Изображение стрелочного прибора
@@ -100,19 +100,19 @@
 		{	41, 0,	9, 5, display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
 		{	41,	5,	9, 5, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
 
-		{	37,	5,	4, 5, display2_dummy,		& dzi_default, PGALL, },	// placeholder
-		{	37, 10,	4, 5, display2_mode3_a,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	36,	5,	5, 5, display2_dummy,		& dzi_default, PGALL, },	// placeholder
+		{	36, 10,	5, 5, display2_mode3_a,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	4, 5, display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	45, 10,	5, 5, display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 
-		{	37, 15,	4, 5, display2_nr3,			& dzi_default, PGALL, },	// NR : was: AGC
+		{	36, 15,	5, 5, display2_nr3,			& dzi_default, PGALL, },	// NR : was: AGC
 		{	41, 15,	4, 5, display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
 		{	45, 15,	5, 5, display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
 
 		{	15, 20,	3, 5, display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 5, display2_vfomode3,	& dzi_default, PGALL, },	// SPL
 		{	24,	20,	12, 5, display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
-		{	37, 20,	4, 5, display2_mode3_b,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	36, 20,	5, 5, display2_mode3_b,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	4, 5, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 
@@ -125,7 +125,7 @@
 		//{	23, 25,
 		//{	27, 25,
 		{	33, 25,	3, 5, display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	37, 25,	4, 5, display2_spk3,		& dzi_default, PGALL, },	// отображение признака включения динамика
+		{	36, 25,	5, 5, display2_spk3,		& dzi_default, PGALL, },	// отображение признака включения динамика
 		{	41, 25, 4, 5, display2_bkin3,		& dzi_default, PGALL, },	// BREAK-IN
 		{	45,	25,	5, 5, display2_wpm5, 		& dzi_default, PGALL, },	// 22WPM
 
