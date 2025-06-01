@@ -7064,6 +7064,31 @@ static lv_style_t xxdivstyle;
 static lv_obj_t * xxfreqwnd;
 static lv_obj_t * xxmainwnds [DISPLC_MODCOUNT];
 
+static lv_obj_t * lbl_freq;
+static lv_obj_t * img1_wfl;
+
+static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
+{
+    * mhz = freq / 1000000;
+    * khz = (freq / 1000) % 1000;
+    * hz = freq % 1000;
+}
+
+static void lvgl_task1_cb(lv_timer_t * tmr)
+{
+	if (lbl_freq)
+	{
+		unsigned mhz, khz, hz;
+		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
+		lv_label_set_text_fmt(lbl_freq, "%u.%03u.%03u", mhz, khz, hz);
+	}
+	if (img1_wfl)
+	{
+		wfl_proccess();
+		lv_obj_invalidate(img1_wfl);
+	}
+}
+
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void display2_initialize(void)
@@ -7082,10 +7107,10 @@ void display2_initialize(void)
     ASSERT(lv_screen_active());
 
 	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
-	//styles_init();
+
+	// стиль окна
 	lv_style_init(& xxmainstyle);
 	lv_style_set_bg_color(& xxmainstyle, display_lvlcolor(display2_getbgcolor()));
-	//lv_style_set_text_color(& xxmainstyle, lv_palette_main(LV_PALETTE_RED));
 	lv_style_set_border_width(& xxmainstyle, 0);
 	lv_style_set_pad_all(& xxmainstyle, 0);
 	lv_style_set_radius(& xxmainstyle, 0);
@@ -7094,6 +7119,7 @@ void display2_initialize(void)
 
 	lv_style_init(& xxdivstyle);
 
+	// стиль элемента
 	//lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(COLORPIP_GREEN));
 	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_GREY));
 
@@ -7103,6 +7129,12 @@ void display2_initialize(void)
 	lv_style_set_border_width(& xxdivstyle, 1);
 	lv_style_set_pad_all(& xxdivstyle, 0);
 	lv_style_set_radius(& xxdivstyle, 0);
+	// частота основного приемникв
+
+    lv_style_init(& xxfreqstyle);
+    lv_style_set_text_color(& xxfreqstyle, lv_color_black());
+    lv_style_set_text_font(& xxfreqstyle, & lv_font_montserrat_38);
+    lv_style_set_pad_ver(& xxfreqstyle, 5);
 
 	{
 		uint_fast8_t page = DPAGE0;
@@ -7130,13 +7162,43 @@ void display2_initialize(void)
 					continue;
 
 				const struct dzitem * const dzip = dzp->dzip;	// араметры создания элемента
-				lv_obj_t * lbl = lv_label_create(wnd);
-				lv_obj_add_style(lbl, & xxdivstyle, 0);
+				lv_obj_t * lbl;
+
+				if (0)
+				{
+
+				}
+				else if (dzp->redraw == display2_gcombo)
+				{
+					lbl = lv_img_create(wnd);
+					//lv_obj_align(img1_wfl, LV_ALIGN_CENTER, 0, 0);
+					lv_img_set_src(lbl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
+
+					img1_wfl = lbl;
+				}
+				else if (dzp->redraw == display2_freqX_a)
+				{
+					lbl = lv_label_create(wnd);
+					lv_obj_add_style(lbl, & xxdivstyle, 0);
+					lv_obj_add_style(lbl, & xxfreqstyle, 0);
+
+					lbl_freq = lbl;
+				}
+				else
+				{
+					lbl = lv_label_create(wnd);
+					lv_obj_add_style(lbl, & xxdivstyle, 0);
+				}
 				lv_obj_set_pos(lbl, GRID2X(dzp->x), GRID2Y(dzp->y));
 				lv_obj_set_size(lbl, GRID2X(dzp->colspan), GRID2Y(dzp->rowspan));
 
 			}
 		}
+	}
+	{
+		static lv_timer_t * lvgl_task1;
+		lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
+		lv_timer_set_repeat_count(lvgl_task1, -1);
 	}
 #endif
 
