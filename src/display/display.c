@@ -757,6 +757,7 @@ void display_lvgl_initialize(void)
 
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t dbuf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t dbuf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+
 	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
 
 	    lv_display_set_buffers_with_stride(
@@ -784,12 +785,13 @@ void display_lvgl_initialize(void)
 
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t dbuf_3_1 [GXSIZE(TVD_WIDTH, TVD_HEIGHT) * TVMODE_PIXELSIZE];
 	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t dbuf_3_2 [GXSIZE(TVD_WIDTH, TVD_HEIGHT) * TVMODE_PIXELSIZE];
+
 	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
 
 	    lv_display_set_buffers_with_stride(
 	    		disp,
 				dbuf_3_1, dbuf_3_2, sizeof(dbuf_3_1),
-	    		GXADJ(DIM_X) * TVMODE_PIXELSIZE,
+    		GXADJ(DIM_X) * TVMODE_PIXELSIZE,
 				LV_DISPLAY_RENDER_MODE_DIRECT);
 	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
 	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
