@@ -6393,7 +6393,7 @@ static void window_lfm_spectre_process(const gxdrawb_t * db)
 
 	for (int x = 0; x < xmax; x ++)
 		for (int y = 0; y < ymax; y ++)
-			gui_drawpoint(x, y, d[x][y]);
+			gui_drawpoint(db, x, y, d[x][y]);
 
 #endif /* WITHLFM  */
 }
@@ -6689,7 +6689,7 @@ static void window_iioconfig_process(const gxdrawb_t * db)
 
 		if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_uri_edit"))
 		{
-			keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
+			keyboard_edit_string(db, (uintptr_t) & uri, ARRAY_SIZE(uri), 0);
 		}
 		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action"))
 		{
@@ -6816,12 +6816,12 @@ static void window_as_process(const gxdrawb_t * db)
 	}
 
 	for (int x = 0; x < len; x ++)
-		gui_drawline(x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
+		gui_drawline(db, x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
 
 	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
 	{
 		uint16_t pos = len * as_get_progress() * 0.01;
-		gui_drawline(pos, 0, pos, lim *2, COLORPIP_GREEN);
+		gui_drawline(db, pos, 0, pos, lim *2, COLORPIP_GREEN);
 	}
 
 
