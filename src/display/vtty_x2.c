@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if ! LCDMODE_DUMMY && LCDMODE_LTDC
+#if ! LCDMODE_DUMMY && LCDMODE_LTDC && 0
 
 #include "display.h"
 #include "display2.h"
@@ -45,6 +45,9 @@ typedef struct vtty_x2_tag
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTYx2_ROWS-1
 	unsigned row;		// 0..VTTYx2_ROWS-1
 	unsigned col;		// 0..VTTYx2_COLS-1
+	gxdrawb_t dbvfb;
+	gxdrawb_t dbvfgshadow;
+	gxdrawb_t dbvbgshadow;
 } vtty_x2_t;
 
 static RAMFRAMEBUFF ALIGNX_BEGIN vtty_x2_t vtty_x2_0 ALIGNX_END;
@@ -75,9 +78,14 @@ void display_vtty_x2_initialize(void)
 	vt->scroll = 0;
 	vt->row = 0;
 	vt->col = 0;
-	colpip_fillrect(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0, VTTYx2_DX, VTTYx2_DY, gbg);	// очищаем видеобуфер
-	colpip_fillrect(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gfg);	// очищаем видеобуфер
-	colpip_fillrect(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gbg);	// очищаем видеобуфер
+	gxdrawb_initialize(& vt->dbvfb, vt->fb, VTTYx2_DX, VTTYx2_DY);
+	gxdrawb_initialize(& vt->dbvfgshadow, vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS);
+	gxdrawb_initialize(& vt->dbvbgshadow, vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS);
+
+	colpip_fillrect(& vt->dbvfb, 0, 0, VTTYx2_DX, VTTYx2_DY, gbg);	// очищаем видеобуфер
+	colpip_fillrect(& vt->dbvfgshadow, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gfg);	// очищаем видеобуфер
+	colpip_fillrect(& vt->dbvbgshadow, 0, 0, VTTYx2_COLS, VTTYx2_ROWS, gbg);	// очищаем видеобуфер
+
 	memset(vt->shadow, ' ', sizeof vt->shadow);
 	PRINTF("display_vtty_x2_initialize: rows=%u, cols=%u\n", VTTYx2_ROWS, VTTYx2_COLS);
 }
@@ -96,7 +104,8 @@ void display_vtty_x2_gotoxy(unsigned x, unsigned y)
 	ASSERT(vt->col < VTTYx2_COLS);
 }
 // копирование растра в видеобуфер отображения
-void display_vtty_x2_show(PACKEDCOLORPIP_T * const tfb,
+void display_vtty_x2_show(
+	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
@@ -118,8 +127,8 @@ void display_vtty_x2_show(PACKEDCOLORPIP_T * const tfb,
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_bitblt(
-				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-				tfb, DIM_X, DIM_Y, x, y + tgy1,
+				(uintptr_t) db->buffer, GXSIZE(db->dx, db->dy) * sizeof (PACKEDCOLORPIP_T),
+				db->buffer, db->dx, db->dy, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				vt->fb,	// начальный адрес источника
 				VTTYx2_DX, VTTYx2_DY,	// размеры источника
@@ -131,8 +140,8 @@ void display_vtty_x2_show(PACKEDCOLORPIP_T * const tfb,
 	{
 		// нижняя часть
 		colpip_bitblt(
-				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-				tfb, DIM_X, DIM_Y, x, y + tgy2,
+				(uintptr_t) db->buffer, 1 * GXSIZE(db->dx, db->dy) * sizeof (PACKEDCOLORPIP_T),
+				db->buffer, db->dx, db->dy, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				vt->fb,	// начальный адрес источника
 				VTTYx2_DX, VTTYx2_DY,// размеры источника
@@ -144,7 +153,8 @@ void display_vtty_x2_show(PACKEDCOLORPIP_T * const tfb,
 
 // копирование растра в видеобуфер отображения
 // с поворотом вправо на 90 градусов
-void display_vtty_x2_show_ra90(PACKEDCOLORPIP_T * const tfb,
+void display_vtty_x2_show_ra90(
+	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
@@ -166,20 +176,20 @@ void display_vtty_x2_show_ra90(PACKEDCOLORPIP_T * const tfb,
 		// верхняя часть - правее в выхоном растре
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_bitblt_ra90(
-				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-				tfb, DIM_X, DIM_Y, x + tgh2, y,
+				(uintptr_t) db->buffer, GXSIZE(db->dx, db->dy) * sizeof (PACKEDCOLORPIP_T),
+				db, x + tgh2, y,
 				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
+				colpip_mem_at(& vt->dbvfb, 0, tgh2),	// начальный адрес источника
 				VTTYx2_DX, tgh1);	// размеры источника
 	}
 	if (1 && tgh2 != 0)
 	{
 		// нижняя часть - левее в выхоном растре
 		colpip_bitblt_ra90(
-				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-				tfb, DIM_X, DIM_Y, x, y,
+				(uintptr_t) db->buffer, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
+				db, x, y,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
+				colpip_mem_at(& vt->dbvfb, 0, 0),	// начальный адрес источника
 				VTTYx2_DX, tgh2);	// размеры источника
 	}
 }
@@ -196,12 +206,12 @@ static void display_vtty_x2_scrollup(
 	const unsigned row = (VTTYx2_ROWS - 1 + vt->scroll) % VTTYx2_ROWS;
 	// очищаем видеобуфер
 	colpip_fillrect(
-			vt->fb, VTTYx2_DX, VTTYx2_DY,
+			& vt->dbvfb,
 			0, row * H,
 			VTTYx2_DX, nlines * H,
 			gbg);
-	colpip_fillrect(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, row, VTTYx2_COLS, nlines, gfg);	// очищаем видеобуфер
-	colpip_fillrect(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, 0, row, VTTYx2_COLS, nlines, gbg);	// очищаем видеобуфер
+	colpip_fillrect(& vt->dbvfgshadow, 0, row, VTTYx2_COLS, nlines, gfg);	// очищаем видеобуфер
+	colpip_fillrect(& vt->dbvbgshadow, 0, row, VTTYx2_COLS, nlines, gbg);	// очищаем видеобуфер
 	memset(vt->shadow [row], ' ', sizeof vt->shadow [0] * nlines);
 	ASSERT(vt->scroll < VTTYx2_ROWS);
 	ASSERT(vt->row < VTTYx2_ROWS);
@@ -216,22 +226,22 @@ static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COL
 	const unsigned vpos = (row + vt->scroll) % VTTYx2_ROWS;
 
 	colpip_fillrect(
-			vt->fb, VTTYx2_DX, VTTYx2_DY,
+			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			VTTYx2_CHARPIX, VTTYx2_ROWSPIX, bg);	// очищаем видеобуфер под выыодимыи символом
 #if DIM_X == 720
 	colpip_text_x2(
-			vt->fb, VTTYx2_DX, VTTYx2_DY,
+			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			fg, & ch, 1);
 #else
 	colpip_text(
-			vt->fb, VTTYx2_DX, VTTYx2_DY,
+			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			fg, & ch, 1);
 #endif
-	colpip_putpixel(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, vpos, fg);	// сохраняем цвет символа
-	colpip_putpixel(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, vpos, bg);	// сохраняем цвет фона
+	colpip_putpixel(& vt->dbvfgshadow, col, vpos, fg);	// сохраняем цвет символа
+	colpip_putpixel(& vt->dbvbgshadow, col, vpos, bg);	// сохраняем цвет фона
 	vt->shadow [vpos] [col] = ch;
 }
 
@@ -393,8 +403,8 @@ void ex_gettext(int left, int top, int right, int bottom, void *destin)
 		{
 			* p ++ = vt->shadow [v] [col];
 			* p ++ =
-					(color2attr(* colpip_mem_at(vt->fgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, v)) << AFGPOS) +
-					(color2attr(* colpip_mem_at(vt->bgshadow, VTTYx2_COLS, VTTYx2_ROWS, col, v)) << ABGPOS);
+					(color2attr(* colpip_mem_at(& vt->dbvfgshadow, col, v)) << AFGPOS) +
+					(color2attr(* colpip_mem_at(& vt->dbvbgshadow, col, v)) << ABGPOS);
 			++ col;
 		}
 		++ row;

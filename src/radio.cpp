@@ -6097,7 +6097,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 }
 
 // Отображение КСВ в меню
-void display2_swrsts22(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_swrsts22(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
@@ -6109,7 +6109,7 @@ void display2_swrsts22(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_f
 		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
 		r);
-	display_at(colorpip, x, y, b);
+	display_at(db, x, y, b);
 
 }
 
@@ -8761,27 +8761,27 @@ uif_encoder2_rotate(
 
 
 // FUNC item label
-void display2_fnlabel9(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
 	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1fmenu(colorpip, x, y, text_nul9_P);
+		display_1fmenu(db, x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2fmenus(colorpip, x, y, 0, text, text);
+		display_2fmenus(db, x, y, 0, text, text);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2fmenus(colorpip, x, y, 1, text, text);
+		display_2fmenus(db, x, y, 1, text, text);
 		break;
 	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // FUNC item value
-void display2_fnvalue9(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
 	enum { WDTH = 9 };	// ширина поля для отображения
@@ -8791,13 +8791,13 @@ void display2_fnvalue9(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_f
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1fmenu(colorpip, x, y, text_nul9_P);
+		display_1fmenu(db, x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2fmenus(colorpip, x, y, 0, b, b);
+		display_2fmenus(db, x, y, 0, b, b);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2fmenus(colorpip, x, y, 1, b, b);
+		display_2fmenus(db, x, y, 1, b, b);
 		break;
 	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
@@ -13449,7 +13449,7 @@ uif_key_click_xxxx(void)
 /* отображение S-метра или SWR-метра на приёме или передаче */
 // Функция вызывается из display2.c
 void
-display2_bars(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+display2_bars(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHBARS
 	if (userfsg)
@@ -13457,11 +13457,11 @@ display2_bars(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y,
 	}
 	else if (gtx)
 	{
-		display2_bars_tx(colorpip, x, y, xspan, yspan, pctx);
+		display2_bars_tx(db, x, y, xspan, yspan, pctx);
 	}
 	else
 	{
-		display2_bars_rx(colorpip, x, y, xspan, yspan, pctx);
+		display2_bars_rx(db, x, y, xspan, yspan, pctx);
 	}
 #endif /* WITHBARS */
 }
@@ -16588,7 +16588,7 @@ static char menuw [20];						// буфер для вывода значений 
 // Или диагностическое сообщение при запуске
 static void
 //NOINLINEAT
-display_menu_digit(PACKEDCOLORPIP_T * const colorpip,
+display_menu_digit(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	int_fast32_t value,
@@ -16628,7 +16628,7 @@ display_menu_digit(PACKEDCOLORPIP_T * const colorpip,
 	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display2_menu_value(colorpip, x, y + lowhalf, value, width, comma, rj, lowhalf);
+		display2_menu_value(db, x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 
 #endif /* WITHTOUCHGUI */
@@ -16638,7 +16638,7 @@ display_menu_digit(PACKEDCOLORPIP_T * const colorpip,
 // Или диагностическое сообщение при запуске
 
 static void
-display_menu_string_P(PACKEDCOLORPIP_T * const colorpip,
+display_menu_string_P(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	const char * text,
@@ -16659,19 +16659,19 @@ display_menu_string_P(PACKEDCOLORPIP_T * const colorpip,
 		notext [fill] = '\0';
 
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at(colmain_fb_draw(), x + 0, y, notext);
-		display_at_P(colmain_fb_draw(), x + fill, y, text);
+		display_at(db, x + 0, y, notext);
+		display_at_P(db, x + fill, y, text);
 	}
 	else
 	{
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at_P(colmain_fb_draw(), x + 0, y, text);
+		display_at_P(db, x + 0, y, text);
 	}
 #endif /* WITHTOUCHGUI */
 }
 
 static void
-display_menu_string(PACKEDCOLORPIP_T * const colorpip,
+display_menu_string(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	const char * text,
@@ -16693,13 +16693,13 @@ display_menu_string(PACKEDCOLORPIP_T * const colorpip,
 		notext [fill] = '\0';
 
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at(colorpip, x + 0, y, notext);
-		display_at(colorpip, x + fill, y, text);
+		display_at(db, x + 0, y, notext);
+		display_at(db, x + fill, y, text);
 	}
 	else
 	{
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at(colorpip, x + 0, y, text);
+		display_at(db, x + 0, y, text);
 	}
 
 #endif /* WITHTOUCHGUI */
@@ -17073,7 +17073,7 @@ defaultsettings(void)
 
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17124,19 +17124,19 @@ void display2_multilinemenu_block_groups(PACKEDCOLORPIP_T * const colorpip, uint
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(colmain_fb_draw(), x - 1, y_position_groups, PSTR(">"));
+				display_at_P(db, x - 1, y_position_groups, PSTR(">"));
 			}
 			else
 			{
 				//снять отметку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(colmain_fb_draw(), x - 1, y_position_groups, PSTR(" "));
+				display_at_P(db, x - 1, y_position_groups, PSTR(" "));
 			}
 
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_group(colorpip, x, y_position_groups, xspan, yspan, & dctx); // название группы
+			display2_menu_group(db, x, y_position_groups, xspan, yspan, & dctx); // название группы
 
 			y_position_groups += window.ystep;
 		}
@@ -17152,12 +17152,12 @@ void display2_multilinemenu_block_groups(PACKEDCOLORPIP_T * const colorpip, uint
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_at(colorpip, x - 1, y_position_groups, nolabel);
+		display_at(db, x - 1, y_position_groups, nolabel);
 	}
 }
 
 // Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17218,18 +17218,18 @@ void display2_multilinemenu_block_params(PACKEDCOLORPIP_T * const colorpip, uint
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(colorpip, x - 1, y_position_params, PSTR(">"));
+				display_at_P(db, x - 1, y_position_params, PSTR(">"));
 			}
 			else
 			{
 				//снять подсветку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(colorpip, x - 1, y_position_params, PSTR(" "));
+				display_at_P(db, x - 1, y_position_params, PSTR(" "));
 			}
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_lblng(colorpip, x, y_position_params, xspan, yspan, & dctx); // название редактируемого параметра
+			display2_menu_lblng(db, x, y_position_params, xspan, yspan, & dctx); // название редактируемого параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17244,12 +17244,12 @@ void display2_multilinemenu_block_params(PACKEDCOLORPIP_T * const colorpip, uint
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		display_at(colorpip, x - 1, y_position_params, nolabel);
+		display_at(db, x - 1, y_position_params, nolabel);
 	}
 }
 
 // Отображение многострочного меню для больших экранов (значения)
-void display2_multilinemenu_block_vals(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17309,7 +17309,7 @@ void display2_multilinemenu_block_vals(PACKEDCOLORPIP_T * const colorpip, uint_f
             dctx_t dctx;
             dctx.type = DCTX_MENU;
             dctx.pv = mv;
-            display2_menu_valxx(colorpip, x, y_position_params, xspan, yspan, & dctx); // значение параметра
+            display2_menu_valxx(db, x, y_position_params, xspan, yspan, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17328,17 +17328,13 @@ void display2_multilinemenu_block_vals(PACKEDCOLORPIP_T * const colorpip, uint_f
 			++ index_params, y_position_params += window.ystep)
 	{
 		//display_menu_string_P(colorpip, x, y_position_params, nolabel, VALUEW, VALUEW);
-		display_at(colorpip, x, y_position_params, nolabel);
+		display_at(db, x, y_position_params, nolabel);
 	}
 }
 
 // Вызывается из display2.c
 // код редактируемого параметра
-void display2_menu_lblc3(PACKEDCOLORPIP_T * const colorpip,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17348,26 +17344,20 @@ void display2_menu_lblc3(PACKEDCOLORPIP_T * const colorpip,
 	if (ismenukind(mp, ITEM_GROUP))
 	{
 		colmain_setcolors(MENUCOLOR, BGCOLOR);
-		display_at_P(colorpip, x, y, PSTR("---"));
+		display_at_P(db, x, y, PSTR("---"));
 		return;
 	}
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], index >= 100 ? PSTR("%03d") : PSTR("F%02d"), index);
 
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at(colorpip, x + 0, y, buff);
+	display_at(db, x + 0, y, buff);
 }
 
 // Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display2_menu_lblng(PACKEDCOLORPIP_T * const colorpip,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17375,35 +17365,23 @@ void display2_menu_lblng(PACKEDCOLORPIP_T * const colorpip,
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(colorpip, x, y, mp->pd->qlabel);
+	display_at_P(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
 // название редактируемого параметра или группы
-void display2_menu_lblst(PACKEDCOLORPIP_T * const colorpip,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(colorpip, x, y, mp->pd->qlabel);
+	display_at_P(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display2_menu_group(PACKEDCOLORPIP_T * const colorpip,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -17412,18 +17390,12 @@ void display2_menu_group(PACKEDCOLORPIP_T * const colorpip,
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_at_P(colorpip, x, y, mp->pd->qlabel);
+	display_at_P(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
 // значение параметра
-void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	static const char months [13] [4] =
 	{
@@ -17498,7 +17470,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 	case RJ_TXAUDIO:
 		{
 			width = VALUEW;
-			display_menu_string_P(colorpip, x, y, txaudiosrcs [value].label, width, comma);
+			display_menu_string_P(db, x, y, txaudiosrcs [value].label, width, comma);
 		}
 		break;
 #endif /* WITHTX && WITHIF4DSP */
@@ -17507,7 +17479,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 
 	case RJ_MDMSPEED:
 		width = VALUEW;
-		display_menu_digit(colorpip, x, y, modembr2int100 [value], width, comma, 0);
+		display_menu_digit(db, x, y, modembr2int100 [value], width, comma, 0);
 		break;
 
 	case RJ_MDMMODE:
@@ -17520,7 +17492,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 
 			width = VALUEW;
 			comma = 4;
-			display_menu_string_P(colorpip, x, y, msg [value], width, comma);
+			display_menu_string_P(db, x, y, msg [value], width, comma);
 		}
 		break;
 
@@ -17532,7 +17504,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(colorpip, x, y, months [value - mp->pd->qbottom + 1], width, comma);
+			display_menu_string_P(db, x, y, months [value - mp->pd->qbottom + 1], width, comma);
 		}
 		break;
 #endif /* defined (RTC1_TYPE) */
@@ -17544,7 +17516,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(colorpip, x, y, value ? msg_yes : msg_no, width, comma);
+			display_menu_string_P(db, x, y, value ? msg_yes : msg_no, width, comma);
 		}
 		break;
 
@@ -17555,7 +17527,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 
 			width = VALUEW;
 			comma = 4;
-			display_menu_string_P(colorpip, x, y, value ? msg_dial : msg_bars, width, comma);
+			display_menu_string_P(db, x, y, value ? msg_dial : msg_bars, width, comma);
 		}
 		break;
 
@@ -17568,13 +17540,13 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 			{
 			default:
 			case BOARD_NOTCH_OFF:
-				display_menu_string_P(colorpip, x, y, PSTR("OFF "), width, comma);
+				display_menu_string_P(db, x, y, PSTR("OFF "), width, comma);
 				break;
 			case BOARD_NOTCH_MANUAL:
-				display_menu_string_P(colorpip, x, y, PSTR("FREQ"), width, comma);
+				display_menu_string_P(db, x, y, PSTR("FREQ"), width, comma);
 				break;
 			case BOARD_NOTCH_AUTO:
-				display_menu_string_P(colorpip, x, y, PSTR("AUTO"), width, comma);
+				display_menu_string_P(db, x, y, PSTR("AUTO"), width, comma);
 				break;
 			}
 		}
@@ -17588,7 +17560,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(colorpip, x, y, value ? msg_on : msg_off, width, comma);
+			display_menu_string_P(db, x, y, value ? msg_on : msg_off, width, comma);
 		}
 		break;
 
@@ -17596,26 +17568,26 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 	case RJ_DUAL:
 		width = VALUEW;
 		comma = 3;
-		display_menu_string_P(colorpip, x, y, mainsubrxmodes [value].label, width, comma);
+		display_menu_string_P(db, x, y, mainsubrxmodes [value].label, width, comma);
 		break;
 #endif /* WITHUSEDUALWATCH */
 
 	case RJ_ENCRES:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(colorpip, x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
+		display_menu_digit(db, x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
 		break;
 
 #if WITHCAT
 	case RJ_CATSPEED:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(colorpip, x, y, catbr2int [value] * BRSCALE, width, comma, 0);
+		display_menu_digit(db, x, y, catbr2int [value] * BRSCALE, width, comma, 0);
 		break;
 
 #if WITHCAT_MUX
 	case RJ_CATMUX:
 		comma = 8;
 		width = VALUEW;
-		display_menu_string_P(colorpip, x, y, catmuxlabels [value], width, comma);
+		display_menu_string_P(db, x, y, catmuxlabels [value], width, comma);
 		break;
 #endif /* WITHCAT_MUX */
 
@@ -17623,7 +17595,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 	{
 		comma = 8;
 		width = VALUEW;
-		display_menu_string_P(colorpip, x, y, catsiglabels [value], width, comma);
+		display_menu_string_P(db, x, y, catsiglabels [value], width, comma);
 	}
 	break;
 #endif /* WITHCAT */
@@ -17631,20 +17603,20 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(colorpip, x, y, gsubtones [value], width, comma, 0);
+		display_menu_digit(db, x, y, gsubtones [value], width, comma, 0);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 
 	case RJ_POW2:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(colorpip, x, y, 1UL << value, width, comma, 0);
+		display_menu_digit(db, x, y, 1UL << value, width, comma, 0);
 		break;
 
 #if WITHELKEY
 	case RJ_ELKEYMODE:
 		width = VALUEW;
 		comma = 3;
-		display_menu_string_P(colorpip, x, y, elkeymodes [value].label, width, comma);
+		display_menu_string_P(db, x, y, elkeymodes [value].label, width, comma);
 		break;
 #endif /* WITHELKEY */
 
@@ -17652,7 +17624,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 	case RJ_POWER:	/* отображние мощности HP/LP */
 		width = VALUEW;
 		comma = 2;
-		display_menu_string_P(colorpip, x, y, pwrmodes [value].label, width, comma);
+		display_menu_string_P(db, x, y, pwrmodes [value].label, width, comma);
 		break;
 #endif /* WITHPOWERLPHP */
 
@@ -17689,7 +17661,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 #endif
 			width = VALUEW;
 			comma = strlen_P(msg);
-			display_menu_string_P(colorpip, x, y, msg, width, comma);
+			display_menu_string_P(db, x, y, msg, width, comma);
 		}
 		break;
 
@@ -17704,7 +17676,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
 			width = VALUEW;
 			comma = strlen(p);
-			display_menu_string(colorpip, x, y, p, width, comma);
+			display_menu_string(db, x, y, p, width, comma);
 		}
 		break;
 
@@ -17722,7 +17694,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
 			width = VALUEW;
 			comma = strlen(p);
-			display_menu_string(colorpip, x, y, p, width, comma);
+			display_menu_string(db, x, y, p, width, comma);
 		}
 		break;
 
@@ -17730,7 +17702,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 		{
 			/* стиль отображения спектра и панорамы */
 			width = VALUEW;
-			display_menu_string_P(colorpip, x, y, view_types [value], width, comma);
+			display_menu_string_P(db, x, y, view_types [value], width, comma);
 		}
 		break;
 
@@ -17745,7 +17717,7 @@ void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip,
 		if (comma)
 			width = width - 1;
 
-		display_menu_digit(colorpip, x, y, value, width, comma, rj);
+		display_menu_digit(db, x, y, value, width, comma, rj);
 		break;
 
 	}
@@ -18003,6 +17975,9 @@ modifysettings(
 static void
 uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
 	uint_fast16_t menupos;
 #if WITHAUTOTUNER
 	if (reqautotune != 0)
@@ -18029,7 +18004,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		return;
 	}
 #if WITHTOUCHGUI
-	gui_uif_editmenu(name, menupos, exitkey);
+	gui_uif_editmenu(& dbv, name, menupos, exitkey);
 #else
 
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
@@ -18483,7 +18458,7 @@ static size_t sizePopUp = 0;
 #endif
 
 // всплывающее меню
-void display2_popup(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_popup(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 	if (thisPopUp == NULL)
@@ -18597,8 +18572,8 @@ static void dispvfocode(
 	uint_fast32_t freq = getvcoranges(vco, top);
 	synth_lo1_setfreq(0, freq, getlo1div(gtx));
 
-	display_at(colorpip, 0, 1, label);
-	display_menu_digit(colorpip, 0, 0, freq, 9, 3, 0);
+	display_at(db, 0, 1, label);
+	display_menu_digit(db, 0, 0, freq, 9, 3, 0);
 
 }
 
@@ -18808,19 +18783,13 @@ process_key_menuset0(uint_fast8_t kbch)
 
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 }
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(PACKEDCOLORPIP_T * const colorpip,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 }
@@ -19249,6 +19218,8 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
@@ -19331,7 +19302,7 @@ processkeyboard(uint_fast8_t kbch)
 		display2_needupdate();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #elif WITHTOUCHGUI
-		gui_open_sys_menu();
+		gui_open_sys_menu(& dbv);
 		return 0;
 #else
 		return 0;
@@ -19644,6 +19615,8 @@ void initialize2(void)
 
 	if (keyboard_test() == 0)
 	{
+		gxdrawb_t dbv;
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		static const char msg  [] = "KBD fault";
 #if WITHLCDBACKLIGHT
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -19651,7 +19624,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg();
-		display_at_P(colmain_fb_draw(), 0, 0, msg);
+		display_at_P(& dbv, 0, 0, msg);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
@@ -19670,6 +19643,8 @@ void initialize2(void)
 	// проверить работу - потом закомментарит.
 	if (sizeof (struct nvmap) > (NVRAM_END + 1))
 	{
+		gxdrawb_t dbv;
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		// в случае отсутствия превышения размера этот кусок и переменная не комптилируются
 		static const char msg  [] = "TOO LARGE nvmap";
 		void wrong_NVRAM_END(void);
@@ -19680,8 +19655,8 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 		display2_fillbg();
-		display_menu_digit(colmain_fb_draw(), 0, 0, sizeof (struct nvmap), 9, 0, 0);
-		display_at_P(colmain_fb_draw(), 0, 1, msg);
+		display_menu_digit(& dbv, 0, 0, sizeof (struct nvmap), 9, 0, 0);
+		display_at_P(& dbv, 0, 1, msg);
 		colmain_nextfb();
 
 		wrong_NVRAM_END();
@@ -19747,7 +19722,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg();
-			display_at_P(colmain_fb_draw(), 0, 0, PSTR("ERASE: Press SPL"));
+			display_at_P(db, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
 			for (;;)
@@ -19789,7 +19764,7 @@ void initialize2(void)
 
 			display2_fillbg();
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(colmain_fb_draw(), 0, 1, PSTR("NVRAM fault"));
+			display_at_P(db, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 
 			PRINTF(PSTR("NVRAM fault1\n"));
@@ -19818,6 +19793,8 @@ void initialize2(void)
 		if (mclearnvram == 1)
 		{
 			uint_fast8_t kbch;
+			gxdrawb_t dbv;
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -19825,7 +19802,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg();
-			display_at_P(colmain_fb_draw(), 0, 0, PSTR("ERASE: Press SPL"));
+			display_at_P(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
 			for (;;)
@@ -19854,6 +19831,8 @@ void initialize2(void)
 
 		if (verifynvrampattern())
 		{
+			gxdrawb_t dbv;
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
@@ -19864,8 +19843,8 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg();
-			display_menu_digit(colmain_fb_draw(), 0, 1, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(colmain_fb_draw(), 0, 1, PSTR("NVRAM fault"));
+			display_menu_digit(& dbv, 0, 1, NVRAM_END + 1, 9, 0, 0);
+			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 
 			for (;;)
@@ -21143,6 +21122,8 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	uint_fast16_t el;
 
 	for (el = index; el <= index + cnt; el ++)
@@ -21153,7 +21134,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_valxx(colmain_fb_draw(), 0, 0, 0, 0, & dctx);
+			display2_menu_valxx(& dbv, 0, 0, 0, 0, & dctx);
 			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
 			vals->index = el;
 			return;
@@ -21163,6 +21144,8 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	const struct paramdefdef * const pd = menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
@@ -21174,7 +21157,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
 	dctx.pv = & menutable [index];
-	display2_menu_valxx(colmain_fb_draw(), 0, 0, 0, 0, & dctx);
+	display2_menu_valxx(& dbv, 0, 0, 0, 0, & dctx);
 	return menuw;
 }
 #endif /* WITHMENU */

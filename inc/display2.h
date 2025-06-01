@@ -41,52 +41,52 @@ typedef struct dctx_tag
 } dctx_t;
 
 // копирование растра в видеобуфер отображения
-void display2_vtty(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-void display2_vtty_init(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_vtty(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_vtty_init(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 
 // FUNC item label
-void display2_fnlabel9(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // FUNC item value
-void display2_fnvalue9(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-void display2_swrsts22(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_swrsts22(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 //Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 //Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 //Отображение многострочного меню для больших экранов (значения)
-void display2_multilinemenu_block_vals(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display2_menu_group(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // значение параметра
-void display2_menu_valxx(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // название редактируемого параметра или группы
-void display2_menu_lblst(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display2_menu_lblng(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // код редактируемого параметра
-void display2_menu_lblc3(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-void display2_keyboard_menu(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
@@ -102,22 +102,22 @@ void display2_needupdate(void);
 
 // Вызывается из display2.c
 void
-display2_bars(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+display2_bars(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 void
-display2_bars_rx(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+display2_bars_rx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 void
-display2_bars_tx(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+display2_bars_tx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 // Вызывается из display2.c
 void
-display2_adctest(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+display2_adctest(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // всплывающее меню
-void display2_popup(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_popup(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-void layout_init(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
-void gui_WM_walkthrough(PACKEDCOLORPIP_T * const colorpip, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx);
+void layout_init(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Параметры отображения многострочного меню для больших экранов
 typedef struct multimenuwnd_tag
@@ -133,7 +133,7 @@ typedef struct multimenuwnd_tag
 
 void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
 
-void display_smeter(PACKEDCOLORPIP_T * const colorpip,
+void display_smeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	uint_fast8_t value,
@@ -143,7 +143,7 @@ void display_smeter(PACKEDCOLORPIP_T * const colorpip,
 	uint_fast8_t delta2		// s9+50 - s9 delta
 	);
 
-void display_pwrmeter(PACKEDCOLORPIP_T * const colorpip,
+void display_pwrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	uint_fast8_t pwr,
@@ -162,7 +162,7 @@ uint_fast16_t normalize(
 
 #define BGCOLOR (display2_getbgcolor())
 
-void display_2states(PACKEDCOLORPIP_T * const colorpip,
+void display_2states(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	uint_fast8_t state,
@@ -170,7 +170,7 @@ void display_2states(PACKEDCOLORPIP_T * const colorpip,
 	const char * state0
 	);
 // параметры, не меняющие состояния цветом
-void display_1state(PACKEDCOLORPIP_T * const colorpip,
+void display_1state(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	const char * label
@@ -178,7 +178,7 @@ void display_1state(PACKEDCOLORPIP_T * const colorpip,
 
 // FUNC menu
 
-void display_2fmenus(PACKEDCOLORPIP_T * const colorpip,
+void display_2fmenus(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	uint_fast8_t state,
@@ -187,7 +187,7 @@ void display_2fmenus(PACKEDCOLORPIP_T * const colorpip,
 	);
 
 // параметры, не меняющие состояния цветом
-void display_1fmenu(PACKEDCOLORPIP_T * const colorpip,
+void display_1fmenu(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	const char * label
