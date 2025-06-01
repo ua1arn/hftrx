@@ -209,30 +209,40 @@ void display_clear(PACKEDCOLORPIP_T * const buffer);	// Заполниить ц�
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
+typedef struct gxdrawb_tag
+{
+	PACKEDCOLORPIP_T * buffer;
+	uint16_t dx;	// горизонтальный размер в пикселях
+	uint16_t dy;	// вертикальный размер в пикселях
+} gxdrawb_t;
+
+void gxdrawb_default(gxdrawb_t * db);
+void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
+
 // самый маленький шрифт
-uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-void display_wrdata2_end(void);
-uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_wrdata2_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+void display_wrdata2_end(const gxdrawb_t * db);
+uint_fast16_t display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
 // полоса индикатора
-uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-void display_wrdatabar_end(void);
+uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_barcolumn(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
+void display_wrdatabar_end(const gxdrawb_t * db);
 // большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-void display_wrdatabig_end(void);
+uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+void display_wrdatabig_end(const gxdrawb_t * db);
 // обычный шрифт
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_small_xy(uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLOR565_T fg);
-void display_wrdata_end(void);
+uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_small_xy(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLOR565_T fg);
+void display_wrdata_end(const gxdrawb_t * db);
 
 // большие и средние цифры (частота)
-uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-void render_wrdatabig_end(void);
+uint_fast16_t render_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+void render_wrdatabig_end(const gxdrawb_t * db);
 
 typedef struct pipparams_tag
 {
@@ -868,7 +878,7 @@ void colpip_line(
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
-display_value_big(PACKEDCOLORPIP_T * const colorpip,
+display_value_big(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -883,7 +893,7 @@ display_value_big(PACKEDCOLORPIP_T * const colorpip,
 	);
 
 void
-pix_display_value_big(PACKEDCOLORPIP_T * const colorpip,
+pix_display_value_big(const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -900,7 +910,7 @@ pix_display_value_big(PACKEDCOLORPIP_T * const colorpip,
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 /* из предварительно подготовленных буферов */
 void
-render_value_big(PACKEDCOLORPIP_T * const colorpip,
+render_value_big(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -915,7 +925,7 @@ render_value_big(PACKEDCOLORPIP_T * const colorpip,
 	);
 
 void
-pix_render_value_big(PACKEDCOLORPIP_T * const colorpip,
+pix_render_value_big(const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -932,7 +942,7 @@ pix_render_value_big(PACKEDCOLORPIP_T * const colorpip,
 void render_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
-display_value_lower(PACKEDCOLORPIP_T * const colorpip,
+display_value_lower(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -942,7 +952,7 @@ display_value_lower(PACKEDCOLORPIP_T * const colorpip,
 	);
 
 void
-display_value_small(PACKEDCOLORPIP_T * const colorpip,
+display_value_small(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	int_fast32_t freq,
