@@ -7123,17 +7123,19 @@ void display2_initialize(void)
 	//lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(COLORPIP_GREEN));
 	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_GREY));
 
+	lv_style_set_text_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVETEXT));
+    lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVEBACK));
 	lv_style_set_bg_opa(& xxdivstyle, LV_OPA_COVER);
-	lv_style_set_text_color(& xxdivstyle, lv_color_black());
 	lv_style_set_border_color(& xxdivstyle, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
 	lv_style_set_border_width(& xxdivstyle, 1);
 	lv_style_set_pad_all(& xxdivstyle, 0);
-	lv_style_set_radius(& xxdivstyle, 0);
-	// частота основного приемникв
+	lv_style_set_radius(& xxdivstyle, 4);
 
+	// частота основного приемникв
     lv_style_init(& xxfreqstyle);
-    lv_style_set_text_color(& xxfreqstyle, lv_color_black());
+    lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
     lv_style_set_text_font(& xxfreqstyle, & lv_font_montserrat_38);
+    lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
     lv_style_set_pad_ver(& xxfreqstyle, 5);
 
 	{
