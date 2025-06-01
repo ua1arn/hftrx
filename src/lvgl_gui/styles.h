@@ -19,6 +19,7 @@ void lvgl_dev_init(void);
 void lvgl_init(void);	// создание главного окна
 lv_draw_buf_t * wfl_init(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 void wfl_proccess(void);	/* построить растр с водопадом и спектром */
+lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 

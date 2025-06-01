@@ -7074,15 +7074,17 @@ void display2_initialize(void)
 	//lv_demo_vector_graphic_not_buffered();
     lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
+#elif 0
+ 	lvgl_init();	// создание главного окна
+	lvgl_test();	// создание элементов на главном окне
 #else
-// 	lvgl_init();	// создание главного окна
-//	lvgl_test();	// создание элементов на главном окне
+
     ASSERT(lv_screen_active());
 
 	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
 	//styles_init();
 	lv_style_init(& xxmainstyle);
-	//lv_style_set_bg_color(& xxmainstyle, lv_palette_main(LV_PALETTE_GREY));
+	lv_style_set_bg_color(& xxmainstyle, display_lvlcolor(display2_getbgcolor()));
 	//lv_style_set_text_color(& xxmainstyle, lv_palette_main(LV_PALETTE_RED));
 	lv_style_set_border_width(& xxmainstyle, 0);
 	lv_style_set_pad_all(& xxmainstyle, 0);
@@ -7091,15 +7093,20 @@ void display2_initialize(void)
 //	lv_style_set_grid_cell_column_span(& xxmainstyle, 16);
 
 	lv_style_init(& xxdivstyle);
-	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_BLUE));
+
+	//lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(COLORPIP_GREEN));
+	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_GREY));
+
+	lv_style_set_bg_opa(& xxdivstyle, LV_OPA_COVER);
 	lv_style_set_text_color(& xxdivstyle, lv_color_black());
+	lv_style_set_border_color(& xxdivstyle, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
 	lv_style_set_border_width(& xxdivstyle, 1);
 	lv_style_set_pad_all(& xxdivstyle, 0);
 	lv_style_set_radius(& xxdivstyle, 0);
 
 	{
 		uint_fast8_t page = DPAGE0;
-		for (page = 0; page < DISPLC_MODCOUNT; ++ page)
+		for (page = 0; page < 1 /*DISPLC_MODCOUNT*/; ++ page)
 		{
 			const uint_fast16_t subset = REDRSUBSET(page);
 			if ((subset & REDRSUBSET_SHOW) == 0)
@@ -7108,8 +7115,7 @@ void display2_initialize(void)
 			lv_obj_t * wnd;
 			wnd = lv_obj_create(lv_screen_active());
 			lv_obj_set_size(wnd, DIM_X, DIM_Y);
-		//	lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
-		//	lv_obj_add_style(wnd, & xxmainstyle, 0);
+			lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
 			lv_obj_add_style(wnd, & xxmainstyle, 0);
 			xxmainwnds [page] = wnd;
 
@@ -7123,12 +7129,11 @@ void display2_initialize(void)
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
 
-
+				const struct dzitem * const dzip = dzp->dzip;	// араметры создания элемента
 				lv_obj_t * lbl = lv_label_create(wnd);
 				lv_obj_add_style(lbl, & xxdivstyle, 0);
 				lv_obj_set_pos(lbl, GRID2X(dzp->x), GRID2Y(dzp->y));
 				lv_obj_set_size(lbl, GRID2X(dzp->colspan), GRID2Y(dzp->rowspan));
-				//lv_obj_set_style_bg_color(lbl, lv_color_black(), 0);
 
 			}
 		}

@@ -808,6 +808,15 @@ void display_lvgl_initialize(void)
 	lv_tick_set_cb(myhardgeticks);
 }
 
+// преобразование цвета в тип LVGL
+lv_color_t display_lvlcolor(COLORPIP_T c)
+{
+	return lv_color_make(
+			COLORPIP_R(c),
+			COLORPIP_G(c),
+			COLORPIP_B(c));
+}
+
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 #endif /* LCDMODE_LTDC */
