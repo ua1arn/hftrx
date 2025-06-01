@@ -3889,14 +3889,17 @@ void colmain_nextfb(void)
 	//	display_at(0, 0, s);
 #if WITHHDMITVHW && 0
 		// дублирование буфера
-		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
-		ASSERT(fbtv);
+		gxdrawb_t fbtfb0;
+		gxdrawb_initialize(& fbtfb0, (PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y);
+		gxdrawb_t fbtvdb;
+		gxdrawb_initialize(& fbtvdb, tvout_fb_draw(), TVD_WIDTH, TVD_HEIGHT);
+
 		colpip_bitblt(
-			(uintptr_t) fbtv, datasize_dmabuffercolmain1fb(),
-			(PACKEDCOLORPIP_T *) fbtv, TVD_WIDTH, TVD_HEIGHT,
+			fbtvdb.cachebase, fbtvdb.cachesize,
+			& fbtvdb,
 			0, 0,			/* позиция прямоугольника - получателя */
 			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
-			(PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y,
+			& fbtfb0,
 			0, 0, DIM_X, DIM_Y,
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);
@@ -3920,15 +3923,19 @@ void colmain_nextfb_sub(void)
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
 	//	display_at(0, 0, s);
 #if WITHHDMITVHW && 1
+
 		// дублирование буфера
-		PACKEDTVBUFF_T * const fbtv = tvout_fb_draw();
-		ASSERT(fbtv);
+		gxdrawb_t fbtfb0;
+		gxdrawb_initialize(& fbtfb0, (PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y);
+		gxdrawb_t fbtvdb;
+		gxdrawb_initialize(& fbtvdb, tvout_fb_draw(), TVD_WIDTH, TVD_HEIGHT);
+
 		colpip_bitblt(
-			(uintptr_t) fbtv, datasize_dmabuffercolmain1fb(),
-			(PACKEDCOLORPIP_T *) fbtv, TVD_WIDTH, TVD_HEIGHT,
+			fbtvdb.cachebase, datasize_dmabuffercolmain1fb(),
+			& fbtvdb,
 			0, 0,			/* позиция прямоугольника - получателя */
 			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
-			(PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y,
+			& fbtfb0,
 			0, 0, DIM_X, DIM_Y,
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);

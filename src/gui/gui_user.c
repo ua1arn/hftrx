@@ -295,14 +295,14 @@ window_t * get_win(uint8_t window_id)
 	return & windows [window_id];
 }
 
-void gui_user_actions_after_close_window(void)
+void gui_user_actions_after_close_window(const gxdrawb_t * db)
 {
 	hamradio_disable_encoder2_redirect();
 	hamradio_set_lock(0);
 	gui_update();
 }
 
-static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
+static void keyboard_edit_string(const gxdrawb_t * db, uintptr_t s, unsigned strlen, unsigned clean)
 {
 	gui_keyboard.str = (char *) s;
 	gui_keyboard.clean = clean;
@@ -310,21 +310,21 @@ static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
 	gui_keyboard.digits_only = 0;
 	window_t * win_kbd = get_win(WINDOW_KBD);
 	win_kbd->parent_id = check_for_parent_window();
-	open_window(win_kbd);
+	open_window(db, win_kbd);
 }
 
-static void keyboard_edit_digits(uint32_t * val)
+static void keyboard_edit_digits(const gxdrawb_t * db, uint32_t * val)
 {
 	gui_keyboard.num = val;
 	gui_keyboard.digits_only = 1;
 	window_t * win_kbd = get_win(WINDOW_KBD);
 	win_kbd->parent_id = check_for_parent_window();
-	open_window(win_kbd);
+	open_window(db, win_kbd);
 }
 
 // *********************************************************************************************************************************************************************
 
-static void window_infobar_menu_process(void)
+static void window_infobar_menu_process(const gxdrawb_t * db)
 {
 #if GUI_SHOW_INFOBAR
 	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
@@ -556,9 +556,9 @@ static void window_infobar_menu_process(void)
 
 				if (bh->payload == 20)
 				{
-					close_all_windows();
+					close_all_windows(db);
 					window_t * const win2 = get_win(WINDOW_AF_EQ);
-					open_window(win2);
+					open_window(db, win2);
 					footer_buttons_state(DISABLED);
 				}
 			}
@@ -567,7 +567,7 @@ static void window_infobar_menu_process(void)
 			case INFOBAR_ATT:
 			{
 				hamradio_set_att_db(bh->payload);
-				close_all_windows();
+				close_all_windows(db);
 			}
 				break;
 
@@ -575,15 +575,15 @@ static void window_infobar_menu_process(void)
 			{
 				if (bh->payload == 255)
 				{
-					close_all_windows();
+					close_all_windows(db);
 					window_t * const win2 = get_win(WINDOW_AF);
-					open_window(win2);
+					open_window(db, win2);
 					footer_buttons_state(DISABLED);
 				}
 				else
 				{
 					hamradio_set_bw(bh->payload);
-					close_all_windows();
+					close_all_windows(db);
 				}
 			}
 				break;
@@ -615,9 +615,9 @@ static void window_infobar_menu_process(void)
 		{
 		case INFOBAR_TX_POWER:
 		{
-			close_all_windows();
+			close_all_windows(db);
 			window_t * const win2 = get_win(WINDOW_TX_POWER);
-			open_window(win2);
+			open_window(db, win2);
 			footer_buttons_state(DISABLED);
 		}
 			break;
@@ -628,17 +628,16 @@ static void window_infobar_menu_process(void)
 	}
 
 	if (need_close)
-		close_all_windows();
+		close_all_windows(db);
 #endif /* GUI_SHOW_INFOBAR */
 }
 
 // *********************************************************************************************************************************************************************
 
-static void gui_main_process(void)
+static void gui_main_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_MAIN);
 
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	char buf [TEXT_ARRAY_SIZE];
 	const unsigned buflen = ARRAY_SIZE(buf);
 	unsigned update = 0;
@@ -793,13 +792,13 @@ static void gui_main_process(void)
 			{
 				if (check_for_parent_window() == WINDOW_INFOBAR_MENU)
 				{
-					close_window(DONT_OPEN_PARENT_WINDOW);
+					close_window(db, DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 				else if (check_for_parent_window() == NO_PARENT_WINDOW)
 				{
 					window_t * const win = get_win(WINDOW_INFOBAR_MENU);
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED);
 				}
 			}
@@ -831,13 +830,13 @@ static void gui_main_process(void)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 				else
 				{
 					window_t * const win = get_win(WINDOW_FT8);
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_ft8);
 				}
 			}
@@ -853,13 +852,13 @@ static void gui_main_process(void)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 				else
 				{
 					window_t * const win = get_win(WINDOW_BANDS);
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_Bands);
 				}
 			}
@@ -868,12 +867,12 @@ static void gui_main_process(void)
 				window_t * const win = get_win(WINDOW_MEMORY);
 				if (win->state == NON_VISIBLE)
 				{
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_Memory);
 				}
 				else
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 			}
@@ -881,7 +880,7 @@ static void gui_main_process(void)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					hamradio_set_lock(0);
 					hamradio_disable_keyboard_redirect();
@@ -889,7 +888,7 @@ static void gui_main_process(void)
 				else
 				{
 					window_t * const win = get_win(WINDOW_OPTIONS);
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_Options);
 				}
 			}
@@ -897,7 +896,7 @@ static void gui_main_process(void)
 			{
 				if (check_for_parent_window() != NO_PARENT_WINDOW)
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					hamradio_set_lock(0);
 					hamradio_disable_keyboard_redirect();
@@ -905,7 +904,7 @@ static void gui_main_process(void)
 				else
 				{
 					window_t * const win = get_win(WINDOW_RECEIVE);
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_Receive);
 				}
 			}
@@ -915,12 +914,12 @@ static void gui_main_process(void)
 				window_t * const win = get_win(WINDOW_AS);
 				if (win->state == NON_VISIBLE)
 				{
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_var);
 				}
 				else
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 			}
@@ -953,12 +952,12 @@ static void gui_main_process(void)
 				window_t * const win = get_win(WINDOW_NOTCH);
 				if (win->state == NON_VISIBLE)
 				{
-					open_window(win);
+					open_window(db, win);
 					footer_buttons_state(DISABLED, btn_notch);
 				}
 				else
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(db, OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
 			}
@@ -1055,7 +1054,7 @@ static void gui_main_process(void)
 		for(unsigned i = 1; i < infobar_num_places; i++)
 		{
 			uint_fast16_t x = infobar_label_width * i;
-			colpip_line(fr, DIM_X, DIM_Y, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
+			colpip_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
 		}
 
 		if (infobar_hl)
@@ -1063,7 +1062,7 @@ static void gui_main_process(void)
 			uint16_t x1 = infobar_selected * infobar_label_width + 2;
 			uint16_t x2 = x1 + infobar_label_width - 4;
 
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
+			colmain_rounded_rect(db, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
 		}
 
 		for (unsigned current_place = 0; current_place < infobar_num_places; current_place ++)
@@ -1083,9 +1082,9 @@ static void gui_main_process(void)
 					hamradio_get_vfomode3_value(& val);
 
 				local_snprintf_P(buf, buflen, "Dual RX");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 #endif /* WITHUSEDUALWATCH */
 			}
 				break;
@@ -1099,12 +1098,12 @@ static void gui_main_process(void)
 					vol = hamradio_get_afgain();
 
 				local_snprintf_P(buf, buflen, PSTR("AF gain"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				if (hamradio_get_gmutespkr())
 					local_snprintf_P(buf, buflen, PSTR("muted"));
 				else
 					local_snprintf_P(buf, buflen, PSTR("%d"), vol);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 			}
 				break;
 
@@ -1121,9 +1120,9 @@ static void gui_main_process(void)
 				}
 
 				local_snprintf_P(buf, buflen, PSTR("TX %d\%%"), (int) tx_pwr);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, PSTR("Tune %d\%%"), (int) tune_pwr);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 #endif /* WITHTX */
 			}
 				break;
@@ -1140,9 +1139,9 @@ static void gui_main_process(void)
 				}
 
 				local_snprintf_P(buf, buflen, PSTR("DNR"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
 				local_snprintf_P(buf, buflen, state ? "on" : "off");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
 			}
 
 				break;
@@ -1163,12 +1162,12 @@ static void gui_main_process(void)
 				}
 				local_snprintf_P(buf, buflen, PSTR("AF"));
 				xx = current_place * infobar_label_width + 7;
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y_mid, buf, str_color);
+				colpip_string2_tbg(db, xx, y_mid, buf, str_color);
 				xx += SMALLCHARW2 * 3;
 				local_snprintf_P(buf, buflen, bp_wide ? (PSTR("L %u")) : (PSTR("W %u")), bp_low);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, bp_wide ? (PSTR("H %u")) : (PSTR("P %u")), bp_high);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx, infobar_2nd_str_y, buf, str_color);
 			}
 				break;
 
@@ -1184,14 +1183,14 @@ static void gui_main_process(void)
 				if (if_shift)
 				{
 					local_snprintf_P(buf, buflen, PSTR("IF shift"));
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 					local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+d Hz"), if_shift);
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 				}
 				else
 				{
 					local_snprintf_P(buf, buflen, PSTR("IF shift"));
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
 				}
 			}
 				break;
@@ -1208,13 +1207,13 @@ static void gui_main_process(void)
 				}
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
 				local_snprintf_P(buf, buflen, PSTR("ATT"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				if (atten)
 					local_snprintf_P(buf, buflen, PSTR("%d db"), atten);
 				else
 					local_snprintf_P(buf, buflen, PSTR("off"));
 
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 			}
 				break;
 
@@ -1229,9 +1228,9 @@ static void gui_main_process(void)
 					z = display_zoomedbw() / 1000;
 				local_snprintf_P(buf, buflen, PSTR("SPAN"));
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, PSTR("%dk"), z);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 	#endif /* WITHIF4DSP */
 			}
 				break;
@@ -1252,7 +1251,7 @@ static void gui_main_process(void)
 	#else
 				uint_fast16_t yy = y_mid;
 	#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, yy, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, yy, buf, str_color);
 	#endif /* WITHVOLTLEVEL */
 
 	#if WITHCURRLEVEL || WITHCURRLEVEL2
@@ -1284,7 +1283,7 @@ static void gui_main_process(void)
 
 	#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 				}
 	#endif /* WITHCURRLEVEL */
 			}
@@ -1300,9 +1299,9 @@ static void gui_main_process(void)
 
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 				local_snprintf_P(buf, buflen, PSTR("CPU temp"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 	#endif /* defined (GET_CPU_TEMPERATURE) */
 			}
 				break;
@@ -1317,11 +1316,11 @@ static void gui_main_process(void)
 					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
 					remove_end_line_spaces(buf);
 					unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.val);
 					remove_end_line_spaces(buf);
 					COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
 				}
 				else
 				{
@@ -1329,9 +1328,9 @@ static void gui_main_process(void)
 					// текущее время
 					local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 					unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 					local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((seconds & 1) ? ' ' : ':'), minute);
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
 				}
 			}
@@ -1363,7 +1362,7 @@ static void gui_main_process(void)
 #if WITHGUIDEBUG
 	if (tf_debug->visible)
 	{
-		display_transparency(tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
+		display_transparency(db, tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
 	}
 #endif /* WITHGUIDEBUG */
 }
@@ -1409,7 +1408,7 @@ static void write_mems(uint_fast8_t cell)
 #endif /* LINUX_SUBSYSTEM */
 }
 
-static void window_memory_process(void)
+static void window_memory_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_MEMORY);
 
@@ -1490,7 +1489,7 @@ static void window_memory_process(void)
 				if (bh->payload)
 				{
 					load_mems(cell_id, 1);
-					close_window(DONT_OPEN_PARENT_WINDOW);
+					close_window(db, DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 					return;
 				}
@@ -1526,7 +1525,7 @@ static void window_memory_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_bands_process(void)
+static void window_bands_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_BANDS);
 	static band_array_t * bands = NULL;
@@ -1667,14 +1666,14 @@ static void window_bands_process(void)
 			if (bh == btn_Freq)
 			{
 				window_t * const win = get_win(WINDOW_FREQ);
-				open_window(win);
+				open_window(db, win);
 				hamradio_set_lock(1);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
 			{
 				hamradio_goto_band_by_freq(bh->payload);
-				close_all_windows();
+				close_all_windows(db);
 			}
 		}
 		break;
@@ -1693,7 +1692,7 @@ static void window_bands_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_options_process(void)
+static void window_options_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_OPTIONS);
 
@@ -1761,41 +1760,41 @@ static void window_options_process(void)
 			if (bh == btn_Time)
 			{
 				window_t * const win = get_win(WINDOW_TIME);
-				open_window(win);
+				open_window(db, win);
 			}
 			else
 #endif /* defined (RTC1_TYPE) */
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
-				open_window(win);
+				open_window(db, win);
 			}
 			else if (bh == btn_gui)
 			{
 				window_t * const win = get_win(WINDOW_GUI_SETTINGS);
-				open_window(win);
+				open_window(db, win);
 			}
 			else if (bh == btn_TXsett)
 			{
 				window_t * const win = get_win(WINDOW_TX_SETTINGS);
-				open_window(win);
+				open_window(db, win);
 			}
 			else if (bh == btn_AUDsett)
 			{
 				window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
-				open_window(win);
+				open_window(db, win);
 			}
 			else if (bh == btn_SysMenu)
 			{
 				window_t * const win = get_win(WINDOW_MENU);
-				open_window(win);
+				open_window(db, win);
 				hamradio_enable_encoder2_redirect();
 			}
 #if WITHSPECTRUMWF && WITHMENU
 			else if (bh == btn_Display)
 			{
 				window_t * const win = get_win(WINDOW_DISPLAY);
-				open_window(win);
+				open_window(db, win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
 #if LINUX_SUBSYSTEM
@@ -1807,7 +1806,7 @@ static void window_options_process(void)
 #if WITHAD936XIIO
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_936x"))
 			{
-				open_window(get_win(WINDOW_IIOCONFIG));
+				open_window(db, get_win(WINDOW_IIOCONFIG));
 			}
 #endif /* WITHAD936XIIO */
 		}
@@ -1821,7 +1820,7 @@ static void window_options_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_display_process(void)
+static void window_display_process(const gxdrawb_t * db)
 {
 #if WITHSPECTRUMWF && WITHMENU
 	window_t * const win = get_win(WINDOW_DISPLAY);
@@ -2074,7 +2073,7 @@ static void window_display_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_utilites_process(void)
+static void window_utilites_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_UTILS);
 
@@ -2136,37 +2135,37 @@ static void window_utilites_process(void)
 
 			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
-				open_window(get_win(WINDOW_3D));
+				open_window(db, get_win(WINDOW_3D));
 			}
 #if WITHSWRSCAN
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
 			{
-				open_window(get_win(WINDOW_SWR_SCANNER));
+				open_window(db, get_win(WINDOW_SWR_SCANNER));
 			}
 #endif /* WITHSWRSCAN */
 #if WITHLFM
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_lfm"))
 			{
-				open_window(get_win(WINDOW_LFM));
+				open_window(db, get_win(WINDOW_LFM));
 			}
 #endif /* WITHLFM  */
 #if WITHGUIDEBUG
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_debug"))
 			{
 				gui_open_debug_window();
-				close_all_windows();
+				close_all_windows(db);
 			}
 #endif /* WITHGUIDEBUG */
 #if WITHIQSHIFT
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_shift"))
 			{
-				open_window(get_win(WINDOW_SHIFT));
+				open_window(db, get_win(WINDOW_SHIFT));
 			}
 #endif /* WITHIQSHIFT */
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_stream"))
 			{
-				open_window(get_win(WINDOW_EXTIOLAN));
+				open_window(db, get_win(WINDOW_EXTIOLAN));
 			}
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 		}
@@ -2181,7 +2180,7 @@ static void window_utilites_process(void)
 // *********************************************************************************************************************************************************************
 
 // переделать полностью
-static void window_swrscan_process(void)
+static void window_swrscan_process(const gxdrawb_t * db)
 {
 #if WITHSWRSCAN
 	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
@@ -2292,7 +2291,7 @@ static void window_swrscan_process(void)
 			}
 			else if (bh == btn_swr_OK)
 			{
-				close_all_windows();
+				close_all_windows(db);
 				free(y_vals);
 				return;
 			}
@@ -2346,36 +2345,36 @@ static void window_swrscan_process(void)
 	{
 		// отрисовка фона графика и разметки
 		uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
-		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORPIP_WHITE, 0);
-		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORPIP_WHITE, 0);
+		colpip_line(db, gr_x, gr_y, gr_x, win->y1 + y1, COLORPIP_WHITE, 0);
+		colpip_line(db, gr_x, gr_y, win->x1 + x1, gr_y, COLORPIP_WHITE, 0);
 
 		char buf [5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-		colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
+		colpip_string3_tbg(db, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
 			if (yy < 0)
 				break;
 
-			colpip_line(fr, DIM_X, DIM_Y, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORPIP_DARKGREEN, 0);
+			colpip_line(db, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORPIP_DARKGREEN, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-			colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
+			colpip_string3_tbg(db, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
 		}
 
 		if (lbl_swr_error->visible)				// фон сообщения об ошибке
 		{
-			colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORPIP_RED);
+			colpip_fillrect(db, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORPIP_RED);
 		}
 		else									// маркер текущей частоты
 		{
-			colpip_line(fr, DIM_X, DIM_Y, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORPIP_RED, 0);
+			colpip_line(db, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORPIP_RED, 0);
 		}
 
 		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
-				colpip_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORPIP_YELLOW, 1);
+				colpip_line(db, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORPIP_YELLOW, 1);
 		}
 	}
 #endif /* WITHSWRSCAN */
@@ -2383,7 +2382,7 @@ static void window_swrscan_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_process(void)
+static void window_tx_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_TX_SETTINGS);
 	unsigned update = 0;
@@ -2438,7 +2437,7 @@ static void window_tx_process(void)
 #if WITHPOWERTRIM && WITHTX
 			if (bh == btn_tx_power)
 			{
-				open_window(winPower);
+				open_window(db, winPower);
 				return;
 			}
 #endif /* WITHPOWERTRIM  && WITHTX*/
@@ -2450,7 +2449,7 @@ static void window_tx_process(void)
 			}
 			else if (bh == btn_tx_vox_settings)
 			{
-				open_window(winVOX);
+				open_window(db, winVOX);
 				return;
 			}
 #endif /* WITHVOX */
@@ -2489,7 +2488,7 @@ static void window_tx_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_vox_process(void)
+static void window_tx_vox_process(const gxdrawb_t * db)
 {
 #if WITHVOX
 	window_t * const win = get_win(WINDOW_TX_VOX_SETT);
@@ -2646,7 +2645,7 @@ static void window_tx_vox_process(void)
 			button_t * btn_tx_vox_OK = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
 			if (bh == btn_tx_vox_OK)
 			{
-				close_all_windows();
+				close_all_windows(db);
 			}
 		}
 		else if (IS_SLIDER_MOVE)
@@ -2684,7 +2683,7 @@ static void window_tx_vox_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_power_process(void)
+static void window_tx_power_process(const gxdrawb_t * db)
 {
 #if WITHPOWERTRIM && WITHTX
 	window_t * const win = get_win(WINDOW_TX_POWER);
@@ -2759,7 +2758,7 @@ static void window_tx_power_process(void)
 
 			if (bh == btn_tx_pwr_OK)
 			{
-				close_all_windows();
+				close_all_windows(db);
 			}
 			else if (bh == btn_p || bh == btn_n)
 			{
@@ -2837,7 +2836,7 @@ static void window_tx_power_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_audiosettings_process(void)
+static void window_audiosettings_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
 	unsigned update = 0;
@@ -2923,7 +2922,7 @@ static void window_audiosettings_process(void)
 #if WITHREVERB
 			else if (bh == btn_reverb_settings)
 			{
-				open_window(get_win(WINDOW_AP_REVERB_SETT));
+				open_window(db, get_win(WINDOW_AP_REVERB_SETT));
 			}
 #endif /* WITHREVERB */
 #if WITHAFCODEC1HAVEPROC
@@ -2934,18 +2933,18 @@ static void window_audiosettings_process(void)
 			}
 			else if (bh == btn_mic_eq_settings)
 			{
-				open_window(winEQ);
+				open_window(db, winEQ);
 				return;
 			}
 #endif /* WITHAFCODEC1HAVEPROC */
 			else if (bh == btn_mic_settings)
 			{
-				open_window(winMIC);
+				open_window(db, winMIC);
 				return;
 			}
 			else if (bh == btn_mic_profiles)
 			{
-				open_window(winMICpr);
+				open_window(db, winMICpr);
 				return;
 			}
 #if WITHREVERB
@@ -3001,7 +3000,7 @@ static void window_audiosettings_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_reverb_process(void)
+static void window_ap_reverb_process(const gxdrawb_t * db)
 {
 #if WITHREVERB
 	window_t * const win = get_win(WINDOW_AP_REVERB_SETT);
@@ -3118,7 +3117,7 @@ static void window_ap_reverb_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			close_window(OPEN_PARENT_WINDOW); // единственная кнопка
+			close_window(db, OPEN_PARENT_WINDOW); // единственная кнопка
 			return;
 		}
 		else if (IS_SLIDER_MOVE)
@@ -3149,7 +3148,7 @@ static void window_ap_reverb_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_eq_process(void)
+static void window_ap_mic_eq_process(const gxdrawb_t * db)
 {
 #if WITHAFCODEC1HAVEPROC
 	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
@@ -3262,7 +3261,7 @@ static void window_ap_mic_eq_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			close_all_windows();
+			close_all_windows(db);
 			return;
 		}
 		else if (IS_SLIDER_MOVE)
@@ -3288,22 +3287,22 @@ static void window_ap_mic_eq_process(void)
 	for (unsigned i = 0; i <= abs(eq_base); i += 3)
 	{
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
+		colpip_line(db, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(db, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
+		colpip_line(db, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(db, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
 	}
 #endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_eq_process(void)
+static void window_af_eq_process(const gxdrawb_t * db)
 {
 #if WITHAFEQUALIZER
 	window_t * const win = get_win(WINDOW_AF_EQ);
@@ -3426,7 +3425,7 @@ static void window_af_eq_process(void)
 
 			if (bh == btn_EQ_ok)
 			{
-				close_all_windows();
+				close_all_windows(db);
 				return;
 			}
 
@@ -3477,7 +3476,7 @@ static void window_af_eq_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_process(void)
+static void window_ap_mic_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
 
@@ -3665,7 +3664,7 @@ static void window_ap_mic_process(void)
 			}
 			else if (bh == btn_mic_OK)
 			{
-				close_all_windows();
+				close_all_windows(db);
 				return;
 			}
 		}
@@ -3701,7 +3700,7 @@ static void window_ap_mic_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_prof_process(void)
+static void window_ap_mic_prof_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
 
@@ -3763,7 +3762,7 @@ static void window_ap_mic_prof_process(void)
 				hamradio_load_mic_profile(profile_id, 1);
 				gui_nvram.micprofile = profile_id;
 				save_settings();
-				close_window(DONT_OPEN_PARENT_WINDOW);
+				close_window(db, DONT_OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 				return;
 			}
@@ -3801,7 +3800,7 @@ static void window_ap_mic_prof_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_notch_process(void)
+static void window_notch_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_NOTCH);
 	static enc_var_t notch;
@@ -3980,7 +3979,7 @@ static void window_notch_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_gui_settings_process(void)
+static void window_gui_settings_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_GUI_SETTINGS);
 	unsigned update = 0;
@@ -4078,7 +4077,7 @@ static void window_gui_settings_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_shift_process(void)
+static void window_shift_process(const gxdrawb_t * db)
 {
 #if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
@@ -4241,13 +4240,13 @@ static void window_shift_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+void gui_uif_editmenu(const gxdrawb_t * db, const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
 {
 	window_t * const win = get_win(WINDOW_UIF);
 	if (win->state == NON_VISIBLE)
 	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		open_window(win);
+		close_window(db, DONT_OPEN_PARENT_WINDOW);
+		open_window(db, win);
 		footer_buttons_state(DISABLED, NULL);
 		strcpy(menu_uif.name, name);
 		menu_uif.menupos = menupos;
@@ -4256,13 +4255,13 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 	}
 	else if (win->state == VISIBLE)
 	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
+		close_window(db, DONT_OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 		hamradio_disable_encoder2_redirect();
 	}
 }
 
-static void window_uif_process(void)
+static void window_uif_process(const gxdrawb_t * db)
 {
 	static label_t * lbl_uif_val;
 	static button_t * button_up, * button_down;
@@ -4338,7 +4337,7 @@ static void window_uif_process(void)
 		if (action == menu_uif.exitkey)
 		{
 			hamradio_disable_keyboard_redirect();
-			close_window(DONT_OPEN_PARENT_WINDOW);
+			close_window(db, DONT_OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 			return;
 		}
@@ -4371,17 +4370,17 @@ static void window_uif_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void gui_open_sys_menu(void)
+void gui_open_sys_menu(const gxdrawb_t * db)
 {
 	if (check_for_parent_window() != NO_PARENT_WINDOW)
 	{
-		close_window(OPEN_PARENT_WINDOW);
+		close_window(db, OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
 	}
 	else
 	{
 		window_t * const win = get_win(WINDOW_MENU);
-		open_window(win);
+		open_window(db, win);
 		footer_buttons_state(DISABLED);
 	}
 }
@@ -4434,7 +4433,7 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 	}
 }
 
-static void window_ft8_bands_process(void)
+static void window_ft8_bands_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_FT8_BANDS);
 
@@ -4489,7 +4488,7 @@ static void window_ft8_bands_process(void)
 			button_t * bh = (button_t *) ptr;
 			gui_nvram.ft8_band = bh->index;
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
-			close_window(OPEN_PARENT_WINDOW);
+			close_window(db, OPEN_PARENT_WINDOW);
 		}
 
 		break;
@@ -4500,7 +4499,7 @@ static void window_ft8_bands_process(void)
 	}
 }
 
-static void window_ft8_settings_process(void)
+static void window_ft8_settings_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_FT8_SETTINGS);
 
@@ -4581,12 +4580,12 @@ static void window_ft8_settings_process(void)
 
 			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_OK"))
 			{
-				close_window(OPEN_PARENT_WINDOW);
+				close_window(db, OPEN_PARENT_WINDOW);
 			}
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_freq"))
 			{
 				uint32_t f = gui_nvram.ft8_txfreq_val;
-				keyboard_edit_digits(& f);
+				keyboard_edit_digits(db, & f);
 				uint32_t l = hamradio_get_low_bp(0) * 10;
 				uint32_t h = hamradio_get_high_bp(0) * 10;
 				gui_nvram.ft8_txfreq_val = (f >= l && f <= h) ? f : gui_nvram.ft8_txfreq_val;
@@ -4599,9 +4598,9 @@ static void window_ft8_settings_process(void)
 				board_rtc_settime(hour, minute, seconds);
 			}
 			else if (bh->payload == 1)
-				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
+				keyboard_edit_string(db, (uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
 			else if (bh->payload == 2)
-				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_qth, 10, 0);
+				keyboard_edit_string(db, (uintptr_t) & gui_nvram.ft8_qth, 10, 0);
 		}
 
 		break;
@@ -4612,7 +4611,7 @@ static void window_ft8_settings_process(void)
 	}
 }
 
-static void window_ft8_process(void)
+static void window_ft8_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_FT8);
 	static unsigned win_x = 0, win_y = 0, x, y, update = 0, selected_label_cq = 255, selected_label_tx = 0;
@@ -4809,13 +4808,13 @@ static void window_ft8_process(void)
 			{
 				work = 1;
 				window_t * win2 = get_win(WINDOW_FT8_SETTINGS);
-				open_window(win2);
+				open_window(db, win2);
 			}
 			else if (bh == btn_bands)
 			{
 				work = 1;
 				window_t * win2 = get_win(WINDOW_FT8_BANDS);
-				open_window(win2);
+				open_window(db, win2);
 			}
 		}
 		else if (IS_LABEL_PRESS)
@@ -4903,7 +4902,7 @@ static void window_ft8_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_process(void)
+static void window_af_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_AF);
 	static enc_var_t bp_t;
@@ -5105,7 +5104,7 @@ static void window_af_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_mode_process(void)
+static void window_mode_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_MODES);
 
@@ -5161,7 +5160,7 @@ static void window_mode_process(void)
 			if (bh->payload != INT32_MAX)
 				hamradio_change_submode(bh->payload, 1);
 
-			close_window(DONT_OPEN_PARENT_WINDOW);
+			close_window(db, DONT_OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
 			return;
 		}
@@ -5175,7 +5174,7 @@ static void window_mode_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_receive_process(void)
+static void window_receive_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_RECEIVE);
 	unsigned update = 0;
@@ -5253,7 +5252,7 @@ static void window_receive_process(void)
 			else if (bh == btn_AF)
 			{
 				window_t * const win = get_win(WINDOW_AF);
-				open_window(win);
+				open_window(db, win);
 			}
 			else if (bh == btn_AGC)
 			{
@@ -5263,7 +5262,7 @@ static void window_receive_process(void)
 			else if (bh == btn_mode)
 			{
 				window_t * const win = get_win(WINDOW_MODES);
-				open_window(win);
+				open_window(db, win);
 			}
 			else if (bh == btn_DNR)
 			{
@@ -5283,7 +5282,7 @@ static void window_receive_process(void)
 			button_t * btn_WNB = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_WNB");
 			if (bh == btn_WNB)
 			{
-				open_window(get_win(WINDOW_WNBCONFIG));
+				open_window(db, get_win(WINDOW_WNBCONFIG));
 			}
 #endif /* WITHWNB */
 		}
@@ -5320,7 +5319,7 @@ static void window_receive_process(void)
 
 // *********************************************************************************************
 
-static void window_freq_process (void)
+static void window_freq_process (const gxdrawb_t * db)
 {
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
@@ -5427,7 +5426,7 @@ static void window_freq_process (void)
 			case BUTTON_CODE_OK:
 				if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
 				{
-					close_all_windows();
+					close_all_windows(db);
 				}
 				else
 					editfreq.error = 1;
@@ -5454,7 +5453,7 @@ static void window_freq_process (void)
 
 // *****************************************************************************************************************************
 
-static void window_time_process(void)
+static void window_time_process(const gxdrawb_t * db)
 {
 #if defined (RTC1_TYPE)
 	window_t * const win = get_win(WINDOW_TIME);
@@ -5582,7 +5581,7 @@ static void window_time_process(void)
 			else if (bh == btn_set)
 			{
 				board_rtc_setdatetime(year, month, day, hour, minute, second);
-				close_all_windows();
+				close_all_windows(db);
 				return;
 			}
 
@@ -5620,7 +5619,7 @@ static void window_time_process(void)
 #endif /* defined (RTC1_TYPE) */
 }
 
-static void window_kbd_process(void)
+static void window_kbd_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_KBD);
 	static unsigned update = 0, is_shift = 0;
@@ -5783,7 +5782,7 @@ static void window_kbd_process(void)
 						strcpy(gui_keyboard.str, edit_str);
 				}
 
-				close_window(OPEN_PARENT_WINDOW);
+				close_window(db, OPEN_PARENT_WINDOW);
 				return;
 			}
 
@@ -5813,7 +5812,7 @@ static void window_kbd_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_kbd_test_process(void)
+static void window_kbd_test_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static uint32_t num_lbl1 = 12345;
@@ -5877,9 +5876,9 @@ static void window_kbd_test_process(void)
 			button_t * bh = (button_t *) ptr;
 
 			if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_text"))
-				keyboard_edit_string((uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
+				keyboard_edit_string(db, (uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_num"))
-				keyboard_edit_digits(& num_lbl1);
+				keyboard_edit_digits(db, & num_lbl1);
 		}
 		break;
 
@@ -5892,7 +5891,7 @@ static void window_kbd_test_process(void)
 
 /* https://www.a1k0n.net/2011/07/20/donut-math.html */
 
-static void window_3d_process(void)
+static void window_3d_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_3D);
 	static text_field_t * tf_3d = NULL;
@@ -5962,7 +5961,7 @@ static void window_3d_process(void)
 #define MENU_PARAMS_MAX	50
 static unsigned index_param = 0;
 
-static void window_menu_params_process(void)
+static void window_menu_params_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
@@ -6083,7 +6082,7 @@ static void window_menu_params_process(void)
 	}
 }
 
-static void window_menu_process(void)
+static void window_menu_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_MENU);
 
@@ -6141,7 +6140,7 @@ static void window_menu_process(void)
 			button_t * bh = (button_t *) ptr;
 			index_param = bh->payload;
 			window_t * const win = get_win(WINDOW_MENU_PARAMS);
-			open_window(win);
+			open_window(db, win);
 		}
 		break;
 
@@ -6152,7 +6151,7 @@ static void window_menu_process(void)
 
 // *****************************************************************************************************************************
 
-static void window_lfm_process(void)
+static void window_lfm_process(const gxdrawb_t * db)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
@@ -6256,7 +6255,7 @@ static void window_lfm_process(void)
 			}
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_draw"))
 			{
-				open_window(get_win(WINDOW_LFM_SPECTRE));
+				open_window(db, get_win(WINDOW_LFM_SPECTRE));
 			}
 			else if (bh->index == 90 || bh->index == 91)
 				gui_set_encoder2_rotate(bh->payload);
@@ -6347,7 +6346,7 @@ static void window_lfm_process(void)
 #endif /* WITHLFM  */
 }
 
-static void window_lfm_spectre_process(void)
+static void window_lfm_spectre_process(const gxdrawb_t * db)
 {
 #if WITHLFM
 	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
@@ -6394,7 +6393,7 @@ static void window_lfm_spectre_process(void)
 
 	for (int x = 0; x < xmax; x ++)
 		for (int y = 0; y < ymax; y ++)
-			gui_drawpoint(x, y, d[x][y]);
+			gui_drawpoint(db, x, y, d[x][y]);
 
 #endif /* WITHLFM  */
 }
@@ -6412,7 +6411,7 @@ void stream_log(char * str)
 	}
 }
 
-static void window_stream_process(void)
+static void window_stream_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_EXTIOLAN);
 	static uint8_t update = 0;
@@ -6485,7 +6484,7 @@ static void window_stream_process(void)
 
 #if WITHWNB
 
-static void window_wnbconfig_process(void)
+static void window_wnbconfig_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_WNBCONFIG);
 	static unsigned update = 0;
@@ -6598,7 +6597,7 @@ static void window_wnbconfig_process(void)
 
 #if WITHAD936XIIO
 
-static void window_iioconfig_process(void)
+static void window_iioconfig_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_IIOCONFIG);
 	static unsigned update = 0;
@@ -6690,7 +6689,7 @@ static void window_iioconfig_process(void)
 
 		if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_uri_edit"))
 		{
-			keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
+			keyboard_edit_string(db, (uintptr_t) & uri, ARRAY_SIZE(uri), 0);
 		}
 		else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_action"))
 		{
@@ -6774,7 +6773,7 @@ void gui_as_update(void)
 		put_to_wm_queue(get_win(WINDOW_AS), WM_MESSAGE_UPDATE);
 }
 
-static void window_as_process(void)
+static void window_as_process(const gxdrawb_t * db)
 {
 	window_t * const win = get_win(WINDOW_AS);
 	static unsigned update = 0;
@@ -6817,12 +6816,12 @@ static void window_as_process(void)
 	}
 
 	for (int x = 0; x < len; x ++)
-		gui_drawline(x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
+		gui_drawline(db, x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
 
 	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
 	{
 		uint16_t pos = len * as_get_progress() * 0.01;
-		gui_drawline(pos, 0, pos, lim *2, COLORPIP_GREEN);
+		gui_drawline(db, pos, 0, pos, lim *2, COLORPIP_GREEN);
 	}
 
 

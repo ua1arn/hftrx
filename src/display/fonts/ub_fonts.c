@@ -9,8 +9,8 @@
 // Цвет шрифта и фон (шрифт = макс 16 пикселей в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawChar(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint16_t dy,uint16_t x, uint16_t y, uint8_t ascii, const UB_Font *font, COLORPIP_T vg)
+void UB_Font_DrawChar(const gxdrawb_t * db,
+		uint16_t x, uint16_t y, uint8_t ascii, const UB_Font *font, COLORPIP_T vg)
 {
 	uint_fast16_t xn,yn,start_maske,maske;
   const uint16_t *wert;
@@ -27,7 +27,7 @@ void UB_Font_DrawChar(PACKEDCOLORPIP_T * __restrict buffer,
 
       for(xn = 0; xn < font->width; xn++) {
         if((wert[yn] & maske) != 0x00)
-        	* colpip_mem_at(buffer, dx, dy, x + xn, yn + y) = vg;
+        	* colpip_mem_at(db, x + xn, yn + y) = vg;
 
         maske=(maske>>1);
       }
@@ -41,15 +41,13 @@ void UB_Font_DrawChar(PACKEDCOLORPIP_T * __restrict buffer,
 // Цвет шрифта и фон (шрифт = макс 16 пикселей в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawString(
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx, uint_fast16_t dy,
+void UB_Font_DrawString(const gxdrawb_t * db,
 	uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font * font, COLORPIP_T vg)
 {
 	uint_fast16_t pos = x;
 
 	while (* ptr != 0) {
-		UB_Font_DrawChar(buffer, dx, dy, pos, y, * ptr, font, vg);
+		UB_Font_DrawChar(db, pos, y, * ptr, font, vg);
 		pos += font->width;
 		ptr ++;
 	}
@@ -62,8 +60,7 @@ void UB_Font_DrawString(
 // Цвет шрифта и фон (шрифт = макс 32 пикселя в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawChar32(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint_fast16_t dy,
+void UB_Font_DrawChar32(const gxdrawb_t * db,
 		uint_fast16_t x, uint_fast16_t y,
 		uint8_t ascii, const UB_Font32 *font, COLORPIP_T vg)
 {
@@ -86,7 +83,7 @@ void UB_Font_DrawChar32(PACKEDCOLORPIP_T * __restrict buffer,
       for(xn = 0; xn < font->width; xn++) {
         if((wert[yn] & maske))
 
-        	* colpip_mem_at(buffer, dx, dy, x + xn, yn + y) = vg;
+        	* colpip_mem_at(db, x + xn, yn + y) = vg;
 
         maske=(maske>>1);
       }
@@ -100,15 +97,14 @@ void UB_Font_DrawChar32(PACKEDCOLORPIP_T * __restrict buffer,
 // Цвет шрифта и фон (шрифт = макс 32 пикселя в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawString32(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y,
+void UB_Font_DrawString32(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y,
 		const char *ptr, const UB_Font32 *font, COLORPIP_T vg)
 {
 	uint_fast16_t pos;
 
     pos=x;
     while (*ptr != '\0') {
-      UB_Font_DrawChar32(buffer, dx, dy, pos,y,*ptr,font,vg);
+      UB_Font_DrawChar32(db, pos,y,*ptr,font,vg);
       pos+=font->width;
       ptr++;
     }
@@ -121,8 +117,7 @@ void UB_Font_DrawString32(PACKEDCOLORPIP_T * __restrict buffer,
 // Шрифт должен быть передан с оператором &
 // Возвращает: ширину нарисованного символа
 //--------------------------------------------------------------
-uint16_t UB_Font_DrawPChar(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint_fast16_t dy,
+uint16_t UB_Font_DrawPChar(const gxdrawb_t * db,
 		uint_fast16_t x, uint_fast16_t y,
 		uint8_t ascii, const UB_pFont * font,
 		COLORPIP_T vg)
@@ -153,7 +148,7 @@ uint16_t UB_Font_DrawPChar(PACKEDCOLORPIP_T * __restrict buffer,
 		for(xn = 0; xn < width; xn++)
 		{
 			if((wert [yn+1] & maske))
-				* colpip_mem_at(buffer, dx, dy, x + xn, yn + y) = vg;
+				* colpip_mem_at(db, x + xn, yn + y) = vg;
 
 			maske = (maske >> 1);
 		}
@@ -170,8 +165,7 @@ uint16_t UB_Font_DrawPChar(PACKEDCOLORPIP_T * __restrict buffer,
 //--------------------------------------------------------------
 void UB_Font_DrawPStringDbg(
 		const char * file, int line,
-		PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint_fast16_t dy,
+		const gxdrawb_t * db,
 		uint_fast16_t x, uint_fast16_t y,
 		const char * ptr, const UB_pFont * font,
 		COLORPIP_T vg)
@@ -180,19 +174,19 @@ void UB_Font_DrawPStringDbg(
 
 	savestring = ptr;
 	savewhere = __func__;
-	if (x >= dx)
+	if (x >= db->dx)
 	{
-		PRINTF("%s called from %s/%d: x/dx=%d/%d\n", __func__, file, line, (int) x, (int) dx);
+		PRINTF("%s called from %s/%d: x/dx=%d/%d\n", __func__, file, line, (int) x, (int) db->dx);
 	}
-	if (y >= dy)
+	if (y >= db->dy)
 	{
-		PRINTF("%s called from %s/%d: y/dy=%d/%d\n", __func__, file, line, (int) y, (int) dy);
+		PRINTF("%s called from %s/%d: y/dy=%d/%d\n", __func__, file, line, (int) y, (int) db->dy);
 	}
-	ASSERT(y < dy);
+	ASSERT(y < db->dy);
 	while (*ptr != '\0')
 	{
-		ASSERT(pos < dx);
-		width = UB_Font_DrawPChar(buffer, dx, dy, pos, y, * ptr, font, vg);
+		ASSERT(pos < db->dx);
+		width = UB_Font_DrawPChar(db, pos, y, * ptr, font, vg);
 		pos += width;
 		ptr ++;
 	}
@@ -204,8 +198,7 @@ void UB_Font_DrawPStringDbg(
 // Шрифт должен быть передан с оператором &
 // Возвращает: ширину нарисованного символа
 //--------------------------------------------------------------
-uint16_t UB_Font_DrawPChar32(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint_fast16_t dy,
+uint16_t UB_Font_DrawPChar32(const gxdrawb_t * db,
 		uint_fast16_t x, uint_fast16_t y,
 		uint8_t ascii, const UB_pFont32 * font,
 		COLORPIP_T vg)
@@ -235,7 +228,7 @@ uint16_t UB_Font_DrawPChar32(PACKEDCOLORPIP_T * __restrict buffer,
 		for(xn = 0; xn < width; xn++)
 		{
 			if((wert [yn + 1] & maske))
-				* colpip_mem_at(buffer, dx, dy, x + xn, yn + y) = vg;
+				* colpip_mem_at(db, x + xn, yn + y) = vg;
 
 			maske = (maske >> 1);
 		}
@@ -249,8 +242,7 @@ uint16_t UB_Font_DrawPChar32(PACKEDCOLORPIP_T * __restrict buffer,
 // Цвет шрифта плана и фона (шрифт = макс 32 пикселя в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawPString32(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx, uint_fast16_t dy,
+void UB_Font_DrawPString32(const gxdrawb_t * db,
 		uint_fast16_t x, uint_fast16_t y,
 		const char * ptr, const UB_pFont32 * font,
 		COLORPIP_T vg)
@@ -260,8 +252,8 @@ void UB_Font_DrawPString32(PACKEDCOLORPIP_T * __restrict buffer,
 	savewhere = __func__;
 	while (* ptr != 0)
 	{
-		ASSERT(pos < dx);
-		width = UB_Font_DrawPChar32(buffer, dx, dy, pos, y, * ptr, font, vg);
+		ASSERT(pos < db->dx);
+		width = UB_Font_DrawPChar32(db, pos, y, * ptr, font, vg);
 		pos += width;
 		ptr ++;
 	}
