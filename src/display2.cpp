@@ -7763,7 +7763,7 @@ LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_
 // подготовка lv_draw_buf_t с изображением спектра/водопада
 lv_draw_buf_t * wfl_init(void)
 {
-	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data; //& fb [ix][0];
+	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data;
 	wfl_buff.header.cf = display_get_lvformat();
 	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(wfl_buff.header.w, display_get_lvformat());
 	LV_DRAW_BUF_INIT_STATIC(wfl_buff);
@@ -7777,7 +7777,7 @@ lv_draw_buf_t * wfl_init(void)
 	return & wfl_buff;
 }
 
-/* построить растр с водопадом и спектром */
+/* Обновить содержимое lv_draw_buf_t - растр с водопадом и спектром */
 void wfl_proccess(void)
 {
 	pipparams_t pip;
