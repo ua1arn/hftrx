@@ -715,11 +715,13 @@ void colmain_fb_list(uintptr_t * frames);	// получение массива �
 	#define TVD_HEIGHT DIM_Y
 	typedef PACKEDCOLORPIP_T PACKEDTVBUFF_T;
 	typedef COLORPIP_T TVBUFF_T;
+	#define TVMODE_PIXELSIZE LCDMODE_PIXELSIZE
 #else /* WITHHDMITVHW */
 	#define TVD_WIDTH  720
 	#define TVD_HEIGHT 576
 	typedef uint8_t PACKEDTVBUFF_T;
 	typedef uint_fast8_t TVBUFF_T;
+	#define TVMODE_PIXELSIZE 1
 #endif /* WITHHDMITVHW */
 
 #define TVD_SIZE (TVD_WIDTH * TVD_HEIGHT)

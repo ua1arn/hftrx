@@ -25,7 +25,7 @@ DFUUTIL = ./dfu-util
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj
+OBJDIR = o
 
 # Define project name here
 PROJECT = tc1_stm32mp157axx
