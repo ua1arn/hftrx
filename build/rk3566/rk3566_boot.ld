@@ -155,10 +155,21 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
+	} > RAM
 
-		/* All data end */
-		__data_end__ = .;
-
+	.bss :
+	{
+		__bss_start__ = .;
+		. = ALIGN(64);
+		*(.bss*)
+		*(COMMON)
+		. = ALIGN(64);
+		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):
@@ -167,16 +178,6 @@ SECTIONS
 		*(.noinit*)
 
 	} > RAM
-
-	.bss (NOLOAD):
-	{
-		__bss_start__ = .;
-		. = ALIGN(64);
-		*(.bss*)
-		*(COMMON)
-
-		__bss_end__ = .;
-	} > RAM 
 
 	.vram (NOLOAD):
 	{

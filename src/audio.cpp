@@ -5590,15 +5590,9 @@ static int getRxGate(void)
 void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 {
 #if WITHINTEGRATEDDSP
-	#if WITHTX
-		txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
-		shapeCWSSBSidetoneInpit = keydown;
-	#if TXGFV_RX != 0
-		rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
-	#endif /* TXGFV_RX != 0 */
-	#else /* WITHTX */
-		rxgateflag = 1;
-	#endif /* WITHTX */
+	txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
+	rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
+	shapeCWSSBSidetoneInpit = keydown;
 #endif /* WITHINTEGRATEDDSP */
 //	PRINTF("%u", shapeCWSSBSidetoneInpit);
 }
@@ -5612,9 +5606,6 @@ void hardware_sounds_disable(void)
 	shapeSidetoneInpit = 0;
 }
 
-#if SIDETONE_TARGET_BIT != 0
-	#error SIDETONE_TARGET_BIT != 0
-#endif
 // called from interrupt or with disabled interrupts
 // всегда включаем генерацию выходного сигнала
 void hardware_sounds_setfreq(

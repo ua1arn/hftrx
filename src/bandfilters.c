@@ -343,6 +343,7 @@ void bandf_calc_initialize(void)
 
 #endif /* BANDF_USE_BANDINIT */
 
+#if ! BANDSELSTYLERE_NOTHING
 	if (0)
 	{
 		/* отладочная печать границ диапазонов */
@@ -353,6 +354,7 @@ void bandf_calc_initialize(void)
 			PRINTF("board_bandfs[%d]=%lu\n", (int) i, (unsigned long) freq);
 		}
 	}
+#endif
 }
 
 /* Частоы переключения bandf2 */

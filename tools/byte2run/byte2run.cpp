@@ -54,8 +54,8 @@ onetable(int tft565, const char * fg, const char * bg)
 	unsigned taglesize = (1uL << ROWLENGTH);
 	unsigned i;
 	printf("/* Foreground %s_%s, background %s_%s */" "\n", pfx, fg, pfx, bg);
-	printf("//extern const FLASHMEM %s %s_%s_%s_%s_%s [%u][%d]; // fg=%s_%s, bg=%s_%s\n", typenames [tft565], name565, pfx, fg, pfx, bg, taglesize, ROWLENGTH, pfx, fg, pfx, bg);
-	printf("const FLASHMEM %s %s_%s_%s_%s_%s [%u][%u] =\n", typenames [tft565], name565, pfx, fg, pfx, bg, taglesize, ROWLENGTH);
+	printf("//extern const %s %s_%s_%s_%s_%s [%u][%d]; // fg=%s_%s, bg=%s_%s\n", typenames [tft565], name565, pfx, fg, pfx, bg, taglesize, ROWLENGTH, pfx, fg, pfx, bg);
+	printf("const %s %s_%s_%s_%s_%s [%u][%u] =\n", typenames [tft565], name565, pfx, fg, pfx, bg, taglesize, ROWLENGTH);
 	printf("{\n");
 	for (i = 0; i < taglesize; ++ i)
 	{

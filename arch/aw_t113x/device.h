@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__E88EF34D_BB95_4cfd_9438_7C6E40DDDD90__INCLUDED
+#define HEADER__E88EF34D_BB95_4cfd_9438_7C6E40DDDD90__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -4129,5 +4132,8 @@ typedef struct VE_Type
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__E88EF34D_BB95_4cfd_9438_7C6E40DDDD90__INCLUDED */

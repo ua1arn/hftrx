@@ -269,9 +269,9 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
 				 USBD_RNDIS_OUT_BUFSIZE);
 
 	USBD_LL_OpenEP(pdev,
-				 USBD_EP_RNDIS_INT,
+				 USBD_EP_RNDIS_NOTIFY,
 				 USBD_EP_TYPE_INTR,
-				 USBD_RNDIS_INT_SIZE);
+				 USBD_RNDIS_NOTIFY_SIZE);
 
 	USBD_LL_OpenEP(pdev,
 				 USBD_EP_RNDIS_IN,
@@ -289,7 +289,7 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
 
 static USBD_StatusTypeDef  usbd_rndis_deinit(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
 {
-	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_NOTIFY);
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
 	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
 	return USBD_OK;
@@ -765,7 +765,7 @@ static void response_available(USBD_HandleTypeDef *pdev)
 	uint_fast32_t code = 0x01;
 	uint_fast32_t reserved0 = 0x09;
 
-	ASSERT(USBD_RNDIS_INT_SIZE >= sizeof sendState);
+	ASSERT(USBD_RNDIS_NOTIFY_SIZE >= sizeof sendState);
 	sendState [0] = LO_BYTE(code);
 	sendState [1] = HI_BYTE(code);
 	sendState [2] = HI_24BY(code);
@@ -777,7 +777,7 @@ static void response_available(USBD_HandleTypeDef *pdev)
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	USBD_LL_Transmit (pdev, USBD_EP_RNDIS_INT, sendState, USBD_RNDIS_INT_SIZE);
+	USBD_LL_Transmit (pdev, USBD_EP_RNDIS_NOTIFY, sendState, USBD_RNDIS_NOTIFY_SIZE);
 	LowerIrql(oldIrql);
 }
 

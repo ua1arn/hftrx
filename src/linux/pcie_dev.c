@@ -46,6 +46,8 @@ int pcie_init()
 {
     int status = 1;
 
+    memset(& xdma, 0, sizeof(xdma));
+
     xdma.h2c0_path = "/dev/xdma0_h2c_0";
     xdma.c2h0_path = "/dev/xdma0_c2h_0";
 	xdma.user_path = "/dev/xdma0_user";
@@ -56,7 +58,7 @@ int pcie_init()
         if (xdma.buffer_c2h) {
             status = -1;
             free(xdma.buffer_c2h);
-            fprintf(stderr, "Error allocate buffer , OOM--error code: %d\n", ENOMEM);
+            printf("Error allocate buffer , OOM--error code: %d\n", ENOMEM);
         }
 	
     return status;
@@ -77,7 +79,7 @@ int pcie_open()
     /* open XDMA Card-to-Host 0 device */
     xdma.c2h0 = open(xdma.c2h0_path, O_RDWR);
     if (xdma.c2h0 < 0){
-        fprintf(stderr, "unable to open device %s.\n", xdma.c2h0_path);
+        printf("unable to open device %s.\n", xdma.c2h0_path);
         status = -1;
         goto cleanup_handles;
     }
@@ -86,13 +88,13 @@ int pcie_open()
     if(access(xdma.user_path, F_OK) ==0){
         xdma.user = open(xdma.user_path, O_RDWR | O_SYNC);
         if (xdma.user < 0) {
-            fprintf(stderr, "unable to open device %s.\n", xdma.user_path);
+            printf("unable to open device %s.\n", xdma.user_path);
             status = -1;
             goto cleanup_handles;
         }
         xdma.user_map_base = mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, xdma.user, 0);
         if (xdma.user_map_base == MAP_FAILED){
-            perror("mmap user error");
+        	printf("mmap user error\n");
             status = -2;
             goto cleanup_handles;
         }
@@ -176,16 +178,17 @@ long xdma_c2h_transfer(long offset, unsigned long size, char* rcv_content)
 
 void xdma_write_user(long offset, uint32_t value)
 {
-    /* swap 32-bit endianess if host is not little-endian */
-	value = htoll(value);
-    *((uint32_t *) (xdma.user_map_base + offset)) = value;
+	if (xdma.user_map_base)
+		*((uint32_t *) (xdma.user_map_base + offset)) = htoll(value);
 }
 
 uint32_t xdma_read_user(long offset)
 {
-	uint32_t v = *((uint32_t *) (xdma.user_map_base + offset));
-	/* swap 32-bit endianess if host is not little-endian */
-	v = ltohl(v);
+	uint32_t v = 0;
+
+	if (xdma.user_map_base)
+		v = ltohl(*((uint32_t *) (xdma.user_map_base + offset)));
+
 	return v;
 }
 

@@ -219,24 +219,6 @@ typedef struct dualctl32_tag
 	uint_fast32_t potvalue;	/* значение после функции гистерезиса от потенциометра */
 } dualctl32_t;
 
-static uint_fast8_t
-getstablev8(const volatile uint_fast8_t * p)
-{
-	if (sizeof * p == 1)
-		return * p;
-	else
-	{
-		uint_fast8_t v1 = * p;
-		uint_fast8_t v2;
-		do
-		{
-			v2 = v1;
-			v1 = * p;
-		} while (v2 != v1);
-		return v1;
-	}
-}
-
 static uint_fast16_t
 getstablev16(const volatile uint_fast16_t * p)
 {
@@ -261,7 +243,7 @@ getstablev16(const volatile uint_fast16_t * p)
 /* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
    при частоте генератора 8 МГц
    */
-static const FLASHMEM uint_fast8_t catbr2int [] =
+static const uint_fast8_t catbr2int [] =
 {
 	1200u / BRSCALE,	// 1200
 	2400u / BRSCALE,	// 2400
@@ -275,9 +257,7 @@ static const FLASHMEM uint_fast8_t catbr2int [] =
 
 static void
 display2_redrawbarstimed(
-	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t extra,		/* находимся в режиме отображения настроек */
-	const FLASHMEM struct menudef * mp
+	uint_fast8_t immed	// Безусловная перерисовка изображения
 	);
 
 #if WITHLFM
@@ -453,6 +433,7 @@ enum
 // особые случаи отображения значения параметра
 enum
 {
+	RJ_BASE0,
 	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
 	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
 	RJ_CATSPEED,	/* отображение скорости CAT */
@@ -583,7 +564,7 @@ loadvfy16up(
 /* входит ли данный пункт меню в группу разрешённых для показа */
 static uint_fast8_t
 ismenukinddp(
-	const FLASHMEM struct paramdefdef * pd,
+	const struct paramdefdef * pd,
 	uint_fast8_t itemmask
 	)
 {
@@ -594,7 +575,7 @@ ismenukinddp(
 /* Сохранить параметр после редактирования */
 static void
 savemenuvalue(
-	const FLASHMEM struct paramdefdef * pd
+	const struct paramdefdef * pd
 	)
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
@@ -626,7 +607,7 @@ savemenuvalue(
 // Установить значение параметра и сохранить в nvram
 static void
 param_setvalue(
-	const FLASHMEM struct paramdefdef * pd,
+	const struct paramdefdef * pd,
 	int_fast32_t v
 	)
 {
@@ -659,7 +640,7 @@ param_setvalue(
 
 static int_fast32_t
 param_getvalue(
-	const FLASHMEM struct paramdefdef * pd
+	const struct paramdefdef * pd
 	)
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
@@ -686,7 +667,7 @@ param_getvalue(
 // Считать значение параметра из nvram
 static void
 param_load(
-	const FLASHMEM struct paramdefdef * pd
+	const struct paramdefdef * pd
 	)
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
@@ -1011,11 +992,11 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t codeatt;	// признак включения аттенюатора
 		uint8_t codepre;	// признак включения предусилителя
 		int16_t atten10;	// результирующее затухание
-		char label [5];
+		const char * label;
 	}  attmodes [] =
 	{
 		{ 0, 0, 0, "    ", },
@@ -1023,9 +1004,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1035,10 +1016,10 @@ enum {
 #elif WITHONEATTONEAMP
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t codeatt;	// признак включения аттенюатора
 		uint8_t codepre;	// признак включения предусилителя
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1050,9 +1031,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1065,9 +1046,9 @@ enum {
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1079,9 +1060,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1095,9 +1076,9 @@ enum {
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1109,9 +1090,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1124,9 +1105,9 @@ enum {
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1138,9 +1119,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1152,9 +1133,9 @@ enum {
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 
-	static const FLASHMEM struct {
+	static const struct {
 		unsigned char code;
-		char label [5];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1166,9 +1147,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1176,9 +1157,9 @@ enum {
 	};
 #elif WITHATT1PRE1
 
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
@@ -1189,9 +1170,9 @@ enum {
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
@@ -1238,7 +1219,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		//
 		};
 
-	static const FLASHMEM struct {
+	static const struct {
 		uint_fast8_t code;
 		char label4 [5];
 		char label3 [4];
@@ -1261,7 +1242,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		//
 		};
 
-	static const FLASHMEM struct {
+	static const struct {
 		uint_fast8_t code;
 		char label4 [5];
 		char label3 [4];
@@ -1281,7 +1262,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		AGCMODE_MED = 0,
 		AGCMODE_FAST = 0
 		};
-//	static const FLASHMEM struct {
+//	static const struct {
 //		uint_fast8_t code;
 //		char label4 [5];
 //		char label3 [4];
@@ -1301,7 +1282,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		AGCMODE_OFF
 		//
 		};
-	static const FLASHMEM struct {
+	static const struct {
 		uint_fast8_t code;
 		char label4 [5];
 		char label3 [4];
@@ -1319,7 +1300,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		AGCMODE_MED = 1,
 		AGCMODE_FAST = 1
 		};
-	static const FLASHMEM struct {
+	static const struct {
 		uint_fast8_t code;
 		char label4 [5];
 		char label3 [4];
@@ -1340,7 +1321,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		AGCMODE_OFF
 		//
 		};
-	static const FLASHMEM struct {
+	static const struct {
 		uint_fast8_t code;
 		char label4 [5];
 		char label3 [4];
@@ -1362,7 +1343,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		AGCMODE_OFF
 		//
 		};
-	static const FLASHMEM struct {
+	static const struct {
 		uint_fast8_t code;
 		char label4 [5];
 		char label3 [4];
@@ -1388,7 +1369,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 
 #if WITHANTSELECT1RX
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
 	char label2 [3];
 }  antmodes [] =
@@ -1396,7 +1377,7 @@ static const FLASHMEM struct {
 	{	0,	"A1" },
 };
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
 	char label2 [3];
 }  rxantmodes [] =
@@ -1407,7 +1388,7 @@ static const FLASHMEM struct {
 
 #elif WITHANTSELECTRX
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
 	char label2 [3];
 }  antmodes [] =
@@ -1416,7 +1397,7 @@ static const FLASHMEM struct {
 	{	1,	"A2" },
 };
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
 	char label2 [3];
 }  rxantmodes [] =
@@ -1427,7 +1408,7 @@ static const FLASHMEM struct {
 
 #elif WITHANTSELECT
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code [2];	// RX/TX antenna
 	char label5 [6];
 }  antmodes [] =
@@ -1445,7 +1426,7 @@ static const FLASHMEM struct {
 
 #elif WITHANTSELECT2
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
 	char label2 [3];
 }  antmodes [] =
@@ -1457,9 +1438,9 @@ static const FLASHMEM struct {
 
 #if WITHPOWERLPHP
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
-	char label [5];
+	const char * label;
 }  pwrmodes [] =
 {
 	{ BOARDPOWERMIN, "LP" },
@@ -1470,9 +1451,9 @@ static const FLASHMEM struct {
 
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
-	char label [6];
+	const char * label;
 }  notchmodes [] =
 {
 //	{ BOARD_NOTCH_OFF, 		"     " },
@@ -1485,9 +1466,9 @@ static const FLASHMEM struct {
 
 #if WITHUSEDUALWATCH
 
-static const FLASHMEM struct {
+static const struct {
 	uint8_t code;
-	char label [5];
+	const char * label;
 }  mainsubrxmodes [] =
 {
 	{ BOARD_RXMAINSUB_A_B, "A/B", },	// Левый/правый, A - main RX, B - sub RX
@@ -1500,12 +1481,12 @@ static const FLASHMEM struct {
 static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 
-#if WITHIF4DSP && 0
-// надо бы перейти, но проблема в начальных значениях в таблице mdt - там коды а не индексы в этой таблице
-static const FLASHMEM struct {
+#if WITHTX && WITHIF4DSP
+
+static const struct {
 	uint_fast8_t code;
-	char label [6];
-}  txaudiosrcs [] =
+	const char * label;
+}  txaudiosrcs [BOARD_TXAUDIO_count] =	// todo: remove
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
@@ -1520,7 +1501,21 @@ static const FLASHMEM struct {
 	{ BOARD_TXAUDIO_MUTE, 	"MUTE ", },
 };
 
-#endif /* WITHIF4DSP */
+#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
+
+static uint_fast8_t findtxaudioindex(uint_fast8_t code)
+{
+	uint_fast8_t i;
+
+	for (i = 0; i < TXAUDIOSRC_COUNT; ++ i)
+	{
+		if (txaudiosrcs [i].code == code)
+			return i;
+	}
+	return 0;
+}
+
+#endif /* WITHTX && WITHIF4DSP */
 
 #define PWRMODE_COUNT (sizeof pwrmodes / sizeof pwrmodes [0])
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
@@ -1528,7 +1523,6 @@ static const FLASHMEM struct {
 #define ATTMODE_COUNT (sizeof attmodes / sizeof attmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
-#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
 
 #define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
@@ -1683,7 +1677,7 @@ enum
 	BWSETI_count
 };
 
-static const char FLASHMEM
+static const char
 	strFlashWFM [] = "WFM",
 	strFlashWide [] = "WID",
 	strFlashMedium [] = "MED",
@@ -1717,7 +1711,7 @@ typedef struct
 {
 	uint8_t last;		// 0..BWSET_WIDTHS-1
 	bwprop_t  * prop [BWSET_WIDTHS];				// частоты и другие свойства фильтров
-	const char FLASHMEM * labels [BWSET_WIDTHS];	// названия фильтров
+	const char * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
 
 // Пределы изменения полосы пропускания для меню
@@ -1779,7 +1773,7 @@ static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BW
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
-static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
+static const bwsetsc_t bwsetsc [BWSETI_count] =
 {
 	{ 2, { & bwprop_cwwide, & bwprop_cwnarrow, & bwprop_ssbwide, }, { strFlashWide, strFlashNarrow, strFlashNormal, }, },	// BWSETI_CW
 	{ 2, { & bwprop_ssbwide, & bwprop_ssbmedium, & bwprop_ssbnarrow, }, { strFlashWide, strFlashMedium, strFlashNarrow, }, },	// BWSETI_SSB
@@ -1795,7 +1789,7 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
 static uint8_t bwsetpos [BWSETI_count];
 
 // Используется для обмена с NVRAN параметрами фильтров
-static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
+static bwprop_t * const bwprops [BWPROPI_count] =
 {
 	& bwprop_cwnarrow,	// BWPROPI_CWNARROW,
 	& bwprop_cwwide,	// BWPROPI_CWWIDE,
@@ -1981,7 +1975,7 @@ struct afsetitempl
 	#define AGC_RATE_DRM	3
 #endif /* CTLSTYLE_OLEG4Z_V1 */
 
-static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
+static const struct afsetitempl aft [AGCSETI_COUNT] =
 {
 	//AGCSETI_SSB,
 	{
@@ -2211,7 +2205,7 @@ struct modetempl
 	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
 	uint_fast8_t bwsetis [2];			// индекс банка полос пропускания для данного режима в режиме приёма и передачи
 	int_fast16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
+	uint_fast8_t txaudiocode;			// источник звукового сигнала для данного режима (код BOARD_TXAUDIO_xxx)
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
 	FLOAT_t * (* afproc)(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
@@ -2219,13 +2213,13 @@ struct modetempl
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
 	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
-	char label [4];					// для контроля правильности инициализации структуры
+	const char * label;					// для контроля правильности инициализации структуры
 };
 
 // modes
 // Порядок элементов в этом массиве должен совпадать с элементми enum,
 // в котором определён MODE_COUNT
-static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
+static const struct modetempl mdt [MODE_COUNT] =
 {
 	/* MODE_CW */
 	{
@@ -2719,7 +2713,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 /* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
    при частоте генератора 8 МГц
    */
-static const FLASHMEM uint_fast8_t encresols [] =
+static const uint_fast8_t encresols [] =
 {
 	24 / ENCRESSCALE,	// 0
 	32 / ENCRESSCALE,	// 1
@@ -2748,11 +2742,6 @@ static const FLASHMEM uint_fast8_t encresols [] =
 #endif
 /* BANDMIDDLE - граница, по которой происходит разделение двух обзорных диапазонов */
 #if defined (BANDMIDDLE)
-
-#elif CTLSTYLE_SW2011ALL
-
-	#define BANDMIDDLE	15000000L
-	#define UPPER_DEF	19000000L
 
 #elif TUNE_TOP >= 54000000L
 
@@ -2863,7 +2852,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint32_t init;
 		uint8_t defsubmode_bandset;
 		uint8_t bandgroup;
-		char label [9];
+		const char * label;
 	};
 
 	#define BMF(a) (a)		/* получение инициализационного элемента */
@@ -2908,7 +2897,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 
 */
 
-static FLASHMEM struct bandrange  const bandsmap [] =
+static struct bandrange  const bandsmap [] =
 {
 #if FQMODEL_FMRADIO	// 87..108.5 MHz
 	{ BMF(89000000), 			BMF(89500000), 			BMF(79000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/*  */
@@ -3309,7 +3298,7 @@ validatesubmode(
 
 /* текст (любой), используемый как сигнатура содержимого NVRAM */
 /* последний байт этого массива в NVRAM не запоминается и не сравнивается. */
-static const FLASHMEM char nvramsign [] =
+static const char nvramsign [] =
 #if WITHKEEPNVRAM
 		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 		{ 0, 0, 0, 0, 1, 1, 1, 1, };
@@ -3322,7 +3311,7 @@ __TIME__;
 #endif /* WITHKEEPNVRAM */
 
 /* Шаблон данных для тестирования доступа к NVRAM */
-static const FLASHMEM char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]] =
+static const char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]] =
 {
 	'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
 };
@@ -3341,7 +3330,9 @@ struct modeprops
 	//uint16_t step;	/* шаг валкодера в данном режиме */
 
 #if WITHIF4DSP
-	uint8_t txaudio;	/* источник звука для передачи */
+#if WITHTX
+	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
+#endif /* WITHTX */
 	uint8_t noisereduct;	/* включение NR для данного режима */
 #endif /* WITHIF4DSP */
 	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
@@ -3433,6 +3424,7 @@ struct nvmap
 	/* группы */
 	uint8_t ggroup;			/* последняя группа в менюю, с которой работали */
 	uint8_t	ggrpdisplay;	// последний посещённый пункт группы
+	uint8_t	ggrptxparam;		// последний посещённый пункт группы
 	uint8_t	ggrptxadj;		// последний посещённый пункт группы
 	uint8_t	ggrpsecial;		// последний посещённый пункт группы
 	uint8_t	ggrpaudio;		// последний посещённый пункт группы
@@ -3975,7 +3967,7 @@ struct nvmap
 
 #define RMT_TXPOWER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txpower)
 #define RMT_TXCOMPR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txcompr)
-#define RMT_TXAUDIO_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudio)
+#define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
@@ -4053,7 +4045,7 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
-static uint_fast16_t gstep_ENC1;
+static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
@@ -4299,7 +4291,7 @@ static const struct paramdefdef xgbandset11m =
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
-static uint_fast8_t bandset4m = 0;	/* используется ли диапазон 4 метров */
+static uint_fast8_t bandset4m = 1;	/* используется ли диапазон 4 метров */
 #endif /* TUNE_4MBAND */
 #if TUNE_2MBAND
 static uint_fast8_t bandset2m = 1;	/* используется ли диапазон 2 метра */
@@ -4527,9 +4519,7 @@ static const struct paramdefdef xgwflevelsep =
 	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
-#if WITHPWBUTTON	/* Наличие схемы электронного включения питания */
 	static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
-#endif /* WITHPWBUTTON */
 
 #if LCDMODE_COLORED
 	//static uint_fast8_t gbluebgnd;
@@ -4857,17 +4847,20 @@ static const struct paramdefdef xcatenable =
 
 		int_fast32_t hamradio_get_af_equalizer_base(void)
 		{
+			ASSERT(4 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
 			return - AF_EQUALIZER_BASE;
 		}
 
 		int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v)
 		{
+			ASSERT(4 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
 			ASSERT(v < AF_EQUALIZER_BANDS);
 			return geqrxparams [v];
 		}
 
 		void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain)
 		{
+			ASSERT(4 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
 			ASSERT(index < AF_EQUALIZER_BANDS);
 			ASSERT(gain <= AF_EQUALIZER_BASE * 2);
 			geqrxparams [index] = gain;
@@ -4919,7 +4912,7 @@ static const struct paramdefdef xcatenable =
 	#if WITHSUBTONES
 		// частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
 		// https://en.wikipedia.org/wiki/Continuous_Tone-Coded_Squelch_System#List_of_tones
-		static const FLASHMEM uint_least16_t gsubtones [] =
+		static const uint_least16_t gsubtones [] =
 		{
 			330,	/* 33.0 герц #0 */
 			354,	/* 35.4 герц */
@@ -5004,7 +4997,7 @@ static const struct paramdefdef xcatenable =
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
 		static const struct paramdefdef xgsubtonei =
 		{
-			QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,
+			QLABEL2("CTCSS FQ", "CTCSS FQ "), 7, 1, RJ_SUBTONE,	ISTEP1,
 			ITEM_VALUE,
 			0, ARRAY_SIZE(gsubtones) - 1,
 			OFFSETOF(struct nvmap, gsubtonei),
@@ -5208,9 +5201,9 @@ static const struct paramdefdef xcatenable =
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const FLASHMEM struct {
+	static const struct {
 		uint8_t code;
-		char label [4];
+		const char * label;
 	}  elkeymodes [] =
 	{
 		{ ELKEY_MODE_ACS, "ACS", },
@@ -5228,10 +5221,14 @@ static const struct paramdefdef xcatenable =
 
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
+		QLABEL2("CW SPEED", "CW SPEED "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
+#if WITHPOTWPM
+		MENUNONVRAM,
+#else /* WITHPOTWPM */
 		OFFSETOF(struct nvmap, elkeywpm),
+#endif /* WITHPOTWPM */
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& elkeywpm.value,
@@ -5645,11 +5642,7 @@ static int_fast32_t getlfmbias(void)
 	}
 #endif /* defined (REFERENCE_FREQ) */
 
-#if CTLSTYLE_SW2011ALL
-static uint_fast8_t gkeybeep10 = 1850 / 10;	/* озвучка нажатий клавиш - 1850 Гц */
-#else /* CTLSTYLE_SW2011ALL */
 static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - нота ля второй октавы (A5) (аналогично FT1000) */
-#endif /* CTLSTYLE_SW2011ALL */
 
 
 #if WITHMIC1LEVEL
@@ -5822,7 +5815,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* WITHIF4DSP */
 
 #if WITHMODEM
-	static const FLASHMEM uint_fast32_t modembr2int100 [] =	// Индекс в этой таблице хранится в gmodemspeed
+	static const uint_fast32_t modembr2int100 [] =	// Индекс в этой таблице хранится в gmodemspeed
 	{
 		3125,			// 31.25 baud		#0
 		6250,			// 62.5 baud		#1
@@ -6104,7 +6097,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 }
 
 // Отображение КСВ в меню
-void display2_swrsts22(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_swrsts22(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
@@ -6116,7 +6109,7 @@ void display2_swrsts22(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_
 		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
 		r);
-	display_at(x, y, b);
+	display_at(db, x, y, b);
 
 }
 
@@ -6261,7 +6254,7 @@ static uint_fast8_t tuneabort(void)
 
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
-	display2_redrawbarstimed(1, 0, NULL);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+	display2_redrawbarstimed(1);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	processmessages(& kbch, & kbready, 0, NULL);
 	if (kbready != 0)
@@ -6740,7 +6733,7 @@ typedef struct submodeprops_tag
 
 // Порядок элементов в этом массиве должен совпадать с элементми enum,
 // в котором определён SUBMODE_COUNT
-static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
+static const submodeprops_t submodes [SUBMODE_COUNT] =
 {
 #if WITHMODESETSMART
 	/* SUBMODE_SSBSMART */
@@ -7138,7 +7131,7 @@ static const uint_fast8_t am_steps10 [] =
 #endif
 
 /* функция работает с кэшем параметров режима работы */
-static const FLASHMEM struct modetempl *
+static const struct modetempl *
 NOINLINEAT
 getmodetempl(uint_fast8_t submode)
 {
@@ -7152,7 +7145,7 @@ getmodetempl(uint_fast8_t submode)
 static void
 uif_key_click_amfmbandpassup(void)
 {
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const struct modetempl * const pmodet = getmodetempl(gsubmode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
@@ -7181,7 +7174,7 @@ uif_key_click_amfmbandpassup(void)
 static void
 uif_key_click_amfmbandpassdown(void)
 {
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const struct modetempl * const pmodet = getmodetempl(gsubmode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
@@ -7209,7 +7202,7 @@ uif_key_click_amfmbandpassdown(void)
 /* текущее значение верхнего среза полосы пропускания в установленном режиме (в десятках герц) */
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 {
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(gsubmode);
+	const struct modetempl * const pmodet = getmodetempl(gsubmode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
@@ -7229,14 +7222,12 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 }
 #endif /* WITHAMHIGHKBDADJ */
 
-#if WITHPWBUTTON
 static void
 uif_pwbutton_press(void)
 {
 	gpoweronhold = 0;
 	updateboard(1, 0);
 }
-#endif /* WITHPWBUTTON */
 
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
@@ -7886,13 +7877,13 @@ uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
 	return gfreqs [getbankindex_pathi(pathi)];
 }
 // SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_mode_a_value_P(void)
+const char * hamradio_get_mode_a_value_P(void)
 {
 	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;	/* VFO A modifications */
 }
 
 // SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_mode_b_value_P(void)
+const char * hamradio_get_mode_b_value_P(void)
 {
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
@@ -8148,11 +8139,11 @@ getdefaultbandsubmode(
 }
 
 
-#if WITHIF4DSP
+#if WITHIF4DSP && WITHTX
 
 	static uint_fast8_t gtxaudio [MODE_COUNT];
 
-#endif /* WITHIF4DSP */
+#endif /* WITHIF4DSP && WITHTX */
 
 	static uint_fast8_t gmiddlepos [MODE_COUNT];
 
@@ -8258,7 +8249,7 @@ static void micproc_load(void)
 //
 // работа со вторым валкодером
 
-static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
+static const char catsiglabels [BOARD_CATSIG_count] [9] =
 {
 	"    NONE",
 	"SER1 DTR",
@@ -8269,7 +8260,7 @@ static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 };
 
-static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
+static const char catmuxlabels [BOARD_CATMUX_count] [9] =
 {
 	"USB     ",
 	"DIN8    ",
@@ -8302,9 +8293,53 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
 }
 
+#if WITHTX
+
+#if WITHPACLASSA
+/* усилитель мощности поддерживает переключение в класс А */
+static const struct paramdefdef xgclassamode =
+{
+	QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gclassamode),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gclassamode,
+	getzerobase,
+};
+#endif
+
+#if WITHPOWERTRIM && ! WITHPOTPOWER
+static const struct paramdefdef xgnormalpower =
+{
+	QLABEL2("TX POWER", "TX POWER "), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
+    ITEM_VALUE,
+    WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+    OFFSETOF(struct nvmap, gnormalpower),
+    getselector0, nvramoffs0, valueoffs0,
+    NULL,
+    & gnormalpower.value,
+    getzerobase, /* складывается со смещением и отображается */
+};
+#endif
+static const struct paramdefdef xgtxgate =
+{
+	QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gtxgate),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gtxgate,
+	getzerobase,
+};
+
+#endif /* WITHTX */
+
 #if WITHENCODER2
 
-static const FLASHMEM struct paramdefdef * enc2menus [] =
+static const struct paramdefdef * enc2menus [] =
 {
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
@@ -8347,19 +8382,7 @@ static const FLASHMEM struct paramdefdef * enc2menus [] =
 	},
 #endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM && ! WITHPOTPOWER
-	(const struct paramdefdef [1]) {
-		QLABELENC2("TX POWER "),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP5,
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		OFFSETOF(struct nvmap, gnormalpower),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnormalpower.value,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgnormalpower,
 #endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
 #if WITHSUBTONES
 	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
@@ -8481,9 +8504,9 @@ static const FLASHMEM struct paramdefdef * enc2menus [] =
 
 /* получение названия редактируемого параметра */
 static
-const FLASHMEM char *
+const char *
 enc2menu_label_P(
-	const FLASHMEM struct paramdefdef * const mp
+	const struct paramdefdef * const mp
 	)
 {
 	return mp->enc2label;
@@ -8492,7 +8515,7 @@ enc2menu_label_P(
 /* получение значения редактируемого параметра */
 static void
 enc2menu_value(
-	const FLASHMEM struct paramdefdef * const pd,
+	const struct paramdefdef * const pd,
 	int WDTH,	// ширина поля для отображения (в GUI не используется)
 	char * buff,	// буфер для текста значения параметра
 	size_t sz		// размер буфера
@@ -8614,7 +8637,7 @@ enum
 	ENC2STATE_COUNT
 };
 
-static const FLASHMEM char text_nul9_P [] = "         ";
+static const char text_nul9_P [] = "         ";
 
 static uint_fast8_t enc2state = ENC2STATE_INITIALIZE;
 static uint_fast8_t enc2pos;	// выбраный пунки меню
@@ -8738,27 +8761,27 @@ uif_encoder2_rotate(
 
 
 // FUNC item label
-void display2_fnlabel9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
-	const char FLASHMEM * const text = enc2menu_label_P(enc2menus [enc2pos]);
+	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1fmenu_P(x, y, text_nul9_P);
+		display_1fmenu(db, x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2fmenus_P(x, y, 0, text, text);
+		display_2fmenus(db, x, y, 0, text, text);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2fmenus_P(x, y, 1, text, text);
+		display_2fmenus(db, x, y, 1, text, text);
 		break;
 	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // FUNC item value
-void display2_fnvalue9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
 	enum { WDTH = 9 };	// ширина поля для отображения
@@ -8768,13 +8791,13 @@ void display2_fnvalue9(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1fmenu_P(x, y, text_nul9_P);
+		display_1fmenu(db, x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2fmenus(x, y, 0, b, b);
+		display_2fmenus(db, x, y, 0, b, b);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2fmenus(x, y, 1, b, b);
+		display_2fmenus(db, x, y, 1, b, b);
 		break;
 	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
@@ -8841,10 +8864,10 @@ loadsavedstate(void)
 		unsigned middlerowsize;
 		mdt [mode].middlemenu(& middlerowsize);
 		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
-	#if WITHIF4DSP
+	#if WITHIF4DSP && WITHTX
 		// источник звука
-		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIO_BASE(mode), 0, BOARD_TXAUDIO_count - 1, mdt [mode].txaudio);
-	#endif /* WITHIF4DSP */
+		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));
+	#endif /* WITHIF4DSP && WITHTX */
 		/* включение NR */
 	#if WITHIF4DSP
 		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
@@ -8911,7 +8934,7 @@ getsubmode(
 
 /* функция вызывается из updateboard при измененияя параметров приёма
  * Устанавливает "кэшированные" состояния режима работы -
-   gsubmode, gstep_ENC1, gagcmode, gfi, gmode.
+   gsubmode, gstep_ENC_MAIN, gagcmode, gfi, gmode.
 */
 static void
 //NOINLINEAT
@@ -8921,7 +8944,7 @@ setgsubmode(
 {
 	/* подправить фильтр, АРУ и шаг перестройки в соответствии с новым режимим работы */
 	/* выбор фильтра */
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+	const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t mode = submodes [submode].mode;
 	const uint_fast8_t deffilter = getdefflt(mode, 0);	/* получить индекс фильтра "по умолчанию" для режима */
 
@@ -8931,10 +8954,10 @@ setgsubmode(
 #if ! WITHAGCMODENONE
 	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
 #endif /* ! WITHAGCMODENONE */
-#if ENCODER2_NOSPOOL
+#if WITHENCODER2 && ENCODER2_HIRES
 	// ENCODER2 - тоже высокого разрешения, для перестройки по частоте второго тракта
 	{
-		gstep_ENC1 = pmodet->step10 [0] * 10;
+		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [0] * 10;
 		gencderate = 1;
 
@@ -8942,15 +8965,15 @@ setgsubmode(
 #else
 	if (gusefast || gbigstep)
 	{
-		gstep_ENC1 = pmodet->step10 [1] * 10;
+		gstep_ENC_MAIN = pmodet->step10 [1] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
 		gencderate = 1;
 	}
 	else
 	{
-		gstep_ENC1 = pmodet->step10 [0] * 10;
+		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
-		gencderate = gstep_ENC1 / STEP_MINIMAL;
+		gencderate = gstep_ENC_MAIN / STEP_MINIMAL;
 	}
 #endif
 }
@@ -9629,7 +9652,7 @@ hamradio_getleft_bp(uint_fast8_t pathi)
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
 	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+	const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
 	const uint_fast8_t mode = submodes [submode].mode;
 	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
@@ -9658,7 +9681,7 @@ hamradio_getright_bp(uint_fast8_t pathi)
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
 	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+	const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
 	const uint_fast8_t mode = submodes [submode].mode;
 	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
@@ -9853,10 +9876,10 @@ getactualdownpower(void)
 
 #if WITHTX
 
-/* возвращаем 0..100 для кода на разъеме ACC */
+/* возвращаем 0..100 для кода на разъеме ACC (bandf3hint) */
 static uint_fast8_t
 makebandf2adjust(
-	uint_fast8_t lpfno, 	// 0..15 - код диапазона
+	uint_fast8_t lpfno, 	// 0..15 - код диапазона bandf3hint
 	int amplitude	// 0..WITHPOWERTRIMMAX 0..100 - относительная мощность
 	)
 {
@@ -11231,6 +11254,15 @@ FLOAT_t local_log(FLOAT_t x)
 
 #endif /* WITHINTEGRATEDDSP */
 
+
+static ticker_t displatchticker;
+
+// User-mode function. Вызывается для выполнения latch спектра и панорамы
+static void dpc_displatch_timer_fn(void * arg)
+{
+	display2_latch();
+}
+
 static void codec1_directupdate(void)
 {
 //	{
@@ -11423,7 +11455,7 @@ updateboardZZZ(
 	)
 {
 	/* параметры, вычисляемые по updateboard(full=1) */
-	static const FLASHMEM struct modetempl * pamodetempl;	/* Режим, используемый при передаче */
+	static const struct modetempl * pamodetempl;	/* Режим, используемый при передаче */
 
 	/* Параметры, которые могут измениться при перестройке частоты и вызвать необходимость full=1 */
 	static uint_fast8_t lo0side = LOCODE_INVALID;
@@ -11544,9 +11576,10 @@ updateboardZZZ(
 
 		const uint_fast8_t rxbi = getbankindex_tx(0);
 		const uint_fast8_t txbi = getbankindex_tx(1);
+#if WITHTX
 		const uint_fast8_t txsubmode = getsubmode(txbi);		/* код режима, который будет при передаче */
 		const uint_fast8_t txmode = submodes [txsubmode].mode;
-
+#endif /* WITHTX */
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
 			const uint_fast8_t asubmode = getasubmode(pathi);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
@@ -11751,7 +11784,6 @@ updateboardZZZ(
 		#endif /* WITHIF4DSP */
 
 		board_set_filter(workfilter->code [gtx]);	/* В случае WITHDUALFLTR формирование управляющего слова в зависимости от mixXlsbs [4] происходит при выдаче управляющих кодов в аппаратуру. */
-		board_set_nfm(amode == MODE_NFM);
 
 		#if WITHTX
 			/* переносить эти параметры под условие перенастройки в режиме приёма не стал, так как меню может быть вызвано и при передаче */
@@ -11760,14 +11792,14 @@ updateboardZZZ(
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
-				board_subtone_enable_user(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
+				board_subtone_enable(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
 				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */
 				vox_set_levels(gvoxlevel, gavoxlevel);		/* установка параметров vox */
 			#endif /* WITHVOX */
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
-			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
+			seq_set_txgate(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 			#if WITHPABIASTRIM
@@ -11830,10 +11862,8 @@ updateboardZZZ(
 			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
 		#if ! WITHAGCMODENONE
-			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 		#else /* ! WITHAGCMODENONE */
-			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
 		#endif /* ! WITHAGCMODENONE */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -11874,22 +11904,25 @@ updateboardZZZ(
 		board_set_afgain(sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 
-		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
+		#if WITHTX
+			const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
-		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUACOUT
-			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
-			const uint_fast8_t txaudio = BOARD_TXAUDIO_USB;
-		#elif WITHBBOX && defined (WITHBBOXMIKESRC)
-			const uint_fast8_t txaudio = WITHBBOXMIKESRC;
-		#else /* defined (WITHBBOXMIKESRC) */
-			const uint_fast8_t txaudio = gtxaudio [txmode];
-		#endif /* defined (WITHBBOXMIKESRC) */
-#if WITHAFCODEC1HAVELINEINLEVEL
-		board_set_lineinput(txaudio == BOARD_TXAUDIO_LINE);
-#else /* WITHAFCODEC1HAVELINEINLEVEL */
-		board_set_lineinput(0);
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
+			#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUACOUT
+				/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
+				const uint_fast8_t txaudiocode = BOARD_TXAUDIO_USB;
+			#elif WITHBBOX && defined (WITHBBOXMIKESRC)
+				const uint_fast8_t txaudiocode = WITHBBOXMIKESRC;
+			#else /* defined (WITHBBOXMIKESRC) */
+				const uint_fast8_t txaudiocode = txaudiosrcs [gtxaudio [txmode]].code;	// Код источника
+			#endif /* defined (WITHBBOXMIKESRC) */
+
+			#if WITHAFCODEC1HAVELINEINLEVEL
+					board_set_lineinput(txaudiocode == BOARD_TXAUDIO_LINE);
+			#else /* WITHAFCODEC1HAVELINEINLEVEL */
+					board_set_lineinput(0);
+			#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+		#endif /* WITHTX */
+
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
 		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10 + gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));	/*	Мощность, соответствующая full scale от IF ADC */
@@ -11906,28 +11939,30 @@ updateboardZZZ(
 			#endif /* WITHTX */
 			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
 		#endif /* WITHUSBHW && WITHUSBUAC */
-		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
-		board_set_lineamp(glineamp);	/* усиление с линейного входа */
-#if WITHUSBHW && WITHUSBUACOUT
-		board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudio);	// Альтернативные источники сигнала при передаче
-#else /* WITHUSBUAC */
-		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
-#endif /* WITHUSBUAC */
-		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
-		board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
-		board_set_mikehclip(gmikehclip);	/* Ограничитель */
-#if WITHCOMPRESSOR
-		board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
-#endif /* WITHCOMPRESSOR */
-#if WITHREVERB
-		board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
-#endif /* WITHREVERB */
-#if WITHELKEY
-		board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
-		board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
-#endif /* WITHELKEY */
-		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		#if WITHTX
+			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
+			board_set_lineamp(glineamp);	/* усиление с линейного входа */
+			#if WITHUSBHW && WITHUSBUACOUT
+				board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudiocode);	// Альтернативные источники сигнала при передаче
+			#else /* WITHUSBUAC */
+				board_set_txaudio(txaudiocode);	// Альтернативные источники сигнала при передаче
+			#endif /* WITHUSBUAC */
+			board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
+			board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
+			board_set_mikehclip(gmikehclip);	/* Ограничитель */
+			#if WITHCOMPRESSOR
+				board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
+			#endif /* WITHCOMPRESSOR */
+			#if WITHREVERB
+				board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
+			#endif /* WITHREVERB */
+			#if WITHELKEY
+				board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+				board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
+			#endif /* WITHELKEY */
+		#endif /* WITHTX */
 		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
+		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
@@ -12019,9 +12054,7 @@ updateboardZZZ(
 	#if WITHKBDBACKLIGHT
 		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : gkblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
-	#if WITHPWBUTTON
 		board_set_poweron(gpoweronhold);
-	#endif /* WITHPWBUTTON */
 	#if WITHNBONOFF
 		board_set_nfmnbon(glock);	/* Включние noise blanker на SW2014FM */
 	#endif /* WITHNBONOFF */
@@ -12037,6 +12070,8 @@ updateboardZZZ(
 	#else /* WITHAUTOTUNER */
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
+
+	ticker_setperiod(& displatchticker, NTICKS(1000 / gdisplaybarsfps));	// частота обновления изображения на экране
 
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
@@ -12192,7 +12227,7 @@ uint_fast8_t hamradio_get_voxvalue(void)
 #if WITHANTSELECT1RX
 
 // antenna
-const FLASHMEM char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value_P(void)
 {
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
@@ -12205,7 +12240,7 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 #elif WITHANTSELECTRX
 
 // antenna
-const FLASHMEM char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value_P(void)
 {
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
@@ -12220,14 +12255,14 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 #elif WITHANTSELECT
 
 // antenna
-const FLASHMEM char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value_P(void)
 {
 	return antmodes [gantenna].label5;
 }
 
 #elif WITHANTSELECT2
 // antenna
-const FLASHMEM char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value_P(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	static char b [6];
@@ -12905,14 +12940,28 @@ uif_key_changefilter(void)
 // обработчики кнопок клавиатуры
 //////////////////////////
 #if WITHTX
+
+// Установить режимы. Вернуть не-ноль если менялись
+static uint_fast8_t setmoxtune(uint_fast8_t mox, uint_fast8_t tune)
+{
+	uint_fast8_t f = 0;
+
+	f = f || moxmode != mox;
+	f = f || tunemode != tune;
+
+	moxmode = mox;
+	tunemode = tune;
+
+	return f;
+}
+
 /* включение режима настройки */
 static void
 uif_key_tuneoff(void)
 {
 	if (getactualtune() || moxmode)
 	{
-		moxmode = 0;
-		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 #if WITHCAT
 		cattunemode = 0;
 		//catautotuner_p3 = 0;
@@ -13004,7 +13053,7 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 	return gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF;
 }
 
-const FLASHMEM char * hamradio_get_notchtype5_P(void)
+const char * hamradio_get_notchtype5_P(void)
 {
 	return notchmodes [gnotchtype].label;
 }
@@ -13064,11 +13113,6 @@ uint_fast8_t hamradio_get_volt_value(void)
 		//PRINTF(PSTR("hamradio_get_volt_value: ref=%u\n"), ref);
 		return UINT8_MAX;
 	}
-
-#elif CTLSTYLE_SW2011ALL
-
-	//PRINTF(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
-	return board_getadc_unfiltered_u8(VOLTSOURCE, 0, voltcalibr100mV);
 
 #else /* WITHREFSENSOR */
 
@@ -13238,7 +13282,7 @@ uint_fast8_t hamradio_get_tx(void)
 #if WITHIF4DSP
 
 // Three-character wide printed current RX/TX bandwidth namw
-const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
+const char * hamradio_get_rxbw_label3_P(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	return bwsetsc [bwseti].labels [bwsetpos[bwseti]];
@@ -13265,7 +13309,7 @@ const char * hamradio_get_rxbw_value4(void)
 
 #else /* WITHIF4DSP */
 
-const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
+const char * hamradio_get_rxbw_label3_P(void)
 {
 #if WITHFIXEDBFO
 	return PSTR("");
@@ -13299,7 +13343,7 @@ const char * hamradio_get_rxbw_value4(void)
 #endif /* WITHIF4DSP */
 
 // RX preamplifier
-const FLASHMEM char * hamradio_get_pre_value_P(void)
+const char * hamradio_get_pre_value_P(void)
 {
 #if ! WITHONEATTONEAMP
 	return pampmodes [gpamp].label;
@@ -13309,13 +13353,13 @@ const FLASHMEM char * hamradio_get_pre_value_P(void)
 }
 
 // RX attenuator (or att/pre).
-const FLASHMEM char * hamradio_get_att_value_P(void)
+const char * hamradio_get_att_value_P(void)
 {
 	return attmodes [gatt].label;
 }
 
 // RX agc time - 3 символа
-const FLASHMEM char * hamradio_get_agc3_value_P(void)
+const char * hamradio_get_agc3_value_P(void)
 {
 #if ! WITHAGCMODENONE
 	return agcmodes [gagcmode].label3;
@@ -13325,7 +13369,7 @@ const FLASHMEM char * hamradio_get_agc3_value_P(void)
 }
 
 // RX agc time - 4 символа
-const FLASHMEM char * hamradio_get_agc4_value_P(void)
+const char * hamradio_get_agc4_value_P(void)
 {
 #if ! WITHAGCMODENONE
 	return agcmodes [gagcmode].label4;
@@ -13336,7 +13380,7 @@ const FLASHMEM char * hamradio_get_agc4_value_P(void)
 
 #if WITHPOWERLPHP
 // HP/LP
-const FLASHMEM char * hamradio_get_hplp_value_P(void)
+const char * hamradio_get_hplp_value_P(void)
 {
 	return pwrmodes [gpwri].label;
 }
@@ -13357,7 +13401,7 @@ uif_key_mainsubrx(void)
 }
 
 // текущее состояние DUAL WATCH
-const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void)
+const char * hamradio_get_mainsubrxmode3_value_P(void)
 {
 	return mainsubrxmodes [param_getvalue(& xmainsubrxmode)].label;
 }
@@ -13405,7 +13449,7 @@ uif_key_click_xxxx(void)
 /* отображение S-метра или SWR-метра на приёме или передаче */
 // Функция вызывается из display2.c
 void
-display2_bars(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+display2_bars(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHBARS
 	if (userfsg)
@@ -13413,11 +13457,11 @@ display2_bars(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t y
 	}
 	else if (gtx)
 	{
-		display2_bars_tx(x, y, xspan, yspan, pctx);
+		display2_bars_tx(db, x, y, xspan, yspan, pctx);
 	}
 	else
 	{
-		display2_bars_rx(x, y, xspan, yspan, pctx);
+		display2_bars_rx(db, x, y, xspan, yspan, pctx);
 	}
 #endif /* WITHBARS */
 }
@@ -13587,10 +13631,9 @@ static uint_fast8_t processencoders(void)
 	return changed;
 }
 
-static volatile uint_fast8_t counterupdatedfreqs;
+static volatile uint_fast16_t counterupdatedfreqs;
 static volatile uint_fast16_t counterupdatedvoltage; // счетчик для обновления вольтажа АКБ
-
-static volatile uint_fast8_t counterupdatebars;
+static volatile uint_fast16_t counterupdatebars;
 
 /*
 	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
@@ -13604,7 +13647,7 @@ display_event(void * ctx)
 {
 	// таймер обновления частоты
 	{
-		const uint_fast8_t t = counterupdatedfreqs;
+		const uint_fast16_t t = counterupdatedfreqs;
 		if (t != 0)
 			counterupdatedfreqs = t - 1;
 	}
@@ -13619,7 +13662,7 @@ display_event(void * ctx)
 
 	// таймер обновления индикатора SWR или мощности
 	{
-		const uint_fast8_t t = counterupdatebars;
+		const uint_fast16_t t = counterupdatebars;
 		if (t != 0)
 			counterupdatebars = t - 1;
 	}
@@ -13650,14 +13693,14 @@ display_refreshperformed_voltage(void)
 static uint_fast8_t
 display_refreshenabled_freqs(void)
 {
-	return getstablev8(& counterupdatedfreqs) == 0;		/* таймер дошёл до нуля - можно обновлять. */
+	return getstablev16(& counterupdatedfreqs) == 0;		/* таймер дошёл до нуля - можно обновлять. */
 }
 
 // подтверждение выполненного обновления дисплея (индикация частоты).
 static void
 display_refreshperformed_freqs(void)
 {
-	const uint_fast8_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast16_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
 	RiseIrql(TICKER_IRQL, & oldIrql);
@@ -13687,13 +13730,13 @@ dctx_t * display2_getcontext(void)
 static uint_fast8_t
 display_refresenabled_bars(void)
 {
-	return getstablev8(& counterupdatebars) == 0;		/* таймер дошёл до нуля - можно обновлять. */
+	return getstablev16(& counterupdatebars) == 0;		/* таймер дошёл до нуля - можно обновлять. */
 }
 // подтверждение выполненного обновления дисплея (индикация SWR/S-метр).
 static void
 display_refreshperformed_bars(void)
 {
-	const uint_fast8_t n = UINTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast16_t n = UINTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
 	RiseIrql(TICKER_IRQL, & oldIrql);
@@ -13705,18 +13748,9 @@ display_refreshperformed_bars(void)
 static void
 //NOINLINEAT
 display2_redrawbarstimed(
-	uint_fast8_t immed,	// Безусловная перерисовка изображения
-	uint_fast8_t Sextra,		/* находимся в режиме отображения настроек */
-	const FLASHMEM struct menudef * Smp
+	uint_fast8_t immed
 	)
 {
-	if (display_refresenabled_bars())
-	{
-		display2_latch();
-		/* быстро меняющиеся значения с частым опорсом */
-		main_speed_diagnostics();
-		looptests();		// Периодически вызывается в главном цикле - тесты
-	}
 	if (immed || display_refresenabled_bars())
 	{
 		/* быстро меняющиеся значения с частым опорсом */
@@ -13807,7 +13841,7 @@ display_redrawfreqstimed(
 static void
 directctlupdate(
 	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 	)
 {
 	uint_fast8_t changedtx = 0;
@@ -13846,7 +13880,7 @@ static uint_fast8_t sendmorsepos [2];
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
+static volatile uint_fast16_t catstateout = CATSTATEO_HALTED;
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
@@ -13856,7 +13890,7 @@ static volatile uint_fast8_t catsendcount;
 static uint_fast8_t
 cat_getstateout(void)
 {
-	return getstablev8(& catstateout);
+	return getstablev16(& catstateout);
 }
 
 /* вызывается из обработчика прерываний */
@@ -14258,7 +14292,7 @@ void cat2_parsechar(uint_fast8_t c)
 #if WITHTX && WITHAUTOTUNER
 static void acanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_3 [] =
+	static const char fmt_3 [] =
 		"AC"			// 2 characters - status information code
 		"%d"		// P1 1 characters - 0: RX-AT THRU 1: RX-AT IN
 		"%d"		// P2 1 characters - 0: TX-AT THRU 1: TX-AT IN
@@ -14275,7 +14309,7 @@ static void acanswer(uint_fast8_t arg)
 #endif /* WITHTX && WITHAUTOTUNER */
 static void idanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"ID"			// 2 characters - status information code
 		"%03d"		// P1 3 characters - model
 		";";				// 1 char - line terminator
@@ -14288,7 +14322,7 @@ static void idanswer(uint_fast8_t arg)
 
 static void fvanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_0 [] =
+	static const char fmt_0 [] =
 		"FV"			// 2 characters - status information code
 		"1.00"			// P1 4 characters - For example, for firmware version ..00, it reads “FV..00;.
 		";";			// 1 char - line terminator
@@ -14301,7 +14335,7 @@ static void fvanswer(uint_fast8_t arg)
 
 static void daanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"DA"			// 2 characters - status information code
 		"%1d"			// P1 1 characters -  0: DATA mode OFF, 1: DATA mode ON,
 		";";			// 1 char - line terminator
@@ -14316,7 +14350,7 @@ static void daanswer(uint_fast8_t arg)
 static void faanswer(uint_fast8_t arg)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);	/* vfo A bank index */
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"FA"				// 2 characters - status information code
 		"%011ld"			// P1 11 characters - freq
 		";";				// 1 char - line terminator
@@ -14330,7 +14364,7 @@ static void faanswer(uint_fast8_t arg)
 static void fbanswer(uint_fast8_t arg)
 {
 	const uint_fast8_t bi = getbankindex_ab(1);	/* vfo B bank index */
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"FB"				// 2 characters - status information code
 		"%011ld"			// P1 11 characters - freq
 		";";				// 1 char - line terminator
@@ -14345,7 +14379,7 @@ static void fbanswer(uint_fast8_t arg)
 static void spanswer(uint_fast8_t arg)
 {
 	//const uint_fast8_t bi = getbankindex_ab(1);	/* vfo B bank index */
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"SP"				// 2 characters - status information code
 		"%01d"			// P1 1 characters - 0: VFO A, 1: VFO B, 2: Memory Channel
 		";";				// 1 char - line terminator
@@ -14362,7 +14396,7 @@ static void spanswer(uint_fast8_t arg)
 static void franswer(uint_fast8_t arg)
 {
 	//const uint_fast8_t bi = getbankindex_ab(1);	/* vfo B bank index */
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"FR"				// 2 characters - status information code
 		"%01d"			// P1 1 characters - 0: VFO A, 1: VFO B, 2: Memory Channel
 		";";				// 1 char - line terminator
@@ -14377,7 +14411,7 @@ static void franswer(uint_fast8_t arg)
 static void ftanswer(uint_fast8_t arg)
 {
 	//const uint_fast8_t bi = getbankindex_ab(1);	/* vfo B bank index */
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"FT"				// 2 characters - status information code
 		"%01d"			// P1 1 characters - 0: VFO A, 1: VFO B, 2: Memory Channel
 		";";				// 1 char - line terminator
@@ -14392,7 +14426,7 @@ static void ftanswer(uint_fast8_t arg)
 static void mdanswer(uint_fast8_t arg)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);	/* vfo B bank index */
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"MD"				// 2 characters - status information code
 		"%1d"				// 1 char - mode
 		";";				// 1 char - line terminator
@@ -14406,7 +14440,7 @@ static void mdanswer(uint_fast8_t arg)
 
 static void fwanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"FW"			// 2 characters - status information code
 		"%04d"			// P42 4 characters - DSP filtering bandwidth.
 		";";				// 1 char - line terminator
@@ -14422,7 +14456,7 @@ static void fwanswer(uint_fast8_t arg)
 static void zyanswer(uint_fast8_t arg)
 {
 	//ZYmSLL
-	static const FLASHMEM char fmt_3 [] =
+	static const char fmt_3 [] =
 		"ZY"			// 2 characters - status information code
 		"%1d"			// 1 char - mode
 		"%1d"			// state
@@ -14444,7 +14478,7 @@ static void zyanswer(uint_fast8_t arg)
 static void zzanswer(uint_fast8_t arg)
 {
 	//ZZmLLLLUUUUSSSS
-	static const FLASHMEM char fmt_4 [] =
+	static const char fmt_4 [] =
 		"ZZ"			// 2 characters - status information code
 		"%1d"			// 1 char - mode
 		"%04d"			// right
@@ -14453,7 +14487,7 @@ static void zzanswer(uint_fast8_t arg)
 		";";			// 1 char - line terminator
 
 	const uint_fast8_t submode = findkenwoodsubmode(arg, SUBMODE_USB);	/* поиск по кенвудовскому номеру */
-	const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+	const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
@@ -14474,7 +14508,7 @@ static void zzanswer(uint_fast8_t arg)
 static void aganswer(uint_fast8_t arg)
 {
 	// AF gain
-	static const FLASHMEM char fmt_2 [] =
+	static const char fmt_2 [] =
 		"AG"			// 2 characters - status information code
 		"%1d"			// P1 always 0
 		"%03d"			// P2 0..255 Squelch level
@@ -14492,7 +14526,7 @@ static void aganswer(uint_fast8_t arg)
 static void rganswer(uint_fast8_t arg)
 {
 	// RF (IF) gain
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"RG"			// 2 characters - status information code
 		"%03d"			// P1 0..255 RF Gain status
 		";";				// 1 char - line terminator
@@ -14507,7 +14541,7 @@ static void rganswer(uint_fast8_t arg)
 
 static void sqanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_2 [] =
+	static const char fmt_2 [] =
 		"SQ"			// 2 characters - status information code
 		"%1d"			// P1 always 0
 		"%03d"			// P2 0..255 Squelch level
@@ -14523,7 +14557,7 @@ static void sqanswer(uint_fast8_t arg)
 
 static void nranswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"NR"			// 2 characters - status information code
 		"%1d"			// P1 NR0: nr off, NR1: nr1 on NR2: nr2 on
 		";";			// 1 char - line terminator
@@ -14539,7 +14573,7 @@ static void nranswer(uint_fast8_t arg)
 #if WITHPOWERTRIM && WITHTX
 static void pcanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"PC"			// 2 characters - status information code
 		"%03d"			// P1 005..100: SSB/CW/FM/FSK, 25: AM
 		";";				// 1 char - line terminator
@@ -14547,7 +14581,7 @@ static void pcanswer(uint_fast8_t arg)
 	// answer mode
 	// Нормирование значений WITHPOWERTRIMMIN..WITHPOWERTRIMMAX к диапазону Kenwood CAT
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) ((gnormalpower.value - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
+		(int) ((param_getvalue(& xgnormalpower) - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
 		);
 	cat_answer(len);
 }
@@ -14558,7 +14592,7 @@ static void pcanswer(uint_fast8_t arg)
 
 static void ky0answer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"KY"			// 2 characters - status information code
 		"%c"			// P44 1 character - KEYER BUFFER STATUS: 0 - BUFFER SPACE AVALIABLE, 1 - BUFFER FULL
 		";";				// 1 char - line terminator
@@ -14572,7 +14606,7 @@ static void ky0answer(uint_fast8_t arg)
 
 static void ky1answer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"KY"			// 2 characters - status information code
 		"%c"			// P44 1 character - KEYER BUFFER STATUS: 0 - BUFFER SPACE AVALIABLE, 1 - BUFFER FULL
 		";";				// 1 char - line terminator
@@ -14586,7 +14620,7 @@ static void ky1answer(uint_fast8_t arg)
 
 static void ksanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"KS"			// 2 characters - status information code
 		"%03d"			// P42 3 characters - keyer speed in WPM
 		";";				// 1 char - line terminator
@@ -14601,7 +14635,7 @@ static void ksanswer(uint_fast8_t arg)
 
 static void txanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"TX"			// 2 characters - status information code
 		"%01d"			// P1 1 character - TX reason
 		";";			// 1 char - line terminator
@@ -14615,7 +14649,7 @@ static void txanswer(uint_fast8_t arg)
 
 static void rxanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_0 [] =
+	static const char fmt_0 [] =
 		"RX"			// 2 characters - status information code
 		";";			// 1 char - line terminator
 
@@ -14627,7 +14661,7 @@ static void rxanswer(uint_fast8_t arg)
 
 static void aianswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"AI"			// 2 characters - status information code
 		"%1d"			// 1 char - mode
 		";";			// 1 char - line terminator
@@ -14644,7 +14678,7 @@ static void aianswer(uint_fast8_t arg)
 
 static void psanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"PS"			// 2 characters - status information code
 		"%01d"			// P1 1 characters - POWER ON/OFF
 		";";			// 1 char - line terminator
@@ -14758,7 +14792,7 @@ static uint_fast8_t kenwoodpowermeter(void)
 static void sm0answer(uint_fast8_t arg)
 {
 	// s-meter state answer
-	static const FLASHMEM char fmt0_2 [] =
+	static const char fmt0_2 [] =
 		"SM"			// 2 characters - status information code
 		"%1d"				// 1 char - Always 0
 		"%04d"				// 4 chars - s-meter points (0000..0030)
@@ -14780,7 +14814,7 @@ static void sm9answer(uint_fast8_t arg)
 {
 	// s-meter state answer
 	// код SM9 введен для получения "сырого" уровня.
-	static const FLASHMEM char fmt9_1 [] =
+	static const char fmt9_1 [] =
 		"SM"			// 2 characters - status information code
 		"9"				// 1 char - Always 9
 		"%+d"				// level in dBm
@@ -14805,7 +14839,7 @@ static void sm9answer(uint_fast8_t arg)
 static void raanswer(uint_fast8_t arg)
 {
 	// RX attenuator
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"RA"				// 2 characters - status information code
 		"%02d"				// 2 chars - 00: ATT OFF 01: ATT ON
 		"00"				// 2 chars - 00: Always 00
@@ -14828,7 +14862,7 @@ static void paanswer(uint_fast8_t arg)
 #endif /* ! WITHONEATTONEAMP */
 
 	// RX preamplifier
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"PA"				// 2 characters - status information code
 		"%01d"				// 1 chars - 0: Pre-amp OFF, 1: : Pre-amp ON
 		"0"					// 1 chars - Always 0
@@ -14852,7 +14886,7 @@ static void ananswer(uint_fast8_t arg)
 	const int p3 = gtxgate ? 1 : 0;
 	//const uint_fast8_t pathi = 0;	// A or B path
 	// Antenna information answer
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"AN"				// 2 characters - status information code
 		"%01d"				// 1 chars - 0: ant 1, 1: : ant 2
 		"%01d"					// 1 chars - 0: RX ANT is not used
@@ -14875,7 +14909,7 @@ static void rm1answer(uint_fast8_t arg)
 {
 	//const uint_fast8_t pathi = 0;	// A or B path
 	// SWR-meter report
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"RM"			// 2 characters - status information code
 		"1"				// 1 char - 1 - SWR
 		"%04d"				// 4 chars - 0000 ~ 0030: Meter value in dots
@@ -14893,7 +14927,7 @@ static void rm2answer(uint_fast8_t arg)
 {
 	//const uint_fast8_t pathi = 0;	// A or B path
 	// COMP report
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"RM"			// 2 characters - status information code
 		"2"				// 1 char - 2 - COMP
 		"%04d"				// 4 chars - 0000 ~ 0030: Meter value in dots
@@ -14911,7 +14945,7 @@ static void rm3answer(uint_fast8_t arg)
 {
 	//const uint_fast8_t pathi = 0;	// A or B path
 	// ALC report
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"RM"			// 2 characters - status information code
 		"3"				// 1 char - 3 - ALC
 		"%04d"				// 4 chars - 0000 ~ 0030: Meter value in dots
@@ -14941,7 +14975,7 @@ adjust8(uint_fast8_t v, uint_fast8_t minimal, uint_fast8_t maximal)
 // поэтому перед отдачей приводится к допустимому.
 static void ptanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_1 [] =
+	static const char fmt_1 [] =
 		"PT"			// 2 characters - status information code
 		"%02d"			// P1 2 characters - pitch code
 		";";				// 1 char - line terminator
@@ -14958,7 +14992,7 @@ static void ptanswer(uint_fast8_t arg)
 // Reads status of the transceiver.
 static void ifanswer(uint_fast8_t arg)
 {
-	static const FLASHMEM char fmt_5 [] =
+	static const char fmt_5 [] =
 		"IF"			// 2 characters - status information code
 		"%011ld"		// P1 11 characters - freq
 		"     "			// P2 5 chars - unused
@@ -15384,12 +15418,20 @@ processcatmsg(
 		}
 	}
 #if WITHIF4DSP
+	else if (match2('B', 'C'))
+	{
+		// Sets and reads the Beat Cancel function status.
+		// Auto Notch
+		cat_answer_request(CAT_BADCOMMAND_INDEX);
+	}
 	else if (match2('R', 'L'))
 	{
+		// откуда взялось?
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 	else if (match2('N', 'R'))
 	{
+		// откуда взялось?
 		if (cathasparam != 0)
 		{
 			const uint_fast32_t p1 = vfy32up(catparam, 0, 2, 0) != 0;	// RN0; NR1; NR2;
@@ -15587,16 +15629,28 @@ processcatmsg(
 #if WITHPOWERTRIM && WITHTX
 	else if (match2('P', 'C'))
 	{
+		// May be: CG Sets and reads the Carrier Level.
 		// Sets and reads the output power
 		if (cathasparam != 0)
 		{
 			const uint_fast32_t p2 = vfy32up(catparam, 5, 100, 100);
 			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
-			if (flagne_u16(& gnormalpower.value, (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN))
+			const int_fast32_t v = (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN;
+#if 0
+			const int_fast32_t vold = param_getvalue(& xgnormalpower);
+			param_setvalue(& xgnormalpower, v);
+			if (v != vold)
 			{
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
+#else
+			if (flagne_u8(& gnormalpower.value, v))
+			{
+				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+				rc = 1;
+			}
+#endif
 		}
 		else
 		{
@@ -15973,7 +16027,7 @@ processcatmsg(
 				}
 				else
 				{
-					const FLASHMEM struct modetempl * const pmodet = getmodetempl(submode);
+					const struct modetempl * const pmodet = getmodetempl(submode);
 					//ZZmLLLLUUUUSSSS
 					const uint_fast8_t bwseti = pmodet->bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
 					const uint_fast8_t pos = bwsetpos [bwseti];
@@ -16016,7 +16070,7 @@ processcatmsg(
 		display_wrdata_end();
 
 		if (cathasparam)
-			display_menu_digit(catparam, 7, 0, 0);
+			display_menu_digit(colmain_fb_draw(), catparam, 7, 0, 0);
 		else
 		{
 			display_wrdata_begin();
@@ -16261,7 +16315,7 @@ int board_islfmmode(void)
 // TODO: перенести эти функции на выполнение по board_dpc_addentry
 void app_processing(
 	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 )
 {
 	if (inmenu)
@@ -16301,7 +16355,7 @@ void app_processing(
 	if (dimmflagch != 0)
 	{
 		dimmflagch = 0;
-		display2_redrawbarstimed(0, 0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 	}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -16318,7 +16372,7 @@ void app_processing(
 	if (sleepflagch != 0)
 	{
 		sleepflagch = 0;
-		display2_redrawbarstimed(0, 0, 0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 	}
 #endif /* WITHSLEEPTIMER */
@@ -16331,7 +16385,7 @@ processmessages(
 	uint_fast8_t * kbch,
 	uint_fast8_t * kbready,
 	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 	)
 {
 	if (hardware_getshutdown())	// признак провала питания
@@ -16412,8 +16466,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 
 static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 {
-#if defined (HARDWARE_GET_TXDISABLE)
-	if (HARDWARE_GET_TXDISABLE())
+	if (hardware_get_txdisable())
 	{
 		//PRINTF("tx disabled\n");
 		if (txreq)
@@ -16422,7 +16475,6 @@ static uint_fast8_t get_txdisable(uint_fast8_t txreq)
 		}
 		return 1;
 	}
-#endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
 	if (gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
@@ -16510,8 +16562,9 @@ processtxrequest(void)
 #if WITHCAT
 		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
 #endif	/* WITHCAT */
-		moxmode = 0;
-		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		if (f)
+			updateboard(1, 0);
 #if WITHAUTOTUNER
 		reqautotune = 0;
 #endif /* WITHAUTOTUNER */
@@ -16535,7 +16588,7 @@ static char menuw [20];						// буфер для вывода значений 
 // Или диагностическое сообщение при запуске
 static void
 //NOINLINEAT
-display_menu_digit(
+display_menu_digit(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	int_fast32_t value,
@@ -16544,6 +16597,9 @@ display_menu_digit(
 	uint_fast8_t rj
 	)
 {
+	if (rj >= RJ_BASE0 && rj <= RJ_UNSIGNED)
+		rj = 0;
+
 #if WITHTOUCHGUI
 	const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
 	const uint_fast32_t ca = ipow10(comma);
@@ -16572,20 +16628,20 @@ display_menu_digit(
 	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 	do
 	{
-		display2_menu_value(x, y + lowhalf, value, width, comma, rj, lowhalf);
+		display2_menu_value(db, x, y + lowhalf, value, width, comma, rj, lowhalf);
 	} while (lowhalf --);
 
 #endif /* WITHTOUCHGUI */
 }
 
-// При редактировании настроек - показ строковых (из FLASHMEM) значений параметров.
+// При редактировании настроек - показ строковых значений параметров.
 // Или диагностическое сообщение при запуске
 
 static void
-display_menu_string_P(
+display_menu_string_P(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
-	const FLASHMEM char * text,
+	const char * text,
 	uint_fast8_t width,
 	uint_fast8_t filled		// сколько символов сейчас в text
 	)
@@ -16603,19 +16659,19 @@ display_menu_string_P(
 		notext [fill] = '\0';
 
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at(x + 0, y, notext);
-		display_at_P(x + fill, y, text);
+		display_at(db, x + 0, y, notext);
+		display_at_P(db, x + fill, y, text);
 	}
 	else
 	{
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at_P(x + 0, y, text);
+		display_at_P(db, x + 0, y, text);
 	}
 #endif /* WITHTOUCHGUI */
 }
 
 static void
-display_menu_string(
+display_menu_string(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	const char * text,
@@ -16637,13 +16693,13 @@ display_menu_string(
 		notext [fill] = '\0';
 
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at(x + 0, y, notext);
-		display_at(x + fill, y, text);
+		display_at(db, x + 0, y, notext);
+		display_at(db, x + fill, y, text);
 	}
 	else
 	{
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at(x + 0, y, text);
+		display_at(db, x + 0, y, text);
 	}
 
 #endif /* WITHTOUCHGUI */
@@ -16654,7 +16710,7 @@ display_menu_string(
 
 static size_t
 param_format(
-	const FLASHMEM struct paramdefdef * pd,
+	const struct paramdefdef * pd,
 	char * buff,
 	int width	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
 	)
@@ -16669,21 +16725,21 @@ param_format(
 	{
 	case RJ_POW2:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*" PRIu32, width, UINT32_C(1) << value);
 			buff [n] = '\0';
 			return n;
 		}
 		case RJ_YES:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "YES" : "NO");
 			buff [n] = '\0';
 			return n;
 		}
 		case RJ_ON:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "ON" : "OFF");
 			buff [n] = '\0';
 			return n;
@@ -16691,7 +16747,7 @@ param_format(
 #if WITHUSEDUALWATCH
 		case RJ_DUAL:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*s", width, mainsubrxmodes [value].label);
 			buff [n] = '\0';
 			return n;
@@ -16700,18 +16756,25 @@ param_format(
 #if WITHSUBTONES && WITHTX
 		case RJ_SUBTONE:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
 			buff [n] = '\0';
 			return n;
 		}
 #endif /* WITHSUBTONES && WITHTX */
 
+	case RJ_SIGNED:
+		{
+			const int_fast32_t value = param_getvalue(pd);
+			const int n = local_snprintf_P(buff, width + 1, "%+*" PRIdFAST32, width, value);
+			buff [n] = '\0';
+			return n;
+		}
 
 	default:
 	case RJ_UNSIGNED:
 		{
-			int_fast32_t value = param_getvalue(pd);
+			const int_fast32_t value = param_getvalue(pd);
 			const int n = local_snprintf_P(buff, width + 1, "%*" PRIdFAST32, width, value);
 			buff [n] = '\0';
 			return n;
@@ -16903,7 +16966,7 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, uns
 /* входит ли данный пункт меню в группу разрешённых для показа */
 static uint_fast8_t
 ismenukind(
-	const FLASHMEM struct menudef * mp,
+	const struct menudef * mp,
 	uint_fast8_t itemmask
 	)
 {
@@ -16913,7 +16976,7 @@ ismenukind(
 /* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
 static uint_fast8_t
 ismenufilterusb(
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 	)
 {
 	return ismenukind(mp, ITEM_FILTERU);
@@ -16922,7 +16985,7 @@ ismenufilterusb(
 /* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
 static uint_fast8_t
 ismenufilterlsb(
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 	)
 {
 	return ismenukind(mp, ITEM_FILTERL);
@@ -16944,7 +17007,7 @@ loadsettings(void)
 
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
-		const FLASHMEM struct menudef * const mp = & menutable [i];
+		const struct menudef * const mp = & menutable [i];
 		const struct paramdefdef * const pd = mp->pd;
 		if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 		{
@@ -16989,7 +17052,7 @@ defaultsettings(void)
 
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
-		const FLASHMEM struct menudef * const mp = & menutable [i];
+		const struct menudef * const mp = & menutable [i];
 		if (! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
 			savemenuvalue(mp->pd);
@@ -17010,11 +17073,11 @@ defaultsettings(void)
 
 // Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
 	uint_fast16_t index_groups = 0;
@@ -17035,7 +17098,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fa
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			index_groups ++;
@@ -17049,7 +17112,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fa
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			index_groups ++;
@@ -17061,19 +17124,19 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fa
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(x - 1, y_position_groups, PSTR(">"));
+				display_at_P(db, x - 1, y_position_groups, PSTR(">"));
 			}
 			else
 			{
 				//снять отметку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(x - 1, y_position_groups, PSTR(" "));
+				display_at_P(db, x - 1, y_position_groups, PSTR(" "));
 			}
 
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_group(x, y_position_groups, xspan, yspan, & dctx); // название группы
+			display2_menu_group(db, x, y_position_groups, xspan, yspan, & dctx); // название группы
 
 			y_position_groups += window.ystep;
 		}
@@ -17089,16 +17152,16 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, uint_fa
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_at(x - 1, y_position_groups, nolabel);
+		display_at(db, x - 1, y_position_groups, nolabel);
 	}
 }
 
 // Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -17123,7 +17186,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fa
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
@@ -17139,7 +17202,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fa
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin)
@@ -17155,18 +17218,18 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fa
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(x - 1, y_position_params, PSTR(">"));
+				display_at_P(db, x - 1, y_position_params, PSTR(">"));
 			}
 			else
 			{
 				//снять подсветку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(x - 1, y_position_params, PSTR(" "));
+				display_at_P(db, x - 1, y_position_params, PSTR(" "));
 			}
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_lblng(x, y_position_params, xspan, yspan, & dctx); // название редактируемого параметра
+			display2_menu_lblng(db, x, y_position_params, xspan, yspan, & dctx); // название редактируемого параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17181,16 +17244,16 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, uint_fa
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		display_at(x - 1, y_position_params, nolabel);
+		display_at(db, x - 1, y_position_params, nolabel);
 	}
 }
 
 // Отображение многострочного меню для больших экранов (значения)
-void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -17215,7 +17278,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
@@ -17231,7 +17294,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin)
@@ -17246,7 +17309,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast
             dctx_t dctx;
             dctx.type = DCTX_MENU;
             dctx.pv = mv;
-            display2_menu_valxx(x, y_position_params, xspan, yspan, & dctx); // значение параметра
+            display2_menu_valxx(db, x, y_position_params, xspan, yspan, & dctx); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17264,106 +17327,77 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, uint_fast
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		//display_menu_string_P(x, y_position_params, nolabel, VALUEW, VALUEW);
-		display_at(x, y_position_params, nolabel);
+		//display_menu_string_P(colorpip, x, y_position_params, nolabel, VALUEW, VALUEW);
+		display_at(db, x, y_position_params, nolabel);
 	}
 }
 
 // Вызывается из display2.c
 // код редактируемого параметра
-void display2_menu_lblc3(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
 	{
 		colmain_setcolors(MENUCOLOR, BGCOLOR);
-		display_at_P(x, y, PSTR("---"));
+		display_at_P(db, x, y, PSTR("---"));
 		return;
 	}
 
 	local_snprintf_P(buff, sizeof buff / sizeof buff [0], index >= 100 ? PSTR("%03d") : PSTR("F%02d"), index);
 
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at(x + 0, y, buff);
+	display_at(db, x + 0, y, buff);
 }
 
 // Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display2_menu_lblng(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(x, y, mp->pd->qlabel);
+	display_at_P(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
 // название редактируемого параметра или группы
-void display2_menu_lblst(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(x, y, mp->pd->qlabel);
+	display_at_P(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display2_menu_group(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * mp = (const struct menudef *) pctx->pv;
 
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_at_P(x, y, mp->pd->qlabel);
+	display_at_P(db, x, y, mp->pd->qlabel);
 }
-
 
 // Вызывается из display2.c
 // значение параметра
-void display2_menu_valxx(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
-	static const FLASHMEM char months [13] [4] =
+	static const char months [13] [4] =
 	{
 		"---",
 		"JAN",
@@ -17381,7 +17415,7 @@ void display2_menu_valxx(
 	};
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
+	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const struct paramdefdef * const pd = mp->pd;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
@@ -17435,23 +17469,8 @@ void display2_menu_valxx(
 #if WITHTX && WITHIF4DSP
 	case RJ_TXAUDIO:
 		{
-			static const FLASHMEM char msg [] [6] =
-			{
- 				"MIKE ",	// BOARD_TXAUDIO_MIKE
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа (rear panel mini-din 6 pin input) */
- 				"LINE ",	// BOARD_TXAUDIO_LINE (rear panel mini-din 6 pin input)
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBHW && WITHUSBUACOUT
-				"USB  ",	// BOARD_TXAUDIO_USB
-#endif /* WITHUSBHW && WITHUSBUACOUT */
-				"2TONE",	// BOARD_TXAUDIO_2TONE
-				"NOISE",	// BOARD_TXAUDIO_NOISE
-				"1TONE",	// BOARD_TXAUDIO_1TONE
-				"MUTE ",	// BOARD_TXAUDIO_MUTE
-			};
-
 			width = VALUEW;
-			display_menu_string_P(x, y, msg [value], width, comma);
+			display_menu_string_P(db, x, y, txaudiosrcs [value].label, width, comma);
 		}
 		break;
 #endif /* WITHTX && WITHIF4DSP */
@@ -17460,12 +17479,12 @@ void display2_menu_valxx(
 
 	case RJ_MDMSPEED:
 		width = VALUEW;
-		display_menu_digit(x, y, modembr2int100 [value], width, comma, 0);
+		display_menu_digit(db, x, y, modembr2int100 [value], width, comma, 0);
 		break;
 
 	case RJ_MDMMODE:
 		{
-			static const FLASHMEM char msg [] [5] =
+			static const char msg [] [5] =
 			{
  				"BPSK",
 				"QPSK",
@@ -17473,7 +17492,7 @@ void display2_menu_valxx(
 
 			width = VALUEW;
 			comma = 4;
-			display_menu_string_P(x, y, msg [value], width, comma);
+			display_menu_string_P(db, x, y, msg [value], width, comma);
 		}
 		break;
 
@@ -17485,30 +17504,30 @@ void display2_menu_valxx(
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(x, y, months [value - mp->pd->qbottom + 1], width, comma);
+			display_menu_string_P(db, x, y, months [value - mp->pd->qbottom + 1], width, comma);
 		}
 		break;
 #endif /* defined (RTC1_TYPE) */
 
 	case RJ_YES:
 		{
-			static const FLASHMEM char msg_yes [] = "YES";
-			static const FLASHMEM char msg_no  [] = " NO";
+			static const char msg_yes [] = "YES";
+			static const char msg_no  [] = " NO";
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(x, y, value ? msg_yes : msg_no, width, comma);
+			display_menu_string_P(db, x, y, value ? msg_yes : msg_no, width, comma);
 		}
 		break;
 
 	case RJ_SMETER:
 		{
-			static const FLASHMEM char msg_dial [] = "DIAL";
-			static const FLASHMEM char msg_bars [] = "BARS";
+			static const char msg_dial [] = "DIAL";
+			static const char msg_bars [] = "BARS";
 
 			width = VALUEW;
 			comma = 4;
-			display_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
+			display_menu_string_P(db, x, y, value ? msg_dial : msg_bars, width, comma);
 		}
 		break;
 
@@ -17521,13 +17540,13 @@ void display2_menu_valxx(
 			{
 			default:
 			case BOARD_NOTCH_OFF:
-				display_menu_string_P(x, y, PSTR("OFF "), width, comma);
+				display_menu_string_P(db, x, y, PSTR("OFF "), width, comma);
 				break;
 			case BOARD_NOTCH_MANUAL:
-				display_menu_string_P(x, y, PSTR("FREQ"), width, comma);
+				display_menu_string_P(db, x, y, PSTR("FREQ"), width, comma);
 				break;
 			case BOARD_NOTCH_AUTO:
-				display_menu_string_P(x, y, PSTR("AUTO"), width, comma);
+				display_menu_string_P(db, x, y, PSTR("AUTO"), width, comma);
 				break;
 			}
 		}
@@ -17536,12 +17555,12 @@ void display2_menu_valxx(
 
 	case RJ_ON:
 		{
-			static const FLASHMEM char msg_on  [] = " ON";
-			static const FLASHMEM char msg_off [] = "OFF";
+			static const char msg_on  [] = " ON";
+			static const char msg_off [] = "OFF";
 
 			width = VALUEW;
 			comma = 3;
-			display_menu_string_P(x, y, value ? msg_on : msg_off, width, comma);
+			display_menu_string_P(db, x, y, value ? msg_on : msg_off, width, comma);
 		}
 		break;
 
@@ -17549,26 +17568,26 @@ void display2_menu_valxx(
 	case RJ_DUAL:
 		width = VALUEW;
 		comma = 3;
-		display_menu_string_P(x, y, mainsubrxmodes [value].label, width, comma);
+		display_menu_string_P(db, x, y, mainsubrxmodes [value].label, width, comma);
 		break;
 #endif /* WITHUSEDUALWATCH */
 
 	case RJ_ENCRES:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
+		display_menu_digit(db, x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
 		break;
 
 #if WITHCAT
 	case RJ_CATSPEED:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
+		display_menu_digit(db, x, y, catbr2int [value] * BRSCALE, width, comma, 0);
 		break;
 
 #if WITHCAT_MUX
 	case RJ_CATMUX:
 		comma = 8;
 		width = VALUEW;
-		display_menu_string_P(x, y, catmuxlabels [value], width, comma);
+		display_menu_string_P(db, x, y, catmuxlabels [value], width, comma);
 		break;
 #endif /* WITHCAT_MUX */
 
@@ -17576,7 +17595,7 @@ void display2_menu_valxx(
 	{
 		comma = 8;
 		width = VALUEW;
-		display_menu_string_P(x, y, catsiglabels [value], width, comma);
+		display_menu_string_P(db, x, y, catsiglabels [value], width, comma);
 	}
 	break;
 #endif /* WITHCAT */
@@ -17584,20 +17603,20 @@ void display2_menu_valxx(
 #if WITHSUBTONES && WITHTX
 	case RJ_SUBTONE:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(x, y, gsubtones [value], width, comma, 0);
+		display_menu_digit(db, x, y, gsubtones [value], width, comma, 0);
 		break;
 #endif /* WITHSUBTONES && WITHTX */
 
 	case RJ_POW2:
 		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(x, y, 1UL << value, width, comma, 0);
+		display_menu_digit(db, x, y, 1UL << value, width, comma, 0);
 		break;
 
 #if WITHELKEY
 	case RJ_ELKEYMODE:
 		width = VALUEW;
 		comma = 3;
-		display_menu_string_P(x, y, elkeymodes [value].label, width, comma);
+		display_menu_string_P(db, x, y, elkeymodes [value].label, width, comma);
 		break;
 #endif /* WITHELKEY */
 
@@ -17605,13 +17624,13 @@ void display2_menu_valxx(
 	case RJ_POWER:	/* отображние мощности HP/LP */
 		width = VALUEW;
 		comma = 2;
-		display_menu_string_P(x, y, pwrmodes [value].label, width, comma);
+		display_menu_string_P(db, x, y, pwrmodes [value].label, width, comma);
 		break;
 #endif /* WITHPOWERLPHP */
 
 	case RJ_CPUTYPE:
 		{
-			const FLASHMEM char * msg;
+			const char * msg;
 #if defined (WITHCPUNAME)
 			msg = PSTR(WITHCPUNAME);
 #elif CPUSTYLE_STM32MP1
@@ -17642,7 +17661,7 @@ void display2_menu_valxx(
 #endif
 			width = VALUEW;
 			comma = strlen_P(msg);
-			display_menu_string_P(x, y, msg, width, comma);
+			display_menu_string_P(db, x, y, msg, width, comma);
 		}
 		break;
 
@@ -17657,7 +17676,7 @@ void display2_menu_valxx(
 			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
 			width = VALUEW;
 			comma = strlen(p);
-			display_menu_string(x, y, p, width, comma);
+			display_menu_string(db, x, y, p, width, comma);
 		}
 		break;
 
@@ -17675,7 +17694,7 @@ void display2_menu_valxx(
 			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
 			width = VALUEW;
 			comma = strlen(p);
-			display_menu_string(x, y, p, width, comma);
+			display_menu_string(db, x, y, p, width, comma);
 		}
 		break;
 
@@ -17683,10 +17702,12 @@ void display2_menu_valxx(
 		{
 			/* стиль отображения спектра и панорамы */
 			width = VALUEW;
-			display_menu_string_P(x, y, view_types [value], width, comma);
+			display_menu_string_P(db, x, y, view_types [value], width, comma);
 		}
 		break;
 
+	case RJ_SIGNED:	// учитывается в display_menu_digit
+	case RJ_UNSIGNED:
 	default:
 		if (width & WSIGNFLAG)
 			width = (VALUEW - 1) | WSIGNFLAG;
@@ -17696,7 +17717,7 @@ void display2_menu_valxx(
 		if (comma)
 			width = width - 1;
 
-		display_menu_digit(x, y, value, width, comma, rj);
+		display_menu_digit(db, x, y, value, width, comma, rj);
 		break;
 
 	}
@@ -17706,7 +17727,7 @@ void display2_menu_valxx(
 
 static uint_fast16_t menulooklast(uint_fast16_t menupos)
 {
-	const FLASHMEM struct menudef * mp;
+	const struct menudef * mp;
 	do
 	{
 		mp = & menutable [++ menupos];
@@ -17725,7 +17746,7 @@ modifysettings(
 	)
 {
 	uint_fast16_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
-	const FLASHMEM struct menudef * mp = & menutable [menupos];
+	const struct menudef * mp = & menutable [menupos];
 	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
@@ -17739,7 +17760,7 @@ modifysettings(
 #if WITHDEBUG
 	PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
-	display2_redrawbarstimed(1, 1, mp);
+	display2_redrawbarstimed(1);
 	encoders_clear();
 
 	for (;;)
@@ -17748,6 +17769,7 @@ modifysettings(
 		uint_fast8_t kbch, kbready;
 
 		processpots();
+		//processencoders(); // решить проблему с енкодером - перемешение по меню.
 		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
@@ -17819,7 +17841,7 @@ modifysettings(
 						getstamprtc();
 					#endif /* defined (RTC1_TYPE) */
 						modifysettings(first, last, ITEM_VALUE, mp->pd->qnvram, exitkey, byname);
-						display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+						display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 					}
 				}
 				continue;	// требуется обновление индикатора
@@ -17827,7 +17849,7 @@ modifysettings(
 			case KBD_CODE_LOCK:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_key_lockencoder();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 		#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 			case KBD_CODE_LOCK_HOLDED:
@@ -17836,39 +17858,37 @@ modifysettings(
 				continue;	// требуется обновление индикатора
 		#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
-		#if WITHPWBUTTON
 			case KBD_CODE_POWEROFF:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_pwbutton_press();
 				return;
-		#endif /* WITHPWBUTTON */
 
 #if WITHTX
 			case KBD_CODE_MOX:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* выключить режим настройки или приём/передача */
 				uif_key_tuneoff();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_TXTUNE:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* выключить режим настройки или приём/передача */
 				uif_key_tune();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 	#if WITHAUTOTUNER
 			case KBD_CODE_ATUSTART:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_key_atunerstart();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
 			case KBD_CODE_ATUBYPASS:
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				uif_key_bypasstoggle();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 	#endif /* WITHAUTOTUNER */
 
@@ -17879,7 +17899,7 @@ modifysettings(
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -17900,7 +17920,7 @@ modifysettings(
 				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -17923,7 +17943,7 @@ modifysettings(
 				PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
-				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				break;
 			}
 		}
@@ -17941,11 +17961,11 @@ modifysettings(
 			/* обновление отображения пункта */
 			board_wakeup();
 			updateboard(1, 0);
-			display2_redrawbarstimed(1, 1, mp);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(1);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		}
 		else
 		{
-			display2_redrawbarstimed(0, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		}
 #endif /* WITHENCODER */
 	}
@@ -17955,6 +17975,9 @@ modifysettings(
 static void
 uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
 	uint_fast16_t menupos;
 #if WITHAUTOTUNER
 	if (reqautotune != 0)
@@ -17963,7 +17986,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
-		const FLASHMEM struct menudef * const mp = & menutable [menupos];
+		const struct menudef * const mp = & menutable [menupos];
 		if (ismenukind(mp, ITEM_VALUE) == 0)
 			continue;
 	#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
@@ -17996,7 +18019,7 @@ static void
 print_menu_string_P(
 	uint_fast8_t x,
 	uint_fast8_t y,
-	const FLASHMEM  char * text,
+	const  char * text,
 	uint_fast8_t width,
 	uint_fast8_t filled		// сколько символов сейчас в text
 	)
@@ -18039,10 +18062,10 @@ static void menu_print(void)
 	uint_fast16_t menupos;
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
-        const FLASHMEM struct menudef * mp = & menutable [menupos];
+        const struct menudef * mp = & menutable [menupos];
         if (ismenukind(mp, ITEM_GROUP) == 0)
         	continue;
-        const FLASHMEM struct menudef * const mpgroup = mp ++;	/* группа */
+        const struct menudef * const mpgroup = mp ++;	/* группа */
     	PRINTF("%s,,\n", mpgroup->pd->qlabel);
         for (; mp < (menutable + MENUROW_COUNT) && ismenukind(mp, ITEM_VALUE); ++ mp)
         {
@@ -18096,23 +18119,8 @@ static void menu_print(void)
         #if WITHTX && WITHIF4DSP
         	case RJ_TXAUDIO:
         		{
-        			static const FLASHMEM char msg [] [6] =
-        			{
-         				"MIKE ",	// BOARD_TXAUDIO_MIKE
-        #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-         				"LINE ",	// BOARD_TXAUDIO_LINE
-        #endif /* WITHAFCODEC1HAVELINEINLEVEL */
-        #if WITHUSBHW && WITHUSBUACOUT
-        				"USB  ",	// BOARD_TXAUDIO_USB
-        #endif /* WITHUSBHW && WITHUSBUACOUT */
-        				"2TONE",	// BOARD_TXAUDIO_2TONE
-        				"NOISE",	// BOARD_TXAUDIO_NOISE
-        				"1TONE",	// BOARD_TXAUDIO_1TONE
-        				"MUTE ",	// BOARD_TXAUDIO_MUTE
-        			};
-
         			width = VALUEW;
-        			print_menu_string_P(x, y, msg [value], width, comma);
+        			print_menu_string_P(x, y, txaudiosrcs [value].label, width, comma);
         		}
         		break;
         #endif /* WITHTX && WITHIF4DSP */
@@ -18126,7 +18134,7 @@ static void menu_print(void)
 
         	case RJ_MDMMODE:
         		{
-        			static const FLASHMEM char msg [] [5] =
+        			static const char msg [] [5] =
         			{
          				"BPSK",
         				"QPSK",
@@ -18143,7 +18151,7 @@ static void menu_print(void)
         #if defined (RTC1_TYPE)
         	case RJ_MONTH:
         		{
-        			static const FLASHMEM char months [13] [4] =
+        			static const char months [13] [4] =
         			{
         				"JAN",
         				"FEB",
@@ -18168,8 +18176,8 @@ static void menu_print(void)
 
         	case RJ_YES:
         		{
-        			static const FLASHMEM char msg_yes [] = "YES";
-        			static const FLASHMEM char msg_no  [] = " NO";
+        			static const char msg_yes [] = "YES";
+        			static const char msg_no  [] = " NO";
 
         			width = VALUEW;
         			comma = 3;
@@ -18179,8 +18187,8 @@ static void menu_print(void)
 
         	case RJ_SMETER:
         		{
-        			static const FLASHMEM char msg_dial [] = "DIAL";
-        			static const FLASHMEM char msg_bars [] = "BARS";
+        			static const char msg_dial [] = "DIAL";
+        			static const char msg_bars [] = "BARS";
 
         			width = VALUEW;
         			comma = 4;
@@ -18212,8 +18220,8 @@ static void menu_print(void)
 
         	case RJ_ON:
         		{
-        			static const FLASHMEM char msg_on  [] = " ON";
-        			static const FLASHMEM char msg_off [] = "OFF";
+        			static const char msg_on  [] = " ON";
+        			static const char msg_off [] = "OFF";
 
         			width = VALUEW;
         			comma = 3;
@@ -18281,7 +18289,7 @@ static void menu_print(void)
 
         	case RJ_CPUTYPE:
         		{
-        			const FLASHMEM char * msg;
+        			const char * msg;
 			#if defined (WITHCPUNAME)
 					msg = PSTR(WITHCPUNAME);
 			#elif CPUSTYLE_STM32MP1
@@ -18331,11 +18339,11 @@ static void menu_print(void)
 
         	case RJ_COMPILED:
         		{
-        			static const FLASHMEM char msg [] =
+        			static const char msg [] =
         					__DATE__
         					//" " __TIME__
         					;
-        			const FLASHMEM char * const p = msg + strlen_P(msg) - ulmin(VALUEW, strlen_P(msg));	// сколько может поместиться в поле отображения
+        			const char * const p = msg + strlen_P(msg) - ulmin(VALUEW, strlen_P(msg));	// сколько может поместиться в поле отображения
         			width = VALUEW;
         			comma = strlen_P(p);
         			print_menu_string_P(x, y, p, width, comma);
@@ -18442,15 +18450,15 @@ static const struct menudef notchPopUp [] =
 #endif /* WITHNOTCHFREQ */
 };
 
-static const FLASHMEM struct menudef * thisPopUp = notchPopUp;
+static const struct menudef * thisPopUp = notchPopUp;
 static size_t sizePopUp = ARRAY_SIZE(notchPopUp);
 #else
-static const FLASHMEM struct menudef * thisPopUp = NULL;
+static const struct menudef * thisPopUp = NULL;
 static size_t sizePopUp = 0;
 #endif
 
 // всплывающее меню
-void display2_popup(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_popup(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 	if (thisPopUp == NULL)
@@ -18468,7 +18476,7 @@ void display2_popup(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, 
 
 	for (i = 0; i < sizePopUp; ++ i)
 	{
-		const FLASHMEM struct menudef * const mp = thisPopUp + i;
+		const struct menudef * const mp = thisPopUp + i;
 
 		//menu
 	}
@@ -18564,8 +18572,8 @@ static void dispvfocode(
 	uint_fast32_t freq = getvcoranges(vco, top);
 	synth_lo1_setfreq(0, freq, getlo1div(gtx));
 
-	display_at(0, 1, label);
-	display_menu_digit(0, 0, freq, 9, 3, 0);
+	display_at(db, 0, 1, label);
+	display_menu_digit(db, 0, 0, freq, 9, 3, 0);
 
 }
 
@@ -18580,7 +18588,7 @@ static void vfoallignment(void)
 		uint_fast8_t kbch, kbready;
 
 		processmessages(& kbch, & kbready, 1, NULL);
-		//display2_redrawbarstimed(0, 1, mp);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		//display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 		if (kbready != 0)
 		{
@@ -18775,19 +18783,13 @@ process_key_menuset0(uint_fast8_t kbch)
 
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 }
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 
 }
@@ -19102,11 +19104,9 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_lockencoder();
 		return 1;	/* клавиша уже обработана */
 
-#if WITHPWBUTTON
 	case KBD_CODE_POWEROFF:
 		uif_pwbutton_press();
 		return 1;
-#endif /* WITHPWBUTTON */
 
 	case KBD_CODE_LOCK_HOLDED:
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
@@ -19218,6 +19218,8 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
@@ -19494,6 +19496,9 @@ uint_fast8_t edgepins_get_ptt(void)
 static void dpc_01_s_timer_fn(void * ctx)
 {
 	bringtimers();
+	/* быстро меняющиеся значения с частым опорсом */
+	main_speed_diagnostics();
+	looptests();		// Периодически вызывается в главном цикле - тесты
 }
 
 /* вызывается при запрещённых прерываниях. */
@@ -19610,14 +19615,16 @@ void initialize2(void)
 
 	if (keyboard_test() == 0)
 	{
-		static const FLASHMEM char msg  [] = "KBD fault";
+		gxdrawb_t dbv;
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+		static const char msg  [] = "KBD fault";
 #if WITHLCDBACKLIGHT
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg();
-		display_at_P(0, 0, msg);
+		display_at_P(& dbv, 0, 0, msg);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
@@ -19636,8 +19643,10 @@ void initialize2(void)
 	// проверить работу - потом закомментарит.
 	if (sizeof (struct nvmap) > (NVRAM_END + 1))
 	{
+		gxdrawb_t dbv;
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		// в случае отсутствия превышения размера этот кусок и переменная не комптилируются
-		static const FLASHMEM char msg  [] = "TOO LARGE nvmap";
+		static const char msg  [] = "TOO LARGE nvmap";
 		void wrong_NVRAM_END(void);
 
 #if WITHLCDBACKLIGHT
@@ -19646,8 +19655,8 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 		display2_fillbg();
-		display_menu_digit(0, 0, sizeof (struct nvmap), 9, 0, 0);
-		display_at_P(0, 1, msg);
+		display_menu_digit(& dbv, 0, 0, sizeof (struct nvmap), 9, 0, 0);
+		display_at_P(& dbv, 0, 1, msg);
 		colmain_nextfb();
 
 		wrong_NVRAM_END();
@@ -19659,7 +19668,7 @@ void initialize2(void)
 	{
 		// отладочная печать размера памяти, требуемого для хранения конфигурации
 		/*
-		static const FLASHMEM char msg  [] = "nvmap size";
+		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(0, 0, msg);
@@ -19713,7 +19722,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg();
-			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
+			display_at_P(db, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
 			for (;;)
@@ -19755,7 +19764,7 @@ void initialize2(void)
 
 			display2_fillbg();
 			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(0, 1, PSTR("NVRAM fault"));
+			display_at_P(db, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 
 			PRINTF(PSTR("NVRAM fault1\n"));
@@ -19784,6 +19793,8 @@ void initialize2(void)
 		if (mclearnvram == 1)
 		{
 			uint_fast8_t kbch;
+			gxdrawb_t dbv;
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -19791,7 +19802,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg();
-			display_at_P(0, 0, PSTR("ERASE: Press SPL"));
+			display_at_P(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
 			for (;;)
@@ -19820,6 +19831,8 @@ void initialize2(void)
 
 		if (verifynvrampattern())
 		{
+			gxdrawb_t dbv;
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
@@ -19830,8 +19843,8 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg();
-			display_menu_digit(0, 1, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(0, 1, PSTR("NVRAM fault"));
+			display_menu_digit(& dbv, 0, 1, NVRAM_END + 1, 9, 0, 0);
+			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 
 			for (;;)
@@ -19883,14 +19896,14 @@ static STTE_t hamradio_tune_step(void)
 	switch (tunerstate)
 	{
 	case TUNERSTATE_0:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		updateboard(1, 0);
 		auto_tune0_init();
 		tunerstate = TUNERSTATE_01;
 		break;
 
 	case TUNERSTATE_01:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		switch (auto_tune0())
 		{
 		case PHASE_ABORT:
@@ -19907,7 +19920,7 @@ static STTE_t hamradio_tune_step(void)
 		break;
 
 	case TUNERSTATE_1:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		switch (auto_tune1())
 		{
 		case PHASE_ABORT:
@@ -19924,7 +19937,7 @@ static STTE_t hamradio_tune_step(void)
 		break;
 
 	case TUNERSTATE_2:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		switch (auto_tune2())
 		{
 		case PHASE_ABORT:
@@ -19939,7 +19952,7 @@ static STTE_t hamradio_tune_step(void)
 		}
 
 	case TUNERSTATE_ABORTING:
-		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		auto_tune3();
 		reqautotune = 0;
 		updateboard(1, 0);
@@ -20185,7 +20198,7 @@ hamradio_main_step(void)
 				const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
 			#endif /* WITHSPLIT, WITHSPLITEX */
 
-			display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && ! BOARD_PPSIN_BIT
 			if (lfmmode)
@@ -20233,28 +20246,28 @@ hamradio_main_step(void)
 			uint_fast16_t step_main;
 			uint_fast16_t step_sub;
 
-			/* переход по частоте - шаг берется из gstep_ENC1 */
+			/* переход по частоте - шаг берется из gstep_ENC_MAIN */
 			#if WITHBBOX && defined (WITHBBOXFREQ)
 				nrotate_main = 0;	// ignore encoder
 				nrotate_sub = 0;	// ignore encoder
-				step_main = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
 				step_sub = gstep_ENC2;
 			#elif WITHENCODER_SUB
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
-				step_main = gstep_ENC1;
-				step_sub = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
+				step_sub = gstep_ENC_MAIN;
 			#elif WITHENCODER2 && LINUX_SUBSYSTEM
 				nrotate_sub = linux_get_enc2();
 			#elif WITHENCODER2
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
-				step_main = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
 				step_sub = gstep_ENC2;
 			#else
 				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 				nrotate_sub = 0;
-				step_main = gstep_ENC1;
+				step_main = gstep_ENC_MAIN;
 				step_sub = 0;
 			#endif
 			(void) step_sub;
@@ -20316,7 +20329,7 @@ hamradio_main_step(void)
 					/* Валкодер A: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
 					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize_main * - nrotate_main), gstep_ENC1, TUNE_BOTTOM);
+					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize_main * - nrotate_main), gstep_ENC_MAIN, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
 				else if (nrotate_main > 0)
@@ -20324,7 +20337,7 @@ hamradio_main_step(void)
 					/* Валкодер A: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
 					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize_main * nrotate_main), gstep_ENC1, TUNE_TOP);
+					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize_main * nrotate_main), gstep_ENC_MAIN, TUNE_TOP);
 					freqchanged = 1;
 				}
 
@@ -20896,7 +20909,7 @@ void hamradio_enable_encoder2_redirect(void)
 //todo: добавить учет текущего режима
 void hamradio_set_agc_fast(void)
 {
-	const FLASHMEM struct modetempl * pamodetempl;
+	const struct modetempl * pamodetempl;
 	const uint_fast8_t asubmode = getasubmode(0);
 	pamodetempl = getmodetempl(asubmode);
 	const uint_fast8_t agcseti = pamodetempl->agcseti;
@@ -20914,7 +20927,7 @@ void hamradio_set_agc_fast(void)
 
 void hamradio_set_agc_slow(void)
 {
-	const FLASHMEM struct modetempl * pamodetempl;
+	const struct modetempl * pamodetempl;
 	const uint_fast8_t asubmode = getasubmode(0);
 	pamodetempl = getmodetempl(asubmode);
 	const uint_fast8_t agcseti = pamodetempl->agcseti;
@@ -20933,7 +20946,7 @@ void hamradio_set_agc_slow(void)
 uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
 {
 	const uint_fast8_t pathi = 0;
-	const FLASHMEM struct modetempl * pamodetempl;
+	const struct modetempl * pamodetempl;
 	const uint_fast8_t asubmode = getasubmode(pathi);
 	pamodetempl = getmodetempl(asubmode);
 	const uint_fast8_t agcseti = pamodetempl->agcseti;
@@ -21069,7 +21082,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 #endif /* defined (RTC1_TYPE) */
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals [count];
@@ -21088,7 +21101,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 
 	for (el = index + 1; el < MENUROW_COUNT; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_GROUP))
 			break;
 		if (ismenukind(mv, ITEM_VALUE))
@@ -21109,17 +21122,19 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	uint_fast16_t el;
 
 	for (el = index; el <= index + cnt; el ++)
 	{
-		const FLASHMEM struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
 			dctx.pv = mv;
-			display2_menu_valxx(0, 0, 0, 0, & dctx);
+			display2_menu_valxx(& dbv, 0, 0, 0, 0, & dctx);
 			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
 			vals->index = el;
 			return;
@@ -21129,6 +21144,8 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	const struct paramdefdef * const pd = menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
@@ -21140,7 +21157,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	dctx_t dctx;
 	dctx.type = DCTX_MENU;
 	dctx.pv = & menutable [index];
-	display2_menu_valxx(0, 0, 0, 0, & dctx);
+	display2_menu_valxx(& dbv, 0, 0, 0, 0, & dctx);
 	return menuw;
 }
 #endif /* WITHMENU */
@@ -21513,8 +21530,9 @@ void hamradio_change_preamp(void)
 
 void hamradio_set_moxmode(uint_fast8_t mode)
 {
-	moxmode = !! mode;
-	updateboard(1, 1);
+	const uint_fast8_t f = setmoxtune(!! mode, tunemode);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+	if (f)
+		updateboard(1, 1);
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
@@ -21594,7 +21612,7 @@ void hamradio_save_gui_settings(const void * ptrv)
 #if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
-	const char FLASHMEM * const text = enc2menu_label_P(enc2menus [enc2pos]);
+	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 	enc2menu_value(enc2menus [enc2pos], INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 	enc2_menu.updated = 1;
@@ -21693,7 +21711,7 @@ void beacon_255(void)
 	}
 }
 
-static const FLASHMEM char textbeacon [] =
+static const char textbeacon [] =
 	"00"
 	"1011001101010100110010110100101011001010110101010011010011001100"
 	"1010110011010101010101001101001011010010110101001011001011001100"
@@ -21857,10 +21875,6 @@ application_initialize(void)
 	bandf_calc_initialize();
 	bandf2_calc_initialize();
 	bandf3_calc_initialize();
-#if CTLSTYLE_SW2011ALL
-	board_set_bandfonhpf(bandf_calc(nyquistadj(14000000L)));	/* в SW20xx частота (диапазон), с которого включается ФВЧ на входе приёмника */
-	board_set_bandfonuhf(bandf_calc(nyquistadj(85000000L)));
-#endif /* CTLSTYLE_SW2011ALL */
 #if XVTR_R820T2
 	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
 #endif /* XVTR_R820T2 */
@@ -21961,6 +21975,14 @@ application_initialize(void)
 		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
 		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
 		ticker_add(& ticker);
+	}
+
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
+		ticker_initialize_user(& displatchticker, NTICKS(1000 / gdisplaybarsfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& displatchticker);
 	}
 
 	{

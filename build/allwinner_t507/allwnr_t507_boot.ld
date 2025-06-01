@@ -4,9 +4,9 @@
 
 MEMORY
 {
-  xRAM (rwx)	 : ORIGIN = 0x00028000 + 256, 	LENGTH = 192k - 256		/* base addres for bootloader tests */
   RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 	LENGTH = 224k - 256		/*  */
-  DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 1024M - 32M		/*  */
+  xfelRAM (rwx)	: ORIGIN = 0x00028000 + 256, 	LENGTH = 192k - 256		/* base addres for bootloader tests */
+  DDR3 (rwx) : ORIGIN = 0x40000000 + 128M, 	LENGTH = 1024M - 128M		/*  */
 }
 
 /* Library configurations */
@@ -44,15 +44,9 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(64);
 		KEEP(*(.startup0))
-
 		*(.text*)
+		*(.itcm*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
 		
@@ -71,11 +65,12 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
 
 		KEEP(*(.eh_frame*))
-		
-		*(.itcm*)
-		
 	} > RAM
 
 	.ARM.extab :
@@ -155,10 +150,21 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
+	} > RAM
 
-		/* All data end */
-		__data_end__ = .;
-
+	.bss :
+	{
+		__bss_start__ = .;
+		. = ALIGN(64);
+		*(.bss*)
+		*(COMMON)
+		. = ALIGN(64);
+		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):
@@ -167,16 +173,6 @@ SECTIONS
 		*(.noinit*)
 
 	} > RAM
-
-	.bss (NOLOAD):
-	{
-		__bss_start__ = .;
-		. = ALIGN(64);
-		*(.bss*)
-		*(COMMON)
-
-		__bss_end__ = .;
-	} > RAM 
 
 	.vram (NOLOAD):
 	{

@@ -368,7 +368,7 @@
 	
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	
@@ -593,13 +593,11 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0
-		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		
+		#define WITHLVGL 1		/* bare-metal config of LVGL */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLWIP 1
-		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */

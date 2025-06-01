@@ -44,9 +44,7 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
 		KEEP(*(.startup0))
-
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -146,10 +144,10 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		/* All data end */
-
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > RAM
 
 	__etext2 = .;
@@ -170,15 +168,15 @@ SECTIONS
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
-
-	.bss (NOLOAD):
+	.bss :
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-
+		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):

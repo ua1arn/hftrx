@@ -160,22 +160,23 @@ SECTIONS
 
 	} > RAM
 
+
+	.bss :
+	{
+		__bss_start__ = .;
+		. = ALIGN(64);
+		*(.bss*)
+		*(COMMON)
+		. = ALIGN(64);
+		__bss_end__ = .;
+	} > RAM 
+
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 
 	} > RAM
-
-	.bss (NOLOAD):
-	{
-		__bss_start__ = .;
-		. = ALIGN(64);
-		*(.bss*)
-		*(COMMON)
-
-		__bss_end__ = .;
-	} > RAM 
 
 	.vram (NOLOAD):
 	{

@@ -293,6 +293,7 @@
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER2_NOSPOOL 1
+
 	#define ENCODER_INITIALIZE() \
 		do { \
 			static einthandler_t h1; \
@@ -499,22 +500,6 @@
 #endif /* WITHSDHCHW */
 
 #if WITHTX
-
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-		} while (0)
-
 
 	// +++
 	// TXDISABLE input - PD10

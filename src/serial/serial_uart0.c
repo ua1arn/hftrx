@@ -80,23 +80,23 @@ static void UART0_IRQHandler(void)
 {
 	UART_t * const uart = UARTBASENAME(thisPORT);
 	char c;
-	const uint_fast32_t sts = UART0->ISR & UART0->IMR;
+	const uint_fast32_t sts = uart->ISR & uart->IMR;
 	if (sts & (1u << 5))	// RXOVR
 	{
-		UART0->ISR = (1u << 5);	// RXOVR
+		uart->ISR = (1u << 5);	// RXOVR
 		HARDWARE_UART0_ONOVERFLOW();
 	}
 	if (sts & (1u << 7))	// PARE
 	{
-		UART0->ISR = (1u << 7);	// PARE
+		uart->ISR = (1u << 7);	// PARE
 	}
 	if (sts & (1u << 6))	// FRAME
 	{
-		UART0->ISR = (1u << 6);	// FRAME
+		uart->ISR = (1u << 6);	// FRAME
 	}
 	if (sts & (1u << 3))	// TEMPTY
 	{
-		HARDWARE_UART0_ONTXCHAR(UART0);
+		HARDWARE_UART0_ONTXCHAR(uart);
 	}
 	while (hardware_uart0_getchar(& c))
 	{

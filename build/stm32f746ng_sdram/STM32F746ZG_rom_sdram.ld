@@ -169,10 +169,10 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(8);
-		/* All data end */
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > SDRAM AT > FLASH
 
 	. = __etext + __data_end__ - __data_start__;
@@ -232,12 +232,13 @@ SECTIONS
 	
 	.bss (NOLOAD):
 	{
-		. = ALIGN(32);
 		__bss_start__ = .;
+		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > SDRAM
 
 	.sdrambss (NOLOAD):

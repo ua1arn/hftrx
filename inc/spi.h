@@ -320,7 +320,7 @@ int fullEraseDATAFLASH(void);
 void hangoffDATAFLASH(void);	// Отключить процессор от SERIAL FLASH
 unsigned long sectorsizeDATAFLASH(void);
 unsigned long chipsizeDATAFLASH(void);
-extern char nameDATAFLASH [];
+extern char nameDATAFLASH [64];
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
 void bootloader_verifyimage(unsigned long flashoffset, const uint8_t * dest, unsigned Len);

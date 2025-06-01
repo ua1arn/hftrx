@@ -24,6 +24,7 @@
 #include <time.h>
 #include <sched.h>
 #include <sys/time.h>
+#include <sys/epoll.h>
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <linux/gpio.h>
@@ -34,7 +35,6 @@
 #include <linux/input.h>
 #include <dirent.h>
 #include "lvgl/lvgl.h"
-#include "lv_drivers/indev/evdev.h"
 #include "pcie_dev.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
@@ -46,8 +46,47 @@ void lvgl_test(void);
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	5
 
+#if defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
+
+int uartlite_rx_ready(void)
+{
+    uint32_t status = xdma_read_user(AXI_LITE_UARTLITE + UARTLITE_STATUS);
+    return (status & STATUS_RXVALID) != 0;
+}
+
+void uartlite_write_byte(uint8_t data)
+{
+    while ((xdma_read_user(AXI_LITE_UARTLITE + UARTLITE_STATUS) & STATUS_TXFULL)) {
+        usleep(100);
+    }
+    xdma_write_user(AXI_LITE_UARTLITE + UARTLITE_TX_FIFO, data);
+}
+
+void uartlite_write_string(const char * str)
+{
+    while (* str) {
+        uartlite_write_byte(* str ++);
+    }
+}
+
+uint8_t uartlite_read_byte(void)
+{
+    uint32_t val = xdma_read_user(AXI_LITE_UARTLITE + UARTLITE_RX_FIFO);
+    return (uint8_t)(val & 0xFF);
+}
+
+void uartlite_reset(void)
+{
+	xdma_write_user(AXI_LITE_UARTLITE + UARTLITE_CONTROL, CONTROL_RESET_FIFO);
+	usleep(100);
+	xdma_write_user(AXI_LITE_UARTLITE + UARTLITE_CONTROL, CONTROL_RX_ENABLE | CONTROL_TX_ENABLE | CONTROL_INTR_ENABLE);
+}
+
+#endif /* defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
+
 pthread_t timer_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
+int pcie_status = 0;
 
 void linux_wait_iq(void)
 {
@@ -88,12 +127,14 @@ enum {
 	iq_thread_core = 1,
 	iio_thread_core = 1,
 	spool_thread_core = 0,
+	nmea_thread_core = 1,
 #elif CPUSTYLE_RK356X
 	stream_thread_core = 3,
 	alsa_thread_core = 3,
 	iq_thread_core = 2,
 	iio_thread_core = 2,
 	spool_thread_core = 0,
+	nmea_thread_core = 1,
 #endif
 };
 
@@ -340,7 +381,7 @@ void * process_linux_timer_spool(void * args)
 	}
 }
 
-#if WITHNMEA //&& WITHLFM
+#if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
 
 void * linux_nmea_spool(void * args)
 {
@@ -395,7 +436,7 @@ void * linux_pps_thread(void * args)
     }
 }
 
-#endif /* WITHNMEA && WITHLFM */
+#endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z */
 
 /******************************************************************/
 
@@ -1080,6 +1121,17 @@ void server_kill(void)
 	close(sockServer);
 }
 
+void stream_event_handler(void)
+{
+	if (stream_state == STREAM_CONNECTED)
+	{
+		uint32_t pos = get_stream_pos();
+		uint16_t offset = pos >= 512 ? 0 : 4096;
+		stream_receive(streambuf, offset);
+		safe_cond_signal(& ct_rts);
+	}
+}
+
 void * eth_stream_interrupt_thread(void * args)
 {
 	ssize_t nb;
@@ -1544,7 +1596,8 @@ void linux_iq_init(void)
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	pcie_init();
-	if (pcie_open() < 0)
+	pcie_status = pcie_open();
+	if (pcie_status < 0)
 		perror("pcie init");
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 #if WITHEXTIO_LAN
@@ -1579,7 +1632,7 @@ void linux_iq_init(void)
 
 pthread_t xdma_t;
 
-void xdma_iq_event(void)
+void xdma_iq_event_handler(void)
 {
 #if WITHAD936XIIO
 	if (get_ad936x_stream_status()) return;
@@ -1593,28 +1646,6 @@ void xdma_iq_event(void)
 	memcpy((uint8_t *) addr32rx, rxbuf, SIZERX8);
 	save_dmabuffer32rx(addr32rx);
 
-#if CODEC1_FPGA
-#if WITHFT8
-	if (! ft8_get_state())
-#endif /* WITHFT8 */
-	{
-		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
-		uint32_t * b = (uint32_t *) addr_ph;
-
-#if WITHAUDIOSAMPLESREC
-#if WITHAD936XIIO
-		if (! get_ad936x_stream_status())
-#endif /* WITHAD936XIIO */
-			as_rx(b);
-#endif /* WITHAUDIOSAMPLESREC */
-
-		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-			xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
-
-		release_dmabuffer16tx(addr_ph);
-	}
-#endif /* CODEC1_FPGA */
-
 	const uintptr_t addr32tx = getfilled_dmabuffer32tx();
 	uint32_t * t = (uint32_t *) addr32tx;
 
@@ -1626,71 +1657,168 @@ void xdma_iq_event(void)
 	iq_mutex_unlock();
 }
 
+void codec_event_handler(void)
+{
+#if CODEC1_FPGA
+	enum { SIZEMIC8 = DMABUFFSIZE16RX * 4 };
+	uint8_t bufm[SIZEMIC8] = { 0 };
+	uint16_t mic_pos = xdma_read_user(AXI_LITE_MIC_POS);
+	uint16_t offs = mic_pos >= DMABUFFSIZE16RX ? 0 : SIZEMIC8;
+	xdma_c2h_transfer(AXI_BRAM_MIC + offs, SIZEMIC8, bufm);
+
+	uintptr_t addrm = allocate_dmabuffer16rx();
+	memcpy((uint8_t *) addrm, bufm, SIZEMIC8);
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
+	as_tx((uint32_t *) bufm);
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI */
+	save_dmabuffer16rx(addrm);
+
+#if WITHFT8
+	if (! ft8_get_state())
+#endif /* WITHFT8 */
+	{
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
+
+#if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
+#if WITHAD936XIIO
+		if (! get_ad936x_stream_status())
+#endif /* WITHAD936XIIO */
+			as_rx(b);
+#endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI */
+
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			xdma_write_user(AXI_LITE_FIFO_PHONES, b[i]);
+
+		release_dmabuffer16tx(addr_ph);
+	}
+#endif /* CODEC1_FPGA */
+}
+
+#if defined (LINUX_XDMA_PPS_FILE)
+void pps_event_handler(void)
+{
+	spool_nmeapps(NULL);
+}
+#endif /* defined (LINUX_XDMA_PPS_FILE) */
+
+#if defined (LINUX_XDMA_UART_FILE)
+void uartlite_event_handler(void)
+{
+	enum { bufsize = 256 };
+	static char buf[bufsize] = { 0 };
+	static int rx_index = 0;
+
+	while(uartlite_rx_ready() && rx_index < bufsize)
+	{
+		buf[rx_index ++] = uartlite_read_byte();
+	}
+
+	if (rx_index > 1)
+	{
+		for (int i = 0; i < rx_index; i ++)
+			nmeagnss_parsechar(buf[i]);
+
+		rx_index = 0;
+		memset(buf, 0, bufsize);
+	}
+}
+#endif /* defined (LINUX_XDMA_UART_FILE) */
+
+typedef void (* event_handler_t)(void);
+typedef struct {
+	const char * device_file;
+	event_handler_t handler;
+	int fd;
+} irq_channel_t;
+
+irq_channel_t channels[] = {
+#if defined (LINUX_XDMA_IQ_EVENT_FILE)
+		{ LINUX_XDMA_IQ_EVENT_FILE, xdma_iq_event_handler, -1 },
+#endif /* defined (LINUX_XDMA_IQ_EVENT_FILE) */
+#if CODEC1_FPGA
+		{ LINUX_XDMA_MIC_EVENT_FILE, codec_event_handler, -1 },
+#endif /* CODEC1_FPGA */
+#if WITHEXTIO_LAN
+		{ LINUX_STREAM_INT_FILE, stream_event_handler, -1 },
+#endif /* WITHEXTIO_LAN */
+#if defined (LINUX_XDMA_PPS_FILE)
+		{ LINUX_XDMA_PPS_FILE, pps_event_handler, -1 },
+#endif /* defined (LINUX_XDMA_PPS_FILE) */
+#if defined (LINUX_XDMA_UART_FILE)
+		{ LINUX_XDMA_UART_FILE, uartlite_event_handler, -1 },
+#endif /* defined (LINUX_XDMA_UART_FILE) */
+};
+
+#define NUM_CHANNELS (sizeof(channels) / sizeof(channels[0]))
+
 void * xdma_event_thread(void * args)
 {
-	uint32_t events_user;
-
-	int fd0 = open(LINUX_XDMA_IQ_EVENT_FILE, O_RDONLY);
-	if (fd0 < 0) {
-		perror(LINUX_XDMA_IQ_EVENT_FILE);
+	if (! NUM_CHANNELS)
 		return NULL;
+
+	int epoll_fd = epoll_create1(0);
+	if (epoll_fd == -1) {
+		perror("epoll_create1");
+		exit(EXIT_FAILURE);
 	}
 
-	pread(fd0, & events_user, sizeof(events_user), 0);
+	for (int i = 0; i < NUM_CHANNELS; i ++) {
+		channels[i].fd = open(channels[i].device_file, O_RDONLY);
+		if (channels[i].fd < 0) {
+			perror("open");
+			fprintf(stderr, "Open %s error\n", channels[i].device_file);
+			continue;
+		}
 
-#if CODEC1_FPGA
-	int fd1 = open(LINUX_XDMA_MIC_EVENT_FILE, O_RDONLY);
-	if (fd1 < 0) {
-		perror(LINUX_XDMA_MIC_EVENT_FILE);
-		return NULL;
+		struct epoll_event ev;
+		ev.events = EPOLLIN | EPOLLET;
+		ev.data.ptr = & channels[i];
+
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, channels[i].fd, & ev) == -1) {
+			perror("epoll_ctl ADD");
+			close(channels[i].fd);
+			channels[i].fd = -1;
+		}
 	}
 
-	pread(fd1, & events_user, sizeof(events_user), 0);
-#endif /* CODEC1_FPGA */
-
-	struct pollfd fds[] = {
-			{ fd0, POLLIN },
-#if CODEC1_FPGA
-			{ fd1, POLLIN },
-#endif /* CODEC1_FPGA */
-	};
-	enum {
-		fds_cnt = ARRAY_SIZE(fds),
-		SIZEMIC8 = DMABUFFSIZE16RX * 4,
-	};
+	#define MAX_EVENTS 10
+	struct epoll_event events[MAX_EVENTS];
 
 	while (1) {
-		int r = poll(fds, fds_cnt, 0);
-		if (r < 0) {
-			perror("poll");
-		} else {
-			if (fds[0].revents & POLLIN) {
-				pread(fds[0].fd, & events_user, sizeof(events_user), 0);
-				xdma_iq_event(); // iq interrupt from FPGA via XDMA
-			}
-#if CODEC1_FPGA
-			else if (fds[1].revents & POLLIN) {
-				pread(fds[1].fd, & events_user, sizeof(events_user), 0);
+		int num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+		if (num_events == -1) {
+			if (errno == EINTR)
+				continue;
+			perror("epoll_wait");
+			break;
+		}
 
-				uint8_t bufm[SIZEMIC8] = { 0 };
-				uint16_t mic_pos = xdma_read_user(AXI_LITE_MIC_POS);
-				uint16_t offs = mic_pos >= DMABUFFSIZE16RX ? 0 : SIZEMIC8;
-				xdma_c2h_transfer(AXI_BRAM_MIC + offs, SIZEMIC8, bufm);
+		for (int i = 0; i < num_events; i++) {
+			irq_channel_t * channel = (irq_channel_t *) events[i].data.ptr;
+			uint32_t event;
 
-				uintptr_t addrm = allocate_dmabuffer16rx();
-				memcpy((uint8_t *) addrm, bufm, SIZEMIC8);
-#if WITHAUDIOSAMPLESREC
-				as_tx((uint32_t *) bufm);
-#endif /* WITHAUDIOSAMPLESREC */
-				save_dmabuffer16rx(addrm);
+			ssize_t bytes_read = pread(channel->fd, & event, sizeof(event), 0);
+			if (bytes_read < 0) {
+				perror("read");
+				continue;
 			}
-#endif /* CODEC1_FPGA */
+
+			if (bytes_read != sizeof(event)) {
+				fprintf(stderr, "Partial read event\n");
+				continue;
+			}
+
+			channel->handler();
 		}
 	}
 }
 
 void xdma_iq_init(void)
 {
+	if(pcie_status < 0)
+		return;
+
 	xcz_resetn_modem(0);
 
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
@@ -2082,6 +2210,7 @@ void linux_subsystem_init(void)
 	linux_iq_init();
 #endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
 #if WITHLVGL
+	lvgl_dev_init();	// linux-specific LVGL initialize - lv_deinit and lv_init include
 	lvgl_init();
 #endif /* WITHLVGL */
 #if WITHIQSHIFT
@@ -2099,11 +2228,17 @@ void linux_user_init(void)
 	zynq_pl_init();
 #elif (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_iq_init();
-#endif /*  */
-#if WITHNMEA && WITHLFM
-	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
-	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
-#endif /* WITHNMEA && WITHLFM */
+#if defined(AXI_LITE_UARTLITE)
+	uartlite_reset();
+#endif /* defined(AXI_LITE_UARTLITE) */
+#if defined(HARDWARE_NMEA_INITIALIZE) && WITHNMEA
+	HARDWARE_NMEA_INITIALIZE();
+#endif /* defined(HARDWARE_NMEA_INITIALIZE()) && WITHNMEA*/
+#endif /* (DDS1_TYPE == DDS_TYPE_XDMA) */
+#if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
+	linux_create_thread(& nmea_t, linux_nmea_spool, 50, nmea_thread_core);
+	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
+#endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z*/
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
@@ -2126,7 +2261,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 #if WITHDSPEXTFIR && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 volatile uint32_t * fir_reload = NULL;
-static adapter_t plfircoefsout;		/* параметры прербразования к PL */
+static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
 void board_fpga_fir_initialize(void)
 {
@@ -2171,7 +2306,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	}
 }
 #elif WITHDSPEXTFIR && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
-static adapter_t plfircoefsout;		/* параметры прербразования к PL */
+static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
 void board_fpga_fir_initialize(void)
 {
@@ -2653,7 +2788,6 @@ void iq_stream_stop(void)
 	linux_cancel_thread(iq_interrupt_t);
 #endif
 }
-
 
 uint8_t iio_ad936x_start(const char * uri)
 {

@@ -341,8 +341,7 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	#define NMEA_INITIALIZE() \
-		do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 		} while (0)
 
 #if WITHSDHCHW
@@ -415,22 +414,6 @@
 #endif /* WITHSDHCHW */
 
 #if WITHTX
-
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-		} while (0)
-
 
 	// +++
 	// TXDISABLE input - PD10

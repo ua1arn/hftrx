@@ -524,21 +524,6 @@
 
 #if WITHTX
 
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() do { \
-		} while (0)
-
-
 	// +++
 	// TXDISABLE input - PE11
 	#define TXDISABLE_TARGET_PIN
@@ -1217,7 +1202,8 @@
 		} while (0)
 
 	#define BOARD_PPSIN_BIT	(UINT32_C(1) << 24)		// PD24
-	#define NMEA_INITIALIZE() do { \
+	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
+	#define NMEA_1PPS_INITIALIZE() do { \
 		static einthandler_t h; \
 		arm_hardware_piod_altfn20(BOARD_PPSIN_BIT, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); /* pull-down */ \
@@ -1230,21 +1216,41 @@
 #if WITHETHHW
 
 	//PA0 - PA9 EMAC RMII
-	#define ETHERNET_INITIALIZE() do { \
-		arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 3, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 4, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 5, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 6, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 7, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 8, GPIO_CFG_AF2);	\
-		arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
+	#define HARDWARE_ETH_INITIALIZE() do { \
+		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
+		\
+		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 RGMII_RXD2 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 RGMII_RXD1 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RGMII_RXD0 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 RGMII_RXCK */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 RGMII_RXCTL */ \
+		\
+		arm_hardware_pioi_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		arm_hardware_pioi_outputs(NRSTB, 1 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		\
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII_RXD3 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII_RXD2 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* PI2 RGMII_RXD1 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* PI3 RGMII_RXD0 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* PI4 RGMII_RXCK */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* PI5 RGMII_RXCTL */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* PI7 RGMII_TXD3 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* PI8 RGMII_TXD2 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* PI9 RGMII_TXD1 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* PI10 RGMII_TXD0 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* PI11 RGMII_TXCK */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* PI12 RGMII_TXCTL */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* PI13 RGMII_CLKIN */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* PI14 MDC */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* PI15 MDIO */ \
+		arm_hardware_pioi_updown(UINT32_C(1) << 14, UINT32_C(1) << 14, 0); /* PI14 MDC */ \
+		arm_hardware_pioi_updown(UINT32_C(1) << 15, UINT32_C(1) << 15, 0); /*  PI15 MDIO */ \
+		\
 	} while (0)
 
-#else
-	#define ETHERNET_INITIALIZE() do { } while (0)
 #endif /* WITHETHHW */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
@@ -1254,7 +1260,6 @@
 		HARDWARE_GPIOREG_INITIALIZE(); \
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		HARDWARE_DCDC_INITIALIZE(); \
-		ETHERNET_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 

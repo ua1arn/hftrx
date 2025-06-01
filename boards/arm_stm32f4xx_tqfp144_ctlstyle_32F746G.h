@@ -183,7 +183,7 @@
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	//#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 	#define WITHENCODER				1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2			1
 
@@ -323,8 +323,10 @@
 	//#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	// Есть ли регулировка параметров потенциометрами
+	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -430,11 +432,6 @@
 	#if WITHVOLTLEVEL 
 		VOLTSOURCE = 0,		// PB0 Средняя точка делителя напряжения, для АКБ
 	#endif /* WITHVOLTLEVEL */
-
-	#if WITHPOTGAIN
-		POTIFGAIN = 0,		// PA2 IF GAIN
-		POTAFGAIN = 0,		// PA3 AF GAIN
-	#endif /* WITHPOTGAIN */
 
 	#if WITHPOTWPM
 		POTWPM = 0,			// PA6 потенциометр управления скоростью передачи в телеграфе

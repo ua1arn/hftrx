@@ -37,53 +37,45 @@ const char * savewhere = "no func";
 	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
 #endif /* WITHALTERNATIVEFONTS */
 
-void display_putpixel(
+void display_putpixel(const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	colpip_putpixel(buffer, dx, dy, x, y, color);
+	colpip_putpixel(db, x, y, color);
 }
 
 /* заполнение прямоугольника на основном экране произвольным цветом
 */
 void
-display_fillrect(
+display_fillrect(const gxdrawb_t * db,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-
-	colpip_fillrect(buffer, dx, dy, x, y, w, h, color);
+	colpip_fillrect(db, x, y, w, h, color);
 }
 
 /* рисование линии на основном экране произвольным цветом
 */
 void
-display_line(
+display_line(const gxdrawb_t * db,
 	int x1, int y1,
 	int x2, int y2,
 	COLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
-	colpip_line(buffer, dx, dy, x1, y1, x2, y2, color, 0);
+	colpip_line(db, x1, y1, x2, y2, color, 0);
 }
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
-display_scroll_down(
+display_scroll_down(const gxdrawb_t * db,
 	uint_fast16_t x0,	// левый верхний угол окна
 	uint_fast16_t y0,	// левый верхний угол окна
 	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
@@ -92,7 +84,6 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -142,7 +133,7 @@ display_scroll_down(
 
 /* копирование содержимого окна с перекрытием для водопада */
 void
-display_scroll_up(
+display_scroll_up(const gxdrawb_t * db,
 	uint_fast16_t x0,	// левый верхний угол окна
 	uint_fast16_t y0,	// левый верхний угол окна
 	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
@@ -151,7 +142,6 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
 
@@ -240,17 +230,17 @@ void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 // Заполниить цветом фона
-void display_clear(void)
+void display_clear(const gxdrawb_t * db)
 {
 	const COLORPIP_T bg = display2_getbgcolor();
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
-	colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
+	colpip_fillrect(db, 0, 0, DIM_X, DIM_Y, bg);
 }
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 void display_bar(
+	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
@@ -262,9 +252,6 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
 	ASSERT(value <= topvalue);
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
@@ -273,14 +260,30 @@ void display_bar(
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
-	colpip_fillrect(buffer, dx, dy, 	x, y, 			wpart, h, 			ltdc_fg);
-	colpip_fillrect(buffer, dx, dy, 	x + wpart, y, 	wfull - wpart, h, 	ltdc_bg);
+	colpip_fillrect(db, 	x, y, 			wpart, h, 			ltdc_fg);
+	colpip_fillrect(db, 	x + wpart, y, 	wfull - wpart, h, 	ltdc_bg);
 	if (wmark < wfull && wmark >= wpart)
-		colpip_fillrect(buffer, dx, dy, x + wmark, y, 	1, h, 				ltdc_fg);
+		colpip_fillrect(db, x + wmark, y, 	1, h, 				ltdc_fg);
+}
+
+void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+{
+	ASSERT(buffer);
+	db->buffer = buffer;
+	db->dx = dx;
+	db->dy = dy;
+	db->cachebase = (uintptr_t) buffer;
+	db->cachesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
+	db->stride = GXADJ(dx) * sizeof (PACKEDCOLORPIP_T);
+}
+
+void gxdrawb_default(gxdrawb_t * db)
+{
+	gxdrawb_initialize(db, colmain_fb_draw(), DIM_X, DIM_Y);
 }
 
 // самый маленький шрифт
-uint_fast16_t display_wrdata2_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdata2_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	//ltdc_secondoffs = 0;
 	//ltdc_h = SMALLCHARH;
@@ -289,7 +292,7 @@ uint_fast16_t display_wrdata2_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_
 	return GRID2X(x);
 }
 
-void display_wrdata2_end(void)
+void display_wrdata2_end(const gxdrawb_t * db)
 {
 }
 
@@ -297,15 +300,15 @@ void display_wrdata2_end(void)
 // Выдать один цветной пиксель
 static void
 ltdc_pix1color(
+	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	PACKEDCOLORPIP_T color
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
+	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
 	* tgr = color;
 	//dcache_clean((uintptr_t) tgr, sizeof * tgr);
 }
@@ -314,18 +317,20 @@ ltdc_pix1color(
 // Выдать один цветной пиксель (фон/символ)
 static void
 ltdc_pixel(
+	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t v			// 0 - цвет background, иначе - foreground
 	)
 {
-	ltdc_pix1color(x, y, v ? ltdc_fg : ltdc_bg);
+	ltdc_pix1color(db, x, y, v ? ltdc_fg : ltdc_bg);
 }
 
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 static void
 ltdc_vertical_pixN(
+	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast8_t pattern,		// pattern
@@ -334,14 +339,14 @@ ltdc_vertical_pixN(
 {
 
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	ltdc_pixel(x, y + 0, pattern & 0x01);
-	ltdc_pixel(x, y + 1, pattern & 0x02);
-	ltdc_pixel(x, y + 2, pattern & 0x04);
-	ltdc_pixel(x, y + 3, pattern & 0x08);
-	ltdc_pixel(x, y + 4, pattern & 0x10);
-	ltdc_pixel(x, y + 5, pattern & 0x20);
-	ltdc_pixel(x, y + 6, pattern & 0x40);
-	ltdc_pixel(x, y + 7, pattern & 0x80);
+	ltdc_pixel(db, x, y + 0, pattern & 0x01);
+	ltdc_pixel(db, x, y + 1, pattern & 0x02);
+	ltdc_pixel(db, x, y + 2, pattern & 0x04);
+	ltdc_pixel(db, x, y + 3, pattern & 0x08);
+	ltdc_pixel(db, x, y + 4, pattern & 0x10);
+	ltdc_pixel(db, x, y + 5, pattern & 0x20);
+	ltdc_pixel(db, x, y + 6, pattern & 0x40);
+	ltdc_pixel(db, x, y + 7, pattern & 0x80);
 }
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
@@ -373,8 +378,7 @@ ltdc_put_char_unified(
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx, uint_fast16_t dy,	// размеры целевого буфера
+	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	uint_fast8_t ci,	// индекс символа в знакогенераторе
 	uint_fast8_t width2	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
@@ -383,7 +387,7 @@ ltdc_put_char_unified(
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, xpix, ypix + cgrow);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
 		ltdc_horizontal_pixels(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2);
 	}
 }
@@ -392,36 +396,36 @@ ltdc_put_char_unified(
 // return new x
 static uint_fast16_t
 RAMFUNC
-ltdc_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+ltdc_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
-	ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, xpix, ypix, ci, SMALLCHARW);
+	ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], db, xpix, ypix, ci, SMALLCHARW);
 	return xpix + SMALLCHARW;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast16_t RAMFUNC ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
-	ltdc_put_char_unified(font_big, BIGCHARW, BIGCHARH, size_bigfont, buffer, dx, dy, xpix, ypix, ci, width2);
+	ltdc_put_char_unified(font_big, BIGCHARW, BIGCHARH, size_bigfont, db, xpix, ypix, ci, width2);
  	return xpix + width2;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
-	ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARH, size_halffont, buffer, dx, dy, xpix, ypix, ci, width2);
+	ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARH, size_halffont, db, xpix, ypix, ci, width2);
 	return xpix + width2;
 }
 
 #if 0
-uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
@@ -431,7 +435,7 @@ uint_fast16_t display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, ch
 #endif
 
 // полоса индикатора
-uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -439,25 +443,25 @@ uint_fast16_t display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, ui
 
 // Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 uint_fast16_t
-display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
+display_barcolumn(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 //	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 	return xpix + 1;
 }
 
-void display_wrdatabar_end(void)
+void display_wrdatabar_end(const gxdrawb_t * db)
 {
 }
 
 // большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
 
 // большой шрифт
-uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
@@ -465,43 +469,35 @@ uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, char cc, ui
     const uint_fast8_t width = bigfont_width(cc);
     const uint_fast8_t ci = bigfont_decode(cc);
 	savewhere = __func__;
-	return ltdc_put_char_big(x, y, ci, width, buffer, dx, dy);
+	return ltdc_put_char_big(db, x, y, ci, width);
 }
 
-uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-    const uint_fast8_t width = halffont_width(cc);
+	const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
-	return ltdc_put_char_half(x, y, ci, width, buffer, dx, dy);
+	return ltdc_put_char_half(db, x, y, ci, width);
 }
 
-uint_fast16_t display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	ASSERT(xpix < DIM_X);
-	ASSERT(ypix < DIM_Y);
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t ci = smallfont_decode(cc);
 
-	return ltdc_put_char_small(xpix, ypix, ci, buffer, dx, dy);
+	return ltdc_put_char_small(db, xpix, ypix, ci);
 }
 
-void display_wrdata_end(void)
+void display_wrdata_end(const gxdrawb_t * db)
 {
 }
 
 // большой шрифт
-void display_wrdatabig_end(void)
+void display_wrdatabig_end(const gxdrawb_t * db)
 {
 }
 
 // обычный шрифт
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -521,6 +517,8 @@ static const unsigned picy_half = HALFCHARH;
 /* Изображения символов располагаются в буфере горизонтально, слева направо */
 static PACKEDCOLORPIP_T rendered_big [GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH)];
 static PACKEDCOLORPIP_T rendered_half [GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH)];
+static gxdrawb_t dbvbig;
+static gxdrawb_t dbvhalf;
 
 // Подготовка отображения больщих символов
 /* valid chars: "0123456789 #._" */
@@ -528,9 +526,11 @@ void render_value_big_initialize(void)
 {
 	COLORPIP_T keycolor = COLORPIP_KEY;
 	unsigned picalpha = 255;
+	gxdrawb_initialize(& dbvbig, rendered_big, picx_big, picy_big);
+	gxdrawb_initialize(& dbvhalf, rendered_half, picx_half, picy_half);
 
-	colpip_fillrect(rendered_big, picx_big, picy_big, 0, 0, picx_big, picy_big, TFTALPHA(picalpha, COLORPIP_RED));	/* при alpha==0 все биты цвета становятся 0 */
-	colpip_fillrect(rendered_half, picx_half, picy_half, 0, 0, picx_half, picy_half, TFTALPHA(picalpha, COLORPIP_YELLOW));	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(& dbvbig, 0, 0, picx_big, picy_big, TFTALPHA(picalpha, COLORPIP_RED));	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(& dbvhalf, 0, 0, picx_half, picy_half, TFTALPHA(picalpha, COLORPIP_YELLOW));	/* при alpha==0 все биты цвета становятся 0 */
 
 	uint_fast8_t ci;
 
@@ -552,50 +552,50 @@ void render_value_big_initialize(void)
 	/* big-size characters */
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdatabig_begin(0, 0, & ypix);
+		uint_fast16_t xpix = display_wrdatabig_begin(& dbvbig, 0, 0, & ypix);
 		for (ci = 0; ci < RENDERCHARS; ++ ci)
 		{
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * BIGCHARW);
-			ltdc_put_char_big(xpix, ypix, ci, BIGCHARW, rendered_big, picx_big, picy_big);
-			display_do_AA(rendered_big, picx_big, picy_big, xpix, ypix, BIGCHARW, BIGCHARH);
+			ltdc_put_char_big(& dbvbig, xpix, ypix, ci, BIGCHARW);
+			display_do_AA(& dbvbig, xpix, ypix, BIGCHARW, BIGCHARH);
 			xpix += BIGCHARW;
 		}
-		display_wrdatabig_end();
+		display_wrdatabig_end(& dbvbig);
 		dcache_clean((uintptr_t) rendered_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
 	}
 	/* half-size characters */
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdatabig_begin(0, 0, & ypix);
+		uint_fast16_t xpix = display_wrdatabig_begin(& dbvhalf, 0, 0, & ypix);
 		for (ci = 0; ci < RENDERCHARS; ++ ci)
 		{
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * HALFCHARW);
-			ltdc_put_char_half(xpix, ypix, ci, HALFCHARW, rendered_half, picx_half, picy_half);
-			display_do_AA(rendered_half, picx_half, picy_half, xpix, ypix, HALFCHARW, HALFCHARH);
+			ltdc_put_char_half(& dbvhalf, xpix, ypix, ci, HALFCHARW);
+			display_do_AA(& dbvhalf, xpix, ypix, HALFCHARW, HALFCHARH);
 			xpix += HALFCHARW;
 		}
-		display_wrdatabig_end();
+		display_wrdatabig_end(& dbvhalf);
 		dcache_clean((uintptr_t) rendered_half, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
 	}
 }
 
 // большой шрифт
-uint_fast16_t render_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+uint_fast16_t render_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
 
 // большой шрифт
-void render_wrdatabig_end(void)
+void render_wrdatabig_end(const gxdrawb_t * db)
 {
 }
 
-uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
@@ -608,11 +608,11 @@ uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, u
 	/* копируем изображение БЕЗ цветового ключа */
 	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
 	colpip_bitblt(
-			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
-			buffer, DIM_X, DIM_Y,
+			(uintptr_t) db->buffer, GXSIZE(db->dx, db->dy) * sizeof buffer [0],
+			db,
 			xpix, ypix,	// координаты в окне получатля
 			(uintptr_t) rendered_big, 0 * GXSIZE(picx_big, picy_big) * sizeof rendered_big [0],
-			rendered_big, picx_big, picy_big,
+			& dbvbig,
 			ci * BIGCHARW, 0,	// координаты окна источника
 			width, BIGCHARH, // размер окна источника
 			BITBLT_FLAG_NONE, COLORPIP_KEY
@@ -621,11 +621,8 @@ uint_fast16_t render_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char cc, u
 	return xpix + width;
 }
 
-uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
     const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
@@ -634,11 +631,11 @@ uint_fast16_t render_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char cc, 
 	/* копируем изображение БЕЗ цветового ключа */
 	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
 	colpip_bitblt(
-			(uintptr_t) buffer, GXSIZE(DIM_X, DIM_Y) * sizeof buffer [0],
-			buffer, DIM_X, DIM_Y,
+			(uintptr_t) db->buffer, GXSIZE(db->dx, db->dy) * sizeof (PACKEDCOLORPIP_T),
+			db,
 			xpix, ypix,	// координаты в окне получатля
 			(uintptr_t) rendered_half, 0 * GXSIZE(picx_half, picy_half) * sizeof rendered_half [0],
-			rendered_half, picx_half, picy_half,
+			& dbvhalf,
 			ci * HALFCHARW, 0,	// координаты окна источника
 			width, HALFCHARH, // размер окна источника
 			BITBLT_FLAG_NONE, COLORPIP_KEY
@@ -668,20 +665,155 @@ display_reset(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-#if WITHOPENVG
-	uintptr_t frames [LCDMODE_MAIN_PAGES];
-	colmain_fb_list(frames);
-	openvg_init(frames);
-#endif /* WITHOPENVG */
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+	display_lvgl_initialize();
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 }
 
 /* Разряжаем конденсаторы питания */
 void display_uninitialize(void)
 {
-#if WITHOPENVG
-	openvg_deinit();
-#endif /* WITHOPENVG */
 }
+
+
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+#include "lvgl.h"
+//#include "../demos/lv_demos.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
+//#include "src/lvgl_gui/styles.h"
+
+/*Flush the content of the internal buffer the specific area on the display.
+ *`px_map` contains the rendered image as raw pixel map and it should be copied to `area` on the display.
+ *You can use DMA or any hardware acceleration to do this operation in the background but
+ *'lv_display_flush_ready()' has to be called when it's finished.*/
+
+#if defined (RTMIXIDLCD)
+
+static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
+{
+	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp))
+	{
+    	dcache_clean(
+    		(uintptr_t) px_map,
+    		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
+    		);
+    	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
+    }
+	/*IMPORTANT!!!
+     *Inform the graphics library that you are ready with the flushing*/
+    lv_display_flush_ready(disp);
+}
+
+#endif /* defined (RTMIXIDLCD) */
+
+#if defined (RTMIXIDTV)
+
+static void subdisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map)
+{
+	if (lv_display_is_double_buffered(disp) && lv_display_flush_is_last(disp))
+	{
+    	dcache_clean(
+    		(uintptr_t) px_map,
+    		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
+    		);
+    	hardware_ltdc_main_set(RTMIXIDTV, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
+    }
+	/*IMPORTANT!!!
+     *Inform the graphics library that you are ready with the flushing*/
+    lv_display_flush_ready(disp);
+}
+
+#endif /* defined (RTMIXIDTV) */
+
+static uint32_t myhardgeticks(void)
+{
+	return sys_now();
+}
+
+struct driverdata
+{
+	int rtmixid;
+};
+
+// Инициадизация нужного количества дисплеев
+void display_lvgl_initialize(void)
+{
+	lv_init();	// LVGL library initialize
+
+#if defined (RTMIXIDLCD)
+	if (1)
+	{
+		static struct driverdata maindisplay =
+		{
+				.rtmixid = RTMIXIDLCD
+		};
+		// main display
+	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
+	    lv_display_set_driver_data(disp, & maindisplay);
+	    lv_display_set_flush_cb(disp, maindisplay_flush);
+
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
+
+	    lv_display_set_buffers_with_stride(
+	    		disp,
+				dbuf_3_1, dbuf_3_2, sizeof(dbuf_3_1),
+	    		GXADJ(DIM_X) * LCDMODE_PIXELSIZE,
+				LV_DISPLAY_RENDER_MODE_DIRECT);
+	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
+	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
+	    lv_display_set_antialiasing(disp, false);
+	}
+#endif /* defined (RTMIXIDTV) */
+
+#if defined (RTMIXIDTV)
+	if (1)
+	{
+		static struct driverdata subdisplay =
+		{
+				.rtmixid = RTMIXIDTV;
+		};
+		// tv display
+	    lv_display_t * disp = lv_display_create(DIM_X, DIM_Y);
+	    lv_display_set_driver_data(disp, & subdisplay);
+	    lv_display_set_flush_cb(disp, subdisplay_flush);
+
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF  uint8_t dbuf_3_2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
+
+	    lv_display_set_buffers_with_stride(
+	    		disp,
+				dbuf_3_1, dbuf_3_2, sizeof(dbuf_3_1),
+	    		GXADJ(DIM_X) * LCDMODE_PIXELSIZE,
+				LV_DISPLAY_RENDER_MODE_DIRECT);
+	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
+	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
+	    lv_display_set_antialiasing(disp, false);
+	}
+#endif /* defined (RTMIXIDTV) */
+
+	// Add custom draw unit
+	lvglhw_initialize();
+
+	// lvgl будет получать тики
+	lv_tick_set_cb(myhardgeticks);
+}
+
+// преобразование цвета в тип LVGL
+lv_color_t display_lvlcolor(COLORPIP_T c)
+{
+	return lv_color_make(
+			COLORPIP_R(c),
+			COLORPIP_G(c),
+			COLORPIP_B(c));
+}
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 #endif /* LCDMODE_LTDC */
 
@@ -717,54 +849,54 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 #endif
 // Используется при выводе на графический индикатор,
 static void
-display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
+display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	savestring = s;
 	savewhere = __func__;
 	char c;
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
 	while((c = * s ++) != '\0')
-		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
-	display_wrdata_end();
+		xpix = display_put_char_small(db, xpix, ypix, c, lowhalf);
+	display_wrdata_end(db);
 }
 
 // Выдача строки из ОЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at(uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
+display_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string(xcell, ycell + lowhalf, s, lowhalf);
+		display_string(db, xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
 
 // Используется при выводе на графический индикатор,
 static void
-display_string_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
+display_string_P(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	char c;
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
 	while((c = * s ++) != '\0')
-		xpix = display_put_char_small(xpix, ypix, c, lowhalf);
-	display_wrdata_end();
+		xpix = display_put_char_small(db, xpix, ypix, c, lowhalf);
+	display_wrdata_end(db);
 }
 
 // Выдача строки из ПЗУ в указанное место экрана.
 void
 //NOINLINEAT
-display_at_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM char * s)
+display_at_P(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
-		display_string_P(xcell, ycell + lowhalf, s, lowhalf);
+		display_string_P(db, xcell, ycell + lowhalf, s, lowhalf);
 
 	} while (lowhalf --);
 }
@@ -815,7 +947,7 @@ static const FLASHMEM int32_t vals10 [] =
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-pix_display_value_big(
+pix_display_value_big(const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -844,13 +976,13 @@ pix_display_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_big(xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = display_put_char_big(xpix, ypix, '.', lowhalf);
+			xpix = display_put_char_big(db, xpix, ypix, '.', lowhalf);
 		}
 
 		if (blinkpos == g)
@@ -859,19 +991,19 @@ pix_display_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(xpix, ypix, bc, lowhalf);
+				xpix = display_put_char_half(db, xpix, ypix, bc, lowhalf);
 			else
-				xpix = display_put_char_big(xpix, ypix, bc, lowhalf);
+				xpix = display_put_char_big(db, xpix, ypix, bc, lowhalf);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(xpix, ypix, ' ', lowhalf);	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ', lowhalf);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, lowhalf);
 			else
-				xpix = display_put_char_big(xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, lowhalf);
 		}
 		freq = res.rem;
 	}
@@ -880,7 +1012,7 @@ pix_display_value_big(
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-display_value_big(
+display_value_big(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -896,9 +1028,9 @@ display_value_big(
 {
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
-	pix_display_value_big(xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
-	display_wrdatabig_end();
+	uint_fast16_t xpix = display_wrdatabig_begin(db, xcell, ycell, & ypix);
+	pix_display_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	display_wrdatabig_end(db);
 }
 
 #if WITHPRERENDER
@@ -908,7 +1040,7 @@ display_value_big(
 /* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-pix_render_value_big(
+pix_render_value_big(const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -937,13 +1069,13 @@ pix_render_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = render_char_big(xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = render_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = render_char_big(xpix, ypix, '.', lowhalf);
+			xpix = render_char_big(db, xpix, ypix, '.', lowhalf);
 		}
 
 		if (blinkpos == g)
@@ -952,20 +1084,20 @@ pix_render_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = render_char_half(xpix, ypix, bc, lowhalf);
+				xpix = render_char_half(db, xpix, ypix, bc, lowhalf);
 			else
-				xpix = render_char_big(xpix, ypix, bc, lowhalf);
+				xpix = render_char_big(db, xpix, ypix, bc, lowhalf);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = render_char_big(xpix, ypix, ' ', lowhalf);	// supress zero
+			xpix = render_char_big(db, xpix, ypix, ' ', lowhalf);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = render_char_half(xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = render_char_half(db, xpix, ypix, '0' + res.quot, lowhalf);
 
 			else
-				xpix = render_char_big(xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = render_char_big(db, xpix, ypix, '0' + res.quot, lowhalf);
 		}
 		freq = res.rem;
 	}
@@ -975,7 +1107,7 @@ pix_render_value_big(
 /* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-render_value_big(
+render_value_big(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -991,16 +1123,16 @@ render_value_big(
 {
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = render_wrdatabig_begin(xcell, ycell, & ypix);
-	pix_render_value_big(xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
-	render_wrdatabig_end();
+	uint_fast16_t xpix = render_wrdatabig_begin(db, xcell, ycell, & ypix);
+	pix_render_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	render_wrdatabig_end(db);
 }
 
 #endif /* WITHPRERENDER */
 
 void
 NOINLINEAT
-display_value_lower(
+display_value_lower(const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast32_t freq,
@@ -1017,7 +1149,7 @@ display_value_lower(
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdatabig_begin(xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdatabig_begin(db, xcell, ycell, & ypix);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -1026,24 +1158,24 @@ display_value_lower(
 		if (comma == g || comma + 3 == g)
 		{
 			z = 0;
-			xpix = display_put_char_big(xpix, ypix, '.', 0);
+			xpix = display_put_char_big(db, xpix, ypix, '.', 0);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(xpix, ypix, ' ', 0);	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ', 0);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_half(xpix, ypix, '0' + res.quot, 0);
+			xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, 0);
 		}
 		freq = res.rem;
 	}
-	display_wrdatabig_end();
+	display_wrdatabig_end(db);
 }
 
 void
 NOINLINEAT
-display_value_small(
+display_value_small(const gxdrawb_t * db,
 	uint_fast8_t x,	// x координата начала вывода значения
 	uint_fast8_t y,	// y координата начала вывода значения
 	int_fast32_t freq,
@@ -1063,20 +1195,20 @@ display_value_small(
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(db, x, y, & ypix);
 	if (wsign || wminus)
 	{
 		// отображение со знаком.
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = display_put_char_small(xpix, ypix, '-', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '-', lowhalf);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = display_put_char_small(xpix, ypix, '+', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '+', lowhalf);
 		else
-			xpix = display_put_char_small(xpix, ypix, ' ', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, ' ', lowhalf);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1085,24 +1217,24 @@ display_value_small(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_small(xpix, ypix, (z == 0) ? '.' : ' ', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', lowhalf);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = display_put_char_small(xpix, ypix, '.', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '.', lowhalf);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_small(xpix, ypix, ' ', lowhalf);	// supress zero
+			xpix = display_put_char_small(db, xpix, ypix, ' ', lowhalf);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_small(xpix, ypix, '0' + res.quot, lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '0' + res.quot, lowhalf);
 		}
 		freq = res.rem;
 	}
-	display_wrdata_end();
+	display_wrdata_end(db);
 }
 
 void display_value_small_xy(
@@ -1112,6 +1244,8 @@ void display_value_small_xy(
 	COLOR565_T fg
 	)
 {
+	gxdrawb_t dbv;
+	gxdrawb_default(& dbv);
 	uint_fast8_t width = 9;
 	uint_fast8_t comma = 3;
 	uint_fast8_t comma2 = 6;
@@ -1129,13 +1263,13 @@ void display_value_small_xy(
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = display_put_char_small_xy(xpix, ypix, '-', fg);
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '-', fg);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = display_put_char_small_xy(xpix, ypix, '+', fg);
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '+', fg);
 		else
-			xpix = display_put_char_small_xy(xpix, ypix, ' ', fg);
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, ' ', fg);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1144,20 +1278,20 @@ void display_value_small_xy(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_small_xy(xpix, ypix, (z == 0) ? '.' : ' ', fg);
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, (z == 0) ? '.' : ' ', fg);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = display_put_char_small_xy(xpix, ypix, '.', fg);
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_small_xy(xpix, ypix, ' ', fg);	// supress zero
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_small_xy(xpix, ypix, '0' + res.quot, fg);
+			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}
@@ -1956,12 +2090,11 @@ COLORPIP_T convert_565_to_a888(uint16_t color)
 	return TFTRGB(r5, g6, b5);
 }
 
-void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color)
+void graw_picture_RLE(const gxdrawb_t * db, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORPIP_T bg_color)
 {
 	uint_fast32_t i = 0;
 	uint_fast16_t x1 = x, y1 = y;
 	uint_fast16_t transparent_color = 0, count = 0;
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	while (y1 < y + picture->height)
 	{
@@ -1972,7 +2105,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 			for (uint_fast16_t p = 0; p < count; p ++)
 			{
 				const COLORPIP_T point = convert_565_to_a888(picture->data [i]);
-				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
+				colpip_point(db, x1, y1, picture->data [i] == 0 ? bg_color : point);
 
 				x1 ++;
 				if (x1 >= x + picture->width)
@@ -1991,7 +2124,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 			const COLORPIP_T point = convert_565_to_a888(picture->data [i]);
 			for (uint_fast16_t p = 0; p < count; p ++)
 			{
-				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
+				colpip_point(db, x1, y1, picture->data [i] == 0 ? bg_color : point);
 
 				x1 ++;
 				if (x1 >= x + picture->width)
@@ -2005,7 +2138,7 @@ void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCO
 	}
 }
 
-void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, COLORPIP_T bg_color)
+void graw_picture_RLE_buf(const gxdrawb_t * db, uint16_t x, uint16_t y, const picRLE_t * picture, COLORPIP_T bg_color)
 {
 	uint_fast32_t i = 0;
 	uint_fast16_t x1 = x, y1 = y;
@@ -2020,7 +2153,7 @@ void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_f
 			for (uint_fast16_t p = 0; p < count; p++)
 			{
 				COLORPIP_T point = convert_565_to_a888(picture->data [i]);
-				colpip_point(buf, dx, dy, x1, y1, picture->data [i] == transparent_color ? bg_color : point);
+				colpip_point(db, x1, y1, picture->data [i] == transparent_color ? bg_color : point);
 
 				x1 ++;
 				if (x1 >= x + picture->width)
@@ -2039,7 +2172,7 @@ void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_f
 			PACKEDCOLORPIP_T point = convert_565_to_a888(picture->data [i]);
 			for (uint_fast16_t p = 0; p < count; p++)
 			{
-				colpip_point(buf, dx, dy, x1, y1, picture->data[i] == transparent_color ? bg_color : point);
+				colpip_point(db, x1, y1, picture->data[i] == transparent_color ? bg_color : point);
 
 				x1 ++;
 				if (x1 >= x + picture->width)
@@ -2058,9 +2191,7 @@ void graw_picture_RLE_buf(PACKEDCOLORPIP_T * const buf, uint_fast16_t dx, uint_f
 #if LCDMODE_LTDC
 
 void display_do_AA(
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
+	const gxdrawb_t * db,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
 	uint_fast16_t width,
@@ -2073,10 +2204,10 @@ void display_do_AA(
 		uint_fast16_t y;
 		for (y = row; y < (row + height - 1); y ++)
 		{
-			const COLORPIP_T p1 = * colpip_mem_at(buffer, dx, dy, x, y);
-			const COLORPIP_T p2 = * colpip_mem_at(buffer, dx, dy, x + 1, y);
-			const COLORPIP_T p3 = * colpip_mem_at(buffer, dx, dy, x, y + 1);
-			const COLORPIP_T p4 = * colpip_mem_at(buffer, dx, dy, x + 1, y + 1);
+			const COLORPIP_T p1 = * colpip_mem_at(db, x, y);
+			const COLORPIP_T p2 = * colpip_mem_at(db, x + 1, y);
+			const COLORPIP_T p3 = * colpip_mem_at(db, x, y + 1);
+			const COLORPIP_T p4 = * colpip_mem_at(db, x + 1, y + 1);
 
 			unsigned p1_r, p1_g, p1_b, p2_r, p2_g, p2_b, p3_r, p3_g, p3_b, p4_r, p4_g, p4_b;
 			unsigned p_r, p_b, p_g;
@@ -2104,7 +2235,7 @@ void display_do_AA(
 			p_g = ((uint_fast32_t) p1_g + p2_g + p3_g + p4_g) / 4;
 			p_b = ((uint_fast32_t) p1_b + p2_b + p3_b + p4_b) / 4;
 
-			colpip_point(buffer, dx, dy, x, y, TFTRGB(p_r, p_g, p_b));
+			colpip_point(db, x, y, TFTRGB(p_r, p_g, p_b));
 		}
 	}
 }

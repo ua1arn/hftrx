@@ -9,6 +9,8 @@
 
 #if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 
+
+#include "gpio.h"
 #include "formats.h"
 
 #include "lwip/opt.h"
@@ -126,16 +128,19 @@ static void emac_hw_initialize(void)
 	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
 	//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
 
+	HARDWARE_ETH_INITIALIZE();	// Должно быть тут - снять ресет с PHY до инициализации
 	{
 		// The working clock of EMAC is from AHB3.
 
 		HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
 		//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 		//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
+
+		// Сигнал phyrstb тут уже должен бьыть неактивен
+
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
 		while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
 			;
-
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
 			//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
@@ -149,9 +154,14 @@ static void emac_hw_initialize(void)
 //			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 //			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
 
+
+		const uint8_t hwaddr [6] = { HWADDR };
 		// ether 1A:0C:74:06:AF:64
-		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
-		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+//		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
+//		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
+		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
+
 	}
 	// RX init
 	{
@@ -221,9 +231,11 @@ static void emac_hw_initialize(void)
 
 void nic_initialize(void)
 {
-	//PRINTF("init_netif start\n");
+	//PRINTF("nic_initialize start\n");
 	emac_hw_initialize();
 	on_packet = nic_on_packet;
+	//PRINTF("nic_initialize done\n");
+
 }
 
 #endif /* WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616) */

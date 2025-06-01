@@ -29,6 +29,9 @@ void spi_operate_unlock(IRQL_t irql);
 void spidf_operate_lock(IRQL_t * oldIrql);
 void spidf_operate_unlock(IRQL_t irql);
 
+
+char nameDATAFLASH [64] = "NoChip";
+
 #if WITHSPIHW || WITHSPISW
 
 
@@ -6137,8 +6140,6 @@ static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
 static uint_fast32_t sectorSize = (UINT32_C(1) << 16);		// default sectoir size 64kB
 static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
 
-char nameDATAFLASH [64];
-
 int testchipDATAFLASH(void)
 {
 	unsigned mf_id;	// Manufacturer ID
@@ -6566,8 +6567,6 @@ unsigned long sectorsizeDATAFLASH(void)
 {
 	return 4096;
 }
-
-char nameDATAFLASH [] = "NoChip";
 
 int testchipDATAFLASH(void)
 {
@@ -7199,7 +7198,7 @@ void board_fpga_fir_coef_p1(int_fast32_t v)
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
 
-#else /* WITHSPI32BIT */
+#elif WITHSPISW
 	// Software SPI
 	spi_progval8_p1(0, v >> 24);
 	spi_progval8_p2(0, v >> 16);
@@ -7225,7 +7224,7 @@ void board_fpga_fir_coef_p2(int_fast32_t v)
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
 
-#else /* WITHSPI32BIT */
+#elif WITHSPISW
 	// Software SPI
 	spi_progval8_p2(0, v >> 24);
 	spi_progval8_p2(0, v >> 16);
@@ -7247,7 +7246,7 @@ board_fpga_fir_complete(void)
 #elif WITHSPIHW
 	hardware_spi_complete_b8();
 
-#else /* WITHSPI32BIT */
+#elif WITHSPISW
 	// Software SPI
 	spi_complete(targetnone);
 
@@ -7276,7 +7275,7 @@ board_fpga_fir_connect(IRQL_t * oldIrql)
 	hardware_spi_b8_p1(0x00);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8();
 
-#else /* WITHSPI32BIT */
+#elif WITHSPISW
 	// Software SPI
 	spi_progval8_p1(targetnone, 0x00);	// provide clock for reset bit counter while CS=1
 	spi_complete(targetnone);

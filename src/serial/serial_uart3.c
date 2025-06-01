@@ -17,6 +17,12 @@
 #include <math.h>
 #include "clocks.h"
 
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
+	typedef USART_TypeDef UART_t;
+	#undef UARTBASENAME
+	#define UARTBASENAME(port) UARTBASEconcat(USART, port)
+#endif
+
 #define thisPORT 3
 
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX

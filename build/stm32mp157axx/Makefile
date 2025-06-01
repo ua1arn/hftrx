@@ -44,8 +44,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
@@ -69,7 +69,6 @@ MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
-LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -133,11 +132,8 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 
-ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
-endif
+include ../lvgl.mak
 
 ifeq (1, 1)
 # ST USB DEVICE
@@ -160,55 +156,20 @@ SRCDIRS += $(TINYUSBDIR)/src
 DINCDIR += $(TINYUSBDIR)/src
 endif
 
-ifeq (1, 0)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
-endif
+include ../lupng.mak
 
-ifeq (1, 0)
 # LWIP
-LWIPDIR = $(PRJROOT)/lib/lwip
-DINCDIR += \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/apps/http
-SRCDIRS += \
-	$(LWIPDIR)/src/api \
-	$(LWIPDIR)/src/core \
-	$(LWIPDIR)/src/netif \
-	$(LWIPDIR)/src/http \
-	$(LWIPDIR)/src/apps/http \
-	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-endif
+include ../lwip.mak
 
-ifeq (1, 0)
-# OpenVG
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
-SRCDIRS += $(OPENVGDIR)/src
-DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
-UDEFS += -D"EGL_STATIC_LIBRARY"=1
-endif
-
-ifeq (1, 0)
 # FreeRTOS
-RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
-DINCDIR += \
-	$(RTOSDIR)/include \
-	$(RTOSDIR)/portable/GCC/ARM_CA9
-SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
-endif
+include ../freertos.mak
 
-ifeq (1, 0)
 # btstack
-# https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
-endif
+
+# litehtml
+include ../litehtml.mak
 
 ifeq (1, 0)
 # litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
@@ -330,11 +291,11 @@ $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(OBJSA_APP)
+%_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 

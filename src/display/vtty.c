@@ -45,6 +45,7 @@ typedef struct vtty_tag
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTY_ROWS-1
 	unsigned row;		// 0..VTTY_ROWS-1
 	unsigned col;		// 0..VTTY_COLS-1
+	gxdrawb_t dbvfb;
 } vtty_t;
 
 static uint_fast8_t debugvtty_qget(uint_fast8_t * pc);
@@ -60,7 +61,7 @@ static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);
 void display_vtty_printf_irq(const char * format, ...);
-void display2_vtty(uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_vtty(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 void display_vtty_clrscr(void);
 void display_vtty_gotoxy(unsigned x, unsigned y);
 
@@ -73,7 +74,8 @@ static void display_vtty_initialize(void)
 	vt->scroll = 0;
 	vt->row = 0;
 	vt->col = 0;
-	colpip_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
+	gxdrawb_initialize(& vt->dbvfb, vt->fb, VTTY_DX, VTTY_DY);
+	colpip_fillrect(& vt->dbvfb, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
 	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
 	vtty_inited = 1;
 	display_vtty_printf("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
@@ -87,7 +89,7 @@ void display_vtty_clrscr(void)
 	vt->row = 0;
 	vt->col = 0;
 
-	colpip_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
+	colpip_fillrect(& vt->dbvfb, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
 }
 
 void display_vtty_gotoxy(unsigned x, unsigned y)
@@ -105,12 +107,11 @@ void display_vtty_gotoxy(unsigned x, unsigned y)
 }
 
 // копирование растра в видеобуфер отображения
-static void display_vtty_show(
+static void display_vtty_show(const gxdrawb_t * tdb,
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
 {
-	PACKEDCOLORPIP_T * const tfb = colmain_fb_draw();
 //	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, VTTY_BG);	// обозначам место под вывод информации
 //	return;
 	vtty_t * const vt = & vtty0;
@@ -128,11 +129,10 @@ static void display_vtty_show(
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_bitblt(
-				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-				tfb, DIM_X, DIM_Y, x, y + tgy1,
-				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				vt->fb,	// начальный адрес источника
-				VTTY_DX, VTTY_DY,	// размеры источника
+				(uintptr_t) tdb->buffer, GXSIZE(tdb->dx, tdb->dy) * sizeof (PACKEDCOLORPIP_T),
+				tdb, x, y + tgy1,
+				(uintptr_t) vt->dbvfb.buffer, GXSIZE(vt->dbvfb.dx, vt->dbvfb.dy) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				& vt->dbvfb,	// источник
 				0, tgh2,	// координаты окна источника
 				VTTY_DX, tgh1,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
@@ -141,18 +141,17 @@ static void display_vtty_show(
 	{
 		// нижняя часть
 		colpip_bitblt(
-				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
-				tfb, DIM_X, DIM_Y, x, y + tgy2,
-				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				vt->fb,	// начальный адрес источника
-				VTTY_DX, VTTY_DY,	// размеры источника
+				(uintptr_t) tdb->buffer, 1 * GXSIZE(tdb->dx, tdb->dy) * sizeof (PACKEDCOLORPIP_T),
+				tdb, x, y + tgy2,
+				(uintptr_t) vt->dbvfb.buffer, 1 * GXSIZE(vt->dbvfb.dx, vt->dbvfb.dy) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
+				& vt->dbvfb,	// источник
 				0, 0,	// координаты окна источника
 				VTTY_DX, tgh2,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
 }
 
-void display2_vtty(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_vtty(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	const uint_fast16_t x = GRID2X(x0);
 	const uint_fast16_t y = GRID2Y(y0);
@@ -171,10 +170,10 @@ void display2_vtty(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_
 		display_vtty_cout(vt, c);
 
 	}
-	display_vtty_show(x, y);
+	display_vtty_show(db, x, y);
 }
 
-void display2_vtty_init(uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_vtty_init(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	display_vtty_initialize();
 }
@@ -190,7 +189,7 @@ static void display_vtty_scrollup(
 	vt->scroll = (vt->scroll + nlines) % VTTY_ROWS;
 	// очищаем видеобуфер
 	colpip_fillrect(
-			vt->fb, VTTY_DX, VTTY_DY,
+			& vt->dbvfb,
 			0, (VTTY_ROWS - 1 + vt->scroll) % VTTY_ROWS * H,
 			VTTY_DX, nlines * H,
 			VTTY_BG);
@@ -223,7 +222,7 @@ static void display_vtty_cout(
 	default:
 		{
 			colpip_text(
-					vt->fb, VTTY_DX, VTTY_DY,
+					& vt->dbvfb,
 					vt->col * VTTY_CHARPIX, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
 					VTTY_FG, & ch, 1);
 

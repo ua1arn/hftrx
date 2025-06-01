@@ -90,7 +90,7 @@ struct FREQR {
 
 #if 1
 
-static const struct FREQR FLASHMEM hmc830_freqs [] = {
+static const struct FREQR hmc830_freqs [] = {
 	{ 1,    0x1C0 | 1,	1500000000UL, 3000000000UL, },
 	{ 2,    0x1C0 | 2,	 750000000UL, 1500000000UL, },
 	{ 4,    0x0C0 | 4,	 500000000UL,  750000000UL, },
@@ -106,7 +106,7 @@ static const struct FREQR FLASHMEM hmc830_freqs [] = {
 #else
 
 /* Полная таблица */
-static const struct FREQR FLASHMEM hmc830_freqs [] =
+static const struct FREQR hmc830_freqs [] =
 {
         { 1, 0x1C0 | 1,         1500000000UL, 3000000000UL, }, /* 1500.000000..3000.000000 */
         { 2, 0x1C0 | 2,          750000000UL, 1500000000UL, }, /* 750.000000..1500.000000 */

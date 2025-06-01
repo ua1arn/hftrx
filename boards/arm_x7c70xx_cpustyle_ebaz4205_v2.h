@@ -13,7 +13,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	0	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -89,7 +89,7 @@
 		} while (0)
 
 	#define BOARD_PPSIN_BIT	48
-	#define NMEA_INITIALIZE() do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
 		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
 		gpio_onrisinginterrupt(BOARD_PPSIN_BIT, spool_nmeapps, NULL, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);	\
@@ -562,22 +562,6 @@
 #endif /* WITHSDHCHW */
 
 #if WITHTX
-
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	// 
-	#define TXGFV_RX		(1u << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(1u << 0)
-	#define TXGFV_TX_CW		(1u << 1)
-	#define TXGFV_TX_AM		(1u << 2)
-	#define TXGFV_TX_NFM	(1u << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-		} while (0)
-
 
 	// +++
 	// TXDISABLE input - PD10

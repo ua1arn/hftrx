@@ -51,7 +51,7 @@ enum
 	ep0inxxx = 0x80,
 
 #if WITHUSBRNDIS
-	USBD_EP_RNDIS_INT,
+	USBD_EP_RNDIS_NOTIFY,
 	USBD_EP_RNDIS_IN,
 #endif /* WITHUSBRNDIS */
 
@@ -68,7 +68,7 @@ enum
 #if WITHUSBCDCACM
 		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
 	#if ! WITHUSBCDCACM_NOINT
-			USBD_EP_CDCACM_INT,		// CDC INT состояние ком-порта в компьютер из TRX
+			USBD_EP_CDCACM_NOTIFY,		// CDC INT состояние ком-порта в компьютер из TRX
 	#endif /* ! WITHUSBCDCACM_NOINT */
 		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N * 2 - 1,
 #endif /* WITHUSBCDCACM */
@@ -78,18 +78,18 @@ enum
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
-	USBD_EP_CDCECM_INT,	// CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDCECM_NOTIFY,	// CDC INT События ком-порта в компьютер из TRX
 	USBD_EP_CDCECM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBCDCNCM
-	USBD_EP_CDCNCM_INT,	// CDC INT События ком-порта в компьютер из TRX
+	USBD_EP_CDCNCM_NOTIFY,	// CDC INT События ком-порта в компьютер из TRX
 	USBD_EP_CDCNCM_IN,	// CDC IN Данные ком-порта в компьютер из TRX
 #endif /* WITHUSBCDCNCM */
 
 #if WITHUSBHID
-	//USBD_EP_HIDMOUSE_INT,	// HID INT События манипулятора в компьютер из TRX
-	USBD_EP_HIDKEYBOARD_INT,	// HID INT События манипулятора в компьютер из TRX
+	//USBD_EP_HIDMOUSE_NOTIFY,	// HID INT События манипулятора в компьютер из TRX
+	USBD_EP_HIDKEYBOARD_NOTIFY,	// HID INT События манипулятора в компьютер из TRX
 #endif /* WITHUSBHID */
 
 #if WITHUSBDFU
@@ -97,7 +97,7 @@ enum
 #endif /* WITHUSBDFU */
 
 #if WITHUSBDMTP
-	USBD_EP_MTP_INT,	// MTP INT События в компьютер из TRX
+	USBD_EP_MTP_NOTIFY,	// MTP INT События в компьютер из TRX
 	USBD_EP_MTP_IN,		// MTP IN Данные в компьютер из TRX
 #endif /* WITHUSBDMTP */
 
@@ -315,16 +315,16 @@ enum interfaces_tag
 
 #if ! WITHUSBCDCACM_NOINT
 
-#define USBD_CDCACM_INT_EP(base, offset) ((base) + (offset) * 2)
-#define USBD_CDCACM_OFFSET_BY_INT_EP(ep, base) (((ep) - (base)) / 2)
+	#define USBD_CDCACM_NOTIFY_EP(base, offset) ((base) + (offset) * 2)
+	#define USBD_CDCACM_OFFSET_BY_NOTIFY_EP(ep, base) (((ep) - (base)) / 2)
 
-#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
-#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
+	#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
+	#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
 
 #else /* ! WITHUSBCDCACM_NOINT */
 
-#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 1)
-#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 1)
+	#define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 1)
+	#define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 1)
 
 #endif /* ! WITHUSBCDCACM_NOINT */
 

@@ -174,7 +174,7 @@ SECTIONS
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-
+		. = ALIGN(64);
 		__bss_end__ = .;
 	} > RAM
 

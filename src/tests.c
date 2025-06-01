@@ -355,7 +355,7 @@ static uint_fast8_t getbufferbit(uint_fast8_t col, uint_fast8_t row, uint_fast8_
 #if 0
 	const uint_fast8_t c = ascii_decode((unsigned char) eitext [textcol]);
 	enum { NBYTES = (sizeof ls020_smallfont [0] / sizeof ls020_smallfont [0][0]) };
-	const FLASHMEM uint8_t * p = & ls020_smallfont [c][0];
+	const uint8_t * p = & ls020_smallfont [c][0];
 	return (p [SMALLCHARH - 1 - charrow] & (128U >> charcol)) ? 3 : 2;
 #else
 	const uint_fast8_t * p = pattern;
@@ -3113,7 +3113,7 @@ typedef struct
 /**************************************************************************//**
  * @brief Working instance of LCD display
  *****************************************************************************/
-static const FLASHMEM MCU_DISPLAY LCD1x9 = {
+static const MCU_DISPLAY LCD1x9 = {
   {
     { /* 1 */
 	{       3,       3,       0,       0,       2,       1,       1,       3,       1,       3,       1,       2,       2,       2,       0,       0}, // com
@@ -3160,7 +3160,7 @@ static const FLASHMEM MCU_DISPLAY LCD1x9 = {
  * Uses bit pattern as defined for text segments above.
  * E.g. a capital O, would have bits 0 1 2 3 4 5 => 0x003f defined
  *****************************************************************************/
-static const FLASHMEM uint16_t LCDAlphabet[] = {
+static const uint16_t LCDAlphabet[] = {
   0x0000, /* space */
   0x1100, /* ! */
   0x0280, /* " */
@@ -5251,7 +5251,7 @@ static uint_fast8_t qempty(void)
 // ---------
 static volatile uint_fast8_t rxcount, txcount, rxerrcount;
 
-static int cat3_puts_impl_P(const FLASHMEM char * s)
+static int cat3_puts_impl_P(const char * s)
 {
 	char c;
 	while ((c = * s ++) != '\0')
@@ -5571,6 +5571,8 @@ static void display_solidbar(
 	COLORPIP_T color
 	)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	if (x2 < x)
 	{
 		const uint_fast16_t t = x;
@@ -5581,7 +5583,7 @@ static void display_solidbar(
 		const uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	display_fillrect(x, y, x2 - x, y2 - y, color);
+	display_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
 }
 
 
@@ -5636,6 +5638,9 @@ static void BarTest(void)
 static  void
 GridTest(void)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
 	PRINTF("GridTest\n");
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
@@ -5677,9 +5682,9 @@ GridTest(void)
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
-	display_fillrect(xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
-	display_fillrect(xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
-	display_fillrect(xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
+	display_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
+	display_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
+	display_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
 /*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
@@ -5693,27 +5698,27 @@ GridTest(void)
 				 );
 */
 
-	display_fillrect(xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
-	display_line(xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
+	display_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
+	display_line(& dbv, xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
 
 	/* Interlase clocke test.	*/
-	display_line(10,  0,  xm, 10 + 1,  col3);
-	display_line(10,  0,  xm, 10 + 3,  col3);
-	display_line(10,  0,  xm, 10 + 5,  col3);
-	display_line(10,  0,  xm, 10 + 7,  col3);
+	display_line(& dbv, 10,  0,  xm, 10 + 1,  col3);
+	display_line(& dbv, 10,  0,  xm, 10 + 3,  col3);
+	display_line(& dbv, 10,  0,  xm, 10 + 5,  col3);
+	display_line(& dbv, 10,  0,  xm, 10 + 7,  col3);
 
 	/* diagonales test.	*/
-	display_line(xm, 0,  xm, ym, col3);
-	display_line(xm, ym, 0,  ym, col3);
-	display_line(0,  ym, 0,  0,  col3);
-	display_line(0,  0,  xm, ym, col3);
-	display_line(0,  ym, xm, 0,  col3);
+	display_line(& dbv, xm, 0,  xm, ym, col3);
+	display_line(& dbv, xm, ym, 0,  ym, col3);
+	display_line(& dbv, 0,  ym, 0,  0,  col3);
+	display_line(& dbv, 0,  0,  xm, ym, col3);
+	display_line(& dbv, 0,  ym, xm, 0,  col3);
 
 	// тест перестановки байтов при выборке видеоконтроллером
 	const unsigned rctx = DIM_X / 3;
 	const unsigned rcty = DIM_Y / 3;
-	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
-	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
+	display_line(& dbv, rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
+	display_line(& dbv, rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
 
 	colmain_nextfb();
 
@@ -5821,614 +5826,6 @@ static void disableAllIRQs(void)
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
-#if WITHOPENVG
-/*------------------------------------------------------------------------
- *
- * OpenVG 1.0.1 Reference Implementation sample code
- * -------------------------------------------------
- *
- * Copyright (c) 2007 The Khronos Group Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and /or associated documentation files
- * (the "Materials "), to deal in the Materials without restriction,
- * including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Materials,
- * and to permit persons to whom the Materials are furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Materials.
- *
- * THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE MATERIALS OR
- * THE USE OR OTHER DEALINGS IN THE MATERIALS.
- *
- *//**
- * \file
- * \brief	Tiger sample application. Resizing the application window
- *			rerenders the tiger in the new resolution. Pressing 1,2,3
- *			or 4 sets pixel zoom factor, mouse moves inside the zoomed
- *			image (mouse move works on OpenGL >= 1.2).
- * \note
- *//*-------------------------------------------------------------------*/
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <assert.h>
-#include <string.h>
-#define UNREF(X) ((void)(X))
-
-#ifdef HG_FLAT_INCLUDES
-#	include "openvg.h"
-#	include "vgu.h"
-//#	include "egl.h"
-#else
-#	include "VG/openvg.h"
-#	include "VG/vgu.h"
-//#	include "EGL/egl.h"
-#endif
-
-
-//#if WITHOPENVG && 1
-
-#include "tiger.h"
-
-/*--------------------------------------------------------------*/
-
-//static const float			aspectRatio = 612.0f / 792.0f;
-
-/*--------------------------------------------------------------*/
-
-typedef struct
-{
-	VGFillRule		m_fillRule;
-	VGPaintMode		m_paintMode;
-	VGCapStyle		m_capStyle;
-	VGJoinStyle		m_joinStyle;
-	float			m_miterLimit;
-	float			m_strokeWidth;
-	VGPaint			m_fillPaint;
-	VGPaint			m_strokePaint;
-	VGPath			m_path;
-} PathData;
-
-typedef struct
-{
-	PathData*			m_paths;
-	int					m_numPaths;
-} PS;
-
-static PS* PS_construct(const char* commands, int commandCount, const float* points, int pointCount)
-{
-	PS* ps = (PS*)malloc(sizeof(PS));
-	int p = 0;
-	int c = 0;
-	int i = 0;
-	int paths = 0;
-	int maxElements = 0;
-	unsigned char* cmd;
-	UNREF(pointCount);
-
-	while(c < commandCount)
-	{
-		int elements, e;
-		c += 4;
-		p += 8;
-		elements = (int)points[p++];
-		ASSERT(elements > 0);
-		if(elements > maxElements)
-			maxElements = elements;
-		for(e=0;e<elements;e++)
-		{
-			switch(commands[c])
-			{
-			case 'M': p += 2; break;
-			case 'L': p += 2; break;
-			case 'C': p += 6; break;
-			case 'E': break;
-			default:
-				ASSERT(0);		//unknown command
-			}
-			c++;
-		}
-		paths++;
-	}
-
-	ps->m_numPaths = paths;
-	ps->m_paths = (PathData*)malloc(paths * sizeof(PathData));
-	cmd = (unsigned char*)malloc(maxElements);
-
-	i = 0;
-	p = 0;
-	c = 0;
-	while(c < commandCount)
-	{
-		int elements, startp, e;
-		float color[4];
-
-		//fill type
-		int paintMode = 0;
-		ps->m_paths[i].m_fillRule = VG_NON_ZERO;
-		switch( commands[c] )
-		{
-		case 'N':
-			break;
-		case 'F':
-			ps->m_paths[i].m_fillRule = VG_NON_ZERO;
-			paintMode |= VG_FILL_PATH;
-			break;
-		case 'E':
-			ps->m_paths[i].m_fillRule = VG_EVEN_ODD;
-			paintMode |= VG_FILL_PATH;
-			break;
-		default:
-			ASSERT(0);		//unknown command
-		}
-		c++;
-
-		//stroke
-		switch( commands[c] )
-		{
-		case 'N':
-			break;
-		case 'S':
-			paintMode |= VG_STROKE_PATH;
-			break;
-		default:
-			ASSERT(0);		//unknown command
-		}
-		ps->m_paths[i].m_paintMode = (VGPaintMode)paintMode;
-		c++;
-
-		//line cap
-		switch( commands[c] )
-		{
-		case 'B':
-			ps->m_paths[i].m_capStyle = VG_CAP_BUTT;
-			break;
-		case 'R':
-			ps->m_paths[i].m_capStyle = VG_CAP_ROUND;
-			break;
-		case 'S':
-			ps->m_paths[i].m_capStyle = VG_CAP_SQUARE;
-			break;
-		default:
-			ASSERT(0);		//unknown command
-		}
-		c++;
-
-		//line join
-		switch( commands[c] )
-		{
-		case 'M':
-			ps->m_paths[i].m_joinStyle = VG_JOIN_MITER;
-			break;
-		case 'R':
-			ps->m_paths[i].m_joinStyle = VG_JOIN_ROUND;
-			break;
-		case 'B':
-			ps->m_paths[i].m_joinStyle = VG_JOIN_BEVEL;
-			break;
-		default:
-			ASSERT(0);		//unknown command
-		}
-		c++;
-
-		//the rest of stroke attributes
-		ps->m_paths[i].m_miterLimit = points[p++];
-		ps->m_paths[i].m_strokeWidth = points[p++];
-
-		//paints
-		color[0] = points[p++];
-		color[1] = points[p++];
-		color[2] = points[p++];
-		color[3] = 1.0f;
-		ps->m_paths[i].m_strokePaint = vgCreatePaint();
-		vgSetParameteri(ps->m_paths[i].m_strokePaint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
-		vgSetParameterfv(ps->m_paths[i].m_strokePaint, VG_PAINT_COLOR, 4, color);
-
-		color[0] = points[p++];
-		color[1] = points[p++];
-		color[2] = points[p++];
-		color[3] = 1.0f;
-		ps->m_paths[i].m_fillPaint = vgCreatePaint();
-		vgSetParameteri(ps->m_paths[i].m_fillPaint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
-		vgSetParameterfv(ps->m_paths[i].m_fillPaint, VG_PAINT_COLOR, 4, color);
-
-		//read number of elements
-
-		elements = (int)points[p++];
-		ASSERT(elements > 0);
-		startp = p;
-		for(e=0;e<elements;e++)
-		{
-			switch( commands[c] )
-			{
-			case 'M':
-				cmd[e] = VG_MOVE_TO | VG_ABSOLUTE;
-				p += 2;
-				break;
-			case 'L':
-				cmd[e] = VG_LINE_TO | VG_ABSOLUTE;
-				p += 2;
-				break;
-			case 'C':
-				cmd[e] = VG_CUBIC_TO | VG_ABSOLUTE;
-				p += 6;
-				break;
-			case 'E':
-				cmd[e] = VG_CLOSE_PATH;
-				break;
-			default:
-				ASSERT(0);		//unknown command
-			}
-			c++;
-		}
-
-		ps->m_paths[i].m_path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
-		vgAppendPathData(ps->m_paths[i].m_path, elements, cmd, points + startp);
-		i++;
-	}
-	free(cmd);
-	return ps;
-}
-
-static void PS_destruct(PS* ps)
-{
-	int i;
-	ASSERT(ps);
-	for(i=0;i<ps->m_numPaths;i++)
-	{
-		vgDestroyPaint(ps->m_paths[i].m_fillPaint);
-		vgDestroyPaint(ps->m_paths[i].m_strokePaint);
-		vgDestroyPath(ps->m_paths[i].m_path);
-	}
-	free(ps->m_paths);
-	free(ps);
-}
-
-static void PS_render(PS* ps)
-{
-	int i;
-	ASSERT(ps);
-	vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);
-
-	for(i=0;i<ps->m_numPaths;i++)
-	{
-		vgSeti(VG_FILL_RULE, ps->m_paths[i].m_fillRule);
-		vgSetPaint(ps->m_paths[i].m_fillPaint, VG_FILL_PATH);
-
-		if(ps->m_paths[i].m_paintMode & VG_STROKE_PATH)
-		{
-			vgSetf(VG_STROKE_LINE_WIDTH, ps->m_paths[i].m_strokeWidth);
-			vgSeti(VG_STROKE_CAP_STYLE, ps->m_paths[i].m_capStyle);
-			vgSeti(VG_STROKE_JOIN_STYLE, ps->m_paths[i].m_joinStyle);
-			vgSetf(VG_STROKE_MITER_LIMIT, ps->m_paths[i].m_miterLimit);
-			vgSetPaint(ps->m_paths[i].m_strokePaint, VG_STROKE_PATH);
-		}
-
-		vgDrawPath(ps->m_paths[i].m_path, ps->m_paths[i].m_paintMode);
-	}
-	ASSERT(vgGetError() == VG_NO_ERROR);
-}
-
-/*--------------------------------------------------------------*/
-
-static void rendertiger(PS* const tiger, int w, int h)
-{
-	float clearColor[4] = {1,1,1,1};
-	float scaleX = w / (tigerMaxX - tigerMinX);
-	float scaleY = h / (tigerMaxY - tigerMinY);
-	float scale = fminf(scaleX, scaleY);
-
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
-
-	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-	ASSERT(vgGetError() == VG_NO_ERROR);
-	vgClear(0, 0, w, h);
-	ASSERT(vgGetError() == VG_NO_ERROR);
-
-	// normal on Window (top-down mirror on Storch)
-//	vgLoadIdentity();
-//	vgScale(scale, scale);
-//	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));	// all parameters are zeroes
-
-	// top-down mirror
-	vgLoadIdentity();
-	vgScale(scale, -scale);
-	vgTranslate(-tigerMinX, - (tigerMaxY - tigerMinY));
-	ASSERT(vgGetError() == VG_NO_ERROR);
-
-	PS_render(tiger);
-	ASSERT(vgGetError() == VG_NO_ERROR);
-
-}
-
-//#endif /* WITHOPENVG */
-/*--------------------------------------------------------------*/
-
-// See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
-#if 0
-{
-    VGPath path;
-
-    VGfloat clear[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    vgSetfv( VG_CLEAR_COLOR, 4, clear );
-    vgClear( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
-
-    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1, 0, 0, 0, VG_PATH_CAPABILITY_ALL );
-
-    vguRect( path, 40.5f, 40.5f, 160.0f, 100.0f );
-    vguRect( path, 40.0f, 180.0f, 160.0f, 100.0f );
-
-    vgDrawPath( path, VG_STROKE_PATH );
-
-    vgDestroyPath( path );
-}
-#endif
-
-static void rendertest1(int w, int h)
-{
-	//		float scaleX = w / (tigerMaxX - tigerMinX);
-	//		float scaleY = h / (tigerMaxY - tigerMinY);
-	//		float scale = fminf(scaleX, scaleY);
-	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
-
-	vgLoadIdentity();
-
-	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
-	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
-
-	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);	// для работы антииалиасинга треьуется знать расположение пикселей
-	//vgSeti(VG_SCREEN_LAYOUT, );
-
-	VGPath path;
-    VGPaint fillPaint, strokePaint;
-    static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
-                           VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
-    static const VGfloat coords [] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
-    static const VGfloat clearColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    static const VGfloat fillColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
-    static const VGfloat strokeColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-
-    // top-down mirror and back...
-	vgLoadIdentity();
-//	vgScale(1, -1);
-//	vgScale(1, -1);
-//	vgTranslate(0, - h);
-//	vgTranslate(0, + h);
-
-    vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
-    vgClear( 0, 0, w, h );
-#if 1
-
-    vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
-    fillPaint = vgCreatePaint();
-    strokePaint = vgCreatePaint();
-
-    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
-
-    // 1) перечисляем (добавляем) фигуры
-    vgAppendPathData( path, 6, segments, coords );
-	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
-
-    // 2) правила черчения / заполнения
-   vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
-    vgSetPaint(fillPaint, VG_FILL_PATH );
-    vgSetPaint(strokePaint, VG_STROKE_PATH );
-
-    // 3) Цвета
-   vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
-    vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
-
-    // 4) рисуем фигуры
-   vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
-
-	// 5) Освобожлаем память
-   vgDestroyPath( path );
-    vgDestroyPaint( fillPaint );
-    vgDestroyPaint( strokePaint );
-#endif
-}
-
-static void rendertest2(int w, int h)
-{
-	static const float clearColor[4] = {0,1,0,1};
-	//		float scaleX = w / (tigerMaxX - tigerMinX);
-	//		float scaleY = h / (tigerMaxY - tigerMinY);
-	//		float scale = fminf(scaleX, scaleY);
-	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
-
-	vgLoadIdentity();
-	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
-
-	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
-	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
-
-	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
-	//vgSeti(VG_SCREEN_LAYOUT, );
-
-	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-	vgClear(0, 0, w, h);
-#if 1
-
-	VGPaint paint = vgCreatePaint();
-
-	static const float drawColorRed[4] = {0,0,0,1};
-	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
-	//vgSetColor(paint, VGuint rgba)
-
-	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
-
-	//static const float drawColorRed[4] = {1,0,0,1};
-	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
-	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
-
-	static const float drawColorGreen[4] = {0,0,0,1};
-	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
-	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
-
-	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
-	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
-
-	vgDestroyPath(path);
-
-	vgDestroyPaint(paint);
-	//		vgLoadIdentity();
-	//		vgScale(scale, scale);
-	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
-	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
-	//		//vgTranslate(-tigerMinX, tigerMinY);
-	//		//vgRotate(30);
-	//		PS_render(tiger);
-	//		ASSERT(vgGetError() == VG_NO_ERROR);
-#endif
-}
-
-static void rendertest3(int w, int h)
-{
-	static const float clearColor[4] = {0,0,1,1};
-	//		float scaleX = w / (tigerMaxX - tigerMinX);
-	//		float scaleY = h / (tigerMaxY - tigerMinY);
-	//		float scale = fminf(scaleX, scaleY);
-	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
-
-	vgLoadIdentity();
-	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
-
-	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
-	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
-
-	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
-	//vgSeti(VG_SCREEN_LAYOUT, );
-
-	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-	vgClear(0, 0, w, h);
-#if 1
-	VGPaint paint = vgCreatePaint();
-
-	static const float drawColorRed[4] = {0,0,0,1};
-	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
-	//vgSetColor(paint, VGuint rgba)
-
-	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
-
-	//static const float drawColorRed[4] = {1,0,0,1};
-	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
-	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
-
-	static const float drawColorGreen[4] = {0,0,0,1};
-	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
-	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
-
-	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
-	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
-
-	vgDestroyPath(path);
-
-	vgDestroyPaint(paint);
-	//		vgLoadIdentity();
-	//		vgScale(scale, scale);
-	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
-	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
-	//		//vgTranslate(-tigerMinX, tigerMinY);
-	//		//vgRotate(30);
-	//		PS_render(tiger);
-	//		ASSERT(vgGetError() == VG_NO_ERROR);
-#endif
-}
-
-
-static void rendertestdynamic(int w, int h, int pos, int total)
-{
-	static const float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f };
-
-	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
-
-	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
-	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
-	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
-
-	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
-	//vgSeti(VG_SCREEN_LAYOUT, );
-
-	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-	vgClear(0, 0, w, h);
-#if 1
-
-    VGPaint fillPaint = vgCreatePaint();
-    VGPaint strokePaint = vgCreatePaint();
-
-    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-    static const VGfloat strokeColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
-    static const VGfloat fillColor2 [4] = { 1.0f, 0.0f, 1.0f, 1.0f };
-    static const VGfloat strokeColor2 [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-
-	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
-
-	// 0) сброс масштабирования
-	vgLoadIdentity();
-
-	// 1) перечисляем (добавляем) фигуры
-	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
-	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100 + pos * 5, 10, 10, 10));
-
-	// 2) правила черчения / заполнения
-	vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
-	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
-	vgSetPaint(fillPaint, VG_FILL_PATH );
-	vgSetPaint(strokePaint, VG_STROKE_PATH );
-
-	// 3) Цвета
-	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
-	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
-
-	// 4) рисуем фигуры
-	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
-
-	vgClearPath(path, VG_PATH_CAPABILITY_ALL);
-
-	// 1a) перечисляем (добавляем) фигуры
-	VERIFY(VGU_NO_ERROR == vguRect(path, 50, 50, 100, 100));
-	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 150, 150, 100 + pos * 5, 10, 10, 10));
-
-	// 2a) правила черчения / заполнения
-	vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
-	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
-	vgSetPaint(fillPaint, VG_FILL_PATH );
-	vgSetPaint(strokePaint, VG_STROKE_PATH );
-
-	// 3a) Цвета
-	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor2);
-	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor2);
-
-	// 4a) рисуем фигуры
-	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
-	vgClearPath(path, VG_PATH_CAPABILITY_ALL);
-
-	// 5a) Освобожлаем память
-	vgDestroyPath(path);
-
-	vgDestroyPaint(strokePaint);
-	vgDestroyPaint(fillPaint);
-
-#endif
-}
-
-/*--------------------------------------------------------------*/
-
-#endif /* WITHOPENVG */
 
 #if 1
 
@@ -6962,63 +6359,6 @@ static void zero2dsp(uint8_t * pdspmap, unsigned offs, unsigned size)
 //}
 
 #endif /* CPUSTYLE_T113 */
-
-#if CPUSTYLE_STM32MP1 && WITHETHHW && 1
-
-void ethhw_initialize(void)
-{
-	RCC->ETHCKSELR =
-			0 |
-			0;
-
-	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHMACEN_Msk;
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHTXEN_Msk;
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHRXEN_Msk;
-	(void) RCC->MP_AHB6ENSETR;
-
-	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_ETHMACRST_Msk;	// assert reset
-	(void) RCC->AHB6RSTSETR;
-	RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_ETHMACRST_Msk;	// de-assert reset
-	(void) RCC->AHB6RSTCLRR;
-
-	HARDWARE_ETH_INITIALIZE();
-}
-
-void ethhw_deinitialize(void)
-{
-	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_ETHMACRST_Msk;	// assert reset
-	(void) RCC->AHB6RSTSETR;
-
-	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_ETHTXEN_Msk;
-	(void) RCC->MP_AHB6ENCLRR;
-	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_ETHRXEN_Msk;
-	(void) RCC->MP_AHB6ENCLRR;
-	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_ETHMACEN_Msk;
-	(void) RCC->MP_AHB6ENCLRR;
-}
-
-#define ETHHW_BUFFSIZE 4096
-
-void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
-{
-	desc [0] = (uintptr_t) buff1;
-	desc [1] = (uintptr_t) buff2;
-	desc [2] =
-		0 * (UINT32_C(1) << 31) | // IOC
-		0 * (UINT32_C(1) << 30) | // TTSE
-		ETHHW_BUFFSIZE * (UINT32_C(1) << 16) | // B2L = buffer 2 length
-		ETHHW_BUFFSIZE * (UINT32_C(1) << 0) | // B1L = buffer 1 length
-		0;
-
-	desc [3] =
-		1 * (UINT32_C(1) << 29) | // First Descriptor
-		1 * (UINT32_C(1) << 28) | // Last Descriptor
-		0;
-}
-
-#endif
 
 #if CPUSTYLE_VM14
 
@@ -10701,58 +10041,20 @@ static void lidar_parse(unsigned char c)
 }
 #endif
 
-#if WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
-
-enum { EMAC_FRAMESZ = 2048 - 4 };
-static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
-static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
-
-static void EMAC_Handler(void)
-{
-	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
-	if (sta & ((UINT32_C(1) << 8)))	// RX_P
-	{
-		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-		if ((HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA & 0x07) == 0x03)
-		{
-			//PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
-			// Results
-			//PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-			//PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-			// 0..5 - Destination MAC (multicast)
-			// 6..11 - Source MAC [38:D5:47:82:A4:78]
-			unsigned v1 = USBD_peek_u16_BE(rxbuff + 12);	// 0x0800 EtherType (Type field)
-			unsigned v2 = USBD_peek_u16_BE(rxbuff + 14); 	// 0x4500 IP packet starts from here.
-			//printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-			//printhex(0, rxbuff, 128);
-			//memset(rxbuff, 0xE5, sizeof rxbuff);
-			unsigned i = 0;
-			emac_rxdesc [i][0] =
-				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-				0;
-		}
-		else
-		{
-			TP();
-			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-		}
-	}
-
-}
-#endif
-
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
+
 void hightests(void)
 {
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		display_fillrect(0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_at(0, 0, "Start...");
+		display_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+		display_at(& dbv, 0, 0, "Start...");
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
@@ -11318,65 +10620,6 @@ void hightests(void)
 		for (;;)
 			;
 
-	}
-#endif
-#if 0 && CPUSTYLE_STM32MP1 && WITHETHHW
-	{
-		// Ethernet controller tests
-		ethhw_initialize();
-
-		TP();
-
-		ETH->MACCR |= ETH_MACCR_PS_Msk | ETH_MACCR_FES_Msk;	// Select 100 Mbps operation
-		ETH->MACCR |= ETH_MACCR_DM_Msk;	// Select duplex operation
-
-		PRINTF("ETH->MACCR=%08X\n", (unsigned) ETH->MACCR);
-		PRINTF("ETH->DMASBMR=%08X\n", (unsigned) ETH->DMASBMR);
-
-		static __attribute__((aligned(32))) uint8_t  dmac0tx_buff [2][ETHHW_BUFFSIZE];
-		static __attribute__((aligned(32))) uint8_t  dmac0rx_buff [2][ETHHW_BUFFSIZE];
-		static __attribute__((aligned(32))) uint8_t  dmac1tx_buff [2][ETHHW_BUFFSIZE];
-
-		static __attribute__((aligned(32))) volatile uint32_t  dmac0tx_desc [64];
-		static __attribute__((aligned(32))) volatile uint32_t  dmac0rx_desc [64];
-		static __attribute__((aligned(32))) volatile uint32_t  dmac1tx_desc [64];
-
-		ethhw_filldesc(dmac0tx_desc, dmac0tx_buff [0], dmac0tx_buff [1]);
-		ethhw_filldesc(dmac0rx_desc, dmac0rx_buff [0], dmac0rx_buff [1]);
-		ethhw_filldesc(dmac1tx_desc, dmac1tx_buff [0], dmac1tx_buff [1]);
-
-		dcache_clean_invalidate((uintptr_t) dmac0tx_desc, sizeof dmac0tx_desc);
-		dcache_clean_invalidate((uintptr_t) dmac0rx_desc, sizeof dmac0rx_desc);
-		dcache_clean_invalidate((uintptr_t) dmac1tx_desc, sizeof dmac1tx_desc);
-
-		dcache_clean_invalidate((uintptr_t) dmac0tx_buff, sizeof dmac0tx_buff);
-		dcache_clean_invalidate((uintptr_t) dmac0rx_buff, sizeof dmac0rx_buff);
-		dcache_clean_invalidate((uintptr_t) dmac1tx_buff, sizeof dmac1tx_buff);
-
-		// CH0: RX & TX
-		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
-		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
-		ETH->DMAC0TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 0 Tx descriptor ring length register
-		ETH->DMAC0TXCR |= 0x01;	// Channel 0 transmit control register
-
-		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
-		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
-		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
-			0 * (UINT32_C(17) << 0) |	// ARBS
-			1 * (UINT32_C(1) << 0) |	// RDRL
-			0;
-		ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
-
-		// CH1: TX
-		ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
-		ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
-		ETH->DMAC1TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 1 Tx descriptor ring length register
-		ETH->DMAC1TXCR |= 0x01;	// Channel 1 transmit control register
-
-		ETH->MACCR |= ETH_MACCR_TE_Msk;
-		ETH->MACCR |= ETH_MACCR_RE_Msk;
-
-		ethhw_deinitialize();
 	}
 #endif
 #if 0 && CPUSTYLE_T113
@@ -12351,122 +11594,6 @@ void hightests(void)
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
-	{
-
-		const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
-		CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
-		CCU->EMAC_BGR_REG &= ~ (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
-		CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
-		//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
-
-		PRINTF("Ethernet RGMII test started.\n");
-		{
-			// The working clock of EMAC is from AHB3.
-
-			HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
-			//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-			//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
-			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-			while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
-				;
-
-
-			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
-				0x03 * (UINT32_C(1) << 2) |	// 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
-				0x01 * (UINT32_C(1) << 0) | // 1: Full-duplex
-				0;
-			HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
-				0x08 * (UINT32_C(1) << 24) |
-				0;
-
-//			PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
-//			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-//			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
-		}
-		{
-			unsigned len = EMAC_FRAMESZ;
-			unsigned i = 0;
-			emac_rxdesc [i][0] =
-				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-				0;
-			emac_rxdesc [i][1] =
-					len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-				0;
-			emac_rxdesc [i][2] = (uintptr_t) rxbuff;	// BUF_ADDR
-			emac_rxdesc [i][3] = (uintptr_t) emac_rxdesc [0];	// NEXT_DESC_ADDR
-			//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
-
-			// ether 1A:0C:74:06:AF:64
-			HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
-			HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
-
-			//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
-
-			HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
-//					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
-					1 * (UINT32_C(1) << 0) |	// RX_ALL
-					0;
-
-			HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
-			//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL0 =
-				1 * (UINT32_C(1) << 31) |	// RX_EN
-				//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
-				//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
-				1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
-				0;
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 =
-					1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
-					1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
-					0;
-
-			HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
-
-			HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
-#if 0
-			// Wait interrupt
-			while ((HARDWARE_EMAC_PTR->EMAC_INT_STA & (UINT32_C(1) << 8)) == 0)	// RX_P
-				;
-			HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-			if (sta & ((UINT32_C(1) << 8)))	// RX_P
-			{
-				// Results
-				PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
-				PRINTF("EMAC_RX_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_CTL1);
-				printhex32((uintptr_t) 0, emac_rxdesc, sizeof emac_rxdesc);
-				printhex(0, rxbuff, 128);
-			}
-#endif
-		}
-		PRINTF("Ethernet RGMII test done.\n");
-	}
-#endif
-#if 0 && WITHETHHW && CPUSTYLE_XC7Z
-	{
-		PRINTF("GEM0 test:\n");
-
-		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-		SCLR->APER_CLK_CTRL |= (0x01uL << 6);	// APER_CLK_CTRL.GEM0_CPU_1XCLKACT
-		SCLR->GEM0_CLK_CTRL = //(SCLR->GEM0_CLK_CTRL & ~ (0x00uL)) |
-				((uint_fast32_t) 0x08 << 20) |	// DIVISOR1
-				((uint_fast32_t) 0x05 << 8) |	// DIVISOR
-				((uint_fast32_t) 0x00 << 4) |	// SRCSEL: 00x: IO PLL
-				((uint_fast32_t) 0x01 << 0) |	// CLKACT
-				0;
-		SCLR->GEM0_RCLK_CTRL = 0x0000001uL;
-
-		ASSERT(GEM0->MODULE_ID == 0x00020118uL);
-		PRINTF("GEM0 test done\n");
-
-		//	Net:   ZYNQ GEM: e000b000, phyaddr 7, interface rgmii-id
-		//	eth0: ethernet@e000b000
-		//	U-BOOT for myd_y7z020_10_07
-
-	}
-#endif
 #if 0
 	{
 		PRINTF("CPU speed changing test:\n");
@@ -12749,101 +11876,6 @@ void hightests(void)
 			ASSERT(PinNumber == GPIO_PIN2BITPOS(pin));
 		}
 		PRINTF("zynq pin & bank calculations test passed.\n");
-	}
-#endif
-#if 0 && WITHOPENVG
-	{
-		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-		board_update();
-
-		rendertest2(DIM_X, DIM_Y);
-		colmain_nextfb();		// наблюдаем результат
-
-		local_delay_ms(500);
-		rendertest3(DIM_X, DIM_Y);
-		colmain_nextfb();		// наблюдаем результат
-
-		local_delay_ms(500);
-		rendertestdynamic(DIM_X, DIM_Y, 0, 1);
-		colmain_nextfb();		// наблюдаем результат
-	#if 1
-
-		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
-		ASSERT(tiger != NULL);
-		unsigned cnt;
-		PRINTF("tiger: test started, CPU_FREQ=%lu kHz\n", (unsigned long) (CPU_FREQ / 1000));
-		for (cnt = 0;; ++ cnt)
-		{
-			const time_t start = time(NULL);
-			uint_fast8_t kbch, repeat;
-
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
-			if ((repeat = kbd_scan(& kbch)) != 0)
-			{
-				break;
-			}
-
-			rendertiger(tiger, DIM_X, DIM_Y);
-			colmain_nextfb();		// наблюдаем результат
-			const time_t end = time(NULL);
-#if defined (GET_CPU_TEMPERATURE)
-		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
-#else /* WITHTHERMOLEVEL */
-		PRINTF("tiger: cnt=%u, %d s\n", cnt, (int) (end - start));
-#endif /* WITHTHERMOLEVEL */
-		}
-		PS_destruct(tiger);
-
-	#elif 1
-		{
-			int pos;
-			int total = 100;
-			colmain_nextfb();
-			for (pos = 0; ; pos = (pos + 1) % total)
-			{
-				uint_fast8_t kbch, repeat;
-
-				if ((repeat = kbd_scan(& kbch)) != 0)
-				{
-					break;
-				}
-
-				//rendertest1(DIM_X, DIM_Y);
-				//colmain_nextfb();
-
-				rendertestdynamic(DIM_X, DIM_Y, pos, total);
-				colmain_nextfb();
-			}
-		}
-
-	#else
-
-		// wait for press any key
-		for (;;)
-		{
-			uint_fast8_t kbch, repeat;
-
-			if ((repeat = kbd_scan(& kbch)) != 0)
-			{
-				break;
-			}
-			rendertest1(DIM_X, DIM_Y);
-			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_RED);
-			colmain_nextfb();
-			//local_delay_ms(300);
-
-			rendertest2(DIM_X, DIM_Y);
-			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_GREEN);
-			colmain_nextfb();
-			//local_delay_ms(300);
-
-			rendertest3(DIM_X, DIM_Y);
-			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_BLUE);
-			colmain_nextfb();
-			//local_delay_ms(300);
-		}
-
-	#endif
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
@@ -14818,7 +13850,7 @@ void hightests(void)
 				i2c_start(ADDR | 0x01);
 				i2c_read(& v1, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 				
-				static const FLASHMEM char fmt_1 [] = "%02X";
+				static const char fmt_1 [] = "%02X";
 				char buff [17];
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
@@ -14840,7 +13872,7 @@ void hightests(void)
 		i2c_read(& v1, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 
 
-		static const FLASHMEM char fmt_1 [] = "v=%02X";
+		static const char fmt_1 [] = "v=%02X";
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
@@ -14870,7 +13902,7 @@ void hightests(void)
 		//unsigned char v = i2c_readNak();
 		//i2c_waitsend();
 		i2c_stop();
-		static const FLASHMEM char fmt_1 [] = "v=%02X";
+		static const char fmt_1 [] = "v=%02X";
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
@@ -14935,7 +13967,7 @@ void hightests(void)
 		//display_initialize();
 		for (;;)
 		{	
-			static const FLASHMEM char fmt_1 [] = "%08lX";
+			static const char fmt_1 [] = "%08lX";
 			char buff [17];
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);

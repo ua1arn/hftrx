@@ -157,7 +157,7 @@ typedef int32_t hdmi48bufv_t;
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_Р616) && WITHDSPLOCALFIR
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616) && WITHDSPLOCALFIR
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих

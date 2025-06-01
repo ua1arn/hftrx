@@ -39,6 +39,7 @@ uint_fast16_t gui_get_window_draw_height(void);
 void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORPIP_T color);
 void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color);
 void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color);
+const gxdrawb_t * gui_get_drawbuf(void);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

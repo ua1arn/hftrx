@@ -51,18 +51,18 @@ power4(uint_fast8_t v)
 #if 1
 	portholder_t r = 0;
 
-	r |= (v & (1U << 0)) ? (UINT32_C(1) << 0) : 0;
-	r |= (v & (1U << 1)) ? (UINT32_C(1) << 4) : 0;
-	r |= (v & (1U << 2)) ? (UINT32_C(1) << 8) : 0;
-	r |= (v & (1U << 3)) ? (UINT32_C(1) << 12) : 0;
-	r |= (v & (1U << 4)) ? (UINT32_C(1) << 16) : 0;
-	r |= (v & (1U << 5)) ? (UINT32_C(1) << 20) : 0;
-	r |= (v & (1U << 6)) ? (UINT32_C(1) << 24) : 0;
-	r |= (v & (1U << 7)) ? (UINT32_C(1) << 28) : 0;
+	r |= !! (v & (UINT8_C(1) << 0)) * (UINT32_C(1) << 0);
+	r |= !! (v & (UINT8_C(1) << 1)) * (UINT32_C(1) << 4);
+	r |= !! (v & (UINT8_C(1) << 2)) * (UINT32_C(1) << 8);
+	r |= !! (v & (UINT8_C(1) << 3)) * (UINT32_C(1) << 12);
+	r |= !! (v & (UINT8_C(1) << 4)) * (UINT32_C(1) << 16);
+	r |= !! (v & (UINT8_C(1) << 5)) * (UINT32_C(1) << 20);
+	r |= !! (v & (UINT8_C(1) << 6)) * (UINT32_C(1) << 24);
+	r |= !! (v & (UINT8_C(1) << 7)) * (UINT32_C(1) << 28);
 
 	return r;
 #else
-	static const FLASHMEM uint_fast32_t tablepow4 [256] =
+	static const uint_fast32_t tablepow4 [256] =
 	{
 	 0x00000000UL,  0x00000001UL,  0x00000010UL,  0x00000011UL,  0x00000100UL,  0x00000101UL,  0x00000110UL,  0x00000111UL,
 	 0x00001000UL,  0x00001001UL,  0x00001010UL,  0x00001011UL,  0x00001100UL,  0x00001101UL,  0x00001110UL,  0x00001111UL,
@@ -108,22 +108,22 @@ power2(uint_fast16_t v)
 {
 	portholder_t r = 0;
 
-	r |= (v & (1U << 0)) ? (UINT32_C(1) << 0) : 0;
-	r |= (v & (1U << 1)) ? (UINT32_C(1) << 2) : 0;
-	r |= (v & (1U << 2)) ? (UINT32_C(1) << 4) : 0;
-	r |= (v & (1U << 3)) ? (UINT32_C(1) << 6) : 0;
-	r |= (v & (1U << 4)) ? (UINT32_C(1) << 8) : 0;
-	r |= (v & (1U << 5)) ? (UINT32_C(1) << 10) : 0;
-	r |= (v & (1U << 6)) ? (UINT32_C(1) << 12) : 0;
-	r |= (v & (1U << 7)) ? (UINT32_C(1) << 14) : 0;
-	r |= (v & (1U << 8)) ? (UINT32_C(1) << 16) : 0;
-	r |= (v & (1U << 9)) ? (UINT32_C(1) << 18) : 0;
-	r |= (v & (1U << 10)) ? (UINT32_C(1) << 20) : 0;
-	r |= (v & (1U << 11)) ? (UINT32_C(1) << 22) : 0;
-	r |= (v & (1U << 12)) ? (UINT32_C(1) << 24) : 0;
-	r |= (v & (1U << 13)) ? (UINT32_C(1) << 26) : 0;
-	r |= (v & (1U << 14)) ? (UINT32_C(1) << 28) : 0;
-	r |= (v & (1U << 15)) ? (UINT32_C(1) << 30) : 0;
+	r |= !! (v & (UINT16_C(1) << 0)) * (UINT32_C(1) << 0);
+	r |= !! (v & (UINT16_C(1) << 1)) * (UINT32_C(1) << 2);
+	r |= !! (v & (UINT16_C(1) << 2)) * (UINT32_C(1) << 4);
+	r |= !! (v & (UINT16_C(1) << 3)) * (UINT32_C(1) << 6);
+	r |= !! (v & (UINT16_C(1) << 4)) * (UINT32_C(1) << 8);
+	r |= !! (v & (UINT16_C(1) << 5)) * (UINT32_C(1) << 10);
+	r |= !! (v & (UINT16_C(1) << 6)) * (UINT32_C(1) << 12);
+	r |= !! (v & (UINT16_C(1) << 7)) * (UINT32_C(1) << 14);
+	r |= !! (v & (UINT16_C(1) << 8)) * (UINT32_C(1) << 16);
+	r |= !! (v & (UINT16_C(1) << 9)) * (UINT32_C(1) << 18);
+	r |= !! (v & (UINT16_C(1) << 10)) * (UINT32_C(1) << 20);
+	r |= !! (v & (UINT16_C(1) << 11)) * (UINT32_C(1) << 22);
+	r |= !! (v & (UINT16_C(1) << 12)) * (UINT32_C(1) << 24);
+	r |= !! (v & (UINT16_C(1) << 13)) * (UINT32_C(1) << 26);
+	r |= !! (v & (UINT16_C(1) << 14)) * (UINT32_C(1) << 28);
+	r |= !! (v & (UINT16_C(1) << 15)) * (UINT32_C(1) << 30);
 
 	return r;
 }
@@ -134,10 +134,10 @@ power8(uint_fast8_t v)
 {
 	portholder_t r = 0;
 
-	r |= (v & (1U << 0)) ? (UINT32_C(1) << 0) : 0;
-	r |= (v & (1U << 1)) ? (UINT32_C(1) << 8) : 0;
-	r |= (v & (1U << 2)) ? (UINT32_C(1) << 16) : 0;
-	r |= (v & (1U << 3)) ? (UINT32_C(1) << 24) : 0;
+	r |= !! (v & (UINT8_C(1) << 0)) * (UINT32_C(1) << 0);
+	r |= !! (v & (UINT8_C(1) << 1)) * (UINT32_C(1) << 8);
+	r |= !! (v & (UINT8_C(1) << 2)) * (UINT32_C(1) << 16);
+	r |= !! (v & (UINT8_C(1) << 3)) * (UINT32_C(1) << 24);
 
 	return r;
 }
@@ -659,17 +659,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static LCLSPINLOCK_t gpiobank_ctx [8] =
-{
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-		LCLSPINLOCK_INIT,
-};
+static IRQLSPINLOCK_t gpiobank_ctx [8];
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
@@ -679,8 +669,8 @@ void sysinit_gpio_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(gpiobank_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiobank_ctx [i];
-		LCLSPINLOCK_INITIALIZE(lck);
+		IRQLSPINLOCK_t * const lck = & gpiobank_ctx [i];
+		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
@@ -690,16 +680,14 @@ void sysinit_gpio_initialize(void)
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
-	RiseIrql(GPIOIRQL, oldIrql);
-	LCLSPIN_LOCK(lck);
+	IRQLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
+	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
-	LCLSPIN_UNLOCK(lck);
-	LowerIrql(oldIrql);
+	IRQLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
+	IRQLSPIN_UNLOCK(lck, oldIrql);
 }
 
 
@@ -836,7 +824,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 
 typedef struct gpio_ctx
 {
-	LCLSPINLOCK_t lock;
+	IRQLSPINLOCK_t lock;
 	portholder_t data;
 } gpio_ctx_t;
 
@@ -879,12 +867,12 @@ void sysinit_gpio_initialize(void)
 	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
 		gpio_ctx_t * const lck = & gpiodatas_ctx [i];
-		LCLSPINLOCK_INITIALIZE(& lck->lock);
+		IRQLSPINLOCK_INITIALIZE(& lck->lock);
 		lck->data = 0;
 	}
 
 #if defined (GPIOL)
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
+	IRQLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
 	gpiodata_L_ctx.data = 0;
 #endif /* defined (GPIOL) */
 
@@ -918,16 +906,14 @@ typedef uint32_t irqstatus_t;
 
 static void gpioX_lock(const GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
-	RiseIrql(GPIOIRQL, oldIrql);
-	LCLSPIN_LOCK(lck);
+	IRQLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
+	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
 }
 
 static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
-	LCLSPIN_UNLOCK(lck);
-	LowerIrql(irql);
+	IRQLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
+	IRQLSPIN_UNLOCK(lck, irql);
 }
 
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
@@ -1334,15 +1320,48 @@ gpioX_onchangeinterrupt(
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
+
+static IRQLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
+static IRQLSPINLOCK_t gpioz_data_ctx;
+
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
 void sysinit_gpio_initialize(void)
 {
 	unsigned i;
+
+#if defined(GPIOZ)
+	IRQLSPINLOCK_INITIALIZE(& gpioz_data_ctx);	// PIOZ
+#endif /* defined(GPIOZ) */
+
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
+	{
+		IRQLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
+		IRQLSPINLOCK_INITIALIZE(lck);
+	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
 		InitializeListHead(& einthead [i]);
 	}
+}
+
+static IRQLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
+{
+#if defined(GPIOZ)
+	if (gpio == GPIOZ)
+		return & gpioz_data_ctx;	// PIOZ
+#endif /* defined(GPIOZ) */
+	return & gpiodatas_ctx [((uintptr_t) gpio - GPIOA_BASE) / 0x1000];
+}
+
+static void stm32mp1_pio_lock(GPIO_TypeDef * gpio, IRQL_t * irqlp)
+{
+	IRQLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio), irqlp, GPIOIRQL);
+}
+
+static void stm32mp1_pio_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
+{
+	IRQLSPIN_UNLOCK(stm32mp1xx_getgpiolock(gpio), irql);
 }
 
 #elif CPUSTYLE_VM14
@@ -1363,17 +1382,11 @@ void sysinit_gpio_initialize(void)
 
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-//	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-//	RiseIrql(GPIOIRQL, oldIrql);
-//	LCLSPIN_LOCK(lck);
 	* oldIrql = 0;
 }
 
 static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-//	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-//	LCLSPIN_UNLOCK(lck);
-//	LowerIrql(irql);
 }
 
 void gpioX_setstate(
@@ -1528,10 +1541,12 @@ void sysinit_gpio_initialize(void)
 		  do { \
 			const portholder_t iomask = (iomask0);	\
 			const portholder_t mask3 = power2(iomask);	\
+			IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 			(gpio)->MODER = ((gpio)->MODER & ~ (mask3 * GPIO_MODER_MODER0)) | mask3 * (moder) * GPIO_MODER_MODER0_0; \
 			(gpio)->OSPEEDR = ((gpio)->OSPEEDR & ~ (mask3 * GPIO_OSPEEDR_OSPEEDR0)) | mask3 * (speed) * GPIO_OSPEEDR_OSPEEDR0_0; \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (mask3 * GPIO_PUPDR_PUPDR0)) | mask3 * (pupdr) * GPIO_PUPDR_PUPDR0_0; \
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT0)) | (iomask) * (typer); \
+			stm32mp1_pio_unlock(gpio, irql); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
 		#define tm32mp1_pioX_pupdr(gpio, ipins, up, down) \
@@ -1539,10 +1554,12 @@ void sysinit_gpio_initialize(void)
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
 			const portholder_t ipins3 = power2(ipins); \
+			IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | \
 				up3 * (1) * GPIO_PUPDR_PUPDR0_0 | \
 				down3 * (2) * GPIO_PUPDR_PUPDR0_0 | \
 				0; \
+				stm32mp1_pio_unlock(gpio, irql); \
 		  } while (0)
 
 		#define stm32mp1_pioX_altfn(gpio, opins, afn) \
@@ -1550,8 +1567,10 @@ void sysinit_gpio_initialize(void)
 				const portholder_t op = (opins); \
 				const portholder_t lo = power4((op) >> 0); \
 				const portholder_t hi = power4((op) >> 8); \
+				IRQL_t irql; stm32mp1_pio_lock(gpio, & irql); \
 				(gpio)->AFR [0] = ((gpio)->AFR [0] & ~ (lo * 0x0f)) | (lo * (afn)); \
 				(gpio)->AFR [1] = ((gpio)->AFR [1] & ~ (hi * 0x0f)) | (hi * (afn)); \
+				stm32mp1_pio_unlock(gpio, irql); \
 			} while (0)
 
 	/* разрешение прерывания по изменению состояния указанных групп выводов */
@@ -1565,9 +1584,9 @@ void sysinit_gpio_initialize(void)
 			)
 	{
 		// CPU1 = MPU and CPU2 = MCU
-		RCC->MP_APB3ENSETR |= RCC_MP_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR |= RCC_MP_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3LPENSETR;
 
 		#if 1

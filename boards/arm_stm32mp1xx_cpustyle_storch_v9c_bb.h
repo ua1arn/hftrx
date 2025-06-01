@@ -299,50 +299,6 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 #endif
 
-#if WITHENCODER
-
-	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOE)) //(gpioX_getinputs(GPIOE))
-	#define ENCODER_BITA		(UINT32_C(1) << 1)		// PE1
-	#define ENCODER_BITB		(UINT32_C(1) << 0)		// PE0
-
-	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(gpioX_getinputs(GPIOE)) //(gpioX_getinputs(GPIOE))
-	#define ENCODER2_BITA		(UINT32_C(1) << 4)		// PE4
-	#define ENCODER2_BITB		(UINT32_C(1) << 6)		// PE6
-
-
-	#define EENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define EENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
-	#define BOARD_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
-	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
-
-	#define ENCODER2_NOSPOOL 1
-	#define ENCODER_INITIALIZE() \
-		do { \
-			static einthandler_t eh1; \
-			static einthandler_t eh2; \
-			static ticker_t th2; \
-			arm_hardware_pioe_inputs(EENCODER_BITS); \
-			arm_hardware_pioe_updown(EENCODER_BITS, EENCODER_BITS, 0); \
-			einthandler_initialize(& eh1, EENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_pioe_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh1); \
-			arm_hardware_pioe_inputs(EENCODER2_BITS); \
-			arm_hardware_pioe_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
-			einthandler_initialize(& eh2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_pioe_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
-			/* ticker for spool */ \
-			ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
-			ticker_add(& th2); \
-		} while (0)
-
-#endif
-
 #if WITHI2S2HW
 
 	// Инициализируются I2S2 в дуплексном режиме.
@@ -441,8 +397,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 #if WITHLFM
 		#define BOARD_PPSIN_BIT (UINT32_C(1) << 14)		/* PD7 - PPS signal from GPS */
 
-		#define NMEA_INITIALIZE() do { \
-			static einthandler_t h; \
+		#define NMEA_1PPS_INITIALIZE() do { \
 			arm_hardware_piod_inputs(BOARD_PPSIN_BIT); \
 			arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
@@ -550,22 +505,6 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	} while (0)
 
 #if WITHTX
-
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-		} while (0)
-
 
 	// +++
 	// TXDISABLE input - PZ3
@@ -951,25 +890,34 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	/* From MYC-YA157C-V3 Product Manual */
 	#define HARDWARE_ETH_INITIALIZE() do { \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH_RX_CLK PA1 */ \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 7), AF_ETH);		/* ETH_RX_DV PA7 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH_RXD0 PC4 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH_RXD1 PC5 */ \
-		arm_hardware_piob_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH_RXD2 PB0 */ \
-		arm_hardware_piob_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH_RXD3 PB1 */ \
-		arm_hardware_piob_altfn50((UINT32_C(1) << 11), AF_ETH);		/* ETH_TX_EN PB11 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 13), AF_ETH);		/* ETH_TXD0 PG13 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 14), AF_ETH);		/* ETH_TXD1 PG14 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH_TXD2 PC2 */ \
-		arm_hardware_pioe_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH_TXD3 PE2 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH_GTX_CLK PG4 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH_RST PG0 */ \
-		arm_hardware_pioa_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH_MDIO PA2 */ \
-		arm_hardware_pioc_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH_MDC PC1 */ \
-		arm_hardware_piog_altfn50((UINT32_C(1) << 5), AF_ETH);		/* CLK125_NDO PG5 */ \
+		arm_hardware_pioc_inputs((UINT32_C(1) << 13));		/* PHY INT - PC13 */ \
+		arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
+		local_delay_ms(50); \
+		SYSCFG->PMCSETR = (SYSCFG->PMCSETR & ~ SYSCFG_PMCSETR_ETH_SEL_Msk & ~ SYSCFG_PMCSETR_ETH_SEL_CONF_Msk) | (0x01 << SYSCFG_PMCSETR_ETH_SEL_Pos); /* RGMII */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_RGMII_RX_CLK PA1 */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 7), AF_ETH);		/* ETH1_RGMII_RX_CTL PA7 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH1_RGMII_RXD0 PC4 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH1_RGMII_RXD1 PC5 */ \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 0), AF_ETH);		/* ETH1_RGMII_RXD2 PB0 */ \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_RGMII_RXD3 PB1 */ \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 11), AF_ETH);		/* ETH1_RGMII_TX_EN PB11 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 13), AF_ETH);		/* ETH1_RGMII_TXD0 PG13 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 14), AF_ETH);		/* ETH1_RGMII_TXD1 PG14 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH1_RGMII_TXD2 PC2 */ \
+		arm_hardware_pioe_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH1_RGMII_TXD3 PE2 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 4), AF_ETH);		/* ETH1_RGMII_GTX_CLK PG4 */ \
+		arm_hardware_piog_altfn50((UINT32_C(1) << 5), AF_ETH);		/* ETH1_RGMII_CLK125 PG5 */ \
+		arm_hardware_pioa_altfn50((UINT32_C(1) << 2), AF_ETH);		/* ETH1_MDIO PA2 */ \
+		arm_hardware_pioc_altfn50((UINT32_C(1) << 1), AF_ETH);		/* ETH1_MDC PC1 */ \
+		arm_hardware_piog_outputs((UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
 	} while (0)
 
 #endif /* WITHETHHW */
+
+#define HARDWARE_ETH_RESET() do { \
+	arm_hardware_piog_outputs((UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0));		/* ETH_RST PG0 */ \
+	local_delay_ms(50); \
+} while (0)
 
 #if WITHUSBHW
 
@@ -1202,22 +1150,21 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	#endif
 
+#if 1
 	#define BOARD_BLINK_BIT (UINT32_C(1) << 13)	// PA13 - led on Storch board
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_pioa_opendrain(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
-		arm_hardware_piob_outputs(HOSTBB_LED1_BIT, 1 * HOSTBB_LED1_BIT); \
+			arm_hardware_pioa_opendrain(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
+			arm_hardware_piob_outputs(HOSTBB_LED1_BIT, 1 * HOSTBB_LED1_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) { \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
-				(GPIOB)->BSRR = BSRR_S(HOSTBB_LED1_BIT); \
-			} else {\
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
-				(GPIOB)->BSRR = BSRR_C(HOSTBB_LED1_BIT); \
-			} \
+			gpioX_setstate(GPIOA, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
+			gpioX_setstate(GPIOB, HOSTBB_LED1_BIT, ! (state) * HOSTBB_LED1_BIT); \
 		} while (0)
-
+#else
+	#define BOARD_BLINK_INITIALIZE() do { \
+		} while (0)
+#endif
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOG_USERBOOT_BIT	(UINT32_C(1) << 15)	/* PG15: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOG)) & BOARD_GPIOG_USERBOOT_BIT) == 0 || ((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
@@ -1228,17 +1175,18 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			BOARD_BLINK_INITIALIZE(); \
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_DAC_INITIALIZE(); \
-			HARDWARE_BL_INITIALIZE(); \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-			HOSTBB_INITIALIZE(); \
-		} while (0)
+		HARDWARE_ETH_RESET(); \
+		BOARD_BLINK_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
+		HARDWARE_BL_INITIALIZE(); \
+		HARDWARE_DCDC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		BOARD_USERBOOT_INITIALIZE(); \
+		USBD_EHCI_INITIALIZE(); \
+		HOSTBB_INITIALIZE(); \
+	} while (0)
 
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9c_2ch.h"
 

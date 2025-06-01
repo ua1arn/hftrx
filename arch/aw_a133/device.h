@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__9E291677_B6C7_4f4a_BBFD_D0F40B363F83__INCLUDED
+#define HEADER__9E291677_B6C7_4f4a_BBFD_D0F40B363F83__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -802,5 +805,8 @@ typedef struct USB_OHCI_Capability_Type
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define S_TWI1 ((TWI_TypeDef *) S_TWI1_BASE)          /*!< S_TWI1  register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__9E291677_B6C7_4f4a_BBFD_D0F40B363F83__INCLUDED */

@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__13407CD6_4A45_4d15_9E8C_7F0C1F8E0873__INCLUDED
+#define HEADER__13407CD6_4A45_4d15_9E8C_7F0C1F8E0873__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -3630,5 +3633,8 @@ typedef struct VE_Type
 #define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */
 #define C0_CPUX_CFG_T507 ((C0_CPUX_CFG_T507_TypeDef *) C0_CPUX_CFG_T507_BASE)/*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__13407CD6_4A45_4d15_9E8C_7F0C1F8E0873__INCLUDED */

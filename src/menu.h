@@ -7,7 +7,7 @@
 // Описание меню, используется только в main.c
 //
 
-static const FLASHMEM struct menudef menutable [] =
+static const struct menudef menutable [] =
 {
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
 /* group name +++ */
@@ -727,7 +727,6 @@ static const FLASHMEM struct menudef menutable [] =
 #elif (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
 	/* Обычная схема - выбор ПЧ делается перестановкой последнего гетеродина */
 
-#if ! CTLSTYLE_SW2011ALL
 #if WITHTX
 	(const struct paramdefdef [1]) {
 		QLABEL("DC TX CW"), 7, 3, RJ_YES,	ISTEP1,
@@ -740,7 +739,6 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHTX */
-#endif /* ! CTLSTYLE_SW2011ALL */
 
 	#if (IF3_FMASK & IF3_FMASK_2P4)
 	(const struct paramdefdef [1]) {
@@ -1457,8 +1455,8 @@ static const FLASHMEM struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC SSB "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_SSB),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_SSB],
@@ -1467,8 +1465,8 @@ static const FLASHMEM struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC DIG "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_DIGI),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_DIGI],
@@ -1477,8 +1475,8 @@ static const FLASHMEM struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC AM  "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_AM),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_AM),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_AM],
@@ -1487,8 +1485,8 @@ static const FLASHMEM struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC FM  "), 8, 5, RJ_TXAUDIO,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIO_BASE(MODE_NFM),
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gtxaudio [MODE_NFM],
@@ -2230,6 +2228,98 @@ static const FLASHMEM struct menudef menutable [] =
 /* settings page header */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
+		QLABEL("TX PARAM"), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrptxparam),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+/* group name --- */
+
+/* settings page list */
+
+#if WITHPOWERTRIM
+  #if ! WITHPOTPOWER
+    & xgnormalpower,        /* мощность при обычной работе на передачу */
+	#if WITHPACLASSA
+		& xgclassamode,	/* использование режима клвсс А при передаче */
+	#endif /* WITHPACLASSA */
+  #endif /* ! WITHPOTPOWER */
+#elif WITHPOWERLPHP
+	(const struct paramdefdef [1]) {
+		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		0, PWRMODE_COUNT - 1,
+		OFFSETOF(struct nvmap, gpwri),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gpwri,
+		getzerobase,
+	},
+#endif /* WITHPOWERTRIM */
+#if WITHIF4DSP
+
+	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
+	& xgnfmdeviation,	/* Девиация при передаче в NFM - в сотнях герц */
+	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+
+#endif /* WITHIF4DSP */
+#if WITHFANTIMER
+	(const struct paramdefdef [1]) {
+		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,
+		0, FANPATIMEMAX,
+		OFFSETOF(struct nvmap, gfanpatime),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpatime,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#if WITHFANPWM
+	(const struct paramdefdef [1]) {
+		QLABEL("FAN FLOW"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		WITHFANPWMMIN, WITHFANPWMMAX,
+		OFFSETOF(struct nvmap, gfanpapwm),
+		getselector0, nvramoffs0, valueoffs0,
+		& gfanpapwm,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* WITHFANPWM */
+#endif /* WITHFANTIMER */
+	& xgtxgate,
+
+#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
+	(const struct paramdefdef [1]) {
+		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gdactest),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gdactest,
+		getzerobase,
+	},
+#endif /* WITHDSPEXTDDC */
+#if WITHIF4DSP
+	(const struct paramdefdef [1]) {
+		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gdacscale,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+/* settings page header */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
 		QLABEL("TX ADJ  "), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
@@ -2242,17 +2332,6 @@ static const FLASHMEM struct menudef menutable [] =
 /* group name --- */
 
 /* settings page list */
-#if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
 
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2786,90 +2865,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 
 #endif /* WITHPACLASSA */
-
-	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
-	& xgnfmdeviation,	/* Девиация при передаче в NFM - в сотнях герц */
-	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-
 #endif /* WITHIF4DSP */
-#if WITHFANTIMER
-	(const struct paramdefdef [1]) {
-		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, FANPATIMEMAX,
-		OFFSETOF(struct nvmap, gfanpatime),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gfanpatime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if WITHFANPWM
-	(const struct paramdefdef [1]) {
-		QLABEL("FAN FLOW"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHFANPWMMIN, WITHFANPWMMAX,
-		OFFSETOF(struct nvmap, gfanpapwm),
-		getselector0, nvramoffs0, valueoffs0,
-		& gfanpapwm,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHFANPWM */
-#endif /* WITHFANTIMER */
-
-#if WITHPOWERTRIM
-  #if ! WITHPOTPOWER
-	(const struct paramdefdef [1]) {
-		QLABEL("TX POWER"), 7, 0, 0,	ISTEP5,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		OFFSETOF(struct nvmap, gnormalpower),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnormalpower.value,
-		getzerobase,
-	},
-	#if WITHPACLASSA
-		/* усилитель мощности поддерживает переключение в класс А */
-		(const struct paramdefdef [1]) {
-			QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
-			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, gclassamode),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gclassamode,
-			getzerobase,
-		},
-	#endif /* WITHPACLASSA */
-  #endif /* ! WITHPOTPOWER */
-#elif WITHPOWERLPHP
-	#if ! CTLSTYLE_SW2011ALL
-	(const struct paramdefdef [1]) {
-		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		OFFSETOF(struct nvmap, gpwri),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gpwri,
-		getzerobase,
-	},
-	#endif /* ! CTLSTYLE_SW2011ALL */
-#endif /* WITHPOWERTRIM */
-
-#if ! CTLSTYLE_SW2011ALL
-	(const struct paramdefdef [1]) {
-		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gtxgate),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxgate,
-		getzerobase, 
-	},
-#endif /* ! CTLSTYLE_SW2011ALL */
 
 #if WITHPABIASTRIM
 	(const struct paramdefdef [1]) {
@@ -2883,18 +2879,6 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
-#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
-	(const struct paramdefdef [1]) {
-		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gdactest),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdactest,
-		getzerobase,
-	},
-#endif /* WITHDSPEXTDDC */
 
 #endif /* WITHTX */
 
@@ -3411,7 +3395,6 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* WITHBCBANDS */
 
-#if CTLSTYLE_SW2011ALL
 #if TUNE_6MBAND
 	(const struct paramdefdef [1]) {
 		QLABEL("BAND 50 "), 8, 3, RJ_ON,	ISTEP1,
@@ -3448,7 +3431,6 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* TUNE_2MBAND */
-#endif /* CTLSTYLE_SW2011ALL */
 
 /* group name +++ */
 	(const struct paramdefdef [1]) {

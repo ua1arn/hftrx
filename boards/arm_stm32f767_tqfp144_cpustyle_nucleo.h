@@ -231,8 +231,7 @@
 		} while (0)
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	#define NMEA_INITIALIZE() \
-		do { \
+	#define NMEA_1PPS_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
 			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)
@@ -328,24 +327,6 @@
 
 #if WITHTX
 
-	// Управление передатчиком - единственный сигнал разрешения тракта
-	#define TXPATH_BIT_GATE 0//(1u << 0)	// PD0 выходной сигнал из процессора - управление передатчиком.
-	#define TXPATH_BIT_GATE_RX 0	// сигнал tx2 - управление передатчиком. При приёме не активен
-
-	#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	// 
-	#define TXGFV_RX		(1u << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(1u << 0)
-	#define TXGFV_TX_CW		(1u << 1)
-	#define TXGFV_TX_AM		(1u << 2)
-	#define TXGFV_TX_NFM	(1u << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-			arm_hardware_piod_outputs2m(TXPATH_BIT_GATE, 0); \
-		} while (0)
 
 	// PTT input - PD10
 	#define PTT_TARGET_PIN				(GPIOD->IDR)

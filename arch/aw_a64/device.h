@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__DADB7421_2CE1_4351_A89A_B0338D2EB5AF__INCLUDED
+#define HEADER__DADB7421_2CE1_4351_A89A_B0338D2EB5AF__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -3300,5 +3303,8 @@ typedef struct VE_Type
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__DADB7421_2CE1_4351_A89A_B0338D2EB5AF__INCLUDED */

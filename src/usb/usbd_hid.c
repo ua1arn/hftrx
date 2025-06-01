@@ -70,7 +70,7 @@ uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t 
     if (hhid->state == HID_IDLE)
     {
       hhid->state = HID_BUSY;
-      (void)USBD_LL_Transmit(pdev, USBD_EP_HIDMOUSE_INT, report, len);
+      (void)USBD_LL_Transmit(pdev, USBD_EP_HIDMOUSE_NOTIFY, report, len);
     }
   }
 
@@ -122,15 +122,15 @@ static USBD_StatusTypeDef USBD_HID_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	//pdev->pClassData = (void*) hhid;
 
 	if (pdev->dev_speed == USBD_SPEED_HIGH) {
-		pdev->ep_in [USBD_EP_HIDKEYBOARD_INT & 0xFU].bInterval = HID_HS_BINTERVAL;
+		pdev->ep_in [USBD_EP_HIDKEYBOARD_NOTIFY & 0xFU].bInterval = HID_HS_BINTERVAL;
 	} else /* LOW and FULL-speed endpoints */
 	{
-		pdev->ep_in [USBD_EP_HIDKEYBOARD_INT & 0xFU].bInterval = HID_FS_BINTERVAL;
+		pdev->ep_in [USBD_EP_HIDKEYBOARD_NOTIFY & 0xFU].bInterval = HID_FS_BINTERVAL;
 	}
 
 	/* Open EP IN */
-	(void) USBD_LL_OpenEP(pdev, USBD_EP_HIDKEYBOARD_INT, USBD_EP_TYPE_INTR, HIDKEYBOARD_INT_DATA_SIZE);
-	pdev->ep_in [USBD_EP_HIDKEYBOARD_INT & 0xFU].is_used = 1U;
+	(void) USBD_LL_OpenEP(pdev, USBD_EP_HIDKEYBOARD_NOTIFY, USBD_EP_TYPE_INTR, HIDKEYBOARD_NOTIFY_DATA_SIZE);
+	pdev->ep_in [USBD_EP_HIDKEYBOARD_NOTIFY & 0xFU].is_used = 1U;
 
 	hhid->state = HID_IDLE;
 
@@ -142,9 +142,9 @@ static USBD_StatusTypeDef USBD_HID_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	UNUSED(cfgidx);
 
 	/* Close HID EPs */
-	(void) USBD_LL_CloseEP(pdev, USBD_EP_HIDKEYBOARD_INT);
-	pdev->ep_in[USBD_EP_HIDKEYBOARD_INT & 0xFU].is_used = 0U;
-	pdev->ep_in[USBD_EP_HIDKEYBOARD_INT & 0xFU].bInterval = 0U;
+	(void) USBD_LL_CloseEP(pdev, USBD_EP_HIDKEYBOARD_NOTIFY);
+	pdev->ep_in[USBD_EP_HIDKEYBOARD_NOTIFY & 0xFU].is_used = 0U;
+	pdev->ep_in[USBD_EP_HIDKEYBOARD_NOTIFY & 0xFU].bInterval = 0U;
 
 	/* Free allocated memory */
 //	if (pdev->pClassData != NULL) {

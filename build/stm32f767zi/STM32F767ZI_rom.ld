@@ -133,10 +133,10 @@ SECTIONS
 		*(vtable)
 		. = ALIGN(8);
 		*(.dtcm*)
-		. = ALIGN(8);	/* may be 32 */
+
+		. = ALIGN(4);
 		/* All data end */
 		__data_end__ = .;
-
 	} > DTCM
 
 	. = __etext + __data_end__ - __data_start__;

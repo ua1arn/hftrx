@@ -1,4 +1,4 @@
-SET CONVERTER=..\Debug\genregdefs.exe
+SET CONVERTER=..\Debug\genregdefs.exe --guid "{DADB7421-2CE1-4351-A89A-B0338D2EB5AF}"
 SET OUTFILE=..\..\..\arch\aw_a64\device.h
 SET FILELIST= ve.csv gic.csv cpusubsysctrl.csv ccu.csv sys_cfg.csv ndfc.csv tsc.csv uart.csv gpio.csv smhc.csv i2s_pcm.csv dmic.csv owa.csv audio_codec.csv twi.csv spi.csv cir_rx.csv tpadc.csv gpadc.csv ce.csv rtc.csv iommu.csv ths.csv timer.csv hstimer.csv ^
 	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^

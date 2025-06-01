@@ -1,6 +1,6 @@
 @rem CONFIG_MACH_SUN8xxxx
 
-SET CONVERTER=..\Debug\genregdefs.exe 
+SET CONVERTER=..\Debug\genregdefs.exe --guid "{0A1222C2-8BE1-4494-B3C4-CD5CBE2E70AB}"
 SET OUTFILE=..\..\..\arch\aw_f133\device.h
 SET FILELIST=risc_cfg.csv risc_wdg.csv risc_timestamp.csv ccu.csv plic.csv sysmap.csv sys_cfg.csv ^
 	can.csv uart.csv gpio.csv smhc.csv i2s_pcm.csv dmic.csv owa.csv audio_codec.csv twi.csv spi.csv ^

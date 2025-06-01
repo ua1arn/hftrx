@@ -16,7 +16,15 @@ static ticker_t seqticker;
 static adcdone_t voxoribet;
 
 
-#if WITHTX
+// вызывается из SYSTEM обработчика прерываний
+static void
+seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
+{
+#if WITHINTEGRATEDDSP
+	dsp_txpath_set(txpathstate, keydown);
+#endif
+	hardware_txpath_set(txpathstate);
+}
 
 enum {
 	SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
@@ -34,7 +42,7 @@ enum {
 
 // Значения для выбора из таблицы управления трактом.
 // Последняя размерность в данной таблице: 0: keyup, 1: keydown
-static const FLASHMEM uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
+static const uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 {
 	{ TXGFI_RX,			TXGFI_RX,		},	// SEQST_INITIALIZE,		// ничего не передается - начальное состояние сиквенсора
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_PUSHED_WAIT_ACK_TX,// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
@@ -48,7 +56,7 @@ static const FLASHMEM uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 
 // Значения для выбора из таблицы управления трактом.
 // Последняя размерность в данной таблице: 0: keyup, 1: keydown
-static const FLASHMEM uint_fast8_t seqtxstate [SEQST_MAX] =
+static const uint_fast8_t seqtxstate [SEQST_MAX] =
 {
 	0,	// SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
 	0,	// SEQST_PUSHED_WAIT_ACK_TX,	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
@@ -63,7 +71,7 @@ static const FLASHMEM uint_fast8_t seqtxstate [SEQST_MAX] =
 #if WITHDEBUG
 
 // Названия состояний сиквенсора - для отладочной печати
-static const char * FLASHMEM const seqnames [SEQST_MAX] =
+static const char * const seqnames [SEQST_MAX] =
 {
 	"SEQST_INITIALIZE",			// ничего не передается - начальное состояние сиквенсора
 	"SEQST_PUSHED_WAIT_ACK_TX",	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
@@ -300,20 +308,20 @@ static void keyqueueclear(void)
 }
 
 /* Начальное значение параметров управления трактом - для исключения использования неинициализированных значений. */
-static const FLASHMEM 
+static const
 	portholder_t txgfva0 [TXGFI_SIZE] =	// усостояния выходов для разных режимов
 		{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB }; // для SSB
-static const FLASHMEM 
+static const
 	uint_fast8_t sdtnva0 [TXGFI_SIZE] =	// признаки включения самоконтроля для разных режимов
 		{ 0, 0, 0, 0 };	// для SSB
 
-static const portholder_t FLASHMEM * txgfp = txgfva0;	// параметры управления трактом
-static const uint_fast8_t FLASHMEM * sdtnp = sdtnva0;	// параметры управления самоконтролем
+static const portholder_t * txgfp = txgfva0;	// параметры управления трактом
+static const uint_fast8_t * sdtnp = sdtnva0;	// параметры управления самоконтролем
 
 /* как включать тракт в данном режиме работы из прерываний */
-void seq_set_txgate_P(
-	const portholder_t FLASHMEM * atxgfp, 
-	const uint_fast8_t FLASHMEM * asdtnp
+void seq_set_txgate(
+	const portholder_t * atxgfp,
+	const uint_fast8_t * asdtnp
 	)
 {
 	IRQL_t oldIrql;
@@ -358,16 +366,6 @@ seqhastxrequest(void)
 	// причин оставаться в режиме передачи больше нет.
 	// выключаем если надо всё и переходим к приёму.
 	return 0;
-}
-
-// вызывается из SYSTEM обработчика прерываний
-static void
-seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
-{
-#if WITHINTEGRATEDDSP
-	dsp_txpath_set(txpathstate, keydown);
-#endif
-	hardware_txpath_set(txpathstate);
 }
 
 // 
@@ -605,7 +603,7 @@ void seq_initialize(void)
 	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
 
 	hardware_txpath_initialize();
-	//seq_set_txgate_P(txgfva0, sdtnva0);	// Сделано статической инициализацией
+	//seq_set_txgate(txgfva0, sdtnva0);	// Сделано статической инициализацией
 	seq_txpath_set(TXGFV_RX, 0);	// - аппаратное управление выдачей несущей - в состояние приём
 	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 
@@ -671,67 +669,3 @@ uint_fast8_t seq_get_phase(void)
 	return SEQPHASE_INIT;
 }
 
-#else	/* WITHTX */
-
-static void 
-seq_spool_ticks(void * ctc)
-{
-	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
-
-	// Выдача сигнала самоконтроля в зависимости от состояния сиквенсора.
-	// самоконтроль от ключа передается всегда, может добавится тон от состояния TUNE.
-	board_sidetone_enable(keydown); // - выдача сигнала самоконтроля
-}
-
-
-/* заглушки функций для работы в случае только приёмника. */
-void seq_txrequest(uint_fast8_t tune, uint_fast8_t ptt)
-{
-}
-
-/* заглушки функций для работы в случае только приёмника. */
-void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt)
-{
-}
-
-uint_fast8_t seq_get_txstate(void)
-{
-	return 0;
-}
-
-void seq_ask_txstate(uint_fast8_t tx)
-{
-}
-
-/* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
-void seq_initialize(void)
-{
-	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL);
-	ticker_add(& seqticker);
-}
-
-/* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
-void seq_purge(void)
-{
-}
-
-void 
-vox_initialize(void)
-{
-}
-
-void 
-seq_set_bkin_enable(
-	uint_fast8_t bkinstate, 			/* разрешение (не-0) или запрещение (0) работы BREAK-IN. */
-	uint_fast8_t bkin_delay_tens	/* задержка отпускания break-in в 1/100 секундных интервалах */
-	)
-{
-}
-
-// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
-uint_fast8_t seq_get_phase(void)
-{
-	return SEQPHASE_INIT;
-}
-
-#endif	/* WITHTX */

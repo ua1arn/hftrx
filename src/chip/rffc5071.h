@@ -144,7 +144,7 @@ static uint_fast16_t rffc5071_spi_read(
 
 
 /* Default register values. */
-static const FLASHMEM uint16_t rffc5071_regs_default[RFFC5071_NUM_REGS] = { 
+static const uint16_t rffc5071_regs_default[RFFC5071_NUM_REGS] = {
 	0xbefa,   /* 00 */
 	0x4064,   /* 01 */
 	0x9055,   /* 02 */

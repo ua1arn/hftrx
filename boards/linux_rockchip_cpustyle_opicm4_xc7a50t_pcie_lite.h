@@ -17,6 +17,12 @@
 #define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
 
+// GPS receiver Locosys MC-1513: only RMC sentences at 1 Hz
+#define HARDWARE_NMEA_INITIALIZE() do { \
+		uartlite_write_string("$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"); \
+		uartlite_write_string("$PMTK220,1000*1F\r\n"); \
+	} while (0)
+
 #define	AXI_IQ_RX_BRAM				0xC0000000
 #define	AXI_IQ_STREAM_BRAM			0xC0010000
 #define	AXI_LITE_IQ_RX_BRAM_CNT		0x00001000
@@ -29,6 +35,7 @@
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
 #define	AXI_LITE_FIR_COEFFS			0x0000A000
+#define	AXI_LITE_UARTLITE			0x00020000
 
 /*
 enum {
@@ -74,7 +81,8 @@ enum {
 #define LINUX_FB_FILE			"/dev/fb0"
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
-#define LINUX_AUDIO_INT_FILE	"/dev/uio3"
+#define LINUX_XDMA_UART_FILE	"/dev/xdma0_events_2"
+#define LINUX_XDMA_PPS_FILE		"/dev/xdma0_events_3"
 #define TOUCH_EVENT_NAME		"goodix-ts" //"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
@@ -91,13 +99,6 @@ enum {
 #endif /* WITHCPUTEMPERATURE */
 
 #if WITHTX
-
-	#define TXGFV_RX		(1u << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(1u << 0)
-	#define TXGFV_TX_CW		(1u << 1)
-	#define TXGFV_TX_AM		(1u << 2)
-	#define TXGFV_TX_NFM	(1u << 3)
 
 	#define TXPATH_INITIALIZE() do { } while (0)
 
@@ -124,15 +125,8 @@ enum {
 
 #endif /* WITHSPIDEV */
 
-#if WITHDSPEXTFIR
-#define AXIDMA_FIR_COEFFS_ID	XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID
-
-	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-		} while (0)
-#endif /* WITHDSPEXTFIR */
-
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE()   do {} while (0)
-#define HARDWARE_DEBUG_FLUSH()	do {} while(0)
+#define HARDWARE_DEBUG_FLUSH()	do {} while (0)
 
 #endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_LITE_H_INCLUDED */

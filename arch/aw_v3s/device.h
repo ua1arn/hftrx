@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__25B09AFF_0510_4ff4_AC97_A98D3B4BAC38__INCLUDED
+#define HEADER__25B09AFF_0510_4ff4_AC97_A98D3B4BAC38__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -1033,5 +1036,8 @@ typedef struct VE_Type
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
 #define SPI ((SPI_TypeDef *) SPI_BASE)                /*!< SPI Serial Peripheral Interface register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__25B09AFF_0510_4ff4_AC97_A98D3B4BAC38__INCLUDED */

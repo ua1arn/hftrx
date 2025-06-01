@@ -37,8 +37,8 @@
 
 //#define WITHISBOOTLOADER	1		/* выполняем make bootloader */
 //#define WITHISBOOTLOADER0			(WITHISBOOTLOADER && CPUSTYLE_R7S721)	/* Renesas specific option - FSBL. Открыть эту строку и запустить make bootloader */
-//#define WITHISBOOTLOADER_DDR		(WITHISBOOTLOADER && 1)	/* for xfel: T507, H616, A64, T113-s4 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */
-//#define WITHISBOOTLOADER_RUN64	(WITHISBOOTLOADER && 1)	/* Загрузчик инициализирует память, загружает application и запускает в режиме aarch64/rv64 */
+//#define WITHISBOOTLOADER_DDR		(WITHISBOOTLOADER && 1)	/* For xfel: T507, H616, A64, T113-s4 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */
+//#define WITHISBOOTLOADER_RUN64	(WITHISBOOTLOADER && 1)	/* For SD/NOR flash: Загрузчик инициализирует память, загружает application и запускает в режиме aarch64/rv64 */
 
 // Дисплей с фреймбуфером:
 #define CTLSTYLE_STORCH_V7	1
@@ -173,6 +173,10 @@
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_mango_pi.h"
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+	#include "boards/arm_allwt113s3_ctlstyle_zentec_v0.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_zentec_v0.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi_dctrx.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -199,17 +203,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_zinc20.h"	// 7020 Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
-	#include "boards/arm_x7c70xx_ctlstyle_zm10.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_x7c70xx_cpustyle_zm10.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_storch_sv9.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_storch_sv9.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
-	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_10_v1.h"	// плата EBAZ4205
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v1.h"	// плата EBAZ4205
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_x7c70xx_ctlstyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -219,15 +215,20 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_rockchip_cpustyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_lite.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_lite.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+	#include <boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_lite.h>
+	#include "paramdepend.h"
+	#include <boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_lite.h>
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_full.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h"	// Вычислительный модуль Orange Pi CM4 Rockchip RK3566 + базовая плата, FPGA модуль на основе Xilinx Artix-7, by RA4ASN
+	#include <boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_full.h>
+	#include "paramdepend.h"
+	#include <boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h>
+#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
+	#include <boards/linux_rockchip_ctlstyle_opicm4_xc7a100t_pcie.h>
+	#include "paramdepend.h"
+	#include <boards/linux_rockchip_cpustyle_opicm4_xc7a100t_pcie.h>
 #else
 	#define LCDMODE_DUMMY	1
+	#define	BOARDPOWERMAX 1
 	#define BANDSELSTYLERE_NOTHING	1
 	#define	CTLREGMODE_NOCTLREG	1
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */

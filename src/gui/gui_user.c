@@ -638,7 +638,7 @@ static void gui_main_process(void)
 {
 	window_t * const win = get_win(WINDOW_MAIN);
 
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
+	const gxdrawb_t * db = gui_get_drawbuf();
 	char buf [TEXT_ARRAY_SIZE];
 	const unsigned buflen = ARRAY_SIZE(buf);
 	unsigned update = 0;
@@ -1055,7 +1055,7 @@ static void gui_main_process(void)
 		for(unsigned i = 1; i < infobar_num_places; i++)
 		{
 			uint_fast16_t x = infobar_label_width * i;
-			colpip_line(fr, DIM_X, DIM_Y, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
+			colpip_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
 		}
 
 		if (infobar_hl)
@@ -1063,7 +1063,7 @@ static void gui_main_process(void)
 			uint16_t x1 = infobar_selected * infobar_label_width + 2;
 			uint16_t x2 = x1 + infobar_label_width - 4;
 
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
+			colmain_rounded_rect(db, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
 		}
 
 		for (unsigned current_place = 0; current_place < infobar_num_places; current_place ++)
@@ -1083,9 +1083,9 @@ static void gui_main_process(void)
 					hamradio_get_vfomode3_value(& val);
 
 				local_snprintf_P(buf, buflen, "Dual RX");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 #endif /* WITHUSEDUALWATCH */
 			}
 				break;
@@ -1099,18 +1099,18 @@ static void gui_main_process(void)
 					vol = hamradio_get_afgain();
 
 				local_snprintf_P(buf, buflen, PSTR("AF gain"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				if (hamradio_get_gmutespkr())
 					local_snprintf_P(buf, buflen, PSTR("muted"));
 				else
 					local_snprintf_P(buf, buflen, PSTR("%d"), vol);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 			}
 				break;
 
 			case INFOBAR_TX_POWER:
 			{
-#if WITHTX
+			#if WITHTX
 				static uint_fast8_t tx_pwr, tune_pwr;
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 
@@ -1121,11 +1121,11 @@ static void gui_main_process(void)
 				}
 
 				local_snprintf_P(buf, buflen, PSTR("TX %d\%%"), (int) tx_pwr);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, PSTR("Tune %d\%%"), (int) tune_pwr);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-#endif /* WITHTX */
-			}
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			#endif /* WITHTX */
+						}
 				break;
 
 			case INFOBAR_DNR:
@@ -1140,9 +1140,9 @@ static void gui_main_process(void)
 				}
 
 				local_snprintf_P(buf, buflen, PSTR("DNR"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
 				local_snprintf_P(buf, buflen, state ? "on" : "off");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
 			}
 
 				break;
@@ -1163,12 +1163,12 @@ static void gui_main_process(void)
 				}
 				local_snprintf_P(buf, buflen, PSTR("AF"));
 				xx = current_place * infobar_label_width + 7;
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y_mid, buf, str_color);
+				colpip_string2_tbg(db, xx, y_mid, buf, str_color);
 				xx += SMALLCHARW2 * 3;
 				local_snprintf_P(buf, buflen, bp_wide ? (PSTR("L %u")) : (PSTR("W %u")), bp_low);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, bp_wide ? (PSTR("H %u")) : (PSTR("P %u")), bp_high);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx, infobar_2nd_str_y, buf, str_color);
 			}
 				break;
 
@@ -1184,14 +1184,14 @@ static void gui_main_process(void)
 				if (if_shift)
 				{
 					local_snprintf_P(buf, buflen, PSTR("IF shift"));
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 					local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+d Hz"), if_shift);
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 				}
 				else
 				{
 					local_snprintf_P(buf, buflen, PSTR("IF shift"));
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
 				}
 			}
 				break;
@@ -1208,13 +1208,13 @@ static void gui_main_process(void)
 				}
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
 				local_snprintf_P(buf, buflen, PSTR("ATT"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				if (atten)
 					local_snprintf_P(buf, buflen, PSTR("%d db"), atten);
 				else
 					local_snprintf_P(buf, buflen, PSTR("off"));
 
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 			}
 				break;
 
@@ -1229,9 +1229,9 @@ static void gui_main_process(void)
 					z = display_zoomedbw() / 1000;
 				local_snprintf_P(buf, buflen, PSTR("SPAN"));
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
 				local_snprintf_P(buf, buflen, PSTR("%dk"), z);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 	#endif /* WITHIF4DSP */
 			}
 				break;
@@ -1252,7 +1252,7 @@ static void gui_main_process(void)
 	#else
 				uint_fast16_t yy = y_mid;
 	#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, yy, buf, str_color);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, yy, buf, str_color);
 	#endif /* WITHVOLTLEVEL */
 
 	#if WITHCURRLEVEL || WITHCURRLEVEL2
@@ -1284,7 +1284,7 @@ static void gui_main_process(void)
 
 	#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
 				}
 	#endif /* WITHCURRLEVEL */
 			}
@@ -1300,9 +1300,9 @@ static void gui_main_process(void)
 
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 				local_snprintf_P(buf, buflen, PSTR("CPU temp"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 	#endif /* defined (GET_CPU_TEMPERATURE) */
 			}
 				break;
@@ -1317,11 +1317,11 @@ static void gui_main_process(void)
 					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
 					remove_end_line_spaces(buf);
 					unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.val);
 					remove_end_line_spaces(buf);
 					COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
 				}
 				else
 				{
@@ -1329,9 +1329,9 @@ static void gui_main_process(void)
 					// текущее время
 					local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 					unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 					local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((seconds & 1) ? ' ' : ':'), minute);
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
 				}
 			}
@@ -2184,7 +2184,6 @@ static void window_utilites_process(void)
 static void window_swrscan_process(void)
 {
 #if WITHSWRSCAN
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
 	uint_fast8_t interval = 20;
 	uint_fast16_t x0 = edge_step + interval * 2, y0 = edge_step + gr_h - interval * 2;	// нулевые координаты графика
@@ -2346,36 +2345,36 @@ static void window_swrscan_process(void)
 	{
 		// отрисовка фона графика и разметки
 		uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
-		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORPIP_WHITE, 0);
-		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORPIP_WHITE, 0);
+		colpip_line(db, gr_x, gr_y, gr_x, win->y1 + y1, COLORPIP_WHITE, 0);
+		colpip_line(db, gr_x, gr_y, win->x1 + x1, gr_y, COLORPIP_WHITE, 0);
 
 		char buf [5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-		colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
+		colpip_string3_tbg(db, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
 			if (yy < 0)
 				break;
 
-			colpip_line(fr, DIM_X, DIM_Y, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORPIP_DARKGREEN, 0);
+			colpip_line(db, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORPIP_DARKGREEN, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-			colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
+			colpip_string3_tbg(db, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
 		}
 
 		if (lbl_swr_error->visible)				// фон сообщения об ошибке
 		{
-			colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORPIP_RED);
+			colpip_fillrect(db, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORPIP_RED);
 		}
 		else									// маркер текущей частоты
 		{
-			colpip_line(fr, DIM_X, DIM_Y, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORPIP_RED, 0);
+			colpip_line(db, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORPIP_RED, 0);
 		}
 
 		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
-				colpip_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORPIP_YELLOW, 1);
+				colpip_line(db, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORPIP_YELLOW, 1);
 		}
 	}
 #endif /* WITHSWRSCAN */
@@ -3152,8 +3151,8 @@ static void window_ap_reverb_process(void)
 static void window_ap_mic_eq_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	window_t * const win = get_win(WINDOW_AP_MIC_EQ);
+	const gxdrawb_t * db = gui_get_drawbuf();
 
 	label_t * lbl = NULL;
 	static unsigned eq_limit, eq_base = 0, id = 0;
@@ -3288,15 +3287,15 @@ static void window_ap_mic_eq_process(void)
 	for (unsigned i = 0; i <= abs(eq_base); i += 3)
 	{
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
+		colpip_line(db, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(db, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
-		colpip_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
+		colpip_line(db, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
+		colpip_string2_tbg(db, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
 	}
 #endif /* WITHAFCODEC1HAVEPROC */
 }
@@ -6186,6 +6185,8 @@ static void window_lfm_process(void)
 
 		add_element("btn_state", 86, 40, 0, 0, "");
 		add_element("btn_draw", 86, 40, 0, 0, "Draw|spectre");
+		add_element("btn_p", 35, 35, 0, 0, "+");
+		add_element("btn_m", 35, 35, 0, 0, "-");
 
 		for (unsigned i = 0; i < win->lh_count; i += 2)
 		{
@@ -6212,6 +6213,20 @@ static void window_lfm_process(void)
 		btn_draw->x1 = btn_state->x1 + btn_state->w + interval;
 		btn_draw->y1 = y;
 		btn_draw->visible = VISIBLE;
+
+		button_t * btn_p = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_p");
+		btn_p->x1 = 230;
+		btn_p->y1 = 35;
+		btn_p->visible = VISIBLE;
+		btn_p->payload = 1;
+		btn_p->index = 90;
+
+		button_t * btn_m = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_m");
+		btn_m->x1 = btn_p->x1;
+		btn_m->y1 = btn_p->y1 + btn_p->h + 20;
+		btn_m->visible = VISIBLE;
+		btn_m->payload = -1;
+		btn_m->index = 91;
 
 		hamradio_enable_encoder2_redirect();
 		enable_window_move(win);
@@ -6242,6 +6257,8 @@ static void window_lfm_process(void)
 			{
 				open_window(get_win(WINDOW_LFM_SPECTRE));
 			}
+			else if (bh->index == 90 || bh->index == 91)
+				gui_set_encoder2_rotate(bh->payload);
 		}
 		else if (IS_LABEL_PRESS)
 		{
@@ -6332,20 +6349,20 @@ static void window_lfm_process(void)
 static void window_lfm_spectre_process(void)
 {
 #if WITHLFM
-	const unsigned xmax = 600, ymax = 200, x1 = (800 / 2) - 100, x2 = (800 / 2) + 100;
+	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
 	window_t * const win = get_win(WINDOW_LFM_SPECTRE);
-	static COLORPIP_T d[600][200];
+	static COLORPIP_T d[xmax][ymax];
 	static int shift = 0;
 
-	static unsigned x = 0;
+	static unsigned xx = 0;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		x = 0;
+		xx = 0;
 		shift = 0;
 
-		memset(d, 0, sizeof(d));
+		memset(d, GUI_DEFAULTCOLOR, sizeof(d));
 		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, xmax, ymax);
 		return;
 	}
@@ -6361,21 +6378,23 @@ static void window_lfm_spectre_process(void)
 		break;
 	}
 
-	for (int j = 0; j < xmax; j ++)
-		for (int k = 0; k < x2 - x1; k ++)
-			gui_drawpoint(j, k, d[j][k]);
-
-	if (x < xmax)
+	if (xx >= xmax)
 	{
-		for (int i = x1, y = 0; i < x2; i ++, y ++)
-		{
-			COLORPIP_T v = display2_get_spectrum(i + shift);
-			gui_drawpoint(x, y, v);
-			d[x][y] = v;
-		}
+		for (int x = 0; x < xmax - 1; x ++)
+			memmove(d[x], d[x + 1], (xmax - 1) * 4);
 
-		x ++;
+		xx --;
 	}
+
+	for (int i = i1, y = 0; i < i2; i ++, y ++)
+		d[xx][y] = display2_get_spectrum(i + shift);
+
+	xx ++;
+
+	for (int x = 0; x < xmax; x ++)
+		for (int y = 0; y < ymax; y ++)
+			gui_drawpoint(x, y, d[x][y]);
+
 #endif /* WITHLFM  */
 }
 

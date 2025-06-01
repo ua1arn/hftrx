@@ -285,7 +285,7 @@ typedef struct filter_tag
 	uint_fast8_t widefilter;	/* 0 - считается "узким", 1 - "широким" */
 	uint_fast16_t ceoffset;		/*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
 	const lo2param_t * lo2set;
-	const FLASHMEM char * labelf3;	/* name of filter - 3 chars width */
+	const char * labelf3;	/* name of filter - 3 chars width */
 } filter_t;
 
 #define IF3OFFS 15000	/* половина перестройки частоты ската через меню - удвоенное значение должно помещаться в uint_fast16_t */
@@ -447,14 +447,14 @@ void seq_set_bkin_enable(uint_fast8_t bkinstate, uint_fast8_t bkin_delay_tens);	
 void seq_set_cw_enable(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) работы qsk. означает работу CW */
 void seq_set_rgbeep(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 
-// Для управления трактом надо задать управляющие слова для следующих состояний:
+// Для управления трактом надо задать управляющие слова dsp/фппаратуры для следующих состояний:
 //
 // состояние приёма
 // состояние перехода с приёма на передачу и с передачи на приём
 // состояние передачи SSB
 // состояние передачи CW (а так же AM, NFM)
 
-enum 
+enum
 {
 	TXGFI_RX = 0,	// индекс состояния для режима приёма
 	TXGFI_TRANSIENT,	// индекс состояния для режима перехода с приёма на передачу и с передачи на приём
@@ -465,21 +465,15 @@ enum
 };
 
 // Подготовленные управляющие слова
-//#define TXGFV_RX		0
-//#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-//#define TXGFV_TX_SSB	TXPATH_BIT_ENABLE_SSB
-//#define TXGFV_TX_CW		TXPATH_BIT_ENABLE_CW
 
-//	portholder_t txgfva [TXGFI_SIZE];	// усостояния выходов для разных режимов
-//	uint_fast8_t sdtnva [TXGFI_SIZE];	// признаки включения самоконтроля для разных режимов
+#define TXGFV_RX		(UINT8_C(1) << 0)			// приём
+#define TXGFV_TRANS		(UINT8_C(1) << 1)			// переход между режимами приёма и передачи
+#define TXGFV_TX_SSB	(UINT8_C(1) << 2)
+#define TXGFV_TX_CW		(UINT8_C(1) << 3)
+#define TXGFV_TX_AM		(UINT8_C(1) << 4)
+#define TXGFV_TX_NFM	(UINT8_C(1) << 5)
 
-//	{ TXGFV_RX, TXGFV_TRANS, TXGFV_TRANS, TXGFV_TX_CW }, // для CW
-//	{ 0, 0, 0, 1 },	// для CW
-
-//	{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB } // для SSB
-//	{ 0, 0, 0, 0 },	// для SSB
-
-void seq_set_txgate_P(const portholder_t FLASHMEM * txgfp, const uint_fast8_t FLASHMEM * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
+void seq_set_txgate(const portholder_t * txgfp, const uint_fast8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
 
 void hardware_cw_diagnostics_noirq(
 	uint_fast8_t c1,
@@ -3277,14 +3271,6 @@ extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
 
-void display_swrmeter(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	adcvalholder_t forward,
-	adcvalholder_t reflected, // скорректированное
-	uint_fast16_t minforward
-	);
-
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
 uint_fast8_t hamradio_get_atuvalue(void);
@@ -3300,24 +3286,24 @@ uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для ото�
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
-const FLASHMEM char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
+const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
-const FLASHMEM char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
-const FLASHMEM char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
+const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
+const char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
+const char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
 const char * hamradio_get_rxbw_value4(void);	// RX bandwidth - value
-const FLASHMEM char * hamradio_get_pre_value_P(void);	// RX preamplifier
-const FLASHMEM char * hamradio_get_att_value_P(void);	// RX attenuator
-const FLASHMEM char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
-const FLASHMEM char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
-const FLASHMEM char * hamradio_get_ant5_value_P(void);	// antenna
-const FLASHMEM char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
+const char * hamradio_get_pre_value_P(void);	// RX preamplifier
+const char * hamradio_get_att_value_P(void);	// RX attenuator
+const char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
+const char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
+const char * hamradio_get_ant5_value_P(void);	// antenna
+const char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
 const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
 uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
 int_fast16_t hamradio_get_PAtemp_value(void);	// Градусы в десятых долях
 int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
-const FLASHMEM char * hamradio_get_hplp_value_P(void);	// HP/LP
+const char * hamradio_get_hplp_value_P(void);	// HP/LP
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
@@ -3381,7 +3367,6 @@ void hamradio_settemp_viewstyle(uint_fast8_t v);
 int_fast8_t hamradio_afresponce(int_fast8_t v);
 uint_fast8_t hamradio_get_classa(void);
 
-#if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
 uint_fast8_t hamradio_get_greverb(void);
 void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3390,7 +3375,6 @@ uint_fast8_t hamradio_get_reverb_delay(void);
 uint_fast8_t hamradio_get_reverb_loss(void);
 void hamradio_set_reverb_delay(uint_fast8_t v);
 void hamradio_set_reverb_loss(uint_fast8_t v);
-#endif /* WITHREVERB */
 
 uint_fast16_t hamradio_notch_freq(int_fast8_t step);
 uint_fast16_t hamradio_notch_width(int_fast8_t step);
@@ -3416,7 +3400,6 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v);
 uint32_t hamradio_get_gadcrand(void);
 void hamradio_set_gdactest(uint8_t v);
 
-#if WITHVOX
 void hamradio_set_gvoxenable(uint_fast8_t v);
 uint_fast8_t hamradio_get_gvoxenable(void);
 void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3428,21 +3411,16 @@ void hamradio_set_vox_level(uint_fast8_t v);
 void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
 uint_fast8_t hamradio_get_antivox_level(void);
 void hamradio_set_antivox_level(uint_fast8_t v);
-#endif /* WITHVOX */
 
-#if WITHTX
 void hamradio_set_tune(uint_fast8_t v);
 void hamradio_set_tx_tune_power(uint_fast8_t v);
 uint_fast8_t hamradio_get_tx_tune_power(void);
 void hamradio_set_tx_power(uint_fast8_t v);
 uint_fast8_t hamradio_get_tx_power(void);
 void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
-#endif /* WITHTX */
 
-#if WITHSPKMUTE
 uint_fast8_t hamradio_get_gmutespkr(void);
 void hamradio_set_gmutespkr(uint_fast8_t v);
-#endif /* WITHSPKMUTE */
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 const char * hamradio_get_att_value(void);
@@ -3475,7 +3453,7 @@ enum
 	VIEW_COUNT
 };
 
-static const FLASHMEM char view_types [][6] =
+static const char view_types [][6] =
 	{
 		"LINE ",
 		"FILL ",
@@ -3522,11 +3500,6 @@ const char * get_band_label3(unsigned b); /* получение человеко
 		#error Can not be defined WITHDUALFLTR together with FQMODEL_DCTRX
 	#endif
 #endif
-
-#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-#endif /* WITHPOTGAIN */
 
 #define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
 #define CWWPMMAX	60

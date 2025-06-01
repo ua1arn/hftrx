@@ -540,7 +540,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
-	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
 
 	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
@@ -563,7 +562,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
-	//#define PSTR(s) (__extension__({static const char __c[] FLASHMEM = (s); &__c[0];}))
 
 	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
@@ -976,10 +974,10 @@ void cpptest(void);
 #define AX_PWM_AXI_SLV_REG3_OFFSET 12
 
 #define AX_PWM_mWriteReg(BaseAddress, RegOffset, Data) \
-  	do { Xil_Out32((BaseAddress) + (RegOffset), (u32)(Data)) } while (0)
+  	do { Xil_Out32((BaseAddress) + (RegOffset), (u32)(Data)); } while (0)
 
 #define AX_PWM_mReadReg(BaseAddress, RegOffset) \
-		do { Xil_In32((BaseAddress) + (RegOffset)) } while (0)
+		do { Xil_In32((BaseAddress) + (RegOffset)); } while (0)
 
 void xcz_dcdc_sync(uint32_t freq);
 void xc7z_hardware_initialize(void);
@@ -1027,7 +1025,7 @@ processmessages(
 	uint_fast8_t * kbch,
 	uint_fast8_t * kbready,
 	uint_fast8_t inmenu,
-	const FLASHMEM struct menudef * mp
+	const struct menudef * mp
 	);
 
 

@@ -33,8 +33,8 @@ CP   = $(TRGT)objcopy
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 
 # Cortex-A9 r3p0
 
@@ -76,12 +76,9 @@ ZYNQLIB = zynq7010.a
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -99,10 +96,6 @@ DINCDIR = \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src \
 	$(ZYNQLIBSRC)
 
 # List the default directory to look for the libraries here
@@ -129,36 +122,17 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(OPENVGDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
-ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
-endif
+include ../lvgl.mak
 
-ifeq (1, 0)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
-endif
+include ../lupng.mak
 
-ifeq (1, 0)
 # FreeRTOS
-RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
-DINCDIR += \
-	$(RTOSDIR)/include \
-	$(RTOSDIR)/portable/GCC/ARM_CA9
-SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
-endif
+include ../freertos.mak
 
-ifeq (1, 0)
-# litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
-# http://www.litehtml.com/
-LITEHTMLDIR = $(PRJROOT)/lib/litehtml
-DINCDIR += $(LITEHTMLDIR)/include $(LITEHTMLDIR)/src/gumbo/include $(LITEHTMLDIR)/include/litehtml $(LITEHTMLDIR)/src/gumbo/include/gumbo
-SRCDIRS += $(LITEHTMLDIR)/src
-UDEFS += -D"LITEHTML_NO_THREADS"=1
-endif
+# litehtml
+include ../litehtml.mak
 
 # Define project name here
 PROJECT = tc1_xc7z010
@@ -331,11 +305,11 @@ $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(OBJSA_APP)
+%_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 

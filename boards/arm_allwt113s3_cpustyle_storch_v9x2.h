@@ -23,7 +23,7 @@
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 #define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
-//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -170,7 +170,12 @@
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
-		#if WITHUSBDEV_HSDESC
+		#if WITHLWIP && ! WITHETHHW
+			//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+			//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+			#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+			//#define WITHUSBCDCNCM	1	/* Network Control Model - NCM */
+		#elif WITHUSBDEV_HSDESC
 
 			#define WITHUAC2		1	/* UAC2 support */
 			#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
@@ -210,12 +215,6 @@
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
-
-	#if WITHLWIP
-		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 	#if WIHSPIDFHW || WIHSPIDFSW
@@ -264,22 +263,44 @@
 	#define ENCODER2_BITS_GET() 	((TARGET_ENCODER2_PORT & TARGET_ENCODER2_BITS) >> TARGET_ENCODER2_B_POS)
 	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * GETENCBIT_A + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0) * GETENCBIT_B)
 
-	#define ENCODER_INITIALIZE() do { \
-		static einthandler_t eh1; \
-		static einthandler_t eh2; \
-		static ticker_t th2; \
+	#define ENCODER2_NOSPOOL 1
+
+	#define TARGET_MAIN_ENC_INITIALIZE() do { \
 		/* Main encoder */ \
+		static einthandler_t eh; \
 		arm_hardware_pioe_altfn2(TARGET_ENCODER_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, 0); \
-		einthandler_initialize(& eh1, TARGET_ENCODER_BITS, spool_encinterrupts, & encoder1); \
-		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
-		/* FUNC encoder */ \
+		einthandler_initialize(& eh, TARGET_ENCODER_BITS, spool_encinterrupts, & encoder1); \
+		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+
+	// Эксперементальная - только прерывания
+	#define TARGET_FUNC_ENC_INITIALIZEx() do { \
+		/* FUNC encoder по прерываниям */ \
+		static einthandler_t eh; \
+		static ticker_t th; \
+		arm_hardware_pioe_altfn20(TARGET_ENCODER2_A, GPIO_CFG_EINT); \
+		arm_hardware_pioe_inputs(TARGET_ENCODER2_B); \
+		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
+		einthandler_initialize(& eh, TARGET_ENCODER2_A, spool_encinterrupts4_dirB_ccw, & encoder2); \
+		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_A, 1 * TARGET_ENCODER2_A, 0 * TARGET_ENCODER2_A, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+
+	#define TARGET_FUNC_ENC_INITIALIZE() do { \
+		/* FUNC encoder по опросу и прерываниям */ \
+		static einthandler_t eh; \
+		static ticker_t th; \
 		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
-		ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
-		ticker_add(& th2); \
-		einthandler_initialize(& eh2, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh2); \
+		ticker_initialize(& th, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
+		ticker_add(& th); \
+		einthandler_initialize(& eh, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
+		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+
+	#define ENCODER_INITIALIZE() do { \
+		TARGET_MAIN_ENC_INITIALIZE(); \
+		TARGET_FUNC_ENC_INITIALIZE(); \
 	} while (0)
 
 #endif /* WITHENCODER */
@@ -425,21 +446,6 @@
 #endif /* WITHSDHCHW */
 
 #if WITHTX
-
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() do { \
-		} while (0)
-
 
 	// +++
 	// TXDISABLE input - PF5

@@ -45,8 +45,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
@@ -65,9 +65,7 @@ OPT = -Ofast
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
 USBXDIR = $(PRJROOT)/src/hal
-LUPNGDIR = $(PRJROOT)/lib/LuPng
 TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
@@ -137,11 +135,8 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
-endif
+include ../lvgl.mak
 
 ifeq (1, 1)
 # ST USB DEVICE
@@ -164,62 +159,20 @@ SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
 DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
 endif
 
-ifeq (1, 0)
 # LuPng
-SRCDIRS += $(PRJROOT)/lib/LuPng
-DINCDIR += $(PRJROOT)/lib/LuPng
-endif
+include ../lupng.mak
 
-ifeq (1, 0)
-# OpenVG
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
-SRCDIRS += $(OPENVGDIR)/src
-UDEFS += -D"EGL_STATIC_LIBRARY"=1
-endif
-
-ifeq (1, 0)
 # LWIP
-LWIPDIR = $(PRJROOT)/lib/lwip
-DINCDIR += \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/apps/http
-SRCDIRS += \
-	$(LWIPDIR)/src/api \
-	$(LWIPDIR)/src/core \
-	$(LWIPDIR)/src/netif \
-	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-endif
+include ../lwip.mak
 
-ifeq (1, 0)
 # FreeRTOS
-RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
-DINCDIR += \
-	$(RTOSDIR)/include \
-	$(RTOSDIR)/portable/GCC/ARM_CA9
-SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
-endif
+include ../freertos.mak
 
-ifeq (1, 0)
 # btstack
-# https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
-endif
 
-ifeq (1, 0)
-# litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
-# http://www.litehtml.com/
-LITEHTMLDIR = $(PRJROOT)/lib/litehtml
-DINCDIR += $(LITEHTMLDIR)/include $(LITEHTMLDIR)/src/gumbo/include $(LITEHTMLDIR)/include/litehtml $(LITEHTMLDIR)/src/gumbo/include/gumbo
-SRCDIRS += $(LITEHTMLDIR)/src
-UDEFS += -D"LITEHTML_NO_THREADS"=1
-endif
+# litehtml
+include ../litehtml.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

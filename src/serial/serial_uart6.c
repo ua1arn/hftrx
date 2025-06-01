@@ -17,6 +17,12 @@
 #include <math.h>
 #include "clocks.h"
 
+#if CPUSTYLE_STM32H7XX
+	typedef USART_TypeDef UART_t;
+	#undef UARTBASENAME
+	#define UARTBASENAME(port) UARTBASEconcat(USART, port)
+#endif
+
 #define thisPORT 6
 
 #endif /* WITHUART6HW */

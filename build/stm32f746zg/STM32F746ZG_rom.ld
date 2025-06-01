@@ -166,10 +166,10 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(8);
-		/* All data end */
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > RAM AT > FLASH
 
     . = __etext + __data_end__ - __data_start__;

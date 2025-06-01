@@ -46,8 +46,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 
 # floating-point use hardware of STM32H743ZI CPU (64-bit and 32-bit float)
 CORE = -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -ftree-vectorize --specs=nosys.specs
@@ -59,13 +59,11 @@ OPT = -Ofast -flto
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32H7xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
-LUPNGDIR = $(PRJROOT)/lib/LuPng
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -141,11 +139,8 @@ SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 
-ifeq (1, 0)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
-endif
+include ../lupng.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

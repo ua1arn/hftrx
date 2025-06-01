@@ -57,13 +57,14 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN(64);
+		KEEP(*(.startup0))
+		
+		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(64);
-		KEEP(*(.startup0))
 
+		. = ALIGN(64);
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -173,22 +174,23 @@ SECTIONS
 
 	} > RAM
 
+	.bss :
+	{
+		__bss_start__ = .;
+		. = ALIGN(64);
+		*(.bss*)
+		*(COMMON)
+		. = ALIGN(64);
+		__bss_end__ = .;
+		LONG(0xDEADBEEF)
+	} > RAM 
+
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 
 	} > RAM
-
-	.bss (NOLOAD):
-	{
-		__bss_start__ = .;
-		. = ALIGN(64);
-		*(.bss*)
-		*(COMMON)
-
-		__bss_end__ = .;
-	} > RAM 
 
 	.vram (NOLOAD):
 	{

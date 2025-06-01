@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 by Genadi V. Zawidowski. All rights reserved. */
 #pragma once
-#ifndef HEADER_00003039_INCLUDED
-#define HEADER_00003039_INCLUDED
+#ifndef HEADER__0A1222C2_8BE1_4494_B3C4_CD5CBE2E70AB__INCLUDED
+#define HEADER__0A1222C2_8BE1_4494_B3C4_CD5CBE2E70AB__INCLUDED
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 /* IRQs */
 
@@ -3971,5 +3974,8 @@ typedef struct VE_Type
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */
 #define SYSMAP ((SYSMAP_TypeDef *) SYSMAP_BASE)       /*!< SYSMAP XuanTie-Openc906 register set access pointer */
 
+#ifdef __cplusplus
+ }
+#endif /* __cplusplus */
 
-#endif /* HEADER_00003039_INCLUDED */
+#endif /* HEADER__0A1222C2_8BE1_4494_B3C4_CD5CBE2E70AB__INCLUDED */

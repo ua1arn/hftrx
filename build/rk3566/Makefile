@@ -47,8 +47,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
@@ -130,11 +130,8 @@ DINCDIR += \
 	$(CMSISDSPDIR)/PrivateInclude
 endif
 
-ifeq (1, 0)
 # lvgl
-SRCDIRS += $(PRJROOT)/lvgl/src
-DINCDIR += $(PRJROOT)/lvgl/src
-endif
+include ../lvgl.mak
 
 ifeq (1, 0)
 # ST USB DEVICE
@@ -163,49 +160,14 @@ SRCDIRS += $(PRJROOT)/lib/LuPng
 DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
-ifeq (1, 0)
-# OpenVG
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
-DINCDIR += \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
-SRCDIRS += $(OPENVGDIR)/src
-UDEFS += -D"EGL_STATIC_LIBRARY"=1
-endif
-
-ifeq (1, 0)
 # LWIP
-LWIPDIR = $(PRJROOT)/lib/lwip
-DINCDIR += \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/apps/http
-SRCDIRS += \
-	$(LWIPDIR)/src/api \
-	$(LWIPDIR)/src/core \
-	$(LWIPDIR)/src/netif \
-	$(LWIPDIR)/src/http \
-	$(LWIPDIR)/src/apps/http \
-	$(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
-endif
+include ../lwip.mak
 
-ifeq (1, 0)
 # FreeRTOS
-RTOSDIR := $(PRJROOT)/lib/FreeRTOS-Kernel-main
-DINCDIR += \
-	$(RTOSDIR)/include \
-	$(RTOSDIR)/portable/GCC/ARM_CA9
-SRCDIRS += $(RTOSDIR)
-ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
-endif
+include ../freertos.mak
 
-ifeq (1, 0)
 # btstack
-# https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
-endif
 
 ifeq (1, 0)
 # custom application

@@ -426,14 +426,10 @@ static void adcdones_event(void * ctx)
 
 static volatile uint32_t sys_now_counter;
 
-#if 1//! WITHLWIP
-
 uint32_t sys_now(void)
 {
 	return sys_now_counter;
 }
-
-#endif /* WITHLWIP */
 
 uint32_t board_millis(void)
 {
@@ -1537,6 +1533,11 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 	MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
 		1 * MPU_CTRL_ENABLE_Msk |
 		0;
+}
+
+static void sysinit_mmu_tables(void)
+{
+
 }
 
 #endif /* CPUSTYLE_STM32H7XX */
@@ -4097,10 +4098,10 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
 
-	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;
+	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET assert
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	dcache_clean_all();				// startup code should be copied in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;
+	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET de-assert
 }
 
 #elif CPUSTYLE_VM14

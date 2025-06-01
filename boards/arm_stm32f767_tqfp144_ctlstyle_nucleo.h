@@ -351,7 +351,8 @@
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTGAIN		1	/* регуляторы усиления на потенциометрах */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
@@ -443,7 +444,7 @@
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-	//#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
+	//#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
@@ -461,11 +462,12 @@
 		VOLTSOURCE = 8,		// PB0 Средняя точка делителя напряжения, для АКБ
 	#endif /* WITHVOLTLEVEL */
 
-	#if WITHPOTGAIN
+	#if WITHPOTIFGAIN
 		POTIFGAIN = 2,		// PA2 IF GAIN
+	#endif /* WITHPOTIFGAIN */
+	#if WITHPOTAFGAIN
 		POTAFGAIN = 3,		// PA3 AF GAIN
-	#endif /* WITHPOTGAIN */
-
+	#endif /* WITHPOTAFGAIN */
 	#if WITHPOTWPM
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */

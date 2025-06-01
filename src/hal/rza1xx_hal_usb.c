@@ -87,8 +87,8 @@ uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr)
 #endif /* WITHUSBUACIN */
 #if WITHUSBCDCACM
 
-	case USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, 0):	return HARDWARE_USBD_PIPE_CDC_INT;
-	case USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, 1):	return HARDWARE_USBD_PIPE_CDC_INTb;
+	case USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, 0):	return HARDWARE_USBD_PIPE_CDC_INT;
+	case USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, 1):	return HARDWARE_USBD_PIPE_CDC_INTb;
 
 	case USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, 0):	return HARDWARE_USBD_PIPE_CDC_OUT;
 	case USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, 0):	return HARDWARE_USBD_PIPE_CDC_IN;
@@ -103,7 +103,7 @@ uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr)
 #if WITHUSBRNDIS
 	case USBD_EP_RNDIS_OUT:		return HARDWARE_USBD_PIPE_RNDIS_OUT;
 	case USBD_EP_RNDIS_IN:		return HARDWARE_USBD_PIPE_RNDIS_IN;
-	case USBD_EP_RNDIS_INT:		return HARDWARE_USBD_PIPE_RNDIS_INT;
+	case USBD_EP_RNDIS_NOTIFY:		return HARDWARE_USBD_PIPE_RNDIS_INT;
 #endif /* WITHUSBRNDIS */
 	}
 }
@@ -144,8 +144,8 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 #endif /* WITHUSBUACIN */
 #if WITHUSBCDCACM
 
-	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, 0);
-	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, 1);
+	case HARDWARE_USBD_PIPE_CDC_INT: return USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, 0);
+	case HARDWARE_USBD_PIPE_CDC_INTb: return USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, 1);
 
 	case HARDWARE_USBD_PIPE_CDC_OUT: return USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, 0);
 	case HARDWARE_USBD_PIPE_CDC_IN: return USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, 0);
@@ -161,7 +161,7 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 #if WITHUSBRNDIS
 	case HARDWARE_USBD_PIPE_RNDIS_OUT: return USBD_EP_RNDIS_OUT;
 	case HARDWARE_USBD_PIPE_RNDIS_IN: return USBD_EP_RNDIS_IN;
-	case HARDWARE_USBD_PIPE_RNDIS_INT: return USBD_EP_RNDIS_INT;
+	case HARDWARE_USBD_PIPE_RNDIS_INT: return USBD_EP_RNDIS_NOTIFY;
 #endif /* WITHUSBRNDIS */
 	}
 }
@@ -5594,7 +5594,7 @@ usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 	{
 		{
 			// Прерывание CDC в компьютер из трансивера
-			const uint_fast8_t epnum = USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset);
+			const uint_fast8_t epnum = USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, offset);
 			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 1;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
@@ -5608,9 +5608,9 @@ usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 				2 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
 				0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
 				0;
-			const uint32_t bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
+			const uint32_t bufsize64 = (VIRTUAL_COM_PORT_NOTIFY_SIZE + 63) / 64;
 			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-			USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
+			USBx->PIPEMAXP = VIRTUAL_COM_PORT_NOTIFY_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 			bufnumb64 += bufsize64 * 1; // * 2 for DBLB
 			ASSERT(bufnumb64 <= 0x100);
 

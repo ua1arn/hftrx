@@ -2007,7 +2007,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 		ASSERT2(oldv >= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	* oldIrql = oldv;
-	GIC_SetInterfacePriorityMask(newIRQL);
+	GIC_SetInterfacePriorityMask(GICInterface_PMR_Priority(newIRQL));
 #elif defined (__CORTEX_M)
 	////ASSERT2(__get_BASEPRI() >= newIRQL, file, line);	/* Не понижаем приоритет */
 	* oldIrql = __get_BASEPRI();
@@ -2037,7 +2037,7 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
     __asm__ volatile ("" ::: "memory");
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
     ASSERT2(newIRQL != 0, file, line);
-	GIC_SetInterfacePriorityMask(newIRQL);
+	GIC_SetInterfacePriorityMask(GICInterface_PMR_Priority(newIRQL));
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV

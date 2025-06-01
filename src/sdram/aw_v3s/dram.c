@@ -724,16 +724,16 @@ void arm_hardware_sdram_initialize(void)
 	if (sys_dram_init() == 0)
 	{
 		PRINTF("No external memory");
-#ifdef BOARD_BLINK_INITIALIZE
-		BOARD_BLINK_INITIALIZE();
-		for (;;)
-		{
-			BOARD_BLINK_SETSTATE(1);
-			local_delay_ms(100);
-			BOARD_BLINK_SETSTATE(0);
-			local_delay_ms(100);
-		}
-#endif
+//#ifdef BOARD_BLINK_INITIALIZE
+//		BOARD_BLINK_INITIALIZE();
+//		for (;;)
+//		{
+//			BOARD_BLINK_SETSTATE(1);
+//			local_delay_ms(100);
+//			BOARD_BLINK_SETSTATE(0);
+//			local_delay_ms(100);
+//		}
+//#endif
 		for (;;)
 			;
 	}

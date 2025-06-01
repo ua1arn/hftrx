@@ -496,21 +496,6 @@
 
 #if WITHTX
 
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	// 
-	#define TXGFV_RX		(UINT32_C(1) << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(UINT32_C(1) << 0)
-	#define TXGFV_TX_CW		(UINT32_C(1) << 1)
-	#define TXGFV_TX_AM		(UINT32_C(1) << 2)
-	#define TXGFV_TX_NFM	(UINT32_C(1) << 3)
-
-	#define TXPATH_INITIALIZE() do { \
-		} while (0)
-
-
 	// +++
 	// TXDISABLE input - PE11
 	#define TXDISABLE_TARGET_PIN				gpioX_getinputs(GPIOE)
@@ -715,7 +700,7 @@
 	} while (0)
 
 #if WITHETHHW
-	#define ETHERNET_INITIALIZE() do { \
+	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
 		\
 		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
@@ -756,11 +741,6 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
-
-#else /* WITHETHHW */
-
-	#define ETHERNET_INITIALIZE() do { \
-	} while (0)
 
 #endif /* WITHETHHW */
 
@@ -1116,7 +1096,6 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			ETHERNET_INITIALIZE(); \
 			/*BOARD_BLINK_INITIALIZE(); */\
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\

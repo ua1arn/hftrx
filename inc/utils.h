@@ -186,7 +186,6 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соотв
 //	spi_operate_unlock(irql);
 
 /* Таблица разворота младших восьми бит */
-//extern const FLASHMEM unsigned char revbittable [256];
 uint_fast8_t revbits8(uint_fast8_t v);	// Функция разворота младших восьми бит
 
 uint_fast32_t ptr_hi32(uintptr_t v);

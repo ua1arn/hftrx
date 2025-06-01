@@ -2526,7 +2526,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	{
 		const uint_fast8_t pipein = USBD_EP_MTP_IN & 0x0F;
 		const uint_fast8_t pipeout = USBD_EP_MTP_OUT & 0x0F;
-		const uint_fast8_t pipeint = USBD_EP_MTP_INT & 0x0F;
+		const uint_fast8_t pipeint = USBD_EP_MTP_NOTIFY & 0x0F;
 		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
 		//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	#if WITHUSBDEV_HSDESC
@@ -2537,7 +2537,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), EP_DIR_OUT, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
 		  /* Open INTR EP IN */
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_NOTIFY & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
 
 		//PRINTF("USBDMTP: pipein=%d, pipeout=%d, pipeint=%d\n", pipein, pipeout, pipeint);
 		usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
@@ -2575,8 +2575,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		{
 #if ! WITHUSBCDCACM_NOINT
-			const uint_fast8_t pipeint =  USBD_CDCACM_INT_EP(USBD_EP_CDCACM_INT, offset) & 0x0F;
-			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, 1, fifo_addr);
+			const uint_fast8_t pipeint =  USBD_CDCACM_NOTIFY_EP(USBD_EP_CDCACM_NOTIFY, offset) & 0x0F;
+			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_NOTIFY_SIZE, 1, fifo_addr);
 #endif /* ! WITHUSBCDCACM_NOINT */
 			const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
 			const uint_fast8_t pipeout = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F;

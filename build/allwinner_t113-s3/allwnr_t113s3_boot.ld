@@ -5,7 +5,7 @@
 MEMORY
 {
   RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 	LENGTH = 160k - 256		/*  */
-  debugRAM (rwx) : ORIGIN = 0x00028000 + 256,   LENGTH = 160k - 32k - 256     /* version of parameters for bootloader tests */
+  xfelRAM (rwx) : ORIGIN = 0x00028000 + 256,   LENGTH = 160k - 32k - 256     /* For xfel ddr init or bootloader tests */
   DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 128M - 32M		/*  */
 }
 
@@ -44,17 +44,15 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(64);
 		KEEP(*(.startup0))
-
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
+
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		. = ALIGN(64);
 		
 		/* .ctors */
 		*crtbegin.o(.ctors)
@@ -155,28 +153,29 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-
-		/* All data end */
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > RAM
 
-	.noinit (NOLOAD):
-	{
-		. = ALIGN(64);
-		*(.noinit*)
-
-	} > RAM
-
-	.bss (NOLOAD):
+	.bss :
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-
+		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM 
+
+	.noinit :
+	{
+		. = ALIGN(64);
+		*(.noinit*)
+
+	} > RAM
 
 	.vram (NOLOAD):
 	{

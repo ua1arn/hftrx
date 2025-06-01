@@ -9941,12 +9941,12 @@ sysinit_pll_initialize(int forced)
 		0;
 
 #if CPUSTYLE_H616
-	C0_CPUX_CFG_->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	C0_CPUX_CFG_->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#else /* CPUSTYLE_ */
+	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#else /* CPUSTYLE_H616 */
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#endif /* CPUSTYLE_ */
+#endif /* CPUSTYLE_H616 */
 
 #elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 
@@ -10015,7 +10015,7 @@ struct DCDCFREQ
 /* number of dividers=25 13..38 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 15000000 /* DCDC clock frequency */
-static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+static const struct DCDCFREQ dcdcfreqtable [] = {
 	{ 13 , 30000   , 1134000 , },	/* dcdc=1153846 Hz */
 	{ 14 , 1134000 , 1230000 , },	/* dcdc=1071428 Hz */
 	{ 13 , 1230000 , 2286000 , },	/* dcdc=1153846 Hz */
@@ -10114,7 +10114,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 #elif CPUSTYLE_STM32H7XX
 // пока для проверки работоспособности. Таблицу надо расчитать.
 #define BOARDDCDCSYNC 333333 /* DCDC clock frequency */
-static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+static const struct DCDCFREQ dcdcfreqtable [] = {
   { 63, 26900000uL,  UINT32_MAX },
   { 63, 6900000uL,  26900000uL },
   { 62, 0,		6900000uL },
@@ -10126,7 +10126,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 /* number of dividers=104 51..154 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 61440000 /* DCDC clock frequency */
-static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+static const struct DCDCFREQ dcdcfreqtable [] = {
         { 51 , 30000   , 1182000 , },   /* dcdc=1204705 Hz visible=no */
         { 55 , 1182000 , 1230000 , },   /* dcdc=1117090 Hz visible=no */
         { 52 , 1230000 , 1278000 , },   /* dcdc=1181538 Hz visible=no */
@@ -10226,7 +10226,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 /* number of dividers=168 83..250 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 100000000 /* DCDC clock frequency */
-static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+static const struct DCDCFREQ dcdcfreqtable [] = {
         { 83 , 30000   , 1182000 , },   /* dcdc=1204819 Hz visible=no */
         { 89 , 1182000 , 1230000 , },   /* dcdc=1123595 Hz visible=no */
         { 85 , 1230000 , 1278000 , },   /* dcdc=1176470 Hz visible=no */
@@ -10329,7 +10329,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 /* number of dividers=84 42..125 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 50000000 /* DCDC clock frequency */
-static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+static const struct DCDCFREQ dcdcfreqtable [] = {
         { 42 , 30000   , 1182000 , },   /* dcdc=1190476 Hz visible=no */
         { 45 , 1182000 , 1230000 , },   /* dcdc=1111111 Hz visible=no */
         { 43 , 1230000 , 1278000 , },   /* dcdc=1162790 Hz visible=no */
@@ -10438,7 +10438,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 /* number of dividers=53 27..80 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 32000000 /* DCDC clock frequency */
-static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
+static const struct DCDCFREQ dcdcfreqtable [] = {
 	{ 27 , 30000   , 1182000 , },	/* dcdc=1185185 Hz */
 	{ 29 , 1182000 , 1230000 , },	/* dcdc=1103448 Hz */
 	{ 28 , 1230000 , 1278000 , },	/* dcdc=1142857 Hz */

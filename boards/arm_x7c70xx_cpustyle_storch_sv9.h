@@ -495,22 +495,6 @@
 
 #if WITHTX
 
-	// txpath outputs not used
-	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	// 
-	#define TXGFV_RX		(1u << 4)
-	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(1u << 0)
-	#define TXGFV_TX_CW		(1u << 1)
-	#define TXGFV_TX_AM		(1u << 2)
-	#define TXGFV_TX_NFM	(1u << 3)
-
-	#define TXPATH_INITIALIZE() \
-		do { \
-		} while (0)
-
-
 	// +++
 	// TXDISABLE input - PD10
 	#define TXDISABLE_TARGET_PIN				1//(GPIOD->IDR)
@@ -1205,7 +1189,7 @@
 
 	// See Table 16‐10: Ethernet RGMII Interface Signals via MIO Pins
 	// GigE 0
-	#define ETHERNET_INITIALIZE() do { \
+	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0x00, 0x00, 0x00, 0x00, 0); \
 		const portholder_t pinmode_mdio = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x04, 0x00, 0x00, 0x00, 0); \
 		const portholder_t pinmode_rgmii_tx = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 0); \
@@ -1269,7 +1253,6 @@
 			TUNE_INITIALIZE(); \
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
-			/*ETHERNET_INITIALIZE(); */\
 			USB_ULPI_INITIALIZE(); \
 		} while (0)
 

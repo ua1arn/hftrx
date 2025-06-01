@@ -125,6 +125,8 @@ static unsigned char hex2int(uint_fast8_t c)
 static dpcobj_t dpcobj_gnss;
 
 /* nmea_time скорректировано на следующую секунду */
+// Update RTC by NMEA time
+// IRQL_USER
 static void dpc_parsehandler(void * arg)
 {
 	(void) arg;
@@ -151,7 +153,7 @@ static void dpc_parsehandler(void * arg)
 #endif /* defined (RTC1_TYPE) */
 }
 
-/* USER-MODE обработчик */
+/* IRQL_SYSTEM обработчик. Так же может быть вызван из user-mode в Linux */
 void nmeagnss_parsechar(uint_fast8_t c)
 {
 	//dbg_putchar(c);
@@ -234,9 +236,6 @@ void nmeagnss_parsechar(uint_fast8_t c)
 	}
 }
 
-// Очередь принятых симвоов из канала обменна
-//static u8queue_t rxq;
-
 // callback по принятому символу. сохранить в очередь для обработки в user level
 void nmeagnss_onrxchar(uint_fast8_t c)
 {
@@ -250,23 +249,6 @@ void nmeagnss_onrxchar(uint_fast8_t c)
 void nmeagnss_sendchar(void * ctx)
 {
 
-}
-
-/* user-mode callback */
-static void gnss_spool(void * ctx)
-{
-//	uint_fast8_t c;
-//	uint_fast8_t f;
-//	IRQL_t oldIrql;
-//
-//	RiseIrql(IRQL_SYSTEM, & oldIrql);
-//	f = uint8_queue_get(& rxq, & c);
-//	LowerIrql(oldIrql);
-//
-//	if (f)
-//	{
-//		nmeagnss_parsechar(c & 0xFF);	/* USER-MODE обработчик */
-//	}
 }
 
 /* вызывается из обработчика прерываний */
@@ -299,7 +281,7 @@ void nmeagnss_initialize(void)
 	HARDWARE_NMEA_SET_SPEED(baudrate);
 	HARDWARE_NMEA_ENABLERX(1);
 	HARDWARE_NMEA_ENABLETX(0);
-	NMEA_INITIALIZE();
+	NMEA_1PPS_INITIALIZE();
 
 #endif /*  ! LINUX_SUBSYSTEM */
 }

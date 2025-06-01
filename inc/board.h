@@ -76,7 +76,6 @@ void board_set_txlevel(uint_fast8_t n);	/* установить выходную
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
 void board_set_rxantenna(uint_fast8_t v);
-void board_set_boardagc(uint_fast8_t n);
 void board_set_dspagc(uint_fast8_t n);
 void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
 
@@ -85,9 +84,6 @@ void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе
 void board_setfanflag(uint_fast8_t v);	/* включить вентилятор */
 void board_setfanpwm(uint_fast8_t n);	/* скорость ывентилятора 0..255 */
 void board_set_mainsubrxmode(uint_fast8_t v);	// Левый/правый, A - main RX, B - sub RX
-void board_set_detector(uint_fast8_t v);
-void board_set_nfm(uint_fast8_t v);
-void board_set_nfmnbon(uint_fast8_t v);	/* Включние noise blanker на SW2014FM */
 void board_set_filter(uint_fast16_t v);
 void board_set_bandf(uint_fast8_t n);	/*  диапазонный фильтр приёмника */
 void board_set_bandf2(uint_fast8_t n);	/* диапазонный фильтр передатчика */
@@ -95,8 +91,6 @@ void board_set_bandf3(uint_fast8_t n);	/* управление через раз
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
 void board_set_bcdfreq1k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 1 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
-void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
-void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором включать UHF */
 void board_set_if4lsb(uint_fast8_t v);	/* требуется для приемников прямого преобразования */
 //void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
@@ -196,7 +190,7 @@ void board_errbeep_enable(uint_fast8_t state);	/* сигнал об ошибке
 void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep */
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
-void board_subtone_enable_user(uint_fast8_t state);
+void board_subtone_enable(uint_fast8_t state);
 /* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
 void bandf2_calc_initialize(void);

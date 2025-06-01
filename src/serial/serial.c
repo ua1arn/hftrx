@@ -44,7 +44,7 @@ enum
 	SCSMR_DIV64 = 0x03,
 };
 
-const FLASHMEM struct spcr_spsr_tag scemr_scsmr [] =
+const struct spcr_spsr_tag scemr_scsmr [] =
 {
 	{ SCEMR_x8, 	SCSMR_DIV1, },		/* /8 = 8 * 1 */
 	{ SCEMR_x16, 	SCSMR_DIV1, }, 		/* /16 = 16 * 1 */
