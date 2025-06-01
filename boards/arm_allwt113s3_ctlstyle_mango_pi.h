@@ -504,10 +504,6 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0
-		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
-	#endif
-	#if 0
 		#define WITHLWIP 1
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif

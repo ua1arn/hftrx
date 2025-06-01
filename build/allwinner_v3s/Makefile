@@ -157,9 +157,6 @@ SRCDIRS += $(PRJROOT)/lib/LuPng
 DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
-# OpenVG
-include ../openvg.mak
-
 # LWIP
 include ../lwip.mak
 

@@ -499,15 +499,8 @@
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
-
-	#if 0
-		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
-	#endif
 	#if 0
 		#define WITHLWIP 1
-		
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */

@@ -665,25 +665,16 @@ display_reset(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-#if WITHOPENVG
-	uintptr_t frames [LCDMODE_MAIN_PAGES];
-	colmain_fb_list(frames);
-	openvg_init(frames);
-#endif /* WITHOPENVG */
-
 #if WITHLVGL && ! LINUX_SUBSYSTEM
 
 	display_lvgl_initialize();
 
-#endif /* WITHOPENVG */
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 }
 
 /* Разряжаем конденсаторы питания */
 void display_uninitialize(void)
 {
-#if WITHOPENVG
-	openvg_deinit();
-#endif /* WITHOPENVG */
 }
 
 

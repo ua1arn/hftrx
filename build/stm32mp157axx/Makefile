@@ -162,9 +162,6 @@ include ../lupng.mak
 # LWIP
 include ../lwip.mak
 
-# OpenVG
-include ../openvg.mak
-
 # FreeRTOS
 include ../freertos.mak
 

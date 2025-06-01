@@ -3910,9 +3910,6 @@ void colmain_nextfb(void)
 	}
 	fb0 = allocate_dmabuffercolmain0fb();
 	ASSERT(fb0);
-#if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr(fb0));
-#endif /* WITHOPENVG */
 }
 /* поставить на отображение этот буфер, запросить следующий */
 void colmain_nextfb_sub(void)
@@ -4016,9 +4013,6 @@ void colmain_nextfb(void)
 #endif /* WITHHDMITVHW */
 
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
-#if WITHOPENVG
-	openvg_next(colmain_getindexbyaddr((uintptr_t) colmain_fb_draw()));
-#endif /* WITHOPENVG */
 }
 
 #if defined (TCONTV_PTR) && 0

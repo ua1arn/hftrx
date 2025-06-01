@@ -126,9 +126,6 @@ ULIBS +=
 # LuPng
 include ../lupng.mak
 
-# OpenVG
-include ../openvg.mak
-
 # LWIP
 include ../lwip.mak
 

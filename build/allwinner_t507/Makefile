@@ -161,9 +161,6 @@ SRCDIRS += $(PRJROOT)/lib/LuPng
 DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
-# OpenVG
-include ../openvg.mak
-
 # FreeRTOS
 include ../freertos.mak
 

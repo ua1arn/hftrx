@@ -129,9 +129,6 @@ include ../lupng.mak
 # FreeRTOS
 include ../freertos.mak
 
-# OpenVG
-include ../openvg.mak
-
 # litehtml
 include ../litehtml.mak
 

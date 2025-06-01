@@ -403,11 +403,6 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	#if 0
-		
-		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
-	#endif
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
