@@ -7136,7 +7136,9 @@ void display2_initialize(void)
     lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
     lv_style_set_text_font(& xxfreqstyle, & lv_font_montserrat_38);
     lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
-    lv_style_set_pad_ver(& xxfreqstyle, 5);
+    //lv_style_set_pad_ver(& xxfreqstyle, 5);
+    lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
+    lv_style_set_text_letter_space(& xxfreqstyle, 5);
 
 	{
 		uint_fast8_t page = DPAGE0;
