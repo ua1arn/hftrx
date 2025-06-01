@@ -1429,12 +1429,16 @@ lv_result_t lv_draw_sw_image_awrot(
 	PRINTF("dst coords: x/y=%u/%u, dx/dy=%u/%u\n", (unsigned) dst_coords->x1, (unsigned) dst_coords->y1, (unsigned) lv_area_get_width(dst_coords), (unsigned) lv_area_get_height(dst_coords));
 	//return LV_RESULT_OK;
     uint8_t *des_buf = (uint8_t *)lv_draw_layer_go_to_xy(draw_task->target_layer, 0, 0);
+    gxdrawb_t tdbv;
+    gxdrawb_t sdbv;
+    gxdrawb_initialize(& tdbv, (void *) des_buf, lv_area_get_width(dst_coords), lv_area_get_height(dst_coords));
+    gxdrawb_initialize(& sdbv, (void *) src_buf, lv_area_get_width(img_coords), lv_area_get_height(img_coords));
 	colpip_copyrotate(
-		(uintptr_t) des_buf, GXSIZE(lv_area_get_width(dst_coords), lv_area_get_height(dst_coords)) * LCDMODE_PIXELSIZE,
-		(PACKEDCOLORPIP_T *) des_buf, lv_area_get_width(dst_coords), lv_area_get_height(dst_coords),
+		tdbv.cachebase, tdbv.cachesize,
+		& tdbv,	// получатель
 		dst_coords->x1, dst_coords->y1,	// получатель Позиция
-		(uintptr_t) src_buf, GXSIZE(draw_dsc->header.w, draw_dsc->header.h) * LCDMODE_PIXELSIZE,
-		(const PACKEDCOLORPIP_T *) src_buf, lv_area_get_width(img_coords), lv_area_get_height(img_coords),	// буфер источника
+		sdbv.cachebase, sdbv.cachesize,
+		& sdbv,	// источника
 		0, 0, //0, 0,	// координаты окна источника
 		lv_area_get_width(img_coords), lv_area_get_height(img_coords), //picx, picy, // размер окна источника
 		0,	// X mirror flag

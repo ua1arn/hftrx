@@ -7780,19 +7780,20 @@ lv_draw_buf_t * wfl_init(void)
 /* построить растр с водопадом и спектром */
 void wfl_proccess(void)
 {
-	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data; //& fb [ix][0];
 #if 1
 	pipparams_t pip;
 	display2_getpipparams(& pip);
+    gxdrawb_t tdbv;
+    gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) wfl_buff.data, pip.w, pip.h);
 
-	dcache_invalidate((uintptr_t) fr, wfl_buff.data_size);
-	colpip_fillrect(db, 0, 0, pip.w, pip.h, display2_getbgcolor());
+	dcache_invalidate(tdbv.cachebase, tdbv.cachesize);
+	colpip_fillrect(& tdbv, 0, 0, pip.w, pip.h, display2_getbgcolor());
 #if LINUX_SUBSYSTEM
 	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
-	display2_latchcombo(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	display2_latchcombo(& tdbv, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
-	display2_gcombo(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
-	dcache_clean((uintptr_t) fr, wfl_buff.data_size);
+	display2_gcombo(& tdbv, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
+	dcache_clean(tdbv.cachebase, tdbv.cachesize);
 #endif
 }
 #endif /* WITHLVGL */
