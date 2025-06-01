@@ -9,7 +9,9 @@
 #ifndef DSTYLES_H_INCLUDED
 #define DSTYLES_H_INCLUDED 1
 
-#if defined (BOARD_DSTYLE)
+#if defined (BOARD_DSTYLE_LVGL) && WITHLVGL
+    #include BOARD_DSTYLE_LVGL
+#elif defined (BOARD_DSTYLE)
     #include BOARD_DSTYLE
 #elif DSTYLE_G_X320_Y240
     #include "g_x320_y240.h"
