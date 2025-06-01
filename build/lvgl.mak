@@ -5,5 +5,5 @@ ifeq (1, 0)
 LVGLDIR = $(PRJROOT)/lvgl
 DINCDIR += $(LVGLDIR)/src
 SRCDIRS += $(LVGLDIR)/src
-SRCDIRS += $(LVGLDIR)/demos/widgets
+#SRCDIRS += $(LVGLDIR)/demos/widgets
 endif
