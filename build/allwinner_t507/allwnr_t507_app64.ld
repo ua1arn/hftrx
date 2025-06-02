@@ -159,9 +159,8 @@ SECTIONS
 		*(.plt) *(.iplt)
 		*(.plt.got)
 		*(.plt.bnd)
-		
-		
-        . = ALIGN(4);
+
+		. = ALIGN(8);
         /* All data end */
         __data_end__ = .;
 	} > RAM
