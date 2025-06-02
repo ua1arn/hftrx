@@ -10,7 +10,7 @@ extern "C" {
 void styles_init(void);	// инициализация стилей, используемых объектами главного окна
 void lvgl_test(void);	// создание элементов на главном окне
 void lvgl_dev_init(void);
-lv_draw_buf_t * wfl_init(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
+lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 

@@ -18,13 +18,13 @@
 #include "dspdefines.h"
 
 
-#if WITHLVGL //&& ! LINUX_SUBSYSTEM
+#if WITHLVGL
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 #include "src/lvgl_gui/styles.h"
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL */
 
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
 void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
@@ -56,11 +56,11 @@ typedef struct dzitem
 {
 	void (* draw)(struct dzone * dzp);
 	void (* onclick)(struct dzone * dzp);
-#if WITHLVGL //&& ! LINUX_SUBSYSTEM
+#if WITHLVGL
 	lv_obj_t * (* lvelementcreate)(const struct dzone * dzp, lv_obj_t * parent, unsigned i);
-#else
+#else /* WITHLVGL */
 	void * lvelementcreate;
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL */
 	const char * id;	// html id
 } dzitem_t;
 
@@ -75,7 +75,7 @@ typedef struct dzone
 	uint16_t subset;	// битовая маска страниц
 } dzone_t;
 
-#if WITHLVGL //&& ! LINUX_SUBSYSTEM
+#if WITHLVGL
 
 extern const lv_font_t eurostyle_56w;
 extern const lv_font_t rubik_16w2;
@@ -263,12 +263,16 @@ static lv_obj_t * dzi_create_gcombo(const dzone_t * dzp, lv_obj_t * parent, unsi
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
-	lv_img_set_src(lbl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
+
+#if WITHLVGL && WITHSPECTRUMWF
+	lv_img_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
 
 	if (img1_wflsn < NOBJ)
 	{
 		img1_wfls [img1_wflsn ++] = lbl;
 	}
+#endif /* WITHLVGL && WITHSPECTRUMWF */
+
 	return lbl;
 }
 
@@ -332,6 +336,9 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 
 		}
 	}
+
+#if WITHLVGL && WITHSPECTRUMWF
+
 	if (img1_wflsn)
 	{
 		wfl_proccess();
@@ -344,15 +351,16 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 
 		}
 	}
+#endif /* WITHLVGL && WITHSPECTRUMWF */
 }
 
 #define LVCREATE(fn) (fn)
 
-#else /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#else /* WITHLVGL */
 
 #define LVCREATE(fn) (NULL)
 
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL */
 
 static dzitem_t dzi_default =
 {
@@ -8029,24 +8037,13 @@ COLORPIP_T display2_get_spectrum(int x)
 
 #endif /* WITHTOUCHGUI */
 
-#if WITHLVGL
+#if WITHLVGL && WITHSPECTRUMWF
 
 LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_ALLRX), LV_COLOR_FORMAT_ARGB8888);
 
 // подготовка lv_draw_buf_t с изображением спектра/водопада
-lv_draw_buf_t * wfl_init(void)
+lv_draw_buf_t * wfl_get_draw_buff(void)
 {
-//	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data;
-//	wfl_buff.header.cf = display_get_lvformat();
-//	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(wfl_buff.header.w, display_get_lvformat());
-//	LV_DRAW_BUF_INIT_STATIC(wfl_buff);
-
-#if LINUX_SUBSYSTEM
-//	pipparams_t pip;
-//	display2_getpipparams(& pip);
-//	display2_wfl_init(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
-#endif /* LINUX_SUBSYSTEM */
-
 	return & wfl_buff;
 }
 
@@ -8067,4 +8064,4 @@ void wfl_proccess(void)
 	display2_gcombo(& tdbv, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 	dcache_clean(tdbv.cachebase, tdbv.cachesize);
 }
-#endif /* WITHLVGL */
+#endif /* WITHLVGL && WITHSPECTRUMWF */
