@@ -50,6 +50,8 @@ struct dzone
 
 #if WITHLVGL && ! LINUX_SUBSYSTEM
 
+extern const lv_font_t eurostyle_56;
+
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqstyle;
 static lv_style_t xxdivstyle;
@@ -96,9 +98,9 @@ static void lvstales_initialize(void)
 	// частота основного приемникв
     lv_style_init(& xxfreqstyle);
     lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
-    lv_style_set_text_font(& xxfreqstyle, & lv_font_montserrat_38);
+    lv_style_set_text_font(& xxfreqstyle, & eurostyle_56);
     lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
-    //lv_style_set_pad_ver(& xxfreqstyle, 5);
+    lv_style_set_pad_ver(& xxfreqstyle, 15);
     lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
     //lv_style_set_text_letter_space(& xxfreqstyle, 5);
 	lv_style_set_border_width(& xxfreqstyle, 0);
