@@ -168,9 +168,9 @@ static const dzone_t dzones [] =
 
 #if WITHMENU
 	{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-	{	0,				DLES,	LABELW, (DLEB - DLES) - 1, display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-	{	LABELW + 5,		DLES,	LABELW, (DLEB - DLES) - 1, display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-	{	LABELW*2 + 6,	DLES,	BDTH_ALL - (LABELW*2 + 6), (DLEB - DLES) - 1, display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	{	0,				DLEM,	LABELW, (DLEB - DLEM) - 1, display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+	{	LABELW + 5,		DLEM,	LABELW, (DLEB - DLEM) - 1, display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+	{	LABELW*2 + 6,	DLEM,	BDTH_ALL - (LABELW*2 + 6), (DLEB - DLEM) - 1, display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 #if WITHAUTOTUNER
 	{	28, 			DLEB,	22,	4,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
