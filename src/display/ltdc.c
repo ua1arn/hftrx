@@ -1686,7 +1686,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 
-#elif LINUX_SUBSYSTEM && WITHSDL2VIDEO
+#elif LINUX_SUBSYSTEM && WITHSDL2VIDEO && ! WITHLVGL
 
 void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
@@ -7878,7 +7878,7 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
-void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
+void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 }
 

@@ -89,8 +89,9 @@
 	#define WITHSPECBETA_DEFAULT	30
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
-//	#define WITHLVGL				1
-	#define WITHTOUCHGUI			1
+	#define WITHLVGL				1
+	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_lvgl.h"
+//	#define WITHTOUCHGUI			1
 //	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
@@ -99,14 +100,14 @@
 //	#define WITHAFEQUALIZER			1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-	#define WITHGNSS				1
-	#define WITHNMEA				1
-	#define WITHLFM					1
-	#define WITHLFMTOFFSET			15
+//	#define WITHGNSS				1
+//	#define WITHNMEA				1
+//	#define WITHLFM					1
+//	#define WITHLFMTOFFSET			15
 	#define DMABUFCLUSTER			32
 	#define DMABUFSCALE				1
 	#define WITHIQSHIFT				1
-//	#define DEFAULTDIALFREQ			12289000uL
+	#define DEFAULTDIALFREQ			7100000uL
 //	#define WITHCPUFANPWM			1
 	#define WITHCPUTEMPERATURE		1
 //	#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper

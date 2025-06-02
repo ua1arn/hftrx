@@ -2209,10 +2209,6 @@ void linux_subsystem_init(void)
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_iq_init();
 #endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
-#if WITHLVGL
-	lvgl_dev_init();	// linux-specific LVGL initialize - lv_deinit and lv_init include
-	lvgl_init();
-#endif /* WITHLVGL */
 #if WITHIQSHIFT
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
@@ -2240,7 +2236,7 @@ void linux_user_init(void)
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
 #endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z*/
 #if WITHLVGL
-	lvgl_test();
+	//lvgl_test();
 #endif /* WITHLVGL */
 	evdev_initialize();
 }
@@ -2705,7 +2701,7 @@ void linux_exit(void)
 {
 #if WITHFBDEV && ! WITHLVGL
 	framebuffer_close();
-#elif WITHSDL2VIDEO
+#elif WITHSDL2VIDEO && ! WITHLVGL
 	sdl2_render_close();
 #endif /* WITHFBDEV && ! WITHLVGL */
 

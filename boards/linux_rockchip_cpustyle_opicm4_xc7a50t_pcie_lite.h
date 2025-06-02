@@ -81,8 +81,8 @@ enum {
 #define LINUX_FB_FILE			"/dev/fb0"
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
-#define LINUX_XDMA_UART_FILE	"/dev/xdma0_events_2"
-#define LINUX_XDMA_PPS_FILE		"/dev/xdma0_events_3"
+//#define LINUX_XDMA_UART_FILE	"/dev/xdma0_events_2"
+//#define LINUX_XDMA_PPS_FILE		"/dev/xdma0_events_3"
 #define TOUCH_EVENT_NAME		"goodix-ts" //"Touch2USB"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
@@ -91,7 +91,7 @@ enum {
 #define NVRAM_DB_FILE			"hftrx_data/nvram.db"
 
 #define WITHLTDCHW			1	/* Наличие контроллера дисплея с framebuffer-ом */
-#define RTMIXIDLCD			0
+//#define RTMIXIDLCD			0
 #define WITHLCDBACKLIGHTMAX	0
 
 #if WITHCPUTEMPERATURE

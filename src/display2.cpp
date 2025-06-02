@@ -18,7 +18,7 @@
 #include "dspdefines.h"
 
 
-#if WITHLVGL && ! LINUX_SUBSYSTEM
+#if WITHLVGL //&& ! LINUX_SUBSYSTEM
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
@@ -26,6 +26,13 @@
 #include "src/lvgl_gui/styles.h"
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
+#if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
+void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
+{
+    if(v) lv_obj_add_flag(obj, f);
+    else lv_obj_remove_flag(obj, f);
+}
+#endif /* LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3 */
 
 /* struct dzone subset field values */
 
@@ -49,7 +56,7 @@ typedef struct dzitem
 {
 	void (* draw)(struct dzone * dzp);
 	void (* onclick)(struct dzone * dzp);
-#if WITHLVGL && ! LINUX_SUBSYSTEM
+#if WITHLVGL //&& ! LINUX_SUBSYSTEM
 	lv_obj_t * (* lvelementcreate)(const struct dzone * dzp, lv_obj_t * parent, unsigned i);
 #else
 	void * lvelementcreate;
@@ -68,7 +75,7 @@ typedef struct dzone
 	uint16_t subset;	// битовая маска страниц
 } dzone_t;
 
-#if WITHLVGL && ! LINUX_SUBSYSTEM
+#if WITHLVGL //&& ! LINUX_SUBSYSTEM
 
 extern const lv_font_t eurostyle_56;
 extern const lv_font_t eurostyle_56w;
@@ -7431,7 +7438,7 @@ void display2_bgprocess(
 
 void display2_initialize(void)
 {
-#if WITHLVGL && ! LINUX_SUBSYSTEM
+#if WITHLVGL //&& ! LINUX_SUBSYSTEM
 
 #if LV_BUILD_DEMOS
 	//lv_demo_vector_graphic_not_buffered();
@@ -8027,15 +8034,15 @@ LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_
 // подготовка lv_draw_buf_t с изображением спектра/водопада
 lv_draw_buf_t * wfl_init(void)
 {
-	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data;
-	wfl_buff.header.cf = display_get_lvformat();
-	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(wfl_buff.header.w, display_get_lvformat());
-	LV_DRAW_BUF_INIT_STATIC(wfl_buff);
+//	PACKEDCOLORPIP_T * const fr = (PACKEDCOLORPIP_T *) wfl_buff.data;
+//	wfl_buff.header.cf = display_get_lvformat();
+//	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(wfl_buff.header.w, display_get_lvformat());
+//	LV_DRAW_BUF_INIT_STATIC(wfl_buff);
 
 #if LINUX_SUBSYSTEM
-	pipparams_t pip;
-	display2_getpipparams(& pip);
-	display2_wfl_init(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
+//	pipparams_t pip;
+//	display2_getpipparams(& pip);
+//	display2_wfl_init(fr, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 #endif /* LINUX_SUBSYSTEM */
 
 	return & wfl_buff;

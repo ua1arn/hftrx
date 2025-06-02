@@ -17,8 +17,7 @@
 
 #include "../linux/linux_subsystem.h"
 
-#include "lv_drivers/display/fbdev.h"
-#include "lv_drivers/indev/evdev.h"
+//#include "lv_drivers/indev/evdev.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 
@@ -28,10 +27,7 @@ void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int p
 #include "src/lvgl_gui/styles.h"
 
 
-
-#define DISP_BUF_SIZE	(128 * DIM_X)
-
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && WITHSDL2VIDEO
 
 pthread_t p_inc, p_h;
 
@@ -55,61 +51,27 @@ void * thread_lv_task_handler(void * p)
 	return NULL;
 }
 
-void evdev_read_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
+//void evdev_read_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
+//{
+//	evdev_read(drv, data);
+//}
+
+
+void lvglhw_initialize(void)
 {
-	evdev_read(drv, data);
-}
-
-
-void lvgl_dev_init(void)
-{
-	lv_deinit();
-
-	int ttyd = open("/dev/tty0", O_RDWR);
-	if (ttyd)
-		ioctl(ttyd, KDSETMODE, KD_GRAPHICS);
-
-	close(ttyd);
-
-	const char * argv [3] = { "/sbin/modprobe", "gt911.ko", NULL, };
-	linux_run_shell_cmd(argv);
-	usleep(500000);
-
-	/*LVGL init*/
-	lv_init();
-
-	/*Linux frame buffer device init*/
-	fbdev_init();
-
-	/*A small buffer for LittlevGL to draw the screen's content*/
-	static lv_color_t buf1[DISP_BUF_SIZE];
-	static lv_color_t buf2[DISP_BUF_SIZE];
-
-	/*Initialize a descriptor for the buffer*/
-	static lv_disp_draw_buf_t disp_buf;
-	lv_disp_draw_buf_init(&disp_buf, buf1, buf2, DISP_BUF_SIZE);
-
-	/*Initialize and register a display driver*/
-	static lv_disp_drv_t disp_drv;
-	lv_disp_drv_init(& disp_drv);
-	disp_drv.draw_buf   = & disp_buf;
-	disp_drv.flush_cb   = fbdev_flush;
-	disp_drv.hor_res    = DIM_X;
-	disp_drv.ver_res    = DIM_Y;
-	lv_disp_drv_register(& disp_drv);
-
-	/* Linux input device init */
-	evdev_init();
-
-	/* Set up touchpad input device interface */
-	static lv_indev_drv_t touch_drv;
-	lv_indev_drv_init(& touch_drv);
-	touch_drv.type = LV_INDEV_TYPE_POINTER;
-	touch_drv.read_cb = evdev_read_cb;
-	lv_indev_drv_register(& touch_drv);
-
-	linux_create_thread(& p_inc, thread_lv_tick_inc, 50, 0);
-	linux_create_thread(& p_h, thread_lv_task_handler, 50, 1);
+	lv_display_t * disp = lv_sdl_window_create(DIM_X, DIM_Y);
+#if 0
+	SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
+	SDL_DisplayMode display_mode;
+	SDL_GetCurrentDisplayMode(0, & display_mode);
+    if ((display_mode.w > DIM_X) && (display_mode.h > DIM_Y))
+    {
+    	float d_x = (float) display_mode.w / DIM_X;
+    	float d_y = (float) display_mode.h / DIM_Y;
+    	SDL_RenderSetScale(renderer, d_x, d_y); 			// масштабирование до размеров экрана
+    	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");	// Antialiasing для масштабированных объектов
+    }
+#endif
 }
 
 void lvgl_deinit(void)
@@ -226,6 +188,7 @@ void lvgl_task1_cb(lv_timer_t * tmr)
 // создание элементов на главном окне
 void lvgl_test(void)
 {
+#if 0
 	lbl_freq = lv_label_create(main_page);
 	lv_obj_add_style(lbl_freq, & style_freq_main, 0);
 
@@ -249,6 +212,7 @@ void lvgl_test(void)
 	static lv_timer_t * lvgl_task1;
 	lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
 	lv_timer_set_repeat_count(lvgl_task1, -1);
+#endif
 }
 
-#endif /* WITHLVGL */
+#endif /* WITHLVGL && WITHSDL2VIDEO*/

@@ -665,15 +665,9 @@ display_reset(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-#if WITHLVGL && ! LINUX_SUBSYSTEM
-
-#if LINUX_SUBSYSTEM
-	lvgl_dev_init();	// linux-specific LVGL initialize - lv_deinit and lv_init include
-#else /* LINUX_SUBSYSTEM */
+#if WITHLVGL //&& ! LINUX_SUBSYSTEM
 	display_lvgl_initialize();
-#endif /* LINUX_SUBSYSTEM */
-
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 }
 
 /* Разряжаем конденсаторы питания */
@@ -682,7 +676,7 @@ void display_uninitialize(void)
 }
 
 
-#if WITHLVGL && ! LINUX_SUBSYSTEM
+#if WITHLVGL //&& ! LINUX_SUBSYSTEM
 
 #include "lvgl.h"
 //#include "../demos/lv_demos.h"
@@ -810,7 +804,7 @@ void display_lvgl_initialize(void)
 	lv_tick_set_cb(myhardgeticks);
 }
 
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
 #endif /* LCDMODE_LTDC */
 

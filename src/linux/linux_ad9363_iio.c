@@ -169,7 +169,7 @@ uint16_t iq_proc_tx(int32_t * buf_i, int32_t * buf_q, uint16_t idx, uint16_t lim
 	uintptr_t addr_mic = allocate_dmabuffer16rx();
 	uint32_t * mic = (uint32_t *) addr_mic;
 
-	memset(mic, 0, DMABUFFSIZE16RX * 4);
+	//memset(mic, 0, DMABUFFSIZE16RX * 4);
 
 #if WITHAUDIOSAMPLESREC && WITHTOUCHGUI
 	as_tx(mic);
@@ -243,8 +243,8 @@ void stream(size_t rx_sample, size_t tx_sample,
 			int16_t i = p_dat[0];
 			int16_t q = p_dat[1];
 
-			buf2304k_i[cnt2304] = i << 16;
-			buf2304k_q[cnt2304] = q << 16;
+			buf2304k_i[cnt2304] = (i << 16) | i;
+			buf2304k_q[cnt2304] = (q << 16) | q;
 
 			cnt2304 ++;
 			if (cnt2304 >= BLOCK_SIZE)

@@ -12,7 +12,7 @@
 #include <SDL2/SDL_image.h>
 #include <GLES3/gl32.h>
 
-#if WITHSDL2VIDEO
+#if WITHSDL2VIDEO && ! WITHLVGL
 
 void get_cursor_pos(uint16_t * x, uint16_t * y);
 uint8_t check_is_mouse_present(void);
@@ -121,6 +121,6 @@ void sdl2_render_update(uintptr_t frame)
 	SDL_RenderPresent(renderer);
 }
 
-#endif /* WITHSDL2VIDEO */
+#endif /* WITHSDL2VIDEO && ! WITHLVGL */
 
 #endif /* LINUX_SUBSYSTEM */
