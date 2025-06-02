@@ -5,14 +5,35 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"
 
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && WITHSDL2VIDEO
 
 #include "linux_subsystem.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <GLES3/gl32.h>
 
-#if WITHSDL2VIDEO && ! WITHLVGL
+#if WITHLVGL
+
+#include "lvgl.h"
+
+void lvglhw_initialize(void)
+{
+	lv_display_t * disp = lv_sdl_window_create(DIM_X, DIM_Y);
+#if 0
+	SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
+	SDL_DisplayMode display_mode;
+	SDL_GetCurrentDisplayMode(0, & display_mode);
+    if ((display_mode.w > DIM_X) && (display_mode.h > DIM_Y))
+    {
+    	float d_x = (float) display_mode.w / DIM_X;
+    	float d_y = (float) display_mode.h / DIM_Y;
+    	SDL_RenderSetScale(renderer, d_x, d_y); 			// масштабирование до размеров экрана
+    	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");	// Antialiasing для масштабированных объектов
+    }
+#endif
+}
+
+#else
 
 void get_cursor_pos(uint16_t * x, uint16_t * y);
 uint8_t check_is_mouse_present(void);
@@ -121,6 +142,6 @@ void sdl2_render_update(uintptr_t frame)
 	SDL_RenderPresent(renderer);
 }
 
-#endif /* WITHSDL2VIDEO && ! WITHLVGL */
+#endif /* WITHLVGL */
 
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM && WITHSDL2VIDEO */

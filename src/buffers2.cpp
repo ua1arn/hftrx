@@ -4010,6 +4010,8 @@ void colmain_nextfb(void)
 	hardware_ltdc_main_set(RTMIXIDLCD, frame);
 #elif defined(RTMIXIDTV)
 	hardware_ltdc_main_set(RTMIXIDTV, frame);
+#elif LINUX_SUBSYSTEM
+	hardware_ltdc_main_set(0, frame);
 #endif /* WITHHDMITVHW */
 
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
