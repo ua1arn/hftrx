@@ -77,7 +77,6 @@ typedef struct dzone
 
 #if WITHLVGL //&& ! LINUX_SUBSYSTEM
 
-extern const lv_font_t eurostyle_56;
 extern const lv_font_t eurostyle_56w;
 extern const lv_font_t rubik_16w2;
 
@@ -86,7 +85,7 @@ static lv_style_t xxfreqstyle;
 static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 
-#define NOBJ 12l
+#define NOBJ 32
 static lv_obj_t * img1_wfls [NOBJ];
 static unsigned img1_wflsn;
 static lv_obj_t * lbl_txrxs [NOBJ];
