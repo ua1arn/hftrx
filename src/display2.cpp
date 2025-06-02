@@ -26,6 +26,24 @@
 #include "src/lvgl_gui/styles.h"
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
+
+/* struct dzone subset field values */
+
+#define PAGELATCH 12
+#define PAGEINIT 13
+#define PAGESLEEP 14
+#define PAGEMENU 15
+#define PAGEBITS 16
+
+#define REDRSUBSET(page)		(UINT16_C(1) << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
+
+#define REDRSUBSET_MENU		REDRSUBSET(PAGEMENU)
+#define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
+/* специальные биты */
+#define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
+#define REDRSUBSET_LATCH	REDRSUBSET(PAGELATCH)
+#define REDRSUBSET_SHOW		((uint16_t) (~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT)))
+
 struct dzone;
 typedef struct dzitem
 {
@@ -68,6 +86,8 @@ static lv_obj_t * lbl_freqb;
 static lv_obj_t * lbl_modea;
 static lv_obj_t * lbl_modeb;
 
+static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
+
 static void lvstales_initialize(void)
 {
     ASSERT(lv_screen_active());
@@ -105,7 +125,7 @@ static void lvstales_initialize(void)
 		lv_style_set_radius(s, 4);
 		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_text_opa(s, LV_OPA_COVER);
-	    lv_style_set_text_font(s, & rubik_16w2);
+	    ////lv_style_set_text_font(s, & rubik_16w2);
 	    //lv_style_set_text_letter_space(s, 3);
 	}
 
@@ -115,10 +135,10 @@ static void lvstales_initialize(void)
 
 	    lv_style_init(s);
 	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
-	    lv_style_set_text_font(s, & eurostyle_56w);
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
 	    lv_style_set_pad_ver(s, 15);
 	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+	    //lv_style_set_text_font(s, & eurostyle_56w);
 	    //lv_style_set_text_letter_space(s, 5);
 		lv_style_set_border_width(s, 0);
 
@@ -301,23 +321,6 @@ static dzitem_t dzi_modeb =
 	.lvelementcreate = LVCREATE(dzi_create_modeb),
 	.id = "mode-b"
 };
-
-/* struct dzone subset field values */
-
-#define PAGELATCH 12
-#define PAGEINIT 13
-#define PAGESLEEP 14
-#define PAGEMENU 15
-#define PAGEBITS 16
-
-#define REDRSUBSET(page)		(UINT16_C(1) << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
-
-#define REDRSUBSET_MENU		REDRSUBSET(PAGEMENU)
-#define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
-/* специальные биты */
-#define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
-#define REDRSUBSET_LATCH	REDRSUBSET(PAGELATCH)
-#define REDRSUBSET_SHOW		((uint16_t) (~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT)))
 
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"
@@ -7170,11 +7173,11 @@ enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 
 static uint_fast16_t
 getsubset(
-	uint_fast8_t menuset,	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	uint_fast8_t extra		/* находимся в режиме отображения настроек */
+	uint_fast8_t inmenu,		/* находимся в режиме отображения настроек */
+	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
-	return extra ? REDRSUBSET_MENU : REDRSUBSET(menuset);
+	return inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset);
 }
 
 // выполнение отрисовки всех элементов за раз.
@@ -7222,7 +7225,7 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 	return 0;
 
 #else
-	const uint_fast16_t subset = inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset);
+	const uint_fast16_t subset = getsubset(inmenu, menuset);
 	uint_fast8_t i;
 
 	for (i = 0; i < WALKCOUNT; ++ i)
@@ -7261,6 +7264,18 @@ void display2_bgprocess(
 
 #if WITHLVGL
 	// Отрисовка производится диспетчером LVGL
+	{
+		//uint_fast16_t subset = getsubset(inmenu, menuset);
+		menuset = inmenu ? PAGEMENU : menuset;
+		uint_fast8_t page;
+		for (page = 0; page < PAGEBITS; ++ page)
+		{
+			lv_obj_t * const wnd = xxmainwnds [page];
+			if (wnd == NULL)
+				continue;
+			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != menuset);
+		}
+	}
 	lv_task_handler();
 	return;
 
@@ -7342,15 +7357,9 @@ void display2_bgprocess(
 
 #else
 	// обычное отображение, без LVGL или litehtml
-	display_walktrough(inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset), pctx);
+	display_walktrough(getsubset(inmenu, menuset), pctx);
 #endif
 }
-
-#if WITHLVGL && ! LINUX_SUBSYSTEM
-
-static lv_obj_t * xxmainwnds [PAGEBITS];
-
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void display2_initialize(void)
 {
@@ -7370,19 +7379,13 @@ void display2_initialize(void)
 	{
     	// Всего страниц (включая неотображаемые - PAGEBITS
 		uint_fast8_t page;
-		for (page = 0; page < 1 /*PAGEBITS*/; ++ page)
+		for (page = 0; page < PAGEBITS; ++ page)
 		{
 			const uint_fast16_t subset = REDRSUBSET(page);
 			if ((subset & REDRSUBSET_SHOW) == 0)
 				continue;	// не треуется создавать элементы на этой странице
 
-			lv_obj_t * wnd;
-			wnd = lv_obj_create(lv_screen_active());
-			lv_obj_set_size(wnd, DIM_X, DIM_Y);
-			lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
-			lv_obj_add_style(wnd, & xxmainstyle, 0);
-			xxmainwnds [page] = wnd;
-
+			lv_obj_t * const wnd = lv_obj_create(lv_screen_active());
 			unsigned i;
 			for (i = 0; i < WALKCOUNT; ++ i)
 			{
@@ -7408,6 +7411,22 @@ void display2_initialize(void)
 				lv_obj_set_pos(lbl, GRID2X(dzp->x), GRID2Y(dzp->y));
 				lv_obj_set_size(lbl, GRID2X(dzp->colspan), GRID2Y(dzp->rowspan));
 
+			}
+
+			// Включаем завершенную страницу
+			if (lv_obj_get_child_count(wnd) != 0)
+			{
+				lv_obj_set_size(wnd, DIM_X, DIM_Y);
+				lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
+				lv_obj_add_style(wnd, & xxmainstyle, 0);
+
+				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
+				xxmainwnds [page] = wnd;
+			}
+			else
+			{
+				lv_obj_delete(wnd);
+				xxmainwnds [page] = NULL;
 			}
 		}
 	}

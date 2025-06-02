@@ -16,7 +16,7 @@
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 
 		BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(59 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
+		BDCV_ALLRX = ROWS2GRID(DLE1 - DLES - 1),	// количество строк, отведенное под панораму и волопад.
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -147,9 +147,9 @@
 
 	#if WITHMENU
 		{	0,				0,		0, 0, display2_keyboard_menu,				& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-		{	3,				DLES,	0, 0, display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		DLES,	0, 0, display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	DLES,	0, 0, display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	3,				DLES,	5, (DLE1 - DLES) - 1, display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	LABELW + 5,		DLES,	5, (DLE1 - DLES) - 1, display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+		{	LABELW*2 + 6,	DLES,	5, (DLE1 - DLES) - 1, display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 	#if WITHAUTOTUNER
 		{	28, 			DLE1,	22, 5, display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
