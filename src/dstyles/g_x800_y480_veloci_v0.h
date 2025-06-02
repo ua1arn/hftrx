@@ -21,6 +21,7 @@ enum
 	BDTH_ALLRX = CHARS2GRID(50), 		// ширина зоны для отображение графического окна на индикаторе
 	BDCV_ALLRX = ROWS2GRID(DLEB - DLES) - 1,	// количество cells, отведенное под панораму и волопад.
 	//
+	BDTH_ALL = 50, 		// ширина индикатора
 	B_unused
 };
 
@@ -167,9 +168,9 @@ static const dzone_t dzones [] =
 
 #if WITHMENU
 	{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-	{	3,				DLEM,	0,	0,	display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-	{	LABELW + 5,		DLEM,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-	{	LABELW*2 + 6,	DLEM,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	{	0,				DLES,	LABELW, (DLE1 - DLES) - 1, display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+	{	LABELW + 5,		DLES,	LABELW, (DLE1 - DLES) - 1, display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+	{	LABELW*2 + 6,	DLES,	BDTH_ALL - (LABELW*2 + 6), (DLE1 - DLES) - 1, display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
 #if WITHAUTOTUNER
 	{	28, 			DLEB,	22,	4,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
