@@ -90,10 +90,10 @@ SECTIONS
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
-	*/
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
+	*/
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -119,6 +119,13 @@ SECTIONS
 		. = ALIGN(64);
 
 		*(.data*)
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+
+		*(.itcm*)
+		*(.dtcm*)
 
 		. = ALIGN(8);
 		/* preinit data */
@@ -142,30 +149,13 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
+		
         . = ALIGN(4);
         /* All data end */
         __data_end__ = .;
-
 	} > RAM
 
 	__etext2 = .;
-
-	.sysram : AT (__etext2)
-	{
-		__data2_start__ = .;
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-
-		*(.itcm*)
-		*(.dtcm*)
-
-		__data2_end__ = .;
-	} > RAM /* was: STSRAN */
-
-	. = __etext2 + __data2_end__ - __data2_start__;
-
 
 	.bss :
 	{
