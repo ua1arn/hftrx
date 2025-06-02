@@ -101,7 +101,7 @@
 		{	41,	5,	9, 5, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
 
 		{	36,	5,	5, 5, display2_dummy,		& dzi_default, PGALL, },	// placeholder
-		{	36, 10,	5, 5, display2_mode3_a,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	36, 10,	5, 5, display2_mode3_a,		& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	4, 5, display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	45, 10,	5, 5, display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 
@@ -112,7 +112,7 @@
 		{	15, 20,	3, 5, display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 5, display2_vfomode3,	& dzi_default, PGALL, },	// SPL
 		{	24,	20,	12, 5, display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
-		{	36, 20,	5, 5, display2_mode3_b,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	36, 20,	5, 5, display2_mode3_b,		& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	4, 5, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 

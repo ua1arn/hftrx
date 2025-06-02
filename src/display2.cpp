@@ -55,10 +55,12 @@ static lv_style_t xxfreqstyle;
 static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 
-static lv_obj_t * xxfreqwnd;
-
-static lv_obj_t * lbl_freq;
 static lv_obj_t * img1_wfl;
+static lv_obj_t * lbl_txrx;
+static lv_obj_t * lbl_freqa;
+static lv_obj_t * lbl_freqb;
+static lv_obj_t * lbl_modea;
+static lv_obj_t * lbl_modeb;
 
 static void lvstales_initialize(void)
 {
@@ -96,11 +98,12 @@ static void lvstales_initialize(void)
     lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
     //lv_style_set_pad_ver(& xxfreqstyle, 5);
     lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
-    lv_style_set_text_letter_space(& xxfreqstyle, 5);
+    //lv_style_set_text_letter_space(& xxfreqstyle, 5);
+	lv_style_set_border_width(& xxfreqstyle, 0);
 
 	// водопад/спектроаналихатор/3dss
     lv_style_init(& xxscopestyle);
-	lv_style_set_border_width(& xxscopestyle, 10);
+	lv_style_set_border_width(& xxfreqstyle, 0);
 
 //    static lv_anim_t a;
 //    lv_anim_set_repeat_delay(& a, 20);
@@ -119,6 +122,28 @@ static lv_obj_t * dzi_create_default(const struct dzone * dzp, lv_obj_t * parent
 	return lbl;
 }
 
+static lv_obj_t * dzi_create_modea(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	//lv_label
+
+	lbl_modea = lbl;
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_modeb(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	//lv_label
+
+	lbl_modeb = lbl;
+	return lbl;
+}
+
 static lv_obj_t * dzi_create_freqa(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
@@ -127,7 +152,7 @@ static lv_obj_t * dzi_create_freqa(const struct dzone * dzp, lv_obj_t * parent, 
 	lv_obj_add_style(lbl, & xxfreqstyle, 0);
 	//lv_label
 
-	lbl_freq = lbl;
+	lbl_freqa = lbl;
 	return lbl;
 }
 
@@ -137,6 +162,7 @@ static lv_obj_t * dzi_create_freqb(const struct dzone * dzp, lv_obj_t * parent, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	lbl_freqb = lbl;
 	return lbl;
 }
 
@@ -146,6 +172,7 @@ static lv_obj_t * dzi_create_txrx(const struct dzone * dzp, lv_obj_t * parent, u
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	lbl_txrx = lbl;
 	return lbl;
 }
 
@@ -159,6 +186,44 @@ static lv_obj_t * dzi_create_gcombo(const struct dzone * dzp, lv_obj_t * parent,
 
 	img1_wfl = lbl;
 	return lbl;
+}
+
+static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
+{
+    * mhz = freq / 1000000;
+    * khz = (freq / 1000) % 1000;
+    * hz = freq % 1000;
+}
+
+static void lvgl_task1_cb(lv_timer_t * tmr)
+{
+	if (lbl_freqa)
+	{
+		static char label [332];
+		unsigned mhz, khz, hz;
+
+		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
+		local_snprintf_P(label, ARRAY_SIZE(label), "%u.%03u.%03u", mhz, khz, hz);
+		lv_label_set_text_static(lbl_freqa, label);	// не вызывает heap
+	}
+	if (lbl_txrx)
+	{
+		const uint_fast8_t state = hamradio_get_tx();
+		lv_label_set_text_static(lbl_txrx, state ? "TX" : "RX");	// не вызывает heap
+	}
+	if (lbl_modea)
+	{
+		lv_label_set_text_static(lbl_modea, hamradio_get_mode_a_value_P());	// не вызывает heap
+	}
+	if (lbl_modeb)
+	{
+		lv_label_set_text_static(lbl_modeb, hamradio_get_mode_b_value_P());	// не вызывает heap
+	}
+	if (img1_wfl)
+	{
+		wfl_proccess();
+		lv_obj_invalidate(img1_wfl);
+	}
 }
 
 static struct dzitem dzi_default =
@@ -189,6 +254,18 @@ static struct dzitem dzi_gcombo =
 {
 	.lvelementcreate = dzi_create_gcombo,
 	.label = "gcombo"
+};
+
+static struct dzitem dzi_modea =
+{
+	.lvelementcreate = dzi_create_modea,
+	.label = "modea"
+};
+
+static struct dzitem dzi_modeb =
+{
+	.lvelementcreate = dzi_create_modeb,
+	.label = "modeb"
 };
 
 #else /* WITHLVGL && ! LINUX_SUBSYSTEM */
@@ -7247,28 +7324,6 @@ void display2_bgprocess(
 }
 
 #if WITHLVGL && ! LINUX_SUBSYSTEM
-
-static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
-{
-    * mhz = freq / 1000000;
-    * khz = (freq / 1000) % 1000;
-    * hz = freq % 1000;
-}
-
-static void lvgl_task1_cb(lv_timer_t * tmr)
-{
-	if (lbl_freq)
-	{
-		unsigned mhz, khz, hz;
-		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
-		lv_label_set_text_fmt(lbl_freq, "%u.%03u.%03u", mhz, khz, hz);
-	}
-	if (img1_wfl)
-	{
-		wfl_proccess();
-		lv_obj_invalidate(img1_wfl);
-	}
-}
 
 static lv_obj_t * xxmainwnds [PAGEBITS];
 
