@@ -101,17 +101,20 @@ static void lvstales_initialize(void)
 	// водопад/спектроаналихатор/3dss
     lv_style_init(& xxscopestyle);
 	lv_style_set_border_width(& xxscopestyle, 10);
+
+//    static lv_anim_t a;
+//    lv_anim_set_repeat_delay(& a, 20);
+//    lv_anim_set_path_cb(&a, lvanim_path_ticks);
+//    lv_style_set_anim(&xxscopestyle, & a);
+
 }
 
 static lv_obj_t * dzi_create_default(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	char label [32];
-	local_snprintf_P(label, ARRAY_SIZE(label), "el%u", i);
-
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_label_set_text(lbl, label);
+	lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
 }
@@ -122,6 +125,7 @@ static lv_obj_t * dzi_create_freqa(const struct dzone * dzp, lv_obj_t * parent, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqstyle, 0);
+	//lv_label
 
 	lbl_freq = lbl;
 	return lbl;
