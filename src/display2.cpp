@@ -197,6 +197,8 @@ static lv_obj_t * dzi_create_modeb(const dzone_t * dzp, lv_obj_t * parent, unsig
 	return lbl;
 }
 
+static char label_freqa [32];
+
 static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
@@ -205,6 +207,7 @@ static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsig
 	lv_obj_add_style(lbl, & xxfreqstyle, 0);
 	//lv_label
 
+	lv_label_set_text_static(lbl, label_freqa);	// не вызывает heap
 	lbl_freqas [lbl_freqasn ++] = lbl;
 	return lbl;
 }
@@ -252,18 +255,18 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 {
 	if (lbl_freqasn)
 	{
-		static char label [332];
 		unsigned mhz, khz, hz;
 
 		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
-		local_snprintf_P(label, ARRAY_SIZE(label), "%u.%03u.%03u", mhz, khz, hz);
+		local_snprintf_P(label_freqa, ARRAY_SIZE(label_freqa), "%u.%03u.%03u", mhz, khz, hz);
 
 		unsigned i;
 		for (i = 0; i < lbl_freqasn; ++ i)
 		{
 			lv_obj_t * const obj = lbl_freqas [i];
 
-			lv_label_set_text_static(obj, label);	// не вызывает heap
+			//lv_label_set_text_static(obj, label_freqa);	// не вызывает heap
+			lv_obj_invalidate(obj);
 
 		}
 	}

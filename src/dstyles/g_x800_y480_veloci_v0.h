@@ -156,7 +156,7 @@ static const dzone_t dzones [] =
 #if WITHSPECTRUMWF
 	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
+	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 
 	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
