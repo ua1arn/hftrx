@@ -667,7 +667,11 @@ void display_initialize(void)
 {
 #if WITHLVGL && ! LINUX_SUBSYSTEM
 
+#if LINUX_SUBSYSTEM
+	lvgl_dev_init();	// linux-specific LVGL initialize - lv_deinit and lv_init include
+#else /* LINUX_SUBSYSTEM */
 	display_lvgl_initialize();
+#endif /* LINUX_SUBSYSTEM */
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 }
@@ -804,15 +808,6 @@ void display_lvgl_initialize(void)
 
 	// lvgl будет получать тики
 	lv_tick_set_cb(myhardgeticks);
-}
-
-// преобразование цвета в тип LVGL
-lv_color_t display_lvlcolor(COLORPIP_T c)
-{
-	return lv_color_make(
-			COLORPIP_R(c),
-			COLORPIP_G(c),
-			COLORPIP_B(c));
 }
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */

@@ -95,6 +95,15 @@ static unsigned lbl_modebsn;
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
+// преобразование цвета в тип LVGL
+lv_color_t display_lvlcolor(COLORPIP_T c)
+{
+	return lv_color_make(
+			COLORPIP_R(c),
+			COLORPIP_G(c),
+			COLORPIP_B(c));
+}
+
 static void lvstales_initialize(void)
 {
     ASSERT(lv_screen_active());
@@ -197,7 +206,8 @@ static lv_obj_t * dzi_create_modeb(const dzone_t * dzp, lv_obj_t * parent, unsig
 	return lbl;
 }
 
-static char label_freqa [32];
+static char label_freqa [32];	// текст - частота тракта A
+static char label_freqb [32];	// текст - частота тракта A
 
 static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
@@ -208,7 +218,10 @@ static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsig
 	//lv_label
 
 	lv_label_set_text_static(lbl, label_freqa);	// не вызывает heap
-	lbl_freqas [lbl_freqasn ++] = lbl;
+	if (lbl_freqasn < NOBJ)
+	{
+		lbl_freqas [lbl_freqasn ++] = lbl;
+	}
 	return lbl;
 }
 
@@ -218,7 +231,10 @@ static lv_obj_t * dzi_create_freqb(const dzone_t * dzp, lv_obj_t * parent, unsig
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
-	lbl_freqbs [lbl_freqbsn ++] = lbl;
+	if (lbl_freqbsn < NOBJ)
+	{
+		lbl_freqbs [lbl_freqbsn ++] = lbl;
+	}
 	return lbl;
 }
 
@@ -228,7 +244,10 @@ static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsign
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
-	lbl_txrxs [lbl_txrxsn ++] = lbl;
+	if (lbl_txrxsn < NOBJ)
+	{
+		lbl_txrxs [lbl_txrxsn ++] = lbl;
+	}
 	return lbl;
 }
 
@@ -240,7 +259,10 @@ static lv_obj_t * dzi_create_gcombo(const dzone_t * dzp, lv_obj_t * parent, unsi
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_img_set_src(lbl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
 
-	img1_wfls [img1_wflsn ++] = lbl;
+	if (img1_wflsn < NOBJ)
+	{
+		img1_wfls [img1_wflsn ++] = lbl;
+	}
 	return lbl;
 }
 
