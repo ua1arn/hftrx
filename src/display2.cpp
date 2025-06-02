@@ -90,6 +90,8 @@ static void lvstales_initialize(void)
 	lv_style_set_border_width(& xxdivstyle, 1);
 	lv_style_set_pad_all(& xxdivstyle, 0);
 	lv_style_set_radius(& xxdivstyle, 4);
+	lv_style_set_text_align(& xxdivstyle, LV_TEXT_ALIGN_CENTER);
+	lv_style_set_text_opa(& xxdivstyle, LV_OPA_COVER);
 
 	// частота основного приемникв
     lv_style_init(& xxfreqstyle);
