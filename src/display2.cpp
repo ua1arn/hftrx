@@ -7438,7 +7438,7 @@ void display2_bgprocess(
 
 void display2_initialize(void)
 {
-#if WITHLVGL //&& ! LINUX_SUBSYSTEM
+#if WITHLVGL
 
 #if LV_BUILD_DEMOS
 	//lv_demo_vector_graphic_not_buffered();
@@ -7450,9 +7450,6 @@ void display2_initialize(void)
     //lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
 
-#elif 0
- 	lvgl_init();	// создание главного окна
-	lvgl_test();	// создание элементов на главном окне
 #else
 
 	lvstales_initialize();
@@ -7518,7 +7515,7 @@ void display2_initialize(void)
 	}
 #endif
 
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL */
 
 #if 0
 	{

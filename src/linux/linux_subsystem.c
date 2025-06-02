@@ -40,8 +40,6 @@
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
 void ft8_thread(void);
-void lvgl_init(void);
-void lvgl_test(void);
 
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	5

@@ -665,9 +665,9 @@ display_reset(void)
 /* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
-#if WITHLVGL //&& ! LINUX_SUBSYSTEM
+#if WITHLVGL
 	display_lvgl_initialize();
-#endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL */
 }
 
 /* Разряжаем конденсаторы питания */

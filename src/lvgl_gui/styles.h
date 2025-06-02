@@ -7,16 +7,9 @@ extern "C" {
 
 #include "lvgl/lvgl.h"
 
-extern lv_style_t style_mainscreen;
-extern lv_style_t style_footer_button;
-extern lv_style_t style_freq_main;
-extern lv_style_t style_label_btn;
-extern lv_style_t style_window;
-
 void styles_init(void);	// инициализация стилей, используемых объектами главного окна
 void lvgl_test(void);	// создание элементов на главном окне
 void lvgl_dev_init(void);
-void lvgl_init(void);	// создание главного окна
 lv_draw_buf_t * wfl_init(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
