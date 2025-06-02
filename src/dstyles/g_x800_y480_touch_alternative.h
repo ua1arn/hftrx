@@ -79,7 +79,7 @@
 	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 	//#define SMALLCHARH 15 /* Font height */
 	//#define SMALLCHARW 16 /* Font width */
-	static const FLASHMEM struct dzone dzones [] =
+	static const dzone_t dzones [] =
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана

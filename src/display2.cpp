@@ -27,7 +27,7 @@
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 struct dzone;
-struct dzitem
+typedef struct dzitem
 {
 	void (* draw)(struct dzone * dzp);
 	void (* onclick)(struct dzone * dzp);
@@ -37,18 +37,18 @@ struct dzitem
 	void * lvelementcreate;
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 	const char * id;	// html id
-};
+} dzitem_t;
 
-struct dzone
+typedef struct dzone
 {
 	uint8_t x; // левый верхний угол
 	uint8_t y;
 	uint8_t colspan;
 	uint8_t rowspan;
 	void (* redraw)(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);	// функция отображения элемента
-	const struct dzitem * dzip;
+	const dzitem_t * dzip;
 	uint16_t subset;	// битовая маска страниц
-};
+} dzone_t;
 
 #if WITHLVGL && ! LINUX_SUBSYSTEM
 
@@ -120,7 +120,7 @@ static void lvstales_initialize(void)
 
 }
 
-static lv_obj_t * dzi_create_default(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_default(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -130,7 +130,7 @@ static lv_obj_t * dzi_create_default(const struct dzone * dzp, lv_obj_t * parent
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_modea(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_modea(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -141,7 +141,7 @@ static lv_obj_t * dzi_create_modea(const struct dzone * dzp, lv_obj_t * parent, 
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_modeb(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_modeb(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -152,7 +152,7 @@ static lv_obj_t * dzi_create_modeb(const struct dzone * dzp, lv_obj_t * parent, 
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_freqa(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -164,7 +164,7 @@ static lv_obj_t * dzi_create_freqa(const struct dzone * dzp, lv_obj_t * parent, 
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_freqb(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_freqb(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -174,7 +174,7 @@ static lv_obj_t * dzi_create_freqb(const struct dzone * dzp, lv_obj_t * parent, 
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_txrx(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -184,7 +184,7 @@ static lv_obj_t * dzi_create_txrx(const struct dzone * dzp, lv_obj_t * parent, u
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_gcombo(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_gcombo(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_img_create(parent);
 
@@ -242,43 +242,43 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
-static struct dzitem dzi_default =
+static dzitem_t dzi_default =
 {
 	.lvelementcreate = LVCREATE(dzi_create_default),
 	.id = "default"
 };
 
-static struct dzitem dzi_freqa =
+static dzitem_t dzi_freqa =
 {
 	.lvelementcreate = LVCREATE(dzi_create_freqa),
 	.id = "freq-a"
 };
 
-static struct dzitem dzi_freqb =
+static dzitem_t dzi_freqb =
 {
 	.lvelementcreate = LVCREATE(dzi_create_freqb),
 	.id = "freq-b"
 };
 
-static struct dzitem dzi_txrx =
+static dzitem_t dzi_txrx =
 {
 	.lvelementcreate = LVCREATE(dzi_create_txrx),
 	.id = "txrx"
 };
 
-static struct dzitem dzi_gcombo =
+static dzitem_t dzi_gcombo =
 {
 	.lvelementcreate = LVCREATE(dzi_create_gcombo),
 	.id = "gcombo"
 };
 
-static struct dzitem dzi_modea =
+static dzitem_t dzi_modea =
 {
 	.lvelementcreate = LVCREATE(dzi_create_modea),
 	.id = "mode-a"
 };
 
-static struct dzitem dzi_modeb =
+static dzitem_t dzi_modeb =
 {
 	.lvelementcreate = LVCREATE(dzi_create_modeb),
 	.id = "mode-b"
@@ -7375,7 +7375,7 @@ void display2_initialize(void)
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
 
-				const struct dzitem * const dzip = dzp->dzip;	// араметры создания элемента
+				const dzitem_t * const dzip = dzp->dzip;	// араметры создания элемента
 				lv_obj_t * lbl;
 				if (dzip != NULL && dzip->lvelementcreate != NULL)
 				{
