@@ -54,7 +54,7 @@ typedef struct dzone
 
 extern const lv_font_t eurostyle_56;
 extern const lv_font_t eurostyle_56w;
-extern const lv_font_t eurostyle_56w4;
+extern const lv_font_t rubik_16w2;
 
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqstyle;
@@ -74,49 +74,67 @@ static void lvstales_initialize(void)
 
 	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
 
-	// стиль окна
-	lv_style_init(& xxmainstyle);
-	lv_style_set_bg_color(& xxmainstyle, display_lvlcolor(display2_getbgcolor()));
-	lv_style_set_border_width(& xxmainstyle, 0);
-	lv_style_set_pad_all(& xxmainstyle, 0);
-	lv_style_set_radius(& xxmainstyle, 0);
-//	lv_style_set_grid_cell_row_span(& xxmainstyle, 5);
-//	lv_style_set_grid_cell_column_span(& xxmainstyle, 16);
+	{
+		lv_style_t * const s = & xxmainstyle;
+
+		// стиль окна
+		lv_style_init(s);
+		lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
+		lv_style_set_border_width(s, 0);
+		lv_style_set_pad_all(s, 0);
+		lv_style_set_radius(s, 0);
+	//	lv_style_set_grid_cell_row_span(s, 5);
+	//	lv_style_set_grid_cell_column_span(s, 16);
+	}
 
 
-	// стиль элемента
-	lv_style_init(& xxdivstyle);
-	//lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(COLORPIP_GREEN));
-	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_GREY));
+	{
+		// стиль элемента
+		lv_style_t * const s = & xxdivstyle;
+		//
+		lv_style_init(s);
+		//lv_style_set_bg_color(s, display_lvlcolor(COLORPIP_GREEN));
+		lv_style_set_bg_color(s, lv_palette_main(LV_PALETTE_GREY));
 
-	lv_style_set_text_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVETEXT));
-    lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVEBACK));
-	lv_style_set_bg_opa(& xxdivstyle, LV_OPA_COVER);
-	lv_style_set_border_color(& xxdivstyle, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
-	lv_style_set_border_width(& xxdivstyle, 1);
-	lv_style_set_pad_all(& xxdivstyle, 0);
-	lv_style_set_radius(& xxdivstyle, 4);
-	lv_style_set_text_align(& xxdivstyle, LV_TEXT_ALIGN_CENTER);
-	lv_style_set_text_opa(& xxdivstyle, LV_OPA_COVER);
+		lv_style_set_text_color(s, display_lvlcolor(DSGN_LABELACTIVETEXT));
+	    lv_style_set_bg_color(s, display_lvlcolor(DSGN_LABELACTIVEBACK));
+		lv_style_set_bg_opa(s, LV_OPA_COVER);
+		lv_style_set_border_color(s, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
+		lv_style_set_border_width(s, 1);
+		lv_style_set_pad_all(s, 0);
+		lv_style_set_radius(s, 4);
+		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+		lv_style_set_text_opa(s, LV_OPA_COVER);
+	    lv_style_set_text_font(s, & rubik_16w2);
+	    //lv_style_set_text_letter_space(s, 3);
+	}
 
-	// частота основного приемникв
-    lv_style_init(& xxfreqstyle);
-    lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
-    lv_style_set_text_font(& xxfreqstyle, & eurostyle_56w4);
-    lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
-    lv_style_set_pad_ver(& xxfreqstyle, 15);
-    lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
-    //lv_style_set_text_letter_space(& xxfreqstyle, 5);
-	lv_style_set_border_width(& xxfreqstyle, 0);
+	{
+		// частота основного приемникв
+		lv_style_t * const s = & xxfreqstyle;
 
-	// водопад/спектроаналихатор/3dss
-    lv_style_init(& xxscopestyle);
-	lv_style_set_border_width(& xxfreqstyle, 0);
+	    lv_style_init(s);
+	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
+	    lv_style_set_text_font(s, & eurostyle_56w);
+	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
+	    lv_style_set_pad_ver(s, 15);
+	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+	    //lv_style_set_text_letter_space(s, 5);
+		lv_style_set_border_width(s, 0);
 
-//    static lv_anim_t a;
-//    lv_anim_set_repeat_delay(& a, 20);
-//    lv_anim_set_path_cb(&a, lvanim_path_ticks);
-//    lv_style_set_anim(&xxscopestyle, & a);
+	}
+
+	{
+		// водопад/спектроаналихатор/3dss
+		lv_style_t * const s = & xxscopestyle;
+	    lv_style_init(s);
+		lv_style_set_border_width(s, 0);
+
+	//    static lv_anim_t a;
+	//    lv_anim_set_repeat_delay(& a, 20);
+	//    lv_anim_set_path_cb(&a, lvanim_path_ticks);
+	//    lv_style_set_anim(s, & a);
+	}
 
 }
 
