@@ -79,12 +79,19 @@ static lv_style_t xxfreqstyle;
 static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 
-static lv_obj_t * img1_wfl;
-static lv_obj_t * lbl_txrx;
-static lv_obj_t * lbl_freqa;
-static lv_obj_t * lbl_freqb;
-static lv_obj_t * lbl_modea;
-static lv_obj_t * lbl_modeb;
+#define NOBJ 12l
+static lv_obj_t * img1_wfls [NOBJ];
+static unsigned img1_wflsn;
+static lv_obj_t * lbl_txrxs [NOBJ];
+static unsigned lbl_txrxsn;
+static lv_obj_t * lbl_freqas [NOBJ];
+static unsigned lbl_freqasn;
+static lv_obj_t * lbl_freqbs [NOBJ];
+static unsigned lbl_freqbsn;
+static lv_obj_t * lbl_modeas [NOBJ];
+static unsigned lbl_modeasn;
+static lv_obj_t * lbl_modebs [NOBJ];
+static unsigned lbl_modebsn;
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
@@ -125,7 +132,7 @@ static void lvstales_initialize(void)
 		lv_style_set_radius(s, 4);
 		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_text_opa(s, LV_OPA_COVER);
-	    ////lv_style_set_text_font(s, & rubik_16w2);
+	    lv_style_set_text_font(s, & rubik_16w2);
 	    //lv_style_set_text_letter_space(s, 3);
 	}
 
@@ -136,9 +143,9 @@ static void lvstales_initialize(void)
 	    lv_style_init(s);
 	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
-	    lv_style_set_pad_ver(s, 15);
 	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
-	    //lv_style_set_text_font(s, & eurostyle_56w);
+	    lv_style_set_pad_ver(s, 15);
+	    lv_style_set_text_font(s, & eurostyle_56w);
 	    //lv_style_set_text_letter_space(s, 5);
 		lv_style_set_border_width(s, 0);
 
@@ -175,7 +182,7 @@ static lv_obj_t * dzi_create_modea(const dzone_t * dzp, lv_obj_t * parent, unsig
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	//lv_label
 
-	lbl_modea = lbl;
+	lbl_modeas [lbl_modeasn ++] = lbl;
 	return lbl;
 }
 
@@ -186,7 +193,7 @@ static lv_obj_t * dzi_create_modeb(const dzone_t * dzp, lv_obj_t * parent, unsig
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	//lv_label
 
-	lbl_modeb = lbl;
+	lbl_modebs [lbl_modebsn ++] = lbl;
 	return lbl;
 }
 
@@ -198,7 +205,7 @@ static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsig
 	lv_obj_add_style(lbl, & xxfreqstyle, 0);
 	//lv_label
 
-	lbl_freqa = lbl;
+	lbl_freqas [lbl_freqasn ++] = lbl;
 	return lbl;
 }
 
@@ -208,7 +215,7 @@ static lv_obj_t * dzi_create_freqb(const dzone_t * dzp, lv_obj_t * parent, unsig
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
-	lbl_freqb = lbl;
+	lbl_freqbs [lbl_freqbsn ++] = lbl;
 	return lbl;
 }
 
@@ -218,7 +225,7 @@ static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsign
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
-	lbl_txrx = lbl;
+	lbl_txrxs [lbl_txrxsn ++] = lbl;
 	return lbl;
 }
 
@@ -230,7 +237,7 @@ static lv_obj_t * dzi_create_gcombo(const dzone_t * dzp, lv_obj_t * parent, unsi
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_img_set_src(lbl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
 
-	img1_wfl = lbl;
+	img1_wfls [img1_wflsn ++] = lbl;
 	return lbl;
 }
 
@@ -243,32 +250,68 @@ static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned 
 
 static void lvgl_task1_cb(lv_timer_t * tmr)
 {
-	if (lbl_freqa)
+	if (lbl_freqasn)
 	{
 		static char label [332];
 		unsigned mhz, khz, hz;
 
 		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
 		local_snprintf_P(label, ARRAY_SIZE(label), "%u.%03u.%03u", mhz, khz, hz);
-		lv_label_set_text_static(lbl_freqa, label);	// не вызывает heap
+
+		unsigned i;
+		for (i = 0; i < lbl_freqasn; ++ i)
+		{
+			lv_obj_t * const obj = lbl_freqas [i];
+
+			lv_label_set_text_static(obj, label);	// не вызывает heap
+
+		}
 	}
-	if (lbl_txrx)
+	if (lbl_txrxsn)
 	{
 		const uint_fast8_t state = hamradio_get_tx();
-		lv_label_set_text_static(lbl_txrx, state ? "TX" : "RX");	// не вызывает heap
+		unsigned i;
+		for (i = 0; i < lbl_txrxsn; ++ i)
+		{
+			lv_obj_t * const obj = lbl_txrxs [i];
+
+			lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
+
+		}
 	}
-	if (lbl_modea)
+	if (lbl_modeasn)
 	{
-		lv_label_set_text_static(lbl_modea, hamradio_get_mode_a_value_P());	// не вызывает heap
+		unsigned i;
+		for (i = 0; i < lbl_modeasn; ++ i)
+		{
+			lv_obj_t * const obj = lbl_modeas [i];
+
+			lv_label_set_text_static(obj, hamradio_get_mode_a_value_P());	// не вызывает heap
+
+		}
 	}
-	if (lbl_modeb)
+	if (lbl_modebsn)
 	{
-		lv_label_set_text_static(lbl_modeb, hamradio_get_mode_b_value_P());	// не вызывает heap
+		unsigned i;
+		for (i = 0; i < lbl_modebsn; ++ i)
+		{
+			lv_obj_t * const obj = lbl_modebs [i];
+
+			lv_label_set_text_static(obj, hamradio_get_mode_b_value_P());	// не вызывает heap
+
+		}
 	}
-	if (img1_wfl)
+	if (img1_wflsn)
 	{
 		wfl_proccess();
-		lv_obj_invalidate(img1_wfl);
+		unsigned i;
+		for (i = 0; i < img1_wflsn; ++ i)
+		{
+			lv_obj_t * const obj = img1_wfls [i];
+
+			lv_obj_invalidate(obj);
+
+		}
 	}
 }
 
