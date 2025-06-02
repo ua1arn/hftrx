@@ -78,7 +78,7 @@
 		{	0,	0, 	7, 5, display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 5, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	4, 5, display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
-		{	15,	0,	2, 5, display_txrxstate2, 	& dzi_default, PGALL, },
+		{	15,	0,	2, 5, display_txrxstate2, 	& dzi_txrx, PGALL, },
 		{	18, 0,	3, 5, display2_atu3,		& dzi_default, PGALL, },	// TUNER state (optional)
 		{	22, 0,	3, 5, display2_byp3,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
 		{	26,	0,	5, 5, display2_ant5,		& dzi_default, PGALL, },
@@ -95,7 +95,7 @@
 	#endif /* WITHAFSPECTRE */
 
 		{	15,	5,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	15,	5,	21, 15, display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	15,	5,	21, 15, display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 5, display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
 		{	41,	5,	9, 5, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
@@ -111,7 +111,7 @@
 
 		{	15, 20,	3, 5, display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 5, display2_vfomode3,	& dzi_default, PGALL, },	// SPL
-		{	24,	20,	12, 5, display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
+		{	24,	20,	12, 5, display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
 		{	36, 20,	5, 5, display2_mode3_b,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	4, 5, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
@@ -135,7 +135,7 @@
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_default, PG0, },// подготовка изображения спектра
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_gcombo, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	12, 5, display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40

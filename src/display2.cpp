@@ -31,6 +31,10 @@ struct dzitem
 {
 	void (* draw)(struct dzone * dzp);
 	void (* onclick)(struct dzone * dzp);
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+	lv_obj_t * (* lvelementcreate)(const struct dzone * dzp, lv_obj_t * parent, unsigned i);
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+	const char * label;
 };
 
 struct dzone
@@ -44,7 +48,155 @@ struct dzone
 	uint16_t subset;	// битовая маска страниц
 };
 
+#if WITHLVGL && ! LINUX_SUBSYSTEM
+
+static lv_style_t xxmainstyle;
+static lv_style_t xxfreqstyle;
+static lv_style_t xxdivstyle;
+static lv_style_t xxscopestyle;
+
+static lv_obj_t * xxfreqwnd;
+
+static lv_obj_t * lbl_freq;
+static lv_obj_t * img1_wfl;
+
+static void lvstales_initialize(void)
+{
+    ASSERT(lv_screen_active());
+
+	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
+
+	// стиль окна
+	lv_style_init(& xxmainstyle);
+	lv_style_set_bg_color(& xxmainstyle, display_lvlcolor(display2_getbgcolor()));
+	lv_style_set_border_width(& xxmainstyle, 0);
+	lv_style_set_pad_all(& xxmainstyle, 0);
+	lv_style_set_radius(& xxmainstyle, 0);
+//	lv_style_set_grid_cell_row_span(& xxmainstyle, 5);
+//	lv_style_set_grid_cell_column_span(& xxmainstyle, 16);
+
+
+	// стиль элемента
+	lv_style_init(& xxdivstyle);
+	//lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(COLORPIP_GREEN));
+	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_GREY));
+
+	lv_style_set_text_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVETEXT));
+    lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVEBACK));
+	lv_style_set_bg_opa(& xxdivstyle, LV_OPA_COVER);
+	lv_style_set_border_color(& xxdivstyle, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
+	lv_style_set_border_width(& xxdivstyle, 1);
+	lv_style_set_pad_all(& xxdivstyle, 0);
+	lv_style_set_radius(& xxdivstyle, 4);
+
+	// частота основного приемникв
+    lv_style_init(& xxfreqstyle);
+    lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
+    lv_style_set_text_font(& xxfreqstyle, & lv_font_montserrat_38);
+    lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
+    //lv_style_set_pad_ver(& xxfreqstyle, 5);
+    lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
+    lv_style_set_text_letter_space(& xxfreqstyle, 5);
+
+	// водопад/спектроаналихатор/3dss
+    lv_style_init(& xxscopestyle);
+	lv_style_set_border_width(& xxscopestyle, 10);
+}
+
+static lv_obj_t * dzi_create_default(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	char label [32];
+	local_snprintf_P(label, ARRAY_SIZE(label), "el%u", i);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_label_set_text(lbl, label);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_freqa(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxfreqstyle, 0);
+
+	lbl_freq = lbl;
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_freqb(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_txrx(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_gcombo(const struct dzone * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_img_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxscopestyle, 0);
+	lv_img_set_src(lbl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
+
+	img1_wfl = lbl;
+	return lbl;
+}
+
+static struct dzitem dzi_default =
+{
+	.lvelementcreate = dzi_create_default,
+	.label = "default"
+};
+
+static struct dzitem dzi_freqa =
+{
+	.lvelementcreate = dzi_create_freqa,
+	.label = "freqa"
+};
+
+static struct dzitem dzi_freqb =
+{
+	.lvelementcreate = dzi_create_freqb,
+	.label = "freqb"
+};
+
+static struct dzitem dzi_txrx =
+{
+	.lvelementcreate = dzi_create_txrx,
+	.label = "txrx"
+};
+
+static struct dzitem dzi_gcombo =
+{
+	.lvelementcreate = dzi_create_gcombo,
+	.label = "gcombo"
+};
+
+#else /* WITHLVGL && ! LINUX_SUBSYSTEM */
+
 static struct dzitem dzi_default;
+static struct dzitem dzi_freqa;
+static struct dzitem dzi_freqb;
+static struct dzitem dzi_modea;
+static struct dzitem dzi_modeb;
+static struct dzitem dzi_txrx;
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 /* struct dzone subset field values */
 
@@ -7091,15 +7243,6 @@ void display2_bgprocess(
 }
 
 #if WITHLVGL && ! LINUX_SUBSYSTEM
-static lv_style_t xxmainstyle;
-static lv_style_t xxfreqstyle;
-static lv_style_t xxdivstyle;
-
-static lv_obj_t * xxfreqwnd;
-static lv_obj_t * xxmainwnds [PAGEBITS];
-
-static lv_obj_t * lbl_freq;
-static lv_obj_t * img1_wfl;
 
 static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
 {
@@ -7123,6 +7266,8 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 	}
 }
 
+static lv_obj_t * xxmainwnds [PAGEBITS];
+
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 void display2_initialize(void)
@@ -7138,41 +7283,7 @@ void display2_initialize(void)
 	lvgl_test();	// создание элементов на главном окне
 #else
 
-    ASSERT(lv_screen_active());
-
-	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
-
-	// стиль окна
-	lv_style_init(& xxmainstyle);
-	lv_style_set_bg_color(& xxmainstyle, display_lvlcolor(display2_getbgcolor()));
-	lv_style_set_border_width(& xxmainstyle, 0);
-	lv_style_set_pad_all(& xxmainstyle, 0);
-	lv_style_set_radius(& xxmainstyle, 0);
-//	lv_style_set_grid_cell_row_span(& xxmainstyle, 5);
-//	lv_style_set_grid_cell_column_span(& xxmainstyle, 16);
-
-	lv_style_init(& xxdivstyle);
-
-	// стиль элемента
-	//lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(COLORPIP_GREEN));
-	lv_style_set_bg_color(& xxdivstyle, lv_palette_main(LV_PALETTE_GREY));
-
-	lv_style_set_text_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVETEXT));
-    lv_style_set_bg_color(& xxdivstyle, display_lvlcolor(DSGN_LABELACTIVEBACK));
-	lv_style_set_bg_opa(& xxdivstyle, LV_OPA_COVER);
-	lv_style_set_border_color(& xxdivstyle, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
-	lv_style_set_border_width(& xxdivstyle, 1);
-	lv_style_set_pad_all(& xxdivstyle, 0);
-	lv_style_set_radius(& xxdivstyle, 4);
-
-	// частота основного приемникв
-    lv_style_init(& xxfreqstyle);
-    lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
-    lv_style_set_text_font(& xxfreqstyle, & lv_font_montserrat_38);
-    lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
-    //lv_style_set_pad_ver(& xxfreqstyle, 5);
-    lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
-    lv_style_set_text_letter_space(& xxfreqstyle, 5);
+	lvstales_initialize();
 
 	{
     	// Всего страниц (включая неотображаемые - PAGEBITS
@@ -7202,29 +7313,13 @@ void display2_initialize(void)
 
 				const struct dzitem * const dzip = dzp->dzip;	// араметры создания элемента
 				lv_obj_t * lbl;
-
-				if (0)
+				if (dzip != NULL && dzip->lvelementcreate != NULL)
 				{
-
-				}
-				else if (dzp->redraw == display2_gcombo)
-				{
-					lbl = lv_img_create(wnd);
-					//lv_obj_align(img1_wfl, LV_ALIGN_CENTER, 0, 0);
-					lv_img_set_src(lbl, wfl_init());	// src_type=LV_IMAGE_SRC_VARIABLE
-
-					img1_wfl = lbl;
-				}
-				else if (dzp->redraw == display2_freqX_a)
-				{
-					lbl = lv_label_create(wnd);
-					lv_obj_add_style(lbl, & xxdivstyle, 0);
-					lv_obj_add_style(lbl, & xxfreqstyle, 0);
-
-					lbl_freq = lbl;
+					lbl = (dzip->lvelementcreate)(dzp, wnd, i);
 				}
 				else
 				{
+					// Для целей отладки создаём видимый элемент
 					lbl = lv_label_create(wnd);
 					lv_obj_add_style(lbl, & xxdivstyle, 0);
 				}
