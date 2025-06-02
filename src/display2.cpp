@@ -33,8 +33,10 @@ struct dzitem
 	void (* onclick)(struct dzone * dzp);
 #if WITHLVGL && ! LINUX_SUBSYSTEM
 	lv_obj_t * (* lvelementcreate)(const struct dzone * dzp, lv_obj_t * parent, unsigned i);
+#else
+	void * lvelementcreate;
 #endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
-	const char * label;
+	const char * id;	// html id
 };
 
 struct dzone
@@ -52,6 +54,7 @@ struct dzone
 
 extern const lv_font_t eurostyle_56;
 extern const lv_font_t eurostyle_56w;
+extern const lv_font_t eurostyle_56w4;
 
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqstyle;
@@ -99,7 +102,7 @@ static void lvstales_initialize(void)
 	// частота основного приемникв
     lv_style_init(& xxfreqstyle);
     lv_style_set_text_color(& xxfreqstyle, display_lvlcolor(DSGN_BIGCOLOR));
-    lv_style_set_text_font(& xxfreqstyle, & eurostyle_56w);
+    lv_style_set_text_font(& xxfreqstyle, & eurostyle_56w4);
     lv_style_set_bg_color(& xxfreqstyle, display_lvlcolor(display2_getbgcolor()));
     lv_style_set_pad_ver(& xxfreqstyle, 15);
     lv_style_set_text_align(& xxfreqstyle, LV_TEXT_ALIGN_CENTER);
@@ -231,58 +234,55 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 	}
 }
 
+#define LVCREATE(fn) (fn)
+
+#else /* WITHLVGL && ! LINUX_SUBSYSTEM */
+
+#define LVCREATE(fn) (NULL)
+
+#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
+
 static struct dzitem dzi_default =
 {
-	.lvelementcreate = dzi_create_default,
-	.label = "default"
+	.lvelementcreate = LVCREATE(dzi_create_default),
+	.id = "default"
 };
 
 static struct dzitem dzi_freqa =
 {
-	.lvelementcreate = dzi_create_freqa,
-	.label = "freqa"
+	.lvelementcreate = LVCREATE(dzi_create_freqa),
+	.id = "freq-a"
 };
 
 static struct dzitem dzi_freqb =
 {
-	.lvelementcreate = dzi_create_freqb,
-	.label = "freqb"
+	.lvelementcreate = LVCREATE(dzi_create_freqb),
+	.id = "freq-b"
 };
 
 static struct dzitem dzi_txrx =
 {
-	.lvelementcreate = dzi_create_txrx,
-	.label = "txrx"
+	.lvelementcreate = LVCREATE(dzi_create_txrx),
+	.id = "txrx"
 };
 
 static struct dzitem dzi_gcombo =
 {
-	.lvelementcreate = dzi_create_gcombo,
-	.label = "gcombo"
+	.lvelementcreate = LVCREATE(dzi_create_gcombo),
+	.id = "gcombo"
 };
 
 static struct dzitem dzi_modea =
 {
-	.lvelementcreate = dzi_create_modea,
-	.label = "modea"
+	.lvelementcreate = LVCREATE(dzi_create_modea),
+	.id = "mode-a"
 };
 
 static struct dzitem dzi_modeb =
 {
-	.lvelementcreate = dzi_create_modeb,
-	.label = "modeb"
+	.lvelementcreate = LVCREATE(dzi_create_modeb),
+	.id = "mode-b"
 };
-
-#else /* WITHLVGL && ! LINUX_SUBSYSTEM */
-
-static struct dzitem dzi_default;
-static struct dzitem dzi_freqa;
-static struct dzitem dzi_freqb;
-static struct dzitem dzi_modea;
-static struct dzitem dzi_modeb;
-static struct dzitem dzi_txrx;
-
-#endif /* WITHLVGL && ! LINUX_SUBSYSTEM */
 
 /* struct dzone subset field values */
 
