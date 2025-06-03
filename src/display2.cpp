@@ -5468,6 +5468,7 @@ template<typename pixelt, uint_fast16_t argdx, uint_fast16_t argdy> class scroll
 	element_t * bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t rx, uint_fast16_t ry)  const;	/* получить адрес в памяти элемента с координатами x/y */
 
 public:
+	element_t * bf() const { return m_buffer; }	// пока для переноса
 	scrollb(uint_fast16_t & scrollh, uint_fast16_t & scrollv, element_t * buffer) :
 		vx(scrollh),
 		vy(scrollv),
@@ -5486,7 +5487,7 @@ public:
 	// получить значение по виртуальной позиции
 	pixelt peek(uint_fast16_t x, uint_fast16_t y) const { return * bufferat(argdx, argdy, (vx + x) % argdx, (vy + y) % argdy); }
 	// записать значение по виртуальной позиции
-	void poke(uint_fast16_t x, uint_fast16_t y, pixelt value) const { return * bufferat(argdx, argdy, (vx + x) % argdx, (vy + y) % argdy) = value; }
+	void poke(uint_fast16_t x, uint_fast16_t y, pixelt value) const { * bufferat(argdx, argdy, (vx + x) % argdx, (vy + y) % argdy) = value; }
 };
 // Специализация. стереть содержимое
 template <> void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, int16_t v) const
@@ -5654,6 +5655,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	FLOAT_t m_avgwfl [w * h];	// h == 1
 	FLOAT_t m_avg3dss [w * h];	// h == 1
 
+public:
 	scrollb<PACKEDCOLORPIP_T, w, h>  scrollcolor;
 	scrollb<int16_t, w, h>  scrollpwr;
 	/* one-row objects */
@@ -6393,22 +6395,26 @@ static void display2_latchcombo(
 		const int val3dss = dsp_mag2y(filter_3dss(x), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 	#if LCDMODE_MAIN_L8
 		colpip_putpixel(& wfjdbv, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
+		scrollbuffs.scrollcolor.poke(x, 0, valwfl);
 		#if WITHVIEW_3DSS
-		colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
-		* atskapejval(x, row3dss) = val3dss;
+			colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
+			* atskapejval(x, row3dss) = val3dss;
 		#endif /* WITHVIEW_3DSS */
 		#if WITHVIEW_3DSS
 			* atskapejval(x, row3dss) = val3dss;
+			scrollbuffs.scrollpwr.poke(x, 0, val3dss);
 		#endif /* WITHVIEW_3DSS */
 	#else /* LCDMODE_MAIN_L8 */
 		ASSERT(valwfl >= 0);
 		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
 		colpip_putpixel(& wfjdbv, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
+		scrollbuffs.scrollcolor.poke(x, 0, wfpalette [valwfl]);
 		#if WITHVIEW_3DSS
-		ASSERT(val3dss >= 0);
-		ASSERT(val3dss <= INT16_MAX);
+			ASSERT(val3dss >= 0);
+			ASSERT(val3dss <= INT16_MAX);
 			colpip_putpixel(& scapedbv, x, row3dss, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 			* atskapejval(x, row3dss) = val3dss;
+			scrollbuffs.scrollpwr.poke(x, 0, val3dss);
 		#endif /* WITHVIEW_3DSS */
 	#endif /* LCDMODE_MAIN_L8 */
 	}
