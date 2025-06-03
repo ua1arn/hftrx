@@ -84,6 +84,7 @@ static lv_style_t xxmainstyle;
 static lv_style_t xxfreqstyle;
 static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
+static lv_style_t xxtxrxstyle;
 
 #define NOBJ 32
 
@@ -188,6 +189,11 @@ static void lvstales_initialize(void)
 	//    lv_style_set_anim(s, & a);
 	}
 
+	{
+		// TX/RX indicator
+		lv_style_t * const s = & xxtxrxstyle;
+	    lv_style_init(s);
+	}
 }
 
 static lv_obj_t * dzi_create_default(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
@@ -259,6 +265,7 @@ static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsign
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
 	if (lbl_txrxsn < NOBJ)
 	{
@@ -334,6 +341,11 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 	if (lbl_txrxsn)
 	{
 		const uint_fast8_t state = hamradio_get_tx();
+
+		lv_style_t * const s = & xxtxrxstyle;
+		lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
+		lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
+
 		unsigned i;
 		for (i = 0; i < lbl_txrxsn; ++ i)
 		{
