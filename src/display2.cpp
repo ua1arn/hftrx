@@ -4169,7 +4169,6 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 
 #elif WITHGRADIENT_FIXED
@@ -4177,7 +4176,6 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
-	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif LCDMODE_LTDC
 
@@ -4185,7 +4183,6 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 	enum { PALETTESIZE = 256 };
 
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
-	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 	static uint_fast16_t row3dss;		// строка, в которую последней занесены данные
 
 #endif
@@ -4212,13 +4209,6 @@ struct ustates
 	FLOAT_t cmplx_sig [NORMALFFT * 2];
 	FLOAT_t ifspec_wndfn [NORMALFFT];
 
-	FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
-	FLOAT_t Yold_wtf [ALLDX];
-	FLOAT_t Yold_spe [ALLDX];
-	FLOAT_t Yold_3dss [ALLDX];
-
-	PACKEDCOLORPIP_T histcolors [GXSIZE(ALLDX, NROWSWFL)];	// массив цветных пикселей "водопада"
-
 #if WITHVIEW_3DSS
 
 	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
@@ -4242,7 +4232,7 @@ struct ustates
 
 #define SIZEOF_WFL3DSS (sizeof gvars.wfj3dss)
 #define ADDR_WFL3DSS (gvars.wfj3dss)
-#define ADDR_WFJARRAY (gvars.histcolors)
+
 #define ADDR_SCAPEARRAY (gvars.hist3dss)
 #define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
 
@@ -4472,7 +4462,6 @@ public:
 		dy(ady),
 		m_buffer(buffer)
 	{
-
 	}
 	// стереть содержимое
 	void setupnew(uint_fast16_t dx, pixelt value) const;
@@ -4510,7 +4499,7 @@ template <> void scrollb<int16_t, ALLDX>::shiftleft(uint_fast16_t dx, uint_fast1
 				bufferat(dx, pixels, y),		// from
  				(dx - pixels) * sizeof (element_t)
  		);
- 		memset(bufferat(dx, dx - pixels, y), 0, pixels * sizeof (element_t));
+ 		arm_fill_q15(value, bufferat(dx, dx - pixels, y), pixels);
 	}
 }
 // Специализация
@@ -4526,19 +4515,23 @@ template <> void scrollb<int16_t, ALLDX>::shiftright(uint_fast16_t dx, uint_fast
 				bufferat(dx, 0, y),		// from
 				(dx - pixels) * sizeof (element_t)
     		);
- 		memset(bufferat(dx, 0, y), 0, pixels * sizeof (element_t));
+   		arm_fill_q15(value, bufferat(dx, 0, y), pixels);
    	}
 }
 
 ///////////////////////////////
-
 // Специализация. стереть содержимое
-template <> void scrollb<PACKEDCOLORPIP_T, ALLDX>::setupnew(uint_fast16_t dx, PACKEDCOLORPIP_T v) const
+template <> void scrollb<PACKEDCOLORPIP_T, ALLDX>::setupnew(uint_fast16_t dx, PACKEDCOLORPIP_T value) const
 {
 	// todo: use accelerated graphic functions
-	memset(m_buffer, 0x00, dx * dy * sizeof (element_t));
+#if LCDMODE_PIXELSIZE == 2
+	arm_fill_q15(value, (q15_t *) m_buffer, GXSIZE(dx, dy));
+#elif LCDMODE_PIXELSIZE == 4
+	arm_fill_q31(value, (q31_t *) m_buffer, GXSIZE(dx, dy));
+#elif LCDMODE_PIXELSIZE == 1
+	arm_fill_q7(value, (q7_t *) m_buffer, GXSIZE(dx, dy));
+#endif
 }
-
 // Специализация. получить адрес по невиртуальным координатам буфера
 template <> PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX>::bufferat(uint_fast16_t dx, uint_fast16_t rx, uint_fast16_t ry) const
 {
@@ -4557,7 +4550,13 @@ template <> void scrollb<PACKEDCOLORPIP_T, ALLDX>::shiftleft(uint_fast16_t dx, u
 				bufferat(dx, pixels, y),		// from
  				(dx - pixels) * sizeof (element_t)
  		);
- 		memset(bufferat(dx, dx - pixels, y), 0, pixels * sizeof (element_t));
+#if LCDMODE_PIXELSIZE == 2
+		arm_fill_q15(value, (q15_t *) bufferat(dx, dx - pixels, y), pixels);
+#elif LCDMODE_PIXELSIZE == 4
+		arm_fill_q31(value, (q31_t *) bufferat(dx, dx - pixels, y), pixels);
+#elif LCDMODE_PIXELSIZE == 1
+		arm_fill_q7(value, (q7_t *) bufferat(dx, dx - pixels, y), pixels);
+#endif
 	}
 }
 // Специализация
@@ -4573,23 +4572,23 @@ template <> void scrollb<PACKEDCOLORPIP_T, ALLDX>::shiftright(uint_fast16_t dx, 
 				bufferat(dx, 0, y),		// from
 				(ALLDX - pixels) * sizeof (element_t)
     		);
- 		memset(bufferat(dx, 0, y), 0, pixels * sizeof (element_t));
+#if LCDMODE_PIXELSIZE == 2
+   		arm_fill_q15(value, (q15_t *) bufferat(dx, 0, y), pixels);
+#elif LCDMODE_PIXELSIZE == 4
+   		arm_fill_q31(value, (q31_t *) bufferat(dx, 0, y), pixels);
+#elif LCDMODE_PIXELSIZE == 1
+   		arm_fill_q7(value, (q7_t *) bufferat(dx, 0, y), pixels);
+#endif
    	}
 
 }
-
 ///////////////////////////////
 
-
-/* Специализация.
- *  + стереть содержимое
- * */
-template <>
-void scrollb<FLOAT_t, ALLDX>::setupnew(uint_fast16_t dx, FLOAT_t v) const
+// Специализация. стереть содержимое
+template <> void scrollb<FLOAT_t, ALLDX>::setupnew(uint_fast16_t dx, FLOAT_t v) const
 {
 	ARM_MORPH(arm_fill)(v, m_buffer, dx * dy);
 }
-
 // Специализация. получить адрес по невиртуальным координатам буфера
 template <> FLOAT_t * scrollb<FLOAT_t, ALLDX>::bufferat(uint_fast16_t dx, uint_fast16_t x, uint_fast16_t y) const
 {
@@ -4609,7 +4608,6 @@ template <> void scrollb<FLOAT_t, ALLDX>::shiftleft(uint_fast16_t dx, uint_fast1
  				(dx - pixels) * sizeof (FLOAT_t)
  		);
  		ARM_MORPH(arm_fill)(value, bufferat(dx, dx - pixels, y), pixels);
- 		//memset(bufferat(dx, dx - pixels, y), 0, pixels * sizeof (element_t));
 	}
 }
 // Специализация
@@ -4626,7 +4624,6 @@ template <> void scrollb<FLOAT_t, ALLDX>::shiftright(uint_fast16_t dx, uint_fast
 				(dx - pixels) * sizeof (FLOAT_t)
     		);
  		ARM_MORPH(arm_fill)(value, bufferat(dx, 0, y), pixels);
- 		//memset(bufferat(dx, 0, y), 0, pixels * sizeof (element_t));
    	}
 }
 
@@ -4639,20 +4636,7 @@ public:
 	scrollb1h(uint_fast16_t & scrollh, uint_fast16_t & scrollv, pixelt * buffer) :
 		scrollb<pixelt, argdx>(scrollh, scrollv, buffer, 1)
 	{
-
 	}
-//	// частота увеличилась - надо сдвигать картинку влево
-//	// нужно сохрянять часть старого изображения
-//	void shiftleft(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, pixelt value) const
-//	{
-//		parent::shiftleft(dx, 1, pixels, value);
-//	}
-//	// частота уменьшилась - надо сдвигать картинку вправо
-//	// нужно сохрянять часть старого изображения
-//	void shiftright(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, pixelt value) const
-//	{
-//		parent::shiftright(dx, 1, pixels, value);
-//	}
 };
 
 ////////////////////////////////
@@ -4671,13 +4655,14 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	FLOAT_t m_yold3dss [w * h];	// h == 1
 
 public:
-	scrollb<PACKEDCOLORPIP_T, w>  scrollcolor;
-	scrollb<int16_t, w>  scrollpwr;
+	uint_fast16_t getwfrow() const { return centery; }
+	scrollb<PACKEDCOLORPIP_T, w>  scrollcolor;	// Водопад (можно использовать как источник данных для 3DSS)
+	scrollb<int16_t, w>  scrollpwr;				// мощности для 3DSS
 	/* one-row objects */
-	scrollb1h<FLOAT_t, w>  spavgarray;
-	scrollb1h<FLOAT_t, w>  yoldwfl;
-	scrollb1h<FLOAT_t, w>  yoldspe;
-	scrollb1h<FLOAT_t, w>  yold3dss;
+	scrollb1h<FLOAT_t, w>  spavgarray;	// строка принятая из DSP части в последний раз
+	scrollb1h<FLOAT_t, w>  yoldwfl;		// фильтр водопада
+	scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
+	scrollb1h<FLOAT_t, w>  yold3dss;	// фильтр 3DSS
 
 public:
 	scrollbf() :
@@ -4706,52 +4691,62 @@ public:
 	void shiftrows()
 	{
 		centery = (centery + h - 1) % h;
-		// TODO: очистить освобождающиеся зоны
 	}
 	// частота увеличилась - надо сдвигать картинку влево
 	// нужно сохрянять часть старого изображения
+	// в строке centery - новое
 	void shiftleft(uint_fast16_t pixels)
 	{
-		//centerx = (centerx + w - pixels) % w;
-		// TODO: очистить освобождающиеся зоны
-		scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
-		scrollpwr.shiftleft(w, pixels, 0);
-		/* one-row objects */
-		spavgarray.shiftleft(w, pixels, 0);
-		yoldwfl.shiftleft(w, pixels, 0);
-		yoldspe.shiftleft(w, pixels, 0);
-		yold3dss.shiftleft(w, pixels, 0);
+		if (pixels)
+		{
+			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
+			// TODO: очистить освобождающиеся зоны
+			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
+			scrollpwr.shiftleft(w, pixels, 0);
+			/* one-row objects */
+			spavgarray.shiftleft(w, pixels, 0);
+			yoldwfl.shiftleft(w, pixels, 0);
+			yoldspe.shiftleft(w, pixels, 0);
+			yold3dss.shiftleft(w, pixels, 0);
+		}
 	}
 	// частота уменьшилась - надо сдвигать картинку вправо
 	// нужно сохрянять часть старого изображения
-	// в строке wfrow - новое
+	// в строке centery - новое
 	void shiftright(uint_fast16_t pixels)
 	{
-		//centerx = (centerx + w - pixels) % w;
-		// TODO: очистить освобождающиеся зоны
-		scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
-		scrollpwr.shiftright(w, pixels, 0);
-		/* one-row objects */
-		spavgarray.shiftright(w, pixels, 0);
-		yoldwfl.shiftright(w, pixels, 0);
-		yoldspe.shiftright(w, pixels, 0);
-		yold3dss.shiftright(w, pixels, 0);
+		if (pixels)
+		{
+			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
+			// TODO: очистить освобождающиеся зоны
+			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
+			scrollpwr.shiftright(w, pixels, 0);
+			/* one-row objects */
+			spavgarray.shiftright(w, pixels, 0);
+			yoldwfl.shiftright(w, pixels, 0);
+			yoldspe.shiftright(w, pixels, 0);
+			yold3dss.shiftright(w, pixels, 0);
+		}
 	}
 
 };
 
-static scrollbf<ALLDX, NROWSWFL> scrollbuffs;
+static scrollbf<ALLDX, NROWSWFL> scbf;
 
 ///////////////////
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
 	)
 {
-	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
-	ASSERT(x < ARRAY_SIZE(gvars.Yold_wtf));
-	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
-	const FLOAT_t Y = gvars.Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
-	gvars.Yold_wtf [x] = Y;
+	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
+	const FLOAT_t Y = scbf.yoldwfl.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
+	scbf.yoldwfl.poke(x, 0, Y);
+
+//	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
+//	ASSERT(x < ARRAY_SIZE(gvars.Yold_wtf));
+//	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
+//	const FLOAT_t Y = gvars.Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
+//	gvars.Yold_wtf [x] = Y;
 	return Y;
 }
 
@@ -4759,11 +4754,15 @@ static FLOAT_t filter_spectrum(
 	uint_fast16_t x
 	)
 {
-	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
-	ASSERT(x < ARRAY_SIZE(gvars.Yold_spe));
-	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
-	const FLOAT_t Y = gvars.Yold_spe [x] * spectrum_alpha + spectrum_beta * val;
-	gvars.Yold_spe [x] = Y;
+	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
+	const FLOAT_t Y = scbf.yoldspe.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
+	scbf.yoldspe.poke(x, 0, Y);
+
+//	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
+//	ASSERT(x < ARRAY_SIZE(gvars.Yold_spe));
+//	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
+//	const FLOAT_t Y = gvars.Yold_spe [x] * spectrum_alpha + spectrum_beta * val;
+//	gvars.Yold_spe [x] = Y;
 	return Y;
 }
 
@@ -4772,11 +4771,15 @@ static FLOAT_t filter_3dss(
 	uint_fast16_t x
 	)
 {
-	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
-	ASSERT(x < ARRAY_SIZE(gvars.Yold_3dss));
-	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
-	const FLOAT_t Y = gvars.Yold_3dss [x] * spectrum_alpha + spectrum_beta * val;
-	gvars.Yold_3dss [x] = Y;
+	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
+	const FLOAT_t Y = scbf.yold3dss.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
+	scbf.yold3dss.poke(x, 0, Y);
+
+//	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
+//	ASSERT(x < ARRAY_SIZE(gvars.Yold_3dss));
+//	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
+//	const FLOAT_t Y = gvars.Yold_3dss [x] * spectrum_alpha + spectrum_beta * val;
+//	gvars.Yold_3dss [x] = Y;
 	return Y;
 }
 
@@ -5816,33 +5819,6 @@ atskapejval(uint_fast16_t x, uint_fast16_t y)
 
 #endif /* WITHVIEW_3DSS */
 
-/* получить адрес пикселя из массива истории водопада */
-static
-PACKEDCOLORPIP_T *
-atwflj(uint_fast16_t x, uint_fast16_t y)
-{
-	gxdrawb_t wfjdbv;
-	gxdrawb_initialize(& wfjdbv, ADDR_WFJARRAY, ALLDX, NROWSWFL);
-	return colpip_mem_at(& wfjdbv, x, y);
-}
-
-// стираем буфер усреднения FFT
-static void avg_clear_spe(void)
-{
-	ARM_MORPH(arm_fill)(0, gvars.Yold_spe, ALLDX);
-}
-
-// стираем буфер усреднения водопада
-static void avg_clear_wfl(void)
-{
-	ARM_MORPH(arm_fill)(0, gvars.Yold_wtf, ALLDX);
-}
-
-// стираем буфер усреднения 3dss
-static void avg_clear_3dss(void)
-{
-	ARM_MORPH(arm_fill)(0, gvars.Yold_3dss, ALLDX);
-}
 
 // стираем целиком старое изображение водопада
 static void wflclear(void)
@@ -5850,10 +5826,6 @@ static void wflclear(void)
 #if WITHVIEW_3DSS
 	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
 #endif /* WITHVIEW_3DSS */
-	// стирание прямоугольника
-	gxdrawb_t wfjdbv;
-	gxdrawb_initialize(& wfjdbv, ADDR_WFJARRAY, ALLDX, NROWSWFL);
-	colpip_fillrect(& wfjdbv, 0, 0, ALLDX, NROWSWFL, display2_bgcolorwfl());
 
 #if WITHVIEW_3DSS
 	gxdrawb_t scapedbv;
@@ -5873,21 +5845,6 @@ static void wflshiftleft(uint_fast16_t pixels)
 
 	if (pixels == 0)
 		return;
-	gxdrawb_t wfjdbv;
-	gxdrawb_initialize(& wfjdbv, ADDR_WFJARRAY, ALLDX, NROWSWFL);
-
-	// двигаем буфер усреднения значений WTF и FFT
-    // спектр
-	memmove(& gvars.Yold_spe [0], & gvars.Yold_spe [pixels], (ALLDX - pixels) * sizeof gvars.Yold_spe [0]);
-	ARM_MORPH(arm_fill)(0, & gvars.Yold_spe [ALLDX - pixels], pixels);
-
-    // водопад
-	memmove(& gvars.Yold_wtf [0], & gvars.Yold_wtf [pixels], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
-	ARM_MORPH(arm_fill)(0, & gvars.Yold_wtf [ALLDX - pixels], pixels);
-
-   // ландшафт
-	memmove(& gvars.Yold_3dss [0], & gvars.Yold_3dss [pixels], (ALLDX - pixels) * sizeof gvars.Yold_3dss [0]);
-	ARM_MORPH(arm_fill)(0, & gvars.Yold_3dss [ALLDX - pixels], pixels);
 
 #if WITHVIEW_3DSS
 	gxdrawb_t scapedbv;
@@ -5919,18 +5876,6 @@ static void wflshiftleft(uint_fast16_t pixels)
      // заполнение вновь появившегося прямоугольника
  	colpip_fillrect(& scapedbv, scapedbv.dx - pixels, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
 #endif /* WITHVIEW_3DSS */
-
-    // водопад
-    for (y = 0; y < NROWSWFL; ++ y)
-	{
-		memmove(
-				atwflj(0, y),		// to
-				atwflj(pixels, y),	// from
-				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
-		);
-	}
-    // заполнение вновь появившегося прямоугольника
-	colpip_fillrect(& wfjdbv, ALLDX - pixels, 0, pixels, NROWSWFL, display2_bgcolorwfl());
 }
 
 // частота уменьшилась - надо сдвигать картинку вправо
@@ -5942,19 +5887,6 @@ static void wflshiftright(uint_fast16_t pixels)
 
 	if (pixels == 0)
 		return;
-	gxdrawb_t wfjdbv;
-	gxdrawb_initialize(& wfjdbv, ADDR_WFJARRAY, ALLDX, NROWSWFL);
-	// двигаем по частоте буфер усреднения значений WTF и FFT
-	memmove(& gvars.Yold_spe [pixels], & gvars.Yold_spe [0], (ALLDX - pixels) * sizeof gvars.Yold_spe [0]);
-	ARM_MORPH(arm_fill)(0, & gvars.Yold_spe [0], pixels);
-
-    // водопад
-	memmove(& gvars.Yold_wtf [pixels], & gvars.Yold_wtf [0], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
-	ARM_MORPH(arm_fill)(0, & gvars.Yold_wtf [0], pixels);
-
-    // ландшафт
-	memmove(& gvars.Yold_3dss [pixels], & gvars.Yold_3dss [0], (ALLDX - pixels) * sizeof gvars.Yold_3dss [0]);
-	ARM_MORPH(arm_fill)(0, & gvars.Yold_3dss [0], pixels);
 
 #if WITHVIEW_3DSS
 	gxdrawb_t scapedbv;
@@ -5986,19 +5918,6 @@ static void wflshiftright(uint_fast16_t pixels)
 	// заполнение вновь появившегося прямоугольника
 	colpip_fillrect(& scapedbv, 0, 0, pixels, MAX_3DSS_STEP, display2_bgcolorwfl());
 #endif /* WITHVIEW_3DSS */
-
-    // водопад
-	for (y = 0; y < NROWSWFL; ++ y)
-	{
-
-		memmove(
-				atwflj(pixels, y),	// to
-				atwflj(0, y),		// from
-				(ALLDX - pixels) * sizeof (PACKEDCOLORPIP_T)
-			);
-	}
-    // заполнение вновь появившегося прямоугольника
-	colpip_fillrect(& wfjdbv, 0, 0, pixels, NROWSWFL, display2_bgcolorwfl());
 }
 
 // при смене диапазона или частот  при отсутствии необзодимости сохранять часть старого изображения водопада
@@ -6007,9 +5926,6 @@ static void wflshiftright(uint_fast16_t pixels)
 static void wfsetupnew(void)
 {
 	wflclear();	// Очистка водопада
-	avg_clear_spe(); // очищаем буфер усреднения FFT
-	avg_clear_wfl(); // очищаем буфер усреднения водопада
-	avg_clear_3dss(); // очищаем буфер усреднения 3dss
 }
 
 #if ! LINUX_SUBSYSTEM
@@ -6045,12 +5961,13 @@ display2_wfl_init(
 #endif /* !  defined (COLORPIP_SHADED) */
 
 	wflclear();	// Очистка водопада
-	avg_clear_spe();	// Сброс фильтра
-	avg_clear_wfl();	// Сброс фильтра
-	avg_clear_3dss();	// Сброс фильтра 3dss
+//	avg_clear_spe();	// Сброс фильтра
+//	avg_clear_wfl();	// Сброс фильтра
+//	avg_clear_3dss();	// Сброс фильтра 3dss
 #if WITHVIEW_3DSS
 	init_depth_map_3dss();
 #endif /* WITHVIEW_3DSS */
+	scbf.setupnew();
 }
 
 // Получить абсолюьный пиксель горизонтальной позиции для заданой частоты
@@ -6348,7 +6265,7 @@ static void display2_latchcombo(
 	if (wffreqpix == 0 || wfzoompow2 != glob_zoomxpow2)
 	{
 		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
-		scrollbuffs.setupnew();
+		scbf.setupnew();
 //		hclear = 1;
 	}
 	else if (wffreqpix == latched_dm.f0pix)
@@ -6364,12 +6281,12 @@ static void display2_latchcombo(
 			hscroll = (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
 			wflshiftright(hscroll);
-			scrollbuffs.shiftright(hscroll);
+			scbf.shiftright(hscroll);
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
-			scrollbuffs.setupnew();
+			scbf.setupnew();
 //			hclear = 1;
 		}
 	}
@@ -6382,23 +6299,22 @@ static void display2_latchcombo(
 			hscroll = - (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
 			wflshiftleft(- hscroll);
-			scrollbuffs.shiftleft(- hscroll);
+			scbf.shiftleft(- hscroll);
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
-			scrollbuffs.setupnew();
+			scbf.setupnew();
 //			hclear = 1;
 		}
 	}
 
-	// запоминание информации спектра для спектрограммы
-	if (! dsp_getspectrumrow(gvars.spavgarray, alldx, glob_zoomxpow2))
+	// запоминание информации спектра для спектрограммы и 3DSS
+	if (! dsp_getspectrumrow(scbf.spavgarray.bf(), alldx, glob_zoomxpow2))
 		return;	// еще нет новых данных.
 
-	scrollbuffs.shiftrows();
+	scbf.shiftrows();	/* + продвижение по истории */
 
-	wfrow = (wfrow == 0) ? (NROWSWFL - 1) : (wfrow - 1);
 #if WITHVIEW_3DSS
 	row3dss = (row3dss == 0) ? (MAX_3DSS_STEP - 1) : (row3dss - 1);
 #endif /* WITHVIEW_3DSS */
@@ -6410,40 +6326,37 @@ static void display2_latchcombo(
 		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 #endif /* WITHVIEW_3DSS */
 
-	gxdrawb_t wfjdbv;
-	gxdrawb_initialize(& wfjdbv, ADDR_WFJARRAY, ALLDX, NROWSWFL);
 #if WITHVIEW_3DSS
 	gxdrawb_t scapedbv;
 	gxdrawb_initialize(& scapedbv, ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP);
 #endif
-	// запоминание информации спектра для водопада
+	// формирование строки водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
 		const int valwfl = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 		const int val3dss = dsp_mag2y(filter_3dss(x), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		scbf.scrollpwr.poke(x, 0, val3dss);
 	#if LCDMODE_MAIN_L8
-		colpip_putpixel(& wfjdbv, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
-		scrollbuffs.scrollcolor.poke(x, 0, valwfl);
+		//colpip_putpixel(& wfjdbv, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
+		scbf.scrollcolor.poke(x, 0, valwfl);
 		#if WITHVIEW_3DSS
 			colpip_putpixel(ADDR_SCAPEARRAY, ALLDX, NROWSWFL, x, row3dss, val3dss);	// запись в буфер водопада индекса палитры
 			* atskapejval(x, row3dss) = val3dss;
 		#endif /* WITHVIEW_3DSS */
 		#if WITHVIEW_3DSS
 			* atskapejval(x, row3dss) = val3dss;
-			scrollbuffs.scrollpwr.poke(x, 0, val3dss);
 		#endif /* WITHVIEW_3DSS */
 	#else /* LCDMODE_MAIN_L8 */
 		ASSERT(valwfl >= 0);
 		ASSERT(valwfl < (int) ARRAY_SIZE(wfpalette));
-		colpip_putpixel(& wfjdbv, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
-		scrollbuffs.scrollcolor.poke(x, 0, wfpalette [valwfl]);
+		//colpip_putpixel(& wfjdbv, x, wfrow, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
+		scbf.scrollcolor.poke(x, 0, wfpalette [valwfl]);
 		#if WITHVIEW_3DSS
 			ASSERT(val3dss >= 0);
 			ASSERT(val3dss <= INT16_MAX);
 			colpip_putpixel(& scapedbv, x, row3dss, wfpalette [valwfl]);	// запись в буфер водопада цветовой точки
 			* atskapejval(x, row3dss) = val3dss;
-			scrollbuffs.scrollpwr.poke(x, 0, val3dss);
 		#endif /* WITHVIEW_3DSS */
 	#endif /* LCDMODE_MAIN_L8 */
 	}
@@ -6860,12 +6773,12 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 	const uint_fast16_t wfdy = GRID2Y(xBDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t wfdx = GRID2X(xspan);
 	gxdrawb_t wfjdbv;
-	gxdrawb_initialize(& wfjdbv, ADDR_WFJARRAY, ALLDX, NROWSWFL);
+	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
 
 #if ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
-
+	const uint_fast16_t wfrow = scbf.getwfrow();
 	const uint_fast16_t p1h = ulmin16(NROWSWFL - wfrow, wfdy);	// высота верхней части в результируюшем изображении
 	const uint_fast16_t p2h = ulmin16(wfrow, wfdy - p1h);		// высота нижней части в результируюшем изображении
 	const uint_fast16_t p1y = y0pix;
@@ -6881,7 +6794,7 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 				db->cachebase, db->cachesize,
 				db,
 				0, p1y,	// координаты получателя
-				(uintptr_t) ADDR_WFJARRAY, sizeof (* ADDR_WFJARRAY) * GXSIZE(ALLDX, NROWSWFL),	// папаметры для clean
+				wfjdbv.cachebase, wfjdbv.cachesize,	// папаметры для clean
 				& wfjdbv,	// источник
 				0, wfrow,	// координаты окна источника
 				wfdx, p1h, 	// размеры окна источника
@@ -6895,7 +6808,7 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 				db->cachebase, 0 * db->cachesize,
 				db,
 				0, p2y,		// координаты получателя
-				(uintptr_t) ADDR_WFJARRAY, 0 * sizeof (* ADDR_WFJARRAY) * GXSIZE(ALLDX, NROWSWFL),	// размер области 0 - ранее уже вызывали clean
+				wfjdbv.cachebase, wfjdbv.cachesize,	// папаметры для clean
 				& wfjdbv,	// источник
 				0, 0,	// координаты окна источника
 				wfdx, p2h, 	// размеры окна источника
