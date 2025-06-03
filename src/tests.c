@@ -10174,7 +10174,7 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0
+#if 1
 	{
 		rctest();
 	}
