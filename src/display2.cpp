@@ -6872,7 +6872,7 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 		uint_fast16_t x;
 		for (x = 0; x < wfdx; ++ x)
 		{
-			colpip_point(db, x0pix + x, y0pix + y, wfpalette [* atwflj(x, (wfrow + y) % NROWSWFL)]);
+			colpip_point(db, x0pix + x, y0pix + y, wfpalette [scbf.scrollcolor.peek(x, y)]);
 		}
 	}
 
