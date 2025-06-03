@@ -5460,6 +5460,116 @@ static uint_fast8_t wfzoompow2;				// масштаб, с которым выво
 //static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 struct dispmap latched_dm;
 
+template<typename pixelt, uint_fast16_t w, uint_fast16_t h> class scrollb
+{
+	uint_fast16_t & m_scrollh;
+	uint_fast16_t & m_scrollv;
+	pixelt * m_buffer;
+	pixelt * bufferat(uint_fast16_t x, uint_fast16_t y);	/* получить адрес в памяти элемента с координатами x/y */
+
+public:
+	scrollb(uint_fast16_t & scrollh, uint_fast16_t & scrollv, pixelt * buffer) :
+		m_scrollh(scrollh),
+		m_scrollv(scrollv),
+		m_buffer(buffer)
+	{
+
+	}
+	/* + стереть содержимое */
+	void setupnew();
+	/* получить координаты окон в хранимом буфере */
+	uint_fast16_t get_0_3_xy(uint_fast16_t & y) const;
+	uint_fast16_t get_9_12_xy(uint_fast16_t & y) const;
+	uint_fast16_t get_3_6_xy(uint_fast16_t & y) const;
+	uint_fast16_t get_6_9_xy(uint_fast16_t & y) const;
+};
+
+/* Специализация.
+ *  + стереть содержимое
+ * */
+template <>
+void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew()
+{
+	arm_fill_q15(0, m_buffer, ALLDX * NROWSWFL);
+}
+
+/* Специализация.
+ * получить адрес в памяти элемента с координатами x/y
+ * */
+template <>
+uint16_t * scrollb<uint16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+{
+	return & m_buffer [ALLDX * y + x];
+}
+
+/* Специализация.
+ *  + стереть содержимое
+ * */
+template <>
+void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew()
+{
+	// todo: use accelerated graphic functions
+	memset(m_buffer, 0x00, ALLDX * NROWSWFL * sizeof (PACKEDCOLORPIP_T));
+}
+
+/* Специализация.
+ * получить адрес в памяти элемента с координатами x/y
+ * */
+template <>
+PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+{
+	return & m_buffer [GXADJ(ALLDX) * y + x];
+}
+
+template<uint_fast16_t w, uint_fast16_t h> class scrollbf
+{
+	uint_fast16_t centerx;
+	uint_fast16_t centery;
+
+	PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
+	int16_t m_buffscrollpwr [GXSIZE(w, h)];
+
+	scrollb<PACKEDCOLORPIP_T, w, h>  scrollcolor;
+	scrollb<int16_t, w, h>  scrollpwr;
+
+public:
+	scrollbf() :
+		scrollcolor(centerx, centery, m_buffscrollcolor),
+		scrollpwr(centerx, centery, m_buffscrollpwr)
+	{
+
+	}
+	/* + стереть содержимое */
+	void setupnew()
+	{
+		scrollcolor.setupnew();
+		scrollpwr.setupnew();
+	}
+	/* + продвижение по истории */
+	void shiftrows()
+	{
+		// TODO: очистить освобождающиеся зоны
+		centery = centery + h - 1 % h;
+	}
+	// частота увеличилась - надо сдвигать картинку влево
+	// нужно сохрянять часть старого изображения
+	void shiftleft(uint_fast16_t pixels)
+	{
+		// TODO: очистить освобождающиеся зоны
+		centerx = centerx + w - pixels % w;
+	}
+	// частота уменьшилась - надо сдвигать картинку вправо
+	// нужно сохрянять часть старого изображения
+	// в строке wfrow - новое
+	void shiftright(uint_fast16_t pixels)
+	{
+		// TODO: очистить освобождающиеся зоны
+		centerx = centerx + w + pixels % w;
+	}
+
+};
+
+static scrollbf<ALLDX, NROWSWFL> scrollbuffs;
 
 #if WITHVIEW_3DSS
 enum
@@ -6062,6 +6172,7 @@ static void display2_latchcombo(
 	if (wffreqpix == 0 || wfzoompow2 != glob_zoomxpow2)
 	{
 		wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+		scrollbuffs.setupnew();
 //		hclear = 1;
 	}
 	else if (wffreqpix == latched_dm.f0pix)
@@ -6077,10 +6188,12 @@ static void display2_latchcombo(
 			hscroll = (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
 			wflshiftright(hscroll);
+			scrollbuffs.shiftright(hscroll);
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+			scrollbuffs.setupnew();
 //			hclear = 1;
 		}
 	}
@@ -6093,10 +6206,12 @@ static void display2_latchcombo(
 			hscroll = - (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
 			wflshiftleft(- hscroll);
+			scrollbuffs.shiftleft(- hscroll);
 		}
 		else
 		{
 			wfsetupnew(); // стираем целиком старое изображение водопада. в строке 0 - новое
+			scrollbuffs.setupnew();
 //			hclear = 1;
 		}
 	}
@@ -6104,6 +6219,8 @@ static void display2_latchcombo(
 	// запоминание информации спектра для спектрограммы
 	if (! dsp_getspectrumrow(gvars.spavgarray, alldx, glob_zoomxpow2))
 		return;	// еще нет новых данных.
+
+	scrollbuffs.shiftrows();
 
 	wfrow = (wfrow == 0) ? (NROWSWFL - 1) : (wfrow - 1);
 #if WITHVIEW_3DSS
@@ -8149,10 +8266,6 @@ static void smtr_proccess(void)
 
 	dcache_invalidate(tdbv.cachebase, tdbv.cachesize);
 	colpip_fillrect(& tdbv, 0, 0, SM_BG_W, SM_BG_H, display2_getbgcolor());
-#if LINUX_SUBSYSTEM
-	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
-	display2_latchcombo(& tdbv, 0, 0, X2GRID(SM_BG_W), Y2GRID(SM_BG_H), NULL);
-#endif /* LINUX_SUBSYSTEM */
 	pix_display2_smeter15(& tdbv, 0, 0, SM_BG_W, SM_BG_H);
 	dcache_clean(tdbv.cachebase, tdbv.cachesize);
 }
