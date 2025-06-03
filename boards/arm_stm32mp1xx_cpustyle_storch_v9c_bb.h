@@ -705,6 +705,8 @@ void user_uart4_onrxchar(uint_fast8_t c);
 // WITHUART4HW
 // PB8 UART4-RX, PH13 UART4-TX
 // Разъем IDC-40
+// TX = PH13 - LCD_G2 	- XS20-29
+// RX = PB8 - LCD_B6	- XS20-11
 #define HARDWARE_UART4_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (UINT32_C(1) << 13); /* PH13: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (UINT32_C(1) << 8); /* PB8: RX DATA line (2 MHz) - pull-up RX data */  \
