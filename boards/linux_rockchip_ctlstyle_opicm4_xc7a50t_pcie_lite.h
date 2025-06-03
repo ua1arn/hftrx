@@ -89,7 +89,7 @@
 	#define WITHSPECBETA_DEFAULT	30
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
-//	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
+	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1

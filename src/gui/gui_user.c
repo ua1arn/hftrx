@@ -1363,7 +1363,7 @@ static void gui_main_process(void)
 #if WITHGUIDEBUG
 	if (tf_debug->visible)
 	{
-		display_transparency(tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
+		display_transparency(db, tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
 	}
 #endif /* WITHGUIDEBUG */
 }
