@@ -8307,7 +8307,7 @@ uint_fast8_t display_getpage0(void)
 
 COLORPIP_T display2_get_spectrum(int x)
 {
-	return wfpalette [dsp_mag2y(gvars.spavgarray [x], PALETTESIZE - 1, glob_topdb, glob_bottomdb)];
+	return wfpalette [dsp_mag2y(scbf.spavgarray.peek(x, 0), PALETTESIZE - 1, glob_topdb, glob_bottomdb)];
 }
 
 #endif /* WITHTOUCHGUI */
