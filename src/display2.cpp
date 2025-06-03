@@ -5520,6 +5520,45 @@ PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fas
 	return & m_buffer [GXADJ(ALLDX) * y + x];
 }
 
+
+/* Специализация.
+ *  + стереть содержимое
+ * */
+template <>
+void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew()
+{
+	ARM_MORPH(arm_fill)(0, m_buffer, ALLDX * NROWSWFL);
+}
+
+/* Специализация.
+ *  + стереть содержимое
+ * */
+template <>
+void scrollb<FLOAT_t, ALLDX, 1>::setupnew()
+{
+	ARM_MORPH(arm_fill)(0, m_buffer, ALLDX);
+}
+
+/* Специализация.
+ * получить адрес в памяти элемента с координатами x/y
+ * */
+template <>
+FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+{
+	return & m_buffer [ALLDX * y + x];
+}
+
+/* Специализация.
+ * получить адрес в памяти элемента с координатами x/y
+ * */
+template <>
+FLOAT_t * scrollb<FLOAT_t, ALLDX, 1>::bufferat(uint_fast16_t x, uint_fast16_t y)
+{
+	return & m_buffer [x];
+}
+
+////////////////////////////////
+///
 template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 {
 	uint_fast16_t centerx;
@@ -5528,13 +5567,24 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
 
+	FLOAT_t m_avgscec [h];
+	FLOAT_t m_avgwfl [h];
+	FLOAT_t m_avg3dss [h];
+
 	scrollb<PACKEDCOLORPIP_T, w, h>  scrollcolor;
 	scrollb<int16_t, w, h>  scrollpwr;
+	/* one-row objects */
+	scrollb<FLOAT_t, w, 1>  scrollavgspec;
+	scrollb<FLOAT_t, w, 1>  scrollavgwfl;
+	scrollb<FLOAT_t, w, 1>  scrollavg3dss;
 
 public:
 	scrollbf() :
 		scrollcolor(centerx, centery, m_buffscrollcolor),
-		scrollpwr(centerx, centery, m_buffscrollpwr)
+		scrollpwr(centerx, centery, m_buffscrollpwr),
+		scrollavgspec(centerx, centery, m_avgscec),
+		scrollavgwfl(centerx, centery, m_avgwfl),
+		scrollavg3dss(centerx, centery, m_avg3dss)
 	{
 
 	}
@@ -5543,27 +5593,30 @@ public:
 	{
 		scrollcolor.setupnew();
 		scrollpwr.setupnew();
+		scrollavgspec.setupnew();
+		scrollavgwfl.setupnew();
+		scrollavg3dss.setupnew();
 	}
 	/* + продвижение по истории */
 	void shiftrows()
 	{
-		// TODO: очистить освобождающиеся зоны
 		centery = centery + h - 1 % h;
+		// TODO: очистить освобождающиеся зоны
 	}
 	// частота увеличилась - надо сдвигать картинку влево
 	// нужно сохрянять часть старого изображения
 	void shiftleft(uint_fast16_t pixels)
 	{
-		// TODO: очистить освобождающиеся зоны
 		centerx = centerx + w - pixels % w;
+		// TODO: очистить освобождающиеся зоны
 	}
 	// частота уменьшилась - надо сдвигать картинку вправо
 	// нужно сохрянять часть старого изображения
 	// в строке wfrow - новое
 	void shiftright(uint_fast16_t pixels)
 	{
-		// TODO: очистить освобождающиеся зоны
 		centerx = centerx + w + pixels % w;
+		// TODO: очистить освобождающиеся зоны
 	}
 
 };
