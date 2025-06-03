@@ -4713,6 +4713,8 @@ public:
 		// TODO: очистить освобождающиеся зоны
 		scrollcolor.shiftright(w, h, pixels, display2_bgcolorwfl());
 		scrollpwr.shiftright(w, h, pixels, 0);
+		/* one-row objects */
+		spavgarray.shiftright(w, h, pixels, 0);
 		yoldwfl.shiftright(w, h, pixels, 0);
 		yoldspe.shiftright(w, h, pixels, 0);
 		yold3dss.shiftright(w, h, pixels, 0);
