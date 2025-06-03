@@ -10044,6 +10044,112 @@ static void lidar_parse(unsigned char c)
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 
+#if 1
+
+
+// Очереди символов для обмена
+
+// Очередь символов для передачи в канал обмена
+static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
+static u8queue_t rxq;
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart4_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+static void uartX_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmeaX_putc(b [i]);
+
+	va_end(ap);
+}
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart4_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart4_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart4_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart4_enabletx(0);
+	}
+	else
+	{
+		hardware_uart4_enabletx(0);
+	}
+}
+
+static void rctest(void)
+{
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	static uint8_t rxb [512];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	hardware_uart4_initialize(0, 9600, 8, 0, 0);
+	hardware_uart4_set_speed(9600);
+	hardware_uart4_enablerx(1);
+	hardware_uart4_enabletx(0);
+
+	for (;;)
+	{
+		IRQL_t oldIrql;
+		uint_fast8_t f;
+		uint_fast8_t c;
+
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_get(& rxq, & c);
+		LowerIrql(oldIrql);
+		if (f)
+		{
+			PRINTF("R:%02X ", c);
+		}
+	}
+}
+
+#endif
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -10060,6 +10166,11 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 1
+	{
+		rctest();
+	}
+#endif
 #if 0
 	{
 		for (;;)

@@ -56,7 +56,7 @@
 	#define WITHCATSPEED 115200
 #endif /* WITHCAT */
 
-#if WITHMGLOOP
+#if WITHMGLOOP || 1
 	// antenna controller
 	#define WITHUART4HW			1	/* PB8 UART4-RX, PH13 UART4-TX Используется периферийный контроллер последовательного порта UART4 */
 	#define WITHUART4HW_FIFO	1	/* использование FIFO */
