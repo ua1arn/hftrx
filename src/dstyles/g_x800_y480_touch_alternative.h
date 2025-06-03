@@ -97,7 +97,7 @@
 		{	46, 20,	3,	0,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  15,	0,	display2_smeter15, 	& dzi_default, PGALL, },	// Изображение стрелочного прибора
+		{    0, 4,  15,	0,	display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
@@ -114,15 +114,15 @@
 		{	42, 20,	4,	0,	display2_byp4alt,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3,	0,	display2_nr3,		& dzi_default, PGALL, },	// NR : was: AGC
 		{	38, 15,	3,	0,	display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	42,	15,	5,	0,	display2_vfomode5alt,	& dzi_default, PGALL, },	// SPLIT
-		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
-		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
+		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 		{	0,	0,	0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
 #if 1

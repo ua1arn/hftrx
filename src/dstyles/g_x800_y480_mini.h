@@ -84,7 +84,7 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-		{	0,	0,	2,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+		{	0,	0,	2,	0,	display_txrxstate2, * dzi_txrx, PGALL, },
 		{	3,	0,	5,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	4,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	3,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
@@ -111,8 +111,8 @@
 		{	46, 25,	3,	0,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 
 		{	0,	7,	0,	0,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	0,	7,	0,	0,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	21, 10,	3,	0,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	0,	7,	0,	0,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	21, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	3,	0,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	21, 15,	3,	0,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 

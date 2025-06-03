@@ -83,7 +83,7 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-		{	0,	0,	2,	5,	display_txrxstate2, & dzi_default, PGALL, },
+		{	0,	0,	2,	5,	display_txrxstate2, & dzi_txrx, PGALL, },
 		{	3,	0,	5,	5,	display2_ant5,		& dzi_default, PGALL, },
 		{	9,	0,	4,	5,	display2_att4,		& dzi_default, PGALL, },
 		{	14,	0,	3,	5,	display2_preovf3,	& dzi_default, PGALL, },
@@ -103,8 +103,8 @@
 		{	26,	20,	3,	5,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
 
 		{	0,	4,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	0,	4,	0,	0,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	21,	8,	3,	5,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	0,	4,	0,	0,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	21,	8,	3,	5,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	21,	12,	3,	5,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	26,	8,	3,	5,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
 
@@ -113,7 +113,7 @@
 
 		{	5,	16,	3,	5,	display2_vfomode3,	& dzi_default, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
 		{	9,	16,	0,	5,	display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
-		{	21,	16,	3,	5,	display2_mode3_b,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	21,	16,	3,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		{	0,	20,	0,	0,	display2_legend,	& dzi_default, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра

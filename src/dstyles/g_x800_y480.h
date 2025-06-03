@@ -78,7 +78,7 @@
 		{	0,	0, 	7, 4, display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 4, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	4, 4, display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
-		{	15,	0,	2, 4, display_txrxstate2, 	& dzi_default, PGALL, },
+		{	15,	0,	2, 4, display_txrxstate2, 	& dzi_txrx, PGALL, },
 		{	18, 0,	3, 4, display2_atu3,		& dzi_default, PGALL, },	// TUNER state (optional)
 		{	22, 0,	3, 4, display2_byp3,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
 		{	26,	0,	5, 4, display2_ant5,		& dzi_default, PGALL, },
@@ -86,7 +86,7 @@
 		{	37,	0,	3, 4, display2_preovf3,		& dzi_default, PGALL, },
 	#if WITHBARS
 		{   0, 	4,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	4,	15, 20, display2_smeter15, 	& dzi_default, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	4,	15, 20, display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	4,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
@@ -95,7 +95,7 @@
 	#endif /* WITHAFSPECTRE */
 
 		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	15,	6,	21, 13, display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	15,	6,	21, 13, display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 4, display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
 		{	41,	4,	9, 4, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
@@ -110,8 +110,8 @@
 
 		{	15, 20,	3, 4, display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 4, display2_vfomode3,	& dzi_default, PGALL, },	// SPL
-		{	24,	20,	12, 4, display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
-		{	37, 20,	3, 4, display2_mode3_b,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+		{	24,	20,	12, 4, display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
+		{	37, 20,	3, 4, display2_mode3_b,		& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	3, 4, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 		{	45,	20,	4, 4, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 

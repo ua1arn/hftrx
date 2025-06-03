@@ -49,7 +49,7 @@
 		{
 				{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 			{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-			{	0, 0,	2,	0,	display_txrxstate2, & dzi_default, REDRSUBSET(DPAGE0), },
+			{	0, 0,	2,	0,	display_txrxstate2, & dzi_txrx, REDRSUBSET(DPAGE0), },
 			{	3, 0,	3,	0,	display2_voxtune3,	& dzi_default, REDRSUBSET(DPAGE0), },
 			{	7, 0,	4,	0,	display2_att4,		& dzi_default, REDRSUBSET(DPAGE0), },
 			{	12, 0,	3,	0,	display2_preovf3,	& dzi_default, REDRSUBSET(DPAGE0), },
@@ -57,11 +57,11 @@
 			{	19, 0,	3,	0,	display2_rxbw3,		& dzi_default, REDRSUBSET(DPAGE0), },
 
 			{	0, 8,	0,	0,	display_freqXbig_a, & dzi_default, REDRSUBSET(DPAGE0), },
-			{	19, 8,	3,	0,	display2_mode3_a,	& dzi_default,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	19, 8,	3,	0,	display2_mode3_a,	& dzi_modea,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	0, 18,	0,	0,	display_vfomode5,	& dzi_default, REDRSUBSET(DPAGE0), },	// SPLIT
-			{	5, 18,	0,	0,	display2_freqX_b,	& dzi_default, REDRSUBSET(DPAGE0), },
-			{	19, 18,	3,	0,	display2_mode3_b,	& dzi_default,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
+			{	5, 18,	0,	0,	display2_freqX_b,	& dzi_freqb, REDRSUBSET(DPAGE0), },
+			{	19, 18,	3,	0,	display2_mode3_b,	& dzi_modeb,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
 
 			{	1, 24,	0,	0,	display2_bars,		& dzi_default, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
 		#if defined (RTC1_TYPE)
@@ -153,7 +153,7 @@
 		static const dzone_t dzones [] =
 		{
 				{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-			{	2,	0,	display_txrxstate2, & dzi_default, PGALL, },
+			{	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
 			{	3,	0,	display2_voxtune3,	& dzi_default, PGALL, },
 			{	7,	0,	display2_att4,		& dzi_default, PGALL, },
 			{	12, 0,	display_pre3,		& dzi_default, PGALL, },
@@ -165,14 +165,14 @@
 			{	29, 0,	display2_rxbw3,		& dzi_default, PGALL, },
 
 			{	0,	8,	display_freqXbig_a, & dzi_default, PGALL, },
-			{	29, 8,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+			{	29, 8,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
 			{	0,	15,	display_vfomode5,	& dzi_default, PGALL, },	// SPLIT
 			{	6,	15,	display2_freqX_b,	& dzi_default, PGALL, },
 		#if WITHUSEDUALWATCH
 			{	25, 15,	display2_mainsub3,	& dzi_default, PGNOMEMU, },	// main/sub RX
 		#endif /* WITHUSEDUALWATCH */
-			{	29, 15,	display2_mode3_b,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+			{	29, 15,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 			//---
 			{	0,	18,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
 		#if WITHIF4DSP

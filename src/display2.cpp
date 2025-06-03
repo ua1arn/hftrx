@@ -88,6 +88,8 @@ static lv_style_t xxscopestyle;
 #define NOBJ 32
 static lv_obj_t * img1_wfls [NOBJ];
 static unsigned img1_wflsn;
+static lv_obj_t * lbl_smeters [NOBJ];
+static unsigned lbl_smetersn;
 static lv_obj_t * lbl_txrxs [NOBJ];
 static unsigned lbl_txrxsn;
 static lv_obj_t * lbl_freqas [NOBJ];
@@ -257,6 +259,20 @@ static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsign
 	return lbl;
 }
 
+static lv_obj_t * dzi_create_smeter(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+{
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	if (lbl_smetersn < NOBJ)
+	{
+		lbl_smeters [lbl_smetersn ++] = lbl;
+	}
+	return lbl;
+}
+
+
 static lv_obj_t * dzi_create_gcombo(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
 	lv_obj_t * const lbl = lv_img_create(parent);
@@ -352,6 +368,19 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 		}
 	}
 #endif /* WITHLVGL && WITHSPECTRUMWF */
+
+	if (lbl_smetersn)
+	{
+		wfl_proccess();
+		unsigned i;
+		for (i = 0; i < lbl_smetersn; ++ i)
+		{
+			lv_obj_t * const obj = lbl_smeters [i];
+
+			lv_obj_invalidate(obj);
+
+		}
+	}
 }
 
 #define LVCREATE(fn) (fn)
@@ -384,6 +413,12 @@ static dzitem_t dzi_txrx =
 {
 	.lvelementcreate = LVCREATE(dzi_create_txrx),
 	.id = "txrx"
+};
+
+static dzitem_t dzi_smeter =
+{
+	.lvelementcreate = LVCREATE(dzi_create_smeter),
+	.id = "smeter"
 };
 
 static dzitem_t dzi_gcombo =

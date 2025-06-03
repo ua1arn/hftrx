@@ -90,7 +90,7 @@ static const dzone_t dzones [] =
 	//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 	//{	10,	0,	4,	0,	display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
-	//{	15,	0,	2,	0,	display_txrxstate2, & dzi_default, PGALL, },
+	//{	15,	0,	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
 	{	20,	0,	4,	4,	display2_att4,		& dzi_default, PGALL, },
 	{	25,	0,	3,	4,	display2_preovf3,	& dzi_default, PGALL, },
 
@@ -103,7 +103,7 @@ static const dzone_t dzones [] =
 
 #if WITHBARS
 	{   0, 	4,  0,	0,	display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-	{   0, 	4,	15,	20,	display2_smeter15, 	& dzi_default, PGALL, },	// Изображение стрелочного прибора
+	{   0, 	4,	15,	20,	display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 	{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
@@ -195,7 +195,7 @@ static const dzone_t dzones [] =
 	// Второй дисплей с отличающимся дизайном
 	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_default, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
 	{	0,	20,	BDTH_ALLRX,	DLEB - 20,	display2_gcombo,	& dzi_default, PGALL, },// подготовка изображения спектра

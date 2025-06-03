@@ -101,20 +101,20 @@
 		{	42, 20,	4,	0,	display2_byp4alt,		& dzi_default, PG0, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_default, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
+		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_freqa, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PG0, },	// SSB/CW/AM/FM/...
 		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_default, PG0, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3,	0,	display2_nr3,		& dzi_default, PG0, },	// NR : was: AGC
 		{	38, 15,	3,	0,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	42,	15,	5,	0,	display2_vfomode5alt,	& dzi_default, PG0, },	// SPLIT
 		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
-		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
+		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
 
 		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,	& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  15,	0,	display2_smeter15, 		& dzi_default, PG0, },	// Изображение стрелочного прибора
+		{    0, 4,  15,	0,	display2_smeter15, 		& dzi_smeter, PG0, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
