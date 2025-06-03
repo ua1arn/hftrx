@@ -2180,14 +2180,13 @@ static void window_utilites_process(void)
 
 // *********************************************************************************************************************************************************************
 
-// переделать полностью
 static void window_swrscan_process(void)
 {
 #if WITHSWRSCAN
-	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
+	uint_fast16_t gr_w = 500, gr_h = 200;							// размеры области графика
 	uint_fast8_t interval = 20;
-	uint_fast16_t x0 = edge_step + interval * 2, y0 = edge_step + gr_h - interval * 2;	// нулевые координаты графика
-	uint_fast16_t x1 = x0 + gr_w - interval * 4, y1 = gr_h - y0 + interval * 2;			// размеры осей графика
+	uint_fast16_t x0 = interval, y0 = gr_h;							// нулевые координаты графика
+	uint_fast16_t x1 = x0 + gr_w - interval * 2, y1 = gr_h - y0;	// размеры осей графика
 	static uint_fast16_t mid_w = 0, freq_step = 0;
 	static uint_fast16_t i, current_freq_x;
 	static uint_fast32_t lim_bottom, lim_top, swr_freq, backup_freq;
@@ -2199,8 +2198,7 @@ static void window_swrscan_process(void)
 	static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
 	static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
 	window_t * const win = get_win(WINDOW_SWR_SCANNER);
-	const gxdrawb_t * db = gui_get_drawbuf();
-	uint_fast8_t averageFactor = 3;
+	const uint8_t averageFactor = 3;
 
 	if (win->first_call)
 	{
@@ -2218,7 +2216,7 @@ static void window_swrscan_process(void)
 		mid_w = 0 + gr_w / 2;
 		btn_swr_start = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
 		btn_swr_start->x1 = mid_w - btn_swr_start->w - interval;
-		btn_swr_start->y1 = 0 + gr_h + 0;
+		btn_swr_start->y1 = gr_h + interval;
 		strcpy(btn_swr_start->text, "Start");
 		btn_swr_start->visible = VISIBLE;
 
@@ -2235,13 +2233,13 @@ static void window_swrscan_process(void)
 		{
 			label_t * lbl_swr_bottom = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_swr_bottom");
 			local_snprintf_P(lbl_swr_bottom->text, ARRAY_SIZE(lbl_swr_bottom->text), PSTR("%dk"), lim_bottom / 1000);
-			lbl_swr_bottom->x = x0 - get_label_width(lbl_swr_bottom) / 2;
+			lbl_swr_bottom->x = x0;
 			lbl_swr_bottom->y = y0 + get_label_height(lbl_swr_bottom) * 2;
 			lbl_swr_bottom->visible = VISIBLE;
 
 			label_t * lbl_swr_top = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_swr_top");
 			local_snprintf_P(lbl_swr_top->text, ARRAY_SIZE(lbl_swr_top->text), PSTR("%dk"), lim_top / 1000);
-			lbl_swr_top->x = x1 - get_label_width(lbl_swr_bottom) / 2;
+			lbl_swr_top->x = x1 - get_label_width(lbl_swr_bottom);
 			lbl_swr_top->y = lbl_swr_bottom->y;
 			lbl_swr_top->visible = VISIBLE;
 
@@ -2255,7 +2253,7 @@ static void window_swrscan_process(void)
 		{	// если текущая частота не входит ни в один из любительских диапазонов, вывод сообщения об ошибке
 			local_snprintf_P(lbl_swr_error->text, ARRAY_SIZE(lbl_swr_error->text), PSTR("%dk not into HAM bands"), backup_freq / 1000);
 			lbl_swr_error->x = mid_w - get_label_width(lbl_swr_error) / 2;
-			lbl_swr_error->y = (0 + gr_h) / 2;
+			lbl_swr_error->y = gr_h / 2;
 			lbl_swr_error->visible = VISIBLE;
 			btn_swr_start->state = DISABLED;
 		}
@@ -2345,37 +2343,40 @@ static void window_swrscan_process(void)
 	if (! win->first_call)
 	{
 		// отрисовка фона графика и разметки
-		uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
-		colpip_line(db, gr_x, gr_y, gr_x, win->y1 + y1, COLORPIP_WHITE, 0);
-		colpip_line(db, gr_x, gr_y, win->x1 + x1, gr_y, COLORPIP_WHITE, 0);
+		gui_drawline(x0, y0, x0, y1, COLORPIP_WHITE);
+		gui_drawline(x0, y0, x1, y0, COLORPIP_WHITE);
 
 		char buf [5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-		colpip_string3_tbg(db, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
+		uint8_t charw = gothic_11x13.width, charh = gothic_11x13.height;
+
+		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
+		gui_print_UB(x0 - charw, y0 - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
+
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
 			if (yy < 0)
 				break;
 
-			colpip_line(db, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORPIP_DARKGREEN, 0);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-			colpip_string3_tbg(db, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
+			gui_drawline(x0 + 1, yy, x1, yy, COLORPIP_DARKGREEN);
+			local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
+			gui_print_UB(x0 - charw, yy - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
 		}
 
 		if (lbl_swr_error->visible)				// фон сообщения об ошибке
 		{
-			colpip_fillrect(db, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORPIP_RED);
+			int lx1 = 0, ly1 = gr_h / 2 - 3, lx2 = gr_w - 1, ly2 = ly1 + get_label_height(lbl_swr_error) + 4;
+			gui_drawrect(lx1, ly1, lx2, ly2, COLORPIP_RED, 1);
 		}
 		else									// маркер текущей частоты
 		{
-			colpip_line(db, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORPIP_RED, 0);
+			gui_drawline(x0 + current_freq_x, y0, x0 + current_freq_x, y1, COLORPIP_RED);
 		}
 
 		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
-				colpip_line(db, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORPIP_YELLOW, 1);
+				gui_drawline(x0 + j - 2, y0 - y_vals [j - 2], x0 + j - 1, y0 - y_vals [j - 1], COLORPIP_YELLOW);
 		}
 	}
 #endif /* WITHSWRSCAN */

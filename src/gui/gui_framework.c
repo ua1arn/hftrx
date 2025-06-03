@@ -2027,4 +2027,14 @@ void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color)
 	colpip_point(gdb, xp, yp, color);
 }
 
+void gui_print_UB(uint16_t x, uint16_t y, const char * text, const UB_Font * font, COLORPIP_T color)
+{
+	window_t * win = get_win(check_for_parent_window());
+
+	const uint_fast16_t xn = x + win->draw_x1;
+	const uint_fast16_t yn = y + win->draw_y1;
+
+	UB_Font_DrawString(gdb, xn, yn,	text, font, color);
+}
+
 #endif /* WITHTOUCHGUI */
