@@ -86,6 +86,14 @@ static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 
 #define NOBJ 32
+
+static lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
+static void wfl_proccess(void);	/* построить растр с водопадом и спектром */
+
+static lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
+static void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
+
+
 static lv_obj_t * img1_wfls [NOBJ];
 static unsigned img1_wflsn;
 static lv_obj_t * lbl_smeters [NOBJ];
@@ -261,14 +269,19 @@ static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsign
 
 static lv_obj_t * dzi_create_smeter(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
 {
-	lv_obj_t * const lbl = lv_label_create(parent);
+	lv_obj_t * const lbl = lv_img_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxscopestyle, 0);
 
+#if WITHLVGL && WITHBARS
+	lv_img_set_src(lbl, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
 	if (lbl_smetersn < NOBJ)
 	{
 		lbl_smeters [lbl_smetersn ++] = lbl;
 	}
+#endif /* WITHLVGL && WITHBARS */
+
 	return lbl;
 }
 
@@ -371,7 +384,7 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 
 	if (lbl_smetersn)
 	{
-		wfl_proccess();
+		smtr_proccess();
 		unsigned i;
 		for (i = 0; i < lbl_smetersn; ++ i)
 		{
@@ -8089,18 +8102,18 @@ COLORPIP_T display2_get_spectrum(int x)
 
 #endif /* WITHTOUCHGUI */
 
-#if WITHLVGL && WITHSPECTRUMWF
+#if LCDMODE_LTDC && WITHLVGL && WITHSPECTRUMWF
 
 LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_ALLRX), LV_COLOR_FORMAT_ARGB8888);
 
 // подготовка lv_draw_buf_t с изображением спектра/водопада
-lv_draw_buf_t * wfl_get_draw_buff(void)
+static lv_draw_buf_t * wfl_get_draw_buff(void)
 {
 	return & wfl_buff;
 }
 
 /* Обновить содержимое lv_draw_buf_t - растр с водопадом и спектром */
-void wfl_proccess(void)
+static void wfl_proccess(void)
 {
 	pipparams_t pip;
 	display2_getpipparams(& pip);
@@ -8116,4 +8129,31 @@ void wfl_proccess(void)
 	display2_gcombo(& tdbv, 0, 0, X2GRID(pip.w), Y2GRID(pip.h), NULL);
 	dcache_clean(tdbv.cachebase, tdbv.cachesize);
 }
-#endif /* WITHLVGL && WITHSPECTRUMWF */
+#endif /* LCDMODE_LTDC && WITHLVGL && WITHSPECTRUMWF */
+
+#if LCDMODE_LTDC && WITHLVGL && WITHBARS
+
+LV_DRAW_BUF_DEFINE_STATIC(smtr_buff, SM_BG_W, SM_BG_H, LV_COLOR_FORMAT_ARGB8888);
+
+// подготовка lv_draw_buf_t с изображением спектра/водопада
+static lv_draw_buf_t * smtr_get_draw_buff(void)
+{
+	return & smtr_buff;
+}
+
+/* Обновить содержимое lv_draw_buf_t - s-meter */
+static void smtr_proccess(void)
+{
+    gxdrawb_t tdbv;
+    gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) smtr_buff.data, SM_BG_W, SM_BG_H);
+
+	dcache_invalidate(tdbv.cachebase, tdbv.cachesize);
+	colpip_fillrect(& tdbv, 0, 0, SM_BG_W, SM_BG_H, display2_getbgcolor());
+#if LINUX_SUBSYSTEM
+	// В не-linux версии получение информации о спктре происходит вызовом DPC в главном цикле с частотой FPS
+	display2_latchcombo(& tdbv, 0, 0, X2GRID(SM_BG_W), Y2GRID(SM_BG_H), NULL);
+#endif /* LINUX_SUBSYSTEM */
+	pix_display2_smeter15(& tdbv, 0, 0, SM_BG_W, SM_BG_H);
+	dcache_clean(tdbv.cachebase, tdbv.cachesize);
+}
+#endif /* LCDMODE_LTDC && WITHLVGL && WITHBARS */
