@@ -96,7 +96,6 @@ static uint_fast8_t		glob_fanflag;	/* включение вентилятора 
 
 /* Следующие два параметра совместно выбирают фильтры в случае использования отдельных фильтров для LSB и USB */
 static uint_fast16_t 	glob_filter;		// код фильтра ПЧ. 16 бит из-за использования пары ADG714 в одной из конфигураций
-static uint_fast8_t 	glob_if4lsb;	/* Выбор фильтра ПЧ или боковой в детекторе приёмника прямого преобразования */
 
 static uint_fast8_t 	glob_notch;
 static uint_fast8_t 	glob_notchnarrow;
@@ -2657,195 +2656,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
-#elif ARM_CTLSTYLE_V7A_H_INCLUDED		//  новая плата с двумя аттенюаторами, без или с FM, с УВЧ - совмещённая с синтезатором
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-/* ctl register interface */
-
-static void 
-//NOINLINEAT
-prog_ctldacreg(void)	// ARM_CTLSTYLE_V7A_H_INCLUDED
-{
-	const spitarget_t target = targetctldac1;
-#if defined (LO1MODE_HYBRID) || defined (LO1MODE_FIXSCALE)
-	const uint_fast8_t vcomask = (1U << glob_vco);
-#else
-	const uint_fast8_t vcomask = 0;
-#endif
-
-	prog_select(target);	/* start sending data to target chip */
-
-	/* регистр управления (74HC595), расположенный на плате синтезатора */
-	prog_bit(target, ! glob_reset_n);		/* d7 in control register - ad9951 RESET */
-	prog_bit(target, 0x00 /* glob_bglight */);				/* d6 in control register - LD light ON */
-	prog_val(target, vcomask, 6);	/* d0..d5 in control register */
-
-	prog_unselect(target);	/* done sending data to target chip */
-
-
-}
-
-static void 
-//NOINLINEAT
-prog_rxctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetrxc1;
-	const uint_fast8_t fm = glob_af_input == BOARD_DETECTOR_FM;	// FM mode activated
-	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
-
-	prog_select(target);	/* start sending data to target chip */
-
-	/* учет диапазона - на 0-м диапазоне обход УВЧ включается принудительно */
-	prog_val(target, glob_bandf, 4);			// D4..D7: band select код выбора диапазонного фильтра
-	prog_bit(target, 0 != (glob_att & 0x02));	/* D3: second stage (20 dB) atteuator on */
-	prog_bit(target, 0 != (glob_att & 0x01));	/* D2: 10 dB ATTENUATOR RELAYS POWER */
-	prog_bit(target, glob_preamp && (glob_bandf != 0));				/* D1: RF amplifier */
-	prog_bit(target, glob_tx);					/* D0: TX mode: 1 - TX режим передачи */
-
-	// programming RX control registers
-	// filter codes:
-	// 0x06 - fil3 3.1 kHz
-	// 0x01 - fil2 2.7 kHz
-	// 0x00 - fil0 9.0 kHz
-	// 0x02 - fil1 6.0 kHz
-	// 0x03 - fil5 0.5 kHz
-	// 0x04 - fil2 15 kHz (bypass)
-	// 0x05 - unused (9 kHz filter in FM strip)
-	// 0x07 - unused (6 kHz filter in FM strip)
-	prog_val(target, glob_filter, 3);	/* D5, D6, D7: select IF filter, wrong order of bits */
-	prog_bit(target, glob_tx);			/* D4: TX mode: 1 - TX режим передачи */
-	prog_bit(target, glob_tx ? 0x00 : am);		/* D3: AM DETECTOR POWER */
-	prog_bit(target, glob_tx ? 0x00 : fm);		/* D2: FM DETECTOR POWER */
-	prog_bit(target, (glob_boardagc == BOARD_AGCCODE_OFF));	/* D1: AGC OFF */
-	prog_bit(target, 0x00);	/* D0 unused output  */
-
-	prog_val(target, glob_boardagc, 3);	/* D5,D6,D7:  AGC code (delay) */
-	prog_val(target, glob_tx ? BOARD_DETECTOR_MUTE : glob_af_input, 2);	/* D3..D4: AF input selection 0-ssb, 1-am, 2-mute, 3-fm */
-	prog_bit(target, glob_tx && glob_txcw);	/* D2: DDB_MOD_UNBALANCE  */
-	prog_bit(target, glob_mikemute);	/* D1: MIKE_AMP_MUTE  */
-	prog_bit(target, fm || am);	// D0: switch lo4 off in AM and FM modes
-
-	prog_unselect(target);	/* done sending data to target chip */
-
-
-}
-
-#elif CTLREGSTYLE_DISCO32
-	// FPGA_V2
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-static void 
-prog_ctrlreg(uint_fast8_t plane)
-{
-}
-
-#elif CTLREGSTYLE_WDKP
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	//const spitarget_t target = targetctl1;
-}
-
-#elif CTLREGMODE_4Z5KY_V1
-
-	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-/* Синтезатор 4Z5KY с двухстрочником http://ur5yfv.ucoz.ua/forum/28-19-2 */
-
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	const spitarget_t target = targetctl1;
-	rbtype_t rbbuff [2] = { 0 };
-
-	/* регистр управления (74HC595), дальше от процессора */
-	RBBIT(017, glob_att);			/* pin 07 ATTEN */
-	RBBIT(016, glob_preamp);		/* pin 06 PRE */
-	RBBIT(015, glob_af_input == BOARD_DETECTOR_FM);	/* pin 05 reserved */
-	RBBIT(014, glob_affilter);		/* pin 04 NARROW */
-	RBBIT(013, glob_notch);			/* pin 03 NOTCH */
-	RBBIT(012, glob_vox);			/* pin 02 VOX */
-	RBBIT(011, 0);					/* pin 01 COMP */
-	RBBIT(010, glob_tx);			/* pin 15 TX (was: reserved) */
-
-	/* регистр управления (74HC595), ближе к процессору */
-	//RBVAL(04, bandcode, 4);		/* pin 07:04: BAND3:BAND0 */
-	RBBIT(007, glob_bandf & 0x01);	/* pin 07 - BAND0 */
-	RBBIT(006, glob_bandf & 0x02);	/* pin 06 - BAND1 */
-	RBBIT(005, glob_bandf & 0x04);	/* pin 05 - BAND2 */
-	RBBIT(004, glob_bandf & 0x08);	/* pin 04 - BAND3 */
-
-	RBBIT(003, ! glob_filter);		/* pin 03 - включение широкого фильтра по ПЧ, was: NOR */
-	RBBIT(002, glob_af_input == BOARD_DETECTOR_AM);	/* pin 02 - REVERS AM MODE */
-	RBBIT(001, glob_filter);		/* pin 01 - включение узкого фильтра по ПЧ, was: +CW */
-	RBBIT(000, glob_tx && glob_txcw);/* pin 15 - передача в режиме телеграфа, was: reserved */
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-
-#elif CTLREGMODE_UA3REO_EXTBOARD
-
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
-
-static void
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	enum
-	{
-		HARDWARE_OPA2674I_FULLPOWER = 0x03,
-		HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-		HARDWARE_OPA2674I_SHUTDOWN = 0x00
-	};
-	static const uint_fast8_t powerxlat [] =
-	{
-		HARDWARE_OPA2674I_IDLEPOWER,
-		HARDWARE_OPA2674I_POWERCUTBACK,
-		HARDWARE_OPA2674I_FULLPOWER,
-	};
-	const uint_fast8_t txgated = glob_tx && glob_txgate;
-
-	{
-		spitarget_t target = targetextctl;
-		rbtype_t rbbuff [3] = { 0 };
-		const uint_fast8_t att_db = revbits8(glob_attvalue) >> 3;
-		const uint_fast8_t bpf1 = glob_bandf == 5 || glob_bandf == 6;
-		const uint_fast8_t bpf2 = glob_bandf >= 1 || glob_bandf <= 4;
-
-		/* U7 */
-		RBBIT(027, ! glob_bandf);	// LPF_ON
-		RBBIT(026, 1);	// LNA always on
-		RBBIT(025, 0);	// ATT_ON_0.5
-		RBVAL(020, att_db, 5);
-
-		/* U1 */
-		RBBIT(017, 0);	// not use
-		RBVAL(015, bpf2 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
-		RBBIT(014, ! bpf2);
-		RBVAL(012, bpf1 ? revbits8(bpf_xlat [glob_bandf - 1]) >> 6 : 0 , 2);
-		RBBIT(011, ! bpf1);
-		RBBIT(010, bpf1 || bpf2);
-
-		/* U3 */
-		RBBIT(007, 0);	// not use
-		RBBIT(006, glob_tx);	// tx amp
-		RBBIT(005, 0);	// not use
-		RBBIT(004, 0);	// not use
-		RBBIT(003, 0);	// not use
-		RBBIT(002, 0);	// not use
-		RBBIT(001, 0);	// not use
-		RBBIT(000, glob_tx);	// tx & ant 1-2
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
 #elif CTLREGMODE_ZYNQ_4205
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -3304,16 +3114,6 @@ board_set_pabias(uint_fast8_t n)
 	}
 }
 
-void 
-board_set_filter(uint_fast16_t n)
-{
-	if (glob_filter != n)
-	{
-		glob_filter = n;
-		board_ctlreg1changed();
-	}
-}
-
 /* установить выходную мощность BOARDPOWERMIN..BOARDPOWERMAX */
 void 
 board_set_txlevel(uint_fast8_t n)
@@ -3334,18 +3134,6 @@ board_set_maxlabdac(uint_fast16_t n)
 	if (glob_maxlabdac != n)
 	{
 		glob_maxlabdac = n;
-		board_ctlreg1changed();
-	}
-}
-
-/* не нулевой аргумент - прием нижней боковой в приемнике прямого преобразования */
-void
-board_set_if4lsb(uint_fast8_t v)	/* требуется для приемников прямого преобразования */
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_if4lsb != n)
-	{
-		glob_if4lsb = n;
 		board_ctlreg1changed();
 	}
 }

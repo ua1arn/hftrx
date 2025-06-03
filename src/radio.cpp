@@ -11777,13 +11777,7 @@ updateboardZZZ(
 				board_set_tx_bpsk_enable(pamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
 				board_set_mode_wfm(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
 			#endif /* WITHDSPEXTDDC */
-		#else /* WITHIF4DSP */
-			board_set_if4lsb(mixXlsbs [4]);	/* для прямого преобразования - управление детектором - или выбор фильтра LSB для конфигураций с фиксированным 3-м гетеродином */
-			//board_set_detector((mute && ! gtx) ? BOARD_DETECTOR_MUTE : pamodetempl->detector [gtx]);		// режим берётся из gsubmode
-			board_set_detector(sleepflag ? BOARD_DETECTOR_MUTE : pamodetempl->detector [gtx]);
 		#endif /* WITHIF4DSP */
-
-		board_set_filter(workfilter->code [gtx]);	/* В случае WITHDUALFLTR формирование управляющего слова в зависимости от mixXlsbs [4] происходит при выдаче управляющих кодов в аппаратуру. */
 
 		#if WITHTX
 			/* переносить эти параметры под условие перенастройки в режиме приёма не стал, так как меню может быть вызвано и при передаче */
@@ -12136,17 +12130,6 @@ updateboardZZZ(
 			//const int_fast32_t freq = gfreqs [bi];
 
 		}
-		//local_delay_ms(20.0);		/* подождать установки частоты */
-	#if ! WITHIF4DSP
-		//board_set_detector((mute && ! gtx) ? BOARD_DETECTOR_MUTE : pamodetempl->detector [gtx]);		// режим берётся из gsubmode
-		board_set_detector(sleepflag ? BOARD_DETECTOR_MUTE : pamodetempl->detector [gtx]);	// включить звук, если приём
-		board_update();		/* вывести забуферированные изменения в регистры */
-	#endif /* WITHIF4DSP */
-			// todo: убрать после решения проблем с переходом между приёмом и передачей в FPGA
-	#if WITHTX
-		//board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
-		//board_update();		/* вывести забуферированные изменения в регистры */
-	#endif /* WITHTX */
 	}
 
 	/* после всех перенастроек включаем передатчик */
@@ -17975,9 +17958,10 @@ modifysettings(
 static void
 uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 {
+#if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-
+#endif /* LCDMODE_LTDC */
 	uint_fast16_t menupos;
 #if WITHAUTOTUNER
 	if (reqautotune != 0)
@@ -19218,8 +19202,10 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
+#if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+#endif /* LCDMODE_LTDC */
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
@@ -19589,6 +19575,10 @@ keyboard_test(void)
 /* вызывается при разрешённых прерываниях. */
 void initialize2(void)
 {
+#if LCDMODE_LTDC
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+#endif /* LCDMODE_LTDC */
 	uint_fast8_t mclearnvram;
 
 
@@ -19615,15 +19605,13 @@ void initialize2(void)
 
 	if (keyboard_test() == 0)
 	{
-		gxdrawb_t dbv;
-		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		static const char msg  [] = "KBD fault";
 #if WITHLCDBACKLIGHT
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
-		display2_fillbg();
+		display2_fillbg(& dbv);
 		display_at_P(& dbv, 0, 0, msg);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
@@ -19643,8 +19631,6 @@ void initialize2(void)
 	// проверить работу - потом закомментарит.
 	if (sizeof (struct nvmap) > (NVRAM_END + 1))
 	{
-		gxdrawb_t dbv;
-		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		// в случае отсутствия превышения размера этот кусок и переменная не комптилируются
 		static const char msg  [] = "TOO LARGE nvmap";
 		void wrong_NVRAM_END(void);
@@ -19654,7 +19640,7 @@ void initialize2(void)
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
 
-		display2_fillbg();
+		display2_fillbg(& dbv);
 		display_menu_digit(& dbv, 0, 0, sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(& dbv, 0, 1, msg);
 		colmain_nextfb();
@@ -19721,7 +19707,7 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
-			display2_fillbg();
+			display2_fillbg(& dbv);
 			display_at_P(db, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
@@ -19762,9 +19748,9 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
-			display2_fillbg();
-			display_menu_digit(0, 0, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(db, 0, 1, PSTR("NVRAM fault"));
+			display2_fillbg(& dbv);
+			display_menu_digit(& dbv, 0, 0, NVRAM_END + 1, 9, 0, 0);
+			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 
 			PRINTF(PSTR("NVRAM fault1\n"));
@@ -19793,15 +19779,13 @@ void initialize2(void)
 		if (mclearnvram == 1)
 		{
 			uint_fast8_t kbch;
-			gxdrawb_t dbv;
-			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
-			display2_fillbg();
+			display2_fillbg(& dbv);
 			display_at_P(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
@@ -19831,8 +19815,6 @@ void initialize2(void)
 
 		if (verifynvrampattern())
 		{
-			gxdrawb_t dbv;
-			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
@@ -19842,7 +19824,7 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
-			display2_fillbg();
+			display2_fillbg(& dbv);
 			display_menu_digit(& dbv, 0, 1, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
@@ -21122,8 +21104,10 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
+#if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+#endif /* LCDMODE_LTDC */
 	uint_fast16_t el;
 
 	for (el = index; el <= index + cnt; el ++)
@@ -21144,8 +21128,10 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
+#if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+#endif /* LCDMODE_LTDC */
 	const struct paramdefdef * const pd = menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{

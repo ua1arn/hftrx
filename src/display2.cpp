@@ -444,8 +444,9 @@ static void display2_preparebg(const gxdrawb_t * db, uint_fast8_t xcell, uint_fa
 {
 #if WITHLVGL
 	return;
-#else
+#elif WITHLTDCHW
 	colpip_fillrect(db, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+#else
 #endif
 }
 
@@ -457,8 +458,9 @@ static void display2_showmain(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 #if WITHLVGL
 	return;
-#else
+#elif WITHLTDCHW
 	colmain_nextfb();
+#else
 #endif
 }
 
@@ -1270,7 +1272,8 @@ display2_smeter15_layout(
 static uint_fast8_t smprmsinited;
 
 static void
-display2_smeter15_init(const gxdrawb_t * db,
+display2_smeter15_init(
+		const gxdrawb_t * db_unused,	// NULL
 		uint_fast8_t xgrid,
 		uint_fast8_t ygrid,
 		uint_fast8_t xspan,
@@ -1357,11 +1360,10 @@ static void smeter_arrow(const gxdrawb_t * db, uint_fast16_t target_pixel_x, uin
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 static void
 pix_display2_smeter15(const gxdrawb_t * db,
-		uint_fast8_t x0,
-		uint_fast8_t y0,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
+		uint_fast16_t x0,
+		uint_fast16_t y0,
+		uint_fast16_t xspan,	// width
+		uint_fast16_t yspan		// height
 		)
 {
 	smeter_params_t * const smpr = & smprms [glob_smetertype];
@@ -1572,10 +1574,7 @@ display2_smeter15(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	const uint_fast16_t x0 = GRID2X(xgrid);
-	const uint_fast16_t y0 = GRID2Y(ygrid);
-
-	pix_display2_smeter15(db, x0, y0, xspan, yspan, pctx);
+	pix_display2_smeter15(db, GRID2X(xgrid), GRID2Y(ygrid), GRID2X(xspan), GRID2Y(yspan));
 }
 
 #endif /* LCDMODE_LTDC */
@@ -1623,7 +1622,8 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 
 
 // Подготовка отображения частоты. Герцы маленьким шрифтом.
-static void display2_freqX_a_init(const gxdrawb_t * db,
+static void display2_freqX_a_init(
+	const gxdrawb_t * db_unused,	// NULL
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	uint_fast8_t xspan,
@@ -4299,7 +4299,8 @@ afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 #include "dsp/window_functions.h"
 
 static void
-display2_af_spectre15_init(const gxdrawb_t * db,
+display2_af_spectre15_init(
+		const gxdrawb_t * db_unused,	// NULL
 		uint_fast8_t xgrid,
 		uint_fast8_t ygrid,
 		uint_fast8_t xspan,
@@ -4324,7 +4325,8 @@ display2_af_spectre15_init(const gxdrawb_t * db,
 
 
 static void
-display2_af_spectre15_latch(const gxdrawb_t * db,
+display2_af_spectre15_latch(
+		const gxdrawb_t * db_unused,	// NULL
 		uint_fast8_t xgrid,
 		uint_fast8_t ygrid,
 		uint_fast8_t xspan,
@@ -5682,7 +5684,9 @@ static void wfsetupnew(void)
 
 
 static void
-display2_wfl_init(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+display2_wfl_init(
+		const gxdrawb_t * db_unused, 	// NULL
+		uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	static subscribeint32_t rtsregister;
 
@@ -5993,7 +5997,9 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 
 // формирование данных спектра для последующего отображения
 // спектра или водопада
-static void display2_latchcombo(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_latchcombo(
+		const gxdrawb_t * db_unused, 	// NULL
+		uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	uint_fast16_t x, y;
 	const uint_fast16_t alldx = GRID2X(xspan);
@@ -6718,7 +6724,7 @@ class hftrxgd: public litehtml::document_container
 {
 	// call back interface to draw text, images and other elements
 public:
-	litehtml::uint_ptr create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm);
+	litehtml::uint_ptr create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm);
 	void delete_font(litehtml::uint_ptr hFont);
 	int text_width(const char *text, litehtml::uint_ptr hFont);
 	void draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos);
@@ -6746,6 +6752,7 @@ public:
 	void set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius);
 	void del_clip();
 	void get_client_rect(litehtml::position &client) const;
+	void get_viewport(litehtml::position& viewport) const;
 	litehtml::element::ptr create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc);
 
 	void get_media_features(litehtml::media_features &media) const;
@@ -6772,12 +6779,12 @@ static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
 }
 
-litehtml::uint_ptr hftrxgd::create_font(const char *faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics *fm)
+litehtml::uint_ptr hftrxgd::create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm)
 {
 	PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
-		fm->font_size = size;
+		fm->font_size = 12; //?????size;
 		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
 		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
 		fm->height = SMALLCHARH; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
@@ -6801,11 +6808,11 @@ int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_text: text='%s'\n", text);
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-	//colpip_fillrect(buffer, m_dx, m_dy, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
-	colpip_string_tbg(buffer, m_dx, m_dy, pos.left(), pos.top(), text, getCOLORPIP(color));
+	//colpip_fillrect(db, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
+	colpip_string_tbg(db, pos.left(), pos.top(), text, getCOLORPIP(color));
 }
 
 int hftrxgd::pt_to_px(int pt) const
@@ -6825,10 +6832,10 @@ const char* hftrxgd::get_default_font_name() const
 
 void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	TP();
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-	colpip_fillrect(buffer, m_dx, m_dy, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLORPIP(marker.color));
+	colpip_fillrect(db, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLORPIP(marker.color));
 
 //	int top_margin = marker.pos.height / 3;
 //	if (top_margin < 4)
@@ -6856,7 +6863,7 @@ void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::siz
 
 void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url)
 {
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
 	if (0)
 	{
@@ -6864,7 +6871,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	}
 	else if (! strcmp(url.c_str(), "smeter"))
 	{
-		pix_display2_smeter15(buffer, layer.border_box.left(), layer.border_box.top(), NULL);
+		pix_display2_smeter15(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height);
 	}
 	else if (! strcmp(url.c_str(), "bigfreq"))
 	{
@@ -6882,9 +6889,9 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		do
 		{
 #if WITHPRERENDER
-			pix_render_value_big(& dbv, buffer, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_render_value_big(db, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-			pix_display_value_big(& dbv, buffer, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_display_value_big(db, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
 		} while (lowhalf --);
 	}
@@ -6892,61 +6899,63 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	{
 		uint_fast8_t x = layer.border_box.left() / 16;
 		uint_fast8_t y = layer.border_box.top() / 5;
-		display2_gcombo(buffer, x, y, NULL);
+		uint_fast8_t w = layer.border_box.width / 16;
+		uint_fast8_t h = layer.border_box.height / 5;
+		display2_gcombo(db, x, y, w, h, NULL);
 
 	}
 	else
 	{
-		colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, COLORPIP_RED);
+		colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, COLORPIP_RED);
 	}
 }
 
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 
-	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
+	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
 }
 
 void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//TP();
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T color = COLORPIP_RED;
 
-	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
+	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
 }
 void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//TP();
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T color = COLORPIP_GREEN;
 
-	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
+	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
 }
 
 void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//TP();
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
 	COLORPIP_T color = COLORPIP_BLUE;
 
-	colpip_fillrect(buffer, m_dx, m_dy, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
+	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
 }
 
 void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
 {
 	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
-	PACKEDCOLORPIP_T *const buffer = colmain_fb_draw();
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	COLORPIP_T top_color = getCOLORPIP(borders.top.color);
 	COLORPIP_T botom_color = getCOLORPIP(borders.bottom.color);
 	COLORPIP_T left_color = getCOLORPIP(borders.left.color);
 	COLORPIP_T right_color = getCOLORPIP(borders.right.color);
-	colpip_rect(buffer, m_dx, m_dy, draw_pos.left(), draw_pos.top(), draw_pos.right() - 1, draw_pos.bottom() - 1, top_color, 0);
+	colpip_rect(db, draw_pos.left(), draw_pos.top(), draw_pos.right() - 1, draw_pos.bottom() - 1, top_color, 0);
 }
 
 void hftrxgd::set_caption(const char *caption)
@@ -6999,6 +7008,10 @@ void hftrxgd::del_clip()
 void hftrxgd::get_client_rect(litehtml::position &client) const
 {
 	client = litehtml::position(0, 0, DIM_X, DIM_Y);
+}
+void hftrxgd::get_viewport(litehtml::position& viewport) const
+{
+	ASSERT(0);
 }
 
 #if 0
@@ -7211,7 +7224,6 @@ using namespace litehtml;
 static litehtml::hftrxgd hfrx_cont(DIM_X, DIM_Y);
 static const litehtml::position hfrx_wndclip(0, 0, DIM_X, DIM_Y);
 static document::ptr hftrxmain_docs [DISPLC_MODCOUNT];
-static litehtml::uint_ptr hftrx_hdc = 0;
 static litehtml::elements_list hftrx_timeels;
 
 static const char hftrx_css [] =
@@ -7266,12 +7278,11 @@ getsubset(
 // Например при работе в меню
 static void 
 display_walktrough(
+	const gxdrawb_t * db,
 	uint_fast16_t subset,
 	dctx_t * pctx
 	)
 {
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	uint_fast8_t i;
 	for (i = 0; i < WALKCOUNT; ++ i)
 	{
@@ -7279,7 +7290,7 @@ display_walktrough(
 
 		if (validforredraw(dzp, subset) == 0)
 			continue;
-		(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
+		(* dzp->redraw)(db, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
 	}
 }
 
@@ -7362,7 +7373,9 @@ void display2_bgprocess(
 	return;
 
 #elif LINUX_SUBSYSTEM
-	display_walktrough(REDRSUBSET(menuset), pctx);
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+	display_walktrough(& dbv, REDRSUBSET(menuset), pctx);
 
 #elif ! LCDMODE_LTDC
 	return;
@@ -7386,8 +7399,12 @@ void display2_bgprocess(
 		}
 
 	}
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+	const litehtml::uint_ptr hftrx_hdc = (uintptr_t) & dbv;
 	if (1)
 	{
+
 		for (litehtml::element::ptr& el : hftrx_timeels)
 		{
 //			uint_fast8_t hour, minute, seconds;
@@ -7439,7 +7456,9 @@ void display2_bgprocess(
 
 #else
 	// обычное отображение, без LVGL или litehtml
-	display_walktrough(getsubset(inmenu, menuset), pctx);
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+	display_walktrough(& dbv, getsubset(inmenu, menuset), pctx);
 #endif
 }
 
@@ -7585,7 +7604,7 @@ void display2_initialize(void)
 	}
 #endif
 
-	display_walktrough(REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(NULL, REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
 	redrawreq = 0;
 
 #if WITHRENDERHTML
@@ -7643,18 +7662,16 @@ display2_getbgcolor(void)
 }
 
 // очистить дисплей
-void display2_fillbg(void)
+void display2_fillbg(const gxdrawb_t * db)
 {
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-	colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+	colpip_fillrect(db, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 }
 
 void display2_latch(void)
 {
 #if LINUX_SUBSYSTEM && WITHLVGL
 #else
-	display_walktrough(REDRSUBSET_LATCH, NULL);// выполнение отрисовки всех элементов за раз.
+	display_walktrough(NULL, REDRSUBSET_LATCH, NULL);// обновление данных всех элементов за раз. draw buffer не требуется
 #endif
 }
 

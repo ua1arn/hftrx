@@ -19,7 +19,7 @@ void display_initialize(void)
 
 // Заполниить цветом фона
 void
-display_clear(void)
+display_clear(const gxdrawb_t * db)
 {
 }
 
@@ -32,25 +32,25 @@ void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
 {
 }
 
-uint_fast16_t display_wrdata_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(y);
 	return GRID2X(x);
 }
 
 void
-display_wrdata_end(void)
+display_wrdata_end(const gxdrawb_t * db)
 {
 }
 
-uint_fast16_t display_wrdatabar_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(y);
 	return GRID2X(x);
 }
 
 void
-display_wrdatabar_end(void)
+display_wrdatabar_end(const gxdrawb_t * db)
 {
 }
 
@@ -58,21 +58,21 @@ display_wrdatabar_end(void)
 /* старшие биты соответствуют верхним пикселям изображения */
 /* вызывается между вызовами display_wrdatabar_begin() и display_wrdatabar_end() */
 uint_fast16_t
-display_barcolumn(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
+display_barcolumn(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
 {
 	return xpix + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
+display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return xpix + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
+display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return xpix + 1;
 }
@@ -81,7 +81,7 @@ display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
+display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return xpix + 1;
 }
@@ -99,14 +99,14 @@ void display_uninitialize(void)
 }
 
 void
-display_wrdata2_end(void)
+display_wrdata2_end(const gxdrawb_t * db)
 {
 }
 
 
 // большие и средние цифры (частота)
 // большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
+uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(y);
 	return GRID2X(x);
@@ -114,14 +114,14 @@ uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast1
 
 
 void
-display_wrdatabig_end(void)
+display_wrdatabig_end(const gxdrawb_t * db)
 {
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
 uint_fast16_t
-display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
 {
 	(void) lowhalf;
 	(void) cc;

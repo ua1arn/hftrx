@@ -2679,7 +2679,7 @@ ttb_level2_2MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn),
 #endif
 
 static void
-ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn))
 {
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 20);
@@ -2688,13 +2688,6 @@ ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn),
 	{
 		const uintptr_t address = (uintptr_t) i << 20;
 		ttb0_base [i] =  accessbits(address, 0, 0);
-	}
-	/* Установить R/O атрибуты для указанной области */
-	while (textsize >= pagesize)
-	{
-		ttb0_base [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
-		textsize -= pagesize;
-		textstart += pagesize;
 	}
 }
 
@@ -2706,55 +2699,46 @@ sysinit_mmu_tables(void)
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
-#if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
-	{
-		// SCU inut
-		// SCU Control Register
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
-//
-//
-//		// Filtering Start Address Register
-//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
-//				(0x001uL << 20) |
-//				0;
-//		TP();
-//		// Filtering End Address Register
-//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
-//				(0xFFEuL << 20) |
-//				0;
+	#if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
+		{
+			// SCU inut
+			// SCU Control Register
+			((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
+	//
+	//
+	//		// Filtering Start Address Register
+	//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
+	//				(0x001uL << 20) |
+	//				0;
+	//		TP();
+	//		// Filtering End Address Register
+	//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
+	//				(0xFFEuL << 20) |
+	//				0;
 
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
-	}
-#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
+			((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
+			((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
+		}
+	#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
 
 
-#if defined (__aarch64__)
-	// MMU iniitialize
+	#if defined (__aarch64__)
+		// MMU iniitialize
 
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
-	{
-		ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
-	}
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
+		{
+			ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+		}
 
-	ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
+		ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
 
-#elif WITHISBOOTLOADER || CPUSTYLE_R7S721
+	#else
+		// MMU iniitialize
 
-	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+		ttb_level0_1MB_initialize(ttb_1MB_accessbits);
 
-#elif CPUSTYLE_STM32MP1
-	extern uint32_t __data_start__;
-	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
-
-#else
-	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-#endif
+	#endif	/* defined (__aarch64__) */
 
 
 #elif CPUSTYLE_RISCV
@@ -2810,64 +2794,6 @@ sysinit_mmu_tables(void)
 	}
 
 	//ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
-#if 0
-
-
-	#define FULLADFSZ 32	// Not __riscv_xlen
-	if (0)
-	{
-		const unsigned SYSMAP_ASH = 12;	// 40-28
-
-		extern uint32_t __RAMNC_BASE;
-		extern uint32_t __RAMNC_TOP;
-		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-
-		// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
-
-		// The smallest address of address space 0 is 0x0
-		SYSMAP->PARAM [0].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [1].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
-
-		SYSMAP->PARAM [2].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
-
-		SYSMAP->PARAM [3].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
-
-		// DRAM space ends at 0xC0000000
-		SYSMAP->PARAM [4].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [5].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
-
-		{
-			unsigned i;
-			for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
-			{
-				const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-				PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
-						i,
-						(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
-						(attr >> 4) & 0x01,
-						(attr >> 3) & 0x01,
-						(attr >> 2) & 0x01
-						);
-			}
-		}
-	}
-
-#endif
 
 #endif
 

@@ -10046,8 +10046,10 @@ static void lidar_parse(unsigned char c)
 
 void hightests(void)
 {
+#if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+#endif /* LCDMODE_LTDC */
 
 #if WITHLTDCHW && LCDMODE_LTDC
 	{

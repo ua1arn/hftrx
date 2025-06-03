@@ -1229,14 +1229,13 @@ display_value_small(const gxdrawb_t * db,
 }
 
 void display_value_small_xy(
+	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	int_fast32_t freq,
 	COLOR565_T fg
 	)
 {
-	gxdrawb_t dbv;
-	gxdrawb_default(& dbv);
 	uint_fast8_t width = 9;
 	uint_fast8_t comma = 3;
 	uint_fast8_t comma2 = 6;
@@ -1254,13 +1253,13 @@ void display_value_small_xy(
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '-', fg);
+			xpix = display_put_char_small_xy(db, xpix, ypix, '-', fg);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '+', fg);
+			xpix = display_put_char_small_xy(db, xpix, ypix, '+', fg);
 		else
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, ' ', fg);
+			xpix = display_put_char_small_xy(db, xpix, ypix, ' ', fg);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1269,20 +1268,20 @@ void display_value_small_xy(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, (z == 0) ? '.' : ' ', fg);
+			xpix = display_put_char_small_xy(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '.', fg);
+			xpix = display_put_char_small_xy(db, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, ' ', fg);	// supress zero
+			xpix = display_put_char_small_xy(db, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_small_xy(& dbv, xpix, ypix, '0' + res.quot, fg);
+			xpix = display_put_char_small_xy(db, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}

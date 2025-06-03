@@ -173,7 +173,9 @@ void display2_vtty(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_
 	display_vtty_show(db, x, y);
 }
 
-void display2_vtty_init(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+void display2_vtty_init(
+		const gxdrawb_t * db_unused, 	// NULL
+		uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 	display_vtty_initialize();
 }

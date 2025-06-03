@@ -194,7 +194,6 @@ typedef struct gxdrawb_tag
 	uint16_t stride;
 } gxdrawb_t;
 
-void gxdrawb_default(gxdrawb_t * db);
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
@@ -911,6 +910,7 @@ display_value_small(
 	);
 
 void display_value_small_xy(
+	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	int_fast32_t freq,
