@@ -2199,6 +2199,7 @@ static void window_swrscan_process(void)
 	static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
 	static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
 	window_t * const win = get_win(WINDOW_SWR_SCANNER);
+	const gxdrawb_t * db = gui_get_drawbuf();
 	uint_fast8_t averageFactor = 3;
 
 	if (win->first_call)
