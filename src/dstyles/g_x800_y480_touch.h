@@ -95,7 +95,7 @@
 		{	47, 20,	3,	0,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  15,	0,	display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
+		{    0, 4,  15,	20,	display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },

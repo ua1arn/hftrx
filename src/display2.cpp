@@ -1324,8 +1324,8 @@ display2_smeter15_init(
 		const gxdrawb_t * db_unused,	// NULL
 		uint_fast8_t xgrid,
 		uint_fast8_t ygrid,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
+		uint_fast8_t xspan,	// 0
+		uint_fast8_t yspan,	// 0
 		dctx_t * pctx
 		)
 {
@@ -1410,15 +1410,13 @@ static void
 pix_display2_smeter15(const gxdrawb_t * db,
 		uint_fast16_t x0,
 		uint_fast16_t y0,
-		uint_fast16_t xspan,	// width
-		uint_fast16_t yspan		// height
+		uint_fast16_t width,
+		uint_fast16_t height
 		)
 {
 	smeter_params_t * const smpr = & smprms [glob_smetertype];
 
 	/* получение координат прямоугольника с изображением */
-	const uint_fast16_t width = SM_BG_W;
-	const uint_fast16_t height = SM_BG_H;
 	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
 	const int yc = y0 + 120 + dial_shift;
