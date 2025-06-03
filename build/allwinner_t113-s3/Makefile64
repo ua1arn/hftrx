@@ -26,7 +26,7 @@ XFEL = ./xfel_fixed_t113-s3
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj64
+OBJDIR = x
 
 # Define project name here
 PROJECT = tc1_t113s3_64
