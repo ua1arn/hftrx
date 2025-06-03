@@ -5458,71 +5458,128 @@ static uint_fast8_t wfzoompow2;				// масштаб, с которым выво
 //static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 struct dispmap latched_dm;
 
-template<typename pixelt, uint_fast16_t adx, uint_fast16_t ady> class scrollb
+template<typename pixelt, uint_fast16_t argdx, uint_fast16_t argdy> class scrollb
 {
+	typedef pixelt element_t;
 	uint_fast16_t & vx;	// координаты левого верхнего угла видимой области
-	uint_fast16_t & vy;	// координаты левого верхнего угла видимой области
-	pixelt * m_buffer;
-	pixelt * bufferat(uint_fast16_t aw, uint_fast16_t ah, uint_fast16_t x, uint_fast16_t y)  const;	/* получить адрес в памяти элемента с координатами x/y */
+	uint_fast16_t & vy;	// координаты левого верхнего угла видимой области - самые свежие данные водопада
+	element_t * m_buffer;
+	// получить адрес по невиртуальным координатам буфера
+	element_t * bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t rx, uint_fast16_t ry)  const;	/* получить адрес в памяти элемента с координатами x/y */
 
 public:
-	scrollb(uint_fast16_t & scrollh, uint_fast16_t & scrollv, pixelt * buffer) :
+	scrollb(uint_fast16_t & scrollh, uint_fast16_t & scrollv, element_t * buffer) :
 		vx(scrollh),
 		vy(scrollv),
 		m_buffer(buffer)
 	{
 
 	}
-	/* + стереть содержимое целиком */
+	// стереть содержимое
 	void setupnew(uint_fast16_t dx, uint_fast16_t dy, pixelt value) const;
-
-//	/* + стереть содержимое в указаном прямоугольнике */
-//	void eraserect(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y, uint_fast16_t wclear, uint_fast16_t hclear, pixelt value) const;
-
-	//	/* + стереть содержимое */
-//	void movecorner(int_fast16_t dx, int_fast16_t dy, uint_fast16_t w, uint_fast16_t h) const;
-	/* получить координаты окон в хранимом буфере */
-	uint_fast16_t get_0_3_xy(uint_fast16_t & y) const;
-	uint_fast16_t get_9_12_xy(uint_fast16_t & y) const;
-	uint_fast16_t get_3_6_xy(uint_fast16_t & y) const;
-	uint_fast16_t get_6_9_xy(uint_fast16_t & y) const;
+	// частота увеличилась - надо сдвигать картинку влево
+	// нужно сохрянять часть старого изображения
+	void shiftleft(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, pixelt value) const;
+	// частота уменьшилась - надо сдвигать картинку вправо
+	// нужно сохрянять часть старого изображения
+	void shiftright(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, pixelt value) const;
+	// получить значение по виртуальной позиции
+	pixelt peek(uint_fast16_t x, uint_fast16_t y) const { return * bufferat(argdx, argdy, (vx + x) % argdx, (vy + y) % argdy); }
+	// записать значение по виртуальной позиции
+	void poke(uint_fast16_t x, uint_fast16_t y, pixelt value) const { return * bufferat(argdx, argdy, (vx + x) % argdx, (vy + y) % argdy) = value; }
 };
-
-/* Специализация.
- *  + стереть содержимое
- * */
-template <>
-void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, int16_t v) const
+// Специализация. стереть содержимое
+template <> void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, int16_t v) const
 {
 	arm_fill_q15(v, m_buffer, dx * dx);
 }
-/* Специализация.
- * получить адрес в памяти элемента с координатами x/y
- * */
-template <>
-int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
+// Специализация. получить адрес по невиртуальным координатам буфера
+template <> int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t rx, uint_fast16_t ry) const
 {
-	return & m_buffer [dx * y + x];
+	return & m_buffer [dx * ry + rx];
+}
+// Специализация
+// частота увеличилась - надо сдвигать картинку влево
+// нужно сохрянять часть старого изображения
+template <> void scrollb<int16_t, ALLDX, NROWSWFL>::shiftleft(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, int16_t value) const
+{
+	uint_fast16_t y;
+    for (y = 0; y < dy; ++ y)
+ 	{
+ 		memmove(
+ 				bufferat(dx, dy, 0, y),			// to
+				bufferat(dx, dy, pixels, y),		// from
+ 				(dx - pixels) * sizeof (element_t)
+ 		);
+ 		memset(bufferat(dx, dy, dx - pixels, y), 0, pixels * sizeof (element_t));
+	}
+}
+// Специализация
+// частота уменьшилась - надо сдвигать картинку вправо
+// нужно сохрянять часть старого изображения
+template <> void scrollb<int16_t, ALLDX, NROWSWFL>::shiftright(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, int16_t value) const
+{
+	uint_fast16_t y;
+   	for (y = 0; y < dy; ++ y)
+	{
+   		memmove(
+   				bufferat(dx, dy, pixels, y),	// to
+				bufferat(dx, dy, 0, y),		// from
+				(dx - pixels) * sizeof (element_t)
+    		);
+ 		memset(bufferat(dx, dy, 0, y), 0, pixels * sizeof (element_t));
+   	}
 }
 
-/* Специализация.
- *  + стереть содержимое
- * */
-template <>
-void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, PACKEDCOLORPIP_T v) const
+///////////////////////////////
+
+// Специализация. стереть содержимое
+template <> void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, PACKEDCOLORPIP_T v) const
 {
 	// todo: use accelerated graphic functions
-	memset(m_buffer, 0x00, dx * dy * sizeof (PACKEDCOLORPIP_T));
+	memset(m_buffer, 0x00, dx * dy * sizeof (element_t));
 }
 
-/* Специализация.
- * получить адрес в памяти элемента с координатами x/y
- * */
-template <>
-PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
+// Специализация. получить адрес по невиртуальным координатам буфера
+template <> PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t rx, uint_fast16_t ry) const
 {
-	return & m_buffer [GXADJ(dx) * y + x];
+	return & m_buffer [GXADJ(dx) * ry + rx];
 }
+// Специализация
+// частота увеличилась - надо сдвигать картинку влево
+// нужно сохрянять часть старого изображения
+template <> void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::shiftleft(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, PACKEDCOLORPIP_T value) const
+{
+	uint_fast16_t y;
+    for (y = 0; y < dy; ++ y)
+ 	{
+ 		memmove(
+ 				bufferat(dx, dy, 0, y),			// to
+				bufferat(dx, dy, pixels, y),		// from
+ 				(dx - pixels) * sizeof (element_t)
+ 		);
+ 		memset(bufferat(dx, dy, dx - pixels, y), 0, pixels * sizeof (element_t));
+	}
+}
+// Специализация
+// частота уменьшилась - надо сдвигать картинку вправо
+// нужно сохрянять часть старого изображения
+template <> void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::shiftright(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, PACKEDCOLORPIP_T value) const
+{
+	uint_fast16_t y;
+    for (y = 0; y < dy; ++ y)
+    {
+   		memmove(
+   				bufferat(dx, dy, pixels, y),	// to
+				bufferat(dx, dy, 0, y),		// from
+				(ALLDX - pixels) * sizeof (element_t)
+    		);
+ 		memset(bufferat(dx, dy, 0, y), 0, pixels * sizeof (element_t));
+   	}
+
+}
+
+///////////////////////////////
 
 
 /* Специализация.
@@ -5534,23 +5591,53 @@ void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t
 	ARM_MORPH(arm_fill)(v, m_buffer, dx * dy);
 }
 
-/* Специализация.
- *  + стереть содержимое
- * */
-template <>
-void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t dx, uint_fast16_t dy, FLOAT_t v) const
+// Специализация. стереть содержимое
+template <> void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t dx, uint_fast16_t dy, FLOAT_t v) const
 {
 	ARM_MORPH(arm_fill)(v, m_buffer, dx * dy);
 }
 
-/* Специализация.
- * получить адрес в памяти элемента с координатами x/y
- * */
-template <>
-FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
+// Специализация. получить адрес по невиртуальным координатам буфера
+template <> FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
 {
 	return & m_buffer [dx * y + x];
 }
+// Специализация
+// частота увеличилась - надо сдвигать картинку влево
+// нужно сохрянять часть старого изображения
+template <> void scrollb<FLOAT_t, ALLDX, NROWSWFL>::shiftleft(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, FLOAT_t value) const
+{
+	uint_fast16_t y;
+    for (y = 0; y < dy; ++ y)
+    {
+ 		memmove(
+ 				bufferat(dx, dy, 0, y),			// to
+				bufferat(dx, dy, pixels, y),		// from
+ 				(dx - pixels) * sizeof (FLOAT_t)
+ 		);
+ 		ARM_MORPH(arm_fill)(value, bufferat(dx, dy, dx - pixels, y), pixels);
+ 		//memset(bufferat(dx, dy, dx - pixels, y), 0, pixels * sizeof (element_t));
+	}
+}
+// Специализация
+// частота уменьшилась - надо сдвигать картинку вправо
+// нужно сохрянять часть старого изображения
+template <> void scrollb<FLOAT_t, ALLDX, NROWSWFL>::shiftright(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t pixels, FLOAT_t value) const
+{
+	uint_fast16_t y;
+    for (y = 0; y < dy; ++ y)
+	{
+   		memmove(
+   				bufferat(dx, dy, pixels, y),	// to
+				bufferat(dx, dy, 0, y),		// from
+				(dx - pixels) * sizeof (FLOAT_t)
+    		);
+ 		ARM_MORPH(arm_fill)(value, bufferat(dx, dy, 0, y), pixels);
+ 		//memset(bufferat(dx, dy, 0, y), 0, pixels * sizeof (element_t));
+   	}
+}
+
+///////////////////////////////
 
 
 ////////////////////////////////
@@ -5587,7 +5674,7 @@ public:
 	/* + стереть содержимое */
 	void setupnew()
 	{
-		scrollcolor.setupnew(w, h, COLORPIP_DARKGRAY);
+		scrollcolor.setupnew(w, h, display2_bgcolorwfl());
 		scrollpwr.setupnew(w, h, 0);
 		scrollavgspec.setupnew(w, h, 0);
 		scrollavgwfl.setupnew(w, h, 0);
@@ -5596,23 +5683,33 @@ public:
 	/* + продвижение по истории */
 	void shiftrows()
 	{
-		centery = centery + h - 1 % h;
+		centery = (centery + h - 1) % h;
 		// TODO: очистить освобождающиеся зоны
 	}
 	// частота увеличилась - надо сдвигать картинку влево
 	// нужно сохрянять часть старого изображения
 	void shiftleft(uint_fast16_t pixels)
 	{
-		centerx = centerx + w - pixels % w;
+		//centerx = (centerx + w - pixels) % w;
 		// TODO: очистить освобождающиеся зоны
+		scrollcolor.shiftleft(w, h, pixels, display2_bgcolorwfl());
+		scrollpwr.shiftleft(w, h, pixels, 0);
+		scrollavgspec.shiftleft(w, h, pixels, 0);
+		scrollavgwfl.shiftleft(w, h, pixels, 0);
+		scrollavg3dss.shiftleft(w, h, pixels, 0);
 	}
 	// частота уменьшилась - надо сдвигать картинку вправо
 	// нужно сохрянять часть старого изображения
 	// в строке wfrow - новое
 	void shiftright(uint_fast16_t pixels)
 	{
-		centerx = centerx + w + pixels % w;
+		//centerx = (centerx + w - pixels) % w;
 		// TODO: очистить освобождающиеся зоны
+		scrollcolor.shiftright(w, h, pixels, display2_bgcolorwfl());
+		scrollpwr.shiftright(w, h, pixels, 0);
+		scrollavgspec.shiftright(w, h, pixels, 0);
+		scrollavgwfl.shiftright(w, h, pixels, 0);
+		scrollavg3dss.shiftright(w, h, pixels, 0);
 	}
 
 };
