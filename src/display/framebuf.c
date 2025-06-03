@@ -3719,11 +3719,7 @@ void display_snapshot_req(void)
 /* stub */
 /* запись видимого изображения */
 void
-display_snapshot(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy
-	)
+display_snapshot(const gxdrawb_t * db)
 {
 }
 
