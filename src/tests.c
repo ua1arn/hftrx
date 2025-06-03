@@ -10132,11 +10132,19 @@ static void rctest(void)
 	hardware_uart4_enablerx(1);
 	hardware_uart4_enabletx(0);
 
+	PRINTF("Test device\n");
 	for (;;)
 	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
+
 		IRQL_t oldIrql;
 		uint_fast8_t f;
 		uint_fast8_t c;
+		/* Отладочные функции */
+		if (kbready)
+			PRINTF("bkbch=%02x\n", kbch);
 
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = uint8_queue_get(& rxq, & c);
@@ -10166,7 +10174,7 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 1
+#if 0
 	{
 		rctest();
 	}
