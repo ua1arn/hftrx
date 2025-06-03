@@ -5476,7 +5476,7 @@ public:
 
 	}
 	/* + стереть содержимое */
-	void setupnew();
+	void setupnew(uint_fast16_t aw, uint_fast16_t ah);
 	/* получить координаты окон в хранимом буфере */
 	uint_fast16_t get_0_3_xy(uint_fast16_t & y) const;
 	uint_fast16_t get_9_12_xy(uint_fast16_t & y) const;
@@ -5488,9 +5488,9 @@ public:
  *  + стереть содержимое
  * */
 template <>
-void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew()
+void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h)
 {
-	arm_fill_q15(0, m_buffer, ALLDX * NROWSWFL);
+	arm_fill_q15(0, m_buffer, w * h);
 }
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
@@ -5505,10 +5505,10 @@ int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast
  *  + стереть содержимое
  * */
 template <>
-void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew()
+void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h)
 {
 	// todo: use accelerated graphic functions
-	memset(m_buffer, 0x00, ALLDX * NROWSWFL * sizeof (PACKEDCOLORPIP_T));
+	memset(m_buffer, 0x00, w * h * sizeof (PACKEDCOLORPIP_T));
 }
 
 /* Специализация.
@@ -5525,18 +5525,18 @@ PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fas
  *  + стереть содержимое
  * */
 template <>
-void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew()
+void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h)
 {
-	ARM_MORPH(arm_fill)(0, m_buffer, ALLDX * NROWSWFL);
+	ARM_MORPH(arm_fill)(0, m_buffer, w * h);
 }
 
 /* Специализация.
  *  + стереть содержимое
  * */
 template <>
-void scrollb<FLOAT_t, ALLDX, 1>::setupnew()
+void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t w, uint_fast16_t h)
 {
-	ARM_MORPH(arm_fill)(0, m_buffer, ALLDX);
+	ARM_MORPH(arm_fill)(0, m_buffer, w * h);
 }
 
 /* Специализация.
@@ -5567,16 +5567,16 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
 
-	FLOAT_t m_avgscec [h];
-	FLOAT_t m_avgwfl [h];
-	FLOAT_t m_avg3dss [h];
+	FLOAT_t m_avgscec [w * h];	// h == 1
+	FLOAT_t m_avgwfl [w * h];	// h == 1
+	FLOAT_t m_avg3dss [w * h];	// h == 1
 
 	scrollb<PACKEDCOLORPIP_T, w, h>  scrollcolor;
 	scrollb<int16_t, w, h>  scrollpwr;
 	/* one-row objects */
-	scrollb<FLOAT_t, w, 1>  scrollavgspec;
-	scrollb<FLOAT_t, w, 1>  scrollavgwfl;
-	scrollb<FLOAT_t, w, 1>  scrollavg3dss;
+	scrollb<FLOAT_t, w, h>  scrollavgspec;
+	scrollb<FLOAT_t, w, h>  scrollavgwfl;
+	scrollb<FLOAT_t, w, h>  scrollavg3dss;
 
 public:
 	scrollbf() :
@@ -5591,11 +5591,11 @@ public:
 	/* + стереть содержимое */
 	void setupnew()
 	{
-		scrollcolor.setupnew();
-		scrollpwr.setupnew();
-		scrollavgspec.setupnew();
-		scrollavgwfl.setupnew();
-		scrollavg3dss.setupnew();
+		scrollcolor.setupnew(w, h);
+		scrollpwr.setupnew(w, h);
+		scrollavgspec.setupnew(w, h);
+		scrollavgwfl.setupnew(w, h);
+		scrollavg3dss.setupnew(w, h);
 	}
 	/* + продвижение по истории */
 	void shiftrows()
