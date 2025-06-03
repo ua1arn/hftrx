@@ -36,10 +36,11 @@ void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
 
 /* struct dzone subset field values */
 
-#define PAGELATCH 12
-#define PAGEINIT 13
-#define PAGESLEEP 14
-#define PAGEMENU 15
+#define PAGELATCH 12	// bit position
+#define PAGEINIT 13		// bit position
+#define PAGESLEEP 14	// bit position
+#define PAGEMENU 15		// bit position
+
 #define PAGEBITS 16
 
 #define REDRSUBSET(page)		(UINT16_C(1) << (page))	// сдвиги соответствуют номеру отображаемого набора элементов
@@ -49,7 +50,7 @@ void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
 /* специальные биты */
 #define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
 #define REDRSUBSET_LATCH	REDRSUBSET(PAGELATCH)
-#define REDRSUBSET_SHOW		((uint16_t) (~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT)))
+#define REDRSUBSET_SHOW		((uint16_t) (~ REDRSUBSET(PAGELATCH) & ~ REDRSUBSET(PAGEINIT)))	// кроме специальных
 
 struct dzone;
 typedef struct dzitem
@@ -57,7 +58,7 @@ typedef struct dzitem
 	void (* draw)(struct dzone * dzp);
 	void (* onclick)(struct dzone * dzp);
 #if WITHLVGL
-	lv_obj_t * (* lvelementcreate)(const struct dzone * dzp, lv_obj_t * parent, unsigned i);
+	lv_obj_t * (* lvelementcreate)(lv_obj_t * parent, const struct dzone * dzp, const struct dzitem * dzip, unsigned i);
 #else /* WITHLVGL */
 	void * lvelementcreate;
 #endif /* WITHLVGL */
@@ -193,10 +194,11 @@ static void lvstales_initialize(void)
 		// TX/RX indicator
 		lv_style_t * const s = & xxtxrxstyle;
 	    lv_style_init(s);
+		lv_style_set_border_width(s, 0);
 	}
 }
 
-static lv_obj_t * dzi_create_default(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -206,7 +208,7 @@ static lv_obj_t * dzi_create_default(const dzone_t * dzp, lv_obj_t * parent, uns
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_modea(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -217,7 +219,7 @@ static lv_obj_t * dzi_create_modea(const dzone_t * dzp, lv_obj_t * parent, unsig
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_modeb(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -231,7 +233,7 @@ static lv_obj_t * dzi_create_modeb(const dzone_t * dzp, lv_obj_t * parent, unsig
 static char label_freqa [32];	// текст - частота тракта A
 static char label_freqb [32];	// текст - частота тракта A
 
-static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -247,7 +249,7 @@ static lv_obj_t * dzi_create_freqa(const dzone_t * dzp, lv_obj_t * parent, unsig
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_freqb(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -260,7 +262,7 @@ static lv_obj_t * dzi_create_freqb(const dzone_t * dzp, lv_obj_t * parent, unsig
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
@@ -274,7 +276,7 @@ static lv_obj_t * dzi_create_txrx(const dzone_t * dzp, lv_obj_t * parent, unsign
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_smeter(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_img_create(parent);
 
@@ -292,8 +294,8 @@ static lv_obj_t * dzi_create_smeter(const dzone_t * dzp, lv_obj_t * parent, unsi
 	return lbl;
 }
 
-
-static lv_obj_t * dzi_create_gcombo(const dzone_t * dzp, lv_obj_t * parent, unsigned i)
+// отображение водопада/спектра/3DSS
+static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_img_create(parent);
 
@@ -7535,13 +7537,21 @@ validforredraw(
 
 enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 
+static uint_fast8_t getpageix(
+	uint_fast8_t inmenu,		/* находимся в режиме отображения настроек */
+	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
+	)
+{
+	return inmenu ? PAGEMENU : menuset;
+}
+
 static uint_fast16_t
 getsubset(
 	uint_fast8_t inmenu,		/* находимся в режиме отображения настроек */
 	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
 	)
 {
-	return inmenu ? REDRSUBSET_MENU : REDRSUBSET(menuset);
+	return REDRSUBSET(getpageix(inmenu, menuset));
 }
 
 // выполнение отрисовки всех элементов за раз.
@@ -7628,15 +7638,13 @@ void display2_bgprocess(
 #if WITHLVGL
 	// Отрисовка производится диспетчером LVGL
 	{
-		//uint_fast16_t subset = getsubset(inmenu, menuset);
-		menuset = inmenu ? PAGEMENU : menuset;
 		uint_fast8_t page;
 		for (page = 0; page < PAGEBITS; ++ page)
 		{
 			lv_obj_t * const wnd = xxmainwnds [page];
 			if (wnd == NULL)
 				continue;
-			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != menuset);
+			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != getpageix(inmenu, menuset));
 		}
 	}
 	lv_task_handler();
@@ -7757,7 +7765,7 @@ void display2_initialize(void)
 		{
 			const uint_fast16_t subset = REDRSUBSET(page);
 			if ((subset & REDRSUBSET_SHOW) == 0)
-				continue;	// не треуется создавать элементы на этой странице
+				continue;	// не треуется создавать страницу
 
 			lv_obj_t * const wnd = lv_obj_create(lv_screen_active());
 			unsigned i;
@@ -7765,16 +7773,14 @@ void display2_initialize(void)
 			{
 				const struct dzone * const dzp = & dzones [i];
 
-				if (validforredraw(dzp, subset) == 0)
-					continue;
-				if (dzp->colspan == 0 || dzp->rowspan == 0)
+				if (validforredraw(dzp, subset) == 0 || dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
 
 				const dzitem_t * const dzip = dzp->dzip;	// араметры создания элемента
 				lv_obj_t * lbl;
 				if (dzip != NULL && dzip->lvelementcreate != NULL)
 				{
-					lbl = (dzip->lvelementcreate)(dzp, wnd, i);
+					lbl = (dzip->lvelementcreate)(wnd, dzp, dzip, i);
 				}
 				else
 				{
