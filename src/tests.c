@@ -10120,6 +10120,83 @@ void user_uart4_ontxchar(void * ctx)
 	}
 }
 
+enum csrf_states
+{
+	CSRF_WAIT_SYNC,
+	CSRF_FRAME_LEN,
+	CSRF_FRAME_TYPE,
+	CSRF_PAYLOAD,
+	CSRF_CRC
+
+};
+
+static enum csrf_states state = CSRF_WAIT_SYNC;
+
+static uint_fast8_t crsf_type;
+static uint_fast8_t crsf_framelen;
+static uint_fast8_t crsf_crc;
+static uint_fast8_t crsf_payload [255];
+static unsigned crsf_payload_ix;
+
+static void crsf_parser(uint_fast8_t c)
+{
+	PRINTF("%c:%02X ", state + 'a', c);
+	switch (state)
+	{
+	case CSRF_WAIT_SYNC:
+		if (c == 0xC8)
+			state = CSRF_FRAME_LEN;
+		break;
+
+	case CSRF_FRAME_LEN:
+		if (c >= 2 && c <= 0x62)
+		{
+			// Broadcast Frame: Type + Payload + CRC,
+			// Extended header frame: Type + Destination address + Origin address + Payload + CRC
+			crsf_framelen = c - 2;
+			state = CSRF_FRAME_TYPE;
+		}
+		else
+		{
+			state = CSRF_WAIT_SYNC;
+		}
+		break;
+
+	case CSRF_FRAME_TYPE:
+		crsf_type = c;
+		crsf_payload_ix = 0;
+		state = CSRF_PAYLOAD;
+		break;
+
+	case CSRF_PAYLOAD:
+		if (crsf_payload_ix < ARRAY_SIZE(crsf_payload))
+		{
+			PRINTF("[%02X]", c);
+			crsf_payload [crsf_payload_ix] = c;
+			if (++ crsf_payload_ix >= crsf_framelen)
+				state = CSRF_CRC;
+		}
+		else
+		{
+			PRINTF("drop ");
+			state = CSRF_WAIT_SYNC;
+		}
+		break;
+
+	case CSRF_CRC:
+		crsf_crc = c;
+		state = CSRF_WAIT_SYNC;
+		PRINTF("\n ty=%02X, crc=%02X ", crsf_type, crsf_crc);
+		printhex(0, crsf_payload, 16);
+		break;
+
+	default:
+		break;
+
+	}
+
+}
+
 static void rctest(void)
 {
 	static uint8_t txb [512];
@@ -10127,8 +10204,12 @@ static void rctest(void)
 	static uint8_t rxb [512];
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
-	hardware_uart4_initialize(0, 9600, 8, 0, 0);
-	hardware_uart4_set_speed(9600);
+	const uint_fast32_t baudrate = 430000;
+	hardware_uart4_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart4_set_speed(baudrate);
+
+
+
 	hardware_uart4_enablerx(1);
 	hardware_uart4_enabletx(0);
 
@@ -10151,7 +10232,7 @@ static void rctest(void)
 		LowerIrql(oldIrql);
 		if (f)
 		{
-			PRINTF("R:%02X ", c);
+			crsf_parser(c);
 		}
 	}
 }
