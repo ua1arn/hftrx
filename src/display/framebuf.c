@@ -3700,17 +3700,13 @@ void colpip_rect(
 static uint_fast8_t snapshot_req;
 /* запись видимого изображения */
 void
-display_snapshot(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy
-	)
+display_snapshot(const gxdrawb_t * db)
 {
 	if (snapshot_req != 0)
 	{
 		snapshot_req = 0;
 		/* запись файла */
-		display_snapshot_write(buffer, dx, dy);
+		display_snapshot_write(db);
 	}
 }
 

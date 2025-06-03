@@ -688,9 +688,8 @@ void colpip_putpixel(const gxdrawb_t * db,
 	COLORPIP_T color
 	);
 
-void display_at_xy(uint_fast16_t x, uint_fast16_t y, const char * s);	/* вывод строки */
-void display_snapshot(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения */
-void display_snapshot_write(PACKEDCOLORPIP_T * __restrict buffer, uint_fast16_t dx, uint_fast16_t dy);	/* запись видимого изображения в файл */
+void display_snapshot(const gxdrawb_t * db);	/* запись видимого изображения */
+void display_snapshot_write(const gxdrawb_t * db);	/* запись видимого изображения в файл */
 void display_snapshot_req(void);
 
 #if WITHLTDCHWVBLANKIRQ
