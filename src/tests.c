@@ -10135,12 +10135,12 @@ static enum csrf_states state = CSRF_WAIT_SYNC;
 static uint_fast8_t crsf_type;
 static uint_fast8_t crsf_framelen;
 static uint_fast8_t crsf_crc;
-static uint_fast8_t crsf_payload [255];
+static uint8_t crsf_payload [255];
 static unsigned crsf_payload_ix;
 
-static void crsf_parser(uint_fast8_t c)
+static void crsf_parser(const uint_fast8_t c)
 {
-	PRINTF("%c:%02X ", state + 'a', c);
+	PRINTF("%02X ", c);
 	switch (state)
 	{
 	case CSRF_WAIT_SYNC:
@@ -10171,7 +10171,6 @@ static void crsf_parser(uint_fast8_t c)
 	case CSRF_PAYLOAD:
 		if (crsf_payload_ix < ARRAY_SIZE(crsf_payload))
 		{
-			PRINTF("[%02X]", c);
 			crsf_payload [crsf_payload_ix] = c;
 			if (++ crsf_payload_ix >= crsf_framelen)
 				state = CSRF_CRC;
@@ -10187,7 +10186,7 @@ static void crsf_parser(uint_fast8_t c)
 		crsf_crc = c;
 		state = CSRF_WAIT_SYNC;
 		PRINTF("\n ty=%02X, crc=%02X ", crsf_type, crsf_crc);
-		printhex(0, crsf_payload, 16);
+		printhex(0, crsf_payload, crsf_framelen);
 		break;
 
 	default:
