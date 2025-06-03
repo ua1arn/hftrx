@@ -5462,10 +5462,10 @@ struct dispmap latched_dm;
 
 template<typename pixelt, uint_fast16_t w, uint_fast16_t h> class scrollb
 {
-	uint_fast16_t & m_scrollh;
-	uint_fast16_t & m_scrollv;
+	uint_fast16_t & m_scrollh;	// координаты левого верхнего угла видимой области
+	uint_fast16_t & m_scrollv;	// координаты левого верхнего угла видимой области
 	pixelt * m_buffer;
-	pixelt * bufferat(uint_fast16_t x, uint_fast16_t y);	/* получить адрес в памяти элемента с координатами x/y */
+	pixelt * bufferat(uint_fast16_t aw, uint_fast16_t ah, uint_fast16_t x, uint_fast16_t y);	/* получить адрес в памяти элемента с координатами x/y */
 
 public:
 	scrollb(uint_fast16_t & scrollh, uint_fast16_t & scrollv, pixelt * buffer) :
@@ -5475,8 +5475,12 @@ public:
 	{
 
 	}
+	/* + стереть содержимое целиком */
+	void setupnew(uint_fast16_t aw, uint_fast16_t ah, pixelt value);
+	/* + стереть содержимое в указаном прямоугольнике */
+	void eraserect(uint_fast16_t aw, uint_fast16_t ah, uint_fast16_t x, uint_fast16_t y, uint_fast16_t wclear, uint_fast16_t hclear, pixelt value);
 	/* + стереть содержимое */
-	void setupnew(uint_fast16_t aw, uint_fast16_t ah);
+	void movecorner(int_fast16_t dx, int_fast16_t dy, uint_fast16_t aw, uint_fast16_t ah);
 	/* получить координаты окон в хранимом буфере */
 	uint_fast16_t get_0_3_xy(uint_fast16_t & y) const;
 	uint_fast16_t get_9_12_xy(uint_fast16_t & y) const;
@@ -5488,24 +5492,24 @@ public:
  *  + стереть содержимое
  * */
 template <>
-void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h)
+void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h, int16_t v)
 {
-	arm_fill_q15(0, m_buffer, w * h);
+	arm_fill_q15(v, m_buffer, w * h);
 }
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t w, uint_fast16_t h, uint_fast16_t x, uint_fast16_t y)
 {
-	return & m_buffer [ALLDX * y + x];
+	return & m_buffer [w * y + x];
 }
 
 /* Специализация.
  *  + стереть содержимое
  * */
 template <>
-void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h)
+void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h, PACKEDCOLORPIP_T v)
 {
 	// todo: use accelerated graphic functions
 	memset(m_buffer, 0x00, w * h * sizeof (PACKEDCOLORPIP_T));
@@ -5515,7 +5519,7 @@ void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t w, uint_fast16_t h, uint_fast16_t x, uint_fast16_t y)
 {
 	return & m_buffer [GXADJ(ALLDX) * y + x];
 }
@@ -5525,37 +5529,29 @@ PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fas
  *  + стереть содержимое
  * */
 template <>
-void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h)
+void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h, FLOAT_t v)
 {
-	ARM_MORPH(arm_fill)(0, m_buffer, w * h);
+	ARM_MORPH(arm_fill)(v, m_buffer, w * h);
 }
 
 /* Специализация.
  *  + стереть содержимое
  * */
 template <>
-void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t w, uint_fast16_t h)
+void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t w, uint_fast16_t h, FLOAT_t v)
 {
-	ARM_MORPH(arm_fill)(0, m_buffer, w * h);
+	ARM_MORPH(arm_fill)(v, m_buffer, w * h);
 }
 
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t w, uint_fast16_t h, uint_fast16_t x, uint_fast16_t y)
 {
-	return & m_buffer [ALLDX * y + x];
+	return & m_buffer [w * y + x];
 }
 
-/* Специализация.
- * получить адрес в памяти элемента с координатами x/y
- * */
-template <>
-FLOAT_t * scrollb<FLOAT_t, ALLDX, 1>::bufferat(uint_fast16_t x, uint_fast16_t y)
-{
-	return & m_buffer [x];
-}
 
 ////////////////////////////////
 ///
@@ -5591,11 +5587,11 @@ public:
 	/* + стереть содержимое */
 	void setupnew()
 	{
-		scrollcolor.setupnew(w, h);
-		scrollpwr.setupnew(w, h);
-		scrollavgspec.setupnew(w, h);
-		scrollavgwfl.setupnew(w, h);
-		scrollavg3dss.setupnew(w, h);
+		scrollcolor.setupnew(w, h, COLORPIP_DARKGRAY);
+		scrollpwr.setupnew(w, h, 0);
+		scrollavgspec.setupnew(w, h, 0);
+		scrollavgwfl.setupnew(w, h, 0);
+		scrollavg3dss.setupnew(w, h, 0);
 	}
 	/* + продвижение по истории */
 	void shiftrows()
