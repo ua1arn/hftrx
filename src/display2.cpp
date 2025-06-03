@@ -5458,27 +5458,29 @@ static uint_fast8_t wfzoompow2;				// масштаб, с которым выво
 //static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 struct dispmap latched_dm;
 
-template<typename pixelt, uint_fast16_t w, uint_fast16_t h> class scrollb
+template<typename pixelt, uint_fast16_t adx, uint_fast16_t ady> class scrollb
 {
-	uint_fast16_t & m_scrollh;	// координаты левого верхнего угла видимой области
-	uint_fast16_t & m_scrollv;	// координаты левого верхнего угла видимой области
+	uint_fast16_t & vx;	// координаты левого верхнего угла видимой области
+	uint_fast16_t & vy;	// координаты левого верхнего угла видимой области
 	pixelt * m_buffer;
-	pixelt * bufferat(uint_fast16_t aw, uint_fast16_t ah, uint_fast16_t x, uint_fast16_t y);	/* получить адрес в памяти элемента с координатами x/y */
+	pixelt * bufferat(uint_fast16_t aw, uint_fast16_t ah, uint_fast16_t x, uint_fast16_t y)  const;	/* получить адрес в памяти элемента с координатами x/y */
 
 public:
 	scrollb(uint_fast16_t & scrollh, uint_fast16_t & scrollv, pixelt * buffer) :
-		m_scrollh(scrollh),
-		m_scrollv(scrollv),
+		vx(scrollh),
+		vy(scrollv),
 		m_buffer(buffer)
 	{
 
 	}
 	/* + стереть содержимое целиком */
-	void setupnew(uint_fast16_t aw, uint_fast16_t ah, pixelt value);
-	/* + стереть содержимое в указаном прямоугольнике */
-	void eraserect(uint_fast16_t aw, uint_fast16_t ah, uint_fast16_t x, uint_fast16_t y, uint_fast16_t wclear, uint_fast16_t hclear, pixelt value);
-	/* + стереть содержимое */
-	void movecorner(int_fast16_t dx, int_fast16_t dy, uint_fast16_t aw, uint_fast16_t ah);
+	void setupnew(uint_fast16_t dx, uint_fast16_t dy, pixelt value) const;
+
+//	/* + стереть содержимое в указаном прямоугольнике */
+//	void eraserect(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y, uint_fast16_t wclear, uint_fast16_t hclear, pixelt value) const;
+
+	//	/* + стереть содержимое */
+//	void movecorner(int_fast16_t dx, int_fast16_t dy, uint_fast16_t w, uint_fast16_t h) const;
 	/* получить координаты окон в хранимом буфере */
 	uint_fast16_t get_0_3_xy(uint_fast16_t & y) const;
 	uint_fast16_t get_9_12_xy(uint_fast16_t & y) const;
@@ -5490,36 +5492,36 @@ public:
  *  + стереть содержимое
  * */
 template <>
-void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h, int16_t v)
+void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, int16_t v) const
 {
-	arm_fill_q15(v, m_buffer, w * h);
+	arm_fill_q15(v, m_buffer, dx * dx);
 }
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t w, uint_fast16_t h, uint_fast16_t x, uint_fast16_t y)
+int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
 {
-	return & m_buffer [w * y + x];
+	return & m_buffer [dx * y + x];
 }
 
 /* Специализация.
  *  + стереть содержимое
  * */
 template <>
-void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h, PACKEDCOLORPIP_T v)
+void scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, PACKEDCOLORPIP_T v) const
 {
 	// todo: use accelerated graphic functions
-	memset(m_buffer, 0x00, w * h * sizeof (PACKEDCOLORPIP_T));
+	memset(m_buffer, 0x00, dx * dy * sizeof (PACKEDCOLORPIP_T));
 }
 
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t w, uint_fast16_t h, uint_fast16_t x, uint_fast16_t y)
+PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
 {
-	return & m_buffer [GXADJ(ALLDX) * y + x];
+	return & m_buffer [GXADJ(dx) * y + x];
 }
 
 
@@ -5527,27 +5529,27 @@ PACKEDCOLORPIP_T * scrollb<PACKEDCOLORPIP_T, ALLDX, NROWSWFL>::bufferat(uint_fas
  *  + стереть содержимое
  * */
 template <>
-void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t w, uint_fast16_t h, FLOAT_t v)
+void scrollb<FLOAT_t, ALLDX, NROWSWFL>::setupnew(uint_fast16_t dx, uint_fast16_t dy, FLOAT_t v) const
 {
-	ARM_MORPH(arm_fill)(v, m_buffer, w * h);
+	ARM_MORPH(arm_fill)(v, m_buffer, dx * dy);
 }
 
 /* Специализация.
  *  + стереть содержимое
  * */
 template <>
-void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t w, uint_fast16_t h, FLOAT_t v)
+void scrollb<FLOAT_t, ALLDX, 1>::setupnew(uint_fast16_t dx, uint_fast16_t dy, FLOAT_t v) const
 {
-	ARM_MORPH(arm_fill)(v, m_buffer, w * h);
+	ARM_MORPH(arm_fill)(v, m_buffer, dx * dy);
 }
 
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t w, uint_fast16_t h, uint_fast16_t x, uint_fast16_t y)
+FLOAT_t * scrollb<FLOAT_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y) const
 {
-	return & m_buffer [w * y + x];
+	return & m_buffer [dx * y + x];
 }
 
 
