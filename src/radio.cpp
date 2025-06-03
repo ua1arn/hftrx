@@ -19640,10 +19640,12 @@ void initialize2(void)
 		board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+#if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
 		display_menu_digit(& dbv, 0, 0, sizeof (struct nvmap), 9, 0, 0);
 		display_at_P(& dbv, 0, 1, msg);
 		colmain_nextfb();
+#endif /* ! LCDMODE_DUMMY */
 
 		wrong_NVRAM_END();
 		//hardware_cw_diagnostics(0, 0, 0);	// 'S'
@@ -19785,9 +19787,11 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+#if ! LCDMODE_DUMMY
 			display2_fillbg(& dbv);
 			display_at_P(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
+#endif /* ! LCDMODE_DUMMY */
 
 			for (;;)
 			{
@@ -19824,10 +19828,12 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+#if ! LCDMODE_DUMMY
 			display2_fillbg(& dbv);
 			display_menu_digit(& dbv, 0, 1, NVRAM_END + 1, 9, 0, 0);
 			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
+#endif /* ! LCDMODE_DUMMY */
 
 			for (;;)
 				;
