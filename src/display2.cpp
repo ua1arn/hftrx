@@ -5492,12 +5492,11 @@ void scrollb<int16_t, ALLDX, NROWSWFL>::setupnew()
 {
 	arm_fill_q15(0, m_buffer, ALLDX * NROWSWFL);
 }
-
 /* Специализация.
  * получить адрес в памяти элемента с координатами x/y
  * */
 template <>
-uint16_t * scrollb<uint16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
+int16_t * scrollb<int16_t, ALLDX, NROWSWFL>::bufferat(uint_fast16_t x, uint_fast16_t y)
 {
 	return & m_buffer [ALLDX * y + x];
 }
