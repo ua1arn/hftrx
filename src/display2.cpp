@@ -8274,6 +8274,7 @@ LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_
 // подготовка lv_draw_buf_t с изображением спектра/водопада
 static lv_draw_buf_t * wfl_get_draw_buff(void)
 {
+	wfl_buff.header.cf = display_get_lvformat();
 	return & wfl_buff;
 }
 
@@ -8283,7 +8284,7 @@ static void wfl_proccess(void)
 	pipparams_t pip;
 	display2_getpipparams(& pip);
     gxdrawb_t tdbv;
-    gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) wfl_buff.data, pip.w, pip.h);
+    gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) buf_wfl_buff, pip.w, pip.h);
 
 	dcache_invalidate(tdbv.cachebase, tdbv.cachesize);
 	colpip_fillrect(& tdbv, 0, 0, pip.w, pip.h, display2_getbgcolor());
@@ -8303,6 +8304,7 @@ LV_DRAW_BUF_DEFINE_STATIC(smtr_buff, SM_BG_W, SM_BG_H, LV_COLOR_FORMAT_ARGB8888)
 // подготовка lv_draw_buf_t с изображением спектра/водопада
 static lv_draw_buf_t * smtr_get_draw_buff(void)
 {
+	smtr_buff.header.cf = display_get_lvformat();
 	return & smtr_buff;
 }
 
@@ -8310,7 +8312,7 @@ static lv_draw_buf_t * smtr_get_draw_buff(void)
 static void smtr_proccess(void)
 {
     gxdrawb_t tdbv;
-    gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) smtr_buff.data, SM_BG_W, SM_BG_H);
+    gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) buf_smtr_buff, SM_BG_W, SM_BG_H);
 
 	dcache_invalidate(tdbv.cachebase, tdbv.cachesize);
 	colpip_fillrect(& tdbv, 0, 0, SM_BG_W, SM_BG_H, display2_getbgcolor());
