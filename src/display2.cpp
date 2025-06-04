@@ -82,7 +82,8 @@ extern const lv_font_t eurostyle_56w;
 extern const lv_font_t rubik_16w2;
 
 static lv_style_t xxmainstyle;
-static lv_style_t xxfreqstyle;
+static lv_style_t xxfreqastyle;
+static lv_style_t xxfreqbstyle;
 static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
@@ -165,7 +166,7 @@ static void lvstales_initialize(void)
 
 	{
 		// частота основного приемникв
-		lv_style_t * const s = & xxfreqstyle;
+		lv_style_t * const s = & xxfreqastyle;
 
 	    lv_style_init(s);
 	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
@@ -175,6 +176,21 @@ static void lvstales_initialize(void)
 	    lv_style_set_text_font(s, & eurostyle_56w);
 	    //lv_style_set_text_letter_space(s, 5);
 		lv_style_set_border_width(s, 0);
+
+	}
+
+	{
+		// частота второго приемникв
+		lv_style_t * const s = & xxfreqbstyle;
+
+	    lv_style_init(s);
+//	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLORB));
+//	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
+	    ////lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+	    //lv_style_set_pad_ver(s, 15);
+	    //lv_style_set_text_font(s, & eurostyle_56w);
+	    //lv_style_set_text_letter_space(s, 5);
+		////lv_style_set_border_width(s, 0);
 
 	}
 
@@ -230,18 +246,18 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 	return lbl;
 }
 
-static char label_freqa [32];	// текст - частота тракта A
-static char label_freqb [32];	// текст - частота тракта A
+static char text_freqa [32];	// текст - частота тракта A
+static char text_freqb [32];	// текст - частота тракта A
 
 static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxfreqstyle, 0);
+	lv_obj_add_style(lbl, & xxfreqastyle, 0);
 	//lv_label
 
-	lv_label_set_text_static(lbl, label_freqa);	// не вызывает heap
+	lv_label_set_text_static(lbl, text_freqa);	// не вызывает heap
 	if (lbl_freqasn < NOBJ)
 	{
 		lbl_freqas [lbl_freqasn ++] = lbl;
@@ -254,7 +270,10 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
+	//lv_label
 
+	lv_label_set_text_static(lbl, text_freqb);	// не вызывает heap
 	if (lbl_freqbsn < NOBJ)
 	{
 		lbl_freqbs [lbl_freqbsn ++] = lbl;
@@ -297,13 +316,13 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_img_create(parent);
+	lv_obj_t * const lbl = lv_image_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 
 #if WITHLVGL && WITHSPECTRUMWF
-	lv_img_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+	lv_image_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
 
 	if (img1_wflsn < NOBJ)
 	{
@@ -328,14 +347,29 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 		unsigned mhz, khz, hz;
 
 		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
-		local_snprintf_P(label_freqa, ARRAY_SIZE(label_freqa), "%u.%03u.%03u", mhz, khz, hz);
+		lv_snprintf(text_freqa, ARRAY_SIZE(text_freqa), "%u.%03u.%03u", mhz, khz, hz);
 
 		unsigned i;
 		for (i = 0; i < lbl_freqasn; ++ i)
 		{
 			lv_obj_t * const obj = lbl_freqas [i];
 
-			//lv_label_set_text_static(obj, label_freqa);	// не вызывает heap
+			lv_obj_invalidate(obj);
+
+		}
+	}
+	if (lbl_freqbsn)
+	{
+		unsigned mhz, khz, hz;
+
+		xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
+		lv_snprintf(text_freqb, ARRAY_SIZE(text_freqb), "%u.%03u.%03u", mhz, khz, hz);
+
+		unsigned i;
+		for (i = 0; i < lbl_freqbsn; ++ i)
+		{
+			lv_obj_t * const obj = lbl_freqbs [i];
+
 			lv_obj_invalidate(obj);
 
 		}
