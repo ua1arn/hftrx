@@ -6769,12 +6769,6 @@ static void window_iioconfig_process(void)
 
 #if WITHAUDIOSAMPLESREC
 
-void gui_as_update(void)
-{
-	if (check_for_parent_window() == WINDOW_AS)
-		put_to_wm_queue(get_win(WINDOW_AS), WM_MESSAGE_UPDATE);
-}
-
 static void window_as_process(void)
 {
 	window_t * const win = get_win(WINDOW_AS);

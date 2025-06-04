@@ -133,7 +133,6 @@ void gui_open_sys_menu(void);
 void gui_update(void);
 void gui_add_debug(char d);
 void gui_open_debug_window(void);
-void gui_as_update(void);
 
 #endif /* WITHTOUCHGUI */
 

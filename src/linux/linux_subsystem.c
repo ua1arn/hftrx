@@ -169,7 +169,7 @@ void as_rx(uint32_t * buf)
 		ASSERT(as_idx < as_buf_size);
 		memcpy(& as_buf [as_idx], buf, as_buf_step * 4);
 		as_idx += as_buf_step;
-		if (as_idx % as_gui_upd_pr == 0) gui_as_update();
+		if (as_idx % as_gui_upd_pr == 0) gui_update();
 
 		if (as_idx >= as_buf_size || stop)
 		{
@@ -177,7 +177,7 @@ void as_rx(uint32_t * buf)
 			as_idx = 0;
 			stop = 0;
 			as_state = AS_READY;
-			gui_as_update();
+			gui_update();
 		}
 	}
 	else if (as_state == AS_PLAYING)
@@ -185,14 +185,14 @@ void as_rx(uint32_t * buf)
 		ASSERT(as_idx < as_buf_size);
 		memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
 		as_idx += as_buf_step;
-		if (as_idx % as_gui_upd_pr == 0) gui_as_update();
+		if (as_idx % as_gui_upd_pr == 0) gui_update();
 
 		if (as_idx >= as_idx_stop || stop)
 		{
 			as_idx = 0;
 			stop = 0;
 			as_state = AS_READY;
-			gui_as_update();
+			gui_update();
 		}
 	}
 
@@ -209,7 +209,7 @@ void as_tx(uint32_t * buf)
 	ASSERT(as_idx < as_buf_size);
 	memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
 	as_idx += as_buf_step;
-	if (as_idx % as_gui_upd_pr == 0) gui_as_update();
+	if (as_idx % as_gui_upd_pr == 0) gui_update();
 
 	if (as_idx >= as_idx_stop || stop)
 	{
@@ -217,7 +217,7 @@ void as_tx(uint32_t * buf)
 		stop = 0;
 		as_state = AS_READY;
 		hamradio_set_moxmode(0);
-		gui_as_update();
+		gui_update();
 	}
 
 	pthread_mutex_unlock(& mutex_as);

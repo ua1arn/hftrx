@@ -21383,7 +21383,11 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 #if WITHSPECTRUMWF && WITHMENU
 const char * hamradio_change_view_style(uint_fast8_t v)
 {
-	param_rotate(& xgviewstyle, v);	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
+	if (v)
+	{
+		param_keyclick(& xgviewstyle);
+		updateboard(1, 0);
+	}
 
 	return view_types [param_getvalue(& xgviewstyle)];
 }
