@@ -769,8 +769,11 @@ calc_delta(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high, int delta)
 	return v;
 }
 
-/* модификация паметра по нажатиям - выбор следующего значения из допустимых (с "заворотом" через границы) */
-static void
+/* модификация паметра по нажатиям - выбор следующего значения
+ * из допустимых (с "заворотом" через границы)
+ * - возврат не-0  в случае модификации
+ * */
+static uint_fast8_t
 param_keyclick(const struct paramdefdef * pd)
 {
 	unsigned nvalues;
@@ -779,15 +782,22 @@ param_keyclick(const struct paramdefdef * pd)
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+	const uint_fast16_t step = pd->qistep;
+
+	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
+		return 0;
+
 	if (pv16)
 		* pv16 = calc_next(* pv16, pd->qbottom, pd->qupper);
 	else if (pv8)
 		* pv8 = calc_next(* pv8, pd->qbottom, pd->qupper);
 
 	savemenuvalue(pd);
+	return 1;
 }
 
-/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
+/* модификация и сохранение параметра по валкодеру
+ * - возврат не-0  в случае модификации */
 static uint_fast8_t
 param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
@@ -800,16 +810,11 @@ param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 	const uint_fast16_t step = pd->qistep;
 
-	if (! ismenukinddp(pd, ITEM_VALUE))
+	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
 		return 0;
-	if (step == ISTEP_RO)
-	{
-		return 0;
-	}
+
 	if (nrotate == 0)
-	{
 		return 0;
-	}
 	if (nrotate < 0)
 	{
 		// negative change value
