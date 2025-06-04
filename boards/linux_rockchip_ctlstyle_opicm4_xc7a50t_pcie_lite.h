@@ -113,8 +113,9 @@
 	#define REALREFERENCE_FREQ 		61443000L
 	#define MOUSE_EVDEV				1
 	#define MOUSE_CURSOR_PATH		"./arrow.png"
-	#define BLUETOOTH_ALSA			1
+//	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
+
 #if 0
 	#define WITHLVGL				1
 	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_lvgl.h"
