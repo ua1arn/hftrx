@@ -10251,12 +10251,15 @@ static void crsf_parser(const uint_fast8_t c)
 		state = CSRF_WAIT_SYNC;
 		if (crsf_crc == 0)
 		{
-			PRINTF("bc=%d, ty=%02X ", crsf_broadcast, crsf_type);
-			printhex(0, crsf_payload, crsf_framelen);
+			//PRINTF("bc=%d lb=%02X ty=%02X ", crsf_broadcast, crsf_lenbyte, crsf_type);
+			dbg_putchar(crsf_broadcast ? '*' : '-');
+			//printhex(0, crsf_payload, crsf_framelen);
 		}
 		else
 		{
-			PRINTF("drop (bad CRC) ");
+			PRINTF("[bc=%d lb=%02X  ty=%02X ", crsf_broadcast, crsf_lenbyte, crsf_type);
+			PRINTF("drop (bad CRC)] ");
+			//printhex(0, crsf_payload, crsf_framelen);
 		}
 		break;
 
@@ -10274,7 +10277,7 @@ static void rctest(void)
 	static uint8_t rxb [512];
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
-	const uint_fast32_t baudrate = 430000;
+	const uint_fast32_t baudrate = 420000;
 	hardware_uart4_initialize(0, baudrate, 8, 0, 0);
 	hardware_uart4_set_speed(baudrate);
 
