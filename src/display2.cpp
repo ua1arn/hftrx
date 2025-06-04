@@ -281,10 +281,27 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	return lbl;
 }
 
+
+static void xxtxrx_event(lv_event_t * e)
+{
+    lv_obj_t        *obj = (lv_obj_t *) lv_event_get_target(e);
+//    tx_band_item_t  *item = lv_event_get_user_data(e);
+//
+//    item->vref = lv_spinbox_get_value(obj);
+	const uint_fast8_t state = hamradio_get_tx();
+
+//	lv_style_t * const s = & xxtxrxstyle;
+//	lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
+//	lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
+	lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
+}
+
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
+	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_RENDER_READY, NULL);
+	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_RENDER_START, NULL);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
@@ -313,6 +330,15 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
+
+static void xxspectrum_event(lv_event_t * e)
+{
+    lv_obj_t        *obj = (lv_obj_t *) lv_event_get_target(e);
+//    tx_band_item_t  *item = lv_event_get_user_data(e);
+//
+//    item->vref = lv_spinbox_get_value(obj);
+}
+
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
@@ -320,6 +346,7 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
+	//lv_obj_add_event_cb(lbl, xxspectrum_event, LV_EVENT_RENDER_READY, NULL);
 
 #if WITHLVGL && WITHSPECTRUMWF
 	lv_image_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
