@@ -8364,12 +8364,18 @@ COLORPIP_T display2_get_spectrum(int x)
 
 #if LCDMODE_LTDC && WITHLVGL && WITHSPECTRUMWF
 
+// Выделяем ьуфер под LV_COLOR_FORMAT_ARGB8888, даже если потом требуется RGB565
 LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_ALLRX), LV_COLOR_FORMAT_ARGB8888);
 
 // подготовка lv_draw_buf_t с изображением спектра/водопада
 static lv_draw_buf_t * wfl_get_draw_buff(void)
 {
-	wfl_buff.header.cf = display_get_lvformat();
+	const uint_fast8_t cf = display_get_lvformat();
+	const uint_fast16_t w = wfl_buff.header.w;
+
+	wfl_buff.header.cf = cf;
+	wfl_buff.header.stride = LV_DRAW_BUF_STRIDE(w, cf);
+
 	return & wfl_buff;
 }
 
@@ -8394,12 +8400,18 @@ static void wfl_proccess(void)
 
 #if LCDMODE_LTDC && WITHLVGL && WITHBARS
 
+// Выделяем ьуфер под LV_COLOR_FORMAT_ARGB8888, даже если потом требуется RGB565
 LV_DRAW_BUF_DEFINE_STATIC(smtr_buff, SM_BG_W, SM_BG_H, LV_COLOR_FORMAT_ARGB8888);
 
 // подготовка lv_draw_buf_t с изображением спектра/водопада
 static lv_draw_buf_t * smtr_get_draw_buff(void)
 {
-	smtr_buff.header.cf = display_get_lvformat();
+	const uint_fast8_t cf = display_get_lvformat();
+	const uint_fast16_t w = smtr_buff.header.w;
+
+	smtr_buff.header.cf = cf;
+	smtr_buff.header.stride = LV_DRAW_BUF_STRIDE(w, cf);
+
 	return & smtr_buff;
 }
 
