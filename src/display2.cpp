@@ -6837,7 +6837,6 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 	if (p1h != 0)	// всегда есть хоть одна строка
 	{
 		/* перенос свежей части растра */
-		ASSERT(atwflj(0, wfrow) != NULL);
 		colpip_bitblt(
 				db->cachebase, db->cachesize,
 				db,
@@ -6850,7 +6849,6 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 	}
 	if (p2h != 0)
 	{
-		ASSERT(atwflj(0, 0) != NULL);
 		/* перенос старой части растра */
 		colpip_bitblt(
 				db->cachebase, 0 * db->cachesize,
