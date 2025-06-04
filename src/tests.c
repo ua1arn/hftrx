@@ -10157,6 +10157,8 @@ enum csrf_states
 	CSRF_WAIT_SYNC, ///< CSRF_WAIT_SYNC
 	CSRF_FRAME_LEN, ///< CSRF_FRAME_LEN
 	CSRF_FRAME_TYPE,///< CSRF_FRAME_TYPE
+	CSRF_ORIG_ADDR,
+	CSRF_DEST_ADDR,
 	CSRF_PAYLOAD,   ///< CSRF_PAYLOAD
 	CSRF_CRC        ///< CSRF_CRC
 
@@ -10167,12 +10169,16 @@ static enum csrf_states state = CSRF_WAIT_SYNC;
 static uint_fast8_t crsf_type;
 static uint_fast8_t crsf_framelen;
 static uint_fast8_t crsf_crc;
+static uint_fast8_t crsf_dest_addr;
+static uint_fast8_t crsf_orig_addr;
+static uint_fast8_t crsf_lenbyte;	// необработанный байт длинны
+static uint_fast8_t crsf_broadcast;
 static uint8_t crsf_payload [255];
 static unsigned crsf_payload_ix;
 
 static void crsf_parser(const uint_fast8_t c)
 {
-	PRINTF("%02X ", c);
+	//PRINTF("%02X ", c);
 	crsf_crc = crc8update(c, crsf_crc);
 	switch (state)
 	{
@@ -10188,7 +10194,8 @@ static void crsf_parser(const uint_fast8_t c)
 		{
 			// Broadcast Frame: Type + Payload + CRC,
 			// Extended header frame: Type + Destination address + Origin address + Payload + CRC
-			crsf_framelen = c - 2;
+//			crsf_framelen = c - 2;
+			crsf_lenbyte = c;
 			state = CSRF_FRAME_TYPE;
 			crsf_crc = 0x00;	// initial CRC accum
 		}
@@ -10202,6 +10209,27 @@ static void crsf_parser(const uint_fast8_t c)
 	case CSRF_FRAME_TYPE:
 		crsf_type = c;
 		crsf_payload_ix = 0;
+		if (crsf_type < 0x27)
+		{
+			crsf_framelen = crsf_lenbyte - 2;
+			crsf_broadcast = 1;
+			state = CSRF_PAYLOAD;
+		}
+		else
+		{
+			crsf_framelen = crsf_lenbyte - 4;
+			crsf_broadcast = 0;
+			state = CSRF_DEST_ADDR;
+		}
+		break;
+
+	case CSRF_DEST_ADDR:
+		crsf_dest_addr = c;
+		state = CSRF_ORIG_ADDR;
+		break;
+
+	case CSRF_ORIG_ADDR:
+		crsf_orig_addr = c;
 		state = CSRF_PAYLOAD;
 		break;
 
@@ -10223,7 +10251,7 @@ static void crsf_parser(const uint_fast8_t c)
 		state = CSRF_WAIT_SYNC;
 		if (crsf_crc == 0)
 		{
-			PRINTF("\n ty=%02X ", crsf_type);
+			PRINTF("bc=%d, ty=%02X ", crsf_broadcast, crsf_type);
 			printhex(0, crsf_payload, crsf_framelen);
 		}
 		else
