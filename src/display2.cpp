@@ -7762,12 +7762,15 @@ void display2_initialize(void)
 #if LV_BUILD_DEMOS
 	//lv_demo_vector_graphic_not_buffered();
 
-	//char s1 [] = "stress";
-	char s1 [] = "widgets";
-	char * demo [] = { s1, };
-    lv_demos_create(demo, 1);
-    //lv_demo_widgets();
+//	//char s1 [] = "stress";
+//	char s1 [] = "widgets";
+//	char * demo [] = { s1, };
+//    lv_demos_create(demo, 1);
+//
+    lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
+//    for (;;)
+//    	lv_task_handler();
 
 #else
 

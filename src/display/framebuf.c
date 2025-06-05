@@ -1134,7 +1134,7 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
         return ;//LV_DRAW_UNIT_IDLE;
     }
 
-    void * dest = lv_draw_layer_go_to_xy(layer,
+    void * const dest = lv_draw_layer_go_to_xy(layer,
                                          clipped_coords.x1 - layer->buf_area.x1,
                                          clipped_coords.y1 - layer->buf_area.y1);
 //    ASSERT(dest);
@@ -1145,8 +1145,8 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
     const lv_draw_buf_t * dbf = dsc->src;
     ASSERT(LV_IMAGE_SRC_VARIABLE == lv_image_src_get_type(dbf));
 
-    const uint_fast16_t sw = lv_area_get_width(& dsc->image_area);
-    const uint_fast16_t sh = lv_area_get_height(& dsc->image_area);
+    const uint_fast16_t sw = lv_area_get_width(area);
+    const uint_fast16_t sh = lv_area_get_height(area);
 //    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
 
     const unsigned keyflag = 0;
@@ -1155,7 +1155,7 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
 	const unsigned sstride = dbf->header.stride;
 	const uintptr_t taddr = (uintptr_t) dest;
-	const uintptr_t saddr = (uintptr_t) dbf->data;
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
 	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
 	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
 
@@ -1472,7 +1472,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
         return ;//LV_DRAW_UNIT_IDLE;
     }
 
-    void * dest = lv_draw_layer_go_to_xy(layer,
+    void * const dest = lv_draw_layer_go_to_xy(layer,
                                          clipped_coords.x1 - layer->buf_area.x1,
                                          clipped_coords.y1 - layer->buf_area.y1);
 //    ASSERT(dest);
@@ -1483,9 +1483,8 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
     const lv_draw_buf_t * dbf = dsc->src;
     ASSERT(LV_IMAGE_SRC_VARIABLE == lv_image_src_get_type(dbf));
 
-    const uint_fast16_t w = lv_area_get_width(& dsc->image_area);
-    const uint_fast16_t h = lv_area_get_height(& dsc->image_area);
-//    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
+    const uint_fast16_t w = lv_area_get_width(area);
+    const uint_fast16_t h = lv_area_get_height(area);//    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
 
     const unsigned keyflag = 0;
     const COLORPIP_T keycolor = 0;
@@ -1493,7 +1492,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
 	const unsigned sstride = dbf->header.stride;
 	const uintptr_t taddr = (uintptr_t) dest;
-	const uintptr_t saddr = (uintptr_t) dbf->data;
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
 
 	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;
 	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
