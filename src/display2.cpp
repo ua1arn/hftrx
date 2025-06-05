@@ -211,6 +211,7 @@ static void lvstales_initialize(void)
 		lv_style_t * const s = & xxtxrxstyle;
 	    lv_style_init(s);
 		lv_style_set_border_width(s, 0);
+		lv_style_set_radius(s, 4);
 	}
 }
 
@@ -293,15 +294,24 @@ static void xxtxrx_event(lv_event_t * e)
 //	lv_style_t * const s = & xxtxrxstyle;
 //	lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
 //	lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
-	lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
+//	lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
+
+    lv_area_t coords;
+    lv_obj_get_coords(obj, &coords);	// координаты объекта при
+
+    lv_draw_rect_dsc_t r;
+    lv_draw_rect_dsc_init(&r);
+
+    r.bg_color = state ? lv_color_make(255, 0, 0) : lv_color_make(0, 255, 0);
+
+    lv_draw_rect(lv_event_get_layer(e), &r, & coords);
 }
 
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_RENDER_READY, NULL);
-	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_RENDER_START, NULL);
+	lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
@@ -403,18 +413,19 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 	}
 	if (lbl_txrxsn)
 	{
-		const uint_fast8_t state = hamradio_get_tx();
+//		const uint_fast8_t state = hamradio_get_tx();
 
-		lv_style_t * const s = & xxtxrxstyle;
-		lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
-		lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
+//		lv_style_t * const s = & xxtxrxstyle;
+//		lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
+//		lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
 
 		unsigned i;
 		for (i = 0; i < lbl_txrxsn; ++ i)
 		{
 			lv_obj_t * const obj = lbl_txrxs [i];
 
-			lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
+			lv_obj_invalidate(obj);
+			//lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
 
 		}
 	}
@@ -7847,6 +7858,10 @@ void display2_initialize(void)
 					lbl = lv_label_create(wnd);
 					lv_obj_add_style(lbl, & xxdivstyle, 0);
 				}
+
+				if (lbl == NULL)
+					continue;
+
 				lv_obj_set_pos(lbl, GRID2X(dzp->x), GRID2Y(dzp->y));
 				lv_obj_set_size(lbl, GRID2X(dzp->colspan), GRID2Y(dzp->rowspan));
 
