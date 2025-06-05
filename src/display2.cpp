@@ -209,9 +209,14 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 	return lbl;
 }
 
+static int infocb_modea(char * b, size_t len)
+{
+	return lv_snprintf(b, len, "%s", hamradio_get_mode_a_value_P());
+}
+
 static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_label_create(parent);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_modea);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
@@ -220,9 +225,106 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 	return lbl;
 }
 
+static int infocb_modeb(char * b, size_t len)
+{
+	return lv_snprintf(b, len, "%s", hamradio_get_mode_b_value_P());
+}
+
 static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_label_create(parent);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_modeb);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
+	//lv_label
+
+	return lbl;
+}
+
+static int infocb_ant5(char * b, size_t len)
+{
+#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 || WITHANTSELECT
+	return lv_snprintf(b, len, "%s", hamradio_get_ant5_value_P());
+#else
+	return 0;
+#endif /* xxx */
+}
+
+static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_ant5);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
+	//lv_label
+
+	return lbl;
+}
+
+static int infocb_preamp_ovf(char * b, size_t len)
+{
+	return lv_snprintf(b, len, "%s", hamradio_get_pre_value_P());
+}
+
+static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_preamp_ovf);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
+	//lv_label
+
+	return lbl;
+}
+
+static int infocb_tune(char * b, size_t len)
+{
+#if WITHTX && WITHAUTOTUNER
+	return lv_snprintf(b, len, "%s", hamradio_get_tunemodevalue() ? "TUN" : "");
+#else
+	return 0;
+#endif
+}
+
+static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_tune);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
+	//lv_label
+
+	return lbl;
+}
+
+static int infocb_bypass(char * b, size_t len)
+{
+#if WITHAUTOTUNER
+	return lv_snprintf(b, len, "%s", hamradio_get_bypvalue() ? "BYP" : "TUN");
+#else
+	return 0;
+#endif
+}
+
+static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_bypass);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
+	//lv_label
+
+	return lbl;
+}
+
+static int infocb_attenuator(char * b, size_t len)
+{
+	return lv_snprintf(b, len, "%s", hamradio_get_att_value_P());
+}
+
+static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_attenuator);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
@@ -447,6 +549,36 @@ static dzitem_t dzi_modeb =
 {
 	.lvelementcreate = LVCREATE(dzi_create_modeb),
 	.id = "mode-b"
+};
+
+static dzitem_t dzi_antenna =
+{
+	.lvelementcreate = LVCREATE(dzi_create_antenna),
+	.id = "ant"
+};
+
+static dzitem_t dzi_attenuator =
+{
+	.lvelementcreate = LVCREATE(dzi_create_attenuator),
+	.id = "ant"
+};
+
+static dzitem_t dzi_preamp_ovf =
+{
+	.lvelementcreate = LVCREATE(dzi_create_preamp_ovf),
+	.id = "ant"
+};
+
+static dzitem_t dzi_tune =
+{
+	.lvelementcreate = LVCREATE(dzi_create_tune),
+	.id = "ant"
+};
+
+static dzitem_t dzi_bypass =
+{
+	.lvelementcreate = LVCREATE(dzi_create_bypass),
+	.id = "byp"
 };
 
 #if WITHALTERNATIVEFONTS

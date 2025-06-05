@@ -81,11 +81,11 @@
 		//{	0,	0, 	5, 5, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	4, 5, display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
 		{	15,	0,	2, 5, display_txrxstate2, 	& dzi_txrx, PGALL, },
-		{	18, 0,	3, 5, display2_atu3,		& dzi_default, PGALL, },	// TUNER state (optional)
-		{	22, 0,	3, 5, display2_byp3,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
-		{	26,	0,	5, 5, display2_ant5,		& dzi_default, PGALL, },
-		{	31,	0,	5, 5, display2_att4,		& dzi_default, PGALL, },
-		{	36,	0,	5, 5, display2_preovf3,		& dzi_default, PGALL, },
+		{	18, 0,	3, 5, display2_atu3,		& dzi_tune, PGALL, },	// TUNER state (optional)
+		{	22, 0,	3, 5, display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
+		{	26,	0,	5, 5, display2_ant5,		& dzi_antenna, PGALL, },
+		{	31,	0,	5, 5, display2_att4,		& dzi_attenuator, PGALL, },
+		{	36,	0,	5, 5, display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 	#if WITHBARS
 		{   0, 	5,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора

@@ -1,12 +1,9 @@
-/*
- *  SPDX-License-Identifier: LGPL-2.1-or-later
- *
- *  Copyright (c) 2022-2024 Belousov Oleg aka R1CBU
- */
-
-/*********************
- *      INCLUDES
- *********************/
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #include "hardware.h"
 
@@ -31,6 +28,7 @@
 #define MY_CLASS_SMTR (& lv_smtr_class)
 #define MY_CLASS_TXRX (& lv_txrx_class)
 #define MY_CLASS_WTRF (& lv_wtfl_class)
+#define MY_CLASS_INFO (& lv_info_class)
 
 /**********************
  *  STATIC PROTOTYPES
@@ -43,6 +41,10 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
 static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_txrx_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static void lv_info_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_info_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_wtfl_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
@@ -65,6 +67,13 @@ typedef struct
 
 typedef struct
 {
+	lv_label_t label;
+	char infotext [32];
+	int (* infocb)(char * b, size_t len);
+} lv_info_t;
+
+typedef struct
+{
 	lv_image_t img;
 	//char text [32];
 } lv_wtfl_t;
@@ -79,7 +88,7 @@ static const lv_obj_class_t lv_smtr_class  = {
     .event_cb = lv_smtr_event,
     .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_smtr_t),
-    .name = "lv_smtr",
+    .name = "hmr_smtr",
 };
 
 static const lv_obj_class_t lv_txrx_class  = {
@@ -88,9 +97,16 @@ static const lv_obj_class_t lv_txrx_class  = {
     .event_cb = lv_txrx_event,
     .base_class = & lv_label_class,
     .instance_size = sizeof (lv_txrx_t),
-    .width_def = LV_SIZE_CONTENT,
-    .height_def = LV_SIZE_CONTENT,
-    .name = "lv_txrx",
+    .name = "hmr_txrx",
+};
+
+static const lv_obj_class_t lv_info_class  = {
+    .constructor_cb = lv_info_constructor,
+//    .destructor_cb = lv_info_destructor,
+    .event_cb = lv_info_event,
+    .base_class = & lv_label_class,
+    .instance_size = sizeof (lv_info_t),
+    .name = "hmr_nfo",
 };
 
 static const lv_obj_class_t lv_wtfl_class  = {
@@ -99,9 +115,7 @@ static const lv_obj_class_t lv_wtfl_class  = {
 //    .event_cb = lv_wtfl_event,
     .base_class = & lv_image_class,
     .instance_size = sizeof (lv_wtfl_t),
-    .width_def = LV_SIZE_CONTENT,
-    .height_def = LV_SIZE_CONTENT,
-    .name = "lv_wtfl",
+    .name = "hmr_wtfl",
 };
 
 /**********************
@@ -118,7 +132,6 @@ lv_obj_t * lv_smtr_create(lv_obj_t * parent)
 }
 
 
-
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin");
@@ -133,6 +146,17 @@ lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_TXRX, parent);
     lv_obj_class_init_obj(obj);
 
+    return obj;
+}
+
+lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len)) {
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_INFO, parent);
+    lv_obj_class_init_obj(obj);
+
+    lv_info_t * const cp = (lv_info_t *) obj;
+    cp->infotext [0] = '\0';
+    cp->infocb = infocb;
     return obj;
 }
 
@@ -155,6 +179,18 @@ static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     const int state = hamradio_get_tx();
     lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", "--");
     lv_label_set_text_static(obj, cp->text);
+    LV_TRACE_OBJ_CREATE("finished");
+}
+
+static void lv_info_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_info_t * const cp = (lv_info_t *) obj;
+
+    lv_snprintf(cp->infotext, ARRAY_SIZE(cp->infotext), "%s", "..");
+    lv_label_set_text_static(obj, cp->infotext);
     LV_TRACE_OBJ_CREATE("finished");
 }
 
@@ -211,6 +247,25 @@ static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
     }
 
     lv_res_t res = lv_obj_event_base(MY_CLASS_TXRX, e);	// обработчик родительского клвсса
+    if (res != LV_RES_OK) return;
+}
+
+static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
+{
+    LV_UNUSED(class_p);
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	lv_layer_t * const layer = lv_event_get_layer(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_INFO);
+
+    // текст обновляем перед отрисовкой
+    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
+    {
+    	lv_info_t   * const cp = (lv_info_t *) obj;
+        (* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext));
+    }
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_INFO, e);	// обработчик родительского клвсса
     if (res != LV_RES_OK) return;
 }
 

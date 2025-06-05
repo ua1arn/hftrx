@@ -22,6 +22,7 @@ void wfl_proccess(void);	/* построить растр с водопадом 
 lv_obj_t * lv_smtr_create(lv_obj_t * parent);	// s-meter
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
 lv_obj_t * lv_txrx_create(lv_obj_t * parent);	// tx/rx indicator
+lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len));
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 

@@ -91,7 +91,7 @@ static const dzone_t dzones [] =
 	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 	//{	10,	0,	4,	0,	display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
 	//{	15,	0,	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
-	{	20,	0,	4,	4,	display2_att4,		& dzi_default, PGALL, },
+	{	20,	0,	4,	4,	display2_att4,		& dzi_attenuator, PGALL, },
 	{	25,	0,	3,	4,	display2_preovf3,	& dzi_default, PGALL, },
 
 //	{	41, 0,	9,	4,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
@@ -135,8 +135,8 @@ static const dzone_t dzones [] =
 	{	7, 	25,	0,	4,	display2_currlevelA6, & dzi_default, PGALL, },	// PA drain current d.dd with "A"
 
 	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
-	{	19,	25,	5,	4,	display2_ant5,		& dzi_default, PGALL, },
-	{	25, 25,	3,	4,	display2_byp3,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
+	{	19,	25,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
+	{	25, 25,	3,	4,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
 	{	33, 25,	3,	4,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
 	{	37, 25,	3,	4,	display2_spk3,		& dzi_default, PGALL, },	// отображение признака включения динамика

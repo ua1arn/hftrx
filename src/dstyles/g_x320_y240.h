@@ -51,7 +51,7 @@
 			{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 			{	0, 0,	2,	0,	display_txrxstate2, & dzi_txrx, REDRSUBSET(DPAGE0), },
 			{	3, 0,	3,	0,	display2_voxtune3,	& dzi_default, REDRSUBSET(DPAGE0), },
-			{	7, 0,	4,	0,	display2_att4,		& dzi_default, REDRSUBSET(DPAGE0), },
+			{	7, 0,	4,	0,	display2_att4,		& dzi_attenuator, REDRSUBSET(DPAGE0), },
 			{	12, 0,	3,	0,	display2_preovf3,	& dzi_default, REDRSUBSET(DPAGE0), },
 			{	16, 0,	1,	0,	display_lockstate1, & dzi_default, REDRSUBSET(DPAGE0), },
 			{	19, 0,	3,	0,	display2_rxbw3,		& dzi_default, REDRSUBSET(DPAGE0), },
@@ -155,7 +155,7 @@
 				{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 			{	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
 			{	3,	0,	display2_voxtune3,	& dzi_default, PGALL, },
-			{	7,	0,	display2_att4,		& dzi_default, PGALL, },
+			{	7,	0,	display2_att4,		& dzi_attenuator, PGALL, },
 			{	12, 0,	display_pre3,		& dzi_default, PGALL, },
 		#if WITHDSPEXTDDC
 			{	16, 0,	display2_ovf3,		& dzi_default, PGALL, },	// ovf/pre

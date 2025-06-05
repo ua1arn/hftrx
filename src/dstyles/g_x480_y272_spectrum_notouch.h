@@ -84,8 +84,8 @@
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0,	0,	2,	5,	display_txrxstate2, & dzi_txrx, PGALL, },
-		{	3,	0,	5,	5,	display2_ant5,		& dzi_default, PGALL, },
-		{	9,	0,	4,	5,	display2_att4,		& dzi_default, PGALL, },
+		{	3,	0,	5,	5,	display2_ant5,		& dzi_antenna, PGALL, },
+		{	9,	0,	4,	5,	display2_att4,		& dzi_attenuator, PGALL, },
 		{	14,	0,	3,	5,	display2_preovf3,	& dzi_default, PGALL, },
 		{	18,	0,	1,	5,	display_lockstate1,	& dzi_default, PGALL, },	// LOCK (*)
 
@@ -136,8 +136,8 @@
 		//{	0,	51,	8,	5,	display_samfreqdelta8, & dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	5,	5,	display_time5,		& dzi_default, PG0,	},	// TIME
 		{	6, 	51,	3,	5,	display2_classa3,		& dzi_default, PG0, },	// ClassA indication
-		//{	6, 	51,	3,	5,	display2_atu3,		& dzi_default, PG0, },	// TUNER state (optional)
-		{	10, 51,	3,	5,	display2_byp3,		& dzi_default, PG0, },	// TUNER BYPASS state (optional)
+		//{	6, 	51,	3,	5,	display2_atu3,		& dzi_tune, PG0, },	// TUNER state (optional)
+		{	10, 51,	3,	5,	display2_byp3,		& dzi_bypass, PG0, },	// TUNER BYPASS state (optional)
 #endif /* WITH_LPFBOARD_UA1CEI */
 		{	14, 51,	5,	5,	display2_thermo5,	& dzi_default, PG0, },	// thermo sensor 20.7C
 		{	19, 51,	5,	5,	display2_currlevel5, & dzi_default, PG0, },	// PA drain current d.dd without "A"
