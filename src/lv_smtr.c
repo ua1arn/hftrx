@@ -10,6 +10,7 @@
 
 #include "hardware.h"
 #include "board.h"
+#include "display2.h"
 
 #include "lvgl.h"
 #include "core/lv_obj_private.h"
@@ -30,7 +31,7 @@
  *  STATIC PROTOTYPES
  **********************/
  
-//static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
@@ -56,7 +57,7 @@ typedef struct {
  **********************/
 
 static const lv_obj_class_t lv_smtr_class  = {
-//    .constructor_cb = lv_smtr_constructor,
+    .constructor_cb = lv_smtr_constructor,
 //    .destructor_cb = lv_smtr_destructor,
     .event_cb = lv_smtr_event,
     .base_class = & lv_obj_class,
@@ -67,10 +68,10 @@ static const lv_obj_class_t lv_smtr_class  = {
 static const lv_obj_class_t lv_txrx_class  = {
     .constructor_cb = lv_txrx_constructor,
 //    .destructor_cb = lv_txrx_destructor,
-    .event_cb = lv_txrx_event,
-    .base_class = & lv_obj_class,
+//    .event_cb = lv_txrx_event,
+    .base_class = & lv_obj_class, // need lv_label_class
     .instance_size = sizeof (lv_txrx_t),
-    .width_def = LV_SIZE_CONTENT,
+    .width_def = LV_PCT(100), //LV_SIZE_CONTENT,
     .height_def = LV_SIZE_CONTENT,
     .name = "lv_txrx",
 };
@@ -104,21 +105,34 @@ lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
  *   STATIC FUNCTIONS
  **********************/
 
-static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj) {
+static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
     LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
-    lv_txrx_t * cp = (lv_txrx_t *) obj;
+    lv_txrx_t * const cp = (lv_txrx_t *) obj;
 
-//    const int state = hamradio_get_tx();
-//    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX");
+    const int state = hamradio_get_tx();
+    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX");
 //    lv_label_set_text_static(obj, cp->text);
 
 
     LV_TRACE_OBJ_CREATE("finished");
 }
 
-//static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj) {
+static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_smtr_t * const cp = (lv_smtr_t *) obj;
+
+
+    LV_TRACE_OBJ_CREATE("finished");
+}
+
+//static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+//{
 //    LV_UNUSED(class_p);
 //    lv_smtr_t * smtr = (lv_smtr_t *)obj;
 //
@@ -130,7 +144,7 @@ static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj) 
 static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
     LV_UNUSED(class_p);
-
+    return;
     lv_res_t res = lv_obj_event_base(MY_CLASS_TXRX, e);	// обработчик родительского клвсса
 
     if (res != LV_RES_OK) return;
@@ -143,6 +157,22 @@ static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (code == LV_EVENT_DRAW_MAIN_END)
     {
     }
+}
+
+static
+uint_fast16_t normalize3(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmid,
+	uint_fast16_t rawmax,
+	uint_fast16_t range1,
+	uint_fast16_t range2
+	)
+{
+	if (raw < rawmid)
+		return normalize(raw, rawmin, rawmid, range1);
+	else
+		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
@@ -161,15 +191,20 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     {
         lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
         lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
-		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-		uint_fast8_t tracemax;
-		uint_fast8_t smtrvalue = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
 
-//		lv_coord_t w = lv_obj_get_width(obj);
-//		lv_coord_t h = lv_obj_get_height(obj);
+        uint_fast16_t gs = 0;
+        uint_fast16_t gm = lv_area_get_width(& coords) / 2;
+        uint_fast16_t ge = lv_area_get_width(& coords) - 1;
+
+		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+		uint_fast8_t tracemax;
+		uint_fast8_t smtrvalue = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		uint_fast16_t gv_pos = gs + normalize3(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+		uint_fast16_t gv_trace = gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
 
@@ -192,21 +227,28 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 		{
             lv_draw_line_dsc_t dsc;
             lv_draw_line_dsc_init(& dsc);
-            dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
+
             dsc.width = 1;
             dsc.round_end = 0;
             dsc.round_start = 0;
 
             // диагональ
+            dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
             lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
             lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
-
-            lv_value_precise_t delta = lv_area_get_width(& coords) * smtrvalue / UINT8_MAX;
-            lv_point_precise_set(& dsc.p1, coords.x1 + delta, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x1 + delta, coords.y2);
-
-
             lv_draw_line(layer, & dsc);
+
+            dsc.color = lv_palette_main(LV_PALETTE_RED);
+            lv_point_precise_set(& dsc.p1, coords.x1 + gv_pos, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x1 + gv_pos, coords.y2);
+            lv_draw_line(layer, & dsc);
+
+            dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
+            lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
+            lv_draw_line(layer, & dsc);
+
+
         }
 
 
