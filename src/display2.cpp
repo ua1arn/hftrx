@@ -256,7 +256,6 @@ static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	return lbl;
 }
@@ -272,7 +271,6 @@ static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	return lbl;
 }
@@ -292,7 +290,6 @@ static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, c
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	return lbl;
 }
@@ -312,7 +309,6 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	return lbl;
 }
@@ -328,7 +324,6 @@ static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	return lbl;
 }
@@ -344,7 +339,6 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqastyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	lv_label_set_text_static(lbl, text_freqa);	// не вызывает heap
 	return lbl;
@@ -357,70 +351,9 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_label
 
 	lv_label_set_text_static(lbl, text_freqb);	// не вызывает heap
 	return lbl;
-}
-
-// Вызывается после завершения отрисовки базового объекта
-static void xxtxrx_event(lv_event_t * e)
-{
-    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	lv_layer_t * const layer = lv_event_get_layer(e);
-	const lv_event_code_t code = lv_event_get_code(e);
-
-	ASSERT(LV_EVENT_DRAW_MAIN == code);
-	const uint_fast8_t state = hamradio_get_tx();
-
-    lv_area_t coords;
-    lv_obj_get_coords(obj, & coords);	// координаты объекта
-    lv_area_set_width(& coords, 4);
-    lv_area_set_height(& coords, 4);
-
-    lv_draw_rect_dsc_t rect;
-    lv_draw_rect_dsc_init(& rect);
-
-    rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
-
-	lv_draw_rect(layer, & rect, & coords);
-}
-
-// Вызывается после завершения отрисовки базового объекта
-static void xxsmeter_event(lv_event_t * e)
-{
-    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	lv_layer_t * const layer = lv_event_get_layer(e);
-	const lv_event_code_t code = lv_event_get_code(e);
-
-	ASSERT(LV_EVENT_DRAW_MAIN == code);
-	const uint_fast8_t state = hamradio_get_tx();
-
-    lv_area_t coords;
-    lv_obj_get_coords(obj, & coords);	// координаты объекта
-//    lv_area_set_width(& coords, 4);
-//    lv_area_set_height(& coords, 4);
-
-    lv_draw_rect_dsc_t rect;
-    lv_draw_rect_dsc_init(& rect);
-
-    rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
-
-	//lv_draw_rect(layer, & rect, & coords);
-
-    {
-        lv_draw_line_dsc_t dsc;
-        lv_draw_line_dsc_init(& dsc);
-        dsc.color = lv_palette_main(LV_PALETTE_RED);
-        dsc.width = 4;
-        dsc.round_end = 1;
-        dsc.round_start = 1;
-        dsc.p1.x = coords.x1;
-        dsc.p1.y = coords.y1;
-        dsc.p2.x = coords.x2;
-        dsc.p2.y = coords.y2;
-        lv_draw_line(layer, & dsc);
-    }
 }
 
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -438,22 +371,11 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_smtr_create(parent);
 
-	//lv_obj_add_event_cb(lbl, xxsmeter_event, LV_EVENT_DRAW_MAIN, NULL);	// после отрисовки базового элемента выхывается этот callback
-
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 
 	return lbl;
-}
-
-
-static void xxspectrum_event(lv_event_t * e)
-{
-    lv_obj_t        *obj = (lv_obj_t *) lv_event_get_target(e);
-//    tx_band_item_t  *item = lv_event_get_user_data(e);
-//
-//    item->vref = lv_spinbox_get_value(obj);
 }
 
 // отображение водопада/спектра/3DSS
@@ -464,7 +386,6 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-	//lv_obj_add_event_cb(lbl, xxspectrum_event, LV_EVENT_RENDER_READY, NULL);
 
 	return lbl;
 }
