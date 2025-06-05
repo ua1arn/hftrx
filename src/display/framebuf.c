@@ -1091,6 +1091,7 @@ void arm_hardware_mdma_initialize(void)
 
 #if WITHLVGL
 
+#include "misc/lv_area_private.h"
 
 #define DRAW_UNIT_ID_AWG2D 77
 #define DRAW_UNIT_ID_AWROT 78
@@ -1099,74 +1100,65 @@ void arm_hardware_mdma_initialize(void)
 
 typedef struct _draw_awg2d_unit_t {
     lv_draw_unit_t base_unit;
-#if LV_USE_OS
-    lv_draw_sw_thread_dsc_t thread_dscs[LV_DRAW_AWG2D_DRAW_UNIT_CNT];
-#else
-    lv_draw_task_t * task_act;
-#endif
 } draw_awg2d_unit_t;
 
 typedef struct _draw_awrot_unit_t {
     lv_draw_unit_t base_unit;
-#if LV_USE_OS
-    lv_draw_sw_thread_dsc_t thread_dscs[LV_DRAW_AWG2D_DRAW_UNIT_CNT];
-#else
-    lv_draw_task_t * task_act;
-#endif
 } draw_awrot_unit_t;
 
 
 #if defined (G2D_MIXER)
 
-static void awg2d_execute_drawing(lv_draw_task_t * t)
+static void
+draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
 {
-    LV_PROFILER_DRAW_BEGIN;
-    /*Render the draw task*/
-    switch(t->type) {
-//        case LV_DRAW_TASK_TYPE_FILL:
-//            lv_draw_awg2d_fill(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BORDER:
-//            lv_draw_awg2d_border(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
-//            lv_draw_awg2d_box_shadow(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LETTER:
-//            lv_draw_awg2d_letter(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LABEL:
-//            lv_draw_awg2d_label(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_IMAGE:
-//            lv_draw_awg2d_image(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_ARC:
-//            lv_draw_awg2d_arc(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LINE:
-//            lv_draw_awg2d_line(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_TRIANGLE:
-//            lv_draw_awg2d_triangle(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LAYER:
-//            lv_draw_awg2d_layer(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
-//            lv_draw_awg2d_mask_rect(t, t->draw_dsc);
-//            break;
-//#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
-//        case LV_DRAW_TASK_TYPE_VECTOR:
-//            lv_draw_awg2d_vector(t, t->draw_dsc);
-//            break;
-//#endif
-        default:
-            break;
+	// Copy rectangle
+	ASSERT(lv_area_get_width(& dsc->image_area) == lv_area_get_width(area));
+	ASSERT(lv_area_get_height(& dsc->image_area) == lv_area_get_height(area));
+	PRINTF("draw_awg2d_image: tw/th=%d/%d, x/y=%d/%d, w/h=%d/%d\n",
+			(int) lv_area_get_width(& dsc->image_area), (int) lv_area_get_height(& dsc->image_area),
+			(int) area->x1, (int) area->y1, (int) lv_area_get_width(area), (int) lv_area_get_height(area));
+}
+
+static void
+draw_awg2d_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
+{
+	// Fill rectangle
+//	PRINTF("draw_awg2d_fill: x/y=%d/%d, w/h=%d/%d, color=%08X\n",
+//			(int) area->x1, (int) area->y1,
+//			(int) lv_area_get_width(area), (int) lv_area_get_height(area),
+//			(unsigned) COLOR24(dsc->color.red, dsc->color.green, dsc->color.blue)
+//			);
+
+    const lv_area_t * coords = &t->area;
+    lv_area_t clipped_coords;
+    if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
+        return;// LV_DRAW_UNIT_IDLE;
     }
 
+    void * dest = lv_draw_layer_go_to_xy(layer,
+                                         clipped_coords.x1 - layer->buf_area.x1,
+                                         clipped_coords.y1 - layer->buf_area.y1);
 
-    LV_PROFILER_DRAW_END;
+	const uint_fast16_t x = area->x1;
+	const uint_fast16_t y = area->y1;
+	const uint_fast16_t w = lv_area_get_width(area);
+	const uint_fast16_t h = lv_area_get_height(area);
+
+	COLORPIP_T color = TFTALPHA(255, TFTRGB(dsc->color.red, dsc->color.green, dsc->color.blue));
+	//const COLOR24_T color = COLOR24(dsc->color.red, dsc->color.green, dsc->color.blue);
+	const uint_fast16_t dx = lv_area_get_width(& layer->buf_area);
+	PACKEDCOLORPIP_T * buffer = (PACKEDCOLORPIP_T *) dest;
+	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;	// параметры invalidate получателя
+	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
+	const unsigned fillmask = 0;
+	const uintptr_t taddr = (uintptr_t) buffer;
+	const unsigned tstride = layer->draw_buf->header.stride;
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+
 }
 
 /**
@@ -1188,93 +1180,76 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
     LV_PROFILER_DRAW_BEGIN;
     draw_awg2d_unit_t * draw_awg2d_unit = (draw_awg2d_unit_t *) draw_unit;
 
-#if LV_USE_OS
-    uint32_t i;
-    uint32_t taken_cnt = 0;
-    /* All idle (couldn't take any tasks): return LV_DRAW_UNIT_IDLE;
-     * All busy: return 0; as 0 tasks were taken
-     * Otherwise return taken_cnt;
-     */
-
-    /*If at least one is busy, it's not all idle*/
-    bool all_idle = true;
-    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        if(draw_awg2d_unit->thread_dscs[i].task_act) {
-            all_idle = false;
-            break;
-        }
-    }
-
-    lv_draw_task_t * t = NULL;
-    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awg2d_unit->thread_dscs[i];
-
-        /*Do nothing if busy*/
-        if(thread_dsc->task_act) continue;
-
-        /*Find an available task. Start from the previously taken task.*/
-        t = lv_draw_get_next_available_task(layer, t, DRAW_UNIT_ID_SW);
-
-        /*If there is not available task don't try other threads as there won't be available
-         *tasks for then either*/
-        if(t == NULL) {
-            LV_PROFILER_DRAW_END;
-            if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-            else return taken_cnt;
-        }
-
-        /*Allocate a buffer if not done yet.*/
-        void * buf = lv_draw_layer_alloc_buf(layer);
-        /*Do not return is failed. The other thread might already have a buffer can do something. */
-        if(buf == NULL) continue;
-
-        /*Take the task*/
-        all_idle = false;
-        taken_cnt++;
-        t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-        thread_dsc->task_act = t;
-
-        /*Let the render thread work*/
-        if(thread_dsc->inited) lv_thread_sync_signal(&thread_dsc->sync);
-    }
-
-    if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    else return taken_cnt;
-
-#else
-    /*Return immediately if it's busy with draw task*/
-    if(draw_awg2d_unit->task_act) {
-        LV_PROFILER_DRAW_END;
-        return 0;
-    }
-
-    lv_draw_task_t * t = NULL;
-    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWG2D);
+    lv_draw_task_t * const t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWG2D);
     if(t == NULL) {
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+		//TP();
+		LV_PROFILER_DRAW_END;
+		return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
     void * buf = lv_draw_layer_alloc_buf(layer);
     if(buf == NULL) {
+    	TP();
         LV_PROFILER_DRAW_END;
         return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-    draw_awg2d_unit->task_act = t;
 
-    awg2d_execute_drawing(t);
-    draw_awg2d_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
-    draw_awg2d_unit->task_act = NULL;
+    {
+        /*Render the draw task*/
+        switch(t->type)
+        {
+        default:
+        	PRINTF("awrot_execute_drawing: t->type=%d\n", (int) t->type);
+        	break;
+    	case LV_DRAW_TASK_TYPE_IMAGE:
+    		draw_awg2d_image(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
+    	case LV_DRAW_TASK_TYPE_FILL:
+    		draw_awg2d_fill(t, (lv_draw_fill_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
+    //	case LV_DRAW_TASK_TYPE_BORDER:
+    //		lv_draw_awg2d_border(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_BOX_SHADOW:
+    //		lv_draw_awg2d_box_shadow(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LETTER:
+    //		lv_draw_awg2d_letter(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LABEL:
+    //		lv_draw_awg2d_label(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_ARC:
+    //		lv_draw_awg2d_arc(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LINE:
+    //		lv_draw_awg2d_line(t, t->draw_dsc);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_TRIANGLE:
+    //		lv_draw_awg2d_triangle(t, t->draw_dsc);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LAYER:
+    //		lv_draw_awg2d_layer(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
+    //		lv_draw_awg2d_mask_rect(t, t->draw_dsc);
+    //		break;
+    //#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+    //	case LV_DRAW_TASK_TYPE_VECTOR:
+    //		lv_draw_awg2d_vector(t, t->draw_dsc);
+    //		break;
+    //#endif
+		}
+    }
+    t->state = LV_DRAW_TASK_STATE_READY;
 
     /*The draw unit is free now. Request a new dispatching as it can get a new task*/
     lv_draw_dispatch_request();
 
     LV_PROFILER_DRAW_END;
     return 1;
-#endif
-
 }
 
 
@@ -1291,6 +1266,7 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     switch(task->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
         case LV_DRAW_TASK_TYPE_LAYER:
+        	return 0;
         	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
 
@@ -1302,11 +1278,12 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
                     return 0;
                 }
-
+                if (lv_area_get_width(& draw_dsc->image_area) < 2)
+                	return 0;
                 bool masked = draw_dsc->bitmap_mask_src != NULL;
 
                 lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
-                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                if (masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
                     return 0;
                 }
 
@@ -1315,6 +1292,20 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 }
             }
             break;
+        case LV_DRAW_TASK_TYPE_FILL:
+        	{
+                lv_draw_fill_dsc_t * dsc = task->draw_dsc;
+                if(!(dsc->radius == 0
+                     && dsc->grad.dir == LV_GRAD_DIR_NONE
+                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
+                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888
+                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+                    return 0;
+                }
+            }
+            break;
+
 #if LV_USE_3DTEXTURE
         case LV_DRAW_TASK_TYPE_3D:
             return 0;
@@ -1614,8 +1605,8 @@ void lv_draw_awrot_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_ds
 
 static void awrot_execute_drawing(lv_draw_task_t * t)
 {
+	PRINTF("awrot_execute_drawing: t->type=%d\n", (int) t->type);
     LV_PROFILER_DRAW_BEGIN;
-    TP();
     /*Render the draw task*/
     switch(t->type) {
         case LV_DRAW_TASK_TYPE_IMAGE:
@@ -1804,30 +1795,25 @@ static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 
 #else
     /*Return immediately if it's busy with draw task*/
-    if(draw_awrot_unit->task_act) {
-        LV_PROFILER_DRAW_END;
-        return 0;
-    }
 
-    lv_draw_task_t * t = NULL;
-    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWROT);
+    lv_draw_task_t * t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWROT);
     if(t == NULL) {
-        LV_PROFILER_DRAW_END;
+       	TP();
+       LV_PROFILER_DRAW_END;
         return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
     void * buf = lv_draw_layer_alloc_buf(layer);
     if(buf == NULL) {
+    	TP();
         LV_PROFILER_DRAW_END;
         return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-    draw_awrot_unit->task_act = t;
-
+    TP();
     awrot_execute_drawing(t);
-    draw_awrot_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
-    draw_awrot_unit->task_act = NULL;
+    t->state = LV_DRAW_TASK_STATE_READY;
 
     /*The draw unit is free now. Request a new dispatching as it can get a new task*/
     lv_draw_dispatch_request();
@@ -1920,7 +1906,7 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 void lvglhw_initialize(void)
 {
 #if defined (G2D_MIXER)
-	if (0)
+	if (1)
 	{
 
 		//#if LV_DRAW_SW_COMPLEX == 1
