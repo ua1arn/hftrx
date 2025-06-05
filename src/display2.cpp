@@ -88,8 +88,6 @@ static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
 
-#define NOBJ 32
-
 static lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 static void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
@@ -97,20 +95,10 @@ static lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw
 static void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
 
 
-static lv_obj_t * img1_wfls [NOBJ];
-static unsigned img1_wflsn;
-static lv_obj_t * lbl_smeters [NOBJ];
-static unsigned lbl_smetersn;
-static lv_obj_t * lbl_txrxs [NOBJ];
-static unsigned lbl_txrxsn;
-static lv_obj_t * lbl_freqas [NOBJ];
-static unsigned lbl_freqasn;
-static lv_obj_t * lbl_freqbs [NOBJ];
-static unsigned lbl_freqbsn;
-static lv_obj_t * lbl_modeas [NOBJ];
-static unsigned lbl_modeasn;
-static lv_obj_t * lbl_modebs [NOBJ];
-static unsigned lbl_modebsn;
+#define NOBJ 128
+
+static lv_obj_t * lbl_dynamics [NOBJ];
+static unsigned lbl_dynamicn;
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
@@ -215,6 +203,15 @@ static void lvstales_initialize(void)
 	}
 }
 
+// динамические элементы добавляются для передаяи им invalidate
+static void dzi_add_element(lv_obj_t * obj)
+{
+	if (lbl_dynamicn < NOBJ)
+	{
+		lbl_dynamics [lbl_dynamicn ++] = obj;
+	}
+}
+
 static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
@@ -232,7 +229,7 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	//lv_label
 
-	lbl_modeas [lbl_modeasn ++] = lbl;
+	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -243,7 +240,7 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	//lv_label
 
-	lbl_modebs [lbl_modebsn ++] = lbl;
+	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -259,10 +256,7 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 	//lv_label
 
 	lv_label_set_text_static(lbl, text_freqa);	// не вызывает heap
-	if (lbl_freqasn < NOBJ)
-	{
-		lbl_freqas [lbl_freqasn ++] = lbl;
-	}
+	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -275,10 +269,7 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	//lv_label
 
 	lv_label_set_text_static(lbl, text_freqb);	// не вызывает heap
-	if (lbl_freqbsn < NOBJ)
-	{
-		lbl_freqbs [lbl_freqbsn ++] = lbl;
-	}
+	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -312,13 +303,11 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);
+	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_READY, NULL);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
-	if (lbl_txrxsn < NOBJ)
-	{
-		lbl_txrxs [lbl_txrxsn ++] = lbl;
-	}
+	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -331,10 +320,7 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 
 #if WITHLVGL && WITHBARS
 	lv_img_set_src(lbl, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-	if (lbl_smetersn < NOBJ)
-	{
-		lbl_smeters [lbl_smetersn ++] = lbl;
-	}
+	dzi_add_element(lbl);
 #endif /* WITHLVGL && WITHBARS */
 
 	return lbl;
@@ -361,10 +347,7 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 #if WITHLVGL && WITHSPECTRUMWF
 	lv_image_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
 
-	if (img1_wflsn < NOBJ)
-	{
-		img1_wfls [img1_wflsn ++] = lbl;
-	}
+	dzi_add_element(lbl);
 #endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	return lbl;
@@ -379,102 +362,21 @@ static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned 
 
 static void lvgl_task1_cb(lv_timer_t * tmr)
 {
-	if (lbl_freqasn)
 	{
 		unsigned mhz, khz, hz;
 
 		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
 		lv_snprintf(text_freqa, ARRAY_SIZE(text_freqa), "%u.%03u.%03u", mhz, khz, hz);
-
-		unsigned i;
-		for (i = 0; i < lbl_freqasn; ++ i)
-		{
-			lv_obj_t * const obj = lbl_freqas [i];
-
-			lv_obj_invalidate(obj);
-
-		}
 	}
-	if (lbl_freqbsn)
-	{
-		unsigned mhz, khz, hz;
+	wfl_proccess();
+	smtr_proccess();
 
-		xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
-		lv_snprintf(text_freqb, ARRAY_SIZE(text_freqb), "%u.%03u.%03u", mhz, khz, hz);
-
-		unsigned i;
-		for (i = 0; i < lbl_freqbsn; ++ i)
-		{
-			lv_obj_t * const obj = lbl_freqbs [i];
-
-			lv_obj_invalidate(obj);
-
-		}
-	}
-	if (lbl_txrxsn)
-	{
-//		const uint_fast8_t state = hamradio_get_tx();
-
-//		lv_style_t * const s = & xxtxrxstyle;
-//		lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
-//		lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
-
-		unsigned i;
-		for (i = 0; i < lbl_txrxsn; ++ i)
-		{
-			lv_obj_t * const obj = lbl_txrxs [i];
-
-			lv_obj_invalidate(obj);
-			//lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
-
-		}
-	}
-	if (lbl_modeasn)
+	if (lbl_dynamicn)
 	{
 		unsigned i;
-		for (i = 0; i < lbl_modeasn; ++ i)
+		for (i = 0; i < lbl_dynamicn; ++ i)
 		{
-			lv_obj_t * const obj = lbl_modeas [i];
-
-			lv_label_set_text_static(obj, hamradio_get_mode_a_value_P());	// не вызывает heap
-
-		}
-	}
-	if (lbl_modebsn)
-	{
-		unsigned i;
-		for (i = 0; i < lbl_modebsn; ++ i)
-		{
-			lv_obj_t * const obj = lbl_modebs [i];
-
-			lv_label_set_text_static(obj, hamradio_get_mode_b_value_P());	// не вызывает heap
-
-		}
-	}
-
-#if WITHLVGL && WITHSPECTRUMWF
-
-	if (img1_wflsn)
-	{
-		wfl_proccess();
-		unsigned i;
-		for (i = 0; i < img1_wflsn; ++ i)
-		{
-			lv_obj_t * const obj = img1_wfls [i];
-
-			lv_obj_invalidate(obj);
-
-		}
-	}
-#endif /* WITHLVGL && WITHSPECTRUMWF */
-
-	if (lbl_smetersn)
-	{
-		smtr_proccess();
-		unsigned i;
-		for (i = 0; i < lbl_smetersn; ++ i)
-		{
-			lv_obj_t * const obj = lbl_smeters [i];
+			lv_obj_t * const obj = lbl_dynamics [i];
 
 			lv_obj_invalidate(obj);
 
