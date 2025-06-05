@@ -24,6 +24,8 @@
 #include "../demos/lv_demos.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 #include "src/lvgl_gui/styles.h"
+
+#include "lv_smtr.h"
 #endif /* WITHLVGL */
 
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
@@ -344,17 +346,17 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 
 static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_img_create(parent);
+	lv_obj_t * const lbl = lv_smtr_create(parent);
 
-	lv_obj_add_event_cb(lbl, xxsmeter_event, LV_EVENT_DRAW_MAIN, NULL);	// после отрисовки базового элемента выхывается этот callback
+	//lv_obj_add_event_cb(lbl, xxsmeter_event, LV_EVENT_DRAW_MAIN, NULL);	// после отрисовки базового элемента выхывается этот callback
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-
-#if WITHLVGL && WITHBARS
-	lv_img_set_src(lbl, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHBARS */
+//
+//#if WITHLVGL && WITHBARS
+//	lv_img_set_src(lbl, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+//#endif /* WITHLVGL && WITHBARS */
 
 	return lbl;
 }
@@ -418,7 +420,7 @@ static void refreshtexts(void)
 	}
 
 	wfl_proccess();
-	smtr_proccess();
+	//smtr_proccess();
 }
 
 #define LVCREATE(fn) (fn)
@@ -8401,6 +8403,7 @@ static lv_draw_buf_t * smtr_get_draw_buff(void)
 /* Обновить содержимое lv_draw_buf_t - s-meter */
 static void smtr_proccess(void)
 {
+#if 0
     gxdrawb_t tdbv;
     gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) buf_smtr_buff, SM_BG_W, SM_BG_H);
 
@@ -8408,5 +8411,38 @@ static void smtr_proccess(void)
 	colpip_fillrect(& tdbv, 0, 0, SM_BG_W, SM_BG_H, display2_getbgcolor());
 	pix_display2_smeter15(& tdbv, 0, 0, SM_BG_W, SM_BG_H);
 	dcache_clean(tdbv.cachebase, tdbv.cachesize);
+
+#else
+
+	const uint_fast8_t cf = display_get_lvformat();
+	const uint_fast16_t w = smtr_buff.header.w;
+
+	smtr_buff.header.cf = cf;
+	smtr_buff.header.stride = LV_DRAW_BUF_STRIDE(w, cf);
+
+    /*Create a canvas and initialize its palette*/
+    lv_obj_t * canvas = lv_canvas_create(lv_screen_active());
+    lv_canvas_set_draw_buf(canvas, & smtr_buff);
+    lv_canvas_fill_bg(canvas, lv_color_hex3(0xccc), LV_OPA_COVER);
+    lv_obj_center(canvas);
+
+    lv_layer_t layer;
+    lv_canvas_init_layer(canvas, &layer);
+
+    lv_draw_line_dsc_t dsc;
+    lv_draw_line_dsc_init(&dsc);
+    dsc.color = lv_palette_main(LV_PALETTE_RED);
+    dsc.width = 4;
+    dsc.round_end = 1;
+    dsc.round_start = 1;
+    dsc.p1.x = 15;
+    dsc.p1.y = 15;
+    dsc.p2.x = 35;
+    dsc.p2.y = 10;
+    lv_draw_line(&layer, &dsc);
+
+    lv_canvas_finish_layer(canvas, &layer);
+
+#endif
 }
 #endif /* LCDMODE_LTDC && WITHLVGL && WITHBARS */
