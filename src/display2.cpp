@@ -245,7 +245,9 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 }
 
 static char text_freqa [32];	// текст - частота тракта A
-static char text_freqb [32];	// текст - частота тракта A
+static char text_freqb [32];	// текст - частота тракта B
+static char text_txrx [3] = "--";	// текст - режим работы
+
 
 static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
@@ -272,7 +274,6 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	dzi_add_element(lbl);
 	return lbl;
 }
-
 
 static void xxtxrx_event(lv_event_t * e)
 {
@@ -302,11 +303,12 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);
-	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_READY, NULL);
+	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);
+
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
+	lv_label_set_text_static(lbl, text_txrx);	// не вызывает heap
 	dzi_add_element(lbl);
 	return lbl;
 }
@@ -368,6 +370,22 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
 		lv_snprintf(text_freqa, ARRAY_SIZE(text_freqa), "%u.%03u.%03u", mhz, khz, hz);
 	}
+	{
+		unsigned mhz, khz, hz;
+
+		xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
+		lv_snprintf(text_freqb, ARRAY_SIZE(text_freqb), "%u.%03u.%03u", mhz, khz, hz);
+	}
+	{
+		const uint_fast8_t state = hamradio_get_tx();
+
+        lv_style_t * const s = & xxtxrxstyle;
+        lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
+        lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
+
+        lv_snprintf(text_txrx, ARRAY_SIZE(text_txrx), "%s", state ? "TX" : "RX");
+	}
+
 	wfl_proccess();
 	smtr_proccess();
 
