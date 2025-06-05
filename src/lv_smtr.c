@@ -34,7 +34,7 @@
 //static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
-//static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_txrx_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
@@ -55,23 +55,23 @@ typedef struct {
  *  STATIC VARIABLES
  **********************/
 
-//extern const lv_obj_class_t lv_smtr_class;
-
 static const lv_obj_class_t lv_smtr_class  = {
 //    .constructor_cb = lv_smtr_constructor,
 //    .destructor_cb = lv_smtr_destructor,
     .event_cb = lv_smtr_event,
-    .base_class = &lv_obj_class,
-    .instance_size = sizeof(lv_smtr_t),
+    .base_class = & lv_obj_class,
+    .instance_size = sizeof (lv_smtr_t),
     .name = "lv_smtr",
 };
 
 static const lv_obj_class_t lv_txrx_class  = {
-//    .constructor_cb = lv_txrx_constructor,
+    .constructor_cb = lv_txrx_constructor,
 //    .destructor_cb = lv_txrx_destructor,
     .event_cb = lv_txrx_event,
     .base_class = & lv_obj_class,
-    .instance_size = sizeof(lv_txrx_t),
+    .instance_size = sizeof (lv_txrx_t),
+    .width_def = LV_SIZE_CONTENT,
+    .height_def = LV_SIZE_CONTENT,
     .name = "lv_txrx",
 };
 
@@ -108,21 +108,11 @@ static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj) 
     LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
-    lv_txrx_t * cp = (lv_txrx_t *)obj;
+    lv_txrx_t * cp = (lv_txrx_t *) obj;
 
-    const int state = hamradio_get_tx();
-    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX")
-//
-//    smtr->filled = false;
-//    smtr->peak_on = false;
-//    smtr->data_size = 0;
-//    smtr->data_buf = NULL;
-//    smtr->peak_buf = NULL;
-//    smtr->min = -40;
-//    smtr->max = 0;
-//    smtr->span = 100000;
-//    smtr->delta_surplus = 0;
-
+//    const int state = hamradio_get_tx();
+//    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX");
+//    lv_label_set_text_static(obj, cp->text);
 
 
     LV_TRACE_OBJ_CREATE("finished");
@@ -137,7 +127,8 @@ static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj) 
 //}
 
 
-static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
+{
     LV_UNUSED(class_p);
 
     lv_res_t res = lv_obj_event_base(MY_CLASS_TXRX, e);	// обработчик родительского клвсса
@@ -147,6 +138,7 @@ static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	lv_layer_t * const layer = lv_event_get_layer(e);
 	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_TXRX);
 
     if (code == LV_EVENT_DRAW_MAIN_END)
     {
@@ -163,6 +155,7 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	lv_layer_t * const layer = lv_event_get_layer(e);
 	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR);
 
     if (code == LV_EVENT_DRAW_MAIN_END)
     {
