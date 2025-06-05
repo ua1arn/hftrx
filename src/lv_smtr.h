@@ -25,6 +25,7 @@ extern "C" {
  **********************/
 
 lv_obj_t * lv_smtr_create(lv_obj_t * parent);
+lv_obj_t * lv_txrx_create(lv_obj_t * parent);
 
 /*=====================
  * Setter functions

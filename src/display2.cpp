@@ -286,7 +286,6 @@ static void xxtxrx_event(lv_event_t * e)
 
     rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
 
-    //lv_event_stop_processing
 	lv_draw_rect(layer, & rect, & coords);
 }
 
@@ -329,6 +328,15 @@ static void xxsmeter_event(lv_event_t * e)
 
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
+#if 1
+	lv_obj_t * const lbl = lv_txrx_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
+
+#else
+
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);	// после отрисовки базового элемента выхывается этот callback
@@ -338,6 +346,7 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 
 	lv_label_set_text_static(lbl, text_txrx);	// не вызывает heap
+#endif
 	return lbl;
 }
 
