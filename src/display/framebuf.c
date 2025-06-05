@@ -1499,8 +1499,6 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	const uintptr_t srcinvalidateaddr = (uintptr_t) dbf->data;
 	const int_fast32_t srcinvalidatesize = dbf->data_size;
 
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 	// target size для 4-х квадрантов
 	// похоже, поворот учитывать не требуется. Но просто для "красоты" оставлю четыре варианта.
 	const uint_fast32_t tsizehw4 [4] =
