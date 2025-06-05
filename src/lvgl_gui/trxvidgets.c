@@ -27,7 +27,7 @@
  *********************/
 #define MY_CLASS_SMTR (& lv_smtr_class)
 #define MY_CLASS_TXRX (& lv_txrx_class)
-#define MY_CLASS_WTFL (& lv_wtfl_class)
+#define MY_CLASS_WTRF (& lv_wtfl_class)
 
 /**********************
  *  STATIC PROTOTYPES
@@ -94,7 +94,7 @@ static const lv_obj_class_t lv_wtfl_class  = {
     .constructor_cb = lv_wtfl_constructor,
 //    .destructor_cb = lv_wtfl_destructor,
 //    .event_cb = lv_wtfl_event,
-    .base_class = & lv_label_class,
+    .base_class = & lv_image_class,
     .instance_size = sizeof (lv_wtfl_t),
     .width_def = LV_SIZE_CONTENT,
     .height_def = LV_SIZE_CONTENT,
@@ -119,14 +119,10 @@ lv_obj_t * lv_smtr_create(lv_obj_t * parent)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTFL, parent);
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF, parent);
     lv_obj_class_init_obj(obj);
 
 	return obj;
-}
-static void value_changed_event_cb(lv_event_t * e)
-{
-	TP();
 }
 
 lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
@@ -166,10 +162,8 @@ static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
     lv_wtfl_t * const cp = (lv_wtfl_t *) obj;
 
-
 #if WITHLVGL && WITHSPECTRUMWF
 	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-
 #endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	LV_TRACE_OBJ_CREATE("finished");
@@ -182,8 +176,7 @@ static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
     lv_smtr_t * const cp = (lv_smtr_t *) obj;
 
-
-#if WITHLVGL && WITHBARS
+#if WITHLVGL && WITHBARS && 0
 	lv_img_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
 #endif /* WITHLVGL && WITHBARS */
 
