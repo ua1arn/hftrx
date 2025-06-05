@@ -17,6 +17,7 @@
 #include "core/lv_obj_private.h"
 #include "core/lv_obj_class_private.h"
 #include "widgets/label/lv_label_private.h"
+#include "widgets/image/lv_image_private.h"
 #include "misc/lv_area_private.h"
 
 #include "styles.h"
@@ -26,6 +27,7 @@
  *********************/
 #define MY_CLASS_SMTR (& lv_smtr_class)
 #define MY_CLASS_TXRX (& lv_txrx_class)
+#define MY_CLASS_WTFL (& lv_wtfl_class)
 
 /**********************
  *  STATIC PROTOTYPES
@@ -38,6 +40,10 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
 static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_txrx_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_wtfl_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
  *      TYPEDEFS
@@ -53,6 +59,12 @@ typedef struct
 	lv_label_t label;
 	char text [32];
 } lv_txrx_t;
+
+typedef struct
+{
+	lv_image_t img;
+	//char text [32];
+} lv_wtfl_t;
 
 /**********************
  *  STATIC VARIABLES
@@ -78,19 +90,40 @@ static const lv_obj_class_t lv_txrx_class  = {
     .name = "lv_txrx",
 };
 
+static const lv_obj_class_t lv_wtfl_class  = {
+    .constructor_cb = lv_wtfl_constructor,
+//    .destructor_cb = lv_wtfl_destructor,
+//    .event_cb = lv_wtfl_event,
+    .base_class = & lv_label_class,
+    .instance_size = sizeof (lv_wtfl_t),
+    .width_def = LV_SIZE_CONTENT,
+    .height_def = LV_SIZE_CONTENT,
+    .name = "lv_wtfl",
+};
+
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_obj_t * lv_smtr_create(lv_obj_t * parent) {
+lv_obj_t * lv_smtr_create(lv_obj_t * parent)
+{
     LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SMTR, parent);
     lv_obj_class_init_obj(obj);
 
-    return obj;
+	return obj;
 }
 
 
+
+lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTFL, parent);
+    lv_obj_class_init_obj(obj);
+
+	return obj;
+}
 static void value_changed_event_cb(lv_event_t * e)
 {
 	TP();
@@ -126,6 +159,22 @@ static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("finished");
 }
 
+static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_wtfl_t * const cp = (lv_wtfl_t *) obj;
+
+
+#if WITHLVGL && WITHSPECTRUMWF
+	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+
+#endif /* WITHLVGL && WITHSPECTRUMWF */
+
+	LV_TRACE_OBJ_CREATE("finished");
+}
+
 static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
@@ -133,6 +182,10 @@ static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
     lv_smtr_t * const cp = (lv_smtr_t *) obj;
 
+
+#if WITHLVGL && WITHBARS
+	lv_img_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+#endif /* WITHLVGL && WITHBARS */
 
     LV_TRACE_OBJ_CREATE("finished");
 }

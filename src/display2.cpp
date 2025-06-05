@@ -90,9 +90,6 @@ static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
 static lv_style_t xxupdateablestyle;
 
-static lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
-static void wfl_proccess(void);	/* построить растр с водопадом и спектром */
-
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
 // преобразование цвета в тип LVGL
@@ -358,10 +355,6 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
-//
-//#if WITHLVGL && WITHBARS
-//	lv_img_set_src(lbl, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-//#endif /* WITHLVGL && WITHBARS */
 
 	return lbl;
 }
@@ -378,17 +371,12 @@ static void xxspectrum_event(lv_event_t * e)
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_image_create(parent);
+	lv_obj_t * const lbl = lv_wtrf_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 	//lv_obj_add_event_cb(lbl, xxspectrum_event, LV_EVENT_RENDER_READY, NULL);
-
-#if WITHLVGL && WITHSPECTRUMWF
-	lv_image_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-
-#endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	return lbl;
 }
@@ -8358,7 +8346,7 @@ COLORPIP_T display2_get_spectrum(int x)
 LV_DRAW_BUF_DEFINE_STATIC(wfl_buff, GRID2X(CHARS2GRID(BDTH_ALLRX)), GRID2Y(BDCV_ALLRX), LV_COLOR_FORMAT_ARGB8888);
 
 // подготовка lv_draw_buf_t с изображением спектра/водопада
-static lv_draw_buf_t * wfl_get_draw_buff(void)
+lv_draw_buf_t * wfl_get_draw_buff(void)
 {
 	const uint_fast8_t cf = display_get_lvformat();
 	const uint_fast16_t w = wfl_buff.header.w;
@@ -8370,7 +8358,7 @@ static lv_draw_buf_t * wfl_get_draw_buff(void)
 }
 
 /* Обновить содержимое lv_draw_buf_t - растр с водопадом и спектром */
-static void wfl_proccess(void)
+void wfl_proccess(void)
 {
 	pipparams_t pip;
 	display2_getpipparams(& pip);

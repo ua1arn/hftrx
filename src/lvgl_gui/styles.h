@@ -15,6 +15,10 @@ lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цв�
 lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
 void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
 
+
+lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
+void wfl_proccess(void);	/* построить растр с водопадом и спектром */
+
 lv_obj_t * lv_smtr_create(lv_obj_t * parent);	// s-meter
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
 lv_obj_t * lv_txrx_create(lv_obj_t * parent);	// tx/rx indicator
