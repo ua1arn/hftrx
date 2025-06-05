@@ -1203,6 +1203,7 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
         default:
         	PRINTF("awrot_execute_drawing: t->type=%d\n", (int) t->type);
         	break;
+        case LV_DRAW_TASK_TYPE_LAYER:
     	case LV_DRAW_TASK_TYPE_IMAGE:
     		draw_awg2d_image(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
     		break;
@@ -1295,6 +1296,8 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
         case LV_DRAW_TASK_TYPE_FILL:
         	{
                 lv_draw_fill_dsc_t * dsc = task->draw_dsc;
+                if (lv_area_get_width(& task->area) < 2)
+                	return 0;
                 if(!(dsc->radius == 0
                      && dsc->grad.dir == LV_GRAD_DIR_NONE
                      && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
