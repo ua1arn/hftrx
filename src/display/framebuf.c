@@ -22,6 +22,14 @@
 #include <string.h>
 
 
+#if WITHLVGL
+
+#include "lvgl.h"
+#include "draw/lv_draw_private.h"
+#include "draw/lv_draw_image_private.h"
+
+#endif /* WITHLVGL */
+
 static void softfill(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -924,6 +932,16 @@ void arm_hardware_mdma_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
+// Add custom draw unit
+#if WITHLVGL
+
+void lvglhw_initialize(void)
+{
+
+}
+
+#endif /* WITHLVGL */
+
 #elif WITHMDMAHW & CPUSTYLE_ALLWINNER
 
 /* Использование G2D для формирования изображений */
@@ -1073,9 +1091,6 @@ void arm_hardware_mdma_initialize(void)
 
 #if WITHLVGL
 
-#include "lvgl.h"
-#include "draw/lv_draw_private.h"
-#include "draw/lv_draw_image_private.h"
 
 #define DRAW_UNIT_ID_AWG2D 77
 #define DRAW_UNIT_ID_AWROT 78
@@ -1998,6 +2013,16 @@ void draw_awg2d_deinit(void)
 #endif
 }
 
+#endif /* WITHLVGL */
+
+#endif /* WITHMDMAHW */
+
+
+#if ! (LCDMODE_DUMMY)
+
+
+#if WITHLVGL
+
 uint32_t display_get_lvformat(void)
 {
 #if LCDMODE_LTDC
@@ -2014,12 +2039,7 @@ uint32_t display_get_lvformat(void)
     	return LV_COLOR_FORMAT_ARGB8888;
 #endif
 }
-
 #endif /* WITHLVGL */
-
-#endif /* WITHMDMAHW */
-
-#if ! (LCDMODE_DUMMY)
 
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.

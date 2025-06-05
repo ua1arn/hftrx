@@ -122,6 +122,9 @@
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
+
+	#define BOARD_DSTYLE "g_x800_y480.h"
+	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */

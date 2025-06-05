@@ -139,7 +139,9 @@
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
+
 	#define BOARD_DSTYLE "g_x800_y480.h"
+	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
 #elif 1
@@ -169,7 +171,9 @@
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
+
 	#define BOARD_DSTYLE "g_x800_y480.h"
+	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
 #elif 1
