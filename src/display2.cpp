@@ -267,18 +267,15 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	return lbl;
 }
 
+// Вызывается после завершения отрисовки базового объекта
 static void xxtxrx_event(lv_event_t * e)
 {
-    lv_obj_t        *obj = (lv_obj_t *) lv_event_get_target(e);
-//    tx_band_item_t  *item = lv_event_get_user_data(e);
-//
-//    item->vref = lv_spinbox_get_value(obj);
-	const uint_fast8_t state = hamradio_get_tx();
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	lv_layer_t * const layer = lv_event_get_layer(e);
+	const lv_event_code_t code = lv_event_get_code(e);
 
-//	lv_style_t * const s = & xxtxrxstyle;
-//	lv_style_set_bg_color(s, display_lvlcolor(state ? COLORPIP_RED : COLORPIP_GREEN));
-//	lv_style_set_text_color(s, display_lvlcolor(state ? COLORPIP_BLACK : COLORPIP_BLACK));
-//	lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
+	ASSERT(LV_EVENT_DRAW_MAIN == code);
+	const uint_fast8_t state = hamradio_get_tx();
 
     lv_area_t coords;
     lv_obj_get_coords(obj, & coords);	// координаты объекта
@@ -290,7 +287,45 @@ static void xxtxrx_event(lv_event_t * e)
 
     rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
 
-    lv_draw_rect(lv_event_get_layer(e), & rect, & coords);
+    //lv_event_stop_processing
+	lv_draw_rect(layer, & rect, & coords);
+}
+
+// Вызывается после завершения отрисовки базового объекта
+static void xxsmeter_event(lv_event_t * e)
+{
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	lv_layer_t * const layer = lv_event_get_layer(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+
+	ASSERT(LV_EVENT_DRAW_MAIN == code);
+	const uint_fast8_t state = hamradio_get_tx();
+
+    lv_area_t coords;
+    lv_obj_get_coords(obj, & coords);	// координаты объекта
+//    lv_area_set_width(& coords, 4);
+//    lv_area_set_height(& coords, 4);
+
+    lv_draw_rect_dsc_t rect;
+    lv_draw_rect_dsc_init(& rect);
+
+    rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
+
+	//lv_draw_rect(layer, & rect, & coords);
+
+    {
+        lv_draw_line_dsc_t dsc;
+        lv_draw_line_dsc_init(& dsc);
+        dsc.color = lv_palette_main(LV_PALETTE_RED);
+        dsc.width = 4;
+        dsc.round_end = 1;
+        dsc.round_start = 1;
+        dsc.p1.x = coords.x1;
+        dsc.p1.y = coords.y1;
+        dsc.p2.x = coords.x2;
+        dsc.p2.y = coords.y2;
+        lv_draw_line(layer, & dsc);
+    }
 }
 
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -310,6 +345,8 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_img_create(parent);
+
+	lv_obj_add_event_cb(lbl, xxsmeter_event, LV_EVENT_DRAW_MAIN, NULL);	// после отрисовки базового элемента выхывается этот callback
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
