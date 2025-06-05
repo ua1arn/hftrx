@@ -163,7 +163,7 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
 		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 		uint_fast8_t tracemax;
-		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		uint_fast8_t smtrvalue = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
@@ -196,10 +196,16 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
             dsc.width = 1;
             dsc.round_end = 0;
             dsc.round_start = 0;
-            dsc.p1.x = coords.x1;
-            dsc.p1.y = coords.y1;
-            dsc.p2.x = coords.x2;
-            dsc.p2.y = coords.y2;
+
+            // диагональ
+            lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
+
+            lv_value_precise_t delta = lv_area_get_width(& coords) * smtrvalue / UINT8_MAX;
+            lv_point_precise_set(& dsc.p1, coords.x1 + delta, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x1 + delta, coords.y2);
+
+
             lv_draw_line(layer, & dsc);
         }
 
