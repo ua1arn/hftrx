@@ -12,6 +12,9 @@ void lvgl_test(void);	// создание элементов на главном
 void lvgl_dev_init(void);
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
+lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
+void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
+
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 
 	#include "misc/lv_types.h"

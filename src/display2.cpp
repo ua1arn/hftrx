@@ -94,9 +94,6 @@ static lv_style_t xxupdateablestyle;
 static lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 static void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
-static lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
-static void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
-
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
 // преобразование цвета в тип LVGL
@@ -420,7 +417,7 @@ static void refreshtexts(void)
 	}
 
 	wfl_proccess();
-	//smtr_proccess();
+	smtr_proccess();
 }
 
 #define LVCREATE(fn) (fn)
@@ -8389,7 +8386,7 @@ static void wfl_proccess(void)
 LV_DRAW_BUF_DEFINE_STATIC(smtr_buff, SM_BG_W, SM_BG_H, LV_COLOR_FORMAT_ARGB8888);
 
 // подготовка lv_draw_buf_t с изображением спектра/водопада
-static lv_draw_buf_t * smtr_get_draw_buff(void)
+lv_draw_buf_t * smtr_get_draw_buff(void)
 {
 	const uint_fast8_t cf = display_get_lvformat();
 	const uint_fast16_t w = smtr_buff.header.w;
@@ -8401,9 +8398,9 @@ static lv_draw_buf_t * smtr_get_draw_buff(void)
 }
 
 /* Обновить содержимое lv_draw_buf_t - s-meter */
-static void smtr_proccess(void)
+void smtr_proccess(void)
 {
-#if 0
+#if 1
     gxdrawb_t tdbv;
     gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) buf_smtr_buff, SM_BG_W, SM_BG_H);
 

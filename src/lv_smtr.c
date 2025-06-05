@@ -8,8 +8,15 @@
  *      INCLUDES
  *********************/
 
-#include <stdlib.h>
+#include "hardware.h"
+#include "lvgl.h"
+#include "core/lv_obj_private.h"
+#include "core/lv_obj_class_private.h"
+#include "misc/lv_area_private.h"
+
 #include "lv_smtr.h"
+
+#include "lvgl_gui/styles.h"
 
 /*********************
  *      DEFINES
@@ -25,8 +32,18 @@ static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
+ *      TYPEDEFS
+ **********************/
+
+typedef struct {
+    lv_obj_t            obj;
+} lv_smtr_t;
+
+/**********************
  *  STATIC VARIABLES
  **********************/
+
+//extern const lv_obj_class_t lv_smtr_class;
 
 const lv_obj_class_t lv_smtr_class  = {
     .constructor_cb = lv_smtr_constructor,
@@ -122,13 +139,26 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     if (code == LV_EVENT_DRAW_MAIN_END)
     {
-        lv_smtr_t   *smtr = (lv_smtr_t *) obj;
+        lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
+        lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
 
 //		lv_coord_t w = lv_obj_get_width(obj);
 //		lv_coord_t h = lv_obj_get_height(obj);
+
+//        {
+//        	lv_draw_image_dsc_t img;
+//        	lv_draw_image_dsc_init(& img);
+//
+//        	lv_area_t srcrect;
+//        	lv_area_set_pos(& srcrect, 0, 0);
+//        	lv_area_set_width(& srcrect, smeterdesc->header.w);
+//        	lv_area_set_height(& srcrect, smeterdesc->header.h);
+//        	lv_draw_image(layer, smeterdesc, & srcrect);
+//        }
+
 		{
             lv_draw_line_dsc_t dsc;
             lv_draw_line_dsc_init(& dsc);
