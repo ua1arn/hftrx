@@ -193,8 +193,8 @@ static void lvstales_initialize(void)
 		// TX/RX indicator
 		lv_style_t * const s = & xxtxrxstyle;
 	    lv_style_init(s);
-		lv_style_set_border_width(s, 0);
-		lv_style_set_radius(s, 4);
+//		lv_style_set_border_width(s, 0);
+//		lv_style_set_radius(s, 8);
 	}
 
 	{
@@ -281,21 +281,23 @@ static void xxtxrx_event(lv_event_t * e)
 //	lv_label_set_text_static(obj, state ? "TX" : "RX");	// не вызывает heap
 
     lv_area_t coords;
-    lv_obj_get_coords(obj, &coords);	// координаты объекта при
+    lv_obj_get_coords(obj, & coords);	// координаты объекта
+    lv_area_set_width(& coords, 4);
+    lv_area_set_height(& coords, 4);
 
-    lv_draw_rect_dsc_t r;
-    lv_draw_rect_dsc_init(&r);
+    lv_draw_rect_dsc_t rect;
+    lv_draw_rect_dsc_init(& rect);
 
-    r.bg_color = state ? lv_color_make(255, 0, 0) : lv_color_make(0, 255, 0);
+    rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
 
-    lv_draw_rect(lv_event_get_layer(e), &r, & coords);
+    lv_draw_rect(lv_event_get_layer(e), & rect, & coords);
 }
 
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	//lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);
+	lv_obj_add_event_cb(lbl, xxtxrx_event, LV_EVENT_DRAW_MAIN, NULL);	// после отрисовки базового элемента выхывается этот callback
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
