@@ -9,6 +9,9 @@
  *********************/
 
 #include "hardware.h"
+
+#if WITHLVGL
+
 #include "formats.h"
 #include "board.h"
 #include "display2.h"
@@ -73,7 +76,7 @@ typedef struct
 static const lv_obj_class_t lv_smtr_class  = {
     .constructor_cb = lv_smtr_constructor,
 //    .destructor_cb = lv_smtr_destructor,
-//    .event_cb = lv_smtr_event,
+    .event_cb = lv_smtr_event,
     .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_smtr_t),
     .name = "lv_smtr",
@@ -371,3 +374,6 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 //        }
     }
 }
+
+#endif /* WITHLVGL */
+
