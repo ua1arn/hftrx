@@ -87,18 +87,13 @@ static lv_style_t xxfreqbstyle;
 static lv_style_t xxdivstyle;
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
+static lv_style_t xxupdateablestyle;
 
 static lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 static void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
 static lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
 static void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
-
-
-#define NOBJ 128
-
-static lv_obj_t * lbl_dynamics [NOBJ];
-static unsigned lbl_dynamicn;
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
@@ -201,14 +196,11 @@ static void lvstales_initialize(void)
 		lv_style_set_border_width(s, 0);
 		lv_style_set_radius(s, 4);
 	}
-}
 
-// динамические элементы добавляются для передаяи им invalidate
-static void dzi_add_element(lv_obj_t * obj)
-{
-	if (lbl_dynamicn < NOBJ)
 	{
-		lbl_dynamics [lbl_dynamicn ++] = obj;
+		// Периодически требуется обновить содержимое
+		lv_style_t * const s = & xxupdateablestyle;
+	    lv_style_init(s);
 	}
 }
 
@@ -227,9 +219,9 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 	//lv_label
 
-	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -238,9 +230,9 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 	//lv_label
 
-	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -255,10 +247,10 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqastyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 	//lv_label
 
 	lv_label_set_text_static(lbl, text_freqa);	// не вызывает heap
-	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -268,10 +260,10 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 	//lv_label
 
 	lv_label_set_text_static(lbl, text_freqb);	// не вызывает heap
-	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -307,9 +299,9 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 
 	lv_label_set_text_static(lbl, text_txrx);	// не вызывает heap
-	dzi_add_element(lbl);
 	return lbl;
 }
 
@@ -319,10 +311,10 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 
 #if WITHLVGL && WITHBARS
 	lv_img_set_src(lbl, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-	dzi_add_element(lbl);
 #endif /* WITHLVGL && WITHBARS */
 
 	return lbl;
@@ -344,12 +336,12 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
+	lv_obj_add_style(lbl, & xxupdateablestyle, 0);
 	//lv_obj_add_event_cb(lbl, xxspectrum_event, LV_EVENT_RENDER_READY, NULL);
 
 #if WITHLVGL && WITHSPECTRUMWF
 	lv_image_set_src(lbl, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
 
-	dzi_add_element(lbl);
 #endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	return lbl;
@@ -362,7 +354,7 @@ static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned 
     * hz = freq % 1000;
 }
 
-static void lvgl_task1_cb(lv_timer_t * tmr)
+static void refreshtexts(void)
 {
 	{
 		unsigned mhz, khz, hz;
@@ -388,18 +380,6 @@ static void lvgl_task1_cb(lv_timer_t * tmr)
 
 	wfl_proccess();
 	smtr_proccess();
-
-	if (lbl_dynamicn)
-	{
-		unsigned i;
-		for (i = 0; i < lbl_dynamicn; ++ i)
-		{
-			lv_obj_t * const obj = lbl_dynamics [i];
-
-			lv_obj_invalidate(obj);
-
-		}
-	}
 }
 
 #define LVCREATE(fn) (fn)
@@ -7535,15 +7515,6 @@ static uint_fast8_t getpageix(
 	return inmenu ? PAGEMENU : menuset;
 }
 
-static uint_fast16_t
-getsubset(
-	uint_fast8_t inmenu,		/* находимся в режиме отображения настроек */
-	uint_fast8_t menuset	/* индекс режима отображения (0..DISPLC_MODCOUNT - 1) */
-	)
-{
-	return REDRSUBSET(getpageix(inmenu, menuset));
-}
-
 // выполнение отрисовки всех элементов за раз.
 // Например при работе в меню
 static void 
@@ -7588,7 +7559,7 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 	return 0;
 
 #else
-	const uint_fast16_t subset = getsubset(inmenu, menuset);
+	const uint_fast16_t subset = REDRSUBSET(getpageix(inmenu, menuset));
 	uint_fast8_t i;
 
 	for (i = 0; i < WALKCOUNT; ++ i)
@@ -7621,6 +7592,8 @@ void display2_bgprocess(
 		dctx_t * pctx
 		)
 {
+	const uint_fast8_t ix = getpageix(inmenu, menuset);	// требуемая страница для показа (включая меню и sleep)
+
 	if (redrawreq == 0)
 		return;
 	redrawreq = 0;
@@ -7634,8 +7607,14 @@ void display2_bgprocess(
 			lv_obj_t * const wnd = xxmainwnds [page];
 			if (wnd == NULL)
 				continue;
-			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != getpageix(inmenu, menuset));
+			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != ix);
 		}
+	}
+	if (xxmainwnds [ix])
+	{
+		refreshtexts();
+		//lv_obj_move_foreground(xxmainwnds [ix]);
+		lv_obj_invalidate(xxmainwnds [ix]);
 	}
 	lv_task_handler();
 	return;
@@ -7643,6 +7622,7 @@ void display2_bgprocess(
 #elif LINUX_SUBSYSTEM
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+	// may be REDRSUBSET(ix)
 	display_walktrough(& dbv, REDRSUBSET(menuset), pctx);
 
 #elif ! LCDMODE_LTDC
@@ -7650,7 +7630,9 @@ void display2_bgprocess(
 
 #elif WITHRENDERHTML
 
-	document::ptr doc = hftrxmain_docs [menuset];
+	document::ptr doc = hftrxmain_docs [ix];
+	if (doc == NULL)
+		return;
 	if (0)
 	{
 		litehtml::css_selector sel;
@@ -7726,7 +7708,7 @@ void display2_bgprocess(
 	// обычное отображение, без LVGL или litehtml
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-	display_walktrough(& dbv, getsubset(inmenu, menuset), pctx);
+	display_walktrough(& dbv, REDRSUBSET(ix), pctx);
 #endif
 }
 
@@ -7804,11 +7786,11 @@ void display2_initialize(void)
 			}
 		}
 	}
-	{
-		static lv_timer_t * lvgl_task1;
-		lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
-		lv_timer_set_repeat_count(lvgl_task1, -1);
-	}
+//	{
+//		static lv_timer_t * lvgl_task1;
+//		lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
+//		lv_timer_set_repeat_count(lvgl_task1, -1);
+//	}
 #endif
 
 #endif /* WITHLVGL */
