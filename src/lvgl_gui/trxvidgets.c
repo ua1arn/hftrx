@@ -9,17 +9,17 @@
  *********************/
 
 #include "hardware.h"
+#include "formats.h"
 #include "board.h"
 #include "display2.h"
 
 #include "lvgl.h"
 #include "core/lv_obj_private.h"
 #include "core/lv_obj_class_private.h"
+#include "widgets/label/lv_label_private.h"
 #include "misc/lv_area_private.h"
 
-#include "lv_smtr.h"
-
-#include "lvgl_gui/styles.h"
+#include "styles.h"
 
 /*********************
  *      DEFINES
@@ -43,13 +43,15 @@ static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e);
  *      TYPEDEFS
  **********************/
 
-typedef struct {
-    lv_obj_t            obj;
+typedef struct
+{
+	lv_obj_t obj;
 } lv_smtr_t;
 
-typedef struct {
-    lv_obj_t            obj;
-    char text [32];
+typedef struct
+{
+	lv_label_t label;
+	char text [32];
 } lv_txrx_t;
 
 /**********************
@@ -59,7 +61,7 @@ typedef struct {
 static const lv_obj_class_t lv_smtr_class  = {
     .constructor_cb = lv_smtr_constructor,
 //    .destructor_cb = lv_smtr_destructor,
-    .event_cb = lv_smtr_event,
+//    .event_cb = lv_smtr_event,
     .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_smtr_t),
     .name = "lv_smtr",
@@ -68,10 +70,10 @@ static const lv_obj_class_t lv_smtr_class  = {
 static const lv_obj_class_t lv_txrx_class  = {
     .constructor_cb = lv_txrx_constructor,
 //    .destructor_cb = lv_txrx_destructor,
-//    .event_cb = lv_txrx_event,
-    .base_class = & lv_obj_class, // need lv_label_class
+    .event_cb = lv_txrx_event,
+    .base_class = & lv_label_class,
     .instance_size = sizeof (lv_txrx_t),
-    .width_def = LV_PCT(100), //LV_SIZE_CONTENT,
+    .width_def = LV_SIZE_CONTENT,
     .height_def = LV_SIZE_CONTENT,
     .name = "lv_txrx",
 };
@@ -86,6 +88,12 @@ lv_obj_t * lv_smtr_create(lv_obj_t * parent) {
     lv_obj_class_init_obj(obj);
 
     return obj;
+}
+
+
+static void value_changed_event_cb(lv_event_t * e)
+{
+	TP();
 }
 
 lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
@@ -113,10 +121,8 @@ static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     lv_txrx_t * const cp = (lv_txrx_t *) obj;
 
     const int state = hamradio_get_tx();
-    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX");
-//    lv_label_set_text_static(obj, cp->text);
-
-
+    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", "--");
+    lv_label_set_text_static(obj, cp->text);
     LV_TRACE_OBJ_CREATE("finished");
 }
 
@@ -136,31 +142,31 @@ static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 //    LV_UNUSED(class_p);
 //    lv_smtr_t * smtr = (lv_smtr_t *)obj;
 //
-////    if (smtr->data_buf) lv_mem_free(smtr->data_buf);
-////    if (smtr->peak_buf) lv_mem_free(smtr->peak_buf);
 //}
 
 
 static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
     LV_UNUSED(class_p);
-    return;
-    lv_res_t res = lv_obj_event_base(MY_CLASS_TXRX, e);	// обработчик родительского клвсса
-
-    if (res != LV_RES_OK) return;
-
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	lv_layer_t * const layer = lv_event_get_layer(e);
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_TXRX);
 
-    if (code == LV_EVENT_DRAW_MAIN_END)
+    // текст обновляем перед отрисовкой
+    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
     {
+    	lv_txrx_t   * const cp = (lv_txrx_t *) obj;
+        const int state = hamradio_get_tx();
+        lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX");
     }
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_TXRX, e);	// обработчик родительского клвсса
+    if (res != LV_RES_OK) return;
 }
 
 static
-uint_fast16_t normalize3(
+uint_fast16_t normalize31(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,
 	uint_fast16_t rawmid,
@@ -170,9 +176,9 @@ uint_fast16_t normalize3(
 	)
 {
 	if (raw < rawmid)
-		return normalize(raw, rawmin, rawmid, range1);
+		return normalize(raw, rawmin, rawmid - 1, range1 - 1);
 	else
-		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
+		return normalize(raw - rawmid, 0, rawmax - rawmid - 1, range2 - range1 - 1) + range1;
 }
 
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
@@ -202,8 +208,8 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 		uint_fast8_t tracemax;
 		uint_fast8_t smtrvalue = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-		uint_fast16_t gv_pos = gs + normalize3(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
-		uint_fast16_t gv_trace = gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+		uint_fast16_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+		uint_fast16_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);

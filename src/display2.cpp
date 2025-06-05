@@ -25,7 +25,6 @@
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 #include "src/lvgl_gui/styles.h"
 
-#include "lv_smtr.h"
 #endif /* WITHLVGL */
 
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
