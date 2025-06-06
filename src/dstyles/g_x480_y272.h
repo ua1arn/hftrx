@@ -126,14 +126,14 @@
 			{	10, 51,	3,	0,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 			{	14, 51,	5,	0,	display2_thermo5,	& dzi_default, PGALL, },	// thermo sensor 20.7C
 			{	19, 51,	5,	0,	display2_currlevel5, & dzi_default, PGALL, },	// PA drain current d.dd without "A"
-			{	25, 51,	5,	0,	display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
+			{	25, 51,	5,	0,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
 		#if WITHAMHIGHKBDADJ
 			{	25, 51,	5,	0,	display_amfmhighcut5,& dzi_default, PGALL, },	// 13.70
 		#endif /* WITHAMHIGHKBDADJ */
 
 			// sleep mode display
 			{	5,	24,	12,	0,	display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-			{	20, 24,	5,	0,	display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
+			{	20, 24,	5,	0,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 		#if WITHMENU
 			{	0,				0,		0,	0,	display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню

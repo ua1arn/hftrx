@@ -151,7 +151,7 @@
 		//{	XX,	DLE1,	8,	0,	display_samfreqdelta8, & dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		// sleep mode display
 		{	5,	25,	12,	0,	display2_datetime12, & dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5,	0,	display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	5,	0,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 		{	0,	DLES, 0,	0,	gui_WM_walkthrough, & dzi_default, PGWFL | PGSPE, },
 
 		{	0,	0, 0,	0,	display2_keyboard_menu, & dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню

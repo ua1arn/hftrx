@@ -262,7 +262,11 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (LV_EVENT_DRAW_MAIN_BEGIN == code)
     {
     	lv_info_t   * const cp = (lv_info_t *) obj;
-        (* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext));
+        int len = (* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext) - 1);
+        if (len > 0)
+        	cp->infotext [len] = '\0';
+        else
+        	cp->infotext [0] = '\0';
     }
 
     lv_res_t res = lv_obj_event_base(MY_CLASS_INFO, e);	// обработчик родительского клвсса

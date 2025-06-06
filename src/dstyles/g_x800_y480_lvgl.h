@@ -118,8 +118,8 @@
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
-		{	1, 	25,	5, 5, display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
-		{	7, 	25,	6, 5, display2_currlevelA6, & dzi_default, PGALL, },	// PA drain current d.dd with "A"
+		{	1, 	25,	5, 5, display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
+		{	7, 	25,	6, 5, display2_currlevelA6, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25,
 		//{	19, 25,
@@ -158,7 +158,7 @@
 
 		// sleep mode display
 		{	5,	25,	12, 5, display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5, 5, display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	5, 5, display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if 0
 		{	0,	0,	0, 0, display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола

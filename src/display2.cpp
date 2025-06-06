@@ -298,6 +298,95 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
+static int infocb_rxbw(char * b, size_t len)
+{
+	return lv_snprintf(b, len, "%s", hamradio_get_rxbw_label3_P());
+}
+
+static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbw);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
+static int infocb_rxbwval(char * b, size_t len)
+{
+	return lv_snprintf(b, len, "%s", hamradio_get_rxbw_value4());
+}
+
+static lv_obj_t * dzi_create_rxbwval(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbwval);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
+static int infocb_voltlevel(char * b, size_t len)
+{
+#if WITHVOLTLEVEL
+	const int voltx = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	const int volts = voltx / 10;
+	const int volts01 = voltx > 0 ? (voltx % 10) : (- voltx % 10);
+	return lv_snprintf(b, len, "%d.%dV", volts, volts01);
+#else
+	return 0;
+#endif
+}
+
+static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_voltlevel);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
+static int infocb_currlevel(char * b, size_t len)
+{
+#if WITHCURRLEVEL || WITHCURRLEVEL2
+	return lv_snprintf(b, len, "%d.%dA", 0, 0);
+#else
+	return 0;
+#endif
+}
+
+static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_currlevel);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
+static int infocb_siglevel(char * b, size_t len)
+{
+#if WITHIF4DSP
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+
+	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
+	return lv_snprintf(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
+#else
+	return 0;
+#endif
+}
+
+static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_siglevel);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
 static int infocb_attenuator(char * b, size_t len)
 {
 	return lv_snprintf(b, len, "%s", hamradio_get_att_value_P());
@@ -479,6 +568,41 @@ static dzitem_t dzi_bypass =
 {
 	.lvelementcreate = LVCREATE(dzi_create_bypass),
 	.id = "byp"
+};
+
+// nar/wid/nor
+static dzitem_t dzi_rxbw =
+{
+	.lvelementcreate = LVCREATE(dzi_create_rxbw),
+	.id = "rxbw"
+};
+
+// 3.1k
+static dzitem_t dzi_rxbwval =
+{
+	.lvelementcreate = LVCREATE(dzi_create_rxbwval),
+	.id = "rxbwval"
+};
+
+// 3.1k
+static dzitem_t dzi_siglevel =
+{
+	.lvelementcreate = LVCREATE(dzi_create_siglevel),
+	.id = "siglevel"
+};
+
+// 12.7V
+static dzitem_t dzi_voltlevel =
+{
+	.lvelementcreate = LVCREATE(dzi_create_voltlevel),
+	.id = "voltlevel"
+};
+
+// 6.3A
+static dzitem_t dzi_currlevel =
+{
+	.lvelementcreate = LVCREATE(dzi_create_currlevel),
+	.id = "currlevel"
 };
 
 #if WITHALTERNATIVEFONTS

@@ -131,8 +131,8 @@ static const dzone_t dzones [] =
 	//{	45,	20,	4,	4,	display2_lockstate4, & dzi_default, PGALL, },	// LOCK
 
 	// размещены под S-метром (15 ячеек)
-	{	1, 	25,	5,	4,	display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
-	{	7, 	25,	0,	4,	display2_currlevelA6, & dzi_default, PGALL, },	// PA drain current d.dd with "A"
+	{	1, 	25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
+	{	7, 	25,	0,	4,	display2_currlevelA6, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
 	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 	{	19,	25,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
@@ -178,7 +178,7 @@ static const dzone_t dzones [] =
 
 	// sleep mode display
 	{	5,	25,	12,	4,	display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-	{	20, 25,	5,	4,	display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
+	{	20, 25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 #if WITHMENU
 	{	15, 25,	0,	0,	display2_popup,		& dzi_default, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
 #endif /* WITHMENU */

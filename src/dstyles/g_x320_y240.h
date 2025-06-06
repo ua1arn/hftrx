@@ -186,10 +186,10 @@
 			//{	22, 25,	display_samfreqdelta8, & dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 		#if WITHVOLTLEVEL
-			{	0, 28,	display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
+			{	0, 28,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
 		#endif /* WITHVOLTLEVEL */
 		#if WITHCURRLEVEL || WITHCURRLEVEL2
-			{	6, 28,	display2_currlevelA6, & dzi_default, PGALL, },	// amphermeter with "A"
+			{	6, 28,	display2_currlevelA6, & dzi_currlevel, PGALL, },	// amphermeter with "A"
 		#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 		#if defined (RTC1_TYPE)
 			{	13, 28,	display_time8,		& dzi_default, PGALL, },	// TIME
