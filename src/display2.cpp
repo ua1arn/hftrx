@@ -365,7 +365,6 @@ static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * 
 }
 
 static char text_freqa [32];	// текст - частота тракта A
-static char text_freqb [32];	// текст - частота тракта B
 
 
 static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -381,12 +380,11 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 
 static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_label_create(parent);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqb);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
 
-	lv_label_set_text_static(lbl, text_freqb);	// не вызывает heap
 	return lbl;
 }
 
@@ -437,12 +435,6 @@ static void refreshtexts(void)
 
 		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
 		lv_snprintf(text_freqa, ARRAY_SIZE(text_freqa), "%u.%03u.%03u", mhz, khz, hz);
-	}
-	{
-		unsigned mhz, khz, hz;
-
-		xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
-		lv_snprintf(text_freqb, ARRAY_SIZE(text_freqb), "%u.%03u.%03u", mhz, khz, hz);
 	}
 
 }
