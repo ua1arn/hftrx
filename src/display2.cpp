@@ -364,17 +364,14 @@ static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * 
 	return lbl;
 }
 
-static char text_freqa [32];	// текст - частота тракта A
-
 
 static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_label_create(parent);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqa);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqastyle, 0);
 
-	lv_label_set_text_static(lbl, text_freqa);	// не вызывает heap
 	return lbl;
 }
 
@@ -421,22 +418,8 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
-static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
-{
-    * mhz = freq / 1000000;
-    * khz = (freq / 1000) % 1000;
-    * hz = freq % 1000;
-}
-
 static void refreshtexts(void)
 {
-	{
-		unsigned mhz, khz, hz;
-
-		xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
-		lv_snprintf(text_freqa, ARRAY_SIZE(text_freqa), "%u.%03u.%03u", mhz, khz, hz);
-	}
-
 }
 
 #define LVCREATE(fn) (fn)
