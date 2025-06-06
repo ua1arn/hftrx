@@ -347,6 +347,56 @@ static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * d
 	return lbl;
 }
 
+// Печать времени - только часы и минуты, без секунд
+// Jan-01 13:40
+static int infocb_datetime12(char * b, size_t len)
+{
+#if defined (RTC1_TYPE)
+
+	uint_fast16_t year;
+	uint_fast8_t month, day;
+	uint_fast8_t hour, minute, seconds;
+	static const char months [12] [4] =
+	{
+		"JAN",
+		"FEB",
+		"MAR",
+		"APR",
+		"MAY",
+		"JUN",
+		"JUL",
+		"AUG",
+		"SEP",
+		"OCT",
+		"NOV",
+		"DEC",
+	};
+
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
+
+	return lv_snprintf(b, len, "%s-%02d %02d%c%02d",
+		months [month - 1],
+		(int) day,
+		(int) hour,
+		((seconds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		(int) minute
+		);
+#else
+	return 0;
+#endif
+}
+
+// Печать времени - только часы и минуты, без секунд
+// Jan-01 13:40
+static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_datetime12);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	return lbl;
+}
+
 static int infocb_currlevel(char * b, size_t len)
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
@@ -600,6 +650,13 @@ static dzitem_t dzi_voltlevel =
 {
 	.lvelementcreate = LVCREATE(dzi_create_voltlevel),
 	.id = "voltlevel"
+};
+
+// 12.7V
+static dzitem_t dzi_datetime12 =
+{
+	.lvelementcreate = LVCREATE(dzi_create_datetime12),
+	.id = "datetime12"
 };
 
 // 6.3A

@@ -147,7 +147,7 @@
 	#endif /* WITHAMHIGHKBDADJ */
 
 		// sleep mode display
-		{	5,	24,	12,	5,	display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	5,	24,	12,	5,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 24,	5,	5,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU

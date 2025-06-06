@@ -159,7 +159,7 @@ static const dzone_t dzones [] =
 	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 
-	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
+	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	9,	4,	display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	{	23, DLEB,	0,	4,	display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
 	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_default, PG0, },	// USB host status
@@ -177,7 +177,7 @@ static const dzone_t dzones [] =
 #endif /* WITHMENU */
 
 	// sleep mode display
-	{	5,	25,	12,	4,	display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+	{	5,	25,	12,	4,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 	{	20, 25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 #if WITHMENU
 	{	15, 25,	0,	0,	display2_popup,		& dzi_default, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
