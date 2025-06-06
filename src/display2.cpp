@@ -214,11 +214,6 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 	return lbl;
 }
 
-static int infocb_modea(char * b, size_t len)
-{
-	return lv_snprintf(b, len, "%s", hamradio_get_mode_a_value_P());
-}
-
 static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modea);
@@ -226,11 +221,6 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
-}
-
-static int infocb_modeb(char * b, size_t len)
-{
-	return lv_snprintf(b, len, "%s", hamradio_get_mode_b_value_P());
 }
 
 static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -242,15 +232,6 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 	return lbl;
 }
 
-static int infocb_ant5(char * b, size_t len)
-{
-#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 || WITHANTSELECT
-	return lv_snprintf(b, len, "%s", hamradio_get_ant5_value_P());
-#else
-	return 0;
-#endif /* xxx */
-}
-
 static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_ant5);
@@ -258,11 +239,6 @@ static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
-}
-
-static int infocb_preamp_ovf(char * b, size_t len)
-{
-	return lv_snprintf(b, len, "%s", hamradio_get_pre_value_P());
 }
 
 static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -274,15 +250,6 @@ static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * 
 	return lbl;
 }
 
-static int infocb_tune(char * b, size_t len)
-{
-#if WITHTX && WITHAUTOTUNER
-	return lv_snprintf(b, len, "%s", hamradio_get_tunemodevalue() ? "TUN" : "");
-#else
-	return 0;
-#endif
-}
-
 static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_tune);
@@ -290,15 +257,6 @@ static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
-}
-
-static int infocb_bypass(char * b, size_t len)
-{
-#if WITHAUTOTUNER
-	return lv_snprintf(b, len, "%s", hamradio_get_bypvalue() ? "BYP" : "TUN");
-#else
-	return 0;
-#endif
 }
 
 static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -310,9 +268,9 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
-static int infocb_rxbw(char * b, size_t len)
+int infocb_rxbw(char * b, size_t len)
 {
-	return lv_snprintf(b, len, "%s", hamradio_get_rxbw_label3_P());
+	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_label3_P());
 }
 
 static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -324,11 +282,6 @@ static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, c
 	return lbl;
 }
 
-static int infocb_rxbwval(char * b, size_t len)
-{
-	return lv_snprintf(b, len, "%s", hamradio_get_rxbw_value4());
-}
-
 static lv_obj_t * dzi_create_rxbwval(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbwval);
@@ -336,18 +289,6 @@ static lv_obj_t * dzi_create_rxbwval(lv_obj_t * parent, const struct dzone * dzp
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
-}
-
-static int infocb_voltlevel(char * b, size_t len)
-{
-#if WITHVOLTLEVEL
-	const int voltx = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-	const int volts = voltx / 10;
-	const int volts01 = voltx > 0 ? (voltx % 10) : (- voltx % 10);
-	return lv_snprintf(b, len, "%d.%dV", volts, volts01);
-#else
-	return 0;
-#endif
 }
 
 static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -361,45 +302,6 @@ static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * d
 
 // Печать времени - только часы и минуты, без секунд
 // Jan-01 13:40
-static int infocb_datetime12(char * b, size_t len)
-{
-#if defined (RTC1_TYPE)
-
-	uint_fast16_t year;
-	uint_fast8_t month, day;
-	uint_fast8_t hour, minute, seconds;
-	static const char months [12] [4] =
-	{
-		"JAN",
-		"FEB",
-		"MAR",
-		"APR",
-		"MAY",
-		"JUN",
-		"JUL",
-		"AUG",
-		"SEP",
-		"OCT",
-		"NOV",
-		"DEC",
-	};
-
-	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
-
-	return lv_snprintf(b, len, "%s-%02d %02d%c%02d",
-		months [month - 1],
-		(int) day,
-		(int) hour,
-		((seconds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
-		(int) minute
-		);
-#else
-	return 0;
-#endif
-}
-
-// Печать времени - только часы и минуты, без секунд
-// Jan-01 13:40
 static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_datetime12);
@@ -409,14 +311,14 @@ static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * 
 	return lbl;
 }
 
-static int infocb_currlevel(char * b, size_t len)
+int infocb_currlevel(char * b, size_t len)
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 	int_fast16_t drainx = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 	const int draina = drainx / 100;
 	const int drains01a = drainx > 0 ? (drainx % 100) : (- drainx % 100);
-	return lv_snprintf(b, len, "%d.%dA", draina, drains01a);
+	return local_snprintf_P(b, len, "%d.%dA", draina, drains01a);
 #else
 	return 0;
 #endif
@@ -431,14 +333,14 @@ static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * d
 	return lbl;
 }
 
-static int infocb_siglevel(char * b, size_t len)
+int infocb_siglevel(char * b, size_t len)
 {
 #if WITHIF4DSP
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	return lv_snprintf(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
+	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
 #else
 	return 0;
 #endif
@@ -451,11 +353,6 @@ static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dz
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
-}
-
-static int infocb_attenuator(char * b, size_t len)
-{
-	return lv_snprintf(b, len, "%s", hamradio_get_att_value_P());
 }
 
 static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -7978,8 +7875,12 @@ void display2_initialize(void)
 
 #else
 
-	lvstales_initialize();
+	lvstales_initialize();	// эти стили нужны в linux ?
 
+#if LINUX_SUBSYSTEM // другое наверное условое WITHTOUCHGUI - No dzones
+	lv_obj_t * const wnd = lv_obj_create(lv_screen_active());
+	lvgl_gui_init(mainwnd);
+#else
 	{
     	// Всего страниц (включая неотображаемые - PAGEBITS
 		uint_fast8_t page;
@@ -8036,6 +7937,7 @@ void display2_initialize(void)
 			}
 		}
 	}
+#endif
 //	{
 //		static lv_timer_t * lvgl_task1;
 //		lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);

@@ -3528,6 +3528,21 @@ unsigned n7ddc_get_swr(void);
 unsigned get_swr_cached(unsigned rangemax);
 unsigned hamradio_get_pwr(void);
 
+// LVGL interface functions
+int infocb_modea(char * b, size_t len);
+int infocb_modeb(char * b, size_t len);
+int infocb_ant5(char * b, size_t len);
+int infocb_preamp_ovf(char * b, size_t len);
+int infocb_tune(char * b, size_t len);
+int infocb_bypass(char * b, size_t len);
+int infocb_rxbw(char * b, size_t len);
+int infocb_rxbwval(char * b, size_t len);
+int infocb_voltlevel(char * b, size_t len);
+int infocb_datetime12(char * b, size_t len);
+int infocb_currlevel(char * b, size_t len);
+int infocb_siglevel(char * b, size_t len);
+int infocb_attenuator(char * b, size_t len);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

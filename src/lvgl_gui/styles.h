@@ -10,6 +10,7 @@ extern "C" {
 void styles_init(void);	// инициализация стилей, используемых объектами главного окна
 void lvgl_test(void);	// создание элементов на главном окне
 void lvgl_dev_init(void);
+void lvgl_gui_init(lv_obj_t * parent);
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
 lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра

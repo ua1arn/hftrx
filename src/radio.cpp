@@ -22012,3 +22012,107 @@ application_initialize(void)
 	}
 #endif
 }
+
+// LVGL interface functions
+int infocb_modea(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_mode_a_value_P());
+}
+
+int infocb_modeb(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_mode_b_value_P());
+}
+
+int infocb_ant5(char * b, size_t len)
+{
+#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 || WITHANTSELECT
+	return local_snprintf_P(b, len, "%s", hamradio_get_ant5_value_P());
+#else
+	return 0;
+#endif /* xxx */
+}
+
+int infocb_preamp_ovf(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_pre_value_P());
+}
+
+int infocb_tune(char * b, size_t len)
+{
+#if WITHTX && WITHAUTOTUNER
+	return local_snprintf_P(b, len, "%s", hamradio_get_tunemodevalue() ? "TUN" : "");
+#else
+	return 0;
+#endif
+}
+
+int infocb_bypass(char * b, size_t len)
+{
+#if WITHAUTOTUNER
+	return local_snprintf_P(b, len, "%s", hamradio_get_bypvalue() ? "BYP" : "TUN");
+#else
+	return 0;
+#endif
+}
+
+int infocb_rxbwval(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_value4());
+}
+
+int infocb_voltlevel(char * b, size_t len)
+{
+#if WITHVOLTLEVEL
+	const int voltx = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	const int volts = voltx / 10;
+	const int volts01 = voltx > 0 ? (voltx % 10) : (- voltx % 10);
+	return local_snprintf_P(b, len, "%d.%dV", volts, volts01);
+#else
+	return 0;
+#endif
+}
+
+// Печать времени - только часы и минуты, без секунд
+// Jan-01 13:40
+int infocb_datetime12(char * b, size_t len)
+{
+#if defined (RTC1_TYPE)
+
+	uint_fast16_t year;
+	uint_fast8_t month, day;
+	uint_fast8_t hour, minute, seconds;
+	static const char months [12] [4] =
+	{
+		"JAN",
+		"FEB",
+		"MAR",
+		"APR",
+		"MAY",
+		"JUN",
+		"JUL",
+		"AUG",
+		"SEP",
+		"OCT",
+		"NOV",
+		"DEC",
+	};
+
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
+
+	return local_snprintf_P(b, len, "%s-%02d %02d%c%02d",
+		months [month - 1],
+		(int) day,
+		(int) hour,
+		((seconds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
+		(int) minute
+		);
+#else
+	return 0;
+#endif
+}
+
+int infocb_attenuator(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_att_value_P());
+}
