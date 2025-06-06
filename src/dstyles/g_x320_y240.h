@@ -54,7 +54,7 @@
 			{	7, 0,	4,	0,	display2_att4,		& dzi_attenuator, REDRSUBSET(DPAGE0), },
 			{	12, 0,	3,	0,	display2_preovf3,	& dzi_default, REDRSUBSET(DPAGE0), },
 			{	16, 0,	1,	0,	display_lockstate1, & dzi_default, REDRSUBSET(DPAGE0), },
-			{	19, 0,	3,	0,	display2_rxbw3,		& dzi_default, REDRSUBSET(DPAGE0), },
+			{	19, 0,	3,	0,	display2_rxbw3,		& dzi_rxbw, REDRSUBSET(DPAGE0), },
 
 			{	0, 8,	0,	0,	display_freqXbig_a, & dzi_default, REDRSUBSET(DPAGE0), },
 			{	19, 8,	3,	0,	display2_mode3_a,	& dzi_modea,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
@@ -162,7 +162,7 @@
 		#endif /* WITHDSPEXTDDC */
 			{	20, 0,	display2_lockstate4, & dzi_default, PGALL, },
 			{	25, 0,	display2_agc3,		& dzi_default, PGALL, },
-			{	29, 0,	display2_rxbw3,		& dzi_default, PGALL, },
+			{	29, 0,	display2_rxbw3,		& dzi_rxbw, PGALL, },
 
 			{	0,	8,	display_freqXbig_a, & dzi_default, PGALL, },
 			{	29, 8,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...

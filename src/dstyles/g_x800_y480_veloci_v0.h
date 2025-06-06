@@ -87,9 +87,9 @@ static const dzone_t dzones [] =
 	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_default, PGALL, },
 	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_default, PGALL, },
 
-	//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
+	//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
-	//{	10,	0,	4,	0,	display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
+	//{	10,	0,	4,	0,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 	//{	15,	0,	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
 	{	20,	0,	4,	4,	display2_att4,		& dzi_attenuator, PGALL, },
 	{	25,	0,	3,	4,	display2_preovf3,	& dzi_default, PGALL, },
@@ -116,7 +116,7 @@ static const dzone_t dzones [] =
 
 
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
+	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 	{	46, 10,	3,	4,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 
 	{	37, 15,	3,	4,	display2_nr3,		& dzi_default, PGALL, },	// NR : was: AGC
@@ -134,7 +134,7 @@ static const dzone_t dzones [] =
 	{	1, 	25,	5,	4,	display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
 	{	7, 	25,	0,	4,	display2_currlevelA6, & dzi_default, PGALL, },	// PA drain current d.dd with "A"
 
-	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
+	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 	{	19,	25,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
 	{	25, 25,	3,	4,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
@@ -197,7 +197,7 @@ static const dzone_t dzones [] =
 
 	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
+	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 	{	0,	20,	BDTH_ALLRX,	DLEB - 20,	display2_gcombo,	& dzi_default, PGALL, },// подготовка изображения спектра
 
 	{	0,	0,	0, 0, display2_showhdmi,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей

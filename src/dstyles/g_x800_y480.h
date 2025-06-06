@@ -75,9 +75,9 @@
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
-		{	0,	0, 	7, 4, display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
+		{	0,	0, 	7, 4, display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 4, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
-		{	10,	0,	4, 4, display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
+		{	10,	0,	4, 4, display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 		{	15,	0,	2, 4, display_txrxstate2, 	& dzi_txrx, PGALL, },
 		{	18, 0,	3, 4, display2_atu3,		& dzi_tune, PGALL, },	// TUNER state (optional)
 		{	22, 0,	3, 4, display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
@@ -101,7 +101,7 @@
 		{	41,	4,	9, 4, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
 
 		{	37, 10,	3, 4, display2_mode3_a,		& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 10,	3, 4, display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	41, 10,	3, 4, display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3, 4, display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 
 		{	37, 15,	3, 4, display2_nr3,			& dzi_default, PGALL, },	// NR : was: AGC
