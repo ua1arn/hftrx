@@ -7877,9 +7877,6 @@ void display2_initialize(void)
 
 	lvstales_initialize();	// эти стили нужны в linux ?
 
-#if LINUX_SUBSYSTEM // другое наверное условое WITHTOUCHGUI - No dzones
-	lvgl_gui_init(lv_screen_active());
-#else
 	{
     	// Всего страниц (включая неотображаемые - PAGEBITS
 		uint_fast8_t page;
@@ -7936,7 +7933,11 @@ void display2_initialize(void)
 			}
 		}
 	}
+
+#if LINUX_SUBSYSTEM // другое наверное условое WITHTOUCHGUI - No dzones
+	lvgl_gui_init(lv_screen_active());
 #endif
+
 //	{
 //		static lv_timer_t * lvgl_task1;
 //		lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
