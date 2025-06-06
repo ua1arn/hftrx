@@ -413,8 +413,8 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	//lv_obj_t * const lbl = lv_wtrf_create(parent);
-	lv_obj_t * const lbl = lv_wtrf2_create(parent);
+	lv_obj_t * const lbl = lv_wtrf_create(parent);
+	//lv_obj_t * const lbl = lv_wtrf2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
