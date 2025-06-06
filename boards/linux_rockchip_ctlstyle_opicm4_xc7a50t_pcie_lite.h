@@ -118,7 +118,7 @@
 
 #if 0
 	#define WITHLVGL				1
-	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_lvgl.h"
+	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_linux_lvgl.h"
 #else
 	#define WITHTOUCHGUI			1
 #endif
