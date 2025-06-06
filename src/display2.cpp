@@ -413,7 +413,8 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_wtrf_create(parent);
+	//lv_obj_t * const lbl = lv_wtrf_create(parent);
+	lv_obj_t * const lbl = lv_wtrf2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
@@ -6513,6 +6514,8 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 
 	uint_fast8_t pathi = 0;	// RX A
 
+	if (yspan == 0)
+		return;
 
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
@@ -7014,10 +7017,8 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 
 #if WITHLVGL
-void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, int lowerpart)
+void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase)
 {
-	const uint_fast16_t wfdy = NROWSWFL;				// размер по вертикали в пикселях части отведенной водопаду
-	const uint_fast16_t wfdx = ALLDX;
 	gxdrawb_t wfjdbv;
 	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
 
@@ -7030,17 +7031,13 @@ void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t 
 	const uint_fast16_t p2y = 0 + p1h;
 
 	lv_draw_image_dsc_init(fd);
-
-//	fd->bg_color = lowerpart ? lv_palette_main(LV_PALETTE_RED) : lv_palette_main(LV_PALETTE_YELLOW);
-//    fd->bg_image_opa = LV_OPA_COVER;
-    //fd->bg_image_opa = LV_OPA_TRANSP;
-
-	lv_draw_buf_init(dbf, wfdx, wfdy, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, wfjdbv.buffer, wfjdbv.cachesize);
+	lv_draw_buf_init(dbf, ALLDX, NROWSWFL, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, wfjdbv.buffer, wfjdbv.cachesize);
 	fd->src = dbf;
 
-    if (lowerpart == 0)
+    if (phase == 0)
     {
-		/* перенос свежей части растра */
+    	ASSERT(p1h != 0);
+		/* отрисовка свежей части растра */
 
 //		0, p1y,	// координаты получателя
     	lv_area_set(area, 0, p1y, wfdx - 1, p1y + p1h - 1);	// куда
@@ -7049,23 +7046,24 @@ void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t 
     	//		wfdx, p1h, 	// размеры окна источника
     	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
     }
-    else if (p2h != 0)
-    {
-		/* перенос старой части растра */
-//		0, p2y,		// координаты получателя
-    	lv_area_set(area, 0, p2y, wfdx - 1, p2y + p2h - 1);		// куда
-
-//		0, 0,	// координаты окна источника
-//		wfdx, p2h, 	// размеры окна источника
-    	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
-    }
     else
     {
-    	// особый случай - всё "новое".
-    	lv_area_set(area, 0, 0, 0, 0);
-    	lv_draw_buf_init(dbf, wfdx, p1h, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, NULL, 0);
-        fd->src = NULL;
-    	lv_area_set(& fd->image_area, 0, 0, 0, 0);
+        if (p2h != 0)
+        {
+    		/* отрисовка старой части растра */
+    //		0, p2y,		// координаты получателя
+        	lv_area_set(area, 0, p2y, wfdx - 1, p2y + p2h - 1);		// куда
+
+    //		0, 0,	// координаты окна источника
+    //		wfdx, p2h, 	// размеры окна источника
+        	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
+        }
+        else
+        {
+        	// особый случай - всё "новое".
+        	lv_area_set(area, 0, 0, 0, 0);				// куда
+        	lv_area_set(& fd->image_area, 0, 0, 0, 0);	// откуда
+        }
     }
 
 }
