@@ -48,7 +48,7 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_wtfl_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
  *      TYPEDEFS
@@ -74,8 +74,9 @@ typedef struct
 
 typedef struct
 {
-	lv_image_t img;
-	//char text [32];
+	lv_obj_t obj;
+	lv_style_t stdigits;
+	lv_style_t stlines;
 } lv_wtfl_t;
 
 /**********************
@@ -112,8 +113,8 @@ static const lv_obj_class_t lv_info_class  = {
 static const lv_obj_class_t lv_wtfl_class  = {
     .constructor_cb = lv_wtfl_constructor,
 //    .destructor_cb = lv_wtfl_destructor,
-//    .event_cb = lv_wtfl_event,
-    .base_class = & lv_image_class,
+    .event_cb = lv_wtfl_event,
+    .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_wtfl_t),
     .name = "hmr_wtfl",
 };
@@ -201,9 +202,24 @@ static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
     lv_wtfl_t * const cp = (lv_wtfl_t *) obj;
 
-#if WITHLVGL && WITHSPECTRUMWF
-	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHSPECTRUMWF */
+	{
+		lv_style_t * const s = & cp->stdigits;
+
+		// стиль текста оцифровки
+		lv_style_init(s);
+	}
+
+	{
+		lv_style_t * const s = & cp->stlines;
+
+		// стиль линий
+		lv_style_init(s);
+	}
+
+
+//#if WITHLVGL && WITHSPECTRUMWF
+//	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+//#endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	LV_TRACE_OBJ_CREATE("finished");
 }
@@ -323,6 +339,7 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
         //rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
         rect.bg_color = lv_color_make(0, 0, 255);
+        rect.bg_image_opa = LV_OPA_COVER;
 
     	lv_draw_rect(layer, & rect, & coords);
 
@@ -350,6 +367,86 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
         lv_draw_line(layer, & dsc);
     }
+}
+
+// custom draw widget
+static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_WTRF, e);	// обработчик родительского клвсса
+
+    if (res != LV_RES_OK) return;
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_WTRF);
+
+    if (code == LV_EVENT_DRAW_MAIN_END)
+    {
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
+
+        lv_area_t coords;
+        lv_obj_get_coords(obj, & coords);	// координаты объекта
+        lv_draw_line_dsc_t linedsc;
+        lv_draw_line_dsc_init(& linedsc);
+
+        lv_area_t upperarea;
+        lv_area_t lowerarea;
+
+        uint_fast32_t w = lv_area_get_width(& coords);
+        uint_fast32_t h = lv_area_get_height(& coords);
+
+        uint_fast32_t middleh = h / 2;
+        lv_area_set(& upperarea, 0, 0, w - 1, middleh);
+        lv_area_set(& lowerarea, 0, middleh, w - 1, h - 1);
+
+//        lv_layer_t upperpart;
+//        lv_layer_t lowerrpart;
+//        lv_draw_layer_init(& upperpart, layer, display_get_lvformat(), & upperarea);
+//        lv_draw_layer_init(& lowerrpart, layer, display_get_lvformat(), & lowerarea);
+
+        // fill rect
+        static lv_draw_buf_t b1;
+        static lv_draw_buf_t b2;
+
+        lv_draw_rect_dsc_t fd1;
+        lv_draw_rect_dsc_init(& fd1);
+        lv_draw_rect_dsc_t fd2;
+        lv_draw_rect_dsc_init(& fd2);
+
+        fd1.bg_color = lv_palette_main(LV_PALETTE_RED);
+        fd1.bg_image_opa = LV_OPA_COVER;
+        //fd1.bg_image_src = & b1;
+
+        fd2.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+        fd2.bg_image_opa = LV_OPA_COVER;
+        //fd2.bg_image_src = & b2;
+
+        display2_fillpart(& fd1, & b1, & upperarea, 0);
+        display2_fillpart(& fd2, & b2, & lowerarea, 1);
+
+        lv_area_move(& upperarea, coords.x1, coords.y1);
+        lv_area_move(& lowerarea, coords.x1, coords.y1);
+
+        lv_draw_rect(layer, & fd1, & upperarea);
+        lv_draw_rect(layer, & fd2, & lowerarea);
+
+ //
+//        linedsc.width = 1;
+//        linedsc.round_end = 0;
+//        linedsc.round_start = 0;
+//        linedsc.color = lv_palette_main(LV_PALETTE_RED);
+//
+//        PRINTF("lv_area_get_height=%d\n", lv_area_get_height(& coords));
+//        int_fast32_t y;
+//        for (y = 0; y < lv_area_get_height(& coords); y += 3)
+//        {
+//            lv_point_precise_set(& linedsc.p1, 0, y);
+//            lv_point_precise_set(& linedsc.p2, lv_area_get_width(& coords) - 1, y);
+//            lv_draw_line(layer, & linedsc);
+//        }
+     }
 }
 
 #endif /* WITHLVGL */

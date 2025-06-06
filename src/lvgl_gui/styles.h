@@ -20,6 +20,9 @@ void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t
 lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
+// получение указателей на растры спектра
+void display2_fillpart(lv_draw_rect_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, int lowerpart);
+
 lv_obj_t * lv_smtr_create(lv_obj_t * parent);	// s-meter
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
 lv_obj_t * lv_txrx_create(lv_obj_t * parent);	// tx/rx indicator

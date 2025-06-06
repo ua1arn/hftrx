@@ -7011,6 +7011,48 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 	(void) pctx;
 }
 
+
+
+#if WITHLVGL
+void display2_fillpart(lv_draw_rect_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, int lowerpart)
+{
+	const uint_fast16_t wfdy = NROWSWFL;				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast16_t wfdx = ALLDX;
+	gxdrawb_t wfjdbv;
+	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
+
+	// следы спектра ("водопад") на цветных дисплеях
+	/* быстрое отображение водопада (но требует больше памяти) */
+	const uint_fast16_t wfrow = scbf.getwfrow();
+	const uint_fast16_t p1h = ulmin16(NROWSWFL - wfrow, wfdy);	// высота верхней части в результируюшем изображении
+	const uint_fast16_t p2h = ulmin16(wfrow, wfdy - p1h);		// высота нижней части в результируюшем изображении
+	const uint_fast16_t p1y = 0;
+	const uint_fast16_t p2y = 0 + p1h;
+
+    lv_draw_rect_dsc_init(fd);
+
+	fd->bg_color = lowerpart ? lv_palette_main(LV_PALETTE_RED) : lv_palette_main(LV_PALETTE_YELLOW);
+    fd->bg_image_opa = LV_OPA_COVER;
+    //fd->bg_image_opa = LV_OPA_TRANSP;
+
+    if (lowerpart == 0)
+    {
+		/* перенос свежей части растра */
+    	lv_area_set(area, 0, p1y, wfdx - 1, p1y + p1h - 1);
+    	lv_draw_buf_init(dbf, wfdx, p1h, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, colpip_mem_at(& wfjdbv, 0, p1y), 0);
+        fd->bg_image_src = dbf;
+    }
+    else
+    {
+		/* перенос старой части растра */
+    	lv_area_set(area, 0, p2y, wfdx - 1, p2y + p2h - 1);
+    	lv_draw_buf_init(dbf, wfdx, p1h, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, colpip_mem_at(& wfjdbv, 0, p2y), 0);
+        fd->bg_image_src = dbf;
+    }
+
+}
+#endif /* WITHLVGL */
+
 // подготовка изображения спектра и волрада
 static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
