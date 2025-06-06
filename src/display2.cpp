@@ -403,6 +403,7 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_smtr_create(parent);
+	//lv_obj_t * const lbl = lv_smtr2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
