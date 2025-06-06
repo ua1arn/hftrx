@@ -1546,10 +1546,10 @@ extern "C" {
 	#error RTC_TYPE_GPS and WITHNMEA must be used in same time
 #endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA */
 
-#if LINUX_SUBSYSTEM && WITHLVGL
-	#undef WITHTOUCHGUI
-	#undef TSC1_TYPE
-#endif /* LINUX_SUBSYSTEM && WITHLVGL */
+//#if LINUX_SUBSYSTEM && WITHLVGL
+//	#undef WITHTOUCHGUI
+//	#undef TSC1_TYPE
+//#endif /* LINUX_SUBSYSTEM && WITHLVGL */
 
 #ifdef __cplusplus
 }

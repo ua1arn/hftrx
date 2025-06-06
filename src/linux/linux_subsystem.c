@@ -40,6 +40,7 @@
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
 void ft8_thread(void);
+void lvgl_evdev_init(void);
 
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	5
@@ -2218,6 +2219,8 @@ void linux_user_init(void)
 {
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
 
+	evdev_initialize();
+
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
 #elif (DDS1_TYPE == DDS_TYPE_XDMA)
@@ -2234,9 +2237,8 @@ void linux_user_init(void)
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
 #endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z*/
 #if WITHLVGL
-	//lvgl_test();
+	lvgl_evdev_init();
 #endif /* WITHLVGL */
-	evdev_initialize();
 }
 
 /****************************************************************/
@@ -2566,7 +2568,7 @@ void get_mouse_events(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* MOUSE_EVDEV */
 
-#if (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL
+#if (TSC1_TYPE == TSC_TYPE_EVDEV)
 
 int evdev_touch_fd = -1;
 
@@ -2690,6 +2692,24 @@ void evdev_initialize(void)
 }
 
 // *****************************************************************
+
+#if WITHLVGL
+void input_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+	uint_fast16_t x, y, p;
+	p = board_tsc_getxy(& x, & y);
+	data->state = p ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = x;
+	data->point.y = y;
+}
+
+void lvgl_evdev_init(void)
+{
+	lv_indev_t * indev = lv_indev_create();
+	lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+	lv_indev_set_read_cb(indev, input_read_cb);
+}
+#endif /* WITHLVGL */
 
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void)) 	{}
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void)) 		{}
