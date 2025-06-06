@@ -22116,3 +22116,26 @@ int infocb_attenuator(char * b, size_t len)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_att_value_P());
 }
+
+static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned * hz)
+{
+    * mhz = freq / 1000000;
+    * khz = (freq / 1000) % 1000;
+    * hz = freq % 1000;
+}
+
+int infocb_freqa(char * b, size_t len)
+{
+	unsigned mhz, khz, hz;
+
+	xsplit_freq(hamradio_get_freq_a(), & mhz, & khz, & hz);
+	return local_snprintf_P(b, len, "%u.%03u.%03u", mhz, khz, hz);
+}
+
+int infocb_freqb(char * b, size_t len)
+{
+	unsigned mhz, khz, hz;
+
+	xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
+	return local_snprintf_P(b, len, "%u.%03u.%03u", mhz, khz, hz);
+}

@@ -3531,6 +3531,8 @@ unsigned hamradio_get_pwr(void);
 // LVGL interface functions
 int infocb_modea(char * b, size_t len);
 int infocb_modeb(char * b, size_t len);
+int infocb_freqa(char * b, size_t len);
+int infocb_freqb(char * b, size_t len);
 int infocb_ant5(char * b, size_t len);
 int infocb_preamp_ovf(char * b, size_t len);
 int infocb_tune(char * b, size_t len);
