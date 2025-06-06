@@ -350,7 +350,11 @@ static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * d
 static int infocb_currlevel(char * b, size_t len)
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
-	return lv_snprintf(b, len, "%d.%dA", 0, 0);
+	int_fast16_t drainx = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+
+	const int draina = drainx / 100;
+	const int drains01a = drainx > 0 ? (drainx % 100) : (- drainx % 100);
+	return lv_snprintf(b, len, "%d.%dA", draina, drains01a);
 #else
 	return 0;
 #endif
