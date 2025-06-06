@@ -13,8 +13,8 @@ void linux_lvgl_gui(const gxdrawb_t * db,
 	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
 
 	enum {
-		DLES = 31,		// spectrum window upper line
-        DLE1 = 96 - GRID2Y(1),		// 96-5
+		DLES = 27,		// spectrum window upper line
+        DLE1 = 92 - GRID2Y(1),		// 96-5
 		DLE_unused
 	};
 
