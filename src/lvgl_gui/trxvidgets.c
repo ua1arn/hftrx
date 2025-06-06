@@ -302,7 +302,7 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     {
 		lv_layer_t * const layer = lv_event_get_layer(e);
 		lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
-        lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
+        //lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта

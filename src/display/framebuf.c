@@ -1359,13 +1359,6 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 		return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
-    void * buf = lv_draw_layer_alloc_buf(layer);
-    if(buf == NULL) {
-    	TP();
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    }
-
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
 
     {
@@ -1738,13 +1731,6 @@ static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 		return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
-    void * buf = lv_draw_layer_alloc_buf(layer);
-    if(buf == NULL) {
-    	TP();
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    }
-
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
 
     {
@@ -1885,7 +1871,7 @@ void lvglhw_initialize(void)
 #if defined (G2D_MIXER)
 	if (1)
 	{
-
+		PRINTF("lvglhw_initialize: Enable G2D_MIXER hw accelerate for LVGL\n");
 		//#if LV_DRAW_SW_COMPLEX == 1
 		//    lv_draw_sw_mask_init();
 		//#endif
@@ -1924,6 +1910,7 @@ void lvglhw_initialize(void)
 #if defined (G2D_ROT)
 	if (1)
 	{
+		PRINTF("lvglhw_initialize: Enable G2D_ROT hw accelerate for LVGL\n");
 		// Блок позволяет копировать прямоугольники без изменения формата и размеров,
 		// возможен поворот на углы кратные 90 градусам
 
