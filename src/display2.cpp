@@ -430,128 +430,128 @@ static void refreshtexts(void)
 
 #endif /* WITHLVGL */
 
-static dzitem_t dzi_default =
+static const dzitem_t dzi_default =
 {
 	.lvelementcreate = LVCREATE(dzi_create_default),
 	.id = "default"
 };
 
 
-static dzitem_t dzi_GUI =
+static const dzitem_t dzi_GUI =
 {
 	.lvelementcreate = LVCREATE(dzi_create_GUI),
 	.id = "GUI"
 };
 
-static dzitem_t dzi_freqa =
+static const dzitem_t dzi_freqa =
 {
 	.lvelementcreate = LVCREATE(dzi_create_freqa),
 	.id = "freq-a"
 };
 
-static dzitem_t dzi_freqb =
+static const dzitem_t dzi_freqb =
 {
 	.lvelementcreate = LVCREATE(dzi_create_freqb),
 	.id = "freq-b"
 };
 
-static dzitem_t dzi_txrx =
+static const dzitem_t dzi_txrx =
 {
 	.lvelementcreate = LVCREATE(dzi_create_txrx),
 	.id = "txrx"
 };
 
-static dzitem_t dzi_smeter =
+static const dzitem_t dzi_smeter =
 {
 	.lvelementcreate = LVCREATE(dzi_create_smeter),
 	.id = "smeter"
 };
 
-static dzitem_t dzi_gcombo =
+static const dzitem_t dzi_gcombo =
 {
 	.lvelementcreate = LVCREATE(dzi_create_gcombo),
 	.id = "gcombo"
 };
 
-static dzitem_t dzi_modea =
+static const dzitem_t dzi_modea =
 {
 	.lvelementcreate = LVCREATE(dzi_create_modea),
 	.id = "mode-a"
 };
 
-static dzitem_t dzi_modeb =
+static const dzitem_t dzi_modeb =
 {
 	.lvelementcreate = LVCREATE(dzi_create_modeb),
 	.id = "mode-b"
 };
 
-static dzitem_t dzi_antenna =
+static const dzitem_t dzi_antenna =
 {
 	.lvelementcreate = LVCREATE(dzi_create_antenna),
 	.id = "ant"
 };
 
-static dzitem_t dzi_attenuator =
+static const dzitem_t dzi_attenuator =
 {
 	.lvelementcreate = LVCREATE(dzi_create_attenuator),
 	.id = "ant"
 };
 
-static dzitem_t dzi_preamp_ovf =
+static const dzitem_t dzi_preamp_ovf =
 {
 	.lvelementcreate = LVCREATE(dzi_create_preamp_ovf),
 	.id = "ant"
 };
 
-static dzitem_t dzi_tune =
+static const dzitem_t dzi_tune =
 {
 	.lvelementcreate = LVCREATE(dzi_create_tune),
 	.id = "ant"
 };
 
-static dzitem_t dzi_bypass =
+static const dzitem_t dzi_bypass =
 {
 	.lvelementcreate = LVCREATE(dzi_create_bypass),
 	.id = "byp"
 };
 
 // nar/wid/nor
-static dzitem_t dzi_rxbw =
+static const dzitem_t dzi_rxbw =
 {
 	.lvelementcreate = LVCREATE(dzi_create_rxbw),
 	.id = "rxbw"
 };
 
 // 3.1k
-static dzitem_t dzi_rxbwval =
+static const dzitem_t dzi_rxbwval =
 {
 	.lvelementcreate = LVCREATE(dzi_create_rxbwval),
 	.id = "rxbwval"
 };
 
 // 3.1k
-static dzitem_t dzi_siglevel =
+static const dzitem_t dzi_siglevel =
 {
 	.lvelementcreate = LVCREATE(dzi_create_siglevel),
 	.id = "siglevel"
 };
 
 // 12.7V
-static dzitem_t dzi_voltlevel =
+static const dzitem_t dzi_voltlevel =
 {
 	.lvelementcreate = LVCREATE(dzi_create_voltlevel),
 	.id = "voltlevel"
 };
 
 // 12.7V
-static dzitem_t dzi_datetime12 =
+static const dzitem_t dzi_datetime12 =
 {
 	.lvelementcreate = LVCREATE(dzi_create_datetime12),
 	.id = "datetime12"
 };
 
 // 6.3A
-static dzitem_t dzi_currlevel =
+static const dzitem_t dzi_currlevel =
 {
 	.lvelementcreate = LVCREATE(dzi_create_currlevel),
 	.id = "currlevel"
