@@ -80,7 +80,8 @@ typedef struct dzone
 #if WITHLVGL
 
 extern const lv_font_t eurostyle_56w;
-extern const lv_font_t rubik_16w2;
+extern const lv_font_t Rubik_Medium_16_w2;
+extern const lv_font_t Rubik_Medium_18_w2;
 
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqastyle;
@@ -137,7 +138,7 @@ static void lvstales_initialize(void)
 		lv_style_set_radius(s, 4);
 		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_text_opa(s, LV_OPA_COVER);
-	    lv_style_set_text_font(s, & rubik_16w2);
+	    lv_style_set_text_font(s, & Rubik_Medium_18_w2);
 	    //lv_style_set_text_letter_space(s, 3);
 	}
 
