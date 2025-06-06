@@ -27,7 +27,8 @@
  *********************/
 #define MY_CLASS_SMTR (& lv_smtr_class)
 #define MY_CLASS_TXRX (& lv_txrx_class)
-#define MY_CLASS_WTRF (& lv_wtfl_class)
+#define MY_CLASS_WTRF2 (& lv_wtrf2_class)
+#define MY_CLASS_WTRF (& lv_wtrf_class)
 #define MY_CLASS_INFO (& lv_info_class)
 
 /**********************
@@ -46,9 +47,13 @@ static void lv_info_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_info_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
-static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_wtfl_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void lv_wtrf_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_wtrf_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_wtrf2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
  *      TYPEDEFS
@@ -74,9 +79,10 @@ typedef struct
 
 typedef struct
 {
-	lv_image_t img;
-	//char text [32];
-} lv_wtfl_t;
+	lv_obj_t obj;
+	lv_style_t stdigits;
+	lv_style_t stlines;
+} lv_wtrf2_t;
 
 /**********************
  *  STATIC VARIABLES
@@ -109,12 +115,12 @@ static const lv_obj_class_t lv_info_class  = {
     .name = "hmr_nfo",
 };
 
-static const lv_obj_class_t lv_wtfl_class  = {
-    .constructor_cb = lv_wtfl_constructor,
-//    .destructor_cb = lv_wtfl_destructor,
-//    .event_cb = lv_wtfl_event,
-    .base_class = & lv_image_class,
-    .instance_size = sizeof (lv_wtfl_t),
+static const lv_obj_class_t lv_wtrf2_class  = {
+    .constructor_cb = lv_wtrf2_constructor,
+//    .destructor_cb = lv_wtrf2_destructor,
+    .event_cb = lv_wtrf2_event,
+    .base_class = & lv_obj_class,
+    .instance_size = sizeof (lv_wtrf2_t),
     .name = "hmr_wtfl",
 };
 
@@ -132,10 +138,10 @@ lv_obj_t * lv_smtr_create(lv_obj_t * parent)
 }
 
 
-lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
+lv_obj_t * lv_wtrf2_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF, parent);
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF2, parent);
     lv_obj_class_init_obj(obj);
 
 	return obj;
@@ -194,16 +200,31 @@ static void lv_info_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_wtfl_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
-    lv_wtfl_t * const cp = (lv_wtfl_t *) obj;
+    lv_wtrf2_t * const cp = (lv_wtrf2_t *) obj;
 
-#if WITHLVGL && WITHSPECTRUMWF
-	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHSPECTRUMWF */
+	{
+		lv_style_t * const s = & cp->stdigits;
+
+		// стиль текста оцифровки
+		lv_style_init(s);
+	}
+
+	{
+		lv_style_t * const s = & cp->stlines;
+
+		// стиль линий
+		lv_style_init(s);
+	}
+
+
+//#if WITHLVGL && WITHSPECTRUMWF
+//	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+//#endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	LV_TRACE_OBJ_CREATE("finished");
 }
@@ -323,6 +344,7 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
         //rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
         rect.bg_color = lv_color_make(0, 0, 255);
+        rect.bg_image_opa = LV_OPA_COVER;
 
     	lv_draw_rect(layer, & rect, & coords);
 
@@ -351,6 +373,131 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_draw_line(layer, & dsc);
     }
 }
+
+// custom draw widget
+static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_WTRF2, e);	// обработчик родительского клвсса
+
+    if (res != LV_RES_OK) return;
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_WTRF2);
+
+    if (code == LV_EVENT_DRAW_MAIN_END)
+    {
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
+
+        lv_area_t coords;
+        lv_obj_get_coords(obj, & coords);	// координаты объекта
+        lv_draw_line_dsc_t linedsc;
+        lv_draw_line_dsc_init(& linedsc);
+
+        lv_area_t a1;
+        lv_area_t a2;
+
+        uint_fast32_t w = lv_area_get_width(& coords);
+        uint_fast32_t h = lv_area_get_height(& coords);
+
+//        uint_fast32_t middleh = h / 2;
+//        lv_area_set(& upperarea, 0, 0, w - 1, middleh);
+//        lv_area_set(& lowerarea, 0, middleh, w - 1, h - 1);
+
+//        lv_layer_t upperpart;
+//        lv_layer_t lowerrpart;
+//        lv_draw_layer_init(& upperpart, layer, display_get_lvformat(), & upperarea);
+//        lv_draw_layer_init(& lowerrpart, layer, display_get_lvformat(), & lowerarea);
+
+
+        //PRINTF("sh w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords), (int) coords.x1, (int) coords.y1);
+
+        if (1)
+        {
+        	// отладка. закрасить зону отображения
+            lv_draw_rect_dsc_t rect;
+            lv_draw_rect_dsc_init(& rect);
+            rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+            rect.bg_image_opa = LV_OPA_COVER;
+        	lv_draw_rect(layer, & rect, & coords);
+        }
+
+        if (1)
+        {
+        	// водопад
+            lv_draw_buf_t b1;
+            lv_draw_buf_t b2;
+
+            lv_draw_image_dsc_t fd1;
+            lv_draw_image_dsc_t fd2;
+
+            display2_fillpart(& fd1, & b1, & a1, w, h, 0);
+            display2_fillpart(& fd2, & b2, & a2, w, h, 1);
+
+            lv_area_move(& a1, coords.x1, coords.y1);
+            lv_area_move(& a2, coords.x1, coords.y1);
+
+            lv_draw_image(layer, & fd1, & a1);
+            lv_draw_image(layer, & fd2, & a2);
+        }
+
+ //
+//        linedsc.width = 1;
+//        linedsc.round_end = 0;
+//        linedsc.round_start = 0;
+//        linedsc.color = lv_palette_main(LV_PALETTE_RED);
+//
+//        PRINTF("lv_area_get_height=%d\n", lv_area_get_height(& coords));
+//        int_fast32_t y;
+//        for (y = 0; y < lv_area_get_height(& coords); y += 3)
+//        {
+//            lv_point_precise_set(& linedsc.p1, 0, y);
+//            lv_point_precise_set(& linedsc.p2, lv_area_get_width(& coords) - 1, y);
+//            lv_draw_line(layer, & linedsc);
+//        }
+     }
+}
+
+typedef struct
+{
+	lv_image_t img;
+	//char text [32];
+} lv_wtrf_t;
+
+static const lv_obj_class_t lv_wtrf_class  = {
+    .constructor_cb = lv_wtrf_constructor,
+//    .destructor_cb = lv_wtrf_destructor,
+//    .event_cb = lv_wtrf_event,
+    .base_class = & lv_image_class,
+    .instance_size = sizeof (lv_wtrf_t),
+    .name = "hmr_wtfl",
+};
+
+lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF, parent);
+    lv_obj_class_init_obj(obj);
+
+	return obj;
+}
+
+static void lv_wtrf_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_wtrf_t * const cp = (lv_wtrf_t *) obj;
+
+#if WITHLVGL && WITHSPECTRUMWF
+	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+#endif /* WITHLVGL && WITHSPECTRUMWF */
+
+	LV_TRACE_OBJ_CREATE("finished");
+}
+
 
 #endif /* WITHLVGL */
 

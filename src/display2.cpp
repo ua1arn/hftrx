@@ -414,6 +414,7 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_wtrf_create(parent);
+	//lv_obj_t * const lbl = lv_wtrf2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
@@ -4776,7 +4777,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	uint_fast16_t centerx;
 	uint_fast16_t centery;
 
-	PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
+	__ALIGNED(64) PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
 
 	FLOAT_t m_spavgarray [w * h];	// h == 1
@@ -6513,6 +6514,8 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 
 	uint_fast8_t pathi = 0;	// RX A
 
+	if (yspan == 0)
+		return;
 
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
@@ -7010,6 +7013,61 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 	(void) y0;
 	(void) pctx;
 }
+
+
+
+#if WITHLVGL
+void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase)
+{
+	gxdrawb_t wfjdbv;
+	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
+
+	// следы спектра ("водопад") на цветных дисплеях
+	/* быстрое отображение водопада (но требует больше памяти) */
+	const uint_fast16_t wfrow = scbf.getwfrow();
+	const uint_fast16_t p1h = ulmin16(NROWSWFL - wfrow, wfdy);	// высота верхней части в результируюшем изображении
+	const uint_fast16_t p2h = ulmin16(wfrow, wfdy - p1h);		// высота нижней части в результируюшем изображении
+	const uint_fast16_t p1y = 0;
+	const uint_fast16_t p2y = 0 + p1h;
+
+	lv_draw_image_dsc_init(fd);
+	lv_draw_buf_init(dbf, ALLDX, NROWSWFL, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, wfjdbv.buffer, wfjdbv.cachesize);
+	fd->src = dbf;
+
+    if (phase == 0)
+    {
+    	ASSERT(p1h != 0);
+		/* отрисовка свежей части растра */
+
+//		0, p1y,	// координаты получателя
+    	lv_area_set(area, 0, p1y, wfdx - 1, p1y + p1h - 1);	// куда
+
+    	//		0, wfrow,	// координаты окна источника
+    	//		wfdx, p1h, 	// размеры окна источника
+    	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
+    }
+    else
+    {
+        if (p2h != 0)
+        {
+    		/* отрисовка старой части растра */
+    //		0, p2y,		// координаты получателя
+        	lv_area_set(area, 0, p2y, wfdx - 1, p2y + p2h - 1);		// куда
+
+    //		0, 0,	// координаты окна источника
+    //		wfdx, p2h, 	// размеры окна источника
+        	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
+        }
+        else
+        {
+        	// особый случай - всё "новое".
+        	lv_area_set(area, 0, 0, 0, 0);				// куда
+        	lv_area_set(& fd->image_area, 0, 0, 0, 0);	// откуда
+        }
+    }
+
+}
+#endif /* WITHLVGL */
 
 // подготовка изображения спектра и волрада
 static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
