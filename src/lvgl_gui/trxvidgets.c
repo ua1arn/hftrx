@@ -287,6 +287,7 @@ uint_fast16_t normalize31(
 		return normalize(raw - rawmid, 0, rawmax - rawmid - 1, range2 - range1 - 1) + range1;
 }
 
+// custom draw widget
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
 
@@ -325,110 +326,29 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     	lv_draw_rect(layer, & rect, & coords);
 
-//        {
-//        	lv_draw_image_dsc_t img;
-//        	lv_draw_image_dsc_init(& img);
-//
-//        	lv_area_t srcrect;
-//        	lv_area_set_pos(& srcrect, 0, 0);
-//        	lv_area_set_width(& srcrect, smeterdesc->header.w);
-//        	lv_area_set_height(& srcrect, smeterdesc->header.h);
-//        	lv_draw_image(layer, smeterdesc, & srcrect);
-//        }
 
-		{
-            lv_draw_line_dsc_t dsc;
-            lv_draw_line_dsc_init(& dsc);
+        lv_draw_line_dsc_t dsc;
+        lv_draw_line_dsc_init(& dsc);
 
-            dsc.width = 1;
-            dsc.round_end = 0;
-            dsc.round_start = 0;
+        dsc.width = 1;
+        dsc.round_end = 0;
+        dsc.round_start = 0;
 
-            // диагональ
-            dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
-            lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
-            lv_draw_line(layer, & dsc);
+        // диагональ
+        dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
+        lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
+        lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
+        lv_draw_line(layer, & dsc);
 
-            dsc.color = lv_palette_main(LV_PALETTE_RED);
-            lv_point_precise_set(& dsc.p1, coords.x1 + gv_pos, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x1 + gv_pos, coords.y2);
-            lv_draw_line(layer, & dsc);
+        dsc.color = lv_palette_main(LV_PALETTE_RED);
+        lv_point_precise_set(& dsc.p1, coords.x1 + gv_pos, coords.y1);
+        lv_point_precise_set(& dsc.p2, coords.x1 + gv_pos, coords.y2);
+        lv_draw_line(layer, & dsc);
 
-            dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
-            lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
-            lv_draw_line(layer, & dsc);
-
-
-        }
-
-
-//        lv_draw_line_dsc_t  main_line_dsc;
-//        lv_draw_line_dsc_t  peak_line_dsc;
-//
-//        /* Lines */
-//
-//        lv_draw_line_dsc_init(&main_line_dsc);
-//        lv_obj_init_draw_line_dsc(obj, LV_PART_INDICATOR, &main_line_dsc);
-//
-//        if (smtr->peak_on) {
-//            lv_draw_line_dsc_init(&peak_line_dsc);
-//            lv_obj_init_draw_line_dsc(obj, LV_PART_TICKS, &peak_line_dsc);
-//        }
-//
-//        lv_coord_t x1 = obj->coords.x1;
-//        lv_coord_t y1 = obj->coords.y1;
-//
-//        lv_coord_t w = lv_obj_get_width(obj);
-//        lv_coord_t h = lv_obj_get_height(obj);
-//
-//        lv_point_t main_a, main_b;
-//        lv_point_t peak_a, peak_b;
-//
-//        if (!smtr->filled) {
-//            main_b.x = x1;
-//            main_b.y = y1 + h;
-//        }
-//
-//        peak_b.x = x1;
-//        peak_b.y = y1 + h;
-//
-//        float range = smtr->max - smtr->min;
-//
-//        for (uint16_t i = 0; i < smtr->data_size; i++) {
-//            float       v = (smtr->data_buf[i] - smtr->min) / range;
-//            int32_t     x = i * w / smtr->data_size;
-//
-//            /* Peak */
-//
-//            if (smtr->peak_on) {
-//                float v_peak = (smtr->peak_buf[i].val - smtr->min) / range;
-//
-//                peak_a.x = x1 + x;
-//                peak_a.y = y1 + (1.0f - v_peak) * h;
-//
-//                lv_draw_line(draw_ctx, &peak_line_dsc, &peak_a, &peak_b);
-//
-//                peak_b = peak_a;
-//            }
-//
-//            /* Main */
-//
-//            main_a.x = x1 + x;
-//            main_a.y = y1 + (1.0f - v) * h;
-//
-//            if (smtr->filled) {
-//                main_b.x = main_a.x;
-//                main_b.y = y1 + h;
-//            }
-//
-//            lv_draw_line(draw_ctx, &main_line_dsc, &main_a, &main_b);
-//
-//            if (!smtr->filled) {
-//                main_b = main_a;
-//            }
-//        }
+        dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
+        lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
+        lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
+        lv_draw_line(layer, & dsc);
     }
 }
 
