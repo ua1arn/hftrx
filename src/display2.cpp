@@ -7878,8 +7878,7 @@ void display2_initialize(void)
 	lvstales_initialize();	// эти стили нужны в linux ?
 
 #if LINUX_SUBSYSTEM // другое наверное условое WITHTOUCHGUI - No dzones
-	lv_obj_t * const wnd = lv_obj_create(lv_screen_active());
-	lvgl_gui_init(mainwnd);
+	lvgl_gui_init(lv_screen_active());
 #else
 	{
     	// Всего страниц (включая неотображаемые - PAGEBITS
