@@ -26,6 +26,7 @@
  *      DEFINES
  *********************/
 #define MY_CLASS_SMTR (& lv_smtr_class)
+#define MY_CLASS_SMTR2 (& lv_smtr2_class)
 #define MY_CLASS_TXRX (& lv_txrx_class)
 #define MY_CLASS_WTRF2 (& lv_wtrf2_class)
 #define MY_CLASS_WTRF (& lv_wtrf_class)
@@ -36,8 +37,12 @@
  **********************/
  
 static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_txrx_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
@@ -49,7 +54,7 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_wtrf_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_wtrf_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_wtrf2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
@@ -61,12 +66,20 @@ static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 typedef struct
 {
-	lv_obj_t obj;
+	lv_image_t img;
+	//
 } lv_smtr_t;
 
 typedef struct
 {
+	lv_obj_t obj;
+	//
+} lv_smtr2_t;
+
+typedef struct
+{
 	lv_label_t label;
+	//
 	char text [32];
 } lv_txrx_t;
 
@@ -92,9 +105,18 @@ static const lv_obj_class_t lv_smtr_class  = {
     .constructor_cb = lv_smtr_constructor,
 //    .destructor_cb = lv_smtr_destructor,
     .event_cb = lv_smtr_event,
-    .base_class = & lv_obj_class,
+    .base_class = & lv_image_class,
     .instance_size = sizeof (lv_smtr_t),
     .name = "hmr_smtr",
+};
+
+static const lv_obj_class_t lv_smtr2_class  = {
+    .constructor_cb = lv_smtr2_constructor,
+//    .destructor_cb = lv_smtr2_destructor,
+    .event_cb = lv_smtr2_event,
+    .base_class = & lv_obj_class,
+    .instance_size = sizeof (lv_smtr2_t),
+    .name = "hmr_smtr2",
 };
 
 static const lv_obj_class_t lv_txrx_class  = {
@@ -132,6 +154,19 @@ lv_obj_t * lv_smtr_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SMTR, parent);
+    lv_obj_class_init_obj(obj);
+
+#if WITHLVGL && WITHBARS
+	lv_image_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+#endif /* WITHLVGL && WITHBARS */
+
+	return obj;
+}
+
+lv_obj_t * lv_smtr2_create(lv_obj_t * parent)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SMTR2, parent);
     lv_obj_class_init_obj(obj);
 
 	return obj;
@@ -229,12 +264,12 @@ static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
-    lv_smtr_t * const cp = (lv_smtr_t *) obj;
+    lv_smtr2_t * const cp = (lv_smtr2_t *) obj;
 
 #if WITHLVGL && WITHBARS && 0
 	lv_img_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
@@ -243,10 +278,24 @@ static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("finished");
 }
 
-//static void lv_smtr_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_smtr_t * const cp = (lv_smtr_t *) obj;
+
+#if WITHLVGL && WITHBARS
+	lv_img_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+#endif /* WITHLVGL && WITHBARS */
+
+    LV_TRACE_OBJ_CREATE("finished");
+}
+
+//static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 //{
 //    LV_UNUSED(class_p);
-//    lv_smtr_t * smtr = (lv_smtr_t *)obj;
+//    lv_smtr2_t * smtr = (lv_smtr2_t *)obj;
 //
 //}
 
@@ -309,22 +358,21 @@ uint_fast16_t normalize31(
 }
 
 // custom draw widget
-static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
 
-    lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR, e);	// обработчик родительского клвсса
+    lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR2, e);	// обработчик родительского клвсса
 
     if (res != LV_RES_OK) return;
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR);
+    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR2);
 
-    if (code == LV_EVENT_DRAW_MAIN_END)
+    if (LV_EVENT_DRAW_MAIN_END == code)
     {
 		lv_layer_t * const layer = lv_event_get_layer(e);
-		lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
-        //lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
+		lv_smtr2_t * const smtr2 = (lv_smtr2_t *) obj;
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
@@ -374,6 +422,24 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     }
 }
 
+static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR);
+
+    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
+    {
+		lv_smtr_t * const smtr = (lv_smtr_t *) obj;
+
+		smtr_proccess();
+    }
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR, e);	// обработчик родительского клвсса
+    if (res != LV_RES_OK) return;
+}
+
 // custom draw widget
 static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
@@ -386,10 +452,10 @@ static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_WTRF2);
 
-    if (code == LV_EVENT_DRAW_MAIN_END)
+    if (LV_EVENT_DRAW_MAIN_END == code)
     {
 		lv_layer_t * const layer = lv_event_get_layer(e);
-		lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
+		lv_wtrf2_t * const wtrf2 = (lv_wtrf2_t *) obj;
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
@@ -469,7 +535,7 @@ typedef struct
 static const lv_obj_class_t lv_wtrf_class  = {
     .constructor_cb = lv_wtrf_constructor,
 //    .destructor_cb = lv_wtrf_destructor,
-//    .event_cb = lv_wtrf_event,
+    .event_cb = lv_wtrf_event,
     .base_class = & lv_image_class,
     .instance_size = sizeof (lv_wtrf_t),
     .name = "hmr_wtfl",
@@ -496,6 +562,27 @@ static void lv_wtrf_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 #endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	LV_TRACE_OBJ_CREATE("finished");
+}
+
+// custom draw widget
+static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_WTRF, e);	// обработчик родительского клвсса
+
+    if (res != LV_RES_OK) return;
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_WTRF);
+
+    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
+    {
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_wtrf_t * const smtr = (lv_wtrf_t *) obj;
+
+		wfl_proccess();	// обновить в ранее назначенном буфере изображение
+      }
 }
 
 

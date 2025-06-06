@@ -413,8 +413,8 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_wtrf_create(parent);
-	//lv_obj_t * const lbl = lv_wtrf2_create(parent);
+	//lv_obj_t * const lbl = lv_wtrf_create(parent);
+	lv_obj_t * const lbl = lv_wtrf2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
@@ -444,8 +444,6 @@ static void refreshtexts(void)
 		lv_snprintf(text_freqb, ARRAY_SIZE(text_freqb), "%u.%03u.%03u", mhz, khz, hz);
 	}
 
-	wfl_proccess();
-	smtr_proccess();
 }
 
 #define LVCREATE(fn) (fn)
@@ -7045,6 +7043,7 @@ void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t 
     	//		0, wfrow,	// координаты окна источника
     	//		wfdx, p1h, 	// размеры окна источника
     	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
+    	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);
     }
     else
     {
@@ -7057,6 +7056,7 @@ void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t 
     //		0, 0,	// координаты окна источника
     //		wfdx, p2h, 	// размеры окна источника
         	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
+        	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);
         }
         else
         {
