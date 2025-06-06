@@ -96,7 +96,75 @@ static unsigned awxx_get_srcformat(unsigned keyflag)
 	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
+static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
+{
+	unsigned ui_attr = 0;
+	ui_attr = UINT32_C(255) << 24;
+	//	if (img->bpremul)
+	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
+	ui_attr |= srcFormat << 8;
+	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//ui_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
+	ui_attr |= 1;
+	return ui_attr;
+}
+
+static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
+{
+	unsigned vi_attr = 0;
+	vi_attr = UINT32_C(255) << 24;
+	vi_attr |= srcFormat << 8;
+	vi_attr |= UINT32_C(1) << 15;
+	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
+	vi_attr |= 1;
+	return vi_attr;
+}
+
+/* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
+ * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
+ * */
+static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
+{
+//	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
+//	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
+//	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
+//	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
+	return COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
+}
+
+/* Создание режима блендера BLD_CTL */
+// 5.10.9.9 BLD control register
+
+static uint_fast32_t awxx_bld_ctl(
+	uint_fast32_t afd,	// Specifies the coefficient that used in destination alpha data Qd.
+	uint_fast32_t afs,	// Specifies the coefficient that used in source alpha data Qs.
+	uint_fast32_t pfd,	// Specifies the coefficient that used in destination pixel data Qs.
+	uint_fast32_t pfs	// Specifies the coefficient that used in source pixel data Qs.
+	)
+{
+	return
+		(afd << 24) |	// BLEND_AFD Specifies the coefficient that used in destination alpha data Qd.
+		(afs << 16) |	// BLEND_AFS Specifies the coefficient that used in source alpha data Qs.
+		(pfd << 8) |	// BLEND_PFD Specifies the coefficient that used in destination pixel data Qs.
+		(pfs << 0) |	// BLEND_PFS Specifies the coefficient that used in source pixel data Qs.
+		0;
+}
+static uint_fast32_t awxx_bld_ctl2(
+	uint_fast32_t fd,	// Specifies the coefficient that used in destination data Qd.
+	uint_fast32_t fs	// Specifies the coefficient that used in source data Qs.
+	)
+{
+	return awxx_bld_ctl(fd, fs, fd, fs);
+}
+
 #if defined (G2D_MIXER)
+
+static void aw_g2d_initialize(void)
+{
+}
 
 /* Отключаем все источники */
 static void awxx_g2d_mixer_reset(void)
@@ -176,6 +244,125 @@ static void awxx_g2d_rtmix_startandwait(void)
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+}
+
+
+static void
+awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
+		unsigned srcFormat, unsigned sstride,
+		uint_fast32_t ssizehw, uintptr_t saddr,
+		unsigned tstride, uint_fast32_t tsizehw,
+		uintptr_t taddr
+		)
+{
+	//	memset(G2D_V0, 0, sizeof * G2D_V0);
+	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+	//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
+	awxx_g2d_mixer_reset(); /* Отключаем все источники */
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
+		/* 5.10.9.10 BLD color key control register */
+		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+		G2D_BLD->BLD_KEY_CTL = (0x01u << 1) |// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
+				(UINT32_C(1) << 0) |// KEY0_EN 1: enable color key in Alpha Blender0.
+				0;
+		/* 5.10.9.11 BLD color key configuration register */
+		G2D_BLD->BLD_KEY_CON = 0 * (UINT32_C(1) << 2) |// KEY0R_MATCH 0: match color if value inside keys range
+				0 * (UINT32_C(1) << 1) |// KEY0G_MATCH 0: match color if value inside keys range
+				0 * (UINT32_C(1) << 0) |// KEY0B_MATCH 0: match color if value inside keys range
+				0;
+		G2D_BLD->BLD_KEY_MAX = keycolor24;
+		G2D_BLD->BLD_KEY_MIN = keycolor24;
+		/* установка поверхности - источника (анализируется) */
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
+		G2D_UI2->UI_PITCH = sstride;
+		G2D_UI2->UI_FILLC = 0;
+		G2D_UI2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		G2D_UI2->UI_SIZE = ssizehw; // параметры окна исходного буфера
+		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
+		G2D_V0->V0_PITCH0 = tstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = tsizehw; // параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
+		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
+		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
+		/* источник когда есть совпадние */
+		G2D_BLD->BLD_CH_ISIZE[0] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
+		/* источник для анализа */
+		G2D_BLD->BLD_CH_ISIZE[1] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
+				(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
+				0;
+		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX[1] = 0;
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+	else
+	{
+		/* без keycolor */
+		/* установка поверхности - источника (безусловно) */
+		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
+		//		G2D_UI2->UI_PITCH = sstride;
+		//		G2D_UI2->UI_FILLC = 0;
+		//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
+		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw; // параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
+		G2D_V0->V0_HADD = ptr_hi32(saddr);
+		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
+		G2D_BLD->BLD_CH_ISIZE[0] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE[1] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_KEY_CTL = 0;
+		G2D_BLD->BLD_KEY_CON = 0;
+		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
+				//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
+				0;
+		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX[1] = 0;
+		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+	//G2D_BLD->BLD_FILLC0 = ~ 0;
+	//G2D_BLD->BLD_PREMUL_CTL |= (UINT32_C(1) << 0);	// 0 or 1 - sel 1 or sel 0
+	G2D_BLD->BLD_OUT_COLOR = 0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_CSC_CTL = 0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_BK_COLOR = 0;
+	G2D_BLD->BLD_PREMUL_CTL = 0x00000000; /* 0x00000000 */
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_ImageFormat;
+	G2D_WB->WB_SIZE = tsizehw;
+	G2D_WB->WB_PITCH0 = tstride; /* taddr buffer stride */
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
+	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
+	awxx_g2d_rtmix_startandwait(); /* Запускаем и ждём завершения обработки */
 }
 
 #endif /* defined (G2D_MIXER) */
@@ -321,73 +508,6 @@ static void t113_fillrect(
 
 #else
 
-static void aw_g2d_initialize(void)
-{
-}
-
-static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
-{
-	unsigned ui_attr = 0;
-	ui_attr = UINT32_C(255) << 24;
-	//	if (img->bpremul)
-	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
-	ui_attr |= srcFormat << 8;
-	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//ui_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
-	ui_attr |= 1;
-	return ui_attr;
-}
-
-static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
-{
-	unsigned vi_attr = 0;
-	vi_attr = UINT32_C(255) << 24;
-	vi_attr |= srcFormat << 8;
-	vi_attr |= UINT32_C(1) << 15;
-	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
-	vi_attr |= 1;
-	return vi_attr;
-}
-
-/* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
- * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
- * */
-static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
-{
-//	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
-//	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
-//	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
-//	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
-	return COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
-}
-
-/* Создание режима блендера BLD_CTL */
-// 5.10.9.9 BLD control register
-
-static uint_fast32_t awxx_bld_ctl(
-	uint_fast32_t afd,	// Specifies the coefficient that used in destination alpha data Qd.
-	uint_fast32_t afs,	// Specifies the coefficient that used in source alpha data Qs.
-	uint_fast32_t pfd,	// Specifies the coefficient that used in destination pixel data Qs.
-	uint_fast32_t pfs	// Specifies the coefficient that used in source pixel data Qs.
-	)
-{
-	return
-		(afd << 24) |	// BLEND_AFD Specifies the coefficient that used in destination alpha data Qd.
-		(afs << 16) |	// BLEND_AFS Specifies the coefficient that used in source alpha data Qs.
-		(pfd << 8) |	// BLEND_PFD Specifies the coefficient that used in destination pixel data Qs.
-		(pfs << 0) |	// BLEND_PFS Specifies the coefficient that used in source pixel data Qs.
-		0;
-}
-static uint_fast32_t awxx_bld_ctl2(
-	uint_fast32_t fd,	// Specifies the coefficient that used in destination data Qd.
-	uint_fast32_t fs	// Specifies the coefficient that used in source data Qs.
-	)
-{
-	return awxx_bld_ctl(fd, fs, fd, fs);
-}
 
 #define VSU_ZOOM0_SIZE	1
 #define VSU_ZOOM1_SIZE	8
@@ -2864,124 +2984,6 @@ void colpip_point_xor(
 	)
 {
 	* colpip_mem_at(db, col, row) ^= color;
-}
-
-static void
-awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
-		unsigned srcFormat, unsigned sstride,
-		uint_fast32_t ssizehw, uintptr_t saddr,
-		unsigned tstride, uint_fast32_t tsizehw,
-		uintptr_t taddr
-		)
-{
-	//	memset(G2D_V0, 0, sizeof * G2D_V0);
-	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	//	memset(G2D_WB, 0, sizeof * G2D_WB);
-	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
-	awxx_g2d_mixer_reset(); /* Отключаем все источники */
-	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
-	{
-		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
-		/* 5.10.9.10 BLD color key control register */
-		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
-		G2D_BLD->BLD_KEY_CTL = (0x01u << 1) |// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
-				(UINT32_C(1) << 0) |// KEY0_EN 1: enable color key in Alpha Blender0.
-				0;
-		/* 5.10.9.11 BLD color key configuration register */
-		G2D_BLD->BLD_KEY_CON = 0 * (UINT32_C(1) << 2) |// KEY0R_MATCH 0: match color if value inside keys range
-				0 * (UINT32_C(1) << 1) |// KEY0G_MATCH 0: match color if value inside keys range
-				0 * (UINT32_C(1) << 0) |// KEY0B_MATCH 0: match color if value inside keys range
-				0;
-		G2D_BLD->BLD_KEY_MAX = keycolor24;
-		G2D_BLD->BLD_KEY_MIN = keycolor24;
-		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
-		G2D_UI2->UI_PITCH = sstride;
-		G2D_UI2->UI_FILLC = 0;
-		G2D_UI2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		G2D_UI2->UI_SIZE = ssizehw; // параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(saddr);
-		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
-		G2D_V0->V0_PITCH0 = tstride;
-		G2D_V0->V0_FILLC = 0;
-		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = tsizehw; // параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
-		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
-		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
-		/* источник когда есть совпадние */
-		G2D_BLD->BLD_CH_ISIZE[0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
-		/* источник для анализа */
-		G2D_BLD->BLD_CH_ISIZE[1] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
-				(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
-				0;
-		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
-		G2D_BLD->ROP_INDEX[1] = 0;
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-	}
-	else
-	{
-		/* без keycolor */
-		/* установка поверхности - источника (безусловно) */
-		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
-		//		G2D_UI2->UI_PITCH = sstride;
-		//		G2D_UI2->UI_FILLC = 0;
-		//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
-		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
-		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = ssizehw; // параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
-		G2D_V0->V0_HADD = ptr_hi32(saddr);
-		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
-		G2D_BLD->BLD_CH_ISIZE[0] = ssizehw;
-		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_CH_ISIZE[1] = ssizehw;
-		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_KEY_CTL = 0;
-		G2D_BLD->BLD_KEY_CON = 0;
-		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
-				//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
-				0;
-		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
-		G2D_BLD->ROP_INDEX[1] = 0;
-		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-	}
-	//G2D_BLD->BLD_FILLC0 = ~ 0;
-	//G2D_BLD->BLD_PREMUL_CTL |= (UINT32_C(1) << 0);	// 0 or 1 - sel 1 or sel 0
-	G2D_BLD->BLD_OUT_COLOR = 0x00000000; /* 0x00000000 */
-	G2D_BLD->BLD_CSC_CTL = 0x00000000; /* 0x00000000 */
-	G2D_BLD->BLD_BK_COLOR = 0;
-	G2D_BLD->BLD_PREMUL_CTL = 0x00000000; /* 0x00000000 */
-	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_ImageFormat;
-	G2D_WB->WB_SIZE = tsizehw;
-	G2D_WB->WB_PITCH0 = tstride; /* taddr buffer stride */
-	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
-	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
-	awxx_g2d_rtmix_startandwait(); /* Запускаем и ждём завершения обработки */
 }
 
 // копирование в большее или равное окно
