@@ -120,7 +120,7 @@ void linux_lvgl_gui(const gxdrawb_t * db,
 		{	41, 20,	4, 5, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 
-		{	0,	0,	5, 5, linux_lvgl_gui, 		& dzi_default, PGINI, },
+		{	0,	0,	5, 96 - 5, linux_lvgl_gui, 		& dzi_GUI, PGINI, },
 
 //linux_lvgl_gui
 		//{	14, 25,

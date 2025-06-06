@@ -192,6 +192,17 @@ static void lvstales_initialize(void)
 	}
 }
 
+static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	// Тут создать все интересующие жлементы - размер в экран у parent ставится
+	lv_obj_t * const lbl = lv_label_create(parent);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_label_set_text_fmt(lbl, "el%u", i);
+
+	return lbl;
+}
+
 static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
@@ -550,6 +561,13 @@ static dzitem_t dzi_default =
 {
 	.lvelementcreate = LVCREATE(dzi_create_default),
 	.id = "default"
+};
+
+
+static dzitem_t dzi_GUI =
+{
+	.lvelementcreate = LVCREATE(dzi_create_GUI),
+	.id = "GUI"
 };
 
 static dzitem_t dzi_freqa =
