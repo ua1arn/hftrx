@@ -8514,7 +8514,6 @@ lv_draw_buf_t * smtr_get_draw_buff(void)
 /* Обновить содержимое lv_draw_buf_t - s-meter */
 void smtr_proccess(void)
 {
-#if 1
     gxdrawb_t tdbv;
     gxdrawb_initialize(& tdbv, (PACKEDCOLORPIP_T *) buf_smtr_buff, SM_BG_W, SM_BG_H);
 
@@ -8522,38 +8521,5 @@ void smtr_proccess(void)
 	colpip_fillrect(& tdbv, 0, 0, SM_BG_W, SM_BG_H, display2_getbgcolor());
 	pix_display2_smeter15(& tdbv, 0, 0, SM_BG_W, SM_BG_H);
 	dcache_clean(tdbv.cachebase, tdbv.cachesize);
-
-#else
-
-	const uint_fast8_t cf = display_get_lvformat();
-	const uint_fast16_t w = smtr_buff.header.w;
-
-	smtr_buff.header.cf = cf;
-	smtr_buff.header.stride = LV_DRAW_BUF_STRIDE(w, cf);
-
-    /*Create a canvas and initialize its palette*/
-    lv_obj_t * canvas = lv_canvas_create(lv_screen_active());
-    lv_canvas_set_draw_buf(canvas, & smtr_buff);
-    lv_canvas_fill_bg(canvas, lv_color_hex3(0xccc), LV_OPA_COVER);
-    lv_obj_center(canvas);
-
-    lv_layer_t layer;
-    lv_canvas_init_layer(canvas, &layer);
-
-    lv_draw_line_dsc_t dsc;
-    lv_draw_line_dsc_init(&dsc);
-    dsc.color = lv_palette_main(LV_PALETTE_RED);
-    dsc.width = 4;
-    dsc.round_end = 1;
-    dsc.round_start = 1;
-    dsc.p1.x = 15;
-    dsc.p1.y = 15;
-    dsc.p2.x = 35;
-    dsc.p2.y = 10;
-    lv_draw_line(&layer, &dsc);
-
-    lv_canvas_finish_layer(canvas, &layer);
-
-#endif
 }
 #endif /* LCDMODE_LTDC && WITHLVGL && WITHBARS */
