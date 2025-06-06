@@ -4776,7 +4776,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	uint_fast16_t centerx;
 	uint_fast16_t centery;
 
-	PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
+	__ALIGNED(64) PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
 
 	FLOAT_t m_spavgarray [w * h];	// h == 1
@@ -7014,7 +7014,7 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 
 #if WITHLVGL
-void display2_fillpart(lv_draw_rect_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, int lowerpart)
+void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, int lowerpart)
 {
 	const uint_fast16_t wfdy = NROWSWFL;				// размер по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t wfdx = ALLDX;
@@ -7029,25 +7029,43 @@ void display2_fillpart(lv_draw_rect_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t *
 	const uint_fast16_t p1y = 0;
 	const uint_fast16_t p2y = 0 + p1h;
 
-    lv_draw_rect_dsc_init(fd);
+	lv_draw_image_dsc_init(fd);
 
-	fd->bg_color = lowerpart ? lv_palette_main(LV_PALETTE_RED) : lv_palette_main(LV_PALETTE_YELLOW);
-    fd->bg_image_opa = LV_OPA_COVER;
+//	fd->bg_color = lowerpart ? lv_palette_main(LV_PALETTE_RED) : lv_palette_main(LV_PALETTE_YELLOW);
+//    fd->bg_image_opa = LV_OPA_COVER;
     //fd->bg_image_opa = LV_OPA_TRANSP;
+
+	lv_draw_buf_init(dbf, wfdx, wfdy, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, wfjdbv.buffer, wfjdbv.cachesize);
+	fd->src = dbf;
 
     if (lowerpart == 0)
     {
 		/* перенос свежей части растра */
-    	lv_area_set(area, 0, p1y, wfdx - 1, p1y + p1h - 1);
-    	lv_draw_buf_init(dbf, wfdx, p1h, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, colpip_mem_at(& wfjdbv, 0, p1y), 0);
-        fd->bg_image_src = dbf;
+
+//		0, p1y,	// координаты получателя
+    	lv_area_set(area, 0, p1y, wfdx - 1, p1y + p1h - 1);	// куда
+
+    	//		0, wfrow,	// координаты окна источника
+    	//		wfdx, p1h, 	// размеры окна источника
+    	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
+    }
+    else if (p2h != 0)
+    {
+		/* перенос старой части растра */
+//		0, p2y,		// координаты получателя
+    	lv_area_set(area, 0, p2y, wfdx - 1, p2y + p2h - 1);		// куда
+
+//		0, 0,	// координаты окна источника
+//		wfdx, p2h, 	// размеры окна источника
+    	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
     }
     else
     {
-		/* перенос старой части растра */
-    	lv_area_set(area, 0, p2y, wfdx - 1, p2y + p2h - 1);
-    	lv_draw_buf_init(dbf, wfdx, p1h, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, colpip_mem_at(& wfjdbv, 0, p2y), 0);
-        fd->bg_image_src = dbf;
+    	// особый случай - всё "новое".
+    	lv_area_set(area, 0, 0, 0, 0);
+    	lv_draw_buf_init(dbf, wfdx, p1h, (lv_color_format_t) display_get_lvformat(), wfjdbv.stride, NULL, 0);
+        fd->src = NULL;
+    	lv_area_set(& fd->image_area, 0, 0, 0, 0);
     }
 
 }

@@ -410,18 +410,10 @@ static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         static lv_draw_buf_t b1;
         static lv_draw_buf_t b2;
 
-        lv_draw_rect_dsc_t fd1;
-        lv_draw_rect_dsc_init(& fd1);
-        lv_draw_rect_dsc_t fd2;
-        lv_draw_rect_dsc_init(& fd2);
-
-        fd1.bg_color = lv_palette_main(LV_PALETTE_RED);
-        fd1.bg_image_opa = LV_OPA_COVER;
-        //fd1.bg_image_src = & b1;
-
-        fd2.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
-        fd2.bg_image_opa = LV_OPA_COVER;
-        //fd2.bg_image_src = & b2;
+        lv_draw_image_dsc_t fd1;
+        lv_draw_image_dsc_init(& fd1);
+        lv_draw_image_dsc_t fd2;
+        lv_draw_image_dsc_init(& fd2);
 
         display2_fillpart(& fd1, & b1, & upperarea, 0);
         display2_fillpart(& fd2, & b2, & lowerarea, 1);
@@ -429,8 +421,8 @@ static void lv_wtfl_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_area_move(& upperarea, coords.x1, coords.y1);
         lv_area_move(& lowerarea, coords.x1, coords.y1);
 
-        lv_draw_rect(layer, & fd1, & upperarea);
-        lv_draw_rect(layer, & fd2, & lowerarea);
+        lv_draw_image(layer, & fd1, & upperarea);
+        lv_draw_image(layer, & fd2, & lowerarea);
 
  //
 //        linedsc.width = 1;
