@@ -234,7 +234,6 @@ static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
     LV_UNUSED(class_p);
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	lv_layer_t * const layer = lv_event_get_layer(e);
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_TXRX);
 
@@ -254,7 +253,6 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
     LV_UNUSED(class_p);
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	lv_layer_t * const layer = lv_event_get_layer(e);
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_INFO);
 
@@ -297,13 +295,13 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     if (res != LV_RES_OK) return;
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	lv_layer_t * const layer = lv_event_get_layer(e);
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_SMTR);
 
     if (code == LV_EVENT_DRAW_MAIN_END)
     {
-        lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_smtr_t   * const smtr = (lv_smtr_t *) obj;
         lv_draw_buf_t * const smeterdesc = smtr_get_draw_buff();	// изображение s-метра
 
         lv_area_t coords;
