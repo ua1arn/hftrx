@@ -803,8 +803,12 @@ void display_lvgl_initialize(void)
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 {
 	lv_layer_t * layer = (lv_layer_t *) layerv;
-	gxdrawb_initialize(db, (PACKEDCOLORPIP_T *) lv_draw_buf_goto_xy(layer->draw_buf, 0, 0), DIM_X, DIM_Y);
+	gxdrawb_initialize(db,
+			(PACKEDCOLORPIP_T *) lv_draw_buf_goto_xy(layer->draw_buf, 0, 0),
+			layer->draw_buf->header.w, layer->draw_buf->header.h);
 	db->layerv = layerv;
+	db->cachebase = (uintptr_t) layer->draw_buf->data;
+	db->cachesize = layer->draw_buf->data_size;
 }
 
 
