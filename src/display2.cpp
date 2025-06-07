@@ -4236,12 +4236,12 @@ static void display2_legend_tx(const gxdrawb_t * db,
 				display_at(db, x, y, PSTR(SWRPWRMAP));
 		#else
 				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-					display_string(db, x, y, PSTR(SWRMAP));
+					display_string_P(db, x, y, PSTR(SWRMAP));
 				else
-					display_string(db, x, y, PSTR(POWERMAP));
+					display_string_P(db, x, y, PSTR(POWERMAP));
 		#endif
 	#elif WITHPWRMTR
-				display_string(db, x, y, PSTR(POWERMAP));
+				display_string_P(db, x, y, PSTR(POWERMAP));
 	#else
 		#warning No TX indication
 	#endif

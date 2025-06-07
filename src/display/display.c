@@ -858,8 +858,34 @@ display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, con
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
+
+#if WITHLVGL && 0
+	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
+	if (layer)
+	{
+		lv_draw_rect_dsc_t d;
+		lv_area_t coords;
+		lv_draw_rect_dsc_init(& d);
+		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(strlen(s))) - 1, ypix + 15);
+		d.bg_color = lv_color_white();
+	    d.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+//	    d.bg_image_opa = LV_OPA_COVER;
+	    d.bg_image_src = s;
+	    d.bg_image_symbol_font = & lv_font_montserrat_14;
+	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
+		lv_draw_rect(layer, & d, & coords);
+	}
+	else
+	{
+		while((c = * s ++) != '\0')
+			xpix = display_put_char_small(db, xpix, ypix, c, 0);
+	}
+
+#else
 	while((c = * s ++) != '\0')
-		xpix = display_put_char_small(db, xpix, ypix, c, lowhalf);
+		xpix = display_put_char_small(db, xpix, ypix, c, 0);
+#endif
+
 	display_wrdata_end(db);
 }
 
