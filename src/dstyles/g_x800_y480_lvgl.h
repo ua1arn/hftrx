@@ -73,10 +73,6 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const dzone_t dzones [] =
 	{
-
-//		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-
 		{	0,	0, 	7, 5, display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 		{	10,	0,	4, 5, display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 		{	15,	0,	2, 5, display_txrxstate2, 	& dzi_txrx, PGALL, },
@@ -95,11 +91,10 @@
 		{	0,	5,	15, 20, display2_af_spectre15,		& dzi_default, PG0, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	5,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	15,	5,	21, 15, display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	15,	5,	21, 15, display2_dummy,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
-		{	41, 0,	9, 5, display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
-		{	41,	5,	9, 5, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
+		{	41, 0,	9, 5, display2_fnlabel9,	& dzi_compat, PGALL, },	// FUNC item label
+		{	41,	5,	9, 5, display2_fnvalue9,	& dzi_compat, PGALL, },	// FUNC item value
 
 		//{	36,	5,	5, 5, display2_dummy,		& dzi_default, PGALL, },	// placeholder
 		{	36, 10,	5, 5, display2_mode3_a,		& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
@@ -125,10 +120,10 @@
 		//{	19, 25,
 		//{	23, 25,
 		//{	27, 25,
-		{	33, 25,	3, 5, display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	36, 25,	5, 5, display2_spk3,		& dzi_default, PGALL, },	// отображение признака включения динамика
-		{	41, 25, 4, 5, display2_bkin3,		& dzi_default, PGALL, },	// BREAK-IN
-		{	45,	25,	5, 5, display2_wpm5, 		& dzi_default, PGALL, },	// 22WPM
+		{	33, 25,	3, 5, display2_rec3,		& dzi_compat, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	36, 25,	5, 5, display2_spk3,		& dzi_compat, PGALL, },	// отображение признака включения динамика
+		{	41, 25, 4, 5, display2_bkin3,		& dzi_compat, PGALL, },	// BREAK-IN
+		{	45,	25,	5, 5, display2_wpm5, 		& dzi_compat, PGALL, },	// 22WPM
 
 		//{	24, 30,	10, 5, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 		//{	37, 30,	8, 5, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
@@ -165,7 +160,6 @@
 		{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
-//		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 
 #if WITHMENU
