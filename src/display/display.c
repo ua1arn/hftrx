@@ -809,6 +809,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 	db->layerv = layerv;
 	db->cachebase = (uintptr_t) layer->draw_buf->data;
 	db->cachesize = layer->draw_buf->data_size;
+	db->stride = layer->draw_buf->header.stride;
 }
 
 
