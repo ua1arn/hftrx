@@ -864,7 +864,9 @@ display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, con
 	if (layer)
 	{
 		lv_draw_rect_dsc_t d;
+	    lv_draw_label_dsc_t l;
 		lv_area_t coords;
+	    lv_draw_label_dsc_init(&l);
 		lv_draw_rect_dsc_init(& d);
 		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(strlen(s))) - 1, ypix + 15);
 		d.bg_color = lv_color_white();
@@ -872,8 +874,12 @@ display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, con
 //	    d.bg_image_opa = LV_OPA_COVER;
 	    d.bg_image_src = s;
 	    d.bg_image_symbol_font = & lv_font_montserrat_14;
+
+	    l.text = s;
+	    l.font = & lv_font_montserrat_14;
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
-		lv_draw_rect(layer, & d, & coords);
+		//lv_draw_rect(layer, & d, & coords);
+        lv_draw_label(layer, & l, & coords);
 	}
 	else
 	{
