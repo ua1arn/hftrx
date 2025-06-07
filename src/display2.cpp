@@ -215,12 +215,15 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 	return lbl;
 }
 
-void dzi_compat_draw_callback(void * layer, void * dzpv, dctx_t * pctx)
+static dctx_t * compat_pctx;	// хак, эта переменная заполняется перед вызовом lv_task_handler()
+void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pctx)
 {
 	const struct dzone * const dzp = (const struct dzone *) dzpv;
+
+	return;
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, NULL, DIM_X, DIM_Y);
-	(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
+	(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, compat_pctx);
 
 }
 // для быстрого перехода на систему ввода LVGL отрисовка этих vidgets
@@ -7844,6 +7847,7 @@ void display2_bgprocess(
 		//lv_obj_move_foreground(xxmainwnds [ix]);
 		lv_obj_invalidate(xxmainwnds [ix]);
 	}
+	compat_pctx = pctx;
 	lv_task_handler();
 	return;
 

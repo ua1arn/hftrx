@@ -31,6 +31,7 @@
 #define MY_CLASS_WTRF2 (& lv_wtrf2_class)
 #define MY_CLASS_WTRF (& lv_wtrf_class)
 #define MY_CLASS_INFO (& lv_info_class)
+#define MY_CLASS_COMPAT (& lv_compat_class)
 
 /**********************
  *  STATIC PROTOTYPES
@@ -59,6 +60,10 @@ static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e);
 static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_wtrf2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static void lv_compat_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_compat_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
  *      TYPEDEFS
@@ -96,6 +101,12 @@ typedef struct
 	lv_style_t stdigits;
 	lv_style_t stlines;
 } lv_wtrf2_t;
+
+typedef struct
+{
+	lv_obj_t obj;
+	const void * dzpv;
+} lv_compat_t;
 
 /**********************
  *  STATIC VARIABLES
@@ -143,7 +154,16 @@ static const lv_obj_class_t lv_wtrf2_class  = {
     .event_cb = lv_wtrf2_event,
     .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_wtrf2_t),
-    .name = "hmr_wtfl",
+    .name = "hmr_wtrf2",
+};
+
+static const lv_obj_class_t lv_compat_class  = {
+    .constructor_cb = lv_compat_constructor,
+//    .destructor_cb = lv_compat_destructor,
+    .event_cb = lv_compat_event,
+    .base_class = & lv_obj_class,
+    .instance_size = sizeof (lv_compat_t),
+    .name = "hmr_compat",
 };
 
 /**********************
@@ -190,7 +210,8 @@ lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
     return obj;
 }
 
-lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len)) {
+lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len))
+{
     LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_INFO, parent);
     lv_obj_class_init_obj(obj);
@@ -199,6 +220,20 @@ lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len
     cp->infotext [0] = '\0';
     cp->infocb = infocb;
     return obj;
+}
+
+lv_obj_t * lv_compat_create(lv_obj_t * parent, const void * dzp)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_COMPAT, parent);
+    lv_obj_class_init_obj(obj);
+
+    lv_compat_t * const cp = (lv_compat_t *) obj;
+
+    cp->dzpv = dzp;
+
+	return obj;
+
 }
 
 /*=====================
@@ -262,6 +297,16 @@ static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 //#endif /* WITHLVGL && WITHSPECTRUMWF */
 
 	LV_TRACE_OBJ_CREATE("finished");
+}
+
+static void lv_compat_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_compat_t * const cp = (lv_compat_t *) obj;
+
+    LV_TRACE_OBJ_CREATE("finished");
 }
 
 static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
@@ -422,6 +467,30 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     }
 }
 
+// custom draw widget
+static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR2, e);	// обработчик родительского клвсса
+
+    if (res != LV_RES_OK) return;
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR2);
+
+    if (LV_EVENT_DRAW_MAIN_END == code)
+    {
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_compat_t * const cp = (lv_compat_t *) obj;
+
+        lv_area_t coords;
+        lv_obj_get_coords(obj, & coords);	// координаты объекта
+
+        dzi_compat_draw_callback(layer, cp->dzpv, NULL);
+     }
+}
+
 static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
 
@@ -538,7 +607,7 @@ static const lv_obj_class_t lv_wtrf_class  = {
     .event_cb = lv_wtrf_event,
     .base_class = & lv_image_class,
     .instance_size = sizeof (lv_wtrf_t),
-    .name = "hmr_wtfl",
+    .name = "hmr_wtrf",
 };
 
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
