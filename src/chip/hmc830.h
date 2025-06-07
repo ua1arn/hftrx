@@ -166,7 +166,7 @@ prog_hmc830_get_hint(
 			goto found;
 	}
 #if 0
-	display_at_P(0, 0, PSTR("[HMC830 Err]"));
+	display_at(0, 0, PSTR("[HMC830 Err]"));
 	return 0;		/* требуемую частоту невозожно получить */
 #endif
 

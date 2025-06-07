@@ -10257,8 +10257,8 @@ void hightests(void)
 		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
 		PRINTF("Background (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
-		//display_at_P(0, 0, "Start...");
-		//display_at_P(100 / GRID2X(1), 100 / GRID2Y(1), "test");
+		//display_at(0, 0, "Start...");
+		//display_at(100 / GRID2X(1), 100 / GRID2Y(1), "test");
 
 		opaque = 128;
 		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
@@ -12367,13 +12367,13 @@ void hightests(void)
 #if 0
 	{
 		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
-		display_at_P(5, 0, PSTR("PT-Electronics 2015"));
+		display_at(5, 0, PSTR("PT-Electronics 2015"));
 
 		colmain_setcolors(COLOR_RED, COLOR_BLACK);
-		display_at_P(7, 3, PSTR("RENESAS"));
+		display_at(7, 3, PSTR("RENESAS"));
 
 		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-		display_at_P(9, 6, PSTR("2.7 inch TFT"));
+		display_at(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
 			;

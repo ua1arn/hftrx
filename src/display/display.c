@@ -476,7 +476,7 @@ uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_
 	return ltdc_put_char_half(db, x, y, ci, width);
 }
 
-uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf_unused)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
 
@@ -848,12 +848,13 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 }
 #endif
 // Используется при выводе на графический индикатор,
-static void
-display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
+void
+display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	savestring = s;
 	savewhere = __func__;
 	char c;
+	const uint_fast8_t lowhalf = 0;
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
@@ -867,38 +868,8 @@ void
 //NOINLINEAT
 display_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_string(db, xcell, ycell + lowhalf, s, lowhalf);
-
-	} while (lowhalf --);
-}
-
-// Используется при выводе на графический индикатор,
-static void
-display_string_P(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
-	while((c = * s ++) != '\0')
-		xpix = display_put_char_small(db, xpix, ypix, c, lowhalf);
-	display_wrdata_end(db);
-}
-
-// Выдача строки из ПЗУ в указанное место экрана.
-void
-//NOINLINEAT
-display_at_P(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
-{
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_string_P(db, xcell, ycell + lowhalf, s, lowhalf);
-
-	} while (lowhalf --);
+	const uint_fast8_t lowhalf = 0;
+	display_string(db, xcell, ycell + lowhalf, s);
 }
 
 #if LCDMODE_S1D13781

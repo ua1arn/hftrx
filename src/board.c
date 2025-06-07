@@ -1080,7 +1080,7 @@ pll1_getoutdivider(
 			goto found;
 	}
 #if 0
-	display_at_P(PSTR(0, 0, "[pll1_getoutdivider Err]"));
+	display_at(PSTR(0, 0, "[pll1_getoutdivider Err]"));
 	return 0;		/* требуемую частоту невозожно получить */
 #endif
 

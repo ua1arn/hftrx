@@ -2053,7 +2053,7 @@ display2_text_P(const gxdrawb_t * db,
 	layout_label1_medium(db, xcell, ycell, labels [state], strlen_P(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 #else
 	colmain_setcolors(colors [state].fg, colors [state].bg);
-	display_at_P(db, xcell, ycell, labels [state]);
+	display_at(db, xcell, ycell, labels [state]);
 #endif /* WITHALTERNATIVELAYOUT */
 }
 
@@ -2105,7 +2105,7 @@ static void display_txrxstatecompact(const gxdrawb_t * db,
 #if WITHTX
 	const uint_fast8_t tx = hamradio_get_tx();
 	colmain_setcolors(TXRXMODECOLOR, tx ? MODECOLORBG_TX : MODECOLORBG_RX);
-	display_at_P(db, xcell, ycell, tx ? PSTR("T") : PSTR(" "));
+	display_at(db, xcell, ycell, tx ? PSTR("T") : PSTR(" "));
 #endif /* WITHTX */
 }
 
@@ -2195,7 +2195,7 @@ static void display2_usbsts3(const gxdrawb_t * db,
 		static const char text_usb [] = "USB";
 		display_2states(db, x, y, active, text_usb, text_usb);
 	#else /* LCDMODE_COLORED */
-		display_at_P(db, x, y, active ? PSTR("USB") : PSTR("   "));
+		display_at(db, x, y, active ? PSTR("USB") : PSTR("   "));
 	#endif /* LCDMODE_COLORED */
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
@@ -2926,7 +2926,7 @@ static void display_lockstate1(const gxdrawb_t * db,
 		)
 {
 	colmain_setcolors(LOCKCOLOR, BGCOLOR);
-	display_at_P(db, x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(" "));
+	display_at(db, x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(" "));
 }
 
 // Отображение PBT
@@ -2940,7 +2940,7 @@ static void display_pbt(const gxdrawb_t * db,
 {
 #if WITHPBT
 	const int_fast32_t pbt = hamradio_get_pbtvalue();
-	display_at_P(db, x, y, PSTR("PBT "), lowhalf);
+	display_at(db, x, y, PSTR("PBT "), lowhalf);
 
 	//colmain_setcolors(LOCKCOLOR, BGCOLOR);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
@@ -3045,22 +3045,22 @@ static void display2_ovf3(const gxdrawb_t * db,
 	if (hamradio_get_bringSWR(labels))
 	{
  		colmain_setcolors(BGCOLOR, OVFCOLOR);
-		display_at_P(db, x, y, labels [0]);
+		display_at(db, x, y, labels [0]);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
 		colmain_setcolors(BGCOLOR, OVFCOLOR);
-		display_at_P(db, x, y, PSTR("OVF"));
+		display_at(db, x, y, PSTR("OVF"));
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		colmain_setcolors(BGCOLOR, OVFCOLOR);
-		display_at_P(db, x, y, PSTR("MIK"));
+		display_at(db, x, y, PSTR("MIK"));
 	}
 	else
 	{
 		colmain_setcolors(BGCOLOR, BGCOLOR);
-		display_at_P(db, x, y, PSTR("   "));
+		display_at(db, x, y, PSTR("   "));
 	}
 #endif /* WITHDSPEXTDDC */
 }
@@ -3078,22 +3078,22 @@ static void display2_preovf3(const gxdrawb_t * db,
 	if (hamradio_get_bringSWR(labels))
 	{
  		colmain_setcolors(BGCOLOR, OVFCOLOR);
-		display_at_P(db, x, y, labels [0]);
+		display_at(db, x, y, labels [0]);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
 		colmain_setcolors(BGCOLOR, OVFCOLOR);
-		display_at_P(db, x, y, PSTR("OVF"));
+		display_at(db, x, y, PSTR("OVF"));
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		colmain_setcolors(BGCOLOR, OVFCOLOR);
-		display_at_P(db, x, y, PSTR("MIK"));
+		display_at(db, x, y, PSTR("MIK"));
 	}
 	else
 	{
 		colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
-		display_at_P(db, x, y, hamradio_get_pre_value_P());
+		display_at(db, x, y, hamradio_get_pre_value_P());
 	}
 }
 
@@ -3219,7 +3219,7 @@ static void display_att_tx3(const gxdrawb_t * db,
 
 	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	ASSERT(strlen(text) == 3);
-	display_at_P(db, x, y, text);
+	display_at(db, x, y, text);
 }
 
 // RX agc
@@ -3337,7 +3337,7 @@ static void display2_voltlevelV5(const gxdrawb_t * db,
 	{
 		display_value_small(db, x + CHARS2GRID(0), y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
-	display_at_P(db, x + CHARS2GRID(4), y, PSTR("V"));
+	display_at(db, x + CHARS2GRID(4), y, PSTR("V"));
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3436,7 +3436,7 @@ static void display2_thermo5(const gxdrawb_t * db,
 	{
 		display_value_small(db, x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
 	} while (lowhalf --);
-	display_at_P(db, x + CHARS2GRID(4), y, PSTR("C"));
+	display_at(db, x + CHARS2GRID(4), y, PSTR("C"));
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -3463,7 +3463,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
 		} while (lowhalf --);
 		// last character
-		display_at_P(db, x + CHARS2GRID(5), y, PSTR("A"));
+		display_at(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 6 places (without "A")
@@ -3476,7 +3476,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 		} while (lowhalf --);
 		// last character
-		display_at_P(db, x + CHARS2GRID(5), y, PSTR("A"));
+		display_at(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3503,7 +3503,7 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		{
 			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
 		} while (lowhalf --);
-		//display_at_P(db, x + CHARS2GRID(5), y, PSTR("A"));
+		//display_at(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 5 places (without "A")
@@ -3515,7 +3515,7 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		{
 			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
 		} while (lowhalf --);
-		//display_at_P(db, x + CHARS2GRID(5), y, PSTR("A"));
+		//display_at(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3537,7 +3537,7 @@ static void display2_classa7(const gxdrawb_t * db,
 		static const char classa_null [] = "       ";
 		display_2states(db, x, y, active, classa_text, classa_text);
 	#else /* LCDMODE_COLORED */
-		display_at_P(db, x, y, active ? classa_text : classa_null);
+		display_at(db, x, y, active ? classa_text : classa_null);
 	#endif /* LCDMODE_COLORED */
 #endif /* WITHPACLASSA */
 }
@@ -3560,7 +3560,7 @@ static void display2_classa3(const gxdrawb_t * db,
 		//display_2states(db, x, y, active, classa_text, classb_text);
 		display_2states(db, x, y, 1, active ? classa_text : classb_text, classa_null);
 	#else /* LCDMODE_COLORED */
-		display_at_P(db, x, y, active ? classa_text : classa_null);
+		display_at(db, x, y, active ? classa_text : classa_null);
 	#endif /* LCDMODE_COLORED */
 #endif /* WITHPACLASSA */
 }
@@ -3745,7 +3745,7 @@ static void display2_freqdelta8(const gxdrawb_t * db,
 	}
 	else
 	{
-		display_at_P(db, x, y, PSTR("        "));
+		display_at(db, x, y, PSTR("        "));
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
@@ -3774,7 +3774,7 @@ static void display_samfreqdelta8(const gxdrawb_t * db,
 	}
 	else
 	{
-		display_at_P(db, x, y, PSTR("        "));
+		display_at(db, x, y, PSTR("        "));
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
@@ -4216,7 +4216,7 @@ static void display2_legend_rx(const gxdrawb_t * db,
 {
 #if defined(SMETERMAP)
 	colmain_setcolors(DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
-	display_at_P(db, x, y, PSTR(SMETERMAP));
+	display_at(db, x, y, PSTR(SMETERMAP));
 #endif /* defined(SMETERMAP) */
 }
 
@@ -4233,15 +4233,15 @@ static void display2_legend_tx(const gxdrawb_t * db,
 	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-				display_at_P(db, x, y, PSTR(SWRPWRMAP));
+				display_at(db, x, y, PSTR(SWRPWRMAP));
 		#else
 				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-					display_string_P(db, x, y, PSTR(SWRMAP));
+					display_string(db, x, y, PSTR(SWRMAP));
 				else
-					display_string_P(db, x, y, PSTR(POWERMAP));
+					display_string(db, x, y, PSTR(POWERMAP));
 		#endif
 	#elif WITHPWRMTR
-				display_string_P(db, x, y, PSTR(POWERMAP));
+				display_string(db, x, y, PSTR(POWERMAP));
 	#else
 		#warning No TX indication
 	#endif

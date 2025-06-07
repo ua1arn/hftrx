@@ -457,9 +457,9 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	);
 
+void display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s);
 void display_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
 void display_x2_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
-void display_at_P(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s); // Выдача строки из ПЗУ в указанное место экрана.
 
 
 void display_swrmeter(const gxdrawb_t * db,

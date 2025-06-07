@@ -16648,12 +16648,12 @@ display_menu_string_P(const gxdrawb_t * db,
 
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
 		display_at(db, x + 0, y, notext);
-		display_at_P(db, x + fill, y, text);
+		display_at(db, x + fill, y, text);
 	}
 	else
 	{
 		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_at_P(db, x + 0, y, text);
+		display_at(db, x + 0, y, text);
 	}
 #endif /* WITHTOUCHGUI */
 }
@@ -17112,13 +17112,13 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, u
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(db, x - 1, y_position_groups, PSTR(">"));
+				display_at(db, x - 1, y_position_groups, PSTR(">"));
 			}
 			else
 			{
 				//снять отметку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(db, x - 1, y_position_groups, PSTR(" "));
+				display_at(db, x - 1, y_position_groups, PSTR(" "));
 			}
 
 			dctx_t dctx;
@@ -17206,13 +17206,13 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, u
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(db, x - 1, y_position_params, PSTR(">"));
+				display_at(db, x - 1, y_position_params, PSTR(">"));
 			}
 			else
 			{
 				//снять подсветку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at_P(db, x - 1, y_position_params, PSTR(" "));
+				display_at(db, x - 1, y_position_params, PSTR(" "));
 			}
 			dctx_t dctx;
 			dctx.type = DCTX_MENU;
@@ -17332,7 +17332,7 @@ void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, u
 	if (ismenukind(mp, ITEM_GROUP))
 	{
 		colmain_setcolors(MENUCOLOR, BGCOLOR);
-		display_at_P(db, x, y, PSTR("---"));
+		display_at(db, x, y, PSTR("---"));
 		return;
 	}
 
@@ -17353,7 +17353,7 @@ void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, u
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(db, x, y, mp->pd->qlabel);
+	display_at(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
@@ -17364,7 +17364,7 @@ void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, u
 		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at_P(db, x, y, mp->pd->qlabel);
+	display_at(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
@@ -17378,7 +17378,7 @@ void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, u
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_at_P(db, x, y, mp->pd->qlabel);
+	display_at(db, x, y, mp->pd->qlabel);
 }
 
 // Вызывается из display2.c
@@ -19617,7 +19617,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
-		display_at_P(& dbv, 0, 0, msg);
+		display_at(& dbv, 0, 0, msg);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
@@ -19648,7 +19648,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
 		display_menu_digit(& dbv, 0, 0, sizeof (struct nvmap), 9, 0, 0);
-		display_at_P(& dbv, 0, 1, msg);
+		display_at(& dbv, 0, 1, msg);
 		colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19664,7 +19664,7 @@ void initialize2(void)
 		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
-		display_at_P(0, 0, msg);
+		display_at(0, 0, msg);
 
 
 		unsigned i;
@@ -19715,7 +19715,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 			display2_fillbg(& dbv);
-			display_at_P(db, 0, 0, PSTR("ERASE: Press SPL"));
+			display_at(db, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 
 			for (;;)
@@ -19757,7 +19757,7 @@ void initialize2(void)
 
 			display2_fillbg(& dbv);
 			display_menu_digit(& dbv, 0, 0, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
+			display_at(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 
 			PRINTF(PSTR("NVRAM fault1\n"));
@@ -19794,7 +19794,7 @@ void initialize2(void)
 
 #if ! LCDMODE_DUMMY
 			display2_fillbg(& dbv);
-			display_at_P(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
+			display_at(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19836,7 +19836,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			display2_fillbg(& dbv);
 			display_menu_digit(& dbv, 0, 1, NVRAM_END + 1, 9, 0, 0);
-			display_at_P(& dbv, 0, 1, PSTR("NVRAM fault"));
+			display_at(& dbv, 0, 1, PSTR("NVRAM fault"));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
