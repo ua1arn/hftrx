@@ -88,6 +88,7 @@ static lv_style_t xxmainstyle;
 static lv_style_t xxfreqastyle;
 static lv_style_t xxfreqbstyle;
 static lv_style_t xxdivstyle;
+static lv_style_t xxcompatstyle;	// отрисовка элементов через функции совместимости
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
 
@@ -186,6 +187,15 @@ static void lvstales_initialize(void)
 	}
 
 	{
+		// отрисовка элементов через функции совместимости
+		lv_style_t * const s = & xxcompatstyle;
+	    lv_style_init(s);
+		lv_style_set_border_width(s, 0);
+	    lv_style_set_text_color(s, display_lvlcolor(COLOR_WHITE));
+	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
+	}
+
+	{
 		// TX/RX indicator
 		lv_style_t * const s = & xxtxrxstyle;
 	    lv_style_init(s);
@@ -220,9 +230,8 @@ void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pc
 {
 	const struct dzone * const dzp = (const struct dzone *) dzpv;
 
-	return;
 	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, NULL, DIM_X, DIM_Y);
+	gxdrawb_initialize(& dbv, (PACKEDCOLORPIP_T *) lv_draw_buf_goto_xy(layer->draw_buf, 0, 0), DIM_X, DIM_Y);
 	(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, compat_pctx);
 
 }
@@ -232,8 +241,7 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_compat_create(parent, dzp);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	//lv_label_set_text_fmt(lbl, "el%u", i);
+	lv_obj_add_style(lbl, & xxcompatstyle, 0);
 
 	return lbl;
 }
