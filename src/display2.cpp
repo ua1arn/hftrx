@@ -231,7 +231,7 @@ void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pc
 	const struct dzone * const dzp = (const struct dzone *) dzpv;
 
 	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, (PACKEDCOLORPIP_T *) lv_draw_buf_goto_xy(layer->draw_buf, 0, 0), DIM_X, DIM_Y);
+	gxdrawb_initlvgl(& dbv, layer);
 	(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, compat_pctx);
 
 }

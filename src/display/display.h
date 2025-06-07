@@ -192,9 +192,11 @@ typedef struct gxdrawb_tag
 	uintptr_t cachebase;
 	int32_t cachesize;
 	uint16_t stride;
+	void * layerv;	// LVGL lv_layer_t *
 } gxdrawb_t;
 
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
+void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */

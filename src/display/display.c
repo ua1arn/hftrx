@@ -275,11 +275,7 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 	db->cachebase = (uintptr_t) buffer;
 	db->cachesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
 	db->stride = GXADJ(dx) * sizeof (PACKEDCOLORPIP_T);
-}
-
-void gxdrawb_default(gxdrawb_t * db)
-{
-	gxdrawb_initialize(db, colmain_fb_draw(), DIM_X, DIM_Y);
+	db->layerv = NULL;
 }
 
 // самый маленький шрифт
@@ -803,6 +799,14 @@ void display_lvgl_initialize(void)
 	// lvgl будет получать тики
 	lv_tick_set_cb(myhardgeticks);
 }
+
+void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
+{
+	lv_layer_t * layer = (lv_layer_t *) layerv;
+	gxdrawb_initialize(db, (PACKEDCOLORPIP_T *) lv_draw_buf_goto_xy(layer->draw_buf, 0, 0), DIM_X, DIM_Y);
+	db->layerv = layerv;
+}
+
 
 #endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
