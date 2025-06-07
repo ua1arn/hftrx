@@ -440,6 +440,7 @@ static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 {
 	data->state = LV_INDEV_STATE_RELEASED;
+	// lv_key_t (заняты коды до 127)
 	data->key = 0;
 }
 #endif /* WITHKEYBOARD */
