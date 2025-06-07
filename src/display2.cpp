@@ -14,6 +14,7 @@
 #include <string.h>
 #include <math.h>
 #include "src/gui/gui.h"
+#include "src/touch/touch.h"
 
 #include "dspdefines.h"
 
@@ -423,6 +424,26 @@ static void refreshtexts(void)
 }
 
 #define LVCREATE(fn) (fn)
+
+#if defined (TSC1_TYPE)
+static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+	uint_fast16_t x, y, p;
+	p = board_tsc_getxy(& x, & y);
+	data->state = p ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = x;
+	data->point.y = y;
+}
+#endif /* defined (TSC1_TYPE) */
+
+#if WITHKEYBOARD
+static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+	data->state = LV_INDEV_STATE_RELEASED;
+	data->key = 0;
+}
+#endif /* WITHKEYBOARD */
+
 
 #else /* WITHLVGL */
 
@@ -7970,6 +7991,26 @@ void display2_initialize(void)
 
 #if LINUX_SUBSYSTEM // другое наверное условое WITHTOUCHGUI - No dzones
 	lvgl_gui_init(lv_screen_active());
+#endif
+
+#if ! LINUX_SUBSYSTEM
+	// может тут оставить как общую инициализацию?
+	#if defined (TSC1_TYPE)
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+		lv_indev_set_read_cb(indev, input_tsc_read_cb);
+	}
+	#endif /* defined (TSC1_TYPE) */
+	#if WITHKEYBOARD
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
+		lv_indev_set_read_cb(indev, input_keypad_read_cb);
+	}
+	#endif /* WITHKEYBOARD) */
+	// TODO: add encoder(s)
+
 #endif
 
 //	{
