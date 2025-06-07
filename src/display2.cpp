@@ -200,7 +200,7 @@ static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, co
 	lv_obj_t * const lbl = lv_label_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_label_set_text_fmt(lbl, "el%u", i);
+	//lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
 }
@@ -211,6 +211,26 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text_fmt(lbl, "el%u", i);
+
+	return lbl;
+}
+
+void dzi_compat_draw_callback(void * layer, void * dzpv, dctx_t * pctx)
+{
+	const struct dzone * const dzp = (const struct dzone *) dzpv;
+	gxdrawb_t dbv;
+	gxdrawb_initialize(& dbv, NULL, DIM_X, DIM_Y);
+	(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
+
+}
+// для быстрого перехода на систему ввода LVGL отрисовка этих vidgets
+// производится вызовом старых функций
+static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_compat_create(parent, dzp);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	//lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
 }
@@ -456,6 +476,14 @@ static const dzitem_t dzi_default =
 {
 	.lvelementcreate = LVCREATE(dzi_create_default),
 	.id = "default"
+};
+
+// для быстрого перехода на систему ввода LVGL отрисовка этих vidgets
+// производится вызовом старых функций
+static const dzitem_t dzi_compat =
+{
+	.lvelementcreate = LVCREATE(dzi_create_compat),
+	.id = "undef"
 };
 
 
@@ -7994,8 +8022,6 @@ void display2_initialize(void)
 	lvgl_gui_init(lv_screen_active());
 #endif
 
-#if ! LINUX_SUBSYSTEM
-	// может тут оставить как общую инициализацию?
 	#if defined (TSC1_TYPE)
 	{
 		lv_indev_t * indev = lv_indev_create();
@@ -8011,8 +8037,6 @@ void display2_initialize(void)
 	}
 	#endif /* WITHKEYBOARD) */
 	// TODO: add encoder(s)
-
-#endif
 
 //	{
 //		static lv_timer_t * lvgl_task1;
