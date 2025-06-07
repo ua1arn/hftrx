@@ -124,6 +124,7 @@
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 	#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
+	//#define BOARD_DSTYLE_LVGL "g_x800_y480_linux_lvgl.h"
 
 #elif 1
 
@@ -288,6 +289,7 @@
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHVIEW_3DSS		1
 		#define WITHVIEW_3DSS_MARK	1
+		//#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHSPECBETA_DEFAULT	30
 		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
