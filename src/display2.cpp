@@ -8256,7 +8256,7 @@ void display2_bgprocess(
 #endif
 }
 
-
+#if WITHLVGL
 /**
  * Draw a line to the canvas
  */
@@ -8297,6 +8297,7 @@ void lv_example_canvas_7(void)
     TP();
 
 }
+#endif /* WITHLVGL */
 
 void display2_initialize(void)
 {
