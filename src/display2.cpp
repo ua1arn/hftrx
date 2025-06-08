@@ -229,7 +229,7 @@ static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, co
 	// Тут создать все интересующие жлементы - размер в экран у parent ставится
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 	//lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
@@ -239,7 +239,7 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 	lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
@@ -261,7 +261,7 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_compat_create(parent, dzp);
 
-	lv_obj_add_style(lbl, & xxcompatstyle, 0);
+	lv_obj_add_style(lbl, & xxcompatstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -270,7 +270,7 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modea);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -279,7 +279,7 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modeb);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -288,7 +288,7 @@ static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_ant5);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -297,7 +297,7 @@ static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_preamp_ovf);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -306,7 +306,7 @@ static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_tune);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -315,7 +315,7 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_bypass);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -329,7 +329,7 @@ static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbw);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -338,7 +338,7 @@ static lv_obj_t * dzi_create_rxbwval(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbwval);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -347,7 +347,7 @@ static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * d
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_voltlevel);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -358,7 +358,7 @@ static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_datetime12);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -380,7 +380,7 @@ static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * d
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_currlevel);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -402,7 +402,7 @@ static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dz
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_siglevel);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -411,7 +411,7 @@ static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_attenuator);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -421,8 +421,8 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqa);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxfreqastyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxfreqastyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -431,8 +431,8 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqb);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxfreqbstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -441,8 +441,8 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_txrx_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxtxrxstyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -452,8 +452,8 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 	lv_obj_t * const lbl = lv_smtr_create(parent);
 	//lv_obj_t * const lbl = lv_smtr2_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxscopestyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
 
 	return lbl;
 }
@@ -464,8 +464,8 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 #if 1
 	lv_obj_t * const lbl = lv_wtrf_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxscopestyle, 0);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
 
 	return lbl;
 #else
@@ -479,22 +479,20 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
     lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
     lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 
-	lv_obj_add_style(cont, & xxcellstyle, 0);
+	lv_obj_add_style(cont, & xxcellstyle, LV_PART_MAIN);
 
 
 	lv_obj_t * const upper = lv_sscp2_create(cont);
-	lv_obj_t * const lower = lv_wtrf2_create(cont);
-
-	lv_label_set_text_fmt(upper, "upper");
-	lv_label_set_text_fmt(lower, "lower");
-
 	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
-
-	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
-
 	lv_obj_add_style(upper, & xxcellstyle, LV_PART_MAIN);
 
+	lv_obj_t * const lower = lv_wtrf2_create(cont);
+	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 	lv_obj_add_style(lower, & xxcellstyle, LV_PART_MAIN);
+
+
+
+
 
 
 	ASSERT(2 == lv_obj_get_child_count(cont));
@@ -8157,7 +8155,7 @@ void display2_initialize(void)
 				{
 					// Для целей отладки создаём видимый элемент
 					lbl = lv_label_create(wnd);
-					lv_obj_add_style(lbl, & xxdivstyle, 0);
+					lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 					lv_label_set_text_fmt(lbl, "ix%d", (int) i);
 				}
 
@@ -8174,7 +8172,7 @@ void display2_initialize(void)
 			{
 				lv_obj_set_size(wnd, DIM_X, DIM_Y);
 				lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
-				lv_obj_add_style(wnd, & xxmainstyle, 0);
+				lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
 
 				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
 				xxmainwnds [page] = wnd;
