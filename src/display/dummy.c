@@ -78,14 +78,6 @@ display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t yp
 }
 
 
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-uint_fast16_t
-display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
-{
-	return xpix + 1;
-}
-
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */
 void

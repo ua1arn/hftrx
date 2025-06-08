@@ -3244,29 +3244,6 @@ static void display_agc4(const gxdrawb_t * db,
 	display_1state(db, x, y, hamradio_get_agc4_value_P());
 }
 
-// VFO mode - одним символом (первым от слова SPLIT или пробелом)
-static void display_vfomode1(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
-	const char * const label = hamradio_get_vfomode3_value(& state);
-
-	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(db, x, y, & ypix);
-		display_put_char_small(db, xpix, ypix, label [0], lowhalf);
-		display_wrdata_end(db);
-	} while (lowhalf --);
-}
-
 // SSB/CW/AM/FM/...
 static void display2_mode3_a(const gxdrawb_t * db,
 		uint_fast8_t x,

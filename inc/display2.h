@@ -189,6 +189,14 @@ COLORPIP_T display2_get_spectrum(int x);
 
 int_fast32_t display2_zoomedbw(void);
 
+typedef struct pipparams_tag
+{
+	uint16_t x, y, w, h;	// в пикселях
+} pipparams_t;
+
+void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
+const char * display2_gethtml(uint_fast8_t page);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 #ifdef __cplusplus

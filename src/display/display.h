@@ -224,38 +224,10 @@ void display_clear(const gxdrawb_t * db);	// Заполниить цветом �
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
-// самый маленький шрифт
-uint_fast16_t display_wrdata2_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-void display_wrdata2_end(const gxdrawb_t * db);
-uint_fast16_t display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_barcolumn(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
 void display_wrdatabar_end(const gxdrawb_t * db);
-// большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-void display_wrdatabig_end(const gxdrawb_t * db);
-// обычный шрифт
-uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_small_xy(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLOR565_T fg);
-void display_wrdata_end(const gxdrawb_t * db);
-
-// большие и средние цифры (частота)
-uint_fast16_t render_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-void render_wrdatabig_end(const gxdrawb_t * db);
-
-typedef struct pipparams_tag
-{
-	uint16_t x, y, w, h;	// в пикселях
-} pipparams_t;
-
-void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
-const char * display2_gethtml(uint_fast8_t page);
 
 // Заполнение буфера сполшным цветом
 // Формат RGB565
