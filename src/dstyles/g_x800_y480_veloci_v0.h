@@ -206,6 +206,7 @@ void display2_getmultimenu(multimenuwnd_t * p)
 	p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 	p->reverse = 1;
 	p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+	p->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 }
 #endif /* WITHMENU */
 

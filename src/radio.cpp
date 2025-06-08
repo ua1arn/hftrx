@@ -17327,16 +17327,43 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 // вызывается по dzones
 void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	const uint_fast8_t groupx = xcell + 1;
-	const uint_fast8_t namesx = groupx + LABELW + 3;
-	const uint_fast8_t valuesx = namesx + LABELW + 3;
-	const uint_fast8_t groupspan = namesx - groupx;
-	const uint_fast8_t namesspan = valuesx - namesx;
-	const uint_fast8_t valuesspan = xspan - valuesx;
+	multimenuwnd_t w;
+	const uint_fast8_t xcell_marker = xcell + 0;
+	const uint_fast8_t xcell_text = xcell + 1;
 
-	display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
-	display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
-	display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
+	if (xspan == 0)
+		return;
+	display2_getmultimenu(& w);
+	/* параметры полей вывода значений в меню */
+	const uint_fast8_t VALUEW = w.valuew;
+
+	if (w.xspan < 50)
+	{
+		// compact view
+		const uint_fast8_t groupx = xcell;
+		const uint_fast8_t namesx = groupx + VALUEW + 1;
+		const uint_fast8_t valuesx = namesx + VALUEW + 1;
+		const uint_fast8_t groupspan = namesx - groupx;
+		const uint_fast8_t namesspan = valuesx - namesx;
+		const uint_fast8_t valuesspan = xspan - valuesx;
+
+		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
+		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
+		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
+	}
+	else
+	{
+		const uint_fast8_t groupx = xcell + 1;
+		const uint_fast8_t namesx = groupx + VALUEW + 3;
+		const uint_fast8_t valuesx = namesx + VALUEW + 3;
+		const uint_fast8_t groupspan = namesx - groupx;
+		const uint_fast8_t namesspan = valuesx - namesx;
+		const uint_fast8_t valuesspan = xspan - valuesx;
+
+		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
+		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
+		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
+	}
 }
 
 // название редактируемого параметра

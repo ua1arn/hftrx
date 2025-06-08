@@ -151,7 +151,7 @@
 		{	20, 24,	5,	5,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	0, MENU1ROW,	BDTH_ALLRX, (51 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	0, MENU1ROW,	BDTH_ALLRX, (54 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		#if WITHAUTOTUNER
 		{	0,  		51,	22,	0,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 		#endif /* WITHAUTOTUNER */
@@ -163,10 +163,11 @@
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
-		p->multilinemenu_max_rows = (51 - MENU1ROW) / YSTEP;
+		p->multilinemenu_max_rows = (54 - MENU1ROW) / YSTEP;
 		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
-		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+		p->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 	}
 #endif /* WITHMENU */
 

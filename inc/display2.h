@@ -99,6 +99,7 @@ typedef struct multimenuwnd_tag
 	uint8_t ystep;
 	uint8_t reverse;	// 0/1
 	uint8_t valuew;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+	uint8_t xspan;	/* количество знакомест по горизонтали, отдаваемое под меню */
 } multimenuwnd_t;
 
 #define LABELW 8
