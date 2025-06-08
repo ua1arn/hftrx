@@ -245,7 +245,7 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 	return lbl;
 }
 
-static dctx_t * compat_pctx;	// хак, эта переменная заполняется перед вызовом lv_task_handler()
+static dctx_t * compat_pctx;	// хак, эта переменная заполняется перед вызовом lv_timer_handler()
 void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pctx)
 {
 	const struct dzone * const dzp = (const struct dzone *) dzpv;
@@ -8160,7 +8160,7 @@ void display2_bgprocess(
 		lv_obj_invalidate(xxmainwnds [ix]);
 	}
 	compat_pctx = pctx;
-	lv_task_handler();
+	lv_timer_handler();
 	return;
 
 #elif LINUX_SUBSYSTEM
@@ -8256,49 +8256,6 @@ void display2_bgprocess(
 #endif
 }
 
-#if WITHLVGL
-/**
- * Draw a line to the canvas
- */
-void lv_example_canvas_7(void)
-{
-    /*Create a buffer for the canvas*/
-    LV_DRAW_BUF_DEFINE_STATIC(draw_buf, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
-    LV_DRAW_BUF_INIT_STATIC(draw_buf);
-    TP();
-    /*Create a canvas and initialize its palette*/
-    lv_obj_t * canvas = lv_canvas_create(lv_screen_active());
-    TP();
-    lv_canvas_set_draw_buf(canvas, &draw_buf);
-    TP();
-    lv_canvas_fill_bg(canvas, lv_color_hex3(0xccc), LV_OPA_COVER);
-    TP();
-   lv_obj_center(canvas);
-
-    lv_layer_t layer;
-    lv_canvas_init_layer(canvas, &layer);
-    TP();
-
-    lv_draw_line_dsc_t dsc;
-    lv_draw_line_dsc_init(&dsc);
-    TP();
-   dsc.color = lv_palette_main(LV_PALETTE_RED);
-    dsc.width = 4;
-    dsc.round_end = 1;
-    dsc.round_start = 1;
-    dsc.p1.x = 15;
-    dsc.p1.y = 15;
-    dsc.p2.x = 35;
-    dsc.p2.y = 10;
-    lv_draw_line(&layer, &dsc);
-    TP();
-
-    lv_canvas_finish_layer(canvas, &layer);
-    TP();
-
-}
-#endif /* WITHLVGL */
-
 void display2_initialize(void)
 {
 #if WITHLVGL
@@ -8314,11 +8271,9 @@ void display2_initialize(void)
     lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
 //    for (;;)
-//    	lv_task_handler();
+//    	lv_timer_handler();
 
 #else
-//    lv_example_canvas_7();
-//    return;
 	lvstales_initialize();	// эти стили нужны в linux ?
 
 	{
