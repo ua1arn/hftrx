@@ -177,23 +177,7 @@ void display_wrdata2_end(const gxdrawb_t * db)
 }
 
 
-#if 1
-
-// Выдать один цветной пиксель
-static void
-ltdc_pix1color(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	PACKEDCOLORPIP_T color
-	)
-{
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-	volatile PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-	* tgr = color;
-	//dcache_clean((uintptr_t) tgr, sizeof * tgr);
-}
+#if 1//! WITHLVGL
 
 
 // Выдать один цветной пиксель (фон/символ)
@@ -205,31 +189,10 @@ ltdc_pixel(
 	uint_fast8_t v			// 0 - цвет background, иначе - foreground
 	)
 {
-	ltdc_pix1color(db, x, y, v ? ltdc_fg : ltdc_bg);
+	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
+	* tgr = v ? ltdc_fg : ltdc_bg;
 }
 
-
-// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-static void
-ltdc_vertical_pixN(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast8_t pattern,		// pattern
-	uint_fast8_t w		// number of lower bits used in pattern
-	)
-{
-
-	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	ltdc_pixel(db, x, y + 0, pattern & 0x01);
-	ltdc_pixel(db, x, y + 1, pattern & 0x02);
-	ltdc_pixel(db, x, y + 2, pattern & 0x04);
-	ltdc_pixel(db, x, y + 3, pattern & 0x08);
-	ltdc_pixel(db, x, y + 4, pattern & 0x10);
-	ltdc_pixel(db, x, y + 5, pattern & 0x20);
-	ltdc_pixel(db, x, y + 6, pattern & 0x40);
-	ltdc_pixel(db, x, y + 7, pattern & 0x80);
-}
 
 // для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 void RAMFUNC ltdc_horizontal_pixels(
@@ -254,7 +217,27 @@ void RAMFUNC ltdc_horizontal_pixels(
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
-#endif
+#endif /* ! WITHLVGL */
+
+static void RAMFUNC
+ltdc_put_char_unified(
+	const FLASHMEM uint8_t * fontraster,
+	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
+	uint_fast8_t height,	// строк в символе по вертикали
+	uint_fast8_t bytesw,	// байтов в одной строке символа
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	uint_fast8_t ci,	// индекс символа в знакогенераторе
+	uint_fast8_t width2	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
+	)
+{
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < height; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
+		ltdc_horizontal_pixels(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2);
+	}
+}
 
 /* valid chars: "0123456789 #._" */
 static uint_fast8_t
@@ -337,26 +320,6 @@ uint_fast8_t smallfont3_width(char cc)
 	return SMALLCHARW3;	// полная ширина символа в пикселях
 }
 #endif /* defined (SMALLCHARH3) */
-
-static void RAMFUNC
-ltdc_put_char_unified(
-	const FLASHMEM uint8_t * fontraster,
-	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
-	uint_fast8_t height,	// строк в символе по вертикали
-	uint_fast8_t bytesw,	// байтов в одной строке символа
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	uint_fast8_t ci,	// индекс символа в знакогенераторе
-	uint_fast8_t width2	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
-	)
-{
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < height; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2);
-	}
-}
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // return new x
@@ -793,14 +756,6 @@ uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, 
 	return GRID2X(xcell);
 }
 
-// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-uint_fast16_t
-display_barcolumn(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t pattern)
-{
-//	ltdc_vertical_pixN(pattern, 8);	// Выдать восемь цветных пикселей, младший бит - самый верхний в растре
-	return xpix + 1;
-}
-
 void display_wrdatabar_end(const gxdrawb_t * db)
 {
 }
@@ -867,15 +822,6 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	const uint_fast8_t ci = smallfont_decode(cc);
 	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], db, x, y, ci, SMALLCHARW3);
 	return x + SMALLCHARW3;
-//	const uint_fast8_t width = SMALLCHARW3;
-//	const uint_fast8_t c = smallfont_decode(cc);
-//	uint_fast8_t cgrow;
-//	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-//	{
-//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-//		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
-//	}
-//	return x + width;
 }
 
 static void
