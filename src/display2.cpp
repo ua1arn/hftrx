@@ -381,6 +381,33 @@ static lv_obj_t * dzi_create_rec(lv_obj_t * parent, const struct dzone * dzp, co
 	return lbl;
 }
 
+static lv_obj_t * dzi_create_agc(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_agc);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_notch(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_notch);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_lock(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_lock);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
 static lv_obj_t * dzi_create_spk(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_spk);
@@ -744,6 +771,24 @@ static const dzitem_t dzi_rec =
 {
 	.lvelementcreate = LVCREATE(dzi_create_rec),
 	.id = "rec"
+};
+
+static const dzitem_t dzi_lock =
+{
+	.lvelementcreate = LVCREATE(dzi_create_lock),
+	.id = "lock"
+};
+
+static const dzitem_t dzi_notch =
+{
+	.lvelementcreate = LVCREATE(dzi_create_notch),
+	.id = "notch"
+};
+
+static const dzitem_t dzi_agc =
+{
+	.lvelementcreate = LVCREATE(dzi_create_agc),
+	.id = "agc"
 };
 
 static const dzitem_t dzi_spk =

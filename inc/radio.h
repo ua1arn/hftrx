@@ -3555,6 +3555,9 @@ int infocb_classa(char * b, size_t len);
 int infocb_datamode(char * b, size_t len);
 int infocb_voxtune(char * b, size_t len);
 int infocb_vfomode(char * b, size_t len);
+int infocb_lock(char * b, size_t len);
+int infocb_agc(char * b, size_t len);
+int infocb_notch(char * b, size_t len);
 
 #ifdef __cplusplus
 }

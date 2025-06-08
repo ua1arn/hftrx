@@ -99,18 +99,18 @@
 		//{	36,	5,	5, 5, display2_dummy,		& dzi_default, PGALL, },	// placeholder
 		{	36, 10,	5, 5, display2_dummy,		& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	4, 5, display2_dummy,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	45, 10,	5, 5, display2_agc3,		& dzi_default, PGALL, },	// AGC mode
+		{	45, 10,	5, 5, display2_dummy,		& dzi_agc, PGALL, },	// AGC mode
 
 		{	36, 15,	5, 5, display2_dummy,		& dzi_nr, PGALL, },	// NR : was: AGC
 		{	41, 15,	4, 5, display2_dummy,		& dzi_datamode, PGALL, },	// DATA mode indicator
-		{	45, 15,	5, 5, display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
+		{	45, 15,	5, 5, display2_dummy,		& dzi_notch, PGALL, },	// NOTCH on/off
 
 		{	15, 20,	3, 5, display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 5, display2_dummy,		& dzi_vfomode, PGALL, },	// SPL
 		{	24,	20,	12, 5, display2_dummy,		& dzi_freqb, PGALL, },	// SUB FREQ
 		{	36, 20,	5, 5, display2_dummy,		& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	4, 5, display2_dummy,		& dzi_voxtune, PGALL, },	// VOX
-		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
+		{	45,	20,	5, 5, display2_dummy, 		& dzi_lock, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
 		{	1, 	25,	5, 5, display2_dummy, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -131,7 +131,7 @@
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_gcombo, PG0, },// подготовка изображения спектра
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_dummy,	& dzi_gcombo, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	12, 5, display2_dummy,		& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40

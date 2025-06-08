@@ -22002,6 +22002,36 @@ int infocb_nr(char * b, size_t len)
 	return local_snprintf_P(b, len, "%s", state ? "NR" : "");
 }
 
+int infocb_notch(char * b, size_t len)
+{
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+	int_fast32_t freq;
+	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
+	const char * const label = hamradio_get_notchtype5_P();
+	const char * const labels [2] = { label, label, };
+	return local_snprintf_P(b, len, "%s", labels [state]);
+#else
+	return 0;
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+}
+
+int infocb_agc(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_agc3_value_P());
+}
+
+int infocb_lock(char * b, size_t len)
+{
+	const uint_fast8_t lockv = hamradio_get_lockvalue();
+	const uint_fast8_t fastv = hamradio_get_usefastvalue();
+
+	static const char text0 [] = "";
+	static const char text1 [] = "LOCK";
+	static const char text2 [] = "FAST";
+	const char * const labels [4] = { text1, text2, text1, text1, };
+	return local_snprintf_P(b, len, "%s", labels [lockv * 2 + fastv]);
+}
+
 int infocb_voxtune(char * b, size_t len)
 {
 	static const char text_vox [] = "VOX";
