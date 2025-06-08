@@ -82,25 +82,6 @@ void display_uninitialize(void)
 {
 }
 
-void
-display_wrdata2_end(const gxdrawb_t * db)
-{
-}
-
-
-// большие и средние цифры (частота)
-// большие и средние цифры (частота)
-uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
-{
-	* yp = GRID2Y(y);
-	return GRID2X(x);
-}
-
-
-void
-display_wrdatabig_end(const gxdrawb_t * db)
-{
-}
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения

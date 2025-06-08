@@ -141,10 +141,6 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 	db->layerv = NULL;
 }
 
-// самый маленький шрифт
-uint_fast16_t display_wrdata2_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-void display_wrdata2_end(const gxdrawb_t * db);
-uint_fast16_t display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
@@ -218,6 +214,79 @@ void RAMFUNC ltdc_horizontal_pixels(
 }
 
 #endif /* ! WITHLVGL */
+
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLORPIP_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 8)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	tgr [0] = fg;
+		if (v & 0x02)	tgr [1] = fg;
+		if (v & 0x04)	tgr [2] = fg;
+		if (v & 0x08)	tgr [3] = fg;
+		if (v & 0x10)	tgr [4] = fg;
+		if (v & 0x20)	tgr [5] = fg;
+		if (v & 0x40)	tgr [6] = fg;
+		if (v & 0x80)	tgr [7] = fg;
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				* tgr = fg;
+			++ tgr;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
+
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+// удвоенный по ширине растр
+static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLORPIP_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 16)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	{ tgr [ 0] = tgr [ 1] = fg; }
+		if (v & 0x02)	{ tgr [ 2] = tgr [ 3] = fg; }
+		if (v & 0x04)	{ tgr [ 4] = tgr [ 5] = fg; }
+		if (v & 0x08)	{ tgr [ 6] = tgr [ 7] = fg; }
+		if (v & 0x10)	{ tgr [ 8] = tgr [ 9] = fg; }
+		if (v & 0x20)	{ tgr [10] = tgr [11] = fg; }
+		if (v & 0x40)	{ tgr [12] = tgr [13] = fg; }
+		if (v & 0x80)	{ tgr [14] = tgr [15] = fg; }
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				tgr [ 0] = tgr [ 1] = fg;
+			tgr += 2;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
 
 static void RAMFUNC
 ltdc_put_char_unified(
@@ -351,89 +420,6 @@ static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast1
 	ASSERT(ypix < DIM_Y);
 	ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARH, size_halffont, db, xpix, ypix, ci, width2);
 	return xpix + width2;
-}
-
-#if 0
-uint_fast16_t display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
-{
-	ASSERT(xpix < DIM_X);
-	ASSERT(ypix < DIM_Y);
-	const uint_fast8_t ci = smallfont_decode(cc);
-	return ltdc_put_char_small(xpix, ypix, ci);
-}
-#endif
-
-// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-// Фон не трогаем
-static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
-	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
-	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
-	COLORPIP_T fg
-	)
-{
-	uint_fast16_t w = width;
-
-	for (; w >= 8; w -= 8, tgr += 8)
-	{
-		const uint_fast8_t v = * raster ++;
-		if (v & 0x01)	tgr [0] = fg;
-		if (v & 0x02)	tgr [1] = fg;
-		if (v & 0x04)	tgr [2] = fg;
-		if (v & 0x08)	tgr [3] = fg;
-		if (v & 0x10)	tgr [4] = fg;
-		if (v & 0x20)	tgr [5] = fg;
-		if (v & 0x40)	tgr [6] = fg;
-		if (v & 0x80)	tgr [7] = fg;
-	}
-	if (w != 0)
-	{
-		uint_fast8_t vlast = * raster;
-		do
-		{
-			if (vlast & 0x01)
-				* tgr = fg;
-			++ tgr;
-			vlast >>= 1;
-		} while (-- w);
-	}
-}
-
-// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-// Фон не трогаем
-// удвоенный по ширине растр
-static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
-	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
-	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
-	COLORPIP_T fg
-	)
-{
-	uint_fast16_t w = width;
-
-	for (; w >= 8; w -= 8, tgr += 16)
-	{
-		const uint_fast8_t v = * raster ++;
-		if (v & 0x01)	{ tgr [ 0] = tgr [ 1] = fg; }
-		if (v & 0x02)	{ tgr [ 2] = tgr [ 3] = fg; }
-		if (v & 0x04)	{ tgr [ 4] = tgr [ 5] = fg; }
-		if (v & 0x08)	{ tgr [ 6] = tgr [ 7] = fg; }
-		if (v & 0x10)	{ tgr [ 8] = tgr [ 9] = fg; }
-		if (v & 0x20)	{ tgr [10] = tgr [11] = fg; }
-		if (v & 0x40)	{ tgr [12] = tgr [13] = fg; }
-		if (v & 0x80)	{ tgr [14] = tgr [15] = fg; }
-	}
-	if (w != 0)
-	{
-		uint_fast8_t vlast = * raster;
-		do
-		{
-			if (vlast & 0x01)
-				tgr [ 0] = tgr [ 1] = fg;
-			tgr += 2;
-			vlast >>= 1;
-		} while (-- w);
-	}
 }
 
 #if 0//SMALLCHARW
@@ -1178,7 +1164,6 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 #endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
-#endif /* LCDMODE_LTDC */
 
 // Используется при выводе на графический индикатор,
 void
@@ -1561,64 +1546,7 @@ display_value_small(const gxdrawb_t * db,
 	display_wrdata_end(db);
 }
 
-void display_value_small_xy(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// x координата начала вывода значения
-	uint_fast16_t ypix,	// y координата начала вывода значения
-	int_fast32_t freq,
-	COLOR565_T fg
-	)
-{
-	uint_fast8_t width = 9;
-	uint_fast8_t comma = 3;
-	uint_fast8_t comma2 = 6;
-	uint_fast8_t rj = 0;
-	uint_fast8_t lowhalf = 0;
-	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
-	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
-	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
-	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
-	uint_fast8_t z = 1;	// only zeroes
-
-	if (wsign || wminus)
-	{
-		// отображение со знаком.
-		z = 0;
-		if (freq < 0)
-		{
-			xpix = display_put_char_small_xy(db, xpix, ypix, '-', fg);
-			freq = - freq;
-		}
-		else if (wsign)
-			xpix = display_put_char_small_xy(db, xpix, ypix, '+', fg);
-		else
-			xpix = display_put_char_small_xy(db, xpix, ypix, ' ', fg);
-	}
-	for (; i < j; ++ i)
-	{
-		const ldiv_t res = ldiv(freq, vals10 [i]);
-		const uint_fast8_t g = (j - i);
-		// разделитель десятков мегагерц
-		if (comma2 == g)
-		{
-			xpix = display_put_char_small_xy(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
-		}
-		else if (comma == g)
-		{
-			z = 0;
-			xpix = display_put_char_small_xy(db, xpix, ypix, '.', fg);
-		}
-
-		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_small_xy(db, xpix, ypix, ' ', fg);	// supress zero
-		else
-		{
-			z = 0;
-			xpix = display_put_char_small_xy(db, xpix, ypix, '0' + res.quot, fg);
-		}
-		freq = res.rem;
-	}
-}
+#endif /* LCDMODE_LTDC */
 
 #if WITHLTDCHW || 1
 

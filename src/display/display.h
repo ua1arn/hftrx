@@ -817,14 +817,6 @@ display_value_small(
 	uint_fast8_t lowhalf
 	);
 
-void display_value_small_xy(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// x координата начала вывода значения
-	uint_fast16_t ypix,	// y координата начала вывода значения
-	int_fast32_t freq,
-	COLOR565_T fg
-	);
-
 void display_floodfill(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// начальная координата
