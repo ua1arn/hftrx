@@ -3856,7 +3856,7 @@ void tvout_nextfb(void)
 	{
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb1);
-	//	display_at(0, 0, s);
+	//	display_text(0, 0, s);
 		dcache_clean_invalidate(fb1, cachesize_dmabuffercolmain1fb());
 		save_dmabuffercolmain1fb(fb1);
 	}
@@ -3886,7 +3886,7 @@ void colmain_nextfb(void)
 	{
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
-	//	display_at(0, 0, s);
+	//	display_text(0, 0, s);
 #if WITHHDMITVHW && 0
 		// дублирование буфера
 		gxdrawb_t fbtfb0;
@@ -3918,7 +3918,7 @@ void colmain_nextfb_sub(void)
 	{
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
-	//	display_at(0, 0, s);
+	//	display_text(0, 0, s);
 #if WITHHDMITVHW && 1
 
 		// дублирование буфера

@@ -1213,39 +1213,9 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 #endif /* LCDMODE_LTDC */
 
-#if 0
-// Используется при выводе на графический индикатор,
-// самый маленький шрифт
-static void
-display_string2(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
-	while((c = * s ++) != '\0')
-		xpix = display_put_char_small2(xpix, ypix, c, lowhalf);
-	display_wrdata2_end();
-}
-
-
-
-// Используется при выводе на графический индикатор,
-// самый маленький шрифт
-static void
-display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char * s, uint_fast8_t lowhalf)
-{
-	char c;
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata2_begin(xcell, ycell, & ypix);
-	while((c = * s ++) != '\0')
-		xpix = display_put_char_small2(xpix, xpix, c, lowhalf);
-	display_wrdata2_end();
-}
-#endif
 // Используется при выводе на графический индикатор,
 void
-display_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	savestring = s;
 	savewhere = __func__;
