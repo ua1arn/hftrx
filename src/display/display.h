@@ -401,36 +401,6 @@ uint_fast16_t strheight(
 	const char * s
 	);
 
-/* копирование содержимого окна с перекрытием для водопада */
-void
-display_scroll_down(const gxdrawb_t * db,
-	uint_fast16_t x0,	// левый верхний угол окна
-	uint_fast16_t y0,	// левый верхний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
-	);
-
-/* копирование содержимого окна с перекрытием для водопада */
-void
-display_scroll_up(const gxdrawb_t * db,
-	uint_fast16_t x0,	// левый верхний угол окна
-	uint_fast16_t y0,	// левый верхний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
-	);
-
-void
-display_panel(const gxdrawb_t * db,
-	uint_fast8_t x, // левый верхний угод
-	uint_fast8_t y,
-	uint_fast8_t w, // ширина и высота в знакоместах
-	uint_fast8_t h
-	);
-
 void
 display2_menu_value(const gxdrawb_t * db,
 	uint_fast8_t x,
@@ -677,12 +647,6 @@ colpip_const_mem_at_debug(
 
 #define colpip_mem_at(a,b,c) (colpip_mem_at_debug((a), (b), (c), __FILE__, __LINE__))
 #define colpip_const_mem_at(a,b,c) (colpip_const_mem_at_debug((a), (b), (c), __FILE__, __LINE__))
-
-void display_putpixel(const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T color
-	);
 
 void colpip_putpixel(const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо

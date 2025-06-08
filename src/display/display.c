@@ -37,27 +37,6 @@ const char * savewhere = "no func";
 	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
 #endif /* WITHALTERNATIVEFONTS */
 
-void display_putpixel(const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T color
-	)
-{
-	colpip_putpixel(db, x, y, color);
-}
-
-/* заполнение прямоугольника на основном экране произвольным цветом
-*/
-void
-display_fillrect(const gxdrawb_t * db,
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORPIP_T color
-	)
-{
-	colpip_fillrect(db, x, y, w, h, color);
-}
-
 /* рисование линии на основном экране произвольным цветом
 */
 void
@@ -67,124 +46,8 @@ display_line(const gxdrawb_t * db,
 	COLORPIP_T color
 	)
 {
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
 
 	colpip_line(db, x1, y1, x2, y2, color, 0);
-}
-
-/* копирование содержимого окна с перекрытием для водопада */
-void
-display_scroll_down(const gxdrawb_t * db,
-	uint_fast16_t x0,	// левый верхний угол окна
-	uint_fast16_t y0,	// левый верхний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
-	)
-{
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-
-#if WITHDMA2DHW
-
-#if defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	/* TODO: В DMA2D нет средств управления направлением пересылки, потому данный код копирует сам на себя данные (размножает) */
-	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + 0, x0);
-	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
-		0;
-	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + n, x0);
-	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
-		0;
-	/* размер пересылаемого растра */
-	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		((h - n) << DMA2D_NLR_NL_Pos) |
-		(w << DMA2D_NLR_PL_Pos) |
-		0;
-	/* формат пикселя */
-	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
-		0;
-
-	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
-		1 * DMA2D_CR_START |
-		0;
-
-	/* ожидаем выполнения операции */
-	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
-	__DMB();
-
-	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
-	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
-
-#endif /* defined (DMA2D_FGPFCCR_CM_VALUE_MAIN) */
-
-#endif /* WITHDMA2DHW */
-}
-
-/* копирование содержимого окна с перекрытием для водопада */
-void
-display_scroll_up(const gxdrawb_t * db,
-	uint_fast16_t x0,	// левый верхний угол окна
-	uint_fast16_t y0,	// левый верхний угол окна
-	uint_fast16_t w, 	// до 65535 пикселей - ширина окна
-	uint_fast16_t h, 	// до 65535 пикселей - высота окна
-	uint_fast16_t n,	// количество строк прокрутки
-	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
-	)
-{
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-
-#if WITHDMA2DHW
-#if defined (DMA2D_FGPFCCR_CM_VALUE_MAIN)
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-
-	/* исходный растр */
-	DMA2D->FGMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + n, x0);
-	DMA2D->FGOR = (DMA2D->FGOR & ~ (DMA2D_FGOR_LO)) |
-		((DIM_X - w) << DMA2D_FGOR_LO_Pos) |
-		0;
-	/* целевой растр */
-	DMA2D->OMAR = (uintptr_t) colpip_mem_at(buffer, dx, dy, y0 + 0, x0);
-	DMA2D->OOR = (DMA2D->OOR & ~ (DMA2D_OOR_LO)) |
-		((DIM_X - w) << DMA2D_OOR_LO_Pos) |
-		0;
-	/* размер пересылаемого растра */
-	DMA2D->NLR = (DMA2D->NLR & ~ (DMA2D_NLR_NL | DMA2D_NLR_PL)) |
-		((h - n) << DMA2D_NLR_NL_Pos) |
-		(w << DMA2D_NLR_PL_Pos) |
-		0;
-	/* формат пикселя */
-	DMA2D->FGPFCCR = (DMA2D->FGPFCCR & ~ (DMA2D_FGPFCCR_CM)) |
-		DMA2D_FGPFCCR_CM_VALUE_MAIN |	/* Color mode - framebuffer pixel format */
-		0;
-
-	/* запустить операцию */
-	DMA2D->CR = (DMA2D->CR & ~ (DMA2D_CR_MODE)) |
-		0 * DMA2D_CR_MODE_0 |	// 00: Memory-to-memory (FG fetch only)
-		1 * DMA2D_CR_START |
-		0;
-
-	/* ожидаем выполнения операции */
-	while ((DMA2D->CR & DMA2D_CR_START) != 0)
-		;
-	__DMB();
-
-	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
-	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
-
-#endif /* defined (DMA2D_FGPFCCR_CM_VALUE_MAIN) */
-#endif /* WITHDMA2DHW */
 }
 
 #if ! LCDMODE_LTDC_L24

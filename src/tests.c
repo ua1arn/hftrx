@@ -5583,7 +5583,7 @@ static void display_solidbar(
 		const uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	display_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
+	colpip_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
 }
 
 
@@ -5682,9 +5682,9 @@ GridTest(void)
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
-	display_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
-	display_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
-	display_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
 /*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
@@ -5698,7 +5698,7 @@ GridTest(void)
 				 );
 */
 
-	display_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
+	colpip_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
 	display_line(& dbv, xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
 
 	/* Interlase clocke test.	*/
@@ -10055,7 +10055,7 @@ void hightests(void)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		display_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		display_at(& dbv, 0, 0, "Start...");
 		colmain_nextfb();
 	}
@@ -12870,7 +12870,7 @@ void hightests(void)
 		for (int i = 0; i <= 255; i++)
 		{
 
-			display_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
+			colpip_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
 
 			if (wx > 24)
 			{
