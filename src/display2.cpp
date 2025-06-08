@@ -211,6 +211,16 @@ static void lvstales_initialize(void)
 	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_border_width(s, 0);
 		lv_style_set_radius(s, 0);
+
+		lv_style_set_pad_column(s, 0);
+		lv_style_set_pad_row(s, 0);
+
+		lv_style_set_margin_all(s, 0);
+
+		lv_style_set_pad_top(s, 0);
+		lv_style_set_pad_bottom(s, 0);
+		lv_style_set_pad_left(s, 0);
+		lv_style_set_pad_right(s, 0);
 	}
 }
 
@@ -468,22 +478,23 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
     lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
     lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
     lv_obj_set_layout(cont, LV_LAYOUT_GRID);
-	//lv_obj_add_style(cont, & xxdivstyle, 0);
+
 	lv_obj_add_style(cont, & xxcellstyle, 0);
 
 
-	lv_obj_t * const upper = lv_label_create(cont);
-	lv_obj_t * const lower = lv_label_create(cont);
+	lv_obj_t * const upper = lv_sscp2_create(cont);
+	lv_obj_t * const lower = lv_wtrf2_create(cont);
 
 	lv_label_set_text_fmt(upper, "upper");
 	lv_label_set_text_fmt(lower, "lower");
 
 	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+
 	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 
-	lv_obj_add_style(upper, & xxcellstyle, 0);
+	lv_obj_add_style(upper, & xxcellstyle, LV_PART_MAIN);
 
-	lv_obj_add_style(lower, & xxcellstyle, 0);
+	lv_obj_add_style(lower, & xxcellstyle, LV_PART_MAIN);
 
 
 	ASSERT(2 == lv_obj_get_child_count(cont));
@@ -7146,7 +7157,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 //        lv_draw_layer_init(& lowerrpart, layer, display_get_lvformat(), & lowerarea);
 
 
-    PRINTF("lv_wtrf2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+    //PRINTF("lv_wtrf2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
 
     if (0)
     {
@@ -7225,7 +7236,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 // Рисуем спектр примитивами LVGL
 void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
 {
-    PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+    //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
     if (1)
     {
     	// отладка. закрасить зону отображения
