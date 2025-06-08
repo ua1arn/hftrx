@@ -131,7 +131,7 @@ void linux_lvgl_gui(const gxdrawb_t * db,
 	#if WITHSPECTRUMWF
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_gcombo, PG0, },// подготовка изображения спектра
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 

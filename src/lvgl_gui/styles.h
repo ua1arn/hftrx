@@ -28,6 +28,7 @@ lv_obj_t * lv_smtr_create(lv_obj_t * parent);	// s-meter
 lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
 lv_obj_t * lv_wtrf2_create(lv_obj_t * parent);	// waterfall (own draw)
+lv_obj_t * lv_sscp2_create(lv_obj_t * parent);	// RF specter (own draw)
 lv_obj_t * lv_txrx_create(lv_obj_t * parent);	// tx/rx indicator
 lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len));
 
@@ -35,6 +36,7 @@ lv_obj_t * lv_compat_create(lv_obj_t * parent, const void * param);
 void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pctx);
 
 void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords);
+void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords);
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 

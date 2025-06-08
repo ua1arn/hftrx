@@ -29,6 +29,7 @@
 #define MY_CLASS_SMTR2 (& lv_smtr2_class)
 #define MY_CLASS_TXRX (& lv_txrx_class)
 #define MY_CLASS_WTRF2 (& lv_wtrf2_class)
+#define MY_CLASS_SSCP2 (& lv_sscp2_class)
 #define MY_CLASS_WTRF (& lv_wtrf_class)
 #define MY_CLASS_INFO (& lv_info_class)
 #define MY_CLASS_COMPAT (& lv_compat_class)
@@ -60,6 +61,10 @@ static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e);
 static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_wtrf2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+//static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_compat_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_compat_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
@@ -101,6 +106,13 @@ typedef struct
 	lv_style_t stdigits;
 	lv_style_t stlines;
 } lv_wtrf2_t;
+
+typedef struct
+{
+	lv_obj_t obj;
+	lv_style_t stdigits;
+	lv_style_t stlines;
+} lv_sscp2_t;
 
 typedef struct
 {
@@ -157,6 +169,15 @@ static const lv_obj_class_t lv_wtrf2_class  = {
     .name = "hmr_wtrf2",
 };
 
+static const lv_obj_class_t lv_sscp2_class  = {
+    .constructor_cb = lv_sscp2_constructor,
+//    .destructor_cb = lv_sscp2_destructor,
+    .event_cb = lv_sscp2_event,
+    .base_class = & lv_obj_class,
+    .instance_size = sizeof (lv_sscp2_t),
+    .name = "hmr_sscp2",
+};
+
 static const lv_obj_class_t lv_compat_class  = {
     .constructor_cb = lv_compat_constructor,
 //    .destructor_cb = lv_compat_destructor,
@@ -197,6 +218,15 @@ lv_obj_t * lv_wtrf2_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF2, parent);
+    lv_obj_class_init_obj(obj);
+
+	return obj;
+}
+
+lv_obj_t * lv_sscp2_create(lv_obj_t * parent)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SSCP2, parent);
     lv_obj_class_init_obj(obj);
 
 	return obj;
@@ -276,6 +306,35 @@ static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("begin");
 
     lv_wtrf2_t * const cp = (lv_wtrf2_t *) obj;
+
+	{
+		lv_style_t * const s = & cp->stdigits;
+
+		// стиль текста оцифровки
+		lv_style_init(s);
+	}
+
+	{
+		lv_style_t * const s = & cp->stlines;
+
+		// стиль линий
+		lv_style_init(s);
+	}
+
+
+//#if WITHLVGL && WITHSPECTRUMWF
+//	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+//#endif /* WITHLVGL && WITHSPECTRUMWF */
+
+	LV_TRACE_OBJ_CREATE("finished");
+}
+
+static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_sscp2_t * const cp = (lv_sscp2_t *) obj;
 
 	{
 		lv_style_t * const s = & cp->stdigits;
@@ -508,6 +567,8 @@ static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR, e);	// обработчик родительского клвсса
     if (res != LV_RES_OK) return;
 }
+
+
 // custom draw widget
 static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
@@ -529,6 +590,30 @@ static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_obj_get_coords(obj, & coords);	// координаты объекта
 
         lv_wtrf2_draw(layer, & coords);
+     }
+}
+
+// custom draw widget
+static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_SSCP2, e);	// обработчик родительского клвсса
+
+    if (res != LV_RES_OK) return;
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_SSCP2);
+
+    if (LV_EVENT_DRAW_MAIN == code)
+    {
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+
+        lv_area_t coords;
+        lv_obj_get_coords(obj, & coords);	// координаты объекта
+
+        lv_sscp2_draw(layer, & coords);
      }
 }
 

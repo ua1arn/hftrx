@@ -23,6 +23,7 @@
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
+#include "layouts/grid/lv_grid.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 #include "src/lvgl_gui/styles.h"
 
@@ -87,6 +88,7 @@ static lv_style_t xxdivstyle;
 static lv_style_t xxcompatstyle;	// отрисовка элементов через функции совместимости
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
+static lv_style_t xxcellstyle;		// для обхектов в grid - без зазора вокруг
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
@@ -175,6 +177,7 @@ static void lvstales_initialize(void)
 		lv_style_t * const s = & xxscopestyle;
 	    lv_style_init(s);
 		lv_style_set_border_width(s, 0);
+		lv_style_set_radius(s, 0);
 
 	//    static lv_anim_t a;
 	//    lv_anim_set_repeat_delay(& a, 20);
@@ -187,6 +190,7 @@ static void lvstales_initialize(void)
 		lv_style_t * const s = & xxcompatstyle;
 	    lv_style_init(s);
 		lv_style_set_border_width(s, 0);
+		lv_style_set_radius(s, 0);
 	    lv_style_set_text_color(s, display_lvlcolor(COLOR_WHITE));
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
 	}
@@ -197,6 +201,16 @@ static void lvstales_initialize(void)
 	    lv_style_init(s);
 //		lv_style_set_border_width(s, 0);
 //		lv_style_set_radius(s, 8);
+	}
+
+	{
+		// cells
+		lv_style_t * const s = & xxcellstyle;
+	    lv_style_init(s);
+
+	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+		lv_style_set_border_width(s, 0);
+		lv_style_set_radius(s, 0);
 	}
 }
 
@@ -437,13 +451,44 @@ static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp,
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
+#if 1
 	lv_obj_t * const lbl = lv_wtrf_create(parent);
-	//lv_obj_t * const lbl = lv_wtrf2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 
 	return lbl;
+#else
+
+    static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
+    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+
+	//return slv_example_grid_1(parent);
+    lv_obj_t * cont = lv_obj_create(parent);
+    lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
+    lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
+    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+	//lv_obj_add_style(cont, & xxdivstyle, 0);
+	lv_obj_add_style(cont, & xxcellstyle, 0);
+
+
+	lv_obj_t * const upper = lv_label_create(cont);
+	lv_obj_t * const lower = lv_label_create(cont);
+
+	lv_label_set_text_fmt(upper, "upper");
+	lv_label_set_text_fmt(lower, "lower");
+
+	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
+
+	lv_obj_add_style(upper, & xxcellstyle, 0);
+
+	lv_obj_add_style(lower, & xxcellstyle, 0);
+
+
+	ASSERT(2 == lv_obj_get_child_count(cont));
+	return cont;
+#endif
 }
 
 static void refreshtexts(void)
@@ -6516,7 +6561,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	const uint_fast16_t x0pix = GRID2X(x0);
 	const uint_fast16_t y0pix = GRID2Y(y0);				// смещение по вертикали в пикселях части отведенной спектру
 	const uint_fast16_t alldx = GRID2X(xspan);
-	const uint_fast16_t SPDY = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t alldy = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
 
@@ -6529,7 +6574,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	const int_fast32_t bw = latched_dm.bw;
 	/* рисуем спектр ломанной линией */
 	/* стираем старый фон */
-	colpip_fillrect(db, x0pix, y0pix, alldx, SPDY, DSGN_SPECTRUMBG);
+	colpip_fillrect(db, x0pix, y0pix, alldx, alldy, DSGN_SPECTRUMBG);
 
 	if (! colpip_hasalpha())
 	{
@@ -6555,31 +6600,31 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 			// Изображение "шторки" под спектром.
 			if (xleft < xrightv)
 			{
-				colpip_fillrect(db, x0pix + xleft, y0pix, xrightv - xleft, SPDY, rxbwcolor);
+				colpip_fillrect(db, x0pix + xleft, y0pix, xrightv - xleft, alldy, rxbwcolor);
 			}
 		}
 	}
 
 	uint_fast16_t ylast = 0;
-	display_colorgrid_set(db, x0pix, y0pix, alldx, SPDY, f0, bw, & latched_dm);	// отрисовка маркеров частот
+	display_colorgrid_set(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
 	for (uint_fast16_t x = 0; x < alldx; ++ x)
 	{
 		// ломанная
-		const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
-		uint_fast16_t ynew = y0pix + SPDY - 1 - val;
+		const int val = dsp_mag2y(filter_spectrum(x), alldy - 1, glob_topdb, glob_bottomdb);
+		uint_fast16_t ynew = y0pix + alldy - 1 - val;
 
 		if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
 		{
-			for (uint_fast16_t y = y0pix + SPDY - 1, i = 0; y > ynew; y --, i ++)
+			for (uint_fast16_t y = y0pix + alldy - 1, i = 0; y > ynew; y --, i ++)
 			{
-				const uint_fast16_t ix = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+				const uint_fast16_t ix = normalize(i, 0, alldy - 1, PALETTESIZE - 1);
 				colpip_point(db, x0pix + x, y, wfpalette [ix]);
 			}
 		}
 		else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
 		{
-			colpip_set_vline(db, x0pix + x, ynew, SPDY + y0pix - ynew, DSGN_SPECTRUMFG);
+			colpip_set_vline(db, x0pix + x, ynew, alldy + y0pix - ynew, DSGN_SPECTRUMFG);
 		}
 
 		if (x)
@@ -6611,7 +6656,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 			colpip_rectangle(
 					db,
 					xleft + x0pix, y0pix,
-					xright + 1 - xleft, SPDY, // размер окна источника
+					xright + 1 - xleft, alldy, // размер окна источника
 					TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
 					FILL_FLAG_NONE | FILL_FLAG_MIXBG
 				);
@@ -7101,14 +7146,14 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 //        lv_draw_layer_init(& lowerrpart, layer, display_get_lvformat(), & lowerarea);
 
 
-    //PRINTF("sh w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords), (int) coords.x1, (int) coords.y1);
+    PRINTF("lv_wtrf2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
 
     if (0)
     {
     	// отладка. закрасить зону отображения
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
-        rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+        rect.bg_color = lv_palette_main(LV_PALETTE_RED);
         rect.bg_image_opa = LV_OPA_COVER;
     	lv_draw_rect(layer, & rect, coords);
     }
@@ -7175,6 +7220,32 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 //            lv_point_precise_set(& linedsc.p2, lv_area_get_width(& coords) - 1, y);
 //            lv_draw_line(layer, & linedsc);
 //        }
+}
+
+// Рисуем спектр примитивами LVGL
+void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
+{
+    PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+    if (1)
+    {
+    	// отладка. закрасить зону отображения
+        lv_draw_rect_dsc_t rect;
+        lv_draw_rect_dsc_init(& rect);
+        rect.bg_color = lv_palette_main(LV_PALETTE_GREY);
+        rect.bg_image_opa = LV_OPA_COVER;
+    	lv_draw_rect(layer, & rect, coords);
+    }
+    if (1)
+    {
+    	// надписи
+	    lv_draw_label_dsc_t label;
+	    lv_draw_label_dsc_init(& label);
+        label.color = lv_palette_main(LV_PALETTE_INDIGO);
+        label.align = LV_TEXT_ALIGN_CENTER;
+        label.text = "Test scope";
+        lv_draw_label(layer, & label, coords);
+
+    }
 }
 
 
@@ -8076,6 +8147,7 @@ void display2_initialize(void)
 					// Для целей отладки создаём видимый элемент
 					lbl = lv_label_create(wnd);
 					lv_obj_add_style(lbl, & xxdivstyle, 0);
+					lv_label_set_text_fmt(lbl, "ix%d", (int) i);
 				}
 
 				if (lbl == NULL)
