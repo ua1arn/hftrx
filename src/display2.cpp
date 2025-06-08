@@ -80,10 +80,6 @@ typedef struct dzone
 
 #if WITHLVGL
 
-extern const lv_font_t eurostyle_56w;
-extern const lv_font_t Rubik_Medium_16_w2;
-extern const lv_font_t Rubik_Medium_18_w2;
-
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqastyle;
 static lv_style_t xxfreqbstyle;

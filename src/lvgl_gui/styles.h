@@ -13,6 +13,10 @@ void lvgl_dev_init(void);
 void lvgl_gui_init(lv_obj_t * parent);
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
+extern const lv_font_t eurostyle_56w;
+extern const lv_font_t Rubik_Medium_16_w2;
+extern const lv_font_t Rubik_Medium_18_w2;
+
 lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
 void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
 

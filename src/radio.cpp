@@ -19664,7 +19664,8 @@ void initialize2(void)
 		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
-		display_at(0, 0, msg);
+		display_at(& dbv, 0, 0, msg);
+		colmain_nextfb();
 
 
 		unsigned i;

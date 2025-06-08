@@ -677,7 +677,7 @@ void display_uninitialize(void)
 #include "lvgl.h"
 //#include "../demos/lv_demos.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
-//#include "src/lvgl_gui/styles.h"
+#include "src/lvgl_gui/styles.h"
 
 /*Flush the content of the internal buffer the specific area on the display.
  *`px_map` contains the rendered image as raw pixel map and it should be copied to `area` on the display.
@@ -849,7 +849,7 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 #endif
 // Используется при выводе на графический индикатор,
 void
-display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
+display_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
 {
 	savestring = s;
 	savewhere = __func__;
@@ -859,26 +859,24 @@ display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, con
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
 
-#if WITHLVGL && 0
+#if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
 	if (layer)
 	{
+		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
 		lv_draw_rect_dsc_t d;
 	    lv_draw_label_dsc_t l;
 		lv_area_t coords;
 	    lv_draw_label_dsc_init(&l);
 		lv_draw_rect_dsc_init(& d);
-		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(strlen(s))) - 1, ypix + 15);
-		d.bg_color = lv_color_white();
-	    d.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
-//	    d.bg_image_opa = LV_OPA_COVER;
-	    d.bg_image_src = s;
-	    d.bg_image_symbol_font = & lv_font_montserrat_14;
-
+		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(strlen(s))) - 1, ypix + DISPLAY_AT_H - 1);
+	    d.bg_color = display_lvlcolor(ltdc_bg);
+	    l.color = display_lvlcolor(ltdc_fg);
+	    l.align = LV_TEXT_ALIGN_LEFT;
 	    l.text = s;
-	    l.font = & lv_font_montserrat_14;
+	    l.font = DISPLAY_AT_FONT;
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
-		//lv_draw_rect(layer, & d, & coords);
+		lv_draw_rect(layer, & d, & coords);
         lv_draw_label(layer, & l, & coords);
 	}
 	else
@@ -893,15 +891,6 @@ display_string(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, con
 #endif
 
 	display_wrdata_end(db);
-}
-
-// Выдача строки из ОЗУ в указанное место экрана.
-void
-//NOINLINEAT
-display_at(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
-{
-	const uint_fast8_t lowhalf = 0;
-	display_string(db, xcell, ycell + lowhalf, s);
 }
 
 #if LCDMODE_S1D13781
