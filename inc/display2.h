@@ -187,6 +187,8 @@ void display2_setbgcolor(COLORPIP_T c);
 
 COLORPIP_T display2_get_spectrum(int x);
 
+int_fast32_t display2_zoomedbw(void);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 #ifdef __cplusplus

@@ -1226,7 +1226,7 @@ static void gui_main_process(void)
 				uint_fast16_t xx;
 
 				if (update)
-					z = display_zoomedbw() / 1000;
+					z = display2_zoomedbw() / 1000;
 				local_snprintf_P(buf, buflen, PSTR("SPAN"));
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
 				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);

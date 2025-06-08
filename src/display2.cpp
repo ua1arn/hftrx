@@ -3626,7 +3626,7 @@ static void display2_span9(const gxdrawb_t * db,
 
 	char buf2 [10];
 
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display2_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 9);
 	display2_text(db, x, y, labels, colors_1statevoltage, 0);
@@ -6174,7 +6174,7 @@ deltafreq2x_abs(
 /* получение оконных координат границ полосы пропускания и центра спектра */
 static void display2_getdispmap(struct dispmap * p)
 {
-	const int_fast32_t bw = display_zoomedbw();
+	const int_fast32_t bw = display2_zoomedbw();
 	const int_fast32_t f0 = hamradio_get_freq_pathi(0);	// частота центра экрана
 	const int_fast32_t fz = 10000000;	// расчёт положений отногсительно одной и той же частоты - изюежать "прыгания" ихображения при перестройке
 	unsigned pathi;

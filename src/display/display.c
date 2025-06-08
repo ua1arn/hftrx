@@ -236,7 +236,7 @@ void RAMFUNC ltdc_horizontal_pixels(
 #endif
 
 /* valid chars: "0123456789 #._" */
-uint_fast8_t
+static uint_fast8_t
 bigfont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
@@ -253,7 +253,7 @@ bigfont_decode(char cc)
 }
 
 /* valid chars: "0123456789 #._" */
-uint_fast8_t
+static uint_fast8_t
 halffont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
@@ -269,7 +269,7 @@ halffont_decode(char cc)
 	return c - '0';		// остальные - цифры 0..9
 }
 
-uint_fast8_t
+static uint_fast8_t
 smallfont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
@@ -317,7 +317,7 @@ uint_fast8_t smallfont3_width(char cc)
 }
 #endif /* defined (SMALLCHARH3) */
 
-void RAMFUNC
+static void RAMFUNC
 ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
@@ -378,6 +378,392 @@ uint_fast16_t display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, 
 	return ltdc_put_char_small(xpix, ypix, ci);
 }
 #endif
+
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLORPIP_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 8)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	tgr [0] = fg;
+		if (v & 0x02)	tgr [1] = fg;
+		if (v & 0x04)	tgr [2] = fg;
+		if (v & 0x08)	tgr [3] = fg;
+		if (v & 0x10)	tgr [4] = fg;
+		if (v & 0x20)	tgr [5] = fg;
+		if (v & 0x40)	tgr [6] = fg;
+		if (v & 0x80)	tgr [7] = fg;
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				* tgr = fg;
+			++ tgr;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
+
+// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
+// Фон не трогаем
+// удвоенный по ширине растр
+static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
+	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
+	const FLASHMEM uint8_t * __restrict raster,
+	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	COLORPIP_T fg
+	)
+{
+	uint_fast16_t w = width;
+
+	for (; w >= 8; w -= 8, tgr += 16)
+	{
+		const uint_fast8_t v = * raster ++;
+		if (v & 0x01)	{ tgr [ 0] = tgr [ 1] = fg; }
+		if (v & 0x02)	{ tgr [ 2] = tgr [ 3] = fg; }
+		if (v & 0x04)	{ tgr [ 4] = tgr [ 5] = fg; }
+		if (v & 0x08)	{ tgr [ 6] = tgr [ 7] = fg; }
+		if (v & 0x10)	{ tgr [ 8] = tgr [ 9] = fg; }
+		if (v & 0x20)	{ tgr [10] = tgr [11] = fg; }
+		if (v & 0x40)	{ tgr [12] = tgr [13] = fg; }
+		if (v & 0x80)	{ tgr [14] = tgr [15] = fg; }
+	}
+	if (w != 0)
+	{
+		uint_fast8_t vlast = * raster;
+		do
+		{
+			if (vlast & 0x01)
+				tgr [ 0] = tgr [ 1] = fg;
+			tgr += 2;
+			vlast >>= 1;
+		} while (-- w);
+	}
+}
+
+#if 0//SMALLCHARW
+// return new x coordinate
+static uint_fast16_t
+RAMFUNC_NONILINE
+ltdcmain_horizontal_put_char_small(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc
+	)
+{
+	const uint_fast8_t width = SMALLCHARW;
+	const uint_fast8_t c = smallfont_decode(cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
+		colorpip_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
+	}
+	return x + width;
+}
+#endif /* SMALLCHARW */
+
+#if defined (SMALLCHARW)
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLOR565_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW;
+	const uint_fast8_t c = smallfont_decode(cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
+		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+	}
+	return x + width;
+}
+
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLOR565_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW;
+	const uint_fast8_t c = smallfont_decode(cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr0 = colpip_mem_at(db, x, y + cgrow * 2 + 0);
+		ltdcmain_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		PACKEDCOLORPIP_T * const tgr1 = colpip_mem_at(db, x, y + cgrow * 2 + 1);
+		ltdcmain_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+	}
+	return x + width * 2;
+}
+
+uint_fast16_t display_put_char_small_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char c, COLOR565_T fg)
+{
+	return colorpip_put_char_small_tbg(db, x, y, c, fg);
+}
+#endif /* defined (SMALLCHARW) */
+
+#if SMALLCHARW2
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLORPIP_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW2;
+	const uint_fast8_t c = smallfont_decode(cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
+		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
+	}
+	return x + width;
+}
+#endif /* SMALLCHARW2 */
+
+#if SMALLCHARW3
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLORPIP_T fg
+	)
+{
+	const uint_fast8_t width = SMALLCHARW3;
+	const uint_fast8_t c = smallfont_decode(cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
+		ltdcmain_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
+	}
+	return x + width;
+}
+#endif /* SMALLCHARW3 */
+
+
+
+#if defined (SMALLCHARW)
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		x = colorpip_put_char_small_tbg(db, x, y, c, fg);
+	}
+}
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_x2_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		x = colorpip_x2_put_char_small_tbg(db, x, y, c, fg);
+	}
+}
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_text(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	)
+{
+	ASSERT(s != NULL);
+	while (len --)
+	{
+		const char c = * s ++;
+		x = colorpip_put_char_small_tbg(db, x, y, c, fg);
+	}
+}
+// Используется при выводе на графический индикатор,
+void
+colpip_text_x2(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	)
+{
+	ASSERT(s != NULL);
+	while (len --)
+	{
+		const char c = * s ++;
+		x = colorpip_x2_put_char_small_tbg(db, x, y, c, fg);
+	}
+}
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_x2ra90_count(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T fg,		// цвет вывода текста
+	COLORPIP_T bg,		// цвет вывода текста
+	const char * s,		// строка для вывода
+	size_t len			// количество символов
+	)
+{
+	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
+	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
+	gxdrawb_t sdbv;
+	gxdrawb_initialize(& sdbv, scratch, TDX, TDY);
+	ASSERT(s != NULL);
+	while (len --)
+	{
+		const char c = * s ++;
+		colpip_fillrect(& sdbv, 0, 0, TDX, TDY, bg);
+		colorpip_x2_put_char_small_tbg(& sdbv, 0, 0, c, fg);
+		hwaccel_ra90(db, x, y, & sdbv);
+		y += TDX;
+	}
+}
+#endif /* defined (SMALLCHARW) */
+
+#if defined (SMALLCHARW2)
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string2_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		x = colorpip_put_char_small2_tbg(db, x, y, c, fg);
+	}
+}
+
+// Возвращает ширину строки в пикселях
+uint_fast16_t strwidth2(
+	const char * s
+	)
+{
+	ASSERT(s != NULL);
+	return SMALLCHARW2 * strlen(s);
+}
+
+#endif /* defined (SMALLCHARW2) */
+
+#if defined (SMALLCHARW3)
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string3_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		x = colorpip_put_char_small3_tbg(db, x, y, c, fg);
+	}
+}
+
+// Возвращает ширину строки в пикселях
+uint_fast16_t strwidth3(
+	const char * s
+	)
+{
+	ASSERT(s != NULL);
+	return SMALLCHARW3 * strlen(s);
+}
+
+#endif /* defined (SMALLCHARW3) */
+
+
+#if defined (SMALLCHARW) && defined (SMALLCHARH)
+// Возвращает ширину строки в пикселях
+uint_fast16_t strwidth(
+	const char * s
+	)
+{
+	ASSERT(s != NULL);
+	return SMALLCHARW * strlen(s);
+}
+
+#endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
 
 // полоса индикатора
 uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)

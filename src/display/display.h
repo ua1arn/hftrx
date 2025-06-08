@@ -717,18 +717,6 @@ void ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
-// Для произвольного шрифта
-void ltdc_put_char_unified(
-	const uint8_t * fontraster,
-	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
-	uint_fast8_t height,	// строк в символе по вертикали
-	uint_fast8_t bytesw,	// байтов в одной строке символа
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	uint_fast8_t ci,	// индекс символа в знакогенераторе
-	uint_fast8_t width2	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
-	);
-
 // Установить прозрачность для прямоугольника
 void display_transparency(const gxdrawb_t * db,
 	uint_fast16_t x1, uint_fast16_t y1,
@@ -749,16 +737,11 @@ void gpu_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-uint_fast8_t smallfont_decode(char cc);
-uint_fast8_t bigfont_decode(char cc);
-uint_fast8_t halffont_decode(char cc);
 uint_fast8_t bigfont_width(char cc);
 uint_fast8_t halffont_width(char cc);
 uint_fast8_t smallfont_width(char cc);
 uint_fast8_t smallfont2_width(char cc);
 uint_fast8_t smallfont3_width(char cc);
-
-int_fast32_t display_zoomedbw(void);
 
 void display_string3_at_xy(const gxdrawb_t * db,uint_fast16_t x, uint_fast16_t y, const char * s, COLORPIP_T fg, COLORPIP_T bg);
 
