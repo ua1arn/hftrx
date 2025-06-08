@@ -7025,7 +7025,8 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 
 #if WITHLVGL
-void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase)
+
+static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase)
 {
 	gxdrawb_t wfjdbv;
 	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
@@ -7077,6 +7078,106 @@ void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t 
     }
 
 }
+
+// Рисуем водопад примитивами LVGL
+void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
+{
+//    lv_draw_line_dsc_t linedsc;
+//    lv_draw_line_dsc_init(& linedsc);
+
+    lv_area_t a1;
+    lv_area_t a2;
+
+    uint_fast32_t w = lv_area_get_width(coords);
+    uint_fast32_t h = lv_area_get_height(coords);
+
+//        uint_fast32_t middleh = h / 2;
+//        lv_area_set(& upperarea, 0, 0, w - 1, middleh);
+//        lv_area_set(& lowerarea, 0, middleh, w - 1, h - 1);
+
+//        lv_layer_t upperpart;
+//        lv_layer_t lowerrpart;
+//        lv_draw_layer_init(& upperpart, layer, display_get_lvformat(), & upperarea);
+//        lv_draw_layer_init(& lowerrpart, layer, display_get_lvformat(), & lowerarea);
+
+
+    //PRINTF("sh w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords), (int) coords.x1, (int) coords.y1);
+
+    if (0)
+    {
+    	// отладка. закрасить зону отображения
+        lv_draw_rect_dsc_t rect;
+        lv_draw_rect_dsc_init(& rect);
+        rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+        rect.bg_image_opa = LV_OPA_COVER;
+    	lv_draw_rect(layer, & rect, coords);
+    }
+
+    if (1)
+    {
+    	// водопад
+        lv_draw_buf_t b1;
+        lv_draw_buf_t b2;
+
+        lv_draw_image_dsc_t fd1;
+        lv_draw_image_dsc_t fd2;
+
+        wtrf2_fillinfo(& fd1, & b1, & a1, w, h, 0);
+        wtrf2_fillinfo(& fd2, & b2, & a2, w, h, 1);
+
+        lv_area_move(& a1, coords->x1, coords->y1);
+        lv_area_move(& a2, coords->x1, coords->y1);
+
+        lv_draw_image(layer, & fd1, & a1);
+        lv_draw_image(layer, & fd2, & a2);
+    }
+
+    if (1)
+    {
+    	// надписи
+	    lv_draw_label_dsc_t label;
+	    lv_draw_label_dsc_init(& label);
+        label.color = lv_palette_main(LV_PALETTE_YELLOW);
+        label.align = LV_TEXT_ALIGN_CENTER;
+        label.text = "Test waterfall";
+        lv_draw_label(layer, & label, coords);
+
+    }
+
+    if (1)
+    {
+    	// линии
+        lv_draw_line_dsc_t l;
+        lv_draw_line_dsc_init(& l);
+
+        l.width = 1;
+        l.round_end = 0;
+        l.round_start = 0;
+        l.color = lv_palette_main(LV_PALETTE_YELLOW);
+
+        lv_point_precise_set(& l.p1, coords->x1 + w / 2, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x1 + w / 2, coords->y2);
+        lv_draw_line(layer, & l);
+
+    }
+
+//
+//        linedsc.width = 1;
+//        linedsc.round_end = 0;
+//        linedsc.round_start = 0;
+//        linedsc.color = lv_palette_main(LV_PALETTE_RED);
+//
+//        PRINTF("lv_area_get_height=%d\n", lv_area_get_height(& coords));
+//        int_fast32_t y;
+//        for (y = 0; y < lv_area_get_height(& coords); y += 3)
+//        {
+//            lv_point_precise_set(& linedsc.p1, 0, y);
+//            lv_point_precise_set(& linedsc.p2, lv_area_get_width(& coords) - 1, y);
+//            lv_draw_line(layer, & linedsc);
+//        }
+}
+
+
 #endif /* WITHLVGL */
 
 // подготовка изображения спектра и волрада

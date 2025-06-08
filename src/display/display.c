@@ -1184,7 +1184,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 		lv_draw_rect_dsc_t d;
 	    lv_draw_label_dsc_t l;
 		lv_area_t coords;
-	    lv_draw_label_dsc_init(&l);
+	    lv_draw_label_dsc_init(& l);
 		lv_draw_rect_dsc_init(& d);
 		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(strlen(s))) - 1, ypix + DISPLAY_AT_H - 1);
 	    d.bg_color = display_lvlcolor(ltdc_bg);

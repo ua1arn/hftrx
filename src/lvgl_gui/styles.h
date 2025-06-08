@@ -24,9 +24,6 @@ void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t
 lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
 void wfl_proccess(void);	/* построить растр с водопадом и спектром */
 
-// получение указателей на растры спектра
-void display2_fillpart(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase);
-
 lv_obj_t * lv_smtr_create(lv_obj_t * parent);	// s-meter
 lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
@@ -36,6 +33,8 @@ lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len
 
 lv_obj_t * lv_compat_create(lv_obj_t * parent, const void * param);
 void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pctx);
+
+void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords);
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 
