@@ -3608,7 +3608,7 @@ static void display2_siglevel4(const gxdrawb_t * db,
 }
 
 #if WITHIF4DSP
-int_fast32_t display_zoomedbw(void)
+int_fast32_t display2_zoomedbw(void)
 {
 	return ((int_fast64_t) dsp_get_samplerateuacin_rts() * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM) >> glob_zoomxpow2;
 }
