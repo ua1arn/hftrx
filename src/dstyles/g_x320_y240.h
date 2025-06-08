@@ -69,10 +69,7 @@
 		#endif /* defined (RTC1_TYPE) */
 			{	18, 28,	3,	0,	display2_agc3,		& dzi_default, REDRSUBSET(DPAGE0), },
 		#if WITHMENU
-			{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-			{	1 + LABELW * 0 + 0,	18,	0,	0,	display2_multilinemenu_block_groups,	& dzi_default, sREDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	0,				DLES,	BDTH_ALLRX, 5, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		#endif /* WITHMENU */
 			{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 		};
@@ -198,9 +195,7 @@
 			{	25, 28,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
 		#endif /* WITHUSEAUDIOREC */
 		#if WITHMENU
-			{	1 + LABELW * 0 + 0,	18,	display2_multilinemenu_block_groups,	& dzi_default, 	REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-			{	1 + LABELW * 1 + 1,	18,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-			{	1 + LABELW * 2 + 2,	18,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+			{	0,				DLES,	BDTH_ALLRX, 5, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		#endif /* WITHMENU */
 			{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 		};

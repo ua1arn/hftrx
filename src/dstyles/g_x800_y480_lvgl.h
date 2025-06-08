@@ -142,9 +142,8 @@
 		//{	28, DLE1,	10, 5, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
-		{	3,				DLES,	LABELW, (DLE1 - DLES) - 1, display2_multilinemenu_block_groups,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		DLES,	LABELW, (DLE1 - DLES) - 1, display2_multilinemenu_block_params,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	DLES,	BDTH_ALL - (LABELW*2 + 6), (DLE1 - DLES) - 1, display2_multilinemenu_block_vals,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+
+		{	0,				DLES,	BDTH_ALL, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
 		{	28, 			DLE1,	22, 5, display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */

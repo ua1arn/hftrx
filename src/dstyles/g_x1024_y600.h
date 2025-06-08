@@ -148,10 +148,7 @@
 		//{	28, DLE1,	10, 0, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
-		{	0,				0,		0, 0, display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-		{	3,				DLES,	0, 0, display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		DLES,	0, 0, display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	DLES,	0, 0, display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
 		{	28, 			DLE1,	0, 0, display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
@@ -160,9 +157,6 @@
 		// sleep mode display
 		{	5,	25,	12, 0, display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	5, 0, display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
-	#if WITHMENU
-		{	15, 25,	0, 0, display2_popup,		& dzi_default, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
-	#endif /* WITHMENU */
 
 	#if 0
 		{	0,	0,	0, 0, display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола

@@ -151,10 +151,7 @@
 		{	20, 24,	5,	5,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-		{	1,	MENU1ROW,	0,	0,	display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 1,	MENU1ROW,	0,	0,	display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW * 2 + 2,	MENU1ROW,	0,	0,	display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	0, MENU1ROW,	BDTH_ALLRX, (51 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		#if WITHAUTOTUNER
 		{	0,  		51,	22,	0,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 		#endif /* WITHAUTOTUNER */

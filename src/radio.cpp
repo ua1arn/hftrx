@@ -16631,7 +16631,7 @@ display_menu_digit(const gxdrawb_t * db,
 
 // При редактировании настроек - показ строковых значений параметров.
 // Или диагностическое сообщение при запуске
-
+// Для GUI - заполнить menuw []
 static void
 display_menu_string_P(const gxdrawb_t * db,
 	uint_fast8_t x,
@@ -17079,8 +17079,8 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
-	const uint_fast8_t xcell_marker = xcell - 1;
-	const uint_fast8_t xcell_text = xcell;
+	const uint_fast8_t xcell_marker = xcell + 0;
+	const uint_fast8_t xcell_text = xcell + 1;
 
 	display2_getmultimenu(& window);
 
@@ -17164,8 +17164,8 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
-	const uint_fast8_t xcell_marker = xcell - 1;
-	const uint_fast8_t xcell_text = xcell;
+	const uint_fast8_t xcell_marker = xcell + 0;
+	const uint_fast8_t xcell_text = xcell + 1;
 
 	display2_getmultimenu(& window);
 
@@ -17324,26 +17324,19 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 	}
 }
 
-// Вызывается из display2.c
-// код редактируемого параметра
-void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+// вызывается по dzones
+void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
-	const struct menudef * const mp = (const struct menudef *) pctx->pv;
-	char buff [4];
-	const uint_fast8_t index = (int) (mp - menutable);
-	if (ismenukind(mp, ITEM_GROUP))
-	{
-		colmain_setcolors(MENUCOLOR, BGCOLOR);
-		display_at(db, x, y, PSTR("---"));
-		return;
-	}
+	const uint_fast8_t groupx = xcell + 1;
+	const uint_fast8_t namesx = groupx + LABELW + 3;
+	const uint_fast8_t valuesx = namesx + LABELW + 3;
+	const uint_fast8_t groupspan = namesx - groupx;
+	const uint_fast8_t namesspan = valuesx - namesx;
+	const uint_fast8_t valuesspan = xspan - valuesx;
 
-	local_snprintf_P(buff, sizeof buff / sizeof buff [0], index >= 100 ? PSTR("%03d") : PSTR("F%02d"), index);
-
-	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at(db, x + 0, y, buff);
+	display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
+	display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
+	display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
 }
 
 // название редактируемого параметра
@@ -17365,7 +17358,8 @@ static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 	display_at(db, xcell, ycell, mp->pd->qlabel);
 }
 
-// значение параметра
+// отобразить значение параметра
+// Для GUI - заполнить menuw []
 static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, const struct menudef * mp)
 {
 	static const char months [13] [4] =
@@ -18345,110 +18339,6 @@ static void menu_print(void)
         menupos = mp - menutable - 1;
 	}
 
-}
-
-
-#if 0
-
-static const struct menudef notchPopUp [] =
-{
-#if WITHNOTCHFREQ
-	{
-		QLABEL("NOTCH   "), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		OFFSETOF(struct nvmap, ggrpnotch),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-	{
-		QLABEL("NOTCH   "), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
-		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnotchtype,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if ! WITHPOTNOTCH
-	{
-		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
-		ITEM_VALUE,
-		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		& gnotchfreq.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
-		ITEM_VALUE,
-		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
-		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		& gnotchwidth.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* ! WITHPOTNOTCH */
-#elif WITHNOTCHONOFF
-	{
-		QLABEL("NOTCH   "), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		OFFSETOF(struct nvmap, ggrpnotch),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-	{
-		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
-		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnotch,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHNOTCHFREQ */
-};
-
-static const struct menudef * thisPopUp = notchPopUp;
-static size_t sizePopUp = ARRAY_SIZE(notchPopUp);
-#else
-static const struct menudef * thisPopUp = NULL;
-static size_t sizePopUp = 0;
-#endif
-
-// всплывающее меню
-void display2_popup(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-
-	if (thisPopUp == NULL)
-		return;
-	multimenuwnd_t mw;
-	unsigned i;
-
-	display2_getmultimenu(& mw);
-	const uint_fast16_t x = GRID2X(xcell);
-	const uint_fast16_t y = GRID2Y(ycell);
-	const uint_fast16_t w = GRID2X(LABELW);
-	const uint_fast16_t h = GRID2Y(mw.ystep) * sizePopUp;
-
-	//display_fillrect(x, y, w, h, COLORPIP_DARKGREEN);	// Фон
-
-	for (i = 0; i < sizePopUp; ++ i)
-	{
-		const struct menudef * const mp = thisPopUp + i;
-
-		//menu
-	}
 }
 
 #else // WITHMENU
@@ -21107,7 +20997,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
-			display2_menu_valxx(& dbv, 0, 0, 0, 0, mv);
+			display2_menu_valxx(& dbv, 0, 0, mv);
 			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
 			vals->index = el;
 			return;
@@ -21129,7 +21019,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 		display2_needupdate();
 	}
 
-	display2_menu_valxx(& dbv, 0, 0, 0, 0, & menutable [index]);
+	display2_menu_valxx(& dbv, 0, 0, & menutable [index]);
 	return menuw;
 }
 #endif /* WITHMENU */

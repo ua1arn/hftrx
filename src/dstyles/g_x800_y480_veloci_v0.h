@@ -167,10 +167,7 @@ static const dzone_t dzones [] =
 	//{	28, DLEB,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
-	{	0,				0,		0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-	{	0,				DLEM,	LABELW, (DLEB - DLEM) - 1, display2_multilinemenu_block_groups,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-	{	LABELW + 5,		DLEM,	LABELW, (DLEB - DLEM) - 1, display2_multilinemenu_block_params,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-	{	LABELW*2 + 6,	DLEM,	BDTH_ALL - (LABELW*2 + 6), (DLEB - DLEM) - 1, display2_multilinemenu_block_vals,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	{	0,				DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 #if WITHAUTOTUNER
 	{	28, 			DLEB,	22,	4,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
@@ -179,9 +176,6 @@ static const dzone_t dzones [] =
 	// sleep mode display
 	{	5,	25,	12,	4,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 	{	20, 25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
-#if WITHMENU
-	{	15, 25,	0,	0,	display2_popup,		& dzi_default, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
-#endif /* WITHMENU */
 
 #if 0
 	{	0,	0,	0,	0,	display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола
