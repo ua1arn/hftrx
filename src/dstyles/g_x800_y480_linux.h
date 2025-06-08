@@ -111,7 +111,7 @@
 		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
 		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
 
-		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
+//		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,	& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  15,	20,	display2_smeter15, 		& dzi_smeter, PG0, },	// Изображение стрелочного прибора

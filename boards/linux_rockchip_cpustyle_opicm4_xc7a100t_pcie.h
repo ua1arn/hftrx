@@ -14,9 +14,12 @@
 #ifndef LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A100T_PCIE_H_INCLUDED
 #define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A100T_PCIE_H_INCLUDED 1
 
+#define WITHLTDCHW			1	/* Наличие контроллера дисплея с framebuffer-ом */
+#define WITHLCDBACKLIGHTMAX	0
 //#define WITHSPIDEV		1	/* Linux SPI userspace API */
-#define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
+#define WITHTWIHW 			1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHSDL2VIDEO		1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
+//#define WITHFBDEV			1
 
 #define	AXI_IQ_RX_BRAM				0xC0000000
 #define	AXI_IQ_STREAM_BRAM			0xC0010000
@@ -25,17 +28,17 @@
 #define	AXI_LITE_DDS_RTS			0x00003000
 #define	AXI_LITE_MODEM_CONTROL		0x00004000
 #define	AXI_LITE_WNB_CONFIG			0x00005000
-#define	AXI_LITE_DDS_FTW_SUB		0x00006000
-#define	AXI_LITE_IQ_FX_FIFO			0x00007000
+//#define	AXI_LITE_DDS_FTW_SUB		0x00006000
+#define	AXI_LITE_IQ_TX_FIFO			0x00007000
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
-#define	AXI_LITE_FIR_COEFFS			0x0000A000
+#define	AXI_LITE_FIR_COEFFS			0x0000C000
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
-#define CALIBRATION_IQ_CIC_RX_SHIFT		59
+#define CALIBRATION_IQ_CIC_RX_SHIFT		62
 #define CALIBRATION_TX_SHIFT			27
 
-//#define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
+#define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
 //#define LINUX_STREAM_INT_FILE		"/dev/xdma0_events_1"
 #define LINUX_I2C_FILE				"/dev/i2c-3"
 #define LINUX_FB_FILE				"/dev/fb0"
@@ -44,10 +47,6 @@
 #define MOUSE_EVENT_NAME			"Mouse"
 #define MEMORYCELLS_DB_FILE			"hftrx_data/memory_cells.db"
 #define NVRAM_DB_FILE				"hftrx_data/nvram.db"
-
-#define WITHLTDCHW			1	/* Наличие контроллера дисплея с framebuffer-ом */
-#define RTMIXIDLCD			0
-#define WITHLCDBACKLIGHTMAX	0
 
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (linux_get_cpu_temp())

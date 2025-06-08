@@ -924,7 +924,7 @@ void fir_load_reset(uint8_t val)
 	update_modem_ctrl();
 }
 
-void xcz_resetn_modem(uint8_t val)
+void modem_reset(uint8_t val)
 {
 	resetn_modem = val != 0;
 	update_modem_ctrl();
@@ -1648,7 +1648,7 @@ void xdma_iq_event_handler(void)
 	uint32_t * t = (uint32_t *) addr32tx;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		xdma_write_user(AXI_LITE_IQ_FX_FIFO, t[i]);
+		xdma_write_user(AXI_LITE_IQ_TX_FIFO, t[i]);
 
 	release_dmabuffer32tx(addr32tx);
 
@@ -1817,11 +1817,11 @@ void xdma_iq_init(void)
 	if(pcie_status < 0)
 		return;
 
-	xcz_resetn_modem(0);
+	modem_reset(0);
+	usleep(100);
+	modem_reset(1);
 
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
-
-	xcz_resetn_modem(1);
 	linux_init_cond(& ct_iq);
 }
 
@@ -1960,7 +1960,7 @@ void * audio_interrupt_thread(void * args)
 
 void zynq_pl_init(void)
 {
-	xcz_resetn_modem(0);
+	modem_reset(0);
 
 #if WITHAUDIOSAMPLESREC
 	pthread_mutex_init(& mutex_as, NULL);
@@ -1989,7 +1989,7 @@ void zynq_pl_init(void)
 	}
 #endif /* WITHCPUFANPWM */
 
-	xcz_resetn_modem(1);
+	modem_reset(1);
 
 	linux_init_cond(& ct_iq);
 }
@@ -2138,6 +2138,7 @@ static void handle_sig(int sig)
 #if WITHAD936XIIO
 	iio_stop_stream();
 #endif /* WITHAD936XIIO */
+	modem_reset(0);
 	linux_exit();
 }
 

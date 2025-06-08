@@ -22,8 +22,8 @@
 	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#define XVTR_R820T2			1	// ad936x
-	#define	WITHAD936XIIO		1	// External AD936x board
+//	#define XVTR_R820T2			1	// ad936x
+//	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
 
 	// --- вариации прошивки, специфические для разных частот
@@ -62,7 +62,7 @@
 //	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	#define CODEC1_TYPE CODEC_TYPE_ALSA
+//	#define CODEC1_TYPE CODEC_TYPE_ALSA
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
@@ -89,8 +89,6 @@
 	#define WITHSPECBETA_DEFAULT	30
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
-//	#define WITHLVGL				1
-	#define WITHTOUCHGUI			1
 //	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
@@ -116,6 +114,13 @@
 //	#define MOUSE_EVDEV				1
 //	#define MOUSE_CURSOR_PATH		"./arrow.png"
 //	#define BLUETOOTH_ALSA			1
+
+#if 0
+	#define WITHLVGL				1
+	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_linux_lvgl.h"
+#else
+	#define WITHTOUCHGUI			1
+#endif
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
