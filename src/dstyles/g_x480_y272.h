@@ -133,7 +133,7 @@
 
 			// sleep mode display
 			{	5,	24,	12,	0,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-			{	20, 24,	5,	0,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
+			{	20, 24,	5,	0,	display2_voltlevelV5, 	& dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 		#if WITHMENU
 			{	0, MENU1ROW,	BDTH_ALLRX, (54 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
