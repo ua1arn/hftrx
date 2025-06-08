@@ -170,7 +170,7 @@ SECTIONS
 		LONG(0xDEADBEEF)
 	} > RAM 
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
