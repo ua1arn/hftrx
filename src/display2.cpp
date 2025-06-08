@@ -8260,20 +8260,6 @@ void display2_initialize(void)
 {
 #if WITHLVGL
 
-#if LV_BUILD_DEMOS
-	//lv_demo_vector_graphic_not_buffered();
-
-//	//char s1 [] = "stress";
-//	char s1 [] = "widgets";
-//	char * demo [] = { s1, };
-//    lv_demos_create(demo, 1);
-//
-    lv_demo_widgets();
-    lv_demo_widgets_start_slideshow();
-//    for (;;)
-//    	lv_timer_handler();
-
-#else
 	lvstales_initialize();	// эти стили нужны в linux ?
 
 	{
@@ -8359,7 +8345,6 @@ void display2_initialize(void)
 //		lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
 //		lv_timer_set_repeat_count(lvgl_task1, -1);
 //	}
-#endif
 
 #endif /* WITHLVGL */
 

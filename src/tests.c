@@ -10046,14 +10046,12 @@ static void lidar_parse(unsigned char c)
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 #include "src/lvgl_gui/styles.h"
 
-#define CANVAS_WIDTH  DIM_X		//200
-#define CANVAS_HEIGHT  DIM_Y	//150
-
 /**
  * Draw a line to the canvas
  */
-static void lv_example_canvas_7(void)
+static void lv_example_canvas_7(lv_obj_t * parent)
 {
+	enum { CANVAS_WIDTH = 300, CANVAS_HEIGHT = 300 };
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_rect_dsc_init(&rect_dsc);
     rect_dsc.radius = 10;
@@ -10079,14 +10077,14 @@ static void lv_example_canvas_7(void)
     LV_DRAW_BUF_INIT_STATIC(draw_buf_16bpp);
 
     {
-        lv_obj_t * canvas = lv_canvas_create(lv_screen_active());
+        lv_obj_t * canvas1 = lv_canvas_create(parent);
 
-        lv_canvas_set_draw_buf(canvas, &draw_buf_16bpp);
-        lv_obj_center(canvas);
-        lv_canvas_fill_bg(canvas, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_OPA_COVER);
+        lv_canvas_set_draw_buf(canvas1, &draw_buf_16bpp);
+        lv_obj_center(canvas1);
+        lv_canvas_fill_bg(canvas1, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_OPA_COVER);
 
         lv_layer_t layer;
-        lv_canvas_init_layer(canvas, &layer);
+        lv_canvas_init_layer(canvas1, &layer);
 
         lv_area_t coords_rect = {30, 20, 100, 70};
         lv_draw_rect(&layer, &rect_dsc, &coords_rect);
@@ -10094,27 +10092,27 @@ static void lv_example_canvas_7(void)
         lv_area_t coords_text = {40, 80, 100, 120};
         lv_draw_label(&layer, &label_dsc, &coords_text);
 
-        lv_canvas_finish_layer(canvas, &layer);
+        lv_canvas_finish_layer(canvas1, &layer);
 
-        //lv_obj_delete(canvas);
-		lv_obj_set_flag(canvas, LV_OBJ_FLAG_HIDDEN, 1);
+        //lv_obj_delete(canvas1);
+		//lv_obj_set_flag(canvas1, LV_OBJ_FLAG_HIDDEN, 1);
      }
     /*Test the rotation. It requires another buffer where the original image is stored.
      *So use previous canvas as image and rotate it to the new canvas*/
     LV_DRAW_BUF_DEFINE_STATIC(draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888);
     LV_DRAW_BUF_INIT_STATIC(draw_buf_32bpp);
     {
-        /*Create a canvas and initialize its palette*/
-        lv_obj_t * canvas = lv_canvas_create(lv_screen_active());
+        /*Create a canvas2 and initialize its palette*/
+        lv_obj_t * canvas2 = lv_canvas_create(parent);
 
-        lv_canvas_set_draw_buf(canvas, &draw_buf_32bpp);
-        lv_canvas_fill_bg(canvas, lv_color_hex3(0xccc), LV_OPA_COVER);
-        lv_obj_center(canvas);
+        lv_canvas_set_draw_buf(canvas2, &draw_buf_32bpp);
+        lv_canvas_fill_bg(canvas2, lv_color_hex3(0xccc), LV_OPA_COVER);
+        lv_obj_center(canvas2);
 
-        lv_canvas_fill_bg(canvas, lv_palette_lighten(LV_PALETTE_GREY, 1), LV_OPA_COVER);
+        lv_canvas_fill_bg(canvas2, lv_palette_lighten(LV_PALETTE_GREY, 1), LV_OPA_COVER);
 
         lv_layer_t layer;
-        lv_canvas_init_layer(canvas, &layer);
+        lv_canvas_init_layer(canvas2, &layer);
         lv_image_dsc_t img;
         lv_draw_buf_to_image(&draw_buf_16bpp, &img);	// копируктся ранее нарисованный буфер
         lv_draw_image_dsc_t img_dsc;
@@ -10127,9 +10125,9 @@ static void lv_example_canvas_7(void)
         lv_area_t coords_img = {0, 0, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1};
         lv_draw_image(&layer, &img_dsc, &coords_img);
 
-        lv_canvas_finish_layer(canvas, &layer);
-        //lv_obj_delete(canvas);
-		lv_obj_set_flag(canvas, LV_OBJ_FLAG_HIDDEN, 1);
+        lv_canvas_finish_layer(canvas2, &layer);
+        //lv_obj_delete(canvas2);
+		//lv_obj_set_flag(canvas2, LV_OBJ_FLAG_HIDDEN, 1);
 
     }
 }
@@ -10154,9 +10152,24 @@ void hightests(void)
 
 #if 0 && WITHLVGL
 	{
-		lv_example_canvas_7();
+		lv_example_canvas_7(lv_screen_active());
 //		for (;;)
 //			lv_timer_handler();
+	}
+#endif
+#if 0 && WITHLVGL && LV_BUILD_DEMOS
+	{
+		//lv_demo_vector_graphic_not_buffered();
+
+	//	//char s1 [] = "stress";
+	//	char s1 [] = "widgets";
+	//	char * demo [] = { s1, };
+	//    lv_demos_create(demo, 1);
+	//
+	    lv_demo_widgets();
+	    lv_demo_widgets_start_slideshow();
+	//    for (;;)
+	//    	lv_timer_handler();
 	}
 #endif
 #if 0
