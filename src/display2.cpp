@@ -320,11 +320,6 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
-int infocb_rxbw(char * b, size_t len)
-{
-	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_label3_P());
-}
-
 static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbw);
@@ -376,31 +371,109 @@ int infocb_currlevel(char * b, size_t len)
 #endif
 }
 
-static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+
+static lv_obj_t * dzi_create_rec(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_info_create(parent, infocb_currlevel);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_rec);
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
 	return lbl;
 }
 
-int infocb_siglevel(char * b, size_t len)
+static lv_obj_t * dzi_create_spk(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-#if WITHIF4DSP
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_spk);
 
-	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
-#else
-	return 0;
-#endif
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_wpm(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_wpm);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_bkin(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_bkin);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_usbact(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_usbact);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_vfomode(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_vfomode);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_nr(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_nr);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_classa(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_classa);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_datamode(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_datamode);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_voxtune(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_voxtune);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
 }
 
 static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_siglevel);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_currlevel);
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
@@ -666,6 +739,67 @@ static const dzitem_t dzi_currlevel =
 	.lvelementcreate = LVCREATE(dzi_create_currlevel),
 	.id = "currlevel"
 };
+
+static const dzitem_t dzi_rec =
+{
+	.lvelementcreate = LVCREATE(dzi_create_rec),
+	.id = "rec"
+};
+
+static const dzitem_t dzi_spk =
+{
+	.lvelementcreate = LVCREATE(dzi_create_spk),
+	.id = "spk"
+};
+
+static const dzitem_t dzi_bkin =
+{
+	.lvelementcreate = LVCREATE(dzi_create_bkin),
+	.id = "bkin"
+};
+
+static const dzitem_t dzi_usbact =
+{
+	.lvelementcreate = LVCREATE(dzi_create_usbact),
+	.id = "usbact"
+};
+
+static const dzitem_t dzi_wpm =
+{
+	.lvelementcreate = LVCREATE(dzi_create_wpm),
+	.id = "wpm"
+};
+
+static const dzitem_t dzi_vfomode =
+{
+	.lvelementcreate = LVCREATE(dzi_create_vfomode),
+	.id = "vfomode"
+};
+
+static const dzitem_t dzi_nr =
+{
+	.lvelementcreate = LVCREATE(dzi_create_nr),
+	.id = "nr"
+};
+
+static const dzitem_t dzi_classa =
+{
+	.lvelementcreate = LVCREATE(dzi_create_classa),
+	.id = "classa"
+};
+
+static const dzitem_t dzi_datamode =
+{
+	.lvelementcreate = LVCREATE(dzi_create_datamode),
+	.id = "datamode"
+};
+
+static const dzitem_t dzi_voxtune =
+{
+	.lvelementcreate = LVCREATE(dzi_create_voxtune),
+	.id = "voxtune"
+};
+
 
 #if WITHALTERNATIVEFONTS
 	#include "display/fonts/ub_fonts.h"

@@ -3544,6 +3544,17 @@ int infocb_datetime12(char * b, size_t len);
 int infocb_currlevel(char * b, size_t len);
 int infocb_siglevel(char * b, size_t len);
 int infocb_attenuator(char * b, size_t len);
+int infocb_bkin(char * b, size_t len);
+int infocb_wpm(char * b, size_t len);
+int infocb_spk(char * b, size_t len);
+int infocb_rxbw(char * b, size_t len);
+int infocb_rec(char * b, size_t len);
+int infocb_usbact(char * b, size_t len);
+int infocb_nr(char * b, size_t len);
+int infocb_classa(char * b, size_t len);
+int infocb_datamode(char * b, size_t len);
+int infocb_voxtune(char * b, size_t len);
+int infocb_vfomode(char * b, size_t len);
 
 #ifdef __cplusplus
 }

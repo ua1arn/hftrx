@@ -1189,7 +1189,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	savestring = s;
 	savewhere = __func__;
 
-#if WITHLVGL && 0
+#if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
 	if (layer)
 	{

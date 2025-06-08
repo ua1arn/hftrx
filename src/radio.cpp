@@ -21953,6 +21953,75 @@ int infocb_rxbwval(char * b, size_t len)
 	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_value4());
 }
 
+int infocb_wpm(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%uwpm", (int) hamradio_get_cw_wpm());
+}
+
+int infocb_rec(char * b, size_t len)
+{
+	const uint_fast8_t state = hamradio_get_rec_value();	// не-0: запись включена
+	return local_snprintf_P(b, len, "%s", state ? "REC" : "PAU");
+}
+
+int infocb_spk(char * b, size_t len)
+{
+	const uint_fast8_t state = hamradio_get_spkon_value();	// не-0: динамик включен
+	return local_snprintf_P(b, len, "%s", state ? "SPK" : "");
+}
+
+int infocb_bkin(char * b, size_t len)
+{
+	const uint_fast8_t state = hamradio_get_bkin_value();	// не-0: break-in включен
+	return local_snprintf_P(b, len, "%s", state ? "BKIN" : "");
+}
+
+int infocb_usbact(char * b, size_t len)
+{
+	const uint_fast8_t state = hamradio_get_usbh_active();	// не-0: USB active
+	return local_snprintf_P(b, len, "%s", state ? "USB" : "");
+}
+
+int infocb_vfomode(char * b, size_t len)
+{
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
+	const char * const label = hamradio_get_vfomode3_value(& state);
+	return local_snprintf_P(b, len, "%s", label);
+}
+
+int infocb_classa(char * b, size_t len)
+{
+	const uint_fast8_t state = hamradio_get_usbh_active();	// не-0: USB active
+	return local_snprintf_P(b, len, "%s", state ? "USB" : "");
+}
+
+int infocb_nr(char * b, size_t len)
+{
+	int_fast32_t grade;
+	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
+	return local_snprintf_P(b, len, "%s", state ? "NR" : "");
+}
+
+int infocb_voxtune(char * b, size_t len)
+{
+	static const char text_vox [] = "VOX";
+	static const char text_tun [] = "TUN";
+	static const char text_nul [] = "";
+
+	const uint_fast8_t tunev = hamradio_get_tunemodevalue();
+	const uint_fast8_t voxv = hamradio_get_voxvalue();
+
+	const char * const labels [4] = { text_nul, text_vox, text_tun, text_tun, };
+
+	return local_snprintf_P(b, len, "%s", labels [tunev * 2 + voxv]);
+}
+
+int infocb_datamode(char * b, size_t len)
+{
+	const uint_fast8_t state = hamradio_get_datamode();	// не-0: USB active
+	return local_snprintf_P(b, len, "%s", state ? "DAT" : "");
+}
+
 int infocb_voltlevel(char * b, size_t len)
 {
 #if WITHVOLTLEVEL
@@ -22030,4 +22099,22 @@ int infocb_freqb(char * b, size_t len)
 
 	xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
 	return local_snprintf_P(b, len, "%u.%03u.%03u", mhz, khz, hz);
+}
+
+int infocb_rxbw(char * b, size_t len)
+{
+	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_label3_P());
+}
+
+int infocb_siglevel(char * b, size_t len)
+{
+#if WITHIF4DSP
+	uint_fast8_t tracemax;
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+
+	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
+	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
+#else
+	return 0;
+#endif
 }

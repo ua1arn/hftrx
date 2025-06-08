@@ -101,15 +101,15 @@
 		{	41, 10,	4, 5, display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	45, 10,	5, 5, display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 
-		{	36, 15,	5, 5, display2_nr3,			& dzi_default, PGALL, },	// NR : was: AGC
-		{	41, 15,	4, 5, display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
+		{	36, 15,	5, 5, display2_nr3,			& dzi_nr, PGALL, },	// NR : was: AGC
+		{	41, 15,	4, 5, display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 		{	45, 15,	5, 5, display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
 
 		{	15, 20,	3, 5, display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 		{	20,	20,	3, 5, display2_vfomode3,	& dzi_default, PGALL, },	// SPL
 		{	24,	20,	12, 5, display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
 		{	36, 20,	5, 5, display2_mode3_b,		& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 20,	4, 5, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
+		{	41, 20,	4, 5, display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
@@ -120,10 +120,10 @@
 		//{	19, 25,
 		//{	23, 25,
 		//{	27, 25,
-		{	33, 25,	3, 5, display2_rec3,		& dzi_compat, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	36, 25,	5, 5, display2_spk3,		& dzi_compat, PGALL, },	// отображение признака включения динамика
-		{	41, 25, 4, 5, display2_bkin3,		& dzi_compat, PGALL, },	// BREAK-IN
-		{	45,	25,	5, 5, display2_wpm5, 		& dzi_compat, PGALL, },	// 22WPM
+		{	33, 25,	3, 5, display2_rec3,		& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	36, 25,	5, 5, display2_spk3,		& dzi_spk, PGALL, },	// отображение признака включения динамика
+		{	41, 25, 4, 5, display2_bkin3,		& dzi_bkin, PGALL, },	// BREAK-IN
+		{	45,	25,	5, 5, display2_wpm5, 		& dzi_wpm, PGALL, },	// 22WPM
 
 		//{	24, 30,	10, 5, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 		//{	37, 30,	8, 5, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
@@ -137,8 +137,8 @@
 		{	0,	DLE1,	12, 5, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	9, 5, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	4, 5, display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
-		{	28, DLE1,	3, 5, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-		{	32, DLE1,	7, 5, display2_classa7,		& dzi_default, PGALL, },	// Class-A power amplifier
+		{	28, DLE1,	3, 5, display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
+		{	32, DLE1,	7, 5, display2_classa7,		& dzi_classa, PGALL, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 5, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
