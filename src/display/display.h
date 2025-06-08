@@ -324,17 +324,6 @@ colpip_string_x2_tbg(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
-colpip_string_x2ra90_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg		// цвет фона
-	);
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
 colpip_text(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо

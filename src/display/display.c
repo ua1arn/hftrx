@@ -448,6 +448,67 @@ uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uin
 	return GRID2X(xcell);
 }
 
+#if SMALLCHARH3
+
+static uint_fast16_t
+RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
+	const gxdrawb_t * db,
+	uint_fast16_t x, uint_fast16_t y,
+	char cc
+	)
+{
+	const uint_fast8_t ci = smallfont_decode(cc);
+	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], db, x, y, ci, SMALLCHARW3);
+	return x + SMALLCHARW3;
+//	const uint_fast8_t width = SMALLCHARW3;
+//	const uint_fast8_t c = smallfont_decode(cc);
+//	uint_fast8_t cgrow;
+//	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+//	{
+//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
+//		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
+//	}
+//	return x + width;
+}
+
+static void
+display_string3(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
+{
+	char c;
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH3;
+	while ((c = * s ++) != '\0')
+		x = ltdc_horizontal_put_char_small3(db, x, y, c);
+}
+
+void
+colpip_string3_at_xy(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	const char * __restrict s
+	)
+{
+	char c;
+//	ltdc_secondoffs = 0;
+//	ltdc_h = SMALLCHARH3;
+	while ((c = * s ++) != '\0')
+		x = ltdc_horizontal_put_char_small3(db, x, y, c);
+}
+
+void
+display_string3_at_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORPIP_T fg, COLORPIP_T bg)
+{
+	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
+	colmain_setcolors(fg, bg);
+	do
+	{
+		display_string3(db, x, y + lowhalf, s, lowhalf);
+	} while (lowhalf --);
+}
+
+#endif /* SMALLCHARH3 */
+
 #if WITHPRERENDER
 /* использование предварительно построенных изображений при отображении частоты */
 

@@ -3578,33 +3578,6 @@ void display_snapshot_req(void)
 }
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
-// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-#if 0
-// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-static void RAMFUNC colorpip_pixels(
-	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
-	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
-	)
-{
-	uint_fast16_t col;
-	uint_fast16_t w = width;
-
-	for (col = 0; w >= 8; col += 8, w -= 8)
-	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
-		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
-	}
-	if (w != 0)
-	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster];
-		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
-	}
-	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
-}
-#endif
-
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
@@ -3848,34 +3821,6 @@ colpip_string_x2_tbg(
 }
 
 // Используется при выводе на графический индикатор,
-// с поворотом
-void
-colpip_string_x2ra90_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg		// цвет фона
-	)
-{
-	char c;
-	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
-	gxdrawb_t sdbv;
-	gxdrawb_initialize(& sdbv, scratch, TDX, TDY);
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		colpip_fillrect(& sdbv, 0, 0, TDX, TDY, bg);
-		colorpip_x2_put_char_small_tbg(& sdbv, 0, 0, c, fg);
-		hwaccel_ra90(db, x, y, & sdbv);
-		y += TDX;
-	}
-}
-
-// Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 void
 colpip_text(
@@ -4101,67 +4046,6 @@ void colpip_bitblt_ra90(
 		);
 }
 
-
-#if SMALLCHARH3
-
-static uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
-	const gxdrawb_t * db,
-	uint_fast16_t x, uint_fast16_t y,
-	char cc
-	)
-{
-	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], db, x, y, ci, SMALLCHARW3);
-	return x + SMALLCHARW3;
-//	const uint_fast8_t width = SMALLCHARW3;
-//	const uint_fast8_t c = smallfont_decode(cc);
-//	uint_fast8_t cgrow;
-//	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-//	{
-//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-//		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
-//	}
-//	return x + width;
-}
-
-static void
-display_string3(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c);
-}
-
-void
-colpip_string3_at_xy(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	const char * __restrict s
-	)
-{
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c);
-}
-
-void
-display_string3_at_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORPIP_T fg, COLORPIP_T bg)
-{
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	colmain_setcolors(fg, bg);
-	do
-	{
-		display_string3(db, x, y + lowhalf, s, lowhalf);
-	} while (lowhalf --);
-}
-
-#endif /* SMALLCHARH3 */
 
 
 #if LCDMODE_COLORED
