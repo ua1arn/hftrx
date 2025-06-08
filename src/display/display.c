@@ -25,18 +25,6 @@ const char * savewhere = "no func";
 
 #include "fontmaps.h"
 
-#if WITHALTERNATIVEFONTS
-	uint8_t const * font_big = ltdc_CenturyGothic_big [0] [0];
-	uint8_t const * font_half = ltdc_CenturyGothic_half [0] [0];
-	const size_t size_bigfont = sizeof ltdc_CenturyGothic_big [0] [0];
-	const size_t size_halffont = sizeof ltdc_CenturyGothic_half [0] [0];
-#else
-	uint8_t const * font_big = S1D13781_bigfont_LTDC [0] [0];
-	uint8_t const * font_half = S1D13781_halffont_LTDC [0] [0];
-	const size_t size_bigfont = sizeof S1D13781_bigfont_LTDC [0] [0];
-	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
-#endif /* WITHALTERNATIVEFONTS */
-
 /* рисование линии на основном экране произвольным цветом
 */
 void
@@ -398,7 +386,9 @@ ltdc_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
-	ltdc_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], db, xpix, ypix, ci, SMALLCHARW);
+	ltdc_put_char_unified(
+			S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0],  	// параметры растра со шрифтом
+			db, xpix, ypix, ci, SMALLCHARW);
 	return xpix + SMALLCHARW;
 }
 
@@ -408,7 +398,17 @@ static uint_fast16_t RAMFUNC ltdc_put_char_big(const gxdrawb_t * db, uint_fast16
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
-	ltdc_put_char_unified(font_big, BIGCHARW, BIGCHARH, size_bigfont, db, xpix, ypix, ci, width2);
+
+#if WITHALTERNATIVEFONTS
+	uint8_t const * const font_big = ltdc_CenturyGothic_big [0] [0];
+	const size_t size_bigfont = sizeof ltdc_CenturyGothic_big [0] [0];
+#else
+	uint8_t const * const font_big = S1D13781_bigfont_LTDC [0] [0];
+	const size_t size_bigfont = sizeof S1D13781_bigfont_LTDC [0] [0];
+#endif /* WITHALTERNATIVEFONTS */
+
+	ltdc_put_char_unified(font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
+			db, xpix, ypix, ci, width2);
  	return xpix + width2;
 }
 
@@ -418,7 +418,18 @@ static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast1
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
-	ltdc_put_char_unified(font_half, HALFCHARW, HALFCHARH, size_halffont, db, xpix, ypix, ci, width2);
+
+#if WITHALTERNATIVEFONTS
+	uint8_t const * const font_half = ltdc_CenturyGothic_half [0] [0];
+	const size_t size_halffont = sizeof ltdc_CenturyGothic_half [0] [0];
+#else
+	uint8_t const * const font_half = S1D13781_halffont_LTDC [0] [0];
+	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
+#endif /* WITHALTERNATIVEFONTS */
+
+	ltdc_put_char_unified(
+			font_half, HALFCHARW, HALFCHARH, size_halffont, 	// параметры растра со шрифтом
+			db, xpix, ypix, ci, width2);
 	return xpix + width2;
 }
 
@@ -806,7 +817,9 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], db, x, y, ci, SMALLCHARW3);
+	ltdc_put_char_unified(
+			S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0],  	// параметры растра со шрифтом
+			db, x, y, ci, SMALLCHARW3);
 	return x + SMALLCHARW3;
 }
 
@@ -1176,7 +1189,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	savestring = s;
 	savewhere = __func__;
 
-#if WITHLVGL
+#if WITHLVGL && 0
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
 	if (layer)
 	{
