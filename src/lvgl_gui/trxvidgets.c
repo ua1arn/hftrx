@@ -445,6 +445,7 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (res != LV_RES_OK) return;
 }
 
+// Исправлено масштабирование к крайнему большему значению
 static
 uint_fast16_t normalize31(
 	uint_fast16_t raw,
