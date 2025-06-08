@@ -4297,6 +4297,7 @@ enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи тол
 
 static uint8_t readxb [SPDFIO_numwires] = { 0x0b, 0x00, 0x00 };
 static uint8_t dmyb [SPDFIO_numwires];
+static uint8_t gnab = 3;
 
 #if WIHSPIDFSW || WIHSPIDFOVERSPI
 
@@ -4509,7 +4510,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -4520,6 +4521,8 @@ static IRQL_t spidf_iostart(
 
 	if (hasaddress)
 	{
+		if (nab >= 4)
+			spidf_progval8_p2(address >> 24);
 		spidf_progval8_p2(address >> 16);
 		spidf_progval8_p2(address >> 8);
 		spidf_progval8_p2(address >> 0);
@@ -4608,7 +4611,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -4637,6 +4640,8 @@ static IRQL_t spidf_iostart(
 
 	if (hasaddress)
 	{
+		if (nab >= 4)
+			b [i ++] = address >> 24;
 		b [i ++] = address >> 16;
 		b [i ++] = address >> 8;
 		b [i ++] = address >> 0;
@@ -5201,7 +5206,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -5229,6 +5234,8 @@ static IRQL_t spidf_iostart(
 
 	if (hasaddress)
 	{
+		if (nab >= 4)
+			spidf_progval8_p2(address >> 24);
 		spidf_progval8_p2(address >> 16);
 		spidf_progval8_p2(address >> 8);
 		spidf_progval8_p2(address >> 0);
@@ -5376,7 +5383,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -5690,7 +5697,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -5750,13 +5757,13 @@ static IRQL_t spidf_iostart(
 /* снять защиту записи для следующей команды */
 static void writeEnableDATAFLASH(void)
 {
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/* 0x06: write enable */
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 }
 
 static void writeDisableDATAFLASH(void)
 {
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/* 0x04: write disable */
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 }
 
@@ -5774,7 +5781,7 @@ int fullEraseDATAFLASH(void)
 
 	writeEnableDATAFLASH();		/* write enable */
 
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
 	const uint_fast8_t rv = largetimed_dataflash_read_status();
@@ -5792,7 +5799,7 @@ uint_fast8_t dataflash_read_status(void)
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000, 0);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 	//PRINTF("dataflash_read_status: v=%02X\n", v);
@@ -6044,7 +6051,7 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	memcpy(buff, & ReadBuffer [1], size);
 
 #else
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000, 0);	/* read id register */
 	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
@@ -6089,7 +6096,7 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 	memcpy(buff, & ReadBuffer [5], size);
 
 #else
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset, 3);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
@@ -6125,11 +6132,11 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	{
 	case 0x00:
 	case 0xFF:
-		//PRINTF("SFDP: %s not supported\n", title);
+		PRINTF("SFDP: %s not supported\n", title);
 		readxb [buswID] = 0x00;	// opcode
 		break;
 	default:
-		//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+		PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
 		readxb [buswID] = opcode;	// opcode
 		dmyb [buswID] = ndmy;	// dummy bytes
 		break;
@@ -6220,7 +6227,7 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword7 = USBD_peek_u32(buff32 + 4 * 6);
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
-		//printhex(ptp, buff32, 256);
+		printhex(ptp, buff32, len4 * 4);
 
 		///////////////////////////////////
 		/* Print density information. */
@@ -6228,16 +6235,17 @@ int testchipDATAFLASH(void)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
-			//PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
+			PRINTF("SFDP: 1 density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
 			chipSize = (dword2 >> 3) + UINT32_C(1);
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
-			//PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
+			PRINTF("SFDP: 2 density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
 			chipSize = UINT32_C(1) << ((dword2 & 0x7FFFFFFF) - 3);
 		}
+		PRINTF("SFDP: chipSize=%u\n", (unsigned) chipSize);
 		///////////////////////////////////
 		// dword8, dword9 - 4KB Erase opcode, Sector size, Sector erase opcode
 		// Автоматическое определение наибольшего размера сектора
@@ -6269,6 +6277,13 @@ int testchipDATAFLASH(void)
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
+		if (chipSize > UINT32_C(16) * 1024 * 1024)
+		{
+			// Параметры для W25Q256JVEIQ
+			readxb [SPDFIO_4WIRE] = 0xEC;	// opcode
+			dmyb [SPDFIO_4WIRE] = 3;	// dummy bytes
+			gnab = 4;
+		}
 	}
 	else
 	{
@@ -6310,7 +6325,7 @@ int prepareDATAFLASH(void)
 
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
-		const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
+		const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1, SPDFIO_1WIRE);
 		spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
@@ -6353,7 +6368,7 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset, gnab);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 	const uint_fast8_t rv = timed_dataflash_read_status();
 	releaseDATAFLASH(oldIrql);
@@ -6377,7 +6392,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 	// start byte programm
 
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset, gnab);		/* Page Program */
 	spidf_write(data, len, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
@@ -6416,20 +6431,20 @@ spdif_iostartread(unsigned long len, unsigned long flashoffset, IRQL_t * oldspid
 #if WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset, gnab);	/* 0xEB: Fast Read Quad I/O */
 		return SPDFIO_4WIRE;
 	}
 #endif /* WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI */
 #if WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset, gnab);	/* 0xBB: Fast Read Dual I/O */
 		return SPDFIO_2WIRE;
 	}
 #endif /* WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI */
 	else
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset, gnab);	/* 0x03: sequential read block */
 		return SPDFIO_1WIRE;
 	}
 }
