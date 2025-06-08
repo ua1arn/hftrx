@@ -59,22 +59,6 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, u
 void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 //Отображение многострочного меню для больших экранов (значения)
 void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-// Вызывается из display2.c
-// группа, в которой находится редактируемый параметр
-void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// значение параметра
-void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// название редактируемого параметра или группы
-void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// название редактируемого параметра
-// если группа - ничего не отображаем
-void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // Вызывается из display2.c
 // код редактируемого параметра

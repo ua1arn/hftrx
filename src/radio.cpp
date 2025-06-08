@@ -56,6 +56,13 @@
 static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
 #define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
 
+// группа, в которой находится редактируемый параметр
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp);
+// значение параметра
+static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp);
+// если группа - ничего не отображаем
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp);
+
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
@@ -17059,19 +17066,21 @@ defaultsettings(void)
 
 //+++ menu support
 
-// Вызывается из display2.c
 // Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+// вызывается по dzones
+void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
-	uint_fast16_t y_position_groups = y;
+	uint_fast16_t y_position_groups = ycell;
 	uint_fast16_t index_groups = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
+	const uint_fast8_t xcell_marker = xcell - 1;
+	const uint_fast8_t xcell_text = xcell;
 
 	display2_getmultimenu(& window);
 
@@ -17112,19 +17121,16 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, u
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at(db, x - 1, y_position_groups, PSTR(">"));
+				display_at(db, xcell_marker, y_position_groups, PSTR(">"));
 			}
 			else
 			{
 				//снять отметку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at(db, x - 1, y_position_groups, PSTR(" "));
+				display_at(db, xcell_marker, y_position_groups, PSTR(" "));
 			}
 
-			dctx_t dctx;
-			dctx.type = DCTX_MENU;
-			dctx.pv = mv;
-			display2_menu_group(db, x, y_position_groups, xspan, yspan, & dctx); // название группы
+			display2_menu_group(db, xcell_text, y_position_groups, mv); // название группы
 
 			y_position_groups += window.ystep;
 		}
@@ -17140,23 +17146,26 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, u
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_at(db, x - 1, y_position_groups, nolabel);
+		display_at(db, xcell_marker, y_position_groups, nolabel);
 	}
 }
 
 // Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+// вызывается по dzones
+void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
-	uint_fast16_t y_position_params = y;
+	uint_fast8_t y_position_params = ycell;
 	uint_fast16_t index_params = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
+	const uint_fast8_t xcell_marker = xcell - 1;
+	const uint_fast8_t xcell_text = xcell;
 
 	display2_getmultimenu(& window);
 
@@ -17206,18 +17215,15 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, u
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at(db, x - 1, y_position_params, PSTR(">"));
+				display_at(db, xcell_marker, y_position_params, PSTR(">"));
 			}
 			else
 			{
 				//снять подсветку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_at(db, x - 1, y_position_params, PSTR(" "));
+				display_at(db, xcell_marker, y_position_params, PSTR(" "));
 			}
-			dctx_t dctx;
-			dctx.type = DCTX_MENU;
-			dctx.pv = mv;
-			display2_menu_lblng(db, x, y_position_params, xspan, yspan, & dctx); // название редактируемого параметра
+			display2_menu_lblng(db, xcell_text, y_position_params, mv); // название редактируемого параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17232,18 +17238,19 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, u
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		display_at(db, x - 1, y_position_params, nolabel);
+		display_at(db, xcell_marker, y_position_params, nolabel);
 	}
 }
 
 // Отображение многострочного меню для больших экранов (значения)
+// вызывается по dzones
 void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
-	uint_fast16_t y_position_params = y;
+	uint_fast8_t y_position_params = y;
 	uint_fast16_t index_params = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
@@ -17294,10 +17301,7 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
-            dctx_t dctx;
-            dctx.type = DCTX_MENU;
-            dctx.pv = mv;
-            display2_menu_valxx(db, x, y_position_params, xspan, yspan, & dctx); // значение параметра
+            display2_menu_valxx(db, x, y_position_params, mv); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
@@ -17342,48 +17346,27 @@ void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, u
 	display_at(db, x + 0, y, buff);
 }
 
-// Вызывается из display2.c
 // название редактируемого параметра
 // если группа - ничего не отображаем
-void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp)
 {
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
-	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at(db, x, y, mp->pd->qlabel);
+	display_at(db, xcell, ycell, mp->pd->qlabel);
 }
 
-// Вызывается из display2.c
-// название редактируемого параметра или группы
-void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
-	const struct menudef * const mp = (const struct menudef *) pctx->pv;
-	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_at(db, x, y, mp->pd->qlabel);
-}
-
-// Вызывается из display2.c
 // группа, в которой находится редактируемый параметр
-void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp)
 {
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
-	const struct menudef * mp = (const struct menudef *) pctx->pv;
-
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_at(db, x, y, mp->pd->qlabel);
+	display_at(db, xcell, ycell, mp->pd->qlabel);
 }
 
-// Вызывается из display2.c
 // значение параметра
-void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, const struct menudef * mp)
 {
 	static const char months [13] [4] =
 	{
@@ -17401,9 +17384,6 @@ void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, u
 		"NOV",
 		"DEC",
 	};
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
-	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const struct paramdefdef * const pd = mp->pd;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
@@ -21127,10 +21107,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukind(mv, ITEM_VALUE))
 		{
-			dctx_t dctx;
-			dctx.type = DCTX_MENU;
-			dctx.pv = mv;
-			display2_menu_valxx(& dbv, 0, 0, 0, 0, & dctx);
+			display2_menu_valxx(& dbv, 0, 0, 0, 0, mv);
 			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
 			vals->index = el;
 			return;
@@ -21152,10 +21129,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 		display2_needupdate();
 	}
 
-	dctx_t dctx;
-	dctx.type = DCTX_MENU;
-	dctx.pv = & menutable [index];
-	display2_menu_valxx(& dbv, 0, 0, 0, 0, & dctx);
+	display2_menu_valxx(& dbv, 0, 0, 0, 0, & menutable [index]);
 	return menuw;
 }
 #endif /* WITHMENU */
