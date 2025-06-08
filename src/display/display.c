@@ -156,6 +156,8 @@ void display_wrdata2_end(const gxdrawb_t * db)
 }
 
 
+#if 1
+
 // Выдать один цветной пиксель
 static void
 ltdc_pix1color(
@@ -230,6 +232,90 @@ void RAMFUNC ltdc_horizontal_pixels(
 	}
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
 }
+
+#endif
+
+/* valid chars: "0123456789 #._" */
+uint_fast8_t
+bigfont_decode(char cc)
+{
+	const uint_fast8_t c = (unsigned char) cc;
+	// '#' - узкий пробел
+	if (c == ' ' || c == '#')
+		return 11;
+	if (c == '_')
+		return 10;		// курсор - позиция редактирвания частоты
+	if (c == '.')
+		return 12;		// точка
+	if (c > '9')
+		return 10;		// ошибка - курсор - позиция редактирвания частоты
+	return c - '0';		// остальные - цифры 0..9
+}
+
+/* valid chars: "0123456789 #._" */
+uint_fast8_t
+halffont_decode(char cc)
+{
+	const uint_fast8_t c = (unsigned char) cc;
+	// '#' - узкий пробел
+	if (c == ' ' || c == '#')
+		return 11;
+	if (c == '_')
+		return 10;		// курсор - позиция редактирвания частоты
+	if (c == '.')
+		return 12;		// точка
+	if (c > '9')
+		return 10;		// ошибка - курсор - позиция редактирвания частоты
+	return c - '0';		// остальные - цифры 0..9
+}
+
+uint_fast8_t
+smallfont_decode(char cc)
+{
+	const uint_fast8_t c = (unsigned char) cc;
+	if (c < ' ' || c > 0x7F)
+		return '$' - ' ';
+	return c - ' ';
+}
+
+#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
+uint_fast8_t bigfont_width(char cc)
+{
+	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
+
+#if defined (HALFCHARW)
+uint_fast8_t halffont_width(char cc)
+{
+	(void) cc;
+	return HALFCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (HALFCHARW) */
+
+#if defined (SMALLCHARW)
+uint_fast8_t smallfont_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (SMALLCHARW) */
+
+#if defined (SMALLCHARH2)
+uint_fast8_t smallfont2_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW2;	// полная ширина символа в пикселях
+}
+#endif /* defined (SMALLCHARH2) */
+
+#if defined (SMALLCHARH3)
+uint_fast8_t smallfont3_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW3;	// полная ширина символа в пикселях
+}
+#endif /* defined (SMALLCHARH3) */
 
 void RAMFUNC
 ltdc_put_char_unified(
@@ -2096,90 +2182,6 @@ void display_do_AA(
 
 #endif /* LCDMODE_LTDC */
 
-#if ! LCDMODE_DUMMY
-
-/* valid chars: "0123456789 #._" */
-uint_fast8_t
-bigfont_decode(char cc)
-{
-	const uint_fast8_t c = (unsigned char) cc;
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	if (c > '9')
-		return 10;		// ошибка - курсор - позиция редактирвания частоты
-	return c - '0';		// остальные - цифры 0..9
-}
-
-/* valid chars: "0123456789 #._" */
-uint_fast8_t
-halffont_decode(char cc)
-{
-	const uint_fast8_t c = (unsigned char) cc;
-	// '#' - узкий пробел
-	if (c == ' ' || c == '#')
-		return 11;
-	if (c == '_')
-		return 10;		// курсор - позиция редактирвания частоты
-	if (c == '.')
-		return 12;		// точка
-	if (c > '9')
-		return 10;		// ошибка - курсор - позиция редактирвания частоты
-	return c - '0';		// остальные - цифры 0..9
-}
-
-uint_fast8_t
-smallfont_decode(char cc)
-{
-	const uint_fast8_t c = (unsigned char) cc;
-	if (c < ' ' || c > 0x7F)
-		return '$' - ' ';
-	return c - ' ';
-}
-
-#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
-uint_fast8_t bigfont_width(char cc)
-{
-	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
-}
-#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
-
-#if defined (HALFCHARW)
-uint_fast8_t halffont_width(char cc)
-{
-	(void) cc;
-	return HALFCHARW;	// полная ширина символа в пикселях
-}
-#endif /* defined (HALFCHARW) */
-
-#if defined (SMALLCHARW)
-uint_fast8_t smallfont_width(char cc)
-{
-	(void) cc;
-	return SMALLCHARW;	// полная ширина символа в пикселях
-}
-#endif /* defined (SMALLCHARW) */
-
-#if defined (SMALLCHARH2)
-uint_fast8_t smallfont2_width(char cc)
-{
-	(void) cc;
-	return SMALLCHARW2;	// полная ширина символа в пикселях
-}
-#endif /* defined (SMALLCHARH2) */
-
-#if defined (SMALLCHARH3)
-uint_fast8_t smallfont3_width(char cc)
-{
-	(void) cc;
-	return SMALLCHARW3;	// полная ширина символа в пикселях
-}
-#endif /* defined (SMALLCHARH3) */
-#endif /* ! LCDMODE_DUMMY */
 
 /* Получить желаемую частоту pixel clock для данного видеорежима. */
 uint_fast32_t display_getdotclock(const videomode_t * vdmode)
