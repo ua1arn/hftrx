@@ -7108,7 +7108,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
     	//		0, wfrow,	// координаты окна источника
     	//		wfdx, p1h, 	// размеры окна источника
     	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
-    	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);
+    	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);	// хак - надо исправлять
     }
     else
     {
@@ -7121,7 +7121,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
     //		0, 0,	// координаты окна источника
     //		wfdx, p2h, 	// размеры окна источника
         	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
-        	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);
+        	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);	// хак - надо исправлять
         }
         else
         {
@@ -7209,6 +7209,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         l.round_start = 0;
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
+        // Центральная частота
         lv_point_precise_set(& l.p1, coords->x1 + w / 2, coords->y1);
         lv_point_precise_set(& l.p2, coords->x1 + w / 2, coords->y2);
         lv_draw_line(layer, & l);
@@ -7253,6 +7254,22 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         label.align = LV_TEXT_ALIGN_CENTER;
         label.text = "Test scope";
         lv_draw_label(layer, & label, coords);
+
+    }
+    if (1)
+    {
+    	// линии
+        lv_draw_line_dsc_t l;
+        lv_draw_line_dsc_init(& l);
+
+        l.width = 1;
+        l.round_end = 0;
+        l.round_start = 0;
+        l.color = lv_palette_main(LV_PALETTE_YELLOW);
+
+        lv_point_precise_set(& l.p1, coords->x1, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x2, coords->y2);
+        lv_draw_line(layer, & l);
 
     }
 }
