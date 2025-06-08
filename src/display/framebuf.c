@@ -28,6 +28,8 @@
 #include "draw/lv_draw_private.h"
 #include "draw/lv_draw_image_private.h"
 
+#include "src/lvgl_gui/styles.h"
+
 #endif /* WITHLVGL */
 
 static void softfill(
@@ -480,7 +482,7 @@ static void aw_g2d_initialize(void)
 }
 
 
-static void t113_fillrect(
+static void hwaccel_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
@@ -742,7 +744,7 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 //		} bits;
 //	};
 
-static void t113_fillrect(
+static void hwaccel_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
 	uint_fast16_t dx_UNUSED,	// ширина буфера
 	uintptr_t taddr,
@@ -1323,13 +1325,13 @@ draw_awg2d_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, const lv_are
 	PACKEDCOLORPIP_T * buffer = (PACKEDCOLORPIP_T *) dest;
 	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
-	const unsigned fillmask = 0;
+	const unsigned fillmask = FILL_FLAG_NONE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const unsigned tstride = layer->draw_buf->header.stride;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
 
 }
 
@@ -2245,7 +2247,7 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 
@@ -2528,7 +2530,7 @@ hwaccel_rect_u32(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 
@@ -2650,37 +2652,14 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	//PACKEDCOLORPIP_T * const buffer = db->buffer;
-	const uint_fast16_t dx = db->dx;
-	const uint_fast16_t dy = db->dy;
-	ASSERT(x < dx);
-	ASSERT((x + w) <= dx);
-	ASSERT(y < dy);
-	ASSERT((y + h) <= dy);
-	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
-	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
-
-#if LCDMODE_MAIN_L8
-	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_RGB565
-	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_ARGB8888
-	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, FILL_FLAG_NONE);
-
-#endif
+	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE);
 }
 
 //#define FILL_FLAG_NONE		0x00
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 
 // заполнение прямоугольной области в видеобуфере
-void colpip_fillrect2(
+void colpip_rectangle(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
@@ -3537,10 +3516,11 @@ void colpip_rect(
 	}
 	else
 	{
-		colpip_line(db, x1, y1, x2, y1, color, 0);		// верхняя горизонталь
-		colpip_line(db, x1, y2, x2, y2, color, 0);		// нижняя горизонталь
-		colpip_line(db, x1, y1, x1, y2, color, 0);		// левая вертикаль
-		colpip_line(db, x2, y1, x2, y2, color, 0);		// правая вертикаль
+		int antialiasing = 0;
+		colpip_line(db, x1, y1, x2, y1, color, antialiasing);		// верхняя горизонталь
+		colpip_line(db, x1, y2, x2, y2, color, antialiasing);		// нижняя горизонталь
+		colpip_line(db, x1, y1, x1, y2, color, antialiasing);		// левая вертикаль
+		colpip_line(db, x2, y1, x2, y2, color, antialiasing);		// правая вертикаль
 	}
 }
 
@@ -4070,7 +4050,7 @@ void gpu_fillrect(
 		* buffer = TFTALPHA(alpha, color24);
 		return;
 	}
-	//t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
+	//hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, FILL_FLAG_NONE);
 	int32_t triangle0 [3] [2] = { { 0, 0 }, { 0, h - 1}, { w - 1, 0 } };
 	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }

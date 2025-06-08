@@ -10248,19 +10248,19 @@ void hightests(void)
 		unsigned opaque;
 
 		opaque = 255;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
+		colpip_rectangle(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
 		PRINTF("Background (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 		//display_text(0, 0, "Start...");
 		//display_text(100 / GRID2X(1), 100 / GRID2Y(1), "test");
 
 		opaque = 128;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
+		colpip_rectangle(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
 		PRINTF("blue (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 
 		opaque = 128;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
+		colpip_rectangle(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
 		PRINTF("green (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 		//colmain_nextfb();

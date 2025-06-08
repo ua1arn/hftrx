@@ -6608,7 +6608,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 			if (xright >= alldx)
 				xright = alldx - 1;
 			unsigned picalpha = 128;	// Полупрозрачность
-			colpip_fillrect2(
+			colpip_rectangle(
 					db,
 					xleft + x0pix, y0pix,
 					xright + 1 - xleft, SPDY, // размер окна источника
@@ -6978,7 +6978,7 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 					const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 					/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
 					unsigned picalpha = 128;	// Полупрозрачность
-					colpip_fillrect2(
+					colpip_rectangle(
 							db,
 							xleft, y0pix,
 							xrightv - xleft, wfdy, // размер окна источника

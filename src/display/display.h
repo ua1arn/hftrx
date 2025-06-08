@@ -434,7 +434,7 @@ colpip_fillrect(
 /* заполнение прямоугольника в буфере произвольным цветом
 */
 void
-colpip_fillrect2(
+colpip_rectangle(
 	const gxdrawb_t * db,
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
