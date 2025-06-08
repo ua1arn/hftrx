@@ -531,13 +531,13 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
 
-    lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR2, e);	// обработчик родительского клвсса
+    lv_res_t res = lv_obj_event_base(MY_CLASS_COMPAT, e);	// обработчик родительского клвсса
 
     if (res != LV_RES_OK) return;
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR2);
+    LV_ASSERT_OBJ(obj, MY_CLASS_COMPAT);
 
     if (LV_EVENT_DRAW_MAIN == code)
     {
