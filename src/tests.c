@@ -10052,6 +10052,8 @@ static void lidar_parse(unsigned char c)
 static void lv_example_canvas_7(lv_obj_t * parent)
 {
 	enum { CANVAS_WIDTH = 300, CANVAS_HEIGHT = 300 };
+
+
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_rect_dsc_init(&rect_dsc);
     rect_dsc.radius = 10;
@@ -10073,13 +10075,17 @@ static void lv_example_canvas_7(lv_obj_t * parent)
     label_dsc.color = lv_palette_main(LV_PALETTE_ORANGE);
     label_dsc.text = "Some text on text canvas";
     /*Create a buffer for the canvas*/
-    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565);
-    LV_DRAW_BUF_INIT_STATIC(draw_buf_16bpp);
+//    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565);
+//    LV_DRAW_BUF_INIT_STATIC(draw_buf_16bpp);
+	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db1 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 2];
+	static lv_draw_buf_t draw_buf_16bpp;
+    lv_draw_buf_init(& draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565, 2 * GXADJ(CANVAS_WIDTH), db1, sizeof (db1)); \
+    lv_draw_buf_set_flag(& draw_buf_16bpp, LV_IMAGE_FLAGS_MODIFIABLE);
 
     {
         lv_obj_t * canvas1 = lv_canvas_create(parent);
 
-        lv_canvas_set_draw_buf(canvas1, &draw_buf_16bpp);
+        lv_canvas_set_draw_buf(canvas1, & draw_buf_16bpp);
         lv_obj_center(canvas1);
         lv_canvas_fill_bg(canvas1, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_OPA_COVER);
 
@@ -10099,8 +10105,12 @@ static void lv_example_canvas_7(lv_obj_t * parent)
      }
     /*Test the rotation. It requires another buffer where the original image is stored.
      *So use previous canvas as image and rotate it to the new canvas*/
-    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888);
-    LV_DRAW_BUF_INIT_STATIC(draw_buf_32bpp);
+//    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888);
+//    LV_DRAW_BUF_INIT_STATIC(draw_buf_32bpp);
+	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db2 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 4];
+	static lv_draw_buf_t draw_buf_32bpp;
+    lv_draw_buf_init(& draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888, 4 * GXADJ(CANVAS_WIDTH), db2, sizeof (db2)); \
+    lv_draw_buf_set_flag(& draw_buf_32bpp, LV_IMAGE_FLAGS_MODIFIABLE);
     {
         /*Create a canvas2 and initialize its palette*/
         lv_obj_t * canvas2 = lv_canvas_create(parent);
@@ -10153,8 +10163,8 @@ void hightests(void)
 #if 0 && WITHLVGL
 	{
 		lv_example_canvas_7(lv_screen_active());
-//		for (;;)
-//			lv_timer_handler();
+		for (;;)
+			lv_timer_handler();
 	}
 #endif
 #if 0 && WITHLVGL && LV_BUILD_DEMOS
