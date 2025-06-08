@@ -6227,7 +6227,7 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword7 = USBD_peek_u32(buff32 + 4 * 6);
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
-		printhex(ptp, buff32, len4 * 4);
+		//printhex(ptp, buff32, len4 * 4);
 
 		///////////////////////////////////
 		/* Print density information. */
@@ -6282,6 +6282,10 @@ int testchipDATAFLASH(void)
 			// Параметры для W25Q256JVEIQ
 			readxb [SPDFIO_4WIRE] = 0xEC;	// opcode
 			dmyb [SPDFIO_4WIRE] = 3;	// dummy bytes
+
+			readxb [SPDFIO_1WIRE] = 0x0C;	// opcode
+			dmyb [SPDFIO_1WIRE] = 1;	// dummy bytes
+
 			gnab = 4;
 		}
 	}
@@ -6444,7 +6448,7 @@ spdif_iostartread(unsigned long len, unsigned long flashoffset, IRQL_t * oldspid
 #endif /* WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI */
 	else
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset, gnab);	/* 0x03: sequential read block */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_1WIRE], SPDFIO_1WIRE, dmyb [SPDFIO_1WIRE], len, 1, flashoffset, gnab);	/* 0x03: sequential read block */
 		return SPDFIO_1WIRE;
 	}
 }
