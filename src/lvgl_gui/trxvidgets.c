@@ -101,6 +101,7 @@ typedef struct
 	lv_obj_t obj;
 	lv_style_t stdigits;
 	lv_style_t stlines;
+    lv_draw_rect_dsc_t gradrect;
 } lv_sscp2_t;
 
 typedef struct
@@ -313,18 +314,38 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
-    lv_sscp2_t * const cp = (lv_sscp2_t *) obj;
+    lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
 
 	{
-		lv_style_t * const s = & cp->stdigits;
+		lv_style_t * const s = & sscp2->stdigits;
 
 		// стиль текста оцифровки
 		lv_style_init(s);
 	    lv_obj_add_event_cb(obj, lv_sscp2_size_changed_event_cb, LV_EVENT_SIZE_CHANGED, NULL);
 	}
-
 	{
-		lv_style_t * const s = & cp->stlines;
+        // градиент
+        lv_draw_rect_dsc_init(& sscp2->gradrect);
+
+        static const lv_color_t grad_colors [] = {
+            LV_COLOR_MAKE(0xff, 0x00, 0x00),
+            //LV_COLOR_MAKE(0x00, 0xff, 0x00),
+            LV_COLOR_MAKE(0x00, 0x00, 0xff),
+        };
+
+        static const lv_opa_t grad_opa [ARRAY_SIZE(grad_colors)] = {
+            LV_OPA_COVER,
+			//LV_OPA_COVER,
+			LV_OPA_COVER,
+        };
+
+		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, grad_opa, NULL, ARRAY_SIZE(grad_colors));
+		lv_grad_vertical_init(& sscp2->gradrect.bg_grad);
+		//lv_grad_conical_init(& gradrect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
+
+	}
+	{
+		lv_style_t * const s = & sscp2->stlines;
 
 		// стиль линий
 		lv_style_init(s);
@@ -462,28 +483,34 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         rect.bg_color = lv_color_make(0, 0, 255);
         rect.bg_image_opa = LV_OPA_COVER;
 
-    	//lv_draw_rect(layer, & rect, & coords);
+    	lv_draw_rect(layer, & rect, & coords);
 
+    	{
+            // градиент
+            lv_draw_rect_dsc_t gradrect;
+            lv_draw_rect_dsc_init(& gradrect);
 
-        // градиент
-        static const lv_color_t grad_colors [] = {
-            LV_COLOR_MAKE(0xff, 0x00, 0x00),
-            //LV_COLOR_MAKE(0x00, 0xff, 0x00),
-            LV_COLOR_MAKE(0x00, 0x00, 0xff),
-        };
+            gradrect = rect;
+            static const lv_color_t grad_colors [] = {
+                LV_COLOR_MAKE(0xff, 0x00, 0x00),
+                //LV_COLOR_MAKE(0x00, 0xff, 0x00),
+                LV_COLOR_MAKE(0x00, 0x00, 0xff),
+            };
 
-        static const lv_opa_t grad_opa [ARRAY_SIZE(grad_colors)] = {
-            LV_OPA_COVER,
-			//LV_OPA_COVER,
-			LV_OPA_COVER,
-        };
+            static const lv_opa_t grad_opa [ARRAY_SIZE(grad_colors)] = {
+                LV_OPA_COVER,
+    			//LV_OPA_COVER,
+    			LV_OPA_COVER,
+            };
 
-		lv_grad_init_stops(& rect.bg_grad, grad_colors, grad_opa, NULL, ARRAY_SIZE(grad_colors));
-		lv_grad_vertical_init(& rect.bg_grad);
-		//lv_grad_conical_init(& rect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
+    		lv_grad_init_stops(& gradrect.bg_grad, grad_colors, grad_opa, NULL, ARRAY_SIZE(grad_colors));
+    		lv_grad_vertical_init(& gradrect.bg_grad);
+    		//lv_grad_conical_init(& gradrect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
 
-		// ставить высоту
-	   	lv_draw_rect(layer, & rect, & coords);
+    		// ставить высоту
+    	   	lv_draw_rect(layer, & gradrect, & coords);
+
+    	}
 
 		// lines test
         lv_draw_line_dsc_t dsc;
@@ -581,7 +608,7 @@ static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
 
-        lv_sscp2_draw(layer, & coords);
+        lv_sscp2_draw(layer, & coords, & sscp2->gradrect);
      }
 }
 

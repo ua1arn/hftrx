@@ -7427,12 +7427,20 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 }
 
 // Рисуем спектр примитивами LVGL
-void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
+void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords, lv_draw_rect_dsc_t * gradrect)
 {
 	const int32_t alldx = lv_area_get_width(coords);
 	const int32_t alldy = lv_area_get_height(coords);
 
     //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+	// сохранияем дянные для отображения
+	FLOAT_t powers [alldx];
+    int32_t x;
+	for (x = 0; x < alldx - 1; ++ x)
+	{
+		powers [x] = filter_spectrum(x);
+	}
+
     if (1)
     {
     	// отладка. закрасить зону отображения
@@ -7498,6 +7506,24 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
 
     }
 
+    if (glob_view_style == VIEW_COLOR)
+    {
+    	// Градиентное заполнение
+
+        int32_t x;
+    	for (x = 0; x < alldx - 1; ++ x)
+    	{
+    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
+    		int32_t y = alldy - 1 - val;
+    		lv_area_t gradcoords;
+    		gradcoords.x1 = coords->x1 + x;
+    		gradcoords.x2 = coords->x1 + x + 1;
+    		gradcoords.y1 = coords->y1 + y;
+    		gradcoords.y2 = coords->y2;
+	    	lv_draw_rect(layer, gradrect, & gradcoords);
+    	}
+   	}
+
     if (1)
     {
     	// линия спектра
@@ -7513,7 +7539,7 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
     	for (x = 0; x < alldx; ++ x)
     	{
     		// ломанная
-    		const int val = dsp_mag2y(filter_spectrum(x), alldy - 1, glob_topdb, glob_bottomdb);
+    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
     		int32_t y = alldy - 1 - val;
 	        lv_point_precise_set(& l.p1, coords->x1 + x, coords->y1 + y);
     		if (x)
