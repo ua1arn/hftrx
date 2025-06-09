@@ -1836,7 +1836,7 @@ static void spidf_spi_read_rxbuf_b32(volatile uint32_t * __restrict buf, int len
 	{
 		while (len4 --)
 		{
-			__UNALIGNED_UINT32_WRITE(buf ++, SPIHARD_PTR->SPI_RXD);
+			__UNALIGNED_UINT32_WRITE(buf ++, __REV(SPIHARD_PTR->SPI_RXD));
 		}
 
 	}
@@ -1855,7 +1855,7 @@ static void spidf_spi_write_txbuf_b32(volatile const uint32_t * __restrict buf, 
     {
 		while (len4 --)
 		{
-            SPIHARD_PTR->SPI_TXD = __UNALIGNED_UINT32_READ(* buf ++);
+            SPIHARD_PTR->SPI_TXD = __REV(__UNALIGNED_UINT32_READ(* buf ++));
         }
     }
     else
