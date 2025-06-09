@@ -5541,7 +5541,7 @@ static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
 static uint_fast8_t gblinkphase;
 
-uint_fast8_t amenuset(void)
+uint_fast8_t actpageix(void)
 {
 	if ((dimmflag || sleepflag || dimmmode))
 		return display_getpagesleep();
@@ -8675,7 +8675,7 @@ uif_encoder2_press(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	//display2_mode_subset(amenuset());
+	//display2_mode_subset(actpageix());
 	display2_needupdate();
 #else
 	enc2_menu.state = enc2state;
@@ -8702,7 +8702,7 @@ uif_encoder2_hold(void)
 	}
 	save_i8(RMT_ENC2STATE_BASE, enc2state);
 #if ! WITHTOUCHGUI
-	//display2_mode_subset(amenuset());
+	//display2_mode_subset(actpageix());
 	display2_needupdate();
 #else
 	if (enc2state == ENC2STATE_INITIALIZE)
@@ -13777,7 +13777,7 @@ display2_redrawbarstimed(
 
 		/* отрисовка элементов, общих для всех режимов отображения */
 		/* отрисовка элементов, специфических для данного режима отображения */
-		//display2_barmeters_subset(amenuset(), extra);
+		//display2_barmeters_subset(actpageix(), extra);
 		display2_needupdate();
 		// подтверждение отрисовки
 		display_refreshperformed_bars();
@@ -13813,7 +13813,7 @@ display2_redrawbarstimed(
 	#endif /* WITHVOLTLEVEL */
 		/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 
-		//display2_volts(amenuset(), extra);
+		//display2_volts(actpageix(), extra);
 		display2_needupdate();
 		display_refreshperformed_voltage();
 	}
@@ -16319,7 +16319,7 @@ void app_processing(
 		dctx.type = DCTX_MENU;
 		dctx.pv = mp;
 
-		display2_bgprocess(inmenu, amenuset(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		display2_bgprocess(inmenu, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 	}
 #if WITHDIRECTFREQENER
 	else if (editfreqmode)
@@ -16337,12 +16337,12 @@ void app_processing(
 		dctx.type = DCTX_FREQ;
 		dctx.pv = & ef;
 
-		display2_bgprocess(inmenu, amenuset(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 	}
 #endif
 	else
 	{
-		display2_bgprocess(inmenu, amenuset(), NULL);			/* выполнение шагов state machine отображения дисплея */
+		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
 	}
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
