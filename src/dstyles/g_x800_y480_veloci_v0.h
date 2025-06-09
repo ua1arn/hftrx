@@ -84,8 +84,8 @@ static const dzone_t dzones [] =
 
 	{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 
-	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_default, PGALL, },
-	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_default, PGALL, },
+	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_compat, PGALL, },
+	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_compat, PGALL, },
 
 	//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
@@ -97,8 +97,8 @@ static const dzone_t dzones [] =
 //	{	41, 0,	9,	4,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
 //	{	41,	4,	9,	4,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
 
-	{	31,	0,	9,	4,	display2_ENC3F_9,	& dzi_default, PGALL, },
-	{	41,	0,	9,	4,	display2_ENC4F_9,	& dzi_default, PGALL, },
+	{	31,	0,	9,	4,	display2_ENC3F_9,	& dzi_compat, PGALL, },
+	{	41,	0,	9,	4,	display2_ENC4F_9,	& dzi_compat, PGALL, },
 
 
 #if WITHBARS
@@ -117,18 +117,18 @@ static const dzone_t dzones [] =
 
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	46, 10,	3,	4,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
+	{	46, 10,	3,	4,	display2_agc3,		& dzi_agc, PGALL, },	// AGC mode
 
-	{	37, 15,	3,	4,	display2_nr3,		& dzi_default, PGALL, },	// NR : was: AGC
-	{	41, 15,	3,	4,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
-	{	45, 15,	5,	4,	display2_notch5,	& dzi_default, PGALL, },	// NOTCH on/off
+	{	37, 15,	3,	4,	display2_nr3,		& dzi_nr, PGALL, },	// NR : was: AGC
+	{	41, 15,	3,	4,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
+	{	45, 15,	5,	4,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
 
-	{	15, 20,	3,	4,	display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-	{	20,	20,	3,	4,	display2_vfomode3,	& dzi_default, PGALL, },	// SPL
+	{	15, 20,	3,	4,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+	{	20,	20,	3,	4,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
 	{	24,	20,	12,	4,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
 	{	37, 20,	3,	4,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 20,	3,	4,	display2_voxtune3,	& dzi_default, PGALL, },	// VOX
-	//{	45,	20,	4,	4,	display2_lockstate4, & dzi_default, PGALL, },	// LOCK
+	{	41, 20,	3,	4,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
+	//{	45,	20,	4,	4,	display2_lockstate4, & dzi_lockstate, PGALL, },	// LOCK
 
 	// размещены под S-метром (15 ячеек)
 	{	1, 	25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -138,32 +138,32 @@ static const dzone_t dzones [] =
 	{	19,	25,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
 	{	25, 25,	3,	4,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
-	{	33, 25,	3,	4,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
-	{	37, 25,	3,	4,	display2_spk3,		& dzi_default, PGALL, },	// отображение признака включения динамика
-	{	41, 25, 3,	4,	display2_bkin3,		& dzi_default, PGALL, },	// BREAK-IN
-	//{	45,	25,	5,	4,	display2_wpm5, 		& dzi_default, PGALL, },	// 22WPM
-	{	45,	25,	4,	4,	display2_lockstate4, & dzi_default, PGALL, },	// LOCK
+	{	33, 25,	3,	4,	display2_rec3,		& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
+	{	37, 25,	3,	4,	display2_spk3,		& dzi_spk, PGALL, },	// отображение признака включения динамика
+	{	41, 25, 3,	4,	display2_bkin3,		& dzi_bkin, PGALL, },	// BREAK-IN
+	//{	45,	25,	5,	4,	display2_wpm5, 		& dzi_wpm, PGALL, },	// 22WPM
+	{	45,	25,	4,	4,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	//{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 #if 1
 	// Middle bar
-	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_default, PG0, },
-	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_default, PG0, },
+	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_compat, PG0, },
+	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
 #endif
 
 #if WITHSPECTRUMWF
-	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-	{	0,	DLES,	BDTH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
+	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_gcombo,	& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 #endif /* WITHSPECTRUMWF */
 
 	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	9,	4,	display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-	{	23, DLEB,	0,	4,	display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
-	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-	{	32, DLEB,	7,	4,	display2_classa7,		& dzi_default, PGALL, },	// Class-A power amplifier
+	{	23, DLEB,	0,	4,	display2_thermo4,	& dzi_compat, PGALL, },	// thermo sensor
+	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
+	{	32, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PGALL, },	// Class-A power amplifier
 	//{	28, DLEB,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
@@ -185,12 +185,12 @@ static const dzone_t dzones [] =
 
 	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 
-#if WITHHDMITVHW && 1
+#if WITHHDMITVHW && 0
 	// Второй дисплей с отличающимся дизайном
 	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
 	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_default,	PGALL, },	// SSB/CW/AM/FM/...
+	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 	{	0,	20,	BDTH_ALLRX,	DLEB - 20,	display2_gcombo,	& dzi_default, PGALL, },// подготовка изображения спектра
 
