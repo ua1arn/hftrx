@@ -5975,7 +5975,7 @@ static const encfnitem_t enclabelsENC2FN [] =
 {
 		{
 			0,
-			"ENC3F"
+			"ENC2F"
 		},
 };
 
@@ -6009,7 +6009,7 @@ void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, int len)
 /* получить надпись для отображения состояние ENC2F */
 void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, int len)
 {
-	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC3FN [enc3f_sel].label);
+	local_snprintf_P(buff, len, "%*.*s", len - 1, len - 1, enclabelsENC2FN [enc2f_sel].label);
 }
 
 /* получить надпись для отображения состояние ENC3F */

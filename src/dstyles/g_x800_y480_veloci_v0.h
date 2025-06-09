@@ -82,8 +82,6 @@ static const dzone_t dzones [] =
 {
 	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-	{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-
 	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_compat, PGALL, },
 	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_compat, PGALL, },
 
