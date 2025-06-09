@@ -35,6 +35,14 @@ void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
     if(v) lv_obj_add_flag(obj, f);
     else lv_obj_remove_flag(obj, f);
 }
+
+void lv_style_set_margin_all(lv_style_t * style, int32_t value)
+{
+    lv_style_set_margin_left(style, value);
+    lv_style_set_margin_right(style, value);
+    lv_style_set_margin_top(style, value);
+    lv_style_set_margin_bottom(style, value);
+}
 #endif /* LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3 */
 
 /* struct dzone subset field values */
@@ -8519,10 +8527,9 @@ void display2_fillbg(const gxdrawb_t * db)
 
 void display2_latch(void)
 {
-#if LINUX_SUBSYSTEM && WITHLVGL
-#else
+#if LINUX_SUBSYSTEM
 	display_walktrough(NULL, REDRSUBSET_LATCH, NULL);// обновление данных всех элементов за раз. draw buffer не требуется
-#endif
+#endif /* LINUX_SUBSYSTEM */
 }
 
 // последний номер варианта отображения (menuset)
