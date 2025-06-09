@@ -342,10 +342,6 @@ static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
     lv_smtr2_t * const cp = (lv_smtr2_t *) obj;
 
-#if WITHLVGL && WITHBARS && 0
-	lv_img_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHBARS */
-
     LV_TRACE_OBJ_CREATE("finished");
 }
 
@@ -552,66 +548,6 @@ static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_sscp2_draw(layer, & coords);
      }
 }
-
-typedef struct
-{
-	lv_image_t img;
-	//char text [32];
-} lv_wtrf_t;
-
-static const lv_obj_class_t lv_wtrf_class  = {
-    .constructor_cb = lv_wtrf_constructor,
-//    .destructor_cb = lv_wtrf_destructor,
-    .event_cb = lv_wtrf_event,
-    .base_class = & lv_image_class,
-    .instance_size = sizeof (lv_wtrf_t),
-    .name = "hmr_wtrf",
-};
-
-lv_obj_t * lv_wtrf_create(lv_obj_t * parent)
-{
-    LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF, parent);
-    lv_obj_class_init_obj(obj);
-
-	return obj;
-}
-
-static void lv_wtrf_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
-{
-    LV_UNUSED(class_p);
-    LV_TRACE_OBJ_CREATE("begin");
-
-    lv_wtrf_t * const cp = (lv_wtrf_t *) obj;
-
-#if WITHLVGL && WITHSPECTRUMWF
-	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHSPECTRUMWF */
-
-	LV_TRACE_OBJ_CREATE("finished");
-}
-
-// custom draw widget
-static void lv_wtrf_event(const lv_obj_class_t * class_p, lv_event_t * e) {
-    LV_UNUSED(class_p);
-
-    lv_res_t res = lv_obj_event_base(MY_CLASS_WTRF, e);	// обработчик родительского клвсса
-
-    if (res != LV_RES_OK) return;
-
-    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_WTRF);
-
-    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
-    {
-		lv_layer_t * const layer = lv_event_get_layer(e);
-		lv_wtrf_t * const smtr = (lv_wtrf_t *) obj;
-
-		wfl_proccess();	// обновить в ранее назначенном буфере изображение
-      }
-}
-
 
 #endif /* WITHLVGL */
 

@@ -17,13 +17,6 @@ extern const lv_font_t eurostyle_56w;
 extern const lv_font_t Rubik_Medium_16_w2;
 extern const lv_font_t Rubik_Medium_18_w2;
 
-lv_draw_buf_t * smtr_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением s-метра
-void smtr_proccess(void);	/* Обновить содержимое lv_draw_buf_t - s-meter */
-
-
-lv_draw_buf_t * wfl_get_draw_buff(void);	// подготовка lv_draw_buf_t с изображением спектра/водопада
-void wfl_proccess(void);	/* построить растр с водопадом и спектром */
-
 lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
 lv_obj_t * lv_wtrf2_create(lv_obj_t * parent);	// waterfall (own draw)
