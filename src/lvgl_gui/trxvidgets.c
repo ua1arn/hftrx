@@ -25,22 +25,17 @@
 /*********************
  *      DEFINES
  *********************/
-#define MY_CLASS_SMTR (& lv_smtr_class)
-#define MY_CLASS_SMTR2 (& lv_smtr2_class)
-#define MY_CLASS_TXRX (& lv_txrx_class)
-#define MY_CLASS_WTRF2 (& lv_wtrf2_class)
-#define MY_CLASS_SSCP2 (& lv_sscp2_class)
-#define MY_CLASS_WTRF (& lv_wtrf_class)
-#define MY_CLASS_INFO (& lv_info_class)
-#define MY_CLASS_COMPAT (& lv_compat_class)
+#define MY_CLASS_SMTR2 (& lv_smtr2_class)	// собственный renderer
+#define MY_CLASS_TXRX (& lv_txrx_class)		// собственный renderer
+#define MY_CLASS_WTRF2 (& lv_wtrf2_class)	// собственный renderer
+#define MY_CLASS_SSCP2 (& lv_sscp2_class)	// собственный renderer
+#define MY_CLASS_WTRF (& lv_wtrf_class)		// использует старый renderer
+#define MY_CLASS_INFO (& lv_info_class)		// собственный renderer - нформационная панель
+#define MY_CLASS_COMPAT (& lv_compat_class)	// старый renderer без модификаций
 
 /**********************
  *  STATIC PROTOTYPES
  **********************/
- 
-static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
@@ -73,12 +68,6 @@ static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e);
 /**********************
  *      TYPEDEFS
  **********************/
-
-typedef struct
-{
-	lv_image_t img;
-	//
-} lv_smtr_t;
 
 typedef struct
 {
@@ -123,15 +112,6 @@ typedef struct
 /**********************
  *  STATIC VARIABLES
  **********************/
-
-static const lv_obj_class_t lv_smtr_class  = {
-    .constructor_cb = lv_smtr_constructor,
-//    .destructor_cb = lv_smtr_destructor,
-    .event_cb = lv_smtr_event,
-    .base_class = & lv_image_class,
-    .instance_size = sizeof (lv_smtr_t),
-    .name = "hmr_smtr",
-};
 
 static const lv_obj_class_t lv_smtr2_class  = {
     .constructor_cb = lv_smtr2_constructor,
@@ -190,19 +170,6 @@ static const lv_obj_class_t lv_compat_class  = {
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-
-lv_obj_t * lv_smtr_create(lv_obj_t * parent)
-{
-    LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SMTR, parent);
-    lv_obj_class_init_obj(obj);
-
-#if WITHLVGL && WITHBARS
-	lv_image_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHBARS */
-
-	return obj;
-}
 
 lv_obj_t * lv_smtr2_create(lv_obj_t * parent)
 {
@@ -382,20 +349,6 @@ static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_smtr_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
-{
-    LV_UNUSED(class_p);
-    LV_TRACE_OBJ_CREATE("begin");
-
-    lv_smtr_t * const cp = (lv_smtr_t *) obj;
-
-#if WITHLVGL && WITHBARS
-	lv_img_set_src(obj, smtr_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-#endif /* WITHLVGL && WITHBARS */
-
-    LV_TRACE_OBJ_CREATE("finished");
-}
-
 //static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 //{
 //    LV_UNUSED(class_p);
@@ -551,25 +504,6 @@ static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         dzi_compat_draw_callback(layer, cp->dzpv, NULL);
      }
 }
-
-static void lv_smtr_event(const lv_obj_class_t * class_p, lv_event_t * e) {
-    LV_UNUSED(class_p);
-
-    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR);
-
-    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
-    {
-		lv_smtr_t * const smtr = (lv_smtr_t *) obj;
-
-		smtr_proccess();
-    }
-
-    lv_res_t res = lv_obj_event_base(MY_CLASS_SMTR, e);	// обработчик родительского клвсса
-    if (res != LV_RES_OK) return;
-}
-
 
 // custom draw widget
 static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {

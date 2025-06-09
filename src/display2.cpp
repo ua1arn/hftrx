@@ -550,9 +550,8 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 	return lbl;
 }
 
-static lv_obj_t * dzi_create_smeter(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+static lv_obj_t * dzi_create_smtr2(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	//lv_obj_t * const lbl = lv_smtr_create(parent);
 	lv_obj_t * const lbl = lv_smtr2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
@@ -674,9 +673,9 @@ static const dzitem_t dzi_txrx =
 	.id = "txrx"
 };
 
-static const dzitem_t dzi_smeter =
+static const dzitem_t dzi_smtr2 =
 {
-	.lvelementcreate = LVCREATE(dzi_create_smeter),
+	.lvelementcreate = LVCREATE(dzi_create_smtr2),
 	.id = "smeter"
 };
 
