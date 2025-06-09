@@ -18,7 +18,7 @@
 #define LV_CONF_H
 
 /* If you need to include anything here, do it inside the `__ASSEMBLY__` guard */
-#if 1 //defined(__ASSEMBLY__)
+#if ! defined(__ASSEMBLY__)
 	#include "hardware.h"
 	#include "src/display/display.h"
 #endif
