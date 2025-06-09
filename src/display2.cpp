@@ -7348,7 +7348,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
         rect.bg_color = lv_palette_main(LV_PALETTE_RED);
-        rect.bg_image_opa = LV_OPA_COVER;
+        rect.bg_opa = LV_OPA_COVER;
     	lv_draw_rect(layer, & rect, coords);
     }
 
@@ -7382,6 +7382,22 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_label(layer, & label, coords);
 
     }
+
+    if (hamradio_get_bringtuneA())
+    {
+    	// отладка. закрасить зону полосы пропускания
+    	lv_area_t bwcoords;
+        lv_draw_rect_dsc_t rect;
+        lv_draw_rect_dsc_init(& rect);
+        bwcoords.y1 = coords->y1;
+        bwcoords.y2 = coords->y2;
+        bwcoords.x1 = (coords->x1 + coords->x2) / 2 - 50;
+        bwcoords.x2 = (coords->x1 + coords->x2) / 2 + 50;
+        rect.bg_color = lv_palette_main(LV_PALETTE_GREEN);
+        rect.bg_opa = LV_OPA_20;
+    	lv_draw_rect(layer, & rect, & bwcoords);
+    }
+
 
     if (1)
     {
@@ -7427,8 +7443,22 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
         rect.bg_color = lv_palette_main(LV_PALETTE_GREY);
-        rect.bg_image_opa = LV_OPA_COVER;
+        rect.bg_opa = LV_OPA_COVER;
     	lv_draw_rect(layer, & rect, coords);
+    }
+    if (1)
+    {
+    	// отладка. закрасить зону полосы пропускания
+    	lv_area_t bwcoords;
+        lv_draw_rect_dsc_t rect;
+        lv_draw_rect_dsc_init(& rect);
+        bwcoords.y1 = coords->y1;
+        bwcoords.y2 = coords->y2;
+        bwcoords.x1 = (coords->x1 + coords->x2) / 2 - 50;
+        bwcoords.x2 = (coords->x1 + coords->x2) / 2 + 50;
+        rect.bg_color = lv_palette_main(LV_PALETTE_GREEN);
+        rect.bg_opa = LV_OPA_COVER;
+    	lv_draw_rect(layer, & rect, & bwcoords);
     }
     if (1)
     {
