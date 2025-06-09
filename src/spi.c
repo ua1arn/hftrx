@@ -6218,7 +6218,7 @@ int testchipDATAFLASH(void)
 		}
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
-		//const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
+		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
 		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
 		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
 		const uint_fast32_t dword4 = USBD_peek_u32(buff32 + 4 * 3);
@@ -6227,7 +6227,7 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword7 = USBD_peek_u32(buff32 + 4 * 6);
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
-		//printhex(ptp, buff32, len4 * 4);
+		printhex(ptp, buff32, len4 * 4);
 
 		///////////////////////////////////
 		/* Print density information. */
@@ -6272,12 +6272,23 @@ int testchipDATAFLASH(void)
 			sectorSize = UINT32_C(1) << (sctRESULT & 0xFF);
 			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%u\n", (unsigned) sectorEraseCmd, (unsigned) sectorSize);
 		}
+		// 6.4 JEDEC Flash Parameter Tables
+		// Table 1 — JEDEC Flash Parameters: 1st DWORD
+		// Number of bytes used in addressing flash array read, write and erase:
+		//	00: 3-Byte only addressing
+		//	01: 3- or 4-Byte addressing (e.g. defaults to 3-Byte mode; enters 4-Byte mode on command)
+		//	10: 4-Byte only addressing
+		const unsigned abc = ((dword1 >> 17) & 0x03);
+		//PRINTF("addr bits in commands: %02X\n", abc);
+
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08X, Sector Type 1 Opcode=%02X\n", 1u << ((dword8 >> 0) & 0xFF), (unsigned) (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
-		if (chipSize > UINT32_C(16) * 1024 * 1024)
+		//modeDATAFLASH(dwordx >> 0, "(1-1-1) Fast Read", SPDFIO_1WIRE);
+
+		if ((abc == 1 || (abc == 2)) && chipSize > UINT32_C(16) * 1024 * 1024)
 		{
 			// Параметры для W25Q256JVEIQ
 			readxb [SPDFIO_4WIRE] = 0xEC;	// opcode
