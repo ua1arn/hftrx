@@ -1809,7 +1809,7 @@ static void spidf_spi_write_txbuf_b8(const uint8_t * __restrict buf, int len)
 
 }
 
-static void spidf_spi_write_txbuf_b32(const uint32_t * __restrict buf, int len4)
+static void spidf_spi_write_txbuf_b32(volatile const uint32_t * __restrict buf, int len4)
 {
     if (buf != NULL)
     {
@@ -1847,7 +1847,7 @@ static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
 	}
 }
 
-static void spidf_spi_read_rxbuf_b32(uint32_t * __restrict buf, int len4)
+static void spidf_spi_read_rxbuf_b32(volatile uint32_t * __restrict buf, int len4)
 {
 	if (buf != NULL)
 	{
