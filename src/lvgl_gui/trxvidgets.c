@@ -97,7 +97,7 @@ typedef struct
 {
 	lv_label_t label;
 	char infotext [32];
-	int (* infocb)(char * b, size_t len);
+	int (* infocb)(char * b, size_t len, int * selector);
 } lv_info_t;
 
 typedef struct
@@ -240,7 +240,7 @@ lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
     return obj;
 }
 
-lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len))
+lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len, int * selector))
 {
     LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_INFO, parent);
@@ -434,7 +434,8 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (LV_EVENT_DRAW_MAIN_BEGIN == code)
     {
     	lv_info_t   * const cp = (lv_info_t *) obj;
-        int len = (* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext) - 1);
+    	int seelctor = 0;	// вариант стиля отображения если надо менять в зависимости от ситуации
+        int len = (* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext) - 1, & seelctor);
         if (len > 0)
         	cp->infotext [len] = '\0';
         else
