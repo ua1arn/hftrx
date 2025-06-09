@@ -4295,8 +4295,8 @@ static void releaseDATAFLASH(IRQL_t setIRQL)
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 //enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
-static uint8_t readxb [SPDFIO_numwires] = { 0x0b, 0x00, 0x00 };
-static uint8_t dmyb [SPDFIO_numwires];
+static uint8_t readxb [SPDFIO_numwires] = { 0x03, 0x00, 0x00 };
+static uint8_t dmyb [SPDFIO_numwires] = { 0, 0, 0 };
 static uint8_t gnab = 3;
 
 #if WIHSPIDFSW || WIHSPIDFOVERSPI
@@ -5754,6 +5754,13 @@ static IRQL_t spidf_iostart(
 
 #endif /* WIHSPIDFHW */
 
+/* Enter 4-Byte Address Mode  - W25Q256JVEIQ */
+static void enter32bitaddrDATAFLASH(void)
+{
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0xB7, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/* 0xB7: Enter 4-Byte Address Mode */
+	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
+}
+
 /* снять защиту записи для следующей команды */
 static void writeEnableDATAFLASH(void)
 {
@@ -6290,6 +6297,7 @@ int testchipDATAFLASH(void)
 
 		if ((abc == 1 || (abc == 2)) && chipSize > UINT32_C(16) * 1024 * 1024)
 		{
+			//enter32bitaddrDATAFLASH(); команды ранее работавшие с 24 бит адресом, начинают с 32 (количество dummy bytes корерктируется)
 			// Параметры для W25Q256JVEIQ
 			readxb [SPDFIO_4WIRE] = 0xEC;	// opcode
 			dmyb [SPDFIO_4WIRE] = 3;	// dummy bytes
