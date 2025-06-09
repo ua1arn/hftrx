@@ -95,6 +95,7 @@ static void nau8822_setreg_16(
 }
 
 /* Запись двух регистров на смежных адресах */
+// need investigations (for spi2 && I2C)
 static void nau8822_setreg_16_2(
 	uint_fast8_t regv,			/* 7 bit register address */
 	uint_fast16_t datav1,			/* 9 bit value */
@@ -236,6 +237,9 @@ void nau8822_setreg2(
 #if NAU8822_USE_SPI4_ACTUAL
 	nau8822_setreg_24_2(regv, datav1, datav2);
 #else /* NAU8822_USE_SPI4_ACTUAL */
+	nau8822_setreg_16(regv + 0, datav1);
+	nau8822_setreg_16(regv + 1, datav2);
+	return;
 	nau8822_setreg_16_2(regv, datav1, datav2);
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 }
