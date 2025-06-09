@@ -7321,28 +7321,15 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
 // Рисуем водопад примитивами LVGL
 void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 {
-//    lv_draw_line_dsc_t linedsc;
-//    lv_draw_line_dsc_init(& linedsc);
-
+    //PRINTF("lv_wtrf2_draw: alldx/alldy=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+	const int32_t alldx = lv_area_get_width(coords);
+	const int32_t alldy = lv_area_get_height(coords);
+	const uint8_t pathi = 0;
     lv_area_t a1;
     lv_area_t a2;
 
-	const int32_t w = lv_area_get_width(coords);
-	const int32_t h = lv_area_get_height(coords);
-	const int32_t lbw = w / 2 + 15;
-	const int32_t rbw = w / 2 + 45;
-
-//        uint_fast32_t middleh = h / 2;
-//        lv_area_set(& upperarea, 0, 0, w - 1, middleh);
-//        lv_area_set(& lowerarea, 0, middleh, w - 1, h - 1);
-
-//        lv_layer_t upperpart;
-//        lv_layer_t lowerrpart;
-//        lv_draw_layer_init(& upperpart, layer, display_get_lvformat(), & upperarea);
-//        lv_draw_layer_init(& lowerrpart, layer, display_get_lvformat(), & lowerarea);
-
-
-    //PRINTF("lv_wtrf2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+	const int32_t lbw = alldx / 2 + 15;
+	const int32_t rbw = alldx / 2 + 45;
 
     if (0)
     {
@@ -7363,8 +7350,8 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_image_dsc_t fd1;
         lv_draw_image_dsc_t fd2;
 
-        wtrf2_fillinfo(& fd1, & b1, & a1, w, h, 0);
-        wtrf2_fillinfo(& fd2, & b2, & a2, w, h, 1);
+        wtrf2_fillinfo(& fd1, & b1, & a1, alldx, alldy, 0);
+        wtrf2_fillinfo(& fd2, & b2, & a2, alldx, alldy, 1);
 
         lv_area_move(& a1, coords->x1, coords->y1);
         lv_area_move(& a2, coords->x1, coords->y1);
@@ -7373,7 +7360,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_image(layer, & fd2, & a2);
     }
 
-    if (1)
+    if (0)
     {
     	// надписи
 	    lv_draw_label_dsc_t label;
@@ -7382,24 +7369,44 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         label.align = LV_TEXT_ALIGN_CENTER;
         label.text = "Test waterfall";
         lv_draw_label(layer, & label, coords);
-
     }
 
     if (hamradio_get_bringtuneA())
     {
     	// отладка. закрасить зону полосы пропускания
-    	lv_area_t bwcoords;
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
-        bwcoords.y1 = coords->y1;
-        bwcoords.y2 = coords->y2;
-        bwcoords.x1 = coords->x1 + lbw;
-        bwcoords.x2 = coords->x1 + rbw;
-        rect.bg_color = lv_palette_main(LV_PALETTE_GREEN);
-        rect.bg_opa = LV_OPA_20;
-    	lv_draw_rect(layer, & rect, & bwcoords);
-    }
+		uint_fast8_t splitflag;
+		uint_fast8_t pathi;
+		hamradio_get_vfomode3_value(& splitflag);
+		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+		{
+			int_fast32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+			int_fast32_t xright = latched_dm.xright [pathi];	// правый край шторки
 
+			if (xleft != UINT16_MAX && xright != UINT16_MAX)
+			{
+		    	lv_area_t bwcoords;
+
+				if (xleft > xright)
+					xleft = 0;
+				if (xright == xleft)
+					xright = xleft + 1;
+				if (xright >= alldx)
+					xright = alldx - 1;
+
+				const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+		        bwcoords.y1 = coords->y1;
+		        bwcoords.y2 = coords->y2;
+		        bwcoords.x1 = coords->x1 + xleft;
+		        bwcoords.x2 = coords->x1 + xrightv;
+		        rect.bg_color = display_lvlcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2);
+		        rect.bg_opa = LV_OPA_50;
+		    	lv_draw_rect(layer, & rect, & bwcoords);
+			}
+		}
+    }
 
     if (1)
     {
@@ -7413,36 +7420,17 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
         // Центральная частота
-        lv_point_precise_set(& l.p1, coords->x1 + w / 2, coords->y1);
-        lv_point_precise_set(& l.p2, coords->x1 + w / 2, coords->y2);
+        lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
         lv_draw_line(layer, & l);
-
     }
-
-//
-//        linedsc.width = 1;
-//        linedsc.round_end = 0;
-//        linedsc.round_start = 0;
-//        linedsc.color = lv_palette_main(LV_PALETTE_RED);
-//
-//        PRINTF("lv_area_get_height=%d\n", lv_area_get_height(& coords));
-//        int_fast32_t y;
-//        for (y = 0; y < lv_area_get_height(& coords); y += 3)
-//        {
-//            lv_point_precise_set(& linedsc.p1, 0, y);
-//            lv_point_precise_set(& linedsc.p2, lv_area_get_width(& coords) - 1, y);
-//            lv_draw_line(layer, & linedsc);
-//        }
 }
 
 // Рисуем спектр примитивами LVGL
 void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
 {
-	const int32_t w = lv_area_get_width(coords);
-	const int32_t h = lv_area_get_height(coords);
-	const int32_t lbw = w / 2 + 15;
-	const int32_t rbw = w / 2 + 45;
-
+	const int32_t alldx = lv_area_get_width(coords);
+	const int32_t alldy = lv_area_get_height(coords);
 
     //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
     if (1)
@@ -7454,21 +7442,46 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         rect.bg_opa = LV_OPA_COVER;
     	lv_draw_rect(layer, & rect, coords);
     }
+
     if (1)
     {
-    	// отладка. закрасить зону полосы пропускания
-    	lv_area_t bwcoords;
-        lv_draw_rect_dsc_t rect;
-        lv_draw_rect_dsc_init(& rect);
-        bwcoords.y1 = coords->y1;
-        bwcoords.y2 = coords->y2;
-        bwcoords.x1 = coords->x1 + lbw;
-        bwcoords.x2 = coords->x1 + rbw;
-        rect.bg_color = lv_palette_main(LV_PALETTE_GREEN);
-        rect.bg_opa = LV_OPA_COVER;
-    	lv_draw_rect(layer, & rect, & bwcoords);
+		// Изображение "шторки" на спектре.
+		uint_fast8_t splitflag;
+		uint_fast8_t pathi;
+		hamradio_get_vfomode3_value(& splitflag);
+		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+		{
+			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+			int32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+			int32_t xright = latched_dm.xright [pathi];	// правый край шторки
+			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+				continue;
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= alldx)
+				xright = alldx - 1;
+
+			const int32_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+			// Изображение "шторки" под спектром.
+			if (xleft < xrightv)
+			{
+		    	lv_area_t bwcoords;
+		        lv_draw_rect_dsc_t rect;
+		        lv_draw_rect_dsc_init(& rect);
+		        bwcoords.y1 = coords->y1;
+		        bwcoords.y2 = coords->y2;
+		        bwcoords.x1 = coords->x1 + xleft;
+		        bwcoords.x2 = coords->x1 + xright;
+		        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
+		        rect.bg_opa = LV_OPA_COVER;
+		    	lv_draw_rect(layer, & rect, & bwcoords);
+			}
+		}
     }
-    if (0)
+
+    if (1)
     {
     	// линия центральной частоты
         lv_draw_line_dsc_t l;
@@ -7479,11 +7492,12 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         l.round_start = 0;
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
-        lv_point_precise_set(& l.p1, coords->x1 + h / 2, coords->y1);
-        lv_point_precise_set(& l.p2, coords->x1 + h / 2, coords->y2);
+        lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
         lv_draw_line(layer, & l);
 
     }
+
     if (1)
     {
     	// линия спектра
@@ -7496,11 +7510,11 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
         int32_t x;
-    	for (x = 0; x < w; ++ x)
+    	for (x = 0; x < alldx; ++ x)
     	{
     		// ломанная
-    		const int val = dsp_mag2y(filter_spectrum(x), h - 1, glob_topdb, glob_bottomdb);
-    		int32_t y = h - 1 - val;
+    		const int val = dsp_mag2y(filter_spectrum(x), alldy - 1, glob_topdb, glob_bottomdb);
+    		int32_t y = alldy - 1 - val;
 	        lv_point_precise_set(& l.p1, coords->x1 + x, coords->y1 + y);
     		if (x)
     		{
@@ -7509,6 +7523,7 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
     		l.p2 = l.p1;
     	}
     }
+
     if (1)
     {
     	// надписи
