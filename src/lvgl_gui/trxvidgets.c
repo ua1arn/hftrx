@@ -326,20 +326,15 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	{
         // градиент
         lv_draw_rect_dsc_init(& sscp2->gradrect);
+        // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
+        static const lv_color_t grad_colors [] =
+        {
+                LV_COLOR_MAKE(0xff, 0x00, 0x00),
+                LV_COLOR_MAKE(0x00, 0xff, 0x00),
+                LV_COLOR_MAKE(0x00, 0x00, 0x7f),
+            };
 
-        static const lv_color_t grad_colors [] = {
-            LV_COLOR_MAKE(0xff, 0x00, 0x00),
-            //LV_COLOR_MAKE(0x00, 0xff, 0x00),
-            LV_COLOR_MAKE(0x00, 0x00, 0xff),
-        };
-
-        static const lv_opa_t grad_opa [ARRAY_SIZE(grad_colors)] = {
-            LV_OPA_COVER,
-			//LV_OPA_COVER,
-			LV_OPA_COVER,
-        };
-
-		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, grad_opa, NULL, ARRAY_SIZE(grad_colors));
+		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
 		lv_grad_vertical_init(& sscp2->gradrect.bg_grad);
 		//lv_grad_conical_init(& gradrect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
 
@@ -491,19 +486,14 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
             lv_draw_rect_dsc_init(& gradrect);
 
             gradrect = rect;
-            static const lv_color_t grad_colors [] = {
+            static const lv_color_t grad_colors [] =
+            {
                 LV_COLOR_MAKE(0xff, 0x00, 0x00),
-                //LV_COLOR_MAKE(0x00, 0xff, 0x00),
-                LV_COLOR_MAKE(0x00, 0x00, 0xff),
+                LV_COLOR_MAKE(0x00, 0xff, 0x00),
+                LV_COLOR_MAKE(0x00, 0x00, 0x7f),
             };
 
-            static const lv_opa_t grad_opa [ARRAY_SIZE(grad_colors)] = {
-                LV_OPA_COVER,
-    			//LV_OPA_COVER,
-    			LV_OPA_COVER,
-            };
-
-    		lv_grad_init_stops(& gradrect.bg_grad, grad_colors, grad_opa, NULL, ARRAY_SIZE(grad_colors));
+    		lv_grad_init_stops(& gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
     		lv_grad_vertical_init(& gradrect.bg_grad);
     		//lv_grad_conical_init(& gradrect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
 
