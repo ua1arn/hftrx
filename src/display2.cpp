@@ -7327,8 +7327,10 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
     lv_area_t a1;
     lv_area_t a2;
 
-    uint_fast32_t w = lv_area_get_width(coords);
-    uint_fast32_t h = lv_area_get_height(coords);
+	const int32_t w = lv_area_get_width(coords);
+	const int32_t h = lv_area_get_height(coords);
+	const int32_t lbw = w / 2 + 15;
+	const int32_t rbw = w / 2 + 45;
 
 //        uint_fast32_t middleh = h / 2;
 //        lv_area_set(& upperarea, 0, 0, w - 1, middleh);
@@ -7391,8 +7393,8 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_rect_dsc_init(& rect);
         bwcoords.y1 = coords->y1;
         bwcoords.y2 = coords->y2;
-        bwcoords.x1 = (coords->x1 + coords->x2) / 2 - 50;
-        bwcoords.x2 = (coords->x1 + coords->x2) / 2 + 50;
+        bwcoords.x1 = coords->x1 + lbw;
+        bwcoords.x2 = coords->x1 + rbw;
         rect.bg_color = lv_palette_main(LV_PALETTE_GREEN);
         rect.bg_opa = LV_OPA_20;
     	lv_draw_rect(layer, & rect, & bwcoords);
@@ -7436,13 +7438,19 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 // Рисуем спектр примитивами LVGL
 void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
 {
+	const int32_t w = lv_area_get_width(coords);
+	const int32_t h = lv_area_get_height(coords);
+	const int32_t lbw = w / 2 + 15;
+	const int32_t rbw = w / 2 + 45;
+
+
     //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
     if (1)
     {
     	// отладка. закрасить зону отображения
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
-        rect.bg_color = lv_palette_main(LV_PALETTE_GREY);
+        rect.bg_color = display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
         rect.bg_opa = LV_OPA_COVER;
     	lv_draw_rect(layer, & rect, coords);
     }
@@ -7454,26 +7462,15 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_rect_dsc_init(& rect);
         bwcoords.y1 = coords->y1;
         bwcoords.y2 = coords->y2;
-        bwcoords.x1 = (coords->x1 + coords->x2) / 2 - 50;
-        bwcoords.x2 = (coords->x1 + coords->x2) / 2 + 50;
+        bwcoords.x1 = coords->x1 + lbw;
+        bwcoords.x2 = coords->x1 + rbw;
         rect.bg_color = lv_palette_main(LV_PALETTE_GREEN);
         rect.bg_opa = LV_OPA_COVER;
     	lv_draw_rect(layer, & rect, & bwcoords);
     }
-    if (1)
+    if (0)
     {
-    	// надписи
-	    lv_draw_label_dsc_t label;
-	    lv_draw_label_dsc_init(& label);
-        label.color = lv_palette_main(LV_PALETTE_INDIGO);
-        label.align = LV_TEXT_ALIGN_CENTER;
-        label.text = "Test scope";
-        lv_draw_label(layer, & label, coords);
-
-    }
-    if (1)
-    {
-    	// линии
+    	// линия центральной частоты
         lv_draw_line_dsc_t l;
         lv_draw_line_dsc_init(& l);
 
@@ -7482,9 +7479,45 @@ void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords)
         l.round_start = 0;
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
-        lv_point_precise_set(& l.p1, coords->x1, coords->y1);
-        lv_point_precise_set(& l.p2, coords->x2, coords->y2);
+        lv_point_precise_set(& l.p1, coords->x1 + h / 2, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x1 + h / 2, coords->y2);
         lv_draw_line(layer, & l);
+
+    }
+    if (1)
+    {
+    	// линия спектра
+        lv_draw_line_dsc_t l;
+        lv_draw_line_dsc_init(& l);
+
+        l.width = 1;
+        l.round_end = 0;
+        l.round_start = 0;
+        l.color = lv_palette_main(LV_PALETTE_YELLOW);
+
+        int32_t x;
+    	for (x = 0; x < w; ++ x)
+    	{
+    		// ломанная
+    		const int val = dsp_mag2y(filter_spectrum(x), h - 1, glob_topdb, glob_bottomdb);
+    		int32_t y = h - 1 - val;
+	        lv_point_precise_set(& l.p1, coords->x1 + x, coords->y1 + y);
+    		if (x)
+    		{
+    	        lv_draw_line(layer, & l);
+    		}
+    		l.p2 = l.p1;
+    	}
+    }
+    if (1)
+    {
+    	// надписи
+	    lv_draw_label_dsc_t label;
+	    lv_draw_label_dsc_init(& label);
+        label.color = lv_palette_main(LV_PALETTE_YELLOW);
+        label.align = LV_TEXT_ALIGN_CENTER;
+        label.text = "Test scope";
+        lv_draw_label(layer, & label, coords);
 
     }
 }
