@@ -3540,6 +3540,7 @@ int infocb_rxbwval(char * b, size_t len);
 int infocb_voltlevel(char * b, size_t len);
 int infocb_datetime12(char * b, size_t len);
 int infocb_currlevel(char * b, size_t len);
+int infocb_thermo(char * b, size_t len);
 int infocb_siglevel(char * b, size_t len);
 int infocb_attenuator(char * b, size_t len);
 int infocb_bkin(char * b, size_t len);

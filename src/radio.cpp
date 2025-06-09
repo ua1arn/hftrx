@@ -22148,3 +22148,47 @@ int infocb_siglevel(char * b, size_t len)
 	return 0;
 #endif
 }
+
+int infocb_currlevel(char * b, size_t len)
+{
+#if WITHCURRLEVEL || WITHCURRLEVEL2
+	int_fast16_t drainx = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
+
+	const int draina = drainx / 100;
+	const int drains01a = drainx > 0 ? (drainx % 100) : (- drainx % 100);
+	return local_snprintf_P(b, len, "%d.%dA", draina, drains01a);
+#else
+	return 0;
+#endif
+}
+
+int infocb_thermo(char * b, size_t len)
+{
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
+
+	// 50+ - красный
+	// 30+ - желтый
+	// ниже 30 зеленый
+	if (tempv > 999)
+		tempv = 999; //- tempv;
+
+	if (tempv < 0)
+	{
+		tempv = 0; //- tempv;
+		//colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
+	}
+	else if (tempv >= 500)
+		;//colmain_setcolors(COLORPIP_RED, display2_getbgcolor());
+	else if (tempv >= 300)
+		;//colmain_setcolors(COLORPIP_YELLOW, display2_getbgcolor());
+	else
+		;//colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
+
+	const int thermoa = tempv / 10;
+	const int thermos01a = tempv > 0 ? (tempv % 10) : (- tempv % 10);
+	return local_snprintf_P(b, len, "%d.%d", thermoa, thermos01a);
+#else
+	return 0;
+#endif
+}

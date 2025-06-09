@@ -366,20 +366,6 @@ static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * 
 	return lbl;
 }
 
-int infocb_currlevel(char * b, size_t len)
-{
-#if WITHCURRLEVEL || WITHCURRLEVEL2
-	int_fast16_t drainx = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-
-	const int draina = drainx / 100;
-	const int drains01a = drainx > 0 ? (drainx % 100) : (- drainx % 100);
-	return local_snprintf_P(b, len, "%d.%dA", draina, drains01a);
-#else
-	return 0;
-#endif
-}
-
-
 static lv_obj_t * dzi_create_rec(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rec);
@@ -509,6 +495,15 @@ static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dz
 static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_currlevel);
+
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_thermo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_thermo);
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 
@@ -773,6 +768,11 @@ static const dzitem_t dzi_currlevel =
 {
 	.lvelementcreate = LVCREATE(dzi_create_currlevel),
 	.id = "currlevel"
+};
+static const dzitem_t dzi_thermo =
+{
+	.lvelementcreate = LVCREATE(dzi_create_thermo),
+	.id = "thermo"
 };
 
 static const dzitem_t dzi_rec =
