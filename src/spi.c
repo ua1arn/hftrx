@@ -1815,7 +1815,7 @@ static void spidf_spi_write_txbuf_b32(const uint32_t * __restrict buf, int len4)
     {
 		while (len4 --)
 		{
-            SPIHARD_PTR->SPI_TXD = __UNALIGNED_UINT16_READ(* buf ++);
+            SPIHARD_PTR->SPI_TXD = __UNALIGNED_UINT32_READ(* buf ++);
         }
     }
     else
