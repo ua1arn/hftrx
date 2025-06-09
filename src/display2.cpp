@@ -8527,9 +8527,7 @@ void display2_fillbg(const gxdrawb_t * db)
 
 void display2_latch(void)
 {
-#if LINUX_SUBSYSTEM
 	display_walktrough(NULL, REDRSUBSET_LATCH, NULL);// обновление данных всех элементов за раз. draw buffer не требуется
-#endif /* LINUX_SUBSYSTEM */
 }
 
 // последний номер варианта отображения (menuset)
