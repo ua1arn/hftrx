@@ -296,6 +296,18 @@ static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	LV_TRACE_OBJ_CREATE("finished");
 }
 
+static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
+{
+    lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+	lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+
+    lv_area_t coords;
+    lv_obj_get_coords(obj, & coords);	// координаты объекта
+
+    PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
+    // todo: пересоздание палитры под новый размер по вертикали
+}
+
 static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
@@ -308,6 +320,7 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
 		// стиль текста оцифровки
 		lv_style_init(s);
+	    lv_obj_add_event_cb(obj, lv_sscp2_size_changed_event_cb, LV_EVENT_SIZE_CHANGED, NULL);
 	}
 
 	{
@@ -356,7 +369,7 @@ static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
     LV_UNUSED(class_p);
-    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+    lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_TXRX);
 
@@ -449,9 +462,30 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         rect.bg_color = lv_color_make(0, 0, 255);
         rect.bg_image_opa = LV_OPA_COVER;
 
-    	lv_draw_rect(layer, & rect, & coords);
+    	//lv_draw_rect(layer, & rect, & coords);
 
 
+        // градиент
+        static const lv_color_t grad_colors [] = {
+            LV_COLOR_MAKE(0xff, 0x00, 0x00),
+            //LV_COLOR_MAKE(0x00, 0xff, 0x00),
+            LV_COLOR_MAKE(0x00, 0x00, 0xff),
+        };
+
+        static const lv_opa_t grad_opa [ARRAY_SIZE(grad_colors)] = {
+            LV_OPA_COVER,
+			//LV_OPA_COVER,
+			LV_OPA_COVER,
+        };
+
+		lv_grad_init_stops(& rect.bg_grad, grad_colors, grad_opa, NULL, ARRAY_SIZE(grad_colors));
+		lv_grad_vertical_init(& rect.bg_grad);
+		//lv_grad_conical_init(& rect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
+
+		// ставить высоту
+	   	lv_draw_rect(layer, & rect, & coords);
+
+		// lines test
         lv_draw_line_dsc_t dsc;
         lv_draw_line_dsc_init(& dsc);
 
@@ -474,6 +508,8 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
         lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
         lv_draw_line(layer, & dsc);
+
+
     }
 }
 
