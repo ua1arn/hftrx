@@ -1124,6 +1124,9 @@ void display_lvgl_initialize(void)
 	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
 	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
 	    lv_display_set_antialiasing(disp, false);
+
+//	    lv_obj_t * obj = lv_label_create(lv_display_get_screen_active(disp));
+//	    lv_label_set_text(obj, "Display LCD/LVDS");
 	}
 #endif /* defined (RTMIXIDTV) */
 
@@ -1152,6 +1155,9 @@ void display_lvgl_initialize(void)
 	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
 	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
 	    lv_display_set_antialiasing(disp, false);
+
+//	    lv_obj_t * obj = lv_label_create(lv_display_get_screen_active(disp));
+//	    lv_label_set_text(obj, "Display HDMI");
 	}
 #endif /* WITHHDMITVHW && defined (RTMIXIDTV) */
 
