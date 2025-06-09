@@ -1809,25 +1809,6 @@ static void spidf_spi_write_txbuf_b8(const uint8_t * __restrict buf, int len)
 
 }
 
-static void spidf_spi_write_txbuf_b32(volatile const uint32_t * __restrict buf, int len4)
-{
-    if (buf != NULL)
-    {
-		while (len4 --)
-		{
-            SPIHARD_PTR->SPI_TXD = __UNALIGNED_UINT32_READ(* buf ++);
-        }
-    }
-    else
-    {
-		while (len4 --)
-        {
- 			SPIHARD_PTR->SPI_TXD = 0xFFFFFFFF;
-        }
-    }
-
-}
-
 static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
 {
 	if (buf != NULL)
@@ -1847,6 +1828,8 @@ static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
 	}
 }
 
+#if 0
+// need fix
 static void spidf_spi_read_rxbuf_b32(volatile uint32_t * __restrict buf, int len4)
 {
 	if (buf != NULL)
@@ -1866,6 +1849,25 @@ static void spidf_spi_read_rxbuf_b32(volatile uint32_t * __restrict buf, int len
 	}
 }
 
+static void spidf_spi_write_txbuf_b32(volatile const uint32_t * __restrict buf, int len4)
+{
+    if (buf != NULL)
+    {
+		while (len4 --)
+		{
+            SPIHARD_PTR->SPI_TXD = __UNALIGNED_UINT32_READ(* buf ++);
+        }
+    }
+    else
+    {
+		while (len4 --)
+        {
+ 			SPIHARD_PTR->SPI_TXD = 0xFFFFFFFF;
+        }
+    }
+
+}
+#endif
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb)
 {
@@ -1883,9 +1885,9 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 		{
 		default:
 		case SPDFIO_1WIRE:
-			if (chunk == MAXCHUNK)
-				spidf_spi_write_txbuf_b32((const uint32_t *) txbuff, chunk / 4);
-			else
+//			if (chunk == MAXCHUNK)
+//				spidf_spi_write_txbuf_b32((const uint32_t *) txbuff, chunk / 4);
+//			else
 				spidf_spi_write_txbuf_b8(txbuff, chunk);
 			SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0x00FFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
@@ -1897,9 +1899,9 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 			if (txbuff != NULL)
 			{
 				// 4-wire write
-				if (chunk == MAXCHUNK)
-					spidf_spi_write_txbuf_b32((const uint32_t *) txbuff, chunk / 4);
-				else
+//				if (chunk == MAXCHUNK)
+//					spidf_spi_write_txbuf_b32((const uint32_t *) txbuff, chunk / 4);
+//				else
 					spidf_spi_write_txbuf_b8(txbuff, chunk);
 				SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0x00FFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
@@ -1921,9 +1923,9 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 			;
 		SPIHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
 
-		if (chunk == MAXCHUNK)
-			spidf_spi_read_rxbuf_b32((uint32_t *) rxbuff, chunk / 4);
-		else
+//		if (chunk == MAXCHUNK)
+//			spidf_spi_read_rxbuf_b32((uint32_t *) rxbuff, chunk / 4);
+//		else
 			spidf_spi_read_rxbuf_b8(rxbuff, chunk);
 
 		if (rxbuff != NULL)
