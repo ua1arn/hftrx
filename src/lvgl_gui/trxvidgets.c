@@ -12,6 +12,7 @@
 #include "formats.h"
 #include "board.h"
 #include "display2.h"
+#include "audio.h"
 
 #include "lvgl.h"
 #include "core/lv_obj_private.h"
@@ -28,7 +29,6 @@
 #define MY_CLASS_SMTR2 (& lv_smtr2_class)	// собственный renderer
 #define MY_CLASS_TXRX (& lv_txrx_class)		// собственный renderer
 #define MY_CLASS_WTRF2 (& lv_wtrf2_class)	// собственный renderer
-#define MY_CLASS_SSCP2 (& lv_sscp2_class)	// собственный renderer
 #define MY_CLASS_WTRF (& lv_wtrf_class)		// использует старый renderer
 #define MY_CLASS_INFO (& lv_info_class)		// собственный renderer - нформационная панель
 #define MY_CLASS_COMPAT (& lv_compat_class)	// старый renderer без модификаций
@@ -57,62 +57,10 @@ static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 //static void lv_wtrf2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
-static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e);
-
 static void lv_compat_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_compat_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
-/**********************
- *      TYPEDEFS
- **********************/
-
-typedef struct
-{
-	lv_obj_t obj;
-	//
-} lv_smtr2_t;
-
-typedef struct
-{
-	lv_label_t label;
-	//
-	char text [32];
-} lv_txrx_t;
-
-typedef struct
-{
-	lv_label_t label;
-	char infotext [32];
-	int (* infocb)(char * b, size_t len, int * selector);
-} lv_info_t;
-
-typedef struct
-{
-	lv_obj_t obj;
-	lv_style_t stdigits;
-	lv_style_t stlines;
-} lv_wtrf2_t;
-
-typedef struct
-{
-	lv_obj_t obj;
-	lv_style_t stdigits;
-	lv_style_t stlines;
-    lv_draw_rect_dsc_t gradrect;
-} lv_sscp2_t;
-
-typedef struct
-{
-	lv_obj_t obj;
-	const void * dzpv;
-} lv_compat_t;
-
-/**********************
- *  STATIC VARIABLES
- **********************/
 
 static const lv_obj_class_t lv_smtr2_class  = {
     .constructor_cb = lv_smtr2_constructor,
@@ -150,15 +98,6 @@ static const lv_obj_class_t lv_wtrf2_class  = {
     .name = "hmr_wtrf2",
 };
 
-static const lv_obj_class_t lv_sscp2_class  = {
-    .constructor_cb = lv_sscp2_constructor,
-//    .destructor_cb = lv_sscp2_destructor,
-    .event_cb = lv_sscp2_event,
-    .base_class = & lv_obj_class,
-    .instance_size = sizeof (lv_sscp2_t),
-    .name = "hmr_sscp2",
-};
-
 static const lv_obj_class_t lv_compat_class  = {
     .constructor_cb = lv_compat_constructor,
 //    .destructor_cb = lv_compat_destructor,
@@ -186,15 +125,6 @@ lv_obj_t * lv_wtrf2_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin");
     lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_WTRF2, parent);
-    lv_obj_class_init_obj(obj);
-
-	return obj;
-}
-
-lv_obj_t * lv_sscp2_create(lv_obj_t * parent)
-{
-    LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SSCP2, parent);
     lv_obj_class_init_obj(obj);
 
 	return obj;
@@ -297,62 +227,7 @@ static void lv_wtrf2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
-{
-    lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
-	lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
-
-    lv_area_t coords;
-    lv_obj_get_coords(obj, & coords);	// координаты объекта
-
-    PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
-    // todo: пересоздание палитры под новый размер по вертикали
-}
-
-static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
-{
-    LV_UNUSED(class_p);
-    LV_TRACE_OBJ_CREATE("begin");
-
-    lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
-
-	{
-		lv_style_t * const s = & sscp2->stdigits;
-
-		// стиль текста оцифровки
-		lv_style_init(s);
-	    lv_obj_add_event_cb(obj, lv_sscp2_size_changed_event_cb, LV_EVENT_SIZE_CHANGED, NULL);
-	}
-	{
-        // градиент
-        lv_draw_rect_dsc_init(& sscp2->gradrect);
-        // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
-        static const lv_color_t grad_colors [] =
-        {
-                LV_COLOR_MAKE(0xff, 0x00, 0x00),
-                LV_COLOR_MAKE(0x00, 0xff, 0x00),
-                LV_COLOR_MAKE(0x00, 0x00, 0x7f),
-            };
-
-		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
-		lv_grad_vertical_init(& sscp2->gradrect.bg_grad);
-		//lv_grad_conical_init(& gradrect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
-
-	}
-	{
-		lv_style_t * const s = & sscp2->stlines;
-
-		// стиль линий
-		lv_style_init(s);
-	}
-
-
-//#if WITHLVGL && WITHSPECTRUMWF
-//	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
-//#endif /* WITHLVGL && WITHSPECTRUMWF */
-
-	LV_TRACE_OBJ_CREATE("finished");
-}
+//////////////////////
 
 static void lv_compat_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
@@ -579,29 +454,7 @@ static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
      }
 }
 
-// custom draw widget
-static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
-    LV_UNUSED(class_p);
 
-    lv_res_t res = lv_obj_event_base(MY_CLASS_SSCP2, e);	// обработчик родительского клвсса
-
-    if (res != LV_RES_OK) return;
-
-    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
-	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_SSCP2);
-
-    if (LV_EVENT_DRAW_MAIN == code)
-    {
-		lv_layer_t * const layer = lv_event_get_layer(e);
-		lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
-
-        lv_area_t coords;
-        lv_obj_get_coords(obj, & coords);	// координаты объекта
-
-        lv_sscp2_draw(layer, & coords, & sscp2->gradrect);
-     }
-}
 
 #endif /* WITHLVGL */
 

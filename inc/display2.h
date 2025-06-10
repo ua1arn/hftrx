@@ -225,6 +225,71 @@ const char * display2_gethtml(uint_fast8_t page);
 //#define AFSPECTRE_COLOR COLORPIP_YELLOW
 #define AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
+
+#if WITHLVGL
+
+#include "lvgl.h"
+#include "../demos/lv_demos.h"
+#include "layouts/grid/lv_grid.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
+
+#include "core/lv_obj_private.h"
+#include "core/lv_obj_class_private.h"
+#include "widgets/label/lv_label_private.h"
+#include "widgets/image/lv_image_private.h"
+#include "misc/lv_area_private.h"
+#include "src/lvgl_gui/styles.h"
+
+typedef struct
+{
+	lv_obj_t obj;
+
+	lv_style_t stdigits;
+	lv_style_t stlines;
+    lv_draw_rect_dsc_t gradrect;
+    int32_t gbufh;		// высота буфера с подготовленым градиентном
+    uint8_t * gbuf;
+    lv_draw_buf_t gdrawb;
+    lv_draw_rect_dsc_t grect_dsc;	// из этого прямоугольника будем брать для отрисовки вертикальных линий
+    lv_obj_t * gradcanvas;
+} lv_sscp2_t;
+
+
+typedef struct
+{
+	lv_obj_t obj;
+	//
+} lv_smtr2_t;
+
+typedef struct
+{
+	lv_label_t label;
+	//
+	char text [32];
+} lv_txrx_t;
+
+typedef struct
+{
+	lv_label_t label;
+	char infotext [32];
+	int (* infocb)(char * b, size_t len, int * selector);
+} lv_info_t;
+
+typedef struct
+{
+	lv_obj_t obj;
+	lv_style_t stdigits;
+	lv_style_t stlines;
+} lv_wtrf2_t;
+
+typedef struct
+{
+	lv_obj_t obj;
+	const void * dzpv;
+} lv_compat_t;
+
+#endif /* WITHLVGL */
+
 #if defined (COLORPIP_SHADED)
 	// LCDMODE_MAIN_L8 also defied
 

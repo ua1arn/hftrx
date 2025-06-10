@@ -19,16 +19,6 @@
 #include "dspdefines.h"
 
 
-#if WITHLVGL
-
-#include "lvgl.h"
-#include "../demos/lv_demos.h"
-#include "layouts/grid/lv_grid.h"
-//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
-#include "src/lvgl_gui/styles.h"
-
-#endif /* WITHLVGL */
-
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
 void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
 {
@@ -7265,6 +7255,292 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 #if WITHLVGL
 
+#define MY_CLASS_SSCP2 (& lv_sscp2_class)	// собственный renderer
+
+static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e);
+
+static const lv_obj_class_t lv_sscp2_class  =
+{
+    .base_class = & lv_obj_class,
+    .constructor_cb = lv_sscp2_constructor,
+//    .destructor_cb = lv_sscp2_destructor,
+    .event_cb = lv_sscp2_event,
+    .name = "hmr_sscp2",
+    .instance_size = sizeof (lv_sscp2_t),
+};
+
+lv_obj_t * lv_sscp2_create(lv_obj_t * parent)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_SSCP2, parent);
+    lv_obj_class_init_obj(obj);
+
+	return obj;
+}
+
+static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
+{
+    lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+	lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+
+    lv_area_t coords;
+    lv_obj_get_coords(obj, & coords);	// координаты объекта
+	const int_fast32_t h = lv_area_get_height(& coords);
+
+    PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
+
+	// Формирование градиента в требуемой высоте
+    sscp2->gradcanvas = lv_canvas_create(obj);
+    lv_obj_add_flag(sscp2->gradcanvas, LV_OBJ_FLAG_HIDDEN);
+
+    lv_canvas_set_draw_buf(sscp2->gradcanvas, & sscp2->gdrawb);
+    lv_layer_t layer;
+    lv_canvas_init_layer(sscp2->gradcanvas, & layer);
+
+	lv_area_t gradcoords;
+	lv_area_set(& gradcoords, 0, 0, 0, h);	// шириной в один пиксель, высотой в экран
+	lv_draw_rect(& layer, & sscp2->gradrect, & gradcoords);
+
+    lv_canvas_finish_layer(sscp2->gradcanvas, & layer);	// выполняем отрисовку в sscp2->gdrawb
+}
+
+static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+
+	lv_obj_add_event_cb(obj, lv_sscp2_size_changed_event_cb, LV_EVENT_SIZE_CHANGED, NULL);
+
+	{
+		lv_style_t * const s = & sscp2->stdigits;
+
+		// стиль текста оцифровки
+		lv_style_init(s);
+	}
+	{
+        // градиент
+
+		// Буфер для рисования
+		const lv_color_format_t cf = (lv_color_format_t) display_get_lvformat();
+		const int_fast32_t w = 1;
+		const int_fast32_t h = lv_display_get_vertical_resolution(lv_display_get_default());
+		const int_fast32_t gbufsize = LV_DRAW_BUF_SIZE(1, h, cf);	// размер выделеной памяти
+		sscp2->gbufh = LV_DRAW_BUF_SIZE(1, h, cf);
+		sscp2->gbuf = (uint8_t *) lv_malloc(gbufsize);
+		LV_ASSERT_MALLOC(sscp2->gbuf);
+
+		lv_draw_buf_init(& sscp2->gdrawb, w, h, cf, LV_DRAW_BUF_STRIDE(w, cf), sscp2->gbuf, gbufsize);
+	    lv_draw_buf_set_flag(& sscp2->gdrawb, LV_IMAGE_FLAGS_MODIFIABLE);
+
+	    lv_draw_rect_dsc_init(& sscp2->grect_dsc);
+	    sscp2->grect_dsc.bg_image_src = & sscp2->gdrawb;
+
+
+        lv_draw_rect_dsc_init(& sscp2->gradrect);
+
+        // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
+        static const lv_color_t grad_colors [] =
+        {
+                LV_COLOR_MAKE(0xff, 0x00, 0x00),
+                LV_COLOR_MAKE(0x00, 0xff, 0x00),
+                LV_COLOR_MAKE(0x00, 0x00, 0x7f),
+            };
+
+		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
+		lv_grad_vertical_init(& sscp2->gradrect.bg_grad);
+	}
+	{
+		lv_style_t * const s = & sscp2->stlines;
+
+		// стиль линий
+		lv_style_init(s);
+	}
+
+
+//#if WITHLVGL && WITHSPECTRUMWF
+//	lv_image_set_src(obj, wfl_get_draw_buff());	// src_type=LV_IMAGE_SRC_VARIABLE
+//#endif /* WITHLVGL && WITHSPECTRUMWF */
+
+	LV_TRACE_OBJ_CREATE("finished");
+}
+
+static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+
+	lv_obj_delete(sscp2->gradcanvas);
+	lv_free(sscp2->gbuf);
+
+}
+
+// Рисуем спектр примитивами LVGL
+void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t * coords)
+{
+	const int32_t alldx = lv_area_get_width(coords);
+	const int32_t alldy = lv_area_get_height(coords);
+
+    //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
+	// сохранияем дянные для отображения
+	FLOAT_t powers [alldx];
+    int32_t x;
+	for (x = 0; x < alldx; ++ x)
+	{
+		powers [x] = filter_spectrum(x);
+	}
+
+    if (1)
+    {
+    	// отладка. закрасить зону отображения
+        lv_draw_rect_dsc_t rect;
+        lv_draw_rect_dsc_init(& rect);
+        rect.bg_color = display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
+        rect.bg_opa = LV_OPA_COVER;
+    	lv_draw_rect(layer, & rect, coords);
+    }
+
+    if (1)
+    {
+		// Изображение "шторки" на спектре.
+		uint_fast8_t splitflag;
+		uint_fast8_t pathi;
+		hamradio_get_vfomode3_value(& splitflag);
+		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
+		{
+			const COLORPIP_T rxbwcolor = pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2;
+			//const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+			int32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
+			int32_t xright = latched_dm.xright [pathi];	// правый край шторки
+			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+				continue;
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= alldx)
+				xright = alldx - 1;
+
+			const int32_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+			// Изображение "шторки" под спектром.
+			if (xleft < xrightv)
+			{
+		    	lv_area_t bwcoords;
+		        lv_draw_rect_dsc_t rect;
+		        lv_draw_rect_dsc_init(& rect);
+		        bwcoords.y1 = coords->y1;
+		        bwcoords.y2 = coords->y2;
+		        bwcoords.x1 = coords->x1 + xleft;
+		        bwcoords.x2 = coords->x1 + xright;
+		        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
+		        rect.bg_opa = LV_OPA_COVER;
+		    	lv_draw_rect(layer, & rect, & bwcoords);
+			}
+		}
+    }
+
+    if (1)
+    {
+    	// линия центральной частоты
+        lv_draw_line_dsc_t l;
+        lv_draw_line_dsc_init(& l);
+
+        l.width = 1;
+        l.round_end = 0;
+        l.round_start = 0;
+        l.color = lv_palette_main(LV_PALETTE_YELLOW);
+
+        lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
+        lv_draw_line(layer, & l);
+
+    }
+
+    if (0 && glob_view_style == VIEW_COLOR)
+    {
+    	// Градиентное заполнение
+
+        int32_t x;
+    	for (x = 0; x < alldx - 1; ++ x)
+    	{
+    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
+    		int32_t y = alldy - 1 - val;
+    		lv_area_t gradcoords;
+    		gradcoords.x1 = coords->x1 + x;
+    		gradcoords.x2 = coords->x1 + x + 1;
+    		gradcoords.y1 = coords->y1 + y;
+    		gradcoords.y2 = coords->y2;
+	    	//lv_draw_rect(layer, gradrect, & gradcoords);
+    	}
+   	}
+
+    if (1)
+    {
+    	// линия спектра
+        lv_draw_line_dsc_t l;
+        lv_draw_line_dsc_init(& l);
+
+        l.width = 1;
+        l.round_end = 0;
+        l.round_start = 0;
+        l.color = lv_palette_main(LV_PALETTE_YELLOW);
+
+        int32_t x;
+    	for (x = 0; x < alldx; ++ x)
+    	{
+    		// ломанная
+    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
+    		int32_t y = alldy - 1 - val;
+	        lv_point_precise_set(& l.p2, coords->x1 + x, coords->y1 + y);
+    		if (x)
+    		{
+    	        lv_draw_line(layer, & l);
+    		}
+    		l.p1 = l.p2;
+    	}
+    }
+
+    if (1)
+    {
+    	// надписи
+	    lv_draw_label_dsc_t label;
+	    lv_draw_label_dsc_init(& label);
+        label.color = lv_palette_main(LV_PALETTE_YELLOW);
+        label.align = LV_TEXT_ALIGN_CENTER;
+        label.text = "Test scope";
+        lv_draw_label(layer, & label, coords);
+
+    }
+}
+
+// custom draw widget
+static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
+    LV_UNUSED(class_p);
+
+    lv_res_t res = lv_obj_event_base(MY_CLASS_SSCP2, e);	// обработчик родительского клвсса
+
+    if (res != LV_RES_OK) return;
+
+    lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
+	const lv_event_code_t code = lv_event_get_code(e);
+    LV_ASSERT_OBJ(obj, MY_CLASS_SSCP2);
+
+    if (LV_EVENT_DRAW_MAIN == code)
+    {
+		lv_layer_t * const layer = lv_event_get_layer(e);
+		lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+
+        lv_area_t coords;
+        lv_obj_get_coords(obj, & coords);	// координаты объекта
+
+        lv_sscp2_draw(sscp2, layer, & coords);
+     }
+}
+
+////////////////////////////
+
 static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase)
 {
 	gxdrawb_t wfjdbv;
@@ -7423,143 +7699,6 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
         lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
         lv_draw_line(layer, & l);
-    }
-}
-
-// Рисуем спектр примитивами LVGL
-void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords, lv_draw_rect_dsc_t * gradrect)
-{
-	const int32_t alldx = lv_area_get_width(coords);
-	const int32_t alldy = lv_area_get_height(coords);
-
-    //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
-	// сохранияем дянные для отображения
-	FLOAT_t powers [alldx];
-    int32_t x;
-	for (x = 0; x < alldx - 1; ++ x)
-	{
-		powers [x] = filter_spectrum(x);
-	}
-
-    if (1)
-    {
-    	// отладка. закрасить зону отображения
-        lv_draw_rect_dsc_t rect;
-        lv_draw_rect_dsc_init(& rect);
-        rect.bg_color = display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
-        rect.bg_opa = LV_OPA_COVER;
-    	lv_draw_rect(layer, & rect, coords);
-    }
-
-    if (1)
-    {
-		// Изображение "шторки" на спектре.
-		uint_fast8_t splitflag;
-		uint_fast8_t pathi;
-		hamradio_get_vfomode3_value(& splitflag);
-		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
-		{
-			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-			int32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
-			int32_t xright = latched_dm.xright [pathi];	// правый край шторки
-			if (xleft == UINT16_MAX || xright == UINT16_MAX)
-				continue;
-			if (xleft > xright)
-				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
-			if (xright >= alldx)
-				xright = alldx - 1;
-
-			const int32_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-			// Изображение "шторки" под спектром.
-			if (xleft < xrightv)
-			{
-		    	lv_area_t bwcoords;
-		        lv_draw_rect_dsc_t rect;
-		        lv_draw_rect_dsc_init(& rect);
-		        bwcoords.y1 = coords->y1;
-		        bwcoords.y2 = coords->y2;
-		        bwcoords.x1 = coords->x1 + xleft;
-		        bwcoords.x2 = coords->x1 + xright;
-		        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
-		        rect.bg_opa = LV_OPA_COVER;
-		    	lv_draw_rect(layer, & rect, & bwcoords);
-			}
-		}
-    }
-
-    if (1)
-    {
-    	// линия центральной частоты
-        lv_draw_line_dsc_t l;
-        lv_draw_line_dsc_init(& l);
-
-        l.width = 1;
-        l.round_end = 0;
-        l.round_start = 0;
-        l.color = lv_palette_main(LV_PALETTE_YELLOW);
-
-        lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
-        lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
-        lv_draw_line(layer, & l);
-
-    }
-
-    if (glob_view_style == VIEW_COLOR)
-    {
-    	// Градиентное заполнение
-
-        int32_t x;
-    	for (x = 0; x < alldx - 1; ++ x)
-    	{
-    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
-    		int32_t y = alldy - 1 - val;
-    		lv_area_t gradcoords;
-    		gradcoords.x1 = coords->x1 + x;
-    		gradcoords.x2 = coords->x1 + x + 1;
-    		gradcoords.y1 = coords->y1 + y;
-    		gradcoords.y2 = coords->y2;
-	    	lv_draw_rect(layer, gradrect, & gradcoords);
-    	}
-   	}
-
-    if (1)
-    {
-    	// линия спектра
-        lv_draw_line_dsc_t l;
-        lv_draw_line_dsc_init(& l);
-
-        l.width = 1;
-        l.round_end = 0;
-        l.round_start = 0;
-        l.color = lv_palette_main(LV_PALETTE_YELLOW);
-
-        int32_t x;
-    	for (x = 0; x < alldx; ++ x)
-    	{
-    		// ломанная
-    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
-    		int32_t y = alldy - 1 - val;
-	        lv_point_precise_set(& l.p1, coords->x1 + x, coords->y1 + y);
-    		if (x)
-    		{
-    	        lv_draw_line(layer, & l);
-    		}
-    		l.p2 = l.p1;
-    	}
-    }
-
-    if (1)
-    {
-    	// надписи
-	    lv_draw_label_dsc_t label;
-	    lv_draw_label_dsc_init(& label);
-        label.color = lv_palette_main(LV_PALETTE_YELLOW);
-        label.align = LV_TEXT_ALIGN_CENTER;
-        label.text = "Test scope";
-        lv_draw_label(layer, & label, coords);
-
     }
 }
 

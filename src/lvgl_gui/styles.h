@@ -28,7 +28,6 @@ lv_obj_t * lv_compat_create(lv_obj_t * parent, const void * param);
 void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pctx);
 
 void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords);
-void lv_sscp2_draw(lv_layer_t * layer, const lv_area_t * coords, lv_draw_rect_dsc_t * gradrect);
 
 #if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
 
