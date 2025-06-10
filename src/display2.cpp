@@ -7265,7 +7265,7 @@ static const lv_obj_class_t lv_sscp2_class  =
 {
     .base_class = & lv_obj_class,
     .constructor_cb = lv_sscp2_constructor,
-//    .destructor_cb = lv_sscp2_destructor,
+    .destructor_cb = lv_sscp2_destructor,
     .event_cb = lv_sscp2_event,
     .name = "hmr_sscp2",
     .instance_size = sizeof (lv_sscp2_t),
@@ -7289,6 +7289,7 @@ static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
     lv_obj_get_coords(obj, & coords);	// координаты объекта
 	const int_fast32_t h = lv_area_get_height(& coords);
 
+	sscp2->gbufh = lv_area_get_height(& coords);
     PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
 	// Формирование градиента в требуемой высоте
@@ -7312,6 +7313,9 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("begin");
 
     lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+	const lv_color_format_t cf = (lv_color_format_t) display_get_lvformat();
+	const int_fast32_t h = lv_display_get_vertical_resolution(lv_display_get_default());
+	const int_fast32_t w = lv_display_get_horizontal_resolution(lv_display_get_default());
 
 	lv_obj_add_event_cb(obj, lv_sscp2_size_changed_event_cb, LV_EVENT_SIZE_CHANGED, NULL);
 
@@ -7322,18 +7326,25 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 		lv_style_init(s);
 	}
 	{
+		// Временный буфер для рисования самого виджета
+		const int_fast32_t gbufsizetmp = LV_DRAW_BUF_SIZE(w, h, cf);	// размер выделеной памяти
+		sscp2->gbuftmp = (uint8_t *) lv_malloc(gbufsizetmp);
+		LV_ASSERT_MALLOC(sscp2->gbuftmp);
+
+		lv_draw_buf_init(& sscp2->gdrawbtmp, w, h, cf, LV_DRAW_BUF_STRIDE(w, cf), sscp2->gbuftmp, gbufsizetmp);
+	    lv_draw_buf_set_flag(& sscp2->gdrawbtmp, LV_IMAGE_FLAGS_MODIFIABLE);
+	}
+	{
         // градиент
 
-		// Буфер для рисования
-		const lv_color_format_t cf = (lv_color_format_t) display_get_lvformat();
+		// Буфер для рисования градиента
 		const int_fast32_t w = 1;
-		const int_fast32_t h = lv_display_get_vertical_resolution(lv_display_get_default());
-		const int_fast32_t gbufsize = LV_DRAW_BUF_SIZE(1, h, cf);	// размер выделеной памяти
-		sscp2->gbufh = LV_DRAW_BUF_SIZE(1, h, cf);
-		sscp2->gbuf = (uint8_t *) lv_malloc(gbufsize);
-		LV_ASSERT_MALLOC(sscp2->gbuf);
+		const int_fast32_t gbufsize = LV_DRAW_BUF_SIZE(w, h, cf);	// размер выделеной памяти
+		sscp2->gbufh = h;
+		sscp2->gbuf1pix = (uint8_t *) lv_malloc(gbufsize);
+		LV_ASSERT_MALLOC(sscp2->gbuf1pix);
 
-		lv_draw_buf_init(& sscp2->gdrawb, w, h, cf, LV_DRAW_BUF_STRIDE(w, cf), sscp2->gbuf, gbufsize);
+		lv_draw_buf_init(& sscp2->gdrawb, w, h, cf, LV_DRAW_BUF_STRIDE(w, cf), sscp2->gbuf1pix, gbufsize);
 	    lv_draw_buf_set_flag(& sscp2->gdrawb, LV_IMAGE_FLAGS_MODIFIABLE);
 
 	    lv_draw_rect_dsc_init(& sscp2->grect_dsc);
@@ -7373,15 +7384,18 @@ static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
     lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
 
 	lv_obj_delete(sscp2->gradcanvas);
-	lv_free(sscp2->gbuf);
+	lv_free(sscp2->gbuf1pix);
+	lv_free(sscp2->gbuftmp);
 
 }
 
 // Рисуем спектр примитивами LVGL
-void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t * coords)
+void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_area_t * coords)
 {
 	const int32_t alldx = lv_area_get_width(coords);
 	const int32_t alldy = lv_area_get_height(coords);
+    lv_area_t areatmp;
+    lv_area_set(& areatmp, 0, 0, alldx - 1, alldy - 1);
 
     //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
 	// сохранияем дянные для отображения
@@ -7392,14 +7406,19 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		powers [x] = filter_spectrum(x);
 	}
 
+    lv_obj_t * canvastmp = lv_canvas_create(& sscp2->obj);
+    lv_canvas_set_draw_buf(canvastmp, & sscp2->gdrawbtmp);
+    lv_layer_t layertmp;
+    lv_canvas_init_layer(canvastmp, & layertmp);
+
     if (1)
     {
-    	// отладка. закрасить зону отображения
+    	// закрасить фон
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
         rect.bg_color = display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
         rect.bg_opa = LV_OPA_COVER;
-    	lv_draw_rect(layer, & rect, coords);
+    	lv_draw_rect(& layertmp, & rect, & areatmp);
     }
 
     if (1)
@@ -7429,13 +7448,10 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		    	lv_area_t bwcoords;
 		        lv_draw_rect_dsc_t rect;
 		        lv_draw_rect_dsc_init(& rect);
-		        bwcoords.y1 = coords->y1;
-		        bwcoords.y2 = coords->y2;
-		        bwcoords.x1 = coords->x1 + xleft;
-		        bwcoords.x2 = coords->x1 + xright;
+		        lv_area_set(& bwcoords, xleft, 0, xright, alldy - 1);
 		        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
 		        rect.bg_opa = LV_OPA_COVER;
-		    	lv_draw_rect(layer, & rect, & bwcoords);
+		    	lv_draw_rect(& layertmp, & rect, & bwcoords);
 			}
 		}
     }
@@ -7451,13 +7467,13 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
         l.round_start = 0;
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
-        lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
-        lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
-        lv_draw_line(layer, & l);
+        lv_point_precise_set(& l.p1, latched_dm.xcenter, 0);
+        lv_point_precise_set(& l.p2, latched_dm.xcenter, alldy - 1);
+        lv_draw_line(& layertmp, & l);
 
     }
 
-    if (0 && glob_view_style == VIEW_COLOR)
+    if (1 && glob_view_style == VIEW_COLOR)
     {
     	// Градиентное заполнение
 
@@ -7467,11 +7483,26 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
     		int32_t y = alldy - 1 - val;
     		lv_area_t gradcoords;
-    		gradcoords.x1 = coords->x1 + x;
-    		gradcoords.x2 = coords->x1 + x + 1;
-    		gradcoords.y1 = coords->y1 + y;
-    		gradcoords.y2 = coords->y2;
-	    	//lv_draw_rect(layer, gradrect, & gradcoords);
+    		lv_area_t palettecoords;
+
+    		lv_area_set_pos(& gradcoords, x, y);
+    		lv_area_set_width(& gradcoords, 1);
+    		lv_area_set_height(& gradcoords, val);
+
+    		lv_area_set_pos(& palettecoords, 0, sscp2->gbufh - val - 1);
+    		lv_area_set_pos(& palettecoords, 0, 0);
+    		lv_area_set_width(& palettecoords, 1);
+    		lv_area_set_height(& palettecoords, val);
+
+            lv_image_dsc_t img;
+            lv_draw_buf_to_image(& sscp2->gdrawb, &img);	// копируктся ранее нарисованный буфер (1 иксель колонка)
+            lv_draw_image_dsc_t img_dsc;
+            lv_draw_image_dsc_init(& img_dsc);
+
+            img_dsc.src = &img;
+            img_dsc.image_area = palettecoords;
+
+            lv_draw_image(& layertmp, & img_dsc, & gradcoords);
     	}
    	}
 
@@ -7492,10 +7523,10 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     		// ломанная
     		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
     		int32_t y = alldy - 1 - val;
-	        lv_point_precise_set(& l.p2, coords->x1 + x, coords->y1 + y);
+	        lv_point_precise_set(& l.p2, x, y);
     		if (x)
     		{
-    	        lv_draw_line(layer, & l);
+    	        lv_draw_line(& layertmp, & l);
     		}
     		l.p1 = l.p2;
     	}
@@ -7509,9 +7540,40 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
         label.color = lv_palette_main(LV_PALETTE_YELLOW);
         label.align = LV_TEXT_ALIGN_CENTER;
         label.text = "Test scope";
-        lv_draw_label(layer, & label, coords);
+        lv_draw_label(& layertmp, & label, & areatmp);
 
     }
+
+
+    if (0)
+    {
+    	// отладка закрасить фон
+        lv_draw_rect_dsc_t rect;
+        lv_draw_rect_dsc_init(& rect);
+        rect.bg_color = lv_color_make(255, 0, 0);//display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
+        rect.bg_opa = LV_OPA_COVER;
+    	lv_draw_rect(layerdest, & rect, coords);
+    }
+
+    lv_canvas_finish_layer(canvastmp, & layertmp);	// выполнение всех отрисовок в буфере
+
+
+    //lv_canvas_copy_buf(canvastmp, & areatmp, layerdest->draw_buf, coords);
+    {
+        lv_image_dsc_t img;
+        lv_draw_buf_to_image(& sscp2->gdrawbtmp, &img);	// копируктся ранее нарисованный буфер
+        lv_draw_image_dsc_t img_dsc;
+        lv_draw_image_dsc_init(&img_dsc);
+        img_dsc.src = &img;
+
+        lv_draw_image(layerdest, &img_dsc, coords);
+
+    }
+
+
+    lv_obj_delete(canvastmp);
+
+
 }
 
 // custom draw widget
