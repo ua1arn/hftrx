@@ -253,7 +253,7 @@ void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pc
 	(* dzp->redraw)(& dbv, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, compat_pctx);
 
 }
-// для быстрого перехода на систему ввода LVGL отрисовка этих vidgets
+// для быстрого перехода на систему ввода LVGL отрисовка этих widgets
 // производится вызовом старых функций
 static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
@@ -630,12 +630,12 @@ static const dzitem_t dzi_default =
 	.id = "default"
 };
 
-// для быстрого перехода на систему ввода LVGL отрисовка этих vidgets
+// для быстрого перехода на систему ввода LVGL отрисовка этих widgets
 // производится вызовом старых функций
 static const dzitem_t dzi_compat =
 {
 	.lvelementcreate = LVCREATE(dzi_create_compat),
-	.id = "undef"
+	.id = "compat"
 };
 
 
