@@ -7289,22 +7289,26 @@ static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
     lv_obj_get_coords(obj, & coords);	// координаты объекта
 	const int_fast32_t h = lv_area_get_height(& coords);
 
-	sscp2->gbufh = lv_area_get_height(& coords);
+	sscp2->gbufh = h;
     PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
 	// Формирование градиента в требуемой высоте
-    sscp2->gradcanvas = lv_canvas_create(obj);
-    lv_obj_add_flag(sscp2->gradcanvas, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_t * gradcanvas = lv_canvas_create(obj);
+    lv_obj_add_flag(gradcanvas, LV_OBJ_FLAG_HIDDEN);
 
-    lv_canvas_set_draw_buf(sscp2->gradcanvas, & sscp2->gdrawb);
+    lv_canvas_set_draw_buf(gradcanvas, & sscp2->gdrawb);
     lv_layer_t layer;
-    lv_canvas_init_layer(sscp2->gradcanvas, & layer);
+    lv_canvas_init_layer(gradcanvas, & layer);
 
 	lv_area_t gradcoords;
-	lv_area_set(& gradcoords, 0, 0, 0, h);	// шириной в один пиксель, высотой в экран
+	lv_area_set_pos(& gradcoords, 0, 0);
+	lv_area_set_width(& gradcoords, 1);
+	lv_area_set_height(& gradcoords, h);
+
 	lv_draw_rect(& layer, & sscp2->gradrect, & gradcoords);
 
-    lv_canvas_finish_layer(sscp2->gradcanvas, & layer);	// выполняем отрисовку в sscp2->gdrawb
+    lv_canvas_finish_layer(gradcanvas, & layer);	// выполняем отрисовку в sscp2->gdrawb
+    lv_obj_delete(gradcanvas);
 }
 
 static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
@@ -7383,7 +7387,6 @@ static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
 
-	lv_obj_delete(sscp2->gradcanvas);
 	lv_free(sscp2->gbuf1pix);
 	lv_free(sscp2->gbuftmp);
 

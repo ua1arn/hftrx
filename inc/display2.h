@@ -237,6 +237,7 @@ const char * display2_gethtml(uint_fast8_t page);
 #include "core/lv_obj_class_private.h"
 #include "widgets/label/lv_label_private.h"
 #include "widgets/image/lv_image_private.h"
+#include "layouts/grid/lv_grid.h"
 #include "misc/lv_area_private.h"
 #include "src/lvgl_gui/styles.h"
 
@@ -251,7 +252,6 @@ typedef struct
     uint8_t * gbuf1pix;	// с шириной в 1 пиксель
     lv_draw_buf_t gdrawb;
     lv_draw_rect_dsc_t grect_dsc;	// из этого прямоугольника будем брать для отрисовки вертикальных линий
-    lv_obj_t * gradcanvas;
 
     uint8_t * gbuftmp;	// буфер для отрисовки виджета в draw
     lv_draw_buf_t gdrawbtmp;
