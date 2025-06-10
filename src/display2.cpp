@@ -7639,7 +7639,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
     	//		0, wfrow,	// координаты окна источника
     	//		wfdx, p1h, 	// размеры окна источника
     	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
-    	//dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);	// хак - надо исправлять
+    	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);	// хак - надо исправлять
     }
     else
     {
@@ -7652,7 +7652,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
     //		0, 0,	// координаты окна источника
     //		wfdx, p2h, 	// размеры окна источника
         	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
-        	//dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);	// хак - надо исправлять
+        	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);	// хак - надо исправлять
         }
         else
         {
