@@ -7410,8 +7410,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
-			const COLORPIP_T rxbwcolor = pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2;
-			//const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
 			int32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
 			int32_t xright = latched_dm.xright [pathi];	// правый край шторки
 			if (xleft == UINT16_MAX || xright == UINT16_MAX)
