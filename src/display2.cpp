@@ -7394,12 +7394,13 @@ static void lv_sscp2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 }
 
 // Рисуем спектр примитивами LVGL
-void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_area_t * coords)
+void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_area_t * coordsdest)
 {
-	const int32_t alldx = lv_area_get_width(coords);
-	const int32_t alldy = lv_area_get_height(coords);
-    lv_area_t areatmp;
-    lv_area_set(& areatmp, 0, 0, alldx - 1, alldy - 1);
+	const int32_t alldx = lv_area_get_width(coordsdest);
+	const int32_t alldy = lv_area_get_height(coordsdest);
+//    lv_area_t areatmp;
+//    lv_area_set(& areatmp, 0, 0, alldx - 1, alldy - 1);
+//    lv_area_move(& areatmp, coordsdest->x1, coordsdest->y1);
 
     //PRINTF("lv_sscp2_draw: w/h=%d/%d, x/y=%d/%d\n", (int) lv_area_get_width(coords), (int) lv_area_get_height(coords), (int) coords->x1, (int) coords->y1);
 	// сохранияем дянные для отображения
@@ -7410,10 +7411,10 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
 		powers [x] = filter_spectrum(x);
 	}
 
-    lv_obj_t * canvastmp = lv_canvas_create(& sscp2->obj);
-    lv_canvas_set_draw_buf(canvastmp, & sscp2->gdrawbtmp);
-    lv_layer_t layertmp;
-    lv_canvas_init_layer(canvastmp, & layertmp);
+//    lv_obj_t * canvastmp = lv_canvas_create(& sscp2->obj);
+//    lv_canvas_set_draw_buf(canvastmp, & sscp2->gdrawbtmp);
+//    lv_layer_t layertmp;
+//    lv_canvas_init_layer(canvastmp, & layertmp);
 
     if (1)
     {
@@ -7422,7 +7423,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
         lv_draw_rect_dsc_init(& rect);
         rect.bg_color = display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
         rect.bg_opa = LV_OPA_COVER;
-    	lv_draw_rect(& layertmp, & rect, & areatmp);
+    	lv_draw_rect(layerdest, & rect, coordsdest);
     }
 
     if (1)
@@ -7453,9 +7454,11 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
 		        lv_draw_rect_dsc_t rect;
 		        lv_draw_rect_dsc_init(& rect);
 		        lv_area_set(& bwcoords, xleft, 0, xright, alldy - 1);
+		        lv_area_move(& bwcoords, coordsdest->x1, coordsdest->y1);
+
 		        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
 		        rect.bg_opa = LV_OPA_COVER;
-		    	lv_draw_rect(& layertmp, & rect, & bwcoords);
+		    	lv_draw_rect(layerdest, & rect, & bwcoords);
 			}
 		}
     }
@@ -7471,13 +7474,13 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
         l.round_start = 0;
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
-        lv_point_precise_set(& l.p1, latched_dm.xcenter, 0);
-        lv_point_precise_set(& l.p2, latched_dm.xcenter, alldy - 1);
-        lv_draw_line(& layertmp, & l);
+        lv_point_precise_set(& l.p1, coordsdest->x1 + latched_dm.xcenter, coordsdest->y1 + 0);
+        lv_point_precise_set(& l.p2, coordsdest->x1 + latched_dm.xcenter, coordsdest->y1 + alldy - 1);
+        lv_draw_line(layerdest, & l);
 
     }
 
-    if (1 && glob_view_style == VIEW_COLOR)
+    if (0 && glob_view_style == VIEW_COLOR)
     {
     	// Градиентное заполнение
 
@@ -7505,8 +7508,9 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
 
             img_dsc.src = & sscp2->gdrawb;
             img_dsc.image_area = palettecoords;
-
-            lv_draw_image(& layertmp, & img_dsc, & gradcoords);
+            //TP();
+            //lv_draw_image(& layertmp, & img_dsc, & gradcoords);
+            //TP();
 
     	}
    	}
@@ -7528,10 +7532,10 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
     		// ломанная
     		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
     		int32_t y = alldy - 1 - val;
-	        lv_point_precise_set(& l.p2, x, y);
+	        lv_point_precise_set(& l.p2, coordsdest->x1 + x, coordsdest->y1 + y);
     		if (x)
     		{
-    	        lv_draw_line(& layertmp, & l);
+    	        lv_draw_line(layerdest, & l);
     		}
     		l.p1 = l.p2;
     	}
@@ -7545,7 +7549,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
         label.color = lv_palette_main(LV_PALETTE_YELLOW);
         label.align = LV_TEXT_ALIGN_CENTER;
         label.text = "Test scope";
-        lv_draw_label(& layertmp, & label, & areatmp);
+        lv_draw_label(layerdest, & label, coordsdest);
 
     }
 
@@ -7557,26 +7561,26 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
         lv_draw_rect_dsc_init(& rect);
         rect.bg_color = lv_color_make(255, 0, 0);//display_lvlcolor(DSGN_SPECTRUMBG); //lv_palette_main(LV_PALETTE_GREY);
         rect.bg_opa = LV_OPA_COVER;
-    	lv_draw_rect(layerdest, & rect, coords);
+    	lv_draw_rect(layerdest, & rect, coordsdest);
     }
 
-    lv_canvas_finish_layer(canvastmp, & layertmp);	// выполнение всех отрисовок в буфере
-
-
-    //lv_canvas_copy_buf(canvastmp, & areatmp, layerdest->draw_buf, coords);
-    {
-        lv_image_dsc_t img;
-        lv_draw_buf_to_image(& sscp2->gdrawbtmp, &img);	// копируктся ранее нарисованный буфер
-        lv_draw_image_dsc_t img_dsc;
-        lv_draw_image_dsc_init(&img_dsc);
-        img_dsc.src = &img;
-
-        lv_draw_image(layerdest, &img_dsc, coords);
-
-    }
-
-
-    lv_obj_delete(canvastmp);
+//    lv_canvas_finish_layer(canvastmp, & layertmp);	// выполнение всех отрисовок в буфере
+//
+//
+//    //lv_canvas_copy_buf(canvastmp, & areatmp, layerdest->draw_buf, coords);
+//    {
+//        lv_image_dsc_t img;
+//        lv_draw_buf_to_image(& sscp2->gdrawbtmp, &img);	// копируктся ранее нарисованный буфер
+//        lv_draw_image_dsc_t img_dsc;
+//        lv_draw_image_dsc_init(&img_dsc);
+//        img_dsc.src = &img;
+//
+//        lv_draw_image(layerdest, &img_dsc, coords);
+//
+//    }
+//
+//
+//    lv_obj_delete(canvastmp);
 
 
 }
@@ -7635,7 +7639,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
     	//		0, wfrow,	// координаты окна источника
     	//		wfdx, p1h, 	// размеры окна источника
     	lv_area_set(& fd->image_area, 0, wfrow, wfdx - 1, wfrow + p1h - 1);	// откуда
-    	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);	// хак - надо исправлять
+    	//dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, wfrow);	// хак - надо исправлять
     }
     else
     {
@@ -7648,7 +7652,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
     //		0, 0,	// координаты окна источника
     //		wfdx, p2h, 	// размеры окна источника
         	lv_area_set(& fd->image_area, 0, 0, wfdx - 1, p2h - 1);	// откуда
-        	dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);	// хак - надо исправлять
+        	//dbf->data = (uint8_t *) lv_draw_buf_goto_xy(dbf, 0, 0);	// хак - надо исправлять
         }
         else
         {
