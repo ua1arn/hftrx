@@ -7350,6 +7350,7 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
 		lv_draw_buf_init(& sscp2->gdrawb, w, h, cf, LV_DRAW_BUF_STRIDE(w, cf), sscp2->gbuf1pix, gbufsize);
 	    lv_draw_buf_set_flag(& sscp2->gdrawb, LV_IMAGE_FLAGS_MODIFIABLE);
+	    //lv_draw_buf_set_flag(& sscp2->gdrawb, LV_IMAGE_FLAGS_CUSTOM_DRAW);
 
 	    lv_draw_rect_dsc_init(& sscp2->grect_dsc);
 	    sscp2->grect_dsc.bg_image_src = & sscp2->gdrawb;
@@ -7483,8 +7484,11 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
-    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
-    		int32_t y = alldy - 1 - val;
+    		int val;
+    		val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
+    		val = (x * (alldy - 1) / (alldx - 1));	// debug
+
+    		const int32_t y = alldy - 1 - val;
     		lv_area_t gradcoords;
     		lv_area_t palettecoords;
 
@@ -7493,19 +7497,17 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layerdest, const lv_ar
     		lv_area_set_height(& gradcoords, val);
 
     		lv_area_set_pos(& palettecoords, 0, sscp2->gbufh - val - 1);
-    		lv_area_set_pos(& palettecoords, 0, 0);
     		lv_area_set_width(& palettecoords, 1);
     		lv_area_set_height(& palettecoords, val);
 
-            lv_image_dsc_t img;
-            lv_draw_buf_to_image(& sscp2->gdrawb, &img);	// копируктся ранее нарисованный буфер (1 иксель колонка)
             lv_draw_image_dsc_t img_dsc;
             lv_draw_image_dsc_init(& img_dsc);
 
-            img_dsc.src = &img;
+            img_dsc.src = & sscp2->gdrawb;
             img_dsc.image_area = palettecoords;
 
             lv_draw_image(& layertmp, & img_dsc, & gradcoords);
+
     	}
    	}
 
