@@ -478,7 +478,7 @@
 
 /** Number of stops allowed per gradient. Increase this to allow more stops.
  *  This adds (sizeof(lv_color_t) + 1) bytes per additional stop. */
-#define LV_GRADIENT_MAX_STOPS   2
+#define LV_GRADIENT_MAX_STOPS   4
 
 /** Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  *  - 0:   round down,

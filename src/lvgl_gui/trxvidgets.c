@@ -486,6 +486,7 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
             lv_draw_rect_dsc_init(& gradrect);
 
             gradrect = rect;
+            // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
             static const lv_color_t grad_colors [] =
             {
                 LV_COLOR_MAKE(0xff, 0x00, 0x00),
