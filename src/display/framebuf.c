@@ -1442,6 +1442,8 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
                     return 0;
                 }
+                if (lv_area_get_width(& draw_dsc->image_area) == 0 || lv_area_get_height(& draw_dsc->image_area) == 0)
+                	return 0;
                 if (lv_area_get_width(& draw_dsc->image_area) < 2)
                 	return 0;
                 bool masked = draw_dsc->bitmap_mask_src != NULL;
@@ -1666,8 +1668,8 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
                     return 0;
                 }
-//                if (lv_area_get_width(& draw_dsc->image_area) < 2)
-//                	return 0;
+                if (lv_area_get_width(& draw_dsc->image_area) == 0 || lv_area_get_height(& draw_dsc->image_area) == 0)
+                	return 0;
 
                 /* not support tile */
                 if (draw_dsc->tile) {
