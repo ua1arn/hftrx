@@ -86,6 +86,7 @@ static lv_style_t xxdivstyle;
 static lv_style_t xxcompatstyle;	// отрисовка элементов через функции совместимости
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
+//static lv_style_t xxsmeterstyle;
 static lv_style_t xxcellstyle;		// объекты, выполняющие разметку для вложенных объектов - без зазоров, без рамки, с прозрачным фоном.
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
@@ -118,7 +119,12 @@ static void lvstales_initialize(void)
 	//	lv_style_set_grid_cell_column_span(s, 16);
 	}
 
-
+//	{
+//		// s-meter
+//		lv_style_t * const s = & xxsmeterstyle;
+//		//
+//		lv_style_init(s);
+//	}
 	{
 		// стиль элемента
 		lv_style_t * const s = & xxdivstyle;
@@ -548,7 +554,7 @@ static lv_obj_t * dzi_create_smtr2(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * const lbl = lv_smtr2_create(parent);
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
-	lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
+	//lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
 
 	return lbl;
 }

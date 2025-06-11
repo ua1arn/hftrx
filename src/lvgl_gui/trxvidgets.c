@@ -328,22 +328,23 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_SMTR2);
 
-    if (LV_EVENT_DRAW_MAIN == code)
+    if (LV_EVENT_DRAW_MAIN_END == code)	// рисуем после отрисовки родителбского класса
     {
 		lv_layer_t * const layer = lv_event_get_layer(e);
 		lv_smtr2_t * const smtr2 = (lv_smtr2_t *) obj;
 
         lv_area_t coords;
-        lv_obj_get_coords(obj, & coords);	// координаты объекта
+        lv_obj_get_content_coords(obj, & coords);	// координаты внутри border
         const int_fast32_t h = lv_area_get_height(& coords);
         const int_fast32_t w = lv_area_get_width(& coords);
 
+        // Прямоугольник для рисования полосы s-meter
         lv_area_t smeterbar;
         lv_area_set(& smeterbar, coords.x1, coords.y1 + h / 3, coords.x2, coords.y1 + h * 2 / 3);
 
         int_fast32_t gs = 0;
-        int_fast32_t gm = lv_area_get_width(& coords) / 2;
-        int_fast32_t ge = lv_area_get_width(& coords) - 1;
+        int_fast32_t gm = lv_area_get_width(& smeterbar) / 2;
+        int_fast32_t ge = lv_area_get_width(& smeterbar) - 1;
 
 		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 		uint_fast8_t tracemax;
@@ -357,10 +358,10 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
             lv_draw_rect_dsc_t rect;
             lv_draw_rect_dsc_init(& rect);
 
-            rect.bg_color = lv_palette_main(LV_PALETTE_GREY);
-            rect.bg_image_opa = LV_OPA_COVER;
-
-        	lv_draw_rect(layer, & rect, & coords);
+            // фон
+//            rect.bg_color = lv_palette_main(LV_PALETTE_DEEP_PURPLE);
+//            rect.bg_image_opa = LV_OPA_COVER;
+//        	lv_draw_rect(layer, & rect, & coords);
 
         	if (gv_trace > gv_pos)
         	{
@@ -371,10 +372,10 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
         	}
         	if (gv_pos > 0)
         	{
-        		lv_area_t cplus;
-        		lv_area_set(& cplus, smeterbar.x1 + 0, smeterbar.y1 + 0, smeterbar.x1 + gv_pos, smeterbar.y2 + 0);
+        		lv_area_t cmeter;
+        		lv_area_set(& cmeter, smeterbar.x1 + 0, smeterbar.y1 + 0, smeterbar.x1 + gv_pos, smeterbar.y2 + 0);
         		rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
-            	lv_draw_rect(layer, & rect, & cplus);
+            	lv_draw_rect(layer, & rect, & cmeter);
         	}
         }
 
