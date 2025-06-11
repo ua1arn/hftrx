@@ -248,7 +248,6 @@ typedef struct
 	lv_style_t stdigits;
 	lv_style_t stlines;
     lv_draw_rect_dsc_t gradrect;
-    int32_t gbufh;		// высота буфера с подготовленым градиентном
     uint8_t * gbuf1pix;	// с шириной в 1 пиксель
     lv_draw_buf_t gdrawb;
     lv_draw_rect_dsc_t grect_dsc;	// из этого прямоугольника будем брать для отрисовки вертикальных линий

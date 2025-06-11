@@ -7284,13 +7284,11 @@ static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
 {
     lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
 	lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
+    //PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
     lv_area_t coords;
     lv_obj_get_coords(obj, & coords);	// координаты объекта
 	const int_fast32_t h = lv_area_get_height(& coords);
-
-	sscp2->gbufh = h;
-    //PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
 	// Формирование градиента в требуемой высоте
     lv_obj_t * gradcanvas = lv_canvas_create(obj);
@@ -7344,13 +7342,11 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 		// Буфер для рисования градиента
 		const int_fast32_t w = 1;
 		const int_fast32_t gbufsize = LV_DRAW_BUF_SIZE(w, h, cf);	// размер выделеной памяти
-		sscp2->gbufh = h;
 		sscp2->gbuf1pix = (uint8_t *) lv_malloc(gbufsize);
 		LV_ASSERT_MALLOC(sscp2->gbuf1pix);
 
 		lv_draw_buf_init(& sscp2->gdrawb, w, h, cf, LV_DRAW_BUF_STRIDE(w, cf), sscp2->gbuf1pix, gbufsize);
 	    lv_draw_buf_set_flag(& sscp2->gdrawb, LV_IMAGE_FLAGS_MODIFIABLE);
-	    //lv_draw_buf_set_flag(& sscp2->gdrawb, LV_IMAGE_FLAGS_CUSTOM_DRAW);
 
 	    lv_draw_rect_dsc_init(& sscp2->grect_dsc);
 	    sscp2->grect_dsc.bg_image_src = & sscp2->gdrawb;
@@ -7359,12 +7355,12 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
         lv_draw_rect_dsc_init(& sscp2->gradrect);
 
         // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
-        static const lv_color_t grad_colors [] =
-        {
-                LV_COLOR_MAKE(0xff, 0x00, 0x00),
-                LV_COLOR_MAKE(0x00, 0xff, 0x00),
-                LV_COLOR_MAKE(0x00, 0x00, 0x7f),
-            };
+		static const lv_color_t grad_colors [] =
+		{
+			LV_COLOR_MAKE(0x00, 0x00, 0x7f),
+			LV_COLOR_MAKE(0x00, 0xff, 0x00),
+			LV_COLOR_MAKE(0xff, 0x00, 0x00),
+		};
 
 		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
 		lv_grad_vertical_init(& sscp2->gradrect.bg_grad);
@@ -7494,7 +7490,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 			for (level = 0; level <= val; ++ level)
 			{
 				const int32_t ydst = alldy - 1 - level;
-				const int32_t ysrc = sscp2->gbufh - 1 - level;
+				const int32_t ysrc = level;
 
 				lv_color_t * const dst = (lv_color_t *) lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
 				lv_color_t * const src = (lv_color_t *) lv_draw_buf_goto_xy(& sscp2->gdrawb, 0, ysrc);	// одна колонка
