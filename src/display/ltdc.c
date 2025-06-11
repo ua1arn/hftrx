@@ -1425,7 +1425,7 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDCx_InitTypeDef LTDC_InitStruct;
 
-	pipparams_t mainwnd = { 0, 0, DIM_X, DIM_Y };
+	const pipparams_t mainwnd = { 0, 0, DIM_X, DIM_Y };
 
 	LTDC_InitStruct.LTDC_HSPolarity = vdmode->hsyncneg ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     

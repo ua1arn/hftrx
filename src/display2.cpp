@@ -7344,9 +7344,6 @@ PACKEDCOLORPIP_T * getscratchwnd(const gxdrawb_t * db,
 		uint_fast8_t y0
 	)
 {
-//    pipparams_t pip;
-//    display2_getpipparams(& pip);
-//    return colpip_mem_at(db, pip.x, pip.y);
     return colpip_mem_at(db, GRID2X(x0), GRID2Y(y0));
 }
 

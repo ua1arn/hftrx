@@ -895,6 +895,13 @@ void graw_picture_RLE_buf(const gxdrawb_t * db, uint16_t x, uint16_t y, const pi
 
 #endif /* WITHRLEDECOMPRESS */
 
+typedef struct pipparams_tag
+{
+	uint16_t x, y, w, h;	// в пикселях
+} pipparams_t;
+
+void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
