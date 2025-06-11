@@ -587,41 +587,46 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-    static int32_t col_dsc[] = { LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
-    static int32_t row_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
-#if 1
+    static int32_t col_dsc0[] = { LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
+    static int32_t row_dsc0[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+#if 0
     lv_obj_t * lbl = lv_label_create(parent);
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 	return lbl;
 #endif
     lv_obj_t * cont0 = lv_obj_create(parent);
-    lv_obj_set_style_grid_column_dsc_array(cont0, col_dsc, 0);
-    lv_obj_set_style_grid_row_dsc_array(cont0, row_dsc, 0);
     lv_obj_set_layout(cont0, LV_LAYOUT_GRID);
+    lv_obj_set_style_grid_column_dsc_array(cont0, col_dsc0, 0);
+    lv_obj_set_style_grid_row_dsc_array(cont0, row_dsc0, 0);
 
-	lv_obj_add_style(cont0, & xxcellstyle, LV_PART_MAIN);
+	lv_obj_add_style(cont0, & xxdivstyle, LV_PART_MAIN);
 
 	unsigned col;
-	for (col = 0; col < ARRAY_SIZE(col_dsc); ++ col)
+	for (col = 0; col < ARRAY_SIZE(col_dsc0) - 1; ++ col)
 	{
 
 	    static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
 	    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
 
-	    lv_obj_t * cont = lv_obj_create(cont0);
+	    lv_obj_t * cont = lv_label_create(cont0);
+
+		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+		lv_label_set_text_fmt(cont, "F%u", col);
+		continue;
+
+	    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 	    lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
 	    lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
-	    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
-
-		lv_obj_add_style(cont, & xxcellstyle, LV_PART_MAIN);
-
+		lv_obj_set_grid_cell(cont, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
 		lv_obj_t * const upper = lv_label_create(cont);
-		lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+		lv_label_set_text_fmt(upper, "up%u", col);
+		lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 		lv_obj_add_style(upper, & xxdivstyle, LV_PART_MAIN);
 
 		lv_obj_t * const lower = lv_label_create(cont);
-		lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
+		lv_label_set_text_fmt(upper, "dn%u", col);
+		lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 		lv_obj_add_style(lower, & xxdivstyle, LV_PART_MAIN);
 
 	}
