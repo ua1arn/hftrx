@@ -1250,6 +1250,7 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 //			(int) lv_area_get_width(& dsc->image_area), (int) lv_area_get_height(& dsc->image_area),
 //			(int) area->x1, (int) area->y1, (int) lv_area_get_width(area), (int) lv_area_get_height(area));
 
+
     const lv_area_t * coords = &t->area;
     lv_area_t clipped_coords;
     if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
@@ -1277,8 +1278,8 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
 	const unsigned sstride = dbf->header.stride;
 	const uintptr_t taddr = (uintptr_t) dest;
-	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
-	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
+	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
 	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
 	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
 
@@ -1429,35 +1430,62 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-    switch(task->type) {
-        case LV_DRAW_TASK_TYPE_IMAGE:
-        case LV_DRAW_TASK_TYPE_LAYER:
-        	{
+    switch(task->type)
+    {
+    	case LV_DRAW_TASK_TYPE_LAYER:
+    	case LV_DRAW_TASK_TYPE_IMAGE:
+       	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
+                return 0;
 
+                /* not support opaque */
+                // also see draw_dsc->blend_mode
+                if (draw_dsc->opa != LV_OPA_COVER)
+                {
+                    return 0;
+                }
+                if (draw_dsc->clip_radius != 0)
+                {
+                    return 0;
+                }
+                if (lv_color_to_int(draw_dsc->recolor) != lv_color_to_int(lv_color_black()))
+                {
+                    return 0;
+                }
                 /* not support skew */
-                if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0)
+                {
                     return 0;
                 }
                 /* not support scale */
-                if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
+                if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE)
+                {
                     return 0;
                 }
                 if (lv_area_get_width(& draw_dsc->image_area) == 0 || lv_area_get_height(& draw_dsc->image_area) == 0)
-                	return 0;
-                if (lv_area_get_width(& draw_dsc->image_area) < 2)
-                	return 0;
-                bool masked = draw_dsc->bitmap_mask_src != NULL;
-                if (masked)
-                	return 0;
-                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
-                if (cf != display_get_lvformat())
-                	return 0;
-                if (masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                {
                     return 0;
                 }
-
-                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+                if (lv_area_get_width(& draw_dsc->image_area) < 2 || lv_area_get_height(& draw_dsc->image_area) < 2)
+                {
+                    return 0;
+                }
+                bool masked = draw_dsc->bitmap_mask_src != NULL;
+                if (masked)
+                {
+                    return 0;
+                }
+                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
+                if (cf != display_get_lvformat())
+                {
+                    return 0;
+                }
+                if (masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8))
+                {
+                    return 0;
+                }
+                if (cf >= LV_COLOR_FORMAT_PROPRIETARY_START)
+                {
                     return 0;
                 }
             }
@@ -1465,7 +1493,7 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
         case LV_DRAW_TASK_TYPE_FILL:
         	{
                 lv_draw_fill_dsc_t * dsc = task->draw_dsc;
-                if (lv_area_get_width(& task->area) < 2)
+                if (lv_area_get_width(& task->area) < 2 || lv_area_get_height(& task->area) < 2)
                 	return 0;
                 if(!(dsc->radius == 0
                      && dsc->grad.dir == LV_GRAD_DIR_NONE
@@ -1617,8 +1645,8 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
 	const unsigned sstride = dbf->header.stride;
 	const uintptr_t taddr = (uintptr_t) dest;
-	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
-	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
+	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
 
 	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;
 	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
@@ -1925,7 +1953,7 @@ void lvglhw_initialize(void)
 	}
 #endif /* defined (G2D_MIXER) */
 #if defined (G2D_ROT)
-	if (1)
+	if (0)
 	{
 		PRINTF("lvglhw_initialize: Enable G2D_ROT hw accelerate for LVGL\n");
 		// Блок позволяет копировать прямоугольники без изменения формата и размеров,
