@@ -1884,6 +1884,7 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 // Add custom draw unit
 void lvglhw_initialize(void)
 {
+	return;
 #if defined (G2D_MIXER)
 	if (1)
 	{
