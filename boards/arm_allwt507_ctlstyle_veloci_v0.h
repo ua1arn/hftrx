@@ -467,8 +467,7 @@
 		#define WITHLWIP 1
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 0
-
+	#if 1
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
