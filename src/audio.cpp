@@ -1211,6 +1211,8 @@ int dsp_mag2y(
 	int_fast16_t bottomdb		/* нижний предел спектроанализатора (positive number of decibels) */
 	)
 {
+	if (mag == 0)
+		return 0;
 	const FLOAT_t r = ratio2db(mag);
 	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb - topdb));
 

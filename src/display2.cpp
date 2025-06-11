@@ -7485,9 +7485,9 @@ static void lv_sscp2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
         // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
 		static const lv_color_t grad_colors [] =
 		{
-			LV_COLOR_MAKE(0x00, 0x00, 0x7f),
+			LV_COLOR_MAKE(0x00, 0x00, 0x7f),	// цвет самого слабого сигнала
 			LV_COLOR_MAKE(0x00, 0xff, 0x00),
-			LV_COLOR_MAKE(0xff, 0x00, 0x00),
+			LV_COLOR_MAKE(0xff, 0x00, 0x00),	// цвет самого сильного сигнала
 		};
 
 		lv_grad_init_stops(& sscp2->gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));

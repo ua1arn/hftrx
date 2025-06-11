@@ -301,13 +301,13 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
 
 // Исправлено масштабирование к крайнему большему значению
 static
-uint_fast16_t normalize31(
-	uint_fast16_t raw,
-	uint_fast16_t rawmin,
-	uint_fast16_t rawmid,
-	uint_fast16_t rawmax,
-	uint_fast16_t range1,
-	uint_fast16_t range2
+int_fast32_t normalize31(
+	int_fast32_t raw,
+	int_fast32_t rawmin,
+	int_fast32_t rawmid,
+	int_fast32_t rawmax,
+	int_fast32_t range1,
+	int_fast32_t range2
 	)
 {
 	if (raw < rawmid)
@@ -335,32 +335,58 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
         lv_area_t coords;
         lv_obj_get_coords(obj, & coords);	// координаты объекта
+        const int_fast32_t h = lv_area_get_height(& coords);
+        const int_fast32_t w = lv_area_get_width(& coords);
 
-        uint_fast16_t gs = 0;
-        uint_fast16_t gm = lv_area_get_width(& coords) / 2;
-        uint_fast16_t ge = lv_area_get_width(& coords) - 1;
+        lv_area_t smeterbar;
+        lv_area_set(& smeterbar, coords.x1, coords.y1 + h / 3, coords.x2, coords.y1 + h * 2 / 3);
+
+        int_fast32_t gs = 0;
+        int_fast32_t gm = lv_area_get_width(& coords) / 2;
+        int_fast32_t ge = lv_area_get_width(& coords) - 1;
 
 		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 		uint_fast8_t tracemax;
 		uint_fast8_t smtrvalue = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-		uint_fast16_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
-		uint_fast16_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+		int_fast32_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+		int_fast32_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 
-        lv_draw_rect_dsc_t rect;
-        lv_draw_rect_dsc_init(& rect);
+        if (1)
+        {
 
-        //rect.bg_color = state ? lv_color_make(255, 255, 0) : lv_color_make(0, 0, 255);
-        rect.bg_color = lv_color_make(0, 0, 255);
-        rect.bg_image_opa = LV_OPA_COVER;
+            lv_draw_rect_dsc_t rect;
+            lv_draw_rect_dsc_init(& rect);
 
-    	lv_draw_rect(layer, & rect, & coords);
+            rect.bg_color = lv_palette_main(LV_PALETTE_GREY);
+            rect.bg_image_opa = LV_OPA_COVER;
 
+        	lv_draw_rect(layer, & rect, & coords);
+
+        	if (gv_trace > gv_pos)
+        	{
+        		lv_area_t cplus;
+        		lv_area_set(& cplus, smeterbar.x1 + gv_pos, smeterbar.y1 + 0, smeterbar.x1 + gv_trace, smeterbar.y2 + 0);
+        		rect.bg_color = lv_palette_main(LV_PALETTE_RED);
+            	lv_draw_rect(layer, & rect, & cplus);
+        	}
+        	if (gv_pos > 0)
+        	{
+        		lv_area_t cplus;
+        		lv_area_set(& cplus, smeterbar.x1 + 0, smeterbar.y1 + 0, smeterbar.x1 + gv_pos, smeterbar.y2 + 0);
+        		rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+            	lv_draw_rect(layer, & rect, & cplus);
+        	}
+        }
+
+    	if (0)
     	{
             // градиент
-            lv_draw_rect_dsc_t gradrect;
-            lv_draw_rect_dsc_init(& gradrect);
+            lv_draw_rect_dsc_t rect;
+            lv_draw_rect_dsc_init(& rect);
 
-            gradrect = rect;
+            rect.bg_color = lv_palette_main(LV_PALETTE_BLUE);
+            rect.bg_image_opa = LV_OPA_COVER;
+
             // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
             static const lv_color_t grad_colors [] =
             {
@@ -369,40 +395,39 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
                 LV_COLOR_MAKE(0x00, 0x00, 0x7f),
             };
 
-    		lv_grad_init_stops(& gradrect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
-    		lv_grad_vertical_init(& gradrect.bg_grad);
-    		//lv_grad_conical_init(& gradrect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
+    		lv_grad_init_stops(& rect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
+    		lv_grad_vertical_init(& rect.bg_grad);
+    		//lv_grad_conical_init(& rect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
 
-    		// ставить высоту
-    	   	lv_draw_rect(layer, & gradrect, & coords);
-
+    	   	lv_draw_rect(layer, & rect, & coords);
     	}
 
-		// lines test
-        lv_draw_line_dsc_t dsc;
-        lv_draw_line_dsc_init(& dsc);
+    	if (0)
+    	{
+    		// lines test
+            lv_draw_line_dsc_t dsc;
+            lv_draw_line_dsc_init(& dsc);
 
-        dsc.width = 1;
-        dsc.round_end = 0;
-        dsc.round_start = 0;
+            dsc.width = 1;
+            dsc.round_end = 0;
+            dsc.round_start = 0;
 
-        // диагональ
-        dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
-        lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
-        lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
-        lv_draw_line(layer, & dsc);
+            // диагональ
+            dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
+            lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
+            lv_draw_line(layer, & dsc);
 
-        dsc.color = lv_palette_main(LV_PALETTE_RED);
-        lv_point_precise_set(& dsc.p1, coords.x1 + gv_pos, coords.y1);
-        lv_point_precise_set(& dsc.p2, coords.x1 + gv_pos, coords.y2);
-        lv_draw_line(layer, & dsc);
+            dsc.color = lv_palette_main(LV_PALETTE_RED);
+            lv_point_precise_set(& dsc.p1, coords.x1 + gv_pos, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x1 + gv_pos, coords.y2);
+            lv_draw_line(layer, & dsc);
 
-        dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
-        lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
-        lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
-        lv_draw_line(layer, & dsc);
-
-
+            dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
+            lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
+            lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
+            lv_draw_line(layer, & dsc);
+    	}
     }
 }
 
