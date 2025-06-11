@@ -27,7 +27,7 @@ XFEL = ./xfel_lpddr4
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj64
+OBJDIR = x
 # Define project name here
 PROJECT = tc1_awt507_64
 PROJECT64 = tc1_awt507_64
