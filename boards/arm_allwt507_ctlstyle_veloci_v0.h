@@ -213,7 +213,7 @@
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
-	#define FORMATFROMLIBRARY 	1
+	//#define FORMATFROMLIBRARY 	1
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
@@ -465,11 +465,9 @@
 
 	#if 0
 		#define WITHLWIP 1
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 1
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
