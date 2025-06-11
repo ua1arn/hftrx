@@ -4374,7 +4374,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
-	static uint_fast8_t grxbwsatu = 100;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+	static uint_fast8_t grxbwsatu = 50;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 #if defined (WITHSPECBETA_DEFAULT)
 	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
 #else /* defined (WITHSPECBETA_DEFAULT) */

@@ -4536,8 +4536,8 @@ uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
 	else
 		return lim - 1;
 }
-uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
 
+uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
 {
 	v ++;
 	if (v >= lim)
@@ -4545,6 +4545,8 @@ uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
 	else
 		return v;
 }
+
+#if ! LCDMODE_DUMMY
 
 static int scalecolor(int component, int m, int delta)
 {
@@ -4575,6 +4577,8 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 	return TFTALPHA(fg_a, TFTRGB(scalecolor(delta_r, m, 100) + bg_r, scalecolor(delta_g, m, 100) + bg_g, scalecolor(delta_b, m, 100) + bg_b));
 #endif
 }
+
+#endif /* ! LCDMODE_DUMMY */
 
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
@@ -7861,7 +7865,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 		        bwcoords.x1 = coords->x1 + xleft;
 		        bwcoords.x2 = coords->x1 + xrightv;
 		        rect.bg_color = display_lvlcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2);
-		        rect.bg_opa = LV_OPA_50;
+		        rect.bg_opa = glob_rxbwsatu * (LV_OPA_COVER - LV_OPA_TRANSP) / 100 + LV_OPA_TRANSP;
 		    	lv_draw_rect(layer, & rect, & bwcoords);
 			}
 		}
