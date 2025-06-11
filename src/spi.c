@@ -6192,7 +6192,7 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 		readxb [buswID] = 0x00;	// opcode
 		break;
 	default:
-		PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+		//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
 		readxb [buswID] = opcode;	// opcode
 		dmyb [buswID] = ndmy;	// dummy bytes
 		break;
@@ -6283,7 +6283,7 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword7 = USBD_peek_u32(buff32 + 4 * 6);
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
-		printhex(ptp, buff32, len4 * 4);
+		//printhex(ptp, buff32, len4 * 4);
 
 		///////////////////////////////////
 		/* Print density information. */
