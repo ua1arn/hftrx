@@ -150,11 +150,9 @@ static const dzone_t dzones [] =
 //	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
 #endif
 
-#if WITHSPECTRUMWF
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_gcombo,	& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
-#endif /* WITHSPECTRUMWF */
 
 	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	9,	4,	display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */

@@ -587,8 +587,17 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-    static int32_t col_dsc0[] = { LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
-    static int32_t row_dsc0[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+    static int32_t col_dsc0 [] =
+    {
+		LV_GRID_FR(8), LV_GRID_FR(8), LV_GRID_FR(8), LV_GRID_FR(8),
+		LV_GRID_FR(8), LV_GRID_FR(8), LV_GRID_FR(8), LV_GRID_FR(8),
+		LV_GRID_TEMPLATE_LAST
+    };
+    static int32_t row_dsc0 [] =
+    {
+    	LV_GRID_FR(1),		// занимаем всю высоту родителя
+		LV_GRID_TEMPLATE_LAST
+    };
 #if 0
     lv_obj_t * lbl = lv_label_create(parent);
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
@@ -599,7 +608,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
     lv_obj_set_style_grid_column_dsc_array(cont0, col_dsc0, 0);
     lv_obj_set_style_grid_row_dsc_array(cont0, row_dsc0, 0);
 
-	lv_obj_add_style(cont0, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(cont0, & xxcellstyle, LV_PART_MAIN);
 
 	unsigned col;
 	for (col = 0; col < ARRAY_SIZE(col_dsc0) - 1; ++ col)
@@ -608,24 +617,23 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 	    static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
 	    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
 
-	    lv_obj_t * cont = lv_label_create(cont0);
+	    lv_obj_t * cont = lv_obj_create(cont0);
 
 		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
-		lv_label_set_text_fmt(cont, "F%u", col);
-		continue;
 
 	    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 	    lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
 	    lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
 		lv_obj_set_grid_cell(cont, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
+		// нижняя и верхняя строки в элементе горизонтального меню
 		lv_obj_t * const upper = lv_label_create(cont);
 		lv_label_set_text_fmt(upper, "up%u", col);
 		lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 		lv_obj_add_style(upper, & xxdivstyle, LV_PART_MAIN);
 
 		lv_obj_t * const lower = lv_label_create(cont);
-		lv_label_set_text_fmt(upper, "dn%u", col);
+		lv_label_set_text_fmt(lower, "dn%u", col);
 		lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 		lv_obj_add_style(lower, & xxdivstyle, LV_PART_MAIN);
 
@@ -1391,7 +1399,7 @@ display2_testvidget(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint
 #endif
 
 // waterfall/spectrum parameters
-static uint_fast8_t glob_view_style;		/* стиль отображения спектра и панорамы */
+static uint_fast8_t glob_view_style = VIEW_COLOR;		/* стиль отображения спектра и панорамы */
 static uint_fast8_t gview3dss_mark;			/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 static uint_fast8_t glob_rxbwsatu = 100;	// 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре.
 
@@ -4516,6 +4524,53 @@ static void display2_legend(const gxdrawb_t * db,
 }
 
 
+uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
+{
+	if (v)
+		return -- v;
+	else
+		return lim - 1;
+}
+uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
+
+{
+	v ++;
+	if (v >= lim)
+		return 0;
+	else
+		return v;
+}
+
+static int scalecolor(int component, int m, int delta)
+{
+	return component * m / delta;
+}
+
+/* получение цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
+{
+#if defined (COLORPIP_SHADED)
+	return colorfg;
+#else
+	const int fg_a = COLORPIP_A(colorfg);
+	const int fg_r = COLORPIP_R(colorfg);
+	const int fg_g = COLORPIP_G(colorfg);
+	const int fg_b = COLORPIP_B(colorfg);
+
+	const int bg_a = COLORPIP_A(colorbg);
+	const int bg_r = COLORPIP_R(colorbg);
+	const int bg_g = COLORPIP_G(colorbg);
+	const int bg_b = COLORPIP_B(colorbg);
+
+	const int delta_r = fg_r - bg_r;
+	const int delta_g = fg_g - bg_g;
+	const int delta_b = fg_b - bg_b;
+
+	unsigned m = glob_rxbwsatu;	// 0..100
+	return TFTALPHA(fg_a, TFTRGB(scalecolor(delta_r, m, 100) + bg_r, scalecolor(delta_g, m, 100) + bg_g, scalecolor(delta_b, m, 100) + bg_b));
+#endif
+}
+
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
 enum { ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)) };
@@ -6615,53 +6670,6 @@ display_colorgrid_3dss(
 }
 
 
-uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
-{
-	if (v)
-		return -- v;
-	else
-		return lim - 1;
-}
-uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
-
-{
-	v ++;
-	if (v >= lim)
-		return 0;
-	else
-		return v;
-}
-
-static int scalecolor(int component, int m, int delta)
-{
-	return component * m / delta;
-}
-
-/* получение цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
-{
-#if defined (COLORPIP_SHADED)
-	return colorfg;
-#else
-	const int fg_a = COLORPIP_A(colorfg);
-	const int fg_r = COLORPIP_R(colorfg);
-	const int fg_g = COLORPIP_G(colorfg);
-	const int fg_b = COLORPIP_B(colorfg);
-
-	const int bg_a = COLORPIP_A(colorbg);
-	const int bg_r = COLORPIP_R(colorbg);
-	const int bg_g = COLORPIP_G(colorbg);
-	const int bg_b = COLORPIP_B(colorbg);
-
-	const int delta_r = fg_r - bg_r;
-	const int delta_g = fg_g - bg_g;
-	const int delta_b = fg_b - bg_b;
-
-	unsigned m = glob_rxbwsatu;	// 0..100
-	return TFTALPHA(fg_a, TFTRGB(scalecolor(delta_r, m, 100) + bg_r, scalecolor(delta_g, m, 100) + bg_g, scalecolor(delta_b, m, 100) + bg_b));
-#endif
-}
-
 // формирование данных спектра для последующего отображения
 // спектра или водопада
 static void display2_latchcombo(
@@ -7301,6 +7309,79 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 
 
+// подготовка изображения спектра и волрада
+static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	const uint_fast8_t hspectrum = (uint_fast16_t) yspan * glob_spectrumpart / 100;
+	switch (glob_view_style)
+	{
+#if WITHVIEW_3DSS
+	case VIEW_3DSS:
+		display2_3dss(db, xgrid, ygrid, xspan, yspan, pctx);
+		//display2_3dss_alt(db, xgrid, ygrid, xspan, yspan, pctx);
+		break;
+#endif /* WITHVIEW_3DSS */
+	default:
+		// Делим отведённый размер между двумя панелями отображения
+		display2_spectrum(db, xgrid, ygrid + 0, xspan, hspectrum, pctx);
+		display2_waterfall(db, xgrid, ygrid + hspectrum, xspan, yspan - hspectrum, pctx);
+		break;
+	}
+}
+
+static
+PACKEDCOLORPIP_T * getscratchwnd(const gxdrawb_t * db,
+		uint_fast8_t x0,
+		uint_fast8_t y0
+	)
+{
+//    pipparams_t pip;
+//    display2_getpipparams(& pip);
+//    return colpip_mem_at(db, pip.x, pip.y);
+    return colpip_mem_at(db, GRID2X(x0), GRID2Y(y0));
+}
+
+
+#else /* WITHSPECTRUMWF && ! LCDMODE_DUMMY */
+
+static
+PACKEDCOLORPIP_T * getscratchwnd(const gxdrawb_t * db,
+		uint_fast8_t x0,
+		uint_fast8_t y0
+	)
+{
+	return NULL;
+}
+
+// Stub
+static void display2_latchcombo(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+}
+
+// Stub
+static void display2_spectrum(PACKEDCOLORPIP_T * const colorpipu, int_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+}
+
+// Stub
+static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+}
+
+// Stub
+static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+}
+
+// Stub
+static void display2_wfl_init(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+
+}
+
+#endif /* WITHSPECTRUMWF && ! LCDMODE_DUMMY */
+
+
 #if WITHLVGL
 
 #define MY_CLASS_SSCP2 (& lv_sscp2_class)	// собственный renderer
@@ -7447,11 +7528,15 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 
 	// сохранияем дянные для отображения, чтобы фильтр работал правилььно
 	// todo: переместить в latch - на случай если более одного элемента используют фильтр
-	FLOAT_t powers [alldx];
+	int vals [alldx];
     int32_t x;
 	for (x = 0; x < alldx; ++ x)
 	{
-		powers [x] = filter_spectrum(x);
+#if WITHSPECTRUMWF
+		vals [x] = dsp_mag2y(powers [filter_spectrum(x)], alldy - 1, glob_topdb, glob_bottomdb);
+#else
+		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
+#endif /* WITHSPECTRUMWF */
 	}
 
 	// Формирование изображения.
@@ -7465,6 +7550,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	lv_draw_rect(layer, & rect, coord);
     }
 
+#if WITHSPECTRUMWF
     if (1)
     {
 		// Изображение "шторки" на спектре.
@@ -7501,7 +7587,9 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 			}
 		}
     }
+#endif /* WITHSPECTRUMWF */
 
+#if WITHSPECTRUMWF
     if (1)
     {
     	// линия центральной частоты
@@ -7518,6 +7606,8 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
         lv_draw_line(layer, & l);
 
     }
+#endif /* WITHSPECTRUMWF */
+
     if (0)
     {
     	// Установка точки в углу
@@ -7531,8 +7621,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
-    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
-    		//const int val = (x * (alldy - 1) / (alldx - 1));	// debug
+    		const int val = vals [x];
 
     		int32_t level;		// отступ от нижней границы контрола в отображаемой части
 			for (level = 0; level <= val; ++ level)
@@ -7554,7 +7643,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
-    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
+    		const int val = vals [x];
      		int32_t level;	// отступ от нижней границы контрола в отображаемой части
 			for (level = 0; level <= val; ++ level)
 			{
@@ -7581,7 +7670,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	for (x = 0; x < alldx; ++ x)
     	{
     		// ломанная
-    		const int val = dsp_mag2y(powers [x], alldy - 1, glob_topdb, glob_bottomdb);
+    		const int val = vals [x];
     		int32_t y = alldy - 1 - val;
 	        lv_point_precise_set(& l.p2, coord->x1 + x, coord->y1 + y);
     		if (x)
@@ -7633,6 +7722,7 @@ static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
 static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_area_t * area, uint_fast16_t wfdx, uint_fast16_t wfdy, int phase)
 {
+#if WITHSPECTRUMWF
 	gxdrawb_t wfjdbv;
 	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
 
@@ -7681,7 +7771,7 @@ static void wtrf2_fillinfo(lv_draw_image_dsc_t * fd, lv_draw_buf_t * dbf, lv_are
         	lv_area_set(& fd->image_area, 0, 0, 0, 0);	// откуда
         }
     }
-
+#endif /* WITHSPECTRUMWF */
 }
 
 // Рисуем водопад примитивами LVGL
@@ -7707,6 +7797,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
     	lv_draw_rect(layer, & rect, coords);
     }
 
+#if WITHSPECTRUMWF
     if (1)
     {
     	// водопад
@@ -7725,8 +7816,10 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_draw_image(layer, & fd1, & a1);
         lv_draw_image(layer, & fd2, & a2);
     }
+#endif /* WITHSPECTRUMWF */
 
-    if (0)
+#if ! WITHSPECTRUMWF
+    if (1)
     {
     	// надписи
 	    lv_draw_label_dsc_t label;
@@ -7736,7 +7829,9 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         label.text = "Test waterfall";
         lv_draw_label(layer, & label, coords);
     }
+#endif /* ! WITHSPECTRUMWF */
 
+#if WITHSPECTRUMWF
     if (hamradio_get_bringtuneA())
     {
     	// отладка. закрасить зону полосы пропускания
@@ -7773,7 +7868,9 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 			}
 		}
     }
+#endif /* WITHSPECTRUMWF */
 
+#if WITHSPECTRUMWF
     if (1)
     {
     	// линии
@@ -7790,82 +7887,11 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
         lv_draw_line(layer, & l);
     }
+#endif /* WITHSPECTRUMWF */
 }
 
 
 #endif /* WITHLVGL */
-
-// подготовка изображения спектра и волрада
-static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	const uint_fast8_t hspectrum = (uint_fast16_t) yspan * glob_spectrumpart / 100;
-	switch (glob_view_style)
-	{
-#if WITHVIEW_3DSS
-	case VIEW_3DSS:
-		display2_3dss(db, xgrid, ygrid, xspan, yspan, pctx);
-		//display2_3dss_alt(db, xgrid, ygrid, xspan, yspan, pctx);
-		break;
-#endif /* WITHVIEW_3DSS */
-	default:
-		// Делим отведённый размер между двумя панелями отображения
-		display2_spectrum(db, xgrid, ygrid + 0, xspan, hspectrum, pctx);
-		display2_waterfall(db, xgrid, ygrid + hspectrum, xspan, yspan - hspectrum, pctx);
-		break;
-	}
-}
-
-static
-PACKEDCOLORPIP_T * getscratchwnd(const gxdrawb_t * db,
-		uint_fast8_t x0,
-		uint_fast8_t y0
-	)
-{
-//    pipparams_t pip;
-//    display2_getpipparams(& pip);
-//    return colpip_mem_at(db, pip.x, pip.y);
-    return colpip_mem_at(db, GRID2X(x0), GRID2Y(y0));
-}
-
-
-#else /* WITHSPECTRUMWF && ! LCDMODE_DUMMY */
-
-static
-PACKEDCOLORPIP_T * getscratchwnd(const gxdrawb_t * db,
-		uint_fast8_t x0,
-		uint_fast8_t y0
-	)
-{
-	return NULL;
-}
-
-// Stub
-static void display2_latchcombo(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-}
-
-// Stub
-static void display2_spectrum(PACKEDCOLORPIP_T * const colorpipu, int_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-}
-
-// Stub
-static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-}
-
-// Stub
-static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-}
-
-// Stub
-static void display2_wfl_init(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-
-}
-
-#endif /* WITHSPECTRUMWF && ! LCDMODE_DUMMY */
 
 ///////////////////////////////
 ///
