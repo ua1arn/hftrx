@@ -2,14 +2,6 @@
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
-void linux_lvgl_gui(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		);
-
 	#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
 
 	enum {
@@ -37,7 +29,6 @@ void linux_lvgl_gui(const gxdrawb_t * db,
 		//
 		B_unused
 	};
-
 
 	enum
 	{
@@ -120,29 +111,18 @@ void linux_lvgl_gui(const gxdrawb_t * db,
 		{	41, 20,	4, 5, display2_voxtune3,	& dzi_default, PGALL, },	// VOX
 		{	45,	20,	5, 5, display2_lockstate4, 	& dzi_default, PGALL, },	// LOCK
 
-//		{	0,	0,	5, 96 - 5, linux_lvgl_gui, 		& dzi_GUI, PGINI, },
-
 		//{	14, 25,
 		//{	19, 25,
 		//{	23, 25,
 		//{	27, 25,
 
-
-	#if WITHSPECTRUMWF
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,		& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
-	#endif /* WITHSPECTRUMWF */
-
-
-	#if WITHMENU
-		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_default, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-	#if WITHAUTOTUNER
-		{	28, 			DLE1,	22, 5, display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
-	#endif /* WITHAUTOTUNER */
-	#endif /* WITHMENU */
-
-//		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
+#if 1
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,		& dzi_compat, 	PG0, },		// подготовка изображения спектра
+#else
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_dummy,			& dzi_gcombo, 	PG0, },		// подготовка изображения спектра
+#endif
 	};
 
 #if WITHMENU
