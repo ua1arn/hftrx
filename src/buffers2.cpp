@@ -3887,7 +3887,7 @@ void colmain_nextfb(void)
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
 	//	display_text(0, 0, s);
-#if WITHHDMITVHW && 0
+#if WITHHDMITVHW && 1
 		// дублирование буфера
 		gxdrawb_t fbtfb0;
 		gxdrawb_initialize(& fbtfb0, (PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y);
@@ -3919,7 +3919,7 @@ void colmain_nextfb_sub(void)
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
 	//	display_text(0, 0, s);
-#if WITHHDMITVHW && 1
+#if WITHHDMITVHW && 0
 
 		// дублирование буфера
 		gxdrawb_t fbtfb0;

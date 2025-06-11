@@ -1057,6 +1057,10 @@ static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8
     		lv_color_format_get_size(lv_display_get_color_format(disp)) * GXSIZE(lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp))
     		);
     	hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
+#if WITHHDMITVHW && defined (RTMIXIDTV) && 1
+    	// Дубль жкрана
+    	hardware_ltdc_main_set(RTMIXIDTV, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
+#endif
     }
 	/*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
@@ -1132,7 +1136,7 @@ void display_lvgl_initialize(void)
 	}
 #endif /* defined (RTMIXIDTV) */
 
-#if WITHHDMITVHW && defined (RTMIXIDTV)
+#if WITHHDMITVHW && defined (RTMIXIDTV) && 0
 	if (1)
 	{
 		static struct driverdata subdisplay =
