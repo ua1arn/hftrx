@@ -581,14 +581,51 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 	lv_obj_add_style(lower, & xxcellstyle, LV_PART_MAIN);
 
-
-
-
-
-
-	ASSERT(2 == lv_obj_get_child_count(cont));
 	return cont;
 #endif
+}
+
+static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+    static int32_t col_dsc[] = { LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
+    static int32_t row_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+#if 1
+    lv_obj_t * lbl = lv_label_create(parent);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	return lbl;
+#endif
+    lv_obj_t * cont0 = lv_obj_create(parent);
+    lv_obj_set_style_grid_column_dsc_array(cont0, col_dsc, 0);
+    lv_obj_set_style_grid_row_dsc_array(cont0, row_dsc, 0);
+    lv_obj_set_layout(cont0, LV_LAYOUT_GRID);
+
+	lv_obj_add_style(cont0, & xxcellstyle, LV_PART_MAIN);
+
+	unsigned col;
+	for (col = 0; col < ARRAY_SIZE(col_dsc); ++ col)
+	{
+
+	    static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
+	    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+
+	    lv_obj_t * cont = lv_obj_create(cont0);
+	    lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
+	    lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
+	    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+
+		lv_obj_add_style(cont, & xxcellstyle, LV_PART_MAIN);
+
+
+		lv_obj_t * const upper = lv_label_create(cont);
+		lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+		lv_obj_add_style(upper, & xxdivstyle, LV_PART_MAIN);
+
+		lv_obj_t * const lower = lv_label_create(cont);
+		lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
+		lv_obj_add_style(lower, & xxdivstyle, LV_PART_MAIN);
+
+	}
+	return cont0;
 }
 
 static void refreshtexts(void)
@@ -636,6 +673,12 @@ static const dzitem_t dzi_compat =
 {
 	.lvelementcreate = LVCREATE(dzi_create_compat),
 	.id = "compat"
+};
+
+static const dzitem_t dzi_middlemenu =
+{
+	.lvelementcreate = LVCREATE(dzi_create_middlemenu),
+	.id = "middlemenu"
 };
 
 

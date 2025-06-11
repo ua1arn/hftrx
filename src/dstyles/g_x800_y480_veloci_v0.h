@@ -80,8 +80,6 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const dzone_t dzones [] =
 {
-	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-
 	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_compat, PGALL, },
 	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_compat, PGALL, },
 
@@ -101,54 +99,55 @@ static const dzone_t dzones [] =
 
 #if WITHBARS
 	{   0, 	4,  0,	0,	display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-	{   0, 	4,	15,	20,	display2_smeter15, 	& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
+	{   0, 	4,	15,	20,	display2_dummy, 	& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 	{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
 	{	0,	4,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-	{	0,	4,	15,	20,	display2_af_spectre15,		& dzi_default, PGSPE, },
+	{	0,	4,	15,	20,	display2_af_spectre15,		& dzi_compat, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
 	{	15,	6,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	15,	6,	21, 13,	display2_dummy,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
-	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	46, 10,	3,	4,	display2_agc3,		& dzi_agc, PGALL, },	// AGC mode
+	{	37, 10,	3,	4,	display2_dummy,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
+	{	41, 10,	3,	4,	display2_dummy,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
+	{	46, 10,	3,	4,	display2_dummy,		& dzi_agc, PGALL, },	// AGC mode
 
-	{	37, 15,	3,	4,	display2_nr3,		& dzi_nr, PGALL, },	// NR : was: AGC
-	{	41, 15,	3,	4,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
-	{	45, 15,	5,	4,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
+	{	37, 15,	3,	4,	display2_dummy,		& dzi_nr, PGALL, },	// NR : was: AGC
+	{	41, 15,	3,	4,	display2_dummy,	& dzi_datamode, PGALL, },	// DATA mode indicator
+	{	45, 15,	5,	4,	display2_dummy,	& dzi_notch, PGALL, },	// NOTCH on/off
 
-	{	15, 20,	3,	4,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-	{	20,	20,	3,	4,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
-	{	24,	20,	12,	4,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
-	{	37, 20,	3,	4,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 20,	3,	4,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
-	//{	45,	20,	4,	4,	display2_lockstate4, & dzi_lockstate, PGALL, },	// LOCK
+	{	15, 20,	3,	4,	display2_dummy,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+	{	20,	20,	3,	4,	display2_dummy,	& dzi_vfomode, PGALL, },	// SPL
+	{	24,	20,	12,	4,	display2_dummy,	& dzi_freqb, PGALL, },	// SUB FREQ
+	{	37, 20,	3,	4,	display2_dummy,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
+	{	41, 20,	3,	4,	display2_dummy,	& dzi_voxtune, PGALL, },	// VOX
+	//{	45,	20,	4,	4,	display2_dummy, & dzi_lockstate, PGALL, },	// LOCK
 
 	// размещены под S-метром (15 ячеек)
-	{	1, 	25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
-	{	7, 	25,	0,	4,	display2_currlevelA6, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
+	{	1, 	25,	5,	4,	display2_dummy, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
+	{	7, 	25,	0,	4,	display2_dummy, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
-	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
-	{	19,	25,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
-	{	25, 25,	3,	4,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
+	{	14,	25,	4,	4,	display2_dummy,	& dzi_rxbwval, PGALL, },	// RX BW value
+	{	19,	25,	5,	4,	display2_dummy,		& dzi_antenna, PGALL, },
+	{	25, 25,	3,	4,	display2_dummy,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
-	{	33, 25,	3,	4,	display2_rec3,		& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
-	{	37, 25,	3,	4,	display2_spk3,		& dzi_spk, PGALL, },	// отображение признака включения динамика
-	{	41, 25, 3,	4,	display2_bkin3,		& dzi_bkin, PGALL, },	// BREAK-IN
-	//{	45,	25,	5,	4,	display2_wpm5, 		& dzi_wpm, PGALL, },	// 22WPM
-	{	45,	25,	4,	4,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
+	{	33, 25,	3,	4,	display2_dummy,		& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
+	{	37, 25,	3,	4,	display2_dummy,		& dzi_spk, PGALL, },	// отображение признака включения динамика
+	{	41, 25, 3,	4,	display2_dummy,		& dzi_bkin, PGALL, },	// BREAK-IN
+	//{	45,	25,	5,	4,	display2_dummy, 		& dzi_wpm, PGALL, },	// 22WPM
+	{	45,	25,	4,	4,	display2_dummy, & dzi_lock, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	//{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 #if 1
 	// Middle bar
-	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_compat, PG0, },
-	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
+	{	0, MIDLABEL,	BDTH_ALLRX,	10,	display2_dummy,  & dzi_middlemenu, PG0, },
+//	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_compat, PG0, },
+//	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
 #endif
 
 #if WITHSPECTRUMWF
@@ -179,20 +178,6 @@ static const dzone_t dzones [] =
 	{	0,	0,	0,	0,	display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола
 	{	0,	0, 0,	0,	display2_vtty,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
 	{	0,	(DIM_Y - GRID2Y(5)) / 5, 9,	5,	 display2_freqsof9,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
-#endif
-
-	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
-
-#if WITHHDMITVHW && 0
-	// Второй дисплей с отличающимся дизайном
-	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-
-	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 10,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	0,	20,	BDTH_ALLRX,	DLEB - 20,	display2_gcombo,	& dzi_default, PGALL, },// подготовка изображения спектра
-
-	{	0,	0,	0, 0, display2_showhdmi,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 #endif
 };
 
