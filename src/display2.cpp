@@ -7629,7 +7629,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 
 				void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
 				void * const src = lv_draw_buf_goto_xy(& sscp2->gdrawb, 0, ysrc);	// одна колонка
-				memcpy(dst, src, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
+				lv_memcpy(dst, src, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
 			}
     	}
    	}
@@ -7648,7 +7648,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 				const int32_t ydst = alldy - 1 - level;
 
 				void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
-				memcpy(dst, & colorfill, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
+				lv_memcpy(dst, & colorfill, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
 			}
     	}
    	}
