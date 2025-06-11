@@ -86,7 +86,7 @@ static lv_style_t xxdivstyle;
 static lv_style_t xxcompatstyle;	// отрисовка элементов через функции совместимости
 static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
-static lv_style_t xxcellstyle;		// для обхектов в grid - без зазора вокруг
+static lv_style_t xxcellstyle;		// объекты, выполняющие разметку для вложенных объектов - без зазоров, без рамки, с прозрачным фоном.
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 
@@ -203,10 +203,11 @@ static void lvstales_initialize(void)
 
 	{
 		// cells
+		// объекты, выполняющие разметку для вложенных объектов - без зазоров, без рамки, с прозрачным фоном.
 		lv_style_t * const s = & xxcellstyle;
 	    lv_style_init(s);
 
-	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+	    //lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_border_width(s, 0);
 		lv_style_set_radius(s, 0);
 
@@ -600,11 +601,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
     	LV_GRID_FR(1),		// занимаем всю высоту родителя
 		LV_GRID_TEMPLATE_LAST
     };
-#if 0
-    lv_obj_t * lbl = lv_label_create(parent);
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
-	return lbl;
-#endif
+
     lv_obj_t * cont0 = lv_obj_create(parent);
     lv_obj_set_layout(cont0, LV_LAYOUT_GRID);
     lv_obj_set_style_grid_column_dsc_array(cont0, col_dsc0, 0);
@@ -8678,6 +8675,10 @@ void display2_initialize(void)
 				continue;	// не треуется создавать страницу
 
 			lv_obj_t * const wnd = lv_obj_create(lv_screen_active());
+			lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
+			lv_obj_set_size(wnd, DIM_X, DIM_Y);
+			lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
+
 			unsigned i;
 			for (i = 0; i < WALKCOUNT; ++ i)
 			{
@@ -8711,9 +8712,6 @@ void display2_initialize(void)
 			// Включаем завершенную страницу
 			if (lv_obj_get_child_count(wnd) != 0)
 			{
-				lv_obj_set_size(wnd, DIM_X, DIM_Y);
-				lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
-				lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
 
 				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
 				xxmainwnds [page] = wnd;
