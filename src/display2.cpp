@@ -219,6 +219,8 @@ static void lvstales_initialize(void)
 		lv_style_set_pad_bottom(s, 0);
 		lv_style_set_pad_left(s, 0);
 		lv_style_set_pad_right(s, 0);
+
+		lv_style_set_bg_opa(s, LV_OPA_0);
 	}
 }
 
@@ -619,7 +621,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 
 	    lv_obj_t * cont = lv_obj_create(cont0);
 
-		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(cont, & xxcellstyle, LV_PART_MAIN);
 
 	    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 	    lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
