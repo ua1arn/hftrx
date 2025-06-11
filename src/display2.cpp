@@ -7533,7 +7533,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	for (x = 0; x < alldx; ++ x)
 	{
 #if WITHSPECTRUMWF
-		vals [x] = dsp_mag2y(powers [filter_spectrum(x)], alldy - 1, glob_topdb, glob_bottomdb);
+		vals [x] = dsp_mag2y(filter_spectrum(x), alldy - 1, glob_topdb, glob_bottomdb);
 #else
 		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 #endif /* WITHSPECTRUMWF */
