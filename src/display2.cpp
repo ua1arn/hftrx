@@ -9,6 +9,7 @@
 #include "board.h"
 #include "audio.h"
 #include "display2.h"
+#include "keyboard.h"
 #include "formats.h"
 
 #include <string.h>
@@ -666,10 +667,20 @@ static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 #if WITHKEYBOARD
 static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 {
+#if WITHLVGLINDEV
+	uint_fast8_t kbch;
+
+	data->state = kbd_scan(& kbch) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	// lv_key_t (заняты коды до 127)
+	data->key = kbch;
+#else
+	// stub
 	data->state = LV_INDEV_STATE_RELEASED;
 	// lv_key_t (заняты коды до 127)
 	data->key = 0;
+#endif /*  */
 }
+
 #endif /* WITHKEYBOARD */
 
 

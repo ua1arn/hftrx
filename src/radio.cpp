@@ -16448,6 +16448,13 @@ processmessages(
 #endif /* WITHUSEUSBBT */
 	app_processing(inmenu, mp);
 
+#if WITHLVGL && WITHLVGLINDEV
+
+	* kbch = KBD_CODE_MAX;
+	* kbready = 0;
+
+#else /* WITHLVGL && WITHLVGLINDEV */
+
 	if ((* kbready = kbd_scan(kbch)) != 0)
 	{
 		if (board_wakeup() && * kbch != KBD_CODE_POWEROFF)
@@ -16455,6 +16462,8 @@ processmessages(
 	}
 	else
 		* kbch = KBD_CODE_MAX;
+
+#endif /* WITHLVGL && WITHLVGLINDEV */
 
 	uint8_t * buff;
 	switch (takemsgready(& buff))
