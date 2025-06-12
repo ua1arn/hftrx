@@ -231,7 +231,7 @@ const char * display2_gethtml(uint_fast8_t page);
 #include "widgets/label/lv_label_private.h"
 #include "widgets/image/lv_image_private.h"
 #include "layouts/grid/lv_grid.h"
-#include "misc/lv_area_private.h"
+#include "misc/lv_event.h"
 #include "src/lvgl_gui/styles.h"
 
 typedef struct

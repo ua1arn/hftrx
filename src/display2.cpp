@@ -80,6 +80,13 @@ typedef struct dzone
 
 #if WITHLVGL
 
+static void mainwndkeyhandler(lv_event_t * e)
+{
+	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+	//PRINTF("ev: %s\n", lv_event_code_get_name(e->code));
+	TP();
+}
+
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqastyle;
 static lv_style_t xxfreqbstyle;
@@ -7445,10 +7452,7 @@ static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
     lv_canvas_init_layer(gradcanvas, & layer);
 
 	lv_area_t gradcoords;
-	lv_area_set_pos(& gradcoords, 0, 0);
-	lv_area_set_width(& gradcoords, 1);
-	lv_area_set_height(& gradcoords, h);
-
+	lv_area_set(& gradcoords, 0, 0, 0, h - 1);
 	lv_draw_rect(& layer, & sscp2->gradrect, & gradcoords);
 
     lv_canvas_finish_layer(gradcanvas, & layer);	// выполняем отрисовку в sscp2->gdrawb
@@ -8684,6 +8688,7 @@ void display2_initialize(void)
 	lvstales_initialize();	// эти стили нужны в linux ?
 
 	{
+		lv_obj_t * const parent = lv_screen_active();
     	// Всего страниц (включая неотображаемые - PAGEBITS
 		uint_fast8_t page;
 		for (page = 0; page < PAGEBITS; ++ page)
@@ -8692,7 +8697,7 @@ void display2_initialize(void)
 			if ((subset & REDRSUBSET_SHOW) == 0)
 				continue;	// не треуется создавать страницу
 
-			lv_obj_t * const wnd = lv_obj_create(lv_screen_active());
+			lv_obj_t * const wnd = lv_obj_create(parent);
 			lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
 			lv_obj_set_size(wnd, DIM_X, DIM_Y);
 			lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
@@ -8727,11 +8732,14 @@ void display2_initialize(void)
 
 			}
 
-			// Включаем завершенную страницу
+			// Включаем завершённую страницу
 			if (lv_obj_get_child_count(wnd) != 0)
 			{
-
 				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
+//				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_PRESSED, NULL);
+//				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_RELEASED, NULL);
+//				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);
+
 				xxmainwnds [page] = wnd;
 			}
 			else

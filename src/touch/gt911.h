@@ -2,6 +2,11 @@
 #define GT911_H_INCLUDED
 
 #include "hardware.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gt911structs.h"
 
 #define GOODIX_OK   0
@@ -94,5 +99,9 @@
 
 uint_fast8_t gt911_initialize(void);
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt);
+
+#ifdef __cplusplus
+ }
+#endif
 
 #endif /* GT911_H_INCLUDED */

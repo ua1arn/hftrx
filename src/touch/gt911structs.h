@@ -3,6 +3,10 @@
 
 #include "hardware.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   // 0x8140-0x814A 
   char productId[4];
@@ -119,5 +123,9 @@ typedef struct {
   uint8_t NC_5[2];
   GTKeyConfig keys;
 }  ATTRPACKED GTConfig;
+
+#ifdef __cplusplus
+ }
+#endif
 
 #endif /* GT911STRUCTS_H_INCLUDED */
