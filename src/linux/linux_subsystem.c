@@ -2236,6 +2236,9 @@ void linux_user_init(void)
 	linux_create_thread(& nmea_t, linux_nmea_spool, 50, nmea_thread_core);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
 #endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z*/
+#if WITHLVGL && 0
+	lvgl_gui_init(lv_screen_active());
+#endif
 }
 
 /****************************************************************/

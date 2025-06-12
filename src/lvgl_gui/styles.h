@@ -10,7 +10,6 @@ extern "C" {
 void styles_init(void);	// инициализация стилей, используемых объектами главного окна
 void lvgl_test(void);	// создание элементов на главном окне
 void lvgl_dev_init(void);
-void lvgl_gui_init(lv_obj_t * parent);
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
 extern const lv_font_t eurostyle_56w;

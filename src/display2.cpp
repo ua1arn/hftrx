@@ -8775,10 +8775,6 @@ void display2_initialize(void)
 		}
 	}
 
-#if LINUX_SUBSYSTEM // другое наверное условое WITHTOUCHGUI - No dzones
-	lvgl_gui_init(lv_screen_active());
-#endif
-
 	#if defined (TSC1_TYPE)
 	{
 		lv_indev_t * indev = lv_indev_create();
