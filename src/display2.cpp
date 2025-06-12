@@ -80,13 +80,6 @@ typedef struct dzone
 
 #if WITHLVGL
 
-static void mainwndkeyhandler(lv_event_t * e)
-{
-	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
-	//PRINTF("ev: %s\n", lv_event_code_get_name(e->code));
-	TP();
-}
-
 static lv_style_t xxmainstyle;
 static lv_style_t xxfreqastyle;
 static lv_style_t xxfreqbstyle;
@@ -98,6 +91,7 @@ static lv_style_t xxtxrxstyle;
 static lv_style_t xxcellstyle;		// объекты, выполняющие разметку для вложенных объектов - без зазоров, без рамки, с прозрачным фоном.
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
+static lv_group_t * xxgroup;
 
 // преобразование цвета в тип LVGL
 lv_color_t display_lvlcolor(COLORPIP_T c)
@@ -663,13 +657,38 @@ static void refreshtexts(void)
 #if defined (TSC1_TYPE)
 static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 {
-	uint_fast16_t x, y, p;
-	p = board_tsc_getxy(& x, & y);
-	data->state = p ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	uint_fast16_t x, y;
+
+	data->state = board_tsc_getxy(& x, & y) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
 	data->point.x = x;
 	data->point.y = y;
 }
 #endif /* defined (TSC1_TYPE) */
+
+//#include "misc/lv_event_private.h"
+//extern "C" const char * lv_event_code_get_name(lv_event_code_t code);
+
+static int demostate;
+static void mainwndkeyhandler(lv_event_t * e)
+{
+	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
+	switch (lv_event_get_code(e))
+	{
+	case LV_EVENT_KEY:
+		PRINTF("event key=%u\n", (unsigned) lv_event_get_key(e));
+		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
+		{
+			demostate = ! demostate;
+		}
+		break;
+	case LV_EVENT_CLICKED:
+		PRINTF("clicked at main window\n");
+		break;
+	default:
+		break;
+	}
+}
 
 #if WITHKEYBOARD
 static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
@@ -687,7 +706,6 @@ static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 	data->key = 0;
 #endif /*  */
 }
-
 #endif /* WITHKEYBOARD */
 
 
@@ -8560,6 +8578,10 @@ void display2_bgprocess(
 		dctx_t * pctx
 		)
 {
+#if WITHLVGLINDEV && 0
+	inmenu = 0;
+	menuset = demostate ? PAGESLEEP : 0;
+#endif
 	const uint_fast8_t ix = getpageix(inmenu, menuset);	// требуемая страница для показа (включая меню и sleep)
 
 	if (redrawreq == 0)
@@ -8688,6 +8710,7 @@ void display2_initialize(void)
 	lvstales_initialize();	// эти стили нужны в linux ?
 
 	{
+		xxgroup = lv_group_create();
 		lv_obj_t * const parent = lv_screen_active();
     	// Всего страниц (включая неотображаемые - PAGEBITS
 		uint_fast8_t page;
@@ -8736,10 +8759,12 @@ void display2_initialize(void)
 			if (lv_obj_get_child_count(wnd) != 0)
 			{
 				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
-//				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_PRESSED, NULL);
-//				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_RELEASED, NULL);
-//				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);
-
+#if WITHLVGLINDEV
+				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
+				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);
+				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
+				lv_group_add_obj(xxgroup, wnd);
+#endif /* WITHLVGLINDEV */
 				xxmainwnds [page] = wnd;
 			}
 			else
@@ -8766,6 +8791,13 @@ void display2_initialize(void)
 		lv_indev_t * indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
 		lv_indev_set_read_cb(indev, input_keypad_read_cb);
+#if WITHLVGLINDEV
+		const uint_fast8_t page = 0;
+		if (xxgroup)
+		{
+			lv_indev_set_group(indev, xxgroup);
+		}
+#endif /* WITHLVGLINDEV */
 	}
 	#endif /* WITHKEYBOARD) */
 	// TODO: add encoder(s)
