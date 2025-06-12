@@ -4521,12 +4521,38 @@ static const struct paramdefdef xgwflevelsep =
 	#else /* WITHISBOOTLOADER */
 		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
 	#endif /* WITHISBOOTLOADER */
+
+	static const struct paramdefdef xgbglight =
+	{
+		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX,
+		OFFSETOF(struct nvmap, gbglight),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gbglight,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+
 #else /* WITHLCDBACKLIGHT */
 	enum { gbglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
 
 #if WITHKBDBACKLIGHT
 	static uint_fast8_t gkblight /* = 1 */;
+
+	static const struct paramdefdef xgkblight =
+	{
+		QLABEL2("KBD LIGH", "KBD Backlight"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gkblight),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gkblight,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+
 #else /* WITHKBDBACKLIGHT */
 	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
@@ -7000,6 +7026,17 @@ static uint_fast8_t gdimmtime;	/* количество секунд до гаш�
 static uint_fast8_t dimmcount;
 static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
+static const struct paramdefdef xgdimmtime =
+{
+	QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
+	ITEM_VALUE,
+	0, 240,
+	OFFSETOF(struct nvmap, gdimmtime),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gdimmtime,
+	getzerobase, /* складывается со смещением и отображается */
+};
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 
 #if WITHFANTIMER
@@ -7021,6 +7058,18 @@ static uint_fast8_t fanpaflagch;	/* не-0: изменилось состоян�
 static uint_fast8_t gsleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
 static uint_fast16_t sleepcount;	/* счетчик в секундах */
 static uint_fast8_t sleepflagch;	/* не-0: изменилось состояние sleepflag */
+
+static const struct paramdefdef xgsleeptime =
+{
+	QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
+	ITEM_VALUE,
+	0, 240,
+	OFFSETOF(struct nvmap, gsleeptime),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gsleeptime,
+	getzerobase, /* складывается со смещением и отображается */
+};
 
 #else
 	//enum { sleepflag = 0 };

@@ -125,52 +125,16 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 #if WITHLCDBACKLIGHT
-	(const struct paramdefdef [1]) {
-		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
-		OFFSETOF(struct nvmap, gbglight),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gbglight,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgbglight,
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
-	(const struct paramdefdef [1]) {
-		QLABEL2("KBD LIGH", "KBD Backlight"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, gkblight),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gkblight,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgkblight,
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	(const struct paramdefdef [1]) {
-		QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, 240, 
-		OFFSETOF(struct nvmap, gdimmtime),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdimmtime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgdimmtime,
 #endif /* WITHKBDBACKLIGHT */
 #if WITHSLEEPTIMER
-	(const struct paramdefdef [1]) {
-		QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, 240, 
-		OFFSETOF(struct nvmap, gsleeptime),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsleeptime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgsleeptime,
 #endif /* WITHSLEEPTIMER */
 #if LCDMODE_COLORED
 	// Для цветных дисплеев можно менять цвет фона
