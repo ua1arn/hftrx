@@ -441,7 +441,7 @@
 	#endif
 	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
-		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL
+		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
