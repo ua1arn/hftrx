@@ -661,8 +661,8 @@ static lv_obj_t * dzi_create_smtr2(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 	//lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
-	ASSERT(lv_obj_is_editable(lbl));
-	lv_obj_add_event_cb(lbl, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
+//	ASSERT(lv_obj_is_editable(lbl));
+//	lv_obj_add_event_cb(lbl, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
 
 	return lbl;
 }

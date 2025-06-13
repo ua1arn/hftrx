@@ -69,7 +69,7 @@ static const lv_obj_class_t lv_smtr2_class  = {
     .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_smtr2_t),
     .name = "hmr_smtr2",
-    .editable = LV_OBJ_CLASS_EDITABLE_TRUE,
+//    .editable = LV_OBJ_CLASS_EDITABLE_TRUE,
 };
 
 static const lv_obj_class_t lv_txrx_class  = {
