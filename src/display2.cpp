@@ -234,6 +234,109 @@ static void lvstales_initialize(void)
 	}
 }
 
+#if defined (TSC1_TYPE)
+static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+	uint_fast16_t x, y;
+
+	data->state = board_tsc_getxy(& x, & y) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	data->point.x = x;
+	data->point.y = y;
+}
+#endif /* defined (TSC1_TYPE) */
+
+#if WITHKEYBOARD
+static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+#if WITHLVGLINDEV
+	uint_fast8_t kbch;
+
+	data->state = kbd_scan(& kbch) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+	// lv_key_t (заняты коды до 127)
+	data->key = kbch;
+#else
+	// stub
+	data->state = LV_INDEV_STATE_RELEASED;
+	// lv_key_t (заняты коды до 127)
+	data->key = 0;
+#endif /*  */
+}
+#endif /* WITHKEYBOARD */
+
+#if WITHENCODER
+static void input_encoder_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+#if WITHLVGLINDEV
+	encoder_t * const e = (encoder_t *) lv_indev_get_driver_data(drv);
+	LV_ASSERT_NULL(e);
+	data->state = LV_INDEV_STATE_RELEASED;
+	data->enc_diff = encoder_get_delta(e, 1);
+//	if (data->enc_diff)
+//	{
+//		PRINTF("input_encoder_read_cb: delta=%d\n", (int) data->enc_diff);
+//	}
+#else
+	// stub
+	data->state = LV_INDEV_STATE_RELEASED;
+	data->enc_diff = 0;
+#endif /*  */
+}
+#endif /* WITHENCODER */
+
+//#include "misc/lv_event_private.h"
+//extern "C" const char * lv_event_code_get_name(lv_event_code_t code);
+
+static int demostate;
+
+static void mainwndkeyhandler(lv_event_t * e)
+{
+	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
+	switch (lv_event_get_code(e))
+	{
+	case LV_EVENT_KEY:
+		PRINTF("main event key=%u, obj=%p\n", (unsigned) lv_event_get_key(e), lv_event_get_target(e));
+		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
+		{
+			demostate = ! demostate;
+		}
+		break;
+	case LV_EVENT_CLICKED:
+		PRINTF("main clicked , obj=%p\n", lv_event_get_target(e));
+		break;
+	case LV_EVENT_ROTARY:
+		PRINTF("main rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
+		break;
+	default:
+		break;
+	}
+}
+
+static void sleepwndkeyhandler(lv_event_t * e)
+{
+	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
+	switch (lv_event_get_code(e))
+	{
+	case LV_EVENT_KEY:
+		PRINTF("sleep event key=%u, obj=%p\n", (unsigned) lv_event_get_key(e), lv_event_get_target(e));
+		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
+		{
+			demostate = ! demostate;
+		}
+		break;
+	case LV_EVENT_CLICKED:
+		PRINTF("sleep clicked , obj=%p\n", lv_event_get_target(e));
+		break;
+	case LV_EVENT_ROTARY:
+		PRINTF("sleep rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
+		break;
+	default:
+		break;
+	}
+}
+
+
 static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	// Тут создать все интересующие жлементы - размер в экран у parent ставится
@@ -558,6 +661,8 @@ static lv_obj_t * dzi_create_smtr2(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
 	//lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
+	ASSERT(lv_obj_is_editable(lbl));
+	lv_obj_add_event_cb(lbl, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
 
 	return lbl;
 }
@@ -654,105 +759,6 @@ static void refreshtexts(void)
 }
 
 #define LVCREATE(fn) (fn)
-
-#if defined (TSC1_TYPE)
-static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
-{
-	uint_fast16_t x, y;
-
-	data->state = board_tsc_getxy(& x, & y) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-	data->point.x = x;
-	data->point.y = y;
-}
-#endif /* defined (TSC1_TYPE) */
-
-#if WITHKEYBOARD
-static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
-{
-#if WITHLVGLINDEV
-	uint_fast8_t kbch;
-
-	data->state = kbd_scan(& kbch) ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-	// lv_key_t (заняты коды до 127)
-	data->key = kbch;
-#else
-	// stub
-	data->state = LV_INDEV_STATE_RELEASED;
-	// lv_key_t (заняты коды до 127)
-	data->key = 0;
-#endif /*  */
-}
-#endif /* WITHKEYBOARD */
-
-#if WITHENCODER
-static void input_encoder_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
-{
-#if WITHLVGLINDEV
-	encoder_t * const e = (encoder_t *) lv_indev_get_driver_data(drv);
-	LV_ASSERT_NULL(e);
-	data->state = LV_INDEV_STATE_RELEASED;
-	data->enc_diff = encoder_get_delta(e, 1);
-#else
-	// stub
-	data->state = LV_INDEV_STATE_RELEASED;
-	data->enc_diff = 0;
-#endif /*  */
-}
-#endif /* WITHENCODER */
-
-//#include "misc/lv_event_private.h"
-//extern "C" const char * lv_event_code_get_name(lv_event_code_t code);
-
-static int demostate;
-
-static void mainwndkeyhandler(lv_event_t * e)
-{
-	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
-//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
-	switch (lv_event_get_code(e))
-	{
-	case LV_EVENT_KEY:
-		PRINTF("main event key=%u, obj=%p\n", (unsigned) lv_event_get_key(e), lv_event_get_target(e));
-		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
-		{
-			demostate = ! demostate;
-		}
-		break;
-	case LV_EVENT_CLICKED:
-		PRINTF("main clicked , obj=%p\n", lv_event_get_target(e));
-		break;
-	case LV_EVENT_ROTARY:
-		PRINTF("main rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
-		break;
-	default:
-		break;
-	}
-}
-
-static void sleepwndkeyhandler(lv_event_t * e)
-{
-	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
-//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
-	switch (lv_event_get_code(e))
-	{
-	case LV_EVENT_KEY:
-		PRINTF("sleep event key=%u, obj=%p\n", (unsigned) lv_event_get_key(e), lv_event_get_target(e));
-		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
-		{
-			demostate = ! demostate;
-		}
-		break;
-	case LV_EVENT_CLICKED:
-		PRINTF("sleep clicked , obj=%p\n", lv_event_get_target(e));
-		break;
-	case LV_EVENT_ROTARY:
-		PRINTF("sleep rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
-		break;
-	default:
-		break;
-	}
-}
-
 
 #else /* WITHLVGL */
 
@@ -8811,12 +8817,12 @@ void display2_initialize(void)
 				{
 				case 0:
 					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
-					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);		// Объект должен быть editable
+					//lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);		// Объект должен быть editable
 					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
 					break;
 				case PAGESLEEP:
 					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
-					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
+					//lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
 					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
 					break;
 				}

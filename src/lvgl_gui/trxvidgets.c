@@ -69,6 +69,7 @@ static const lv_obj_class_t lv_smtr2_class  = {
     .base_class = & lv_obj_class,
     .instance_size = sizeof (lv_smtr2_t),
     .name = "hmr_smtr2",
+    .editable = LV_OBJ_CLASS_EDITABLE_TRUE,
 };
 
 static const lv_obj_class_t lv_txrx_class  = {
@@ -328,6 +329,13 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 	const lv_event_code_t code = lv_event_get_code(e);
     LV_ASSERT_OBJ(obj, MY_CLASS_SMTR2);
 
+    if (LV_EVENT_ROTARY == code)
+    {
+    	if (lv_event_get_rotary_diff(e))
+    	{
+    		PRINTF("lv_smtr2_event rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
+    	}
+    }
     if (LV_EVENT_DRAW_MAIN_END == code)	// рисуем после отрисовки родителбского класса
     {
 		lv_layer_t * const layer = lv_event_get_layer(e);
