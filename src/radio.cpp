@@ -21975,6 +21975,9 @@ int infocb_modea(char * b, size_t len, int * selector)
 
 int infocb_modeb(char * b, size_t len, int * selector)
 {
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);
+	* selector = state;
 	return local_snprintf_P(b, len, "%s", hamradio_get_mode_b_value_P());
 }
 
@@ -21995,7 +21998,9 @@ int infocb_preamp_ovf(char * b, size_t len, int * selector)
 int infocb_tune(char * b, size_t len, int * selector)
 {
 #if WITHTX && WITHAUTOTUNER
-	return local_snprintf_P(b, len, "%s", hamradio_get_tunemodevalue() ? "TUN" : "");
+	const uint_fast8_t state = hamradio_get_tunemodevalue();
+	* selector = state;
+	return local_snprintf_P(b, len, "%s", state ? "TUN" : "");
 #else
 	return 0;
 #endif
@@ -22004,7 +22009,9 @@ int infocb_tune(char * b, size_t len, int * selector)
 int infocb_bypass(char * b, size_t len, int * selector)
 {
 #if WITHAUTOTUNER
-	return local_snprintf_P(b, len, "%s", hamradio_get_bypvalue() ? "BYP" : "TUN");
+	const uint_fast8_t state = hamradio_get_bypvalue();
+	* selector = state;
+	return local_snprintf_P(b, len, "%s", state ? "BYP" : "TUN");
 #else
 	return 0;
 #endif
@@ -22023,25 +22030,29 @@ int infocb_wpm(char * b, size_t len, int * selector)
 int infocb_rec(char * b, size_t len, int * selector)
 {
 	const uint_fast8_t state = hamradio_get_rec_value();	// не-0: запись включена
+	* selector = state;
 	return local_snprintf_P(b, len, "%s", state ? "REC" : "PAU");
 }
 
 int infocb_spk(char * b, size_t len, int * selector)
 {
 	const uint_fast8_t state = hamradio_get_spkon_value();	// не-0: динамик включен
+	* selector = state;
 	return local_snprintf_P(b, len, "%s", state ? "SPK" : "");
 }
 
 int infocb_bkin(char * b, size_t len, int * selector)
 {
 	const uint_fast8_t state = hamradio_get_bkin_value();	// не-0: break-in включен
-	return local_snprintf_P(b, len, "%s", state ? "BKIN" : "");
+	* selector = state;
+	return local_snprintf_P(b, len, "%s", state ? "BKIN" : "BKIN");
 }
 
 int infocb_usbact(char * b, size_t len, int * selector)
 {
 	const uint_fast8_t state = hamradio_get_usbh_active();	// не-0: USB active
-	return local_snprintf_P(b, len, "%s", state ? "USB" : "");
+	* selector = state;
+	return local_snprintf_P(b, len, "%s", state ? "USB" : "USB");
 }
 
 int infocb_vfomode(char * b, size_t len, int * selector)
@@ -22188,6 +22199,9 @@ int infocb_freqa(char * b, size_t len, int * selector)
 int infocb_freqb(char * b, size_t len, int * selector)
 {
 	unsigned mhz, khz, hz;
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);
+	* selector = state;
 
 	xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
 	return local_snprintf_P(b, len, "%u.%03u.%03u", mhz, khz, hz);
