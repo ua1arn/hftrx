@@ -98,16 +98,16 @@ static const dzone_t dzones [] =
 
 
 #if WITHBARS
-	{   0, 	5,  0,	0,	display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-	{   0, 	5,	15,	19,	display2_dummy, 	& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
+	{   0, 	5,  0,	0,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
+	{   0, 	4,  15,	20,	display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
+//	{   0, 	5,	15,	19,	display2_dummy, 		& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
-	{	0,	5,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
-	{	0,	5,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-	{	0,	5,	15,	19,	display2_af_spectre15,		& dzi_compat, PGSPE, },
+	{	0,	5,	0,	0,	display2_af_spectre15_init,		NULL, PGINI, },
+	{	0,	5,	0,	0,	display2_af_spectre15_latch,	NULL,	PGLATCH, },
+	{	0,	5,	15,	19,	display2_af_spectre15,			& dzi_compat, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
-	{	15,	6,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 	{	15,	6,	21, 13,	display2_dummy,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
@@ -145,14 +145,14 @@ static const dzone_t dzones [] =
 
 #if 1
 	// Middle bar
-	{	0, MIDLABEL,	BDTH_ALLRX,	10,	display2_dummy,  & dzi_middlemenu, PG0, },
-//	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_compat, PG0, },
-//	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
+//	{	0, MIDLABEL,	BDTH_ALLRX,	10,	display2_dummy,  & dzi_middlemenu, PG0, },
+	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_compat, PG0, },
+	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
 #endif
 
-	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_dummy,	& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
+	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_wfl_init,		NULL,	PGINI, },	// формирование палитры водопада
+	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	NULL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_gcombo,		& dzi_compat, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 
 	{	0,	DLEB,	12,	4,	display2_dummy,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	9,	4,	display2_span9,			& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
