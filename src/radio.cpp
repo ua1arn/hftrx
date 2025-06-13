@@ -21124,22 +21124,6 @@ uint_fast8_t hamradio_get_submode(void)
 	return getsubmode(0);
 }
 
-void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
-{
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
-	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
-	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-
-	if (need_correct_freq)
-		gsubmodechange(getsubmode(bi), bi);
-	else
-		storebandstate(getvfoindex(bi), bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
-
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	display_redrawfreqstimed(1);
-	display2_needupdate();
-}
-
 void hamradio_clean_memory_cells(uint_fast8_t i)
 {
 	ASSERT(i < MBANDS_COUNT);
@@ -21331,6 +21315,26 @@ uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 }
 
 #endif /* WITHTOUCHGUI */
+
+#if 1
+
+void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
+	const uint_fast8_t defcol = locatesubmode(newsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+	putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+
+	if (need_correct_freq)
+		gsubmodechange(getsubmode(bi), bi);
+	else
+		storebandstate(getvfoindex(bi), bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+
+	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
+	display_redrawfreqstimed(1);
+	display2_needupdate();
+}
+
+#endif /*  */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 uint_fast8_t hamradio_get_gsmetertype(void)
