@@ -317,6 +317,83 @@ int_fast32_t normalize31(
 		return normalize(raw - rawmid, 0, rawmax - rawmid - 1, range2 - range1 - 1) + range1;
 }
 
+static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t * layer)
+{
+	const int_fast32_t h = lv_area_get_height(coords);
+	const int_fast32_t w = lv_area_get_width(coords);
+	// Прямоугольник для рисования полосы s-meter
+	lv_area_t smeterbar;
+	lv_area_set(&smeterbar, coords->x1, coords->y1 + h / 3, coords->x2, coords->y1 + h * 2 / 3);
+	int_fast32_t gs = 0;
+	int_fast32_t gm = lv_area_get_width(&smeterbar) / 2;
+	int_fast32_t ge = lv_area_get_width(&smeterbar) - 1;
+	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
+	// без возможных тормозов на SPI при чтении
+	uint_fast8_t tracemax;
+	uint_fast8_t smtrvalue = board_getsmeter(&tracemax, 0, UINT8_MAX, 0);
+	int_fast32_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+	int_fast32_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+	if (1)
+	{
+		lv_draw_rect_dsc_t rect;
+		lv_draw_rect_dsc_init(&rect);
+		// фон
+		rect.bg_color = lv_palette_main(LV_PALETTE_DEEP_PURPLE);
+		rect.bg_image_opa = LV_OPA_COVER;
+		lv_draw_rect(layer, & rect, coords);
+
+		if (gv_pos > 0)
+		{
+			lv_area_t cmeter;
+			lv_area_set(&cmeter, smeterbar.x1 + 0, smeterbar.y1 + 0, smeterbar.x1 + gv_pos, smeterbar.y2 + 0);
+			rect.bg_color = lv_palette_main(LV_PALETTE_RED);
+			lv_draw_rect(layer, &rect, &cmeter);
+		}
+		if (gv_trace > gv_pos)
+		{
+			lv_area_t cplus;
+			lv_area_set(&cplus, smeterbar.x1 + gv_pos, smeterbar.y1 + 0, smeterbar.x1 + gv_trace, smeterbar.y2 + 0);
+			rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
+			lv_draw_rect(layer, &rect, &cplus);
+			// Заполнение до правого края
+			lv_area_t cright;
+			lv_area_set(&cright, smeterbar.x1 + gv_trace, smeterbar.y1 + 0, smeterbar.x2, smeterbar.y2 + 0);
+			rect.bg_color = lv_palette_main(LV_PALETTE_BLUE_GREY);
+			lv_draw_rect(layer, &rect, &cright);
+		}
+		else
+		{
+			// Заполнение до правого края
+			lv_area_t cright;
+			lv_area_set(&cright, smeterbar.x1 + gv_pos, smeterbar.y1 + 0, smeterbar.x2, smeterbar.y2 + 0);
+			rect.bg_color = lv_palette_main(LV_PALETTE_BLUE_GREY);
+			lv_draw_rect(layer, &rect, &cright);
+		}
+	}
+	if (0)
+	{
+		// lines test
+		lv_draw_line_dsc_t dsc;
+		lv_draw_line_dsc_init(&dsc);
+		dsc.width = 1;
+		dsc.round_end = 0;
+		dsc.round_start = 0;
+		// диагональ
+		dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
+		lv_point_precise_set(&dsc.p1, coords->x1, coords->y1);
+		lv_point_precise_set(&dsc.p2, coords->x2, coords->y2);
+		lv_draw_line(layer, &dsc);
+		dsc.color = lv_palette_main(LV_PALETTE_RED);
+		lv_point_precise_set(&dsc.p1, coords->x1 + gv_pos, coords->y1);
+		lv_point_precise_set(&dsc.p2, coords->x1 + gv_pos, coords->y2);
+		lv_draw_line(layer, &dsc);
+		dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
+		lv_point_precise_set(&dsc.p1, coords->x1 + gv_trace, coords->y1);
+		lv_point_precise_set(&dsc.p2, coords->x1 + gv_trace, coords->y2);
+		lv_draw_line(layer, &dsc);
+	}
+}
+
 // custom draw widget
 static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     LV_UNUSED(class_p);
@@ -338,105 +415,11 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     }
     if (LV_EVENT_DRAW_MAIN_END == code)	// рисуем после отрисовки родителбского класса
     {
-		lv_layer_t * const layer = lv_event_get_layer(e);
-		lv_smtr2_t * const smtr2 = (lv_smtr2_t *) obj;
-
-        lv_area_t coords;
-        lv_obj_get_content_coords(obj, & coords);	// координаты внутри border
-        const int_fast32_t h = lv_area_get_height(& coords);
-        const int_fast32_t w = lv_area_get_width(& coords);
-
-        // Прямоугольник для рисования полосы s-meter
-        lv_area_t smeterbar;
-        lv_area_set(& smeterbar, coords.x1, coords.y1 + h / 3, coords.x2, coords.y1 + h * 2 / 3);
-
-        int_fast32_t gs = 0;
-        int_fast32_t gm = lv_area_get_width(& smeterbar) / 2;
-        int_fast32_t ge = lv_area_get_width(& smeterbar) - 1;
-
-		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-		uint_fast8_t tracemax;
-		uint_fast8_t smtrvalue = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-		int_fast32_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
-		int_fast32_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
-
-        if (1)
-        {
-
-            lv_draw_rect_dsc_t rect;
-            lv_draw_rect_dsc_init(& rect);
-
-            // фон
-//            rect.bg_color = lv_palette_main(LV_PALETTE_DEEP_PURPLE);
-//            rect.bg_image_opa = LV_OPA_COVER;
-//        	lv_draw_rect(layer, & rect, & coords);
-
-        	if (gv_trace > gv_pos)
-        	{
-        		lv_area_t cplus;
-        		lv_area_set(& cplus, smeterbar.x1 + gv_pos, smeterbar.y1 + 0, smeterbar.x1 + gv_trace, smeterbar.y2 + 0);
-        		rect.bg_color = lv_palette_main(LV_PALETTE_RED);
-            	lv_draw_rect(layer, & rect, & cplus);
-        	}
-        	if (gv_pos > 0)
-        	{
-        		lv_area_t cmeter;
-        		lv_area_set(& cmeter, smeterbar.x1 + 0, smeterbar.y1 + 0, smeterbar.x1 + gv_pos, smeterbar.y2 + 0);
-        		rect.bg_color = lv_palette_main(LV_PALETTE_YELLOW);
-            	lv_draw_rect(layer, & rect, & cmeter);
-        	}
-        }
-
-    	if (0)
-    	{
-            // градиент
-            lv_draw_rect_dsc_t rect;
-            lv_draw_rect_dsc_init(& rect);
-
-            rect.bg_color = lv_palette_main(LV_PALETTE_BLUE);
-            rect.bg_image_opa = LV_OPA_COVER;
-
-            // Update LV_GRADIENT_MAX_STOPS in lv_conf.h
-            static const lv_color_t grad_colors [] =
-            {
-                LV_COLOR_MAKE(0xff, 0x00, 0x00),
-                LV_COLOR_MAKE(0x00, 0xff, 0x00),
-                LV_COLOR_MAKE(0x00, 0x00, 0x7f),
-            };
-
-    		lv_grad_init_stops(& rect.bg_grad, grad_colors, NULL, NULL, ARRAY_SIZE(grad_colors));
-    		lv_grad_vertical_init(& rect.bg_grad);
-    		//lv_grad_conical_init(& rect.bg_grad, lv_pct(50), lv_pct(50), 0, 180, LV_GRAD_EXTEND_PAD);
-
-    	   	lv_draw_rect(layer, & rect, & coords);
-    	}
-
-    	if (0)
-    	{
-    		// lines test
-            lv_draw_line_dsc_t dsc;
-            lv_draw_line_dsc_init(& dsc);
-
-            dsc.width = 1;
-            dsc.round_end = 0;
-            dsc.round_start = 0;
-
-            // диагональ
-            dsc.color = lv_palette_main(LV_PALETTE_YELLOW);
-            lv_point_precise_set(& dsc.p1, coords.x1, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x2, coords.y2);
-            lv_draw_line(layer, & dsc);
-
-            dsc.color = lv_palette_main(LV_PALETTE_RED);
-            lv_point_precise_set(& dsc.p1, coords.x1 + gv_pos, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x1 + gv_pos, coords.y2);
-            lv_draw_line(layer, & dsc);
-
-            dsc.color = lv_palette_main(LV_PALETTE_LIGHT_GREEN);
-            lv_point_precise_set(& dsc.p1, coords.x1 + gv_trace, coords.y1);
-            lv_point_precise_set(& dsc.p2, coords.x1 + gv_trace, coords.y2);
-            lv_draw_line(layer, & dsc);
-    	}
+    	lv_smtr2_t * const smtr2 = (lv_smtr2_t*) obj;
+    	lv_layer_t * const layer = lv_event_get_layer(e);
+    	lv_area_t coords;
+    	lv_obj_get_content_coords(obj, &coords); // координаты внутри border
+		smtr2_draw(smtr2, & coords, layer);
     }
 }
 
