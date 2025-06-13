@@ -160,7 +160,10 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss* .sbss*)
+		*(.sbss*)
+		*(.gnu.linkonce.sb.*)
+		*(.bss .bss.*)
+		*(.gnu.linkonce.b.*)
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;
