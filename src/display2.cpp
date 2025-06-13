@@ -10,6 +10,7 @@
 #include "audio.h"
 #include "display2.h"
 #include "keyboard.h"
+#include "encoder.h"
 #include "formats.h"
 
 #include <string.h>
@@ -665,31 +666,6 @@ static void input_tsc_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 }
 #endif /* defined (TSC1_TYPE) */
 
-//#include "misc/lv_event_private.h"
-//extern "C" const char * lv_event_code_get_name(lv_event_code_t code);
-
-static int demostate;
-static void mainwndkeyhandler(lv_event_t * e)
-{
-	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
-//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
-	switch (lv_event_get_code(e))
-	{
-	case LV_EVENT_KEY:
-		PRINTF("event key=%u\n", (unsigned) lv_event_get_key(e));
-		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
-		{
-			demostate = ! demostate;
-		}
-		break;
-	case LV_EVENT_CLICKED:
-		PRINTF("clicked at main window\n");
-		break;
-	default:
-		break;
-	}
-}
-
 #if WITHKEYBOARD
 static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 {
@@ -707,6 +683,74 @@ static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 #endif /*  */
 }
 #endif /* WITHKEYBOARD */
+
+#if WITHENCODER
+static void input_encoder_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
+{
+#if WITHLVGLINDEV
+	encoder_t * const e = (encoder_t *) lv_indev_get_user_data(drv);
+	data->state = LV_INDEV_STATE_RELEASED;
+	data->enc_diff = encoder_get_delta(e, 1);
+#else
+	// stub
+	data->state = LV_INDEV_STATE_RELEASED;
+	data->enc_diff = 0;
+#endif /*  */
+}
+#endif /* WITHENCODER */
+
+//#include "misc/lv_event_private.h"
+//extern "C" const char * lv_event_code_get_name(lv_event_code_t code);
+
+static int demostate;
+
+static void mainwndkeyhandler(lv_event_t * e)
+{
+	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
+	switch (lv_event_get_code(e))
+	{
+	case LV_EVENT_KEY:
+		PRINTF("main event key=%u, obj=%p\n", (unsigned) lv_event_get_key(e), lv_event_get_target(e));
+		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
+		{
+			demostate = ! demostate;
+		}
+		break;
+	case LV_EVENT_CLICKED:
+		PRINTF("main clicked , obj=%p\n", lv_event_get_target(e));
+		break;
+	case LV_EVENT_ROTARY:
+		PRINTF("main rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
+		break;
+	default:
+		break;
+	}
+}
+
+static void sleepwndkeyhandler(lv_event_t * e)
+{
+	lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
+//	PRINTF("ev: %s\n", lv_event_code_get_name(lv_event_get_code(e)));
+	switch (lv_event_get_code(e))
+	{
+	case LV_EVENT_KEY:
+		PRINTF("sleep event key=%u, obj=%p\n", (unsigned) lv_event_get_key(e), lv_event_get_target(e));
+		if (lv_event_get_key(e) == KBD_CODE_DISPMODE)
+		{
+			demostate = ! demostate;
+		}
+		break;
+	case LV_EVENT_CLICKED:
+		PRINTF("sleep clicked , obj=%p\n", lv_event_get_target(e));
+		break;
+	case LV_EVENT_ROTARY:
+		PRINTF("sleep rotary, diff=%d, obj=%p\n", (int) lv_event_get_rotary_diff(e), lv_event_get_target(e));
+		break;
+	default:
+		break;
+	}
+}
 
 
 #else /* WITHLVGL */
@@ -8581,6 +8625,7 @@ void display2_bgprocess(
 #if WITHLVGLINDEV && 0
 	inmenu = 0;
 	menuset = demostate ? PAGESLEEP : 0;
+	lv_group_focus_obj(xxmainwnds [menuset]);
 #endif
 	const uint_fast8_t ix = getpageix(inmenu, menuset);	// требуемая страница для показа (включая меню и sleep)
 
@@ -8760,11 +8805,22 @@ void display2_initialize(void)
 			{
 				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
 #if WITHLVGLINDEV
-				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
-				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);
-				lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
+				switch (page)
+				{
+				case 0:
+					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
+					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);
+					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
+					break;
+				case PAGESLEEP:
+					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
+					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);
+					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
+					break;
+				}
 				lv_group_add_obj(xxgroup, wnd);
 #endif /* WITHLVGLINDEV */
+				PRINTF("xxmainwnds[%u]=%p\n", (unsigned) page, wnd);
 				xxmainwnds [page] = wnd;
 			}
 			else
@@ -8774,28 +8830,83 @@ void display2_initialize(void)
 			}
 		}
 	}
-
-	#if defined (TSC1_TYPE)
+#if WITHENCODER_1F
 	{
 		lv_indev_t * indev = lv_indev_create();
-		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
-		lv_indev_set_read_cb(indev, input_tsc_read_cb);
-	}
-	#endif /* defined (TSC1_TYPE) */
-	#if WITHKEYBOARD
-	{
-		lv_indev_t * indev = lv_indev_create();
-		lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
-		lv_indev_set_read_cb(indev, input_keypad_read_cb);
+		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
+		lv_indev_set_user_data(indev, & encoder_ENC1F);
+		lv_indev_set_read_cb(indev, input_encoder_read_cb);
 #if WITHLVGLINDEV
-		const uint_fast8_t page = 0;
 		if (xxgroup)
 		{
 			lv_indev_set_group(indev, xxgroup);
 		}
 #endif /* WITHLVGLINDEV */
 	}
-	#endif /* WITHKEYBOARD) */
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
+		lv_indev_set_user_data(indev, & encoder_ENC2F);
+		lv_indev_set_read_cb(indev, input_encoder_read_cb);
+#if WITHLVGLINDEV
+		if (xxgroup)
+		{
+			lv_indev_set_group(indev, xxgroup);
+		}
+#endif /* WITHLVGLINDEV */
+	}
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
+		lv_indev_set_user_data(indev, & encoder_ENC3F);
+		lv_indev_set_read_cb(indev, input_encoder_read_cb);
+#if WITHLVGLINDEV
+		if (xxgroup)
+		{
+			lv_indev_set_group(indev, xxgroup);
+		}
+#endif /* WITHLVGLINDEV */
+	}
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
+		lv_indev_set_user_data(indev, & encoder_ENC4F);
+		lv_indev_set_read_cb(indev, input_encoder_read_cb);
+#if WITHLVGLINDEV
+		if (xxgroup)
+		{
+			lv_indev_set_group(indev, xxgroup);
+		}
+#endif /* WITHLVGLINDEV */
+	}
+#endif /* WITHENCODER_4F */
+
+#if defined (TSC1_TYPE)
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+		lv_indev_set_read_cb(indev, input_tsc_read_cb);
+	}
+#endif /* defined (TSC1_TYPE) */
+#if WITHKEYBOARD
+	{
+		lv_indev_t * indev = lv_indev_create();
+		lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
+		lv_indev_set_read_cb(indev, input_keypad_read_cb);
+#if WITHLVGLINDEV
+		if (xxgroup)
+		{
+			lv_indev_set_group(indev, xxgroup);
+		}
+#endif /* WITHLVGLINDEV */
+	}
+#endif /* WITHKEYBOARD) */
 	// TODO: add encoder(s)
 
 //	{

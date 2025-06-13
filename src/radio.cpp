@@ -7111,12 +7111,16 @@ encoder_delta(
 	const uint_fast8_t derate
 	)
 {
+#if WITHLVGL && WITHLVGLINDEV
+	return 0;
+#else /* WITHLVGL && WITHLVGLINDEV */
 	const int_least16_t delta = encoder_get_delta(e, derate);
 	if (delta)
 	{
 		board_wakeup();
 	}
 	return delta;
+#endif /* WITHLVGL && WITHLVGLINDEV */
 }
 
 /* получаем PBT offset для текущего режима работы */
