@@ -16972,6 +16972,7 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
+
 			if (el == index)
 			{
 				//подсвечиваем выбранный элемент
@@ -16985,7 +16986,16 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 				display_text(db, xcell_marker, y_position_params, PSTR(" "), 1);
 			}
 			display2_menu_lblng(db, xcell_text, y_position_params, mv, xspan - 1); // название редактируемого параметра
-			y_position_params += window.ystep;
+            if (el == index)
+            {
+               	uint_fast16_t xpix = GRID2X(xcell);
+               	uint_fast16_t ypix = GRID2Y(y_position_params);
+              	uint_fast16_t wpix = GRID2X(xspan);
+              	uint_fast16_t hpix = GRID2Y(window.ystep);
+              	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
+            }
+
+            y_position_params += window.ystep;
 		}
 	}
 
@@ -17059,7 +17069,17 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
+
             display2_menu_valxx(db, x, y_position_params, mv, xspan); // значение параметра
+            if (el == index)
+            {
+               	uint_fast16_t xpix = GRID2X(x);
+               	uint_fast16_t ypix = GRID2Y(y_position_params);
+              	uint_fast16_t wpix = GRID2X(xspan);
+              	uint_fast16_t hpix = GRID2Y(window.ystep);
+              	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
+            }
+
 			y_position_params += window.ystep;
 		}
 	}
