@@ -10155,7 +10155,7 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_text(& dbv, 0, 0, "Start...");
+		display_text(& dbv, 0, 0, "Start...", 10);
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */

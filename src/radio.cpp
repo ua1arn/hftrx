@@ -57,11 +57,19 @@ static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * fi
 #define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
 
 // группа, в которой находится редактируемый параметр
-static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp);
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
 // значение параметра
-static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp);
+static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
 // если группа - ничего не отображаем
-static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp);
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
+
+static size_t
+param_format(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	uint_fast8_t xspan	// сколько должно занять значение (до скольки должно дополниться пробелами). Ксли не надо - 1
+	);
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -489,7 +497,7 @@ struct paramdefdef
 	const char * label;
 	const char * enc2label;
 
-	uint8_t qwidth, qcomma, qrj;
+	uint8_t qwidth_unused, qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
 
@@ -1011,7 +1019,7 @@ enum {
 		const char * label;
 	}  attmodes [] =
 	{
-		{ 0, 0, 0, "    ", },
+		{ 0, 0, 0, "", },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
@@ -1022,7 +1030,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 
 #elif WITHONEATTONEAMP
@@ -1035,9 +1043,9 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, 0, "   ", 0  },
+		{ 0, 0, "", 0  },
 		{ 0, 1, "PRE", 0  },
-		{ 0, 0, "   ", 0  },
+		{ 0, 0, "", 0  },
 		{ 1, 0, "ATT", 0  },
 	};
 
@@ -1049,7 +1057,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 
 #elif WITHPREAMPATT2_6DB
@@ -1064,8 +1072,8 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    ", 0 },
-		{ 1, " 6dB", 60 },
+		{ 0, "", 0 },
+		{ 1, "6dB", 60 },
 		{ 2, "12dB", 120 },
 		{ 3, "18dB", 180 },
 	};
@@ -1078,7 +1086,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },
+		{ 0, "", 0 },
 		{ 1, "PRE", -120 },
 	};
 
@@ -1094,7 +1102,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    ", 0  },
+		{ 0, "", 0  },
 		{ 1, "10dB", 100  },
 		{ 2, "20dB", 200  },
 		{ 3, "30dB", 300  },
@@ -1108,7 +1116,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },
+		{ 0, "", 0 },
 		{ 1, "PRE", -120 },
 	};
 
@@ -1123,8 +1131,8 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    ", 0 },
-		{ 1, " 6dB", 60 },
+		{ 0, "", 0 },
+		{ 1, "6dB", 60 },
 		{ 2, "12dB", 120 },
 		{ 3, "18dB", 180 },
 	};
@@ -1137,7 +1145,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 #elif WITHATT2_10DB
 	/* Управление двухкаскадным аттенюатором с затуханиями 0 - 10 - 20 - 30 dB без УВЧ */
@@ -1151,7 +1159,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    ", 0 },
+		{ 0, "", 0 },
 		{ 1, "10dB", 100  },
 		{ 2, "20dB", 200  },
 		{ 3, "30dB", 300  },
@@ -1165,7 +1173,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 #elif WITHATT1PRE1
 
@@ -1175,7 +1183,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "   ", 0 },
+		{ 0, "", 0 },
 		{ 1, "ATT", 120 },
 	};
 
@@ -1188,7 +1196,7 @@ enum {
 		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   ", 0 },
+		{ 0, "", 0 },
 		{ 1, "PRE", - 120 },
 	};
 #else
@@ -1238,7 +1246,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	}  agcmodes [] =
 	{
 		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO"  },	// 3
-		{ BOARD_AGCCODE_MED,  "MED ", "MED" },	// 2
+		{ BOARD_AGCCODE_MED,  "MED", "MED" },	// 2
 		{ BOARD_AGCCODE_FAST, "FAST", "FST" },	// 1
 		{ BOARD_AGCCODE_OFF,  "AGC-", "OFF" },	// 4 ?
 	};
@@ -1261,7 +1269,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	}  agcmodes [] =
 	{
 		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO"  },	// 3
-		{ BOARD_AGCCODE_MED,  "MED ", "MED" },	// 2
+		{ BOARD_AGCCODE_MED,  "MED", "MED" },	// 2
 		{ BOARD_AGCCODE_FAST, "FAST", "FST" },	// 1
 		{ BOARD_AGCCODE_OFF,  "AGC-", "OFF" },	// 4 ?
 	};
@@ -1280,7 +1288,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 //		char label3 [4];
 //	}  agcmodes [] =
 //	{
-//		{ BOARD_AGCCODE_ON, "    ", "   " },
+//		{ BOARD_AGCCODE_ON, "", "" },
 //	};
 #elif WITHAGCMODEONOFF
 	/* перечисление всех возможных режимов АРУ
@@ -1341,7 +1349,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	{
 		{ BOARD_AGCCODE_LONG, "LONG", "lng" },	// 4
 		{ BOARD_AGCCODE_SLOW, "SLOW", "slo" },	// 2
-		{ BOARD_AGCCODE_MED,  "MED ", "med" },	// 1
+		{ BOARD_AGCCODE_MED,  "MED", "med" },	// 1
 		{ BOARD_AGCCODE_FAST, "FAST", "fst" },	// 0
 	};
 #elif WITHAGCMODE5STAGES
@@ -1363,7 +1371,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	{
 		{ BOARD_AGCCODE_LONG, "LONG", "lng" },	// 4
 		{ BOARD_AGCCODE_SLOW, "SLOW", "slo" },	// 2
-		{ BOARD_AGCCODE_MED,  "MED ", "med" },	// 1
+		{ BOARD_AGCCODE_MED,  "MED", "med" },	// 1
 		{ BOARD_AGCCODE_FAST, "FAST", "fst" },	// 0
 		{ BOARD_AGCCODE_OFF,  "AGC-", "off" },	// 8
 	};
@@ -1394,7 +1402,7 @@ static const struct {
 	char label2 [3];
 }  rxantmodes [] =
 {
-	{	0,	"  " },
+	{	0,	" " },
 	{	1,	"RA" },
 };
 
@@ -1414,7 +1422,7 @@ static const struct {
 	char label2 [3];
 }  rxantmodes [] =
 {
-	{	0,	"  " },
+	{	0,	"" },
 	{	1,	"RA" },
 };
 
@@ -6147,7 +6155,7 @@ void display2_swrsts22(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
 		r);
-	display_text(db, x, y, b);
+	display_text(db, x, y, b, 22);
 
 }
 
@@ -8316,7 +8324,7 @@ static void micproc_load(void)
 
 static const char catsiglabels [BOARD_CATSIG_count] [9] =
 {
-	"    NONE",
+	"NONE",
 	"SER1 DTR",
 	"SER1 RTS",
 #if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
@@ -8327,8 +8335,8 @@ static const char catsiglabels [BOARD_CATSIG_count] [9] =
 
 static const char catmuxlabels [BOARD_CATMUX_count] [9] =
 {
-	"USB     ",
-	"DIN8    ",
+	"USB",
+	"DIN8",
 };
 
 static unsigned getselector_bandgroupant(unsigned * count)
@@ -8571,126 +8579,10 @@ static const struct paramdefdef * enc2menus [] =
 static
 const char *
 enc2menu_label_P(
-	const struct paramdefdef * const mp
+	const struct paramdefdef * const pd
 	)
 {
-	return mp->enc2label;
-}
-
-/* получение значения редактируемого параметра */
-static void
-enc2menu_value(
-	const struct paramdefdef * const pd,
-	int WDTH,	// ширина поля для отображения (в GUI не используется)
-	char * buff,	// буфер для текста значения параметра
-	size_t sz		// размер буфера
-	)
-{
-	long int value;
-	unsigned nvalues;
-	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-	//const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
-	const ptrdiff_t offs = pd->valoffs(sel);
-	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-
-	if (pv16 != NULL)
-	{
-		value = pd->funcoffs() + * pv16;
-	}
-	else if (pv8 != NULL)
-	{
-		value = pd->funcoffs() + * pv8;
-	}
-	else
-	{
-		ASSERT(0);
-		value = pd->qbottom;	/* чтобы не ругался компилятор */
-	}
-
-#if WITHTOUCHGUI
-	switch (pd->qrj)
-	{
-#if WITHSUBTONES && WITHTX
-	case RJ_SUBTONE:
-		local_snprintf_P(buff, sz, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
-		break;
-#endif /* WITHSUBTONES && WITHTX */
-	case RJ_YES:
-		local_snprintf_P(buff, sz, PSTR("%s"), value ? "YES" : "NO");
-		break;
-	case RJ_CATSIG:
-		local_snprintf_P(buff, sz, PSTR("%s"), catsiglabels [value]);
-		break;
-#if WITHCAT_MUX
-	case RJ_CATMUX:
-		local_snprintf_P(buff, sz, PSTR("%s"), catmuxlabels [value]);
-		break;
-#endif /* WITHCAT_MUX */
-	case RJ_ON:
-		local_snprintf_P(buff, sz, PSTR("%s"), value ? "ON" : "OFF");
-		break;
-#if WITHUSEDUALWATCH
-	case RJ_DUAL:
-		local_snprintf_P(buff, sz, PSTR("%s"), mainsubrxmodes [value].label);
-		break;
-#endif /* WITHUSEDUALWATCH */
-	case RJ_POW2:
-		local_snprintf_P(buff, sz, PSTR("%u"), 1U << value);
-		break;
-	case RJ_SIGNED:
-		local_snprintf_P(buff, sz, PSTR("%+ld"), (signed long) value);
-		break;
-	case RJ_VIEW:
-		local_snprintf_P(buff, sz, PSTR("%s"), view_types [value]);
-		break;
-	case RJ_UNSIGNED:
-	default:
-		local_snprintf_P(buff, sz, PSTR("%lu"), (unsigned long) value);
-		break;
-	}
-#else
-	switch (pd->qrj)
-		{
-	#if WITHSUBTONES && WITHTX
-		case RJ_SUBTONE:
-			local_snprintf_P(buff, sz, PSTR("%*u.%1u"), WDTH - 2, gsubtones [value] / 10, gsubtones [value] % 10);
-			break;
-	#endif /* WITHSUBTONES && WITHTX */
-		case RJ_YES:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "YES" : "NO");
-			break;
-		case RJ_CATSIG:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catsiglabels [value]);
-			break;
-	#if WITHCAT_MUX
-		case RJ_CATMUX:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catmuxlabels [value]);
-			break;
-	#endif /* WITHCAT_MUX */
-		case RJ_ON:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
-			break;
-	#if WITHUSEDUALWATCH
-		case RJ_DUAL:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, mainsubrxmodes [value].label);
-			break;
-	#endif /* WITHUSEDUALWATCH */
-		case RJ_POW2:
-			local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
-			break;
-		case RJ_VIEW:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, view_types [value]);
-			break;
-		case RJ_SIGNED:
-			local_snprintf_P(buff, sz, PSTR("%-+*ld"), WDTH, (signed long) value);
-			break;
-		case RJ_UNSIGNED:
-		default:
-			local_snprintf_P(buff, sz, PSTR("%*lu"), WDTH, (unsigned long) value);
-			break;
-		}
-#endif
+	return pd->enc2label;
 }
 
 enum
@@ -8852,16 +8744,18 @@ void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 	enum { WDTH = 9 };	// ширина поля для отображения
 	char b [WDTH + 1];	// тут формируется текст для отображения
 
-	enc2menu_value(enc2menus [enc2pos], WDTH, b, ARRAY_SIZE(b));
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
+		local_snprintf_P(b, ARRAY_SIZE(b) - 1, "%*s", WDTH, " ");
 		display_1fmenu(db, x, y, text_nul9_P);
 		break;
 	case ENC2STATE_SELECTITEM:
+		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), WDTH);
 		display_2fmenus(db, x, y, 0, b, b);
 		break;
 	case ENC2STATE_EDITITEM:
+		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), WDTH);
 		display_2fmenus(db, x, y, 1, b, b);
 		break;
 	}
@@ -16639,206 +16533,7 @@ static uint_fast32_t ipow10(uint_fast8_t v)
 	return r;
 }
 
-static char menuw [20];						// буфер для вывода значений системного меню
-
-// При редактировании настроек - показ цифровых значений параметров.
-// Или диагностическое сообщение при запуске
-static void
-//NOINLINEAT
-display_menu_digit(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	int_fast32_t value,
-	uint_fast8_t width,		// WSIGNFLAG can be added for display '+; or '-'
-	uint_fast8_t comma,
-	uint_fast8_t rj
-	)
-{
-	if (rj >= RJ_BASE0 && rj <= RJ_UNSIGNED)
-		rj = 0;
-
-#if WITHTOUCHGUI
-	const uint_fast8_t iwidth = width & WWIDTHFLAG;	// ширина поля
-	const uint_fast32_t ca = ipow10(comma);
-
-	if (ca == 1)
-	{
-		local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld"), (long) value);
-	}
-	else if (value < 0)
-	{
-		ldiv_t d;
-		d = ldiv(- value, ca);
-		local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("-%ld.%0*ld"), d.quot, (int) comma, d.rem);
-	}
-	else
-	{
-		ldiv_t d;
-		d = ldiv(value, ca);
-		local_snprintf_P(menuw, ARRAY_SIZE(menuw), PSTR("%ld.%0*ld"), d.quot, (int) comma, d.rem);
-	}
-
-#else /* WITHTOUCHGUI */
-
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-	do
-	{
-		display2_menu_value(db, x, y + lowhalf, value, width, comma, rj, lowhalf);
-	} while (lowhalf --);
-
-#endif /* WITHTOUCHGUI */
-}
-
-// При редактировании настроек - показ строковых значений параметров.
-// Или диагностическое сообщение при запуске
-// Для GUI - заполнить menuw []
-static void
-display_menu_string_P(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const char * text,
-	uint_fast8_t width,
-	uint_fast8_t filled		// сколько символов сейчас в text
-	)
-{
-#if WITHTOUCHGUI
-	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
-
-#else /* WITHTOUCHGUI */
-
-	if (width > filled)
-	{
-		const size_t fill = width - filled;
-		char notext [fill + 1];
-		memset(notext, ' ', fill);
-		notext [fill] = '\0';
-
-		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_text(db, x + 0, y, notext);
-		display_text(db, x + fill, y, text);
-	}
-	else
-	{
-		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_text(db, x + 0, y, text);
-	}
-#endif /* WITHTOUCHGUI */
-}
-
-static void
-display_menu_string(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const char * text,
-	uint_fast8_t width,
-	uint_fast8_t filled		// сколько символов сейчас в text
-	)
-{
-#if WITHTOUCHGUI
-
-	safestrcpy(menuw, ARRAY_SIZE(menuw), text);
-
-#else /* WITHTOUCHGUI */
-
-	if (width > filled)
-	{
-		const size_t fill = width - filled;
-		char notext [fill + 1];
-		memset(notext, ' ', fill);
-		notext [fill] = '\0';
-
-		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_text(db, x + 0, y, notext);
-		display_text(db, x + fill, y, text);
-	}
-	else
-	{
-		colmain_setcolors(MNUVALCOLOR, BGCOLOR);
-		display_text(db, x + 0, y, text);
-	}
-
-#endif /* WITHTOUCHGUI */
-}
-
 #if WITHMENU
-
-
-static size_t
-param_format(
-	const struct paramdefdef * pd,
-	char * buff,
-	int width	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
-	)
-{
-	if (! ismenukinddp(pd, ITEM_VALUE))
-	{
-		memset(buff, ' ', width);
-		buff [width] = '\0';
-		return 0;
-	}
-	switch (pd->qrj)
-	{
-	case RJ_POW2:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, "%*" PRIu32, width, UINT32_C(1) << value);
-			buff [n] = '\0';
-			return n;
-		}
-		case RJ_YES:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "YES" : "NO");
-			buff [n] = '\0';
-			return n;
-		}
-		case RJ_ON:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, "%*s", width, value ? "ON" : "OFF");
-			buff [n] = '\0';
-			return n;
-		}
-#if WITHUSEDUALWATCH
-		case RJ_DUAL:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, "%*s", width, mainsubrxmodes [value].label);
-			buff [n] = '\0';
-			return n;
-		}
-#endif /* WITHUSEDUALWATCH */
-#if WITHSUBTONES && WITHTX
-		case RJ_SUBTONE:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, PSTR("%u.%1u"), gsubtones [value] / 10, gsubtones [value] % 10);
-			buff [n] = '\0';
-			return n;
-		}
-#endif /* WITHSUBTONES && WITHTX */
-
-	case RJ_SIGNED:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, "%+*" PRIdFAST32, width, value);
-			buff [n] = '\0';
-			return n;
-		}
-
-	default:
-	case RJ_UNSIGNED:
-		{
-			const int_fast32_t value = param_getvalue(pd);
-			const int n = local_snprintf_P(buff, width + 1, "%*" PRIdFAST32, width, value);
-			buff [n] = '\0';
-			return n;
-		}
-
-	}
-}
 
 const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 {
@@ -16995,7 +16690,7 @@ static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8
 const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active, unsigned size)
 {
 	const struct paramdefdef * pd = getmiddlemenu(section, active);
-	static char buff [32];
+	static char buff [32 + 1];
 	ASSERT(ARRAY_SIZE(buff) >= (size + 1));
 	ASSERT(pd);
 	safestrcpy(buff, size + 1, pd->qlabel);
@@ -17007,10 +16702,18 @@ const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active, uns
 const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, unsigned size)
 {
 	const struct paramdefdef * pd = getmiddlemenu(section, active);
-	static char buff [32];
+	static char buff [32 + 1];
 	ASSERT(ARRAY_SIZE(buff) >= (size + 1));
 	ASSERT(pd);
-	param_format(pd, buff, size);
+#if WITHLVGL && 0
+	int n = param_format(pd, buff, ARRAY_SIZE(buff), 1);
+#else /* WITHLVGL */
+	int n = param_format(pd, buff, ARRAY_SIZE(buff), size);
+#endif /* WITHLVGL */
+	if (n >= 0)
+		buff [n] = '\0';
+	else
+		buff [0] = '\0';
 	return buff;
 }
 
@@ -17033,19 +16736,19 @@ ismenukind(
 /* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
 static uint_fast8_t
 ismenufilterusb(
-	const struct menudef * mp
+	const struct paramdefdef * pd
 	)
 {
-	return ismenukind(mp, ITEM_FILTERU);
+	return ismenukinddp(pd, ITEM_FILTERU);
 }
 
 /* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
 static uint_fast8_t
 ismenufilterlsb(
-	const struct menudef * mp
+	const struct paramdefdef * pd
 	)
 {
-	return ismenukind(mp, ITEM_FILTERL);
+	return ismenukinddp(pd, ITEM_FILTERL);
 }
 
 #define MENUROW_COUNT (sizeof menutable / sizeof menutable [0])
@@ -17183,32 +16886,28 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_groups, PSTR(">"));
+				display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1);
 			}
 			else
 			{
 				//снять отметку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_groups, PSTR(" "));
+				display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1);
 			}
 
-			display2_menu_group(db, xcell_text, y_position_groups, mv); // название группы
+			display2_menu_group(db, xcell_text, y_position_groups, mv, xspan); // название группы
 
 			y_position_groups += window.ystep;
 		}
 	}
 
 	//стираем ненужные имена групп, оставшиеся от предыдущей страницы
-	char nolabel [1 + LABELW + 1];
-	memset(nolabel, ' ', sizeof nolabel - 1);
-	nolabel [sizeof nolabel - 1] = '\0';
-
 	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_text(db, xcell_marker, y_position_groups, nolabel);
+		display_text(db, xcell_marker, y_position_groups, "", xspan);
 	}
 }
 
@@ -17277,30 +16976,27 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 			{
 				//подсвечиваем выбранный элемент
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_params, PSTR(">"));
+				display_text(db, xcell_marker, y_position_params, PSTR(">"), 1);
 			}
 			else
 			{
 				//снять подсветку
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_params, PSTR(" "));
+				display_text(db, xcell_marker, y_position_params, PSTR(" "), 1);
 			}
-			display2_menu_lblng(db, xcell_text, y_position_params, mv); // название редактируемого параметра
+			display2_menu_lblng(db, xcell_text, y_position_params, mv, xspan - 1); // название редактируемого параметра
 			y_position_params += window.ystep;
 		}
 	}
 
 	//стираем ненужные имена параметров, оставшиеся от предыдущей страницы
-	char nolabel [1 + LABELW + 1];
-	memset(nolabel, ' ', sizeof nolabel - 1);
-	nolabel [sizeof nolabel - 1] = '\0';
 
 	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		display_text(db, xcell_marker, y_position_params, nolabel);
+		display_text(db, xcell, y_position_params, "", xspan);
 	}
 }
 
@@ -17363,26 +17059,20 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 				continue; //пропускаем пункты для скролла
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
-            display2_menu_valxx(db, x, y_position_params, mv); // значение параметра
+            display2_menu_valxx(db, x, y_position_params, mv, xspan); // значение параметра
 			y_position_params += window.ystep;
 		}
 	}
 
 	/* параметры полей вывода значений в меню */
-	const uint_fast8_t VALUEW = window.valuew;
-
 	//стираем ненужные значения параметров, оставшиеся от предыдущей страницы
-	char nolabel [VALUEW + 1];
-	memset(nolabel, ' ', VALUEW);
-	nolabel [VALUEW] = '\0';
-
 	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		//display_menu_string_P(colorpip, x, y_position_params, nolabel, VALUEW, VALUEW);
-		display_text(db, x, y_position_params, nolabel);
+		//display_menu_string(colorpip, x, y_position_params, nolabel, VALUEW, VALUEW);
+		display_text(db, x, y_position_params, "", xspan);
 	}
 }
 
@@ -17420,7 +17110,7 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 		const uint_fast8_t valuesx = namesx + VALUEW + 3;
 		const uint_fast8_t groupspan = namesx - groupx;
 		const uint_fast8_t namesspan = valuesx - namesx;
-		const uint_fast8_t valuesspan = xspan - valuesx;
+		const uint_fast8_t valuesspan = xspan - 1 - valuesx;
 
 		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
 		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
@@ -17430,27 +17120,41 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 
 // название редактируемого параметра
 // если группа - ничего не отображаем
-static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp)
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan)
 {
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->qlabel);
+	display_text(db, xcell, ycell, mp->pd->qlabel, xspan);
 }
 
 // группа, в которой находится редактируемый параметр
-static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp)
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan)
 {
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->qlabel);
+	display_text(db, xcell, ycell, mp->pd->qlabel, xspan);
 }
 
-// отобразить значение параметра
-// Для GUI - заполнить menuw []
-static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, const struct menudef * mp)
+static int_fast32_t iabs(int_fast32_t v)
 {
+	return v > 0 ? v : - v;
+}
+
+static size_t
+param_format(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
+	uint_fast8_t xspan	// сколько должно занять значение (до скольки должно дополниться пробелами). Ксли не надо - 1
+	)
+{
+	buff [0] = '\0';
+	if (! ismenukinddp(pd, ITEM_VALUE))
+	{
+		return 0;
+	}
 	static const char months [13] [4] =
 	{
 		"---",
@@ -17467,20 +17171,11 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 		"NOV",
 		"DEC",
 	};
-	const struct paramdefdef * const pd = mp->pd;
-	if (ismenukind(mp, ITEM_VALUE) == 0)
-		return;
-	multimenuwnd_t window;
-
-	display2_getmultimenu(& window);
-
-	/* параметры полей вывода значений в меню */
-	const uint_fast8_t VALUEW = window.valuew;
+	if (ismenukinddp(pd, ITEM_VALUE) == 0)
+		return 0;
 
 	int_fast32_t value;
 	const uint_fast8_t rj = pd->qrj;
-	uint_fast8_t width = pd->qwidth;
-	uint_fast8_t comma = pd->qcomma;
 	unsigned nvalues;
 	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
@@ -17489,48 +17184,83 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
 	// получение значения для отображения
-	if (ismenufilterlsb(mp))
+	if (ismenufilterlsb(pd))
 	{
 		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
 		value = getlo4baseflt(filter) + * pv16;
 	}
-	else if (ismenufilterusb(mp))
+	else if (ismenufilterusb(pd))
 	{
 		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
 		value = getlo4baseflt(filter) + * pv16;
 	}
 	else if (pv16 != NULL)
 	{
-		const int_fast32_t offs = mp->pd->funcoffs();
+		const int_fast32_t offs = pd->funcoffs();
 		value = offs + * pv16;
 	}
 	else if (pv8 != NULL)
 	{
-		const int_fast32_t offs = mp->pd->funcoffs();
+		const int_fast32_t offs = pd->funcoffs();
 		value = offs + * pv8;
 	}
 	else
 	{
-		value = mp->pd->qbottom;	/* чтобы не ругался компилятор */
+		value = pd->qbottom;	/* чтобы не ругался компилятор */
 	}
 
 	// отображение параметра, отличающиеся от цифрового
 	switch (rj)
 	{
+	case RJ_POW2:
+		return local_snprintf_P(buff, count, "%*" PRIu32, xspan, UINT32_C(1) << value);
+	case RJ_YES:
+		return local_snprintf_P(buff, count, "%*s", xspan, value ? "YES" : "NO");
+	case RJ_ON:
+		return local_snprintf_P(buff, count, "%*s", xspan, value ? "ON" : "OFF");
+#if WITHSUBTONES && WITHTX
+	case RJ_SUBTONE:
+		return local_snprintf_P(buff, count, PSTR("%*u.%1u"), xspan - 2, gsubtones [value] / 10, gsubtones [value] % 10);
+#endif /* WITHSUBTONES && WITHTX */
+
+	case RJ_SIGNED:
+		switch (pd->qcomma)
+		{
+		default:
+		case 0:
+			return local_snprintf_P(buff, count, "%+*" PRIdFAST32, xspan, value);
+		case 1:
+			return local_snprintf_P(buff, count, "%+*" PRIdFAST32 ".%01" PRIdFAST32, (xspan >= 3) ? (xspan - 2) : xspan, value / 10, iabs(value % 10));
+		case 2:
+			return local_snprintf_P(buff, count, "%+*" PRIdFAST32 ".%02" PRIdFAST32, (xspan >= 4) ? (xspan - 3) : xspan, value / 100, iabs(value % 100));
+		case 3:
+			return local_snprintf_P(buff, count, "%+*" PRIdFAST32 ".%03" PRIdFAST32, (xspan >= 5) ? (xspan - 4) : xspan, value / 1000, iabs(value % 1000));
+		}
+
+	default:
+	case RJ_UNSIGNED:
+		switch (pd->qcomma)
+		{
+		default:
+		case 0:
+			return local_snprintf_P(buff, count, "%*" PRIdFAST32, xspan, value);
+		case 1:
+			return local_snprintf_P(buff, count, "%*" PRIdFAST32 ".%01" PRIdFAST32, (xspan >= 3) ? (xspan - 2) : xspan, value / 10, value % 10);
+		case 2:
+			return local_snprintf_P(buff, count, "%*" PRIdFAST32 ".%02" PRIdFAST32, (xspan >= 4) ? (xspan - 3) : xspan, value / 100, value % 100);
+		case 3:
+			return local_snprintf_P(buff, count, "%*" PRIdFAST32 ".%03" PRIdFAST32, (xspan >= 5) ? (xspan - 4) : xspan, value / 1000, value % 1000);
+		}
+
 #if WITHTX && WITHIF4DSP
 	case RJ_TXAUDIO:
-		{
-			width = VALUEW;
-			display_menu_string_P(db, x, y, txaudiosrcs [value].label, width, comma);
-		}
-		break;
+		return local_snprintf_P(buff, count, "%*s", xspan, txaudiosrcs [value].label);
 #endif /* WITHTX && WITHIF4DSP */
 
 #if WITHMODEM
 
 	case RJ_MDMSPEED:
-		width = VALUEW;
-		display_menu_digit(db, x, y, modembr2int100 [value], width, comma, 0);
+		display_menu_digit(db, x, y, modembr2int100 [value], count, comma, 0);
 		break;
 
 	case RJ_MDMMODE:
@@ -17541,9 +17271,7 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 				"QPSK",
 			};
 
-			width = VALUEW;
-			comma = 4;
-			display_menu_string_P(db, x, y, msg [value], width, comma);
+			display_menu_string(db, x, y, msg [value], count, comma);
 		}
 		break;
 
@@ -17551,132 +17279,62 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 
 #if defined (RTC1_TYPE)
 	case RJ_MONTH:
-		{
-
-			width = VALUEW;
-			comma = 3;
-			display_menu_string_P(db, x, y, months [value - mp->pd->qbottom + 1], width, comma);
-		}
-		break;
+		return local_snprintf_P(buff, count, "%*s", xspan, months [value - pd->qbottom + 1]);
 #endif /* defined (RTC1_TYPE) */
-
-	case RJ_YES:
-		{
-			static const char msg_yes [] = "YES";
-			static const char msg_no  [] = " NO";
-
-			width = VALUEW;
-			comma = 3;
-			display_menu_string_P(db, x, y, value ? msg_yes : msg_no, width, comma);
-		}
-		break;
 
 	case RJ_SMETER:
 		{
 			static const char msg_dial [] = "DIAL";
 			static const char msg_bars [] = "BARS";
-
-			width = VALUEW;
-			comma = 4;
-			display_menu_string_P(db, x, y, value ? msg_dial : msg_bars, width, comma);
+			return local_snprintf_P(buff, count, "%*s", xspan, value ? msg_dial : msg_bars);
 		}
-		break;
 
 #if WITHNOTCHFREQ || WITHNOTCHONOFF
 	case RJ_NOTCH:
 		{
-			width = VALUEW;
-			comma = 4;
 			switch (notchmodes [value].code)
 			{
 			default:
 			case BOARD_NOTCH_OFF:
-				display_menu_string_P(db, x, y, PSTR("OFF "), width, comma);
-				break;
+				return local_snprintf_P(buff, count, "%*s", xspan, "OFF");
 			case BOARD_NOTCH_MANUAL:
-				display_menu_string_P(db, x, y, PSTR("FREQ"), width, comma);
-				break;
+				return local_snprintf_P(buff, count, "%*s", xspan, "FREQ");
 			case BOARD_NOTCH_AUTO:
-				display_menu_string_P(db, x, y, PSTR("AUTO"), width, comma);
-				break;
+				return local_snprintf_P(buff, count, "%*s", xspan, "AUTO");
 			}
 		}
 		break;
 #endif /* WITHNOTCHFREQ || WITHNOTCHONOFF */
 
-	case RJ_ON:
-		{
-			static const char msg_on  [] = " ON";
-			static const char msg_off [] = "OFF";
-
-			width = VALUEW;
-			comma = 3;
-			display_menu_string_P(db, x, y, value ? msg_on : msg_off, width, comma);
-		}
-		break;
-
 #if WITHUSEDUALWATCH
 	case RJ_DUAL:
-		width = VALUEW;
-		comma = 3;
-		display_menu_string_P(db, x, y, mainsubrxmodes [value].label, width, comma);
-		break;
+		return local_snprintf_P(buff, count, "%*s", xspan, mainsubrxmodes [value].label);
 #endif /* WITHUSEDUALWATCH */
 
 	case RJ_ENCRES:
-		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(db, x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
-		break;
+		return local_snprintf_P(buff, count, "%*u", xspan, encresols [value] * ENCRESSCALE);
 
 #if WITHCAT
 	case RJ_CATSPEED:
-		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(db, x, y, catbr2int [value] * BRSCALE, width, comma, 0);
-		break;
+		return local_snprintf_P(buff, count, "%*u", xspan, catbr2int [value] * BRSCALE);
 
 #if WITHCAT_MUX
 	case RJ_CATMUX:
-		comma = 8;
-		width = VALUEW;
-		display_menu_string_P(db, x, y, catmuxlabels [value], width, comma);
-		break;
+		return local_snprintf_P(buff, count, "%*s", xspan, catmuxlabels [value]);
 #endif /* WITHCAT_MUX */
 
 	case RJ_CATSIG:
-	{
-		comma = 8;
-		width = VALUEW;
-		display_menu_string_P(db, x, y, catsiglabels [value], width, comma);
-	}
-	break;
+		return local_snprintf_P(buff, count, "%*s", xspan, catsiglabels [value]);
 #endif /* WITHCAT */
-
-#if WITHSUBTONES && WITHTX
-	case RJ_SUBTONE:
-		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(db, x, y, gsubtones [value], width, comma, 0);
-		break;
-#endif /* WITHSUBTONES && WITHTX */
-
-	case RJ_POW2:
-		width = comma ? VALUEW - 1 : VALUEW;
-		display_menu_digit(db, x, y, 1UL << value, width, comma, 0);
-		break;
 
 #if WITHELKEY
 	case RJ_ELKEYMODE:
-		width = VALUEW;
-		comma = 3;
-		display_menu_string_P(db, x, y, elkeymodes [value].label, width, comma);
-		break;
+		return local_snprintf_P(buff, count, "%*s", xspan, elkeymodes [value].label);
 #endif /* WITHELKEY */
 
 #if WITHPOWERLPHP
 	case RJ_POWER:	/* отображние мощности HP/LP */
-		width = VALUEW;
-		comma = 2;
-		display_menu_string_P(db, x, y, pwrmodes [value].label, width, comma);
-		break;
+		return local_snprintf_P(buff, count, "%*s", xspan, pwrmodes [value]);
 #endif /* WITHPOWERLPHP */
 
 	case RJ_CPUTYPE:
@@ -17710,9 +17368,7 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 #else
 			msg = PSTR("CPUxxx");
 #endif
-			width = VALUEW;
-			comma = strlen_P(msg);
-			display_menu_string_P(db, x, y, msg, width, comma);
+			return local_snprintf_P(buff, count, "%*s", xspan, msg);
 		}
 		break;
 
@@ -17721,15 +17377,12 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 			uint_fast32_t serialnr;
 			board_get_serialnr(& serialnr);
 
-			char msg [VALUEW + 1];
+			char msg [xspan + 1];
 			const uint_fast8_t n = local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("%04X:%04X"), (serialnr >> 16) & 0xFFFF, (serialnr >> 0) & 0xFFFF);
-			msg [VALUEW] = '\0';
-			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
-			width = VALUEW;
-			comma = strlen(p);
-			display_menu_string(db, x, y, p, width, comma);
+			msg [xspan] = '\0';
+			const char * const p = msg + n - ulmin(xspan, n);	// сколько может поместиться в поле отображения
+			return local_snprintf_P(buff, count, "%*s", xspan, p);
 		}
-		break;
 
 	case RJ_COMPILED:
 		{
@@ -17739,39 +17392,27 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8
 
 			board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
 
-			char msg [VALUEW + 1];
+			char msg [xspan + 1];
 			const uint_fast8_t n = local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("%02d-%3.3s-%02d"), day, months [month], year % 100);
-			msg [VALUEW] = '\0';
-			const char * const p = msg + n - ulmin(VALUEW, n);	// сколько может поместиться в поле отображения
-			width = VALUEW;
-			comma = strlen(p);
-			display_menu_string(db, x, y, p, width, comma);
+			msg [xspan] = '\0';
+			const char * const p = msg + n - ulmin(xspan, n);	// сколько может поместиться в поле отображения
+			return local_snprintf_P(buff, count, "%*s", xspan, p);
 		}
-		break;
 
 	case RJ_VIEW:
-		{
-			/* стиль отображения спектра и панорамы */
-			width = VALUEW;
-			display_menu_string_P(db, x, y, view_types [value], width, comma);
-		}
-		break;
-
-	case RJ_SIGNED:	// учитывается в display_menu_digit
-	case RJ_UNSIGNED:
-	default:
-		if (width & WSIGNFLAG)
-			width = (VALUEW - 1) | WSIGNFLAG;
-		else
-			width = VALUEW;
-
-		if (comma)
-			width = width - 1;
-
-		display_menu_digit(db, x, y, value, width, comma, rj);
-		break;
-
+		/* стиль отображения спектра и панорамы */
+		return local_snprintf_P(buff, count, "%*s", xspan, view_types [value]);
 	}
+}
+
+// отобразить значение параметра
+static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan)
+{
+	char buff [xspan + 1];
+
+	const struct paramdefdef * const pd = mp->pd;
+	param_format(pd, buff, xspan + 1, xspan);
+	display_text(db, xcell, ycell, buff, xspan);
 }
 
 // --- menu support
@@ -18111,6 +17752,8 @@ print_menu_digit(
 /* создание списка пунктов мею для получения шаблона документа */
 static void menu_print(void)
 {
+	const uint_fast8_t width = 16;
+
 	uint_fast16_t menupos;
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
@@ -18130,7 +17773,6 @@ static void menu_print(void)
         	const struct paramdefdef * const pd = mp->pd;
         	int_fast32_t value;
         	const uint_fast8_t rj = mp->pd->qrj;
-        	uint_fast8_t width = mp->pd->qwidth;
         	uint_fast8_t comma = mp->pd->qcomma;
     		unsigned nvalues;
     		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
@@ -18140,12 +17782,12 @@ static void menu_print(void)
         	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
         	// получение значения для отображения
-        	if (ismenufilterlsb(mp))
+        	if (ismenufilterlsb(pd))
         	{
         		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
         		value = getlo4baseflt(filter) + * pv16;
         	}
-        	else if (ismenufilterusb(mp))
+        	else if (ismenufilterusb(pd))
         	{
         		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
         		value = getlo4baseflt(filter) + * pv16;
@@ -18171,8 +17813,7 @@ static void menu_print(void)
         #if WITHTX && WITHIF4DSP
         	case RJ_TXAUDIO:
         		{
-        			width = VALUEW;
-        			print_menu_string_P(x, y, txaudiosrcs [value].label, width, comma);
+         			print_menu_string_P(x, y, txaudiosrcs [value].label, width, comma);
         		}
         		break;
         #endif /* WITHTX && WITHIF4DSP */
@@ -18180,7 +17821,6 @@ static void menu_print(void)
         #if WITHMODEM
 
         	case RJ_MDMSPEED:
-        		width = VALUEW;
         		print_menu_digit(x, y, modembr2int100 [value], width, comma, 0);
         		break;
 
@@ -18219,7 +17859,6 @@ static void menu_print(void)
         				"DEC",
         			};
 
-        			width = VALUEW;
         			comma = 3;
         			print_menu_string_P(x, y, months [value - mp->pd->qbottom], width, comma);
         		}
@@ -18231,7 +17870,6 @@ static void menu_print(void)
         			static const char msg_yes [] = "YES";
         			static const char msg_no  [] = " NO";
 
-        			width = VALUEW;
         			comma = 3;
         			print_menu_string_P(x, y, value ? msg_yes : msg_no, width, comma);
         		}
@@ -18242,7 +17880,6 @@ static void menu_print(void)
         			static const char msg_dial [] = "DIAL";
         			static const char msg_bars [] = "BARS";
 
-        			width = VALUEW;
         			comma = 4;
         			print_menu_string_P(x, y, value ? msg_dial : msg_bars, width, comma);
         		}
@@ -18251,7 +17888,6 @@ static void menu_print(void)
         #if WITHNOTCHFREQ || WITHNOTCHONOFF
         	case RJ_NOTCH:
         		{
-        			width = VALUEW;
         			comma = 4;
         			switch (notchmodes [value].code)
         			{
@@ -18275,7 +17911,6 @@ static void menu_print(void)
         			static const char msg_on  [] = " ON";
         			static const char msg_off [] = "OFF";
 
-        			width = VALUEW;
         			comma = 3;
         			print_menu_string_P(x, y, value ? msg_on : msg_off, width, comma);
         		}
@@ -18283,27 +17918,23 @@ static void menu_print(void)
 
 #if WITHUSEDUALWATCH
 			case RJ_DUAL:
-        		width = comma ? VALUEW - 1 : VALUEW;
 				comma = 3;
 				print_menu_string_P(x, y, mainsubrxmodes [value].label, width, comma);
 				break;
 #endif /* WITHUSEDUALWATCH */
 
         	case RJ_ENCRES:
-        		width = comma ? VALUEW - 1 : VALUEW;
         		print_menu_digit(x, y, encresols [value] * ENCRESSCALE, width, comma, 0);
         		break;
 
         #if WITHCAT
         	case RJ_CATSPEED:
-        		width = comma ? VALUEW - 1 : VALUEW;
-        		print_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
+         		print_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
         		break;
 
         	case RJ_CATSIG:
         	{
         		comma = 8;
-        		width = VALUEW;
         		print_menu_string_P(x, y, catsiglabels [value], width, comma);
         	}
         	break;
@@ -18311,20 +17942,17 @@ static void menu_print(void)
 
         #if WITHSUBTONES && WITHTX
         	case RJ_SUBTONE:
-        		width = comma ? VALUEW - 1 : VALUEW;
         		print_menu_digit(x, y, gsubtones [value], width, comma, 0);
         		break;
         #endif /* WITHSUBTONES && WITHTX */
 
         	case RJ_POW2:
-        		width = comma ? VALUEW - 1 : VALUEW;
         		print_menu_digit(x, y, 1UL << value, width, comma, 0);
         		break;
 
         #if WITHELKEY
         	case RJ_ELKEYMODE:
         		{
-         			width = VALUEW;
         			comma = 3;
         			print_menu_string_P(x, y, elkeymodes [value].label, width, comma);
         		}
@@ -18383,7 +18011,6 @@ static void menu_print(void)
         	#else
 					msg = PSTR("CPUxxx");
         	#endif
-        			width = VALUEW;
         			comma = strlen_P(msg);
         			print_menu_string_P(x, y, msg, width, comma);
         		}
@@ -18396,7 +18023,6 @@ static void menu_print(void)
         					//" " __TIME__
         					;
         			const char * const p = msg + strlen_P(msg) - ulmin(VALUEW, strlen_P(msg));	// сколько может поместиться в поле отображения
-        			width = VALUEW;
         			comma = strlen_P(p);
         			print_menu_string_P(x, y, p, width, comma);
         		}
@@ -18405,19 +18031,11 @@ static void menu_print(void)
         	case RJ_VIEW:
         		{
         			/* стиль отображения спектра и панорамы */
-        			width = VALUEW;
         			print_menu_string_P(x, y, view_types [value], width, comma);
         		}
         		break;
 
         	default:
-        		if (width & WSIGNFLAG)
-        			width = (VALUEW - 1) | WSIGNFLAG;
-        		else
-        			width = VALUEW;
-
-        		if (comma)
-        			width = width - 1;
 
         		print_menu_digit(x, y, value, width, comma, rj);
         		break;
@@ -19576,7 +19194,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 0, msg);
+		display_text(& dbv, 0, 0, msg, strlen(msg));
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
@@ -19596,7 +19214,6 @@ void initialize2(void)
 	if (sizeof (struct nvmap) > (NVRAM_END + 1))
 	{
 		// в случае отсутствия превышения размера этот кусок и переменная не комптилируются
-		static const char msg  [] = "TOO LARGE nvmap";
 		void wrong_NVRAM_END(void);
 
 #if WITHLCDBACKLIGHT
@@ -19605,9 +19222,11 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
+		char msg [32];
+		local_snprintf_P(msg, ARRAY_SIZE(msg), "TOO LARGE nvmap %d", (int) sizeof (struct nvmap));
+
 		display2_fillbg(& dbv);
-		display_menu_digit(& dbv, 0, 0, sizeof (struct nvmap), 9, 0, 0);
-		display_text(& dbv, 0, 1, msg);
+		display_text(& dbv, 0, 1, msg, strlen(msg));
 		colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19623,7 +19242,7 @@ void initialize2(void)
 		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
-		display_text(& dbv, 0, 0, msg);
+		display_text(& dbv, 0, 0, msg, strlen(msg));
 		colmain_nextfb();
 
 
@@ -19674,8 +19293,9 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(db, 0, 0, PSTR("ERASE: Press SPL"));
+			display_text(db, 0, 0, msg, strlen(msg));
 			colmain_nextfb();
 
 			for (;;)
@@ -19753,8 +19373,9 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
+			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, PSTR("ERASE: Press SPL"));
+			display_text(& dbv, 0, 0, msg, strlen(msg));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19794,9 +19415,10 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
+			char msg [32];
+			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_menu_digit(& dbv, 0, 1, NVRAM_END + 1, 9, 0, 0);
-			display_text(& dbv, 0, 1, PSTR("NVRAM fault"));
+			display_text(& dbv, 0, 0, msg, strlen(msg));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -21075,19 +20697,14 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
-#if LCDMODE_LTDC
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-#endif /* LCDMODE_LTDC */
 	uint_fast16_t el;
 
 	for (el = index; el <= index + cnt; el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
-		if (ismenukind(mv, ITEM_VALUE))
+		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
-			display2_menu_valxx(& dbv, 0, 0, mv);
-			safestrcpy (vals->name, ARRAY_SIZE(vals->name), menuw);
+			param_format(mv->pd, vals->name, ARRAY_SIZE(vals->name), 1);
 			vals->index = el;
 			return;
 		}
@@ -21096,10 +20713,6 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
 {
-#if LCDMODE_LTDC
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-#endif /* LCDMODE_LTDC */
 	const struct paramdefdef * const pd = menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
@@ -21108,7 +20721,13 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 		display2_needupdate();
 	}
 
-	display2_menu_valxx(& dbv, 0, 0, & menutable [index]);
+	static char menuw [20];						// буфер для вывода значений системного меню
+
+	int n = param_format(menutable [index].pd, menuw, ARRAY_SIZE(menuw), 1);
+	if (n > 0)
+		menuw [n] = '\0';
+	else
+		menuw [0] = '\0';
 	return menuw;
 }
 #endif /* WITHMENU */
@@ -21573,7 +21192,7 @@ void hamradio_gui_enc2_update(void)
 {
 	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-	enc2menu_value(enc2menus [enc2pos], INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	param_format(enc2menus [enc2pos], enc2_menu.val, ARRAY_SIZE(enc2_menu.val), 1);
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);

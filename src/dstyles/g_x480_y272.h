@@ -110,7 +110,7 @@
 	        {	0,  20,	0,	0,	display2_legend_rx, & dzi_default, PGSWR, },    // Отображение оцифровки шкалы S-метра
 	        {	0,  24,	0,	0,	display2_bars_rx,   & dzi_default, PGSWR, },    // S-METER, SWR-METER, POWER-METER
 			{	25, 24, 5,	0,	display2_smeors5, 	& dzi_default, PGSWR, },	 // уровень сигнала в баллах S или dBm
-	        {	0,  28,	0,	0,	display2_legend_tx, & dzi_default, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
+	        {	0,  28,	5,	0,	display2_legend_tx, & dzi_default, PGSWR, },    // Отображение оцифровки шкалы PWR & SWR-метра
 	        {	0,  32,	0,	0,	display2_bars_tx,   & dzi_default, PGSWR, },    // S-METER, SWR-METER, POWER-METER
 
 //			{	0,	28,	0,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада

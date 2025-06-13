@@ -361,17 +361,6 @@ uint_fast16_t strheight(
 	const char * s
 	);
 
-void
-display2_menu_value(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	int_fast32_t value,
-	uint_fast8_t width,	// full width (if >= 128 - display with sign)
-	uint_fast8_t comma,		// comma position (from right, inside width)
-	uint_fast8_t rj,		// right truncated
-	uint_fast8_t lowhalf
-	);
-
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 void display_bar(
@@ -389,7 +378,7 @@ void display_bar(
 
 #define DISPLAY_AT_H	20	// высота строки при работе в режиме совместимости на LVGL
 #define DISPLAY_AT_FONT (& Rubik_Medium_18_w2)	// Rubik_Medium_18_w2 lv_font_montserrat_14
-void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan);		// Выдача строки из ОЗУ в указанное место экрана.
 
 
 void display_swrmeter(const gxdrawb_t * db,

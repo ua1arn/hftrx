@@ -50,7 +50,7 @@ static const struct menudef menutable [] =
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
 	(const struct paramdefdef [1]) {
-		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
+		QLABEL("TUNER L "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		LMIN, LMAX,
 		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunerind),
@@ -60,7 +60,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
+		QLABEL("TUNER C "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		CMIN, CMAX,
 		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunercap),
@@ -70,7 +70,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
+		QLABEL("TUNER TY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
 		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunertype),
@@ -80,7 +80,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
+		QLABEL("TUNER WT"), 7, 0, RJ_UNSIGNED,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
 		10, 250,
 		OFFSETOF(struct nvmap, gtunerdelay),
@@ -160,7 +160,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
+		QLABEL("FREQ FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
 		OFFSETOF(struct nvmap, gdisplayfreqsfps),
@@ -171,7 +171,7 @@ static const struct menudef menutable [] =
 	},
 #if WITHBARS
 	(const struct paramdefdef [1]) {
-		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
+		QLABEL("BARS FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
 		OFFSETOF(struct nvmap, gdisplaybarsfps),
@@ -202,7 +202,7 @@ static const struct menudef menutable [] =
 	& xgtopdbwfl,	/* нижний предел FFT waterflow */
 	& xgbottomdbwfl,	/* верхний предел FFT waterflow */
 	(const struct paramdefdef [1]) {
-		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
+		QLABEL("STEP DB "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		OFFSETOF(struct nvmap, glvlgridstep),
@@ -212,7 +212,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, 0,	ISTEP1,
+		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 		OFFSETOF(struct nvmap, grxbwsatu),
@@ -235,7 +235,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("BETA PAN"), 7, 2, 0,	ISTEP1,
+		QLABEL("BETA PAN"), 7, 2, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра спектра */
 		OFFSETOF(struct nvmap, gspecbeta100),
@@ -245,7 +245,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("BETA WFL"), 7, 2, 0,	ISTEP1,
+		QLABEL("BETA WFL"), 7, 2, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
 		OFFSETOF(struct nvmap, gwflbeta100),
@@ -293,7 +293,7 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
-		QLABEL("TM YEAR "), 7, 0, 0,	ISTEP1,
+		QLABEL("TM YEAR "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE, 
 		2015, 2099, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
@@ -313,7 +313,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TM DAY  "), 7, 0, 0,	ISTEP1,
+		QLABEL("TM DAY  "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE, 
 		1, 31, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
@@ -323,7 +323,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TM HOUR "), 7, 0, 0,	ISTEP1,
+		QLABEL("TM HOUR "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE, 
 		0, 23, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
@@ -333,7 +333,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TM MIN  "), 7, 0, 0,	ISTEP1,
+		QLABEL("TM MIN  "), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE, 
 		0, 59, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
@@ -367,7 +367,7 @@ static const struct menudef menutable [] =
 /* group name --- */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
-		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
+		QLABEL("NR LEVEL"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, NRLEVELMAX, 
 		OFFSETOF(struct nvmap, gnoisereductvl),

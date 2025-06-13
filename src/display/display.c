@@ -1194,7 +1194,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 // Используется при выводе на графический индикатор,
 void
-display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s)
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan)
 {
 	char c;
 	uint_fast16_t ypix;
@@ -1205,15 +1205,17 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 
 #if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
-	if (layer)
+	if (0 && layer)
 	{
+		const size_t len = strlen(s);
+		unsigned w = xspan < len ? len : xspan;
 		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
 		lv_draw_rect_dsc_t d;
 	    lv_draw_label_dsc_t l;
 		lv_area_t coords;
 	    lv_draw_label_dsc_init(& l);
 		lv_draw_rect_dsc_init(& d);
-		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(strlen(s))) - 1, ypix + DISPLAY_AT_H - 1);
+		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(w)) - 1, ypix + DISPLAY_AT_H - 1);
 	    d.bg_color = display_lvlcolor(ltdc_bg);
 	    l.color = display_lvlcolor(ltdc_fg);
 	    l.align = LV_TEXT_ALIGN_LEFT;
@@ -1225,11 +1227,17 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	}
 	else
 	{
+		size_t len = strlen(s);
+		for (len = strlen(s); len < xspan; ++ len)
+			xpix = display_put_char_small(db, xpix, ypix, ' ', 0);
 		while((c = * s ++) != '\0')
 			xpix = display_put_char_small(db, xpix, ypix, c, 0);
 	}
 
 #else
+	size_t len = strlen(s);
+	for (len = strlen(s); len < xspan; ++ len)
+		xpix = display_put_char_small(db, xpix, ypix, ' ', 0);
 	while((c = * s ++) != '\0')
 		xpix = display_put_char_small(db, xpix, ypix, c, 0);
 #endif
