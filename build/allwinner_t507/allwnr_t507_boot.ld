@@ -125,7 +125,7 @@ SECTIONS
 
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 		*(.dtcm*)
 
 		. = ALIGN(8);
@@ -160,7 +160,7 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss*)
+		*(.bss* .sbss*)
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;

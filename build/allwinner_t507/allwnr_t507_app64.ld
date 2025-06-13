@@ -129,7 +129,7 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 
 		. = ALIGN(8);
 		/* preinit data */
@@ -169,7 +169,7 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss*)
+		*(.bss* .sbss*)
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;
