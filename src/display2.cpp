@@ -688,7 +688,8 @@ static void input_keypad_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 static void input_encoder_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 {
 #if WITHLVGLINDEV
-	encoder_t * const e = (encoder_t *) lv_indev_get_user_data(drv);
+	encoder_t * const e = (encoder_t *) lv_indev_get_driver_data(drv);
+	LV_ASSERT_NULL(e);
 	data->state = LV_INDEV_STATE_RELEASED;
 	data->enc_diff = encoder_get_delta(e, 1);
 #else
@@ -8622,7 +8623,7 @@ void display2_bgprocess(
 		dctx_t * pctx
 		)
 {
-#if WITHLVGLINDEV && 0
+#if WITHLVGL && WITHLVGLINDEV
 	inmenu = 0;
 	menuset = demostate ? PAGESLEEP : 0;
 	lv_group_focus_obj(xxmainwnds [menuset]);
@@ -8769,6 +8770,7 @@ void display2_initialize(void)
 			lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
 			lv_obj_set_size(wnd, DIM_X, DIM_Y);
 			lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
+			lv_obj_set_style_rotary_sensitivity(wnd, 1, LV_PART_MAIN);	// не помогло. Объект должен быть editable
 
 			unsigned i;
 			for (i = 0; i < WALKCOUNT; ++ i)
@@ -8809,12 +8811,12 @@ void display2_initialize(void)
 				{
 				case 0:
 					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
-					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);
+					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_ROTARY, NULL);		// Объект должен быть editable
 					lv_obj_add_event_cb(wnd, mainwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
 					break;
 				case PAGESLEEP:
 					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_KEY, NULL);		// работает
-					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);
+					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
 					lv_obj_add_event_cb(wnd, sleepwndkeyhandler, LV_EVENT_CLICKED, NULL);	// работает
 					break;
 				}
@@ -8834,7 +8836,7 @@ void display2_initialize(void)
 	{
 		lv_indev_t * indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
-		lv_indev_set_user_data(indev, & encoder_ENC1F);
+		lv_indev_set_driver_data(indev, & encoder_ENC1F);
 		lv_indev_set_read_cb(indev, input_encoder_read_cb);
 #if WITHLVGLINDEV
 		if (xxgroup)
@@ -8848,7 +8850,7 @@ void display2_initialize(void)
 	{
 		lv_indev_t * indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
-		lv_indev_set_user_data(indev, & encoder_ENC2F);
+		lv_indev_set_driver_data(indev, & encoder_ENC2F);
 		lv_indev_set_read_cb(indev, input_encoder_read_cb);
 #if WITHLVGLINDEV
 		if (xxgroup)
@@ -8862,7 +8864,7 @@ void display2_initialize(void)
 	{
 		lv_indev_t * indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
-		lv_indev_set_user_data(indev, & encoder_ENC3F);
+		lv_indev_set_driver_data(indev, & encoder_ENC3F);
 		lv_indev_set_read_cb(indev, input_encoder_read_cb);
 #if WITHLVGLINDEV
 		if (xxgroup)
@@ -8876,7 +8878,7 @@ void display2_initialize(void)
 	{
 		lv_indev_t * indev = lv_indev_create();
 		lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
-		lv_indev_set_user_data(indev, & encoder_ENC4F);
+		lv_indev_set_driver_data(indev, & encoder_ENC4F);
 		lv_indev_set_read_cb(indev, input_encoder_read_cb);
 #if WITHLVGLINDEV
 		if (xxgroup)
