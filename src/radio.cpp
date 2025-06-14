@@ -1443,7 +1443,7 @@ static const struct {
 	char label2 [3];
 }  rxantmodes [] =
 {
-	{	0,	" " },
+	{	0,	"" },
 	{	1,	"RA" },
 };
 
@@ -1480,8 +1480,8 @@ static const struct {
 	{	{ 0, 1, },	"1R-2T" },
 	{	{ 1, 0, },	"2R-1T" },
 #else /* WITHTX */
-	{	{ 0, 0, },	"ANT1 " },
-	{	{ 1, 1, },	"ANT2 " },
+	{	{ 0, 0, },	"ANT1" },
+	{	{ 1, 1, },	"ANT2" },
 #endif /* WITHTX */
 };
 
@@ -1517,7 +1517,7 @@ static const struct {
 	const char * label;
 }  notchmodes [] =
 {
-//	{ BOARD_NOTCH_OFF, 		"     " },
+//	{ BOARD_NOTCH_OFF, 		"" },
 #if WITHLMSAUTONOTCH
 	{ BOARD_NOTCH_AUTO, 	"ANTCH" },
 #endif /* WITHLMSAUTONOTCH */
@@ -1549,17 +1549,17 @@ static const struct {
 	const char * label;
 }  txaudiosrcs [BOARD_TXAUDIO_count] =	// todo: remove
 {
-	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
+	{ BOARD_TXAUDIO_MIKE, 	"MIKE", },
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-	{ BOARD_TXAUDIO_LINE, 	"LINE ", },
+	{ BOARD_TXAUDIO_LINE, 	"LINE", },
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 #if WITHUSBHW && WITHUSBUACOUT
-	{ BOARD_TXAUDIO_USB, 	"USB  ", },
+	{ BOARD_TXAUDIO_USB, 	"USB", },
 #endif /* WITHUSBHW && WITHUSBUACOUT */
 	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
 	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
 	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
-	{ BOARD_TXAUDIO_MUTE, 	"MUTE ", },
+	{ BOARD_TXAUDIO_MUTE, 	"MUTE", },
 };
 
 #define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
