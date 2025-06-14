@@ -6836,7 +6836,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		MODE_CW, 	/* индекс семейства режимов */
 		3,			/* Kenwood cat mode code */
 		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CW ",
+		"CW",
 	},
 	/* SUBMODE_CWZSMART */
 	{
@@ -6877,7 +6877,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		MODE_CW, 	/* индекс семейства режимов */
 		3,			/* Kenwood cat mode code */
 		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CW ",
+		"CW",
 	},
 	/* SUBMODE_CWR */
 	{
@@ -6901,7 +6901,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		MODE_AM, 	/* индекс семейства режимов */
 		5,			/* Kenwood cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"AM ",
+		"AM",
 	},
 	#if WITHSAM
 	/* SUBMODE_SAM */
