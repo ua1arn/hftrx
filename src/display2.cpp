@@ -379,6 +379,82 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
+static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+#if 0
+	lv_obj_t * const menu = lv_label_create(parent);
+
+	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
+	lv_label_set_text(menu, "Menu placeholder");
+#else
+	lv_obj_t * menu = lv_menu_create(parent);
+	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
+
+
+    /*Create a sub page*/
+    lv_obj_t * sub_page = lv_menu_page_create(menu, "sub page title");
+	lv_obj_add_style(sub_page, & xxdivstyle, LV_PART_MAIN);
+
+	{
+		lv_obj_t * cont;
+		lv_obj_t * label;
+
+	    cont = lv_menu_cont_create(sub_page);
+	    label = lv_label_create(cont);
+		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+	    lv_label_set_text(label, "Hello, I am hiding here");
+	}
+
+    /*Create a main page*/
+    lv_obj_t * main_page = lv_menu_page_create(menu, "main page title");
+	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
+
+    // item 1
+	{
+		lv_obj_t * cont;
+		lv_obj_t * label;
+
+	    cont = lv_menu_cont_create(main_page);
+		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+	    label = lv_label_create(cont);
+		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+	    lv_label_set_text(label, "Item 1");
+	}
+
+    // item 2
+	{
+		lv_obj_t * cont;
+		lv_obj_t * label;
+
+	    cont = lv_menu_cont_create(main_page);
+		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+	    label = lv_label_create(cont);
+		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+	    lv_label_set_text(label, "Item 2");
+	}
+
+    // item 3
+	{
+		lv_obj_t * cont;
+		lv_obj_t * label;
+
+	    cont = lv_menu_cont_create(main_page);
+		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+	    label = lv_label_create(cont);
+		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+		lv_label_set_text(label, "Item 3 (Click me!)");
+	    lv_menu_set_load_page_event(menu, cont, sub_page);
+	}
+
+    lv_menu_set_page(menu, main_page);
+
+#endif
+	return menu;
+}
+
 static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modea);
@@ -828,6 +904,12 @@ static const dzitem_t dzi_compat =
 {
 	.lvelementcreate = LVCREATE(dzi_create_compat),
 	.id = "compat"
+};
+
+static const dzitem_t dzi_menu =
+{
+	.lvelementcreate = LVCREATE(dzi_create_menu),
+	.id = "compmenuat"
 };
 
 static const dzitem_t dzi_middlemenu =
