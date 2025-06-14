@@ -3154,7 +3154,7 @@ static void display_voxtune4(const gxdrawb_t * db,
 #else /* WITHVOX */
 
 	const uint_fast8_t state = hamradio_get_tunemodevalue();
-		display_2states(db, x, y, state, PSTR("TUNE"), text_nul4_P);
+	display_2states(db, x, y, state, "TUNE", "", 4);
 
 #endif /* WITHVOX */
 #endif /* WITHTX */
