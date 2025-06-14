@@ -379,17 +379,77 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
+struct walkctx
+{
+	lv_obj_t * menu;
+	lv_obj_t * main_page;
+};
+
+void * dzicreategroup(void * walkctx, const void * groupitem)
+{
+	char b [32];
+	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
+//	PRINTF("Group: '%s'\n", b);
+//	return NULL;
+
+	struct walkctx * ctx = (struct walkctx *) walkctx;
+
+    lv_obj_t * sub_page = lv_menu_page_create(ctx->main_page, b);
+	lv_obj_add_style(sub_page, & xxdivstyle, LV_PART_MAIN);
+
+	return sub_page;
+}
+
+void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
+{
+	char b [32];
+	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));
+	//PRINTF(" Param: '%s'\n", b);
+	//return;
+
+	struct walkctx * ctx = (struct walkctx *) walkctx;
+
+
+	lv_obj_t * group = (lv_obj_t *) groupctx;
+
+	lv_obj_t * cont;
+	lv_obj_t * label;
+
+    cont = lv_menu_cont_create(group);
+	lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+    label = lv_label_create(cont);
+	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+    lv_label_set_text(label, b);
+
+}
+
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 #if 0
+	lv_obj_t * menu = lv_menu_create(parent);
+	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
+
+    /*Create a main page*/
+    lv_obj_t * main_page = lv_menu_page_create(menu, "main page title");
+	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
+
+	struct walkctx ctx;
+	ctx.menu = menu;
+	ctx.main_page = main_page;
+	hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
+	return menu;
+
+#elif 0
 	lv_obj_t * const menu = lv_label_create(parent);
 
 	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
 	lv_label_set_text(menu, "Menu placeholder");
+	return menu;
 #else
+
 	lv_obj_t * menu = lv_menu_create(parent);
 	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
-
 
     /*Create a sub page*/
     lv_obj_t * sub_page = lv_menu_page_create(menu, "sub page title");
@@ -433,6 +493,10 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
 
 	    lv_label_set_text(label, "Item 2");
+	    label = lv_label_create(cont);
+		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+	    lv_label_set_text(label, "Item 21");
 	}
 
     // item 3

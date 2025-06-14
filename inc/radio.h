@@ -3431,6 +3431,10 @@ uint_fast8_t hamradio_moxmode(uint_fast8_t v);
 uint_fast8_t hamradio_tunemode(uint_fast8_t v);
 void hamradio_set_moxmode(uint_fast8_t mode);
 
+void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
+int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
+int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
+
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
 {
@@ -3469,11 +3473,6 @@ enum
 };
 
 uint_fast8_t hamradio_get_gsmetertype(void);
-void display2_set_smetertype(uint_fast8_t v);
-
-
-void display2_set_filter_spe(uint_fast8_t v);	/* парамеры видеофильтра спектра */
-void display2_set_filter_wfl(uint_fast8_t v);	/* парамеры видеофильтра водопада */
 
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */

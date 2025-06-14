@@ -14,6 +14,7 @@
 #include "encoder.h"
 #include "display2.h"
 #include "clocks.h"
+#include "radio.h"
 
 #include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
@@ -16748,7 +16749,7 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 #include "menu.h"
 
-#define MENUROW_COUNT (sizeof menutable / sizeof menutable [0])
+#define MENUROW_COUNT (ARRAY_SIZE(menutable))
 
 /* Загрузка значений из NVRAM в переменные программы.
    Значением по умолчанию является то, на которое
@@ -17699,38 +17700,9 @@ print_menu_string_P(
 	PRINTF("=\"%s\n", text);
 }
 
-// При редактировании настроек - показ цифровых значений параметров.
-// Или диагностическое сообщение при запуске
-static void
-//NOINLINEAT
-print_menu_digit(
-	int_fast32_t value,
-	uint_fast8_t width,		// WSIGNFLAG can be added for display '+; or '-'
-	uint_fast8_t comma,
-	uint_fast8_t rj
-	)
-{
-	switch (comma)
-	{
-	default:
-		PRINTF("=\"%d\n", (int) value);
-		break;
-	case 1:
-		PRINTF("=\"%d.%01d\n", (int) value / 10, (int) value % 10);
-		break;
-	case 2:
-		PRINTF("=\"%d.%02d\n", (int) value / 100, (int) value % 100);
-		break;
-	case 3:
-		PRINTF("=\"%d.%03d\n", (int) value / 1000, (int) value % 1000);
-		break;
-	}
-}
 /* создание списка пунктов мею для получения шаблона документа */
 static void menu_print(void)
 {
-	const uint_fast8_t width = 16;
-
 	uint_fast16_t menupos;
 	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
 	{
@@ -17752,7 +17724,47 @@ static void menu_print(void)
 
 }
 
+int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count)
+{
+	const struct paramdefdef * pd = (const struct paramdefdef *) groupitem;
+	return local_snprintf_P(buff, count, "%s", pd->qlabel);
+}
+
+int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count)
+{
+	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
+	return local_snprintf_P(buff, count, "%s", pd->qlabel);
+}
+
+void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))
+{
+	uint_fast16_t menupos;
+	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
+	{
+        const struct menudef * mp = & menutable [menupos];
+        if (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
+        	continue;
+        const struct menudef * const mpgroup = mp ++;	/* группа */
+        void * const groupctx = groupcb ? (* groupcb)(walkctx, mpgroup->pd) : NULL;
+        //PRINTF("group: %s\n", mpgroup->pd->qlabel);
+        for (; mp < (menutable + MENUROW_COUNT) && ismenukinddp(mp->pd, ITEM_VALUE); ++ mp)
+        {
+            //PRINTF(" item: %s\n", mp->pd->qlabel);
+        	if (itemcb)
+        		(* itemcb)(walkctx, groupctx, mp->pd);
+		}
+        /* not an ITEM_VALUE */
+        menupos = mp - menutable - 1;
+	}
+
+}
+
 #else // WITHMENU
+
+void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx), void * (* itemcb)(void * walkctx, void * groupctx))
+{
+
+}
 
 const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 {
