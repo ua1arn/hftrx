@@ -7888,6 +7888,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 	const uint8_t pathi = 0;
     lv_area_t a1;
     lv_area_t a2;
+	const struct dispmap * const dm = & latched_dm;
 
 	const int32_t lbw = alldx / 2 + 15;
 	const int32_t rbw = alldx / 2 + 45;
@@ -7947,8 +7948,8 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 		hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
-			int_fast32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
-			int_fast32_t xright = latched_dm.xright [pathi];	// правый край шторки
+			int_fast32_t xleft = dm->xleft [pathi];		// левый край шторки
+			int_fast32_t xright = dm->xright [pathi];	// правый край шторки
 
 			if (xleft != UINT16_MAX && xright != UINT16_MAX)
 			{
@@ -7976,7 +7977,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 #endif /* WITHSPECTRUMWF */
 
 #if WITHSPECTRUMWF
-    if (1)
+    if (0)
     {
     	// линии
         lv_draw_line_dsc_t l;
@@ -7988,8 +7989,8 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
         l.color = lv_palette_main(LV_PALETTE_YELLOW);
 
         // Центральная частота
-        lv_point_precise_set(& l.p1, coords->x1 + latched_dm.xcenter, coords->y1);
-        lv_point_precise_set(& l.p2, coords->x1 + latched_dm.xcenter, coords->y2);
+        lv_point_precise_set(& l.p1, coords->x1 + dm->xcenter, coords->y1);
+        lv_point_precise_set(& l.p2, coords->x1 + dm->xcenter, coords->y2);
         lv_draw_line(layer, & l);
     }
 #endif /* WITHSPECTRUMWF */
