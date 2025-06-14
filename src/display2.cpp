@@ -746,7 +746,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 		{
 			uint_fast8_t active;
 			const char * const label = hamradio_midlabel5(col, & active);
-			lv_label_set_text_fmt(upper, label);
+			lv_label_set_text(upper, label);
 			//lv_label_set_text_fmt(upper, "up%u", col);
 		}
 
@@ -756,7 +756,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 		{
 			uint_fast8_t active;
 			const char * const label = hamradio_midvalue5(col, & active);
-			lv_label_set_text_fmt(lower, label);
+			lv_label_set_text(lower, label);
 			//lv_label_set_text_fmt(lower, "dn%u", col);
 		}
 
