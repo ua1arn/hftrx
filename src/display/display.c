@@ -1224,23 +1224,17 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
 		lv_draw_rect(layer, & d, & coords);
         lv_draw_label(layer, & l, & coords);
-	}
-	else
-	{
-		size_t len = strlen(s);
-		for (len = strlen(s); len < xspan; ++ len)
-			xpix = display_put_char_small(db, xpix, ypix, ' ', 0);
-		while((c = * s ++) != '\0')
-			xpix = display_put_char_small(db, xpix, ypix, c, 0);
-	}
 
-#else
+    	display_wrdata_end(db);
+        return;
+	}
+#endif
+
 	size_t len = strlen(s);
 	for (len = strlen(s); len < xspan; ++ len)
 		xpix = display_put_char_small(db, xpix, ypix, ' ', 0);
-	while((c = * s ++) != '\0')
+	while((c = * s ++) != '\0' && xspan --)
 		xpix = display_put_char_small(db, xpix, ypix, c, 0);
-#endif
 
 	display_wrdata_end(db);
 }

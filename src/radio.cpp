@@ -7931,7 +7931,7 @@ getactualmainsubrx(void)
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 {
 	static const char spl [] = "SPL";
-	static const char sp3 [] = "   ";
+	static const char sp3 [] = "";
 
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
@@ -7950,7 +7950,7 @@ const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 {
 	static const char spl [] = "SPLIT";
-	static const char sp5 [] = "     ";
+	static const char sp5 [] = "";
 
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
@@ -20427,11 +20427,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 
 	static char menuw [20];						// буфер для вывода значений системного меню
 
-	int n = param_format(menutable [index].pd, menuw, ARRAY_SIZE(menuw));
-	if (n > 0)
-		menuw [n] = '\0';
-	else
-		menuw [0] = '\0';
+	param_format(menutable [index].pd, menuw, ARRAY_SIZE(menuw));
 	return menuw;
 }
 #endif /* WITHMENU */
@@ -21391,8 +21387,8 @@ int infocb_vfomode(char * b, size_t len, int * selector)
 
 int infocb_classa(char * b, size_t len, int * selector)
 {
-	const uint_fast8_t state = hamradio_get_usbh_active();	// не-0: USB active
-	return local_snprintf_P(b, len, "%s", state ? "USB" : "");
+	const uint_fast8_t state = hamradio_get_classa();	// не-0: Class-A active
+	return local_snprintf_P(b, len, "%s", state ? "Class-A" : "");
 }
 
 int infocb_nr(char * b, size_t len, int * selector)
