@@ -5246,53 +5246,45 @@ public:
 static scrollbf<ALLDX, NROWSWFL> scbf;
 
 ///////////////////
-static FLOAT_t filter_waterfall(
-	uint_fast16_t x
-	)
+///
+///
+static void filtering_waterfall(uint_fast16_t x)
 {
 	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
 	const FLOAT_t Y = scbf.yoldwfl.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
 	scbf.yoldwfl.poke(x, 0, Y);
-
-//	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
-//	ASSERT(x < ARRAY_SIZE(gvars.Yold_wtf));
-//	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
-//	const FLOAT_t Y = gvars.Yold_wtf [x] * waterfall_alpha + waterfall_beta * val;
-//	gvars.Yold_wtf [x] = Y;
-	return Y;
 }
 
-static FLOAT_t filter_spectrum(
-	uint_fast16_t x
-	)
+static void filtering_spectrum(uint_fast16_t x)
 {
 	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
 	const FLOAT_t Y = scbf.yoldspe.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
 	scbf.yoldspe.poke(x, 0, Y);
-
-//	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
-//	ASSERT(x < ARRAY_SIZE(gvars.Yold_spe));
-//	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
-//	const FLOAT_t Y = gvars.Yold_spe [x] * spectrum_alpha + spectrum_beta * val;
-//	gvars.Yold_spe [x] = Y;
-	return Y;
 }
 
 // todo: свои параметры фильтрации?
-static FLOAT_t filter_3dss(
-	uint_fast16_t x
-	)
+static void filtering_3dss(uint_fast16_t x)
 {
 	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
 	const FLOAT_t Y = scbf.yold3dss.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
 	scbf.yold3dss.poke(x, 0, Y);
+}
 
-//	ASSERT(x < ARRAY_SIZE(gvars.spavgarray));
-//	ASSERT(x < ARRAY_SIZE(gvars.Yold_3dss));
-//	const FLOAT_t val = gvars.spavgarray [x];	// массив входных данных
-//	const FLOAT_t Y = gvars.Yold_3dss [x] * spectrum_alpha + spectrum_beta * val;
-//	gvars.Yold_3dss [x] = Y;
-	return Y;
+
+static FLOAT_t filtered_waterfall(uint_fast16_t x, uint_fast16_t alldx)
+{
+	return scbf.yoldwfl.peek(normalize(x, 0, alldx - 1, ALLDX - 1), 0);
+}
+
+static FLOAT_t filtered_spectrum(uint_fast16_t x, uint_fast16_t alldx)
+{
+	return scbf.yoldspe.peek(normalize(x, 0, alldx - 1, ALLDX - 1), 0);
+}
+
+// todo: свои параметры фильтрации?
+static FLOAT_t filtered_3dss(uint_fast16_t x, uint_fast16_t alldx)
+{
+	return scbf.yold3dss.peek(normalize(x, 0, alldx - 1, ALLDX - 1), 0);
 }
 
 /* парамеры видеофильтра спектра */
@@ -6795,12 +6787,20 @@ static void display2_latchcombo(
 	gxdrawb_t scapedbv;
 	gxdrawb_initialize(& scapedbv, ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP);
 #endif
+	for (x = 0; x < ALLDX; ++ x)
+	{
+		filtering_waterfall(x);
+		filtering_spectrum(x);
+#if WITHVIEW_3DSS
+		filtering_3dss(x);
+#endif /* WITHVIEW_3DSS */
+	}
 	// формирование строки водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int valwfl = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-		const int val3dss = dsp_mag2y(filter_3dss(x), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int valwfl = dsp_mag2y(filtered_waterfall(x, ALLDX), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val3dss = dsp_mag2y(filtered_3dss(x, ALLDX), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 		scbf.scrollpwr.poke(x, 0, val3dss);
 	#if LCDMODE_MAIN_L8
 		//colpip_putpixel(& wfjdbv, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
@@ -6892,7 +6892,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	for (uint_fast16_t x = 0; x < alldx; ++ x)
 	{
 		// ломанная
-		const int val = dsp_mag2y(filter_spectrum(x), alldy - 1, glob_topdb, glob_bottomdb);
+		const int val = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
 		uint_fast16_t ynew = y0pix + alldy - 1 - val;
 
 		if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
@@ -7139,7 +7139,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 			if (i == 0)
 			{
 				// Самый ближний к зрителю (самый свежий)
-				const int val = dsp_mag2y(filter_spectrum(x), HORMAX_3DSS - 1, glob_topdb, glob_bottomdb);
+				const int val = dsp_mag2y(filtered_spectrum(x, alldx), HORMAX_3DSS - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY - 1 - val;
 				uint_fast16_t dy, j;
 				wfj3dss_poke(x, current_3dss_step, val);
@@ -7569,7 +7569,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	for (x = 0; x < alldx; ++ x)
 	{
 #if WITHSPECTRUMWF
-		vals [x] = dsp_mag2y(filter_spectrum(x), alldy - 1, glob_topdb, glob_bottomdb);
+		vals [x] = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
 #else
 		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 #endif /* WITHSPECTRUMWF */
@@ -7962,12 +7962,11 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 				if (xright >= alldx)
 					xright = alldx - 1;
 
-				const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
 		        bwcoords.y1 = coords->y1;
 		        bwcoords.y2 = coords->y2;
 		        bwcoords.x1 = coords->x1 + xleft;
-		        bwcoords.x2 = coords->x1 + xrightv;
+		        bwcoords.x2 = coords->x1 + xright;
 		        rect.bg_color = display_lvlcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2);
 		        rect.bg_opa = glob_rxbwsatu * (LV_OPA_COVER - LV_OPA_TRANSP) / 100 + LV_OPA_TRANSP;
 		    	lv_draw_rect(layer, & rect, & bwcoords);
