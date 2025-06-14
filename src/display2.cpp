@@ -7560,6 +7560,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	const int32_t alldx = lv_area_get_width(coord);
 	const int32_t alldy = lv_area_get_height(coord);
 	//lv_draw_buf_t * db = (lv_draw_buf_t *) lv_draw_layer_alloc_buf(layer);
+	const struct dispmap * const dm = & latched_dm;
 
 	// сохранияем дянные для отображения, чтобы фильтр работал правилььно
 	// todo: переместить в latch - на случай если более одного элемента используют фильтр
@@ -7595,57 +7596,33 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-			int32_t xleft = latched_dm.xleft [pathi];		// левый край шторки
-			int32_t xright = latched_dm.xright [pathi];	// правый край шторки
+			int32_t xleft = dm->xleft [pathi];		// левый край шторки
+			int32_t xright = dm->xright [pathi];	// правый край шторки
 			if (xleft == UINT16_MAX || xright == UINT16_MAX)
 				continue;
+			// рисуем от xleft до xright включительно
 			if (xleft > xright)
 				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
 			if (xright >= alldx)
 				xright = alldx - 1;
 
-			const int32_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 			// Изображение "шторки" под спектром.
-			if (xleft < xrightv)
-			{
-		    	lv_area_t bwcoords;
-		        lv_draw_rect_dsc_t rect;
-		        lv_draw_rect_dsc_init(& rect);
-		        lv_area_set(& bwcoords, xleft, 0, xright, alldy - 1);
-		        lv_area_move(& bwcoords, coord->x1, coord->y1);
+	    	lv_area_t bwcoords;
+	        lv_draw_rect_dsc_t rect;
+	        lv_draw_rect_dsc_init(& rect);
+	        lv_area_set(& bwcoords, xleft, 0, xright, alldy - 1);
+	        lv_area_move(& bwcoords, coord->x1, coord->y1);
 
-		        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
-		        rect.bg_opa = LV_OPA_COVER;
-		    	lv_draw_rect(layer, & rect, & bwcoords);
-			}
+	        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
+	        rect.bg_opa = LV_OPA_COVER;
+	    	lv_draw_rect(layer, & rect, & bwcoords);
 		}
-    }
-#endif /* WITHSPECTRUMWF */
-
-#if WITHSPECTRUMWF
-    if (1)
-    {
-    	// линия центральной частоты
-        lv_draw_line_dsc_t l;
-        lv_draw_line_dsc_init(& l);
-
-        l.width = 1;
-        l.round_end = 0;
-        l.round_start = 0;
-        l.color = lv_palette_main(LV_PALETTE_YELLOW);
-
-        lv_point_precise_set(& l.p1, coord->x1 + latched_dm.xcenter, coord->y1 + 0);
-        lv_point_precise_set(& l.p2, coord->x1 + latched_dm.xcenter, coord->y1 + alldy - 1);
-        lv_draw_line(layer, & l);
-
     }
 #endif /* WITHSPECTRUMWF */
 
     if (glob_view_style == VIEW_COLOR)
     {
-    	// Градиентное заполнение
+    	// Градиентное заполнение спектра
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
@@ -7666,7 +7643,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 
     if (glob_view_style == VIEW_FILL)
     {
-    	// Одноцветное заполнение
+    	// Одноцветное заполнение спектра
     	const lv_color_t colorfill = display_lvlcolor(DSGN_SPECTRUMLINE);
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
@@ -7709,7 +7686,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	}
     }
 
-    if (1)
+    if (0)
     {
     	// надписи
 	    lv_draw_label_dsc_t label;
@@ -7720,6 +7697,106 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
         lv_draw_label(layer, & label, coord);
 
     }
+#if WITHSPECTRUMWF
+    if (1)
+    {
+    	// сетка
+    	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
+    	const int_fast32_t bw = dm->bw;
+
+    	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
+    	const COLORPIP_T color = DSGN_GRIDCOLOR2;
+    	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
+    	const uint_fast8_t markerh = 10;
+    	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
+    	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+    	const int_fast32_t halfbw = bw / 2;
+    	int_fast32_t df;	// кратное сетке значение
+
+    	// Маркеры уровней сигналов
+    	if (glob_lvlgridstep != 0)
+    	{
+    		int32_t lvl;
+    		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
+    		{
+    			const int32_t yval = dsp_mag2y(db2ratio(- lvl), alldy - 1, glob_topdb, glob_bottomdb);
+    			if (yval > 0 && yval < alldy)
+    			{
+   		            lv_draw_line_dsc_t l;
+					lv_draw_line_dsc_init(& l);
+
+					l.width = 1;
+					l.round_end = 0;
+					l.round_start = 0;
+					l.color = display_lvlcolor(color);
+
+					lv_point_precise_set(& l.p1, coord->x1, coord->y1 + yval);
+					lv_point_precise_set(& l.p2, coord->x2, coord->y1 + yval);
+					lv_draw_line(layer, & l);
+
+    				//colpip_set_hline(db, x, y + yval, w, color);	// Level marker
+    			}
+    		}
+    	}
+
+    	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
+    	{
+    		if (df > - halfbw)
+    		{
+    			// Маркер частоты кратной glob_gridstep - XOR линию
+    			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+    			if (xmarker != UINT16_MAX)
+    			{
+    				char buf2 [16];
+    				uint_fast16_t freqw;	// ширина строки со значением частоты
+    				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+
+    				lv_draw_line_dsc_t l;
+		            lv_draw_line_dsc_init(& l);
+
+		            l.width = 1;
+		            l.round_end = 0;
+		            l.round_start = 0;
+		            l.color = display_lvlcolor(color);
+
+		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
+		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
+		            lv_draw_line(layer, & l);
+					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, color);
+
+		            // текст маркера частоты
+		    	    lv_draw_label_dsc_t label;
+		    	    lv_draw_label_dsc_init(& label);
+		            label.color = display_lvlcolor(colordigits);
+		            label.align = LV_TEXT_ALIGN_CENTER;
+		            label.text = buf2;
+		            // позиция (текст, выходящий за границы окне отрежется библиотекой)
+		            lv_area_t labelcoord;
+		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
+		            lv_draw_label(layer, & label, & labelcoord);
+		            //colpip_string3_tbg(db, xtext, y, buf2, colordigits);
+    			}
+    		}
+    	}
+    	if (dm->xcenter != UINT16_MAX)
+    	{
+        	// линия центральной частоты
+            lv_draw_line_dsc_t l;
+            lv_draw_line_dsc_init(& l);
+
+            l.width = 1;
+            l.round_end = 0;
+            l.round_start = 0;
+            l.color = display_lvlcolor(color0);
+
+            lv_point_precise_set(& l.p1, coord->x1 + dm->xcenter, coord->y1 + 0);
+            lv_point_precise_set(& l.p2, coord->x1 + dm->xcenter, coord->y1 + alldy - 1);
+            lv_draw_line(layer, & l);
+    		//colpip_set_vline(db, x + dm->xcenter, y, h, color0);	// center frequency marker
+    	}
+
+    }
+#endif /* WITHSPECTRUMWF */
 }
 
 // custom draw widget
