@@ -7595,7 +7595,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
-			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+			const lv_color_t lvrxbwcolor = display_lvlcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2);
 			int32_t xleft = dm->xleft [pathi];		// левый край шторки
 			int32_t xright = dm->xright [pathi];	// правый край шторки
 			if (xleft == UINT16_MAX || xright == UINT16_MAX)
@@ -7613,8 +7613,8 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	        lv_area_set(& bwcoords, xleft, 0, xright, alldy - 1);
 	        lv_area_move(& bwcoords, coord->x1, coord->y1);
 
-	        rect.bg_color = display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
-	        rect.bg_opa = LV_OPA_COVER;
+	        rect.bg_color = lvrxbwcolor; //display_lvlcolor(rxbwcolor); //lv_palette_main(LV_PALETTE_GREEN);
+	        rect.bg_opa = glob_rxbwsatu * (LV_OPA_COVER - LV_OPA_TRANSP) / 100 + LV_OPA_TRANSP;
 	    	lv_draw_rect(layer, & rect, & bwcoords);
 		}
     }
