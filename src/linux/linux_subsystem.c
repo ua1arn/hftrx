@@ -2733,14 +2733,15 @@ void linux_exit(void)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* WITHDSPEXTFIR */
 #endif
-
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_close();
 #endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
-
 #if defined(CODEC1_TYPE) && CODEC1_TYPE == CODEC_TYPE_ALSA
 	alsa_close();
 #endif /* CODEC1_TYPE == CODEC_TYPE_ALSA */
+#if WITHLVGL
+	lv_deinit();
+#endif /* WITHLVGL */
 
 	unlink(PIDFILE);
 	exit(EXIT_SUCCESS);

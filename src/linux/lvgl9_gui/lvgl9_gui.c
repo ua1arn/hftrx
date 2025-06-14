@@ -18,6 +18,10 @@
 
 static lv_obj_t * main_gui_obj = NULL, * current_window = NULL;
 static lv_style_t mainst, fbtnst, fbtnlockst, fcontst, flbl, winst;
+static uint8_t cid = 255;
+
+static int32_t col_dsc[] = { 60, 60, 60, 60, 60, 60, LV_GRID_TEMPLATE_LAST };
+static int32_t row_dsc[] = { 40, 40, 40, 40, 40, 40, LV_GRID_TEMPLATE_LAST };
 
 void win_close(void);
 
@@ -25,36 +29,58 @@ void win_modes_handler(lv_event_t * e)
 {
 	if (! e) // init window
 	{
-		static const char * btnm_map[] = {
-				"LSB", "CW",  "AM",  "DGL", "\n",
-				"USB", "CWR", "NFM", "DGU", "\n", "", };
+		const char * btnm_map[8] =
+		{
+				"LSB", "USB", "CW",  "CWR",
+				"AM",  "NFM", "DGL", "DGU",
+		};
 
-		lv_obj_t * btnm1 = lv_buttonmatrix_create(current_window);
-		lv_obj_set_style_bg_opa(btnm1, LV_OPA_0, 0);
-		lv_obj_add_style(btnm1, & fbtnst, 0);
-		lv_buttonmatrix_set_map(btnm1, btnm_map);
-		lv_obj_align(btnm1, LV_ALIGN_CENTER, 0, 0);
-		lv_obj_add_event_cb(btnm1, win_modes_handler, LV_EVENT_CLICKED, NULL);
+		static user_t btu[8];
+
+		lv_obj_t * cont = gui_win_get_content(current_window);
+
+		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
+		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
+		lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+		lv_obj_center(cont);
+		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+
+		for(uint8_t i = 0; i < 8; i++)
+		{
+			uint8_t col = i / 2;
+			uint8_t row = i % 2;
+
+			lv_obj_t * btn = lv_button_create(cont);
+	        lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
+	                             LV_GRID_ALIGN_STRETCH, row, 1);
+
+	        lv_obj_t * label = lv_label_create(btn);
+	        lv_label_set_text_fmt(label, "%s", btnm_map[i]);
+	        lv_obj_center(label);
+
+	        btu[i].id = i;
+	        lv_obj_set_user_data(btn, & btu[i]);
+	        lv_obj_add_event_cb(btn, win_modes_handler, LV_EVENT_CLICKED, NULL);
+		}
 
 		return;
 	}
 
-	const int btnm_data [] = {
-			SUBMODE_LSB, SUBMODE_CW, SUBMODE_AM, SUBMODE_DGL,
-			SUBMODE_USB, SUBMODE_CWR, SUBMODE_NFM, SUBMODE_DGU,
+	const int modes [8] = {
+			SUBMODE_LSB, SUBMODE_USB, SUBMODE_CW, SUBMODE_CWR,
+			SUBMODE_AM, SUBMODE_NFM, SUBMODE_DGL, SUBMODE_DGU,
 	};
 
 	lv_event_code_t code = lv_event_get_code(e);
-	lv_obj_t * obj = lv_event_get_target_obj(e);
+	lv_obj_t * btn = lv_event_get_target_obj(e);
 	if(code == LV_EVENT_CLICKED)
 	{
-		uint32_t id = lv_buttonmatrix_get_selected_button(obj);
-		if (id == LV_BUTTONMATRIX_BUTTON_NONE) return;
-		const char * txt = lv_buttonmatrix_get_button_text(obj, id);
-		hamradio_change_submode(btnm_data[id], 1);
+		user_t * btu = lv_obj_get_user_data(btn);
+		hamradio_change_submode(modes[btu->id], 1);
 		win_close();
 	}
 }
+
 
 void win_test_handler(lv_event_t * e)
 {
@@ -68,18 +94,6 @@ enum {
 	fbtn_w = 86,
 	fbtn_h = 44,
 };
-
-typedef struct {
-    lv_obj_t * obj;
-    uint32_t id;
-    char name[30];
-    handler_t handler;
-} user_t;
-
-typedef struct {
-	char name[20];
-	char text[20];
-} btn_t;
 
 static btn_t footer_buttons [] = {
 		{ "fbtn_trx", "RX", 	},
@@ -99,20 +113,27 @@ void win_close(void)
 		lv_obj_del(current_window);
 
 	current_window = NULL;
+	cid = 255;
 }
 
 lv_obj_t * win_open(uint8_t id)
 {
-	win_close();
-
 	ASSERT(id < WINDOW_COUNT);
 	const window_t * win_def = & windows[id];
 
-	current_window = gui_win_create(main_gui_obj);
-	lv_obj_add_style(current_window, & winst, 0);
-	gui_win_add_title(current_window, win_def->title);
+	if (id != cid)
+	{
+		win_close();
 
-	win_def->h(NULL);
+		current_window = gui_win_create(main_gui_obj);
+		lv_obj_add_style(current_window, & winst, 0);
+		gui_win_add_title(current_window, win_def->title);
+		cid = id;
+
+		win_def->h(NULL);
+	}
+	else
+		win_close();
 
 	return current_window;
 }

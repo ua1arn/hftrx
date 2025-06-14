@@ -7,6 +7,23 @@
 extern "C" {
 #endif
 
+#define WIN_MIN_W	200
+#define WIN_MIN_H	150
+
+typedef void (* handler_t)(lv_event_t * e);
+
+typedef struct {
+    lv_obj_t * obj;
+    uint32_t id;
+    char name[30];
+    handler_t handler;
+} user_t;
+
+typedef struct {
+	char name[20];
+	char text[20];
+} btn_t;
+
 void lvgl_gui_init(lv_obj_t * parent);
 
 lv_obj_t * gui_win_create(lv_obj_t * parent);

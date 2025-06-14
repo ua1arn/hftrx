@@ -15,8 +15,6 @@ void win_modes_handler(lv_event_t * e);
 void win_test_handler(lv_event_t * e);
 
 
-typedef void (* handler_t)(lv_event_t * e);
-
 #define WINDOW_LIST(X) \
     X(MODES, "win_modes", "Modes", win_modes_handler)      \
     X(TEST,  "win_test",  "Test",  win_test_handler)

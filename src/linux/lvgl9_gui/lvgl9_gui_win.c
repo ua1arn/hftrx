@@ -6,9 +6,6 @@
 
 #include "lvgl9_gui.h"
 
-#define WIN_MIN_W	300
-#define WIN_MIN_H	200
-
 static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 
 struct _lv_win_t {
