@@ -1031,23 +1031,23 @@ static void display2_preparebg(const gxdrawb_t * db, uint_fast8_t xcell, uint_fa
 {
 #if WITHLVGL
 	return;
-#elif WITHLTDCHW
+#endif /* WITHLVGL */
+#if WITHLTDCHW
 	colpip_fillrect(db, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-#else
 #endif
 }
 
 // запись подготовленного изображения на главный дисплей (REDRSUBSET_SHOW)
 static void display2_showmain(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
+#if WITHLVGL
+	return;
+#endif /* WITHLVGL */
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 	display_snapshot(db);	/* запись видимого изображения */
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
-#if WITHLVGL
-	return;
-#elif WITHLTDCHW
+#if WITHLTDCHW
 	colmain_nextfb();
-#else
 #endif
 }
 
@@ -1056,7 +1056,8 @@ static void display2_showhdmi(const gxdrawb_t * db, uint_fast8_t xcell, uint_fas
 {
 #if WITHLVGL
 	return;
-#else
+#endif /* WITHLVGL */
+#if WITHLTDCHW
 	colmain_nextfb_sub();
 #endif
 }

@@ -136,7 +136,7 @@ uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, ui
 void display_wrdatabig_end(const gxdrawb_t * db);
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
 uint_fast16_t display_put_char_small_xy(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLOR565_T fg);
 void display_wrdata_end(const gxdrawb_t * db);
 
@@ -784,7 +784,7 @@ uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_
 	return ltdc_put_char_half(db, x, y, ci, width);
 }
 
-uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf_unused)
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
 
@@ -1061,6 +1061,14 @@ static void maindisplay_flush(lv_display_t * disp, const lv_area_t * area, uint8
     	// Дубль жкрана
     	hardware_ltdc_main_set(RTMIXIDTV, (uintptr_t) px_map);	/* set visible buffer start. Wait VSYNC. */
 #endif
+#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
+    	{
+    		gxdrawb_t dbv;
+    		//gxdrawb_initlvgl(& dbv, lv_display_get_layer_top(disp));
+    		gxdrawb_initialize(& dbv, (PACKEDCOLORPIP_T *) px_map, lv_display_get_horizontal_resolution(disp), lv_display_get_vertical_resolution(disp));
+    		display_snapshot(& dbv);	/* запись видимого изображения */
+    	}
+#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
     }
 	/*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
@@ -1232,9 +1240,9 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 
 	size_t len = strlen(s);
 	for (len = strlen(s); len < xspan; ++ len)
-		xpix = display_put_char_small(db, xpix, ypix, ' ', 0);
+		xpix = display_put_char_small(db, xpix, ypix, ' ');
 	while((c = * s ++) != '\0' && xspan --)
-		xpix = display_put_char_small(db, xpix, ypix, c, 0);
+		xpix = display_put_char_small(db, xpix, ypix, c);
 
 	display_wrdata_end(db);
 }
@@ -1540,13 +1548,13 @@ display_value_small(const gxdrawb_t * db,
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = display_put_char_small(db, xpix, ypix, '-', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '-');
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = display_put_char_small(db, xpix, ypix, '+', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '+');
 		else
-			xpix = display_put_char_small(db, xpix, ypix, ' ', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, ' ');
 	}
 	for (; i < j; ++ i)
 	{
@@ -1555,20 +1563,20 @@ display_value_small(const gxdrawb_t * db,
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ');
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = display_put_char_small(db, xpix, ypix, '.', lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '.');
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_small(db, xpix, ypix, ' ', lowhalf);	// supress zero
+			xpix = display_put_char_small(db, xpix, ypix, ' ');	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_small(db, xpix, ypix, '0' + res.quot, lowhalf);
+			xpix = display_put_char_small(db, xpix, ypix, '0' + res.quot);
 		}
 		freq = res.rem;
 	}
