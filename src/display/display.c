@@ -1213,10 +1213,11 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 
 #if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
-	if (0 && layer)
+	if (layer)
 	{
 		const size_t len = strlen(s);
 		unsigned w = xspan < len ? len : xspan;
+		w = xspan;
 		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
 		lv_draw_rect_dsc_t d;
 	    lv_draw_label_dsc_t l;
