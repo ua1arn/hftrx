@@ -16882,6 +16882,7 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 				continue; //пропускаем пункты для скролла
 			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
 				continue;
+
 			if (el == selected_group_left_margin)
 			{
 				//подсвечиваем выбранный элемент
@@ -16896,6 +16897,14 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 			}
 
 			display2_menu_group(db, xcell_text, y_position_groups, mv, xspan); // название группы
+            if (el == selected_group_left_margin)
+            {
+               	uint_fast16_t xpix = GRID2X(xcell);
+               	uint_fast16_t ypix = GRID2Y(y_position_groups);
+              	uint_fast16_t wpix = GRID2X(xspan);
+              	uint_fast16_t hpix = GRID2Y(window.ystep);
+              	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
+            }
 
 			y_position_groups += window.ystep;
 		}
