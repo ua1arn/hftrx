@@ -587,6 +587,35 @@ ismenukinddp(
 }
 
 
+/* входит ли данный пункт меню в группу разрешённых для показа */
+static uint_fast8_t
+ismenukind(
+	const struct menudef * mp,
+	uint_fast8_t itemmask
+	)
+{
+	return ismenukinddp(mp->pd, itemmask);
+}
+
+/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
+static uint_fast8_t
+ismenufilterusb(
+	const struct paramdefdef * pd
+	)
+{
+	return ismenukinddp(pd, ITEM_FILTERU);
+}
+
+/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
+static uint_fast8_t
+ismenufilterlsb(
+	const struct paramdefdef * pd
+	)
+{
+	return ismenukinddp(pd, ITEM_FILTERL);
+}
+
+
 /* Сохранить параметр после редактирования */
 static void
 savemenuvalue(
@@ -667,14 +696,26 @@ param_getvalue(
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
+		// получение значения для отображения
+		if (ismenufilterlsb(pd))
+		{
+			const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
+			return getlo4baseflt(filter) + * pv16;
+		}
+		if (ismenufilterusb(pd))
+		{
+			const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
+			return getlo4baseflt(filter) + * pv16;
+		}
 		if (pv16 != NULL)
 		{
 			return (int_fast32_t) * pv16 + pd->funcoffs();
 		}
-		else if (pv8 != NULL)
+		if (pv8 != NULL)
 		{
 			return (int_fast32_t) * pv8 + pd->funcoffs();
 		}
+		return pd->qbottom;
 	}
 	return 0;
 }
@@ -16722,35 +16763,6 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, uns
 
 #include "menu.h"
 
-
-/* входит ли данный пункт меню в группу разрешённых для показа */
-static uint_fast8_t
-ismenukind(
-	const struct menudef * mp,
-	uint_fast8_t itemmask
-	)
-{
-	return ismenukinddp(mp->pd, itemmask);
-}
-
-/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-static uint_fast8_t
-ismenufilterusb(
-	const struct paramdefdef * pd
-	)
-{
-	return ismenukinddp(pd, ITEM_FILTERU);
-}
-
-/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
-static uint_fast8_t
-ismenufilterlsb(
-	const struct paramdefdef * pd
-	)
-{
-	return ismenukinddp(pd, ITEM_FILTERL);
-}
-
 #define MENUROW_COUNT (sizeof menutable / sizeof menutable [0])
 
 /* Загрузка значений из NVRAM в переменные программы.
@@ -17203,43 +17215,10 @@ param_format(
 	if (ismenukinddp(pd, ITEM_VALUE) == 0)
 		return 0;
 
-	int_fast32_t value;
-	const uint_fast8_t rj = pd->qrj;
-	unsigned nvalues;
-	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
-	const ptrdiff_t offs = pd->valoffs(sel);
-	const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
-	const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-
-	// получение значения для отображения
-	if (ismenufilterlsb(pd))
-	{
-		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
-		value = getlo4baseflt(filter) + * pv16;
-	}
-	else if (ismenufilterusb(pd))
-	{
-		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
-		value = getlo4baseflt(filter) + * pv16;
-	}
-	else if (pv16 != NULL)
-	{
-		const int_fast32_t offs = pd->funcoffs();
-		value = offs + * pv16;
-	}
-	else if (pv8 != NULL)
-	{
-		const int_fast32_t offs = pd->funcoffs();
-		value = offs + * pv8;
-	}
-	else
-	{
-		value = pd->qbottom;	/* чтобы не ругался компилятор */
-	}
+	const int_fast32_t value = param_getvalue(pd);
 
 	// отображение параметра, отличающиеся от цифрового
-	switch (rj)
+	switch (pd->qrj)
 	{
 	case RJ_POW2:
 		return local_snprintf_P(buff, count, "%*" PRIu32, xspan, UINT32_C(1) << value);
@@ -17299,8 +17278,7 @@ param_format(
  				"BPSK",
 				"QPSK",
 			};
-
-			display_menu_string(db, x, y, msg [value], count, comma);
+			return local_snprintf_P(buff, count, "%*s", xspan, msg [value]);
 		}
 		break;
 
@@ -17308,7 +17286,7 @@ param_format(
 
 #if defined (RTC1_TYPE)
 	case RJ_MONTH:
-		return local_snprintf_P(buff, count, "%*s", xspan, months [value - pd->qbottom + 1]);
+		return local_snprintf_P(buff, count, "%*s", xspan, months [value]);
 #endif /* defined (RTC1_TYPE) */
 
 	case RJ_SMETER:
