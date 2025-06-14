@@ -288,8 +288,8 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (LV_EVENT_DRAW_MAIN_BEGIN == code)
     {
     	lv_info_t   * const cp = (lv_info_t *) obj;
-    	int selctor = 0;	// вариант стиля отображения если надо менять в зависимости от ситуации
-    	(* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext), & selctor);
+    	int state = 0;	// вариант стиля отображения если надо менять в зависимости от ситуации
+    	(* cp->infocb)(cp->infotext, ARRAY_SIZE(cp->infotext), & state);
     }
 
     lv_res_t res = lv_obj_event_base(MY_CLASS_INFO, e);	// обработчик родительского клвсса

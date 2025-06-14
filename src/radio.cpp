@@ -21291,20 +21291,20 @@ application_initialize(void)
 }
 
 // LVGL interface functions
-int infocb_modea(char * b, size_t len, int * selector)
+int infocb_modea(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_mode_a_value_P());
 }
 
-int infocb_modeb(char * b, size_t len, int * selector)
+int infocb_modeb(char * b, size_t len, int * pstate)
 {
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", hamradio_get_mode_b_value_P());
 }
 
-int infocb_ant5(char * b, size_t len, int * selector)
+int infocb_ant5(char * b, size_t len, int * pstate)
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 || WITHANTSELECT
 	return local_snprintf_P(b, len, "%s", hamradio_get_ant5_value_P());
@@ -21313,92 +21313,92 @@ int infocb_ant5(char * b, size_t len, int * selector)
 #endif /* xxx */
 }
 
-int infocb_preamp_ovf(char * b, size_t len, int * selector)
+int infocb_preamp_ovf(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_pre_value_P());
 }
 
-int infocb_tune(char * b, size_t len, int * selector)
+int infocb_tune(char * b, size_t len, int * pstate)
 {
 #if WITHTX && WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_tunemodevalue();
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "TUN" : "");
 #else
 	return 0;
 #endif
 }
 
-int infocb_bypass(char * b, size_t len, int * selector)
+int infocb_bypass(char * b, size_t len, int * pstate)
 {
 #if WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_bypvalue();
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "BYP" : "TUN");
 #else
 	return 0;
 #endif
 }
 
-int infocb_rxbwval(char * b, size_t len, int * selector)
+int infocb_rxbwval(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_value4());
 }
 
-int infocb_wpm(char * b, size_t len, int * selector)
+int infocb_wpm(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%uwpm", (int) hamradio_get_cw_wpm());
 }
 
-int infocb_rec(char * b, size_t len, int * selector)
+int infocb_rec(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_rec_value();	// не-0: запись включена
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "REC" : "PAU");
 }
 
-int infocb_spk(char * b, size_t len, int * selector)
+int infocb_spk(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_spkon_value();	// не-0: динамик включен
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "SPK" : "");
 }
 
-int infocb_bkin(char * b, size_t len, int * selector)
+int infocb_bkin(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_bkin_value();	// не-0: break-in включен
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "BKIN" : "BKIN");
 }
 
-int infocb_usbact(char * b, size_t len, int * selector)
+int infocb_usbact(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_usbh_active();	// не-0: USB active
-	* selector = state;
+	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "USB" : "USB");
 }
 
-int infocb_vfomode(char * b, size_t len, int * selector)
+int infocb_vfomode(char * b, size_t len, int * pstate)
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const label = hamradio_get_vfomode3_value(& state);
 	return local_snprintf_P(b, len, "%s", label);
 }
 
-int infocb_classa(char * b, size_t len, int * selector)
+int infocb_classa(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_classa();	// не-0: Class-A active
 	return local_snprintf_P(b, len, "%s", state ? "Class-A" : "");
 }
 
-int infocb_nr(char * b, size_t len, int * selector)
+int infocb_nr(char * b, size_t len, int * pstate)
 {
 	int_fast32_t grade;
 	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
 	return local_snprintf_P(b, len, "%s", state ? "NR" : "");
 }
 
-int infocb_notch(char * b, size_t len, int * selector)
+int infocb_notch(char * b, size_t len, int * pstate)
 {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
@@ -21411,12 +21411,12 @@ int infocb_notch(char * b, size_t len, int * selector)
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
-int infocb_agc(char * b, size_t len, int * selector)
+int infocb_agc(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_agc3_value_P());
 }
 
-int infocb_lock(char * b, size_t len, int * selector)
+int infocb_lock(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
@@ -21428,7 +21428,7 @@ int infocb_lock(char * b, size_t len, int * selector)
 	return local_snprintf_P(b, len, "%s", labels [lockv * 2 + fastv]);
 }
 
-int infocb_voxtune(char * b, size_t len, int * selector)
+int infocb_voxtune(char * b, size_t len, int * pstate)
 {
 	static const char text_vox [] = "VOX";
 	static const char text_tun [] = "TUN";
@@ -21442,13 +21442,13 @@ int infocb_voxtune(char * b, size_t len, int * selector)
 	return local_snprintf_P(b, len, "%s", labels [tunev * 2 + voxv]);
 }
 
-int infocb_datamode(char * b, size_t len, int * selector)
+int infocb_datamode(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_datamode();	// не-0: USB active
 	return local_snprintf_P(b, len, "%s", state ? "DAT" : "");
 }
 
-int infocb_voltlevel(char * b, size_t len, int * selector)
+int infocb_voltlevel(char * b, size_t len, int * pstate)
 {
 #if WITHVOLTLEVEL
 	const int voltx = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
@@ -21462,7 +21462,7 @@ int infocb_voltlevel(char * b, size_t len, int * selector)
 
 // Печать времени - только часы и минуты, без секунд
 // Jan-01 13:40
-int infocb_datetime12(char * b, size_t len, int * selector)
+int infocb_datetime12(char * b, size_t len, int * pstate)
 {
 #if defined (RTC1_TYPE)
 
@@ -21499,7 +21499,7 @@ int infocb_datetime12(char * b, size_t len, int * selector)
 #endif
 }
 
-int infocb_attenuator(char * b, size_t len, int * selector)
+int infocb_attenuator(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_att_value_P());
 }
@@ -21511,7 +21511,7 @@ static void xsplit_freq(uint64_t freq, unsigned * mhz, unsigned * khz, unsigned 
     * hz = freq % 1000;
 }
 
-int infocb_freqa(char * b, size_t len, int * selector)
+int infocb_freqa(char * b, size_t len, int * pstate)
 {
 	unsigned mhz, khz, hz;
 
@@ -21519,23 +21519,23 @@ int infocb_freqa(char * b, size_t len, int * selector)
 	return local_snprintf_P(b, len, "%u.%03u.%03u", mhz, khz, hz);
 }
 
-int infocb_freqb(char * b, size_t len, int * selector)
+int infocb_freqb(char * b, size_t len, int * pstate)
 {
 	unsigned mhz, khz, hz;
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);
-	* selector = state;
+	* pstate = state;
 
 	xsplit_freq(hamradio_get_freq_b(), & mhz, & khz, & hz);
 	return local_snprintf_P(b, len, "%u.%03u.%03u", mhz, khz, hz);
 }
 
-int infocb_rxbw(char * b, size_t len, int * selector)
+int infocb_rxbw(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_label3_P());
 }
 
-int infocb_siglevel(char * b, size_t len, int * selector)
+int infocb_siglevel(char * b, size_t len, int * pstate)
 {
 #if WITHIF4DSP
 	uint_fast8_t tracemax;
@@ -21548,7 +21548,7 @@ int infocb_siglevel(char * b, size_t len, int * selector)
 #endif
 }
 
-int infocb_currlevel(char * b, size_t len, int * selector)
+int infocb_currlevel(char * b, size_t len, int * pstate)
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 	int_fast16_t drainx = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
@@ -21561,7 +21561,7 @@ int infocb_currlevel(char * b, size_t len, int * selector)
 #endif
 }
 
-int infocb_thermo(char * b, size_t len, int * selector)
+int infocb_thermo(char * b, size_t len, int * pstate)
 {
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях

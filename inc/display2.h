@@ -269,7 +269,7 @@ typedef struct
 {
 	lv_label_t label;
 	char infotext [32];
-	int (* infocb)(char * b, size_t len, int * selector);
+	int (* infocb)(char * b, size_t len, int * state);
 } lv_info_t;
 
 typedef struct
