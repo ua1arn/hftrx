@@ -382,40 +382,42 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 struct walkctx
 {
 	lv_obj_t * menu;
-	lv_obj_t * main_page;
+//	lv_obj_t * main_page;
+//	lv_obj_t * sub_page;
 };
 
 void * dzicreategroup(void * walkctx, const void * groupitem)
 {
 	char b [32];
 	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
-//	PRINTF("Group: '%s'\n", b);
-//	return NULL;
+	PRINTF("Group: '%s'\n", b);
+	//return NULL;
 
 	struct walkctx * ctx = (struct walkctx *) walkctx;
 
-    lv_obj_t * sub_page = lv_menu_page_create(ctx->main_page, b);
-	lv_obj_add_style(sub_page, & xxdivstyle, LV_PART_MAIN);
+    /*Create a main page*/
+    lv_obj_t * main_page = lv_menu_page_create(ctx->menu, b);
+	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
 
-	return sub_page;
+    //lv_menu_set_page(ctx->menu, main_page);
+	return main_page;
 }
 
 void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
 {
 	char b [32];
 	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));
-	//PRINTF(" Param: '%s'\n", b);
+	PRINTF(" Param: '%s'\n", b);
 	//return;
 
 	struct walkctx * ctx = (struct walkctx *) walkctx;
 
 
-	lv_obj_t * group = (lv_obj_t *) groupctx;
-
+	lv_obj_t * main_page = (lv_obj_t *) groupctx;
 	lv_obj_t * cont;
 	lv_obj_t * label;
 
-    cont = lv_menu_cont_create(group);
+    cont = lv_menu_cont_create(main_page);
 	lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
     label = lv_label_create(cont);
 	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
@@ -426,17 +428,13 @@ void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
 
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-#if 0
+#if 1
 	lv_obj_t * menu = lv_menu_create(parent);
 	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
 
-    /*Create a main page*/
-    lv_obj_t * main_page = lv_menu_page_create(menu, "main page title");
-	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
-
 	struct walkctx ctx;
 	ctx.menu = menu;
-	ctx.main_page = main_page;
+	//ctx.sub_page = sub_page;
 	hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
 	return menu;
 
@@ -451,19 +449,24 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_obj_t * menu = lv_menu_create(parent);
 	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
 
-    /*Create a sub page*/
-    lv_obj_t * sub_page = lv_menu_page_create(menu, "sub page title");
-	lv_obj_add_style(sub_page, & xxdivstyle, LV_PART_MAIN);
+//    /*Create a sub page*/
+//    lv_obj_t * sub_page = lv_menu_page_create(menu, "sub page1 title");
+//	lv_obj_add_style(sub_page, & xxdivstyle, LV_PART_MAIN);
+//
+//    /*Create a sub page*/
+//    lv_obj_t * sub_page2 = lv_menu_page_create(menu, "sub page2 title");
+//	lv_obj_add_style(sub_page2, & xxdivstyle, LV_PART_MAIN);
 
-	{
-		lv_obj_t * cont;
-		lv_obj_t * label;
-
-	    cont = lv_menu_cont_create(sub_page);
-	    label = lv_label_create(cont);
-		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
-	    lv_label_set_text(label, "Hello, I am hiding here");
-	}
+//	if (0)
+//	{
+//		lv_obj_t * cont;
+//		lv_obj_t * label;
+//
+//	    cont = lv_menu_cont_create(sub_page);
+//	    label = lv_label_create(cont);
+//		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+//	    lv_label_set_text(label, "Hello, I am hiding here");
+//	}
 
     /*Create a main page*/
     lv_obj_t * main_page = lv_menu_page_create(menu, "main page title");
@@ -493,25 +496,21 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
 
 	    lv_label_set_text(label, "Item 2");
-	    label = lv_label_create(cont);
-		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
-
-	    lv_label_set_text(label, "Item 21");
 	}
-
-    // item 3
-	{
-		lv_obj_t * cont;
-		lv_obj_t * label;
-
-	    cont = lv_menu_cont_create(main_page);
-		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
-	    label = lv_label_create(cont);
-		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
-
-		lv_label_set_text(label, "Item 3 (Click me!)");
-	    lv_menu_set_load_page_event(menu, cont, sub_page);
-	}
+//
+//    // item 3
+//	{
+//		lv_obj_t * cont;
+//		lv_obj_t * label;
+//
+//	    cont = lv_menu_cont_create(main_page);
+//		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+//	    label = lv_label_create(cont);
+//		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+//
+//		lv_label_set_text(label, "Item 3 (Click me!)");
+//	    lv_menu_set_load_page_event(menu, cont, sub_page);
+//	}
 
     lv_menu_set_page(menu, main_page);
 
