@@ -741,14 +741,24 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 
 		// нижняя и верхняя строки в элементе горизонтального меню
 		lv_obj_t * const upper = lv_label_create(cont);
-		lv_label_set_text_fmt(upper, "up%u", col);
 		lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 		lv_obj_add_style(upper, & xxdivstyle, LV_PART_MAIN);
+		{
+			uint_fast8_t active;
+			const char * const label = hamradio_midlabel5(col, & active);
+			lv_label_set_text_fmt(upper, label);
+			//lv_label_set_text_fmt(upper, "up%u", col);
+		}
 
 		lv_obj_t * const lower = lv_label_create(cont);
-		lv_label_set_text_fmt(lower, "dn%u", col);
 		lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 		lv_obj_add_style(lower, & xxdivstyle, LV_PART_MAIN);
+		{
+			uint_fast8_t active;
+			const char * const label = hamradio_midvalue5(col, & active);
+			lv_label_set_text_fmt(lower, label);
+			//lv_label_set_text_fmt(lower, "dn%u", col);
+		}
 
 	}
 	return cont0;
