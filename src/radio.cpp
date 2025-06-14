@@ -17736,6 +17736,12 @@ int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t c
 	return local_snprintf_P(buff, count, "%s", pd->qlabel);
 }
 
+int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count)
+{
+	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
+	return param_format(pd, buff, count);
+}
+
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))
 {
 	uint_fast16_t menupos;

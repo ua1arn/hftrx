@@ -390,7 +390,7 @@ void * dzicreategroup(void * walkctx, const void * groupitem)
 {
 	char b [32];
 	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
-	PRINTF("Group: '%s'\n", b);
+	//PRINTF("Group: '%s'\n", b);
 	//return NULL;
 
 	struct walkctx * ctx = (struct walkctx *) walkctx;
@@ -399,7 +399,7 @@ void * dzicreategroup(void * walkctx, const void * groupitem)
     lv_obj_t * main_page = lv_menu_page_create(ctx->menu, b);
 	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
 
-    //lv_menu_set_page(ctx->menu, main_page);
+    lv_menu_set_page(ctx->menu, main_page);
 	return main_page;
 }
 
@@ -407,7 +407,9 @@ void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
 {
 	char b [32];
 	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));
-	PRINTF(" Param: '%s'\n", b);
+	char v [32];
+	hamradio_walkmenu_getparamvalue(paramitem, v, ARRAY_SIZE(v));
+	//PRINTF(" Param: '%s'\n", b);
 	//return;
 
 	struct walkctx * ctx = (struct walkctx *) walkctx;
@@ -419,10 +421,16 @@ void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
 
     cont = lv_menu_cont_create(main_page);
 	lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+
     label = lv_label_create(cont);
 	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
 
     lv_label_set_text(label, b);
+
+    label = lv_label_create(cont);
+	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+    lv_label_set_text(label, v);
 
 }
 

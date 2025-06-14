@@ -3434,6 +3434,7 @@ void hamradio_set_moxmode(uint_fast8_t mode);
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
+int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
