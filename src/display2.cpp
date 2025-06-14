@@ -764,6 +764,46 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 	return cont0;
 }
 
+static lv_obj_t * dzi_create_encf1(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	char buf [32];
+	hamradio_get_label_ENC1F(0, buf, ARRAY_SIZE(buf));
+	lv_obj_t * lbl = lv_label_create(parent);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_label_set_text(lbl, buf);
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_encf2(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	char buf [32];
+	hamradio_get_label_ENC2F(0, buf, ARRAY_SIZE(buf));
+	lv_obj_t * lbl = lv_label_create(parent);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_label_set_text(lbl, buf);
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_encf3(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	char buf [32];
+	hamradio_get_label_ENC3F(0, buf, ARRAY_SIZE(buf));
+	lv_obj_t * lbl = lv_label_create(parent);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_label_set_text(lbl, buf);
+	return lbl;
+}
+
+static lv_obj_t * dzi_create_encf4(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	char buf [32];
+	hamradio_get_label_ENC4F(0, buf, ARRAY_SIZE(buf));
+	lv_obj_t * lbl = lv_label_create(parent);
+	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_label_set_text(lbl, buf);
+	return lbl;
+}
+
 static void refreshtexts(void)
 {
 }
@@ -796,6 +836,29 @@ static const dzitem_t dzi_middlemenu =
 	.id = "middlemenu"
 };
 
+static const dzitem_t dzi_encf1 =
+{
+	.lvelementcreate = LVCREATE(dzi_create_encf1),
+	.id = "encf1"
+};
+
+static const dzitem_t dzi_encf2 =
+{
+	.lvelementcreate = LVCREATE(dzi_create_encf2),
+	.id = "encf2"
+};
+
+static const dzitem_t dzi_encf3 =
+{
+	.lvelementcreate = LVCREATE(dzi_create_encf3),
+	.id = "encf3"
+};
+
+static const dzitem_t dzi_encf4 =
+{
+	.lvelementcreate = LVCREATE(dzi_create_encf4),
+	.id = "encf4"
+};
 
 static const dzitem_t dzi_GUI =
 {
