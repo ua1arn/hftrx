@@ -2606,7 +2606,7 @@ void display2_midlabelX(const gxdrawb_t * db,
 	)
 {
 	uint_fast8_t active;
-	const char * const label = hamradio_midlabel5(section, & active, width);
+	const char * const label = hamradio_midlabel5(section, & active);
 	display_2states(db, x, y, active, label, label, width);
 }
 
@@ -2619,7 +2619,7 @@ void display2_midvalueX(const gxdrawb_t * db,
 	)
 {
 	uint_fast8_t active;
-	const char * const label = hamradio_midvalue5(section, & active, width);
+	const char * const label = hamradio_midvalue5(section, & active);
 	display_2states(db, x, y, active, label, label, width);
 }
 
