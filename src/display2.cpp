@@ -450,10 +450,10 @@ static lv_obj_t * root_page;
 
 static void back_event_handler(lv_event_t * e)
 {
-    lv_obj_t * obj = lv_event_get_target_obj(e);
-    lv_obj_t * menu = (lv_obj_t *)lv_event_get_user_data(e);
+    lv_obj_t * const obj = lv_event_get_target_obj(e);
+    lv_obj_t * const menu = (lv_obj_t *) lv_event_get_user_data(e);
 
-    if(lv_menu_back_button_is_root(menu, obj)) {
+    if (lv_menu_back_button_is_root(menu, obj)) {
         lv_obj_t * mbox1 = lv_msgbox_create(NULL);
         lv_msgbox_add_title(mbox1, "Hello");
         lv_msgbox_add_text(mbox1, "Root back btn click.");
@@ -463,11 +463,12 @@ static void back_event_handler(lv_event_t * e)
 
 static void switch_handler(lv_event_t * e)
 {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * menu = (lv_obj_t *)lv_event_get_user_data(e);
-    lv_obj_t * obj = lv_event_get_target_obj(e);
-    if(code == LV_EVENT_VALUE_CHANGED) {
-        if(lv_obj_has_state(obj, LV_STATE_CHECKED)) {
+	const lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * const menu = (lv_obj_t *) lv_event_get_user_data(e);
+    lv_obj_t * const obj = lv_event_get_target_obj(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
             lv_menu_set_page(menu, NULL);
             lv_menu_set_sidebar_page(menu, root_page);
             lv_obj_send_event(lv_obj_get_child(lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), 0), 0), LV_EVENT_CLICKED,
@@ -485,16 +486,17 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 {
     lv_obj_t * const menu = lv_menu_create(parent);
 
-    if (0)
+    if (1)
     {
         lv_color_t bg_color = lv_obj_get_style_bg_color(menu, LV_PART_MAIN);
         if(lv_color_brightness(bg_color) > 127) {
-            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 10), 0);
+            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 10), LV_PART_MAIN);
         }
         else {
-            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), 0);
+            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), LV_PART_MAIN);
         }
-    }
+        //lv_obj_set_style_bg_color(menu, lv_color_black(), LV_PART_MAIN);
+   }
 
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
     lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
