@@ -3435,6 +3435,7 @@ void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const 
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
+void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent);
 
 int hamradio_walkmenu_rotate(const void * paramitem, int delta);	// модификация параметра валкодером
 int hamradio_walkmenu_click(const void * paramitem);	// модификация параметра

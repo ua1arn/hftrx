@@ -17723,6 +17723,67 @@ int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t 
 	return param_format(pd, buff, count);
 }
 
+void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
+{
+	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
+#if WITHLVGL
+    lv_obj_t * obj = lv_menu_cont_create((lv_obj_t *) parent);
+	switch (pd->qrj)
+	{
+	default:
+		{
+		    lv_obj_t * img = NULL;
+		    lv_obj_t * label = NULL;
+//
+//		    if(icon) {
+//		        img = lv_image_create(obj);
+//		        lv_image_set_src(img, icon);
+//		    }
+
+	        label = lv_label_create(obj);
+	        lv_label_set_text(label, pd->qlabel);
+	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
+	        lv_obj_set_flex_grow(label, 1);
+
+			lv_obj_t * slider = lv_slider_create(obj);
+			lv_obj_set_flex_grow(slider, 1);
+			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
+			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
+
+			//if(icon == NULL) {
+				lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
+			//}
+
+			return obj;
+		}
+	case RJ_YES:
+	case RJ_ON:
+		{
+
+		    lv_obj_t * img = NULL;
+		    lv_obj_t * label = NULL;
+//
+//		    if(icon) {
+//		        img = lv_image_create(obj);
+//		        lv_image_set_src(img, icon);
+//		    }
+
+	        label = lv_label_create(obj);
+	        lv_label_set_text(label, pd->qlabel);
+	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
+	        lv_obj_set_flex_grow(label, 1);
+
+			lv_obj_t * sw = lv_switch_create(obj);
+			lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
+
+			return obj;
+		}
+	}
+	return obj;
+#else /* WITHLVGL */
+	return NULL;
+#endif /* WITHLVGL */
+}
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))
 {

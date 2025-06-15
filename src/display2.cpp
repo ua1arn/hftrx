@@ -752,22 +752,23 @@ static void * dzicreategroup(void * menuwalkctx, const void * groupitem)
 	lv_obj_t * const cont = create_text(ctx->section_first, LV_SYMBOL_SETTINGS, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
 	lv_menu_set_load_page_event(ctx->menu, cont, sub_xx_page);
 
-	return lv_menu_section_create(sub_xx_page);
+	return lv_menu_section_create(sub_xx_page);		// Сюда будут добавляться редактируемые параметры в группе
 }
 
 static void dzicreateitem(void * pwalkctx, void * psectionctx, const void * paramitem)
 {
-	char b [32];
-	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));
-	char v [32];
-	hamradio_walkmenu_getparamvalue(paramitem, v, ARRAY_SIZE(v));
+//	char b [32];
+//	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));
+//	char v [32];
+//	hamradio_walkmenu_getparamvalue(paramitem, v, ARRAY_SIZE(v));
 	//PRINTF(" Param: '%s'\n", b);
 	//return;
 
-	struct menuwalkctx * ctx = (struct menuwalkctx *) pwalkctx;
-	lv_obj_t * section2 = (lv_obj_t *) psectionctx;
+//	struct menuwalkctx * ctx = (struct menuwalkctx *) pwalkctx;
+//	lv_obj_t * section2 = (lv_obj_t *) psectionctx;	// Сюда будут добавляться редактируемые параметры в группе
 
-	create_slider(section2, LV_SYMBOL_SETTINGS, b, 0, 150, 50);
+	hamradio_walkmenu_getparameditor(paramitem, psectionctx);
+	//create_slider(section2, LV_SYMBOL_SETTINGS, b, 0, 150, 50);
     //create_switch(section_mechanics, LV_SYMBOL_SETTINGS, b, false);
 }
 
@@ -778,18 +779,6 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 	return lv_example_menu_5(parent);
 #elif 1
     lv_obj_t * const menu = lv_menu_create(parent);
-
-    if (0)
-    {
-        lv_color_t bg_color = lv_obj_get_style_bg_color(menu, LV_PART_MAIN);
-        if(lv_color_brightness(bg_color) > 127) {
-            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 10), LV_PART_MAIN);
-        }
-        else {
-            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), LV_PART_MAIN);
-        }
-        //lv_obj_set_style_bg_color(menu, lv_color_black(), LV_PART_MAIN);
-    }
 
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
     lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
