@@ -343,7 +343,7 @@ static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, co
 	// Тут создать все интересующие жлементы - размер в экран у parent ставится
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	//lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
@@ -353,7 +353,7 @@ static lv_obj_t * dzi_create_default(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_label_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text_fmt(lbl, "el%u", i);
 
 	return lbl;
@@ -375,7 +375,7 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_compat_create(parent, dzp);
 
-	lv_obj_add_style(lbl, & xxcompatstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxcompatstyle, 0);
 
 	return lbl;
 }
@@ -501,56 +501,58 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
     lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
 
+    /*Create a root page*/
+	lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
+	lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
+
 
     /*Create sub pages*/
     lv_obj_t * sub_mechanics_page = lv_menu_page_create(menu, NULL);
-    lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+    lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     lv_menu_separator_create(sub_mechanics_page);
     {
-		lv_obj_t * const section = lv_menu_section_create(sub_mechanics_page);
+		lv_obj_t * const section1 = lv_menu_section_create(sub_mechanics_page);
 
-		create_slider(section, LV_SYMBOL_SETTINGS, "Velocity", 0, 150, 120);
-		create_slider(section, LV_SYMBOL_SETTINGS, "Acceleration", 0, 150, 50);
-		create_slider(section, LV_SYMBOL_SETTINGS, "Weight limit", 0, 150, 80);
+		create_slider(section1, LV_SYMBOL_SETTINGS, "Velocity", 0, 150, 120);
+		create_slider(section1, LV_SYMBOL_SETTINGS, "Acceleration", 0, 150, 50);
+		create_slider(section1, LV_SYMBOL_SETTINGS, "Weight limit", 0, 150, 80);
     }
 
     lv_obj_t * sub_sound_page = lv_menu_page_create(menu, NULL);
-    lv_obj_set_style_pad_hor(sub_sound_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+    lv_obj_set_style_pad_hor(sub_sound_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     lv_menu_separator_create(sub_sound_page);
     {
-		lv_obj_t * const section = lv_menu_section_create(sub_sound_page);
+		lv_obj_t * const section2 = lv_menu_section_create(sub_sound_page);
 
-	    create_switch(section, LV_SYMBOL_AUDIO, "Sound", false);
+	    create_switch(section2, LV_SYMBOL_AUDIO, "Sound", false);
     }
 
     lv_obj_t * sub_display_page = lv_menu_page_create(menu, NULL);
-    lv_obj_set_style_pad_hor(sub_display_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+    lv_obj_set_style_pad_hor(sub_display_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     lv_menu_separator_create(sub_display_page);
     {
-		lv_obj_t * const section = lv_menu_section_create(sub_display_page);
+		lv_obj_t * const section3 = lv_menu_section_create(sub_display_page);
 
-
-
-	    create_slider(section, LV_SYMBOL_SETTINGS, "Brightness", 0, 150, 100);
+	    create_slider(section3, LV_SYMBOL_SETTINGS, "Brightness", 0, 150, 100);
     }
 
 	lv_obj_t * sub_software_info_page = lv_menu_page_create(menu, NULL);
-	lv_obj_set_style_pad_hor(sub_software_info_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+	lv_obj_set_style_pad_hor(sub_software_info_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     {
-		lv_obj_t * const section = lv_menu_section_create(sub_software_info_page);
+		lv_obj_t * const section4 = lv_menu_section_create(sub_software_info_page);
 
 
-	    create_text(section, NULL, "Version 1.0", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	    create_text(section4, LV_SYMBOL_DUMMY, "Version 1.0", LV_MENU_ITEM_BUILDER_VARIANT_1);
     }
 
 	lv_obj_t * sub_legal_info_page = lv_menu_page_create(menu, NULL);
-	lv_obj_set_style_pad_hor(sub_legal_info_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+	lv_obj_set_style_pad_hor(sub_legal_info_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     {
-		lv_obj_t * const section = lv_menu_section_create(sub_legal_info_page);
+		lv_obj_t * const section5 = lv_menu_section_create(sub_legal_info_page);
 
 
 	    for(uint32_t i = 0; i < 15; i++) {
-	        create_text(section, NULL,
+	        create_text(section5, LV_SYMBOL_DUMMY,
 	                    "This is a long long long long long long long long long text, if it is long enough it may scroll.",
 	                    LV_MENU_ITEM_BUILDER_VARIANT_1);
 	    }
@@ -560,14 +562,13 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 	lv_obj_set_style_pad_hor(sub_about_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
 	lv_menu_separator_create(sub_about_page);
     {
-		lv_obj_t * cont;
-		lv_obj_t * section = lv_menu_section_create(sub_about_page);
+		lv_obj_t * const section6 = lv_menu_section_create(sub_about_page);
 
 
-	    cont = create_text(section, NULL, "Software information", LV_MENU_ITEM_BUILDER_VARIANT_1);
-	    lv_menu_set_load_page_event(menu, cont, sub_software_info_page);
-	    cont = create_text(section, NULL, "Legal information", LV_MENU_ITEM_BUILDER_VARIANT_1);
-	    lv_menu_set_load_page_event(menu, cont, sub_legal_info_page);
+		lv_obj_t * const cont1 = create_text(section6, LV_SYMBOL_DUMMY, "Software information", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	    lv_menu_set_load_page_event(menu, cont1, sub_software_info_page);
+	    lv_obj_t * const cont2 = create_text(section6, LV_SYMBOL_DUMMY, "Legal information", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	    lv_menu_set_load_page_event(menu, cont2, sub_legal_info_page);
 
     }
 
@@ -575,35 +576,40 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 	lv_obj_set_style_pad_hor(sub_menu_mode_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
 	lv_menu_separator_create(sub_menu_mode_page);
     {
-		lv_obj_t * const section = lv_menu_section_create(sub_menu_mode_page);
-		lv_obj_t * const cont = create_switch(section, LV_SYMBOL_AUDIO, "Sidebar enable", true);
+		lv_obj_t * const section7 = lv_menu_section_create(sub_menu_mode_page);
+		lv_obj_t * const cont = create_switch(section7, LV_SYMBOL_AUDIO, "Sidebar enable", true);
 
 	    lv_obj_add_event_cb(lv_obj_get_child(cont, 2), switch_handler, LV_EVENT_VALUE_CHANGED, menu);
 
     }
 
-    /*Create a root page*/
+    /* Add elements to root page*/
     {
-		lv_obj_t * cont;
-		lv_obj_t * section;
 
-		lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
-		lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
-		section = lv_menu_section_create(root_page);
-		cont = create_text(section, LV_SYMBOL_SETTINGS, "Mechanics", LV_MENU_ITEM_BUILDER_VARIANT_1);
-		lv_menu_set_load_page_event(menu, cont, sub_mechanics_page);
-		cont = create_text(section, LV_SYMBOL_AUDIO, "Sound", LV_MENU_ITEM_BUILDER_VARIANT_1);
-		lv_menu_set_load_page_event(menu, cont, sub_sound_page);
-		cont = create_text(section, LV_SYMBOL_SETTINGS, "Display", LV_MENU_ITEM_BUILDER_VARIANT_1);
-		lv_menu_set_load_page_event(menu, cont, sub_display_page);
+		lv_obj_t * const section8 = lv_menu_section_create(root_page);
 
-		create_text(root_page, NULL, "Others", LV_MENU_ITEM_BUILDER_VARIANT_1);
-		section = lv_menu_section_create(root_page);
-		cont = create_text(section, NULL, "About", LV_MENU_ITEM_BUILDER_VARIANT_1);
-		lv_menu_set_load_page_event(menu, cont, sub_about_page);
-		cont = create_text(section, LV_SYMBOL_SETTINGS, "Menu mode", LV_MENU_ITEM_BUILDER_VARIANT_1);
-		lv_menu_set_load_page_event(menu, cont, sub_menu_mode_page);
+		lv_obj_t * const cont1 = create_text(section8, LV_SYMBOL_SETTINGS, "Mechanics", LV_MENU_ITEM_BUILDER_VARIANT_1);
+		lv_menu_set_load_page_event(menu, cont1, sub_mechanics_page);
 
+		lv_obj_t * const cont2 = create_text(section8, LV_SYMBOL_AUDIO, "Sound", LV_MENU_ITEM_BUILDER_VARIANT_1);
+		lv_menu_set_load_page_event(menu, cont2, sub_sound_page);
+
+		lv_obj_t * const cont3 = create_text(section8, LV_SYMBOL_SETTINGS, "Display", LV_MENU_ITEM_BUILDER_VARIANT_1);
+		lv_menu_set_load_page_event(menu, cont3, sub_display_page);
+    }
+    /* Add elements to root page*/
+    {
+		create_text(root_page, LV_SYMBOL_DUMMY, "Others", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    }
+    /* Add elements to root page*/
+    {
+		lv_obj_t * const section9 = lv_menu_section_create(root_page);
+		lv_obj_t * const cont4 = create_text(section9, LV_SYMBOL_DUMMY, "About", LV_MENU_ITEM_BUILDER_VARIANT_1);
+		lv_menu_set_load_page_event(menu, cont4, sub_about_page);
+		lv_obj_t * const cont5 = create_text(section9, LV_SYMBOL_SETTINGS, "Menu mode", LV_MENU_ITEM_BUILDER_VARIANT_1);
+		lv_menu_set_load_page_event(menu, cont5, sub_menu_mode_page);
+
+		//
 		lv_menu_set_sidebar_page(menu, root_page);
 
 		groot_page = root_page;
@@ -613,8 +619,9 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
     lv_obj_send_event(lv_obj_get_child(lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), 0), 0), LV_EVENT_CLICKED,
                       NULL);
 
+	lv_obj_set_flag(menu, LV_OBJ_FLAG_SCROLLABLE, true);
 //
-//    lv_obj_add_style(menu, & xxcellstyle, LV_PART_MAIN);
+//    lv_obj_add_style(menu, & xxcellstyle, 0);
     return menu;
 }
 
@@ -623,8 +630,8 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 struct walkctx
 {
 	int ngroups;
+	lv_obj_t * root_page;
 	lv_obj_t * menu;
-//	lv_obj_t * main_page;
 //	lv_obj_t * sub_page;
 };
 
@@ -635,11 +642,11 @@ static void * dzicreategroup(void * walkctx, const void * groupitem)
 	struct walkctx * ctx = (struct walkctx *) walkctx;
 
     lv_obj_t * section = lv_menu_section_create(ctx->menu);
-	lv_obj_add_style(section, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(section, & xxdivstyle, 0);
 	lv_obj_set_user_data(section, (void *) groupitem);
 
 //	lv_obj_t * label = lv_label_create(section);
-//	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+//	lv_obj_add_style(label, & xxdivstyle, 0);
 
 //    lv_label_set_text(label, b);
 
@@ -664,60 +671,77 @@ static void dzicreateitem(void * walkctx, void * sectionctx, const void * parami
 	lv_obj_t * label;
 
 //    cont = lv_menu_cont_create(section);
-//	lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+//	lv_obj_add_style(cont, & xxdivstyle, 0);
 //	lv_obj_set_user_data(cont, (void *) paramitem);
 
     label = lv_label_create(section);
-	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(label, & xxdivstyle, 0);
 
     lv_label_set_text(label, b);
 	lv_obj_set_user_data(label, (void *) paramitem);
 //
 //    label = lv_label_create(section);
-//	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+//	lv_obj_add_style(label, & xxdivstyle, 0);
 //
 //    lv_label_set_text(label, v);
 }
 
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-#if 1
+#if 0
 	return lv_example_menu_5(parent);
 #elif 1
-	lv_obj_t * menu = lv_menu_create(parent);
-	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
-    /*Create a main page*/
-    lv_obj_t * main_page = lv_menu_page_create(menu, "menu");
-	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
+    lv_obj_t * const menu = lv_menu_create(parent);
+
+    if (1)
+    {
+        lv_color_t bg_color = lv_obj_get_style_bg_color(menu, LV_PART_MAIN);
+        if(lv_color_brightness(bg_color) > 127) {
+            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 10), LV_PART_MAIN);
+        }
+        else {
+            lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), LV_PART_MAIN);
+        }
+        //lv_obj_set_style_bg_color(menu, lv_color_black(), LV_PART_MAIN);
+   }
+
+    lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
+    lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
+
+    /*Create a root page*/
+	lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
+	lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
 
 	struct walkctx ctx;
+	ctx.root_page = root_page;
 	ctx.menu = menu;
 	ctx.ngroups = 0;
-	//ctx.sub_page = sub_page;
 	hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
 
     //lv_menu_set_page(menu, main_page);
 	PRINTF("menu: %u groups created\n", ctx.ngroups);
+	groot_page = root_page;
+
 	return menu;
 
 #elif 0
 	lv_obj_t * const menu = lv_label_create(parent);
 
-	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(menu, & xxdivstyle, 0);
 	lv_label_set_text(menu, "Menu placeholder");
 	return menu;
 #else
 
 	lv_obj_t * menu = lv_menu_create(parent);
-	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(menu, & xxdivstyle, 0);
 
 //    /*Create a sub page*/
 //    lv_obj_t * sub_page = lv_menu_page_create(menu, "sub page1 title");
-//	lv_obj_add_style(sub_page, & xxdivstyle, LV_PART_MAIN);
+//	lv_obj_add_style(sub_page, & xxdivstyle, 0);
 //
 //    /*Create a sub page*/
 //    lv_obj_t * sub_page2 = lv_menu_page_create(menu, "sub page2 title");
-//	lv_obj_add_style(sub_page2, & xxdivstyle, LV_PART_MAIN);
+//	lv_obj_add_style(sub_page2, & xxdivstyle, 0);
 
 //	if (0)
 //	{
@@ -726,13 +750,13 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 //
 //	    cont = lv_menu_cont_create(sub_page);
 //	    label = lv_label_create(cont);
-//		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+//		lv_obj_add_style(label, & xxdivstyle, 0);
 //	    lv_label_set_text(label, "Hello, I am hiding here");
 //	}
 
     /*Create a main page*/
     lv_obj_t * main_page = lv_menu_page_create(menu, "main page title");
-	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(main_page, & xxdivstyle, 0);
 
     // item 1
 	{
@@ -740,9 +764,9 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 		lv_obj_t * label;
 
 	    cont = lv_menu_cont_create(main_page);
-		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(cont, & xxdivstyle, 0);
 	    label = lv_label_create(cont);
-		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(label, & xxdivstyle, 0);
 
 	    lv_label_set_text(label, "Item 1");
 	}
@@ -753,9 +777,9 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 		lv_obj_t * label;
 
 	    cont = lv_menu_cont_create(main_page);
-		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(cont, & xxdivstyle, 0);
 	    label = lv_label_create(cont);
-		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(label, & xxdivstyle, 0);
 
 	    lv_label_set_text(label, "Item 2");
 	}
@@ -766,9 +790,9 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 //		lv_obj_t * label;
 //
 //	    cont = lv_menu_cont_create(main_page);
-//		lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+//		lv_obj_add_style(cont, & xxdivstyle, 0);
 //	    label = lv_label_create(cont);
-//		lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+//		lv_obj_add_style(label, & xxdivstyle, 0);
 //
 //		lv_label_set_text(label, "Item 3 (Click me!)");
 //	    lv_menu_set_load_page_event(menu, cont, sub_page);
@@ -784,7 +808,7 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modea);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -793,7 +817,7 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modeb);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -802,7 +826,7 @@ static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_ant5);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -811,7 +835,7 @@ static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_preamp_ovf);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -820,7 +844,7 @@ static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_tune);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -829,7 +853,7 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_bypass);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -838,7 +862,7 @@ static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbw);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -847,7 +871,7 @@ static lv_obj_t * dzi_create_rxbwval(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rxbwval);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -856,7 +880,7 @@ static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * d
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_voltlevel);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -867,7 +891,7 @@ static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_datetime12);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -876,7 +900,7 @@ static lv_obj_t * dzi_create_rec(lv_obj_t * parent, const struct dzone * dzp, co
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_rec);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -885,7 +909,7 @@ static lv_obj_t * dzi_create_agc(lv_obj_t * parent, const struct dzone * dzp, co
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_agc);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -894,7 +918,7 @@ static lv_obj_t * dzi_create_notch(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_notch);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -903,7 +927,7 @@ static lv_obj_t * dzi_create_lock(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_lock);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -912,7 +936,7 @@ static lv_obj_t * dzi_create_spk(lv_obj_t * parent, const struct dzone * dzp, co
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_spk);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -921,7 +945,7 @@ static lv_obj_t * dzi_create_wpm(lv_obj_t * parent, const struct dzone * dzp, co
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_wpm);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -930,7 +954,7 @@ static lv_obj_t * dzi_create_bkin(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_bkin);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -939,7 +963,7 @@ static lv_obj_t * dzi_create_usbact(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_usbact);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -948,7 +972,7 @@ static lv_obj_t * dzi_create_vfomode(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_vfomode);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -957,7 +981,7 @@ static lv_obj_t * dzi_create_nr(lv_obj_t * parent, const struct dzone * dzp, con
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_nr);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -966,7 +990,7 @@ static lv_obj_t * dzi_create_classa(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_classa);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -975,7 +999,7 @@ static lv_obj_t * dzi_create_datamode(lv_obj_t * parent, const struct dzone * dz
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_datamode);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -984,7 +1008,7 @@ static lv_obj_t * dzi_create_voxtune(lv_obj_t * parent, const struct dzone * dzp
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_voxtune);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -993,7 +1017,7 @@ static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dz
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_siglevel);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -1002,7 +1026,7 @@ static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * d
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_currlevel);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -1011,7 +1035,7 @@ static lv_obj_t * dzi_create_thermo(lv_obj_t * parent, const struct dzone * dzp,
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_thermo);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -1020,7 +1044,7 @@ static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_attenuator);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
 	return lbl;
 }
@@ -1030,7 +1054,7 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqa);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqastyle, LV_PART_MAIN);
 
 	return lbl;
@@ -1040,8 +1064,8 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqb);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
-	lv_obj_add_style(lbl, & xxfreqbstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
 
 	return lbl;
 }
@@ -1050,8 +1074,8 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 {
 	lv_obj_t * const lbl = lv_txrx_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
-	lv_obj_add_style(lbl, & xxtxrxstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
 	return lbl;
 }
@@ -1060,8 +1084,8 @@ static lv_obj_t * dzi_create_smtr2(lv_obj_t * parent, const struct dzone * dzp, 
 {
 	lv_obj_t * const lbl = lv_smtr2_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
-	//lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	//lv_obj_add_style(lbl, & xxscopestyle, 0);
 //	ASSERT(lv_obj_is_editable(lbl));
 //	lv_obj_add_event_cb(lbl, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
 
@@ -1074,8 +1098,8 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 #if 0
 	lv_obj_t * const lbl = lv_wtrf_create(parent);
 
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
-	lv_obj_add_style(lbl, & xxscopestyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxscopestyle, 0);
 
 	return lbl;
 #else
@@ -1088,16 +1112,16 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
     lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
     lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 
-	lv_obj_add_style(cont, & xxcellstyle, LV_PART_MAIN);
+	lv_obj_add_style(cont, & xxcellstyle, 0);
 
 
 	lv_obj_t * const upper = lv_sscp2_create(cont);
 	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
-	lv_obj_add_style(upper, & xxcellstyle, LV_PART_MAIN);
+	lv_obj_add_style(upper, & xxcellstyle, 0);
 
 	lv_obj_t * const lower = lv_wtrf2_create(cont);
 	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
-	lv_obj_add_style(lower, & xxcellstyle, LV_PART_MAIN);
+	lv_obj_add_style(lower, & xxcellstyle, 0);
 
 	return cont;
 #endif
@@ -1122,7 +1146,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
     lv_obj_set_style_grid_column_dsc_array(cont0, col_dsc0, 0);
     lv_obj_set_style_grid_row_dsc_array(cont0, row_dsc0, 0);
 
-	lv_obj_add_style(cont0, & xxcellstyle, LV_PART_MAIN);
+	lv_obj_add_style(cont0, & xxcellstyle, 0);
 
 	unsigned col;
 	for (col = 0; col < ARRAY_SIZE(col_dsc0) - 1; ++ col)
@@ -1133,7 +1157,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 
 	    lv_obj_t * cont = lv_obj_create(cont0);
 
-		lv_obj_add_style(cont, & xxcellstyle, LV_PART_MAIN);
+		lv_obj_add_style(cont, & xxcellstyle, 0);
 
 	    lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 	    lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
@@ -1143,7 +1167,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 		// нижняя и верхняя строки в элементе горизонтального меню
 		lv_obj_t * const upper = lv_label_create(cont);
 		lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
-		lv_obj_add_style(upper, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(upper, & xxdivstyle, 0);
 		{
 			uint_fast8_t active;
 			const char * const label = hamradio_midlabel5(col, & active);
@@ -1153,7 +1177,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 
 		lv_obj_t * const lower = lv_label_create(cont);
 		lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
-		lv_obj_add_style(lower, & xxdivstyle, LV_PART_MAIN);
+		lv_obj_add_style(lower, & xxdivstyle, 0);
 		{
 			uint_fast8_t active;
 			const char * const label = hamradio_midvalue5(col, & active);
@@ -1170,7 +1194,7 @@ static lv_obj_t * dzi_create_encf1(lv_obj_t * parent, const struct dzone * dzp, 
 	char buf [32];
 	hamradio_get_label_ENC1F(0, buf, ARRAY_SIZE(buf));
 	lv_obj_t * lbl = lv_label_create(parent);
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
 	return lbl;
 }
@@ -1180,7 +1204,7 @@ static lv_obj_t * dzi_create_encf2(lv_obj_t * parent, const struct dzone * dzp, 
 	char buf [32];
 	hamradio_get_label_ENC2F(0, buf, ARRAY_SIZE(buf));
 	lv_obj_t * lbl = lv_label_create(parent);
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
 	return lbl;
 }
@@ -1190,7 +1214,7 @@ static lv_obj_t * dzi_create_encf3(lv_obj_t * parent, const struct dzone * dzp, 
 	char buf [32];
 	hamradio_get_label_ENC3F(0, buf, ARRAY_SIZE(buf));
 	lv_obj_t * lbl = lv_label_create(parent);
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
 	return lbl;
 }
@@ -1200,7 +1224,7 @@ static lv_obj_t * dzi_create_encf4(lv_obj_t * parent, const struct dzone * dzp, 
 	char buf [32];
 	hamradio_get_label_ENC4F(0, buf, ARRAY_SIZE(buf));
 	lv_obj_t * lbl = lv_label_create(parent);
-	lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
 	return lbl;
 }
@@ -9203,7 +9227,7 @@ void display2_initialize(void)
 
 			lv_obj_t * const wnd = lv_obj_create(parent);
 
-			lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
+			lv_obj_add_style(wnd, & xxmainstyle, 0);
 			lv_obj_set_size(wnd, lv_obj_get_width(parent), lv_obj_get_height(parent));
 			lv_obj_set_flag(wnd, LV_OBJ_FLAG_SCROLLABLE, false);
 			lv_obj_set_style_rotary_sensitivity(wnd, 1, LV_PART_MAIN);	// не помогло. Объект должен быть editable
@@ -9226,7 +9250,7 @@ void display2_initialize(void)
 				{
 					// Для целей отладки создаём видимый элемент
 					lbl = lv_label_create(wnd);
-					lv_obj_add_style(lbl, & xxdivstyle, LV_PART_MAIN);
+					lv_obj_add_style(lbl, & xxdivstyle, 0);
 					lv_label_set_text_fmt(lbl, "ix%d", (int) i);
 				}
 
