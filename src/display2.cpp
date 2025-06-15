@@ -120,6 +120,7 @@ static void lvstales_initialize(void)
 		lv_style_set_radius(s, 0);
 	//	lv_style_set_grid_cell_row_span(s, 5);
 	//	lv_style_set_grid_cell_column_span(s, 16);
+		lv_style_set_align(s, LV_ALIGN_TOP_LEFT);
 	}
 
 //	{
@@ -9162,9 +9163,10 @@ void display2_initialize(void)
 				continue;	// не треуется создавать страницу
 
 			lv_obj_t * const wnd = lv_obj_create(parent);
+
 			lv_obj_add_style(wnd, & xxmainstyle, LV_PART_MAIN);
-			lv_obj_set_size(wnd, DIM_X, DIM_Y);
-			lv_obj_clear_flag(wnd, LV_OBJ_FLAG_SCROLLABLE);
+			lv_obj_set_size(wnd, lv_obj_get_width(parent), lv_obj_get_height(parent));
+			lv_obj_set_flag(wnd, LV_OBJ_FLAG_SCROLLABLE, false);
 			lv_obj_set_style_rotary_sensitivity(wnd, 1, LV_PART_MAIN);	// не помогло. Объект должен быть editable
 
 			unsigned i;
@@ -9175,7 +9177,7 @@ void display2_initialize(void)
 				if (validforredraw(dzp, subset) == 0 || dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
 
-				const dzitem_t * const dzip = dzp->dzip;	// араметры создания элемента
+				const dzitem_t * const dzip = dzp->dzip;	// параметры создания элемента
 				lv_obj_t * lbl;
 				if (dzip != NULL && dzip->lvelementcreate != NULL)
 				{

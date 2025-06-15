@@ -82,6 +82,7 @@ static const dzone_t dzones [] =
 {
 	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_compat, PGALL, },
 	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_compat, PGALL, },
+//	{	0,	0,	50, 44, display2_multilinemenu_block,	& dzi_menu, REDRSUBSET(DPAGE0), }, //Блок с пунктами меню (группы)
 
 	//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
