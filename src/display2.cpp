@@ -386,7 +386,7 @@ struct walkctx
 //	lv_obj_t * sub_page;
 };
 
-void * dzicreategroup(void * walkctx, const void * groupitem)
+static void * dzicreategroup(void * walkctx, const void * groupitem)
 {
 	char b [32];
 	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
@@ -403,7 +403,7 @@ void * dzicreategroup(void * walkctx, const void * groupitem)
 	return main_page;
 }
 
-void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
+static void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
 {
 	char b [32];
 	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));

@@ -17690,40 +17690,6 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
-static void
-print_menu_string_P(
-	const  char * text,
-	uint_fast8_t width,
-	uint_fast8_t filled		// сколько символов сейчас в text
-	)
-{
-	PRINTF("=\"%s\n", text);
-}
-
-/* создание списка пунктов мею для получения шаблона документа */
-static void menu_print(void)
-{
-	uint_fast16_t menupos;
-	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
-	{
-        const struct menudef * mp = & menutable [menupos];
-        if (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
-        	continue;
-        const struct menudef * const mpgroup = mp ++;	/* группа */
-    	PRINTF("%s,,\n", mpgroup->pd->qlabel);
-        for (; mp < (menutable + MENUROW_COUNT) && ismenukinddp(mp->pd, ITEM_VALUE); ++ mp)
-        {
-        	char buff [32];
-        	param_format(mp->pd, buff, ARRAY_SIZE(buff));
-        	/* параметры полей вывода значений в меню */
-         	PRINTF(",,%s,=\"%s\n", mp->pd->qlabel, buff);
-		}
-        /* not an ITEM_VALUE */
-        menupos = mp - menutable - 1;
-	}
-
-}
-
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count)
 {
 	const struct paramdefdef * pd = (const struct paramdefdef *) groupitem;
@@ -17741,6 +17707,7 @@ int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t 
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
 	return param_format(pd, buff, count);
 }
+
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))
 {
@@ -17763,6 +17730,31 @@ void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const 
         menupos = mp - menutable - 1;
 	}
 
+}
+
+static void * print_menu_group(void * walkctx, const void * groupitem)
+{
+	char b [32];
+	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
+
+	PRINTF("%s,,\n", b);
+	return NULL;
+}
+
+static void print_menu_item(void * walkctx, void * groupctx, const void * paramitem)
+{
+	char b [32];
+	hamradio_walkmenu_getparamanme(paramitem, b, ARRAY_SIZE(b));
+	char v [32];
+	hamradio_walkmenu_getparamvalue(paramitem, v, ARRAY_SIZE(v));
+
+ 	PRINTF(",,%s,=\"%s\n", b, v);
+}
+
+/* создание списка пунктов мею для получения шаблона документа */
+static void menu_print(void)
+{
+	hamradio_walkmenu(NULL, print_menu_group, print_menu_item);
 }
 
 #else // WITHMENU
