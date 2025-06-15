@@ -446,8 +446,6 @@ static lv_obj_t * create_switch(lv_obj_t * parent, const char * icon, const char
     return obj;
 }
 
-static lv_obj_t * groot_page;
-
 static void back_event_handler(lv_event_t * e)
 {
     lv_obj_t * const obj = lv_event_get_target_obj(e);
@@ -461,6 +459,8 @@ static void back_event_handler(lv_event_t * e)
     }
 }
 
+static lv_obj_t * groot_page;
+
 static void switch_handler(lv_event_t * e)
 {
 	const lv_event_code_t code = lv_event_get_code(e);
@@ -468,6 +468,7 @@ static void switch_handler(lv_event_t * e)
     lv_obj_t * const obj = lv_event_get_target_obj(e);
 
     if (code == LV_EVENT_VALUE_CHANGED) {
+    	ASSERT(groot_page);
         if (lv_obj_has_state(obj, LV_STATE_CHECKED)) {
             lv_menu_set_page(menu, NULL);
             lv_menu_set_sidebar_page(menu, groot_page);
@@ -505,15 +506,14 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
 	lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
 	lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
 
-	lv_obj_t * const section8 = lv_menu_section_create(root_page);
-	lv_obj_t * const section9 = lv_menu_section_create(root_page);
+	lv_obj_t * const section_first = lv_menu_section_create(root_page);
 
 
     /*Create sub pages*/
     lv_obj_t * sub_mechanics_page = lv_menu_page_create(menu, NULL);
     lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     //lv_menu_separator_create(sub_mechanics_page);
-	lv_obj_t * const cont_mechanics = create_text(section8, LV_SYMBOL_SETTINGS, "Mechanics", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_t * const cont_mechanics = create_text(section_first, LV_SYMBOL_SETTINGS, "Mechanics", LV_MENU_ITEM_BUILDER_VARIANT_1);
 	lv_menu_set_load_page_event(menu, cont_mechanics, sub_mechanics_page);
     {
 		lv_obj_t * const section_mechanics = lv_menu_section_create(sub_mechanics_page);
@@ -528,7 +528,7 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
     lv_obj_t * sub_sound_page = lv_menu_page_create(menu, NULL);
     lv_obj_set_style_pad_hor(sub_sound_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     //lv_menu_separator_create(sub_sound_page);
-	lv_obj_t * const cont2 = create_text(section8, LV_SYMBOL_AUDIO, "Sound", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_t * const cont2 = create_text(section_first, LV_SYMBOL_AUDIO, "Sound", LV_MENU_ITEM_BUILDER_VARIANT_1);
 	lv_menu_set_load_page_event(menu, cont2, sub_sound_page);
     {
 		lv_obj_t * const section2 = lv_menu_section_create(sub_sound_page);
@@ -541,7 +541,7 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
     lv_obj_t * sub_display_page = lv_menu_page_create(menu, NULL);
     lv_obj_set_style_pad_hor(sub_display_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     //lv_menu_separator_create(sub_display_page);
-	lv_obj_t * const cont3 = create_text(section8, LV_SYMBOL_SETTINGS, "Display", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_t * const cont3 = create_text(section_first, LV_SYMBOL_SETTINGS, "Display", LV_MENU_ITEM_BUILDER_VARIANT_1);
 	lv_menu_set_load_page_event(menu, cont3, sub_display_page);
     {
 		lv_obj_t * const section3 = lv_menu_section_create(sub_display_page);
@@ -571,11 +571,24 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
 	    }
     }
 
-#if 1
+	lv_obj_t * sub_menu_mode_page = lv_menu_page_create(menu, NULL);
+	lv_obj_set_style_pad_hor(sub_menu_mode_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+	//lv_menu_separator_create(sub_menu_mode_page);
+    {
+		lv_obj_t * const section7 = lv_menu_section_create(sub_menu_mode_page);
+		lv_obj_t * const cont = create_switch(section7, LV_SYMBOL_AUDIO, "Sidebar enable", true);
+
+	    lv_obj_add_event_cb(lv_obj_get_child(cont, 2), switch_handler, LV_EVENT_VALUE_CHANGED, menu);
+
+    }
+
+#if 0
+
+	lv_obj_t * const section_second = lv_menu_section_create(root_page);
 	lv_obj_t * sub_about_page = lv_menu_page_create(menu, NULL);
 	lv_obj_set_style_pad_hor(sub_about_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
 	//lv_menu_separator_create(sub_about_page);
-	lv_obj_t * const cont4 = create_text(section9, LV_SYMBOL_DUMMY, "About", LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_t * const cont4 = create_text(section_second, LV_SYMBOL_DUMMY, "About", LV_MENU_ITEM_BUILDER_VARIANT_1);
 	lv_menu_set_load_page_event(menu, cont4, sub_about_page);
     {
 		lv_obj_t * const section6 = lv_menu_section_create(sub_about_page);
@@ -587,40 +600,37 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
 	    lv_menu_set_load_page_event(menu, cont2, sub_legal_info_page);
 
     }
-#endif
-	lv_obj_t * sub_menu_mode_page = lv_menu_page_create(menu, NULL);
-	lv_obj_set_style_pad_hor(sub_menu_mode_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
-	//lv_menu_separator_create(sub_menu_mode_page);
-    {
-		lv_obj_t * const section7 = lv_menu_section_create(sub_menu_mode_page);
-		lv_obj_t * const cont = create_switch(section7, LV_SYMBOL_AUDIO, "Sidebar enable", true);
-
-	    lv_obj_add_event_cb(lv_obj_get_child(cont, 2), switch_handler, LV_EVENT_VALUE_CHANGED, menu);
-
-    }
-#if 1
     /* Add elements to root page*/
     {
 		create_text(root_page, LV_SYMBOL_DUMMY, "Others", LV_MENU_ITEM_BUILDER_VARIANT_1);
     }
     /* Add elements to root page*/
     {
-		lv_obj_t * const cont5 = create_text(section9, LV_SYMBOL_SETTINGS, "Menu mode", LV_MENU_ITEM_BUILDER_VARIANT_1);
+		lv_obj_t * const cont5 = create_text(section_second, LV_SYMBOL_SETTINGS, "Menu mode", LV_MENU_ITEM_BUILDER_VARIANT_1);
 		lv_menu_set_load_page_event(menu, cont5, sub_menu_mode_page);
 
 		//
-		lv_menu_set_sidebar_page(menu, root_page);
 
-		groot_page = root_page;
    }
 #endif
 
-    lv_obj_send_event(lv_obj_get_child(lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), 0), 0), LV_EVENT_CLICKED,
-                      NULL);
+	lv_menu_set_sidebar_page(menu, root_page);
+    if (1)
+    {
+
+    	int32_t idx1 = 0;	// Открыть первое подменю
+    	int32_t idx2 = 0;	// выбрать первый элемент в нём
+    	lv_obj_t * ch1 = lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), idx1);
+    	ASSERT(ch1);
+        lv_obj_t * ch2 = lv_obj_get_child(ch1, idx2);
+       	ASSERT(ch2);
+       lv_obj_send_event(ch2, LV_EVENT_CLICKED, NULL);
+    }
 
 	lv_obj_set_flag(menu, LV_OBJ_FLAG_SCROLLABLE, true);
 //
 //    lv_obj_add_style(menu, & xxcellstyle, 0);
+	groot_page = root_page;
     return menu;
 }
 
