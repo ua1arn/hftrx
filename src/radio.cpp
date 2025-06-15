@@ -17690,15 +17690,30 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
+// модификация параметра
+int hamradio_walkmenu_rotate(const void * paramitem, int delta)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) paramitem;
+	return param_rotate(pd, delta);
+}
+
+// модификация параметра
+int hamradio_walkmenu_click(const void * paramitem)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) paramitem;
+	return param_keyclick(pd);
+}
+
+
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count)
 {
-	const struct paramdefdef * pd = (const struct paramdefdef *) groupitem;
+	const struct paramdefdef * const pd = (const struct paramdefdef *) groupitem;
 	return local_snprintf_P(buff, count, "%s", pd->qlabel);
 }
 
 int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count)
 {
-	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
+	const struct paramdefdef * const pd = (const struct paramdefdef *) paramitem;
 	return local_snprintf_P(buff, count, "%s", pd->qlabel);
 }
 
