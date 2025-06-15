@@ -13,14 +13,17 @@ extern "C" {
 
 void win_modes_handler(lv_event_t * e);
 void win_memory_handler(lv_event_t * e);
+void win_receive_handler(lv_event_t * e);
 
+#define WIN_MAIN	0xFF
 
 #define WINDOW_LIST(X) \
-    X(MODES,  "win_modes", "Modes", 	win_modes_handler)      \
-    X(MEMORY, "win_test",  "Memory",  	win_memory_handler)
+		X(MODES,   MAIN, "win_modes", 	"Modes",   win_modes_handler)      	\
+		X(MEMORY,  MAIN, "win_memory",  "Memory",  win_memory_handler)		\
+		X(RECEIVE, MAIN, "win_receive", "Receive", win_receive_handler)		\
 
 typedef enum {
-    #define X(name, cname, title, eh) WIN_##name,
+    #define X(name, parent, cname, title, eh) WIN_##name,
     WINDOW_LIST(X)
     #undef X
     WINDOW_COUNT
@@ -29,11 +32,12 @@ typedef enum {
 typedef struct {
     const char name[30];
     const char title[30];
+    uint8_t parent;
     event_handler_t eh;
 } window_t;
 
 static const window_t windows[] = {
-    #define X(name, cname, title, eh) {cname, title, eh},
+    #define X(name, parent, cname, title, eh) { cname, title, WIN_##parent, eh },
     WINDOW_LIST(X)
     #undef X
 };

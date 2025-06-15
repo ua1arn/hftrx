@@ -72,15 +72,18 @@ void win_modes_handler(lv_event_t * e)
 
 	if (! e) // init window
 	{
-		const char * btns[btn_num] =
+		const char btns[btn_num][4] =
 		{
 				"LSB", "USB", "CW",  "CWR",
 				"AM",  "NFM", "DGL", "DGU",
 		};
 
+		const int modes [btn_num] = {
+				SUBMODE_LSB, SUBMODE_USB, SUBMODE_CW, SUBMODE_CWR,
+				SUBMODE_AM, SUBMODE_NFM, SUBMODE_DGL, SUBMODE_DGU,
+		};
+
 		static btn_t btu[btn_num];
-
-
 		lv_obj_t * cont = gui_win_get_content();
 
 		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_60, 0);
@@ -102,27 +105,24 @@ void win_modes_handler(lv_event_t * e)
 	        lv_label_set_text_fmt(label, "%s", btns[i]);
 	        lv_obj_center(label);
 
-	        btu[i].payload = i;
+	        btu[i].payload = modes[i];
+	        btu[i].eh = win_modes_handler;
 	        lv_obj_set_user_data(btn, & btu[i]);
-	        lv_obj_add_event_cb(btn, win_modes_handler, LV_EVENT_CLICKED, NULL);
+	        lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
 		}
 
 		return;
 	}
 
-	const int modes [btn_num] = {
-			SUBMODE_LSB, SUBMODE_USB, SUBMODE_CW, SUBMODE_CWR,
-			SUBMODE_AM, SUBMODE_NFM, SUBMODE_DGL, SUBMODE_DGU,
-	};
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	btn_t * btnu = lv_obj_get_user_data(btn);
 
-	lv_event_code_t code = lv_event_get_code(e);
-	if(code == LV_EVENT_CLICKED)
+	if (btnu->is_clicked)
 	{
-		lv_obj_t * btn = lv_event_get_target_obj(e);
-		btn_t * btu = lv_obj_get_user_data(btn);
-		hamradio_change_submode(modes[btu->payload], 1);
+		hamradio_change_submode(btnu->payload, 1);
 		win_close();
 	}
+
 }
 
 // ***********************************************
@@ -218,33 +218,85 @@ void win_memory_handler(lv_event_t * e)
 	}
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * ext = lv_obj_get_user_data(btn);
+	btn_t * btnu = lv_obj_get_user_data(btn);
 
-	uint8_t idx = ext->payload & 0xff;
-	uint8_t p = (ext->payload >> 31) & 0xff;
+	uint8_t idx = btnu->payload & 0xff;
+	uint8_t p = (btnu->payload >> 31) & 0xff;
 
-	if (ext->is_clicked && p)
+	if (btnu->is_clicked && p)
 	{
 		load_mems(idx, 1);
 		win_close();
 	}
-	else if (ext->is_long_pressed)
+	else if (btnu->is_long_pressed)
 	{
 		if (p)
 		{
-			ext->payload = (0 << 31) | idx;
+			btnu->payload = (0 << 31) | idx;
 			clean_mems(idx);
 			lv_obj_t * label = lv_obj_get_child(btn, 0);
 			lv_label_set_text_fmt(label, "---");
 		}
 		else
 		{
-			ext->payload = (1 << 31) | idx;
+			btnu->payload = (1 << 31) | idx;
 			uint32_t freq = hamradio_get_freq_rx();
 			write_mems(idx, freq);
 			lv_obj_t * label = lv_obj_get_child(btn, 0);
 			lv_label_set_text_fmt(label, "%dk", freq / 1000);
 		}
+	}
+}
+
+// ***********************************************
+
+void win_receive_handler(lv_event_t * e)
+{
+	enum { btn_num = 8 };
+
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+		static btn_t btu[btn_num];
+
+		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_60, 0);
+		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
+		lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+		lv_obj_center(cont);
+		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+
+		for(uint8_t i = 0; i < btn_num; i++)
+		{
+			uint8_t col = i / 2;
+			uint8_t row = i % 2;
+
+			lv_obj_t * btn = lv_button_create(cont);
+			lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
+								 LV_GRID_ALIGN_STRETCH, row, 1);
+
+			lv_obj_t * label = lv_label_create(btn);
+			lv_label_set_text_fmt(label, "%d", i);
+			lv_obj_center(label);
+
+			btu[i].payload = i;
+			btu[i].eh = win_receive_handler;
+			lv_obj_set_user_data(btn, & btu[i]);
+			lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_CLICKED, NULL);
+		}
+
+		return;
+	}
+
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	btn_t * btnu = lv_obj_get_user_data(btn);
+
+	if (btnu->is_clicked)
+	{
+
+	}
+	else if (btnu->is_long_pressed)
+	{
+
 	}
 }
 
@@ -312,7 +364,7 @@ static void footer_buttons_init(lv_obj_t * p)
 			{ "fbtn_trx", 	"RX", 	 	1, btn_txrx_handler, },
 			{ "fbtn_modes", "Modes", 	0, NULL, WIN_MODES, },
 			{ "fbtn_mem", 	"Memory", 	0, NULL, WIN_MEMORY, },
-			{ "fbtn_3", 	"Button 3", 0, NULL, WIN_MEMORY, },
+			{ "fbtn_rcv", 	"Receive",  0, NULL, WIN_RECEIVE, },
 			{ "fbtn_4", 	"Button 4", 0, NULL, WIN_MEMORY, },
 			{ "fbtn_5", 	"Button 5", 0, NULL, WIN_MEMORY, },
 			{ "fbtn_6", 	"Button 6", 0, NULL, WIN_MEMORY, },
