@@ -509,7 +509,7 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
     /*Create sub pages*/
     lv_obj_t * sub_mechanics_page = lv_menu_page_create(menu, NULL);
     lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
-    lv_menu_separator_create(sub_mechanics_page);
+    //lv_menu_separator_create(sub_mechanics_page);
     {
 		lv_obj_t * const section1 = lv_menu_section_create(sub_mechanics_page);
 
@@ -520,7 +520,7 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 
     lv_obj_t * sub_sound_page = lv_menu_page_create(menu, NULL);
     lv_obj_set_style_pad_hor(sub_sound_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
-    lv_menu_separator_create(sub_sound_page);
+    //lv_menu_separator_create(sub_sound_page);
     {
 		lv_obj_t * const section2 = lv_menu_section_create(sub_sound_page);
 
@@ -529,7 +529,7 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 
     lv_obj_t * sub_display_page = lv_menu_page_create(menu, NULL);
     lv_obj_set_style_pad_hor(sub_display_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
-    lv_menu_separator_create(sub_display_page);
+    //lv_menu_separator_create(sub_display_page);
     {
 		lv_obj_t * const section3 = lv_menu_section_create(sub_display_page);
 
@@ -560,7 +560,7 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 
 	lv_obj_t * sub_about_page = lv_menu_page_create(menu, NULL);
 	lv_obj_set_style_pad_hor(sub_about_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
-	lv_menu_separator_create(sub_about_page);
+	//lv_menu_separator_create(sub_about_page);
     {
 		lv_obj_t * const section6 = lv_menu_section_create(sub_about_page);
 
@@ -574,7 +574,7 @@ static lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 
 	lv_obj_t * sub_menu_mode_page = lv_menu_page_create(menu, NULL);
 	lv_obj_set_style_pad_hor(sub_menu_mode_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
-	lv_menu_separator_create(sub_menu_mode_page);
+	//lv_menu_separator_create(sub_menu_mode_page);
     {
 		lv_obj_t * const section7 = lv_menu_section_create(sub_menu_mode_page);
 		lv_obj_t * const cont = create_switch(section7, LV_SYMBOL_AUDIO, "Sidebar enable", true);
@@ -641,9 +641,9 @@ static void * dzicreategroup(void * walkctx, const void * groupitem)
 	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
 	struct walkctx * ctx = (struct walkctx *) walkctx;
 
-    lv_obj_t * section = lv_menu_section_create(ctx->menu);
-	lv_obj_add_style(section, & xxdivstyle, 0);
-	lv_obj_set_user_data(section, (void *) groupitem);
+	create_text(ctx->root_page, LV_SYMBOL_DUMMY, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_t * const section9 = lv_menu_section_create(ctx->root_page);
+	lv_obj_set_user_data(section9, (void *) groupitem);
 
 //	lv_obj_t * label = lv_label_create(section);
 //	lv_obj_add_style(label, & xxdivstyle, 0);
@@ -652,7 +652,7 @@ static void * dzicreategroup(void * walkctx, const void * groupitem)
 
 	++ ctx->ngroups;
 
-	return section;
+	return section9;
 }
 
 static void dzicreateitem(void * walkctx, void * sectionctx, const void * paramitem)
@@ -665,25 +665,12 @@ static void dzicreateitem(void * walkctx, void * sectionctx, const void * parami
 	//return;
 
 	struct walkctx * ctx = (struct walkctx *) walkctx;
-	lv_obj_t * section = (lv_obj_t *) sectionctx;
+	lv_obj_t * section9 = (lv_obj_t *) sectionctx;
 
-	lv_obj_t * cont;
-	lv_obj_t * label;
+	lv_obj_t * const cont4 = create_text(section9, LV_SYMBOL_DUMMY, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_set_user_data(cont4, (void *) paramitem);
 
-//    cont = lv_menu_cont_create(section);
-//	lv_obj_add_style(cont, & xxdivstyle, 0);
-//	lv_obj_set_user_data(cont, (void *) paramitem);
-
-    label = lv_label_create(section);
-	lv_obj_add_style(label, & xxdivstyle, 0);
-
-    lv_label_set_text(label, b);
-	lv_obj_set_user_data(label, (void *) paramitem);
-//
-//    label = lv_label_create(section);
-//	lv_obj_add_style(label, & xxdivstyle, 0);
-//
-//    lv_label_set_text(label, v);
+	lv_menu_set_load_page_event(ctx->menu, cont4, section9);
 }
 
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -720,6 +707,7 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 
     //lv_menu_set_page(menu, main_page);
 	PRINTF("menu: %u groups created\n", ctx.ngroups);
+	lv_menu_set_sidebar_page(menu, root_page);
 	groot_page = root_page;
 
 	return menu;
