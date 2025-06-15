@@ -487,7 +487,7 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
 {
     lv_obj_t * const menu = lv_menu_create(parent);
 
-    if (1)
+    if (0)
     {
         lv_color_t bg_color = lv_obj_get_style_bg_color(menu, LV_PART_MAIN);
         if(lv_color_brightness(bg_color) > 127) {
@@ -497,7 +497,7 @@ static lv_obj_t * lv_example_menu_5_mod(lv_obj_t * parent)
             lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), LV_PART_MAIN);
         }
         //lv_obj_set_style_bg_color(menu, lv_color_black(), LV_PART_MAIN);
-   }
+    }
 
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
     lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
@@ -733,32 +733,26 @@ lv_obj_t * lv_example_menu_5(lv_obj_t * parent)
 
 #endif
 
-struct walkctx
+struct menuwalkctx
 {
-	int ngroups;
-	lv_obj_t * root_page;
 	lv_obj_t * menu;
-	lv_obj_t * sub_page;
-	lv_obj_t * section;
+	lv_obj_t * section_first;
 };
 
-static void * dzicreategroup(void * walkctx, const void * groupitem)
+static void * dzicreategroup(void * menuwalkctx, const void * groupitem)
 {
 	char b [32];
 	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
-	struct walkctx * ctx = (struct walkctx *) walkctx;
+	struct menuwalkctx * ctx = (struct menuwalkctx *) menuwalkctx;
 
     /*Create sub pages*/
-    lv_obj_t * sub_mechanics_page = lv_menu_page_create(ctx->menu, b);
-    lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(ctx->menu), LV_PART_MAIN), 0);
-	lv_obj_t * const section8 = lv_menu_section_create(ctx->root_page);
-	lv_obj_t * const cont1 = create_text(section8, LV_SYMBOL_SETTINGS, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
+    lv_obj_t * sub_xx_page = lv_menu_page_create(ctx->menu, NULL);
+    lv_obj_set_style_pad_hor(sub_xx_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(ctx->menu), LV_PART_MAIN), 0);
+    //lv_menu_separator_create(sub_xx_page);
+	lv_obj_t * const cont = create_text(ctx->section_first, LV_SYMBOL_SETTINGS, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_menu_set_load_page_event(ctx->menu, cont, sub_xx_page);
 
-    ctx->sub_page = sub_mechanics_page;
-    ctx->section = section8;
-	++ ctx->ngroups;
-
-	return section8;
+	return lv_menu_section_create(sub_xx_page);
 }
 
 static void dzicreateitem(void * pwalkctx, void * psectionctx, const void * paramitem)
@@ -770,27 +764,22 @@ static void dzicreateitem(void * pwalkctx, void * psectionctx, const void * para
 	//PRINTF(" Param: '%s'\n", b);
 	//return;
 
-	struct walkctx * ctx = (struct walkctx *) pwalkctx;
-	//struct sectionctx * sect = (lv_obj_t *) psectionctx;
-	lv_obj_t * const section1 = lv_menu_section_create(ctx->sub_page);
-    lv_obj_t * const cont2 = create_text(section1, LV_SYMBOL_DUMMY, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
+	struct menuwalkctx * ctx = (struct menuwalkctx *) pwalkctx;
+	lv_obj_t * section2 = (lv_obj_t *) psectionctx;
 
-	create_slider(section1, LV_SYMBOL_SETTINGS, "Velocity", 0, 150, 120);
-//	create_slider(section1, LV_SYMBOL_SETTINGS, "Acceleration", 0, 150, 50);
-//	create_slider(section1, LV_SYMBOL_SETTINGS, "Weight limit", 0, 150, 80);
-
-	lv_menu_set_load_page_event(ctx->menu, cont2, ctx->sub_page);
+	create_slider(section2, LV_SYMBOL_SETTINGS, b, 0, 150, 50);
+    //create_switch(section_mechanics, LV_SYMBOL_SETTINGS, b, false);
 }
 
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-#if 1
+#if 0
 	return lv_example_menu_5_mod(parent);
 	return lv_example_menu_5(parent);
 #elif 1
     lv_obj_t * const menu = lv_menu_create(parent);
 
-    if (1)
+    if (0)
     {
         lv_color_t bg_color = lv_obj_get_style_bg_color(menu, LV_PART_MAIN);
         if(lv_color_brightness(bg_color) > 127) {
@@ -800,24 +789,36 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
             lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), LV_PART_MAIN);
         }
         //lv_obj_set_style_bg_color(menu, lv_color_black(), LV_PART_MAIN);
-   }
+    }
 
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
     lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
 
     /*Create a root page*/
 	lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
-	lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+	lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
 
-	struct walkctx ctx;
-	ctx.root_page = root_page;
+	lv_obj_t * const section_first = lv_menu_section_create(root_page);
+
+
+	struct menuwalkctx ctx;
 	ctx.menu = menu;
-	ctx.ngroups = 0;
+	ctx.section_first = section_first;
 	hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
-
-    //lv_menu_set_page(menu, main_page);
-	PRINTF("menu: %u groups created\n", ctx.ngroups);
+	lv_obj_set_flag(menu, LV_OBJ_FLAG_SCROLLABLE, true);
 	lv_menu_set_sidebar_page(menu, root_page);
+    if (1)
+    {
+
+    	int32_t idx1 = 0;	// Открыть первое подменю (единственное)
+    	int32_t idx2 = 1;	// выбрать первый элемент в нём (номер группы в меню)
+    	lv_obj_t * ch1 = lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), idx1);
+    	ASSERT(ch1);
+        lv_obj_t * ch2 = lv_obj_get_child(ch1, idx2);
+       	ASSERT(ch2);
+       lv_obj_send_event(ch2, LV_EVENT_CLICKED, NULL);
+    }
+
 	groot_page = root_page;
 
 	return menu;
