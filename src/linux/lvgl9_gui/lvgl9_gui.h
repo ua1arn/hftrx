@@ -10,6 +10,8 @@ extern "C" {
 #define WIN_MIN_W	200
 #define WIN_MIN_H	150
 
+extern lv_style_t mainst, fbtnst, fbtnlockst, fcontst, flbl, winst;
+
 typedef void (* event_handler_t)(lv_event_t * e);
 typedef void (* phandler_t)(lv_obj_t * p);
 typedef void (* handler_t)(void);
@@ -37,10 +39,14 @@ typedef struct {
 
 void lvgl_gui_init(lv_obj_t * parent);
 
-lv_obj_t * gui_win_create(lv_obj_t * parent);
 lv_obj_t * gui_win_add_title(lv_obj_t * win, const char * txt);
-lv_obj_t * gui_win_get_content(lv_obj_t * win);
+lv_obj_t * gui_win_get_content(void);
 void update_win_size(lv_obj_t * win);
+void win_close(void);
+lv_obj_t * win_open(uint8_t id);
+void init_gui_styles(void);
+void gui_set_parent(lv_obj_t * p);
+lv_obj_t * gui_get_window(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

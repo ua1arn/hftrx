@@ -16,10 +16,6 @@
 #include "lvgl9_gui.h"
 #include "windows.h"
 
-static lv_obj_t * main_gui_obj = NULL, * current_window = NULL;
-static lv_style_t mainst, fbtnst, fbtnlockst, fcontst, flbl, winst;
-static uint8_t cid = 255;
-
 static int32_t col_dsc_60[] = { 60, 60, 60, 60, 60, 60, LV_GRID_TEMPLATE_LAST };
 static int32_t col_dsc_80[] = { 80, 80, 80, 80, 80, 80, LV_GRID_TEMPLATE_LAST };
 static int32_t row_dsc_40[] = { 40, 40, 40, 40, 40, 40, LV_GRID_TEMPLATE_LAST };
@@ -76,7 +72,7 @@ void win_modes_handler(lv_event_t * e)
 
 	if (! e) // init window
 	{
-		const char * btnm_map[btn_num] =
+		const char * btns[btn_num] =
 		{
 				"LSB", "USB", "CW",  "CWR",
 				"AM",  "NFM", "DGL", "DGU",
@@ -85,7 +81,7 @@ void win_modes_handler(lv_event_t * e)
 		static btn_t btu[btn_num];
 
 
-		lv_obj_t * cont = gui_win_get_content(current_window);
+		lv_obj_t * cont = gui_win_get_content();
 
 		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_60, 0);
 		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
@@ -103,7 +99,7 @@ void win_modes_handler(lv_event_t * e)
 	                             LV_GRID_ALIGN_STRETCH, row, 1);
 
 	        lv_obj_t * label = lv_label_create(btn);
-	        lv_label_set_text_fmt(label, "%s", btnm_map[i]);
+	        lv_label_set_text_fmt(label, "%s", btns[i]);
 	        lv_obj_center(label);
 
 	        btu[i].payload = i;
@@ -164,7 +160,7 @@ void win_memory_handler(lv_event_t * e)
 
 	if (! e) // init window
 	{
-		lv_obj_t * cont = gui_win_get_content(current_window);
+		lv_obj_t * cont = gui_win_get_content();
 
 		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_80, 0);
 		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
@@ -254,7 +250,7 @@ void win_memory_handler(lv_event_t * e)
 
 // ***********************************************
 
-void btn_txrx_handler(lv_obj_t * p)
+static void btn_txrx_handler(lv_obj_t * p)
 {
 	btn_t * ext = lv_obj_get_user_data(p);
 
@@ -292,74 +288,6 @@ void btn_txrx_handler(lv_obj_t * p)
 
 }
 
-void win_close(void)
-{
-	if (current_window)
-		lv_obj_del(current_window);
-
-	current_window = NULL;
-	cid = 255;
-}
-
-lv_obj_t * win_open(uint8_t id)
-{
-	ASSERT(id < WINDOW_COUNT);
-	const window_t * win_def = & windows[id];
-
-	if (id != cid)
-	{
-		win_close();
-
-		current_window = gui_win_create(main_gui_obj);
-		lv_obj_add_style(current_window, & winst, 0);
-		gui_win_add_title(current_window, win_def->title);
-		cid = id;
-
-		win_def->eh(NULL);
-	}
-	else
-		win_close();
-
-	return current_window;
-}
-
-static void init_gui_styles(void)
-{
-	lv_style_init(& mainst);
-	lv_style_set_width(& mainst, DIM_X);
-	lv_style_set_height(& mainst, DIM_Y);
-
-	lv_style_init(& fbtnst);
-	lv_style_set_bg_color(& fbtnst, lv_palette_main(LV_PALETTE_LIGHT_GREEN));
-	lv_style_set_border_width(& fbtnst, 2);
-	lv_style_set_border_color(& fbtnst, lv_color_black());
-	lv_style_set_radius(& fbtnst, 5);
-	lv_style_set_bg_opa(& fbtnst, LV_OPA_COVER);
-	lv_style_set_pad_all(& fbtnst, 0);
-
-	lv_style_init(& fbtnlockst);
-	lv_style_set_bg_color(& fbtnlockst, lv_palette_main(LV_PALETTE_ORANGE));
-	lv_style_set_border_width(& fbtnlockst, 2);
-	lv_style_set_border_color(& fbtnlockst, lv_color_black());
-	lv_style_set_radius(& fbtnlockst, 5);
-	lv_style_set_bg_opa(& fbtnlockst, LV_OPA_COVER);
-	lv_style_set_pad_all(& fbtnlockst, 0);
-
-	lv_style_init(& flbl);
-	lv_style_set_text_color(& flbl, lv_color_black());
-	lv_style_set_align(& flbl, LV_ALIGN_CENTER);
-
-	lv_style_init(& fcontst);
-	lv_style_set_bg_color(& fcontst, lv_color_black());
-	lv_style_set_border_width(& fcontst, 0);
-	lv_style_set_pad_column(& fcontst, 3);
-	lv_style_set_pad_all(& fcontst, 0);
-
-	lv_style_init(& winst);
-	lv_style_set_align(& winst, LV_ALIGN_CENTER);
-	lv_style_set_bg_opa(& winst, LV_OPA_30);
-}
-
 // ***********************************************
 
 static void btn_footer_handler(lv_event_t * e)
@@ -378,7 +306,7 @@ static void btn_footer_handler(lv_event_t * e)
 		fb->h(btn);
 }
 
-static void footer_buttons_init(lv_obj_t * parent)
+static void footer_buttons_init(lv_obj_t * p)
 {
 	static btn_t footer_buttons [] = {
 			{ "fbtn_trx", 	"RX", 	 	1, btn_txrx_handler, },
@@ -392,7 +320,7 @@ static void footer_buttons_init(lv_obj_t * parent)
 			{ "fbtn_8", 	"Button 8", 0, NULL, WIN_MEMORY, },
 	};
 
-	lv_obj_t * cont = lv_obj_create(parent);
+	lv_obj_t * cont = lv_obj_create(p);
 	lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 	lv_obj_set_style_pad_all(cont, 0, 0);
 
@@ -407,8 +335,6 @@ static void footer_buttons_init(lv_obj_t * parent)
 
 	static int32_t row_dsc[] = { fbtn_h, LV_GRID_TEMPLATE_LAST };
 	lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
-
-	static btn_t btns_def[ARRAY_SIZE(footer_buttons)];
 
 	for (int i = 0; i < ARRAY_SIZE(footer_buttons); i++) {
 		lv_obj_t * btn = lv_button_create(cont);
@@ -433,10 +359,8 @@ static void footer_buttons_init(lv_obj_t * parent)
 void lvgl_gui_init(lv_obj_t * parent)
 {
 	init_gui_styles();
-
-	main_gui_obj = parent;
-
-	footer_buttons_init(main_gui_obj);
+	gui_set_parent(parent);
+	footer_buttons_init(parent);
 }
 
 #endif /* WITHLVGL && LINUX_SUBSYSTEM */

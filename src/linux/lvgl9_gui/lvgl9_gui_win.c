@@ -5,8 +5,12 @@
 #if WITHLVGL && LINUX_SUBSYSTEM
 
 #include "lvgl9_gui.h"
+#include "windows.h"
 
 static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+
+static lv_obj_t * main_gui_obj = NULL, * current_window = NULL;
+static uint8_t cid = 255;
 
 struct _lv_win_t {
     lv_obj_t obj;
@@ -21,26 +25,26 @@ const lv_obj_class_t gui_win_class = {
     .name = "lv_win",
 };
 
-lv_obj_t * gui_win_create(lv_obj_t * parent)
+void gui_set_parent(lv_obj_t * p)
+{
+	main_gui_obj = p;
+}
+
+static lv_obj_t * gui_win_create(lv_obj_t * parent)
 {
     lv_obj_t * obj = lv_obj_class_create_obj(& gui_win_class, parent);
     lv_obj_class_init_obj(obj);
     return obj;
 }
 
-lv_obj_t * gui_win_get_header(lv_obj_t * win)
+lv_obj_t * gui_win_get_content(void)
 {
-    return lv_obj_get_child(win, 0);
-}
-
-lv_obj_t * gui_win_get_content(lv_obj_t * win)
-{
-    return lv_obj_get_child(win, 1);
+    return lv_obj_get_child(current_window, 1);
 }
 
 lv_obj_t * gui_win_add_title(lv_obj_t * win, const char * txt)
 {
-    lv_obj_t * header = gui_win_get_header(win);
+    lv_obj_t * header = lv_obj_get_child(win, 0);
     lv_obj_t * title = lv_label_create(header);
     lv_label_set_long_mode(title, LV_LABEL_LONG_MODE_DOTS);
     lv_label_set_text(title, txt);
@@ -48,12 +52,48 @@ lv_obj_t * gui_win_add_title(lv_obj_t * win, const char * txt)
     return title;
 }
 
+void win_close(void)
+{
+	if (current_window)
+		lv_obj_del(current_window);
+
+	current_window = NULL;
+	cid = 255;
+}
+
+lv_obj_t * win_open(uint8_t id)
+{
+	ASSERT(id < WINDOW_COUNT);
+	const window_t * win_def = & windows[id];
+
+	if (id != cid)
+	{
+		win_close();
+
+		current_window = gui_win_create(main_gui_obj);
+		lv_obj_add_style(current_window, & winst, 0);
+		gui_win_add_title(current_window, win_def->title);
+		cid = id;
+
+		win_def->eh(NULL);
+	}
+	else
+		win_close();
+
+	return current_window;
+}
+
+lv_obj_t * gui_get_window(void)
+{
+	return current_window;
+}
+
 static void window_resized_event_cb(lv_event_t * e)
 {
     lv_obj_t * cont = lv_event_get_target(e);
     lv_obj_t * win = lv_event_get_user_data(e);
     lv_coord_t cont_h = lv_obj_get_height(cont);
-    lv_coord_t header_h = lv_obj_get_height(lv_win_get_header(win));
+    lv_coord_t header_h = lv_obj_get_height(lv_obj_get_child(win, 0));
 
     lv_coord_t total_h = header_h + cont_h;
 
@@ -63,10 +103,6 @@ static void window_resized_event_cb(lv_event_t * e)
     lv_obj_set_size(win, win_w, total_h);
     lv_obj_center(win);
 }
-
-/**********************
- *   STATIC FUNCTIONS
- **********************/
 
 static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
