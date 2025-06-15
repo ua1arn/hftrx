@@ -395,6 +395,7 @@ static void * dzicreategroup(void * walkctx, const void * groupitem)
 
     lv_obj_t * group = lv_menu_section_create(ctx->menu);
 	lv_obj_add_style(group, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_set_user_data(group, (void *) groupitem);
 
 	lv_obj_t * label = lv_label_create(group);
 	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
@@ -423,6 +424,7 @@ static void dzicreateitem(void * walkctx, void * groupctx, const void * paramite
 
     cont = lv_menu_cont_create(group);
 	lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
+	lv_obj_set_user_data(cont, (void *) paramitem);
 
     label = lv_label_create(cont);
 	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
