@@ -20741,6 +20741,11 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 	display2_needupdate();
 }
 
+void hamradio_change_nr(void)
+{
+	uif_key_changenr();
+}
+
 #endif /*  */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -20942,11 +20947,6 @@ void hamradio_set_bw(uint_fast8_t v)
 	bwsetpos [bwseti] = v;
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
 	updateboard(1, 1);
-}
-
-void hamradio_change_nr(void)
-{
-	uif_key_changenr();
 }
 
 void hamradio_load_gui_settings(void * ptrv)

@@ -11,6 +11,7 @@ extern "C" {
 #define WIN_MIN_H	150
 
 extern lv_style_t mainst, fbtnst, fbtnlockst, fcontst, flbl, winst;
+extern int32_t col_dsc_60[], col_dsc_80[], row_dsc_40[];
 
 typedef void (* event_handler_t)(lv_event_t * e);
 typedef void (* phandler_t)(lv_obj_t * p);
@@ -47,6 +48,12 @@ lv_obj_t * win_open(uint8_t id);
 void init_gui_styles(void);
 void gui_set_parent(lv_obj_t * p);
 lv_obj_t * gui_get_window(void);
+
+void buttons_handler(lv_event_t * e);
+lv_obj_t * find_button(lv_obj_t * cont, char * name);
+void button_set_text(lv_obj_t * btn, char * text);
+void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, const uint8_t cols, event_handler_t eh);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

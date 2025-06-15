@@ -16,56 +16,6 @@
 #include "lvgl9_gui.h"
 #include "windows.h"
 
-static int32_t col_dsc_60[] = { 60, 60, 60, 60, 60, 60, LV_GRID_TEMPLATE_LAST };
-static int32_t col_dsc_80[] = { 80, 80, 80, 80, 80, 80, LV_GRID_TEMPLATE_LAST };
-static int32_t row_dsc_40[] = { 40, 40, 40, 40, 40, 40, LV_GRID_TEMPLATE_LAST };
-
-void win_close(void);
-
-static void long_press_timer_cb(lv_timer_t * timer)
-{
-	btn_t * ext = lv_timer_get_user_data(timer);
-    ext->is_pressed = false;
-    ext->is_long_pressed = true;
-    lv_timer_del(ext->long_press_timer);
-}
-
-static void buttons_handler(lv_event_t * e)
-{
-	lv_event_code_t code = lv_event_get_code(e);
-	if (code != LV_EVENT_PRESSED && code != LV_EVENT_RELEASED && code != LV_EVENT_PRESSING &&
-			code != LV_EVENT_PRESS_LOST && code != LV_EVENT_CLICKED) return;
-
-	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * ext = lv_obj_get_user_data(btn);
-
-	if(code == LV_EVENT_PRESSED)
-	{
-		ext->is_pressed = true;
-		ext->long_press_timer = lv_timer_create(long_press_timer_cb, 1000, ext); // 1 секунда
-	}
-	else if (code == LV_EVENT_PRESSING && ext->is_long_pressed)
-	{
-//		LV_LOG_USER("Long press %s", ext->name);
-		ext->eh(e);
-		ext->is_long_pressed = 0;
-	}
-	else if(code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST)
-	{
-		if(ext->is_pressed)
-		{
-//			LV_LOG_USER("Short press %s", ext->name);
-			lv_timer_del(ext->long_press_timer);
-			ext->is_pressed = false;
-			ext->is_clicked = true;
-			ext->eh(e);
-			ext->is_clicked = false;
-		}
-	}
-}
-
-// ***********************************************
-
 void win_modes_handler(lv_event_t * e)
 {
 	enum { btn_num = 8 };
@@ -179,7 +129,6 @@ void win_memory_handler(lv_event_t * e)
 	        lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
 	                             LV_GRID_ALIGN_STRETCH, row, 1);
 
-	        snprintf(btu[i].name, 30, "btn_mem_%02d", i);
 	        btu[i].eh = win_memory_handler;
 
 	        lv_obj_t * label = lv_label_create(btn);
@@ -252,37 +201,19 @@ void win_memory_handler(lv_event_t * e)
 
 void win_receive_handler(lv_event_t * e)
 {
-	enum { btn_num = 8 };
+	enum { btn_num = 3 };
 
 	if (! e) // init window
 	{
 		lv_obj_t * cont = gui_win_get_content();
-		static btn_t btu[btn_num];
 
-		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_60, 0);
-		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
-		lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-		lv_obj_center(cont);
-		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+		static btn_t btns [] = {
+				{ "btn_att", 	"Att", 	 	0, NULL, },
+				{ "btn_preamp", "Preamp", 	0, NULL, },
+				{ "btn_dnr", 	"DNR", 		0, NULL, },
+		};
 
-		for(uint8_t i = 0; i < btn_num; i++)
-		{
-			uint8_t col = i / 2;
-			uint8_t row = i % 2;
-
-			lv_obj_t * btn = lv_button_create(cont);
-			lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
-								 LV_GRID_ALIGN_STRETCH, row, 1);
-
-			lv_obj_t * label = lv_label_create(btn);
-			lv_label_set_text_fmt(label, "%d", i);
-			lv_obj_center(label);
-
-			btu[i].payload = i;
-			btu[i].eh = win_receive_handler;
-			lv_obj_set_user_data(btn, & btu[i]);
-			lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_CLICKED, NULL);
-		}
+		create_button_matrix(cont, btns, 3, 4, win_receive_handler);
 
 		return;
 	}
@@ -290,9 +221,29 @@ void win_receive_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	btn_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->is_clicked)
+	if (btnu->h)
 	{
+		btnu->h(btn);
+	}
+	else if (btnu->is_clicked)
+	{
+		switch(btnu->payload)
+		{
+		case 0:
+			hamradio_change_att();
+			break;
 
+		case 1:
+			hamradio_change_preamp();
+			break;
+
+		case 2:
+			hamradio_change_nr();
+			break;
+
+		default:
+			break;
+		}
 	}
 	else if (btnu->is_long_pressed)
 	{
