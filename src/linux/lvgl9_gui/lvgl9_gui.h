@@ -21,23 +21,18 @@ enum {
 };
 
 typedef struct {
-    lv_obj_t * obj;
-    int32_t payload;
-    char name[30];
-    handler_t h;
-    event_handler_t eh;
-    lv_timer_t * long_press_timer;
-    bool is_pressed;
-    bool is_clicked;
-    bool is_long_pressed;
-} user_t;
-
-typedef struct {
 	char name[20];
 	char text[20];
 	bool long_press;
 	phandler_t h;
 	int win_id;
+	// *****
+	int32_t payload;
+	bool is_pressed;
+	bool is_clicked;
+	bool is_long_pressed;
+	lv_timer_t * long_press_timer;
+	event_handler_t eh;
 } btn_t;
 
 void lvgl_gui_init(lv_obj_t * parent);

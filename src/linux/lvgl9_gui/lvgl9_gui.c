@@ -28,7 +28,7 @@ void win_close(void);
 
 static void long_press_timer_cb(lv_timer_t * timer)
 {
-	user_t * ext = lv_timer_get_user_data(timer);
+	btn_t * ext = lv_timer_get_user_data(timer);
     ext->is_pressed = false;
     ext->is_long_pressed = true;
     lv_timer_del(ext->long_press_timer);
@@ -41,7 +41,7 @@ static void buttons_handler(lv_event_t * e)
 			code != LV_EVENT_PRESS_LOST && code != LV_EVENT_CLICKED) return;
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	user_t * ext = lv_obj_get_user_data(btn);
+	btn_t * ext = lv_obj_get_user_data(btn);
 
 	if(code == LV_EVENT_PRESSED)
 	{
@@ -82,7 +82,8 @@ void win_modes_handler(lv_event_t * e)
 				"AM",  "NFM", "DGL", "DGU",
 		};
 
-		static user_t btu[btn_num];
+		static btn_t btu[btn_num];
+
 
 		lv_obj_t * cont = gui_win_get_content(current_window);
 
@@ -122,13 +123,13 @@ void win_modes_handler(lv_event_t * e)
 	if(code == LV_EVENT_CLICKED)
 	{
 		lv_obj_t * btn = lv_event_get_target_obj(e);
-		user_t * btu = lv_obj_get_user_data(btn);
+		btn_t * btu = lv_obj_get_user_data(btn);
 		hamradio_change_submode(modes[btu->payload], 1);
 		win_close();
 	}
 }
 
-// *****************************************************************
+// ***********************************************
 
 static uint32_t mems[memory_cells_count];
 
@@ -171,7 +172,7 @@ void win_memory_handler(lv_event_t * e)
 		lv_obj_center(cont);
 		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 
-		static user_t btu[btn_num];
+		static btn_t btu[btn_num];
 
 		for(uint8_t i = 0; i < btn_num; i++)
 		{
@@ -221,7 +222,7 @@ void win_memory_handler(lv_event_t * e)
 	}
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	user_t * ext = lv_obj_get_user_data(btn);
+	btn_t * ext = lv_obj_get_user_data(btn);
 
 	uint8_t idx = ext->payload & 0xff;
 	uint8_t p = (ext->payload >> 31) & 0xff;
@@ -251,11 +252,11 @@ void win_memory_handler(lv_event_t * e)
 	}
 }
 
-// *************************************************
+// ***********************************************
 
 void btn_txrx_handler(lv_obj_t * p)
 {
-	user_t * ext = lv_obj_get_user_data(p);
+	btn_t * ext = lv_obj_get_user_data(p);
 
 	if (ext->is_long_pressed)
 	{
@@ -291,18 +292,6 @@ void btn_txrx_handler(lv_obj_t * p)
 
 }
 
-static btn_t footer_buttons [] = {
-		{ "fbtn_trx", 	"RX", 	 	1, btn_txrx_handler, },
-		{ "fbtn_modes", "Modes", 	0, NULL, WIN_MODES, },
-		{ "fbtn_mem", 	"Memory", 	0, NULL, WIN_MEMORY, },
-		{ "fbtn_3", 	"Button 3", 0, NULL, WIN_MEMORY, },
-		{ "fbtn_4", 	"Button 4", 0, NULL, WIN_MEMORY, },
-		{ "fbtn_5", 	"Button 5", 0, NULL, WIN_MEMORY, },
-		{ "fbtn_6", 	"Button 6", 0, NULL, WIN_MEMORY, },
-		{ "fbtn_7", 	"Button 7", 0, NULL, WIN_MEMORY, },
-		{ "fbtn_8", 	"Button 8", 0, NULL, WIN_MEMORY, },
-};
-
 void win_close(void)
 {
 	if (current_window)
@@ -332,54 +321,6 @@ lv_obj_t * win_open(uint8_t id)
 		win_close();
 
 	return current_window;
-}
-
-static void fbtn_event_handler(lv_event_t * e)
-{
-	lv_event_code_t code = lv_event_get_code(e);
-	if (code != LV_EVENT_PRESSED && code != LV_EVENT_RELEASED && code != LV_EVENT_PRESSING &&
-			code != LV_EVENT_PRESS_LOST && code != LV_EVENT_CLICKED) return;
-
-	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	user_t * ext = lv_obj_get_user_data(btn);
-	btn_t * fb = & footer_buttons[ext->payload];
-
-	if (fb->long_press)
-	{
-		if(code == LV_EVENT_PRESSED)
-		{
-			ext->is_pressed = true;
-			ext->long_press_timer = lv_timer_create(long_press_timer_cb, 1000, ext); // 1 секунда
-		}
-		else if (code == LV_EVENT_PRESSING && ext->is_long_pressed)
-		{
-//			LV_LOG_USER("Long press detected");
-			if (fb->h)
-				fb->h(btn);
-			ext->is_long_pressed = 0;
-		}
-		else if(code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST)
-		{
-			if(ext->is_pressed)
-			{
-				lv_timer_del(ext->long_press_timer);
-				ext->is_pressed = false;
-//				LV_LOG_USER("Short press");
-
-				if (fb->h)
-					fb->h(btn);
-				else
-					win_open(fb->win_id);
-			}
-		}
-	}
-	else if (code == LV_EVENT_CLICKED)
-	{
-		if (fb->h)
-			fb->h(btn);
-		else
-			win_open(fb->win_id);
-	}
 }
 
 static void init_gui_styles(void)
@@ -419,8 +360,38 @@ static void init_gui_styles(void)
 	lv_style_set_bg_opa(& winst, LV_OPA_30);
 }
 
+// ***********************************************
+
+static void btn_footer_handler(lv_event_t * e)
+{
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	btn_t * fb = lv_obj_get_user_data(btn);
+
+	if (fb->is_clicked)
+	{
+		if (fb->h)
+			fb->h(btn);
+		else
+			win_open(fb->win_id);
+	}
+	else if (fb->is_long_pressed && fb->h)
+		fb->h(btn);
+}
+
 static void footer_buttons_init(lv_obj_t * parent)
 {
+	static btn_t footer_buttons [] = {
+			{ "fbtn_trx", 	"RX", 	 	1, btn_txrx_handler, },
+			{ "fbtn_modes", "Modes", 	0, NULL, WIN_MODES, },
+			{ "fbtn_mem", 	"Memory", 	0, NULL, WIN_MEMORY, },
+			{ "fbtn_3", 	"Button 3", 0, NULL, WIN_MEMORY, },
+			{ "fbtn_4", 	"Button 4", 0, NULL, WIN_MEMORY, },
+			{ "fbtn_5", 	"Button 5", 0, NULL, WIN_MEMORY, },
+			{ "fbtn_6", 	"Button 6", 0, NULL, WIN_MEMORY, },
+			{ "fbtn_7", 	"Button 7", 0, NULL, WIN_MEMORY, },
+			{ "fbtn_8", 	"Button 8", 0, NULL, WIN_MEMORY, },
+	};
+
 	lv_obj_t * cont = lv_obj_create(parent);
 	lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 	lv_obj_set_style_pad_all(cont, 0, 0);
@@ -437,27 +408,27 @@ static void footer_buttons_init(lv_obj_t * parent)
 	static int32_t row_dsc[] = { fbtn_h, LV_GRID_TEMPLATE_LAST };
 	lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
 
-	static user_t btns_def[ARRAY_SIZE(footer_buttons)];
+	static btn_t btns_def[ARRAY_SIZE(footer_buttons)];
 
 	for (int i = 0; i < ARRAY_SIZE(footer_buttons); i++) {
 		lv_obj_t * btn = lv_button_create(cont);
 		lv_obj_add_style(btn, & fbtnst, 0);
-
-		btn_t fb = footer_buttons[i];
-		user_t * btnd = & btns_def[i];
-
-		lv_obj_add_event_cb(btn, fbtn_event_handler, LV_EVENT_ALL, NULL);
 		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
-		btnd->payload = i;
-		strncpy(btnd->name, fb.name, 30);
-		lv_obj_set_user_data(btn, btnd);
+		btn_t * fb = & footer_buttons[i];
+		fb->payload = i;
+		fb->eh = btn_footer_handler;
+
+		lv_obj_set_user_data(btn, fb);
+		lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
 
 		lv_obj_t * lbl = lv_label_create(btn);
-		lv_label_set_text(lbl, fb.text);
+		lv_label_set_text(lbl, fb->text);
 		lv_obj_add_style(lbl, & flbl, 0);
 	}
 }
+
+// ***********************************************
 
 void lvgl_gui_init(lv_obj_t * parent)
 {
