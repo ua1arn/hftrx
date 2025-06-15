@@ -17742,16 +17742,16 @@ void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 
 	        label = lv_label_create(obj);
 	        lv_label_set_text(label, pd->qlabel);
-	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-	        lv_obj_set_flex_grow(label, 1);
+//	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
+//	        lv_obj_set_flex_grow(label, 1);
 
 			lv_obj_t * slider = lv_slider_create(obj);
-			lv_obj_set_flex_grow(slider, 1);
+//			lv_obj_set_flex_grow(slider, 1);
 			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
 			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
 
 			//if(icon == NULL) {
-				lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
+			//	lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
 			//}
 
 			return obj;
@@ -17770,8 +17770,8 @@ void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 
 	        label = lv_label_create(obj);
 	        lv_label_set_text(label, pd->qlabel);
-	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-	        lv_obj_set_flex_grow(label, 1);
+//	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
+//	        lv_obj_set_flex_grow(label, 1);
 
 			lv_obj_t * sw = lv_switch_create(obj);
 			lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
