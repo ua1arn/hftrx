@@ -381,6 +381,7 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 
 struct walkctx
 {
+	int ngroups;
 	lv_obj_t * menu;
 //	lv_obj_t * main_page;
 //	lv_obj_t * sub_page;
@@ -390,17 +391,19 @@ static void * dzicreategroup(void * walkctx, const void * groupitem)
 {
 	char b [32];
 	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
-	//PRINTF("Group: '%s'\n", b);
-	//return NULL;
-
 	struct walkctx * ctx = (struct walkctx *) walkctx;
 
-    /*Create a main page*/
-    lv_obj_t * main_page = lv_menu_page_create(ctx->menu, b);
-	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
+    lv_obj_t * group = lv_menu_section_create(ctx->menu);
+	lv_obj_add_style(group, & xxdivstyle, LV_PART_MAIN);
 
-    lv_menu_set_page(ctx->menu, main_page);
-	return main_page;
+	lv_obj_t * label = lv_label_create(group);
+	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
+
+    lv_label_set_text(label, b);
+
+	++ ctx->ngroups;
+
+	return group;
 }
 
 static void dzicreateitem(void * walkctx, void * groupctx, const void * paramitem)
@@ -413,13 +416,12 @@ static void dzicreateitem(void * walkctx, void * groupctx, const void * paramite
 	//return;
 
 	struct walkctx * ctx = (struct walkctx *) walkctx;
+	lv_obj_t * group = (lv_obj_t *) groupctx;
 
-
-	lv_obj_t * main_page = (lv_obj_t *) groupctx;
 	lv_obj_t * cont;
 	lv_obj_t * label;
 
-    cont = lv_menu_cont_create(main_page);
+    cont = lv_menu_cont_create(group);
 	lv_obj_add_style(cont, & xxdivstyle, LV_PART_MAIN);
 
     label = lv_label_create(cont);
@@ -431,7 +433,6 @@ static void dzicreateitem(void * walkctx, void * groupctx, const void * paramite
 	lv_obj_add_style(label, & xxdivstyle, LV_PART_MAIN);
 
     lv_label_set_text(label, v);
-
 }
 
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -439,11 +440,18 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 #if 1
 	lv_obj_t * menu = lv_menu_create(parent);
 	lv_obj_add_style(menu, & xxdivstyle, LV_PART_MAIN);
+    /*Create a main page*/
+    lv_obj_t * main_page = lv_menu_page_create(menu, "menu");
+	lv_obj_add_style(main_page, & xxdivstyle, LV_PART_MAIN);
 
 	struct walkctx ctx;
 	ctx.menu = menu;
+	ctx.ngroups = 0;
 	//ctx.sub_page = sub_page;
 	hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
+
+    //lv_menu_set_page(menu, main_page);
+	PRINTF("menu: %u groups created\n", ctx.ngroups);
 	return menu;
 
 #elif 0
