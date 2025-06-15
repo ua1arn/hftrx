@@ -644,15 +644,15 @@ struct menuwalkctx
 
 static void * dzicreategroup(void * menuwalkctx, const void * groupitem)
 {
-	char b [32];
-	hamradio_walkmenu_getgroupanme(groupitem, b, ARRAY_SIZE(b));
+	char groupname [32];
+	hamradio_walkmenu_getgroupanme(groupitem, groupname, ARRAY_SIZE(groupname));
 	struct menuwalkctx * ctx = (struct menuwalkctx *) menuwalkctx;
 
     /*Create sub pages*/
-    lv_obj_t * sub_xx_page = lv_menu_page_create(ctx->menu, NULL);
+    lv_obj_t * sub_xx_page = lv_menu_page_create(ctx->menu, groupname);
     lv_obj_set_style_pad_hor(sub_xx_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(ctx->menu), LV_PART_MAIN), 0);
     //lv_menu_separator_create(sub_xx_page);
-	lv_obj_t * const cont = create_text(ctx->section_first, LV_SYMBOL_SETTINGS, b, LV_MENU_ITEM_BUILDER_VARIANT_1);
+	lv_obj_t * const cont = create_text(ctx->section_first, LV_SYMBOL_SETTINGS, groupname, LV_MENU_ITEM_BUILDER_VARIANT_1);
 	lv_menu_set_load_page_event(ctx->menu, cont, sub_xx_page);
 
 	return lv_menu_section_create(sub_xx_page);		// Сюда будут добавляться редактируемые параметры в группе
@@ -670,7 +670,7 @@ static void dzicreateitem(void * pwalkctx, void * psectionctx, const void * para
 //	struct menuwalkctx * ctx = (struct menuwalkctx *) pwalkctx;
 //	lv_obj_t * section2 = (lv_obj_t *) psectionctx;	// Сюда будут добавляться редактируемые параметры в группе
 
-	hamradio_walkmenu_getparameditor(paramitem, psectionctx);
+	lv_obj_t * const obj = (lv_obj_t *) hamradio_walkmenu_getparameditor(paramitem, psectionctx);
 	//create_slider(section2, LV_SYMBOL_SETTINGS, b, 0, 150, 50);
     //create_switch(section_mechanics, LV_SYMBOL_SETTINGS, b, false);
 }
