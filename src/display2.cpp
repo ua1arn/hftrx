@@ -7815,7 +7815,9 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 	const int32_t alldx = lv_area_get_width(coord);
 	const int32_t alldy = lv_area_get_height(coord);
 	//lv_draw_buf_t * db = (lv_draw_buf_t *) lv_draw_layer_alloc_buf(layer);
+#if WITHSPECTRUMWF
 	const struct dispmap * const dm = & latched_dm;
+#endif /* WITHSPECTRUMWF */
 
 	// Формирование изображения.
     if (1)
@@ -8624,7 +8626,9 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	const int32_t alldx = lv_area_get_width(coord);
 	const int32_t alldy = lv_area_get_height(coord);
 	//lv_draw_buf_t * db = (lv_draw_buf_t *) lv_draw_layer_alloc_buf(layer);
+#if WITHSPECTRUMWF
 	const struct dispmap * const dm = & latched_dm;
+#endif /* WITHSPECTRUMWF */
 
 	// сохранияем дянные для отображения, чтобы фильтр работал правилььно
 	// todo: переместить в latch - на случай если более одного элемента используют фильтр
@@ -8952,7 +8956,9 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 	const uint8_t pathi = 0;
     lv_area_t a1;
     lv_area_t a2;
+#if WITHSPECTRUMWF
 	const struct dispmap * const dm = & latched_dm;
+#endif /* WITHSPECTRUMWF */
 
 	const int32_t lbw = alldx / 2 + 15;
 	const int32_t rbw = alldx / 2 + 45;
