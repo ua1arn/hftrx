@@ -3562,6 +3562,7 @@ int infocb_vfomode(char * b, size_t len, int * pstate);
 int infocb_lock(char * b, size_t len, int * pstate);
 int infocb_agc(char * b, size_t len, int * pstate);
 int infocb_notch(char * b, size_t len, int * pstate);
+int infocb_txrx(char * b, size_t len, int * pstate);
 
 #ifdef __cplusplus
 }

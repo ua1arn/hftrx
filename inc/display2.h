@@ -247,7 +247,6 @@ lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
 lv_obj_t * lv_wtrf2_create(lv_obj_t * parent);	// waterfall (own draw)
 lv_obj_t * lv_sscp2_create(lv_obj_t * parent);	// RF specter (own draw)
-lv_obj_t * lv_txrx_create(lv_obj_t * parent);	// tx/rx indicator
 lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len, int * selector));
 lv_obj_t * lv_sscp3dss_create(lv_obj_t * parent);	// 3dss waterfall
 
@@ -296,13 +295,6 @@ typedef struct
 	lv_obj_t obj;
 	//
 } lv_smtr2_t;
-
-typedef struct
-{
-	lv_label_t label;
-	//
-	char text [32];
-} lv_txrx_t;
 
 typedef struct
 {

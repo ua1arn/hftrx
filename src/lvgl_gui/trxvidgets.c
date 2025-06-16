@@ -27,7 +27,6 @@
  *      DEFINES
  *********************/
 #define MY_CLASS_SMTR2 (& lv_smtr2_class)	// собственный renderer
-#define MY_CLASS_TXRX (& lv_txrx_class)		// собственный renderer
 #define MY_CLASS_WTRF2 (& lv_wtrf2_class)	// собственный renderer
 #define MY_CLASS_WTRF (& lv_wtrf_class)		// использует старый renderer
 #define MY_CLASS_INFO (& lv_info_class)		// собственный renderer - нформационная панель
@@ -40,10 +39,6 @@
 static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_smtr2_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e);
-
-static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-//static void lv_txrx_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static void lv_info_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 //static void lv_info_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
@@ -70,15 +65,6 @@ static const lv_obj_class_t lv_smtr2_class  = {
     .instance_size = sizeof (lv_smtr2_t),
     .name = "hmr_smtr2",
 //    .editable = LV_OBJ_CLASS_EDITABLE_TRUE,
-};
-
-static const lv_obj_class_t lv_txrx_class  = {
-    .constructor_cb = lv_txrx_constructor,
-//    .destructor_cb = lv_txrx_destructor,
-    .event_cb = lv_txrx_event,
-    .base_class = & lv_label_class,
-    .instance_size = sizeof (lv_txrx_t),
-    .name = "hmr_txrx",
 };
 
 static const lv_obj_class_t lv_info_class  = {
@@ -131,14 +117,6 @@ lv_obj_t * lv_wtrf2_create(lv_obj_t * parent)
 	return obj;
 }
 
-lv_obj_t * lv_txrx_create(lv_obj_t * parent) {
-    LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS_TXRX, parent);
-    lv_obj_class_init_obj(obj);
-
-    return obj;
-}
-
 lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len, int * selector))
 {
     LV_LOG_INFO("begin");
@@ -173,19 +151,6 @@ lv_obj_t * lv_compat_create(lv_obj_t * parent, const void * dzp)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-
-static void lv_txrx_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
-{
-    LV_UNUSED(class_p);
-    LV_TRACE_OBJ_CREATE("begin");
-
-    lv_txrx_t * const cp = (lv_txrx_t *) obj;
-
-    const int state = hamradio_get_tx();
-    lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", "--");
-    lv_label_set_text_static(obj, cp->text);
-    LV_TRACE_OBJ_CREATE("finished");
-}
 
 static void lv_info_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
@@ -257,25 +222,6 @@ static void lv_smtr2_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 //
 //}
 
-
-static void lv_txrx_event(const lv_obj_class_t * class_p, lv_event_t * e)
-{
-    LV_UNUSED(class_p);
-    lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
-	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_TXRX);
-
-    // текст обновляем перед отрисовкой
-    if (LV_EVENT_DRAW_MAIN_BEGIN == code)
-    {
-    	lv_txrx_t   * const cp = (lv_txrx_t *) obj;
-        const int state = hamradio_get_tx();
-        lv_snprintf(cp->text, ARRAY_SIZE(cp->text), "%s", state ? "TX" : "RX");
-    }
-
-    lv_res_t res = lv_obj_event_base(MY_CLASS_TXRX, e);	// обработчик родительского клвсса
-    if (res != LV_RES_OK) return;
-}
 
 static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
