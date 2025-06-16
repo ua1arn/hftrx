@@ -21,7 +21,7 @@
 #include "widgets/image/lv_image_private.h"
 #include "misc/lv_area_private.h"
 
-#include "styles.h"
+//#include "styles.h"
 
 /*********************
  *      DEFINES

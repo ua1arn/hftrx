@@ -24,11 +24,10 @@
 
 #if WITHLVGL
 
-#include "lvgl.h"
 #include "draw/lv_draw_private.h"
 #include "draw/lv_draw_image_private.h"
 
-#include "src/lvgl_gui/styles.h"
+//#include "src/lvgl_gui/styles.h"
 
 #endif /* WITHLVGL */
 

@@ -20723,7 +20723,7 @@ uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 
 #endif /* WITHTOUCHGUI */
 
-#if 1
+#if WITHIF4DSP
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
 {
@@ -20746,7 +20746,7 @@ void hamradio_change_nr(void)
 	uif_key_changenr();
 }
 
-#endif /*  */
+#endif /* WITHIF4DSP */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 uint_fast8_t hamradio_get_gsmetertype(void)

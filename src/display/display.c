@@ -1039,7 +1039,7 @@ void display_uninitialize(void)
 #include "lvgl.h"
 //#include "../demos/lv_demos.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
-#include "src/lvgl_gui/styles.h"
+//#include "src/lvgl_gui/styles.h"
 
 /*Flush the content of the internal buffer the specific area on the display.
  *`px_map` contains the rendered image as raw pixel map and it should be copied to `area` on the display.

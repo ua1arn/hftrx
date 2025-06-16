@@ -238,7 +238,7 @@
     #define  LV_USE_DRAW_SW_ASM     LV_DRAW_SW_ASM_NONE
 
     #if LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM
-		#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE "src/lvgl_gui/styles.h"
+		#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE "display2.h"
     #endif
 
     /** Enable drawing complex gradients in software: linear at an angle, radial or conical */
