@@ -199,9 +199,46 @@ void win_memory_handler(lv_event_t * e)
 
 // ***********************************************
 
+void win_wnb_handler(lv_event_t * e)
+{
+	static lv_obj_t  * label, * slider;
+
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+
+		slider = lv_slider_create(cont);
+		lv_obj_center(slider);
+		lv_obj_set_style_anim_duration(slider, 2000, 0);
+		label = lv_label_create(cont);
+
+		uint8_t t = wnb_get_threshold();
+		lv_label_set_text_fmt(label, "%d", t);
+		lv_obj_align_to(label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+
+		uint16_t min, max;
+		wnb_get_limits(& min, & max);
+		lv_slider_set_range(slider, min, max);
+		lv_slider_set_value(slider, t, 0);
+		lv_obj_add_event_cb(slider, win_wnb_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
+		return;
+	}
+
+	lv_event_code_t code = lv_event_get_code(e);
+	if (code != LV_EVENT_VALUE_CHANGED) return;
+
+	wnb_set_threshold(lv_slider_get_value(slider));
+
+	lv_label_set_text_fmt(label, "%d", wnb_get_threshold());
+	lv_obj_align_to(label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+}
+
+// ***********************************************
+
 void win_receive_handler(lv_event_t * e)
 {
-	enum { btn_num = 3 };
+	enum { btn_num = 4 };
 
 	if (! e) // init window
 	{
@@ -211,9 +248,10 @@ void win_receive_handler(lv_event_t * e)
 				{ "btn_att", 	"Att", 	 	0, NULL, },
 				{ "btn_preamp", "Preamp", 	0, NULL, },
 				{ "btn_dnr", 	"DNR", 		0, NULL, },
+				{ "btn_wnb", 	"WNB", 		1, NULL, },
 		};
 
-		create_button_matrix(cont, btns, 3, 4, win_receive_handler);
+		create_button_matrix(cont, btns, btn_num, 4, win_receive_handler);
 
 		return;
 	}
@@ -241,13 +279,18 @@ void win_receive_handler(lv_event_t * e)
 			hamradio_change_nr();
 			break;
 
+		case 3:
+			wnb_state_switch();
+			break;
+
 		default:
 			break;
 		}
 	}
 	else if (btnu->is_long_pressed)
 	{
-
+		if (btnu->payload == 3)
+			win_open(WIN_WNB);
 	}
 }
 
