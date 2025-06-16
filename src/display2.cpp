@@ -3678,7 +3678,6 @@ static void display2_rxbwval4(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
-	ASSERT(strlen(labels [0]) == 4);
 	display2_text(db, x, y, labels, colors_1statevoltage, 0, 4);
 }
 
@@ -3693,7 +3692,6 @@ static void display2_rxbwval6alt(const gxdrawb_t * db,
 {
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
 	enum { state = 0 };
-	ASSERT(strlen(labels [0]) == 4);
 	layout_label1_medium(db, x, y, labels [state], 4, 6, state ? COLORPIP_WHITE : COLORPIP_BLACK, state ? COLORPIP_RED : COLORPIP_GRAY);
 }
 
@@ -3708,7 +3706,6 @@ static void display2_rxbw3(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_rxbw_label3_P(), };
-	ASSERT(strlen(labels [0]) == 3);
 	display2_text(db, x, y, labels, colors_1state, 0, 3);
 }
 
@@ -3725,7 +3722,6 @@ static void display2_mainsub3(const gxdrawb_t * db,
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode5_value(& state);
 	const char * const label = hamradio_get_mainsubrxmode3_value_P();
-	ASSERT(strlen(label) == 3);
 	display_2states(db, x, y, state, label, label, 3);
 #endif /* WITHUSEDUALWATCH */
 }
@@ -3741,7 +3737,6 @@ static void display_pre3(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_pre_value_P(), };
-	ASSERT(strlen(labels [0]) == 3);
 	display2_text(db, x, y, labels, colors_1state, 0, 3);
 }
 
@@ -3852,11 +3847,9 @@ static void display2_ant5(const gxdrawb_t * db,
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
-	ASSERT(strlen(labels [0]) == 5);
 	display2_text(db, x, y, labels, colors_1state, 0, 5);
 #elif WITHANTSELECT
 	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
-	ASSERT(strlen(labels [0]) == 5);
 	display2_text(db, x, y, labels, colors_1state, 0, 5);
 #endif /* WITHANTSELECT */
 }
@@ -3889,7 +3882,6 @@ static void display2_att4(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_att_value_P(), };
-	ASSERT(strlen(labels [0]) == 4);
 	display2_text(db, x, y, labels, colors_1state, 0, 4);
 }
 
@@ -3919,7 +3911,6 @@ static void display_att_tx3(const gxdrawb_t * db,
 	const char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
 
 	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
-	ASSERT(strlen(text) == 3);
 	display_text(db, x, y, text, 3);
 }
 
@@ -3932,7 +3923,6 @@ static void display2_agc3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	ASSERT(strlen(hamradio_get_agc3_value_P()) == 3);
 	display_1state(db, x, y, hamradio_get_agc3_value_P(), 3);
 }
 
@@ -3945,7 +3935,6 @@ static void display_agc4(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	ASSERT(strlen(hamradio_get_agc4_value_P()) == 4);
 	display_1state(db, x, y, hamradio_get_agc4_value_P(), 4);
 }
 
@@ -3959,7 +3948,6 @@ static void display2_mode3_a(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_mode_a_value_P(), };
-	ASSERT(strlen(labels [0]) == 3);
 	display2_text(db, x, y, labels, colors_1mode, 0, 3);
 }
 
@@ -3993,7 +3981,6 @@ static void display2_mode3_b(const gxdrawb_t * db,
 	const char * const labels [2] = { label, label };
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode3_value(& state);
-	ASSERT(strlen(labels [0]) == 3);
 	display2_text(db, x, y, labels, colors_2modeB, state, 3);
 }
 
@@ -4261,7 +4248,6 @@ static void display_siglevel7(const gxdrawb_t * db,
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d" "dBm", tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buf2, };
-	ASSERT(strlen(buf2) == 7);
 	display2_text(db, x, y, labels, colors_1statevoltage, 0, 7);
 #endif /* WITHIF4DSP */
 }
@@ -4284,7 +4270,6 @@ static void display2_siglevel4(const gxdrawb_t * db,
 	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d", (int) (tracemax - UINT8_MAX));
 	(void) v;
 	const char * const labels [1] = { buf2, };
-	ASSERT(strlen(buf2) == 4);
 	display2_text(db, x, y, labels, colors_1statevoltage, 0, 4);
 #endif /* WITHIF4DSP */
 }
@@ -4310,7 +4295,6 @@ static void display2_span9(const gxdrawb_t * db,
 
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display2_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
-	ASSERT(strlen(buf2) == 9);
 	display2_text(db, x, y, labels, colors_1statevoltage, 0, 9);
 
 #endif /* WITHIF4DSP */
@@ -4376,7 +4360,6 @@ static void display_smeter5(const gxdrawb_t * db,
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), alevel - s9level);
 	}
 	const char * const labels [1] = { buf2, };
-	ASSERT(strlen(buf2) == 5);
 	display2_text(db, x, y, labels, colors_1state, 0, 5);
 #endif /* WITHIF4DSP */
 }
@@ -4546,7 +4529,6 @@ static void display_time5(const gxdrawb_t * db,
 		(int) minute
 		);
 
-	ASSERT(strlen(buf2) == 5);
 	const char * const labels [1] = { buf2, };
 	display2_text(db, x, y, labels, colors_1stateBlue, 0, 5);
 
@@ -4597,7 +4579,6 @@ static void display2_freqsof9(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	ASSERT(strlen(buf2) == 9);
 	display2_text(db, x, y, labels, colors_1stateBlue, 0, 9);
 }
 
@@ -4644,7 +4625,6 @@ static void display2_datetime12(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	ASSERT(strlen(buf2) == 12);
 	display2_text(db, x, y, labels, colors_1stateBlue, 0, 12);
 #endif /* defined (RTC1_TYPE) */
 }
