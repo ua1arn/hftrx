@@ -116,6 +116,7 @@ static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	lv_obj_set_size(header, LV_PCT(100), 30);
 	lv_obj_set_flex_flow(header, LV_FLEX_FLOW_ROW);
 	lv_obj_set_flex_align(header, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+	lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
 
 	lv_obj_t * cont = lv_obj_create(obj);
 	lv_obj_set_width(cont, LV_PCT(100));
@@ -125,6 +126,8 @@ static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
 	lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
 	lv_obj_set_style_border_width(cont, 0, 0);
+	lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 
 	lv_obj_set_style_min_width(obj, WIN_MIN_W, 0);
 	lv_obj_set_style_min_height(obj, WIN_MIN_H, 0);

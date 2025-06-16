@@ -1050,6 +1050,13 @@ void wnb_set_threshold(uint16_t v)
 	}
 }
 
+void wnb_get_limits(uint16_t * min, uint16_t * max)
+{
+	ASSERT(min || max);
+	* min = threshold_min;
+	* max = threshold_max;
+}
+
 uint16_t wnb_get_threshold(void)
 {
 	return threshold;
