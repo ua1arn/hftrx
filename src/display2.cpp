@@ -992,7 +992,7 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-	lv_obj_t * const lbl = lv_txrx_create(parent);
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_txrx);
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);

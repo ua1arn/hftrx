@@ -21486,6 +21486,13 @@ int infocb_nr(char * b, size_t len, int * pstate)
 	return local_snprintf_P(b, len, "%s", state ? "NR" : "");
 }
 
+int infocb_txrx(char * b, size_t len, int * pstate)
+{
+	const uint_fast8_t state = hamradio_get_tx();
+	* pstate = state;
+	return local_snprintf_P(b, len, "%s", state ? "TX" : "RX");
+}
+
 int infocb_notch(char * b, size_t len, int * pstate)
 {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
