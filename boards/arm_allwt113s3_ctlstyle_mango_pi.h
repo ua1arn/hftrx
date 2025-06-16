@@ -142,6 +142,7 @@
 
 	#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
+//	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
 #elif 1
@@ -509,11 +510,9 @@
 
 	#if 0
 		#define WITHLWIP 1
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
