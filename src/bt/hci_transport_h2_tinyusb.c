@@ -35,8 +35,6 @@
  *
  */
 
-#define BTSTACK_FILE__ "hci_transport_h2_tinyusb.c"
-
 /*
  *  hci_transport_h2_tinyusb.c
  *
@@ -45,10 +43,13 @@
  */
 
 #include "hardware.h"
+
+#if WITHUSEUSBBT
+
+#define BTSTACK_FILE__ "hci_transport_h2_tinyusb.c"
+
+
 #include "formats.h"
-
-#if WITHUSEUSBBT && WITHTINYUSB
-
 
 #include <stddef.h>
 
@@ -58,6 +59,8 @@
 
 #include "btstack_debug.h"
 #include "btstack_run_loop.h"
+
+#if WITHTINYUSB
 
 #include "tusb.h"
 
@@ -213,8 +216,11 @@ static void hci_transport_h2_tinyusb_set_sco_config(uint16_t voice_setting, int 
     log_info("hci_transport_h2_tinyusb_send_packet, voice 0x%02x, num connections %u", voice_setting, num_connections);
 }
 
+#endif /* WITHTINYUSB */
+
 const hci_transport_t * hci_transport_h2_tinyusb_instance(uint8_t idx) {
 
+#if WITHTINYUSB
     static const hci_transport_t instance = {
             /* const char * name; */                                        "H4",
             /* void   (*init) (const void *transport_config); */            &hci_transport_h2_tinyusb_init,
@@ -229,7 +235,9 @@ const hci_transport_t * hci_transport_h2_tinyusb_instance(uint8_t idx) {
     };
     bth_idx = idx;
     return &instance;
+#else /* WITHTINYUSB */
+    return NULL;
+#endif /* WITHTINYUSB */
 }
 
-
-#endif /* WITHUSEUSBBT && WITHTINYUSB */
+#endif /* WITHUSEUSBBT */

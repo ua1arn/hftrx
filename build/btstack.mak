@@ -3,6 +3,7 @@ ifeq (1, 0)
 # https://github.com/bluekitchen/btstack.git
 # forked to https://github.com/ua1arn/hftrx_btstack.git
 
+# also need enable LwIP and remove  ${BTSTACK_ROOT}/3rd-party/lwip
 BTSTACK_ROOT := $(PRJROOT)/lib/hftrx_btstack
 
 C_SOURCES =  \
@@ -82,31 +83,6 @@ ${BTSTACK_ROOT}/src/hci_dump.c \
 ${BTSTACK_ROOT}/src/hci_transport_h4.c \
 ${BTSTACK_ROOT}/src/l2cap.c \
 ${BTSTACK_ROOT}/src/l2cap_signaling.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/def.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/inet_chksum.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/init.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ip.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/mem.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/memp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/netif.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/pbuf.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp_in.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp_out.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/timeouts.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/udp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/acd.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/dhcp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/etharp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/icmp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_addr.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_frag.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/netif/ethernet.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/altcp_proxyconnect.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/fs.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/httpd.c \
-${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server/dhserver.c \
 ${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c
 
 SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/srce
