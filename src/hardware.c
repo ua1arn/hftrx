@@ -2945,7 +2945,7 @@ sysinit_ttbr_initialize(void)
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	csr_write_satp(satp);
-	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
