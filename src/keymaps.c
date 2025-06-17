@@ -1129,12 +1129,11 @@ uint_fast8_t geterasekey(void)
 /* Новый вариант под корпус с надписями от RK1AQ */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-
 	/* вход кнопки валкодера - KI5 */
 	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		//  MH31 FST
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		//  MH31 UP
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		//  MH31 DOWN
 
 	/* ряд справа от индикатора - снизу вверх KI4 */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
