@@ -47,7 +47,6 @@ ${BTSTACK_ROOT}/src/classic/avrcp_browsing_controller.c \
 ${BTSTACK_ROOT}/src/classic/avrcp_controller.c \
 ${BTSTACK_ROOT}/src/classic/avrcp_media_item_iterator.c \
 ${BTSTACK_ROOT}/src/classic/avrcp_target.c \
-${BTSTACK_ROOT}/src/classic/bnep.c \
 ${BTSTACK_ROOT}/src/classic/btstack_cvsd_plc.c \
 ${BTSTACK_ROOT}/src/classic/btstack_link_key_db_tlv.c \
 ${BTSTACK_ROOT}/src/classic/btstack_sbc_decoder_bluedroid.c \
@@ -82,7 +81,9 @@ ${BTSTACK_ROOT}/src/hci_dump.c \
 ${BTSTACK_ROOT}/src/hci_transport_h4.c \
 ${BTSTACK_ROOT}/src/l2cap.c \
 ${BTSTACK_ROOT}/src/l2cap_signaling.c \
-${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c
+
+#${BTSTACK_ROOT}/src/classic/bnep.c
+#${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c
 
 SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/srce
 SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/srce
@@ -97,8 +98,6 @@ C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/include
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/include
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/hxcmod-player
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/hxcmod-player/mods
-C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/lwip/core/src/include
-C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/md5
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/yxml
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/segger-rtt

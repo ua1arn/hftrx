@@ -168,7 +168,7 @@ static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
 #include "hal_cpu.h"
 
 void hal_cpu_disable_irqs(void){
-    __disable_irq();
+	global_disableIRQ();
 }
 
 void hal_cpu_enable_irqs(void){

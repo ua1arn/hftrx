@@ -1,6 +1,7 @@
 #ifndef __PORT_H
 #define __PORT_H
 
+int btstack_main(int argc, const char * argv[]);
 int spp_counter_btstack_main(int argc, const char * argv[]);
 int a2dp_sink_btstack_main(int argc, const char * argv[]);
 int a2dp_source_btstack_main(int argc, const char * argv[]);

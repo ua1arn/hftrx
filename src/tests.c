@@ -10143,10 +10143,7 @@ static void lv_example_canvas_7(lv_obj_t * parent)
 }
 #endif /* WITHLVGL */
 
-#if 1
-
-
-// Очереди символов для обмена
+#if 0
 
 // Очередь символов для передачи в канал обмена
 static u8queue_t txq;
