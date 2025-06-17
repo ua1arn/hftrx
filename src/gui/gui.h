@@ -100,7 +100,7 @@ uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);
 uint_fast16_t hamradio_get_afgain(void);
 void hamradio_set_afgain(uint_fast16_t v);
-void hamradio_change_nr(void);
+uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 void hamradio_gui_set_reqautotune2(uint_fast8_t val);
 uint_fast8_t hamradio_split_toggle(void);
 void hamradio_split_vfo_swap(void);
@@ -120,7 +120,7 @@ void hamradio_set_lfmtinterval(uint_fast16_t v);
 void hamradio_lfm_disable(void);
 void hamradio_get_nmea_time(char * p, size_t sz);
 void gui_gnssupdate(void);
-uint8_t wnb_state_switch(void);
+uint8_t wnb_state_switch(uint8_t v);
 void wnb_set_threshold(uint16_t v);
 uint16_t wnb_get_threshold(void);
 

@@ -500,7 +500,7 @@ static void window_infobar_menu_process(void)
 
 		case INFOBAR_DNR:
 
-			hamradio_change_nr();
+			hamradio_change_nr(1);
 			need_close = 1;
 			break;
 
@@ -5268,7 +5268,7 @@ static void window_receive_process(void)
 			}
 			else if (bh == btn_DNR)
 			{
-				hamradio_change_nr();
+				hamradio_change_nr(1);
 			}
 #if WITHWNB
 			else if (bh == btn_WNB)
@@ -5314,8 +5314,7 @@ static void window_receive_process(void)
 		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
 
 		button_t * btn_DNR = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
-		int_fast32_t grade = 0;
-		btn_DNR->is_locked = hamradio_get_nrvalue(& grade) != 0;
+		btn_DNR->is_locked = hamradio_change_nr(0) != 0;
 	}
 }
 

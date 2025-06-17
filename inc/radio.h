@@ -3427,7 +3427,7 @@ const char * hamradio_get_att_value(void);
 const char * hamradio_get_preamp_value(void);
 void hamradio_change_att(void);
 void hamradio_change_preamp(void);
-void hamradio_change_nr(void);
+uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 uint_fast8_t hamradio_moxmode(uint_fast8_t v);
 uint_fast8_t hamradio_tunemode(uint_fast8_t v);
 void hamradio_set_moxmode(uint_fast8_t mode);

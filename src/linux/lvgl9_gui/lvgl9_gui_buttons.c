@@ -61,7 +61,7 @@ void buttons_handler(lv_event_t * e)
 	}
 }
 
-lv_obj_t * find_button(lv_obj_t * cont, char * name)
+lv_obj_t * find_button(lv_obj_t * cont, const char * name)
 {
 	uint32_t cnt = lv_obj_get_child_count(cont);
 
@@ -77,16 +77,48 @@ lv_obj_t * find_button(lv_obj_t * cont, char * name)
 	return NULL;
 }
 
-void button_set_text(lv_obj_t * btn, char * text)
+void button_set_text(lv_obj_t * btn, const char * text)
 {
 	lv_obj_t * lbl = lv_obj_get_child(btn, 0);
 	lv_label_set_text_fmt(lbl, "%s", text);
 }
 
-void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, const uint8_t cols, event_handler_t eh)
+void button_lock(lv_obj_t * btn)
 {
-	lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_60, 0);
-	lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
+	lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_ORANGE), 0);
+}
+
+void button_unlock(lv_obj_t * btn)
+{
+	lv_obj_set_style_bg_color(btn, lv_palette_main(LV_PALETTE_LIGHT_GREEN), 0);
+}
+
+void button_set_lock(lv_obj_t * btn, uint8_t v)
+{
+	if (v)
+		button_lock(btn);
+	else
+		button_unlock(btn);
+}
+
+void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh)
+{
+	static lv_coord_t cols_dsc[10], rows_dsc[10];
+	uint8_t w_st = (s >> 8) & 0xFF;
+	uint8_t h_st = (s >> 0) & 0xFF;
+
+	uint8_t i = 0;
+	for (; i < 9; i ++)
+	{
+		cols_dsc[i] = w_st;
+		rows_dsc[i] = h_st;
+	}
+
+	cols_dsc[i + 1] = LV_GRID_TEMPLATE_LAST;
+	rows_dsc[i + 1] = LV_GRID_TEMPLATE_LAST;
+
+	lv_obj_set_style_grid_column_dsc_array(cont, cols_dsc, 0);
+	lv_obj_set_style_grid_row_dsc_array(cont, rows_dsc, 0);
 	lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 	lv_obj_center(cont);
 	lv_obj_set_layout(cont, LV_LAYOUT_GRID);
@@ -102,10 +134,12 @@ void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, cons
 		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
 							 LV_GRID_ALIGN_STRETCH, row, 1);
 
+		lv_obj_add_style(btn, & btnst, 0);
 
 		lv_obj_t * label = lv_label_create(btn);
 		lv_label_set_text_fmt(label, "%s", btu[i].text);
 		lv_obj_center(label);
+		lv_obj_add_style(label, & lblst, 0);
 
 		btu[i].index = i;
 		btu[i].eh = eh;

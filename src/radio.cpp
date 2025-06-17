@@ -20742,9 +20742,10 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 	display2_needupdate();
 }
 
-void hamradio_change_nr(void)
+uint_fast8_t hamradio_change_nr(uint_fast8_t v)
 {
-	uif_key_changenr();
+	if(v) uif_key_changenr();
+	return gnoisereducts [gmode];
 }
 
 #endif /* WITHIF4DSP */

@@ -31,7 +31,7 @@ void win_modes_handler(lv_event_t * e)
 				{ "CWR", SUBMODE_CWR, }, { "DGU", SUBMODE_DGU, },
 		};
 
-		create_button_matrix(cont, btns, btn_num, 4, win_modes_handler);
+		create_button_matrix(cont, btns, btn_num, 4, s86x44, win_modes_handler);
 
 		return;
 	}
@@ -101,7 +101,7 @@ void win_memory_handler(lv_event_t * e)
 			}
 		}
 
-		create_button_matrix(cont, btns, btn_num, 5, win_memory_handler);
+		create_button_matrix(cont, btns, btn_num, 5, s86x44, win_memory_handler);
 
 		lv_obj_t * obj = lv_obj_create(cont);
 		lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -204,7 +204,13 @@ void win_receive_handler(lv_event_t * e)
 				{ "WNB", 	0, 1, NULL, },
 		};
 
-		create_button_matrix(cont, btns, btn_num, 4, win_receive_handler);
+		create_button_matrix(cont, btns, btn_num, 4, s100x44, win_receive_handler);
+
+		lv_obj_t * btnm_WNB = find_button(cont, "btnm_WNB");
+		button_set_lock(btnm_WNB, wnb_state_switch(0));
+
+		lv_obj_t * btnm_DNR = find_button(cont, "btnm_DNR");
+		button_set_lock(btnm_DNR, hamradio_change_nr(0));
 
 		return;
 	}
@@ -229,11 +235,11 @@ void win_receive_handler(lv_event_t * e)
 			break;
 
 		case 2:
-			hamradio_change_nr();
+			button_set_lock(btn, hamradio_change_nr(1));
 			break;
 
 		case 3:
-			wnb_state_switch();
+			button_set_lock(btn, wnb_state_switch(1));
 			break;
 
 		default:
@@ -262,27 +268,23 @@ static void btn_txrx_handler(lv_obj_t * p)
 		hamradio_moxmode(1);
 	}
 
-	lv_obj_t * lbl = lv_obj_get_child(p, 0);
 	bool tune = hamradio_tunemode(0);
 	bool mox = hamradio_moxmode(0);
 
 	if (tune)
 	{
-		lv_label_set_text_fmt(lbl, "%s", "Tune");
-		lv_obj_remove_style_all(p);
-		lv_obj_add_style(p, & fbtnlockst, 0);
+		button_set_text(p, "Tune");
+		button_lock(p);
 	}
 	else if (! tune && mox)
 	{
-		lv_label_set_text_fmt(lbl, "%s", "TX");
-		lv_obj_remove_style_all(p);
-		lv_obj_add_style(p, & btnlockst, 0);
+		button_set_text(p, "TX");
+		button_lock(p);
 	}
 	else
 	{
-		lv_label_set_text_fmt(lbl, "%s", "RX");
-		lv_obj_remove_style_all(p);
-		lv_obj_add_style(p, & fbtnst, 0);
+		button_set_text(p, "RX");
+		button_unlock(p);
 	}
 
 }
@@ -337,7 +339,7 @@ static void footer_buttons_init(lv_obj_t * p)
 
 	for (int i = 0; i < ARRAY_SIZE(footer_buttons); i++) {
 		lv_obj_t * btn = lv_button_create(cont);
-		lv_obj_add_style(btn, & fbtnst, 0);
+		lv_obj_add_style(btn, & btnst, 0);
 		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
 		btn_t * fb = & footer_buttons[i];
@@ -349,7 +351,7 @@ static void footer_buttons_init(lv_obj_t * p)
 
 		lv_obj_t * lbl = lv_label_create(btn);
 		lv_label_set_text(lbl, fb->text);
-		lv_obj_add_style(lbl, & flbl, 0);
+		lv_obj_add_style(lbl, & lblst, 0);
 	}
 }
 

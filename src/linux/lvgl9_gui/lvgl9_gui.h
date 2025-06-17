@@ -10,12 +10,19 @@ extern "C" {
 #define WIN_MIN_W	200
 #define WIN_MIN_H	150
 
-extern lv_style_t mainst, fbtnst, fbtnlockst, fcontst, flbl, winst;
+extern lv_style_t mainst, btnst, btnlockst, fcontst, lblst, winst;
 extern int32_t col_dsc_60[], col_dsc_80[], row_dsc_40[];
 
 typedef void (* event_handler_t)(lv_event_t * e);
 typedef void (* phandler_t)(lv_obj_t * p);
 typedef void (* handler_t)(void);
+
+typedef enum {
+	s130x35 = 130 << 8 | 35,
+	s100x44 = 100 << 8 | 44,
+	s86x44 = 86 << 8 | 44,
+	s40x40 = 40 << 8 | 40
+} btns_size_t;
 
 enum {
 	fbtn_w = 86,
@@ -51,9 +58,12 @@ void gui_set_parent(lv_obj_t * p);
 lv_obj_t * gui_get_window(void);
 
 void buttons_handler(lv_event_t * e);
-lv_obj_t * find_button(lv_obj_t * cont, char * name);
-void button_set_text(lv_obj_t * btn, char * text);
-void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, const uint8_t cols, event_handler_t eh);
+lv_obj_t * find_button(lv_obj_t * cont, const char * name);
+void button_set_text(lv_obj_t * btn, const char * text);
+void button_lock(lv_obj_t * btn);
+void button_unlock(lv_obj_t * btn);
+void button_set_lock(lv_obj_t * btn, uint8_t v);
+void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh);
 
 
 #ifdef __cplusplus
