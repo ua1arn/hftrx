@@ -93,6 +93,10 @@
 #ifdef HAVE_POSIX_FILE_IO
 #include "wav_util.h"
 #define STORE_TO_WAV_FILE
+#ifdef _MSC_VER
+// ignore deprecated warning for fopen
+#pragma warning(disable : 4996)
+#endif
 #endif
 
 #define NUM_CHANNELS 2
@@ -343,13 +347,13 @@ static int setup_demo(void){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    //gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
+    gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
 
     // - Allow to show up in Bluetooth inquiry
-//    gap_discoverable_control(1);
-//
-    // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Loudspeaker
-    gap_set_class_of_device(0x200414);
+    gap_discoverable_control(1);
+
+    // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Headphone
+    gap_set_class_of_device(0x200404);
 
     // - Allow for role switch in general and sniff mode
     gap_set_default_link_policy_settings( LM_LINK_POLICY_ENABLE_ROLE_SWITCH | LM_LINK_POLICY_ENABLE_SNIFF_MODE );
@@ -994,7 +998,7 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
             break;
         
         case AVRCP_SUBEVENT_OPERATION:
-            operation_id = avrcp_subevent_operation_get_operation_id(packet);
+            operation_id = (avrcp_operation_id_t) avrcp_subevent_operation_get_operation_id(packet);
             button_state = avrcp_subevent_operation_get_button_pressed(packet) > 0 ? "PRESS" : "RELEASE";
             switch (operation_id){
                 case AVRCP_OPERATION_ID_VOLUME_UP:
@@ -1377,7 +1381,6 @@ static void stdin_process(char cmd){
 }
 #endif
 
-int btstack_main(int argc, const char * argv[]);
 int a2dp_sink_btstack_main(int argc, const char * argv[]){
     UNUSED(argc);
     (void)argv;
@@ -1391,8 +1394,8 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-//    printf("Starting BTstack ...\n");
-//    hci_power_control(HCI_POWER_ON);
+    printf("Starting BTstack ...\n");
+    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

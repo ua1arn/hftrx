@@ -69,7 +69,7 @@
 #include "sco_demo_util.h"
 
 static uint8_t hfp_service_buffer[150];
-static const uint8_t   rfcomm_channel_nr = 1;
+static const uint8_t   hfp_hf_rfcomm_channel_nr = 1;
 static const char hfp_hf_service_name[] = "HFP HF Demo";
 
 
@@ -698,6 +698,10 @@ static void hfp_hf_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
                             status = hfp_subevent_echo_canceling_and_noise_reduction_deactivate_get_status(event);
                             report_status(status, "Echo Canceling and Noise Reduction Deactivate");
                             break;
+                        case HFP_SUBEVENT_APPLE_EXTENSION_SUPPORTED:
+                            printf("Apple Extension supported: %s\n",
+                                   hfp_subevent_apple_extension_supported_get_supported(event) ? "yes" : "no");
+                            break;
                         default:
                             break;
                     }
@@ -724,7 +728,6 @@ static void hfp_hf_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
  */
 
 /* LISTING_START(MainConfiguration): Setup HFP Hands-Free unit */
-int btstack_main(int argc, const char * argv[]);
 int hfp_hf_btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
@@ -752,19 +755,22 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
         (1<<HFP_HFSF_EC_NR_FUNCTION) |
         (1<<HFP_HFSF_REMOTE_VOLUME_CONTROL);
 
-    hfp_hf_init(rfcomm_channel_nr);
+    hfp_hf_init(hfp_hf_rfcomm_channel_nr);
     hfp_hf_init_supported_features(hf_supported_features);
     hfp_hf_init_hf_indicators(sizeof(indicators)/sizeof(uint16_t), indicators);
     hfp_hf_init_codecs(sizeof(codecs), codecs);
     hfp_hf_register_packet_handler(hfp_hf_packet_handler);
-
+    // Set Apple Accessory Information: features = battery reporting & docked/powered, battery=9, docked=1
+    hfp_hf_apple_set_identification(BLUETOOTH_COMPANY_ID_BLUEKITCHEN_GMBH, 0x0001, "0001", 3);
+    hfp_hf_apple_set_battery_level(9);
+    hfp_hf_apple_set_docked_state(1);
 
     // Configure SDP
 
     // - Create and register HFP HF service record
     memset(hfp_service_buffer, 0, sizeof(hfp_service_buffer));
     hfp_hf_create_sdp_record_with_codecs(hfp_service_buffer, sdp_create_service_record_handle(),
-                             rfcomm_channel_nr, hfp_hf_service_name, hf_supported_features, sizeof(codecs), codecs);
+                             hfp_hf_rfcomm_channel_nr, hfp_hf_service_name, hf_supported_features, sizeof(codecs), codecs);
     btstack_assert(de_get_len( hfp_service_buffer) <= sizeof(hfp_service_buffer));
     sdp_register_service(hfp_service_buffer);
 
@@ -773,10 +779,10 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    //gap_set_local_name("HFP HF Demo 00:00:00:00:00:00");
+    gap_set_local_name("HFP HF Demo 00:00:00:00:00:00");
 
     // - Allow to show up in Bluetooth inquiry
-    //gap_discoverable_control(1);
+    gap_discoverable_control(1);
 
     // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Hands-Free device
     gap_set_class_of_device(0x200408);
@@ -803,7 +809,7 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-    //hci_power_control(HCI_POWER_ON);
+    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* LISTING_END */

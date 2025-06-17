@@ -659,12 +659,12 @@ void tuh_bth_mount_cb(uint8_t idx)
     //VERIFY(! spp_streamer_btstack_main(0, NULL));
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
-    gap_set_local_name(WITHBRANDSTR " BTx");
-    gap_discoverable_control(1);
-//    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-//    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
-//    // turn on!
-    hci_power_control(HCI_POWER_ON);
+//    gap_set_local_name(WITHBRANDSTR " BTx");
+//    gap_discoverable_control(1);
+////    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
+////    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+////    // turn on!
+//    hci_power_control(HCI_POWER_ON);
 
     // go
     //btstack_run_loop_execute();

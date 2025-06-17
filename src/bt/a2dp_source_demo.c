@@ -186,7 +186,9 @@ static uint8_t sdp_avrcp_controller_service_buffer[200];
 static uint8_t device_id_sdp_service_buffer[100];
 
 static media_codec_configuration_sbc_t sbc_configuration;
-static btstack_sbc_encoder_state_t sbc_encoder_state;
+
+static const btstack_sbc_encoder_t *   sbc_encoder_instance;
+static btstack_sbc_encoder_bluedroid_t sbc_encoder_state;
 
 static uint8_t media_sbc_codec_configuration[4];
 static a2dp_media_sending_context_t media_tracker;
@@ -214,9 +216,9 @@ typedef struct {
 static const char title[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 avrcp_track_t tracks[] = {
-    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, 1, "Sine", "Generated", "A2DP Source Demo", "monotone", 12345},
-    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, 2, "Nao-deceased", "Decease", "A2DP Source Demo", "vivid", 12345},
-    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03}, 3, (char *)title, "Decease", "A2DP Source Demo", "vivid", 12345},
+    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, 1, "Sine", "Generated", "A2DP Source Demo", "monotone", 12345, 6789},
+    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, 2, "Nao-deceased", "Decease", "A2DP Source Demo", "vivid", 12345, 6789},
+    {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03}, 3, (char *)title, "Decease", "A2DP Source Demo", "vivid", 12345, 6789},
 };
 int current_track_index;
 avrcp_play_status_info_t play_info;
@@ -327,16 +329,13 @@ static int a2dp_source_and_avrcp_services_init(void){
     // Set local name with a template Bluetooth address, that will be automatically
     // replaced with a actual address once it is available, i.e. when BTstack boots
     // up and starts talking to a Bluetooth module.
-    ////gap_set_local_name("A2DP Source 00:00:00:00:00:00");
-    ////gap_discoverable_control(1);
+    gap_set_local_name("A2DP Source 00:00:00:00:00:00");
+    gap_discoverable_control(1);
     gap_set_class_of_device(0x200408);
     
-#if 0
-    // без автоподключения
     // Register for HCI events.
     hci_event_callback_registration.callback = &hci_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
-#endif
 
     data_source = STREAM_MOD;
 
@@ -367,7 +366,7 @@ static void a2dp_demo_hexcmod_configure_sample_rate(int sample_rate){
 }
 
 static void a2dp_demo_send_media_packet(void){
-    int num_bytes_in_frame = btstack_sbc_encoder_sbc_buffer_length();
+    int num_bytes_in_frame = sbc_encoder_instance->sbc_buffer_length(&sbc_encoder_state);
     int bytes_in_storage = media_tracker.sbc_storage_count;
     uint8_t num_sbc_frames = bytes_in_storage / num_bytes_in_frame;
     // Prepend SBC Header
@@ -377,7 +376,7 @@ static void a2dp_demo_send_media_packet(void){
                                                media_tracker.sbc_storage, bytes_in_storage + 1);
 
     // update rtp_timestamp
-    unsigned int num_audio_samples_per_sbc_buffer = btstack_sbc_encoder_num_audio_frames();
+    unsigned int num_audio_samples_per_sbc_buffer = sbc_encoder_instance->num_audio_frames(&sbc_encoder_state);
     media_tracker.rtp_timestamp += num_sbc_frames * num_audio_samples_per_sbc_buffer;
 
     media_tracker.sbc_storage_count = 0;
@@ -440,21 +439,21 @@ static void produce_audio(int16_t * pcm_buffer, int num_samples){
 static int a2dp_demo_fill_sbc_audio_buffer(a2dp_media_sending_context_t * context){
     // perform sbc encoding
     int total_num_bytes_read = 0;
-    unsigned int num_audio_samples_per_sbc_buffer = btstack_sbc_encoder_num_audio_frames();
+    unsigned int num_audio_samples_per_sbc_buffer =  sbc_encoder_instance->num_audio_frames(&sbc_encoder_state);
+    uint16_t sbc_buffer_length = sbc_encoder_instance->sbc_buffer_length(&sbc_encoder_state);
     while (context->samples_ready >= num_audio_samples_per_sbc_buffer
-        && (context->max_media_payload_size - context->sbc_storage_count) >= btstack_sbc_encoder_sbc_buffer_length()){
+        && (context->max_media_payload_size - context->sbc_storage_count) >= sbc_buffer_length){
 
         int16_t pcm_frame[256*NUM_CHANNELS];
 
         produce_audio(pcm_frame, num_audio_samples_per_sbc_buffer);
-        btstack_sbc_encoder_process_data(pcm_frame);
-        
-        uint16_t sbc_frame_size = btstack_sbc_encoder_sbc_buffer_length(); 
-        uint8_t * sbc_frame = btstack_sbc_encoder_sbc_buffer();
-        
+
+        // encode into sbc storage buffer, first byte contains sbc media header
+        sbc_encoder_instance->encode_signed_16(&sbc_encoder_state, pcm_frame, &context->sbc_storage[1 + context->sbc_storage_count]);
+
         total_num_bytes_read += num_audio_samples_per_sbc_buffer;
-        // first byte in sbc storage contains sbc media header
-        memcpy(&context->sbc_storage[1 + context->sbc_storage_count], sbc_frame, sbc_frame_size);
+
+        uint16_t sbc_frame_size =  sbc_encoder_instance->sbc_buffer_length(&sbc_encoder_state);
         context->sbc_storage_count += sbc_frame_size;
         context->samples_ready -= num_audio_samples_per_sbc_buffer;
     }
@@ -486,7 +485,7 @@ static void a2dp_demo_audio_timeout_handler(btstack_timer_source_t * timer){
 
     a2dp_demo_fill_sbc_audio_buffer(context);
 
-    if ((context->sbc_storage_count + btstack_sbc_encoder_sbc_buffer_length()) > context->max_media_payload_size){
+    if ((context->sbc_storage_count + sbc_encoder_instance->sbc_buffer_length(&sbc_encoder_state)) > context->max_media_payload_size){
         // schedule sending
         context->sbc_ready_to_send = 1;
         a2dp_source_stream_endpoint_request_can_send_now(context->a2dp_cid, context->local_seid);
@@ -552,11 +551,11 @@ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
             a2dp_source_demo_start_scanning();
             break;
 #endif
-//        case HCI_EVENT_PIN_CODE_REQUEST:
-//            printf("Pin code request - using '0000'\n");
-//            hci_event_pin_code_request_get_bd_addr(packet, address);
-//            gap_pin_code_response(address, "0000");
-//            break;
+        case HCI_EVENT_PIN_CODE_REQUEST:
+            printf("Pin code request - using '0000'\n");
+            hci_event_pin_code_request_get_bd_addr(packet, address);
+            gap_pin_code_response(address, "0000");
+            break;
         case GAP_EVENT_INQUIRY_RESULT:
             gap_event_inquiry_result_get_bd_addr(packet, address);
             // print info
@@ -624,12 +623,12 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
             printf("A2DP Source: Connected to address %s, a2dp cid 0x%02x, local seid 0x%02x.\n", bd_addr_to_str(address), media_tracker.a2dp_cid, media_tracker.local_seid);
             break;
 
-         case A2DP_SUBEVENT_SIGNALING_MEDIA_CODEC_SBC_CONFIGURATION:{
+        case A2DP_SUBEVENT_SIGNALING_MEDIA_CODEC_SBC_CONFIGURATION:
             cid  = avdtp_subevent_signaling_media_codec_sbc_configuration_get_avdtp_cid(packet);
             if (cid != media_tracker.a2dp_cid) return;
 
             media_tracker.remote_seid = a2dp_subevent_signaling_media_codec_sbc_configuration_get_remote_seid(packet);
-            
+
             sbc_configuration.reconfigure = a2dp_subevent_signaling_media_codec_sbc_configuration_get_reconfigure(packet);
             sbc_configuration.num_channels = a2dp_subevent_signaling_media_codec_sbc_configuration_get_num_channels(packet);
             sbc_configuration.sampling_frequency = a2dp_subevent_signaling_media_codec_sbc_configuration_get_sampling_frequency(packet);
@@ -637,15 +636,15 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
             sbc_configuration.subbands = a2dp_subevent_signaling_media_codec_sbc_configuration_get_subbands(packet);
             sbc_configuration.min_bitpool_value = a2dp_subevent_signaling_media_codec_sbc_configuration_get_min_bitpool_value(packet);
             sbc_configuration.max_bitpool_value = a2dp_subevent_signaling_media_codec_sbc_configuration_get_max_bitpool_value(packet);
-            
+
             channel_mode = (avdtp_channel_mode_t) a2dp_subevent_signaling_media_codec_sbc_configuration_get_channel_mode(packet);
             allocation_method = a2dp_subevent_signaling_media_codec_sbc_configuration_get_allocation_method(packet);
-            
-            printf("A2DP Source: Received SBC codec configuration, sampling frequency %u, a2dp_cid 0x%02x, local seid 0x%02x, remote seid 0x%02x.\n", 
+
+            printf("A2DP Source: Received SBC codec configuration, sampling frequency %u, a2dp_cid 0x%02x, local seid 0x%02x, remote seid 0x%02x.\n",
                 sbc_configuration.sampling_frequency, cid,
                    a2dp_subevent_signaling_media_codec_sbc_configuration_get_local_seid(packet),
                    a2dp_subevent_signaling_media_codec_sbc_configuration_get_remote_seid(packet));
-            
+
             // Adapt Bluetooth spec definition to SBC Encoder expected input
             sbc_configuration.allocation_method = (btstack_sbc_allocation_method_t)(allocation_method - 1);
             switch (channel_mode){
@@ -670,13 +669,13 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
             current_sample_rate = sbc_configuration.sampling_frequency;
             a2dp_demo_hexcmod_configure_sample_rate(current_sample_rate);
 
-             btstack_sbc_encoder_init(&sbc_encoder_state, SBC_MODE_STANDARD,
-                sbc_configuration.block_length, sbc_configuration.subbands, 
-                sbc_configuration.allocation_method, sbc_configuration.sampling_frequency, 
-                sbc_configuration.max_bitpool_value,
-                sbc_configuration.channel_mode);
+            sbc_encoder_instance = btstack_sbc_encoder_bluedroid_init_instance(&sbc_encoder_state);
+            sbc_encoder_instance->configure(&sbc_encoder_state, SBC_MODE_STANDARD,
+                                            sbc_configuration.block_length, sbc_configuration.subbands,
+                                            sbc_configuration.allocation_method, sbc_configuration.sampling_frequency,
+                                            sbc_configuration.max_bitpool_value,
+                                            sbc_configuration.channel_mode);
             break;
-        }  
 
         case A2DP_SUBEVENT_SIGNALING_DELAY_REPORTING_CAPABILITY:
             printf("A2DP Source: remote supports delay report, remote seid %d\n", 
@@ -855,7 +854,7 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
         //     status = avrcp_target_now_playing_info(avrcp_cid);
         //     break;
         case AVRCP_SUBEVENT_OPERATION:
-            operation_id = avrcp_subevent_operation_get_operation_id(packet);
+            operation_id = (avrcp_operation_id_t) avrcp_subevent_operation_get_operation_id(packet);
             button_pressed = avrcp_subevent_operation_get_button_pressed(packet) > 0;
             button_state = button_pressed ? "PRESS" : "RELEASE";
 
@@ -1064,7 +1063,6 @@ static void stdin_process(char cmd){
 #endif
 
 
-int btstack_main(int argc, const char * argv[]);
 int a2dp_source_btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
@@ -1072,7 +1070,7 @@ int a2dp_source_btstack_main(int argc, const char * argv[]){
     int err = a2dp_source_and_avrcp_services_init();
     if (err) return err;
     // turn on!
-    //hci_power_control(HCI_POWER_ON);
+    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

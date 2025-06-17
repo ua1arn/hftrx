@@ -71,12 +71,12 @@
 // uncomment to temp disable mSBC codec
 // #undef ENABLE_HFP_WIDE_BAND_SPEECH
 
-static uint8_t hfp_service_buffer[150];
-static const uint8_t    rfcomm_channel_nr = 1;
+static uint8_t hfp_ag_service_buffer[150];
+static const uint8_t    hfp_ag_rfcomm_channel_nr = 1;
 static const char hfp_ag_service_name[] = "HFP AG Demo";
 
 static bd_addr_t device_addr;
-static const char * device_addr_string = "00:1A:7D:DA:71:13";
+static const char * device_addr_string = "00:1A:7D:DA:71:03";
 
 static uint8_t codecs[] = {
         HFP_CODEC_CVSD,
@@ -684,6 +684,13 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * even
                             break;
                     }
                     break;
+                case HFP_SUBEVENT_APPLE_ACCESSORY_INFORMATION:
+                    printf("Apple Accessory support: Vendor ID %04x, Product ID %04x, Version: %s, Features %u\n",
+                           hfp_subevent_apple_accessory_information_get_vendor_id(event),
+                           hfp_subevent_apple_accessory_information_get_product_id(event),
+                           hfp_subevent_apple_accessory_information_get_version(event),
+                           hfp_subevent_apple_accessory_information_get_features(event));
+                    break;
                 default:
                     break;
             }
@@ -712,7 +719,6 @@ static hfp_phone_number_t subscriber_number = {
 
 /* LISTING_START(MainConfiguration): Setup HFP Audio Gateway */
 
-int btstack_main(int argc, const char * argv[]);
 int hfp_ag_btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
@@ -722,8 +728,8 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
     // Request role change on reconnecting headset to always use them in slave mode
     hci_set_master_slave_policy(0);
 
-    //gap_set_local_name("HFP AG Demo 00:00:00:00:00:00");
-    //gap_discoverable_control(1);
+    gap_set_local_name("HFP AG Demo 00:00:00:00:00:00");
+    gap_discoverable_control(1);
 
     // L2CAP
     l2cap_init();
@@ -749,22 +755,23 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
         (1<<HFP_AGSF_THREE_WAY_CALLING);
 
     // HFP
-    //rfcomm_init();
-    hfp_ag_init(rfcomm_channel_nr);
+    rfcomm_init();
+    hfp_ag_init(hfp_ag_rfcomm_channel_nr);
     hfp_ag_init_supported_features(supported_features);
     hfp_ag_init_codecs(sizeof(codecs), codecs);
     hfp_ag_init_ag_indicators(ag_indicators_nr, ag_indicators);
     hfp_ag_init_hf_indicators(hf_indicators_nr, hf_indicators); 
     hfp_ag_init_call_hold_services(call_hold_services_nr, call_hold_services);
+    hfp_ag_init_apple_identification("BTstack", 0);
     hfp_ag_set_subcriber_number_information(&subscriber_number, 1);
 
     // SDP Server
     sdp_init();
-    memset(hfp_service_buffer, 0, sizeof(hfp_service_buffer));
-    hfp_ag_create_sdp_record_with_codecs( hfp_service_buffer, sdp_create_service_record_handle(),
-                                          rfcomm_channel_nr, hfp_ag_service_name, 0, supported_features, sizeof(codecs), codecs);
-    btstack_assert(de_get_len( hfp_service_buffer) <= sizeof(hfp_service_buffer));
-    sdp_register_service(hfp_service_buffer);
+    memset(hfp_ag_service_buffer, 0, sizeof(hfp_ag_service_buffer));
+    hfp_ag_create_sdp_record_with_codecs( hfp_ag_service_buffer, sdp_create_service_record_handle(),
+                                          hfp_ag_rfcomm_channel_nr, hfp_ag_service_name, 0, supported_features, sizeof(codecs), codecs);
+    btstack_assert(de_get_len( hfp_ag_service_buffer) <= sizeof(hfp_ag_service_buffer));
+    sdp_register_service(hfp_ag_service_buffer);
     
     // register for HCI events and SCO packets
     hci_event_callback_registration.callback = &packet_handler;

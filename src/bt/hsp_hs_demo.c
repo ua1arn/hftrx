@@ -74,7 +74,7 @@
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 static uint8_t hsp_service_buffer[150]; 
-static const uint8_t rfcomm_channel_nr = 1;
+static const uint8_t hsp_hs_rfcomm_channel_nr = 1;
 static const char    hsp_hs_service_name[] = "Headset Test";
 static hci_con_handle_t sco_handle = HCI_CON_HANDLE_INVALID;
 
@@ -275,7 +275,6 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * even
  */
 
 /* LISTING_START(MainConfiguration): Setup HSP Headset */
-int btstack_main(int argc, const char * argv[]);
 int hsp_hs_btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
@@ -292,13 +291,13 @@ int hsp_hs_btstack_main(int argc, const char * argv[]){
 
     sdp_init();
     memset(hsp_service_buffer, 0, sizeof(hsp_service_buffer));
-    hsp_hs_create_sdp_record(hsp_service_buffer, sdp_create_service_record_handle(), rfcomm_channel_nr, hsp_hs_service_name, 0);
+    hsp_hs_create_sdp_record(hsp_service_buffer, sdp_create_service_record_handle(), hsp_hs_rfcomm_channel_nr, hsp_hs_service_name, 0);
     btstack_assert(de_get_len( hsp_service_buffer) <= sizeof(hsp_service_buffer));
     sdp_register_service(hsp_service_buffer);
 
     rfcomm_init();
 
-    hsp_hs_init(rfcomm_channel_nr);
+    hsp_hs_init(hsp_hs_rfcomm_channel_nr);
 
     // register for HCI events and SCO packets
     hci_event_callback_registration.callback = &packet_handler;
@@ -312,17 +311,16 @@ int hsp_hs_btstack_main(int argc, const char * argv[]){
     btstack_stdin_setup(stdin_process);
 #endif
 
-    //gap_set_local_name("HSP HS Demo 00:00:00:00:00:00");
-    //gap_discoverable_control(1);
+    gap_set_local_name("HSP HS Demo 00:00:00:00:00:00");
+    gap_discoverable_control(1);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
     gap_set_class_of_device(0x240404);
-    gap_set_default_link_policy_settings( LM_LINK_POLICY_ENABLE_ROLE_SWITCH | LM_LINK_POLICY_ENABLE_SNIFF_MODE );
 
     // Parse human readable Bluetooth address.
     sscanf_bd_addr(device_addr_string, device_addr);
     
     // turn on!
-    //hci_power_control(HCI_POWER_ON);
+    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* LISTING_END */

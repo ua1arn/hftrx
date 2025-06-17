@@ -67,8 +67,6 @@
 
 #include "btstack.h"
 
-int btstack_main(int argc, const char * argv[]);
-
 #define RFCOMM_SERVER_CHANNEL 1
 
 #define TEST_COD 0x1234
@@ -317,13 +315,13 @@ int spp_streamer_btstack_main(int argc, const char * argv[])
     gap_set_class_of_device(TEST_COD);
 
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-//    gap_set_local_name("SPP Streamer 00:00:00:00:00:00");
-//    gap_discoverable_control(1);
+    gap_set_local_name("SPP Streamer 00:00:00:00:00:00");
+    gap_discoverable_control(1);
 
     spp_create_test_data();
 
     // turn on!
-//	hci_power_control(HCI_POWER_ON);
+	hci_power_control(HCI_POWER_ON);
 	    
     return 0;
 }
