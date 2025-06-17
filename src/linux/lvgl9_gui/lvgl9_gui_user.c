@@ -22,44 +22,16 @@ void win_modes_handler(lv_event_t * e)
 
 	if (! e) // init window
 	{
-		const char btns[btn_num][4] =
-		{
-				"LSB", "USB", "CW",  "CWR",
-				"AM",  "NFM", "DGL", "DGU",
-		};
-
-		const int modes [btn_num] = {
-				SUBMODE_LSB, SUBMODE_USB, SUBMODE_CW, SUBMODE_CWR,
-				SUBMODE_AM, SUBMODE_NFM, SUBMODE_DGL, SUBMODE_DGU,
-		};
-
-		static btn_t btu[btn_num];
 		lv_obj_t * cont = gui_win_get_content();
 
-		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_60, 0);
-		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
-		lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-		lv_obj_center(cont);
-		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+		static btn_t btns [btn_num] = {
+				{ "LSB", SUBMODE_LSB, }, { "AM", SUBMODE_AM, },
+				{ "CW",  SUBMODE_CW, },  { "DGL", SUBMODE_DGL, },
+				{ "USB", SUBMODE_USB, }, { "NFM", SUBMODE_NFM, },
+				{ "CWR", SUBMODE_CWR, }, { "DGU", SUBMODE_DGU, },
+		};
 
-		for(uint8_t i = 0; i < btn_num; i++)
-		{
-			uint8_t col = i / 2;
-			uint8_t row = i % 2;
-
-			lv_obj_t * btn = lv_button_create(cont);
-	        lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
-	                             LV_GRID_ALIGN_STRETCH, row, 1);
-
-	        lv_obj_t * label = lv_label_create(btn);
-	        lv_label_set_text_fmt(label, "%s", btns[i]);
-	        lv_obj_center(label);
-
-	        btu[i].payload = modes[i];
-	        btu[i].eh = win_modes_handler;
-	        lv_obj_set_user_data(btn, & btu[i]);
-	        lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
-		}
+		create_button_matrix(cont, btns, btn_num, 4, win_modes_handler);
 
 		return;
 	}
@@ -112,43 +84,24 @@ void win_memory_handler(lv_event_t * e)
 	{
 		lv_obj_t * cont = gui_win_get_content();
 
-		lv_obj_set_style_grid_column_dsc_array(cont, col_dsc_80, 0);
-		lv_obj_set_style_grid_row_dsc_array(cont, row_dsc_40, 0);
-		lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-		lv_obj_center(cont);
-		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
-
-		static btn_t btu[btn_num];
+		static btn_t btns[btn_num];
 
 		for(uint8_t i = 0; i < btn_num; i++)
 		{
-			uint8_t row = i / 5;
-			uint8_t col = i % 5;
-
-			lv_obj_t * btn = lv_button_create(cont);
-	        lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1,
-	                             LV_GRID_ALIGN_STRETCH, row, 1);
-
-	        btu[i].eh = win_memory_handler;
-
-	        lv_obj_t * label = lv_label_create(btn);
-
 			unsigned freq = load_mems(i, 0);
 			if (freq > 0)
 			{
-				btu[i].payload = (1 << 31) | i;
-				lv_label_set_text_fmt(label, "%dk", freq / 1000);
+				btns[i].payload = (1 << 31) | i;
+				snprintf(btns[i].text, 20, "%dk", freq / 1000);
 			}
 			else
 			{
-				btu[i].payload = (0 << 31) | i;
-				lv_label_set_text_fmt(label, "---");
+				btns[i].payload = (0 << 31) | i;
+				snprintf(btns[i].text, 20, "---");
 			}
-	        lv_obj_center(label);
-
-	        lv_obj_set_user_data(btn, & btu[i]);
-	        lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
 		}
+
+		create_button_matrix(cont, btns, btn_num, 5, win_memory_handler);
 
 		lv_obj_t * obj = lv_obj_create(cont);
 		lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -245,10 +198,10 @@ void win_receive_handler(lv_event_t * e)
 		lv_obj_t * cont = gui_win_get_content();
 
 		static btn_t btns [] = {
-				{ "btn_att", 	"Att", 	 	0, NULL, },
-				{ "btn_preamp", "Preamp", 	0, NULL, },
-				{ "btn_dnr", 	"DNR", 		0, NULL, },
-				{ "btn_wnb", 	"WNB", 		1, NULL, },
+				{ "Att", 	0, 0, NULL, },
+				{ "Preamp", 0, 0, NULL, },
+				{ "DNR", 	0, 0, NULL, },
+				{ "WNB", 	0, 1, NULL, },
 		};
 
 		create_button_matrix(cont, btns, btn_num, 4, win_receive_handler);
@@ -265,7 +218,7 @@ void win_receive_handler(lv_event_t * e)
 	}
 	else if (btnu->is_clicked)
 	{
-		switch(btnu->payload)
+		switch(btnu->index)
 		{
 		case 0:
 			hamradio_change_att();
@@ -289,7 +242,7 @@ void win_receive_handler(lv_event_t * e)
 	}
 	else if (btnu->is_long_pressed)
 	{
-		if (btnu->payload == 3)
+		if (btnu->index == 3)
 			win_open(WIN_WNB);
 	}
 }
@@ -323,7 +276,7 @@ static void btn_txrx_handler(lv_obj_t * p)
 	{
 		lv_label_set_text_fmt(lbl, "%s", "TX");
 		lv_obj_remove_style_all(p);
-		lv_obj_add_style(p, & fbtnlockst, 0);
+		lv_obj_add_style(p, & btnlockst, 0);
 	}
 	else
 	{
@@ -355,15 +308,15 @@ static void btn_footer_handler(lv_event_t * e)
 static void footer_buttons_init(lv_obj_t * p)
 {
 	static btn_t footer_buttons [] = {
-			{ "fbtn_trx", 	"RX", 	 	1, btn_txrx_handler, },
-			{ "fbtn_modes", "Modes", 	0, NULL, WIN_MODES, },
-			{ "fbtn_mem", 	"Memory", 	0, NULL, WIN_MEMORY, },
-			{ "fbtn_rcv", 	"Receive",  0, NULL, WIN_RECEIVE, },
-			{ "fbtn_4", 	"Button 4", 0, NULL, WIN_MEMORY, },
-			{ "fbtn_5", 	"Button 5", 0, NULL, WIN_MEMORY, },
-			{ "fbtn_6", 	"Button 6", 0, NULL, WIN_MEMORY, },
-			{ "fbtn_7", 	"Button 7", 0, NULL, WIN_MEMORY, },
-			{ "fbtn_8", 	"Button 8", 0, NULL, WIN_MEMORY, },
+			{ "RX", 	  0, 1, btn_txrx_handler, },
+			{ "Modes", 	  0, 0, NULL, WIN_MODES, },
+			{ "Memory",   0, 0, NULL, WIN_MEMORY, },
+			{ "Receive",  0, 0, NULL, WIN_RECEIVE, },
+			{ "Button 4", 0, 0, NULL, WIN_MEMORY, },
+			{ "Button 5", 0, 0, NULL, WIN_MEMORY, },
+			{ "Button 6", 0, 0, NULL, WIN_MEMORY, },
+			{ "Button 7", 0, 0, NULL, WIN_MEMORY, },
+			{ "Button 8", 0, 0, NULL, WIN_MEMORY, },
 	};
 
 	lv_obj_t * cont = lv_obj_create(p);

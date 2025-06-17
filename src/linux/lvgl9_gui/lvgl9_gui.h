@@ -24,16 +24,17 @@ enum {
 };
 
 typedef struct {
-	char name[20];
 	char text[20];
+	int32_t payload;
 	bool long_press;
 	phandler_t h;
 	int win_id;
 	// *****
-	int32_t payload;
+	char name[20];
 	bool is_pressed;
 	bool is_clicked;
 	bool is_long_pressed;
+	uint8_t index;
 	lv_timer_t * long_press_timer;
 	event_handler_t eh;
 } btn_t;

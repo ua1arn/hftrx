@@ -107,8 +107,9 @@ void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, cons
 		lv_label_set_text_fmt(label, "%s", btu[i].text);
 		lv_obj_center(label);
 
-		btu[i].payload = i;
+		btu[i].index = i;
 		btu[i].eh = eh;
+		snprintf(btu[i].name, 20, "btnm_%s", btu[i].text);
 		lv_obj_set_user_data(btn, & btu[i]);
 		lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
 	}
