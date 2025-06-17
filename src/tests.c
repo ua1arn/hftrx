@@ -10143,6 +10143,274 @@ static void lv_example_canvas_7(lv_obj_t * parent)
 }
 #endif /* WITHLVGL */
 
+#if 1
+
+
+// Очереди символов для обмена
+
+// Очередь символов для передачи в канал обмена
+static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
+static u8queue_t rxq;
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart4_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+static void uartX_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmeaX_putc(b [i]);
+
+	va_end(ap);
+}
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart4_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart4_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart4_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart4_enabletx(0);
+	}
+	else
+	{
+		hardware_uart4_enabletx(0);
+	}
+}
+
+
+/////////////
+///
+///
+///
+
+static uint_fast8_t crc8update(const uint_fast8_t v, uint8_t crc)
+{
+
+	static const uint8_t crc8tab [256] =
+	{
+	    0x00, 0xD5, 0x7F, 0xAA, 0xFE, 0x2B, 0x81, 0x54, 0x29, 0xFC, 0x56, 0x83, 0xD7, 0x02, 0xA8, 0x7D,
+	    0x52, 0x87, 0x2D, 0xF8, 0xAC, 0x79, 0xD3, 0x06, 0x7B, 0xAE, 0x04, 0xD1, 0x85, 0x50, 0xFA, 0x2F,
+	    0xA4, 0x71, 0xDB, 0x0E, 0x5A, 0x8F, 0x25, 0xF0, 0x8D, 0x58, 0xF2, 0x27, 0x73, 0xA6, 0x0C, 0xD9,
+	    0xF6, 0x23, 0x89, 0x5C, 0x08, 0xDD, 0x77, 0xA2, 0xDF, 0x0A, 0xA0, 0x75, 0x21, 0xF4, 0x5E, 0x8B,
+	    0x9D, 0x48, 0xE2, 0x37, 0x63, 0xB6, 0x1C, 0xC9, 0xB4, 0x61, 0xCB, 0x1E, 0x4A, 0x9F, 0x35, 0xE0,
+	    0xCF, 0x1A, 0xB0, 0x65, 0x31, 0xE4, 0x4E, 0x9B, 0xE6, 0x33, 0x99, 0x4C, 0x18, 0xCD, 0x67, 0xB2,
+	    0x39, 0xEC, 0x46, 0x93, 0xC7, 0x12, 0xB8, 0x6D, 0x10, 0xC5, 0x6F, 0xBA, 0xEE, 0x3B, 0x91, 0x44,
+	    0x6B, 0xBE, 0x14, 0xC1, 0x95, 0x40, 0xEA, 0x3F, 0x42, 0x97, 0x3D, 0xE8, 0xBC, 0x69, 0xC3, 0x16,
+	    0xEF, 0x3A, 0x90, 0x45, 0x11, 0xC4, 0x6E, 0xBB, 0xC6, 0x13, 0xB9, 0x6C, 0x38, 0xED, 0x47, 0x92,
+	    0xBD, 0x68, 0xC2, 0x17, 0x43, 0x96, 0x3C, 0xE9, 0x94, 0x41, 0xEB, 0x3E, 0x6A, 0xBF, 0x15, 0xC0,
+	    0x4B, 0x9E, 0x34, 0xE1, 0xB5, 0x60, 0xCA, 0x1F, 0x62, 0xB7, 0x1D, 0xC8, 0x9C, 0x49, 0xE3, 0x36,
+	    0x19, 0xCC, 0x66, 0xB3, 0xE7, 0x32, 0x98, 0x4D, 0x30, 0xE5, 0x4F, 0x9A, 0xCE, 0x1B, 0xB1, 0x64,
+	    0x72, 0xA7, 0x0D, 0xD8, 0x8C, 0x59, 0xF3, 0x26, 0x5B, 0x8E, 0x24, 0xF1, 0xA5, 0x70, 0xDA, 0x0F,
+	    0x20, 0xF5, 0x5F, 0x8A, 0xDE, 0x0B, 0xA1, 0x74, 0x09, 0xDC, 0x76, 0xA3, 0xF7, 0x22, 0x88, 0x5D,
+	    0xD6, 0x03, 0xA9, 0x7C, 0x28, 0xFD, 0x57, 0x82, 0xFF, 0x2A, 0x80, 0x55, 0x01, 0xD4, 0x7E, 0xAB,
+	    0x84, 0x51, 0xFB, 0x2E, 0x7A, 0xAF, 0x05, 0xD0, 0xAD, 0x78, 0xD2, 0x07, 0x53, 0x86, 0x2C, 0xF9
+	};
+
+	return crc8tab [(crc ^ v) & 0xFF];
+}
+
+enum csrf_states
+{
+	CSRF_WAIT_SYNC, ///< CSRF_WAIT_SYNC
+	CSRF_FRAME_LEN, ///< CSRF_FRAME_LEN
+	CSRF_FRAME_TYPE,///< CSRF_FRAME_TYPE
+	CSRF_ORIG_ADDR,
+	CSRF_DEST_ADDR,
+	CSRF_PAYLOAD,   ///< CSRF_PAYLOAD
+	CSRF_CRC        ///< CSRF_CRC
+
+};
+
+static enum csrf_states state = CSRF_WAIT_SYNC;
+
+static uint_fast8_t crsf_type;
+static uint_fast8_t crsf_framelen;
+static uint_fast8_t crsf_crc;
+static uint_fast8_t crsf_dest_addr;
+static uint_fast8_t crsf_orig_addr;
+static uint_fast8_t crsf_lenbyte;	// необработанный байт длинны
+static uint_fast8_t crsf_broadcast;
+static uint8_t crsf_payload [255];
+static unsigned crsf_payload_ix;
+
+static void crsf_parser(const uint_fast8_t c)
+{
+	//PRINTF("%02X ", c);
+	crsf_crc = crc8update(c, crsf_crc);
+	switch (state)
+	{
+	case CSRF_WAIT_SYNC:
+		if (c == 0xC8)
+		{
+			state = CSRF_FRAME_LEN;
+		}
+		break;
+
+	case CSRF_FRAME_LEN:
+		if (c >= 2 && c <= 0x62)
+		{
+			// Broadcast Frame: Type + Payload + CRC,
+			// Extended header frame: Type + Destination address + Origin address + Payload + CRC
+//			crsf_framelen = c - 2;
+			crsf_lenbyte = c;
+			state = CSRF_FRAME_TYPE;
+			crsf_crc = 0x00;	// initial CRC accum
+		}
+		else
+		{
+			PRINTF("drop (bad packet length) ");
+			state = CSRF_WAIT_SYNC;
+		}
+		break;
+
+	case CSRF_FRAME_TYPE:
+		crsf_type = c;
+		crsf_payload_ix = 0;
+		if (crsf_type < 0x27)
+		{
+			crsf_framelen = crsf_lenbyte - 2;
+			crsf_broadcast = 1;
+			state = CSRF_PAYLOAD;
+		}
+		else
+		{
+			crsf_framelen = crsf_lenbyte - 4;
+			crsf_broadcast = 0;
+			state = CSRF_DEST_ADDR;
+		}
+		break;
+
+	case CSRF_DEST_ADDR:
+		crsf_dest_addr = c;
+		state = CSRF_ORIG_ADDR;
+		break;
+
+	case CSRF_ORIG_ADDR:
+		crsf_orig_addr = c;
+		state = CSRF_PAYLOAD;
+		break;
+
+	case CSRF_PAYLOAD:
+		if (crsf_payload_ix < ARRAY_SIZE(crsf_payload))
+		{
+			crsf_payload [crsf_payload_ix] = c;
+			if (++ crsf_payload_ix >= crsf_framelen)
+				state = CSRF_CRC;
+		}
+		else
+		{
+			PRINTF("drop (payload overflow) ");
+			state = CSRF_WAIT_SYNC;
+		}
+		break;
+
+	case CSRF_CRC:
+		state = CSRF_WAIT_SYNC;
+		if (crsf_crc == 0)
+		{
+			//PRINTF("bc=%d lb=%02X ty=%02X ", crsf_broadcast, crsf_lenbyte, crsf_type);
+			dbg_putchar(crsf_broadcast ? '*' : '-');
+			//printhex(0, crsf_payload, crsf_framelen);
+		}
+		else
+		{
+			PRINTF("[bc=%d lb=%02X  ty=%02X ", crsf_broadcast, crsf_lenbyte, crsf_type);
+			PRINTF("drop (bad CRC)] ");
+			//printhex(0, crsf_payload, crsf_framelen);
+		}
+		break;
+
+	default:
+		break;
+
+	}
+
+}
+
+static void csrftest(void)
+{
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	static uint8_t rxb [512];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	const uint_fast32_t baudrate = 420000;
+	hardware_uart4_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart4_set_speed(baudrate);
+
+
+
+	hardware_uart4_enablerx(1);
+	hardware_uart4_enabletx(0);
+
+	PRINTF("Test device\n");
+	for (;;)
+	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
+
+		IRQL_t oldIrql;
+		uint_fast8_t f;
+		uint_fast8_t c;
+		/* Отладочные функции */
+		if (kbready)
+			PRINTF("bkbch=%02x\n", kbch);
+
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_get(& rxq, & c);
+		LowerIrql(oldIrql);
+		if (f)
+		{
+			crsf_parser(c);
+		}
+	}
+}
+
+#endif
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -10165,6 +10433,11 @@ void hightests(void)
 		lv_example_canvas_7(lv_screen_active());
 		for (;;)
 			lv_timer_handler();
+	}
+#endif
+#if 0
+	{
+		csrftest();
 	}
 #endif
 #if 0 && WITHLVGL && LV_BUILD_DEMOS
