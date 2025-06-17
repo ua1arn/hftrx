@@ -72,7 +72,7 @@
 	static const dzone_t dzones [] =
 	{
 
-		{	0,	0,	0, 0, display2_preparebg,	& dzi_compat, REDRSUBSET_SHOW, }, // Стирание фона
+		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
 		{	0,	0, 	7, 4, display_siglevel7, 	& dzi_compat, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 4, display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm

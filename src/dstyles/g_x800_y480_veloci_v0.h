@@ -80,19 +80,20 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const dzone_t dzones [] =
 {
+	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
+
 	{	0,	0,	9,	4,	display2_ENC1F_9,	& dzi_compat, PGALL, },
 	{	10,	0,	9,	4,	display2_ENC2F_9,	& dzi_compat, PGALL, },
-//	{	0,	0,	50, 44, display2_multilinemenu_block,	& dzi_menu, REDRSUBSET(DPAGE0), }, //Блок с пунктами меню (группы)
 
-	//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
-	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
+//	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
+	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
 	//{	10,	0,	4,	0,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
-	//{	15,	0,	2,	0,	display2_dummy, 	& dzi_txrx, PGALL, },
-	{	20,	0,	4,	4,	display2_dummy,		& dzi_attenuator, PGALL, },
-	{	25,	0,	3,	4,	display2_dummy,		& dzi_preamp_ovf, PGALL, },
+	//{	15,	0,	2,	0,	display_txrxstate2, 	& dzi_txrx, PGALL, },
+	{	20,	0,	4,	4,	display2_att4,		& dzi_attenuator, PGALL, },
+	{	25,	0,	3,	4,	display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 
-//	{	41, 0,	9,	4,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
-//	{	41,	4,	9,	4,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
+//	{	41, 0,	9,	4,	display2_fnlabel9,	& dzi_compat, PGALL, },	// FUNC item label
+//	{	41,	4,	9,	4,	display2_fnvalue9,	& dzi_compat, PGALL, },	// FUNC item value
 
 	{	31,	0,	9,	4,	display2_ENC3F_9,	& dzi_compat, PGALL, },
 	{	41,	0,	9,	4,	display2_ENC4F_9,	& dzi_compat, PGALL, },
@@ -109,37 +110,38 @@ static const dzone_t dzones [] =
 	{	0,	5,	15,	19,	display2_af_spectre15,			& dzi_compat, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
-	{	15,	6,	21, 13,	display2_dummy,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
-	{	37, 10,	3,	4,	display2_dummy,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 10,	3,	4,	display2_dummy,	& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	46, 10,	3,	4,	display2_dummy,	& dzi_agc, PGALL, },	// AGC mode
+	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
+	{	41, 10,	3,	4,	display2_rxbw3,	& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
+	{	46, 10,	3,	4,	display2_agc3,	& dzi_agc, PGALL, },	// AGC mode
 
-	{	37, 15,	3,	4,	display2_dummy,	& dzi_nr, PGALL, },	// NR : was: AGC
-	{	41, 15,	3,	4,	display2_dummy,	& dzi_datamode, PGALL, },	// DATA mode indicator
-	{	45, 15,	5,	4,	display2_dummy,	& dzi_notch, PGALL, },	// NOTCH on/off
+	{	37, 15,	3,	4,	display2_nr3,	& dzi_nr, PGALL, },	// NR : was: AGC
+	{	41, 15,	3,	4,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
+	{	45, 15,	5,	4,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
 
-	{	15, 20,	3,	4,	display2_dummy,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-	{	20,	20,	3,	4,	display2_dummy,	& dzi_vfomode, PGALL, },	// SPL
-	{	24,	20,	12,	4,	display2_dummy,	& dzi_freqb, PGALL, },	// SUB FREQ
-	{	37, 20,	3,	4,	display2_dummy,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
-	{	41, 20,	3,	4,	display2_dummy,	& dzi_voxtune, PGALL, },	// VOX
+	{	15, 20,	3,	4,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+	{	20,	20,	3,	4,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
+	{	24,	20,	12,	4,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
+	{	37, 20,	3,	4,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
+	{	41, 20,	3,	4,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
 	//{	45,	20,	4,	4,	display2_dummy, & dzi_lockstate, PGALL, },	// LOCK
 
 	// размещены под S-метром (15 ячеек)
-	{	0, 	25,	5,	4,	display2_dummy, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
-	{	6, 	25,	5,	4,	display2_dummy, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
+	{	0, 	25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
+	{	6, 	25,	5,	4,	display2_currlevel5, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
-	{	14,	25,	4,	4,	display2_dummy,	& dzi_rxbwval, PGALL, },	// RX BW value
-	{	19,	25,	5,	4,	display2_dummy,	& dzi_antenna, PGALL, },
-	{	25, 25,	3,	4,	display2_dummy,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
+	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
+	{	19,	25,	5,	4,	display2_ant5,	& dzi_antenna, PGALL, },
+	{	25, 25,	3,	4,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
-	{	33, 25,	3,	4,	display2_dummy,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
-	{	37, 25,	3,	4,	display2_dummy,	& dzi_spk, PGALL, },	// отображение признака включения динамика
-	{	41, 25, 3,	4,	display2_dummy,	& dzi_bkin, PGALL, },	// BREAK-IN
-	//{	45,	25,	5,	4,	display2_dummy, & dzi_wpm, PGALL, },	// 22WPM
-	{	45,	25,	4,	4,	display2_dummy, & dzi_lock, PGALL, },	// LOCK
+	{	33, 25,	3,	4,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
+	{	37, 25,	3,	4,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
+	{	41, 25, 3,	4,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
+	//{	45,	25,	5,	4,	display2_wpm5, & dzi_wpm, PGALL, },	// 22WPM
+	{	45,	25,	4,	4,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	//{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
@@ -155,11 +157,11 @@ static const dzone_t dzones [] =
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	NULL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_gcombo,		& dzi_compat, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 
-	{	0,	DLEB,	12,	4,	display2_dummy,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
+	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	9,	4,	display2_span9,			& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-	{	23, DLEB,	4,	4,	display2_dummy,		& dzi_thermo, PGALL, },	// thermo sensor
-	{	28, DLEB,	3,	4,	display2_dummy,		& dzi_usbact, PGALL, },	// USB host status
-	{	32, DLEB,	7,	4,	display2_dummy,		& dzi_classa, PGALL, },	// Class-A power amplifier
+	{	23, DLEB,	4,	4,	display2_thermo4,		& dzi_thermo, PGALL, },	// thermo sensor
+	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_usbact, PGALL, },	// USB host status
+	{	32, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PGALL, },	// Class-A power amplifier
 	//{	28, DLEB,	10,	4,	display_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
@@ -170,8 +172,10 @@ static const dzone_t dzones [] =
 #endif /* WITHMENU */
 
 	// sleep mode display
-	{	5,	25,	12,	4,	display2_dummy,		& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-	{	20, 25,	5,	4,	display2_dummy, 	& dzi_voltlevel, PGSLP, },	// voltmeter with "V"
+	{	5,	25,	12,	4,	display2_datetime12,		& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+	{	20, 25,	5,	4,	display2_voltlevelV5, 	& dzi_voltlevel, PGSLP, },	// voltmeter with "V"
+
+	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 };
 
 #if WITHMENU
