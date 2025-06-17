@@ -1349,8 +1349,8 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		char label3 [4];
 	}  agcmodes [] =
 	{
-		{ BOARD_AGCCODE_ON,  "AGC ", "AGC" },
-		{ BOARD_AGCCODE_OFF, "OFF ", "OFF" },
+		{ BOARD_AGCCODE_ON,  "AGC", "AGC" },
+		{ BOARD_AGCCODE_OFF, "OFF", "OFF" },
 	};
 #elif WITHAGCMODESLOWFAST	/* среди режимов АРУ есть только быстро-медленно */
 	/* перечисление всех возможных режимов АРУ
@@ -2878,27 +2878,27 @@ enum
 
 static const char * const bandlabels [BANDGROUP_COUNT] =
 {
-	"LW ",
-	"MW ",
+	"LW",
+	"MW",
 	"SW1",
 	"SW2",
 	"1.8",
 	"3.5",
 	"5.3",
-	"7  ",
-	"10 ",
-	"14 ",
-	"18 ",
-	"21 ",
-	"24 ",
-	"CB ",
-	"28 ",
-	"50 ",
-	"70 ",
+	"7",
+	"10",
+	"14",
+	"18",
+	"21",
+	"24",
+	"CB",
+	"28",
+	"50",
+	"70",
 	"144",
 	"430",
-	"lo ",
-	"hi ",
+	"lo",
+	"hi",
 };
 
 #if (FLASHEND > 0x7FFF)
@@ -4486,7 +4486,7 @@ static const struct paramdefdef xgspectrumpart =
 /* уменьшение отображаемого участка спектра */
 static const struct paramdefdef xgzoomxpow2 =
 {
-	QLABEL3("ZOOM PAN", "ZOOM PAN", "ZOOM PAN "), 7, 0, RJ_POW2,	ISTEP1,
+	QLABEL3("ZOOM PAN", "ZOOM PAN", "ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 	ITEM_VALUE,
 	0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 	OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
@@ -4751,7 +4751,7 @@ static const struct paramdefdef xcatenable =
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL2("AF GAIN ", "VOLUME   "), 7, 0, 0,	ISTEP1,
+		QLABEL2("AF GAIN", "VOLUME"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -4767,7 +4767,7 @@ static const struct paramdefdef xcatenable =
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
-		QLABEL2("RF GAIN ", "RF GAIN  "), 7, 0, 0,	ISTEP1,
+		QLABEL2("RF GAIN", "RF GAIN"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -5084,7 +5084,7 @@ static const struct paramdefdef xcatenable =
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
 		static const struct paramdefdef xgsubtonei =
 		{
-			QLABEL2("CTCSS FQ", "CTCSS FQ "), 7, 1, RJ_SUBTONE,	ISTEP1,
+			QLABEL2("CTCSS FQ", "CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,
 			ITEM_VALUE,
 			0, ARRAY_SIZE(gsubtones) - 1,
 			OFFSETOF(struct nvmap, gsubtonei),
@@ -5308,7 +5308,7 @@ static const struct paramdefdef xcatenable =
 
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL2("CW SPEED", "CW SPEED "), 7, 0, 0,	ISTEP1,
+		QLABEL2("CW SPEED", "CW SPEED"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 #if WITHPOTWPM
@@ -5345,7 +5345,7 @@ static const struct paramdefdef xcatenable =
 	};
 	static const struct paramdefdef xgelkeyreverse =
 	{
-		QLABEL("KEY REV "), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("KEY REV"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		OFFSETOF(struct nvmap, elkeyreverse),
@@ -8412,7 +8412,7 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 /* усилитель мощности поддерживает переключение в класс А */
 static const struct paramdefdef xgclassamode =
 {
-	QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+	QLABEL2("CLASSA", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gclassamode),
@@ -8426,7 +8426,7 @@ static const struct paramdefdef xgclassamode =
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 static const struct paramdefdef xgnormalpower =
 {
-	QLABEL2("TX POWER", "TX POWER "), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
+	QLABEL2("TX POWER", "TX POWER"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
     ITEM_VALUE,
     WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
     OFFSETOF(struct nvmap, gnormalpower),
@@ -8548,7 +8548,7 @@ static const struct paramdefdef * enc2menus [] =
 #endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
-		QLABELENC2("NR LEVEL "),
+		QLABELENC2("NR LEVEL"),
 		0, 0,
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* nr level */
@@ -8598,7 +8598,7 @@ static const struct paramdefdef * enc2menus [] =
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
 	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
 	(const struct paramdefdef [1]) {
-		QLABELENC2("IF SHIFT "),
+		QLABELENC2("IF SHIFT"),
 		0, 0,
 		RJ_SIGNED,		// rj
 		ISTEP50,
@@ -13279,7 +13279,7 @@ const char * hamradio_get_rxbw_value4(void)
 		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
 	if (w100 < 10)	// до 1 кГц
-		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d ", w100 * 10);
+		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d", w100 * 10);
 	else if (w100 < 100)	// 1 кГц..9 кГц
 		local_snprintf_P(s, ARRAY_SIZE(s), "%1d.%1dk", w100 / 10, w100 % 10);
 	else	// 10 и более кГц
@@ -13312,7 +13312,7 @@ const char * hamradio_get_rxbw_value4(void)
 		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
 	if (w100 < 10)	// до 1 кГц
-		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d ", w100 * 10);
+		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d", w100 * 10);
 	else if (w100 < 100)	// 1 кГц..9 кГц
 		local_snprintf_P(s, ARRAY_SIZE(s), "%1d.%1dk", w100 / 10, w100 % 10);
 	else	// 10 и более кГц
@@ -13329,7 +13329,7 @@ const char * hamradio_get_pre_value_P(void)
 #if ! WITHONEATTONEAMP
 	return pampmodes [gpamp].label;
 #else /* ! WITHONEATTONEAMP */
-	return PSTR("   ");
+	return PSTR("");
 #endif /* ! WITHONEATTONEAMP */
 }
 
@@ -13345,7 +13345,7 @@ const char * hamradio_get_agc3_value_P(void)
 #if ! WITHAGCMODENONE
 	return agcmodes [gagcmode].label3;
 #else /* ! WITHAGCMODENONE */
-	return PSTR("   ");
+	return PSTR("");
 #endif /* ! WITHAGCMODENONE */
 }
 
@@ -13355,7 +13355,7 @@ const char * hamradio_get_agc4_value_P(void)
 #if ! WITHAGCMODENONE
 	return agcmodes [gagcmode].label4;
 #else /* ! WITHAGCMODENONE */
-	return PSTR("    ");
+	return "";
 #endif /* ! WITHAGCMODENONE */
 }
 
@@ -17923,7 +17923,7 @@ static void dispvfocode(
 	local_snprintf_P(label, sizeof label / sizeof label [0],
 		top ?
 			PSTR("VFO #%d HIGH") :
-			PSTR("VFO #%d LOW "),
+			PSTR("VFO #%d LOW"),
 		vco
 		);
 
