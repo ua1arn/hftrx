@@ -337,6 +337,30 @@ static void sleepwndkeyhandler(lv_event_t * e)
 	}
 }
 
+static lv_ll_t updateslist;
+
+static void updateslist_init(void)
+{
+	lv_ll_init(& updateslist, sizeof (lv_obj_t * *));
+}
+
+// Включить элемент в список требующиз обновления
+static void uiupdates(lv_obj_t * obj)
+{
+	lv_obj_t * * palce = (lv_obj_t * *) lv_ll_ins_tail(& updateslist);
+	LV_ASSERT_MALLOC(palce);
+	* palce = obj;
+}
+
+// Заставить перерисоваться объекты из списка обновления
+static void sendupdates(void)
+{
+	void * it;
+    LV_LL_READ(& updateslist, it)
+	{
+    	lv_obj_invalidate(* (lv_obj_t * *) it);
+	}
+}
 
 static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
@@ -345,7 +369,7 @@ static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, co
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	//lv_label_set_text_fmt(lbl, "el%u", i);
-
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -377,6 +401,7 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxcompatstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -730,6 +755,7 @@ static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -739,6 +765,7 @@ static lv_obj_t * dzi_create_modeb(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -748,6 +775,7 @@ static lv_obj_t * dzi_create_antenna(lv_obj_t * parent, const struct dzone * dzp
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -757,6 +785,7 @@ static lv_obj_t * dzi_create_preamp_ovf(lv_obj_t * parent, const struct dzone * 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -766,6 +795,7 @@ static lv_obj_t * dzi_create_tune(lv_obj_t * parent, const struct dzone * dzp, c
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -775,6 +805,7 @@ static lv_obj_t * dzi_create_bypass(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -784,6 +815,7 @@ static lv_obj_t * dzi_create_rxbw(lv_obj_t * parent, const struct dzone * dzp, c
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -793,6 +825,7 @@ static lv_obj_t * dzi_create_rxbwval(lv_obj_t * parent, const struct dzone * dzp
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -802,6 +835,7 @@ static lv_obj_t * dzi_create_voltlevel(lv_obj_t * parent, const struct dzone * d
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -813,6 +847,7 @@ static lv_obj_t * dzi_create_datetime12(lv_obj_t * parent, const struct dzone * 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -822,6 +857,7 @@ static lv_obj_t * dzi_create_rec(lv_obj_t * parent, const struct dzone * dzp, co
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -831,6 +867,7 @@ static lv_obj_t * dzi_create_agc(lv_obj_t * parent, const struct dzone * dzp, co
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -840,6 +877,7 @@ static lv_obj_t * dzi_create_notch(lv_obj_t * parent, const struct dzone * dzp, 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -849,6 +887,7 @@ static lv_obj_t * dzi_create_lock(lv_obj_t * parent, const struct dzone * dzp, c
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -858,6 +897,7 @@ static lv_obj_t * dzi_create_spk(lv_obj_t * parent, const struct dzone * dzp, co
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -867,6 +907,7 @@ static lv_obj_t * dzi_create_wpm(lv_obj_t * parent, const struct dzone * dzp, co
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -876,6 +917,7 @@ static lv_obj_t * dzi_create_bkin(lv_obj_t * parent, const struct dzone * dzp, c
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -885,6 +927,7 @@ static lv_obj_t * dzi_create_usbact(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -894,6 +937,7 @@ static lv_obj_t * dzi_create_vfomode(lv_obj_t * parent, const struct dzone * dzp
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -903,6 +947,7 @@ static lv_obj_t * dzi_create_nr(lv_obj_t * parent, const struct dzone * dzp, con
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -912,6 +957,7 @@ static lv_obj_t * dzi_create_classa(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -921,6 +967,7 @@ static lv_obj_t * dzi_create_datamode(lv_obj_t * parent, const struct dzone * dz
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -930,6 +977,7 @@ static lv_obj_t * dzi_create_voxtune(lv_obj_t * parent, const struct dzone * dzp
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -939,6 +987,7 @@ static lv_obj_t * dzi_create_siglevel(lv_obj_t * parent, const struct dzone * dz
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -948,6 +997,7 @@ static lv_obj_t * dzi_create_currlevel(lv_obj_t * parent, const struct dzone * d
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -957,6 +1007,7 @@ static lv_obj_t * dzi_create_thermo(lv_obj_t * parent, const struct dzone * dzp,
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -966,6 +1017,7 @@ static lv_obj_t * dzi_create_attenuator(lv_obj_t * parent, const struct dzone * 
 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -977,6 +1029,7 @@ static lv_obj_t * dzi_create_freqa(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqastyle, LV_PART_MAIN);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -987,6 +1040,7 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -997,6 +1051,7 @@ static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxtxrxstyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -1009,6 +1064,7 @@ static lv_obj_t * dzi_create_smtr2(lv_obj_t * parent, const struct dzone * dzp, 
 //	ASSERT(lv_obj_is_editable(lbl));
 //	lv_obj_add_event_cb(lbl, sleepwndkeyhandler, LV_EVENT_ROTARY, NULL);	// Объект должен быть editable
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -1020,6 +1076,7 @@ static lv_obj_t * dzi_create_3dss(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -1032,6 +1089,7 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_obj_add_style(lbl, & xxscopestyle, 0);
 
+	uiupdates(lbl);
 	return lbl;
 #else
 
@@ -1054,6 +1112,7 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 	lv_obj_add_style(lower, & xxcellstyle, 0);
 
+	uiupdates(cont);
 	return cont;
 #endif
 }
@@ -1117,6 +1176,7 @@ static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * 
 		}
 
 	}
+	uiupdates(cont0);
 	return cont0;
 }
 
@@ -1127,6 +1187,7 @@ static lv_obj_t * dzi_create_encf1(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * lbl = lv_label_create(parent);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -1137,6 +1198,7 @@ static lv_obj_t * dzi_create_encf2(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * lbl = lv_label_create(parent);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -1147,6 +1209,7 @@ static lv_obj_t * dzi_create_encf3(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * lbl = lv_label_create(parent);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
+	uiupdates(lbl);
 	return lbl;
 }
 
@@ -1157,11 +1220,8 @@ static lv_obj_t * dzi_create_encf4(lv_obj_t * parent, const struct dzone * dzp, 
 	lv_obj_t * lbl = lv_label_create(parent);
 	lv_obj_add_style(lbl, & xxdivstyle, 0);
 	lv_label_set_text(lbl, buf);
+	uiupdates(lbl);
 	return lbl;
-}
-
-static void refreshtexts(void)
-{
 }
 
 #define LVCREATE(fn) (fn)
@@ -8817,6 +8877,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		    	    lv_draw_label_dsc_init(& label);
 		            label.color = display_lvlcolor(colordigits);
 		            label.align = LV_TEXT_ALIGN_CENTER;
+		            label.font = &lv_font_montserrat_12;
 		            label.text = buf2;
 		            // позиция (текст, выходящий за границы окне отрежется библиотекой)
 		            lv_area_t labelcoord;
@@ -9724,11 +9785,11 @@ void display2_bgprocess(
 			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != ix);
 		}
 	}
+	sendupdates();
 	if (xxmainwnds [ix])
 	{
-		refreshtexts();
 		//lv_obj_move_foreground(xxmainwnds [ix]);
-		lv_obj_invalidate(xxmainwnds [ix]);
+		//lv_obj_invalidate(xxmainwnds [ix]);
 	}
 	compat_pctx = pctx;
 	lv_timer_handler();
@@ -9832,7 +9893,7 @@ void display2_initialize(void)
 #if WITHLVGL
 
 	lvstales_initialize();	// эти стили нужны в linux ?
-
+	updateslist_init();
 	{
 		xxgroup = lv_group_create();
 		lv_obj_t * const parent = lv_screen_active();
