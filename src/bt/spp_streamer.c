@@ -203,8 +203,8 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 
                 case HCI_EVENT_USER_CONFIRMATION_REQUEST:
                     // inform about user confirmation request
-                    printf("SSP User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
-                    printf("SSP User Confirmation Auto accept\n");
+                    printf("xxx User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+                    printf("xxx User Confirmation Auto accept\n");
                     break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
@@ -257,10 +257,10 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
                         
         case RFCOMM_DATA_PACKET:
             test_track_transferred(size);
-#if 0
+#if 1
             // optional: print received data as ASCII text
             printf("RCV: '");
-            for (i=0;i<size;i++){
+            for (uint16_t i=0;i<size;i++){
                 putchar(packet[i]);
             }
             printf("'\n");
@@ -308,15 +308,15 @@ int spp_streamer_btstack_main(int argc, const char * argv[])
     sdp_register_service(spp_service_buffer);
 
     // register for HCI events
-    hci_event_callback_registration.callback = &packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
+//    hci_event_callback_registration.callback = &packet_handler;
+//    hci_add_event_handler(&hci_event_callback_registration);
 
     // short-cut to find other SPP Streamer
     gap_set_class_of_device(TEST_COD);
 
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-    gap_set_local_name("SPP Streamer 00:00:00:00:00:00");
-    gap_discoverable_control(1);
+//    gap_set_local_name("SPP Streamer 00:00:00:00:00:00");
+//    gap_discoverable_control(1);
 
     spp_create_test_data();
 

@@ -637,9 +637,10 @@ void tuh_bth_mount_cb(uint8_t idx)
 	btstack_audio_sink_set_instance(btstack_audio_storch_sink_get_instance());
 	btstack_audio_source_set_instance(btstack_audio_storch_source_get_instance());
 
-//    // inform about BTstack state
+    // inform about BTstack state
 //    hci_event_callback_registration.callback = &packet_handler;
 //    hci_add_event_handler(&hci_event_callback_registration);
+    //hci_register_sco_packet_handler(&packet_handler);		// Used for HSP and HFP profiles.
 //
 //    sdp_init();		// везде в примерах убрать
 //    l2cap_init();	// везде в примерах убрать
@@ -659,8 +660,9 @@ void tuh_bth_mount_cb(uint8_t idx)
     //VERIFY(! spp_streamer_btstack_main(0, NULL));
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
-//    gap_set_local_name(WITHBRANDSTR " BTx");
-//    gap_discoverable_control(1);
+    gap_set_local_name(WITHBRANDSTR " BTx");
+    gap_discoverable_control(1);
+
 ////    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
 ////    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
 ////    // turn on!
