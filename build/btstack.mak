@@ -1,10 +1,9 @@
 ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
-# forked to https://github.com/ua1arn/hftrx_btstack.git
 
 # also need enable LwIP and remove  ${BTSTACK_ROOT}/3rd-party/lwip
-BTSTACK_ROOT := $(PRJROOT)/lib/hftrx_btstack
+BTSTACK_ROOT := $(PRJROOT)/lib/btstack
 
 C_SOURCES =  \
 ${BTSTACK_ROOT}/3rd-party/hxcmod-player/hxcmod.c \
