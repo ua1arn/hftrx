@@ -1002,9 +1002,11 @@ uint8_t iq_shift_tx(uint8_t val)
 	return tx_shift;
 }
 
-uint8_t wnb_state_switch(void)
+uint8_t wnb_state_switch(uint8_t v)
 {
-	wnb_state = wnb_state ? 0 : 1;
+	if (v)
+		wnb_state = wnb_state ? 0 : 1;
+
 	update_modem_ctrl();
 
 	return wnb_state;

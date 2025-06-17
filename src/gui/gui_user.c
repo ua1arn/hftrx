@@ -5273,7 +5273,7 @@ static void window_receive_process(void)
 #if WITHWNB
 			else if (bh == btn_WNB)
 			{
-				btn_WNB->is_locked = wnb_state_switch();
+				btn_WNB->is_locked = wnb_state_switch(1);
 			}
 #endif /* WITHWNB */
 		}
