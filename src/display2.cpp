@@ -8748,7 +8748,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 #if WITHSPECTRUMWF
     if (1)
     {
-    	// сетка
+    	// сетка и надписи
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
@@ -8791,7 +8791,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	{
     		if (df > - halfbw)
     		{
-    			// Маркер частоты кратной glob_gridstep - XOR линию
+    			// Маркер частоты кратной glob_gridstep - линия и надпись
     			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
     			if (xmarker != UINT16_MAX)
     			{
