@@ -3430,7 +3430,7 @@ static void display2_atu3(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHAUTOTUNER
 		const uint_fast8_t state = hamradio_get_atuvalue();
-		display_2states(db, x, y, state, PSTR("ATU"), "", 3);
+		display_2states(db, x, y, state, "ATU", "", xspan);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -3447,7 +3447,7 @@ static void display2_atu4alt(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHAUTOTUNER
 		const uint_fast8_t state = hamradio_get_atuvalue();
-		display_2states(db, x, y, state, "ATU", "", 4);
+		display_2states(db, x, y, state, "ATU", "", xspan);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -3483,7 +3483,7 @@ static void display2_byp3(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_bypvalue();
-	display_2states(db, x, y, state, PSTR("BYP"), "", 3);
+	display_2states(db, x, y, state, "BYP", "", xspan);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -3500,7 +3500,7 @@ static void display2_byp4alt(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_bypvalue();
-	display_2states(db, x, y, state, PSTR("BYP"), "", 3);
+	display_2states(db, x, y, state, "BYP", "", xspan);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -3847,10 +3847,10 @@ static void display2_ant5(const gxdrawb_t * db,
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
-	display2_text(db, x, y, labels, colors_1state, 0, 5);
+	display2_text(db, x, y, labels, colors_1state, 0, xspan);
 #elif WITHANTSELECT
 	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
-	display2_text(db, x, y, labels, colors_1state, 0, 5);
+	display2_text(db, x, y, labels, colors_1state, 0, xspan);
 #endif /* WITHANTSELECT */
 }
 
@@ -4248,7 +4248,7 @@ static void display_siglevel7(const gxdrawb_t * db,
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d" "dBm", tracemax - UINT8_MAX);
 	(void) v;
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, colors_1statevoltage, 0, 7);
+	display2_text(db, x, y, labels, colors_1statevoltage, 0, xspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -4270,7 +4270,7 @@ static void display2_siglevel4(const gxdrawb_t * db,
 	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d", (int) (tracemax - UINT8_MAX));
 	(void) v;
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, colors_1statevoltage, 0, 4);
+	display2_text(db, x, y, labels, colors_1statevoltage, 0, xspan);
 #endif /* WITHIF4DSP */
 }
 
