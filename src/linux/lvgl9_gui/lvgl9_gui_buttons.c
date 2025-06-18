@@ -70,6 +70,8 @@ lv_obj_t * find_button(lv_obj_t * cont, const char * name)
 			return btn;
 	}
 
+	printf("%s not found\n", name);
+	ASSERT(0);
 	return NULL;
 }
 
@@ -97,7 +99,7 @@ void button_set_lock(lv_obj_t * btn, uint8_t v)
 		button_unlock(btn);
 }
 
-void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh)
+void create_button_matrix(lv_obj_t * cont, btn_t * btu, const char * mname, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh)
 {
 	static lv_coord_t cols_dsc[10], rows_dsc[10];
 	uint8_t w_st = (s >> 8) & 0xFF;
@@ -139,7 +141,8 @@ void create_button_matrix(lv_obj_t * cont, btn_t * btu, const uint8_t btns, cons
 
 		btu[i].index = i;
 		btu[i].eh = eh;
-		snprintf(btu[i].name, 20, "btnm_%s", btu[i].text);
+		snprintf(btu[i].name, 20, "%s_%s", mname, btu[i].text);
+
 		lv_obj_set_user_data(btn, & btu[i]);
 		lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
 	}

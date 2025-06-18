@@ -13,7 +13,7 @@
 
 #include "lvgl9_gui.h"
 
-lv_style_t mainst, btnst, fcontst, lblst, winst;
+lv_style_t mainst, btnst, fcontst, lblst, winlblst, winst;
 
 void init_gui_styles(void)
 {
@@ -33,6 +33,10 @@ void init_gui_styles(void)
 	lv_style_set_text_color(& lblst, lv_color_black());
 	lv_style_set_align(& lblst, LV_ALIGN_CENTER);
 
+	lv_style_init(& winlblst);
+	lv_style_set_text_color(& winlblst, lv_color_white());
+	lv_style_set_align(& winlblst, LV_ALIGN_CENTER);
+
 	lv_style_init(& fcontst);
 	lv_style_set_bg_color(& fcontst, lv_color_black());
 	lv_style_set_border_width(& fcontst, 0);
@@ -41,7 +45,8 @@ void init_gui_styles(void)
 
 	lv_style_init(& winst);
 	lv_style_set_align(& winst, LV_ALIGN_CENTER);
-	lv_style_set_bg_opa(& winst, LV_OPA_30);
+	lv_style_set_bg_opa(& winst, LV_OPA_80);
+	lv_style_set_bg_color(& winst, lv_palette_main(LV_PALETTE_BROWN));
 }
 
 
