@@ -83,7 +83,8 @@
 		{	36,	0,	5, 5, display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 	#if WITHBARS
 		{   0, 	5,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
+//		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_smtr2, PGALL, },
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	5,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },

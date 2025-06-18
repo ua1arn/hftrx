@@ -3424,7 +3424,7 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 const char * hamradio_get_att_value(void);
 const char * hamradio_get_preamp_value(void);
 void hamradio_change_att(void);
-void hamradio_change_preamp(void);
+uint_fast8_t hamradio_change_preamp(uint_fast8_t v);
 uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 uint_fast8_t hamradio_moxmode(uint_fast8_t v);
 uint_fast8_t hamradio_tunemode(uint_fast8_t v);

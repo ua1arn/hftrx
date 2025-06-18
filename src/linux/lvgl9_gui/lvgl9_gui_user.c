@@ -206,11 +206,14 @@ void win_receive_handler(lv_event_t * e)
 
 		create_button_matrix(cont, btns, btn_num, 4, s100x44, win_receive_handler);
 
-		lv_obj_t * btnm_WNB = find_button(cont, "btnm_WNB");
-		button_set_lock(btnm_WNB, wnb_state_switch(0));
+		lv_obj_t * btnm = find_button(cont, "btnm_WNB");
+		button_set_lock(btnm, wnb_state_switch(0));
 
-		lv_obj_t * btnm_DNR = find_button(cont, "btnm_DNR");
-		button_set_lock(btnm_DNR, hamradio_change_nr(0));
+		btnm = find_button(cont, "btnm_DNR");
+		button_set_lock(btnm, hamradio_change_nr(0));
+
+		btnm = find_button(cont, "btnm_Preamp");
+		button_set_lock(btnm, hamradio_change_preamp(0));
 
 		return;
 	}
@@ -231,7 +234,7 @@ void win_receive_handler(lv_event_t * e)
 			break;
 
 		case 1:
-			hamradio_change_preamp();
+			button_set_lock(btn, hamradio_change_preamp(1));
 			break;
 
 		case 2:

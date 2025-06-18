@@ -11,7 +11,6 @@ extern "C" {
 #define WIN_MIN_H	150
 
 extern lv_style_t mainst, btnst, btnlockst, fcontst, lblst, winst;
-extern int32_t col_dsc_60[], col_dsc_80[], row_dsc_40[];
 
 typedef void (* event_handler_t)(lv_event_t * e);
 typedef void (* phandler_t)(lv_obj_t * p);

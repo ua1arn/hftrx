@@ -5249,7 +5249,7 @@ static void window_receive_process(void)
 			}
 			else if (bh == btn_preamp)
 			{
-				hamradio_change_preamp();
+				hamradio_change_preamp(1);
 			}
 			else if (bh == btn_AF)
 			{
@@ -5307,8 +5307,8 @@ static void window_receive_process(void)
 		local_snprintf_P(btn_att->text, ARRAY_SIZE(btn_att->text), PSTR("Att|%s"), a == NULL ? "off" : a);
 
 		button_t * btn_preamp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_preamp");
-		const char * p = remove_start_line_spaces(hamradio_get_preamp_value());
-		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p == NULL ? "off" : "on");
+		uint8_t p = hamradio_change_preamp(0);
+		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p ? "on" : "off");
 
 		button_t * btn_AGC = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");

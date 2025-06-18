@@ -62,7 +62,7 @@
 	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	#define CODEC1_TYPE CODEC_TYPE_ALSA
+//	#define CODEC1_TYPE CODEC_TYPE_ALSA
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
@@ -93,7 +93,7 @@
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1
-	#define WITHAFGAINDEFAULT		14
+	#define WITHAFGAINDEFAULT		0 //14
 //	#define WITHAFEQUALIZER			1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
@@ -116,7 +116,7 @@
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
 
-#if 0
+#if 1
 	#define WITHLVGL				1
 	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_linux_lvgl.h"
 #else

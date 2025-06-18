@@ -15,10 +15,6 @@
 
 #include "lvgl9_gui.h"
 
-int32_t col_dsc_60[] = { 60, 60, 60, 60, 60, 60, LV_GRID_TEMPLATE_LAST };
-int32_t col_dsc_80[] = { 80, 80, 80, 80, 80, 80, LV_GRID_TEMPLATE_LAST };
-int32_t row_dsc_40[] = { 40, 40, 40, 40, 40, 40, LV_GRID_TEMPLATE_LAST };
-
 static void long_press_timer_cb(lv_timer_t * timer)
 {
 	btn_t * ext = lv_timer_get_user_data(timer);
