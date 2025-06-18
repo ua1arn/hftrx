@@ -349,7 +349,7 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 	case 44100:
 		addr = allocate_dmabufferbtout44p1k();
 		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
-		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
+		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1k());
 		save_dmabufferbtout44p1k(addr);
 		break;
 	case 32000:

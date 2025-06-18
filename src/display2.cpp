@@ -1467,7 +1467,7 @@ static const dzitem_t dzi_usbact =
 
 static const dzitem_t dzi_btact =
 {
-	.lvelementcreate = LVCREATE(dzi_create_bt),
+	.lvelementcreate = LVCREATE(dzi_create_btact),
 	.id = "bt"
 };
 
