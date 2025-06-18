@@ -173,11 +173,8 @@ include ../litehtml.mak
 # LWIP
 include ../lwip.mak
 
-ifeq (1, 0)
 # custom application
-SRCDIRS += $(PRJROOT)/lib/xhelpert507
-DINCDIR += $(PRJROOT)/lib/xhelpert507
-endif
+include ../custom0.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
