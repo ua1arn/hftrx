@@ -12,6 +12,7 @@
 #include "bootloader.h"
 #include "board.h"
 #include "gpio.h"
+#include "clocks.h"
 #include "xhelper507.h"
 
 
