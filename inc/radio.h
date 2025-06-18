@@ -396,18 +396,15 @@ const phase_t * getplo2r(
 enum
 {
 	BOARD_TXAUDIO_MIKE,	// "MIKE ",
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	BOARD_TXAUDIO_LINE,	// "LINE ",
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBHW && WITHUSBUACOUT
 	BOARD_TXAUDIO_USB,	// "USB AUDIO",
-#endif /* WITHUSBHW && WITHUSBUACOUT */
+	BOARD_TXAUDIO_BT,	// "BT AUDIO",
 	BOARD_TXAUDIO_2TONE,	// "2TONE",
 	BOARD_TXAUDIO_NOISE,	// "NOISE",
 	BOARD_TXAUDIO_1TONE,	// "1TONE",
 	BOARD_TXAUDIO_MUTE,		// no signal to tx
 	//
-	BOARD_TXAUDIO_count
+	BOARD_TXAUDIO_unused
 };
 
 enum
@@ -3516,7 +3513,6 @@ int board_islfmmode(void);
 uint_fast8_t islfmstart(unsigned now);
 
 void bt_initialize(void);
-void bt_enable(uint_fast8_t v);
 
 uint_fast8_t hamradio_get_ft8cn(void);
 

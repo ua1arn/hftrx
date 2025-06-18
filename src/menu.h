@@ -1800,18 +1800,6 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 #if WITHIF4DSP
-#if WITHUSEUSBBT
-	(const struct paramdefdef [1]) {
-		QLABEL("BT CONN"), 7, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		OFFSETOF(struct nvmap, gusbbt),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gusbbt,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHUSEUSBBT */
 #if WITHUSBUAC
 #if WITHTX
 	& xgdatatx,	/* автоматическое изменение источника при появлении звука со стороны компьютера */

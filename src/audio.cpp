@@ -199,7 +199,7 @@ static volatile uint_fast8_t datavox;	/* автоматическое измен
 
 #if WITHINTEGRATEDDSP
 
-static uint_fast8_t istxreplaced(void)
+static uint_fast8_t istxreplacedusbactive(void)
 {
 #if WITHUSBHW && WITHUSBUACOUT
 	return (datavox != 0 && buffers_get_uacoutactive() != 0);
@@ -416,6 +416,7 @@ static uint_fast8_t getTxShapeNotComplete(void);
 
 static FLOAT32P_t getsampmlemike2(void);
 static FLOAT32P_t getsampmleusb2(void);
+static FLOAT32P_t getsampmlebt2(void);
 
 static int getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
@@ -3807,22 +3808,28 @@ static void monimux(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-#if WITHUSBHW && WITHUSBUACOUT
-		if (glob_txaudio != BOARD_TXAUDIO_USB && ! istxreplaced())
+		if (glob_txaudio != BOARD_TXAUDIO_USB && glob_txaudio != BOARD_TXAUDIO_BT && ! istxreplacedusbactive())
 		{
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
 		}
-#else /* WITHUSBHW && WITHUSBUACOUT */
 		moni->IV = * ssbtx;
 		moni->QV = * ssbtx;
-#endif /* WITHUSBHW && WITHUSBUACOUT */
 		break;
 
 	default:
 		break;
 	}
 }
+
+// VOX detector и разрядная цепь
+// Поддержка работы VOX
+static void voxmeasure(FLOAT32P_t v)
+{
+	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
+	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
+}
+
 // return audio sample in range [- 1.. + 1]
 static RAMFUNC FLOAT_t mikeinmux(
 	uint_fast8_t dspmode,
@@ -3830,13 +3837,14 @@ static RAMFUNC FLOAT_t mikeinmux(
 	)
 {
 	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
-	const FLOAT_t txlevelXXX = digitx || istxreplaced() ? txlevelfenceDIGI : txlevelfenceSSB;
-	const FLOAT32P_t vi0p = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
-	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
-	FLOAT_t vi0f = vi0p.IV;
+	const FLOAT_t txlevelXXX = digitx || istxreplacedusbactive() ? txlevelfenceDIGI : txlevelfenceSSB;
+	const FLOAT32P_t vi0pmike = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
+	const FLOAT32P_t vi0pusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
+	const FLOAT32P_t vi0pbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
+	FLOAT_t vi0fmike = vi0pmike.IV;
 
 #if WITHFT8
-	ft8_txfill(& vi0f);	// todo: add new DSPCTL_FT8 mode
+	ft8_txfill(& vi0fmike);	// todo: add new DSPCTL_FT8 mode
 #endif /* WITHFT8 */
 
 #if WITHTXCPATHCALIBRATE
@@ -3859,38 +3867,40 @@ static RAMFUNC FLOAT_t mikeinmux(
 		switch (glob_txaudio)
 		{
 		default:
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 			// источник - LINE IN
 		case BOARD_TXAUDIO_LINE:
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		case BOARD_TXAUDIO_MIKE:
-#if WITHUSBHW && WITHUSBUACOUT
-			if (istxreplaced())
+			if (istxreplacedusbactive())
 				goto txfromusb;
-#endif /* WITHUSBHW && WITHUSBUACOUT */
-			//vi0f = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
+			//vi0fmike = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
-			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
-			vi0f = txmikeclip(vi0f);				// Ограничитель
+			vi0fmike = txmikeagc(vi0fmike * txlevelXXX);	// АРУ
+			vi0fmike = txmikeclip(vi0fmike);				// Ограничитель
 #if WITHREVERB
-			vi0f = audio_reverb_calc(vi0f);				// Ревербератор
+			vi0fmike = audio_reverb_calc(vi0fmike);				// Ревербератор
 #endif /* WITHREVERB */
 #if WITHCOMPRESSOR
-			vi0f = audio_compressor_calc(vi0f);		// Компрессор
+			vi0fmike = audio_compressor_calc(vi0fmike);		// Компрессор
 #endif /* WITHCOMPRESSOR */
-			moni->IV = vi0f;
-			moni->QV = vi0f;
-			return vi0f;
+			moni->IV = vi0fmike;
+			moni->QV = vi0fmike;
+			voxmeasure(vi0pmike);	// Поддержка работы VOX
+			return vi0fmike;
 
-#if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
 			txfromusb:
 			// источник - USB
-			moni->IV = viusb0f.IV;
-			moni->QV = viusb0f.QV;
-			return viusb0f.IV * txlevelXXX;
+			moni->IV = vi0pusb.IV;
+			moni->QV = vi0pusb.QV;
+			voxmeasure(vi0pusb);	// Поддержка работы VOX
+			return vi0pusb.IV * txlevelXXX;
 
-#endif /* WITHUSBHW && WITHUSBUACOUT */
+		case BOARD_TXAUDIO_BT:
+			// источник - BT
+			moni->IV = vi0pbt.IV;
+			moni->QV = vi0pbt.QV;
+			voxmeasure(vi0pbt);	// Поддержка работы VOX
+			return vi0pbt.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
@@ -3912,7 +3922,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 		// В режиме приёма или bypass ничего не делаем.
 		if (uacoutplayer)
 		{
-			* moni = viusb0f;
+			* moni = 0 ? vi0pbt : vi0pusb;
 		}
 		else
 		{
@@ -4588,11 +4598,6 @@ static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 		v.IV = 0;
 		v.QV = 0;
 	}
-	// VOX detector и разрядная цепь
-	// Поддержка работы VOX
-	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
-	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
-
 	return v;
 }
 
@@ -4605,11 +4610,18 @@ static RAMFUNC FLOAT32P_t getsampmleusb2(void)
 		v.IV = 0;
 		v.QV = 0;
 	}
-	// VOX detector и разрядная цепь
-	// Поддержка работы DATA VOX
-	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
-	charge2(& dvoxlevel, vi0f, (dvoxlevel < vi0f) ? DVOXCHARGE : DVOXDISCHARGE);
+	return v;
+}
 
+/* получить очередной оцифрованый сэмпл с USB AUDIO канала. */
+static RAMFUNC FLOAT32P_t getsampmlebt2(void)
+{
+	FLOAT32P_t v;
+	if (getsampmlebt(& v) == 0)
+	{
+		v.IV = 0;
+		v.QV = 0;
+	}
 	return v;
 }
 

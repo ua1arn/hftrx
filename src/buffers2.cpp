@@ -2580,16 +2580,19 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 // При отсутствии данных в очереди - возвращаем 0
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
-#if WITHUSEUSBBT
-	extern int glob_btenable;
-	if (glob_btenable)
-	{
-		return elfetch_dmabufferbtout48(v->ivqv);
-	}
-#endif /* WITHUSEUSBBT */
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	return elfetch_dmabufferuacout48(v->ivqv);
 #endif
+	return 0;
+}
+
+// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
+// При отсутствии данных в очереди - возвращаем 0
+RAMFUNC uint_fast8_t getsampmlebt(FLOAT32P_t * v)
+{
+#if WITHUSEUSBBT
+	return elfetch_dmabufferbtout48(v->ivqv);
+#endif /* WITHUSEUSBBT */
 	return 0;
 }
 

@@ -69,8 +69,6 @@
 #include "hci_dump_embedded_stdout.h"
 #endif
 
-
-int glob_btenable;
 /**
   * @brief  Initializes wave recording.
   * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
@@ -688,27 +686,16 @@ void tuh_bth_umount_cb(uint8_t idx)
 void bt_initialize(void)
 {
 #if ! WITHTINYUSB
+	// For stm32 host library support
 	PRINTF("bt_initialize start\n");
 	tuh_bth_mount_cb(1);
 	PRINTF("bt_initialize done\n");
 #endif
 }
 
-/* Bluetooth enable */
-void bt_enable(uint_fast8_t v)
-{
-	glob_btenable = !! v;
-}
-
-
 #else  /* WITHUSEUSBBT */
 
 void bt_initialize(void)
-{
-
-}
-
-void bt_enable(uint_fast8_t v)
 {
 
 }

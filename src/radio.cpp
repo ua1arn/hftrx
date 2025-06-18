@@ -1547,7 +1547,7 @@ static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B -
 static const struct {
 	uint_fast8_t code;
 	const char * label;
-}  txaudiosrcs [BOARD_TXAUDIO_count] =	// todo: remove
+}  txaudiosrcs [] =	// todo: remove
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE", },
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
@@ -1556,13 +1556,16 @@ static const struct {
 #if WITHUSBHW && WITHUSBUACOUT
 	{ BOARD_TXAUDIO_USB, 	"USB", },
 #endif /* WITHUSBHW && WITHUSBUACOUT */
+#if WITHUSBHW && WITHUSEUSBBT
+	{ BOARD_TXAUDIO_BT, 	"BT", },
+#endif /* WITHUSBHW && WITHUSEUSBBT */
 	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
 	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
 	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
 	{ BOARD_TXAUDIO_MUTE, 	"MUTE", },
 };
 
-#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
+#define TXAUDIOSRC_COUNT (ARRAY_SIZE(txaudiosrcs))
 
 static uint_fast8_t findtxaudioindex(uint_fast8_t code)
 {
@@ -3687,9 +3690,6 @@ struct nvmap
 		uint8_t greverbdelay;		/* ревербератор - задержка */
 		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
-	#if WITHUSEUSBBT
-		uint8_t gusbbt;	/* управление трансивером производится по USB BT каналу, звуук на передачу так же оттуда */
-	#endif /* WITHUSEUSBBT */
 	#if WITHUSBHW && WITHUSBUAC
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
@@ -4815,11 +4815,6 @@ static const struct paramdefdef xcatenable =
 		static uint_fast8_t greverbloss = WITHREVERBLOSSMAX;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 
-	#if WITHUSEUSBBT
-		static uint_fast8_t gusbbt;	/* управление трансивером производится по USB BT каналу, звуук на передачу так же оттуда */
-	#else /* WITHUSEUSBBT */
-		enum { gusbbt = 0 };
-	#endif /* WITHUSEUSBBT */
 	#if WITHUSBHW && WITHUSBUAC
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
@@ -4970,11 +4965,6 @@ static const struct paramdefdef xcatenable =
 	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
-#if WITHUSEUSBBT
-	enum { gusbbt = 1 };		/* Bluetooth enable */
-#else /* WITHUSEUSBBT */
-	enum { gusbbt = 0 };
-#endif /* WITHUSEUSBBT */
 	static const uint_fast8_t gagcoff = 0;
 	static const uint_fast8_t gdatamode = 0;	/* передача звука с USB вместо обычного источника */
 	uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
@@ -11828,9 +11818,6 @@ updateboardZZZ(
 		// параметры, не имеющие специфики для разных приемников
 		update_lo0(lo0hint, lo0side);
 		board_set_sleep(sleepflag);
-#if WITHUSEUSBBT
-		bt_enable(gusbbt);	/* Bluetooth enable */
-#endif /* WITHUSEUSBBT */
 
 		if (gtx == 0)
 		{

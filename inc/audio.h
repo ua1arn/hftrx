@@ -353,6 +353,7 @@ modem_frames_decode(
 
 uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 uint_fast8_t getsampmleusb(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с USB UAC OUT после ресэмплигнга */
+uint_fast8_t getsampmlebt(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с BT AUDIO после ресэмплигнга */
 
 //#endif /* WITHINTEGRATEDDSP */
 
