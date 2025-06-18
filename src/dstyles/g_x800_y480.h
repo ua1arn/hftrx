@@ -138,9 +138,10 @@
 
 		{	0,	DLE1,	12, 4, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	9, 4, display2_span9,		& dzi_compat, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	4, 4, display2_thermo4,	& dzi_compat, PGALL, },	// thermo sensor
+		{	23, DLE1,	4, 4, display2_thermo4,		& dzi_compat, PGALL, },	// thermo sensor
 		{	28, DLE1,	3, 4, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
-		{	32, DLE1,	7, 4, display2_classa7,		& dzi_compat, PGALL, },	// Class-A power amplifier
+		{	32, DLE1,	2, 4, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
+		{	35, DLE1,	7, 4, display2_classa7,		& dzi_compat, PGALL, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 5, display_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
