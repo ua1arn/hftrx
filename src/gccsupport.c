@@ -24,7 +24,8 @@ extern "C" {
            in the used linker script.
 
  */
-__NO_RETURN void __riscv_start(void)
+/* fill .bss and prepare constant data */
+void addr64_preparedata(void)
 {
   extern void _start(void) __NO_RETURN;
 
@@ -55,8 +56,6 @@ __NO_RETURN void __riscv_start(void)
       pTable->dest[i] = 0u;
     }
   }
-
-  _start();
 }
 #endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
