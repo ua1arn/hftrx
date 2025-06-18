@@ -3031,15 +3031,15 @@ static void display2_btsts2(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+#if WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 	const uint_fast8_t active = hamradio_get_usbbth_active();
 	#if LCDMODE_COLORED
 		static const char text_bt [] = "BT";
 		display_2states(db, x, y, active, text_bt, text_bt, xspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? "BT" : PSTR(""), xspan);
+		display_text(db, x, y, active ? "BT" : "", xspan);
 	#endif /* LCDMODE_COLORED */
-#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#endif /* WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
 // отображение состояния USB HOST

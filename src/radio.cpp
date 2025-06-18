@@ -21447,16 +21447,25 @@ int infocb_bkin(char * b, size_t len, int * pstate)
 
 int infocb_usbact(char * b, size_t len, int * pstate)
 {
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	const uint_fast8_t state = hamradio_get_usbmsc_active();	// не-0: USB active
 	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "USB" : "USB");
+#else
+	return 0;
+#endif
 }
 
 int infocb_btact(char * b, size_t len, int * pstate)
 {
+#if WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+
 	const uint_fast8_t state = hamradio_get_usbbth_active();	// не-0: USB active
 	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "BT" : "BT");
+#else
+	return 0;
+#endif
 }
 
 int infocb_vfomode(char * b, size_t len, int * pstate)
