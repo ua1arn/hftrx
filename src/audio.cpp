@@ -3838,10 +3838,10 @@ static RAMFUNC FLOAT_t mikeinmux(
 {
 	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
 	const FLOAT_t txlevelXXX = digitx || istxreplacedusbactive() ? txlevelfenceDIGI : txlevelfenceSSB;
-	const FLOAT32P_t vi0pmike = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
-	const FLOAT32P_t vi0pusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
-	const FLOAT32P_t vi0pbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
-	FLOAT_t vi0fmike = vi0pmike.IV;
+	const FLOAT32P_t vi0airpmike = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
+	const FLOAT32P_t vi0pairusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
+	const FLOAT32P_t vi0pairbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
+	FLOAT_t vi0fmike = vi0airpmike.IV;
 
 #if WITHFT8
 	ft8_txfill(& vi0fmike);	// todo: add new DSPCTL_FT8 mode
@@ -3884,23 +3884,23 @@ static RAMFUNC FLOAT_t mikeinmux(
 #endif /* WITHCOMPRESSOR */
 			moni->IV = vi0fmike;
 			moni->QV = vi0fmike;
-			voxmeasure(vi0pmike);	// Поддержка работы VOX
+			voxmeasure(vi0airpmike);	// Поддержка работы VOX
 			return vi0fmike;
 
 		case BOARD_TXAUDIO_USB:
 			txfromusb:
 			// источник - USB
-			moni->IV = vi0pusb.IV;
-			moni->QV = vi0pusb.QV;
-			voxmeasure(vi0pusb);	// Поддержка работы VOX
-			return vi0pusb.IV * txlevelXXX;
+			moni->IV = vi0pairusb.IV;
+			moni->QV = vi0pairusb.QV;
+			voxmeasure(vi0pairusb);	// Поддержка работы VOX
+			return vi0pairusb.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_BT:
 			// источник - BT
-			moni->IV = vi0pbt.IV;
-			moni->QV = vi0pbt.QV;
-			voxmeasure(vi0pbt);	// Поддержка работы VOX
-			return vi0pbt.IV * txlevelXXX;
+			moni->IV = vi0pairbt.IV;
+			moni->QV = vi0pairbt.QV;
+			voxmeasure(vi0pairbt);	// Поддержка работы VOX
+			return vi0pairbt.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
@@ -3922,7 +3922,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 		// В режиме приёма или bypass ничего не делаем.
 		if (uacoutplayer)
 		{
-			* moni = 0 ? vi0pbt : vi0pusb;
+			* moni = 0 ? vi0pairbt : vi0pairusb;
 		}
 		else
 		{
