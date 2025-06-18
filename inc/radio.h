@@ -3304,7 +3304,8 @@ const char * hamradio_get_hplp_value_P(void);	// HP/LP
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
-uint_fast8_t hamradio_get_usbh_active(void);
+uint_fast8_t hamradio_get_usbmsc_active(void);	// usb storage
+uint_fast8_t hamradio_get_usbbth_active(void);	// usb bt
 unsigned hamradio_get_getsoffreq(void);
 void hamradio_tick_sof(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
@@ -3550,6 +3551,7 @@ int infocb_spk(char * b, size_t len, int * pstate);
 int infocb_rxbw(char * b, size_t len, int * pstate);
 int infocb_rec(char * b, size_t len, int * pstate);
 int infocb_usbact(char * b, size_t len, int * pstate);
+int infocb_btact(char * b, size_t len, int * pstate);
 int infocb_nr(char * b, size_t len, int * pstate);
 int infocb_classa(char * b, size_t len, int * pstate);
 int infocb_datamode(char * b, size_t len, int * pstate);

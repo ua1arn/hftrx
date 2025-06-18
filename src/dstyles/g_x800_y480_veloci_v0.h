@@ -161,7 +161,8 @@ static const dzone_t dzones [] =
 	//{	13,	DLEB,	9,	4,	display2_span9,			& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	{	23, DLEB,	4,	4,	display2_thermo4,		& dzi_thermo, PGALL, },	// thermo sensor
 	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_usbact, PGALL, },	// USB host status
-	{	32, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PGALL, },	// Class-A power amplifier
+	{	32, DLEB,	2,	4,	display2_btsts2,		& dzi_btact, PGALL, },	// USB host status
+	{	35, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PGALL, },	// Class-A power amplifier
 	//{	28, DLEB,	10,	4,	display_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU

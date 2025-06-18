@@ -89,7 +89,7 @@ bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const * cb_da
 static uint8_t devad;
 
 
-uint_fast8_t hamradio_get_usbh_active(void)
+uint_fast8_t hamradio_get_usbmsc_active(void)
 {
 	return devad != 0 && tuh_msc_mounted(devad);
 }
@@ -470,7 +470,7 @@ DRESULT USB_Get_Block_Size(
 }
 
 
-uint_fast8_t hamradio_get_usbh_active(void)
+uint_fast8_t hamradio_get_usbmsc_active(void)
 {
 	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
 	return hUsbHostHS.device.is_connected != 0;
@@ -491,7 +491,7 @@ const struct drvfunc USBH_drvfunc =
 
 #else
 
-uint_fast8_t hamradio_get_usbh_active(void)
+uint_fast8_t hamradio_get_usbmsc_active(void)
 {
 	return  0;
 }

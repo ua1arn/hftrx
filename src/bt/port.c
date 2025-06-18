@@ -591,6 +591,13 @@ const btstack_audio_source_t * btstack_audio_storch_source_get_instance(void){
 }
 
 
+static int btactive;
+
+uint_fast8_t hamradio_get_usbbth_active(void)
+{
+	return btactive;
+}
+
 void tuh_bth_mount_cb(uint8_t idx)
 {
 	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
@@ -668,12 +675,14 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     // go
     //btstack_run_loop_execute();
+    btactive = 1;
 }
 
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
 	PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
+    btactive = 0;
     //hci_power_control(HCI_POWER_OFF);
 	hci_remove_event_handler(&hci_event_callback_registration);
 	hci_deinit();
@@ -698,6 +707,11 @@ void bt_initialize(void)
 void bt_initialize(void)
 {
 
+}
+
+uint_fast8_t hamradio_get_usbbth_active(void)
+{
+	return 0;
 }
 
 #endif /* WITHUSEUSBBT */

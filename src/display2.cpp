@@ -931,6 +931,16 @@ static lv_obj_t * dzi_create_usbact(lv_obj_t * parent, const struct dzone * dzp,
 	return lbl;
 }
 
+static lv_obj_t * dzi_create_btact(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_btact);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+
+	uiupdates(lbl);
+	return lbl;
+}
+
 static lv_obj_t * dzi_create_vfomode(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_vfomode);
@@ -1453,6 +1463,12 @@ static const dzitem_t dzi_usbact =
 {
 	.lvelementcreate = LVCREATE(dzi_create_usbact),
 	.id = "usbact"
+};
+
+static const dzitem_t dzi_btact =
+{
+	.lvelementcreate = LVCREATE(dzi_create_bt),
+	.id = "bt"
 };
 
 static const dzitem_t dzi_wpm =
@@ -3004,6 +3020,28 @@ void display2_swrsts(const gxdrawb_t * db,
 {
 
 }
+
+
+// отображение состояния USB BT
+static void display2_btsts2(const gxdrawb_t * db,
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	const uint_fast8_t active = hamradio_get_usbbth_active();
+	#if LCDMODE_COLORED
+		static const char text_bt [] = "BT";
+		display_2states(db, x, y, active, text_bt, text_bt, xspan);
+	#else /* LCDMODE_COLORED */
+		display_text(db, x, y, active ? "BT" : PSTR(""), xspan);
+	#endif /* LCDMODE_COLORED */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+}
+
 // отображение состояния USB HOST
 static void display2_usbsts3(const gxdrawb_t * db,
 		uint_fast8_t x,
@@ -3014,12 +3052,12 @@ static void display2_usbsts3(const gxdrawb_t * db,
 		)
 {
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
-	const uint_fast8_t active = hamradio_get_usbh_active();
+	const uint_fast8_t active = hamradio_get_usbmsc_active();
 	#if LCDMODE_COLORED
 		static const char text_usb [] = "USB";
-		display_2states(db, x, y, active, text_usb, text_usb, 3);
+		display_2states(db, x, y, active, text_usb, text_usb, xspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), 3);
+		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), xspan);
 	#endif /* LCDMODE_COLORED */
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
@@ -3030,7 +3068,7 @@ void display_2states(const gxdrawb_t * db,
 	uint_fast8_t state,
 	const char * state1,	// активное
 	const char * state0,
-	uint_fast8_t width
+	uint_fast8_t xspan
 	)
 {
 #if LCDMODE_COLORED
@@ -3044,7 +3082,7 @@ void display_2states(const gxdrawb_t * db,
 	const uint_fast16_t w = SMALLCHARW * strlen(state1);
 	const uint_fast16_t h = SMALLCHARH;
 
-	display2_text(db, xcell, ycell, labels, colors_2state, 1, width);
+	display2_text(db, xcell, ycell, labels, colors_2state, 1, xspan);
 
 	colmain_rounded_rect(
 			db,
@@ -3054,7 +3092,7 @@ void display_2states(const gxdrawb_t * db,
 			0
 			);
 #else
-	display2_text(db, xcell, ycell, labels, colors_2state, state, width);
+	display2_text(db, xcell, ycell, labels, colors_2state, state, xspan);
 #endif
 }
 

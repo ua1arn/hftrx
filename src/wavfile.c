@@ -326,7 +326,7 @@ static ALIGNX_BEGIN RAMNOINIT_D1 FATFS wave_Fatfs ALIGNX_END;		/* File system ob
 
 static uint_fast8_t waveUnmount(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	FRESULT rc;				/* Result code */
 
@@ -337,7 +337,7 @@ static uint_fast8_t waveUnmount(void)
 /* Register volume work area (never fails) */
 static uint_fast8_t waveMount(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 
 	FRESULT rc;				/* Result code */
@@ -398,7 +398,7 @@ static uint_fast8_t wave_startrecording(void)
 // Заканчиваем запись
 static uint_fast8_t wave_stoprecording(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	FRESULT rc;				/* Result code */
 	rc = write_wav_tail();
@@ -408,7 +408,7 @@ static uint_fast8_t wave_stoprecording(void)
 
 static uint_fast8_t wave_resync(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	FRESULT rc;				/* Result code */
 	rc = write_wav_resync();
@@ -420,7 +420,7 @@ static uint_fast8_t wave_resync(void)
 // 3 - выполнить resync
 static uint_fast8_t wave_nextblockrecording(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	const uint_fast32_t RSYNLEN = UINT32_C(10) * 1024 * 1024;
 	const uint_fast32_t FILELEN = UINT32_C(695) * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
