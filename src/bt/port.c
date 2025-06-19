@@ -70,6 +70,8 @@
 #include "hci_dump_embedded_stdout.h"
 #endif
 
+static int btactive;
+
 /**
   * @brief  Initializes wave recording.
   * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
@@ -150,7 +152,7 @@ uint8_t BSP_AUDIO_IN_Record(uint16_t* pbuf, uint32_t size)
   */
 uint32_t BSP_AUDIO_OUT_GetFrequency(uint32_t AudioFreq)
 {
-  return 48000;//bsp_audio_out_frequency;
+  return ARMI2SRATE;//bsp_audio_out_frequency;
 }
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
@@ -591,8 +593,6 @@ const btstack_audio_source_t * btstack_audio_storch_source_get_instance(void){
 }
 
 
-static int btactive;
-
 uint_fast8_t hamradio_get_usbbth_active(void)
 {
 	return btactive;
@@ -600,6 +600,8 @@ uint_fast8_t hamradio_get_usbbth_active(void)
 
 void tuh_bth_mount_cb(uint8_t idx)
 {
+	if (btactive)
+		return;
 	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
