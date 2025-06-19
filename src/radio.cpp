@@ -58,11 +58,11 @@ static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * fi
 #define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
 
 // группа, в которой находится редактируемый параметр
-static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
 // значение параметра
 static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
-// если группа - ничего не отображаем
-static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
+// название параметра, если группа - ничего не отображаем
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
 
 static size_t
 param_format(
@@ -512,6 +512,17 @@ struct paramdefdef
 	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 };
+
+const char * pd_getlonglabel(const struct paramdefdef * pd)
+{
+	return pd->label;
+}
+
+
+const char * pd_getshortlabel(const struct paramdefdef * pd)
+{
+	return pd->qlabel;
+}
 
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active);
 
@@ -16813,7 +16824,7 @@ defaultsettings(void)
 
 // Отображение многострочного меню для больших экранов (группы)
 // вызывается по dzones
-void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -16876,7 +16887,7 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 				display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1);
 			}
 
-			display2_menu_group(db, xcell_text, y_position_groups, mv, xspan - 1); // название группы
+			display2_menu_group(db, xcell_text, y_position_groups, mv, xspan - 1, getlabel); // название группы
             if (el == selected_group_left_margin)
             {
                	uint_fast16_t xpix = GRID2X(xcell);
@@ -16902,7 +16913,7 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 
 // Отображение многострочного меню для больших экранов (параметры)
 // вызывается по dzones
-void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
@@ -16974,7 +16985,7 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 				display_text(db, xcell_marker, y_position_params, PSTR(" "), 1);
 			}
-			display2_menu_lblng(db, xcell_text, y_position_params, mv, xspan - 1); // название редактируемого параметра
+			display2_menu_lblng(db, xcell_text, y_position_params, mv, xspan - 1, getlabel); // название редактируемого параметра
             if (el == index)
             {
                	uint_fast16_t xpix = GRID2X(xcell);
@@ -17108,42 +17119,42 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 		const uint_fast8_t namesspan = valuesx - namesx;
 		const uint_fast8_t valuesspan = xspan - valuesx;
 
-		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
-		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
+		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx, pd_getshortlabel);
+		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx, pd_getshortlabel);
 		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
 	}
 	else
 	{
 		const uint_fast8_t groupx = xcell + 1;
-		const uint_fast8_t namesx = groupx + VALUEW + 3;
-		const uint_fast8_t valuesx = namesx + VALUEW + 3;
+		const uint_fast8_t namesx = groupx + VALUEW + 5;
+		const uint_fast8_t valuesx = namesx + VALUEW + 5;
 		const uint_fast8_t groupspan = namesx - groupx;
 		const uint_fast8_t namesspan = valuesx - namesx;
 		const uint_fast8_t valuesspan = xspan - 1 - valuesx;
 
-		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx);
-		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx);
+		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx, pd_getlonglabel);
+		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx, pd_getlonglabel);
 		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
 	}
 }
 
 // название редактируемого параметра
 // если группа - ничего не отображаем
-static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan)
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd))
 {
 	if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->qlabel, xspan);
+	display_text(db, xcell, ycell, mp->pd->label, xspan);
 }
 
 // группа, в которой находится редактируемый параметр
-static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan)
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd))
 {
 	while (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->qlabel, xspan);
+	display_text(db, xcell, ycell, mp->pd->label, xspan);
 }
 
 static int_fast32_t iabs(int_fast32_t v)
@@ -18835,7 +18846,7 @@ uint_fast8_t edgepins_get_ptt(void)
 	return 0;
 }
 
-static void dpc_01_s_timer_fn(void * ctx)
+static void dpc_0p1_s_timer_fn(void * ctx)
 {
 	bringtimers();
 	/* быстро меняющиеся значения с частым опорсом */
@@ -21335,7 +21346,7 @@ application_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, dpc_01_s_timer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL);
 		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
 		ticker_add(& ticker);
 	}

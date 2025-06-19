@@ -696,7 +696,7 @@ void tuh_bth_umount_cb(uint8_t idx)
 	}
 }
 
-static void dpc_001_s_timer_fn(void * ctx)
+static void dpc_0p01_s_timer_fn(void * ctx)
 {
 	btstack_run_loop_embedded_execute_once();
 }
@@ -715,7 +715,7 @@ void bt_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, dpc_001_s_timer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL);
 		ticker_initialize_user(& ticker, NTICKS(10), & dpcobj);
 		ticker_add(& ticker);
 	}
