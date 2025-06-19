@@ -16345,9 +16345,6 @@ void app_processing(
 	}
 #endif /* WITHSLEEPTIMER */
 }
-#if WITHUSEUSBBT
-	extern "C" void btstack_run_loop_embedded_execute_once(void);
-#endif /* WITHUSEUSBBT */
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
@@ -16369,9 +16366,6 @@ processmessages(
 	}
 
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
-#if WITHUSEUSBBT
-	btstack_run_loop_embedded_execute_once();
-#endif /* WITHUSEUSBBT */
 	app_processing(inmenu, mp);
 
 #if WITHLVGL && WITHLVGLINDEV

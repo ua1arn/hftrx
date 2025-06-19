@@ -303,7 +303,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 //////////////////////////////////////////////
 
-#define DRIVER_POLL_INTERVAL_MS          (BTSSCALE * 10)
+#define DRIVER_POLL_INTERVAL_MS          ((BTSSCALE * 10) - 1)	// вызов раз в 10 мс btstack_run_loop_embedded_execute_once
 
 // client
 static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
@@ -696,6 +696,11 @@ void tuh_bth_umount_cb(uint8_t idx)
 	}
 }
 
+static void dpc_001_s_timer_fn(void * ctx)
+{
+	btstack_run_loop_embedded_execute_once();
+}
+
 /* Bluetooth initialize */
 void bt_initialize(void)
 {
@@ -705,6 +710,15 @@ void bt_initialize(void)
 	tuh_bth_mount_cb(1);
 	PRINTF("bt_initialize done\n");
 #endif
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_001_s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(10), & dpcobj);
+		ticker_add(& ticker);
+	}
 }
 
 #else  /* WITHUSEUSBBT */

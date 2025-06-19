@@ -746,7 +746,7 @@ extern "C" {
 #define DMABUFFSIZEHDMI48TX	(DMABUFCLUSTER * DMABUFFSTEPHDMI48TX * DMABUFSCALE)		/* HDMI OUT */
 #define DMABUFFSTEPHDMI48TX 2
 
-#define BTSSCALE 2
+#define BTSSCALE 12
 
 // Buffers interface functions
 void buffers_initialize(void);
