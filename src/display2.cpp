@@ -8036,8 +8036,7 @@ static void lv_sscp3dss_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 		lv_sscp3dss_t * const sscp3dss = (lv_sscp3dss_t *) obj;
 
         lv_area_t coords;
-        lv_obj_get_coords(obj, & coords);	// координаты объекта
-
+    	lv_obj_get_content_coords(obj, &coords); // координаты внутри border
         lv_sscp3dss_draw(sscp3dss, layer, & coords);
      }
 }
@@ -8506,6 +8505,7 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
     {
     	lv_smtr2_t * const smtr2 = (lv_smtr2_t*) obj;
     	lv_layer_t * const layer = lv_event_get_layer(e);
+
     	lv_area_t coords;
     	lv_obj_get_content_coords(obj, &coords); // координаты внутри border
 		smtr2_draw(smtr2, & coords, layer);
@@ -8554,8 +8554,7 @@ static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 		lv_wtrf2_t * const wtrf2 = (lv_wtrf2_t *) obj;
 
         lv_area_t coords;
-        lv_obj_get_coords(obj, & coords);	// координаты объекта
-
+    	lv_obj_get_content_coords(obj, &coords); // координаты внутри border
         lv_wtrf2_draw(layer, & coords);
      }
 }
@@ -8964,8 +8963,7 @@ static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 		lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
 
         lv_area_t coords;
-        lv_obj_get_coords(obj, & coords);	// координаты объекта
-
+    	lv_obj_get_content_coords(obj, &coords); // координаты внутри border
         lv_sscp2_draw(sscp2, layer, & coords);
      }
 }
