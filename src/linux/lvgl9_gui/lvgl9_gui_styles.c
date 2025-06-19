@@ -36,6 +36,7 @@ void init_gui_styles(void)
 	lv_style_init(& winlblst);
 	lv_style_set_text_color(& winlblst, lv_color_white());
 	lv_style_set_align(& winlblst, LV_ALIGN_CENTER);
+	lv_style_set_text_align(& winlblst, LV_TEXT_ALIGN_CENTER);
 
 	lv_style_init(& fcontst);
 	lv_style_set_bg_color(& fcontst, lv_color_black());

@@ -449,11 +449,134 @@ static void footer_buttons_init(lv_obj_t * p)
 
 // ***********************************************
 
+static lv_obj_t * popup = NULL;
+static uint8_t active_popup_index = 0xFF; // 0xFF — ничего не открыто
+static lv_obj_t * popups[infobar_count];
+
+void info_button_event_cb(lv_event_t * e)
+{
+    lv_obj_t * btn = lv_event_get_target(e);
+    btn_t * ext = lv_obj_get_user_data(btn);
+    uint8_t btn_index = ext->index;
+
+    if (active_popup_index == btn_index)
+    {
+        lv_obj_add_flag(popups[btn_index], LV_OBJ_FLAG_HIDDEN);
+        active_popup_index = 0xFF;
+
+        lv_obj_t * cont = lv_obj_get_parent(btn);
+        uint32_t child_cnt = lv_obj_get_child_count(cont);
+        for(uint32_t i = 0; i < child_cnt; i ++)
+        {
+            lv_obj_t * child = lv_obj_get_child(cont, i);
+            if (lv_obj_check_type(child, &lv_button_class))
+                lv_obj_add_flag(child, LV_OBJ_FLAG_CLICKABLE);
+        }
+    }
+    else
+    {
+        lv_obj_t * cont = lv_obj_get_parent(btn);
+        uint32_t child_cnt = lv_obj_get_child_count(cont);
+        for(uint32_t i = 0; i < child_cnt; i ++)
+        {
+            lv_obj_t * child = lv_obj_get_child(cont, i);
+            if (lv_obj_check_type(child, & lv_button_class))
+                lv_obj_clear_flag(child, LV_OBJ_FLAG_CLICKABLE);
+        }
+
+        lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+
+        active_popup_index = btn_index;
+
+		if (btn_index == infobar_count - 1)
+			lv_obj_align_to(popups[btn_index], btn, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 5);
+		else
+			lv_obj_align_to(popups[btn_index], btn, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+
+        lv_obj_clear_flag(popups[btn_index], LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static void infobar_init(lv_obj_t * p)
+{
+	lv_obj_t * infobar = lv_obj_create(p);
+	lv_obj_set_size(infobar, DIM_X, 40);
+	lv_obj_set_pos(infobar, 0, 130);
+
+	lv_obj_set_style_pad_all(infobar, 0, 0);
+	lv_obj_set_style_pad_gap(infobar, 0, 0);
+	lv_obj_set_style_bg_color(infobar, lv_color_black(), 0);
+	lv_obj_set_style_border_width(infobar, 0, 0);
+	lv_obj_clear_flag(infobar, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_set_layout(infobar, LV_LAYOUT_GRID);
+
+	static lv_coord_t col_dsc[] = {
+	        LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+	        LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+	        LV_GRID_TEMPLATE_LAST };
+	static lv_coord_t row_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
+
+	lv_obj_set_style_grid_column_dsc_array(infobar, col_dsc, 0);
+	lv_obj_set_style_grid_row_dsc_array(infobar, row_dsc, 0);
+
+	static btn_t ext[infobar_count];
+
+	for (int i = 0; i < infobar_count; i++)
+	{
+		lv_obj_t * btn = lv_button_create(infobar);
+		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+
+		lv_obj_set_style_bg_color(btn, lv_color_black(), 0);
+		lv_obj_set_style_border_width(btn, 2, 0);
+		lv_obj_set_style_border_color(btn, lv_palette_main(LV_PALETTE_GREEN), 0);
+		lv_obj_set_style_radius(btn, 0, 0);
+
+		if(i == 0)
+			lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_RIGHT, 0);
+		else if(i == 7)
+			lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_LEFT, 0);
+		else
+			lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_RIGHT, 0);
+
+		char txt[32];
+		snprintf(txt, sizeof(txt), "Btn\n%d", i + 1);
+		lv_obj_t * label = lv_label_create(btn);
+		lv_label_set_text(label, txt);
+		lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+		lv_obj_center(label);
+
+
+		ext[i].index = i;
+		lv_obj_set_user_data(btn, & ext[i]);
+		lv_obj_add_event_cb(btn, info_button_event_cb, LV_EVENT_CLICKED, NULL);
+	}
+
+    for(uint8_t i = 0; i < infobar_count; i ++)
+    {
+        popups[i] = lv_obj_create(gui_get_main());
+        lv_obj_set_size(popups[i], 150, 100);
+        lv_obj_set_style_bg_color(popups[i], lv_color_hex(0x333333), 0);
+        lv_obj_set_style_border_color(popups[i], lv_color_white(), 0);
+        lv_obj_set_style_border_width(popups[i], 1, 0);
+
+        char txt[32];
+        snprintf(txt, sizeof(txt), "Popup\n %d", i + 1);
+        lv_obj_t * label = lv_label_create(popups[i]);
+        lv_label_set_text(label, txt);
+        lv_obj_add_style(label, & winlblst, 0);
+
+        lv_obj_add_flag(popups[i], LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+// ***********************************************
+
 void lvgl_gui_init(lv_obj_t * parent)
 {
 	init_gui_styles();
 	gui_set_parent(parent);
 	footer_buttons_init(parent);
+	infobar_init(parent);
 }
 
 #endif /* WITHLVGL && LINUX_SUBSYSTEM */

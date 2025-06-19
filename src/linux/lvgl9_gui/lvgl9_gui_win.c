@@ -88,6 +88,11 @@ lv_obj_t * gui_get_window(void)
 	return current_window;
 }
 
+lv_obj_t * gui_get_main(void)
+{
+	return main_gui_obj;
+}
+
 static void window_resized_event_cb(lv_event_t * e)
 {
     lv_obj_t * cont = lv_event_get_target(e);

@@ -27,6 +27,7 @@ enum {
 	fbtn_w = 86,
 	fbtn_h = 44,
 	memory_cells_count = 20,
+	infobar_count = 8,
 };
 
 typedef struct {
@@ -55,6 +56,7 @@ lv_obj_t * win_open(uint8_t id);
 void init_gui_styles(void);
 void gui_set_parent(lv_obj_t * p);
 lv_obj_t * gui_get_window(void);
+lv_obj_t * gui_get_main(void);
 
 void buttons_handler(lv_event_t * e);
 lv_obj_t * find_button(lv_obj_t * cont, const char * name);
