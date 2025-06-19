@@ -682,13 +682,16 @@ void tuh_bth_mount_cb(uint8_t idx)
 void tuh_bth_umount_cb(uint8_t idx)
 {
 	PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
-    btactive = 0;
-    //hci_power_control(HCI_POWER_OFF);
-	hci_remove_event_handler(&hci_event_callback_registration);
-	hci_deinit();
-//	btstack_run_loop_deinit();
-//	btstack_memory_deinit();
-//	ASSERT(0);
+	if (btactive)
+	{
+	    btactive = 0;
+	    //hci_power_control(HCI_POWER_OFF);
+		hci_remove_event_handler(&hci_event_callback_registration);
+		hci_deinit();
+	//	btstack_run_loop_deinit();
+	//	btstack_memory_deinit();
+	//	ASSERT(0);
+	}
 }
 
 /* Bluetooth initialize */
