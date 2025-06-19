@@ -466,7 +466,7 @@
 	#if 0
 		#define WITHLWIP 1
 	#endif
-	#if 1
+	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
 		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL */
 	#endif
