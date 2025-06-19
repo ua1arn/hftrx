@@ -8915,7 +8915,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		    	    lv_draw_label_dsc_init(& label);
 		            label.color = display_lvlcolor(colordigits);
 		            label.align = LV_TEXT_ALIGN_CENTER;
-		            label.font = &lv_font_montserrat_12;
+		            label.font = &lv_font_montserrat_14;
 		            label.text = buf2;
 		            // позиция (текст, выходящий за границы окне отрежется библиотекой)
 		            lv_area_t labelcoord;
