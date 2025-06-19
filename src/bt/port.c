@@ -42,6 +42,7 @@
 #if WITHUSEUSBBT
 
 #include "buffers.h"
+#include "audio.h"
 
 #include "port.h"
 
@@ -442,7 +443,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 }
 
 static uint32_t btstack_audio_storch_sink_get_samplerate(void) {
-    return 48000;//BSP_AUDIO_OUT_GetFrequency();
+    return ARMSAIRATE;//BSP_AUDIO_OUT_GetFrequency();
 }
 
 static int btstack_audio_storch_source_init(
