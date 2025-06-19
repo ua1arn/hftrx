@@ -1776,7 +1776,7 @@ typedef struct
 // Буфер на стороне 32 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 32 * BTIO32_CHANNELS] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 320 * BTIO32_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = sizeof (int16_t), nch = BTIO32_CHANNELS };	// resampling support
 } btio32k_t;
@@ -1784,7 +1784,7 @@ typedef struct
 // Буфер на стороне 16 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 16 * 1] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * 1] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = sizeof (int16_t), nch = 1 };	// resampling support
 } btio16k_t;
