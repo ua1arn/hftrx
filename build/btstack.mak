@@ -2,7 +2,7 @@ ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 
-# also need enable LwIP and remove  ${BTSTACK_ROOT}/3rd-party/lwip
+# also need enable LwIP and (optional) remove  ${BTSTACK_ROOT}/3rd-party/lwip
 BTSTACK_ROOT := $(PRJROOT)/lib/btstack
 
 C_SOURCES =  \

@@ -1668,7 +1668,7 @@ static RAMDTCM FLOAT_t DVOXCHARGE = 0;
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	unsigned v = FMAXF(mikeinlevel, 0 /* datavox == 0 ? 0 : dvoxlevel */ ) * fullscale;	// масшабирование к 0..255
+	unsigned v = FMAXF(mikeinlevel, 0) * fullscale;	// масшабирование к 0..255
 	return v > fullscale ? fullscale : v;
 }
 

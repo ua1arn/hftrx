@@ -51,8 +51,8 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
 
-#define BTIN48_CAPACITY 12
-#define BTOUT48_CAPACITY 12
+#define BTIN48_CAPACITY 132
+#define BTOUT48_CAPACITY 132
 
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
@@ -881,7 +881,7 @@ public:
 			}
 			rbn = 0;
 		}
-		rbn += getcbf(rb->buff + rbn, dest);
+		rbn += getcbf(rb->buff + rbn, dest);	// получили сжмплы выходного буфера
 		if (rbn >= ARRAY_SIZE(rb->buff))
 		{
 			parent_t::release_buffer(rb);
@@ -1744,7 +1744,6 @@ int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffe
 
 #if WITHUSEUSBBT
 
-#define BTSSCALE 20
 
 #define BTIO44P1_SAMPLEBYTES 2
 #define BTIO44P1_CHANNELS 2
@@ -2042,10 +2041,13 @@ static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
 
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
-	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout32k, nsrc, btio32k_t::nch);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout16k, nsrc, btio16k_t::nch);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout8k, nsrc, btio8k_t::nch);
+	// auto-select by not-empty source
+	return
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
+		0;
 }
 
 //uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)

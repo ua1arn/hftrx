@@ -746,6 +746,8 @@ extern "C" {
 #define DMABUFFSIZEHDMI48TX	(DMABUFCLUSTER * DMABUFFSTEPHDMI48TX * DMABUFSCALE)		/* HDMI OUT */
 #define DMABUFFSTEPHDMI48TX 2
 
+#define BTSSCALE 2
+
 // Buffers interface functions
 void buffers_initialize(void);
 void dsp_processtx(unsigned nsamples);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */

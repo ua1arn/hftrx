@@ -299,7 +299,6 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 };
 
 //////////////////////////////////////////////
-#define BTSSCALE 20
 
 #define DRIVER_POLL_INTERVAL_MS          (BTSSCALE * 10)
 
