@@ -1431,11 +1431,12 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     LV_UNUSED(draw_unit);
     switch(task->type)
     {
+    	case LV_DRAW_TASK_TYPE_IMAGE:	// на t113 пока не работает правильно (чёрный квадрат под Emma Smith)
+    		return 0;
     	case LV_DRAW_TASK_TYPE_LAYER:
-    	case LV_DRAW_TASK_TYPE_IMAGE:
        	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
-                return 0;
+                //return 0;
 
                 /* not support opaque */
                 // also see draw_dsc->blend_mode
