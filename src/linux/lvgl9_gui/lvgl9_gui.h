@@ -27,8 +27,46 @@ enum {
 	fbtn_w = 86,
 	fbtn_h = 44,
 	memory_cells_count = 20,
+	max_updating_objects = 30,
 	infobar_count = 8,
+	infobar_empty = 0x0F,
+	infobar_noaction = 0x10,
+	infobar_noaction_pos = 4,
+	infobar_need_update = 0x20,
+	infobar_need_update_pos = 5,
+	infobar_valid_mask = 0x0F
 };
+
+enum {
+	infobar_place_1,
+	infobar_place_2,
+	infobar_place_3,
+	infobar_place_4,
+	infobar_place_5,
+	infobar_place_6,
+	infobar_place_7,
+	infobar_place_8
+};
+
+enum {
+	INFOBAR_DUMMY,
+	INFOBAR_AF,
+	INFOBAR_ATT,
+	INFOBAR_IF_SHIFT,
+	INFOBAR_SPAN,
+	INFOBAR_VOLTAGE,
+	INFOBAR_CPU_TEMP,
+	INFOBAR_2ND_ENC_MENU,
+	INFOBAR_TX_POWER,
+	INFOBAR_AF_VOLUME,
+	INFOBAR_DNR,
+	INFOBAR_DUAL_RX,
+};
+
+typedef struct {
+	lv_obj_t * popups[infobar_count];
+	uint8_t active_popup_index;			// 0xFF — ничего не открыто
+} infobar_t;
 
 typedef struct {
 	char text[20];

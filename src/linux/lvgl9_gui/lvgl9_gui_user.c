@@ -16,6 +16,16 @@
 #include "lvgl9_gui.h"
 #include "windows.h"
 
+static lv_obj_t * to_update[max_updating_objects];
+static uint8_t update_count = 0;
+
+static void add_to_update(lv_obj_t * p)
+{
+	to_update[update_count] = p;
+	update_count ++;
+	ASSERT(update_count < max_updating_objects);
+}
+
 void win_modes_handler(lv_event_t * e)
 {
 	enum { btn_num = 8 };
@@ -449,20 +459,30 @@ static void footer_buttons_init(lv_obj_t * p)
 
 // ***********************************************
 
-static lv_obj_t * popup = NULL;
-static uint8_t active_popup_index = 0xFF; // 0xFF — ничего не открыто
-static lv_obj_t * popups[infobar_count];
+static infobar_t infobar;
+
+const uint8_t infobar_places[infobar_count] = {
+		INFOBAR_DUMMY,
+		INFOBAR_DUMMY | infobar_noaction,
+		INFOBAR_DUMMY,
+		INFOBAR_DUMMY,
+		INFOBAR_DUMMY,
+		INFOBAR_DUMMY,
+		INFOBAR_CPU_TEMP | infobar_noaction | infobar_need_update,
+		INFOBAR_DUMMY
+};
 
 void info_button_event_cb(lv_event_t * e)
 {
     lv_obj_t * btn = lv_event_get_target(e);
     btn_t * ext = lv_obj_get_user_data(btn);
     uint8_t btn_index = ext->index;
+    lv_obj_t * p = infobar.popups[btn_index];
 
-    if (active_popup_index == btn_index)
+    if (infobar.active_popup_index == btn_index)
     {
-        lv_obj_add_flag(popups[btn_index], LV_OBJ_FLAG_HIDDEN);
-        active_popup_index = 0xFF;
+        lv_obj_add_flag(p, LV_OBJ_FLAG_HIDDEN);
+        infobar.active_popup_index = 0xFF;
 
         lv_obj_t * cont = lv_obj_get_parent(btn);
         uint32_t child_cnt = lv_obj_get_child_count(cont);
@@ -486,44 +506,64 @@ void info_button_event_cb(lv_event_t * e)
 
         lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
 
-        active_popup_index = btn_index;
+        infobar.active_popup_index = btn_index;
 
 		if (btn_index == infobar_count - 1)
-			lv_obj_align_to(popups[btn_index], btn, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 5);
+			lv_obj_align_to(p, btn, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 5);
 		else
-			lv_obj_align_to(popups[btn_index], btn, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+			lv_obj_align_to(p, btn, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
 
-        lv_obj_clear_flag(popups[btn_index], LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(p, LV_OBJ_FLAG_HIDDEN);
     }
+}
+
+static void popup_dummy(uint8_t i)
+{
+	infobar.popups[i] = lv_obj_create(gui_get_main());
+
+	lv_obj_t * p = infobar.popups[i];
+	lv_obj_set_style_bg_color(p, lv_color_hex(0x333333), 0);
+	lv_obj_set_style_border_color(p, lv_color_white(), 0);
+	lv_obj_set_style_border_width(p, 1, 0);
+
+	char txt[32];
+	snprintf(txt, sizeof(txt), "Popup\n %d", i + 1);
+	lv_obj_t * label = lv_label_create(p);
+	lv_label_set_text(label, txt);
+	lv_obj_add_style(label, & winlblst, 0);
+
+	lv_obj_add_flag(p, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void infobar_init(lv_obj_t * p)
 {
-	lv_obj_t * infobar = lv_obj_create(p);
-	lv_obj_set_size(infobar, DIM_X, 40);
-	lv_obj_set_pos(infobar, 0, 130);
+	infobar.active_popup_index = 0xFF;
 
-	lv_obj_set_style_pad_all(infobar, 0, 0);
-	lv_obj_set_style_pad_gap(infobar, 0, 0);
-	lv_obj_set_style_bg_color(infobar, lv_color_black(), 0);
-	lv_obj_set_style_border_width(infobar, 0, 0);
-	lv_obj_clear_flag(infobar, LV_OBJ_FLAG_SCROLLABLE);
-	lv_obj_set_layout(infobar, LV_LAYOUT_GRID);
+	lv_obj_t * cont = lv_obj_create(p);
+	lv_obj_set_size(cont, DIM_X, 40);
+	lv_obj_set_pos(cont, 0, 130);
+
+	lv_obj_set_style_pad_all(cont, 0, 0);
+	lv_obj_set_style_pad_gap(cont, 0, 0);
+	lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
+	lv_obj_set_style_border_width(cont, 0, 0);
+	lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 
 	static lv_coord_t col_dsc[] = {
-	        LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
-	        LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
-	        LV_GRID_TEMPLATE_LAST };
+			LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+			LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+			LV_GRID_TEMPLATE_LAST };
 	static lv_coord_t row_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };
 
-	lv_obj_set_style_grid_column_dsc_array(infobar, col_dsc, 0);
-	lv_obj_set_style_grid_row_dsc_array(infobar, row_dsc, 0);
+	lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
+	lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
 
 	static btn_t ext[infobar_count];
 
 	for (int i = 0; i < infobar_count; i++)
 	{
-		lv_obj_t * btn = lv_button_create(infobar);
+		lv_obj_t * btn = lv_button_create(cont);
 		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
 		lv_obj_set_style_bg_color(btn, lv_color_black(), 0);
@@ -539,37 +579,68 @@ static void infobar_init(lv_obj_t * p)
 			lv_obj_set_style_border_side(btn, LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_RIGHT, 0);
 
 		char txt[32];
-		snprintf(txt, sizeof(txt), "Btn\n%d", i + 1);
 		lv_obj_t * label = lv_label_create(btn);
+
+		uint8_t place = infobar_places[i] & infobar_valid_mask;
+		uint8_t need_update = (infobar_places[i] >> infobar_need_update_pos) & 1;
+
+		if (need_update)
+		{
+			ext[i].payload = place;
+			add_to_update(btn);
+		}
+
+		if (! place)
+		{
+			snprintf(txt, sizeof(txt), "Btn\n%d", i + 1);
+			popup_dummy(i);
+		}
+
 		lv_label_set_text(label, txt);
 		lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 		lv_obj_center(label);
 
+		uint8_t clickable = ! ((infobar_places[i] >> infobar_noaction_pos) & 1);
+		if (clickable)
+		{
+			ext[i].index = i;
+			lv_obj_add_event_cb(btn, info_button_event_cb, LV_EVENT_CLICKED, NULL);
+		}
 
-		ext[i].index = i;
 		lv_obj_set_user_data(btn, & ext[i]);
-		lv_obj_add_event_cb(btn, info_button_event_cb, LV_EVENT_CLICKED, NULL);
 	}
 
-    for(uint8_t i = 0; i < infobar_count; i ++)
-    {
-        popups[i] = lv_obj_create(gui_get_main());
-        lv_obj_set_size(popups[i], 150, 100);
-        lv_obj_set_style_bg_color(popups[i], lv_color_hex(0x333333), 0);
-        lv_obj_set_style_border_color(popups[i], lv_color_white(), 0);
-        lv_obj_set_style_border_width(popups[i], 1, 0);
-
-        char txt[32];
-        snprintf(txt, sizeof(txt), "Popup\n %d", i + 1);
-        lv_obj_t * label = lv_label_create(popups[i]);
-        lv_label_set_text(label, txt);
-        lv_obj_add_style(label, & winlblst, 0);
-
-        lv_obj_add_flag(popups[i], LV_OBJ_FLAG_HIDDEN);
-    }
+	gui_update();
 }
 
 // ***********************************************
+
+void gui_update(void)
+{
+	char buf[32];
+
+	for (int i = 0; i < update_count; i ++)
+	{
+		lv_obj_t * p = to_update[i];
+		btn_t * ext = lv_obj_get_user_data(p);
+
+		switch(ext->payload)
+		{
+		case INFOBAR_CPU_TEMP:
+		{
+#if defined (GET_CPU_TEMPERATURE)
+    			float cpu_temp = GET_CPU_TEMPERATURE();
+    			snprintf(buf, sizeof(buf), "CPU temp\n%2.1f", cpu_temp);
+    			button_set_text(p, buf);
+#endif /* defined (GET_CPU_TEMPERATURE) */
+    			break;
+		}
+
+		default:
+			break;
+		}
+	}
+}
 
 void lvgl_gui_init(lv_obj_t * parent)
 {
