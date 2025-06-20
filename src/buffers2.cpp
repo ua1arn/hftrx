@@ -1868,19 +1868,20 @@ static bool fetchdata_RS_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, u
 		return false;
 	FLOAT_t * const src = addr->buff;
 	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	ASSERT(ndst == BTSSCALE * 480 * 2);
-	ASSERT(nsrc == BTSSCALE * 441 * 2);
+	ASSERT(ndst == BTSSCALE * 441 * 2);
+	ASSERT(nsrc == BTSSCALE * 480 * 2);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	unsigned dsttop = ndst / 2 - 1;
-	unsigned srctop = BTSSCALE * nsrc / 2 - 1;
+	const unsigned dsttop = ndst / 2 - 1;
+	const unsigned srctop = BTSSCALE * nsrc / 2 - 1;
+
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
 	//ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci <= srctop; ++ srci)
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
-		const unsigned dsti = srci * srctop / dsttop;
+		const unsigned srci = dsti * srctop / dsttop;
 		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 
@@ -1904,8 +1905,8 @@ static bool fetchdata_RS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	unsigned dsttop = dstframes - 1;
-	unsigned srctop = srcframes - 1;
+	const unsigned dsttop = dstframes - 1;
+	const unsigned srctop = srcframes - 1;
 	ASSERT(dstframes >= srcframes);
 	ASSERT(nsrcch == 2);
 	ASSERT(ndstch == 2);
@@ -1939,8 +1940,8 @@ static bool fetchdata_RS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	unsigned dsttop = dstframes - 1;
-	unsigned srctop = srcframes - 1;
+	const unsigned dsttop = dstframes - 1;
+	const unsigned srctop = srcframes - 1;
 	ASSERT(dstframes >= srcframes);
 	ASSERT(nsrcch == 2);
 	ASSERT(ndstch == 2);
@@ -1974,8 +1975,8 @@ static bool fetchdata_RS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	unsigned dsttop = dstframes - 1;
-	unsigned srctop = srcframes - 1;
+	const unsigned dsttop = dstframes - 1;
+	const unsigned srctop = srcframes - 1;
 	ASSERT(dstframes >= srcframes);
 	ASSERT(nsrcch == 1);
 	ASSERT(ndstch == 2);
@@ -2009,8 +2010,8 @@ static bool fetchdata_RS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	unsigned dsttop = dstframes - 1;
-	unsigned srctop = srcframes - 1;
+	const unsigned dsttop = dstframes - 1;
+	const unsigned srctop = srcframes - 1;
 	ASSERT(dstframes >= srcframes);
 	ASSERT(nsrcch == 1);
 	ASSERT(ndstch == 2);
