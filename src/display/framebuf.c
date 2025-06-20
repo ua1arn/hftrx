@@ -1320,13 +1320,13 @@ draw_awg2d_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, const lv_are
 	const uint_fast16_t w = lv_area_get_width(area);
 	const uint_fast16_t h = lv_area_get_height(area);
 
-	COLORPIP_T color = TFTALPHA(255, TFTRGB(dsc->color.red, dsc->color.green, dsc->color.blue));
+	COLORPIP_T color = TFTALPHA(dsc->opa * 255 / LV_OPA_COVER, TFTRGB(dsc->color.red, dsc->color.green, dsc->color.blue));
 	//const COLOR24_T color = COLOR24(dsc->color.red, dsc->color.green, dsc->color.blue);
 	const uint_fast16_t dx = lv_area_get_width(& layer->buf_area);
 	PACKEDCOLORPIP_T * buffer = (PACKEDCOLORPIP_T *) dest;
 	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
-	const unsigned fillmask = FILL_FLAG_NONE;
+	const unsigned fillmask = dsc->opa != LV_OPA_COVER ? FILL_FLAG_MIXBG : FILL_FLAG_NONE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const unsigned tstride = layer->draw_buf->header.stride;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
