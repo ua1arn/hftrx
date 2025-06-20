@@ -1866,15 +1866,17 @@ static bool fetchdata_RS_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, u
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
 		return false;
-	const FLOAT_t * const src = addr->buff;
+	FLOAT_t * const src = addr->buff;
 	//unsigned nsrc = ARRAY_SIZE(addr->buff);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
+	ASSERT(nsrc == BTSSCALE * 441 * 2);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	unsigned dsttop = ndst / 2 - 1;
 	unsigned srctop = BTSSCALE * nsrc / 2 - 1;
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
 	//ARM_MORPH(arm_fill)(0, dst, ndst);
 	for (unsigned srci = 0; srci <= srctop; ++ srci)
 	{
