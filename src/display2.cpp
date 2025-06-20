@@ -347,19 +347,19 @@ static void updateslist_init(void)
 // Включить элемент в список требующиз обновления
 static void uiupdates(lv_obj_t * obj)
 {
-	lv_obj_t * * palce = (lv_obj_t * *) lv_ll_ins_tail(& updateslist);
-	LV_ASSERT_MALLOC(palce);
-	* palce = obj;
+//	lv_obj_t * * palce = (lv_obj_t * *) lv_ll_ins_tail(& updateslist);
+//	LV_ASSERT_MALLOC(palce);
+//	* palce = obj;
 }
 
 // Заставить перерисоваться объекты из списка обновления
 static void sendupdates(void)
 {
-	void * it;
-    LV_LL_READ(& updateslist, it)
-	{
-    	lv_obj_invalidate(* (lv_obj_t * *) it);
-	}
+//	void * it;
+//    LV_LL_READ(& updateslist, it)
+//	{
+//    	lv_obj_invalidate(* (lv_obj_t * *) it);
+//	}
 }
 
 static lv_obj_t * dzi_create_GUI(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -9835,7 +9835,7 @@ void display2_bgprocess(
 	if (xxmainwnds [ix])
 	{
 		//lv_obj_move_foreground(xxmainwnds [ix]);
-		//lv_obj_invalidate(xxmainwnds [ix]);
+		lv_obj_invalidate(xxmainwnds [ix]);
 	}
 	compat_pctx = pctx;
 	lv_timer_handler();
