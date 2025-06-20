@@ -1752,13 +1752,10 @@ int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffe
 #define BTIO32_CHANNELS 2
 
 #define BTIO16_SAMPLEBYTES 2
-#define BTIO16_CHANNELS 2
-
-#define BTIO16_SAMPLEBYTES 2
-#define BTIO16_CHANNELS 2
+#define BTIO16_CHANNELS 1
 
 #define BTIO8_SAMPLEBYTES 2
-#define BTIO8_CHANNELS 2
+#define BTIO8_CHANNELS 1
 
 // resampling 44.1 <-> 48 делается на интервале 10 мс
 
@@ -1973,15 +1970,15 @@ static bool fetchdata_RS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 	unsigned dsttop = dstframes - 1;
 	unsigned srctop = srcframes - 1;
 	ASSERT(dstframes >= srcframes);
-	ASSERT(nsrcch == 2);
+	ASSERT(nsrcch == 1);
 	ASSERT(ndstch == 2);
 
 	ARM_MORPH(arm_fill)(0, dst, ndst);
 	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
@@ -2015,8 +2012,8 @@ static bool fetchdata_RS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, 
 	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 

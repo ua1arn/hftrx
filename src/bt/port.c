@@ -317,6 +317,8 @@ static int source_active;
 static int sink_active;
 static uint32_t sink_samplerate;
 static uint32_t source_samplerate;
+static uint32_t sink_channels;
+static uint32_t source_channels;
 
 static int btstack_audio_storch_sink_init(
     uint8_t channels,
@@ -336,6 +338,7 @@ static int btstack_audio_storch_sink_init(
 
     playback_callback  = playback;
     sink_samplerate = samplerate;
+    sink_channels = channels;
     //hal_audio_sink_init(channels, samplerate, &btstack_audio_audio_played);
 
     return 0;
@@ -350,27 +353,30 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 	{
 	case 44100:
 		addr = allocate_dmabufferbtout44p1k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1k());
 		save_dmabufferbtout44p1k(addr);
 		break;
 	case 32000:
 		addr = allocate_dmabufferbtout32k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / 2);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout32k());
 		save_dmabufferbtout32k(addr);
 		break;
 	case 16000:
 		addr = allocate_dmabufferbtout16k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / 1);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
 		save_dmabufferbtout16k(addr);
 		break;
 	case 8000:
 		addr = allocate_dmabufferbtout8k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / 1);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
 		save_dmabufferbtout8k(addr);
+		break;
+	default:
+		TP();
 		break;
 	}
     // playback buffer ready to fill
@@ -405,7 +411,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin44p1k() / sizeof (int16_t) / 2);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin44p1k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin44p1k(addr);
 		}
 		break;
@@ -414,7 +420,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin32k() / sizeof (int16_t) / 2);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin32k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin32k(addr);
 		}
 		break;
@@ -423,7 +429,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / 1);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin16k(addr);
 		}
 		break;
@@ -432,9 +438,12 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / 1);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin8k(addr);
 		}
+		break;
+	default:
+		TP();
 		break;
 	}
 
@@ -462,6 +471,7 @@ static int btstack_audio_storch_source_init(
     PRINTF("btstack_audio_storch_source_init: channels=%u, samplerate=%u\n", (unsigned) channels, (unsigned) samplerate);
     recording_callback  = recording;
     source_samplerate = samplerate;
+    source_channels = channels;
 //    hal_audio_source_init(channels, samplerate, &btstack_audio_audio_recorded);
 
     return 0;
