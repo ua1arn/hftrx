@@ -1242,6 +1242,16 @@ static lv_obj_t * dzi_create_encf4(lv_obj_t * parent, const struct dzone * dzp, 
 
 #endif /* WITHLVGL */
 
+
+#if ! WITHTOUCHGUI
+
+void gui_update(void)
+{
+
+}
+
+#endif
+
 static const dzitem_t dzi_default =
 {
 	.lvelementcreate = LVCREATE(dzi_create_default),

@@ -11561,9 +11561,7 @@ updateboardZZZ(
 
 	if (full2)
 	{
-#if WITHTOUCHGUI || WITHLVGL
 		gui_update();
-#endif /* WITHTOUCHGUI || WITHLVGL*/
 
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
 		if (gtx == 0)
@@ -16254,10 +16252,11 @@ static void dpc_1s_timer_fn(void * arg)
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z */
 
-#if WITHTOUCHGUI || WITHLVGL
 	gui_update();
+#if WITHTOUCHGUI || WITHLVGL
 	//gui_gnssupdate();
 #endif /*WITHTOUCHGUI || WITHLVGL*/
+
 	gblinkphase = ! gblinkphase;
 #if defined (GET_CPU_TEMPERATURE) && ! WITHTOUCHGUI && 0
 	uint8_t c = GET_CPU_TEMPERATURE();
