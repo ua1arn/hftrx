@@ -1754,6 +1754,12 @@ int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffe
 #define BTIO16_SAMPLEBYTES 2
 #define BTIO16_CHANNELS 2
 
+#define BTIO16_SAMPLEBYTES 2
+#define BTIO16_CHANNELS 2
+
+#define BTIO8_SAMPLEBYTES 2
+#define BTIO8_CHANNELS 2
+
 // resampling 44.1 <-> 48 делается на интервале 10 мс
 
 // Буфер на стороне 48 кГц
@@ -1786,7 +1792,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * 1] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = 1 };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// resampling support
 } btio16k_t;
 
 // Буфер на стороне 8 кГц
@@ -1794,7 +1800,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 80 * 1] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = 1 };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO8_CHANNELS };	// resampling support
 } btio8k_t;
 
 typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btioadpt_t;
