@@ -29,9 +29,9 @@ void biquad_create(iir_filter_t *filter, unsigned sect_num)
 	filter->sections = sect_num;
 	filter->sect_ord = IIR_BIQUAD_SECTION_ORDER;
 
-	memset(filter->a, 0, sizeof filter->a);
-	memset(filter->b, 0, sizeof filter->b);
-	memset(filter->d, 0, sizeof filter->d);
+	arm_fill_f64(0, filter->a, ARRAY_SIZE(filter->a));
+	arm_fill_f64(0, filter->b, ARRAY_SIZE(filter->b));
+	arm_fill_f64(0, filter->d, ARRAY_SIZE(filter->d));
 }
 
 void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num)
