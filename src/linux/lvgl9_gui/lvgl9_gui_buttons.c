@@ -80,6 +80,7 @@ void button_set_text(lv_obj_t * btn, const char * text)
 	lv_obj_t * lbl = lv_obj_get_child(btn, 0);
 	lv_label_set_text_fmt(lbl, "%s", text);
 	lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, 0);
+	lv_obj_center(lbl);
 }
 
 void button_lock(lv_obj_t * btn)

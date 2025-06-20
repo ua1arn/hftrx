@@ -34,6 +34,8 @@ enum {
 	infobar_noaction_pos = 4,
 	infobar_need_update = 0x20,
 	infobar_need_update_pos = 5,
+	infobar_switch = 0x40,
+	infobar_switch_pos = 6,
 	infobar_valid_mask = 0x0F
 };
 
