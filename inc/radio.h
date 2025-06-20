@@ -3530,6 +3530,13 @@ unsigned hamradio_get_pwr(void);
 
 void gui_update(void);
 
+typedef struct {
+	char label [10][10];
+} bws_t;
+
+uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
+void hamradio_set_bw(uint_fast8_t v);
+
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);
 int infocb_modeb(char * b, size_t len, int * pstate);

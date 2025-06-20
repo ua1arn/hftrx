@@ -20552,6 +20552,31 @@ uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 
 #if WITHIF4DSP
 
+uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t count = bwsetsc [bwseti].last + 1;
+
+	for (uint_fast8_t i = 0; i < count; i ++)
+	{
+		if (i > limit)
+			break;
+
+		strncpy(bws->label[i], bwsetsc [bwseti].labels [i], 10);
+	}
+
+	return count;
+}
+
+void hamradio_set_bw(uint_fast8_t v)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	ASSERT(v <= bwsetsc [bwseti].last);
+	bwsetpos [bwseti] = v;
+	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
+	updateboard(1, 1);
+}
+
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
@@ -20914,31 +20939,6 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 #endif /* WITHTX */
 
 #if WITHTOUCHGUI
-
-uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
-{
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	const uint_fast8_t count = bwsetsc [bwseti].last + 1;
-
-	for (uint_fast8_t i = 0; i < count; i ++)
-	{
-		if (i > limit)
-			break;
-
-		strcpy(bws->label[i], bwsetsc [bwseti].labels [i]);
-	}
-
-	return count;
-}
-
-void hamradio_set_bw(uint_fast8_t v)
-{
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	ASSERT(v <= bwsetsc [bwseti].last);
-	bwsetpos [bwseti] = v;
-	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard(1, 1);
-}
 
 void hamradio_load_gui_settings(void * ptrv)
 {

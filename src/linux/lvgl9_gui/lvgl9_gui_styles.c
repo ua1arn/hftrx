@@ -13,7 +13,7 @@
 
 #include "lvgl9_gui.h"
 
-lv_style_t mainst, btnst, fcontst, lblst, winlblst, winst;
+lv_style_t mainst, btnst, popupbtnst, fcontst, lblst, winlblst, winst;
 
 void init_gui_styles(void)
 {
@@ -28,6 +28,15 @@ void init_gui_styles(void)
 	lv_style_set_radius(& btnst, 5);
 	lv_style_set_bg_opa(& btnst, LV_OPA_COVER);
 	lv_style_set_pad_all(& btnst, 0);
+
+	lv_style_init(& popupbtnst);
+	lv_style_set_bg_color(& popupbtnst, lv_palette_main(LV_PALETTE_LIGHT_GREEN));
+	lv_style_set_border_width(& popupbtnst, 2);
+	lv_style_set_border_color(& popupbtnst, lv_color_black());
+	lv_style_set_radius(& popupbtnst, 5);
+	lv_style_set_bg_opa(& popupbtnst, LV_OPA_COVER);
+	lv_style_set_pad_all(& popupbtnst, 0);
+	lv_style_set_size(& popupbtnst, 60, 35);
 
 	lv_style_init(& lblst);
 	lv_style_set_text_color(& lblst, lv_color_black());

@@ -462,7 +462,7 @@ static void footer_buttons_init(lv_obj_t * p)
 static infobar_t infobar;
 
 const uint8_t infobar_places[infobar_count] = {
-		INFOBAR_DUMMY,
+		INFOBAR_AF | infobar_need_update,
 		INFOBAR_DUMMY | infobar_noaction,
 		INFOBAR_DUMMY,
 		INFOBAR_DNR | infobar_switch | infobar_need_update,
@@ -476,6 +476,11 @@ static void infobar_action(uint8_t index)
 {
 	switch(index)
 	{
+	case INFOBAR_AF:
+	{
+
+		break;
+	}
 	case INFOBAR_DNR:
 	{
 		hamradio_change_nr(1);
@@ -564,6 +569,58 @@ static void popup_dummy(uint8_t i)
 	lv_obj_add_flag(p, LV_OBJ_FLAG_HIDDEN);
 }
 
+static void popup_create(uint8_t index, uint8_t place)
+{
+	infobar.popups[index] = lv_obj_create(gui_get_main());
+
+	lv_obj_t * p = infobar.popups[index];
+	lv_obj_set_style_bg_color(p, lv_color_hex(0x333333), 0);
+	lv_obj_set_style_border_color(p, lv_color_white(), 0);
+	lv_obj_set_style_border_width(p, 1, 0);
+	lv_obj_set_style_min_width(p, 50, 0);
+	lv_obj_set_style_min_height(p, 50, 0);
+	lv_obj_set_size(p, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+	lv_obj_clear_flag(p, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_set_layout(p, LV_LAYOUT_FLEX);
+	lv_obj_set_flex_flow(p, LV_FLEX_FLOW_COLUMN);
+
+	switch(place)
+	{
+	case INFOBAR_AF:
+	{
+		bws_t bws;
+		const int count = hamradio_get_bws(& bws, 5);
+
+		static btn_t ext[5];
+
+		for (int i = 0; i < count; i ++)
+		{
+			lv_obj_t * btn = lv_obj_create(p);
+			lv_obj_add_style(btn, & popupbtnst, 0);
+			lv_obj_t * lbl = lv_label_create(btn);
+			lv_obj_add_style(lbl, & lblst, 0);
+			lv_label_set_text(lbl, bws.label[i]);
+			ext[i].payload = i;
+			lv_obj_set_user_data(btn, & ext[i]);
+		}
+
+		break;
+	}
+	default:
+	{
+		char txt[32];
+		snprintf(txt, sizeof(txt), "Popup2\n %d", index + 1);
+		lv_obj_t * label = lv_label_create(p);
+		lv_label_set_text(label, txt);
+		lv_obj_add_style(label, & winlblst, 0);
+
+		break;
+	}
+	}
+
+	lv_obj_add_flag(p, LV_OBJ_FLAG_HIDDEN);
+}
+
 static void infobar_init(lv_obj_t * p)
 {
 	infobar.active_popup_index = 0xFF;
@@ -617,7 +674,10 @@ static void infobar_init(lv_obj_t * p)
 			add_to_update(btn);
 
 		if (place)
+		{
 			ext[i].payload = place;
+			popup_create(i, place);
+		}
 		else
 		{
 			snprintf(txt, sizeof(txt), "Btn\n%d", i + 1);
@@ -650,6 +710,7 @@ void gui_update(void)
 	{
 		lv_obj_t * p = to_update[i];
 		btn_t * ext = lv_obj_get_user_data(p);
+		int index = ext->index;
 
 		switch(ext->payload)
 		{
@@ -668,6 +729,18 @@ void gui_update(void)
 			snprintf(buf, sizeof(buf), "DNR\n%s", s ? "on" : "off");
 			button_set_text(p, buf);
 			infobar_lock(p, s);
+			break;
+		}
+		case INFOBAR_AF:
+		{
+			int bp_wide = hamradio_get_bp_type_wide();
+			int bp_high = hamradio_get_high_bp(0);
+			int bp_low = hamradio_get_low_bp(0) * 10;
+			bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
+
+			snprintf(buf, sizeof(buf), "AF\n%d-%d", bp_low, bp_high);
+			button_set_text(p, buf);
+
 			break;
 		}
 
