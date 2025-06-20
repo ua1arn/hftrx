@@ -459,6 +459,7 @@ static int btstack_audio_storch_source_init(
         return 1;
     }
 
+    PRINTF("btstack_audio_storch_source_init: channels=%u, samplerate=%u\n", (unsigned) channels, (unsigned) samplerate);
     recording_callback  = recording;
     source_samplerate = samplerate;
 //    hal_audio_source_init(channels, samplerate, &btstack_audio_audio_recorded);
@@ -661,8 +662,8 @@ void tuh_bth_mount_cb(uint8_t idx)
     // hand over to btstack embedded code
     //VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    VERIFY(! a2dp_sink_btstack_main(0, NULL));
-    //VERIFY(! hfp_hf_btstack_main(0, NULL));
+    VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
+    //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
     //VERIFY(! hsp_hs_btstack_main(0, NULL));
     //VERIFY(! spp_streamer_btstack_main(0, NULL));
 
