@@ -1243,7 +1243,7 @@ static lv_obj_t * dzi_create_encf4(lv_obj_t * parent, const struct dzone * dzp, 
 #endif /* WITHLVGL */
 
 
-#if ! WITHTOUCHGUI
+#if ! WITHTOUCHGUI && ! LINUX_SUBSYSTEM
 
 void gui_update(void)
 {

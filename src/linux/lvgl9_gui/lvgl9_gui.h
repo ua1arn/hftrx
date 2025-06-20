@@ -66,7 +66,8 @@ enum {
 };
 
 typedef struct {
-	lv_obj_t * popups[infobar_count];
+	lv_obj_t * main;
+	lv_obj_t * popup;
 	uint8_t active_popup_index;			// 0xFF — ничего не открыто
 } infobar_t;
 
