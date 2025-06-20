@@ -3536,6 +3536,9 @@ typedef struct {
 
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);
+uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
+uint_fast8_t hamradio_get_att_db(void);
+void hamradio_set_att_db(uint_fast8_t db);
 
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);

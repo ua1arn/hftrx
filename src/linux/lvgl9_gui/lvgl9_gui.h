@@ -32,10 +32,8 @@ enum {
 	infobar_empty = 0x0F,
 	infobar_noaction = 0x10,
 	infobar_noaction_pos = 4,
-	infobar_need_update = 0x20,
-	infobar_need_update_pos = 5,
-	infobar_switch = 0x40,
-	infobar_switch_pos = 6,
+	infobar_switch = 0x20,
+	infobar_switch_pos = 5,
 	infobar_valid_mask = 0x0F
 };
 
@@ -69,6 +67,8 @@ typedef struct {
 	lv_obj_t * main;
 	lv_obj_t * popup;
 	uint8_t active_popup_index;			// 0xFF — ничего не открыто
+	lv_obj_t * to_update[max_updating_objects];
+	uint8_t update_count;
 } infobar_t;
 
 typedef struct {
@@ -88,6 +88,8 @@ typedef struct {
 } btn_t;
 
 void lvgl_gui_init(lv_obj_t * parent);
+void infobar_init(lv_obj_t * p);
+void infobar_update(void);
 
 lv_obj_t * gui_win_add_title(lv_obj_t * win, const char * txt);
 lv_obj_t * gui_win_get_content(void);
