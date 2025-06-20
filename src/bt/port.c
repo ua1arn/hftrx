@@ -306,8 +306,8 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 #define DRIVER_POLL_INTERVAL_MS          ((BTSSCALE * 10) - 1)	// вызов раз в 10 мс btstack_run_loop_embedded_execute_once
 
 // client
-static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
-static void (*recording_callback)(const int16_t * buffer, uint16_t num_samples);
+static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);	// получаем сэмплы для воспроизвеление
+static void (*recording_callback)(const int16_t * buffer, uint16_t num_samples);	// отдаем сэмплы из трансивера
 
 // timer to fill output ring buffer
 static btstack_timer_source_t  driver_timer_sink;
