@@ -208,6 +208,15 @@ static uint_fast8_t istxreplacedusbactive(void)
 #endif /* WITHUSBHW && WITHUSBUACOUT */
 }
 
+static uint_fast8_t istxreplacedbtactive(void)
+{
+#if WITHUSEUSBBT
+	return (datavox != 0 && buffers_get_btoutactive() != 0);
+#else /* WITHUSEUSBBT */
+	return 0;
+#endif /* WITHUSEUSBBTT */
+}
+
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
 
 // Определения для работ по оптимизации быстродействия
@@ -3808,7 +3817,7 @@ static void monimux(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-		if (glob_txaudio != BOARD_TXAUDIO_USB && glob_txaudio != BOARD_TXAUDIO_BT && ! istxreplacedusbactive())
+		if (glob_txaudio != BOARD_TXAUDIO_USB && glob_txaudio != BOARD_TXAUDIO_BT && ! istxreplacedusbactive() && ! istxreplacedbtactive())
 		{
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
@@ -3836,8 +3845,8 @@ static RAMFUNC FLOAT_t mikeinmux(
 	FLOAT32P_t * moni
 	)
 {
-	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
-	const FLOAT_t txlevelXXX = digitx || istxreplacedusbactive() ? txlevelfenceDIGI : txlevelfenceSSB;
+	const uint_fast8_t digitx = (dspmode == DSPCTL_MODE_TX_DIGI);
+	const FLOAT_t txlevelXXX = (digitx || istxreplacedusbactive() || istxreplacedbtactive()) ? txlevelfenceDIGI : txlevelfenceSSB;
 	const FLOAT32P_t vi0airpmike = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 	const FLOAT32P_t vi0pairusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 	const FLOAT32P_t vi0pairbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
@@ -3872,6 +3881,8 @@ static RAMFUNC FLOAT_t mikeinmux(
 		case BOARD_TXAUDIO_MIKE:
 			if (istxreplacedusbactive())
 				goto txfromusb;
+			if (istxreplacedbtactive())
+				goto txfrombt;
 			//vi0fmike = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
 			vi0fmike = txmikeagc(vi0fmike * txlevelXXX);	// АРУ
@@ -3896,6 +3907,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 			return vi0pairusb.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_BT:
+			txfrombt:
 			// источник - BT
 			moni->IV = vi0pairbt.IV;
 			moni->QV = vi0pairbt.QV;

@@ -691,6 +691,10 @@ void tuh_bth_mount_cb(uint8_t idx)
     btactive = 1;
 }
 
+uint_fast8_t buffers_get_btoutactive(void)
+{
+	return 0;
+}
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
@@ -740,6 +744,11 @@ void bt_initialize(void)
 }
 
 uint_fast8_t hamradio_get_usbbth_active(void)
+{
+	return 0;
+}
+
+uint_fast8_t buffers_get_btoutactive(void)
 {
 	return 0;
 }

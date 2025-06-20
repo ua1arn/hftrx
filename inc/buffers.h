@@ -986,6 +986,7 @@ void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернатив�
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 uint_fast8_t buffers_get_uacoutactive(void);
+uint_fast8_t buffers_get_btoutactive(void);
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep);
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);
