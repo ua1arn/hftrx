@@ -3528,6 +3528,8 @@ unsigned n7ddc_get_swr(void);
 unsigned get_swr_cached(unsigned rangemax);
 unsigned hamradio_get_pwr(void);
 
+void gui_update(void);
+
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);
 int infocb_modeb(char * b, size_t len, int * pstate);
