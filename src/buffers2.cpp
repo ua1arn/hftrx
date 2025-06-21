@@ -1861,30 +1861,138 @@ static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin8k;
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin48k -> resampler -> btin44p1k
-static bool fetchdata_RS_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_downRS_btin44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
 		return false;
 	FLOAT_t * const src = addr->buff;
 	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	ASSERT(ndst == BTSSCALE * 441 * 2);
-	ASSERT(nsrc == BTSSCALE * 480 * 2);
+	ASSERT(ndst == BTSSCALE * 441 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = ndst / 2 - 1;
-	const unsigned srctop = BTSSCALE * nsrc / 2 - 1;
+	const unsigned dsttop = ndst / ndstch - 1;
+	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
 
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
-	//ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	{
+		const unsigned srci = dsti * srctop / dsttop;
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * nsrcch + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * nsrcch + 1]) * scale;	// получить sample
+//		dst [dsti * 2 + 0] = get_lout();
+//		dst [dsti * 2 + 1] = get_rout();
+
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Заполнение с ресэмплингом буфера данными из btin48k
+// n - требуемое количество samples
+// возвращает признак того, что данные в источнике есть
+// btin48k -> resampler -> btin32k
+static bool fetchdata_downRS_btin32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+	FLOAT_t * const src = addr->buff;
+	//unsigned nsrc = ARRAY_SIZE(addr->buff);
+	ASSERT(ndst == BTSSCALE * 320 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	const unsigned dsttop = ndst / ndstch - 1;
+	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
+
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin32k, src, src, srcframes);
 	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		const unsigned srci = dsti * srctop / dsttop;
 		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
+//		dst [dsti * 2 + 0] = get_lout();
+//		dst [dsti * 2 + 1] = get_rout();
 
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Заполнение с ресэмплингом буфера данными из btin48k
+// n - требуемое количество samples
+// возвращает признак того, что данные в источнике есть
+// btin48k -> resampler -> btin16k
+static bool fetchdata_downRS_btin16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+	FLOAT_t * const src = addr->buff;
+	//unsigned nsrc = ARRAY_SIZE(addr->buff);
+	ASSERT(ndst == BTSSCALE * 160 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(1 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	const unsigned dsttop = ndst / ndstch - 1;
+	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
+
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin16k, src, src, srcframes);
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	{
+		const unsigned srci = dsti * srctop / dsttop;
+		dst [dsti] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Заполнение с ресэмплингом буфера данными из btin48k
+// n - требуемое количество samples
+// возвращает признак того, что данные в источнике есть
+// btin48k -> resampler -> btin8k
+static bool fetchdata_downRS_btin8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+	FLOAT_t * const src = addr->buff;
+	//unsigned nsrc = ARRAY_SIZE(addr->buff);
+	ASSERT(ndst == BTSSCALE * 80 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(1 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	const unsigned dsttop = ndst / ndstch - 1;
+	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
+
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin8k, src, src, srcframes);
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	{
+		const unsigned srci = dsti * srctop / dsttop;
+		dst [dsti] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 	}
 
 	btin48k.release_buffer(addr);
@@ -1895,26 +2003,27 @@ static bool fetchdata_RS_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, u
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout44p1k -> resampler -> btout48k
-static bool fetchdata_RS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio44p1k_t * addr;
 	if (! btout44p1k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 441 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	const unsigned dsttop = dstframes - 1;
 	const unsigned srctop = srcframes - 1;
-	ASSERT(dstframes >= srcframes);
-	ASSERT(nsrcch == 2);
-	ASSERT(ndstch == 2);
-
-	ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	// up-sampler: свободные места заполняются 0
+    ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned srci = 0; srci <= srctop; ++ srci)
 	{
-		unsigned srci = dsti * srctop / dsttop;
+		unsigned dsti = srci * dsttop / srctop;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
@@ -1930,26 +2039,27 @@ static bool fetchdata_RS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout32k -> resampler -> btout48k
-static bool fetchdata_RS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio32k_t * addr;
 	if (! btout32k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 320 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	const unsigned dsttop = dstframes - 1;
 	const unsigned srctop = srcframes - 1;
-	ASSERT(dstframes >= srcframes);
-	ASSERT(nsrcch == 2);
-	ASSERT(ndstch == 2);
-
-	ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	// up-sampler: свободные места заполняются 0
+    ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned srci = 0; srci <= srctop; ++ srci)
 	{
-		unsigned srci = dsti * srctop / dsttop;
+		unsigned dsti = srci * dsttop / srctop;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
@@ -1965,28 +2075,29 @@ static bool fetchdata_RS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout16k -> resampler -> btout48k
-static bool fetchdata_RS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_upRS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio16k_t * addr;
 	if (! btout16k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 160 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(1 == nsrcch);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	const unsigned dsttop = dstframes - 1;
 	const unsigned srctop = srcframes - 1;
-	ASSERT(dstframes >= srcframes);
-	ASSERT(nsrcch == 1);
-	ASSERT(ndstch == 2);
-
-	ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	// up-sampler: свободные места заполняются 0
+    ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned srci = 0; srci <= srctop; ++ srci)
 	{
-		unsigned srci = dsti * srctop / dsttop;
+		unsigned dsti = srci * dsttop / srctop;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// исходный - одноканальный
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
@@ -2000,28 +2111,29 @@ static bool fetchdata_RS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout8k -> resampler -> btout48k
-static bool fetchdata_RS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_upRS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio8k_t * addr;
 	if (! btout8k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 80 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(1 == nsrcch);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	const unsigned dsttop = dstframes - 1;
 	const unsigned srctop = srcframes - 1;
-	ASSERT(dstframes >= srcframes);
-	ASSERT(nsrcch == 1);
-	ASSERT(ndstch == 2);
-
-	ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	// up-sampler: свободные места заполняются 0
+    ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned srci = 0; srci <= srctop; ++ srci)
 	{
-		unsigned srci = dsti * srctop / dsttop;
+		unsigned dsti = srci * dsttop / srctop;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// исходный - одноканальный
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
@@ -2054,10 +2166,10 @@ uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
 	// auto-select by not-empty source
 	return
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
+		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
 		0;
 }
 
