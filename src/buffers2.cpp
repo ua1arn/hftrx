@@ -4394,9 +4394,9 @@ void buffers_initialize(void)
 	{
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 		// 44.1 kHz -> 48 kHz
-		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		static FLOAT_t stateout [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 		// 48 kHz -> 44.1 kHz kHz
-		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
+		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 44100 / 2);
@@ -4409,9 +4409,9 @@ void buffers_initialize(void)
 	{
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 		// 32 kHz -> 48 kHz
-		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		static FLOAT_t stateout [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 		// 48 kHz -> 32 kHz kHz
-		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
+		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 32000 / 2);
@@ -4424,9 +4424,9 @@ void buffers_initialize(void)
 	{
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 		// 16 kHz -> 48 kHz
-		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		static FLOAT_t stateout [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 		// 48 kHz -> 16 kHz kHz
-		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
+		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 16000 / 2);
@@ -4439,9 +4439,9 @@ void buffers_initialize(void)
 	{
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 		// 8 kHz -> 48 kHz
-		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		static FLOAT_t stateout [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 		// 48 kHz -> 8 kHz kHz
-		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
+		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 8000 / 2);
