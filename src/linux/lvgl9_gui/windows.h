@@ -16,6 +16,7 @@ void win_memory_handler(lv_event_t * e);
 void win_receive_handler(lv_event_t * e);
 void win_wnb_handler(lv_event_t * e);
 void win_af_filter_handler(lv_event_t * e);
+void win_tx_power_handler(lv_event_t * e);
 
 #define WIN_MAIN	0xFF
 
@@ -25,6 +26,7 @@ void win_af_filter_handler(lv_event_t * e);
 		X(RECEIVE, MAIN, "win_receive", "Receive", win_receive_handler)		\
 		X(WNB, RECEIVE,  "win_wnb",		"WNB config", win_wnb_handler)		\
 		X(AF,  RECEIVE,  "win_af",		"AF filter",  win_af_filter_handler)	\
+		X(TX_POWER,  MAIN,  "win_tx_power",	"TX power",  win_tx_power_handler)	\
 
 typedef enum {
     #define X(name, parent, cname, title, eh) WIN_##name,

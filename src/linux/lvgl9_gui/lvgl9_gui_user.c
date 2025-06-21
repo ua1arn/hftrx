@@ -347,7 +347,61 @@ void win_receive_handler(lv_event_t * e)
 
 // ***********************************************
 
-static void user_txrx_handler(lv_obj_t * p)
+void win_tx_power_handler(lv_event_t * e)
+{
+	static lv_obj_t * slider_tx, * slider_tune, * lbl_tx, * lbl_tune;
+
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+		uint8_t tx_pwr = hamradio_get_tx_power();
+		uint8_t tune_pwr = hamradio_get_tx_tune_power();
+
+		uint_fast8_t power_min, power_max;
+		hamradio_get_tx_power_limits(& power_min, & power_max);
+
+		lbl_tx = lv_label_create(cont);
+		lv_obj_add_style(lbl_tx, & winlblst, 0);
+		lv_obj_align(lbl_tx, LV_ALIGN_TOP_LEFT, 0, 0);
+		lv_label_set_text_fmt(lbl_tx, "TX %d\%%", tx_pwr);
+
+		slider_tx = lv_slider_create(cont);
+		lv_obj_align_to(slider_tx, lbl_tx, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+		lv_obj_set_style_anim_duration(slider_tx, 2000, 0);
+		lv_slider_set_range(slider_tx, 0, 100);
+		lv_slider_set_value(slider_tx, tx_pwr, 0);
+		lv_slider_set_range(slider_tx, power_min, power_max);
+		lv_obj_add_event_cb(slider_tx, win_tx_power_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
+		lbl_tune = lv_label_create(cont);
+		lv_obj_add_style(lbl_tune, & winlblst, 0);
+		lv_obj_align_to(lbl_tune, lbl_tx, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
+		lv_label_set_text_fmt(lbl_tune, "Tune %d\%%", tune_pwr);
+
+		slider_tune = lv_slider_create(cont);
+		lv_obj_align_to(slider_tune, slider_tx, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
+		lv_obj_set_style_anim_duration(slider_tune, 2000, 0);
+		lv_slider_set_range(slider_tune, 0, 100);
+		lv_slider_set_value(slider_tune, tune_pwr, 0);
+		lv_slider_set_range(slider_tune, power_min, power_max);
+		lv_obj_add_event_cb(slider_tune, win_tx_power_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
+		return;
+	}
+
+	lv_event_code_t code = lv_event_get_code(e);
+	if (code != LV_EVENT_VALUE_CHANGED) return;
+
+	hamradio_set_tx_power(lv_slider_get_value(slider_tx));
+	hamradio_set_tx_tune_power(lv_slider_get_value(slider_tune));
+
+	lv_label_set_text_fmt(lbl_tx, "TX %d\%%", hamradio_get_tx_power());
+	lv_label_set_text_fmt(lbl_tune, "Tune %d\%%", hamradio_get_tx_tune_power());
+}
+
+// ***********************************************
+
+static void btn_txrx_handler(lv_obj_t * p)
 {
 	user_t * ext = lv_obj_get_user_data(p);
 
@@ -402,7 +456,7 @@ static void btn_footer_handler(lv_event_t * e)
 static void footer_buttons_init(lv_obj_t * p)
 {
 	static user_t footer_buttons [] = {
-			{ "RX", 	  0, 1, user_txrx_handler, },
+			{ "RX", 	  0, 1, btn_txrx_handler, },
 			{ "Modes", 	  0, 0, NULL, WIN_MODES, },
 			{ "Memory",   0, 0, NULL, WIN_MEMORY, },
 			{ "Receive",  0, 0, NULL, WIN_RECEIVE, },

@@ -12,6 +12,7 @@
 #if WITHLVGL && LINUX_SUBSYSTEM
 
 #include "lvgl9_gui.h"
+#include "windows.h"
 
 static infobar_t infobar;
 
@@ -20,7 +21,7 @@ const uint8_t infobar_places[infobar_count] = {
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
 		INFOBAR_DNR | infobar_switch,
-		INFOBAR_DUMMY,
+		INFOBAR_TX_POWER | infobar_switch,
 		INFOBAR_DUMMY,
 		INFOBAR_CPU_TEMP | infobar_noaction,
 		INFOBAR_DUMMY
@@ -33,6 +34,12 @@ static void infobar_action(uint8_t place)
 	case INFOBAR_DNR:
 	{
 		hamradio_change_nr(1);
+		break;
+	}
+
+	case INFOBAR_TX_POWER:
+	{
+		win_open(WIN_TX_POWER);
 		break;
 	}
 
@@ -419,6 +426,17 @@ void infobar_update(void)
 			else
 				snprintf(buf, sizeof(buf), "AF gain\n%d", v);
 
+			button_set_text(p, buf);
+
+			break;
+		}
+
+		case INFOBAR_TX_POWER:
+		{
+			uint8_t tx_pwr = hamradio_get_tx_power();
+			uint8_t tune_pwr = hamradio_get_tx_tune_power();
+
+			snprintf(buf, sizeof(buf), "TX %d\%%\nTune %d\%%", tx_pwr, tune_pwr);
 			button_set_text(p, buf);
 
 			break;
