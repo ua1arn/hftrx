@@ -793,7 +793,8 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_VOLUME_CHANGED);
             avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_BATT_STATUS_CHANGED);
             avrcp_target_battery_status_changed(connection->avrcp_cid, battery_status);
-        
+			avrcp_target_volume_changed(connection->avrcp_cid, 127);	// ставим максимальную громкость
+
             // query supported events:
             avrcp_controller_get_supported_events(connection->avrcp_cid);
             return;
