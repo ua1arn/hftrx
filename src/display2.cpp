@@ -7046,13 +7046,6 @@ display_colorgrid_xor(
 	colpip_xor_vline(db, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
-// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
-
-static FLOAT_t db2ratio(FLOAT_t valueDBb)
-{
-	return POWF(10, valueDBb / 20);
-}
-
 // отрисовка маркеров частот
 static void
 display_colorgrid_set(

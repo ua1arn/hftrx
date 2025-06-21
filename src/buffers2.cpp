@@ -4368,7 +4368,7 @@ void buffers_initialize(void)
 
 #if WITHUSEUSBBT
 
-	#define BTAUDIO_LPF_STAGES 8
+	#define BTAUDIO_LPF_STAGES 3
 	iir_filter_t f0;
 	const FLOAT_t fcoeff = 0.7;
 	const FLOAT_t samplerate = dsp_get_sampleraterx();	// 48 kHz
@@ -4394,11 +4394,12 @@ void buffers_initialize(void)
 //		printf(" ]LPF coeffs done\n");
 
 //		printf("LPF responce:\n");
-//		for (int freq = 1; freq < samplerate / 2; freq += 500)
+//		for (int freq = 0; freq < samplerate / 2; freq += 500)
 //		{
 //			FLOAT_t h [2];
 //			iir_freq_resp(& f0, h, samplerate, freq);
-//			printf("f=%f, h=%f\n", (float) freq, SQRTF(h [0] * h [0] + h [1] * h [1]));
+//			FLOAT_t ratio = SQRTF(h [0] * h [0] + h [1] * h [1]);
+//			printf("f=%d, h=%f (%g dB)\n", freq, ratio, ratio2db(ratio));
 //		}
 //		printf("LPF responce done\n");
 	}
