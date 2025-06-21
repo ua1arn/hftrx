@@ -67,18 +67,18 @@ void biquad_zero(struct iir_filter *filter)
     }
 }
 
-void biquad_init_lowpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t fc)
+void biquad_init_lowpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t f)
 {
 	double *a = filter->a;
 	double *b = filter->b;
-	double w = 2 * M_PI * fc / fs;
+	double w = 2 * M_PI * f / fs;
 	double phi, alpha;
 	int i, k;
 	int n;
 
 	n = filter->sections;
 	for (i = 0; i < n; i += 1) {
-		k = n - i - 1.0;
+		k = n - i - 1;
 		phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
 		alpha = sin(w) * cos(phi);
 

@@ -621,7 +621,7 @@ void biquad_create(iir_filter_t *filter, unsigned sect_num);
 void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num);
 
 void biquad_zero(iir_filter_t *filter);
-void biquad_init_lowpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t fc);
+void biquad_init_lowpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 void biquad_init_bandpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
