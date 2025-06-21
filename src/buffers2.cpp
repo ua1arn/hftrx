@@ -4392,15 +4392,15 @@ void buffers_initialize(void)
 //			printf("%f, ", coeffs [i]);
 //		}
 //		printf(" ]LPF coeffs done\n");
-//
-		printf("LPF responce:\n");
-		for (int freq = 1; freq < samplerate / 2; freq += 500)
-		{
-			FLOAT_t h [2];
-			iir_freq_resp(& f0, h, samplerate, freq);
-			printf("f=%f, h=%f\n", (float) freq, SQRTF(h [0] * h [0] + h [1] * h [1]));
-		}
-		printf("LPF responce done\n");
+
+//		printf("LPF responce:\n");
+//		for (int freq = 1; freq < samplerate / 2; freq += 500)
+//		{
+//			FLOAT_t h [2];
+//			iir_freq_resp(& f0, h, samplerate, freq);
+//			printf("f=%f, h=%f\n", (float) freq, SQRTF(h [0] * h [0] + h [1] * h [1]));
+//		}
+//		printf("LPF responce done\n");
 	}
 
 	{
