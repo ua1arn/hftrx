@@ -91,7 +91,6 @@ void lvgl_gui_init(lv_obj_t * parent);
 void infobar_init(lv_obj_t * p);
 void infobar_update(void);
 
-lv_obj_t * gui_win_add_title(lv_obj_t * win, const char * txt);
 lv_obj_t * gui_win_get_content(void);
 void update_win_size(lv_obj_t * win);
 void win_close(void);
