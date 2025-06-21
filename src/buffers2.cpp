@@ -4392,87 +4392,63 @@ void buffers_initialize(void)
 	iir_filter_t f0;
 	const FLOAT_t samplerate = dsp_get_sampleraterx();	// 48 kHz
 	{
-		// 44.1 kHs -> 48 kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+		// 44.1 kHz -> 48 kHz
+		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		// 48 kHz -> 44.1 kHz kHz
+		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 44100 / 2);
 		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, BTAUDIO_LPF_STAGES, coeffs, state);
-	}
-	{
-		// 48 -> 44.1 kHz kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
-		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 
-		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 44100 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin44p1k, BTAUDIO_LPF_STAGES, coeffs, state);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, BTAUDIO_LPF_STAGES, coeffs, stateout);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin44p1k, BTAUDIO_LPF_STAGES, coeffs, statein);
 	}
 
 	{
-		// 32 kHs -> 48 kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+		// 32 kHz -> 48 kHz
+		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		// 48 kHz -> 32 kHz kHz
+		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 32000 / 2);
 		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout32k, BTAUDIO_LPF_STAGES, coeffs, state);
-	}
-	{
-		// 48 -> 32 kHz kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
-		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 
-		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 32000 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin32k, BTAUDIO_LPF_STAGES, coeffs, state);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout32k, BTAUDIO_LPF_STAGES, coeffs, stateout);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin32k, BTAUDIO_LPF_STAGES, coeffs, statein);
 	}
 
 	{
-		// 16 kHs -> 48 kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+		// 16 kHz -> 48 kHz
+		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		// 48 kHz -> 16 kHz kHz
+		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 16000 / 2);
 		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout16k, BTAUDIO_LPF_STAGES, coeffs, state);
-	}
-	{
-		// 48 -> 16 kHz kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
-		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 
-		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 16000 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin16k, BTAUDIO_LPF_STAGES, coeffs, state);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout16k, BTAUDIO_LPF_STAGES, coeffs, stateout);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin16k, BTAUDIO_LPF_STAGES, coeffs, statein);
 	}
 
 	{
-		// 8 kHs -> 48 kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+		// 8 kHz -> 48 kHz
+		static FLOAT_t stateout [4 * BTAUDIO_LPF_STAGES];	// stateout buffer and size is always 4 * numStages
+		// 48 kHz -> 8 kHz kHz
+		static FLOAT_t statein [4 * BTAUDIO_LPF_STAGES];	// statein buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
 		biquad_init_lowpass(& f0, samplerate, 8000 / 2);
 		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout8k, BTAUDIO_LPF_STAGES, coeffs, state);
-	}
-	{
-		// 48 -> 8 kHz kHz
-		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
-		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
 
-		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 8000 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
-		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin8k, BTAUDIO_LPF_STAGES, coeffs, state);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout8k, BTAUDIO_LPF_STAGES, coeffs, stateout);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin8k, BTAUDIO_LPF_STAGES, coeffs, statein);
 	}
 
 #endif /* WITHUSEUSBBT */
