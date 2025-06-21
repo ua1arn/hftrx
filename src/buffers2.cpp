@@ -1861,7 +1861,7 @@ static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin8k;
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin48k -> resampler -> btin44p1k
-static bool fetchdata_downRS_btin44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
@@ -1898,7 +1898,7 @@ static bool fetchdata_downRS_btin44p1k(FLOAT_t * dst, unsigned ndst, unsigned nd
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin48k -> resampler -> btin32k
-static bool fetchdata_downRS_btin32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
@@ -1935,7 +1935,7 @@ static bool fetchdata_downRS_btin32k(FLOAT_t * dst, unsigned ndst, unsigned ndst
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin48k -> resampler -> btin16k
-static bool fetchdata_downRS_btin16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_downRS_btin16k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
@@ -1969,7 +1969,7 @@ static bool fetchdata_downRS_btin16k(FLOAT_t * dst, unsigned ndst, unsigned ndst
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin48k -> resampler -> btin8k
-static bool fetchdata_downRS_btin8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_downRS_btin8k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
