@@ -615,16 +615,18 @@ typedef struct iir_filter {
     double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
     double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
     double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
+    double x [333];
 } iir_filter_t;
 
 void biquad_create(iir_filter_t *filter, unsigned sect_num);
-void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num);
+void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs);
 
 void biquad_zero(iir_filter_t *filter);
 void biquad_init_lowpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 void biquad_init_bandpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
+void iir_freq_resp(iir_filter_t *filter, FLOAT_t *hcomplex, FLOAT_t fs, FLOAT_t f);
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA
 

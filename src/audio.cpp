@@ -5384,7 +5384,6 @@ void rxEqIni(void)
 #if WITHAFEQUALIZER
 
 #define EQ_STAGES				1
-#define BIQUAD_COEFF_IN_STAGE 	5
 
 static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
 static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };

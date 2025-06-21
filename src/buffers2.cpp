@@ -1846,7 +1846,6 @@ static btio16kdmaRS_t btout16k(IRQL_REALTIME, "btout16k", btout16kbuf, ARRAY_SIZ
 static btio8kdmaRS_t btout8k(IRQL_REALTIME, "btout8k", btout8kbuf, ARRAY_SIZE(btout8kbuf));
 static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
-
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout32k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout16k;
@@ -1876,13 +1875,11 @@ static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned nd
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = ndst / ndstch - 1;
-	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
 
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const unsigned srci = dsti * srctop / dsttop;
+		const unsigned srci = dsti * srcframes / dstframes;
 		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * nsrcch + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * nsrcch + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
@@ -1913,13 +1910,11 @@ static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndst
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = ndst / ndstch - 1;
-	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
 
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin32k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const unsigned srci = dsti * srctop / dsttop;
+		const unsigned srci = dsti * srcframes / dstframes;
 		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
@@ -1950,13 +1945,11 @@ static bool fetchdata_downRS_btin16k(int16_t * dst, unsigned ndst, unsigned ndst
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = ndst / ndstch - 1;
-	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
 
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin16k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const unsigned srci = dsti * srctop / dsttop;
+		const unsigned srci = dsti * srcframes / dstframes;
 		dst [dsti] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 	}
@@ -1984,13 +1977,11 @@ static bool fetchdata_downRS_btin8k(int16_t * dst, unsigned ndst, unsigned ndstc
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = ndst / ndstch - 1;
-	const unsigned srctop = BTSSCALE * nsrc / nsrcch - 1;
 
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin8k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const unsigned srci = dsti * srctop / dsttop;
+		const unsigned srci = dsti * srcframes / dstframes;
 		dst [dsti] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 	}
@@ -2017,17 +2008,13 @@ static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned nds
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = dstframes - 1;
-	const unsigned srctop = srcframes - 1;
 	// up-sampler: свободные места заполняются 0
     ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci <= srctop; ++ srci)
+	for (unsigned srci = 0; srci < srcframes; ++ srci)
 	{
-		unsigned dsti = srci * dsttop / srctop;
+		unsigned dsti = srci * dstframes / srcframes;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
-//		dst [dsti * 2 + 0] = get_lout();
-//		dst [dsti * 2 + 1] = get_rout();
 
 	}
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
@@ -2053,13 +2040,11 @@ static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = dstframes - 1;
-	const unsigned srctop = srcframes - 1;
 	// up-sampler: свободные места заполняются 0
     ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci <= srctop; ++ srci)
+	for (unsigned srci = 0; srci < srcframes; ++ srci)
 	{
-		unsigned dsti = srci * dsttop / srctop;
+		unsigned dsti = srci * dstframes / srcframes;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
@@ -2089,13 +2074,11 @@ static bool fetchdata_upRS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = dstframes - 1;
-	const unsigned srctop = srcframes - 1;
 	// up-sampler: свободные места заполняются 0
     ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci <= srctop; ++ srci)
+	for (unsigned srci = 0; srci < srcframes; ++ srci)
 	{
-		unsigned dsti = srci * dsttop / srctop;
+		unsigned dsti = srci * dstframes / srcframes;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// исходный - одноканальный
 //		dst [dsti * 2 + 0] = get_lout();
@@ -2125,13 +2108,11 @@ static bool fetchdata_upRS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	const unsigned dsttop = dstframes - 1;
-	const unsigned srctop = srcframes - 1;
 	// up-sampler: свободные места заполняются 0
     ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci <= srctop; ++ srci)
+	for (unsigned srci = 0; srci < srcframes; ++ srci)
 	{
-		unsigned dsti = srci * dsttop / srctop;
+		unsigned dsti = srci * dstframes / srcframes;
 		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
 		dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// исходный - одноканальный
 //		dst [dsti * 2 + 0] = get_lout();
@@ -4387,9 +4368,9 @@ void buffers_initialize(void)
 
 #if WITHUSEUSBBT
 
-
-	#define BTAUDIO_LPF_STAGES 2
+	#define BTAUDIO_LPF_STAGES 8
 	iir_filter_t f0;
+	const FLOAT_t fcoeff = 0.7;
 	const FLOAT_t samplerate = dsp_get_sampleraterx();	// 48 kHz
 	{
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
@@ -4399,11 +4380,27 @@ void buffers_initialize(void)
 		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 44100 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 44100 / 2 * fcoeff);
+		fill_biquad_coeffs(& f0, coeffs);
 
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, BTAUDIO_LPF_STAGES, coeffs, stateout);
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin44p1k, BTAUDIO_LPF_STAGES, coeffs, statein);
+
+//		printf("LPF coeffs: [");
+//		for (int i = 0; i < ARRAY_SIZE(coeffs); ++ i)
+//		{
+//			printf("%f, ", coeffs [i]);
+//		}
+//		printf(" ]LPF coeffs done\n");
+//
+		printf("LPF responce:\n");
+		for (int freq = 1; freq < samplerate / 2; freq += 500)
+		{
+			FLOAT_t h [2];
+			iir_freq_resp(& f0, h, samplerate, freq);
+			printf("f=%f, h=%f\n", (float) freq, SQRTF(h [0] * h [0] + h [1] * h [1]));
+		}
+		printf("LPF responce done\n");
 	}
 
 	{
@@ -4414,8 +4411,8 @@ void buffers_initialize(void)
 		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 32000 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 32000 / 2 * fcoeff);
+		fill_biquad_coeffs(& f0, coeffs);
 
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout32k, BTAUDIO_LPF_STAGES, coeffs, stateout);
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin32k, BTAUDIO_LPF_STAGES, coeffs, statein);
@@ -4429,8 +4426,8 @@ void buffers_initialize(void)
 		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 16000 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 16000 / 2 * fcoeff);
+		fill_biquad_coeffs(& f0, coeffs);
 
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout16k, BTAUDIO_LPF_STAGES, coeffs, stateout);
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin16k, BTAUDIO_LPF_STAGES, coeffs, statein);
@@ -4444,8 +4441,8 @@ void buffers_initialize(void)
 		static FLOAT_t statein [2 * 4 * BTAUDIO_LPF_STAGES];	// stereo, state buffer and size is always 4 * numStages
 
 		biquad_create(& f0, BTAUDIO_LPF_STAGES);
-		biquad_init_lowpass(& f0, samplerate, 8000 / 2);
-		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 8000 / 2 * fcoeff);
+		fill_biquad_coeffs(& f0, coeffs);
 
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout8k, BTAUDIO_LPF_STAGES, coeffs, stateout);
 		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltin8k, BTAUDIO_LPF_STAGES, coeffs, statein);
