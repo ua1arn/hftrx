@@ -241,30 +241,19 @@ static uint32_t hal_fram_get_alignment(void * context){
     return 1;
 }
 
-static void hal_fram_erase(void * context, int bank){
-//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
-	if (bank > 1) return;
-//	PRINTF("hal_fram_erase: bank=%u\n", (unsigned) bank);
-//	FLASH_EraseInitTypeDef eraseInit;
-//	eraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
-//	eraseInit.Sector = self->sectors[bank];
-//	eraseInit.NbSectors = 1;
-//	eraseInit.VoltageRange = FLASH_VOLTAGE_RANGE_1;	// safe value
-//	uint32_t sectorError;
-//	HAL_FLASH_Unlock();
-//	HAL_FLASHEx_Erase(&eraseInit, &sectorError);
-//	HAL_FLASH_Lock();
+static void hal_fram_erase(void * context, int bank)
+{
+//	PRINTF("hal_fram_erase:\n");
+//	unsigned tlvbase;
+//	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
+//	for (unsigned i = 0; i < tlvsize; ++ i)
+//	{
+//		save_i8(tlvbase + i, 0xFF);
+//	}
 }
 
-static void hal_fram_read(void * context, int bank, uint32_t offset, uint8_t * buffer, uint32_t size){
-//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
-//
-//	if (bank > 1) return;
-//	if (offset > self->sector_size) return;
-//	if ((offset + size) > self->sector_size) return;
-//
-//	memcpy(buffer, ((uint8_t *) self->banks[bank]) + offset, size);
-//	memset(buffer, 0, size);
+static void hal_fram_read(void * context, int bank, uint32_t offset, uint8_t * buffer, uint32_t size)
+{
 	//PRINTF("hal_fram_read: bank=%u, off=%u, size=%u\n", (unsigned) bank, (unsigned) offset, (unsigned) size);
 	unsigned tlvbase;
 	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
