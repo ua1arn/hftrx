@@ -867,7 +867,7 @@ public:
 		return 1;
 	}
 
-	uint_fast8_t fetchdata_resample(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillresampled)(sample_t *, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch), unsigned nsrc, unsigned nsrcch)
+	uint_fast8_t fetchdata_resample(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillresampled)(sample_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch), unsigned nsrc, unsigned nsrcch)
 	{
 		if (rb == NULL)
 		{
@@ -2007,15 +2007,29 @@ static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned nds
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	// up-sampler: свободные места заполняются 0
-    ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci < srcframes; ++ srci)
+	if (0)
 	{
-		unsigned dsti = srci * dstframes / srcframes;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
+		// up-sampler: свободные места заполняются 0
+		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	    ARM_MORPH(arm_fill)(0, dst, ndst);
+		for (unsigned srci = 0; srci < srcframes; ++ srci)
+		{
+			unsigned dsti = srci * dstframes / srcframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 
+		}
+	}
+	else
+	{
+		// up-sampler: свободные места заполняются соседними данными
+		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+		{
+			unsigned srci = dsti * srcframes / dstframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
+			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
+
+		}
 	}
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
 	btout44p1k.release_buffer(addr);
@@ -2040,16 +2054,29 @@ static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	// up-sampler: свободные места заполняются 0
-    ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci < srcframes; ++ srci)
+	if (0)
 	{
-		unsigned dsti = srci * dstframes / srcframes;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
-//		dst [dsti * 2 + 0] = get_lout();
-//		dst [dsti * 2 + 1] = get_rout();
+		// up-sampler: свободные места заполняются 0
+		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	    ARM_MORPH(arm_fill)(0, dst, ndst);
+		for (unsigned srci = 0; srci < srcframes; ++ srci)
+		{
+			unsigned dsti = srci * dstframes / srcframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 
+		}
+	}
+	else
+	{
+		// up-sampler: свободные места заполняются соседними данными
+		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+		{
+			unsigned srci = dsti * srcframes / dstframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
+			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
+
+		}
 	}
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout32k, dst, dst, dstframes);
 	btout32k.release_buffer(addr);
@@ -2073,17 +2100,29 @@ static bool fetchdata_upRS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	// up-sampler: свободные места заполняются 0
-    ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci < srcframes; ++ srci)
+	if (0)
 	{
-		unsigned dsti = srci * dstframes / srcframes;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// исходный - одноканальный
-//		dst [dsti * 2 + 0] = get_lout();
-//		dst [dsti * 2 + 1] = get_rout();
+		// up-sampler: свободные места заполняются 0
+		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	    ARM_MORPH(arm_fill)(0, dst, ndst);
+		for (unsigned srci = 0; srci < srcframes; ++ srci)
+		{
+			unsigned dsti = srci * dstframes / srcframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
+			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
 
+		}
+	}
+	else
+	{
+		// up-sampler: свободные места заполняются соседними данными
+		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+		{
+			unsigned srci = dsti * srcframes / dstframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]);	// получить sample
+			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
+
+		}
 	}
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout16k, dst, dst, dstframes);
 	btout16k.release_buffer(addr);
@@ -2107,17 +2146,29 @@ static bool fetchdata_upRS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	// up-sampler: свободные места заполняются 0
-    ARM_MORPH(arm_fill)(0, dst, ndst);
-	for (unsigned srci = 0; srci < srcframes; ++ srci)
+	if (0)
 	{
-		unsigned dsti = srci * dstframes / srcframes;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// исходный - одноканальный
-//		dst [dsti * 2 + 0] = get_lout();
-//		dst [dsti * 2 + 1] = get_rout();
+		// up-sampler: свободные места заполняются 0
+		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	    ARM_MORPH(arm_fill)(0, dst, ndst);
+		for (unsigned srci = 0; srci < srcframes; ++ srci)
+		{
+			unsigned dsti = srci * dstframes / srcframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
+			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
 
+		}
+	}
+	else
+	{
+		// up-sampler: свободные места заполняются соседними данными
+		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+		{
+			unsigned srci = dsti * srcframes / dstframes;
+			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]);	// получить sample
+			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
+
+		}
 	}
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout8k, dst, dst, dstframes);
 	btout8k.release_buffer(addr);
@@ -4370,7 +4421,7 @@ void buffers_initialize(void)
 
 	#define BTAUDIO_LPF_STAGES 3
 	iir_filter_t f0;
-	const FLOAT_t fcoeff = 0.7;
+	const FLOAT_t fcoeff = (FLOAT_t) 0.9;
 	const FLOAT_t samplerate = dsp_get_sampleraterx();	// 48 kHz
 	{
 		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
