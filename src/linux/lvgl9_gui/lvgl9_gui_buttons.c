@@ -17,7 +17,7 @@
 
 static void long_press_timer_cb(lv_timer_t * timer)
 {
-	btn_t * ext = lv_timer_get_user_data(timer);
+	user_t * ext = lv_timer_get_user_data(timer);
     ext->is_pressed = false;
     ext->is_long_pressed = true;
     lv_timer_del(ext->long_press_timer);
@@ -30,7 +30,7 @@ void buttons_handler(lv_event_t * e)
 			code != LV_EVENT_PRESS_LOST && code != LV_EVENT_CLICKED) return;
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * ext = lv_obj_get_user_data(btn);
+	user_t * ext = lv_obj_get_user_data(btn);
 
 	if(code == LV_EVENT_PRESSED)
 	{
@@ -64,7 +64,7 @@ lv_obj_t * find_button(lv_obj_t * cont, const char * name)
 	for (int i = 0; i < cnt; i ++)
 	{
 		lv_obj_t * btn = lv_obj_get_child(cont, i);
-		btn_t * ext = lv_obj_get_user_data(btn);
+		user_t * ext = lv_obj_get_user_data(btn);
 
 		if (! strcmp(name, ext->name))
 			return btn;
@@ -101,7 +101,7 @@ void button_set_lock(lv_obj_t * btn, uint8_t v)
 		button_unlock(btn);
 }
 
-void create_button_matrix(lv_obj_t * cont, btn_t * btu, const char * mname, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh)
+void create_button_matrix(lv_obj_t * cont, user_t * btu, const char * mname, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh)
 {
 	static lv_coord_t cols_dsc[10], rows_dsc[10];
 	uint8_t w_st = (s >> 8) & 0xFF;

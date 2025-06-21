@@ -24,7 +24,7 @@ void win_modes_handler(lv_event_t * e)
 	{
 		lv_obj_t * cont = gui_win_get_content();
 
-		static btn_t btns [btn_num] = {
+		static user_t btns [btn_num] = {
 				{ "LSB", SUBMODE_LSB, }, { "AM", SUBMODE_AM, },
 				{ "CW",  SUBMODE_CW, },  { "DGL", SUBMODE_DGL, },
 				{ "USB", SUBMODE_USB, }, { "NFM", SUBMODE_NFM, },
@@ -37,7 +37,7 @@ void win_modes_handler(lv_event_t * e)
 	}
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * btnu = lv_obj_get_user_data(btn);
+	user_t * btnu = lv_obj_get_user_data(btn);
 
 	if (btnu->is_clicked)
 	{
@@ -84,7 +84,7 @@ void win_memory_handler(lv_event_t * e)
 	{
 		lv_obj_t * cont = gui_win_get_content();
 
-		static btn_t btns[btn_num];
+		static user_t btns[btn_num];
 
 		for(uint8_t i = 0; i < btn_num; i++)
 		{
@@ -120,7 +120,7 @@ void win_memory_handler(lv_event_t * e)
 	}
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * btnu = lv_obj_get_user_data(btn);
+	user_t * btnu = lv_obj_get_user_data(btn);
 
 	uint8_t idx = btnu->payload & 0xff;
 	uint8_t p = (btnu->payload >> 31) & 0xff;
@@ -202,12 +202,12 @@ void win_af_filter_handler(lv_event_t * e)
 		uint16_t low = hamradio_get_low_bp(0);
 		uint16_t high = hamradio_get_high_bp(0);
 
-		static btn_t btns_h [] = {
+		static user_t btns_h [] = {
 				{ "-", -1,  0, NULL, },
 				{ "+", 1, 0, NULL, },
 		};
 
-		static btn_t btns_l [] = {
+		static user_t btns_l [] = {
 				{ "-", -1,  0, NULL, },
 				{ "+", 1, 0, NULL, },
 		};
@@ -254,7 +254,7 @@ void win_af_filter_handler(lv_event_t * e)
 	lv_event_code_t code = lv_event_get_code(e);
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * btnu = lv_obj_get_user_data(btn);
+	user_t * btnu = lv_obj_get_user_data(btn);
 
 	if (btnu->is_clicked)
 	{
@@ -281,7 +281,7 @@ void win_receive_handler(lv_event_t * e)
 	{
 		lv_obj_t * cont = gui_win_get_content();
 
-		static btn_t btnm [btn_num] = {
+		static user_t btnm [btn_num] = {
 				{ "Att", 	0, 0, NULL, },
 				{ "Preamp", 0, 0, NULL, },
 				{ "DNR", 	0, 0, NULL, },
@@ -304,7 +304,7 @@ void win_receive_handler(lv_event_t * e)
 	}
 
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * btnu = lv_obj_get_user_data(btn);
+	user_t * btnu = lv_obj_get_user_data(btn);
 
 	if (btnu->h)
 	{
@@ -347,9 +347,9 @@ void win_receive_handler(lv_event_t * e)
 
 // ***********************************************
 
-static void btn_txrx_handler(lv_obj_t * p)
+static void user_txrx_handler(lv_obj_t * p)
 {
-	btn_t * ext = lv_obj_get_user_data(p);
+	user_t * ext = lv_obj_get_user_data(p);
 
 	if (ext->is_long_pressed)
 	{
@@ -386,7 +386,7 @@ static void btn_txrx_handler(lv_obj_t * p)
 static void btn_footer_handler(lv_event_t * e)
 {
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	btn_t * fb = lv_obj_get_user_data(btn);
+	user_t * fb = lv_obj_get_user_data(btn);
 
 	if (fb->is_clicked)
 	{
@@ -401,8 +401,8 @@ static void btn_footer_handler(lv_event_t * e)
 
 static void footer_buttons_init(lv_obj_t * p)
 {
-	static btn_t footer_buttons [] = {
-			{ "RX", 	  0, 1, btn_txrx_handler, },
+	static user_t footer_buttons [] = {
+			{ "RX", 	  0, 1, user_txrx_handler, },
 			{ "Modes", 	  0, 0, NULL, WIN_MODES, },
 			{ "Memory",   0, 0, NULL, WIN_MEMORY, },
 			{ "Receive",  0, 0, NULL, WIN_RECEIVE, },
@@ -434,7 +434,7 @@ static void footer_buttons_init(lv_obj_t * p)
 		lv_obj_add_style(btn, & btnst, 0);
 		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
-		btn_t * fb = & footer_buttons[i];
+		user_t * fb = & footer_buttons[i];
 		fb->payload = i;
 		fb->eh = btn_footer_handler;
 

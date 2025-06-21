@@ -17,7 +17,7 @@ static infobar_t infobar;
 
 const uint8_t infobar_places[infobar_count] = {
 		INFOBAR_AF,
-		INFOBAR_DUMMY | infobar_noaction,
+		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
 		INFOBAR_DNR | infobar_switch,
 		INFOBAR_DUMMY,
@@ -69,8 +69,8 @@ static void popup_close(void)
 static void popup_buttons_cb(lv_event_t * e)
 {
     lv_obj_t * btn = lv_event_get_target(e);
-    btn_t * ext = lv_obj_get_user_data(btn);
-    uint8_t payload = ext->payload;
+    user_t * ext = lv_obj_get_user_data(btn);
+    int8_t payload = ext->payload;
     uint8_t place = ext->index;
 
 	switch(place)
@@ -86,6 +86,19 @@ static void popup_buttons_cb(lv_event_t * e)
 	{
 		hamradio_set_att_db(payload);
 		popup_close();
+		break;
+	}
+
+	case INFOBAR_AF_VOLUME:
+	{
+		if (payload == 20)
+		{
+			hamradio_set_gmutespkr(! hamradio_get_gmutespkr());
+			button_set_lock(btn, hamradio_get_gmutespkr());
+		}
+		else if (! hamradio_get_gmutespkr())
+			hamradio_set_afgain(hamradio_get_afgain() + payload);
+
 		break;
 	}
 
@@ -120,16 +133,18 @@ static lv_obj_t * popup_create(uint8_t place)
 	lv_obj_set_style_border_width(p, 1, 0);
 	lv_obj_set_style_min_width(p, 50, 0);
 	lv_obj_set_style_min_height(p, 50, 0);
+	lv_obj_set_style_pad_all(p, 10, 0);
 	lv_obj_set_size(p, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 	lv_obj_clear_flag(p, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_layout(p, LV_LAYOUT_FLEX);
 	lv_obj_set_flex_flow(p, LV_FLEX_FLOW_COLUMN);
+	lv_obj_set_style_pad_row(p, 5, 0);
 
 	switch(place)
 	{
 	case INFOBAR_AF:
 	{
-		static btn_t ext[5];
+		static user_t ext[5];
 		bws_t bws;
 		const int count = hamradio_get_bws(& bws, 5);
 
@@ -148,9 +163,10 @@ static lv_obj_t * popup_create(uint8_t place)
 
 		break;
 	}
+
 	case INFOBAR_ATT:
 	{
-		static btn_t ext[6];
+		static user_t ext[6];
 		uint_fast8_t atts [6];
 		unsigned count = hamradio_get_att_dbs(atts, 6);
 
@@ -169,6 +185,34 @@ static lv_obj_t * popup_create(uint8_t place)
 
 		break;
 	}
+
+	case INFOBAR_AF_VOLUME:
+	{
+		enum { btn_num = 3 };
+
+		static user_t btns [btn_num] = {
+				{ "+",     1, },
+				{ "-", 	  -1, },
+				{ "Mute", 20, },
+		};
+
+		for (int i = 0; i < btn_num; i ++)
+		{
+			lv_obj_t * btn = lv_obj_create(p);
+			lv_obj_add_style(btn, & popupbtnst, 0);
+			lv_obj_t * lbl = lv_label_create(btn);
+			lv_obj_add_style(lbl, & lblst, 0);
+			lv_label_set_text_fmt(lbl, "%s", btns[i].text);
+			btns[i].index = place;
+			lv_obj_set_user_data(btn, & btns[i]);
+			lv_obj_add_event_cb(btn, popup_buttons_cb, LV_EVENT_CLICKED, NULL);
+
+			if (i == 2) button_set_lock(btn, hamradio_get_gmutespkr());
+		}
+
+		break;
+	}
+
 	default:
 	{
 		char txt[32];
@@ -190,7 +234,7 @@ static void info_button_event_cb(lv_event_t * e)
 	if (code != LV_EVENT_CLICKED) return;
 
     lv_obj_t * btn = lv_event_get_target(e);
-    btn_t * ext = lv_obj_get_user_data(btn);
+    user_t * ext = lv_obj_get_user_data(btn);
     uint8_t btn_index = ext->index;
     uint8_t sw = (infobar_places[btn_index] >> infobar_switch_pos) & 1;
 
@@ -254,7 +298,7 @@ void infobar_init(lv_obj_t * p)
 	lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
 	lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
 
-	static btn_t ext[infobar_count];
+	static user_t ext[infobar_count];
 
 	for (int i = 0; i < infobar_count; i++)
 	{
@@ -314,7 +358,7 @@ void infobar_update(void)
 	for (int i = 0; i < infobar.update_count; i ++)
 	{
 		lv_obj_t * p = infobar.to_update[i];
-		btn_t * ext = lv_obj_get_user_data(p);
+		user_t * ext = lv_obj_get_user_data(p);
 		int index = ext->index;
 
 		switch(ext->payload)
@@ -359,6 +403,21 @@ void infobar_update(void)
 				snprintf(buf, sizeof(buf), "ATT\n%d db", att);
 			else
 				snprintf(buf, sizeof(buf), "ATT\noff");
+
+			button_set_text(p, buf);
+
+			break;
+		}
+
+		case INFOBAR_AF_VOLUME:
+		{
+			uint8_t v = hamradio_get_afgain();
+			uint8_t m = hamradio_get_gmutespkr();
+
+			if (m)
+				snprintf(buf, sizeof(buf), "AF gain\nmuted");
+			else
+				snprintf(buf, sizeof(buf), "AF gain\n%d", v);
 
 			button_set_text(p, buf);
 

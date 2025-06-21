@@ -3419,6 +3419,8 @@ void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
 
 uint_fast8_t hamradio_get_gmutespkr(void);
 void hamradio_set_gmutespkr(uint_fast8_t v);
+uint_fast16_t hamradio_get_afgain(void);
+void hamradio_set_afgain(uint_fast16_t v);
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 const char * hamradio_get_att_value(void);

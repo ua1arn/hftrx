@@ -50,10 +50,6 @@ typedef struct {
 	char name[10];
 } band_array_t;
 
-typedef struct {
-	char label [10][10];
-} bws_t;
-
 /* структура для размещения в конфигурационном ОЗУ */
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
@@ -96,10 +92,7 @@ void hamradio_ft8_start_fill(void);
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
 uint_fast8_t hamradio_get_att_db(void);
 void hamradio_set_att_db(uint_fast8_t db);
-uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);
-uint_fast16_t hamradio_get_afgain(void);
-void hamradio_set_afgain(uint_fast16_t v);
 uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 void hamradio_gui_set_reqautotune2(uint_fast8_t val);
 uint_fast8_t hamradio_split_toggle(void);
