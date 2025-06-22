@@ -131,9 +131,6 @@ DINCDIR += \
 	$(CMSISDSPDIR)/PrivateInclude
 endif
 
-# lvgl
-include ../lvgl.mak
-
 ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -155,11 +152,11 @@ SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
 DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
 endif
 
-ifeq (1, 0)
+# lvgl
+include ../lvgl.mak
+
 # LuPng
-SRCDIRS += $(PRJROOT)/lib/LuPng
-DINCDIR += $(PRJROOT)/lib/LuPng
-endif
+include ../lupng.mak
 
 # FreeRTOS
 include ../freertos.mak
