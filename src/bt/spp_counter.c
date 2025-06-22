@@ -279,15 +279,14 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
         case RFCOMM_DATA_PACKET:
             //printf("RCV: '");
-			if (size == 0)
-        		PRINTF("Empty RFCOMM_DATA_PACKET\n");
-        	else
-        		printhex(0, packet, size);
+//			if (size == 0)
+//        		PRINTF("Empty RFCOMM_DATA_PACKET\n");
+//        	else
+//        		printhex(0, packet, size);
 #if WITHCAT
         	if (board_get_catmux() == BOARD_CATMUX_BTSPP)
         		btspp_handledata(packet, size);
 #endif
-        	TP();
            break;
 
         default:
