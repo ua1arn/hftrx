@@ -399,6 +399,24 @@ void win_tx_power_handler(lv_event_t * e)
 
 // ***********************************************
 
+static void btn_settings_handler(lv_obj_t * p)
+{
+	static lv_obj_t * cont = NULL;
+
+	if (cont)
+	{
+		lv_obj_del(cont);
+		cont = NULL;
+	}
+	else
+	{
+		cont = lv_obj_create(gui_get_main());
+		lv_obj_set_size(cont, DIM_X, 265);
+		lv_obj_set_pos(cont, 0, 170);
+		gui_open_menu(cont);
+	}
+}
+
 void win_settings_handler(lv_event_t * e)
 {
 	if (! e) // init window
@@ -406,7 +424,7 @@ void win_settings_handler(lv_event_t * e)
 		lv_obj_t * cont = gui_win_get_content();
 
 		static user_t btnm [] = {
-//				{ "System\nsettings", 	0, 0, NULL, },
+				{ "System\nsettings", 	0, 0, btn_settings_handler, },
 //				{ "Audio\nsettings", 	0, 0, NULL, },
 //				{ "Transmit\nsettings", 0, 0, NULL, },
 				{ "Display\nsettings", 	0, 0, NULL, WIN_DISPLAY_SETTINGS, },
@@ -427,6 +445,11 @@ void win_settings_handler(lv_event_t * e)
 		linux_exit();
 	else if (btnu->win_id)
 		win_open(btnu->win_id);
+	else if (btnu->h)
+	{
+		win_close();
+		btnu->h(btn);
+	}
 }
 
 // ***********************************************

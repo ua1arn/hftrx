@@ -749,6 +749,11 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 #endif
 }
 
+void gui_open_menu(lv_obj_t * p)
+{
+	dzi_create_menu(p, NULL, NULL, 0);
+}
+
 static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_modea);
