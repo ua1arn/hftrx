@@ -700,45 +700,49 @@ static void dzicreateitem(void * pwalkctx, void * psectionctx, const void * para
     //create_switch(section_mechanics, LV_SYMBOL_SETTINGS, b, false);
 }
 
+lv_obj_t * lv_hamradiomenu_create(lv_obj_t * parent)
+{
+	   lv_obj_t * const menu = lv_menu_create(parent);
+
+	    lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
+	    lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
+
+	    /*Create a root page*/
+		lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
+		lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
+
+		lv_obj_t * const section_first = lv_menu_section_create(root_page);
+
+
+		struct menuwalkctx ctx;
+		ctx.menu = menu;
+		ctx.section_first = section_first;
+		hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
+		lv_obj_set_flag(menu, LV_OBJ_FLAG_SCROLLABLE, true);
+		lv_menu_set_sidebar_page(menu, root_page);
+	    if (1)
+	    {
+
+	    	int32_t idx1 = 0;	// Открыть первое подменю (единственное)
+	    	int32_t idx2 = 1;	// выбрать первый элемент в нём (номер группы в меню)
+	    	lv_obj_t * ch1 = lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), idx1);
+	    	ASSERT(ch1);
+	        lv_obj_t * ch2 = lv_obj_get_child(ch1, idx2);
+	       	ASSERT(ch2);
+	       lv_obj_send_event(ch2, LV_EVENT_CLICKED, NULL);
+	    }
+
+		groot_page = root_page;
+		return menu;
+}
+
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 #if 0
 	return lv_example_menu_5_mod(parent);
 	return lv_example_menu_5(parent);
 #elif 1
-    lv_obj_t * const menu = lv_menu_create(parent);
-
-    lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
-    lv_obj_add_event_cb(menu, back_event_handler, LV_EVENT_CLICKED, menu);
-
-    /*Create a root page*/
-	lv_obj_t * const root_page = lv_menu_page_create(menu, "Settings");
-	lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
-
-	lv_obj_t * const section_first = lv_menu_section_create(root_page);
-
-
-	struct menuwalkctx ctx;
-	ctx.menu = menu;
-	ctx.section_first = section_first;
-	hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
-	lv_obj_set_flag(menu, LV_OBJ_FLAG_SCROLLABLE, true);
-	lv_menu_set_sidebar_page(menu, root_page);
-    if (1)
-    {
-
-    	int32_t idx1 = 0;	// Открыть первое подменю (единственное)
-    	int32_t idx2 = 1;	// выбрать первый элемент в нём (номер группы в меню)
-    	lv_obj_t * ch1 = lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), idx1);
-    	ASSERT(ch1);
-        lv_obj_t * ch2 = lv_obj_get_child(ch1, idx2);
-       	ASSERT(ch2);
-       lv_obj_send_event(ch2, LV_EVENT_CLICKED, NULL);
-    }
-
-	groot_page = root_page;
-
-	return menu;
+	return lv_hamradiomenu_create(parent);
 
 #elif 0
 	lv_obj_t * const menu = lv_label_create(parent);
@@ -747,11 +751,6 @@ static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, c
 	lv_label_set_text(menu, "Menu placeholder");
 	return menu;
 #endif
-}
-
-void gui_open_menu(lv_obj_t * p)
-{
-	dzi_create_menu(p, NULL, NULL, 0);
 }
 
 static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)

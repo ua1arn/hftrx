@@ -413,7 +413,7 @@ static void btn_settings_handler(lv_obj_t * p)
 		cont = lv_obj_create(gui_get_main());
 		lv_obj_set_size(cont, DIM_X, 265);
 		lv_obj_set_pos(cont, 0, 170);
-		gui_open_menu(cont);
+		lv_hamradiomenu_create(cont);
 	}
 }
 
