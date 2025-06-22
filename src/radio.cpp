@@ -15046,7 +15046,7 @@ void btspp_handledata(const uint8_t * data, unsigned size)
 		return;
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-	while (size)
+	while (size --)
 	{
 		cat2_parsechar(* data ++);
 	}
