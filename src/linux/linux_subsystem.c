@@ -2144,9 +2144,6 @@ void linux_cancel_thread(pthread_t tid)
 static void handle_sig(int sig)
 {
 	printf("Waiting for process to finish... Got signal %d\n", sig);
-#if WITHAD936XIIO
-	iio_stop_stream();
-#endif /* WITHAD936XIIO */
 	linux_exit();
 }
 
@@ -2707,6 +2704,9 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
+#if WITHAD936XIIO
+	iio_stop_stream();
+#endif /* WITHAD936XIIO */
 #if WITHFBDEV && ! WITHLVGL
 	framebuffer_close();
 #elif WITHSDL2VIDEO && ! WITHLVGL

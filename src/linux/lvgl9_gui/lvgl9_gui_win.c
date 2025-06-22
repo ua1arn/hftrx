@@ -10,7 +10,7 @@
 static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
 
 static lv_obj_t * main_gui_obj = NULL, * current_window = NULL, * win_title;
-static uint8_t cid = 255;
+static uint8_t cid = WIN_MAIN;
 
 struct _lv_win_t {
     lv_obj_t obj;
@@ -143,7 +143,6 @@ static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 
 	lv_obj_t * cont = lv_obj_create(obj);
 	lv_obj_set_width(cont, LV_PCT(100));
-	lv_obj_set_flex_grow(cont, 1);
 	lv_obj_set_style_min_width(cont, WIN_MIN_W, 0);
 	lv_obj_set_style_pad_all(cont, 10, 10);
 	lv_obj_set_style_bg_opa(cont, LV_OPA_0, 0);
@@ -151,9 +150,6 @@ static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 	lv_obj_set_style_border_width(cont, 0, 0);
 	lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-
-	lv_obj_set_style_min_width(obj, WIN_MIN_W, 0);
-	lv_obj_set_style_min_height(obj, WIN_MIN_H, 0);
 
 	lv_obj_center(obj);
 

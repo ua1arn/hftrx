@@ -66,7 +66,7 @@ lv_obj_t * find_button(lv_obj_t * cont, const char * name)
 		lv_obj_t * btn = lv_obj_get_child(cont, i);
 		user_t * ext = lv_obj_get_user_data(btn);
 
-		if (! strcmp(name, ext->name))
+		if (! strcmp(name, ext->name) && lv_obj_check_type(btn, & lv_button_class))
 			return btn;
 	}
 
@@ -99,6 +99,32 @@ void button_set_lock(lv_obj_t * btn, uint8_t v)
 		button_lock(btn);
 	else
 		button_unlock(btn);
+}
+
+lv_obj_t * add_button(lv_obj_t * cont, user_t * ext, uint8_t idx, const char * text, btns_size_t s, event_handler_t eh)
+{
+	uint8_t w_st = (s >> 8) & 0xFF;
+	uint8_t h_st = (s >> 0) & 0xFF;
+
+	user_t * btu = & ext[idx];
+
+	lv_obj_t * btn = lv_button_create(cont);
+	lv_obj_add_style(btn, & btnst, 0);
+	lv_obj_set_size(btn, w_st, h_st);
+
+	lv_obj_t * label = lv_label_create(btn);
+	lv_obj_add_style(label, & lblst, 0);
+	button_set_text(btn, text);
+
+	btu->index = idx;
+	btu->eh = eh;
+	if (! strlen(btu->name))
+		snprintf(btu->name, 20, "btn_%s", text, btu->text);
+
+	lv_obj_set_user_data(btn, btu);
+	lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
+
+	return btn;
 }
 
 void create_button_matrix(lv_obj_t * cont, user_t * btu, const char * mname, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh)
@@ -139,11 +165,14 @@ void create_button_matrix(lv_obj_t * cont, user_t * btu, const char * mname, con
 		lv_obj_t * label = lv_label_create(btn);
 		lv_label_set_text_fmt(label, "%s", btu[i].text);
 		lv_obj_center(label);
+		lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 		lv_obj_add_style(label, & lblst, 0);
 
 		btu[i].index = i;
 		btu[i].eh = eh;
-		snprintf(btu[i].name, 20, "%s_%s", mname, btu[i].text);
+
+		if (! strlen(btu[i].name))
+			snprintf(btu[i].name, 20, "%s_%s", mname, btu[i].text);
 
 		lv_obj_set_user_data(btn, & btu[i]);
 		lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);

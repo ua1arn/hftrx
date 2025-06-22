@@ -368,7 +368,6 @@ void win_tx_power_handler(lv_event_t * e)
 		slider_tx = lv_slider_create(cont);
 		lv_obj_align_to(slider_tx, lbl_tx, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
 		lv_obj_set_style_anim_duration(slider_tx, 2000, 0);
-		lv_slider_set_range(slider_tx, 0, 100);
 		lv_slider_set_value(slider_tx, tx_pwr, 0);
 		lv_slider_set_range(slider_tx, power_min, power_max);
 		lv_obj_add_event_cb(slider_tx, win_tx_power_handler, LV_EVENT_VALUE_CHANGED, NULL);
@@ -381,7 +380,6 @@ void win_tx_power_handler(lv_event_t * e)
 		slider_tune = lv_slider_create(cont);
 		lv_obj_align_to(slider_tune, slider_tx, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
 		lv_obj_set_style_anim_duration(slider_tune, 2000, 0);
-		lv_slider_set_range(slider_tune, 0, 100);
 		lv_slider_set_value(slider_tune, tune_pwr, 0);
 		lv_slider_set_range(slider_tune, power_min, power_max);
 		lv_obj_add_event_cb(slider_tune, win_tx_power_handler, LV_EVENT_VALUE_CHANGED, NULL);
@@ -397,6 +395,122 @@ void win_tx_power_handler(lv_event_t * e)
 
 	lv_label_set_text_fmt(lbl_tx, "TX %d\%%", hamradio_get_tx_power());
 	lv_label_set_text_fmt(lbl_tune, "Tune %d\%%", hamradio_get_tx_tune_power());
+}
+
+// ***********************************************
+
+void win_settings_handler(lv_event_t * e)
+{
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+
+		static user_t btnm [] = {
+//				{ "System\nsettings", 	0, 0, NULL, },
+//				{ "Audio\nsettings", 	0, 0, NULL, },
+//				{ "Transmit\nsettings", 0, 0, NULL, },
+				{ "Display\nsettings", 	0, 0, NULL, WIN_DISPLAY_SETTINGS, },
+//				{ "GUI\nsettings",		0, 0, NULL, },
+				{ "Terminate\nprogram",	100, 0, NULL, },
+		};
+
+		create_button_matrix(cont, btnm, "", ARRAY_SIZE(btnm), 4, s100x44, win_settings_handler);
+
+		return;
+	}
+
+	lv_event_code_t code = lv_event_get_code(e);
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	user_t * btnu = lv_obj_get_user_data(btn);
+
+	if (btnu->payload == 100)
+		linux_exit();
+	else if (btnu->win_id)
+		win_open(btnu->win_id);
+}
+
+// ***********************************************
+
+void win_display_settings_handler(lv_event_t * e)
+{
+	char txt[32];
+	static lv_obj_t * slider_top, * slider_bottom, * lbl_top, * lbl_bottom;
+
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+		static user_t ext[2];
+
+		uint8_t topsp = hamradio_get_gtopdbspe();
+		uint8_t bottomsp = hamradio_get_gbottomdbspe();
+
+		lbl_top = lv_label_create(cont);
+		lv_obj_add_style(lbl_top, & winlblst, 0);
+		lv_obj_align(lbl_top, LV_ALIGN_TOP_LEFT, 0, 0);
+		lv_label_set_text_fmt(lbl_top, "Top: %d db", topsp);
+
+		slider_top = lv_slider_create(cont);
+		lv_obj_align_to(slider_top, lbl_top, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+		lv_obj_set_style_anim_duration(slider_top, 2000, 0);
+		lv_slider_set_range(slider_top, WITHTOPDBMIN, WITHTOPDBMAX);
+		lv_slider_set_value(slider_top, topsp, 0);
+		lv_obj_add_event_cb(slider_top, win_display_settings_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
+		lbl_bottom = lv_label_create(cont);
+		lv_obj_add_style(lbl_bottom, & winlblst, 0);
+		lv_obj_align_to(lbl_bottom, lbl_top, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
+		lv_label_set_text_fmt(lbl_bottom, "Bottom: %d db", bottomsp);
+
+		slider_bottom = lv_slider_create(cont);
+		lv_obj_align_to(slider_bottom, slider_top, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
+		lv_obj_set_style_anim_duration(slider_bottom, 2000, 0);
+		lv_slider_set_range(slider_bottom, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		lv_slider_set_value(slider_bottom, bottomsp, 0);
+		lv_obj_add_event_cb(slider_bottom, win_display_settings_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
+		lv_obj_t * btn_view = add_button(cont, ext, 0, "View", s100x44, win_display_settings_handler);
+		snprintf(txt, sizeof(txt), "View\n%s", hamradio_change_view_style(0));
+		button_set_text(btn_view, txt);
+		lv_obj_align_to(btn_view, lbl_bottom, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+
+		lv_obj_t * btn_zoom = add_button(cont, ext, 1, "Zoom", s100x44, win_display_settings_handler);
+		snprintf(txt, sizeof(txt), "Zoom\nx%d", 1 << hamradio_get_gzoomxpow2());
+		button_set_text(btn_zoom, txt);
+		lv_obj_align_to(btn_zoom, btn_view, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
+
+		return;
+	}
+
+	lv_event_code_t code = lv_event_get_code(e);
+	lv_obj_t * obj = (lv_obj_t *) lv_event_get_target(e);
+	user_t * ext = lv_obj_get_user_data(obj);
+
+	if (lv_obj_check_type(obj, & lv_button_class))
+	{
+		if (ext->index == 0)
+		{
+			snprintf(txt, sizeof(txt), "View\n%s", hamradio_change_view_style(1));
+			button_set_text(obj, txt);
+		}
+		else if (ext->index == 1)
+		{
+			uint8_t z = (hamradio_get_gzoomxpow2() + 1) % (BOARD_FFTZOOM_POW2MAX + 1);
+			hamradio_set_gzoomxpow2(z);
+			snprintf(txt, sizeof(txt), "Zoom\nx%d", 1 << hamradio_get_gzoomxpow2());
+			button_set_text(obj, txt);
+		}
+	}
+	else if (lv_obj_check_type(obj, & lv_slider_class))
+	{
+		uint8_t topsp = lv_slider_get_value(slider_top);
+		uint8_t bottomsp = lv_slider_get_value(slider_bottom);
+
+		hamradio_set_gtopdbspe(topsp);
+		hamradio_set_gbottomdbspe(bottomsp);
+
+		lv_label_set_text_fmt(lbl_top, "Top: %d db", topsp);
+		lv_label_set_text_fmt(lbl_bottom, "Bottom: %d db", bottomsp);
+	}
 }
 
 // ***********************************************
@@ -432,7 +546,6 @@ static void btn_txrx_handler(lv_obj_t * p)
 		button_set_text(p, "RX");
 		button_unlock(p);
 	}
-
 }
 
 // ***********************************************
@@ -464,7 +577,7 @@ static void footer_buttons_init(lv_obj_t * p)
 			{ "Button 5", 0, 0, NULL, WIN_MEMORY, },
 			{ "Button 6", 0, 0, NULL, WIN_MEMORY, },
 			{ "Button 7", 0, 0, NULL, WIN_MEMORY, },
-			{ "Button 8", 0, 0, NULL, WIN_MEMORY, },
+			{ "Settings", 0, 0, NULL, WIN_SETTINGS, },
 	};
 
 	lv_obj_t * cont = lv_obj_create(p);
@@ -483,7 +596,8 @@ static void footer_buttons_init(lv_obj_t * p)
 	static int32_t row_dsc[] = { fbtn_h, LV_GRID_TEMPLATE_LAST };
 	lv_obj_set_style_grid_row_dsc_array(cont, row_dsc, 0);
 
-	for (int i = 0; i < ARRAY_SIZE(footer_buttons); i++) {
+	for (int i = 0; i < ARRAY_SIZE(footer_buttons); i ++)
+	{
 		lv_obj_t * btn = lv_button_create(cont);
 		lv_obj_add_style(btn, & btnst, 0);
 		lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, i, 1, LV_GRID_ALIGN_STRETCH, 0, 1);

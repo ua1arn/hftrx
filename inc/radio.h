@@ -3541,6 +3541,10 @@ void hamradio_set_bw(uint_fast8_t v);
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
 uint_fast8_t hamradio_get_att_db(void);
 void hamradio_set_att_db(uint_fast8_t db);
+void hamradio_set_gbottomdbspe(uint8_t v);
+void hamradio_set_gtopdbspe(uint8_t v);
+uint8_t hamradio_get_gbottomdbspe(void);
+uint8_t hamradio_get_gtopdbspe(void);
 
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);

@@ -106,8 +106,8 @@ void button_set_text(lv_obj_t * btn, const char * text);
 void button_lock(lv_obj_t * btn);
 void button_unlock(lv_obj_t * btn);
 void button_set_lock(lv_obj_t * btn, uint8_t v);
+lv_obj_t * add_button(lv_obj_t * cont, user_t * ext, uint8_t idx, const char * text, btns_size_t s, event_handler_t eh);
 void create_button_matrix(lv_obj_t * cont, user_t * btu, const char * mname, const uint8_t btns, const uint8_t cols, btns_size_t s, event_handler_t eh);
-
 
 #ifdef __cplusplus
 } /*extern "C"*/

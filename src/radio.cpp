@@ -20886,6 +20886,28 @@ uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
 	return param_getvalue(& xgbottomdbwfl);
 }
 
+void hamradio_set_gbottomdbspe(uint8_t v)
+{
+	param_setvalue(& xgbottomdbspe, v);
+	updateboard(1, 0);
+}
+
+void hamradio_set_gtopdbspe(uint8_t v)
+{
+	param_setvalue(& xgtopdbspe, v);
+	updateboard(1, 0);
+}
+
+uint8_t hamradio_get_gbottomdbspe(void)
+{
+	return param_getvalue(& xgbottomdbspe);
+}
+
+uint8_t hamradio_get_gtopdbspe(void)
+{
+	return param_getvalue(& xgtopdbspe);
+}
+
 #endif /* WITHSPECTRUMWF && WITHMENU */
 
 const char * hamradio_get_att_value(void)
@@ -20901,7 +20923,6 @@ const char * hamradio_get_preamp_value(void)
 	return attmodes [gatt].label;
 #endif
 }
-
 
 uint_fast8_t hamradio_get_att_db(void)
 {
