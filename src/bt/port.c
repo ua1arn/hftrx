@@ -763,22 +763,6 @@ void bt_initialize(void)
 	}
 }
 
-/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void btspp_tx(void * ctx, uint_fast8_t c)
-{
-
-}
-/* вызывается из обработчика прерываний */
-void btspp_enabletx(uint_fast8_t state)
-{
-
-}
-
-/* вызывается из обработчика прерываний */
-void btspp_enablerx(uint_fast8_t state)
-{
-
-}
 
 #else  /* WITHUSEUSBBT */
 

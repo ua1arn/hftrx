@@ -39,9 +39,12 @@
 
 
 #include "hardware.h"
-#include "formats.h"
 
 #if WITHUSEUSBBT
+
+#include "formats.h"
+#include "board.h"
+#include "serial.h"
 
 //#define BTSTACK_FILE__ "spp_counter.c"
 
@@ -252,7 +255,6 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
                 case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
                 	//printf("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
-                	//printhex(0, packet, size);
                 	break;
                 case HCI_EVENT_COMMAND_COMPLETE:
                 	// Done in port.c
@@ -277,11 +279,16 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
         case RFCOMM_DATA_PACKET:
             //printf("RCV: '");
-        	if (size == 0)
+			if (size == 0)
         		PRINTF("Empty RFCOMM_DATA_PACKET\n");
         	else
         		printhex(0, packet, size);
-            break;
+#if WITHCAT
+        	if (board_get_catmux() == BOARD_CATMUX_BTSPP)
+        		btspp_handledata(packet, size);
+#endif
+        	TP();
+           break;
 
         default:
             printf("spp_counter: Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);

@@ -15019,6 +15019,40 @@ cat_reset_ptt(void)
 	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 
+
+static volatile uint_fast8_t btsppenabletx;
+static volatile uint_fast8_t btsppenablerx;
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void btspp_tx(void * ctx, uint_fast8_t c)
+{
+
+}
+/* вызывается из обработчика прерываний */
+void btspp_enabletx(uint_fast8_t state)
+{
+	btsppenabletx = state;
+}
+
+/* вызывается из обработчика прерываний */
+void btspp_enablerx(uint_fast8_t state)
+{
+	btsppenablerx = state;
+}
+
+void btspp_handledata(const uint8_t * data, unsigned size)
+{
+	if (! btsppenablerx)
+		return;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+	while (size)
+	{
+		cat2_parsechar(* data ++);
+	}
+	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+}
+
 static uint_fast8_t
 cat_get_signal(uint_fast8_t selector)
 {
