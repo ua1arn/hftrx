@@ -309,7 +309,7 @@ static int setup_demo(void){
     a2dp_sink_create_sdp_record(sdp_avdtp_sink_service_buffer, sdp_create_service_record_handle(),
                                 AVDTP_SINK_FEATURE_MASK_HEADPHONE, NULL, NULL);
     btstack_assert(de_get_len( sdp_avdtp_sink_service_buffer) <= sizeof(sdp_avdtp_sink_service_buffer));
-    sdp_register_service(sdp_avdtp_sink_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avdtp_sink_service_buffer));
 
     // - Create AVRCP Controller service record and register it with SDP. We send Category 1 commands to the media player, e.g. play/pause
     memset(sdp_avrcp_controller_service_buffer, 0, sizeof(sdp_avrcp_controller_service_buffer));
@@ -323,7 +323,7 @@ static int setup_demo(void){
     avrcp_controller_create_sdp_record(sdp_avrcp_controller_service_buffer, sdp_create_service_record_handle(),
                                        controller_supported_features, NULL, NULL);
     btstack_assert(de_get_len( sdp_avrcp_controller_service_buffer) <= sizeof(sdp_avrcp_controller_service_buffer));
-    sdp_register_service(sdp_avrcp_controller_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avrcp_controller_service_buffer));
 
     // - Create and register A2DP Sink service record
     //   -  We receive Category 2 commands from the media player, e.g. volume up/down
@@ -332,14 +332,14 @@ static int setup_demo(void){
     avrcp_target_create_sdp_record(sdp_avrcp_target_service_buffer,
                                    sdp_create_service_record_handle(), target_supported_features, NULL, NULL);
     btstack_assert(de_get_len( sdp_avrcp_target_service_buffer) <= sizeof(sdp_avrcp_target_service_buffer));
-    sdp_register_service(sdp_avrcp_target_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avrcp_target_service_buffer));
 
     // - Create and register Device ID (PnP) service record
     memset(device_id_sdp_service_buffer, 0, sizeof(device_id_sdp_service_buffer));
     device_id_create_sdp_record(device_id_sdp_service_buffer,
                                 sdp_create_service_record_handle(), DEVICE_ID_VENDOR_ID_SOURCE_BLUETOOTH, BLUETOOTH_COMPANY_ID_BLUEKITCHEN_GMBH, 1, 1);
     btstack_assert(de_get_len( device_id_sdp_service_buffer) <= sizeof(device_id_sdp_service_buffer));
-    sdp_register_service(device_id_sdp_service_buffer);
+    VERIFY(0 == sdp_register_service(device_id_sdp_service_buffer));
 
 
     // Configure GAP - discovery / connection
@@ -1129,7 +1129,7 @@ static void a2dp_sink_packet_handler(uint8_t packet_type, uint16_t channel, uint
             break;
         
         default:
-            printf("Unhandled A2DP subevent 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+            printf("a2dp_sink: Unhandled A2DP subevent 0x%02X\n", (unsigned) packet[2]);
             break;
     }
 }

@@ -219,18 +219,18 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 						rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
 						rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
 						rfcomm_channel_id = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
-						printf("RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
+						printf("spp_counter: RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
 						rfcomm_accept_connection(rfcomm_channel_id);
 					}
                     break;
                
                 case RFCOMM_EVENT_CHANNEL_OPENED:
                     if (rfcomm_event_channel_opened_get_status(packet)) {
-                        printf("RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
+                        printf("spp_counter: RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
                     } else {
                         rfcomm_channel_id = rfcomm_event_channel_opened_get_rfcomm_cid(packet);
                         mtu = rfcomm_event_channel_opened_get_max_frame_size(packet);
-                        printf("RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
+                        printf("spp_counter: RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
                     }
                     break;
                 case RFCOMM_EVENT_CAN_SEND_NOW:
@@ -239,7 +239,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
 /* LISTING_PAUSE */                 
                 case RFCOMM_EVENT_CHANNEL_CLOSED:
-                    printf("RFCOMM channel closed\n");
+                    printf("spp_counter: RFCOMM channel closed\n");
                     rfcomm_channel_id = 0;
                     break;
 
@@ -254,7 +254,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
                 case HCI_EVENT_COMMAND_COMPLETE:
                 	break;
                 default:
-                    printf("Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+                    printf("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                     break;
             }
             break;
@@ -268,7 +268,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
             break;
 
         default:
-            printf("Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
+            printf("spp_counter: Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
             break;
     }
 /* LISTING_RESUME */ 

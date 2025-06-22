@@ -669,11 +669,11 @@ void tuh_bth_mount_cb(uint8_t idx)
 	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/generic-access-profile.html
 
     // hand over to btstack embedded code
-    //VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
-    //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
     VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
-    //VERIFY(! hsp_hs_btstack_main(0, NULL));
+    //VERIFY(! spp_streamer_btstack_main(0, NULL));
+    //VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
+    //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");

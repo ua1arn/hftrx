@@ -773,7 +773,7 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     hfp_hf_create_sdp_record_with_codecs(hfp_service_buffer, sdp_create_service_record_handle(),
                              hfp_hf_rfcomm_channel_nr, hfp_hf_service_name, hf_supported_features, sizeof(codecs), codecs);
     btstack_assert(de_get_len( hfp_service_buffer) <= sizeof(hfp_service_buffer));
-    sdp_register_service(hfp_service_buffer);
+    VERIFY(0 == sdp_register_service(hfp_service_buffer));
 
     // Configure GAP - discovery / connection
 

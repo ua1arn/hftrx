@@ -771,7 +771,7 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
     hfp_ag_create_sdp_record_with_codecs( hfp_ag_service_buffer, sdp_create_service_record_handle(),
                                           hfp_ag_rfcomm_channel_nr, hfp_ag_service_name, 0, supported_features, sizeof(codecs), codecs);
     btstack_assert(de_get_len( hfp_ag_service_buffer) <= sizeof(hfp_ag_service_buffer));
-    sdp_register_service(hfp_ag_service_buffer);
+    VERIFY(0 == sdp_register_service(hfp_ag_service_buffer));
     
     // register for HCI events and SCO packets
     hci_event_callback_registration.callback = &packet_handler;

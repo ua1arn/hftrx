@@ -5,10 +5,13 @@
 //
 
 #include "hardware.h"
+#include "formats.h"
 
 #ifndef BTSTACK_CONFIG_H
 #define BTSTACK_CONFIG_H
 
+#define HAVE_ASSERT
+#define btstack_assert(condition)  do {ASSERT(condition);} while (0)
 
 // Port related features
 //#define HAVE_BTSTACK_STDIN

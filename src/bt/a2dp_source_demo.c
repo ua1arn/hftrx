@@ -301,7 +301,7 @@ static int a2dp_source_and_avrcp_services_init(void){
     memset(sdp_a2dp_source_service_buffer, 0, sizeof(sdp_a2dp_source_service_buffer));
     a2dp_source_create_sdp_record(sdp_a2dp_source_service_buffer, sdp_create_service_record_handle(), AVDTP_SOURCE_FEATURE_MASK_PLAYER, NULL, NULL);
     btstack_assert(de_get_len( sdp_a2dp_source_service_buffer) <= sizeof(sdp_a2dp_source_service_buffer));
-    sdp_register_service(sdp_a2dp_source_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_a2dp_source_service_buffer));
     
     // Create AVRCP Target service record and register it with SDP. We receive Category 1 commands from the headphone, e.g. play/pause
     memset(sdp_avrcp_target_service_buffer, 0, sizeof(sdp_avrcp_target_service_buffer));
@@ -311,20 +311,20 @@ static int a2dp_source_and_avrcp_services_init(void){
 #endif
     avrcp_target_create_sdp_record(sdp_avrcp_target_service_buffer, sdp_create_service_record_handle(), supported_features, NULL, NULL);
     btstack_assert(de_get_len( sdp_avrcp_target_service_buffer) <= sizeof(sdp_avrcp_target_service_buffer));
-    sdp_register_service(sdp_avrcp_target_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avrcp_target_service_buffer));
 
     // Create AVRCP Controller service record and register it with SDP. We send Category 2 commands to the headphone, e.g. volume up/down
     memset(sdp_avrcp_controller_service_buffer, 0, sizeof(sdp_avrcp_controller_service_buffer));
     uint16_t controller_supported_features = AVRCP_FEATURE_MASK_CATEGORY_MONITOR_OR_AMPLIFIER;
     avrcp_controller_create_sdp_record(sdp_avrcp_controller_service_buffer, sdp_create_service_record_handle(), controller_supported_features, NULL, NULL);
     btstack_assert(de_get_len( sdp_avrcp_controller_service_buffer) <= sizeof(sdp_avrcp_controller_service_buffer));
-    sdp_register_service(sdp_avrcp_controller_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avrcp_controller_service_buffer));
 
     // Register Device ID (PnP) service SDP record
     memset(device_id_sdp_service_buffer, 0, sizeof(device_id_sdp_service_buffer));
     device_id_create_sdp_record(device_id_sdp_service_buffer, sdp_create_service_record_handle(), DEVICE_ID_VENDOR_ID_SOURCE_BLUETOOTH, BLUETOOTH_COMPANY_ID_BLUEKITCHEN_GMBH, 1, 1);
     btstack_assert(de_get_len( device_id_sdp_service_buffer) <= sizeof(device_id_sdp_service_buffer));
-    sdp_register_service(device_id_sdp_service_buffer);
+    VERIFY(0 == sdp_register_service(device_id_sdp_service_buffer));
 
     // Set local name with a template Bluetooth address, that will be automatically
     // replaced with a actual address once it is available, i.e. when BTstack boots
@@ -783,6 +783,7 @@ static void a2dp_source_packet_handler(uint8_t packet_type, uint16_t channel, ui
             }
             break;
         default:
+            printf("A2DP Source: unhandled A2DP_SUBEVENT 0x%02X\n", (unsigned) hci_event_a2dp_meta_get_subevent_code(packet));
             break; 
     }
 }
