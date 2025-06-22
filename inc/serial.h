@@ -159,9 +159,9 @@ void btspp_tx(void * ctx, uint_fast8_t c);			/* передача символа 
 void btspp_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void btspp_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 void btspp_handledata(const uint8_t * data, unsigned size);
-
+void cat_answervariable_btspp(const char * p, uint_fast8_t len);
+uint_fast8_t cat_answer_ready_btspp(void);
 void btspp_send(const void * buff, size_t length);	/* временное решение для передачи */
-uint_fast8_t btspp_ready(void);	/* временное решение для передачи */
 
 
 #if defined(STM32F401xC)

@@ -691,12 +691,12 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/generic-access-profile.html
 
+
     // hand over to btstack embedded code
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
     //VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
     VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
-    //VERIFY(! spp_streamer_btstack_main(0, NULL));
-    VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
+    spp_service_setup();	// трансивер виден как два serial порта
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
@@ -763,7 +763,6 @@ void bt_initialize(void)
 	}
 }
 
-
 #else  /* WITHUSEUSBBT */
 
 void bt_initialize(void)
@@ -779,23 +778,6 @@ uint_fast8_t hamradio_get_usbbth_active(void)
 uint_fast8_t buffers_get_btoutactive(void)
 {
 	return 0;
-}
-
-/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void btspp_tx(void * ctx, uint_fast8_t c)
-{
-
-}
-/* вызывается из обработчика прерываний */
-void btspp_enabletx(uint_fast8_t state)
-{
-
-}
-
-/* вызывается из обработчика прерываний */
-void btspp_enablerx(uint_fast8_t state)
-{
-
 }
 
 #endif /* WITHUSEUSBBT */

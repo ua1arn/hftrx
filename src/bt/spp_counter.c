@@ -46,6 +46,12 @@
 #include "board.h"
 #include "serial.h"
 
+
+static volatile uint_fast8_t btsppenabletx;
+static volatile uint_fast8_t btsppenablerx;
+
+static uint_fast8_t btspptxbusy = 0;
+
 //#define BTSTACK_FILE__ "spp_counter.c"
 
 // *****************************************************************************
@@ -93,7 +99,8 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
  */
 
 /* LISTING_START(SPPSetup): SPP service setup */ 
-static void spp_service_setup(void){
+void spp_service_setup(void)
+{
 
     // register for HCI events
     hci_event_callback_registration.callback = &spp_packet_handler;
@@ -128,29 +135,8 @@ static void spp_service_setup(void){
  */
 
 /* LISTING_START(PeriodicCounter): Periodic Counter */ 
-static btstack_timer_source_t heartbeat;
-static char lineBuffer[30];
-static void  heartbeat_handler(struct btstack_timer_source *ts){
-    static int counter = 0;
-
-    if (rfcomm_channel_id){
-    	// Подготовка буфера для передачи по RFCOMM_EVENT_CAN_SEND_NOW
-        snprintf(lineBuffer, sizeof(lineBuffer), "BTstack counter %04u\r\n", ++counter);
-        //printf("%s", lineBuffer);
-        putchar('.');
-        rfcomm_request_can_send_now_event(rfcomm_channel_id);
-    }
-
-    btstack_run_loop_set_timer(ts, HEARTBEAT_PERIOD_MS);
-    btstack_run_loop_add_timer(ts);
-} 
-
-static void one_shot_timer_setup(void){
-    // set one-shot timer
-    heartbeat.process = &heartbeat_handler;
-    btstack_run_loop_set_timer(&heartbeat, HEARTBEAT_PERIOD_MS);
-    btstack_run_loop_add_timer(&heartbeat);
-}
+static uint8_t lineBuffer[128];
+static uint_fast16_t lineBuffer_len;
 /* LISTING_END */
 
 
@@ -204,6 +190,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
     switch (packet_type) {
         case HCI_EVENT_PACKET:
+            //printf("spp_counter: parse HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
             switch (hci_event_packet_get_type(packet)) {
 /* LISTING_RESUME */ 
 //                case HCI_EVENT_PIN_CODE_REQUEST:
@@ -237,10 +224,11 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
                         rfcomm_channel_id = rfcomm_event_channel_opened_get_rfcomm_cid(packet);
                         mtu = rfcomm_event_channel_opened_get_max_frame_size(packet);
                         printf("spp_counter: RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
+                    	btspptxbusy = 0;
                     }
                     break;
                 case RFCOMM_EVENT_CAN_SEND_NOW:
-                    rfcomm_send(rfcomm_channel_id, (uint8_t*) lineBuffer, (uint16_t) strlen(lineBuffer));  
+                    rfcomm_send(rfcomm_channel_id, lineBuffer, lineBuffer_len);
                     break;
 
 /* LISTING_PAUSE */                 
@@ -251,6 +239,8 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
                 case HCI_EVENT_TRANSPORT_PACKET_SENT:
                 	//printf("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
+                	//printhex(0, packet, size);
+                	btspptxbusy = 0;
                 	break;
 
                 case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
@@ -284,7 +274,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 //        	else
 //        		printhex(0, packet, size);
 #if WITHCAT
-        	if (board_get_catmux() == BOARD_CATMUX_BTSPP)
+         	if (btsppenablerx && board_get_catmux() == BOARD_CATMUX_BTSPP)
         		btspp_handledata(packet, size);
 #endif
            break;
@@ -296,23 +286,72 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 /* LISTING_RESUME */ 
 }
 /* LISTING_END */
-
-int spp_counter_btstack_main(int argc, const char * argv[]){
-    (void)argc;
-    (void)argv;
-
-//    one_shot_timer_setup();	// периодическая передача строки
-    spp_service_setup();
-
-//    gap_discoverable_control(1);
-//    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-//    gap_set_local_name("SPP Counter 00:00:00:00:00:00");
-
-    // turn on!
-//    hci_power_control(HCI_POWER_ON);
-    
-    return 0;
-}
 /* EXAMPLE_END */
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void btspp_tx(void * ctx, uint_fast8_t c)
+{
+
+}
+/* вызывается из обработчика прерываний */
+void btspp_enabletx(uint_fast8_t state)
+{
+	btsppenabletx = state;
+}
+
+/* вызывается из обработчика прерываний */
+void btspp_enablerx(uint_fast8_t state)
+{
+	btsppenablerx = state;
+}
+
+void
+cat_answervariable_btspp(const char * p, uint_fast8_t len)
+{
+    if (rfcomm_channel_id){
+    	const uint_fast16_t chunk = ulmin16(len, sizeof lineBuffer);
+    	memcpy(lineBuffer, p, chunk);	// Подготовка буфера для передачи по RFCOMM_EVENT_CAN_SEND_NOW
+    	lineBuffer_len = chunk;
+        rfcomm_request_can_send_now_event(rfcomm_channel_id);
+        //printhex(0, lineBuffer, lineBuffer_len);
+    	btspptxbusy = 1;
+    	//PRINTF("rfcomm_channel_id=0x%02X\n", (unsigned) rfcomm_channel_id);
+    }
+}
+
+uint_fast8_t
+cat_answer_ready_btspp(void)
+{
+	return ! btspptxbusy;
+}
+
+#else  /* WITHUSEUSBBT */
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void btspp_tx(void * ctx, uint_fast8_t c)
+{
+
+}
+/* вызывается из обработчика прерываний */
+void btspp_enabletx(uint_fast8_t state)
+{
+
+}
+
+/* вызывается из обработчика прерываний */
+void btspp_enablerx(uint_fast8_t state)
+{
+
+}
+
+void
+cat_answervariable_btspp(const char * p, uint_fast8_t len)
+{
+}
+
+uint_fast8_t cat_answer_ready_btspp(void)
+{
+	return 1;
+}
 
 #endif /* WITHUSEUSBBT */

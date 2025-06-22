@@ -13923,19 +13923,6 @@ static uint_fast8_t cat_answer_ready_cdcacm(void)
 }
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 
-// user-mode function
-static uint_fast8_t
-cat_answer_ready(void)
-{
-#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
-	return board_get_catmux() == BOARD_CATMUX_USBCDC ? cat_answer_ready_cdcacm() : cat_answer_ready_uart();
-#elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
-	return cat_answer_ready_cdcacm();
-#else /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
-	return cat_answer_ready_uart();
-#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
-}
-
 #if WITHUSBHW && WITHUSBCDCACM
 static void
 cat_answervariable_cdcacm(const char * p, uint_fast8_t len)
@@ -13981,6 +13968,41 @@ cat_answervariable_uart(const char * p, uint_fast8_t len)
 	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 
+
+void btspp_handledata(const uint8_t * data, unsigned size)
+{
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+	while (size --)
+	{
+		cat2_parsechar(* data ++);
+	}
+	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+}
+
+// user-mode function
+static uint_fast8_t
+cat_answer_ready(void)
+{
+#if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
+	switch (board_get_catmux())
+	{
+	case BOARD_CATMUX_USBCDC:
+		return cat_answer_ready_cdcacm();
+	case BOARD_CATMUX_BTSPP:
+		return cat_answer_ready_btspp();
+	case BOARD_CATMUX_DIN8:
+		return cat_answer_ready_uart();
+	default:
+		return 1;
+	}
+#elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
+	return cat_answer_ready_cdcacm();
+#else /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
+	return cat_answer_ready_uart();
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
+}
+
 // Вызов из user-mode программы
 static void
 cat_answervariable(const char * p, uint_fast8_t len)
@@ -13988,15 +14010,20 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
 
 #if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
-	if (board_get_catmux() == BOARD_CATMUX_USBCDC)
+	switch (board_get_catmux())
 	{
+	case BOARD_CATMUX_USBCDC:
 		cat_answervariable_cdcacm(p, len);
-	}
-	else
-	{
+		break;
+	case BOARD_CATMUX_BTSPP:
+		cat_answervariable_btspp(p, len);
+		break;
+	case BOARD_CATMUX_DIN8:
 		cat_answervariable_uart(p, len);
+		break;
+	default:
+		break;
 	}
-
 #elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
 	cat_answervariable_cdcacm(p, len);
 #else
@@ -15016,40 +15043,6 @@ cat_reset_ptt(void)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 	cattunemode = catstatetx = 0;
-	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-}
-
-
-static volatile uint_fast8_t btsppenabletx;
-static volatile uint_fast8_t btsppenablerx;
-
-/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void btspp_tx(void * ctx, uint_fast8_t c)
-{
-
-}
-/* вызывается из обработчика прерываний */
-void btspp_enabletx(uint_fast8_t state)
-{
-	btsppenabletx = state;
-}
-
-/* вызывается из обработчика прерываний */
-void btspp_enablerx(uint_fast8_t state)
-{
-	btsppenablerx = state;
-}
-
-void btspp_handledata(const uint8_t * data, unsigned size)
-{
-	if (! btsppenablerx)
-		return;
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-	while (size --)
-	{
-		cat2_parsechar(* data ++);
-	}
 	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 
