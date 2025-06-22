@@ -450,101 +450,125 @@
 		} while (0)
 
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
-	#define HARDWARE_CAT_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc1_getrts() : 0)
+	#define HARDWARE_CAT_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc1_getrts() : 0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
-	#define HARDWARE_CAT_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc1_getdtr() : 0)
+	#define HARDWARE_CAT_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc1_getdtr() : 0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
-	#define HARDWARE_CAT2_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc2_getrts() : 0)
+	#define HARDWARE_CAT2_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc2_getrts() : 0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
-	#define HARDWARE_CAT2_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc2_getdtr() : 0)
+	#define HARDWARE_CAT2_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc2_getdtr() : 0)
 
 	// вызывается из обработчика прерываний UART5
 	// с принятым символом
 	#define HARDWARE_UART5_ONRXCHAR(c) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart5_enablerx(0); \
-			} else { \
-				cat2_parsechar(c); \
-			} \
-		} while (0)
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
+			cat2_parsechar(c); \
+		} else { \
+			hardware_uart5_enablerx(0); \
+		} \
+	} while (0)
 	// вызывается из обработчика прерываний UART5
 	#define HARDWARE_UART5_ONOVERFLOW() do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
-			hardware_uart5_enablerx(0); \
-		else \
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_rxoverflow(); \
-		} while (0)
+		} else { \
+			hardware_uart5_enablerx(0); \
+		} \
+	} while (0)
 	// вызывается из обработчика прерываний UART5
 	// по готовности передатчика
 	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) { \
-			hardware_uart5_enabletx(0); \
-		} else { \
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_sendchar(ctx); \
+		} else { \
+			hardware_uart5_enabletx(0); \
 		} \
 	} while (0)
 	// вызывается из обработчика прерываний UART5
 	// по окончании передачи (сдвиговый регистр передатчика пуст)
 	#define HARDWARE_UART5_ONTXDONE(ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
-			; \
-		else \
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_txdone(ctx); \
+		} \
 	} while (0)
 	////////////////////////////////////
 	// CAT функции работают через виртуальный USB последовательный порт
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для управления разрешением последующих вызовов прерывания
 	#define HARDWARE_CAT_ENABLETX(v) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart5_enabletx(0); \
-				usbd_cdc_enabletx(v); \
-			} else { \
-				usbd_cdc_enabletx(0); \
-				hardware_uart5_enabletx(v); \
-			} \
-		} while (0)
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) { \
+			hardware_uart5_enabletx(0); \
+			usbd_cdc_enabletx(v); \
+		} else if (board_get_catmux() == BOARD_CATMUX_BTSPP) { \
+			hardware_uart5_enabletx(0); \
+			btspp_enabletx(v); \
+		} else { \
+			usbd_cdc_enabletx(0); \
+			hardware_uart5_enabletx(v); \
+		} \
+	} while (0)
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для управления разрешением последующих вызовов прерывания
 	#define HARDWARE_CAT_ENABLERX(v) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart5_enablerx(0); \
-				usbd_cdc_enablerx(v); \
-			} else { \
-				usbd_cdc_enablerx(0); \
-				hardware_uart5_enablerx(v); \
-			} \
-		} while (0)
+		usbd_cdc_enablerx(v); \
+		btspp_enablerx(v); \
+		hardware_uart5_enablerx(v); \
+	} while (0)
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для передачи символа
 	#define HARDWARE_CAT_TX(ctx, c) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				usbd_cdc_tx((ctx), (c)); \
-				hardware_uart5_enabletx(0); \
-			} else { \
-				usbd_cdc_enabletx(0); \
-				hardware_uart5_tx((ctx), (c)); \
-			} \
-		} while (0)
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) { \
+			usbd_cdc_tx((ctx), (c)); \
+			hardware_uart5_enabletx(0); \
+		} else if (board_get_catmux() == BOARD_CATMUX_BTSPP) { \
+			btspp_tx((ctx), (c)); \
+			hardware_uart5_enabletx(0); \
+		} else { \
+			usbd_cdc_enabletx(0); \
+			hardware_uart5_tx((ctx), (c)); \
+		} \
+	} while (0)
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
 	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) \
 			cat2_parsechar(c); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
 	#define HARDWARE_CDC_ONDISCONNECT() do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) \
 			cat2_disconnect(); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
 	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) \
 			cat2_sendchar(ctx); \
 		} while (0)
+
+	////////////////////////////////////
+
+	// вызывается из обработчика прерываний BTSPP
+	// с принятым символом
+	#define HARDWARE_BTSPP_ONRXCHAR(offset, c) do { \
+		if (board_get_catmux() == BOARD_CATMUX_BTSPP) \
+			cat2_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний BTSPP
+	// произошёл разрыв связи при работе по USB BTSPP
+	#define HARDWARE_BTSPP_ONDISCONNECT() do { \
+		if (board_get_catmux() == BOARD_CATMUX_BTSPP) \
+			cat2_disconnect(); \
+		} while (0)
+	// вызывается из обработчика прерываний BTSPP
+	// по готовности передатчика
+	#define HARDWARE_BTSPP_ONTXCHAR(offset, ctx) do { \
+		if (board_get_catmux() == BOARD_CATMUX_BTSPP) \
+			cat2_sendchar(ctx); \
+		} while (0)
+
 	////////////////////////////////////
 	/* манипуляция от виртуального CDC порта */
 	#define FROMCAT_DTR_INITIALIZE() do { \
