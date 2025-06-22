@@ -4680,7 +4680,7 @@ static const struct paramdefdef xcatenable =
 	#if WITHCAT_MUX
 		enum { nopttsig = BOARD_CATSIG_NONE };
 		enum { nokeysig = BOARD_CATSIG_NONE };
-		static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
+		static uint_fast8_t gcatmux = BOARD_CATMUX_USBCDC;
 		static const struct paramdefdef xgcatmux =
 		{
 			QLABEL("CAT SEL"), 8, 3, RJ_CATMUX,	ISTEP1,
@@ -8377,6 +8377,7 @@ static const char catsiglabels [BOARD_CATSIG_count] [9] =
 static const char catmuxlabels [BOARD_CATMUX_count] [9] =
 {
 	"USB",
+	"BT",
 	"DIN8",
 };
 
@@ -12066,7 +12067,7 @@ updateboardZZZ(
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
 		#if WITHCAT_MUX
-			board_set_catmux(gcatmux);	// BOARD_CATMUX_USB or BOARD_CATMUX_DIN8
+			board_set_catmux(gcatmux);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
 		#endif /* WITHCAT_MUX */
 	#endif	/* WITHCAT */
 
@@ -13927,7 +13928,7 @@ static uint_fast8_t
 cat_answer_ready(void)
 {
 #if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
-	return board_get_catmux() == BOARD_CATMUX_USB ? cat_answer_ready_cdcacm() : cat_answer_ready_uart();
+	return board_get_catmux() == BOARD_CATMUX_USBCDC ? cat_answer_ready_cdcacm() : cat_answer_ready_uart();
 #elif WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC
 	return cat_answer_ready_cdcacm();
 #else /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
@@ -13987,7 +13988,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	//PRINTF(PSTR("cat_answervariable: '%*.*s'\n"), len, len, p);
 
 #if WITHUSBHW && WITHUSBCDCACM && WITHCAT_MUX
-	if (board_get_catmux() == BOARD_CATMUX_USB)
+	if (board_get_catmux() == BOARD_CATMUX_USBCDC)
 	{
 		cat_answervariable_cdcacm(p, len);
 	}

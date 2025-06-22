@@ -71,7 +71,7 @@ static uint_fast8_t 	glob_preamp;		// включение предусилите�
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
 static uint_fast8_t 	glob_forcexvrtr;	// принудительно включить коммутацию трансвертора
-static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USB;
+static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
@@ -3931,7 +3931,7 @@ board_set_showovf(uint_fast8_t v)
 	glob_showovf = n;
 }
 
-// BOARD_CATMUX_USB or BOARD_CATMUX_DIN8
+// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
 void
 board_set_catmux(uint_fast8_t n)	// выбор одного из каналов CAT
 {
