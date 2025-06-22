@@ -12,6 +12,7 @@
 
 #define HAVE_ASSERT
 #define btstack_assert(condition)  do {ASSERT(condition);} while (0)
+#define ENABLE_LOG_DEBUG
 
 // Port related features
 //#define HAVE_BTSTACK_STDIN
@@ -52,8 +53,8 @@
 #define MAX_NR_HFP_CONNECTIONS 1
 #define MAX_NR_HID_HOST_CONNECTIONS 1
 #define MAX_NR_HIDS_CLIENTS 1
-#define MAX_NR_L2CAP_CHANNELS  4
-#define MAX_NR_L2CAP_SERVICES  3
+#define MAX_NR_L2CAP_CHANNELS  8 // was: 4
+#define MAX_NR_L2CAP_SERVICES  5 // was: 3
 #define MAX_NR_RFCOMM_CHANNELS 1
 #define MAX_NR_RFCOMM_MULTIPLEXERS 1
 #define MAX_NR_RFCOMM_SERVICES 1

@@ -65,7 +65,7 @@
  
 #include "btstack.h"
 
-#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 2
+#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 1
 #define HEARTBEAT_PERIOD_MS 1000
 
 static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
@@ -104,17 +104,17 @@ static void spp_service_setup(void){
 #endif
 
     //rfcomm_init();	// перенесено в port.c
-    rfcomm_register_service(spp_packet_handler, SPP_COUNTER_RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+    VERIFY(ERROR_CODE_SUCCESS == rfcomm_register_service(spp_packet_handler, SPP_COUNTER_RFCOMM_SERVER_CHANNEL, 0xffff));  // reserved channel, mtu limited by l2cap
 
     // init SDP, create record for SPP and register with SDP
     //sdp_init();	// перенесено в port.c
     memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
     spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), SPP_COUNTER_RFCOMM_SERVER_CHANNEL, "SPP Counter");
     btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
-    unsigned ec = sdp_register_service(spp_service_buffer);
-    PRINTF("ec=0x%02X\n", ec);
-    ASSERT(ec==0);
-    //VERIFY(0 == sdp_register_service(spp_service_buffer));
+//    unsigned ec = sdp_register_service(spp_service_buffer);
+//    PRINTF("ec=0x%02X\n", ec);
+//    ASSERT(ec==0);
+    VERIFY(0 == sdp_register_service(spp_service_buffer));
 }
 /* LISTING_END */
 
@@ -295,7 +295,7 @@ int spp_counter_btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
 
-    one_shot_timer_setup();	// периодическая передача строки
+//    one_shot_timer_setup();	// периодическая передача строки
     spp_service_setup();
 
 //    gap_discoverable_control(1);
