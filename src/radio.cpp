@@ -4678,14 +4678,28 @@ static const struct paramdefdef xcatenable =
 };
 
 	#if WITHCAT_MUX
+
+		static const struct catmuxmode_tag
+		{
+			uint8_t code;
+			const char * label;
+		} catmuxmodes [] =
+		{
+			{	BOARD_CATMUX_USBCDC, "USB", },
+		#if WITHUSEUSBBT
+			{	BOARD_CATMUX_BTSPP, "BT", },
+		#endif /* WITHUSEUSBBT */
+			{	BOARD_CATMUX_DIN8, "DIN8", },
+		};
+
 		enum { nopttsig = BOARD_CATSIG_NONE };
 		enum { nokeysig = BOARD_CATSIG_NONE };
-		static uint_fast8_t gcatmux = BOARD_CATMUX_USBCDC;
+		static uint_fast8_t gcatmux;
 		static const struct paramdefdef xgcatmux =
 		{
 			QLABEL("CAT SEL"), 8, 3, RJ_CATMUX,	ISTEP1,
 			ITEM_VALUE,
-			0, BOARD_CATMUX_count - 1,
+			0, ARRAY_SIZE(catmuxmodes) - 1,
 			OFFSETOF(struct nvmap, gcatmux),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -8374,12 +8388,6 @@ static const char catsiglabels [BOARD_CATSIG_count] [9] =
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 };
 
-static const char catmuxlabels [BOARD_CATMUX_count] [9] =
-{
-	"USB",
-	"BT",
-	"DIN8",
-};
 
 static unsigned getselector_bandgroupant(unsigned * count)
 {
@@ -12067,7 +12075,7 @@ updateboardZZZ(
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
 		#if WITHCAT_MUX
-			board_set_catmux(gcatmux);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
+			board_set_catmux(catmuxmodes [gcatmux].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
 		#endif /* WITHCAT_MUX */
 	#endif	/* WITHCAT */
 
@@ -17332,7 +17340,7 @@ param_format(
 
 #if WITHCAT_MUX
 	case RJ_CATMUX:
-		return local_snprintf_P(buff, count, "%s", catmuxlabels [value]);
+		return local_snprintf_P(buff, count, "%s", catmuxmodes [value].label);
 #endif /* WITHCAT_MUX */
 
 	case RJ_CATSIG:
