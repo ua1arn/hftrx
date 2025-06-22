@@ -66,10 +66,4 @@
 #define NVM_NUM_DEVICE_DB_ENTRIES 4
 #define NVM_NUM_LINK_KEYS 4
 
-//uint32_t BSP_AUDIO_OUT_GetFrequency(uint32_t AudioFreq);
-//uint8_t BSP_AUDIO_IN_Record(uint16_t* pbuf, uint32_t size);
-//uint8_t BSP_AUDIO_IN_Stop(void);
-//uint8_t BSP_AUDIO_IN_Init(uint32_t AudioFreq, uint32_t BitRes, uint32_t ChnlNbr);
-//uint8_t BSP_AUDIO_IN_PDMToPCM(uint16_t *PDMBuf, uint16_t *PCMBuf);
-
 #endif

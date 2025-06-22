@@ -72,88 +72,6 @@
 
 static int btactive;
 
-/**
-  * @brief  Initializes wave recording.
-  * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
-  * @param  BitRes: Audio frequency to be configured for the I2S peripheral.
-  * @param  ChnlNbr: Audio frequency to be configured for the I2S peripheral.
-  * @retval AUDIO_OK if correct communication, else wrong communication
-  */
-uint8_t BSP_AUDIO_IN_Init(uint32_t AudioFreq, uint32_t BitRes, uint32_t ChnlNbr)
-{
-
-//#if 0
-//  // BK: only do PLL clock configuration in sink
-//  /* Configure PLL clock */
-//  BSP_AUDIO_IN_ClockConfig(&hAudioInI2s, AudioFreq, NULL);
-//#endif
-//
-//  /* Configure the PDM library */
-//  PDMDecoder_Init(AudioFreq, ChnlNbr);
-//
-//  /* Configure the I2S peripheral */
-//  hAudioInI2s.Instance = I2S2;
-//  if(HAL_I2S_GetState(&hAudioInI2s) == HAL_I2S_STATE_RESET)
-//  {
-//    /* Initialize the I2S Msp: this __weak function can be rewritten by the application */
-//    BSP_AUDIO_IN_MspInit(&hAudioInI2s, NULL);
-//  }
-//
-//  /* Configure the I2S2 */
-//  I2S2_Init(AudioFreq);
-//
-  /* Return AUDIO_OK when all operations are correctly done */
-  return 0;//AUDIO_OK;
-}
-
-
-/**
-  * @brief  Stops audio recording.
-  * @retval AUDIO_OK if correct communication, else wrong communication
-  */
-uint8_t BSP_AUDIO_IN_Stop(void)
-{
-//  uint32_t ret = AUDIO_ERROR;
-//
-//  /* Call the Media layer pause function */
-//  HAL_I2S_DMAStop(&hAudioInI2s);
-
-  /* Return AUDIO_OK when all operations are correctly done */
-//  ret = AUDIO_OK;
-
-  return 0;//AUDIO_OK;
-}
-
-
-/**
-  * @brief  Starts audio recording.
-  * @param  pbuf: Main buffer pointer for the recorded data storing
-  * @param  size: Current size of the recorded buffer
-  * @retval AUDIO_OK if correct communication, else wrong communication
-  */
-uint8_t BSP_AUDIO_IN_Record(uint16_t* pbuf, uint32_t size)
-{
-//  uint32_t ret = AUDIO_ERROR;
-//
-//  /* Start the process receive DMA */
-//  HAL_I2S_Receive_DMA(&hAudioInI2s, pbuf, size);
-//
-//  /* Return AUDIO_OK when all operations are correctly done */
-//  ret = AUDIO_OK;
-
-  return 0;//ret;
-}
-
-/**
-  * @brief  Retrive the audio frequency.
-  * @retval AudioFreq: Audio frequency used to play the audio stream.
-  * @note   This API should be called after the BSP_AUDIO_OUT_Init() to adjust the
-  *         audio frequency.
-  */
-uint32_t BSP_AUDIO_OUT_GetFrequency(uint32_t AudioFreq)
-{
-  return ARMI2SRATE;//bsp_audio_out_frequency;
-}
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
@@ -167,7 +85,7 @@ static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
 
 // hal_cpu.h implementation
 #include "hal_cpu.h"
-
+#if 1
 void hal_cpu_disable_irqs(void){
 	global_disableIRQ();
 }
@@ -184,6 +102,7 @@ void hal_cpu_enable_irqs_and_sleep(void){
     //  __asm__("wfe");
 #endif
 }
+#endif
 
 //#define HAL_FLASH_BANK_SIZE (128 * 1024)
 //#define HAL_FLASH_BANK_0_ADDR 0x080C0000
