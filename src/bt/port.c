@@ -659,7 +659,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 //    avrcp_target_init();
 
     // hand over to btstack embedded code
-    //VERIFY(! spp_counter_btstack_main(0, NULL));
+    //VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
     VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
     //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно

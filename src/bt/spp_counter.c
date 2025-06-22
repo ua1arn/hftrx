@@ -68,7 +68,7 @@
 #define RFCOMM_SERVER_CHANNEL 1
 #define HEARTBEAT_PERIOD_MS 1000
 
-static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 static uint16_t rfcomm_channel_id;
 static uint8_t  spp_service_buffer[150];
@@ -93,7 +93,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 static void spp_service_setup(void){
 
     // register for HCI events
-    hci_event_callback_registration.callback = &packet_handler;
+    hci_event_callback_registration.callback = &spp_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
 
     l2cap_init();
@@ -104,7 +104,7 @@ static void spp_service_setup(void){
 #endif
 
     rfcomm_init();
-    rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+    rfcomm_register_service(spp_packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 
     // init SDP, create record for SPP and register with SDP
     sdp_init();
@@ -128,9 +128,10 @@ static void  heartbeat_handler(struct btstack_timer_source *ts){
     static int counter = 0;
 
     if (rfcomm_channel_id){
-        snprintf(lineBuffer, sizeof(lineBuffer), "BTstack counter %04u\n", ++counter);
-        printf("%s", lineBuffer);
-
+    	// Подготовка буфера для передачи по RFCOMM_EVENT_CAN_SEND_NOW
+        snprintf(lineBuffer, sizeof(lineBuffer), "BTstack counter %04u\r\n", ++counter);
+        //printf("%s", lineBuffer);
+        putchar('.');
         rfcomm_request_can_send_now_event(rfcomm_channel_id);
     }
 
@@ -187,12 +188,11 @@ static void one_shot_timer_setup(void){
  */ 
 
 /* LISTING_START(SppServerPacketHandler): SPP Server - Heartbeat Counter over RFCOMM */
-static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
 
 /* LISTING_PAUSE */ 
     bd_addr_t event_addr;
-    uint8_t   rfcomm_channel_nr;
     uint16_t  mtu;
     int i;
 
@@ -214,11 +214,14 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
                     break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
-                    rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
-                    rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
-                    rfcomm_channel_id = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
-                    printf("RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
-                    rfcomm_accept_connection(rfcomm_channel_id);
+					{
+					    uint8_t   rfcomm_channel_nr;
+						rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
+						rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
+						rfcomm_channel_id = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
+						printf("RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
+						rfcomm_accept_connection(rfcomm_channel_id);
+					}
                     break;
                
                 case RFCOMM_EVENT_CHANNEL_OPENED:
@@ -239,8 +242,18 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
                     printf("RFCOMM channel closed\n");
                     rfcomm_channel_id = 0;
                     break;
-                
+
+                case HCI_EVENT_TRANSPORT_PACKET_SENT:
+                	printf("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
+                	break;
+
+                case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
+                	printf("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
+                	printhex(0, packet, size);
+                	break;
+
                 default:
+                    printf("Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                     break;
             }
             break;
@@ -254,6 +267,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
             break;
 
         default:
+            printf("Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
             break;
     }
 /* LISTING_RESUME */ 
@@ -264,7 +278,7 @@ int spp_counter_btstack_main(int argc, const char * argv[]){
     (void)argc;
     (void)argv;
 
-    one_shot_timer_setup();
+    one_shot_timer_setup();	// периодическая передача строки
     spp_service_setup();
 
     gap_discoverable_control(1);
