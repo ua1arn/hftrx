@@ -260,8 +260,11 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
             break;
 
         case RFCOMM_DATA_PACKET:
-            printf("RCV: '");
-            printhex(0, packet, size);
+            //printf("RCV: '");
+        	if (size == 0)
+        		PRINTF("Empty RFCOMM_DATA_PACKET\n");
+        	else
+        		printhex(0, packet, size);
             break;
 
         default:
@@ -279,12 +282,12 @@ int spp_counter_btstack_main(int argc, const char * argv[]){
     one_shot_timer_setup();	// периодическая передача строки
     spp_service_setup();
 
-    gap_discoverable_control(1);
-    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-    gap_set_local_name("SPP Counter 00:00:00:00:00:00");
+//    gap_discoverable_control(1);
+//    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
+//    gap_set_local_name("SPP Counter 00:00:00:00:00:00");
 
     // turn on!
-    hci_power_control(HCI_POWER_ON);
+//    hci_power_control(HCI_POWER_ON);
     
     return 0;
 }

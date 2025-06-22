@@ -728,8 +728,8 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
     // Request role change on reconnecting headset to always use them in slave mode
     hci_set_master_slave_policy(0);
 
-    gap_set_local_name("HFP AG Demo 00:00:00:00:00:00");
-    gap_discoverable_control(1);
+//    gap_set_local_name("HFP AG Demo 00:00:00:00:00:00");
+//    gap_discoverable_control(1);
 
     // L2CAP
     //l2cap_init();	// перенесено в port.c
@@ -788,7 +788,7 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
     btstack_stdin_setup(stdin_process);
 #endif  
     // turn on!
-    hci_power_control(HCI_POWER_ON);
+//    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* LISTING_END */

@@ -347,10 +347,10 @@ static int setup_demo(void){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
-
-    // - Allow to show up in Bluetooth inquiry
-    gap_discoverable_control(1);
+//    gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
+//
+//    // - Allow to show up in Bluetooth inquiry
+//    gap_discoverable_control(1);
 
     // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Headphone
     gap_set_class_of_device(0x200404);
@@ -364,8 +364,8 @@ static int setup_demo(void){
 
 
     // Register for HCI events
-    hci_event_callback_registration.callback = &hci_packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
+//    hci_event_callback_registration.callback = &hci_packet_handler;
+//    hci_add_event_handler(&hci_event_callback_registration);
 
     // Inform about audio playback / test options
 #ifdef HAVE_POSIX_FILE_IO
@@ -668,6 +668,8 @@ static void dump_sbc_configuration(media_codec_configuration_sbc_t * configurati
     printf("\n");
 }
 
+#if 0
+// Перенесено в port.c
 static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
@@ -679,6 +681,7 @@ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
 //        gap_pin_code_response(address, "0000");
 //    }
 }
+#endif
 
 #ifdef ENABLE_AVRCP_COVER_ART
 static void a2dp_sink_demo_cover_art_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
@@ -1396,8 +1399,8 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-    printf("Starting BTstack ...\n");
-    hci_power_control(HCI_POWER_ON);
+ //   printf("Starting BTstack ...\n");
+ //   hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

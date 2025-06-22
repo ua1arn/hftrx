@@ -329,8 +329,8 @@ static int a2dp_source_and_avrcp_services_init(void){
     // Set local name with a template Bluetooth address, that will be automatically
     // replaced with a actual address once it is available, i.e. when BTstack boots
     // up and starts talking to a Bluetooth module.
-    gap_set_local_name("A2DP Source 00:00:00:00:00:00");
-    gap_discoverable_control(1);
+//    gap_set_local_name("A2DP Source 00:00:00:00:00:00");
+//    gap_discoverable_control(1);
     gap_set_class_of_device(0x200408);
     
     // Register for HCI events.
@@ -1070,7 +1070,7 @@ int a2dp_source_btstack_main(int argc, const char * argv[]){
     int err = a2dp_source_and_avrcp_services_init();
     if (err) return err;
     // turn on!
-    hci_power_control(HCI_POWER_ON);
+ //   hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

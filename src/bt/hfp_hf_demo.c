@@ -780,10 +780,10 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    gap_set_local_name("HFP HF Demo 00:00:00:00:00:00");
-
-    // - Allow to show up in Bluetooth inquiry
-    gap_discoverable_control(1);
+//    gap_set_local_name("HFP HF Demo 00:00:00:00:00:00");
+//
+//    // - Allow to show up in Bluetooth inquiry
+//    gap_discoverable_control(1);
 
     // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Hands-Free device
     gap_set_class_of_device(0x200408);
@@ -810,7 +810,7 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-    hci_power_control(HCI_POWER_ON);
+//    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* LISTING_END */
