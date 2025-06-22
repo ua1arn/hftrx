@@ -65,7 +65,7 @@
  
 #include "btstack.h"
 
-#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 1
+#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 2
 #define HEARTBEAT_PERIOD_MS 1000
 
 static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
