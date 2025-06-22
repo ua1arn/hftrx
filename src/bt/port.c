@@ -624,7 +624,7 @@ void tuh_bth_mount_cb(uint8_t idx)
     //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
 
-    gap_set_allow_role_switch(true);
+    //gap_set_allow_role_switch(true);
 
     // turn on!
     hci_power_control(HCI_POWER_ON);
