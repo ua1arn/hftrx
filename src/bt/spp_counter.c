@@ -65,7 +65,7 @@
  
 #include "btstack.h"
 
-#define RFCOMM_SERVER_CHANNEL 1
+#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 2
 #define HEARTBEAT_PERIOD_MS 1000
 
 static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
@@ -79,7 +79,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
  *s
  * @text To provide an SPP service, the L2CAP, RFCOMM, and SDP protocol layers 
  * are required. After setting up an RFCOMM service with channel nubmer
- * RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
+ * SPP_COUNTER_RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
  * Example code for SPP service setup is
  * provided in Listing SPPSetup. The SDP record created by function
  * spp_create_sdp_record consists of a basic SPP definition that uses the provided
@@ -104,14 +104,17 @@ static void spp_service_setup(void){
 #endif
 
     //rfcomm_init();	// перенесено в port.c
-    rfcomm_register_service(spp_packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+    rfcomm_register_service(spp_packet_handler, SPP_COUNTER_RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 
     // init SDP, create record for SPP and register with SDP
     //sdp_init();	// перенесено в port.c
     memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
-    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, "SPP Counter");
+    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), SPP_COUNTER_RFCOMM_SERVER_CHANNEL, "SPP Counter");
     btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
-    sdp_register_service(spp_service_buffer);
+    unsigned ec = sdp_register_service(spp_service_buffer);
+    PRINTF("ec=0x%02X\n", ec);
+    ASSERT(ec==0);
+    //VERIFY(0 == sdp_register_service(spp_service_buffer));
 }
 /* LISTING_END */
 
@@ -252,7 +255,20 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
                 	//printhex(0, packet, size);
                 	break;
                 case HCI_EVENT_COMMAND_COMPLETE:
+                	// Done in port.c
                 	break;
+                case BTSTACK_EVENT_STATE:
+                	// Done in port.c
+                	break;
+                case BTSTACK_EVENT_SCAN_MODE_CHANGED:
+                	// Done in port.c
+               	break;
+            	case HCI_EVENT_COMMAND_STATUS:
+                	// Done in port.c
+            		break;
+                case HCI_EVENT_QOS_SETUP_COMPLETE:
+                    //PRINTF("port: HCI_EVENT_QOS_SETUP_COMPLETE!\n");
+                    break;
                 default:
                     printf("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                     break;

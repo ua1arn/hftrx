@@ -792,7 +792,7 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     gap_set_default_link_policy_settings( LM_LINK_POLICY_ENABLE_ROLE_SWITCH | LM_LINK_POLICY_ENABLE_SNIFF_MODE );
 
     // - Allow for role switch on outgoing connections - this allows HFP AG, e.g. smartphone, to become master when we re-connect to it
-    gap_set_allow_role_switch(true);
+    //gap_set_allow_role_switch(true);	// перенесено в port.c
 
     // Register for HCI events and SCO packets
     hci_event_callback_registration.callback = &hci_packet_handler;

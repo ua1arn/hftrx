@@ -206,24 +206,47 @@ static void port_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t 
 //#endif
     switch(hci_event_packet_get_type(packet))
     {
+    case BTSTACK_EVENT_SCAN_MODE_CHANGED:
+        PRINTF("port: BTSTACK_EVENT_SCAN_MODE_CHANGED\n");
+    	break;
     case BTSTACK_EVENT_STATE:
-        if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) return;
-        gap_local_bd_addr(local_addr);
-        PRINTF("port BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
-        break;
+        switch (btstack_event_state_get_state(packet))
+		{
+		case HCI_STATE_INITIALIZING:
+			PRINTF("port: HCI_STATE_INITIALIZING\n");
+			break;
+		case HCI_STATE_WORKING:
+			gap_local_bd_addr(local_addr);
+			PRINTF("port: BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+			break;
+		default:
+			PRINTF("port: BTstack hci_state=%u.\n", (unsigned) btstack_event_state_get_state(packet));
+			break;
+		}
+		break;
+	case HCI_EVENT_COMMAND_STATUS:
+		break;
+
     case HCI_EVENT_PIN_CODE_REQUEST:
-        PRINTF("port Pin code request - using '0000'\n");
+        PRINTF("port: Pin code request - using '0000'\n");
         hci_event_pin_code_request_get_bd_addr(packet, address);
         gap_pin_code_response(address, "0000");
         break;
     case GAP_EVENT_PAIRING_COMPLETE:
-        PRINTF("port Paired!\n");
+        PRINTF("port: Paired!\n");
         break;
+    case HCI_EVENT_QOS_SETUP_COMPLETE:
+        //PRINTF("port: HCI_EVENT_QOS_SETUP_COMPLETE!\n");
+        break;
+
     case HCI_EVENT_USER_CONFIRMATION_REQUEST:
         // ssp: inform about user confirmation request
-        PRINTF("port User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
-        PRINTF("port User Confirmation Auto accept\n");
+        PRINTF("port: User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+        PRINTF("port: User Confirmation Auto accept\n");
         break;
+    case HCI_EVENT_DISCONNECTION_COMPLETE:
+        PRINTF("port: Disconnection!\n");
+    	break;
 	default:
 		break;
     }
@@ -670,9 +693,9 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     // hand over to btstack embedded code
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
+    //VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
     //VERIFY(! spp_streamer_btstack_main(0, NULL));
-    //VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
+    VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
     //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
@@ -681,6 +704,8 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+
+    //gap_set_allow_role_switch(false);
 
     // turn on!
     hci_power_control(HCI_POWER_ON);

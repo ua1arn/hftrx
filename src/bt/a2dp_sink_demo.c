@@ -360,7 +360,7 @@ static int setup_demo(void){
 
     // - Allow for role switch on outgoing connections
     //   - This allows A2DP Source, e.g. smartphone, to become master when we re-connect to it.
-    gap_set_allow_role_switch(true);
+    //gap_set_allow_role_switch(true);	// перенесено в port.c
 
 
     // Register for HCI events
