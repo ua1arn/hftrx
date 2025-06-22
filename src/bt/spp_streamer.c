@@ -194,18 +194,18 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 		case HCI_EVENT_PACKET:
 			switch (hci_event_packet_get_type(packet)) {
 
-                case HCI_EVENT_PIN_CODE_REQUEST:
-                    // inform about pin code request
-                    printf("Pin code request - using '0000'\n");
-                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
-                    gap_pin_code_response(event_addr, "0000");
-                    break;
+//                case HCI_EVENT_PIN_CODE_REQUEST:
+//                    // inform about pin code request
+//                    printf("Pin code request - using '0000'\n");
+//                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
+//                    gap_pin_code_response(event_addr, "0000");
+//                    break;
 
-                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
-                    // inform about user confirmation request
-                    printf("xxx User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
-                    printf("xxx User Confirmation Auto accept\n");
-                    break;
+//                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
+//                    // inform about user confirmation request
+//                    printf("xxx User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+//                    printf("xxx User Confirmation Auto accept\n");
+//                    break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
                     rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
@@ -285,14 +285,14 @@ int spp_streamer_btstack_main(int argc, const char * argv[])
     (void)argc;
     (void)argv;
 
-    l2cap_init();
+    //l2cap_init();	// перенесено в port.c
 
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
 #endif
 
-    rfcomm_init();
+    //rfcomm_init();	// перенесено в port.c
     rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);
 
 #ifdef ENABLE_L2CAP_ENHANCED_RETRANSMISSION_MODE_FOR_RFCOMM
@@ -301,7 +301,7 @@ int spp_streamer_btstack_main(int argc, const char * argv[])
 #endif
 
     // init SDP, create record for SPP and register with SDP
-    sdp_init();
+    //sdp_init();	// перенесено в port.c
     memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
     spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, "SPP Streamer");
     btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));

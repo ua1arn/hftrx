@@ -266,8 +266,8 @@ static void stdin_process(char cmd);
 static int setup_demo(void){
 
     // init protocols
-    l2cap_init();
-    sdp_init();
+    //l2cap_init();	// перенесено в port.c
+    //sdp_init();	// перенесено в port.c
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
@@ -672,12 +672,12 @@ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
     UNUSED(channel);
     UNUSED(size);
     if (packet_type != HCI_EVENT_PACKET) return;
-    if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
-        bd_addr_t address;
-        printf("Pin code request - using '0000'\n");
-        hci_event_pin_code_request_get_bd_addr(packet, address);
-        gap_pin_code_response(address, "0000");
-    }
+//    if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
+//        bd_addr_t address;
+//        printf("Pin code request - using '0000'\n");
+//        hci_event_pin_code_request_get_bd_addr(packet, address);
+//        gap_pin_code_response(address, "0000");
+//    }
 }
 
 #ifdef ENABLE_AVRCP_COVER_ART
@@ -1126,6 +1126,7 @@ static void a2dp_sink_packet_handler(uint8_t packet_type, uint16_t channel, uint
             break;
         
         default:
+            printf("Unhandled A2DP subevent 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
             break;
     }
 }

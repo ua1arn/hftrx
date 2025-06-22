@@ -470,12 +470,12 @@ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * 
                     dump_supported_codecs();
                     break;
 
-                case HCI_EVENT_PIN_CODE_REQUEST:
-                    // inform about pin code request and respond with '0000'
-                    printf("Pin code request - using '0000'\n");
-                    hci_event_pin_code_request_get_bd_addr(event, event_addr);
-                    gap_pin_code_response(event_addr, "0000");
-                    break;
+//                case HCI_EVENT_PIN_CODE_REQUEST:
+//                    // inform about pin code request and respond with '0000'
+//                    printf("Pin code request - using '0000'\n");
+//                    hci_event_pin_code_request_get_bd_addr(event, event_addr);
+//                    gap_pin_code_response(event_addr, "0000");
+//                    break;
 
                 case HCI_EVENT_SCO_CAN_SEND_NOW:
                     sco_demo_send(sco_handle);
@@ -511,12 +511,12 @@ static void hfp_hf_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
                     dump_supported_codecs();
                     break;
 
-                case HCI_EVENT_PIN_CODE_REQUEST:
-                    // inform about pin code request
-                    printf("Pin code request - using '0000'\n");
-                    hci_event_pin_code_request_get_bd_addr(event, event_addr);
-                    gap_pin_code_response(event_addr, "0000");
-                    break;
+//                case HCI_EVENT_PIN_CODE_REQUEST:
+//                    // inform about pin code request
+//                    printf("Pin code request - using '0000'\n");
+//                    hci_event_pin_code_request_get_bd_addr(event, event_addr);
+//                    gap_pin_code_response(event_addr, "0000");
+//                    break;
 
                 case HCI_EVENT_SCO_CAN_SEND_NOW:
                     sco_demo_send(sco_handle);
@@ -734,9 +734,9 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 
     // Init protocols
     // init L2CAP
-    l2cap_init();
-    rfcomm_init();
-    sdp_init();
+    //l2cap_init();	// перенесено в port.c
+    //rfcomm_init();	// перенесено в port.c
+    //sdp_init();	// перенесено в port.c
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();

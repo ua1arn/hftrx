@@ -282,20 +282,20 @@ int hsp_hs_btstack_main(int argc, const char * argv[]){
     sco_demo_init();
     sco_demo_set_codec(HFP_CODEC_CVSD);
 
-    l2cap_init();
+    //l2cap_init();	// перенесено в port.c
 
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
 #endif
 
-    sdp_init();
+    //sdp_init();	// перенесено в port.c
     memset(hsp_service_buffer, 0, sizeof(hsp_service_buffer));
     hsp_hs_create_sdp_record(hsp_service_buffer, sdp_create_service_record_handle(), hsp_hs_rfcomm_channel_nr, hsp_hs_service_name, 0);
     btstack_assert(de_get_len( hsp_service_buffer) <= sizeof(hsp_service_buffer));
     sdp_register_service(hsp_service_buffer);
 
-    rfcomm_init();
+    //rfcomm_init();	// перенесено в port.c
 
     hsp_hs_init(hsp_hs_rfcomm_channel_nr);
 

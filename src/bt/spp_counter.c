@@ -96,18 +96,18 @@ static void spp_service_setup(void){
     hci_event_callback_registration.callback = &spp_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
 
-    l2cap_init();
+    //l2cap_init();	// перенесено в port.c
 
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
 #endif
 
-    rfcomm_init();
+    //rfcomm_init();	// перенесено в port.c
     rfcomm_register_service(spp_packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 
     // init SDP, create record for SPP and register with SDP
-    sdp_init();
+    //sdp_init();	// перенесено в port.c
     memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
     spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, "SPP Counter");
     btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
@@ -200,18 +200,18 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
         case HCI_EVENT_PACKET:
             switch (hci_event_packet_get_type(packet)) {
 /* LISTING_RESUME */ 
-                case HCI_EVENT_PIN_CODE_REQUEST:
-                    // inform about pin code request
-                    printf("Pin code request - using '0000'\n");
-                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
-                    gap_pin_code_response(event_addr, "0000");
-                    break;
+//                case HCI_EVENT_PIN_CODE_REQUEST:
+//                    // inform about pin code request
+//                    printf("Pin code request - using '0000'\n");
+//                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
+//                    gap_pin_code_response(event_addr, "0000");
+//                    break;
 
-                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
-                    // ssp: inform about user confirmation request
-                    printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
-                    printf("SSP User Confirmation Auto accept\n");
-                    break;
+//                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
+//                    // ssp: inform about user confirmation request
+//                    printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
+//                    printf("SSP User Confirmation Auto accept\n");
+//                    break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
 					{
@@ -244,14 +244,15 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
                     break;
 
                 case HCI_EVENT_TRANSPORT_PACKET_SENT:
-                	printf("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
+                	//printf("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
                 	break;
 
                 case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
-                	printf("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
-                	printhex(0, packet, size);
+                	//printf("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
+                	//printhex(0, packet, size);
                 	break;
-
+                case HCI_EVENT_COMMAND_COMPLETE:
+                	break;
                 default:
                     printf("Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                     break;
@@ -260,10 +261,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
         case RFCOMM_DATA_PACKET:
             printf("RCV: '");
-            for (i=0;i<size;i++){
-                putchar(packet[i]);
-            }
-            printf("'\n");
+            printhex(0, packet, size);
             break;
 
         default:

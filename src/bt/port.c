@@ -194,30 +194,35 @@ void hal_cpu_enable_irqs_and_sleep(void){
 //int btstack_main(int argc, char ** argv);
 
 // main.c
-static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+static void port_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(size);
     UNUSED(channel);
     bd_addr_t local_addr;
 	bd_addr_t address;
     if (packet_type != HCI_EVENT_PACKET) return;
-    switch(hci_event_packet_get_type(packet)){
+//#if 1
+//    PRINTF("port_packet_handler: hci_event=0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+//    return;
+//#endif
+    switch(hci_event_packet_get_type(packet))
+    {
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) return;
         gap_local_bd_addr(local_addr);
-        PRINTF("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+        PRINTF("port BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
         break;
     case HCI_EVENT_PIN_CODE_REQUEST:
-        PRINTF("Pin code request - using '0000'\n");
+        PRINTF("port Pin code request - using '0000'\n");
         hci_event_pin_code_request_get_bd_addr(packet, address);
         gap_pin_code_response(address, "0000");
         break;
     case GAP_EVENT_PAIRING_COMPLETE:
-        PRINTF("Paired!\n");
+        PRINTF("port Paired!\n");
         break;
     case HCI_EVENT_USER_CONFIRMATION_REQUEST:
         // ssp: inform about user confirmation request
-        PRINTF("User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
-        PRINTF("User Confirmation Auto accept\n");
+        PRINTF("port User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+        PRINTF("port User Confirmation Auto accept\n");
         break;
 	default:
 		break;
@@ -333,7 +338,7 @@ static int btstack_audio_storch_sink_init(
     return 0;
 }
 
-
+// Звук в трансивер
 static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 
 	//PRINTF("%s:\n", __func__);
@@ -382,6 +387,7 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
     btstack_run_loop_add_timer(ts);
 }
 
+// Звук из трансивера
 static void driver_timer_handler_source(btstack_timer_source_t * ts){
 	//PRINTF("%s:\n", __func__);
    // recording buffer ready to process
@@ -645,18 +651,22 @@ void tuh_bth_mount_cb(uint8_t idx)
 	btstack_audio_source_set_instance(btstack_audio_storch_source_get_instance());
 
     // inform about BTstack state
-//    hci_event_callback_registration.callback = &packet_handler;
-//    hci_add_event_handler(&hci_event_callback_registration);
-    //hci_register_sco_packet_handler(&packet_handler);		// Used for HSP and HFP profiles.
+    hci_event_callback_registration.callback = &port_packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+
+    //hci_register_sco_packet_handler(&port_packet_handler);		// Used for HSP and HFP profiles.
 //
-//    sdp_init();		// везде в примерах убрать
-//    l2cap_init();	// везде в примерах убрать
-//    rfcomm_init();	// везде в примерах убрать
+    sdp_init();		// везде в примерах убрать
+    l2cap_init();	// везде в примерах убрать
+    rfcomm_init();	// везде в примерах убрать
+
 //    // Init profiles
 //    a2dp_sink_init();
 //    avrcp_init();
 //    avrcp_controller_init();
 //    avrcp_target_init();
+
+	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/generic-access-profile.html
 
     // hand over to btstack embedded code
     //VERIFY(! spp_counter_btstack_main(0, NULL));	// трансивер виден как два serial порта
@@ -693,7 +703,7 @@ void tuh_bth_umount_cb(uint8_t idx)
 	    btactive = 0;
 	    //hci_power_control(HCI_POWER_OFF);
 		hci_remove_event_handler(&hci_event_callback_registration);
-		hci_deinit();
+//		hci_deinit();
 	//	btstack_run_loop_deinit();
 	//	btstack_memory_deinit();
 	//	ASSERT(0);

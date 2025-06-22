@@ -732,7 +732,7 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
     gap_discoverable_control(1);
 
     // L2CAP
-    l2cap_init();
+    //l2cap_init();	// перенесено в port.c
 
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
@@ -755,7 +755,7 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
         (1<<HFP_AGSF_THREE_WAY_CALLING);
 
     // HFP
-    rfcomm_init();
+    //rfcomm_init();	// перенесено в port.c
     hfp_ag_init(hfp_ag_rfcomm_channel_nr);
     hfp_ag_init_supported_features(supported_features);
     hfp_ag_init_codecs(sizeof(codecs), codecs);
@@ -766,7 +766,7 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
     hfp_ag_set_subcriber_number_information(&subscriber_number, 1);
 
     // SDP Server
-    sdp_init();
+    //sdp_init();	// перенесено в port.c
     memset(hfp_ag_service_buffer, 0, sizeof(hfp_ag_service_buffer));
     hfp_ag_create_sdp_record_with_codecs( hfp_ag_service_buffer, sdp_create_service_record_handle(),
                                           hfp_ag_rfcomm_channel_nr, hfp_ag_service_name, 0, supported_features, sizeof(codecs), codecs);
