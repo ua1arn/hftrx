@@ -52,20 +52,6 @@ static volatile uint_fast8_t btsppenablerx;
 
 static uint_fast8_t btspptxbusy = 0;
 
-//#define BTSTACK_FILE__ "spp_counter.c"
-
-// *****************************************************************************
-/* EXAMPLE_START(spp_counter): SPP Server - Heartbeat Counter over RFCOMM
- *
- * @text The Serial port profile (SPP) is widely used as it provides a serial
- * port over Bluetooth. The SPP counter example demonstrates how to setup an SPP
- * service, and provide a periodic timer over RFCOMM.   
- *
- * @text Note: To test, please run the spp_counter example, and then pair from 
- * a remote device, and open the Virtual Serial Port.
- */
-// *****************************************************************************
-
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -75,69 +61,12 @@ static uint_fast8_t btspptxbusy = 0;
 #include "btstack.h"
 
 #define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 2
-#define HEARTBEAT_PERIOD_MS 1000
-
-static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 static uint16_t rfcomm_channel_id;
 static uint8_t  spp_service_buffer[150];
-static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-
-/* @section SPP Service Setup 
- *s
- * @text To provide an SPP service, the L2CAP, RFCOMM, and SDP protocol layers 
- * are required. After setting up an RFCOMM service with channel nubmer
- * SPP_COUNTER_RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
- * Example code for SPP service setup is
- * provided in Listing SPPSetup. The SDP record created by function
- * spp_create_sdp_record consists of a basic SPP definition that uses the provided
- * RFCOMM channel ID and service name. For more details, please have a look at it
- * in \path{src/sdp_util.c}. 
- * The SDP record is created on the fly in RAM and is deterministic.
- * To preserve valuable RAM, the result could be stored as constant data inside the ROM.   
- */
-
-/* LISTING_START(SPPSetup): SPP service setup */ 
-void spp_service_setup(void)
-{
-
-    // register for HCI events
-    hci_event_callback_registration.callback = &spp_packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
-
-    //l2cap_init();	// перенесено в port.c
-
-#ifdef ENABLE_BLE
-    // Initialize LE Security Manager. Needed for cross-transport key derivation
-    sm_init();
-#endif
-
-    //rfcomm_init();	// перенесено в port.c
-    VERIFY(ERROR_CODE_SUCCESS == rfcomm_register_service(spp_packet_handler, SPP_COUNTER_RFCOMM_SERVER_CHANNEL, 0xffff));  // reserved channel, mtu limited by l2cap
-
-    // init SDP, create record for SPP and register with SDP
-    //sdp_init();	// перенесено в port.c
-    memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
-    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), SPP_COUNTER_RFCOMM_SERVER_CHANNEL, "SPP Counter");
-    btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
-//    unsigned ec = sdp_register_service(spp_service_buffer);
-//    PRINTF("ec=0x%02X\n", ec);
-//    ASSERT(ec==0);
-    VERIFY(0 == sdp_register_service(spp_service_buffer));
-}
-/* LISTING_END */
-
-/* @section Periodic Timer Setup
- * 
- * @text The heartbeat handler increases the real counter every second, 
- * and sends a text string with the counter value, as shown in Listing PeriodicCounter. 
- */
-
-/* LISTING_START(PeriodicCounter): Periodic Counter */ 
 static uint8_t lineBuffer[128];
 static uint_fast16_t lineBuffer_len;
-/* LISTING_END */
 
 
 /* @section Bluetooth Logic 
@@ -283,10 +212,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
             printf("spp_counter: Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
             break;
     }
-/* LISTING_RESUME */ 
 }
-/* LISTING_END */
-/* EXAMPLE_END */
 
 /* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
 void btspp_tx(void * ctx, uint_fast8_t c)
@@ -323,6 +249,52 @@ uint_fast8_t
 cat_answer_ready_btspp(void)
 {
 	return ! btspptxbusy;
+}
+
+static btstack_packet_callback_registration_t hci_event_callback_registration;
+
+
+/* @section SPP Service Setup
+ *s
+ * @text To provide an SPP service, the L2CAP, RFCOMM, and SDP protocol layers
+ * are required. After setting up an RFCOMM service with channel nubmer
+ * SPP_COUNTER_RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
+ * Example code for SPP service setup is
+ * provided in Listing SPPSetup. The SDP record created by function
+ * spp_create_sdp_record consists of a basic SPP definition that uses the provided
+ * RFCOMM channel ID and service name. For more details, please have a look at it
+ * in \path{src/sdp_util.c}.
+ * The SDP record is created on the fly in RAM and is deterministic.
+ * To preserve valuable RAM, the result could be stored as constant data inside the ROM.
+ */
+
+/* LISTING_START(SPPSetup): SPP service setup */
+void spp_service_setup(void)
+{
+
+    // register for HCI events
+    hci_event_callback_registration.callback = &spp_packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+
+    //l2cap_init();	// перенесено в port.c
+
+#ifdef ENABLE_BLE
+    // Initialize LE Security Manager. Needed for cross-transport key derivation
+    sm_init();
+#endif
+
+    //rfcomm_init();	// перенесено в port.c
+    VERIFY(ERROR_CODE_SUCCESS == rfcomm_register_service(spp_packet_handler, SPP_COUNTER_RFCOMM_SERVER_CHANNEL, 0xffff));  // reserved channel, mtu limited by l2cap
+
+    // init SDP, create record for SPP and register with SDP
+    //sdp_init();	// перенесено в port.c
+    memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
+    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), SPP_COUNTER_RFCOMM_SERVER_CHANNEL, "SPP Counter");
+    btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
+//    unsigned ec = sdp_register_service(spp_service_buffer);
+//    PRINTF("ec=0x%02X\n", ec);
+//    ASSERT(ec==0);
+    VERIFY(0 == sdp_register_service(spp_service_buffer));
 }
 
 #else  /* WITHUSEUSBBT */
