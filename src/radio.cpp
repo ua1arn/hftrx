@@ -17766,13 +17766,39 @@ static void parameditor_slider_cb(lv_event_t * e)
 
 	lv_label_set_text_fmt(l, "%d", v);
 }
+
+static void parameditor_RJ_SMETER_cb(lv_event_t * e)
+{
+	lv_event_code_t code = lv_event_get_code(e);
+	if (code != LV_EVENT_VALUE_CHANGED) return;
+
+	struct paramdefdef * pd = (struct paramdefdef *) lv_event_get_user_data(e);
+	lv_obj_t * t = (lv_obj_t *) lv_event_get_target(e);
+
+	uint8_t v = lv_dropdown_get_selected(t);
+	param_setvalue(pd, v);
+}
+
 #endif /* WITHLVGL */
 
 void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 {
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
 #if WITHLVGL
+
+	static lv_coord_t cols_dsc[4] = { 50, 50, 300, LV_GRID_TEMPLATE_LAST};
+	static lv_coord_t rows_dsc[20];
+	uint8_t i = 0;
+	for (; i < 19; i ++)
+		rows_dsc[i] = 30;
+
+	rows_dsc[i + 1] = LV_GRID_TEMPLATE_LAST;
+
     lv_obj_t * obj = lv_menu_cont_create((lv_obj_t *) parent);
+// 	lv_obj_set_layout(obj, LV_LAYOUT_GRID);
+//	lv_obj_set_style_grid_column_dsc_array(obj, cols_dsc, 0);
+//	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
+
 	switch (pd->qrj)
 	{
 	default:
@@ -17809,6 +17835,19 @@ void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 
 			return obj;
 		}
+	case RJ_SMETER:
+	{
+		lv_obj_t * label_name = lv_label_create(obj);
+		lv_label_set_text_static(label_name, pd->qlabel);
+
+		lv_obj_t * dd = lv_dropdown_create(obj);
+		lv_dropdown_set_options(dd, "BARS\n" "DIAL");
+		lv_dropdown_set_selected(dd, param_getvalue(pd));
+		lv_obj_align_to(dd, label_name, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+		lv_obj_add_event_cb(dd, parameditor_RJ_SMETER_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
+
+		return obj;
+	}
 	case RJ_YES:
 	case RJ_ON:
 		{
