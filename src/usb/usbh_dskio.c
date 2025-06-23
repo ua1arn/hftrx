@@ -285,6 +285,8 @@ DRESULT USB_Get_Block_Size(
 
 #else /* WITHTINYUSB */
 
+#include "Class/MSC/Inc/usbh_msc.h"
+
 static
 DSTATUS USB_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */

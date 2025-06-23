@@ -49,6 +49,8 @@ void Error_Handler(void);
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_OHCI) || defined (WITHUSBHW_EHCI))
+
+	#include "usbh_core.h"
 	/* USB Host Core handle declaration. */
 	__ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
@@ -191,6 +193,149 @@ void MX_USB_DEVICE_DeInit(void)
 }
 
 #endif /* defined (WITHUSBHW_DEVICE) */
+
+#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+
+#include "usbh_core.h"
+#if WITHUSEUSBFLASH
+#include "Class/MSC/Inc/usbh_msc.h"
+#endif /* WITHUSEUSBFLASH */
+#include "Class/HUB/Inc/usbh_hub.h"
+
+
+/** Status of the application. */
+typedef enum {
+  APPLICATION_IDLE = 0,
+  APPLICATION_START,
+  APPLICATION_READY,
+  APPLICATION_DISCONNECT
+} ApplicationTypeDef;
+
+ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+
+/*
+ * user callback definition
+*/
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
+{
+
+	/* USER CODE BEGIN CALL_BACK_1 */
+	switch(id)
+	{
+	case HOST_USER_SELECT_CONFIGURATION:
+		TP();
+        //phost->device.CfgDesc.bConfigurationValue = 2;
+        break;
+
+	case HOST_USER_DISCONNECTION:
+		Appli_state = APPLICATION_DISCONNECT;
+#if 0
+		switch (USBH_GetActiveClass(phost))
+		{
+		default:
+			/* Дескрипторы уже обнулены... */
+			TP();
+			PRINTF("Undefined device disconnected.\n");
+			break;
+
+#if WITHUSEUSBFLASH
+		case USB_MSC_CLASS:
+			TP();
+			PRINTF("MSC device disconnected.\n");
+			break;
+#endif /* WITHUSEUSBFLASH */
+
+//		case AC_CLASS:
+//			TP();
+//		      PRINTF("AUDIO device disconnected.\n");
+//			break;
+		case USB_HID_CLASS:
+			TP();
+			PRINTF("HID device disconnected.\n");
+			TP();
+			break;
+		case USB_HUB_CLASS:
+			TP();
+			PRINTF("HUB device disconnected.\n");
+			break;
+		}
+#endif
+		break;
+
+	case HOST_USER_CLASS_ACTIVE:
+		TP();
+		Appli_state = APPLICATION_READY;
+#if 0
+	    switch(USBH_GetActiveClass(phost))
+	    {
+#if WITHUSEUSBFLASH
+	    case USB_MSC_CLASS:
+	      //Appli_state = APPLICATION_MSC;
+	      TP();
+	      PRINTF("MSC device active.\n");
+	      /* Link the USB disk I/O driver */
+	      //FATFS_LinkDriver(&USBH_Driver, USBDISKPath);
+	      break;
+#endif /* WITHUSEUSBFLASH */
+
+//	    case AC_CLASS:
+//	      Appli_state = APPLICATION_AUDIO;
+//	      TP();
+//	      PRINTF("AUDIO device active.\n");
+//	      /* Init SD Storage */
+//	      if (SD_StorageInit() == 0)
+//	      {
+//	        SD_StorageParse();
+//	      }
+//	      break;
+
+	    case USB_HID_CLASS:
+			//Appli_state = APPLICATION_HID;
+			TP();
+			PRINTF("HID device active.\n");
+			break;
+		case USB_HUB_CLASS:
+			//Appli_state = APPLICATION_HUB;
+			TP();
+			PRINTF("HUB device active.\n");
+			break;
+	    }
+#endif
+		break;
+
+	case HOST_USER_CONNECTION:
+		TP();
+		Appli_state = APPLICATION_START;
+		break;
+
+	default:
+		break;
+	}
+	/* USER CODE END CALL_BACK_1 */
+}
+
+#include "Class/HID/Inc/usbh_hid.h"
+
+void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
+{
+	for (;;)
+	{
+		//HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		HID_TOUCH_Info_TypeDef * const p = USBH_HID_GetTouchInfo(phost);
+
+		if (p == NULL)
+		{
+			//TP();
+			break;
+
+		}
+		if (p->buttons [0])
+		{
+			PRINTF("USBH_HID_EventCallback: x/y=%4d/%3d, buttons=%d\n", (int) p->x, (int) p->y, (int) p->buttons [0]);
+		}
+	}
+}
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
 
@@ -407,137 +552,6 @@ void board_usb_deactivate(void)
 #endif /* WITHUSBHW */
 #endif /* WITHTINYUSB */
 }
-
-#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
-
-
-/** Status of the application. */
-typedef enum {
-  APPLICATION_IDLE = 0,
-  APPLICATION_START,
-  APPLICATION_READY,
-  APPLICATION_DISCONNECT
-} ApplicationTypeDef;
-
-ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
-/*
- * user callback definition
-*/
-void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
-{
-
-	/* USER CODE BEGIN CALL_BACK_1 */
-	switch(id)
-	{
-	case HOST_USER_SELECT_CONFIGURATION:
-		TP();
-        //phost->device.CfgDesc.bConfigurationValue = 2;
-        break;
-
-	case HOST_USER_DISCONNECTION:
-		Appli_state = APPLICATION_DISCONNECT;
-		switch (USBH_GetActiveClass(phost))
-		{
-		default:
-			/* Дескрипторы уже обнулены... */
-			TP();
-			PRINTF("Undefined device disconnected.\n");
-			break;
-
-#if WITHUSEUSBFLASH
-		case USB_MSC_CLASS:
-			TP();
-			PRINTF("MSC device disconnected.\n");
-			break;
-#endif /* WITHUSEUSBFLASH */
-
-//		case AC_CLASS:
-//			TP();
-//		      PRINTF("AUDIO device disconnected.\n");
-//			break;
-		case USB_HID_CLASS:
-			TP();
-			PRINTF("HID device disconnected.\n");
-			TP();
-			break;
-		case USB_HUB_CLASS:
-			TP();
-			PRINTF("HUB device disconnected.\n");
-			break;
-		}
-		break;
-
-	case HOST_USER_CLASS_ACTIVE:
-		TP();
-		Appli_state = APPLICATION_READY;
-	    switch(USBH_GetActiveClass(phost))
-	    {
-#if WITHUSEUSBFLASH
-	    case USB_MSC_CLASS:
-	      //Appli_state = APPLICATION_MSC;
-	      TP();
-	      PRINTF("MSC device active.\n");
-	      /* Link the USB disk I/O driver */
-	      //FATFS_LinkDriver(&USBH_Driver, USBDISKPath);
-	      break;
-#endif /* WITHUSEUSBFLASH */
-
-//	    case AC_CLASS:
-//	      Appli_state = APPLICATION_AUDIO;
-//	      TP();
-//	      PRINTF("AUDIO device active.\n");
-//	      /* Init SD Storage */
-//	      if (SD_StorageInit() == 0)
-//	      {
-//	        SD_StorageParse();
-//	      }
-//	      break;
-
-	    case USB_HID_CLASS:
-			//Appli_state = APPLICATION_HID;
-			TP();
-			PRINTF("HID device active.\n");
-			break;
-		case USB_HUB_CLASS:
-			//Appli_state = APPLICATION_HUB;
-			TP();
-			PRINTF("HUB device active.\n");
-			break;
-	    }
-		break;
-
-	case HOST_USER_CONNECTION:
-		TP();
-		Appli_state = APPLICATION_START;
-		break;
-
-	default:
-		break;
-	}
-	/* USER CODE END CALL_BACK_1 */
-}
-
-void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
-{
-	for (;;)
-	{
-		//HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
-		HID_TOUCH_Info_TypeDef * const p = USBH_HID_GetTouchInfo(phost);
-
-		if (p == NULL)
-		{
-			//TP();
-			break;
-
-		}
-		if (p->buttons [0])
-		{
-			PRINTF("USBH_HID_EventCallback: x/y=%4d/%3d, buttons=%d\n", (int) p->x, (int) p->y, (int) p->buttons [0]);
-		}
-	}
-}
-#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
 /* так как инициализация USB может происходить при запрещённых
  * прерываниях, работа с systick пока невозможна

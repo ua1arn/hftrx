@@ -3925,7 +3925,7 @@ static uint_fast64_t mmcCardSize(BYTE drv)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-#if 1 && WITHDEBUG && WITHUSEFATFS
+#if 0 && WITHDEBUG && WITHUSEFATFS
 static void diskio_test(BYTE drv)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
@@ -4388,6 +4388,7 @@ static void fatfs_filesystest(int speedtest)
 }
 
 #if 1
+
 static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -4411,6 +4412,8 @@ static int fatfs_filesyspeedstest(void)
 	return dosaveblocks(testlog);
 }
 #endif
+
+#if CPUSTYLE_ALLWINNER
 
 static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 {
@@ -4563,6 +4566,7 @@ startProgramming:
 	rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 	PRINTF("Done\n");
 }
+#endif /* CPUSTYLE_ALLWINNER */
 
 #endif
 

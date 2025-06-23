@@ -816,9 +816,6 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
   * @}
   */
 
-void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd);
-void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd);
-
 
 /* Peripheral Control functions  **********************************************/
 /** @addtogroup PCD_Exported_Functions_Group3 Peripheral Control functions

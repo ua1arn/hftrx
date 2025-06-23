@@ -4404,7 +4404,9 @@ static const struct paramdefdef xgspectrumpart =
 	getzerobase, /* складывается со смещением и отображается */
 };
 
-#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+#if WITHSPECTRUMWF
+
+#if BOARD_FFTZOOM_POW2MAX > 0
 /* уменьшение отображаемого участка спектра */
 static const struct paramdefdef xgzoomxpow2 =
 {
@@ -4417,7 +4419,7 @@ static const struct paramdefdef xgzoomxpow2 =
 	& gzoomxpow2,
 	getzerobase, /* складывается со смещением и отображается */
 };
-
+#endif
 
 /* нижний предел FFT */
 static const struct paramdefdef xgtopdbspe =
@@ -6083,6 +6085,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+#if WITHSWRMTR
 	// обновить кеш данных для дисплея
 	if (FWD == PWRI)
 	{
@@ -6095,6 +6098,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 		board_adc_store_data(FWDMRRIX, f);
 		board_adc_store_data(REFMRRIX, r);
 	}
+#endif /* WITHSWRMTR */
 
 	* pr = r;
 	* pf = f;
@@ -20661,6 +20665,8 @@ void hamradio_settemp_viewstyle(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
+#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+
 uint_fast8_t hamradio_get_gzoomxpow2(void)
 {
 	return param_getvalue(& xgzoomxpow2);
@@ -20740,6 +20746,8 @@ uint8_t hamradio_get_gtopdbspe(void)
 {
 	return param_getvalue(& xgtopdbspe);
 }
+
+#endif
 
 #endif /* WITHSPECTRUMWF && WITHMENU */
 
