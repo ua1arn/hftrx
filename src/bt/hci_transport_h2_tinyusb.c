@@ -101,27 +101,32 @@ static void acl_io_complete(tuh_xfer_t* xfer)
 	(*tuh_packet_sent)();
 }
 
-void tuh_bluetooth_set_packet_sent(void (*callback)(void)){
+static void tuh_bluetooth_set_packet_sent(void (*callback)(void)){
     tuh_packet_sent = callback;
 }
 
 
-void tuh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size)){
+static void tuh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size)){
     tuh_packet_received = callback;
 }
 
-bool tuh_bluetooth_can_send_now(void){
-     return /*st == ST_ALL_READY && */tuh_bth_can_send_now(bth_idx);
+static bool tuh_bluetooth_can_send_acl_now(void){
+     return /*st == ST_ALL_READY && */tuh_bth_can_send_acl_now(bth_idx);
 }
 
-void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
+static void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 	dibgprint("send_cmd", packet, len);
 	tuh_bth_send_cmd(bth_idx, packet, len, cmd_io_complete, 0);
 }
 
-void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
+static void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
 	dibgprint("send_acl", packet, len);
 	tuh_bth_send_acl(bth_idx, packet, len, acl_io_complete, 0);
+}
+
+static void tuh_bluetooth_send_sco(const uint8_t * packet, uint16_t len){
+	dibgprint("send_sco", packet, len);
+	tuh_bth_send_sco(bth_idx, packet, len, acl_io_complete, 0);
 }
 
 
@@ -138,6 +143,14 @@ void tuh_bth_rx_acl_cb(uint8_t idx, uint8_t* buffer, uint16_t count)
 	dibgprint("packet_received (acl)", buffer, count);
 	if (tuh_packet_received)
 		tuh_packet_received(HCI_ACL_DATA_PACKET, buffer, count);
+
+}
+
+void tuh_bth_rx_sco_cb(uint8_t idx, uint8_t* buffer, uint16_t count)
+{
+	dibgprint("packet_received (sco)", buffer, count);
+	if (tuh_packet_received)
+		tuh_packet_received(HCI_SCO_DATA_PACKET, buffer, count);
 
 }
 
@@ -195,7 +208,7 @@ static void hci_transport_h2_tinyusb_register_packet_handler(void (*handler)(uin
 }
 
 static int hci_transport_h2_tinyusb_can_send_now(uint8_t packet_type){
-    return tuh_bluetooth_can_send_now();
+    return tuh_bluetooth_can_send_acl_now();
 }
 
 static int hci_transport_h2_tinyusb_send_packet(uint8_t packet_type, uint8_t * packet, int size){
@@ -205,6 +218,9 @@ static int hci_transport_h2_tinyusb_send_packet(uint8_t packet_type, uint8_t * p
             return 0;
         case HCI_ACL_DATA_PACKET:
             tuh_bluetooth_send_acl(packet, size);
+            return 0;
+        case HCI_SCO_DATA_PACKET:
+            tuh_bluetooth_send_sco(packet, size);
             return 0;
         default:
             break;
