@@ -2,7 +2,7 @@ ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 
-# also need enable LwIP and (optional) remove  ${BTSTACK_ROOT}/3rd-party/lwip
+# also need enable LwIP and (optionaly) remove  ${BTSTACK_ROOT}/3rd-party/lwip
 BTSTACK_ROOT := $(PRJROOT)/lib/btstack
 
 C_SOURCES =  \
@@ -12,7 +12,6 @@ ${BTSTACK_ROOT}/3rd-party/micro-ecc/uECC.c \
 ${BTSTACK_ROOT}/3rd-party/yxml/yxml.c \
 ${BTSTACK_ROOT}/3rd-party/md5/md5.c \
 ${BTSTACK_ROOT}/chipset/cc256x/btstack_chipset_cc256x.c \
-${BTSTACK_ROOT}/example/sco_demo_util.c \
 ${BTSTACK_ROOT}/platform/embedded/btstack_audio_embedded.c \
 ${BTSTACK_ROOT}/platform/embedded/btstack_run_loop_embedded.c \
 ${BTSTACK_ROOT}/platform/embedded/btstack_stdin_embedded.c \
