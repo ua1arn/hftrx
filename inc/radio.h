@@ -11,6 +11,7 @@
 #ifndef RADIO_H_INCLUDED
 #define RADIO_H_INCLUDED
 
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,8 +28,6 @@ extern "C" {
 	#define WITHUSBUACOUT	1
 #endif /* WITHUSBUAC */
 
-typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
-typedef uint_least64_t phase_t;
 
 #if WITHBBOX && defined (WITHBBOXFREQ)
 	#define DEFAULTDIALFREQ	WITHBBOXFREQ
@@ -3436,10 +3435,6 @@ void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const 
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
-void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent);
-
-int hamradio_walkmenu_rotate(const void * paramitem, int delta);	// модификация параметра валкодером
-int hamradio_walkmenu_click(const void * paramitem);	// модификация параметра
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
@@ -3536,6 +3531,90 @@ typedef struct {
 	char label [10][10];
 } bws_t;
 
+
+// шаг изменения значения параметра
+enum
+{
+	ISTEP_RO = 0,
+	ISTEP1 = 1,
+	ISTEP2 = 2,
+	ISTEP3 = 3,
+	ISTEP5 = 5,
+	ISTEP10 = 10,
+	ISTEP50 = 50,
+	ISTEP100 = 100,
+	//ISTEPG,
+	//
+};
+
+// особые случаи отображения значения параметра
+enum
+{
+	RJ_BASE0,
+	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
+	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
+	RJ_CATSPEED,	/* отображение скорости CAT */
+	RJ_CATMUX,		/* выбор одного из каналов CAT */
+	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
+	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
+	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
+	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
+	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
+	RJ_MDMSPEED,	/* параметр - скорость модема */
+	RJ_MDMMODE,		/* параметр - тип модуляции модема */
+	RJ_MONTH,		/* параметр - месяц 1..12 */
+	RJ_POWER,		/* отображние мощности HP/LP */
+	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
+	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
+	RJ_CPUTYPE,		/* текст типа процессора */
+	RJ_VIEW,		/* стиль отображения спектра и панорамы */
+	RJ_COMPILED,		/* текст даты компиляции */
+	RJ_SERIALNR,		/* текст серийного номера */
+	RJ_DUAL,			/* режим двойного прима */
+	//
+	RJ_notused
+};
+
+// WSIGNFLAG
+
+#define ITEM_VALUE	(0x01u << 0)	/* пункт меню для редактирования параметра */
+#define ITEM_GROUP	(0x01u << 1)	/* пункт меню без изменяемого значения - связан с подменю */
+
+#define ITEM_FILTERU	(0x01u << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
+#define ITEM_FILTERL	(0x01u << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
+
+#define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
+
+#define QLABEL(s1) (s1), (s1), (s1)
+#define QLABEL2(s1, s2) (s1), (s2), (s2)
+#define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
+#define QLABELENC2(s1) (s1), (s1), (s1)
+
+struct paramdefdef
+{
+	const char * qlabel;		/* текст - название пункта меню */
+	const char * label;
+	const char * enc2label;
+
+	uint8_t qwidth_unused, qcomma, qrj;
+	uint8_t qistep;
+	uint8_t qspecial;	/* признак к какому меню относится */
+
+	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
+
+	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
+	unsigned (* qselector)(unsigned * count);
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
+
+	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
+	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+};
+
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
@@ -3579,6 +3658,28 @@ int infocb_lock(char * b, size_t len, int * pstate);
 int infocb_agc(char * b, size_t len, int * pstate);
 int infocb_notch(char * b, size_t len, int * pstate);
 int infocb_txrx(char * b, size_t len, int * pstate);
+
+size_t
+param_format(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count	// размер буфера
+	);
+void
+param_setvalue(
+	const struct paramdefdef * pd,
+	int_fast32_t v
+	);
+int_fast32_t
+param_getvalue(
+	const struct paramdefdef * pd
+	);
+void
+param_load(
+	const struct paramdefdef * pd
+	);
+
+
 
 #ifdef __cplusplus
 }

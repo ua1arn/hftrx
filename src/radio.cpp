@@ -64,12 +64,6 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 // название параметра, если группа - ничего не отображаем
 static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
 
-static size_t
-param_format(
-	const struct paramdefdef * pd,
-	char * buff,
-	size_t count	// размер буфера
-	);
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -430,89 +424,6 @@ static uint_fast8_t getactualmainsubrx(void);
 static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
 
 
-// шаг изменения значения параметра
-enum
-{
-	ISTEP_RO = 0,
-	ISTEP1 = 1,
-	ISTEP2 = 2,
-	ISTEP3 = 3,
-	ISTEP5 = 5,
-	ISTEP10 = 10,
-	ISTEP50 = 50,
-	ISTEP100 = 100,
-	//ISTEPG,
-	//
-};
-
-// особые случаи отображения значения параметра
-enum
-{
-	RJ_BASE0,
-	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
-	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
-	RJ_CATSPEED,	/* отображение скорости CAT */
-	RJ_CATMUX,		/* выбор одного из каналов CAT */
-	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
-	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
-	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
-	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
-	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
-	RJ_MDMSPEED,	/* параметр - скорость модема */
-	RJ_MDMMODE,		/* параметр - тип модуляции модема */
-	RJ_MONTH,		/* параметр - месяц 1..12 */
-	RJ_POWER,		/* отображние мощности HP/LP */
-	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
-	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
-	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
-	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
-	RJ_CPUTYPE,		/* текст типа процессора */
-	RJ_VIEW,		/* стиль отображения спектра и панорамы */
-	RJ_COMPILED,		/* текст даты компиляции */
-	RJ_SERIALNR,		/* текст серийного номера */
-	RJ_DUAL,			/* режим двойного прима */
-	//
-	RJ_notused
-};
-
-// WSIGNFLAG
-
-#define ITEM_VALUE	(0x01u << 0)	/* пункт меню для редактирования параметра */
-#define ITEM_GROUP	(0x01u << 1)	/* пункт меню без изменяемого значения - связан с подменю */
-
-#define ITEM_FILTERU	(0x01u << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-#define ITEM_FILTERL	(0x01u << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
-
-#define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
-
-#define QLABEL(s1) (s1), (s1), (s1)
-#define QLABEL2(s1, s2) (s1), (s2), (s2)
-#define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
-#define QLABELENC2(s1) (s1), (s1), (s1)
-
-struct paramdefdef
-{
-	const char * qlabel;		/* текст - название пункта меню */
-	const char * label;
-	const char * enc2label;
-
-	uint8_t qwidth_unused, qcomma, qrj;
-	uint8_t qistep;
-	uint8_t qspecial;	/* признак к какому меню относится */
-
-	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
-
-	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	unsigned (* qselector)(unsigned * count);
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
-
-	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
-	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
-	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
-};
-
 const char * pd_getlonglabel(const struct paramdefdef * pd)
 {
 	return pd->label;
@@ -660,7 +571,7 @@ savemenuvalue(
 }
 
 // Установить значение параметра и сохранить в nvram
-static void
+void
 param_setvalue(
 	const struct paramdefdef * pd,
 	int_fast32_t v
@@ -693,7 +604,7 @@ param_setvalue(
 	}
 }
 
-static int_fast32_t
+int_fast32_t
 param_getvalue(
 	const struct paramdefdef * pd
 	)
@@ -732,7 +643,7 @@ param_getvalue(
 }
 
 // Считать значение параметра из nvram
-static void
+void
 param_load(
 	const struct paramdefdef * pd
 	)
@@ -17197,7 +17108,7 @@ static int_fast32_t iabs(int_fast32_t v)
 	return v > 0 ? v : - v;
 }
 
-static size_t
+size_t
 param_format(
 	const struct paramdefdef * pd,
 	char * buff,
@@ -17718,21 +17629,6 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
-// модификация параметра
-int hamradio_walkmenu_rotate(const void * paramitem, int delta)
-{
-	const struct paramdefdef * const pd = (const struct paramdefdef *) paramitem;
-	return param_rotate(pd, delta);
-}
-
-// модификация параметра
-int hamradio_walkmenu_click(const void * paramitem)
-{
-	const struct paramdefdef * const pd = (const struct paramdefdef *) paramitem;
-	return param_keyclick(pd);
-}
-
-
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) groupitem;
@@ -17749,133 +17645,6 @@ int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t 
 {
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
 	return param_format(pd, buff, count);
-}
-#if WITHLVGL
-
-static void parameditor_slider_cb(lv_event_t * e)
-{
-	lv_event_code_t code = lv_event_get_code(e);
-	if (code != LV_EVENT_VALUE_CHANGED) return;
-
-	struct paramdefdef * pd = (struct paramdefdef *) lv_event_get_user_data(e);
-	lv_obj_t * s = (lv_obj_t *) lv_event_get_target(e);
-	lv_obj_t * l = (lv_obj_t *) lv_obj_get_user_data(s);
-
-	int32_t v = lv_slider_get_value(s);
-	param_setvalue(pd, v);
-
-	lv_label_set_text_fmt(l, "%d", v);
-}
-
-static void parameditor_RJ_SMETER_cb(lv_event_t * e)
-{
-	lv_event_code_t code = lv_event_get_code(e);
-	if (code != LV_EVENT_VALUE_CHANGED) return;
-
-	struct paramdefdef * pd = (struct paramdefdef *) lv_event_get_user_data(e);
-	lv_obj_t * t = (lv_obj_t *) lv_event_get_target(e);
-
-	uint8_t v = lv_dropdown_get_selected(t);
-	param_setvalue(pd, v);
-}
-
-#endif /* WITHLVGL */
-
-void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
-{
-	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
-#if WITHLVGL
-
-	static lv_coord_t cols_dsc[4] = { 50, 50, 300, LV_GRID_TEMPLATE_LAST};
-	static lv_coord_t rows_dsc[20];
-	uint8_t i = 0;
-	for (; i < 19; i ++)
-		rows_dsc[i] = 30;
-
-	rows_dsc[i + 1] = LV_GRID_TEMPLATE_LAST;
-
-    lv_obj_t * obj = lv_menu_cont_create((lv_obj_t *) parent);
-// 	lv_obj_set_layout(obj, LV_LAYOUT_GRID);
-//	lv_obj_set_style_grid_column_dsc_array(obj, cols_dsc, 0);
-//	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
-
-	switch (pd->qrj)
-	{
-	default:
-		{
-		    lv_obj_t * img = NULL;
-		    lv_obj_t * label_name = NULL, * label_value = NULL;
-//
-//		    if(icon) {
-//		        img = lv_image_create(obj);
-//		        lv_image_set_src(img, icon);
-//		    }
-
-		    label_name = lv_label_create(obj);
-	        lv_label_set_text_static(label_name, pd->qlabel);
-//	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-//	        lv_obj_set_flex_grow(label, 1);
-	        //lv_obj_set_width(label, lv_obj_get_content_width(obj) * 2 / 3);
-
-	        label_value = lv_label_create(obj);
-	        lv_label_set_text_fmt(label_value, "%d", param_getvalue(pd));
-	        lv_obj_align_to(label_value, label_name, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-
-			lv_obj_t * slider = lv_slider_create(obj);
-//			lv_obj_set_flex_grow(slider, 1);
-			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
-			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
-			lv_obj_set_user_data(slider, label_value);
-			lv_obj_align_to(slider, label_value, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-			lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
-
-			//if(icon == NULL) {
-			//	lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
-			//}
-
-			return obj;
-		}
-	case RJ_SMETER:
-	{
-		lv_obj_t * label_name = lv_label_create(obj);
-		lv_label_set_text_static(label_name, pd->qlabel);
-
-		lv_obj_t * dd = lv_dropdown_create(obj);
-		lv_dropdown_set_options(dd, "BARS\n" "DIAL");
-		lv_dropdown_set_selected(dd, param_getvalue(pd));
-		lv_obj_align_to(dd, label_name, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-		lv_obj_add_event_cb(dd, parameditor_RJ_SMETER_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
-
-		return obj;
-	}
-	case RJ_YES:
-	case RJ_ON:
-		{
-
-		    lv_obj_t * img = NULL;
-		    lv_obj_t * label = NULL;
-//
-//		    if(icon) {
-//		        img = lv_image_create(obj);
-//		        lv_image_set_src(img, icon);
-//		    }
-
-	        label = lv_label_create(obj);
-	        lv_label_set_text_static(label, pd->qlabel);
-//	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-//	        lv_obj_set_flex_grow(label, 1);
-	       // lv_obj_set_width(label, lv_obj_get_content_width(obj) * 2 / 3);
-
-			lv_obj_t * sw = lv_switch_create(obj);
-			lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
-
-			return obj;
-		}
-	}
-	return obj;
-#else /* WITHLVGL */
-	return NULL;
-#endif /* WITHLVGL */
 }
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))

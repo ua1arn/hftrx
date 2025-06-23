@@ -8,6 +8,7 @@
 #define SYNTHCACS_H_INCLUDED
 
 #include "hardware.h"
+#include "board.h"
 
 //#include <stdbool.h>
 #include <stdint.h>
@@ -15,8 +16,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-extern const phase_t r1_ph; // = SYNTH_R1;
 
 void synth_setreference(
 	uint_fast32_t refclock 	/* частота опорника */

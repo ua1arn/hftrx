@@ -25,6 +25,10 @@ void board_init_chips2(void);
 uint_fast8_t boad_fpga_adcoverflow(void);	/* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_mike_adcoverflow(void);	/* получения признака переполнения АЦП микрофонного тракта */
 
+typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
+typedef uint_least64_t phase_t;
+
+extern const phase_t r1_ph; // = SYNTH_R1;
 
 uint_fast32_t getvcoranges(uint_fast8_t vco, uint_fast8_t top);	/* функция для настройки ГУН */
 
@@ -273,25 +277,9 @@ void board_get_compile_datetime(
 	);
 
 void board_get_serialnr(uint_fast32_t * sn);
-
-#if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
-
-	void nvram_initialize(void);
-	void nvram_set_abytes(uint_fast8_t v);
-	#ifndef NVRAM_END
-		#error NVRAM_END required, may be missing NVRAM_TYPE
-	#endif
-	#if (NVRAM_END > 255)
-		typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
-	#else /* (NVRAM_END > 255) */
-		typedef uint_least8_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
-	#endif /* (NVRAM_END > 255) */
-
-#else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
-
-	typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
-
-#endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
+void nvram_initialize(void);
+void nvram_set_abytes(uint_fast8_t v);
+typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
