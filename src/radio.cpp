@@ -17750,6 +17750,7 @@ int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t 
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
 	return param_format(pd, buff, count);
 }
+#if WITHLVGL
 
 static void parameditor_slider_cb(lv_event_t * e)
 {
@@ -17765,6 +17766,7 @@ static void parameditor_slider_cb(lv_event_t * e)
 
 	lv_label_set_text_fmt(l, "%d", v);
 }
+#endif /* WITHLVGL */
 
 void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 {
