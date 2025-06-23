@@ -17751,6 +17751,21 @@ int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t 
 	return param_format(pd, buff, count);
 }
 
+static void parameditor_slider_cb(lv_event_t * e)
+{
+	lv_event_code_t code = lv_event_get_code(e);
+	if (code != LV_EVENT_VALUE_CHANGED) return;
+
+	struct paramdefdef * pd = (struct paramdefdef *) lv_event_get_user_data(e);
+	lv_obj_t * s = (lv_obj_t *) lv_event_get_target(e);
+	lv_obj_t * l = (lv_obj_t *) lv_obj_get_user_data(s);
+
+	int32_t v = lv_slider_get_value(s);
+	param_setvalue(pd, v);
+
+	lv_label_set_text_fmt(l, "%d", v);
+}
+
 void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 {
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
@@ -17761,23 +17776,30 @@ void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 	default:
 		{
 		    lv_obj_t * img = NULL;
-		    lv_obj_t * label = NULL;
+		    lv_obj_t * label_name = NULL, * label_value = NULL;
 //
 //		    if(icon) {
 //		        img = lv_image_create(obj);
 //		        lv_image_set_src(img, icon);
 //		    }
 
-	        label = lv_label_create(obj);
-	        lv_label_set_text_static(label, pd->qlabel);
+		    label_name = lv_label_create(obj);
+	        lv_label_set_text_static(label_name, pd->qlabel);
 //	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
 //	        lv_obj_set_flex_grow(label, 1);
 	        //lv_obj_set_width(label, lv_obj_get_content_width(obj) * 2 / 3);
+
+	        label_value = lv_label_create(obj);
+	        lv_label_set_text_fmt(label_value, "%d", param_getvalue(pd));
+	        lv_obj_align_to(label_value, label_name, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
 			lv_obj_t * slider = lv_slider_create(obj);
 //			lv_obj_set_flex_grow(slider, 1);
 			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
 			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
+			lv_obj_set_user_data(slider, label_value);
+			lv_obj_align_to(slider, label_value, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+			lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
 
 			//if(icon == NULL) {
 			//	lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);

@@ -401,19 +401,18 @@ void win_tx_power_handler(lv_event_t * e)
 
 static void btn_settings_handler(lv_obj_t * p)
 {
-	static lv_obj_t * cont = NULL;
+	static lv_obj_t * menu = NULL;
 
-	if (cont)
+	if (menu)
 	{
-		lv_obj_del(cont);
-		cont = NULL;
+		lv_obj_del(menu);
+		menu = NULL;
 	}
 	else
 	{
-		cont = lv_obj_create(gui_get_main());
-		lv_obj_set_size(cont, DIM_X, 265);
-		lv_obj_set_pos(cont, 0, 170);
-		lv_hamradiomenu_create(cont);
+		menu = lv_hamradiomenu_create(gui_get_main());
+		lv_obj_set_size(menu, DIM_X, 265);
+		lv_obj_set_pos(menu, 0, 170);
 	}
 }
 
