@@ -157,7 +157,7 @@ SECTIONS
 
 	__etext2 = .;
 
-	.bss (NOLOAD):
+	.bss :
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
@@ -168,6 +168,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;
+		LONG(0xDEADBEEF)
 	} > RAM
 
 	.noinit (NOLOAD):
