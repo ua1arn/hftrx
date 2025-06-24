@@ -11867,7 +11867,10 @@ updateboardZZZ(
 			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 			board_set_lineamp(glineamp);	/* усиление с линейного входа */
 			#if WITHUSBHW && WITHUSBUACOUT
-				board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudiocode);	// Альтернативные источники сигнала при передаче
+				if (txaudiocode == BOARD_TXAUDIO_BT)
+					board_set_txaudio(BOARD_TXAUDIO_BT);
+				else
+					board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudiocode);	// Альтернативные источники сигнала при передаче
 			#else /* WITHUSBUAC */
 				board_set_txaudio(txaudiocode);	// Альтернативные источники сигнала при передаче
 			#endif /* WITHUSBUAC */
