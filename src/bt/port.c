@@ -613,8 +613,8 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     // hand over to btstack embedded code
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    //VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
-    VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
+    VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
+    //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
     spp_service_setup();	// трансивер виден как два serial порта
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
@@ -645,21 +645,23 @@ void tuh_bth_umount_cb(uint8_t idx)
 	if (btactive)
 	{
 	    btactive = 0;
-	    sdp_deinit();
-	    l2cap_deinit();
+
 	    rfcomm_deinit();
+	    l2cap_deinit();
+	    sdp_deinit();
 	    //hci_power_control(HCI_POWER_OFF);
 		hci_remove_event_handler(&hci_event_callback_registration);
 //		hci_deinit();
-	//	btstack_run_loop_deinit();
-	//	btstack_memory_deinit();
+		btstack_run_loop_deinit();
+		btstack_memory_deinit();
 	//	ASSERT(0);
 	}
 }
 
 static void dpc_0p01_s_timer_fn(void * ctx)
 {
-	btstack_run_loop_embedded_execute_once();
+	if (btactive)
+		btstack_run_loop_embedded_execute_once();
 }
 
 /* Bluetooth initialize */
