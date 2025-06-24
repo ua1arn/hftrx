@@ -45,6 +45,17 @@ static void parameditor_dropdown_cb(lv_event_t * e)
 	param_setvalue(pd, v);
 }
 
+static void parameditor_switch_cb(lv_event_t * e)
+{
+	lv_event_code_t code = lv_event_get_code(e);
+	if (code != LV_EVENT_VALUE_CHANGED) return;
+
+	struct paramdefdef * pd = (struct paramdefdef *) lv_event_get_user_data(e);
+	lv_obj_t * sw = (lv_obj_t *) lv_event_get_target(e);
+
+	uint8_t v = lv_obj_has_state(sw, LV_STATE_CHECKED) ? 1 : 0;
+	param_setvalue(pd, v);
+}
 
 void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 {
@@ -86,6 +97,7 @@ void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 		lv_obj_t * sw = lv_switch_create(obj);
 		lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
 		lv_obj_set_grid_cell(sw, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
+		lv_obj_add_event_cb(sw, parameditor_switch_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
 
 		break;
 	}
