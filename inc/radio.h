@@ -3679,7 +3679,8 @@ size_t
 param_format(
 	const struct paramdefdef * pd,
 	char * buff,
-	size_t count	// размер буфера
+	size_t count,	// размер буфера
+	int_fast32_t value
 	);
 void
 param_setvalue(

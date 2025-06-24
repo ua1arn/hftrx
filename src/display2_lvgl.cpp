@@ -15,8 +15,8 @@
 #include "display2.h"
 #include "lvgl.h"
 
-const lv_coord_t cols_dsc[4] = { 100, 50, 300, LV_GRID_TEMPLATE_LAST};
-const lv_coord_t rows_dsc[2] = { 30, LV_GRID_TEMPLATE_LAST };
+static const lv_coord_t cols_dsc[4] = { 100, 50, 300, LV_GRID_TEMPLATE_LAST};
+static const lv_coord_t rows_dsc[2] = { 30, LV_GRID_TEMPLATE_LAST };
 
 static void parameditor_slider_cb(lv_event_t * e)
 {

@@ -90,6 +90,7 @@ static lv_style_t xxscopestyle;
 static lv_style_t xxtxrxstyle;
 //static lv_style_t xxsmeterstyle;
 static lv_style_t xxcellstyle;		// объекты, выполняющие разметку для вложенных объектов - без зазоров, без рамки, с прозрачным фоном.
+static lv_style_t xxmenustyle;
 
 static lv_obj_t * xxmainwnds [PAGEBITS];	// разные экраны (основной, меню, sleep */
 static lv_group_t * xxgroup;
@@ -144,6 +145,26 @@ static void lvstales_initialize(void)
 		lv_style_set_border_width(s, 1);
 		lv_style_set_pad_all(s, 0);
 		lv_style_set_radius(s, 4);
+		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+		lv_style_set_text_opa(s, LV_OPA_COVER);
+	    lv_style_set_text_font(s, & Rubik_Medium_18_w2);
+	    //lv_style_set_text_letter_space(s, 3);
+	}
+	{
+		// стиль меню настроек
+		lv_style_t * const s = & xxmenustyle;
+		//
+		lv_style_init(s);
+		//lv_style_set_bg_color(s, display_lvlcolor(COLORPIP_GREEN));
+		lv_style_set_bg_color(s, lv_palette_main(LV_PALETTE_GREY));
+
+		lv_style_set_text_color(s, display_lvlcolor(DSGN_LABELACTIVETEXT));
+	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
+		lv_style_set_bg_opa(s, LV_OPA_COVER);
+		lv_style_set_border_color(s, lv_palette_main(LV_PALETTE_LIGHT_BLUE));
+		lv_style_set_border_width(s, 0);
+		lv_style_set_pad_all(s, 0);
+		lv_style_set_radius(s, 0);
 		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_text_opa(s, LV_OPA_COVER);
 	    lv_style_set_text_font(s, & Rubik_Medium_18_w2);
@@ -410,19 +431,10 @@ static lv_obj_t * dzi_create_compat(lv_obj_t * parent, const struct dzone * dzp,
 
 static lv_obj_t * dzi_create_menu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-#if 0
-	return lv_example_menu_5_mod(parent);
-	return lv_example_menu_5(parent);
-#elif 1
-	return lv_hamradiomenu_create(parent);
+	lv_obj_t * const menu = lv_hamradiomenu_create(parent);
 
-#elif 0
-	lv_obj_t * const menu = lv_label_create(parent);
-
-	lv_obj_add_style(menu, & xxdivstyle, 0);
-	lv_label_set_text(menu, "Menu placeholder");
+	lv_obj_add_style(menu, & xxmenustyle, 0);
 	return menu;
-#endif
 }
 
 static lv_obj_t * dzi_create_modea(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)

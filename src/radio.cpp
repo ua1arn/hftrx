@@ -8712,11 +8712,11 @@ void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		display_1fmenu(db, x, y, "");
 		break;
 	case ENC2STATE_SELECTITEM:
-		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b));
+		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), param_getvalue(enc2menus [enc2pos]));
 		display_2fmenus(db, x, y, 0, b, b);
 		break;
 	case ENC2STATE_EDITITEM:
-		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b));
+		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), param_getvalue(enc2menus [enc2pos]));
 		display_2fmenus(db, x, y, 1, b, b);
 		break;
 	}
@@ -16680,7 +16680,7 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 	const struct paramdefdef * pd = getmiddlemenu(section, active);
 	static char buff [32];
 	ASSERT(pd);
-	int n = param_format(pd, buff, ARRAY_SIZE(buff));
+	int n = param_format(pd, buff, ARRAY_SIZE(buff), param_getvalue(pd));
 	return buff;
 }
 
@@ -17113,7 +17113,8 @@ size_t
 param_format(
 	const struct paramdefdef * pd,
 	char * buff,
-	size_t count	// видимая ширина отображаемого поля (буфер не менее чем на 1 символ больше)
+	size_t count,	// размер буфера
+	int_fast32_t value
 	)
 {
 	buff [0] = '\0';
@@ -17139,8 +17140,6 @@ param_format(
 	};
 	if (ismenukinddp(pd, ITEM_VALUE) == 0)
 		return 0;
-
-	const int_fast32_t value = param_getvalue(pd);
 
 	// отображение параметра, отличающиеся от цифрового
 	switch (pd->qrj)
@@ -17333,7 +17332,7 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 {
 	char buff [xspan + 1];
 
-	param_format(mp->pd, buff, xspan + 1);
+	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
 	display_text(db, xcell, ycell, buff, xspan);
 }
 
@@ -17645,7 +17644,7 @@ int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t c
 int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count)
 {
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
-	return param_format(pd, buff, count);
+	return param_format(pd, buff, count, param_getvalue(pd));
 }
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))
@@ -20191,7 +20190,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
-			param_format(mv->pd, vals->name, ARRAY_SIZE(vals->name));
+			param_format(mv->pd, vals->name, ARRAY_SIZE(vals->name), param_getvalue(mv->pd));
 			vals->index = el;
 			return;
 		}
@@ -20210,7 +20209,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 
 	static char menuw [20];						// буфер для вывода значений системного меню
 
-	param_format(menutable [index].pd, menuw, ARRAY_SIZE(menuw));
+	param_format(menutable [index].pd, menuw, ARRAY_SIZE(menuw), param_getvalue(menutable [index].pd));
 	return menuw;
 }
 #endif /* WITHMENU */
@@ -20833,30 +20832,18 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 
 #if WITHTOUCHGUI
 
-void hamradio_load_gui_settings(void * ptrv)
+void hamradio_load_gui_settings(void * ptr)
 {
-	uint8_t * ptr = (uint8_t *) ptrv;
-	nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
+	const nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
 	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	size_t i;
-
-	for (i = 0; i < gui_nvram_size; i ++)
-	{
-		* ptr ++ = restore_i8(offset ++);
-	}
+	nvram_read(offset, (uint8_t *) ptr, gui_nvram_size);
 }
 
-void hamradio_save_gui_settings(const void * ptrv)
+void hamradio_save_gui_settings(const void * ptr)
 {
-	const uint8_t * ptr = (uint8_t *) ptrv;
-	nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
+	const nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
 	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	size_t i;
-
-	for (i = 0; i < gui_nvram_size; i ++)
-	{
-		save_i8(offset ++, * ptr ++);
-	}
+	nvram_write(offset, (const uint8_t *) ptr, gui_nvram_size);
 }
 
 #if WITHENCODER2
@@ -20864,7 +20851,7 @@ void hamradio_gui_enc2_update(void)
 {
 	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-	param_format(enc2menus [enc2pos], enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	param_format(enc2menus [enc2pos], enc2_menu.val, ARRAY_SIZE(enc2_menu.val), param_getvalue(enc2menus [enc2pos]));
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
