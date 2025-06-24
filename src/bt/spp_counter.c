@@ -191,7 +191,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
                     //PRINTF("port: HCI_EVENT_QOS_SETUP_COMPLETE!\n");
                     break;
                 default:
-                    printf("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+                    //printf("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                     break;
             }
             break;
