@@ -1805,6 +1805,9 @@ static const struct menudef menutable [] =
 	& xgdatatx,	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 #endif /* WITHTX */
 	& xguacplayer,	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+#if WITHUSEUSBBT
+	& xgbtaudioplayer,	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+#endif /* WITHUSEUSBBT */
 	#if WITHRTS96 || WITHRTS192
 	& xgswapiq,	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 	& xgusb_ft8cn,	/* совместимость VID/PID для работы с программой FT8CN */

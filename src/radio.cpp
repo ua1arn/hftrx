@@ -3614,6 +3614,7 @@ struct nvmap
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		uint8_t gbtaudioplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 */
@@ -4756,6 +4757,7 @@ static const struct paramdefdef xcatenable =
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t gbtaudioplayer = 0;
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
@@ -4805,6 +4807,18 @@ static const struct paramdefdef xcatenable =
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& guacplayer,
+			getzerobase, /* складывается со смещением и отображается */
+		};
+		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static const struct paramdefdef xgbtaudioplayer =
+		{
+			QLABEL("PLAY BT"), 7, 3, RJ_YES,	ISTEP1,
+			ITEM_VALUE,
+			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+			OFFSETOF(struct nvmap, gbtaudioplayer),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gbtaudioplayer,
 			getzerobase, /* складывается со смещением и отображается */
 		};
 	#if WITHRTS96 || WITHRTS192
@@ -11839,6 +11853,7 @@ updateboardZZZ(
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBHW && WITHUSBUAC
+			board_set_btaudioplayer(gbtaudioplayer);
 			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192
 				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */

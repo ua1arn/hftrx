@@ -194,6 +194,7 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+static volatile uint_fast8_t btaudioplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static volatile uint_fast8_t datavox;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 
 
@@ -3757,7 +3758,7 @@ static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
-	if (uacoutplayer)
+	if (uacoutplayer || btaudioplayer)
 		return sdtn;
 	const FLOAT_t mainvolumerx = 1 - sidetonevolume;
 	return v * mainvolumerx + sdtn * sidetonevolume;
@@ -3767,7 +3768,7 @@ static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
-	if (uacoutplayer)
+	if (uacoutplayer || btaudioplayer)
 		return moni;
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
@@ -3934,7 +3935,11 @@ static RAMFUNC FLOAT_t mikeinmux(
 		// В режиме приёма или bypass ничего не делаем.
 		if (uacoutplayer)
 		{
-			* moni = 0 ? vi0pairbt : vi0pairusb;
+			* moni = vi0pairusb;
+		}
+		else if (btaudioplayer)
+		{
+			* moni = vi0pairbt;
 		}
 		else
 		{
@@ -6499,6 +6504,14 @@ void board_set_uacplayer(uint_fast8_t v)
 #if WITHUSBUAC
 	uacoutplayer = v;
 #endif /* WITHUSBUAC */
+}
+
+/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+void board_set_btaudioplayer(uint_fast8_t v)
+{
+#if WITHUSEUSBBT
+	btaudioplayer = v;
+#endif /* WITHUSEUSBBT */
 }
 
 /* автоматическое изменение источника при появлении звука со стороны компьютера */
