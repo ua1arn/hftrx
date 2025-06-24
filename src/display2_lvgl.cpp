@@ -60,11 +60,9 @@ static void parameditor_switch_cb(lv_event_t * e)
 	updateboard(1, 0);
 }
 
-void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
+lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_obj_t * parent)
 {
-	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
-
-	lv_obj_t * obj = lv_menu_cont_create((lv_obj_t *) parent);
+	lv_obj_t * obj = lv_menu_cont_create(parent);
 	lv_obj_set_layout(obj, LV_LAYOUT_GRID);
 	lv_obj_set_style_grid_column_dsc_array(obj, cols_dsc, 0);
 	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
@@ -258,7 +256,7 @@ static void dzicreateitem(void * pwalkctx, void * psectionctx, const void * para
 //	struct menuwalkctx * ctx = (struct menuwalkctx *) pwalkctx;
 //	lv_obj_t * section2 = (lv_obj_t *) psectionctx;	// Сюда будут добавляться редактируемые параметры в группе
 
-	lv_obj_t * const obj = (lv_obj_t *) hamradio_walkmenu_getparameditor(paramitem, psectionctx);
+	lv_obj_t * const obj = hamradio_walkmenu_getparameditor((const struct paramdefdef *) paramitem, (lv_obj_t *) psectionctx);
 	//create_slider(section2, LV_SYMBOL_SETTINGS, b, 0, 150, 50);
     //create_switch(section_mechanics, LV_SYMBOL_SETTINGS, b, false);
 }
