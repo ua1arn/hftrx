@@ -229,7 +229,8 @@ static int hci_transport_h2_tinyusb_send_packet(uint8_t packet_type, uint8_t * p
 }
 
 static void hci_transport_h2_tinyusb_set_sco_config(uint16_t voice_setting, int num_connections){
-    log_info("hci_transport_h2_tinyusb_send_packet, voice 0x%02x, num connections %u", voice_setting, num_connections);
+    PRINTF("hci_transport_h2_tinyusb_set_sco_config, voice 0x%02x, num connections %u\n", voice_setting, num_connections);
+    log_info("hci_transport_h2_tinyusb_set_sco_config, voice 0x%02x, num connections %u", voice_setting, num_connections);
 }
 
 #endif /* WITHTINYUSB */
