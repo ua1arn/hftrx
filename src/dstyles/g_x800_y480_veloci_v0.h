@@ -160,15 +160,15 @@ static const dzone_t dzones [] =
 	{	0,	DLEB,	12,	4,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	9,	4,	display2_span9,			& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	{	23, DLEB,	4,	4,	display2_thermo4,		& dzi_thermo, PGALL, },	// thermo sensor
-	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_usbact, PGALL, },	// USB host status
-	{	32, DLEB,	2,	4,	display2_btsts2,		& dzi_btact, PGALL, },	// USB host status
-	{	35, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PGALL, },	// Class-A power amplifier
+	{	28, DLEB,	3,	4,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
+	{	32, DLEB,	2,	4,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
+	{	35, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
 	//{	28, DLEB,	10,	4,	display_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
 	{	0,				DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 #if WITHAUTOTUNER
-	{	28, 			DLEB,	22,	4,	display2_swrsts22,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
+	{	28, 			DLEB,	20,	4,	display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
 #endif /* WITHMENU */
 

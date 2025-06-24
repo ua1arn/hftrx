@@ -6111,20 +6111,19 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 }
 
 // Отображение КСВ в меню
-void display2_swrsts22(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
 	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
-	char b [23];
+	char b [xspan + 1];
 
 	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
 		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
 		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
 		r);
-	display_text(db, x, y, b, 22);
-
+	display_text(db, x, y, b, xspan);
 }
 
 // Used with WITHMGLOOP

@@ -144,13 +144,13 @@
 		{	13,	DLE1,	9, 0, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	4, 0, display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
 		{	28, DLE1,	3, 0, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-		{	32, DLE1,	7, 0, display2_classa7,		& dzi_default, PGALL, },	// Class-A power amplifier
+		{	32, DLE1,	7, 0, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 0, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
-		{	28, 			DLE1,	0, 0, display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
+		{	28, 			DLE1,	20, 0, display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
 

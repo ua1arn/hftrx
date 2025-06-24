@@ -138,7 +138,7 @@
 		#if WITHMENU
 			{	0, MENU1ROW,	BDTH_ALLRX, (54 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 			#if WITHAUTOTUNER
-			{	0,  		51,	22,	0,	display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
+			{	0,  		51,	20,	5,	display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 			#endif /* WITHAUTOTUNER */
 		#endif /* WITHMENU */
 			{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
