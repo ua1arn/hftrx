@@ -3257,8 +3257,6 @@ void spool_0p128(void);	// OPERA support
 #define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
 #define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
 
-
-
 extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
 extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
 extern uint_fast8_t s9_60_delta;		// 60 dB
@@ -3266,6 +3264,9 @@ extern uint_fast16_t minforward;
 extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
+
+#define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
+void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
 
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее

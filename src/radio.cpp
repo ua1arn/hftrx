@@ -54,9 +54,6 @@
 #include "src/speex/arch.h"
 #include "src/speex/speex_preprocess.h"
 
-static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
-#define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
-
 // группа, в которой находится редактируемый параметр
 static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
 // значение параметра
@@ -11369,7 +11366,7 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
  tx - не-0: переключение аппаратуры в режим передачи
  Учитывается состояние tunemode - режим настройки передатчика, при этом параметр tx не-ноль.
  */
-static void
+void
 updateboardZZZ(
 	uint_fast8_t full,
 	uint_fast8_t mute,
