@@ -198,17 +198,17 @@ uint8_t restore_i8(uint16_t addr) {
     return bitfield[addr];
 }
 
-uint16_t restore_i16(uint16_t addr) {
+uint_fast16_t restore_i16(uint16_t addr) {
     uint16_t value = *(uint16_t *)(bitfield + addr);
     return value; // Little endian
 }
 
-uint32_t restore_i24(uint16_t addr) {
+uint_fast32_t restore_i24(uint16_t addr) {
     uint32_t value = *(uint32_t *)(bitfield + addr);
     return value & 0x00FFFFFF; // Mask for 24 bits
 }
 
-uint32_t restore_i32(uint16_t addr) {
+uint_fast32_t restore_i32(uint16_t addr) {
     uint32_t value = *(uint32_t *)(bitfield + addr);
     return value; // Little endian
 }
@@ -218,17 +218,17 @@ void save_i8(uint16_t addr, uint8_t v) {
     need_sync = 1;
 }
 
-void save_i16(uint16_t addr, uint16_t v) {
+void save_i16(uint16_t addr, uint_fast16_t v) {
     *(uint16_t *)(bitfield + addr) = v; // Little endian
     need_sync = 1;
 }
 
-void save_i24(uint16_t addr, uint32_t v) {
+void save_i24(uint16_t addr, uint_fast32_t v) {
     *(uint32_t *)(bitfield + addr) = v & 0x00FFFFFF; // Mask for 24 bits
     need_sync = 1;
 }
 
-void save_i32(uint16_t addr, uint32_t v) {
+void save_i32(uint16_t addr, uint_fast32_t v) {
     *(uint32_t *)(bitfield + addr) = v; // Little endian
     need_sync = 1;
 }
