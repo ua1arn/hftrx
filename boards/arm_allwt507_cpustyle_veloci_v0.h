@@ -922,7 +922,6 @@
 			arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
 			arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
 			arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
-			local_delay_us(1); \
 		} while (0)
 
 	#elif WITHSPISW
@@ -931,7 +930,6 @@
 			arm_hardware_pioh_outputs(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); 	/* PH6 SPI1_CLK */ \
 			arm_hardware_pioh_outputs(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); 	/* PH7 SPI1_MOSI */ \
 			arm_hardware_pioh_inputs(SPI_MISO_BIT); 	/* PH8 SPI1_MISO */ \
-			local_delay_us(1); \
 		} while (0)
 	#endif
 	#define HARDWARE_SPI_CONNECT() do { \

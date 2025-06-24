@@ -35,6 +35,12 @@ char nameDATAFLASH [64] = "NoChip";
 #if WITHSPIHW || WITHSPISW
 
 
+#ifndef FPGALOADER_SPISPEED
+#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
+#endif
+#define FPGALOADER_SPIMODE SPIC_MODE0
+
+
 // Эти три функции должны использоваться везде, где надо работать с SPI.
 #define prog_select(target) do { prog_select_impl(target); } while (0)
 #define prog_unselect(target) do { prog_unselect_impl(target); } while (0)
@@ -7345,19 +7351,19 @@ board_fpga_fir_connect(IRQL_t * oldIrql)
 {
 	spi_operate_lock(oldIrql);
 #if WITHSPI32BIT
-	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
+	hardware_spi_connect_b32(FPGALOADER_SPISPEED, SPIC_MODE3);
 
 	hardware_spi_b32_p1(0x00000000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b32();
 
 #elif WITHSPI16BIT
-	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
+	hardware_spi_connect_b16(FPGALOADER_SPISPEED, SPIC_MODE3);
 
 	hardware_spi_b16_p1(0x0000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b16();
 
 #elif WITHSPIHW
-	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
+	hardware_spi_connect(FPGALOADER_SPISPEED, SPIC_MODE3);
 
 	hardware_spi_b8_p1(0x00);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8();
@@ -7430,11 +7436,6 @@ static uint_fast8_t board_fpga_get_INIT_DONE(void)
 	return 1;
 #endif
 }
-
-#ifndef FPGALOADER_SPISPEED
-#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
-#endif
-#define FPGALOADER_SPIMODE SPIC_MODE0
 
 void board_fpga_loader_initialize(void)
 {
