@@ -165,7 +165,7 @@ static void lvstales_initialize(void)
 		lv_style_set_border_width(s, 0);
 		lv_style_set_pad_all(s, 0);
 		lv_style_set_radius(s, 0);
-		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+		lv_style_set_text_align(s, LV_TEXT_ALIGN_LEFT);
 		lv_style_set_text_opa(s, LV_OPA_COVER);
 	    lv_style_set_text_font(s, & Rubik_Medium_18_w2);
 	    //lv_style_set_text_letter_space(s, 3);
@@ -178,7 +178,7 @@ static void lvstales_initialize(void)
 	    lv_style_init(s);
 	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
-	    lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+	    lv_style_set_text_align(s, LV_TEXT_ALIGN_RIGHT);
 	    lv_style_set_pad_ver(s, 15);
 	    lv_style_set_text_font(s, & eurostyle_56w);
 	    //lv_style_set_text_letter_space(s, 5);
@@ -193,7 +193,7 @@ static void lvstales_initialize(void)
 	    lv_style_init(s);
 //	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLORB));
 //	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
-	    ////lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
+	    lv_style_set_text_align(s, LV_TEXT_ALIGN_RIGHT);
 	    //lv_style_set_pad_ver(s, 15);
 	    //lv_style_set_text_font(s, & eurostyle_56w);
 	    //lv_style_set_text_letter_space(s, 5);
