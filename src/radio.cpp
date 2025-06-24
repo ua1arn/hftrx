@@ -189,10 +189,11 @@ static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
 static enc2_menu_t enc2_menu;
-static uint_fast8_t band_no_check = 0;
 static uint_fast8_t encoder2_redirect = 0;
 
 #endif /* WITHTOUCHGUI */
+
+static uint_fast8_t band_no_check = 0;
 
 static uint_fast32_t
 nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
@@ -20339,6 +20340,8 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 	return mp->cell_saved;
 }
 
+#endif /* WITHTOUCHGUI */
+
 uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need)
 {
 	uint_fast8_t count = 0;
@@ -20415,8 +20418,6 @@ uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 	band_no_check = 0;
 	return v;
 }
-
-#endif /* WITHTOUCHGUI */
 
 #if WITHIF4DSP
 

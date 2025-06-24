@@ -174,6 +174,11 @@ void create_button_matrix(lv_obj_t * cont, user_t * btu, const char * mname, con
 		if (! strlen(btu[i].name))
 			snprintf(btu[i].name, 20, "%s_%s", mname, btu[i].text);
 
+		if (btu[i].state == LOCKED)
+			button_lock(btn);
+		if (btu[i].state == DISABLED)
+			lv_obj_set_state(btn, LV_STATE_DISABLED, 1);
+
 		lv_obj_set_user_data(btn, & btu[i]);
 		lv_obj_add_event_cb(btn, buttons_handler, LV_EVENT_ALL, NULL);
 	}

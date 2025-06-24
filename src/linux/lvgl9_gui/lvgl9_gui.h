@@ -23,6 +23,12 @@ typedef enum {
 	s40x40 = 40 << 8 | 40
 } btns_size_t;
 
+typedef enum {
+	DEFAULT,
+	LOCKED,
+	DISABLED
+} obj_state_t;
+
 enum {
 	fbtn_w = 86,
 	fbtn_h = 44,
@@ -85,6 +91,7 @@ typedef struct {
 	uint8_t index;
 	lv_timer_t * long_press_timer;
 	event_handler_t eh;
+	obj_state_t state;
 } user_t;
 
 void lvgl_gui_init(lv_obj_t * parent);

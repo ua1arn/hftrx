@@ -537,6 +537,67 @@ void win_display_settings_handler(lv_event_t * e)
 
 // ***********************************************
 
+void win_bands_handler(lv_event_t * e)
+{
+	static band_array_t * bands = NULL;	//	добавить free по событию
+	static user_t * ext = NULL;
+
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+
+		uint8_t bandnum = hamradio_get_bands(NULL, 1, 1);
+		bands = (band_array_t *) calloc(bandnum, sizeof (band_array_t));
+		ASSERT(bands);
+		hamradio_get_bands(bands, 0, 1);
+
+		ext = (user_t *) calloc(bandnum, sizeof (user_t));
+		ASSERT(ext);
+
+		int i = 0;
+		for (; i < bandnum; i ++)
+		{
+			if (bands [i].type != BAND_TYPE_HAM)
+				break;
+
+			ext[i].payload = bands[i].init_freq;
+
+			char * div = strchr(bands[i].name, ' ');
+			if(div) memcpy(div, "\n", 1);
+
+			snprintf(ext[i].name, ARRAY_SIZE(ext[i].name), "btn_ham_%d", i);
+			strcpy(ext[i].text, bands[i].name);
+
+			if (hamradio_check_current_freq_by_band(bands [i].index))
+				ext[i].state = LOCKED;
+
+#if WITHAD936XIIO
+			if ((get_ad936x_stream_status() && ext[i].payload < NOXVRTUNE_TOP) ||
+					(! get_ad936x_stream_status() && ext[i].payload > NOXVRTUNE_TOP))
+				ext[i].state = DISABLED;
+#endif /* WITHAD936XIIO */
+		}
+
+		create_button_matrix(cont, ext, "", i, 4, s86x44, win_bands_handler);
+
+		return;
+	}
+
+	lv_event_code_t code = lv_event_get_code(e);
+
+
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	user_t * btnu = lv_obj_get_user_data(btn);
+
+	if (btnu->is_clicked)
+	{
+		hamradio_goto_band_by_freq(btnu->payload);
+		win_close();
+	}
+}
+
+// ***********************************************
+
 static void btn_txrx_handler(lv_obj_t * p)
 {
 	user_t * ext = lv_obj_get_user_data(p);
@@ -595,7 +656,7 @@ static void footer_buttons_init(lv_obj_t * p)
 			{ "Modes", 	  0, 0, NULL, WIN_MODES, },
 			{ "Memory",   0, 0, NULL, WIN_MEMORY, },
 			{ "Receive",  0, 0, NULL, WIN_RECEIVE, },
-			{ "Button 4", 0, 0, NULL, WIN_MEMORY, },
+			{ "Bands",    0, 0, NULL, WIN_BANDS, },
 			{ "Button 5", 0, 0, NULL, WIN_MEMORY, },
 			{ "Button 6", 0, 0, NULL, WIN_MEMORY, },
 			{ "Button 7", 0, 0, NULL, WIN_MEMORY, },

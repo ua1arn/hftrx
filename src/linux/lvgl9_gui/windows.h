@@ -19,6 +19,7 @@ void win_af_filter_handler(lv_event_t * e);
 void win_tx_power_handler(lv_event_t * e);
 void win_settings_handler(lv_event_t * e);
 void win_display_settings_handler(lv_event_t * e);
+void win_bands_handler(lv_event_t * e);
 
 #define WINDOW_LIST(X) \
 		X(MAIN,    MAIN, "", "", NULL)      	\
@@ -30,6 +31,7 @@ void win_display_settings_handler(lv_event_t * e);
 		X(TX_POWER, MAIN,  "win_tx_power",	"TX power",  win_tx_power_handler)	\
 		X(SETTINGS, MAIN,  "win_settings",	"Settings",  win_settings_handler)	\
 		X(DISPLAY_SETTINGS, SETTINGS,  "win_display_settings",	"Display settings",  win_display_settings_handler)	\
+		X(BANDS, MAIN,  "win_bands",	"Bands",  win_bands_handler)	\
 
 typedef enum {
     #define X(name, parent, cname, title, eh) WIN_##name,

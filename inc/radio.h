@@ -3532,6 +3532,21 @@ typedef struct {
 	char label [10][10];
 } bws_t;
 
+typedef enum {
+	BAND_TYPE_HAM,
+	BAND_TYPE_BROADCAST
+} gui_band_type_t;
+
+typedef struct {
+	uint_fast32_t init_freq;
+	uint_fast8_t index;
+	gui_band_type_t type;
+	char name[10];
+} band_array_t;
+
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
+uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
+void hamradio_goto_band_by_freq(uint_fast32_t f);
 
 // шаг изменения значения параметра
 enum

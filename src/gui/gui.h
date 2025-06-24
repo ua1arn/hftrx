@@ -38,18 +38,6 @@ enum {
 	wifiAPmaxcount = 10,
 };
 
-typedef enum {
-	BAND_TYPE_HAM,
-	BAND_TYPE_BROADCAST
-} gui_band_type_t;
-
-typedef struct {
-	uint_fast32_t init_freq;
-	uint_fast8_t index;
-	gui_band_type_t type;
-	char name[10];
-} band_array_t;
-
 /* структура для размещения в конфигурационном ОЗУ */
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
