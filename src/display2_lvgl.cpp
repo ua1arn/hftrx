@@ -15,6 +15,9 @@
 #include "display2.h"
 #include "lvgl.h"
 
+const lv_coord_t cols_dsc[4] = { 100, 50, 300, LV_GRID_TEMPLATE_LAST};
+const lv_coord_t rows_dsc[2] = { 30, LV_GRID_TEMPLATE_LAST };
+
 static void parameditor_slider_cb(lv_event_t * e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -30,7 +33,7 @@ static void parameditor_slider_cb(lv_event_t * e)
 	lv_label_set_text_fmt(l, "%" PRIx32, v);
 }
 
-static void parameditor_RJ_SMETER_cb(lv_event_t * e)
+static void parameditor_dropdown_cb(lv_event_t * e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
 	if (code != LV_EVENT_VALUE_CHANGED) return;
@@ -47,92 +50,65 @@ void * hamradio_walkmenu_getparameditor(const void * paramitem, void * parent)
 {
 	const struct paramdefdef * pd = (const struct paramdefdef *) paramitem;
 
-	static lv_coord_t cols_dsc[4] = { 50, 50, 300, LV_GRID_TEMPLATE_LAST};
-	static lv_coord_t rows_dsc[20];
-	uint8_t i = 0;
-	for (; i < 19; i ++)
-		rows_dsc[i] = 30;
+	lv_obj_t * obj = lv_menu_cont_create((lv_obj_t *) parent);
+	lv_obj_set_layout(obj, LV_LAYOUT_GRID);
+	lv_obj_set_style_grid_column_dsc_array(obj, cols_dsc, 0);
+	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
 
-	rows_dsc[i + 1] = LV_GRID_TEMPLATE_LAST;
-
-    lv_obj_t * obj = lv_menu_cont_create((lv_obj_t *) parent);
-// 	lv_obj_set_layout(obj, LV_LAYOUT_GRID);
-//	lv_obj_set_style_grid_column_dsc_array(obj, cols_dsc, 0);
-//	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
-
-	switch (pd->qrj)
-	{
-	default:
-		{
-		    lv_obj_t * img = NULL;
-		    lv_obj_t * label_name = NULL, * label_value = NULL;
-//
-//		    if(icon) {
-//		        img = lv_image_create(obj);
-//		        lv_image_set_src(img, icon);
-//		    }
-
-		    label_name = lv_label_create(obj);
-	        lv_label_set_text_static(label_name, pd->qlabel);
-//	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-//	        lv_obj_set_flex_grow(label, 1);
-	        //lv_obj_set_width(label, lv_obj_get_content_width(obj) * 2 / 3);
-
-	        label_value = lv_label_create(obj);
-	        lv_label_set_text_fmt(label_value, "%" PRIiFAST32, param_getvalue(pd));
-	        lv_obj_align_to(label_value, label_name, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-
-			lv_obj_t * slider = lv_slider_create(obj);
-//			lv_obj_set_flex_grow(slider, 1);
-			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
-			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
-			lv_obj_set_user_data(slider, label_value);
-			lv_obj_align_to(slider, label_value, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-			lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
-
-			//if(icon == NULL) {
-			//	lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
-			//}
-
-			return obj;
-		}
-	case RJ_SMETER:
-	{
+	switch (pd->qrj) {
+	case RJ_VIEW:
+	case RJ_SMETER: {
 		lv_obj_t * label_name = lv_label_create(obj);
 		lv_label_set_text_static(label_name, pd->qlabel);
+		lv_obj_set_grid_cell(label_name, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
 		lv_obj_t * dd = lv_dropdown_create(obj);
-		lv_dropdown_set_options(dd, "BARS\n" "DIAL");
-		lv_dropdown_set_selected(dd, param_getvalue(pd));
-		lv_obj_align_to(dd, label_name, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-		lv_obj_add_event_cb(dd, parameditor_RJ_SMETER_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
+		lv_dropdown_clear_options(dd);
 
-		return obj;
+		if (pd->qrj == RJ_SMETER)
+			lv_dropdown_set_options(dd, "BARS\n" "DIAL");
+		else
+			for (int i = 0; i < VIEW_COUNT; i ++)
+				lv_dropdown_add_option(dd, view_types[i], LV_DROPDOWN_POS_LAST);
+
+		lv_dropdown_set_selected(dd, param_getvalue(pd));
+		lv_obj_set_grid_cell(dd, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
+		lv_obj_add_event_cb(dd, parameditor_dropdown_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
+
+		break;
 	}
 	case RJ_YES:
-	case RJ_ON:
-		{
+	case RJ_ON: {
+		lv_obj_t * label = lv_label_create(obj);
+		lv_label_set_text_static(label, pd->qlabel);
+		lv_obj_set_grid_cell(label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
-		    lv_obj_t * img = NULL;
-		    lv_obj_t * label = NULL;
-//
-//		    if(icon) {
-//		        img = lv_image_create(obj);
-//		        lv_image_set_src(img, icon);
-//		    }
+		lv_obj_t * sw = lv_switch_create(obj);
+		lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
+		lv_obj_set_grid_cell(sw, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 
-	        label = lv_label_create(obj);
-	        lv_label_set_text_static(label, pd->qlabel);
-//	        lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-//	        lv_obj_set_flex_grow(label, 1);
-	       // lv_obj_set_width(label, lv_obj_get_content_width(obj) * 2 / 3);
-
-			lv_obj_t * sw = lv_switch_create(obj);
-			lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
-
-			return obj;
-		}
+		break;
 	}
+	default: {
+		lv_obj_t * label_name = lv_label_create(obj);
+		lv_label_set_text_static(label_name, pd->qlabel);
+		lv_obj_set_grid_cell(label_name, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
+
+		lv_obj_t * label_value = lv_label_create(obj);
+		lv_label_set_text_fmt(label_value, "%" PRIiFAST32, param_getvalue(pd));
+		lv_obj_set_grid_cell(label_value, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
+
+		lv_obj_t * slider = lv_slider_create(obj);
+		lv_slider_set_range(slider, pd->qbottom, pd->qupper);
+		lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
+		lv_obj_set_user_data(slider, label_value);
+		lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
+		lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
+
+		break;
+	}
+	}
+
 	return obj;
 }
 
@@ -296,7 +272,7 @@ lv_obj_t * lv_hamradiomenu_create(lv_obj_t * parent)
 	    {
 
 	    	int32_t idx1 = 0;	// Открыть первое подменю (единственное)
-	    	int32_t idx2 = 1;	// выбрать первый элемент в нём (номер группы в меню)
+	    	int32_t idx2 = 0;	// выбрать первый элемент в нём (номер группы в меню)
 	    	lv_obj_t * ch1 = lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), idx1);
 	    	ASSERT(ch1);
 	        lv_obj_t * ch2 = lv_obj_get_child(ch1, idx2);
