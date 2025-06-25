@@ -11838,11 +11838,16 @@ updateboardZZZ(
 			#else /* defined (WITHBBOXMIKESRC) */
 				const uint_fast8_t txaudiocode = txaudiosrcs [gtxaudio [txmode]].code;	// Код источника
 			#endif /* defined (WITHBBOXMIKESRC) */
-
+			// Источник для передачи в цифровом режиме.
+			// Если обычный источник BT или USB - не меняем.
+			const uint_fast8_t txaudiocodedigi =
+					(txaudiocode == BOARD_TXAUDIO_USB || txaudiocode == BOARD_TXAUDIO_USB) ?
+							txaudiocode : txaudiocode;
+			const uint_fast8_t txaudiocodefinal = (gdatamode || getcattxdata()) ? txaudiocodedigi : txaudiocode;
 			#if WITHAFCODEC1HAVELINEINLEVEL
-					board_set_lineinput(txaudiocode == BOARD_TXAUDIO_LINE);
+				board_set_lineinput(txaudiocodefinal == BOARD_TXAUDIO_LINE);
 			#else /* WITHAFCODEC1HAVELINEINLEVEL */
-					board_set_lineinput(0);
+				board_set_lineinput(0);
 			#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		#endif /* WITHTX */
 
@@ -11866,14 +11871,7 @@ updateboardZZZ(
 		#if WITHTX
 			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 			board_set_lineamp(glineamp);	/* усиление с линейного входа */
-			#if WITHUSBHW && WITHUSBUACOUT
-				if (txaudiocode == BOARD_TXAUDIO_BT)
-					board_set_txaudio(BOARD_TXAUDIO_BT);
-				else
-					board_set_txaudio((gdatamode || getcattxdata()) ? BOARD_TXAUDIO_USB : txaudiocode);	// Альтернативные источники сигнала при передаче
-			#else /* WITHUSBUAC */
-				board_set_txaudio(txaudiocode);	// Альтернативные источники сигнала при передаче
-			#endif /* WITHUSBUAC */
+			board_set_txaudio(txaudiocodefinal);	// Альтернативные источники сигнала при передаче
 			board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 			board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
 			board_set_mikehclip(gmikehclip);	/* Ограничитель */
