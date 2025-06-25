@@ -4862,46 +4862,6 @@ static COLORPIP_T display2_bgcolorwfl(void)
 typedef int16_t WFL3DSS_T;
 typedef int16_t SCAPEJVAL_T;
 
-struct ustates
-{
-#if defined(ARM_MATH_NEON)
-	FLOAT_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 8];
-#else /* defined(ARM_MATH_NEON) */
-	FLOAT_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
-#endif /* defined(ARM_MATH_NEON) */
-	FLOAT_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
-
-	FLOAT_t cmplx_sig [NORMALFFT * 2];
-	FLOAT_t ifspec_wndfn [NORMALFFT];
-
-#if WITHVIEW_3DSS
-
-	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
-	uint16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
-	uint16_t envelope_y [ALLDX];
-
-#endif /* WITHVIEW_3DSS */
-
-#if WITHVIEW_3DSS
-
-	PACKEDCOLORPIP_T hist3dss [GXSIZE(ALLDX, MAX_3DSS_STEP)];		// массив цветных пикселей ландшавта
-	SCAPEJVAL_T hist3dssvals [MAX_3DSS_STEP][ALLDX];	// массив высот (0..PALETTESIZE - 1)
-
-#endif /* WITHVIEW_3DSS */
-
-#if WITHAFSPECTRE
-	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
-	afsp_t afsp;
-#endif /* WITHAFSPECTRE */
-};
-
-#define SIZEOF_WFL3DSS (sizeof gvars.wfj3dss)
-#define ADDR_WFL3DSS (gvars.wfj3dss)
-
-#define ADDR_SCAPEARRAY (gvars.hist3dss)
-#define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
-
-
 template<typename pixelt, uint_fast16_t argdx> class scrollb
 {
 	typedef pixelt element_t;
@@ -5323,8 +5283,7 @@ public:
 
 };
 
-static scrollbf<ALLDX, NROWSWFL> scbf;
-
+typedef scrollbf<ALLDX, NROWSWFL> scbfi_t;
 ///////////////////
 ///
 ///
@@ -5350,15 +5309,51 @@ void display2_set_filter_wfl(uint_fast8_t v)
 // Поддержка панорпамы и водопада
 
 
-union states
+struct ustatesx
 {
-	struct ustates data;
-	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
+#if defined(ARM_MATH_NEON)
+	FLOAT_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 8];
+#else /* defined(ARM_MATH_NEON) */
+	FLOAT_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
+#endif /* defined(ARM_MATH_NEON) */
+	FLOAT_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
+
+	FLOAT_t cmplx_sig [NORMALFFT * 2];
+	FLOAT_t ifspec_wndfn [NORMALFFT];
+
+#if WITHVIEW_3DSS
+
+	WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
+	uint16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
+	uint16_t envelope_y [ALLDX];
+
+#endif /* WITHVIEW_3DSS */
+
+#if WITHVIEW_3DSS
+
+	PACKEDCOLORPIP_T hist3dss [GXSIZE(ALLDX, MAX_3DSS_STEP)];		// массив цветных пикселей ландшавта
+	SCAPEJVAL_T hist3dssvals [MAX_3DSS_STEP][ALLDX];	// массив высот (0..PALETTESIZE - 1)
+
+#endif /* WITHVIEW_3DSS */
+
+#if WITHAFSPECTRE
+	FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
+	afsp_t afsp;
+#endif /* WITHAFSPECTRE */
+
+	scbfi_t scbfI;
 };
+
 
 #if (CPUSTYLE_R7S721 || 0)
 
-static uint8_t rbfimage0 [] =
+union states
+{
+	struct ustatesx gvarsv;
+	//uint8_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
+};
+
+static const uint8_t rbfimage0 [] =
 {
 #include BOARD_BITIMAGE_NAME
 };
@@ -5372,13 +5367,21 @@ const uint8_t * getrbfimage(size_t * count)
 	return & rbfimage0 [0];
 }
 
-#define gvars ((* (union states *) rbfimage0).data)
+#define gvars ((* (union states *) rbfimage0).gvarsv)
 
 #else /* (CPUSTYLE_R7S721 || 0) */
 
-static RAMBIGDTCM struct ustates gvars;
+static RAMBIGDTCM struct ustatesx gvars;
 
 #endif /* (CPUSTYLE_R7S721 || 0) */
+
+
+#define SIZEOF_WFL3DSS (sizeof gvars.wfj3dss)
+#define ADDR_WFL3DSS (gvars.wfj3dss)
+#define scbf (gvars.scbfI)
+
+#define ADDR_SCAPEARRAY (gvars.hist3dss)
+#define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
 
 
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
@@ -9775,6 +9778,9 @@ void display2_bgprocess(
 
 void display2_initialize(void)
 {
+#if (CPUSTYLE_R7S721 || 0)
+	//scbfi_t * p = new (reinterpret_cast<void *>(& scbf)) scbfi_t;
+#endif
 #if WITHLVGL
 
 	lvstales_initialize();	// эти стили нужны в linux ?
