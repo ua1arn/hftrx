@@ -5361,7 +5361,6 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 
 	FLOAT_t m_spavgarray [w * 1];	// h == 1
 	FLOAT_t m_yoldwfl [w * 1];	// h == 1
-	//FLOAT_t m_yoldspe [w * 1];	// h == 1
 	agcstate_t m_ypeakspe [w * 1];	// h == 1
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
@@ -5373,7 +5372,6 @@ public:
 	/* one-row objects */
 	scrollb1h<FLOAT_t, w>  spavgarray;	// строка принятая из DSP части в последний раз
 	scrollb1h<FLOAT_t, w>  yoldwfl;		// фильтр водопада
-	//scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
 	scrollb1h<agcstate_t, w>  ypeakspe;		// пиковые значения спектра
 	scrollb1h<FLOAT_t, w>  yold3dss;	// фильтр 3DSS
 
@@ -5384,7 +5382,6 @@ public:
 		/* one-row objects */
 		spavgarray(centerx, centeryzero, m_spavgarray),
 		yoldwfl(centerx, centeryzero, m_yoldwfl),
-		//yoldspe(centerx, centeryzero, m_yoldspe),
 		ypeakspe(centerx, centeryzero, m_ypeakspe),
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
@@ -5399,7 +5396,6 @@ public:
 		/* one-row objects */
 		spavgarray.setupnew(w, 0);
 		yoldwfl.setupnew(w, 0);
-		//yoldspe.setupnew(w, 0);
 		ypeakspe.setupnew(w, agc0);
 		yold3dss.setupnew(w, 0);
 	}
@@ -5422,7 +5418,6 @@ public:
 			/* one-row objects */
 			spavgarray.shiftleft(w, pixels, 0);
 			yoldwfl.shiftleft(w, pixels, 0);
-			//yoldspe.shiftleft(w, pixels, 0);
 			ypeakspe.shiftleft(w, pixels, agc0);
 			yold3dss.shiftleft(w, pixels, 0);
 		}
@@ -5441,9 +5436,76 @@ public:
 			/* one-row objects */
 			spavgarray.shiftright(w, pixels, 0);
 			yoldwfl.shiftright(w, pixels, 0);
-			//yoldspe.shiftright(w, pixels, 0);
 			ypeakspe.shiftright(w, pixels, agc0);
 			yold3dss.shiftright(w, pixels, 0);
+		}
+	}
+
+private:
+	void filtering_waterfall(uint_fast16_t x)
+	{
+		const FLOAT_t val = spavgarray.peek(x, 0);	// массив входных данных
+		const FLOAT_t Y = yoldwfl.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
+		yoldwfl.poke(x, 0, Y);
+	}
+
+public:
+	FLOAT_t filtered_waterfall(uint_fast16_t vx, uint_fast16_t alldx)
+	{
+		const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
+		return yoldwfl.peek(bx, 0);
+	}
+
+private:
+	void filtering_spectrum(uint_fast16_t x)
+	{
+		const FLOAT_t val = spavgarray.peek(x, 0);	// массив входных данных
+		// Работа с пиковым детектором
+		agcstate_t * const st = ypeakspe.bufferat(ALLDX, x, 0);
+		agc_perform(& peakparams, st, val);
+	}
+
+public:
+	FLOAT_t filtered_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
+	{
+		const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
+		//return spavgarray.peek(bx, 0);	// массив входных данных - нефильтрованный вариант
+		agcstate_t * const st = ypeakspe.bufferat(ALLDX, bx, 0);
+		return agc_result_fast(st);
+	}
+
+	FLOAT_t peaks_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
+	{
+		const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
+		agcstate_t * const st = ypeakspe.bufferat(ALLDX, bx, 0);
+		return agc_result_slow(st);
+	}
+
+	// todo: свои параметры фильтрации?
+private:
+	void filtering_3dss(uint_fast16_t x)
+	{
+		const FLOAT_t val = spavgarray.peek(x, 0);	// массив входных данных
+		const FLOAT_t Y = yold3dss.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
+		yold3dss.poke(x, 0, Y);
+	}
+
+public:
+	// todo: свои параметры фильтрации?
+	FLOAT_t filtered_3dss(uint_fast16_t vx, uint_fast16_t alldx)
+	{
+		const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
+		return yold3dss.peek(bx, 0);
+	}
+public:
+	void filtering()
+	{
+		uint_fast16_t x;
+		for (x = 0; x < w; ++ x)
+		{
+			filtering_waterfall(x);
+			filtering_spectrum(x);
+			filtering_3dss(x);
 		}
 	}
 
@@ -5454,59 +5516,6 @@ static agcparams_t peakspetimes;	// параметры фильтра и пик�
 ///////////////////
 ///
 ///
-static void filtering_waterfall(uint_fast16_t x)
-{
-	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
-	const FLOAT_t Y = scbf.yoldwfl.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
-	scbf.yoldwfl.poke(x, 0, Y);
-}
-
-static FLOAT_t filtered_waterfall(uint_fast16_t vx, uint_fast16_t alldx)
-{
-	const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
-	return scbf.yoldwfl.peek(bx, 0);
-}
-
-static void filtering_spectrum(uint_fast16_t x)
-{
-	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
-//	const FLOAT_t Y = scbf.yoldspe.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
-//	scbf.yoldspe.poke(x, 0, Y);
-	// Работа с пиковым детектором
-	agcstate_t * const st = scbf.ypeakspe.bufferat(ALLDX, x, 0);
-	agc_perform(& scbf.peakparams, st, val);
-}
-
-static FLOAT_t filtered_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
-{
-	const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
-	agcstate_t * const st = scbf.ypeakspe.bufferat(ALLDX, bx, 0);
-	return agc_result_fast(st);
-	//return scbf.yoldspe.peek(bx, 0);
-	//
-}
-
-static FLOAT_t peaks_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
-{
-	const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
-	agcstate_t * const st = scbf.ypeakspe.bufferat(ALLDX, bx, 0);
-	return agc_result_slow(st);
-}
-
-// todo: свои параметры фильтрации?
-static void filtering_3dss(uint_fast16_t x)
-{
-	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
-	const FLOAT_t Y = scbf.yold3dss.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
-	scbf.yold3dss.poke(x, 0, Y);
-}
-
-// todo: свои параметры фильтрации?
-static FLOAT_t filtered_3dss(uint_fast16_t vx, uint_fast16_t alldx)
-{
-	const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
-	return scbf.yold3dss.peek(bx, 0);
-}
 
 /* парамеры видеофильтра спектра */
 void display2_set_filter_spe(uint_fast8_t v)
@@ -6985,6 +6994,7 @@ static void display2_latchcombo(
 		return;	// еще нет новых данных.
 
 	scbf.shiftrows();	/* + продвижение по истории */
+	scbf.filtering();
 
 #if WITHVIEW_3DSS
 	row3dss = (row3dss == 0) ? (MAX_3DSS_STEP - 1) : (row3dss - 1);
@@ -7001,20 +7011,12 @@ static void display2_latchcombo(
 	gxdrawb_t scapedbv;
 	gxdrawb_initialize(& scapedbv, ADDR_SCAPEARRAY, ALLDX, MAX_3DSS_STEP);
 #endif
-	for (x = 0; x < ALLDX; ++ x)
-	{
-		filtering_waterfall(x);
-		filtering_spectrum(x);
-#if WITHVIEW_3DSS
-		filtering_3dss(x);
-#endif /* WITHVIEW_3DSS */
-	}
 	// формирование строки водопада
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int valwfl = dsp_mag2y(filtered_waterfall(x, ALLDX), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-		const int val3dss = dsp_mag2y(filtered_3dss(x, ALLDX), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int valwfl = dsp_mag2y(scbf.filtered_waterfall(x, ALLDX), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val3dss = dsp_mag2y(scbf.filtered_3dss(x, ALLDX), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 		scbf.scrollpwr.poke(x, 0, val3dss);
 	#if LCDMODE_MAIN_L8
 		//colpip_putpixel(& wfjdbv, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
@@ -7076,8 +7078,8 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	for (uint_fast16_t x = 0; x < alldx; ++ x)
 	{
 #if WITHSPECTRUMWF
-		vals [x] = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
-		peaks [x] = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		vals [x] = dsp_mag2y(scbf.filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		peaks [x] = dsp_mag2y(scbf.peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
 #else
 		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
@@ -7387,7 +7389,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 			if (i == 0)
 			{
 				// Самый ближний к зрителю (самый свежий)
-				const int val = dsp_mag2y(filtered_spectrum(x, alldx), HORMAX_3DSS - 1, glob_topdb, glob_bottomdb);
+				const int val = dsp_mag2y(scbf.filtered_spectrum(x, alldx), HORMAX_3DSS - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY - 1 - val;
 				uint_fast16_t dy, j;
 				wfj3dss_poke(x, current_3dss_step, val);
@@ -8516,8 +8518,8 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	for (x = 0; x < alldx; ++ x)
 	{
 #if WITHSPECTRUMWF
-		vals [x] = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
-		peaks [x] = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		vals [x] = dsp_mag2y(scbf.filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		peaks [x] = dsp_mag2y(scbf.peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
 #else
 		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
