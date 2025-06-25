@@ -5388,7 +5388,7 @@ public:
 		ypeakspe(centerx, centeryzero, m_ypeakspe),
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
-		agc_parameters_peaks_initialize(& peakparams, 10);	// 10 - как частота latch
+		agc_parameters_peaks_initialize(& peakparams, 15);	// 15 - как частота latch
 		agc_state_initialize(& agc0, & peakparams);
 	}
 	/* + стереть содержимое */
