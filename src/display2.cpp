@@ -10378,11 +10378,13 @@ display2_set_spectrumpart(uint_fast8_t v)
 
 void board_set_displayfps(uint_fast8_t v)
 {
+#if LCDMODE_LTDC
 	if (glob_displayfps != v && v != 0)
 	{
 		glob_displayfps = v;
 		agc_parameters_peaks_initialize(& scbf.peakparams, glob_displayfps);	// частота latch
 	}
+#endif /* LCDMODE_LTDC */
 }
 
 /* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
