@@ -4845,6 +4845,13 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 
 #endif
 
+
+// Получить цвет заполнения водопада при перестройке
+static COLORPIP_T display2_bgcolorwfl(void)
+{
+	return wfpalette [0];
+}
+
 #if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_RK356X
 	enum { MAX_3DSS_STEP = 70 };
 #else
@@ -4894,213 +4901,6 @@ struct ustates
 #define ADDR_SCAPEARRAY (gvars.hist3dss)
 #define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
 
-union states
-{
-	struct ustates data;
-	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
-};
-
-#if (CPUSTYLE_R7S721 || 0)
-
-static uint8_t rbfimage0 [] =
-{
-#include BOARD_BITIMAGE_NAME
-};
-
-/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
-const uint8_t * getrbfimage(size_t * count)
-{
-	ASSERT(sizeof rbfimage0 >= sizeof (union states));
-
-	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
-	return & rbfimage0 [0];
-}
-
-#define gvars ((* (union states *) rbfimage0).data)
-
-#else /* (CPUSTYLE_R7S721 || 0) */
-
-static RAMBIGDTCM struct ustates gvars;
-
-#endif /* (CPUSTYLE_R7S721 || 0) */
-
-// Получить цвет запослнен6ия водопада при перестройке
-static COLORPIP_T display2_bgcolorwfl(void)
-{
-	return wfpalette [0];
-}
-
-
-#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
-
-static void printsigwnd(void)
-{
-	int i;
-
-	PRINTF(PSTR("static const FLOAT_t gvars.ifspec_wndfn [%u] =\n"), (unsigned) NORMALFFT);
-	PRINTF(PSTR("{\n"));
-	for (i = 0; i < NORMALFFT; ++ i)
-	{
-		int el = ((i + 1) % 4) == 0;
-		PRINTF(PSTR("\t" "%+1.20f%s"), gvars.ifspec_wndfn [i], el ? ",\n" : ", ");
-	}
-	PRINTF(PSTR("};\n"));
-}
-
-#endif /*  (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
-
-#if WITHAFSPECTRE
-
-// перевести частоту в позицию бина результата FFT децимированного спектра
-static int freq2fft_af(int freq)
-{
-	return AFSP_DECIMATION * freq * WITHFFTSIZEAF / dsp_get_samplerateuacin_audio48();
-}
-
-// перевод позиции в окне в номер бина - отображение с нулевой частотой в левой стороне окна
-static int raster2fftsingle(
-	int x,	// window pos
-	int dx,	// width
-	int leftfft,	// начало буфера FFT, отобрааемое на экране (в бинах)
-	int rightfft	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
-	)
-{
-	ASSERT(leftfft < rightfft);
-	return x * (rightfft - leftfft) / (dx - 1) + leftfft;
-}
-
-// RT context function
-/* вызывается при запрещённых глобальных прерываниях */
-static void
-afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
-{
-	static uint_fast16_t i = 0;
-
-	ASSERT(i < ARRAY_SIZE(gvars.afsp.raw_buf));
-	if (gvars.afsp.is_ready == 0)
-	{
-		gvars.afsp.raw_buf [i] = ch0;
-		i ++;
-	}
-
-	if (i >= ARRAY_SIZE(gvars.afsp.raw_buf))
-	{
-		gvars.afsp.is_ready = 1;
-		i = 0;
-	}
-}
-
-#include "dsp/window_functions.h"
-
-static void
-display2_af_spectre15_init(
-		const gxdrawb_t * db_unused,	// NULL
-		uint_fast8_t xgrid,
-		uint_fast8_t ygrid,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)		// вызывать после display2_smeter15_init
-{
-	static subscribefloat_t afspectreregister;
-	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS];		// отображение НЧ спектра только для режима s-метра BARS
-
-	gvars.afsp.x = GRID2X(xgrid) + smpr->gs;
-	gvars.afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
-	gvars.afsp.w = smpr->ge - smpr->gs;
-	gvars.afsp.h = 40;
-	gvars.afsp.is_ready = 0;
-
-	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
-	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
-
-	subscribefloat(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
-}
-
-
-static void
-display2_af_spectre15_latch(
-		const gxdrawb_t * db_unused,	// NULL
-		uint_fast8_t xgrid,
-		uint_fast8_t ygrid,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	if (gvars.afsp.is_ready)
-	{
-		const FLOAT_t m1 = 0.6;
-		const FLOAT_t m2 = 1 - m1;
-		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
-		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
-
-		fftzoom_af(gvars.afsp.raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
-		// осталась половина буфера
-
-		ARM_MORPH(arm_mult)(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
-		//VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0)); // 0-прямое, 1-обратное
-		ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
-		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
-		ARM_MORPH(arm_cmplx_mag)(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
-
-		ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
-		for (unsigned x = 0; x < gvars.afsp.w; x ++)
-		{
-			const uint_fast16_t fftpos = raster2fftsingle(x, gvars.afsp.w, leftfftpos, rightfftpos);
-			ASSERT(fftpos < ARRAY_SIZE(gvars.afsp.fft_buf));
-			// filterig
-			gvars.afsp.val_array [x] = gvars.afsp.val_array [x] * m1 + m2 * gvars.afsp.fft_buf [fftpos];
-		}
-		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, gvars.afsp.w, & gvars.afsp.max_val);	// поиск в отображаемой части
-		gvars.afsp.max_val = FMAXF(gvars.afsp.max_val, (FLOAT_t) 0.001);
-	}
-}
-
-static void
-display2_af_spectre15(const gxdrawb_t * db,
-		uint_fast8_t xgrid,
-		uint_fast8_t ygrid,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	switch (glob_smetertype)
-	{
-	case SMETER_TYPE_BARS:
-		{
-			if (! hamradio_get_tx())
-			{
-				PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
-
-				ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
-				for (unsigned x = 0; x < gvars.afsp.w; x ++)
-				{
-					//const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x], 0, gvars.afsp.max_val, gvars.afsp.h - 2) + 1;
-					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, gvars.afsp.h - 2) + 1;
-					ASSERT(y_norm <= gvars.afsp.h);
-					ASSERT(gvars.afsp.y >= y_norm);
-					if (gvars.afsp.y >= y_norm)
-					{
-						colpip_set_vline(db,
-								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
-								AFSPECTRE_COLOR);
-					}
-				}
-#if WITHAA
-				display_do_AA(db, GRID2X(xgrid), GRID2Y(ygrid), SM_BG_W, SM_BG_H);
-#endif /* WITHAA */
-			}
-		}
-		break;
-
-	default:
-		break;
-	}
-}
-
-#endif /* WITHAFSPECTRE */
 
 template<typename pixelt, uint_fast16_t argdx> class scrollb
 {
@@ -5524,7 +5324,7 @@ public:
 };
 
 static scrollbf<ALLDX, NROWSWFL> scbf;
-static agcparams_t peakspetimes;	// параметры фильтра и пиков спектра
+
 ///////////////////
 ///
 ///
@@ -5549,6 +5349,208 @@ void display2_set_filter_wfl(uint_fast8_t v)
 
 // Поддержка панорпамы и водопада
 
+
+union states
+{
+	struct ustates data;
+	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
+};
+
+#if (CPUSTYLE_R7S721 || 0)
+
+static uint8_t rbfimage0 [] =
+{
+#include BOARD_BITIMAGE_NAME
+};
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint8_t * getrbfimage(size_t * count)
+{
+	ASSERT(sizeof rbfimage0 >= sizeof (union states));
+
+	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
+	return & rbfimage0 [0];
+}
+
+#define gvars ((* (union states *) rbfimage0).data)
+
+#else /* (CPUSTYLE_R7S721 || 0) */
+
+static RAMBIGDTCM struct ustates gvars;
+
+#endif /* (CPUSTYLE_R7S721 || 0) */
+
+
+#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+
+static void printsigwnd(void)
+{
+	int i;
+
+	PRINTF(PSTR("static const FLOAT_t gvars.ifspec_wndfn [%u] =\n"), (unsigned) NORMALFFT);
+	PRINTF(PSTR("{\n"));
+	for (i = 0; i < NORMALFFT; ++ i)
+	{
+		int el = ((i + 1) % 4) == 0;
+		PRINTF(PSTR("\t" "%+1.20f%s"), gvars.ifspec_wndfn [i], el ? ",\n" : ", ");
+	}
+	PRINTF(PSTR("};\n"));
+}
+
+#endif /*  (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
+
+#if WITHAFSPECTRE
+
+// перевести частоту в позицию бина результата FFT децимированного спектра
+static int freq2fft_af(int freq)
+{
+	return AFSP_DECIMATION * freq * WITHFFTSIZEAF / dsp_get_samplerateuacin_audio48();
+}
+
+// перевод позиции в окне в номер бина - отображение с нулевой частотой в левой стороне окна
+static int raster2fftsingle(
+	int x,	// window pos
+	int dx,	// width
+	int leftfft,	// начало буфера FFT, отобрааемое на экране (в бинах)
+	int rightfft	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
+	)
+{
+	ASSERT(leftfft < rightfft);
+	return x * (rightfft - leftfft) / (dx - 1) + leftfft;
+}
+
+// RT context function
+/* вызывается при запрещённых глобальных прерываниях */
+static void
+afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	static uint_fast16_t i = 0;
+
+	ASSERT(i < ARRAY_SIZE(gvars.afsp.raw_buf));
+	if (gvars.afsp.is_ready == 0)
+	{
+		gvars.afsp.raw_buf [i] = ch0;
+		i ++;
+	}
+
+	if (i >= ARRAY_SIZE(gvars.afsp.raw_buf))
+	{
+		gvars.afsp.is_ready = 1;
+		i = 0;
+	}
+}
+
+#include "dsp/window_functions.h"
+
+static void
+display2_af_spectre15_init(
+		const gxdrawb_t * db_unused,	// NULL
+		uint_fast8_t xgrid,
+		uint_fast8_t ygrid,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)		// вызывать после display2_smeter15_init
+{
+	static subscribefloat_t afspectreregister;
+	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS];		// отображение НЧ спектра только для режима s-метра BARS
+
+	gvars.afsp.x = GRID2X(xgrid) + smpr->gs;
+	gvars.afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
+	gvars.afsp.w = smpr->ge - smpr->gs;
+	gvars.afsp.h = 40;
+	gvars.afsp.is_ready = 0;
+
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
+	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
+
+	subscribefloat(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
+}
+
+
+static void
+display2_af_spectre15_latch(
+		const gxdrawb_t * db_unused,	// NULL
+		uint_fast8_t xgrid,
+		uint_fast8_t ygrid,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+	if (gvars.afsp.is_ready)
+	{
+		const FLOAT_t m1 = 0.6;
+		const FLOAT_t m2 = 1 - m1;
+		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
+		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
+
+		fftzoom_af(gvars.afsp.raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
+		// осталась половина буфера
+
+		ARM_MORPH(arm_mult)(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
+		//VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0)); // 0-прямое, 1-обратное
+		ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
+		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
+		ARM_MORPH(arm_cmplx_mag)(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
+
+		ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
+		for (unsigned x = 0; x < gvars.afsp.w; x ++)
+		{
+			const uint_fast16_t fftpos = raster2fftsingle(x, gvars.afsp.w, leftfftpos, rightfftpos);
+			ASSERT(fftpos < ARRAY_SIZE(gvars.afsp.fft_buf));
+			// filterig
+			gvars.afsp.val_array [x] = gvars.afsp.val_array [x] * m1 + m2 * gvars.afsp.fft_buf [fftpos];
+		}
+		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, gvars.afsp.w, & gvars.afsp.max_val);	// поиск в отображаемой части
+		gvars.afsp.max_val = FMAXF(gvars.afsp.max_val, (FLOAT_t) 0.001);
+	}
+}
+
+static void
+display2_af_spectre15(const gxdrawb_t * db,
+		uint_fast8_t xgrid,
+		uint_fast8_t ygrid,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+	switch (glob_smetertype)
+	{
+	case SMETER_TYPE_BARS:
+		{
+			if (! hamradio_get_tx())
+			{
+				PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
+
+				ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
+				for (unsigned x = 0; x < gvars.afsp.w; x ++)
+				{
+					//const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x], 0, gvars.afsp.max_val, gvars.afsp.h - 2) + 1;
+					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, gvars.afsp.h - 2) + 1;
+					ASSERT(y_norm <= gvars.afsp.h);
+					ASSERT(gvars.afsp.y >= y_norm);
+					if (gvars.afsp.y >= y_norm)
+					{
+						colpip_set_vline(db,
+								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
+								AFSPECTRE_COLOR);
+					}
+				}
+#if WITHAA
+				display_do_AA(db, GRID2X(xgrid), GRID2Y(ygrid), SM_BG_W, SM_BG_H);
+#endif /* WITHAA */
+			}
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+
+#endif /* WITHAFSPECTRE */
 
 
 // параметры масштабирования спектра
