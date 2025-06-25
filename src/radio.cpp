@@ -193,8 +193,6 @@ static uint_fast8_t encoder2_redirect = 0;
 
 #endif /* WITHTOUCHGUI */
 
-static uint_fast8_t band_no_check = 0;
-
 static uint_fast32_t
 nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t top);
@@ -3021,7 +3019,7 @@ static struct bandrange  const bandsmap [] =
 
 #endif	/* WITHSWLMODE */
 
-static vindex_t getfreqband(uint_fast32_t freq);
+static vindex_t getfreqband(const uint_fast32_t freq, uint_fast8_t bandset_no_check);
 
 /* получение индекса хранения VFO в памяти в зависимости от текущего режима расстройки
    - в режиме приема
@@ -7289,7 +7287,8 @@ static uint_fast8_t
 //NOINLINEAT
 existingband(
 	uint_fast8_t b,	// код диапазона
-	uint_fast8_t bandsetbcast
+	uint_fast8_t bandsetbcast,
+	uint_fast8_t bandset_no_check
 	)
 {
 	const uint_fast8_t bandset = get_band_bandset(b);
@@ -7297,10 +7296,8 @@ existingband(
 	if (get_band_bottom(b) >= TUNE_TOP || get_band_top(b) < TUNE_BOTTOM)
 		return 0;
 
-#if WITHTOUCHGUI
-	if (band_no_check)
+	if (bandset_no_check)
 		return 1;
-#endif
 
 	switch (bandset)
 	{
@@ -7343,9 +7340,10 @@ existingbandsingle(
 	uint_fast8_t bandsetbcast
 	)
 {
-	if (existingband(b, 0) && existingband(b, 1))
+	const uint_fast8_t bandset_no_check = 0;
+	if (existingband(b, 0, bandset_no_check) && existingband(b, 1, bandset_no_check))
 		return bandsetbcast;	// BANDSETF_ALL
-	return existingband(b, bandsetbcast);
+	return existingband(b, bandsetbcast, bandset_no_check);
 }
 
 static void
@@ -7409,13 +7407,13 @@ nyquistadj3(uint_fast32_t f)
 /* получить номер диапазона, в который попадает отображающаяся частота
   Если не принадлежит ни одному диапазону, возврат ((uint8_t)-1) */
 static vindex_t
-getfreqband(const uint_fast32_t freq)
+getfreqband(const uint_fast32_t freq, uint_fast8_t bandset_no_check)
 {
 	vindex_t i;
 
 	for (i = 0; i < (sizeof bandsmap / sizeof bandsmap [0]); ++ i)
 	{
-		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast, bandset_no_check))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_bottom(i) <= freq && get_band_top(i) > freq)
 			return i;
@@ -7429,11 +7427,12 @@ static vindex_t
 getnexthband(const uint_fast32_t freq)
 {
 	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
+	const uint_fast8_t bandset_no_check = 0;
 	vindex_t i;
 
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast, bandset_no_check))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_top(i) > freq)
 			return i;
@@ -7447,13 +7446,14 @@ getnexthband(const uint_fast32_t freq)
 static vindex_t
 getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
 
 	vindex_t i = b;		// начальный диапазон
 	do
 	{
 		i = i == HIGH ? LOW : (i + 1);	// переход к следующему диапазону
-		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast, bandset_no_check))	// диапазон в данной конфигурации не используется
 			continue;
 		if (bandsmap [i].bandgroup == bandgroup)
 			break;			// диапазон той же группы
@@ -7466,11 +7466,12 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 static vindex_t
 getprevhband(const uint_fast32_t freq)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	vindex_t i;
 
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-		if (! existingband(i, gbandsetbcast))	// диапазон в данной конфигурации не используется
+		if (! existingband(i, gbandsetbcast, bandset_no_check))	// диапазон в данной конфигурации не используется
 			continue;
 		if (get_band_bottom(i) > freq)
 		{
@@ -7481,7 +7482,7 @@ getprevhband(const uint_fast32_t freq)
 	// возврат только допустимых диапазонов.
 	do
 		i = calc_prev(i, 0, HBANDS_COUNT - 1);
-	while (! existingband(i, gbandsetbcast));
+	while (! existingband(i, gbandsetbcast, bandset_no_check));
 	return i;
 }
 
@@ -7492,6 +7493,7 @@ getnext_ham_band(
 	const uint_fast32_t freq
 	)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	uint_fast8_t xi;
 	vindex_t xsel [XBANDS_COUNT];
 	vindex_t xnext [XBANDS_COUNT];
@@ -7500,7 +7502,7 @@ getnext_ham_band(
 	for (xi = 0; xi < XBANDS_COUNT; ++ xi)
 	{
 		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi);	// частота в обзорном диапазоне
-		xsel [xi] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
+		xsel [xi] = getfreqband(f, bandset_no_check);			// не принадлежит ли частота какому-то диапазону
 		xnext [xi] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [xi] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
@@ -7548,7 +7550,7 @@ getnext_ham_band(
 			b = HBANDS_COUNT - 1;
 			do
 				b = calc_next(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b, gbandsetbcast));
+			while (! existingband(b, gbandsetbcast, bandset_no_check));
 			continue;
 		}
 		if (
@@ -7585,7 +7587,7 @@ getnext_ham_band(
 			/* текущая частота относится к любительским диапазонам */
 			do
 				b = calc_next(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b, gbandsetbcast));
+			while (! existingband(b, gbandsetbcast, bandset_no_check));
 			continue;
 		}
 		if (b == XBANDS_BASE0)
@@ -7617,6 +7619,7 @@ getprev_ham_band(
 	const uint_fast32_t freq
 	)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	uint_fast8_t xi;
 	vindex_t xsel [XBANDS_COUNT];
 	vindex_t xnext [XBANDS_COUNT];
@@ -7625,7 +7628,7 @@ getprev_ham_band(
 	for (xi = 0; xi < XBANDS_COUNT; ++ xi)
 	{
 		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi);	// частота в обзорном диапазоне
-		xsel [xi] = getfreqband(f);			// не принадлежит ли частота какому-то диапазону
+		xsel [xi] = getfreqband(f, bandset_no_check);			// не принадлежит ли частота какому-то диапазону
 		xnext [xi] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [xi] = getprevhband(f);		// получить номер диапазона с меньшей частотой
 	}
@@ -7672,7 +7675,7 @@ getprev_ham_band(
 			b = 0;
 			do
 				b = calc_prev(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b, gbandsetbcast));
+			while (! existingband(b, gbandsetbcast, bandset_no_check));
 			continue;
 			continue;
 		}
@@ -7710,7 +7713,7 @@ getprev_ham_band(
 			/* текущая частота относится к любительским диапазонам */
 			do
 				b = calc_prev(b, 0, HBANDS_COUNT - 1);
-			while (! existingband(b, gbandsetbcast));
+			while (! existingband(b, gbandsetbcast, bandset_no_check));
 			continue;
 		}
 		if (b == (XBANDS_BASE0))
@@ -7739,7 +7742,8 @@ getprev_ham_band(
 static uint_fast8_t
 getfreqbandgroup(const uint_fast32_t freq)
 {
-	const vindex_t b = getfreqband(freq);
+	const uint_fast8_t bandset_no_check = 0;
+	const vindex_t b = getfreqband(freq, bandset_no_check);
 	ASSERT(b != ((vindex_t) - 1));
 	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
 	return bandgroup;
@@ -8186,7 +8190,8 @@ getdefaultbandsubmode(
 	uint_fast32_t freq	/* частота (изображение на дисплее) */
 	)
 {
-	const vindex_t b = getfreqband(freq);
+	const uint_fast8_t bandset_no_check = 0;
+	const vindex_t b = getfreqband(freq, bandset_no_check);
 	if (b != ((vindex_t) - 1) && b < HBANDS_COUNT)
 		return get_band_defsubmode(b);
 	return getdefaultsubmode(freq);
@@ -8816,7 +8821,7 @@ loadnewband(
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
 #if WITHONLYBANDS
-	const vindex_t hb = getfreqband(gfreqs [bi]);
+	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
@@ -8913,7 +8918,7 @@ modemchangefreq(
 	gfreqs [bi] = vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]);
 
 #if WITHONLYBANDS
-	const vindex_t hb = getfreqband(gfreqs [bi]);
+	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
@@ -8966,7 +8971,8 @@ catchangefreq(
 	uint_fast8_t bi
 	)
 {
-	const vindex_t b = getfreqband(f);	/* определяем по частоте, в какоq диапазон переходим */
+	const uint_fast8_t bandset_no_check = 0;
+	const vindex_t b = getfreqband(f, bandset_no_check);	/* определяем по частоте, в какоq диапазон переходим */
 	const uint_fast8_t bg = bandsmap [b].bandgroup;
 
 	gfreqs [bi] = f;
@@ -12423,9 +12429,10 @@ uif_key_hold_modecols(uint_fast8_t moderow)
 static void
 uif_key_click_bandup(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
@@ -12444,9 +12451,10 @@ uif_key_click_bandup(void)
 static void
 uif_key_click_banddown(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
@@ -12463,11 +12471,12 @@ uif_key_click_banddown(void)
 static void
 uif_key_click_bandjump(uint_fast32_t f)
 {
+	const uint_fast8_t bandset_no_check = 0;
 #if	WITHDIRECTBANDS
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
-	vindex_t bn = getfreqband(f);
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	vindex_t bn = getfreqband(f, bandset_no_check);
 
 	const uint_fast8_t bandgroup = bandsmap [bn].bandgroup;
 	verifyband(b);
@@ -12500,10 +12509,11 @@ uif_key_click_bandjump(uint_fast32_t f)
 static void
 uif_key_click_bandjump2(uint_fast32_t f)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
-	vindex_t bn = getfreqband(f);
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	vindex_t bn = getfreqband(f, bandset_no_check);
 
 	verifyband(b);
 	verifyband(bn);
@@ -12727,8 +12737,9 @@ uif_key_click_notch(void)
 static void
 uif_key_lockencoder(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
 	glock = calc_next(glock, 0, 1);
 	save_i8(RMT_LOCKMODE_BASE(b), glock);
@@ -18027,7 +18038,8 @@ getpower10(uint_fast8_t pos)
 static uint_fast8_t
 freqvalid(
 	int_fast32_t freq,
-	uint_fast8_t tx
+	uint_fast8_t tx,			// могут накладываться дополнительные ограничения
+	uint_fast8_t bandset_no_check
 	)
 {
 #if XVTR_R820T2
@@ -20023,8 +20035,9 @@ uint_fast8_t hamradio_get_cw_wpm(void)
 
 void hamradio_set_lock(uint_fast8_t lock)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
 	glock = lock != 0;
 	save_i8(RMT_LOCKMODE_BASE(b), glock);
@@ -20033,7 +20046,8 @@ void hamradio_set_lock(uint_fast8_t lock)
 
 uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 {
-	if (freqvalid(freq, gtx))
+	const uint_fast8_t bandset_no_check = 0;
+	if (freqvalid(freq, 0, bandset_no_check))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
 		gfreqs [bi] = freq;
@@ -20401,19 +20415,13 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, u
 
 void hamradio_goto_band_by_freq(uint_fast32_t f)
 {
-	band_no_check = 1;
-
-	if (freqvalid(f, gtx))
+	if (freqvalid(f, gtx, 1))
 		uif_key_click_bandjump2(f);
-
-	band_no_check = 0;
 }
 
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 {
-	band_no_check = 1;
-	vindex_t v = getfreqband(hamradio_get_freq_rx()) == band;
-	band_no_check = 0;
+	vindex_t v = getfreqband(hamradio_get_freq_rx(), 1) == band;
 	return v;
 }
 
