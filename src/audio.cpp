@@ -1499,7 +1499,7 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 	agcp->dischargespeedfast = tauFAST;
 
 	agcp->chargespeedslow = tauFAST;
-	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1.0, sr);
 
 	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
 	agcp->mininput = db2ratio(- 160);
