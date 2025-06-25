@@ -452,7 +452,7 @@ hwaccel_rotcopy(
 //	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
 //	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
 
-	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horizontal
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg) CW
 	G2D_ROT->ROT_CTL = rot_ctl;
@@ -1670,7 +1670,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
 	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horisontal
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
 	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
 	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 
@@ -2777,7 +2777,7 @@ void colpip_copyrotate(
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
 	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horisontal
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
 	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
 	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 

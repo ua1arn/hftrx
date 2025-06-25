@@ -792,7 +792,7 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 #else
 
     static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
-    static int32_t row_dsc[] = { LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
 
     lv_obj_t * cont = lv_obj_create(parent);
     lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
@@ -803,11 +803,11 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 
 	lv_obj_t * const upper = lv_sscp2_create(cont);
-	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 3);
+	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 	lv_obj_add_style(upper, & xxcellstyle, 0);
 
 	lv_obj_t * const lower = lv_wtrf2_create(cont);
-	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 3, 1);
+	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 	lv_obj_add_style(lower, & xxcellstyle, 0);
 
 	uiupdates(cont);
@@ -1717,7 +1717,7 @@ static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
 static int_fast16_t glob_topdbwf = 0;		/* верхний предел FFT */
 static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
 static uint_fast8_t glob_wflevelsep;		/* чувствительность водопада регулируется отдельной парой параметров */
-static uint_fast8_t glob_zoomxpow2;			/* уменьшение отображаемого участка спектра - horisontal magnification power of two */
+static uint_fast8_t glob_zoomxpow2;			/* уменьшение отображаемого участка спектра - horizontal magnification power of two */
 
 static uint_fast8_t glob_showdbm = 1;		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 
@@ -6411,7 +6411,7 @@ static uint_fast8_t
 dsp_getspectrumrow(
 	FLOAT_t * const hbase,	// Буфер амплитуд
 	uint_fast16_t dx,		// X width (pixels) of display window
-	uint_fast8_t zoompow2	// horisontal magnification power of two
+	uint_fast8_t zoompow2	// horizontal magnification power of two
 	)
 {
 	uint_fast16_t i;
@@ -10390,7 +10390,7 @@ board_set_bottomdbwf(int_fast16_t v)
 }
 
 /* уменьшение отображаемого участка спектра */
-// horisontal magnification power of two
+// horizontal magnification power of two
 void
 board_set_zoomxpow2(uint_fast8_t v)
 {
