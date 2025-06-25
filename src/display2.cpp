@@ -6459,8 +6459,6 @@ dsp_getspectrumrow(
 	ARM_MORPH(arm_cfft)(& fftinstance, fftinpt, 0, 1);	// forward transform
 	ARM_MORPH(arm_cmplx_mag)(fftinpt, fftinpt, NORMALFFT);	/* Calculate magnitudes */
 
-	//endstamp();	// performance diagnostics
-
 	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };
 	enum { fftsize = NORMALFFT };
 	static const FLOAT_t fftcoeff = (FLOAT_t) 1 / (int32_t) (NORMALFFT / 2);
