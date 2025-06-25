@@ -20838,18 +20838,30 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 
 #if WITHTOUCHGUI
 
-void hamradio_load_gui_settings(void * ptr)
+void hamradio_load_gui_settings(void * ptrv)
 {
-	const nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
+	uint8_t * ptr = (uint8_t *) ptrv;
+	nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
 	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	nvram_read(offset, (uint8_t *) ptr, gui_nvram_size);
+	size_t i;
+
+	for (i = 0; i < gui_nvram_size; i ++)
+	{
+		* ptr ++ = restore_i8(offset ++);
+	}
 }
 
-void hamradio_save_gui_settings(const void * ptr)
+void hamradio_save_gui_settings(const void * ptrv)
 {
-	const nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
+	const uint8_t * ptr = (uint8_t *) ptrv;
+	nvramaddress_t offset = OFFSETOF(struct nvmap, gui_nvram);
 	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	nvram_write(offset, (const uint8_t *) ptr, gui_nvram_size);
+	size_t i;
+
+	for (i = 0; i < gui_nvram_size; i ++)
+	{
+		save_i8(offset ++, * ptr ++);
+	}
 }
 
 #if WITHENCODER2
