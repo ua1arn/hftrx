@@ -5341,9 +5341,9 @@ struct ustatesx
 	afsp_t afsp;
 #endif /* WITHAFSPECTRE */
 
-	scbfi_t scbfI;
 };
 
+static scbfi_t scbf;
 
 #if (CPUSTYLE_R7S721 || 0)
 
@@ -5378,8 +5378,6 @@ static RAMBIGDTCM struct ustatesx gvars;
 
 #define SIZEOF_WFL3DSS (sizeof gvars.wfj3dss)
 #define ADDR_WFL3DSS (gvars.wfj3dss)
-#define scbf (gvars.scbfI)
-
 #define ADDR_SCAPEARRAY (gvars.hist3dss)
 #define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
 
