@@ -611,12 +611,110 @@ void win_bands_handler(lv_event_t * e)
 
 	if (btnu->payload == INT32_MAX)
 	{
-		// open window freq enter
+		win_open(WIN_FREQ);
 	}
 	else if (btnu->is_clicked)
 	{
 		hamradio_goto_band_by_freq(btnu->payload);
 		win_close();
+	}
+}
+
+// ***********************************************
+
+void win_freq_handler(lv_event_t * e)
+{
+	enum {
+		BUTTON_CODE_BK = 20,
+		BUTTON_CODE_OK = 30,
+		BUTTON_CODE_DONE = 99
+	};
+
+	static editfreq_t editfreq;
+	static lv_obj_t * label_freq = NULL;
+
+	if (! e) // init window
+	{
+		editfreq.val = 0;
+		editfreq.num = 0;
+		editfreq.key = BUTTON_CODE_DONE;
+
+		lv_obj_t * cont = gui_win_get_content();
+
+		static user_t btns [] = {
+				{ "1", 1, }, { "2", 2, }, { "3", 3, },
+				{ "4", 4, }, { "5", 5, }, { "6", 6, },
+				{ "7", 7, }, { "8", 8, }, { "9", 9, },
+				{ "<-", BUTTON_CODE_BK, },
+				{ "0", 0, },
+				{ "OK", BUTTON_CODE_OK, },
+		};
+
+		label_freq = lv_label_create(cont);
+		lv_obj_add_style(label_freq, & winlblst, 0);
+		lv_obj_align(label_freq, LV_ALIGN_TOP_MID, 0, 0);
+		lv_obj_set_style_text_font(label_freq, & lv_font_montserrat_20, 0);
+		lv_label_set_text(label_freq, "Enter freq...");
+
+		lv_obj_t * cont2 = lv_obj_create(cont);
+		lv_obj_set_pos(cont2, 0, 40);
+		lv_obj_set_style_pad_all(cont2, 0, 0);
+		lv_obj_set_style_bg_opa(cont2, LV_OPA_TRANSP, 0);
+		lv_obj_set_style_border_width(cont2, 0, 0);
+
+		create_button_matrix(cont2, btns, "", ARRAY_SIZE(btns), 3, s40x40, win_freq_handler);
+
+		return;
+	}
+
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	user_t * btnu = lv_obj_get_user_data(btn);
+
+	if (btnu->is_clicked && editfreq.key == BUTTON_CODE_DONE)
+		editfreq.key = btnu->payload;
+
+	if (editfreq.key != BUTTON_CODE_DONE)
+	{
+		if (editfreq.error)
+		{
+			editfreq.val = 0;
+			editfreq.num = 0;
+		}
+
+		editfreq.error = 0;
+
+		switch (editfreq.key)
+		{
+		case BUTTON_CODE_BK:
+			if (editfreq.num > 0)
+			{
+				editfreq.val /= 10;
+				editfreq.num --;
+			}
+			break;
+
+		case BUTTON_CODE_OK:
+			if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
+				win_close();
+			else
+				editfreq.error = 1;
+
+			break;
+
+		default:
+			if (editfreq.num < 6)
+			{
+				editfreq.val  = editfreq.val * 10 + editfreq.key;
+				if (editfreq.val)
+					editfreq.num ++;
+			}
+		}
+		editfreq.key = BUTTON_CODE_DONE;
+
+		if (editfreq.error)
+			lv_label_set_text(label_freq, "ERROR");
+		else
+			lv_label_set_text_fmt(label_freq, "%d k", (int) editfreq.val);
 	}
 }
 

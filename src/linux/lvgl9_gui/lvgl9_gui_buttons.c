@@ -146,7 +146,6 @@ void create_button_matrix(lv_obj_t * cont, user_t * btu, const char * mname, con
 	lv_obj_set_style_grid_column_dsc_array(cont, cols_dsc, 0);
 	lv_obj_set_style_grid_row_dsc_array(cont, rows_dsc, 0);
 	lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-	lv_obj_center(cont);
 	lv_obj_set_layout(cont, LV_LAYOUT_GRID);
 
 	uint8_t row = 0, col = 0;
