@@ -5348,17 +5348,13 @@ public:
 
 ////////////////////////////////
 ///
-static agcparams_t peakparams;
 
 template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 {
 	uint_fast16_t centerx;
 	uint_fast16_t centery;
 	const uint_fast16_t centeryzero = 0;
-	const agcstate_t agc0 =
-	{
-			0, 0, 0
-	};
+	agcstate_t agc0;
 
 	__ALIGNED(64) PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
@@ -5370,13 +5366,14 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
 public:
+	agcparams_t peakparams;
 	uint_fast16_t getwfrow() const { return centery; }
 	scrollb<PACKEDCOLORPIP_T, w>  scrollcolor;	// Водопад (можно использовать как источник данных для 3DSS)
 	scrollb<int16_t, w>  scrollpwr;				// мощности для 3DSS
 	/* one-row objects */
 	scrollb1h<FLOAT_t, w>  spavgarray;	// строка принятая из DSP части в последний раз
 	scrollb1h<FLOAT_t, w>  yoldwfl;		// фильтр водопада
-	scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
+	//scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
 	scrollb1h<agcstate_t, w>  ypeakspe;		// пиковые значения спектра
 	scrollb1h<FLOAT_t, w>  yold3dss;	// фильтр 3DSS
 
@@ -5387,11 +5384,12 @@ public:
 		/* one-row objects */
 		spavgarray(centerx, centeryzero, m_spavgarray),
 		yoldwfl(centerx, centeryzero, m_yoldwfl),
-		yoldspe(centerx, centeryzero, m_yoldspe),
+		//yoldspe(centerx, centeryzero, m_yoldspe),
 		ypeakspe(centerx, centeryzero, m_ypeakspe),
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
-
+		agc_parameters_peaks_initialize(& peakparams, 10);	// 10 - как частота latch
+		agc_state_initialize(& agc0, & peakparams);
 	}
 	/* + стереть содержимое */
 	void setupnew()
@@ -5401,7 +5399,7 @@ public:
 		/* one-row objects */
 		spavgarray.setupnew(w, 0);
 		yoldwfl.setupnew(w, 0);
-		yoldspe.setupnew(w, 0);
+		//yoldspe.setupnew(w, 0);
 		ypeakspe.setupnew(w, agc0);
 		yold3dss.setupnew(w, 0);
 	}
@@ -5424,7 +5422,7 @@ public:
 			/* one-row objects */
 			spavgarray.shiftleft(w, pixels, 0);
 			yoldwfl.shiftleft(w, pixels, 0);
-			yoldspe.shiftleft(w, pixels, 0);
+			//yoldspe.shiftleft(w, pixels, 0);
 			ypeakspe.shiftleft(w, pixels, agc0);
 			yold3dss.shiftleft(w, pixels, 0);
 		}
@@ -5443,7 +5441,7 @@ public:
 			/* one-row objects */
 			spavgarray.shiftright(w, pixels, 0);
 			yoldwfl.shiftright(w, pixels, 0);
-			yoldspe.shiftright(w, pixels, 0);
+			//yoldspe.shiftright(w, pixels, 0);
 			ypeakspe.shiftright(w, pixels, agc0);
 			yold3dss.shiftright(w, pixels, 0);
 		}
@@ -5472,20 +5470,20 @@ static FLOAT_t filtered_waterfall(uint_fast16_t vx, uint_fast16_t alldx)
 static void filtering_spectrum(uint_fast16_t x)
 {
 	const FLOAT_t val = scbf.spavgarray.peek(x, 0);	// массив входных данных
-	const FLOAT_t Y = scbf.yoldspe.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
-	scbf.yoldspe.poke(x, 0, Y);
+//	const FLOAT_t Y = scbf.yoldspe.peek(x, 0) * waterfall_alpha + waterfall_beta * val;
+//	scbf.yoldspe.poke(x, 0, Y);
 	// Работа с пиковым детектором
 	agcstate_t * const st = scbf.ypeakspe.bufferat(ALLDX, x, 0);
-	agc_perform(& peakparams, st, val);
+	agc_perform(& scbf.peakparams, st, val);
 }
 
 static FLOAT_t filtered_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
 {
 	const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
-	return scbf.yoldspe.peek(bx, 0);
+	agcstate_t * const st = scbf.ypeakspe.bufferat(ALLDX, bx, 0);
+	return agc_result_fast(st);
+	//return scbf.yoldspe.peek(bx, 0);
 	//
-//	agcstate_t * const st = scbf.ypeakspe.bufferat(ALLDX, bx, 0);
-//	return agc_result_fast(st);
 }
 
 static FLOAT_t peaks_spectrum(uint_fast16_t vx, uint_fast16_t alldx)

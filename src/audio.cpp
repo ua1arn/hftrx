@@ -90,6 +90,7 @@
 
 // ARMSAIRATE - sample rate IF кодека в герцах
 #define NSAITICKS(t_ms) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * ARMSAIRATE + 500) / 1000))
+#define NSAITICKS2(t_ms, sr) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * (sr) + 500) / 1000))
 
 ///////////////////////////////////////
 //
@@ -744,7 +745,7 @@ FLOAT_t ratio2db(FLOAT_t ratio)
 
 FLOAT_t db2ratio(FLOAT_t valueDBb)
 {
-	return POWF(10, valueDBb / 20);
+	return POWF(10, (valueDBb) / 20);
 }
 
 //////////////////////////////////////////
@@ -1222,7 +1223,8 @@ int dsp_mag2y(
 	int_fast16_t bottomdb		/* нижний предел спектроанализатора (positive number of decibels) */
 	)
 {
-	if (mag == 0)
+	static const FLOAT_t minmag = db2ratio(- 160);
+	if (mag < minmag)
 		return 0;
 	const FLOAT_t r = ratio2db(mag);
 	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb - topdb));
@@ -1412,26 +1414,24 @@ static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 // Аргумент: постоянная времени цепи в секундах
 // Результат: 1 - мгновенно, 0 - никогда
 
-static FLOAT_t MAKETAUIF(FLOAT_t t)
+FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr)
 {
 	if (t == 0)
 		return 1;
 
-	const FLOAT_t samplerate = ARMSAIRATE;	// 48 kHz
+	const FLOAT_t samplerate = sr;	// 48 kHz
 	const FLOAT_t step = POWF((FLOAT_t) M_SQRT1_2, 1 / (t * samplerate));
 	//const FLOAT_t step = EXPF(- 1 / (t * samplerate));
 
 	return 1 - step;
 }
 
-// Аргумент: постоянная времени цепи в секундах
-// Результат: 1 - мгновенно, 0 - никогда
-static FLOAT_t MAKETAUAF(FLOAT_t t)
+static FLOAT_t MAKETAUIF(FLOAT_t t)
 {
 	if (t == 0)
 		return 1;
 
-	const FLOAT_t samplerate = ARMI2SRATE;	// 48 kHz or 12 kHz
+	const FLOAT_t samplerate = ARMSAIRATE;	// 48 kHz
 	const FLOAT_t step = POWF((FLOAT_t) M_SQRT1_2, 1 / (t * samplerate));
 	//const FLOAT_t step = EXPF(- 1 / (t * samplerate));
 
@@ -1466,20 +1466,42 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 
 // Начальная установка  параметров АРУ приёмника
 
-static void agc_parameters_initialize(volatile agcparams_t * agcp)
+void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 0;
 
-	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.095);
+	agcp->dischargespeedfast = MAKETAUIF2((FLOAT_t) 0.095, sr);
 	agcp->chargespeedfast = MAKETAUAF0();
 
-	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.095);
-	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.2);	
+	agcp->chargespeedslow = MAKETAUIF2((FLOAT_t) 0.095, sr);
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.2, sr);
 
-	agcp->hungticks = NSAITICKS(300);			// 0.3 seconds
+	agcp->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->mininput = db2ratio(- 160);
+	agcp->levelfence = 1;
+	agcp->agcfactor = agc_calcagcfactor(10);
+
+	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+}
+
+// Отображение пиков и линии спектра
+void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
+{
+	agcp->agcoff = 1;
+
+	agcp->dischargespeedfast = MAKETAUAF0();
+	agcp->chargespeedfast = MAKETAUIF2((FLOAT_t) 0.01, sr);
+
+	agcp->chargespeedslow = MAKETAUAF0();
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 2, sr);
+
+	agcp->hungticks = NSAITICKS2(3000, sr);			// 3 seconds
+	agcp->mininput = db2ratio(- 160);
+
+	// параметры используются при работе АРУ
+	agcp->gainlimit = db2ratio(60);
 	agcp->levelfence = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
@@ -1490,16 +1512,17 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 
 static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
 {
+	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
 	agcp->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
 
-	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
+	agcp->dischargespeedfast = MAKETAUIF2((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
 
-	agcp->chargespeedfast = MAKETAUIF((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
-	agcp->chargespeedslow = MAKETAUIF((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
-	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// в сотнях милисекунд (0.1 секунды)
-	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
+	agcp->chargespeedfast = MAKETAUIF2((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	agcp->chargespeedslow = MAKETAUIF2((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	agcp->dischargespeedslow = MAKETAUIF2((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1, sr);	// в сотнях милисекунд (0.1 секунды)
+	agcp->hungticks = NSAITICKS2(glob_agc_thung [pathi] * 100, sr);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit = gainlimit;
 	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
@@ -1649,11 +1672,12 @@ uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 
 static void voxmeter_initialize(void)
 {
+	const uint_fast32_t sr = ARMI2SRATE;
 	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
-	VOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
+	VOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 
 	DVOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
-	DVOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
+	DVOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
 /////////////////////////////
@@ -3287,7 +3311,7 @@ static void modem_update(void)
 
 static RAMDTCM FLOAT_t agclogof10 = 1;
 	
-static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
+void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
@@ -3376,10 +3400,10 @@ static void agc_initialize(void)
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 
-			agc_parameters_initialize(& rxagcparams [profile] [pathi]);
+			agc_parameters_initialize(& rxagcparams [profile] [pathi], ARMSAIRATE);
 			agc_state_initialize(& rxagcstate [pathi], & rxagcparams [profile] [pathi]);
 			// s-meter
-			agc_parameters_initialize(& rxsmeterparams);
+			agc_parameters_initialize(& rxsmeterparams, ARMSAIRATE);
 			agc_state_initialize(& rxsmeterstate [pathi], & rxsmeterparams);
 		}
 
