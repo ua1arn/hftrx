@@ -7105,30 +7105,48 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	uint_fast16_t ylast = 0;
 	display_colorgrid_set(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
-	for (uint_fast16_t x = 0; x < alldx; ++ x)
+	if (0)
 	{
-		// ломанная
-		const int val = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
-		uint_fast16_t ynew = y0pix + alldy - 1 - val;
-
-		if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
+		// пиковые значения спектра
+		for (uint_fast16_t x = 0; x < alldx; ++ x)
 		{
-			for (uint_fast16_t y = y0pix + alldy - 1, i = 0; y > ynew; y --, i ++)
+			// TODO: не рисовать если ниже или равно основному значению
+			const int val = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+			uint_fast16_t ynew = y0pix + alldy - 1 - val;
+			colpip_point(db, x0pix + x, ynew, COLORPIP_RED);
+		}
+	}
+	if (1)
+	{
+		for (uint_fast16_t x = 0; x < alldx; ++ x)
+		{
+			// ломанная
+			const int val = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+			uint_fast16_t ynew = y0pix + alldy - 1 - val;
+
+			if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
 			{
-				const uint_fast16_t ix = normalize(i, 0, alldy - 1, PALETTESIZE - 1);
-				colpip_point(db, x0pix + x, y, wfpalette [ix]);
+				for (uint_fast16_t y = y0pix + alldy - 1, i = 0; y > ynew; y --, i ++)
+				{
+					const uint_fast16_t ix = normalize(i, 0, alldy - 1, PALETTESIZE - 1);
+					colpip_point(db, x0pix + x, y, wfpalette [ix]);
+				}
 			}
-		}
-		else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
-		{
-			colpip_set_vline(db, x0pix + x, ynew, alldy + y0pix - ynew, DSGN_SPECTRUMFG);
-		}
+			else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
+			{
+				colpip_set_vline(db, x0pix + x, ynew, alldy + y0pix - ynew, DSGN_SPECTRUMFG);
+			}
+			else if (glob_view_style == VIEW_DOTS) // Отдельные точки
+			{
+				colpip_point(db, x0pix + x, ynew, DSGN_SPECTRUMFG);
+			}
 
-		if (x)
-		{
-			colpip_line(db, x0pix + x - 1, ylast, x0pix + x, ynew, DSGN_SPECTRUMLINE, 1);
+			if (x && glob_view_style != VIEW_DOTS)
+			{
+				colpip_line(db, x0pix + x - 1, ylast, x0pix + x, ynew, DSGN_SPECTRUMLINE, 1);
+			}
+			ylast = ynew;
 		}
-		ylast = ynew;
 	}
 
 	if (colpip_hasalpha())
@@ -8480,13 +8498,17 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	// сохранияем дянные для отображения, чтобы фильтр работал правилььно
 	// todo: переместить в latch - на случай если более одного элемента используют фильтр
 	int vals [alldx];
+	int peaks [alldx];
     int32_t x;
 	for (x = 0; x < alldx; ++ x)
 	{
 #if WITHSPECTRUMWF
 		vals [x] = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		peaks [x] = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 #else
 		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
+		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 #endif /* WITHSPECTRUMWF */
 	}
 
@@ -8535,6 +8557,23 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     }
 #endif /* WITHSPECTRUMWF */
 
+    if (1)
+    {
+    	// пиковые значения спектра
+    	const lv_color_t colordots = lv_palette_main(LV_PALETTE_RED);
+        int32_t x;
+    	for (x = 0; x < alldx - 1; ++ x)
+    	{
+    		const int val = peaks [x];
+    		if (val > vals [x])
+    		{
+    			const int32_t ydst = alldy - 1 - val;
+    			void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
+    			lv_memcpy(dst, & colordots, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
+    		}
+    	}
+   	}
+
     if (glob_view_style == VIEW_COLOR)
     {
     	// Градиентное заполнение спектра
@@ -8553,6 +8592,21 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 				void * const src = lv_draw_buf_goto_xy(& sscp2->gdrawb, 0, ysrc);	// одна колонка
 				lv_memcpy(dst, src, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
 			}
+    	}
+   	}
+
+    if (glob_view_style == VIEW_DOTS)
+    {
+    	// Без заполнения спектра
+    	const lv_color_t colordots = display_lvlcolor(DSGN_SPECTRUMLINE);
+        int32_t x;
+    	for (x = 0; x < alldx - 1; ++ x)
+    	{
+    		const int val = vals [x];
+			const int32_t ydst = alldy - 1 - val;
+
+			void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
+			lv_memcpy(dst, & colordots, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
     	}
    	}
 
@@ -8575,7 +8629,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	}
    	}
 
-    if (1)
+    if (glob_view_style != VIEW_DOTS)
     {
     	// линия спектра
         lv_draw_line_dsc_t l;

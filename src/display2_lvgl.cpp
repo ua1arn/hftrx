@@ -80,7 +80,7 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 		if (pd->qrj == RJ_SMETER)
 			lv_dropdown_set_options(dd, "BARS\n" "DIAL");
 		else
-			for (int i = 0; i < VIEW_COUNT; i ++)
+			for (int i = 0; i < VIEW_count; i ++)
 				lv_dropdown_add_option(dd, view_types[i], LV_DROPDOWN_POS_LAST);
 
 		lv_dropdown_set_selected(dd, param_getvalue(pd));

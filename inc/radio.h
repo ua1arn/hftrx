@@ -3451,19 +3451,22 @@ enum
 	VIEW_LINE,		// ломаная линия
 	VIEW_FILL,		// залитый зеленым спектр
 	VIEW_COLOR,		// раскрашенный цветовым градиентом спектр
+	VIEW_DOTS,		// точки без соединения между ними
 #if WITHVIEW_3DSS
 	VIEW_3DSS,		// дизайн панорамы под 3DSS Yaesu
 #endif /* WITHVIEW_3DSS */
-	VIEW_COUNT
+	//
+	VIEW_count
 };
 
-static const char view_types [][6] =
+static const char * const view_types [VIEW_count] =
 	{
-		"LINE ",
-		"FILL ",
+		"LINE",
+		"FILL",
 		"COLOR",
+		"DOTS",
 #if WITHVIEW_3DSS
-		"3DSS ",
+		"3DSS",
 #endif /* WITHVIEW_3DSS */
 	};
 

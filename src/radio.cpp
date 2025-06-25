@@ -4382,7 +4382,7 @@ static const struct paramdefdef xgviewstyle =
 {
 	QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_VIEW, ISTEP1,
 	ITEM_VALUE,
-	0, VIEW_COUNT - 1,
+	0, VIEW_count - 1,
 	OFFSETOF(struct nvmap, gviewstyle),
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
@@ -8516,19 +8516,7 @@ static const struct paramdefdef * enc2menus [] =
 #if BOARD_FFTZOOM_POW2MAX > 0
 	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
-	(const struct paramdefdef [1]) {
-		QLABELENC2("VIEW STLE"),
-		0, 0,
-		RJ_VIEW,
-		ISTEP1,
-		ITEM_VALUE,
-		0, VIEW_COUNT - 1,
-		OFFSETOF(struct nvmap, gviewstyle),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gviewstyle,
-		getzerobase,
-	},
+	& xgviewstyle,
 #endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
@@ -20668,7 +20656,7 @@ uint_fast8_t hamradio_get_viewstyle(void)
 
 void hamradio_settemp_viewstyle(uint_fast8_t v)
 {
-	ASSERT(v < VIEW_COUNT);
+	ASSERT(v < VIEW_count);
 	gviewstyle = v;
 	updateboard(1, 0);
 }
