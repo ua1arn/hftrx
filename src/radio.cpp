@@ -1946,16 +1946,9 @@ struct afsetitempl
 };
 
 #define AGC_RATE_FLAT	192	//(UINT8_MAX - 1)
-#if CTLSTYLE_OLEG4Z_V1
-	/* во всех режимах "плоская" АРУ */
-	#define AGC_RATE_SSB	AGC_RATE_FLAT //(UINT8_MAX - 1)
-	#define AGC_RATE_DIGI	AGC_RATE_FLAT //(UINT8_MAX - 1)
-	#define AGC_RATE_DRM	AGC_RATE_FLAT //(UINT8_MAX - 1)
-#else /* CTLSTYLE_OLEG4Z_V1 */
-	#define AGC_RATE_SSB	10
-	#define AGC_RATE_DIGI	3
-	#define AGC_RATE_DRM	3
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#define AGC_RATE_SSB	10
+#define AGC_RATE_DIGI	3
+#define AGC_RATE_DRM	3
 
 static const struct afsetitempl aft [AGCSETI_COUNT] =
 {
@@ -5786,15 +5779,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	void playhandler(uint8_t code);
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 
-#if CTLSTYLE_OLEG4Z_V1
-	static uint_fast8_t gsidetonelevel = 0;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-	static uint_fast8_t gdigigainmax = 120; /* диапазон ручной регулировки цифрового усиления - максимальное значение */
-	static uint_fast16_t gfsadcpower10 [2] =
-	{
-		(+ 180) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
-		(+ 190) + FSADCPOWEROFFSET10,	// с конвертором
-	};
-#elif defined (ADC1_TYPE) && (ADC1_TYPE == ADC_TYPE_AD9246)
+#if  defined (ADC1_TYPE) && (ADC1_TYPE == ADC_TYPE_AD9246)
 	// 14 bit AD9246 + LTC6401-20
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
@@ -5803,7 +5788,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(-  30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 330) + FSADCPOWEROFFSET10,	// с конвертором
 	};
-#else /* CTLSTYLE_OLEG4Z_V1 */
+#else /*  */
 	// 16 bit LTC2208 + LTC6401-20
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 120;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
@@ -5812,7 +5797,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#endif /*  */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */

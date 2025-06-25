@@ -281,11 +281,7 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_HIDa, "HID xxx", },
-#if 0//CTLSTYLE_OLEG4Z_V1
-	{ STRING_ID_IQSPECTRUM, PRODUCTSTR " Spectre", },	// tag for Interface Descriptor 0/0 Audio
-#else /* CTLSTYLE_OLEG4Z_V1 */
 	{ STRING_ID_IQSPECTRUM, "RX IQ Output", },
-#endif /* CTLSTYLE_OLEG4Z_V1 */
 };
 
 typedef struct desc_options
