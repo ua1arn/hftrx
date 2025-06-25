@@ -340,6 +340,43 @@ extern adapter_t sdcardio;
 extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 
+/* AGC */
+
+
+typedef struct agcstate
+{
+	FLOAT_t  agcfastcap;	// разница после выпрямления
+	FLOAT_t  agcslowcap;	// разница после выпрямления
+	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+} agcstate_t;
+
+typedef struct agcparams
+{
+	uint_fast8_t agcoff;	// признак отключения АРУ
+
+	// Временные парметры АРУ
+
+	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
+	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - мгновенно, 0 - никогда
+	FLOAT_t	chargespeedfast;
+
+	// постоянные времени основного фильтра АРУ -  время заряды должно быть того же порядка, что и разряд цепи быстрой АРУ
+	FLOAT_t chargespeedslow;		//0.05f;	// 1 - мгновенно, 0 - никогда
+	FLOAT_t dischargespeedslow;	// 1 - мгновенно, 0 - никогда
+	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+
+	// Амплитудные параметры АРУ
+
+	FLOAT_t gainlimit;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
+	FLOAT_t	mininput;
+	FLOAT_t levelfence;				// Максимальнное значение на выхоле АРУ
+	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
+} agcparams_t;
+
+void agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample);
+FLOAT_t agc_result_fast(agcstate_t * st);
+FLOAT_t agc_result_slow(agcstate_t * st);
+
 unsigned audiorec_getwidth(void);
 
 uint_fast8_t modem_getnextbit(
