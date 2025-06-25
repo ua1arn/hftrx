@@ -1460,7 +1460,6 @@ typedef struct agcstate
 	FLOAT_t  agcfastcap;	// разница после выпрямления
 	FLOAT_t  agcslowcap;	// разница после выпрямления
 	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
-	IRQLSPINLOCK_t lock /* = IRQLSPINLOCK_INIT */;
 } agcstate_t;
 
 typedef struct agcparams
@@ -1599,9 +1598,6 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 static void
 agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
-
 	if (st->agcfastcap < sample)
 	{
 		// быстрая цепь АРУ
@@ -1641,25 +1637,18 @@ agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 		// не меняется значение
 		st->agchangticks = agcp->hungticks;
 	}
-	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 }
 
 static FLOAT_t agc_result_slow(agcstate_t * st)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
-	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 
 	return v;
 }
 
 static FLOAT_t agc_result_fast(agcstate_t * st)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 	const FLOAT_t v = st->agcfastcap;
-	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 
 	return v;
 }
@@ -3330,7 +3319,6 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
-	IRQLSPINLOCK_INITIALIZE(& st->lock);
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;
@@ -3376,7 +3364,7 @@ static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, 
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем относительный уровень (логарифмированный)
-static RAMFUNC FLOAT_t agc_calcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agc_calcstrengthlog10(FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
 }
@@ -3493,64 +3481,17 @@ static RAMFUNC int agc_squelchopen(
 
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
-static void agc_reset(
-	uint_fast8_t pathi
-	)
-{
-	agcparams_t * const agcp = & rxsmeterparams;
-	agcstate_t * const st = & rxsmeterstate [pathi];
-	FLOAT_t m0 = agcp->mininput;
-	FLOAT_t m1;
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	st->agcfastcap = m0;
-	st->agcslowcap = m0;
-	LowerIrql(oldIrql);
-
-	for (;;)
-	{
-		local_delay_ms(1);
-
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		const FLOAT_t v = agc_result_slow(st);
-		LowerIrql(oldIrql);
-
-		if (v != m0)
-		{
-			m1 = v;
-			break;
-		}
-	}
-	for (;;)
-	{
-		local_delay_ms(1);
-
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		const FLOAT_t v = agc_result_slow(st);
-		LowerIrql(oldIrql);
-
-		if (v != m1)
-			break;
-	}
-}
-
-// Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
-/* Вызывается из user-mode программы */
 static FLOAT_t agc_forvard_getstreigthlog10(
 	FLOAT_t * tracemax,
 	uint_fast8_t pathi
 	)
 {
-	agcparams_t * const agcp = & rxsmeterparams;
 	agcstate_t * const st = & rxsmeterstate [pathi];
 
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
-	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
-	FLOAT_t r = agc_calcstrengthlog10(agcp, fltstrengthfast);
+	* tracemax = agc_calcstrengthlog10(fltstrengthslow);
+	FLOAT_t r = agc_calcstrengthlog10(fltstrengthfast);
 
 	return r;
 }
@@ -3576,8 +3517,6 @@ uint_fast8_t
 dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
-	//if (clean != 0)
-	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
 	int level = upper + computeslevel_1(agc_forvard_getstreigthlog10(& tmaxf, pathi));
 	int tmax = upper + computeslevel_1(tmaxf);
@@ -3602,8 +3541,6 @@ uint_fast16_t
 dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
-	//if (clean != 0)
-	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
 	int level = upper + computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
 	int tmax = upper + computeslevel_10(tmaxf);
