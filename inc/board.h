@@ -167,6 +167,7 @@ void board_lcd_rs(uint_fast8_t v);	// выставить уровень на с�
 void board_lcd_reset(uint_fast8_t v);	// выставить уровень на сигнале lcd reset
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 void board_set_nb_enable(uint_fast8_t pathi, uint_fast8_t v);	/* Управлением включением RX Noise Blanker */
+void board_set_displayfps(uint_fast8_t v);
 
 enum
 {

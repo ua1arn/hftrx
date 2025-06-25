@@ -174,10 +174,10 @@ static const struct menudef menutable [] =
 		QLABEL("BARS FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-		OFFSETOF(struct nvmap, gdisplaybarsfps),
+		OFFSETOF(struct nvmap, glatchfps),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& gdisplaybarsfps,
+		& glatchfps,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */

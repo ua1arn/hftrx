@@ -3491,7 +3491,7 @@ struct nvmap
 #endif /* WITHRFSG */
 
 	uint8_t gdisplayfreqsfps;		/* скорость обновления индикатора частоты */
-	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
+	uint8_t glatchfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gviewstyle;		/* стиль отображения спектра и панорамы */
 	uint8_t gview3dss_mark;	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
@@ -4302,16 +4302,16 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	static uint_fast8_t lo1level = WITHLO1LEVELADJINITIAL; //100;	/* уровень (амплитуда) LO1 в процентах */
 #endif /* WITHLO1LEVELADJ */
 
-static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDISPLAY_FPS)
 	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
 #else /* defined (WITHDISPLAY_FPS) */
 	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
 #endif /* defined (WITHDISPLAY_FPS) */
+
 #if defined (WITHDISPLAYSWR_FPS)
-	static uint_fast8_t gdisplaybarsfps = WITHDISPLAYSWR_FPS;
+	static uint_fast8_t glatchfps = WITHDISPLAYSWR_FPS;	// частота latch
 #else /* defined (WITHDISPLAYSWR_FPS) */
-	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
+	static uint_fast8_t glatchfps = DISPLAYSWR_FPS;	// частота latch
 #endif /* defined (WITHDISPLAYSWR_FPS) */
 #if WITHSPECTRUMWF
 #if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
@@ -11971,8 +11971,8 @@ updateboardZZZ(
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
 
-	ticker_setperiod(& displatchticker, NTICKS(1000 / gdisplaybarsfps));	// частота обновления изображения на экране
-
+	ticker_setperiod(& displatchticker, NTICKS(1000 / glatchfps));	// частота обновления изображения на экране
+	board_set_displayfps(glatchfps);
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
 		processcat_enable(catenable);
@@ -13629,7 +13629,7 @@ display_refresenabled_bars(void)
 static void
 display_refreshperformed_bars(void)
 {
-	const uint_fast16_t n = UINTICKS(1000 / gdisplaybarsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast16_t n = UINTICKS(1000 / glatchfps);	// 50 ms - обновление с частотой 20 герц
 
 	IRQL_t oldIrql;
 	RiseIrql(TICKER_IRQL, & oldIrql);
@@ -21221,7 +21221,7 @@ application_initialize(void)
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user(& displatchticker, NTICKS(1000 / gdisplaybarsfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
 

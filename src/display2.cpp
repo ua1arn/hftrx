@@ -1730,6 +1730,8 @@ static uint_fast8_t glob_lvlgridstep = 12;	// Шаг сетки уровней �
 
 static uint_fast8_t glob_spectrumpart = 50;
 
+static uint_fast8_t glob_displayfps = 15;
+
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT);
@@ -5388,7 +5390,7 @@ public:
 		ypeakspe(centerx, centeryzero, m_ypeakspe),
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
-		agc_parameters_peaks_initialize(& peakparams, 15);	// 15 - как частота latch
+		agc_parameters_peaks_initialize(& peakparams, glob_displayfps);	// частота latch
 		agc_state_initialize(& agc0, & peakparams);
 	}
 	/* + стереть содержимое */
@@ -10364,6 +10366,15 @@ void
 display2_set_spectrumpart(uint_fast8_t v)
 {
 	glob_spectrumpart = v;
+}
+
+void board_set_displayfps(uint_fast8_t v)
+{
+	if (glob_displayfps != v && v != 0)
+	{
+		glob_displayfps = v;
+		agc_parameters_peaks_initialize(& scbf.peakparams, glob_displayfps);	// частота latch
+	}
 }
 
 /* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */

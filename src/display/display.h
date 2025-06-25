@@ -65,7 +65,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #if LCDMODE_LTDC
 
-	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты десять раз в секунду */
 	#define DISPLAYSWR_FPS 10	/* количество обновлений SWR и панорамы за секунду */
 
