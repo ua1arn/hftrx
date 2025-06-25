@@ -5361,7 +5361,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 
 	FLOAT_t m_spavgarray [w * 1];	// h == 1
 	FLOAT_t m_yoldwfl [w * 1];	// h == 1
-	FLOAT_t m_yoldspe [w * 1];	// h == 1
+	//FLOAT_t m_yoldspe [w * 1];	// h == 1
 	agcstate_t m_ypeakspe [w * 1];	// h == 1
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
