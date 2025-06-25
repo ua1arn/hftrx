@@ -4827,30 +4827,24 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 
 #elif WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 
 #elif LCDMODE_LTDC
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { PALETTESIZE = 256 };
 
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t row3dss;		// строка, в которую последней занесены данные
 
 #endif
 
 
 // Получить цвет заполнения водопада при перестройке
-static COLORPIP_T display2_bgcolorwfl(void)
-{
-	return wfpalette [0];
-}
+static COLORPIP_T display2_bgcolorwfl(void);
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_RK356X
 	enum { MAX_3DSS_STEP = 70 };
@@ -5341,6 +5335,8 @@ struct ustatesx
 	afsp_t afsp;
 #endif /* WITHAFSPECTRE */
 
+	PACKEDCOLORPIP_T wfpaletteI [PALETTESIZE];
+
 };
 
 static scbfi_t scbf;
@@ -5380,7 +5376,13 @@ static RAMBIGDTCM struct ustatesx gvars;
 #define ADDR_WFL3DSS (gvars.wfj3dss)
 #define ADDR_SCAPEARRAY (gvars.hist3dss)
 #define ADDR_SCAPEARRAYVALS (gvars.hist3dssvals)
+#define wfpalette (gvars.wfpaletteI)
 
+// Получить цвет заполнения водопада при перестройке
+static COLORPIP_T display2_bgcolorwfl(void)
+{
+	return wfpalette [0];
+}
 
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
