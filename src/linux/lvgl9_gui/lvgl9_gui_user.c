@@ -546,50 +546,74 @@ void win_bands_handler(lv_event_t * e)
 	{
 		lv_obj_t * cont = gui_win_get_content();
 
+		static const lv_coord_t cols_dsc[8] = { 86, 86, 86, 40,
+				86, 86, 86, LV_GRID_TEMPLATE_LAST};
+		static const lv_coord_t rows_dsc[10] = { 44, 44, 44, 44, 44, 44,
+				44, 44, 44, LV_GRID_TEMPLATE_LAST };
+
+		lv_obj_set_style_grid_column_dsc_array(cont, cols_dsc, 0);
+		lv_obj_set_style_grid_row_dsc_array(cont, rows_dsc, 0);
+		lv_obj_set_size(cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+		lv_obj_center(cont);
+		lv_obj_set_layout(cont, LV_LAYOUT_GRID);
+
 		uint8_t bandnum = hamradio_get_bands(NULL, 1, 1);
 		bands = (band_array_t *) calloc(bandnum, sizeof (band_array_t));
 		ASSERT(bands);
 		hamradio_get_bands(bands, 0, 1);
 
-		ext = (user_t *) calloc(bandnum, sizeof (user_t));
+		ext = (user_t *) calloc(bandnum + 1, sizeof (user_t));
 		ASSERT(ext);
 
-		int i = 0;
-		for (; i < bandnum; i ++)
+		int i = 0, j = 0, p = 0, n = 0, d = 0;
+		for (; i < bandnum; i ++, j ++)
 		{
-			if (bands [i].type != BAND_TYPE_HAM)
-				break;
+			int8_t row = ((i - d) / 3) - n;
+			int8_t col = (j % 3) + p;
+
+			if (! p && bands [i].type != BAND_TYPE_HAM)
+			{
+				ext[bandnum].payload = INT32_MAX;
+				lv_obj_t * btn = add_button(cont, ext, bandnum, "Freq\nenter", s86x44, win_bands_handler);
+				lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, row, 1);
+				p = 4; // переделать
+				n = row;
+				j = -1;
+				d = 1;
+				i --;
+
+				continue;
+			}
 
 			ext[i].payload = bands[i].init_freq;
 
 			char * div = strchr(bands[i].name, ' ');
 			if(div) memcpy(div, "\n", 1);
 
-			snprintf(ext[i].name, ARRAY_SIZE(ext[i].name), "btn_ham_%d", i);
-			strcpy(ext[i].text, bands[i].name);
+			lv_obj_t * btn = add_button(cont, ext, i, bands[i].name, s86x44, win_bands_handler);
+			lv_obj_set_grid_cell(btn, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, row, 1);
 
-			if (hamradio_check_current_freq_by_band(bands [i].index))
-				ext[i].state = LOCKED;
+			if (hamradio_check_current_freq_by_band(bands[i].index))
+				button_lock(btn);
 
 #if WITHAD936XIIO
 			if ((get_ad936x_stream_status() && ext[i].payload < NOXVRTUNE_TOP) ||
 					(! get_ad936x_stream_status() && ext[i].payload > NOXVRTUNE_TOP))
-				ext[i].state = DISABLED;
+				lv_obj_set_state(btn, LV_STATE_DISABLED, 1);
 #endif /* WITHAD936XIIO */
 		}
-
-		create_button_matrix(cont, ext, "", i, 4, s86x44, win_bands_handler);
 
 		return;
 	}
 
-	lv_event_code_t code = lv_event_get_code(e);
-
-
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->is_clicked)
+	if (btnu->payload == INT32_MAX)
+	{
+		// open window freq enter
+	}
+	else if (btnu->is_clicked)
 	{
 		hamradio_goto_band_by_freq(btnu->payload);
 		win_close();
