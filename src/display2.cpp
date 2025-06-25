@@ -8572,7 +8572,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (1)
     {
     	// пиковые значения спектра
-    	const lv_color_t colordots = lv_palette_main(LV_PALETTE_WHITE);
+    	const PACKEDCOLORPIP_T colordots = COLORPIP_WHITE;
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
@@ -8610,7 +8610,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (glob_view_style == VIEW_DOTS)
     {
     	// Без заполнения спектра
-    	const lv_color_t colordots = display_lvlcolor(DSGN_SPECTRUMLINE);
+    	const PACKEDCOLORPIP_T colordots = DSGN_SPECTRUMLINE;
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
@@ -8625,7 +8625,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (glob_view_style == VIEW_FILL)
     {
     	// Одноцветное заполнение спектра
-    	const lv_color_t colorfill = display_lvlcolor(DSGN_SPECTRUMLINE);
+    	const PACKEDCOLORPIP_T colorfill = DSGN_SPECTRUMLINE;
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
