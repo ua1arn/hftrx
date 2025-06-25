@@ -7072,6 +7072,19 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	/* рисуем спектр ломанной линией */
 	/* стираем старый фон */
 	colpip_fillrect(db, x0pix, y0pix, alldx, alldy, DSGN_SPECTRUMBG);
+	// сохранияем дянные для отображения
+	int vals [alldx];
+	int peaks [alldx];
+	for (uint_fast16_t x = 0; x < alldx; ++ x)
+	{
+#if WITHSPECTRUMWF
+		vals [x] = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+		peaks [x] = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+#else
+		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
+		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
+#endif /* WITHSPECTRUMWF */
+	}
 
 	if (! colpip_hasalpha())
 	{
@@ -7105,15 +7118,18 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	uint_fast16_t ylast = 0;
 	display_colorgrid_set(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
-	if (0)
+	if (1)
 	{
 		// пиковые значения спектра
 		for (uint_fast16_t x = 0; x < alldx; ++ x)
 		{
 			// TODO: не рисовать если ниже или равно основному значению
-			const int val = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+			const int val = peaks [x];
 			uint_fast16_t ynew = y0pix + alldy - 1 - val;
-			colpip_point(db, x0pix + x, ynew, COLORPIP_RED);
+			if (val > vals [x])
+			{
+				colpip_point(db, x0pix + x, ynew, COLORPIP_RED);
+			}
 		}
 	}
 	if (1)
@@ -7121,7 +7137,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 		for (uint_fast16_t x = 0; x < alldx; ++ x)
 		{
 			// ломанная
-			const int val = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
+			const int val = vals [x];
 			uint_fast16_t ynew = y0pix + alldy - 1 - val;
 
 			if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
@@ -8495,8 +8511,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 	const struct dispmap * const dm = & latched_dm;
 #endif /* WITHSPECTRUMWF */
 
-	// сохранияем дянные для отображения, чтобы фильтр работал правилььно
-	// todo: переместить в latch - на случай если более одного элемента используют фильтр
+	// сохранияем дянные для отображения
 	int vals [alldx];
 	int peaks [alldx];
     int32_t x;
@@ -8505,7 +8520,6 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 #if WITHSPECTRUMWF
 		vals [x] = dsp_mag2y(filtered_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
 		peaks [x] = dsp_mag2y(peaks_spectrum(x, alldx), alldy - 1, glob_topdb, glob_bottomdb);
-		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 #else
 		vals [x] = (x * (alldy - 1) / (alldx - 1));	// debug
 		peaks [x] = (x * (alldy - 1) / (alldx - 1));	// debug
