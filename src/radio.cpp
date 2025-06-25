@@ -12507,9 +12507,8 @@ uif_key_click_bandjump(uint_fast32_t f)
 
 /* переход на указанную частоту без задействования механизма bandgroup */
 static void
-uif_key_click_bandjump2(uint_fast32_t f)
+uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 {
-	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
@@ -18038,8 +18037,7 @@ getpower10(uint_fast8_t pos)
 static uint_fast8_t
 freqvalid(
 	int_fast32_t freq,
-	uint_fast8_t tx,			// могут накладываться дополнительные ограничения
-	uint_fast8_t bandset_no_check
+	uint_fast8_t tx			// могут накладываться дополнительные ограничения
 	)
 {
 #if XVTR_R820T2
@@ -20047,7 +20045,7 @@ void hamradio_set_lock(uint_fast8_t lock)
 uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 {
 	const uint_fast8_t bandset_no_check = 0;
-	if (freqvalid(freq, 0, bandset_no_check))
+	if (freqvalid(freq, 0))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
 		gfreqs [bi] = freq;
@@ -20257,7 +20255,7 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 	ASSERT(cell < MBANDS_COUNT);
 
 	int_fast32_t freq = restore_i32(RMT_BFREQ_BASE(MBANDS_BASE + cell));
-	if (freqvalid(freq, gtx))
+	if (freqvalid(freq, 0))
 	{
 		if (set)
 		{
@@ -20415,8 +20413,8 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, u
 
 void hamradio_goto_band_by_freq(uint_fast32_t f)
 {
-	if (freqvalid(f, gtx, 1))
-		uif_key_click_bandjump2(f);
+	if (freqvalid(f, 0))
+		uif_key_click_bandjump2(f, 1);
 }
 
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
