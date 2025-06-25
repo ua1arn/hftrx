@@ -1439,7 +1439,7 @@ static FLOAT_t MAKETAUIF(FLOAT_t t)
 }
 
 // Результат: 1 - мгновенно
-static FLOAT_t MAKETAUAF0(void)
+static FLOAT_t MAKETAU0(void)
 {
 	return 1;
 }
@@ -1469,10 +1469,11 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 0;
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.095, sr);
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
+	const FLOAT_t tauZERO = MAKETAU0();
 
+	agcp->chargespeedfast = tauZERO;
 	agcp->dischargespeedfast = tauFAST;
-	agcp->chargespeedfast = MAKETAUAF0();
 
 	agcp->chargespeedslow = tauFAST;
 	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.2, sr);
@@ -1491,15 +1492,16 @@ void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 1;
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.095, sr);
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
+	const FLOAT_t tauZERO = MAKETAU0();
 
-	agcp->dischargespeedfast = tauFAST;
 	agcp->chargespeedfast = tauFAST;
+	agcp->dischargespeedfast = tauFAST;
 
 	agcp->chargespeedslow = tauFAST;
-	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 2, sr);
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
 
-	agcp->hungticks = NSAITICKS2(3000, sr);			// 3 seconds
+	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
 	agcp->mininput = db2ratio(- 160);
 
 	// параметры используются при работе АРУ
@@ -1537,6 +1539,7 @@ static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t g
 
 static void smeter_parameters_update(volatile agcparams_t * const agcp)
 {
+	const uint_fast32_t sr = ARMSAIRATE;
 	agcp->agcoff = 0;
 
 	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
@@ -1549,7 +1552,7 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->agcfactor = (FLOAT_t) -1;
 
 #if CTLSTYLE_OLEG4Z_V1
-	agcp->chargespeedfast = MAKETAUAF0();
+	agcp->chargespeedfast = MAKETAU0();
 	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
 #endif /* CTLSTYLE_OLEG4Z_V1 */
@@ -1561,10 +1564,11 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 
 static void comp_parameters_initialize(volatile agcparams_t * agcp)
 {
+	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = 0;
 
+	agcp->chargespeedfast = MAKETAU0();
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.100);
-	agcp->chargespeedfast = MAKETAUAF0();
 
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.200);
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.200);
@@ -1581,6 +1585,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit)
 {
+	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = glob_mikeagc == 0;
 
 	agcp->gainlimit = gainlimit;
@@ -1675,10 +1680,10 @@ uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 static void voxmeter_initialize(void)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
-	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
+	VOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
 	VOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 
-	DVOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
+	DVOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
 	DVOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 

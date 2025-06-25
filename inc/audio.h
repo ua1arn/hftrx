@@ -352,7 +352,7 @@ typedef struct agcstate
 
 typedef struct agcparams
 {
-	uint_fast8_t agcoff;	// признак отключения АРУ
+	uint8_t agcoff;	// признак отключения АРУ
 
 	// Временные парметры АРУ
 

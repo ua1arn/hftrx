@@ -792,7 +792,7 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 #else
 
     static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
-    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+    static int32_t row_dsc[] = { LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_FR(4), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
 
     lv_obj_t * cont = lv_obj_create(parent);
     lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
@@ -803,11 +803,11 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 
 	lv_obj_t * const upper = lv_sscp2_create(cont);
-	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+	lv_obj_set_grid_cell(upper, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 3);
 	lv_obj_add_style(upper, & xxcellstyle, 0);
 
 	lv_obj_t * const lower = lv_wtrf2_create(cont);
-	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
+	lv_obj_set_grid_cell(lower, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 3, 1);
 	lv_obj_add_style(lower, & xxcellstyle, 0);
 
 	uiupdates(cont);
@@ -5361,6 +5361,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 
 	FLOAT_t m_spavgarray [w * 1];	// h == 1
 	FLOAT_t m_yoldwfl [w * 1];	// h == 1
+	FLOAT_t m_yoldspe [w * 1];	// h == 1
 	agcstate_t m_ypeakspe [w * 1];	// h == 1
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
@@ -5372,6 +5373,7 @@ public:
 	/* one-row objects */
 	scrollb1h<FLOAT_t, w>  spavgarray;	// строка принятая из DSP части в последний раз
 	scrollb1h<FLOAT_t, w>  yoldwfl;		// фильтр водопада
+	scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
 	scrollb1h<agcstate_t, w>  ypeakspe;		// пиковые значения спектра
 	scrollb1h<FLOAT_t, w>  yold3dss;	// фильтр 3DSS
 
@@ -5382,6 +5384,7 @@ public:
 		/* one-row objects */
 		spavgarray(centerx, centeryzero, m_spavgarray),
 		yoldwfl(centerx, centeryzero, m_yoldwfl),
+		yoldspe(centerx, centeryzero, m_yoldspe),
 		ypeakspe(centerx, centeryzero, m_ypeakspe),
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
@@ -5396,6 +5399,7 @@ public:
 		/* one-row objects */
 		spavgarray.setupnew(w, 0);
 		yoldwfl.setupnew(w, 0);
+		yoldspe.setupnew(w, 0);
 		ypeakspe.setupnew(w, agc0);
 		yold3dss.setupnew(w, 0);
 	}
@@ -5418,6 +5422,7 @@ public:
 			/* one-row objects */
 			spavgarray.shiftleft(w, pixels, 0);
 			yoldwfl.shiftleft(w, pixels, 0);
+			yoldspe.shiftleft(w, pixels, 0);
 			ypeakspe.shiftleft(w, pixels, agc0);
 			yold3dss.shiftleft(w, pixels, 0);
 		}
@@ -5436,6 +5441,7 @@ public:
 			/* one-row objects */
 			spavgarray.shiftright(w, pixels, 0);
 			yoldwfl.shiftright(w, pixels, 0);
+			yoldspe.shiftright(w, pixels, 0);
 			ypeakspe.shiftright(w, pixels, agc0);
 			yold3dss.shiftright(w, pixels, 0);
 		}
@@ -5460,6 +5466,10 @@ private:
 	void filtering_spectrum(uint_fast16_t x)
 	{
 		const FLOAT_t val = spavgarray.peek(x, 0);	// массив входных данных
+		const FLOAT_t Y = yoldspe.peek(x, 0) * spectrum_alpha + spectrum_beta * val;
+		yoldspe.poke(x, 0, Y);
+
+		//const FLOAT_t val = Y;//spavgarray.peek(x, 0);	// массив входных данных
 		// Работа с пиковым детектором
 		agcstate_t * const st = ypeakspe.bufferat(ALLDX, x, 0);
 		agc_perform(& peakparams, st, val);
@@ -5469,9 +5479,9 @@ public:
 	FLOAT_t filtered_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
 	{
 		const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
-		//return spavgarray.peek(bx, 0);	// массив входных данных - нефильтрованный вариант
-		agcstate_t * const st = ypeakspe.bufferat(ALLDX, bx, 0);
-		return agc_result_fast(st);
+		return yoldspe.peek(bx, 0);
+//		agcstate_t * const st = ypeakspe.bufferat(ALLDX, bx, 0);
+//		return agc_result_fast(st);
 	}
 
 	FLOAT_t peaks_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
@@ -7123,12 +7133,11 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 		// пиковые значения спектра
 		for (uint_fast16_t x = 0; x < alldx; ++ x)
 		{
-			// TODO: не рисовать если ниже или равно основному значению
-			const int val = peaks [x];
-			uint_fast16_t ynew = y0pix + alldy - 1 - val;
-			if (val > vals [x])
+			int val;
+			for (val = peaks [x]; val > vals [x]; -- val)
 			{
-				colpip_point(db, x0pix + x, ynew, COLORPIP_WHITE);
+				uint_fast16_t ynew = y0pix + alldy - 1 - val;
+				colpip_point(db, x0pix + x, ynew, COLORPIP_GRAY);
 			}
 		}
 	}
@@ -8574,12 +8583,12 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (1)
     {
     	// пиковые значения спектра
-    	const PACKEDCOLORPIP_T colordots = COLORPIP_WHITE;
+    	const PACKEDCOLORPIP_T colordots = COLORPIP_GRAY;
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{
-    		const int val = peaks [x];
-    		if (val > vals [x])
+    		int val;
+    		for (val = peaks [x]; val > vals [x]; -- val)
     		{
     			const int32_t ydst = alldy - 1 - val;
     			void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
