@@ -1227,9 +1227,9 @@ int axp853_initialize(void)
 	// A4 ball VDD2: vcc_dram 1.1
 
 	VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
-	VERIFY(0 == axp858_set_dcdc2(970));		// CPU
-	VERIFY(0 == axp858_set_dcdc3(970));
-	VERIFY(0 == axp858_set_dcdc4(970));		// VDD-GPU
+	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU
+	VERIFY(0 == axp858_set_dcdc3(900));		// VDD-SYS
+	VERIFY(0 == axp858_set_dcdc4(900));		// VDD-GPU
 	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1V for LPDDR4
 
 	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG, SDIO
