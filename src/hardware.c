@@ -3643,10 +3643,10 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
+	sysinit_pmic_initialize();
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	sysinit_debug_initialize();
 	local_delay_initialize();
-	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize

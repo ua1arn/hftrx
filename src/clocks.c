@@ -3464,6 +3464,7 @@ uint_fast32_t allwnr_t507_get_apb2_freq(void)
 	}
 }
 
+// The system accesses RTC register by APBS1 to generate the real time.
 uint_fast32_t allwnr_t507_get_apbs1_freq(void)
 {
 	const uint_fast32_t clkreg = PRCM->APBS1_CFG_REG;
@@ -9906,11 +9907,22 @@ sysinit_pll_initialize(int forced)
 	PRCM->APBS1_CFG_REG = 0;
 #endif
 
-	set_t507_pll_cpux(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
+	if (forced)
+	{
+		// Рабочая частота
+		set_t507_pll_cpux(PLL_CPU_N, PLL_CPU_P_POW);
+		unsigned apbDIV = 4;	// 1..4
+		unsigned axiDIV = 2;	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
+	}
+	else
+	{
+		set_t507_pll_cpux(17, 0);
+		unsigned apbDIV = 4;	// 1..4
+		unsigned axiDIV = 2;	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
+	}
 
-	unsigned apbDIV = 4;	// 1..4
-	unsigned axiDIV = 2;	// 1..4
-	set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
 
 	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
 	// old default=0x03000102
