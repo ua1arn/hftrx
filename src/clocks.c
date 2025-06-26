@@ -2970,13 +2970,13 @@ static void set_t507_pll_cpux(unsigned N, unsigned Ppow)
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 31)) != 0)
 		;
 	// Set PLL dividers
-	CCU->PLL_CPUX_CTRL_REG = (CCU->PLL_CPUX_CTRL_REG & ~ ((UINT32_C(0xFF) << 8) | (UINT32_C(0x03) << 16))) |
+	CCU->PLL_CPUX_CTRL_REG = (CCU->PLL_CPUX_CTRL_REG & ~ (UINT32_C(0xFF) << 8) & ~ (UINT32_C(0x03) << 16)) |
 		(N - 1) * (UINT32_C(1) << 8) |	// PLL_FACTOR_N
 		Ppow * (UINT32_C(1) << 16) |		// PLL_OUT_EXT_DIVP
 		0;
 	// Start PLL
 	CCU->PLL_CPUX_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 29);
-	// Waitig for PLL stable
+	// Wait for PLL stable
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
 }
@@ -9908,7 +9908,9 @@ sysinit_pll_initialize(int forced)
 
 	set_t507_pll_cpux(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
 
-	set_t507_axi_sel(0x03, 4, 2);	// 011: PLL_CPUX
+	unsigned apbDIV = 4;	// 1..4
+	unsigned axiDIV = 2;	// 1..4
+	set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
 
 	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
 	// old default=0x03000102
