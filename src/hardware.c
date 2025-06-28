@@ -4271,7 +4271,7 @@ void arm_hardware_reset(void)
 void watchdog_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_ALLWINNER
 	TIMER->WDOG_MODE_REG =
 		0x07 * (UINT32_C(1) << 4) |	// 0111: 256000 cycles (8s)
 		0x01 * (UINT32_C(1) << 0) | // WDOG_EN
@@ -4284,7 +4284,7 @@ void watchdog_initialize(void)
 void watchdog_ping(void)
 {
 #if CPUSTYLE_STM32MP1
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_ALLWINNER
 	TIMER->WDOG_CTRL_REG =
 		0xA57 * (UINT32_C(1) << 1) |
 		0x01 * (UINT32_C(1) << 0) |
