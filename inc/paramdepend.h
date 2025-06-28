@@ -1409,7 +1409,7 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_V2_2PAGE
+#elif LCDMODE_V2_NO_SHADES
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
@@ -1430,7 +1430,7 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_V2A || LCDMODE_V2A_2PAGE || LCDMODE_V2B
+#elif LCDMODE_V2A
 	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_RGB565	1

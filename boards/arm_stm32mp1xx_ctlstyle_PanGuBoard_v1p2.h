@@ -273,14 +273,14 @@
 	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
 
 	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
 
 	#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_V2A 1	/* только главный экран 16 бит (две страницы), без PIP */
 
 	//#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB8888, без PIP */
 
-	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
+	
 
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
