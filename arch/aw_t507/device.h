@@ -75,6 +75,8 @@ typedef enum IRQn
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
     DMAC_IRQn = 74,                                   /*!< DMAC  */
     GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector bunber not sequential) */
+    HSTIMER0_IRQn = 77,                               /*!< HSTIMER High Speed Timer (HSTimer) */
+    HSTIMER1_IRQn = 78,                               /*!< HSTIMER High Speed Timer (HSTimer) */
     SMC_IRQn = 79,                                    /*!< SMC  */
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
@@ -205,6 +207,7 @@ typedef enum IRQn
 #define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
+#define HSTIMER_BASE ((uintptr_t) 0x03005000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID  Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
 #define SPC_BASE ((uintptr_t) 0x03008000)             /*!< SPC  Base */
@@ -2002,6 +2005,28 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_I2CM_FS_SCL_LCNT_0_ADDR;       /*!< Offset 0x7E12  */
 } HDMI_TX_TypeDef; /* size of structure = 0x7E13 */
 /*
+ * @brief HSTIMER
+ */
+/*!< HSTIMER High Speed Timer (HSTimer) */
+typedef struct HSTIMER_Type
+{
+    __IO uint32_t HS_TMR_IRQ_EN_REG;                  /*!< Offset 0x000 HS Timer IRQ Enable Register */
+    __IO uint32_t HS_TMR_IRQ_STAS_REG;                /*!< Offset 0x004 HS Timer Status Register */
+         RESERVED(0x008[0x0020 - 0x0008], uint8_t)
+    __IO uint32_t HS_TMR0_CTRL_REG;                   /*!< Offset 0x020 HS Timer0 Control Register */
+    __IO uint32_t HS_TMR0_INTV_LO_REG;                /*!< Offset 0x024 HS Timer0 Interval Value Low Register */
+    __IO uint32_t HS_TMR0_INTV_HI_REG;                /*!< Offset 0x028 HS Timer0 Interval Value High Register */
+    __IO uint32_t HS_TMR0_CURNT_LO_REG;               /*!< Offset 0x02C HS Timer0 Current Value Low Register */
+    __IO uint32_t HS_TMR0_CURNT_HI_REG;               /*!< Offset 0x030 HS Timer0 Current Value High Register */
+         RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    __IO uint32_t HS_TMR1_CTRL_REG;                   /*!< Offset 0x040 HS Timer1 Control Register */
+    __IO uint32_t HS_TMR1_INTV_LO_REG;                /*!< Offset 0x044 HS Timer1 Interval Value Low Register */
+    __IO uint32_t HS_TMR1_INTV_HI_REG;                /*!< Offset 0x048 HS Timer1 Interval Value High Register */
+    __IO uint32_t HS_TMR1_CURNT_LO_REG;               /*!< Offset 0x04C HS Timer1 Current Value Low Register */
+    __IO uint32_t HS_TMR1_CURNT_HI_REG;               /*!< Offset 0x050 HS Timer1 Current Value High Register */
+         RESERVED(0x054[0x1000 - 0x0054], uint8_t)
+} HSTIMER_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
@@ -3541,6 +3566,7 @@ typedef struct VE_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
+#define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
