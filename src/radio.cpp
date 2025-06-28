@@ -16319,6 +16319,9 @@ processmessages(
 	}
 
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
+#if WITHWATCHDOG
+	watchdog_ping();
+#endif /* WITHWATCHDOG */
 	app_processing(inmenu, mp);
 
 #if WITHLVGL && WITHLVGLINDEV
