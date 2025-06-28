@@ -1434,7 +1434,7 @@ extern "C" {
 	#define LCDMODE_PIXELSIZE 2
 
 #elif LCDMODE_ARGB8888
-	/* Экран с двумя видеобуферами 32 бит ARGB8888 */
+	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_PIXELSIZE 4
 

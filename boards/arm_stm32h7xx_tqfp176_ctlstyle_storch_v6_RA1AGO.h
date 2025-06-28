@@ -173,7 +173,7 @@
 	#define LCDMODE_PALETTE256	1	/* Экран с двумя видеобуферами, L8 */
 
 	//#define LCDMODE_RGB565	1	/* Экран 16 бит (три страницы) */
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит  */
+	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */

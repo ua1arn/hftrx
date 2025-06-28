@@ -103,7 +103,7 @@
 	#define LCDMODE_PALETTE256	1	/* Экран с двумя видеобуферами, L8 */
 
 	//#define LCDMODE_RGB565	1	/* Экран 16 бит (три страницы) */
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит  */
+	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
 
 	
 

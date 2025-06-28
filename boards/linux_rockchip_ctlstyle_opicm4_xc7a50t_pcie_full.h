@@ -49,7 +49,7 @@
 	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-	#define LCDMODE_ARGB8888	1	/* Экран с двумя видеобуферами 32 бит ARGB8888 */
+	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 
