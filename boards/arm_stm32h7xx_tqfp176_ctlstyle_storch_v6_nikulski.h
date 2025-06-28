@@ -170,11 +170,11 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_DUMMY	1		/* заглушка - без отображения */
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_PALETTE256	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	#define LCDMODE_PALETTE256	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+	//#define LCDMODE_PALETTE256	1	/* Экран с тремя видеобуферами, L8 */
+	#define LCDMODE_PALETTE256	1	/* Экран с двумя видеобуферами, L8 */
 
-	//#define LCDMODE_RGB565	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_RGB565 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_RGB565	1	/* Экран 16 бит (три страницы) */
+	//#define LCDMODE_RGB565 1	/* Экран 16 бит  */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */

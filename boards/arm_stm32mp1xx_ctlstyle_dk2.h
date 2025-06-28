@@ -200,7 +200,7 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
-	#define LCDMODE_RGB565	1	/* только главный экран с тремя видеобуферами RGB565, без PIP */
+	#define LCDMODE_RGB565	1	/* Экран с тремя видеобуферами RGB565 */
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */

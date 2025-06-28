@@ -178,7 +178,7 @@
 	//#define LCDMODE_ST7565S_TOPDOWN	1	/* LCDMODE_ST7565S - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define LCDMODE_PALETTE256			 1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_PALETTE256			 1	/* Экран с тремя видеобуферами, L8 */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
 	#define ENCRES_DEFAULT ENCRES_128

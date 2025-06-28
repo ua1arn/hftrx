@@ -1389,7 +1389,7 @@ extern "C" {
 /* Зависимости для поределения конфигурации видеосистемы */
 
 #if LCDMODE_PALETTE256
-	/* только главный экран с двумя видеобуферами L8, без PIP */
+	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_PIXELSIZE 1
@@ -1409,7 +1409,7 @@ extern "C" {
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
 #elif LCDMODE_PALETTE256_NO_SHADES
-	/* только главный экран с двумя видеобуферами L8, без PIP */
+	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_PIXELSIZE 1
@@ -1429,12 +1429,12 @@ extern "C" {
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
 #elif LCDMODE_RGB565
-	/* только главный экран 16 бит двумя видеобуферами, без PIP */
+	/* Экран 16 бит двумя видеобуферами */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_PIXELSIZE 2
 
 #elif LCDMODE_ARGB8888
-	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	/* Экран с двумя видеобуферами 32 бит ARGB8888 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_PIXELSIZE 4
 
