@@ -74,13 +74,13 @@ static void softfill(
 		xG2D_MIXER_ALPHA,
 	} xg2d_alpha_mode_enh;
 
-#if LCDMODE_MAIN_ARGB8888
+#if LCDMODE_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define ROT_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	#define VI_ImageFormat 0x0A
 	#define ROT_ImageFormat 0x0A
 	#define UI_ImageFormat 0x0A
@@ -852,17 +852,17 @@ static void hwaccel_fillrect(
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 
-#elif LCDMODE_MAIN_L8
+#elif LCDMODE_PALETTE256
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB8888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(0 * DMA2D_OPFCCR_CM_0)	/* 0: 000: ARGB8888 */
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
@@ -870,7 +870,7 @@ static void hwaccel_fillrect(
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 
-#endif /* LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PALETTE256 */
 
 #if 1
 
@@ -878,7 +878,7 @@ static void hwaccel_fillrect(
 	#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
 	#define MDMA_CTCR_xSIZE_PIP			MDMA_CTCR_xSIZE_MAIN
 
-#endif /* LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PALETTE256 */
 
 //#define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 //#define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
@@ -2023,16 +2023,16 @@ uint32_t display_get_lvformat(void)
 #if LCDMODE_LTDC
 	#if LCDMODE_LTDC_L24
     	return LV_COLOR_FORMAT_NATIVE;
-	#elif LCDMODE_MAIN_L8
+	#elif LCDMODE_PALETTE256
     	return LV_COLOR_FORMAT_L8;
-	#elif LCDMODE_MAIN_ARGB8888
+	#elif LCDMODE_ARGB8888
     	return LV_COLOR_FORMAT_ARGB8888;
-	#elif LCDMODE_MAIN_RGB565
+	#elif LCDMODE_RGB565
     	return LV_COLOR_FORMAT_RGB565;
 	#endif
-#else
+#else /* LCDMODE_LTDC */
     	return LV_COLOR_FORMAT_ARGB8888;
-#endif
+#endif /* LCDMODE_LTDC */
 }
 #endif /* WITHLVGL */
 
@@ -2677,7 +2677,7 @@ colpip_set_hline(
 
 uint_fast8_t colpip_hasalpha(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && LCDMODE_MAIN_ARGB8888
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && LCDMODE_ARGB8888
 	return 1;
 #else
 	return 0;
@@ -2722,16 +2722,16 @@ void colpip_rectangle(
 	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
 
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PALETTE256
 	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
 
 #endif
@@ -2957,16 +2957,16 @@ void colpip_fill(
 
 	const uintptr_t dstinvalidateaddr = (uintptr_t) buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof * buffer;
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PALETTE256
 	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, FILL_FLAG_NONE);
 
 #endif
@@ -3751,7 +3751,7 @@ COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -3768,7 +3768,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-#elif LCDMODE_MAIN_ARGB8888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
+#elif LCDMODE_ARGB8888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -3786,7 +3786,7 @@ COLORPIP_T getshadedcolor(
 	}
 
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 
 	if (dot == COLORPIP_BLACK)
 	{

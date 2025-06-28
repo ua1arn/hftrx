@@ -107,7 +107,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2A 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_RGB565 1	/* только главный экран 16 бит (две страницы), без PIP */
 
 	
 
@@ -115,9 +115,9 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	//#define LCDMODE_V2 1	/* только главный экран 8 бит (две страницы), L8, без PIP */
-	//#define LCDMODE_V2A 1	/* только главный экран 16 бит (две страницы), без PIP */
-	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	//#define LCDMODE_PALETTE256 1	/* только главный экран 8 бит (две страницы), L8, без PIP */
+	//#define LCDMODE_RGB565 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_ARGB8888	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -128,8 +128,8 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_V2A 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_RGB565 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_ARGB8888	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -139,7 +139,7 @@
 #elif 1
 
 	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
-	#define LCDMODE_V2A 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_RGB565 1	/* только главный экран 16 бит (две страницы), без PIP */
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */

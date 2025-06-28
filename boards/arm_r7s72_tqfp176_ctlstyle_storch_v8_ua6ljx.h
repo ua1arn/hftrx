@@ -86,7 +86,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_PALETTE256	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
 
 	
 
@@ -97,11 +97,11 @@
 
 	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	//#define LCDMODE_V2	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+	#define LCDMODE_PALETTE256	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_PALETTE256	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
 
-	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_V2A 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_RGB565	1	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_RGB565 1	/* только главный экран 16 бит (две страницы), без PIP */
 
 	
 
@@ -112,8 +112,8 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_V2	1	/* только главный экран, без PIP */
-	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
+	#define LCDMODE_PALETTE256	1	/* только главный экран, без PIP */
+	//#define LCDMODE_RGB565	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 

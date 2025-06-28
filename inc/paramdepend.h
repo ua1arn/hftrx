@@ -1388,11 +1388,10 @@ extern "C" {
 
 /* Зависимости для поределения конфигурации видеосистемы */
 
-#if LCDMODE_V2
+#if LCDMODE_PALETTE256
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 1
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -1409,11 +1408,10 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_V2_NO_SHADES
+#elif LCDMODE_PALETTE256_NO_SHADES
 	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 1
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -1430,23 +1428,19 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_V2A
+#elif LCDMODE_RGB565
 	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 2
 
-#elif LCDMODE_V5A
+#elif LCDMODE_ARGB8888
 	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_ARGB8888	1
 	#define LCDMODE_PIXELSIZE 4
 
 #elif LCDMODE_DUMMY
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 1
 
 	#define LCDMODE_PIP_PAGES	0
@@ -1460,7 +1454,7 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
+#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 

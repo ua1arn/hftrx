@@ -392,7 +392,7 @@ typedef struct
 	#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 	#define DSGN_SPECTRUMFENCE	COLORPIP_WHITE
 
-	#if LCDMODE_MAIN_L8
+	#if LCDMODE_PALETTE256
 		// Цвета, используемые на основном экране
 		#define COLORPIP_DARKCYAN   COLORPIP_DARKGREEN
 		#define COLORPIP_CYAN       COLORPIP_GREEN
@@ -610,7 +610,7 @@ typedef struct
 
 #else /* COLORSTYLE_RED */
 
-	#if LCDMODE_MAIN_L8
+	#if LCDMODE_PALETTE256
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
 		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 		#define DSGN_BIGCOLORBINACTIVE 	DSGN_SPECTRUMBG2
@@ -638,7 +638,7 @@ typedef struct
 		#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 		#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
-	#else /* LCDMODE_MAIN_L8 */
+	#else /* LCDMODE_PALETTE256 */
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
 		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_GRAY
@@ -665,7 +665,7 @@ typedef struct
 		#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 		#define DSGN_SMLABELBACK		COLORPIP_BLACK
 
-	#endif /* LCDMODE_MAIN_L8 */
+	#endif /* LCDMODE_PALETTE256 */
 
 #endif /* COLORSTYLE_RED */
 

@@ -97,7 +97,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
 
-	#elif LCDMODE_MAIN_L8
+	#elif LCDMODE_PALETTE256
 
 		/* При использовании frame buffer цвета восьмибитные */
 		typedef uint_fast8_t COLORPIP_T;
@@ -119,7 +119,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) (((v) & 0x1C) << 3)
 		#define COLORPIP_B(v) (((v) & 0x03) << 6)
 
-	#elif LCDMODE_MAIN_ARGB8888
+	#elif LCDMODE_ARGB8888
 
 		typedef uint_fast32_t COLORPIP_T;
 		typedef uint32_t PACKEDCOLORPIP_T;
@@ -146,7 +146,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
 
-	#elif LCDMODE_MAIN_RGB565
+	#elif LCDMODE_RGB565
 
 		typedef uint_fast16_t COLORPIP_T;
 		typedef uint16_t PACKEDCOLORPIP_T;
@@ -167,7 +167,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
 		#define COLORPIP_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
 
-	#endif /* LCDMODE_MAIN_L8 */
+	#endif /* LCDMODE_PALETTE256 */
 
 #endif /* LCDMODE_LTDC */
 
