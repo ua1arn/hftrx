@@ -3051,11 +3051,11 @@ uint_fast32_t allwnr_t507_sid_read(unsigned offs)
 //	#define CHIPID_H616			0x2300
 //	#define CHIPID_T507			0x2300
 // T507
-uint_fast32_t allwnr_t507_get_chipid(void)
-{
-	//printhex32(SID_BASE, SID, 1024 * 4);
-	return SID->SID_DATA [0] & 0xFFFF;
-}
+//uint_fast32_t allwnr_t507_get_chipid(void)
+//{
+//	//printhex32(SID_BASE, SID, 1024 * 4);
+//	return SID->SID_DATA [0] & 0xFFFF;
+//}
 
 // T507
 uint_fast32_t allwnr_t507_get_hosc_freq(void)

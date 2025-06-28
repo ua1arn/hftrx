@@ -11136,7 +11136,7 @@ void hightests(void)
 		//printhex32(SID_BASE, SID, 1024);
 		PRINTF("SID memory dump:\n");
 		unsigned offs;
-		for (offs = 0; offs < 128; offs += 4)
+		for (offs = 0; offs < 256; offs += 4)
 		{
 			PRINTF("SID[0x%02X]=%08X\n", offs, (unsigned) allwnr_t507_sid_read(offs));
 		}
