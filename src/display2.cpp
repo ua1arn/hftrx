@@ -7142,7 +7142,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 			for (val = peaks [x]; val > vals [x]; -- val)
 			{
 				uint_fast16_t ynew = y0pix + alldy - 1 - val;
-				colpip_point(db, x0pix + x, ynew, COLORPIP_GRAY);
+				colpip_point(db, x0pix + x, ynew, DSGN_SPECTRUMPEAKS);
 			}
 		}
 	}
@@ -8588,7 +8588,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (1)
     {
     	// пиковые значения спектра
-    	const PACKEDCOLORPIP_T colordots = COLORPIP_GRAY;
+    	const PACKEDCOLORPIP_T colordots = DSGN_SPECTRUMPEAKS;
         int32_t x;
     	for (x = 0; x < alldx - 1; ++ x)
     	{

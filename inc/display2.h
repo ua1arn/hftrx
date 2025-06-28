@@ -424,14 +424,14 @@ typedef struct
 	#define COLOR_DARKRED        TFTRGB(0x80, 0x00, 0x00)
 	#define COLOR_DARKRED2       TFTRGB(0x40, 0x00, 0x00)
 	#define COLOR_OLIVE          TFTRGB(0x80, 0x80, 0x00)
-	#define COLOR_GRAY           TFTRGB(0x80, 0x80, 0x80)
+	#define COLOR_DARKGRAY       TFTRGB(0x80, 0x80, 0x80)
 	#define COLOR_SKYBLUE        TFTRGB(0x87, 0xCE, 0xEB)
 	#define COLOR_BLUEVIOLET     TFTRGB(0x8A, 0x2B, 0xE2)
 	#define COLOR_LIGHTGREEN     TFTRGB(0x90, 0xEE, 0x90)
 	#define COLOR_DARKVIOLET     TFTRGB(0x94, 0x00, 0xD3)
 	#define COLOR_YELLOWGREEN    TFTRGB(0x9A, 0xCD, 0x32)
 	#define COLOR_BROWN          TFTRGB(0xA5, 0x2A, 0x2A)
-	#define COLOR_DARKGRAY       TFTRGB(0xA9, 0xA9, 0xA9)
+	#define COLOR_GRAY       	 TFTRGB(0xA9, 0xA9, 0xA9)
 	#define COLOR_SIENNA         TFTRGB(0xA0, 0x52, 0x2D)
 	#define COLOR_LIGHTBLUE      TFTRGB(0xAD, 0xD8, 0xE6)
 	#define COLOR_GREENYELLOW    TFTRGB(0xAD, 0xFF, 0x2F)
@@ -481,6 +481,7 @@ typedef struct
 		#define DSGN_SPECTRUMFENCE	COLOR_WHITE
 		#define DSGN_SPECTRUMLINE		COLORPIP_RED
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 	#elif COLORSTYLE_GREEN
 		// old
@@ -494,7 +495,8 @@ typedef struct
 		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
 		#define DSGN_SPECTRUMFENCE		COLOR_WHITE
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
-		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_LOCKED  	 		TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 
 	#elif COLORSTYLE_BLUE
@@ -512,6 +514,7 @@ typedef struct
 		//#define DSGN_SPECTRUMLINE	COLORPIP_GREEN
 		#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 	#endif
 
