@@ -11131,6 +11131,18 @@ void hightests(void)
 		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
 	}
 #endif
+#if 0
+	{
+		//printhex32(SID_BASE, SID, 1024);
+		PRINTF("SID memory dump:\n");
+		unsigned offs;
+		for (offs = 0; offs < 128; offs += 4)
+		{
+			PRINTF("SID[0x%02X]=%08X\n", offs, (unsigned) allwnr_t507_sid_read(offs));
+		}
+
+	}
+#endif
 #if 0 && (CPUSTYLE_T113) && WITHDEBUG
 	{
 //		uint32_t midr;

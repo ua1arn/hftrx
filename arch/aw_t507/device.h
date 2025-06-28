@@ -2431,9 +2431,13 @@ typedef struct SCR_Type
 /*!< SID  */
 typedef struct SID_Type
 {
-         RESERVED(0x000[0x0200 - 0x0000], uint8_t)
-    __IO uint32_t SID_DATA [0x004];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
-         RESERVED(0x210[0x1000 - 0x0210], uint8_t)
+         RESERVED(0x000[0x0040 - 0x0000], uint8_t)
+    __IO uint32_t SID_PRCTL;                          /*!< Offset 0x040  */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IO uint32_t SID_RDKEY;                          /*!< Offset 0x060  */
+         RESERVED(0x064[0x0200 - 0x0064], uint8_t)
+    __IO uint32_t SID_DATA [0x100];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
+         RESERVED(0x600[0x1000 - 0x0600], uint8_t)
 } SID_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SMC

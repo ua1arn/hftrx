@@ -14285,8 +14285,26 @@
   <description></description>
   <baseAddress>0x03006000</baseAddress>
   <registers>
+   <register>
+    <name>SID_PRCTL</name>
+    <displayName>SID_PRCTL</displayName>
+    <description></description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RDKEY</name>
+    <displayName>SID_RDKEY</displayName>
+    <description></description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <cluster>
-    <dim>4</dim>
+    <dim>256</dim>
     <addressOffset>0x00000200</addressOffset>
     <register>
      <name>SID_DATA</name>
@@ -14297,7 +14315,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

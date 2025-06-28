@@ -357,6 +357,8 @@ uint_fast32_t allwnr_t507_get_rtc_freq(void);
 void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
 void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
+uint_fast32_t allwnr_t507_sid_read(unsigned offs);
+
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 
