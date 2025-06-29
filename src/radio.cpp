@@ -10948,7 +10948,7 @@ void filters_update_rx(uint_fast8_t pathi)
 
 	// Получение параметров эквалайзера
 	FLOAT_t * const dCoefs = nrp->firEQcoeff;
-	dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs);	// calculate coefficients
+	dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate coefficients
 }
 
 static void InitNoiseReduction(void)

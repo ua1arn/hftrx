@@ -2988,11 +2988,12 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 
 // calculate 1/2 of coefficients
 // Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
-static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
+static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	const uint_fast8_t fltsofter = glob_fltsofter [pathi];
+	const int iCoefNum = Ntap_rx_AUDIO;
 	static FLOAT_t dWindow [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 
 	ASSERT((iCoefNum % 2) == 1);
@@ -3098,9 +3099,10 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 
 // calculate full array of coefficients
 // Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
-void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff)
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
-	dsp_recalceq_coeffs_half(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
+	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
+	dsp_recalceq_coeffs_half(pathi, dCoeff);	// calculate 1/2 of coefficients
 	fir_expand_symmetric(dCoeff, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
 }
 
