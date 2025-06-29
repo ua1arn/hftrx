@@ -94,7 +94,6 @@ void board_set_bandf3(uint_fast8_t n);	/* управление через раз
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
 void board_set_bcdfreq1k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 1 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
-//void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
 void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра */
 void board_set_notchnarrow(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра в режиме CW */

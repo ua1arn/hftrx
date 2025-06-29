@@ -2987,6 +2987,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 }
 
 // calculate 1/2 of coefficients
+// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
 static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
@@ -3096,6 +3097,7 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 
 
 // calculate full array of coefficients
+// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
 void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff)
 {
 	dsp_recalceq_coeffs_half(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
@@ -5914,8 +5916,10 @@ prog_fltlreg(void)
 	audio_setup_mike(spf);
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
+	{
 		audio_update(spf, pathi, tx);
-
+		filters_update_rx(pathi);
+	}
 	gwprof = spf;
 
 	modem_update();

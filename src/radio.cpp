@@ -10928,10 +10928,6 @@ static void speex_update_rx(void)
 #endif /* ! WITHNOSPEEX */
 		rxaproc_t * const nrp = & rxaprocs [pathi];
 
-		// Получение параметров эквалайзера
-		FLOAT_t * const dCoefs = nrp->firEQcoeff;
-		dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs);	// calculate coefficients
-
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
@@ -10943,6 +10939,16 @@ static void speex_update_rx(void)
 
 #endif /* WITHNOSPEEX */
 	}
+}
+
+void filters_update_rx(uint_fast8_t pathi)
+{
+	const uint_fast8_t amode = getamode(pathi);
+	rxaproc_t * const nrp = & rxaprocs [pathi];
+
+	// Получение параметров эквалайзера
+	FLOAT_t * const dCoefs = nrp->firEQcoeff;
+	dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs);	// calculate coefficients
 }
 
 static void InitNoiseReduction(void)

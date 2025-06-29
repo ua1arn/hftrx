@@ -410,8 +410,10 @@ void prog_dsplreg_update(void);
 void prog_fltlreg_update(void);
 void board_dsp1regchanged(void);
 void prog_codec1reg(void);
+void filters_update_rx(uint_fast8_t pathi);
 
 void board_set_trxpath(uint_fast8_t v);	/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
+
 void board_set_mik1level(uint_fast16_t v);	/* усиление микрофонного усилителя */
 void board_set_agcrate(uint_fast8_t v);	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
 void board_set_agc_t0(uint_fast8_t v);	/* подстройка параметра АРУ */
@@ -434,13 +436,11 @@ void board_set_swaprts(uint_fast8_t v);	/* если используется к�
 void board_set_lo6(int_fast32_t f);
 void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 void board_set_fltsofter(uint_fast8_t n);	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-
 void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_nfmdeviation100(uint_fast8_t v);	/* Девиация в NFM (сотни герц) */
-
 void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
 void board_set_dspmode(uint_fast8_t v);	// Параметр для установки режима работы приёмника A/передатчика A
@@ -458,7 +458,6 @@ void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра �
 void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
 void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss); /* ревербератор */
 void board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold);
-
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_btaudioplayer(uint_fast8_t v);	/* BT AUDIO */
