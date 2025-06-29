@@ -25,7 +25,7 @@
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	//  PLL_CPUX=24MHz*N/P
-#if 1
+#if 0
 	/* 1500 MHz */
 	#define PLL_CPU_N 	125
 	#define PLL_CPU_P_POW 1
@@ -204,7 +204,7 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
-	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
+	#define WITHWATCHDOG	(! WITHDEBUG && 1)	/* разрешение сторожевого таймера в устройстве */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	
@@ -283,7 +283,7 @@
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 
-	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
+	#define WITHWATCHDOG	(! WITHDEBUG && 1)	/* разрешение сторожевого таймера в устройстве */
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
