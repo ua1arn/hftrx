@@ -7143,7 +7143,8 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 			{
 				uint_fast16_t ynew = y0pix + alldy - 1 - val;
 				colpip_point(db, x0pix + x, ynew, DSGN_SPECTRUMPEAKS);
-			}
+				break;	// только одна точка
+    		}
 		}
 	}
 	if (1)
@@ -8598,6 +8599,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     			const int32_t ydst = alldy - 1 - val;
     			void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
     			lv_memcpy(dst, & colordots, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
+				break;	// только одна точка
     		}
     	}
    	}
