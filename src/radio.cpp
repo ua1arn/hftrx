@@ -13890,14 +13890,11 @@ cat_answervariable_uart(const char * p, uint_fast8_t len)
 }
 
 
-void btspp_handledata(const uint8_t * data, unsigned size)
+void btspp_parsechar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-	while (size --)
-	{
-		cat2_parsechar(* data ++);
-	}
+	cat2_parsechar(c);
 	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 

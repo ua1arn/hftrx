@@ -203,8 +203,14 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 //        	else
 //        		printhex(0, packet, size);
 #if WITHCAT
-         	if (btsppenablerx && board_get_catmux() == BOARD_CATMUX_BTSPP)
-        		btspp_handledata(packet, size);
+         	if (board_get_catmux() == BOARD_CATMUX_BTSPP)
+         	{
+         		unsigned i;
+         		for (i = 0; btsppenablerx && i < size; ++ i)
+         		{
+         			btspp_parsechar(packet [i]);
+         		}
+         	}
 #endif
            break;
 
