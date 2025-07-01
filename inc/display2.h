@@ -239,9 +239,12 @@ void lvgl_dev_init(void);
 
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
-extern const lv_font_t eurostyle_56w;
-extern const lv_font_t Rubik_Medium_16_w2;
-extern const lv_font_t Rubik_Medium_18_w2;
+LV_FONT_DECLARE(eurostyle_56w)
+LV_FONT_DECLARE(Rubik_Medium_16_w2)
+LV_FONT_DECLARE(Rubik_Medium_18_w2)
+//LV_FONT_DECLARE(Roboto_Regular_14_w1)
+//LV_FONT_DECLARE(Roboto_Regular_16_w1)
+//LV_FONT_DECLARE(Roboto_Regular_56_w1)
 
 lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
