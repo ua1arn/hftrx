@@ -90,7 +90,7 @@
 #regdef; SMHC_BGR_REG; 0x084C; SMHC Bus Gating Reset Register
 #regdef; UART_BGR_REG; 0x090C; UART Bus Gating Reset Register
 #regdef; TWI_BGR_REG; 0x091C; TWI Bus Gating Reset Register
-#regdef; SCR_BGR_REG; 0x093C; SCR Bus Gating Reset Register
+##regdef; SCR_BGR_REG; 0x093C; SCR Bus Gating Reset Register
 #regdef; SPI0_CLK_REG; 0x0940; SPI0 Clock Register
 #regdef; SPI1_CLK_REG; 0x0944; SPI1 Clock Register
 #regdef; SPI_BGR_REG; 0x096C; SPI Bus Gating Reset Register
