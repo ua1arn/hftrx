@@ -3084,36 +3084,10 @@ static const struct menudef menutable [] =
 		getzerobase, 
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	(const struct paramdefdef [1]) {
-		QLABEL("FWD LOWR"), 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
-		ITEM_VALUE,
-		1, (1U << HARDWARE_ADCBITS) - 1, 
-		OFFSETOF(struct nvmap, minforward),
-		getselector0, nvramoffs0, valueoffs0,
-		& minforward,
-		NULL,
-		getzerobase, 
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
-		ITEM_VALUE,
-		1, 255,
-		OFFSETOF(struct nvmap, maxpwrcali),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& maxpwrcali,
-		getzerobase,
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,						/* защита от превышения КСВ */
-		OFFSETOF(struct nvmap, gswrprot),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gswrprot,
-		getzerobase,
-	},
+	& xminforward,
+	& xmaxpwrcali,
+	& xgswrprot,
+	& xgdownatcwtune,
 	
 #elif WITHPWRMTR
 	(const struct paramdefdef [1]) {

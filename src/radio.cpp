@@ -3825,6 +3825,7 @@ struct nvmap
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	uint8_t gswrprot;	/* защита от превышения КСВ */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	uint8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
@@ -5523,6 +5524,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */
+	static uint_fast8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 #if WITHAUTOTUNER
 	static uint_fast8_t reqautotune;
 #else
@@ -5535,9 +5537,54 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	enum { reqautotune2 = 0 };
 #endif /* WITHTOUCHGUI */
 
+	static const struct paramdefdef xgdownatcwtune =
+	{
+		QLABEL("TUNE LP"), 8, 3, RJ_ON,	ISTEP1,	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gdownatcwtune),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gdownatcwtune,
+		getzerobase,
+	};
+	static const struct paramdefdef xgswrprot =
+	{
+			QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
+			ITEM_VALUE,
+			0, 1,						/* защита от превышения КСВ */
+			OFFSETOF(struct nvmap, gswrprot),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gswrprot,
+			getzerobase,
+	};
+	static const struct paramdefdef xminforward =
+	{
+		QLABEL("FWD LOWR"), 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
+		ITEM_VALUE,
+		1, (1U << HARDWARE_ADCBITS) - 1,
+		OFFSETOF(struct nvmap, minforward),
+		getselector0, nvramoffs0, valueoffs0,
+		& minforward,
+		NULL,
+		getzerobase,
+	};
+	static const struct paramdefdef xmaxpwrcali =
+	{
+		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
+		ITEM_VALUE,
+		1, 255,
+		OFFSETOF(struct nvmap, maxpwrcali),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& maxpwrcali,
+		getzerobase,
+	};
+
 #else /* WITHTX */
 
-	enum { tunemode = 0, moxmode = 0, reqautotune = 0, reqautotune2 = 0 };
+	enum { gdownatcwtune = 0, tunemode = 0, moxmode = 0, reqautotune = 0, reqautotune2 = 0 };
 	enum { gheatprot = 0, gtempvmax = 99 };
 
 #endif /* WITHTX */
@@ -9784,7 +9831,14 @@ getactualtune(void)
 static uint_fast8_t
 getactualdownpower(void)
 {
-	return reqautotune || reqautotune2 || hardware_get_tune();
+#if WITHTX
+	return
+			0 ||
+			(gdownatcwtune && tunemode) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+			reqautotune || reqautotune2 || hardware_get_tune();
+#else /* WITHTX */
+	return 0;
+#endif /* WITHTX */
 }
 
 #if WITHTX
