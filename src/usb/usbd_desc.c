@@ -27,6 +27,10 @@
 #include <string.h>
 #include <wchar.h>
 
+
+static uint_fast8_t glob_usb_ft8cn = UINT8_MAX;
+static uint_fast8_t glob_usb_hs = UINT8_MAX;
+
 // UAC audio device
 // USB\VID_FFFF&PID_0736&REV_0100&MI_00
 // USB\VID_FFFF&PID_0736&MI_00
@@ -287,7 +291,7 @@ static const struct stringtempl strtemplates [] =
 typedef struct desc_options
 {
 	uint_fast8_t hsdesc;
-	uint_fast8_t usb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
+	uint_fast8_t ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 } desc_options_t;
 
 static unsigned usbd_get_productId(const desc_options_t * opts)
@@ -297,7 +301,7 @@ static unsigned usbd_get_productId(const desc_options_t * opts)
 	return USB_FUNCTION_PRODUCT_ID_OVERRIDE;
 #endif /* USB_FUNCTION_PRODUCT_ID_OVERRIDE */
 
-	if (opts->usb_ft8cn != 0)
+	if (opts->ft8cn != 0)
 		return 0x5732;	// Need for FT8CN
 	unsigned v = 0;
 
@@ -345,7 +349,7 @@ static unsigned usbd_get_vendorId(const desc_options_t * opts)
 	return USB_FUNCTION_VENDOR_ID_OVERRIDE;
 #endif /* USB_FUNCTION_VENDOR_ID_OVERRIDE */
 
-	if (opts->usb_ft8cn != 0)
+	if (opts->ft8cn != 0)
 		return 0x0483;	// Need for FT8CN - ST (SGS Thomson Microelectronics)
 	return USB_FUNCTION_VENDOR_ID;
 }
@@ -5553,7 +5557,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 
 	desc_options_t opts0;
 	opts0.hsdesc = HSdescv;
-	opts0.usb_ft8cn = ft8cnv;
+	opts0.ft8cn = ft8cnv;
 
 	{
 		// Device Descriptor
@@ -6012,21 +6016,25 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 	}
 }
 
+/* Использование USB HS dvtcn USB FS */
+void board_set_usb_hs(uint_fast8_t v)
+{
+}
+
 /* совместимость VID/PID для работы с программой FT8CN */
 void board_set_usb_ft8cn(uint_fast8_t v)
 {
-	static uint_fast8_t usb_ft8cn = UINT8_MAX;
 	uint_fast8_t n = v != 0;
-	if (usb_ft8cn != n)
+	if (glob_usb_ft8cn != n)
 	{
-		usb_ft8cn = n;
+		glob_usb_ft8cn = n;
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 	#if WITHUSBDEV_HSDESC
-		usbd_descriptors_initialize(1, usb_ft8cn);
+		usbd_descriptors_initialize(1, glob_usb_ft8cn);
 
 	#else /* WITHUSBDEV_HSDESC */
-		usbd_descriptors_initialize(0, usb_ft8cn);
+		usbd_descriptors_initialize(0, glob_usb_ft8cn);
 
 	#endif /* WITHUSBDEV_HSDESC */
 		LowerIrql(oldIrql);

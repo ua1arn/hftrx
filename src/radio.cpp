@@ -3605,6 +3605,7 @@ struct nvmap
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		uint8_t gusb_hs;	/* Использование USB HS dvtcn USB FS */
 		uint8_t gbtaudioplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -4749,6 +4750,7 @@ static const struct paramdefdef xcatenable =
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t gusb_hs = 1;	/* Использование USB HS dvtcn USB FS */
 		static uint_fast8_t gbtaudioplayer = 0;
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
@@ -4813,6 +4815,18 @@ static const struct paramdefdef xcatenable =
 			& gbtaudioplayer,
 			getzerobase, /* складывается со смещением и отображается */
 		};
+		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static const struct paramdefdef xgusb_hs =
+		{
+			QLABEL("HS USB"), 7, 3, RJ_YES,	ISTEP1,
+			ITEM_VALUE,
+			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+			OFFSETOF(struct nvmap, gusb_hs),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gusb_hs,
+			getzerobase, /* складывается со смещением и отображается */
+		};
 	#if WITHRTS96 || WITHRTS192
 		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		static const struct paramdefdef xgswapiq =
@@ -4830,6 +4844,7 @@ static const struct paramdefdef xcatenable =
 	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
+		enum { gusb_hs = 0 };
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
@@ -11901,7 +11916,8 @@ updateboardZZZ(
 			#if WITHTX
 				board_set_datatx(gdatatx);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
-			board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
+				board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
+				board_set_usb_hs(gusb_hs);	/* Использование USB HS dvtcn USB FS */
 		#endif /* WITHUSBHW && WITHUSBUAC */
 		#if WITHTX
 			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном

@@ -463,6 +463,7 @@ void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивани
 void board_set_btaudioplayer(uint_fast8_t v);	/* BT AUDIO */
 void board_set_datatx(uint_fast8_t v);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID для работы с программой FT8CN */
+void board_set_usb_hs(uint_fast8_t v);	/* Использование USB HS dvtcn USB FS */
 
 void dsp_initialize(void);
 
