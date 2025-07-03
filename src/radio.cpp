@@ -20119,6 +20119,8 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 #if LINUX_SUBSYSTEM && WITHAD936XIIO
 		if (get_ad936x_stream_status())
 			ad936x_set_freq(freq);
+#elif LINUX_SUBSYSTEM && WITHAD936XDEV
+		ad936xdev_set_freq(freq);
 #endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
 		return 1;
 	}

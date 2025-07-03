@@ -22,9 +22,10 @@
 	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-//	#define XVTR_R820T2			1	// ad936x
+	#define XVTR_R820T2			1	// ad936x
 //	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
+	#define WITHAD936XDEV		1
 
 	// --- вариации прошивки, специфические для разных частот
 

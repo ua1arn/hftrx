@@ -38,6 +38,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#if WITHAD936XDEV
+#include "ad936xdev.h"
+#endif /* WITHAD936XDEV */
+
 /* Audio register map definitions */
 #define AUDIO_REG_I2S_RESET 		 0x00   //Write only
 #define AUDIO_REG_I2S_CTRL			 0x04
