@@ -9927,7 +9927,7 @@ sysinit_pll_initialize(int forced)
 	if (forced)
 	{
 		const uint_fast32_t desiredAXIfreq = 600;	// AXI не выше 600 MHz
-		const uint_fast32_t desiredAPBfreq = 400;	// AРB не выше 300 MHz
+		const uint_fast32_t desiredAPBfreq = 400;	// AРB не выше 400 MHz
 		const uint_fast32_t fCPU = (24 * PLL_CPU_N) >> PLL_CPU_P_POW;
 		// Рабочая частота
 		set_t507_pll_cpux(PLL_CPU_N, PLL_CPU_P_POW);
