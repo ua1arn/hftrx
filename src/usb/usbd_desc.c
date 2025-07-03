@@ -28,8 +28,12 @@
 #include <wchar.h>
 
 
-static uint_fast8_t glob_usb_ft8cn = UINT8_MAX;
-static uint_fast8_t glob_usb_hs = UINT8_MAX;
+static uint_fast8_t glob_usb_ft8cn = 0;
+#if WITHUSBDEV_HSDESC
+	static uint_fast8_t glob_usb_hs = 1;	/* Использование USB HS dvtcn USB FS */
+#else /* WITHUSBDEV_HSDESC */
+	static uint_fast8_t glob_usb_hs = 1;	/* Использование USB HS dvtcn USB FS */
+#endif /* WITHUSBDEV_HSDESC */
 
 // UAC audio device
 // USB\VID_FFFF&PID_0736&REV_0100&MI_00
@@ -6019,6 +6023,15 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 /* Использование USB HS dvtcn USB FS */
 void board_set_usb_hs(uint_fast8_t v)
 {
+	uint_fast8_t n = v != 0;
+	if (glob_usb_hs != n)
+	{
+		glob_usb_hs = n;
+		IRQL_t oldIrql;
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		usbd_descriptors_initialize(glob_usb_hs, glob_usb_ft8cn);
+		LowerIrql(oldIrql);
+	}
 }
 
 /* совместимость VID/PID для работы с программой FT8CN */
@@ -6030,13 +6043,7 @@ void board_set_usb_ft8cn(uint_fast8_t v)
 		glob_usb_ft8cn = n;
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
-	#if WITHUSBDEV_HSDESC
-		usbd_descriptors_initialize(1, glob_usb_ft8cn);
-
-	#else /* WITHUSBDEV_HSDESC */
-		usbd_descriptors_initialize(0, glob_usb_ft8cn);
-
-	#endif /* WITHUSBDEV_HSDESC */
+		usbd_descriptors_initialize(glob_usb_hs, glob_usb_ft8cn);
 		LowerIrql(oldIrql);
 	}
 }
