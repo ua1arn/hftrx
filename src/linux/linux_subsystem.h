@@ -42,6 +42,11 @@
 #include "ad936xdev.h"
 #endif /* WITHAD936XDEV */
 
+#if WITHLVGL
+#include "lvgl/lvgl.h"
+void lvgl_gui_init(lv_obj_t * parent);
+#endif /* WITHLVGL */
+
 /* Audio register map definitions */
 #define AUDIO_REG_I2S_RESET 		 0x00   //Write only
 #define AUDIO_REG_I2S_CTRL			 0x04

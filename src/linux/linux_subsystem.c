@@ -1641,9 +1641,9 @@ pthread_t xdma_t;
 
 void xdma_iq_event_handler(void)
 {
-#if WITHAD936XIIO
+#if WITHAD936XIIO || WITHAD936XDEV
 	if (get_ad936x_stream_status()) return;
-#endif /* WITHAD936XIIO */
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 
 	uint16_t position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
 	uint16_t offset = position >= DMABUFFSIZE32RX ? 0 : SIZERX8;

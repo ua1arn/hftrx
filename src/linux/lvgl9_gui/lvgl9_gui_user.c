@@ -596,11 +596,11 @@ void win_bands_handler(lv_event_t * e)
 			if (hamradio_check_current_freq_by_band(bands[i].index))
 				button_lock(btn);
 
-#if WITHAD936XIIO
+#if WITHAD936XIIO || WITHAD936XDEV
 			if ((get_ad936x_stream_status() && ext[i].payload < NOXVRTUNE_TOP) ||
 					(! get_ad936x_stream_status() && ext[i].payload > NOXVRTUNE_TOP))
 				lv_obj_set_state(btn, LV_STATE_DISABLED, 1);
-#endif /* WITHAD936XIIO */
+#endif /* WITHAD936XIIO || WITHAD936XDEV*/
 		}
 
 		return;
@@ -720,6 +720,56 @@ void win_freq_handler(lv_event_t * e)
 
 // ***********************************************
 
+void win_ad936xdev_handler(lv_event_t * e)
+{
+#if WITHAD936XDEV
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+		uint8_t p = ad936xdev_present();
+		uint8_t s = get_ad936x_stream_status();
+		static user_t ext[1];
+
+		lv_obj_t * btn = add_button(cont, ext, 0, "", s100x44, win_ad936xdev_handler);
+
+		if (s)
+			button_set_text(btn, "Switch\nto HF");
+		else
+		{
+			button_set_text(btn, p ? "Switch\nto UHF" : "AD936x\not found");
+			lv_obj_set_state(btn, LV_STATE_DISABLED, ! p);
+		}
+
+		return;
+	}
+
+	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
+	user_t * ext = lv_obj_get_user_data(btn);
+	static uint32_t freq = 7012000;
+
+	if (ext->index == 0)
+	{
+		if (get_ad936x_stream_status())
+		{
+			button_set_text(btn, "Switch\nto UHF");
+			ad936xdev_sleep();
+			hamradio_set_freq(freq);
+		}
+		else
+		{
+			button_set_text(btn, "Switch\nto HF");
+			ad936xdev_wake();
+			freq = hamradio_get_freq_rx();
+			hamradio_set_freq(433000000);
+		}
+
+		win_close();
+	}
+#endif /* WITHAD936XDEV */
+}
+
+// ***********************************************
+
 static void btn_txrx_handler(lv_obj_t * p)
 {
 	user_t * ext = lv_obj_get_user_data(p);
@@ -779,7 +829,7 @@ static void footer_buttons_init(lv_obj_t * p)
 			{ "Memory",   0, 0, NULL, WIN_MEMORY, },
 			{ "Receive",  0, 0, NULL, WIN_RECEIVE, },
 			{ "Bands",    0, 0, NULL, WIN_BANDS, },
-			{ "Button 5", 0, 0, NULL, WIN_MEMORY, },
+			{ "AD936x",   0, 0, NULL, WIN_AD936X, },
 			{ "Button 6", 0, 0, NULL, WIN_MEMORY, },
 			{ "Button 7", 0, 0, NULL, WIN_MEMORY, },
 			{ "Settings", 0, 0, NULL, WIN_SETTINGS, },

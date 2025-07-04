@@ -21,6 +21,7 @@ void win_settings_handler(lv_event_t * e);
 void win_display_settings_handler(lv_event_t * e);
 void win_bands_handler(lv_event_t * e);
 void win_freq_handler(lv_event_t * e);
+void win_ad936xdev_handler(lv_event_t * e);
 
 #define WINDOW_LIST(X) \
 		X(MAIN,    MAIN, "", "", NULL)      	\
@@ -34,6 +35,7 @@ void win_freq_handler(lv_event_t * e);
 		X(DISPLAY_SETTINGS, SETTINGS,  "win_display_settings",	"Display settings",  win_display_settings_handler)	\
 		X(BANDS, MAIN,  "win_bands",	"Bands",  win_bands_handler)	\
 		X(FREQ, MAIN,  "win_freq",	"Enter frequency",  win_freq_handler)	\
+		X(AD936X, MAIN,  "win_ad936x",	"AD936x",  win_ad936xdev_handler)	\
 
 typedef enum {
     #define X(name, parent, cname, title, eh) WIN_##name,
