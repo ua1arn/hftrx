@@ -18278,11 +18278,11 @@ process_key_menuset_common(uint_fast8_t kbch)
 //		bring_swr();
 //		return 1;
 
-#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
+#if WITHIF4DSP && WITHUSBHW && WITHUSBUAC && WITHDATAMODE
 	case KBD_CODE_DATATOGGLE:
 		uif_key_click_datamode();
 		return 1;	/* клавиша уже обработана */
-#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
+#endif /* WITHIF4DSP && WITHUSBHW && WITHUSBUAC && WITHDATAMODE */
 
 #endif /* WITHTX */
 
