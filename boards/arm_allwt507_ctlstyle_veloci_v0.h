@@ -25,7 +25,7 @@
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	//  PLL_CPUX=24MHz*N/P
-#if 1
+#if 0
 	/* 1500 MHz */
 	#define PLL_CPU_N 	116
 	#define PLL_CPU_P_POW 1

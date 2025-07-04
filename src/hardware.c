@@ -436,6 +436,11 @@ uint32_t board_millis(void)
 	return sys_now_counter;
 }
 
+uint32_t tusb_time_millis_api(void)
+{
+  return board_millis();
+}
+
 //#include "hal_time_ms.h"
 uint32_t hal_time_ms(void){
 	return sys_now_counter;
