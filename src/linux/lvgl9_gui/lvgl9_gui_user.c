@@ -728,17 +728,23 @@ void win_ad936xdev_handler(lv_event_t * e)
 		lv_obj_t * cont = gui_win_get_content();
 		uint8_t p = ad936xdev_present();
 		uint8_t s = get_ad936x_stream_status();
-		static user_t ext[1];
+		static user_t ext[2];
 
-		lv_obj_t * btn = add_button(cont, ext, 0, "", s100x44, win_ad936xdev_handler);
+		lv_obj_t * btn_sw = add_button(cont, ext, 0, "", s100x44, win_ad936xdev_handler);
 
 		if (s)
-			button_set_text(btn, "Switch\nto HF");
+			button_set_text(btn_sw, "Switch\nto HF");
 		else
 		{
-			button_set_text(btn, p ? "Switch\nto UHF" : "AD936x\not found");
-			lv_obj_set_state(btn, LV_STATE_DISABLED, ! p);
+			button_set_text(btn_sw, p ? "Switch\nto UHF" : "AD936x\not found");
+			lv_obj_set_state(btn_sw, LV_STATE_DISABLED, ! p);
 		}
+
+		ext[1].payload = ad936xdev_get_fir();
+		lv_obj_t * btn_fir = add_button(cont, ext, 1, "FIR", s100x44, win_ad936xdev_handler);
+		button_set_lock(btn_fir, ext[1].payload);
+		lv_obj_set_state(btn_fir, LV_STATE_DISABLED, ! s);
+		lv_obj_align_to(btn_fir, btn_sw, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
 		return;
 	}
@@ -747,23 +753,37 @@ void win_ad936xdev_handler(lv_event_t * e)
 	user_t * ext = lv_obj_get_user_data(btn);
 	static uint32_t freq = 7012000;
 
-	if (ext->index == 0)
+	if (ext->is_clicked)
 	{
-		if (get_ad936x_stream_status())
+		switch (ext->index)
 		{
-			button_set_text(btn, "Switch\nto UHF");
-			ad936xdev_sleep();
-			hamradio_set_freq(freq);
-		}
-		else
-		{
-			button_set_text(btn, "Switch\nto HF");
-			ad936xdev_wake();
-			freq = hamradio_get_freq_rx();
-			hamradio_set_freq(433000000);
-		}
+		case 0:
+			if (get_ad936x_stream_status())
+			{
+				button_set_text(btn, "Switch\nto UHF");
+				ad936xdev_sleep();
+				hamradio_set_freq(freq);
+			}
+			else
+			{
+				button_set_text(btn, "Switch\nto HF");
+				ad936xdev_wake();
+				freq = hamradio_get_freq_rx();
+				hamradio_set_freq(433000000);
+			}
 
-		win_close();
+			win_close();
+			break;
+
+		case 1:
+			ext->payload = ! ext->payload;
+			ad936xdev_set_fir(ext->payload);
+			button_set_lock(btn, ext->payload);
+			break;
+
+		default:
+			break;
+		}
 	}
 #endif /* WITHAD936XDEV */
 }
