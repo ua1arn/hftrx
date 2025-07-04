@@ -12589,6 +12589,13 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard(1, 1);
+
+#if LINUX_SUBSYSTEM && WITHAD936XIIO
+		if (get_ad936x_stream_status())
+			ad936x_set_freq(f);
+#elif LINUX_SUBSYSTEM && WITHAD936XDEV
+		ad936xdev_set_freq(f);
+#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
 }
 
 #if ! WITHAGCMODENONE
