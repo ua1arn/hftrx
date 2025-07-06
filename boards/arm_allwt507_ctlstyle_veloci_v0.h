@@ -26,7 +26,7 @@
 
 	//  PLL_CPUX=24MHz*N/P
 #if 0
-	/* 1500 MHz */
+	/* 1396 MHz */
 	#define PLL_CPU_N 	116
 	#define PLL_CPU_P_POW 1
 #else
