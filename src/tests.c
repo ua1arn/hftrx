@@ -10452,8 +10452,11 @@ void hightests(void)
 	//
 	    lv_demo_widgets();
 	    lv_demo_widgets_start_slideshow();
-	//    for (;;)
-	//    	lv_timer_handler();
+	    for (;;)
+	    {
+	    	board_dpc_processing();
+	    	lv_timer_handler();
+	    }
 	}
 #endif
 #if 0
