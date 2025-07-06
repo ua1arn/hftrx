@@ -4149,10 +4149,10 @@ static void diskio_test(BYTE drv)
 
 			case 'W':
 				{
-					unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
-					//unsigned nsect = 256 * 1024 * 2;	// 10M
+					//unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
+					unsigned nsect = 10 * 1024 * 2;	// 10M
 					// Wipe SD
-					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
+					PRINTF(PSTR("Wipe SD card - first %u sectors (by previously prepared data). Press 'y' for proceed\n"), nsect);
 					char c = 0;
 					for (;;)
 					{
