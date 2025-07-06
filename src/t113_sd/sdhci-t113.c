@@ -500,11 +500,11 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
 	uint32_t ratio;
 
-	if (sdhci->instance == SMHC2)
-	{
-		if (clock > 1000000)
-			clock = 1000000;
-	}
+//	if (sdhci->instance == SMHC2)
+//	{
+//		if (clock > 1000000)
+//			clock = 1000000;
+//	}
 
     ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения частоты сигнала CLK показали, что деление на 4 а не на 2
 

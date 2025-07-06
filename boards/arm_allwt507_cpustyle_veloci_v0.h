@@ -713,21 +713,23 @@
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnr_t507_get_smhc2_freq())
 	#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
-	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface */
+	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface - ALDO1 powered VCC-PC */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF3);	/* PC6 - SDC2_CMD	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PC5 - SDC2_CLK	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF3);	/* PC10 - SDC2_D0	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF3);	/* PC13 - SDC2_D1	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF3);	/* PC15 - SDC2_D2	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3);	/* PC8 - SDC2_D3	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3);	/* PC9 - SDC2_D4	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF3);	/* PC11 - SDC2_D5	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF3);	/* PC14 - SDC2_D6	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3);	/* PC16 - SDC2_D7	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); /* PC0 - SDC2_DS */ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); /* PC1 - SDC2_RST */ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 6, GPIO_CFG_AF3);	/* PC6 - SDC2_CMD	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PC5 - SDC2_CLK	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 10, GPIO_CFG_AF3);	/* PC10 - SDC2_D0	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 13, GPIO_CFG_AF3);	/* PC13 - SDC2_D1	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 15, GPIO_CFG_AF3);	/* PC15 - SDC2_D2	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 8, GPIO_CFG_AF3);	/* PC8 - SDC2_D3	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 9, GPIO_CFG_AF3);	/* PC9 - SDC2_D4	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 11, GPIO_CFG_AF3);	/* PC11 - SDC2_D5	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 14, GPIO_CFG_AF3);	/* PC14 - SDC2_D6	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 16, GPIO_CFG_AF3);	/* PC16 - SDC2_D7	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 0, GPIO_CFG_AF3); /* PC0 - SDC2_DS */ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 1, GPIO_CFG_AF3); /* PC1 - SDC2_RST */ \
+		arm_hardware_piof_updown(UINT32_C(1) << 10, 1 * UINT32_C(1) << 6, 0 * UINT32_C(1) << 6);	/* PC10 - SDC2_D0	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6, 0 * UINT32_C(1) << 6);	/* PC6 - SDC2_CMD	*/ \
 	} while (0)
 	/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 	#define HARDWARE_SDIO_HANGOFF()	do { \
