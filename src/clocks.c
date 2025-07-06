@@ -9928,11 +9928,11 @@ sysinit_pll_initialize(int forced)
 	{
 		const uint_fast32_t desiredAXIfreq = 600;	// AXI не выше 600 MHz
 		const uint_fast32_t desiredAPBfreq = 400;	// AРB не выше 400 MHz
-		const uint_fast32_t fCPU = (24 * PLL_CPU_N) >> PLL_CPU_P_POW;
+		const uint_fast32_t fCPU = (24u * PLL_CPU_N) >> PLL_CPU_P_POW;
 		// Рабочая частота
 		set_t507_pll_cpux(PLL_CPU_N, PLL_CPU_P_POW);
-		unsigned apbDIV = ulmax(1, ulmin(4, (fCPU + (desiredAPBfreq - 1)) / desiredAPBfreq));	// 1..4
-		unsigned axiDIV = ulmax(1, ulmin(4, (fCPU + (desiredAXIfreq - 1)) / desiredAXIfreq));	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		unsigned apbDIV = 4;//ulmax(1, ulmin(4, (fCPU + (desiredAPBfreq - 1)) / desiredAPBfreq));	// 1..4
+		unsigned axiDIV = fCPU > 1200 ? 3 : 2;//ulmax(1, ulmin(4, (fCPU + (desiredAXIfreq - 1)) / desiredAXIfreq));	// 1..4	- if CPU_FREQ=1200, axi_freq=600
 		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
 	}
 	else
