@@ -1238,10 +1238,67 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		unsigned tstride, uint_fast32_t tsizehw,
 		uintptr_t taddr);
 
+// на t113 пока не работает правильно (чёрный квадрат под Emma Smith)
 static void
 draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
 {
 	//PRINTF("draw_awg2d_image\n");
+	// Copy rectangle
+	ASSERT(lv_area_get_width(& dsc->image_area) == lv_area_get_width(area));
+	ASSERT(lv_area_get_height(& dsc->image_area) == lv_area_get_height(area));
+//	PRINTF("draw_awg2d_image: tw/th=%d/%d, x/y=%d/%d, w/h=%d/%d\n",
+//			(int) lv_area_get_width(& dsc->image_area), (int) lv_area_get_height(& dsc->image_area),
+//			(int) area->x1, (int) area->y1, (int) lv_area_get_width(area), (int) lv_area_get_height(area));
+
+
+    const lv_area_t * coords = &t->area;
+    lv_area_t clipped_coords;
+    if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
+        return ;//LV_DRAW_UNIT_IDLE;
+    }
+
+    void * const dest = lv_draw_layer_go_to_xy(layer,
+                                         clipped_coords.x1 - layer->buf_area.x1,
+                                         clipped_coords.y1 - layer->buf_area.y1);
+//    ASSERT(dest);
+//    PRINTF("dest=%p (base=%p)\n", dest, layer->draw_buf->data);	// правильный адрес получателя
+
+//    // Где источник?
+//    PRINTF("src=%p\n", dsc->src);
+    const lv_draw_buf_t * dbf = dsc->src;
+    ASSERT(LV_IMAGE_SRC_VARIABLE == lv_image_src_get_type(dbf));
+
+    const uint_fast16_t sw = lv_area_get_width(area);
+    const uint_fast16_t sh = lv_area_get_height(area);
+//    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
+
+    const unsigned keyflag = 0;
+    const COLORPIP_T keycolor = 0;
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
+	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
+	const unsigned sstride = dbf->header.stride;
+	const uintptr_t taddr = (uintptr_t) dest;
+	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
+	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
+
+	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;
+	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
+	const uintptr_t srcinvalidateaddr = (uintptr_t) dbf->data;
+	const int_fast32_t srcinvalidatesize = dbf->data_size;
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
+
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
+			tsizehw, taddr);
+}
+
+static void
+draw_awg2d_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
+{
+	//PRINTF("draw_awg2d_layer\n");
 	// Copy rectangle
 	ASSERT(lv_area_get_width(& dsc->image_area) == lv_area_get_width(area));
 	ASSERT(lv_area_get_height(& dsc->image_area) == lv_area_get_height(area));
@@ -1372,6 +1429,8 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
         	PRINTF("awrot_execute_drawing: t->type=%d\n", (int) t->type);
         	break;
         case LV_DRAW_TASK_TYPE_LAYER:
+    		draw_awg2d_layer(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
     	case LV_DRAW_TASK_TYPE_IMAGE:
     		draw_awg2d_image(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
     		break;
@@ -1459,6 +1518,11 @@ static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 }
                 /* not support scale */
                 if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE)
+                {
+                    return 0;
+                }
+                /* not support rotation */
+                if (draw_dsc->rotation != 0)
                 {
                     return 0;
                 }
@@ -1665,8 +1729,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 
 	const int mx = 0;
 	const int my = 0;
-	const int angle = 0;
-	const unsigned quadrant = (angle % 360) / 90;
+	unsigned quadrant = 0;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
 	uint_fast32_t rot_ctl = 0;
@@ -1702,6 +1765,11 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 
                 /* not support skew */
                 if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+                /* not support rotation */
+                if (draw_dsc->rotation != 0)
+                {
                     return 0;
                 }
                 /* not support scale */
