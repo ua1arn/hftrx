@@ -734,6 +734,19 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 static void spi_transfer_b16(spitarget_t target, const uint16_t * txbuff, uint16_t * rxbuff, int len, uint_fast8_t readnb);
 static void spi_transfer_b32(spitarget_t target, const uint32_t * txbuff, uint32_t * rxbuff, int len, uint_fast8_t readnb);
 
+void spi_cs_ping(spitarget_t target)
+{
+	IRQL_t oldIrql;
+
+	spi_operate_lock(& oldIrql);
+	prog_select(target);
+	SPI_CS_DELAY(target);	/* Perform delay after assert or de-assert specific CS line */
+	prog_unselect(target);
+
+	spi_operate_unlock(oldIrql);
+
+}
+
 static void spi_operate(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;

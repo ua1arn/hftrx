@@ -264,6 +264,12 @@ void prog_spi_io(
 	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
 	);
+void spi_cs_ping(spitarget_t target);
+
+void spi_operate_lock(IRQL_t * oldIrql);
+void spi_operate_unlock(IRQL_t irql);
+void spidf_operate_lock(IRQL_t * oldIrql);
+void spidf_operate_unlock(IRQL_t irql);
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS

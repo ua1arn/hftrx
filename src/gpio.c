@@ -810,7 +810,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 #define ALWNR_GPIO_DRV_INPUT 0x02
 #define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
 
-#define ALWNR_GPIO_DRV_AF2M 0x02
+#define ALWNR_GPIO_DRV_AF2M 0x00	// 180 OHm
 #define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
 
 #define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03

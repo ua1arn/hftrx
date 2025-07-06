@@ -19069,10 +19069,14 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+#if ! LCDMODE_DUMMY
+			char msg [32];
+			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault1 %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_menu_digit(& dbv, 0, 0, NVRAM_END + 1, 9, 0, 0);
-			display_text(& dbv, 0, 1, PSTR("NVRAM fault"));
+			display_text(& dbv, 0, 0, msg, strlen(msg));
+			display_text(& dbv, 10, 20, msg, strlen(msg));
 			colmain_nextfb();
+#endif /* ! LCDMODE_DUMMY */
 
 			PRINTF(PSTR("NVRAM fault1\n"));
 			for (;;)
@@ -19153,6 +19157,7 @@ void initialize2(void)
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
 			display_text(& dbv, 0, 0, msg, strlen(msg));
+			display_text(& dbv, 10, 20, msg, strlen(msg));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
