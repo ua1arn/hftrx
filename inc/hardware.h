@@ -517,6 +517,7 @@ void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
 void gt911_interrupt_handler(void * ctx);
 void stmpe811_interrupt_handler(void * ctx);
+void xpt2406_interrupt_handler(void * ctx);
 
 void hardware_adc_initialize(void);
 

@@ -126,6 +126,12 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return (z1 > XPT2046_Z1_THRESHOLD2) || (z1 > XPT2046_Z1_THRESHOLD && (4095 - z2) > XPT2046_Z2_THRESHOLD);
 }
 
+void
+xpt2406_interrupt_handler(void * ctx)
+{
+	//tsc_int = 1;
+}
+
 void xpt2046_initialize(void)
 {
 	//BOARD_XPT2046_INT_CONNECT();
@@ -139,6 +145,7 @@ void xpt2046_initialize(void)
 		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
+	//BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
 }
 
