@@ -40,13 +40,14 @@
 
 #define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
 //#define LINUX_STREAM_INT_FILE		"/dev/xdma0_events_1"
+//#define LINUX_AD936X_INT_FILE		"/dev/xdma0_events_2"
 #define LINUX_I2C_FILE				"/dev/i2c-3"
 #define LINUX_FB_FILE				"/dev/fb0"
 #define LINUX_TTY_FILE				"/dev/tty0"
 #define TOUCH_EVENT_NAME			"fts_ts"
 #define MOUSE_EVENT_NAME			"Mouse"
-#define MEMORYCELLS_DB_FILE			"hftrx_data/memory_cells.db"
-#define NVRAM_DB_FILE				"hftrx_data/nvram.db"
+#define MEMORYCELLS_DB_FILE			"/usr/hftrx_data/memory_cells.db"
+#define NVRAM_DB_FILE				"/usr/hftrx_data/nvram.db"
 
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (linux_get_cpu_temp())

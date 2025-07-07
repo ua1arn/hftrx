@@ -85,6 +85,7 @@ void win_memory_handler(lv_event_t * e)
 		lv_obj_t * cont = gui_win_get_content();
 
 		static user_t btns[btn_num];
+		memset(btns, 0, sizeof(btns));
 
 		for(uint8_t i = 0; i < btn_num; i++)
 		{
@@ -93,6 +94,12 @@ void win_memory_handler(lv_event_t * e)
 			{
 				btns[i].payload = (1 << 31) | i;
 				snprintf(btns[i].text, 20, "%dk", freq / 1000);
+
+#if WITHAD936XIIO || WITHAD936XDEV
+			if ((get_ad936x_stream_status() && freq < NOXVRTUNE_TOP) ||
+					(! get_ad936x_stream_status() && freq > NOXVRTUNE_TOP))
+				btns[i].state = DISABLED;
+#endif /* WITHAD936XIIO || WITHAD936XDEV*/
 			}
 			else
 			{
@@ -740,7 +747,7 @@ void win_ad936xdev_handler(lv_event_t * e)
 			lv_obj_set_state(btn_sw, LV_STATE_DISABLED, ! p);
 		}
 
-		ext[1].payload = ad936xdev_get_fir();
+		ext[1].payload = ad936xdev_get_fir_state();
 		lv_obj_t * btn_fir = add_button(cont, ext, 1, "FIR", s100x44, win_ad936xdev_handler);
 		button_set_lock(btn_fir, ext[1].payload);
 		lv_obj_set_state(btn_fir, LV_STATE_DISABLED, ! s);
@@ -777,7 +784,7 @@ void win_ad936xdev_handler(lv_event_t * e)
 
 		case 1:
 			ext->payload = ! ext->payload;
-			ad936xdev_set_fir(ext->payload);
+			ad936xdev_set_fir_state(ext->payload);
 			button_set_lock(btn, ext->payload);
 			break;
 

@@ -1755,6 +1755,9 @@ irq_channel_t channels[] = {
 #if defined (LINUX_XDMA_UART_FILE)
 		{ LINUX_XDMA_UART_FILE, uartlite_event_handler, -1 },
 #endif /* defined (LINUX_XDMA_UART_FILE) */
+#if defined (LINUX_AD936X_INT_FILE)
+		{ LINUX_AD936X_INT_FILE, ad936xdev_int_handler, -1 },
+#endif /* defined (LINUX_XDMA_IQ_EVENT_FILE) */
 };
 
 #define NUM_CHANNELS (sizeof(channels) / sizeof(channels[0]))
@@ -2245,7 +2248,8 @@ void linux_user_init(void)
 	lvgl_gui_init(lv_screen_active());
 #endif
 #if WITHAD936XDEV
-	ad936xdev_init();
+	if (pcie_status)
+		ad936xdev_init();
 #endif /* WITHAD936XDEV */
 }
 

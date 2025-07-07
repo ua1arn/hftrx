@@ -87,8 +87,8 @@ enum {
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
 #define MOUSE_EVENT_NAME		"Mouse"
-#define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
-#define NVRAM_DB_FILE			"hftrx_data/nvram.db"
+#define MEMORYCELLS_DB_FILE		"/usr/hftrx_data/memory_cells.db"
+#define NVRAM_DB_FILE			"/usr/hftrx_data/nvram.db"
 
 #define WITHLTDCHW			1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define RTMIXIDLCD			0
