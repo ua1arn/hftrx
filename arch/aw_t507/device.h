@@ -74,7 +74,7 @@ typedef enum IRQn
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
     DMAC_IRQn = 74,                                   /*!< DMAC  */
-    GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector bunber not sequential) */
+    GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector number not sequential) */
     HSTIMER0_IRQn = 77,                               /*!< HSTIMER High Speed Timer (HSTimer) */
     HSTIMER1_IRQn = 78,                               /*!< HSTIMER High Speed Timer (HSTimer) */
     SMC_IRQn = 79,                                    /*!< SMC  */
