@@ -1444,6 +1444,7 @@
 		static einthandler_t h; \
 		einthandler_initialize(& h, BOARD_XPT2046_INT_PIN, xpt2406_interrupt_handler, NULL); \
 		arm_hardware_pioe_inputs(BOARD_XPT2046_INT_PIN); \
+		arm_hardware_pioe_altfn2(BOARD_XPT2046_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_XPT2046_INT_PIN, BOARD_XPT2046_INT_PIN, 0); \
 		arm_hardware_pioe_onchangeinterrupt(BOARD_XPT2046_INT_PIN, 0 * BOARD_XPT2046_INT_PIN, 1 * BOARD_XPT2046_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); /* Low level active */ \
 	} while (0)

@@ -129,14 +129,20 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 void
 xpt2406_interrupt_handler(void * ctx)
 {
-	//tsc_int = 1;
+	const spitarget_t target = targettsc1;
+	unsigned x, y, z1, z2;
+	xpt2046_read4(target, & x, & y, & z1, & z2);
+	PRINTF("xpt2046 interrupt: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 }
 
 void xpt2046_initialize(void)
 {
-	//BOARD_XPT2046_INT_CONNECT();
 	const spitarget_t target = targettsc1;
 	//PRINTF("xpt2046_initialize:\n");
+	{
+		unsigned x, y, z1, z2;
+		xpt2046_read4(target, & x, & y, & z1, & z2);
+	}
 #if 0
 	for (;;)
 	{
@@ -145,7 +151,7 @@ void xpt2046_initialize(void)
 		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
-	//BOARD_XPT2046_INT_CONNECT();
+	BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
 }
 
