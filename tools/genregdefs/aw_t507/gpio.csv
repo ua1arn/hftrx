@@ -57,7 +57,7 @@
 #irq; GPIOA 83; GPIOA interrupt
 #irq; GPIOC 84; GPIOC interrupt
 #irq; GPIOD 85; GPIOD interrupt
-#irq; GPIOE 75; GPIOE interrupt (vector bunber not sequential)
+#irq; GPIOE 75; GPIOE interrupt (vector number not sequential)
 #irq; GPIOF 86; GPIOF interrupt
 #irq; GPIOG 87; GPIOG interrupt
 #irq; GPIOH 88; GPIOH interrupt
