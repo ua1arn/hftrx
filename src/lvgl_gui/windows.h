@@ -5,7 +5,7 @@
 
 #if WITHLVGL && LINUX_SUBSYSTEM
 
-#include "lvgl9_gui.h"
+#include "lvgl_gui.h"
 
 #ifdef __cplusplus
 extern "C" {

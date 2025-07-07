@@ -13,7 +13,7 @@
 
 #if WITHLVGL && LINUX_SUBSYSTEM
 
-#include "lvgl9_gui.h"
+#include "lvgl_gui.h"
 
 static void long_press_timer_cb(lv_timer_t * timer)
 {

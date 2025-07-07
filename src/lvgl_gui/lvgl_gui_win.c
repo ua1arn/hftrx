@@ -4,7 +4,7 @@
 
 #if WITHLVGL && LINUX_SUBSYSTEM
 
-#include "lvgl9_gui.h"
+#include "lvgl_gui.h"
 #include "windows.h"
 
 static void lv_win_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);

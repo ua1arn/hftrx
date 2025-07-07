@@ -13,7 +13,7 @@
 
 #if WITHLVGL && LINUX_SUBSYSTEM
 
-#include "lvgl9_gui.h"
+#include "lvgl_gui.h"
 #include "windows.h"
 
 void win_modes_handler(lv_event_t * e)

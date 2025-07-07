@@ -11,7 +11,7 @@
 
 #if WITHLVGL && LINUX_SUBSYSTEM
 
-#include "lvgl9_gui.h"
+#include "lvgl_gui.h"
 
 lv_style_t mainst, btnst, popupbtnst, fcontst, lblst, winlblst, winst;
 
