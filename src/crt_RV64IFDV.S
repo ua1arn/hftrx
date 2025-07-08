@@ -345,18 +345,6 @@ __Vectors:
     j trap_IRQ15
     .align 2
 
- //   .space (4096 - (16 + 16) * 4)
-
-	.section ".noinit"
-	.align 3
-	.space	(4 * 512)
-local_stack = .
-	.word 0		/* fix non-zero size of this section */
-	.word 0		/* fix non-zero size of this section */
-
-	.section ".text"
-	.align 3
-
 	mtrap_handler SYNCTRAP
 	mtrap_handler VMSI
 	mtrap_handler VMTI
@@ -380,5 +368,14 @@ local_stack = .
 	mtrap_handler IRQ15
 
 	mtrap_handler EMPTY
+
+ //   .space (4096 - (16 + 16) * 4)
+
+	.section ".noinit"
+	.align 3
+	.space	(4 * 512)
+local_stack = .
+	.word 0		/* fix non-zero size of this section */
+	.word 0		/* fix non-zero size of this section */
 
 
