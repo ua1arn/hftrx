@@ -11566,10 +11566,9 @@ updateboardZZZ(
 
 		const uint_fast8_t rxbi = getbankindex_tx(0);
 		const uint_fast8_t txbi = getbankindex_tx(1);
-#if WITHTX
 		const uint_fast8_t txsubmode = getsubmode(txbi);		/* код режима, который будет при передаче */
 		const uint_fast8_t txmode = submodes [txsubmode].mode;
-#endif /* WITHTX */
+
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
 			const uint_fast8_t asubmode = getasubmode(pathi);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
