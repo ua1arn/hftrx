@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA)
+#if ! LINUX_SUBSYSTEM
 	#include <machine/endian.h>
 #endif /* ! LINUX_SUNSYSTEM */
 
@@ -202,7 +202,7 @@ void prog_spi_read_frame(
 static void 
 spi_select255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 		UC1608_CSP_PORT_S(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT |= UC1608_CSP;
@@ -216,7 +216,7 @@ spi_select255(void)
 static void 
 spi_unselect255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 		UC1608_CSP_PORT_C(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;
@@ -229,7 +229,7 @@ spi_unselect255(void)
 static void 
 spi_hwinit255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 		UC1608_CSP_INITIALIZE();
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;	/* неактивное состояние */
@@ -248,7 +248,7 @@ spi_allcs_disable(void)
 
 	SPI_ALLCS_DISABLE();
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 
@@ -329,7 +329,7 @@ spi_cs_enable(
 
 	SPI_CS_ASSERT(target);
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#if WITHSPISPLIT
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -426,7 +426,7 @@ spi_setaddress(
 #if WITHSPICSEMIO
 	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)
@@ -468,7 +468,7 @@ prog_pulse_ioupdate(void)
 {
 	// SPI_IOUPDATE_PORT was SPI_TARGET_PORT
 #if defined (SPI_IOUPDATE_BIT)
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 		SPI_IOUPDATE_PORT_C(SPI_IOUPDATE_BIT);
 		hardware_spi_io_delay();
@@ -1077,11 +1077,6 @@ prog_select_init(void)
 	#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYLE_ATMEGA
-		static portholder_t spcr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-		static portholder_t spsr_val [SPIC_SPEEDS_COUNT];
-	#elif CPUSTYLE_ATXMEGA
-		static portholder_t spi_ctl_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_R7S721
 		static portholder_t spi_spbr_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
@@ -1425,23 +1420,6 @@ void hardware_spi_master_initialize(void)
 
 	SPIHARD_PTR->SPI_IDR = ~ 0; /* Disable all interrupts */
     SPIHARD_PTR->SPI_CR = AT91C_SPI_SPIEN;
-
-#elif CPUSTYLE_ATMEGA
-
-	// SPI initialization
-	SPCR = 0x00;	/* отключить */
-
-    // setup PIO pins for SPI bus, disconnect from peripherials
-	SPIIO_INITIALIZE();
-
-
-#elif CPUSTYLE_ATXMEGA
-
-	// SPI initialization
-	TARGETHARD_SPI.CTRL = 0x00;	/* отключить */
-
-    // setup PIO pins for SPI bus, disconnect from peripherials
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -2023,34 +2001,6 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_csr_val16w [spispeedindex][SPIC_MODE2] = csrbits16w | AT91C_SPI_CPOL | AT91C_SPI_NCPHA;
 	spi_csr_val16w [spispeedindex][SPIC_MODE3] = csrbits16w | AT91C_SPI_CPOL;
 
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
-	const uint_fast8_t spcr = spcr_spsr [prei].spcr | (1U << SPE) | (1U << MSTR);
-	// С FRAM FM25L04 работает MODE3 и MODE0
-	spcr_val [spispeedindex][SPIC_MODE0] = (0U << CPOL) | (0U << CPHA) | spcr;
-	spcr_val [spispeedindex][SPIC_MODE1] = (0U << CPOL) | (1U << CPHA) | spcr;
-	spcr_val [spispeedindex][SPIC_MODE2] = (1U << CPOL) | (0U << CPHA) | spcr;
-	spcr_val [spispeedindex][SPIC_MODE3] = (1U << CPOL) | (1U << CPHA) | spcr;
-
-	spsr_val [spispeedindex] = spcr_spsr [prei].spsr;	// SPI2X bit
-
-#elif CPUSTYLE_ATXMEGA
-
-	// SPI initialization
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
-	const uint_fast8_t ctl = spi_ctl [prei] | SPI_MASTER_bm | SPI_ENABLE_bm;
-	// С FRAM FM25L04 работает MODE3 и MODE0
-	spi_ctl_val [spispeedindex][SPIC_MODE0] = SPI_MODE_0_gc | ctl;	// SPI MODE0,
-	spi_ctl_val [spispeedindex][SPIC_MODE1] = SPI_MODE_1_gc | ctl;	// SPI MODE1,
-	spi_ctl_val [spispeedindex][SPIC_MODE2] = SPI_MODE_2_gc | ctl;	// SPI MODE2,
-	spi_ctl_val [spispeedindex][SPIC_MODE3] = SPI_MODE_3_gc | ctl;	// SPI MODE3,
-
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
@@ -2362,26 +2312,6 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_ATMEGA
-
-	SPSR = spsr_val [spispeedindex];		// D0 is SPI2X bit, other bits has no effect at write.
-	SPCR = spcr_val [spispeedindex][spimode];
-
-	HARDWARE_SPI_CONNECT();
-
-	(void) SPDR;	/* clear SPIF in status register */
-
-#elif CPUSTYLE_ATXMEGA
-
-	TARGETHARD_SPI.CTRL = spi_ctl_val [spispeedindex][spimode];
- 	/* MOSI and SCK as output, MISO as input. */
-	//SPI_TARGET_DDR_S  = SPI_MOSI_BIT | SPI_SCLK_BIT;
-	//SPI_TARGET_DDR_C  = SPI_MISO_BIT;
-
-	HARDWARE_SPI_CONNECT();
-
-	(void) TARGETHARD_SPI.DATA;	/* clear SPIF in status register */
-
 #elif CPUSTYLE_STM32F1XX
 
 	HARDWARE_SPI_CONNECT();
@@ -2504,14 +2434,6 @@ void hardware_spi_disconnect(void)
 
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYLE_ATMEGA
-
-	HARDWARE_SPI_DISCONNECT();
-
-#elif CPUSTYLE_ATXMEGA
-
-	HARDWARE_SPI_DISCONNECT();
-
 #elif CPUSTYLE_STM32H7XX
 
 	SPIHARD_PTR->CR1 |= SPI_CR1_CSUSP;
@@ -2589,20 +2511,6 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPIHARD_PTR->SPI_SR & AT91C_SPI_RDRF) == 0)
 		;
 	return (SPIHARD_PTR->SPI_RDR & AT91C_SPI_TD);
-
-#elif CPUSTYLE_ATMEGA
-
-	/* дождаться завершения приёма/передачи */
-	while ((SPSR & (1U << SPIF)) == 0)
-		;
-	return SPDR;
-
-#elif CPUSTYLE_ATXMEGA
-
-	/* дождаться завершения приёма/передачи */
-	while ((TARGETHARD_SPI.STATUS & SPI_IF_bm) == 0)
-		;
-	return TARGETHARD_SPI.DATA;
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -2866,11 +2774,6 @@ hardware_spi_master_send_frame_8bpartial(
 
 	//xprog_spi_send_frame(target, buffer, size);
 
-#elif CPUSTYLE_ATXMEGA
-	#warning TODO: implement SPI over DMA
-
-	//xprog_spi_send_frame(target, buffer, size);
-
 #elif CPUSTYLE_R7S721
 
 	SPIHARD_PTR->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
@@ -3030,11 +2933,6 @@ hardware_spi_master_send_frame_16bpartial(
 	//prog_spi_send_frame_b16(target, buffer, size);
 
 #elif CPUSTYLE_STM32F1XX
-	#warning TODO: implement SPI over DMA
-
-	//prog_spi_send_frame_b16(target, buffer, size);
-
-#elif CPUSTYLE_ATXMEGA
 	#warning TODO: implement SPI over DMA
 
 	//prog_spi_send_frame_b16(target, buffer, size);
@@ -3205,11 +3103,6 @@ hardware_spi_master_read_frame_16bpartial(
 
 	//prog_spi_read_frame(target, buffer, size);
 
-#elif CPUSTYLE_ATXMEGA
-	#warning TODO: implement SPI over DMA
-
-	//prog_spi_read_frame(target, buffer, size);
-
 #elif CPUSTYLE_R7S721
 	//#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
 
@@ -3361,11 +3254,6 @@ hardware_spi_master_read_frame_8bpartial(
 	//prog_spi_read_frame(target, buffer, size);
 
 #elif CPUSTYLE_STM32F1XX
-	#warning TODO: implement SPI over DMA
-
-	//prog_spi_read_frame(target, buffer, size);
-
-#elif CPUSTYLE_ATXMEGA
 	#warning TODO: implement SPI over DMA
 
 	//prog_spi_read_frame(target, buffer, size);
@@ -3891,14 +3779,6 @@ void hardware_spi_b8_p1(
 #elif CPUSTYLE_AT91SAM7S
 
 	SPIHARD_PTR->SPI_TDR = v & AT91C_SPI_TD;
-
-#elif CPUSTYLE_ATMEGA
-
-	SPDR = v; // запуск передачи
-
-#elif CPUSTYLE_ATXMEGA
-
-	TARGETHARD_SPI.DATA = v; // запуск передачи
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 

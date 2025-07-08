@@ -17685,12 +17685,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		const struct menudef * const mp = & menutable [menupos];
 		if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
 			continue;
-	#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-		// Сравнение строки в SRAM и FLASH
-		const int r = strcmp_P(name, mp->pd->qlabel);
-	#else /* CPUSTYLE_ATMEGA */
 		const int r = strcmp(name, mp->pd->qlabel);
-	#endif /* CPUSTYLE_ATMEGA */
 		if (r == 0)
 			break;
 	}

@@ -40,7 +40,7 @@ void spi_initialize(void);	// отдельно инициализация SPI
 					{ SPI_MOSI_C(); hardware_spi_io_delay();  } \
 			} while (0)
 
-	#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#elif CPUSTYLE_ARM
 		// при программной реализации SPI
 		// поддерживается режим SPI MODE 3
 		#define SCLK_SET() do { \

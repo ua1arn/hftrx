@@ -940,21 +940,8 @@ board_gpio_init(void)
 
 #if MULTIVFO
 
-	#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-
-		#define VFODIVPOWER2	16	/* ~65 kHz granulation */
-		typedef uint_fast16_t fseltype_t;
-
-	#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
-
-		#define VFODIVPOWER2	0	/* 1 Hz granulation */
-		typedef uint_fast32_t fseltype_t;
-
-	#else
-
-		#error Undefined CPUSTYLE_XXX
-
-	#endif
+#define VFODIVPOWER2	0	/* 1 Hz granulation */
+typedef uint_fast32_t fseltype_t;
 
 static fseltype_t board_vcos [HYBRID_NVFOS - 1];
 
@@ -6046,27 +6033,6 @@ void hardware_txpath_set(
 #else
 	const portholder_t mask = 0;
 #endif
-
-#if CPUSTYLE_ATMEGA
-	// ксли процессор может только целиком читать/писать весь регситр состояния плрта вывода.
-	#if defined (TXPATH_BIT_GATE)
-
-		TXPATH_TARGET_PORT = (TXPATH_TARGET_PORT & ~ mask) | (txpathstate & mask);
-
-	#elif defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_ENABLE_AM) || defined (TXPATH_BIT_ENABLE_NFM)
-		// неактивное состояние - запрограммированное на ввод.
-		// В регистре дланных "0".
-		TXPATH_TARGET_DDR = (TXPATH_TARGET_DDR & ~ mask) | 
-			(txpathstate & mask);	// на нужных битах открываются выходы, в регистре данных "0" в нужном месте.
-
-	#else
-
-		(void) mask;
-		//#error Missing definition of TXPATH_BIT_GATE оr TXPATH_BIT_ENABLE_xxx
-
-	#endif
-
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA || CPUSTYLE_RISCV
 	// если у процессора есть возможность ставить/сбрасывать биты в регистрах состояния вывода по отдельности,
 	// кроме этого - порт пограммируется на работу в режиме "открытый сток".
 	#if defined (TXPATH_BIT_GATE)
@@ -6085,10 +6051,6 @@ void hardware_txpath_set(
 		//#error Missing definition of TXPATH_BIT_GATE оr TXPATH_BIT_ENABLE_xxx
 
 	#endif
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
 }
 
 // Инициализация управления трактом передатчика

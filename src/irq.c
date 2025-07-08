@@ -2671,10 +2671,6 @@ void cpu_initialize(void)
 
 	#endif
 
-#elif CPUSTYLE_ATXMEGA
-
-	cpu_atxmega_switchto32MHz();
-
 #elif CPUSTYLE_RISCV
 
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html

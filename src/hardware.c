@@ -726,45 +726,6 @@ RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 			}
 		}
 	}
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code for ADC interrupt handler
-
-
-	// adc
-	ISR(ADCA_CH0_vect)
-	{
-			// на этом цикле используем результат
-		#if HARDWARE_ADCBITS == 8
-			// Select next ADC input
-			// Read the 8 most significant bits
-			// of the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH);
-		#else
-			// Read the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH * 256 + ADCA.CH0.RESL);
-		#endif 
-		// Select next ADC input
-		for (;;)
-		{
-			if (++ adc_input >= board_get_adcinputs())
-			{
-				spool_adcdonebundle();
-				break;
-			}
-			else
-			{
-				// Select next ADC input (only one)
-				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (isadchw(adci))
-				{
-					ADCA.CH0.MUXCTRL = adci;
-					ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
-					break;
-				}
-			}
-		}
-	}
 
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
@@ -1175,19 +1136,6 @@ hardware_adc_startonescan(void)
 	AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
 	AT91C_BASE_ADC->ADC_CHER = mask; /* enable ADC */
 	AT91C_BASE_ADC->ADC_CR = AT91C_ADC_START;	// Start the AD conversion
-
-#elif CPUSTYLE_ATMEGA
-
-	ADMUX = hardware_atmega_admux(board_get_adcch(adc_input));
-	// Start the AD conversion
-	ADCSRA |= (1U << ADSC);
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code - ADC start
-	ADCA.CH0.MUXCTRL = board_get_adcch(adc_input);
-	// Start the AD conversion
-	ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// Установить следующий вход (блок ADC может измениться)

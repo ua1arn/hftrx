@@ -376,12 +376,6 @@ Free:
 //#define SIDETONE_TARGET_BIT		(1u << 8)	// output TIM4_CH3 (PB8, base mapping)
 
 #if 1 // WITHTWISW
-//#if CPUSTYLE_ATMEGA
-	//#define TARGET_TWI_PORT PORTC
-	//#define TARGET_TWI_DDR DDRC
-	//#define TARGET_TWI_TWCK	(1U << PC0)
-	//#define TARGET_TWI_TWD	(1U << PC1)
-//#elif CPUSTYLE_ARM
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TARGET_TWI_TWCK_PIN		(GPIOA->IDR)

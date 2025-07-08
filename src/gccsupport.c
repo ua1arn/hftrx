@@ -13,7 +13,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA)
+#if ! LINUX_SUBSYSTEM
 
 #if (CPUSTYLE_RISCV || defined(__aarch64__))
 
@@ -247,7 +247,7 @@ size_t strlen(const char * s1)
 }
 #endif /* defined(__aarch64__) */
 
-#endif /* ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA) */
+#endif /* ! LINUX_SUBSYSTEM */
 
 #ifdef __cplusplus
 }

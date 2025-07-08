@@ -128,29 +128,6 @@ extern "C" {
 	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
-#elif \
-	defined (__AVR_ATxmega32A4__) || \
-	defined (__AVR_ATxmega32A4U__) || \
-	defined (__AVR_ATxmega128A4U__) || \
-	0
-
-	#define CPUSTYLE_ATXMEGA	1
-	#define CPUSTYLE_ATXMEGAXXXA4	1
-	
-	#ifndef F_CPU
-	#define F_CPU 32000000uL
-	#endif
-
-	#include <avr/io.h>			/* Pin manipulation functions */
-	#include <avr/pgmspace.h>
-	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
-	#include <avr/interrupt.h>
-	#include <avr/cpufunc.h>
-	#include <util/delay.h>
-
-	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
-	#define ALIGNX_END /* nothing */
-
 #elif CPUSTYLE_STM32H7XX
 	// STM32H743ZIT6 processors, up to 400 MHz
 
@@ -568,39 +545,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	void local_delay_ms(int timeMS);
 	void local_delay_ms_nocache(int timeMS);	// задержка до того как включили MMU и cache */
 	void local_delay_initialize(void);
-
-#elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-	// ATMega, ATXMega target
-
-	/* тип для передачи параметра "адрес устройства на SPI шине" */
-	/* это может быть битовая маска в порту ввода-вывода */
-	typedef uint_fast8_t spitarget_t;
-	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
-	typedef uint_fast8_t portholder_t;		
-
-	#define local_delay_us(t) do { if ((t) <= 1) _delay_us(0); else if ((t <= 10)) _delay_us(10); else _delay_us(100); } while (0)
-	#define local_delay_ms(t) do { if ((t) <= 1) _delay_ms(0); else if ((t <= 10)) _delay_ms(10); else _delay_ms(100); } while (0)
- 
-	#if (FLASHEND > 0x7FFF)	
-		// нет нужды экономить память FLASH
-		#define NOINLINEAT // __attribute__((noinline))
-		#define RAMFUNC_NONILINE // __attribute__((noinline))
-		#define RAMFUNC // __attribute__((__section__(".ramfunc"), noinline))
-	#else
-		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
-		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
-		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
-	#endif
-
-	#define ATTRWEAK __attribute__ ((weak))
-	#define __WEAK __attribute__ ((weak))
-	#define __NO_RETURN	__attribute__((__noreturn__))
-
-	/* stubs */
-
-	#define IRQL_SYSTEM 			1
-	#define IRQL_REALTIME 			1
-	#define IRQL_OVERREALTIME 		1
 
 #else
 	#error Undefined CPUSTYLE_xxxx

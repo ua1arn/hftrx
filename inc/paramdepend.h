@@ -813,13 +813,6 @@ extern "C" {
 	}
 	*/
 
-#elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-
-	typedef uint_fast8_t IRQL_t;
-
-	#define global_enableIRQ() do { sei(); } while (0)
-	#define global_disableIRQ() do { cli(); } while (0)
-
 #elif (__GIC_PRESENT == 1)
 
 	typedef uint8_t IRQL_t;
