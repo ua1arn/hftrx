@@ -74,22 +74,8 @@ void prog_spi_read_frame(
 	unsigned int size
 	);
 
-#if SPI_BIDIRECTIONAL
-
-	void prog_spi_to_read_impl(void);
-	void prog_spi_to_write_impl(void);
-
-	//void (prog_spi_to_read)(spitarget_t target);
-	//void (prog_spi_to_write)(spitarget_t target);
-
-	#define spi_to_read(target) do { prog_spi_to_read_impl(); } while (0)
-	#define spi_to_write(target) do { prog_spi_to_write_impl(); } while (0)
-
-
-#else
-	#define spi_to_read(target) do { } while (0)
-	#define spi_to_write(target) do { } while (0)
-#endif
+#define spi_to_read(target) do { } while (0)
+#define spi_to_write(target) do { } while (0)
 
 	// 8-ми битные функции обмена по SPI
 	#if WITHSPIHW && ! WITHSPISW
@@ -263,15 +249,6 @@ spi_allcs_disable(void)
 	SPI_ALLCS_DISABLE();
 
 #elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
-
-	#if WITHSPISPLIT	
-		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		SPI0_TARGET_PORT_S(SPI0_CS_BIT);
-		SPI1_TARGET_PORT_S(SPI1_CS_BIT);
-		#if defined (SPI_CSEL2)
-			SPI2_TARGET_PORT_S(SPI2_CS_BIT);
-		#endif
-	#endif /* WITHSPISPLIT */
 
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 
@@ -515,26 +492,6 @@ prog_pulse_ioupdate(void)
 #endif
 }
 
-#if SPI_BIDIRECTIONAL
-
-/* переключение вывода SPI DATA на чтение */
-void 
-prog_spi_to_read_impl(void)
-{
-	SPIIO_MOSI_TO_INPUT();
-	hardware_spi_io_delay();  
-}
-
-/* переключение вывода SPI DATA на выдачу даннах. Состояне после инициализации порта */
-void 
-prog_spi_to_write_impl(void)
-{
-	SPIIO_MOSI_TO_OUTPUT();
-	hardware_spi_io_delay();  
-}
-
-#endif /* SPI_BIDIRECTIONAL */
-
 #if WITHSPISW
 
 #if ! WITHSPISPLIT
@@ -550,11 +507,9 @@ prog_spi_to_write_impl(void)
 
 		#if CPUSTYLE_XC7Z || CPUSTYLE_RK356X
 			return SPI_TARGET_MISO_PIN != 0;
-		#elif SPI_BIDIRECTIONAL
-			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
-		#else /* SPI_BIDIRECTIONAL */
+		#else /*  */
 			return (SPI_TARGET_MISO_PIN & SPI_MISO_BIT) != 0;
-		#endif /* SPI_BIDIRECTIONAL */
+		#endif /*  */
 	}
 
 	//////////////////////////
@@ -566,9 +521,7 @@ prog_spi_to_write_impl(void)
 		uint_fast8_t v = 0;
 		while (i --)
 		{
-		#if ! SPI_BIDIRECTIONAL
 			SDO_SET(bytetosend & 0x80);		// запись бита информации
-		#endif /*  ! SPI_BIDIRECTIONAL */
 			v = v * 2 + spi_pulse_clk();	// спадающий перепад на SPI CLK переключает FRAM в режим выдачи
 			bytetosend <<= 1;
 		}
@@ -832,8 +785,7 @@ static void spi_operate(lowspiio_t * iospi)
 				break;
 			}
 			break;
-#if SPI_BIDIRECTIONAL
-#else /* SPI_BIDIRECTIONAL */
+
 		case SPIIO_EXCHANGE:
 			switch (iospi->spiiosize)
 			{
@@ -855,7 +807,7 @@ static void spi_operate(lowspiio_t * iospi)
 				break;
 			}
 			break;
-#endif /* SPI_BIDIRECTIONAL */
+
 		default:
 			break;
 		}
@@ -1110,10 +1062,6 @@ prog_select_init(void)
 
 
 #if WITHSPIHW
-
-	#if SPI_BIDIRECTIONAL
-		#error WITHSPIHW and SPI_BIDIRECTIONAL can not be used together
-	#endif
 
 	#if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */

@@ -69,7 +69,6 @@ Free:
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-//#define SPI_BIDIRECTIONAL 1	// ввод данных по SPI идет через тот же самый pin, что и вывод
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -362,30 +361,15 @@ Free:
 #define	SPI_MISO_BIT			(1u << 8)	// PF8 бит, через который идет ввод
 #define	SPI_MOSI_BIT			(1u << 9)	// PF9 бит, через который идет вывод
 
-#if SPI_BIDIRECTIONAL
 
-	#define SPI_TARGET_MOSI_PIN		(GPIOF->IDR)
-	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_piof_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
-		} while (0)
-	#define SPIIO_MOSI_TO_INPUT() do { \
-		arm_hardware_piof_inputs(SPI_MOSI_BIT);	/* переключить порт на чтение с выводов */ \
-		} while (0)
-	#define SPIIO_MOSI_TO_OUTPUT() do { \
-		arm_hardware_piof_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* открыть выходы порта */ \
-		} while (0)
+#define SPI_TARGET_MISO_PIN		(GPIOF->IDR)
+#define	SPI_MISO_BIT			(1u << 8)	// PF8 бит, через который идет ввод с SPI.
 
-#else /* SPI_BIDIRECTIONAL */
+#define SPIIO_INITIALIZE() do { \
+		arm_hardware_piof_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
+		arm_hardware_piof_inputs(SPI_MISO_BIT); \
+	} while (0)
 
-	#define SPI_TARGET_MISO_PIN		(GPIOF->IDR)
-	#define	SPI_MISO_BIT			(1u << 8)	// PF8 бит, через который идет ввод с SPI.
-
-	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_piof_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
-			arm_hardware_piof_inputs(SPI_MISO_BIT); \
-		} while (0)
-
-#endif /* SPI_BIDIRECTIONAL */
 
 
 
