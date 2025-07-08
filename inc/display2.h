@@ -389,9 +389,9 @@ typedef struct
 	#define DSGN_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 	#define DSGN_SPECTRUMBG2RX2	(COLORPIP_BASE + 13) // TFTRGB(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 	#define DSGN_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB(0, 255, 0)		// цвет спектра при сполошном заполнении
-
 	#define COLORPIP_DARKGRAY   (COLORPIP_BASE + 15) // TFTRGB(0x00, 0x64, 0x00)
 
+	#define DSGN_SPECTRUMPEAKS 	COLORPIP_DARKGRAY
 	#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 	#define DSGN_SPECTRUMFENCE	COLORPIP_WHITE
 
