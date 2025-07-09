@@ -4086,7 +4086,7 @@ void colmain_nextfb_sub(void)
 		gxdrawb_initialize(& fbtvdb, tvout_fb_draw(), TVD_WIDTH, TVD_HEIGHT);
 
 		colpip_bitblt(
-			fbtvdb.cachebase, datasize_dmabuffercolmain1fb(),
+			fbtvdb.cachebase, fbtvdb.cachesize,
 			& fbtvdb,
 			0, 0,			/* позиция прямоугольника - получателя */
 			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),

@@ -129,7 +129,7 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 	{
 		// верхняя часть целевого растра (начиная со scroll в видеобуфере терминала)
 		colpip_bitblt(
-				(uintptr_t) tdb->buffer, GXSIZE(tdb->dx, tdb->dy) * sizeof (PACKEDCOLORPIP_T),
+				tdb->cachebase, tdb->cachesize,
 				tdb, x, y + tgy1,
 				(uintptr_t) vt->dbvfb.buffer, GXSIZE(vt->dbvfb.dx, vt->dbvfb.dy) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				& vt->dbvfb,	// источник
@@ -141,7 +141,7 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 	{
 		// нижняя часть
 		colpip_bitblt(
-				(uintptr_t) tdb->buffer, 1 * GXSIZE(tdb->dx, tdb->dy) * sizeof (PACKEDCOLORPIP_T),
+				tdb->cachebase, tdb->cachesize,
 				tdb, x, y + tgy2,
 				(uintptr_t) vt->dbvfb.buffer, 1 * GXSIZE(vt->dbvfb.dx, vt->dbvfb.dy) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				& vt->dbvfb,	// источник

@@ -322,7 +322,7 @@ uint_fast8_t smallfont_width(char cc)
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_big_tbg(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t RAMFUNC ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
@@ -342,7 +342,7 @@ static uint_fast16_t RAMFUNC ltdc_put_char_big_tbg(const gxdrawb_t * db, uint_fa
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_half_tbg(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
@@ -637,7 +637,7 @@ uint_fast16_t display_put_char_big_tbg(const gxdrawb_t * db, uint_fast16_t x, ui
     const uint_fast8_t width = bigfont_width(cc);
     const uint_fast8_t ci = bigfont_decode(cc);
 	savewhere = __func__;
-	return ltdc_put_char_big_tbg(db, x, y, ci, width, fg);
+	return ltdc_put_char_big(db, x, y, ci, width, fg);
 }
 
 uint_fast16_t display_put_char_half_tbg(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, COLORPIP_T fg)
@@ -645,7 +645,7 @@ uint_fast16_t display_put_char_half_tbg(const gxdrawb_t * db, uint_fast16_t x, u
 	const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
-	return ltdc_put_char_half_tbg(db, x, y, ci, width, fg);
+	return ltdc_put_char_half(db, x, y, ci, width, fg);
 }
 
 void display_wrdata_end(const gxdrawb_t * db)
@@ -760,7 +760,7 @@ void rendered_value_big_initialize(void)
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * BIGCHARW);
-			ltdc_put_char_big_tbg(& dbvbig, xpix, ypix, ci, BIGCHARW, fg);
+			ltdc_put_char_big(& dbvbig, xpix, ypix, ci, BIGCHARW, fg);
 			display_do_AA(& dbvbig, xpix, ypix, BIGCHARW, BIGCHARH);
 			xpix += BIGCHARW;
 		}
@@ -776,7 +776,7 @@ void rendered_value_big_initialize(void)
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * HALFCHARW);
-			ltdc_put_char_half_tbg(& dbvhalf, xpix, ypix, ci, HALFCHARW, fg);
+			ltdc_put_char_half(& dbvhalf, xpix, ypix, ci, HALFCHARW, fg);
 			display_do_AA(& dbvhalf, xpix, ypix, HALFCHARW, HALFCHARH);
 			xpix += HALFCHARW;
 		}
@@ -810,10 +810,10 @@ uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fas
 	/* копируем изображение БЕЗ цветового ключа */
 	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
 	colpip_bitblt(
-			(uintptr_t) db->buffer, GXSIZE(db->dx, db->dy) * sizeof buffer [0],
+			db->cachebase, db->cachesize,
 			db,
 			xpix, ypix,	// координаты в окне получатля
-			(uintptr_t) rendered_big, 0 * GXSIZE(picx_big, picy_big) * sizeof rendered_big [0],
+			dbvbig.cachebase, 0 * dbvbig.cachesize,
 			& dbvbig,
 			ci * BIGCHARW, 0,	// координаты окна источника
 			width, BIGCHARH, // размер окна источника
@@ -833,10 +833,10 @@ uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fa
 	/* копируем изображение БЕЗ цветового ключа */
 	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
 	colpip_bitblt(
-			(uintptr_t) db->buffer, GXSIZE(db->dx, db->dy) * sizeof (PACKEDCOLORPIP_T),
+			db->cachebase, db->cachesize,
 			db,
 			xpix, ypix,	// координаты в окне получатля
-			(uintptr_t) rendered_half, 0 * GXSIZE(picx_half, picy_half) * sizeof rendered_half [0],
+			dbvhalf.cachebase, 0 * dbvhalf.cachesize,
 			& dbvhalf,
 			ci * HALFCHARW, 0,	// координаты окна источника
 			width, HALFCHARH, // размер окна источника
