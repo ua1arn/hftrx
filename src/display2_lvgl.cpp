@@ -68,6 +68,7 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
 
 	switch (pd->qrj) {
+	case RJ_TXAUDIO:
 	case RJ_VIEW:
 	case RJ_SMETER: {
 		lv_obj_t * label_name = lv_label_create(obj);
@@ -79,7 +80,10 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 
 		if (pd->qrj == RJ_SMETER)
 			lv_dropdown_set_options(dd, "BARS\n" "DIAL");
-		else
+		else if (pd->qrj == RJ_TXAUDIO)
+			for (int i = 0; i < TXAUDIOSRC_COUNT; i ++)
+				lv_dropdown_add_option(dd, txaudiosrcs[i].label, LV_DROPDOWN_POS_LAST);
+		else if (pd->qrj == RJ_SMETER)
 			for (int i = 0; i < VIEW_count; i ++)
 				lv_dropdown_add_option(dd, view_types[i], LV_DROPDOWN_POS_LAST);
 
