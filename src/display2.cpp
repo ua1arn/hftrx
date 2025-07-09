@@ -2385,7 +2385,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
-		display_value_big(db, x, y, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2394,7 +2394,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_value_big(db, x, y, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2417,7 +2417,7 @@ static void display2_freqX_a_init(
 }
 
 // Отображение частоты. Герцы маленьким шрифтом.
-static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
@@ -2430,9 +2430,9 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 	#if WITHPRERENDER
-		render_value_big(db, x, y, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		render_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
-		display_value_big(db, x, y, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -2443,9 +2443,9 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
 	#if WITHPRERENDER
-		render_value_big(db, x, y, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		render_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
-		display_value_big(db, x, y, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 	}
 }
@@ -2459,7 +2459,7 @@ static void display2_freqx_a(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t
 	const uint_fast32_t freq = hamradio_get_freq_a();
 
 	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
-	display_value_lower(db, x0, y0, freq, fullwidth, comma, rj);
+	display_value_lower(db, x0, y0, colspan, rowspan, freq, fullwidth, comma, rj);
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
@@ -2482,7 +2482,7 @@ static void display_freqchr_a(const gxdrawb_t * db,
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_value_big(db, xcell, ycell, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2491,7 +2491,7 @@ static void display_freqchr_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_value_big(db, xcell, ycell, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2517,7 +2517,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_value_big(db, xcell, ycell, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2526,7 +2526,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_b();
 
-		display_value_big(db, xcell, ycell, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2547,7 +2547,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
 	colmain_setcolors(colors_2freqB [state].fg, colors_2freqB [state].bg);
-	display_value_small(db, xcell, ycell, freq, fullwidth, comma, comma + 3, rj);
+	display_value_small(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj);
 }
 
 // отладочная функция измерителя опорной частоты
@@ -3748,7 +3748,7 @@ static void display2_voltlevelV5(const gxdrawb_t * db,
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
 	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-	display_value_small(db, x + CHARS2GRID(0), y, volt, 3, 1, 255, 0);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, volt, 3, 1, 255, 0);
 	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1);
 #endif /* WITHVOLTLEVEL */
 }
@@ -3767,7 +3767,7 @@ static void display_voltlevel4(const gxdrawb_t * db,
 	//PRINTF("display_voltlevel4: volt=%u\n", volt);
 
 	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-	display_value_small(db, x, y, volt, 3, 1, 255, 0);
+	display_value_small(db, x, y, xspan, yspan, volt, 3, 1, 255, 0);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3801,7 +3801,7 @@ static void display2_thermo4(const gxdrawb_t * db,
 	else
 		colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
 
-	display_value_small(db, x + CHARS2GRID(0), y, tempv, 3, 1, 255, 0);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, 255, 0);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -3835,7 +3835,7 @@ static void display2_thermo5(const gxdrawb_t * db,
 	else
 		colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
 
-	display_value_small(db, x + CHARS2GRID(0), y, tempv, 3, 1, 255, 0);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, 255, 0);
 	display_text(db, x + CHARS2GRID(4), y, PSTR("C"), 1);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
@@ -3857,7 +3857,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 1, 255, 1);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, 255, 1);
 		// last character
 		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1);
 
@@ -3866,7 +3866,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 2, 255, 0);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, 255, 0);
 		// last character
 		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1);
 
@@ -3890,7 +3890,7 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 1, 255, 1);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, 255, 1);
 		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
@@ -3898,7 +3898,7 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 2, 255, 0);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, 255, 0);
 		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
@@ -4117,11 +4117,11 @@ static void display2_freqdelta8(const gxdrawb_t * db,
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
-		display_value_small(db, x, y, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
+		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
 	}
 	else
 	{
-		display_text(db, x, y, "", 8);
+		display_text(db, x, y, "", xspan);
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
@@ -4142,11 +4142,11 @@ static void display_samfreqdelta8(const gxdrawb_t * db,
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
-		display_value_small(db, x, y, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
+		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
 	}
 	else
 	{
-		display_text(db, x, y, "", 8);
+		display_text(db, x, y, "", xspan);
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
@@ -4166,7 +4166,7 @@ static void display_amfmhighcut4(const gxdrawb_t * db,
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
 	colmain_setcolors(colors_2state [flag].fg, colors_2state [flag].bg);
-	display_value_small(db, x, y, v, 3, 2, 255, 0);
+	display_value_small(db, x, y, xspan, yspan, v, 3, 2, 255, 0);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
@@ -4185,7 +4185,7 @@ static void display_amfmhighcut5(const gxdrawb_t * db,
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
 	colmain_setcolors(colors_2state [flag].fg, colors_2state [flag].bg);
-	display_value_small(db, x, y, v, 4, 2, 255, 0);
+	display_value_small(db, x, y, xspan, yspan, v, 4, 2, 255, 0);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
