@@ -38,15 +38,7 @@ display_line(const gxdrawb_t * db,
 	colpip_line(db, x1, y1, x2, y2, color, 0);
 }
 
-#if ! LCDMODE_LTDC_L24
-#include "./byte2crun.h"
-#endif /* ! LCDMODE_LTDC_L24 */
-
 static PACKEDCOLORPIP_T ltdc_fg = COLORPIP_WHITE, ltdc_bg = COLORPIP_BLACK;
-
-#if ! LCDMODE_LTDC_L24
-static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
-#endif /* ! LCDMODE_LTDC_L24 */
 
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
@@ -61,12 +53,6 @@ void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 	ltdc_bg.r = COLORPIP_R(bg);
 	ltdc_bg.g = COLORPIP_G(bg);
 	ltdc_bg.b = COLORPIP_B(bg);
-
-#endif /* ! LCDMODE_LTDC_L24 */
-
-#if ! LCDMODE_LTDC_L24
-
-	COLORPIP_SELECTOR(byte2runpip);
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
@@ -169,29 +155,6 @@ ltdc_pixel(
 }
 
 
-// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-void RAMFUNC ltdc_horizontal_pixels(
-	PACKEDCOLORPIP_T * tgr,		// target raster
-	const FLASHMEM uint8_t * raster,
-	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
-	)
-{
-	uint_fast16_t col;
-	uint_fast16_t w = width;
-
-	for (col = 0; w >= 8; col += 8, w -= 8)
-	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
-		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
-	}
-	if (w != 0)
-	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
-		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
-	}
-	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
-}
-
 #endif /* ! WITHLVGL */
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
@@ -264,26 +227,6 @@ static void RAMFUNC ltdc_horizontal_x2_pixels_tbg(
 			tgr += 2;
 			vlast >>= 1;
 		} while (-- w);
-	}
-}
-
-static void RAMFUNC
-ltdc_put_char_unified(
-	const FLASHMEM uint8_t * fontraster,
-	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
-	uint_fast8_t height,	// строк в символе по вертикали
-	uint_fast8_t bytesw,	// байтов в одной строке знакогенератора символа
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	uint_fast8_t ci,	// индекс символа в знакогенераторе
-	uint_fast8_t width2	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
-	)
-{
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < height; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2);
 	}
 }
 
@@ -723,49 +666,37 @@ uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uin
 #if SMALLCHARH3
 
 static uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
+RAMFUNC_NONILINE ltdc_horizontal_put_char_small3_tbg(
 	const gxdrawb_t * db,
 	uint_fast16_t x, uint_fast16_t y,
-	char cc
+	char cc,
+	COLORPIP_T fg
 	)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(
+	ltdc_put_char_unified_tbg(
 			S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0],  	// параметры растра со шрифтом
-			db, x, y, ci, SMALLCHARW3);
+			db, x, y, ci, SMALLCHARW3, fg);
 	return x + SMALLCHARW3;
 }
 
-static void
-display_string3(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * s)
-{
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c);
-}
-
 void
-colpip_string3_at_xy(
+display_string3(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
-	const char * __restrict s
+	uint_fast16_t w,
+	uint_fast16_t h,
+	const char * __restrict s,
+	COLORPIP_T fg, COLORPIP_T bg
 	)
 {
 	char c;
 //	ltdc_secondoffs = 0;
 //	ltdc_h = SMALLCHARH3;
+	colpip_rectangle(db, x, y, w, h, bg, FILL_FLAG_NONE);
 	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c);
-}
-
-void
-display_string3_at_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORPIP_T fg, COLORPIP_T bg)
-{
-	colmain_setcolors(fg, bg);
-	display_string3(db, x, y, s);
+		x = ltdc_horizontal_put_char_small3_tbg(db, x, y, c, fg);
 }
 
 #endif /* SMALLCHARH3 */
@@ -1388,6 +1319,9 @@ rendered_value_big(const gxdrawb_t * db,
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = render_wrdatabig_begin(db, xcell, ycell, & ypix);
+	const uint_fast16_t w = GRID2X(xspan);
+	const uint_fast16_t h = GRID2Y(yspan);
+	//colpip_rectangle(db, xpix, ypix, w, h, ltdc_bg, FILL_FLAG_NONE);
 	pix_rendered_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf);
 	render_wrdatabig_end(db);
 }
@@ -1416,6 +1350,9 @@ display_value_lower(const gxdrawb_t * db,
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdatabig_begin(db, xcell, ycell, & ypix);
+	const uint_fast16_t w = GRID2X(xspan);
+	const uint_fast16_t h = GRID2Y(yspan);
+	colpip_rectangle(db, xpix, ypix, w, h, ltdc_bg, FILL_FLAG_NONE);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);

@@ -647,13 +647,6 @@ void hwaccel_ra90(
 	const gxdrawb_t * sdb	// источник
 	);
 
-// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-void ltdc_horizontal_pixels(
-	PACKEDCOLORPIP_T * tgr,		// target raster
-	const uint8_t * raster,
-	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
-	);
-
 // Установить прозрачность для прямоугольника
 void display_transparency(const gxdrawb_t * db,
 	uint_fast16_t x1, uint_fast16_t y1,
@@ -680,7 +673,16 @@ uint_fast8_t smallfont_width(char cc);
 uint_fast8_t smallfont2_width(char cc);
 uint_fast8_t smallfont3_width(char cc);
 
-void display_string3_at_xy(const gxdrawb_t * db,uint_fast16_t x, uint_fast16_t y, const char * s, COLORPIP_T fg, COLORPIP_T bg);
+void
+display_string3(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	uint_fast16_t w,
+	uint_fast16_t h,
+	const char * __restrict s,
+	COLORPIP_T fg, COLORPIP_T bg
+	);
 
 void colpip_line(
 	const gxdrawb_t * db,
