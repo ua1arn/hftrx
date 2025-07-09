@@ -223,8 +223,7 @@ void display_clear(const gxdrawb_t * db);	// Заполниить цветом �
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 
 // полоса индикатора - рисуется display_bar
-uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-void display_wrdatabar_end(const gxdrawb_t * db);
+uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 
 // Заполнение буфера сполшным цветом
 // Эта функция используется только в тесте
@@ -341,7 +340,7 @@ uint_fast16_t strheight(
 	);
 
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
-// display_wrdatabar_begin() и display_wrdatabar_end().
+// display_wrdata_begin() и display_wrdatabar_end().
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -360,6 +359,14 @@ void display_bar(
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan);		// Выдача строки из ОЗУ в указанное место экрана.
 
 
+// большие и средние цифры (частота)
+uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg);
+uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg);
+// большие и средние цифры (частота)
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
+
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -368,15 +375,6 @@ void display_swrmeter(const gxdrawb_t * db,
 	uint_fast16_t minforward
 	);
 
-/* заполнение прямоугольника на основном экране произвольным цветом
-*/
-void
-display_fillrect(
-	const gxdrawb_t * db,
-	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
-	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
-	COLORPIP_T color
-	);
 /* рисование линии на основном экране произвольным цветом
 */
 void

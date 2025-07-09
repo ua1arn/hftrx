@@ -34,33 +34,15 @@ uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fa
 	return GRID2X(x);
 }
 
-void
-display_wrdata_end(const gxdrawb_t * db)
-{
-}
 
-uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
-{
-	* yp = GRID2Y(y);
-	return GRID2X(x);
-}
-
-void
-display_wrdatabar_end(const gxdrawb_t * db)
-{
-}
-
-
-/* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_big_tbg(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c)
+display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg)
 {
 	return xpix + 1;
 }
 
-/* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_half_tbg(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c)
+display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg)
 {
 	return xpix + 1;
 }
@@ -76,16 +58,6 @@ display_reset(void)
 /* Разряжаем конденсаторы питания */
 void display_uninitialize(void)
 {
-}
-
-
-// Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
-// Используется при выводе на графический ндикатор, если ТРЕБУЕТСЯ переключать полосы отображения
-uint_fast16_t
-display_put_char_small2(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc)
-{
-	(void) cc;
-	return xpix;
 }
 
 #endif /* LCDMODE_DUMMY */

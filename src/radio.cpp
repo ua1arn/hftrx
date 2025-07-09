@@ -16040,25 +16040,6 @@ processcatmsg(
 	else
 	{
 		// нераспознанная команда - ожидание следующей.
-#if 0
-		// печать информации о принятой команде
-		uint_fast16_t y;
-		uint_fast16_t x;
-		x = display_wrdata_begin(0, 1, & y);
-		x = display_wrdata_fast(x, y, catcommand1 & 0x7f);
-		x = display_wrdata_fast(x, y, catcommand2 & 0x7f);
-		display_wrdata_end();
-
-		if (cathasparam)
-			display_menu_digit(colmain_fb_draw(), catparam, 7, 0, 0);
-		else
-		{
-			display_wrdata_begin();
-			display_wrdata_fast(';');
-			display_wrdata_end();
-		}
-		//local_delay_ms(500);
-#endif
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 
