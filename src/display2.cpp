@@ -8981,7 +8981,7 @@ static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 
 litehtml::uint_ptr hftrxgd::create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm)
 {
-	PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
+	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
 		fm->font_size = 12; //?????size;
