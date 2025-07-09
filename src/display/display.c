@@ -202,7 +202,7 @@ void RAMFUNC ltdc_horizontal_pixels(
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
-static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
+static void RAMFUNC ltdc_horizontal_pixels_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
@@ -225,21 +225,24 @@ static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
 	}
 	if (w != 0)
 	{
-		uint_fast8_t vlast = * raster;
-		do
+		const uint_fast8_t v = * raster;
+		switch (w)
 		{
-			if (vlast & 0x01)
-				* tgr = fg;
-			++ tgr;
-			vlast >>= 1;
-		} while (-- w);
+		case 7: if (v & 0x01) * tgr = fg; ++ tgr;
+		case 6: if (v & 0x02) * tgr = fg; ++ tgr;
+		case 5: if (v & 0x04) * tgr = fg; ++ tgr;
+		case 4: if (v & 0x08) * tgr = fg; ++ tgr;
+		case 3: if (v & 0x10) * tgr = fg; ++ tgr;
+		case 2: if (v & 0x20) * tgr = fg; ++ tgr;
+		case 1: if (v & 0x40) * tgr = fg; ++ tgr;
+		}
 	}
 }
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 // удвоенный по ширине растр
-static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
+static void RAMFUNC ltdc_horizontal_x2_pixels_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
@@ -434,7 +437,7 @@ static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast1
 // return new x coordinate
 static uint_fast16_t
 RAMFUNC_NONILINE
-ltdcmain_horizontal_put_char_small(
+ltdc_horizontal_put_char_small(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,
 	uint_fast16_t dy,
@@ -473,7 +476,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small_tbg(
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		ltdc_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
 }
@@ -495,9 +498,9 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
 	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr0 = colpip_mem_at(db, x, y + cgrow * 2 + 0);
-		ltdcmain_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		ltdc_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 		PACKEDCOLORPIP_T * const tgr1 = colpip_mem_at(db, x, y + cgrow * 2 + 1);
-		ltdcmain_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
+		ltdc_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width * 2;
 }
@@ -522,7 +525,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
 	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
+		ltdc_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
 }
@@ -546,7 +549,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
 	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdcmain_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
+		ltdc_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width;
 }
