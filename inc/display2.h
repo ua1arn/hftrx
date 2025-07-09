@@ -135,21 +135,6 @@ uint_fast16_t normalize(
 
 #define BGCOLOR (display2_getbgcolor())
 
-void display_2states(const gxdrawb_t * db,
-		uint_fast8_t xcell,
-		uint_fast8_t ycell,
-		uint_fast8_t state,
-		const char * state1,	// активное
-		const char * state0,
-		uint_fast8_t width
-		);
-// параметры, не меняющие состояния цветом
-void display_1state(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const char * label
-	);
-
 // FUNC menu
 
 void display_2fmenus(const gxdrawb_t * db,

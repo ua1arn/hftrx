@@ -2721,48 +2721,7 @@ void display2_swrsts(const gxdrawb_t * db,
 
 }
 
-
-// отображение состояния USB BT
-static void display2_btsts2(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-#if WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
-	const uint_fast8_t active = hamradio_get_usbbth_active();
-	#if LCDMODE_COLORED
-		static const char text_bt [] = "BT";
-		display_2states(db, x, y, active, text_bt, text_bt, xspan);
-	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? "BT" : "", xspan);
-	#endif /* LCDMODE_COLORED */
-#endif /* WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
-}
-
-// отображение состояния USB HOST
-static void display2_usbsts3(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
-	const uint_fast8_t active = hamradio_get_usbmsc_active();
-	#if LCDMODE_COLORED
-		static const char text_usb [] = "USB";
-		display_2states(db, x, y, active, text_usb, text_usb, xspan);
-	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), xspan);
-	#endif /* LCDMODE_COLORED */
-#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-}
-
-void display_2states(const gxdrawb_t * db,
+static void display_2states(const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	uint_fast8_t state,
@@ -2779,7 +2738,7 @@ void display_2states(const gxdrawb_t * db,
 #if 0
 	const uint_fast16_t x = GRID2X(xcell);
 	const uint_fast16_t y = GRID2Y(ycell);
-	const uint_fast16_t w = SMALLCHARW * strlen(state1);
+	const uint_fast16_t w = SMALLCHARW * xspan;
 	const uint_fast16_t h = SMALLCHARH;
 
 	display2_text(db, xcell, ycell, labels, colors_2state, 1, xspan);
@@ -2797,7 +2756,7 @@ void display_2states(const gxdrawb_t * db,
 }
 
 // Параметры, не меняющие состояния цветом
-void display_1state(const gxdrawb_t * db,
+static void display_1state(const gxdrawb_t * db,
 	uint_fast8_t x, 
 	uint_fast8_t y, 
 	const char * label,
@@ -2889,6 +2848,47 @@ void display2_midvalue(const gxdrawb_t * db,
 	uint_fast8_t section;
 	for (section = 0; section < 8; ++ section)
 		display2_midvalueX(db, x + CHARS2GRID(6) * section, y, pctx, section, width);
+}
+
+
+// отображение состояния USB BT
+static void display2_btsts2(const gxdrawb_t * db,
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+#if WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+	const uint_fast8_t active = hamradio_get_usbbth_active();
+	#if LCDMODE_COLORED
+		static const char text_bt [] = "BT";
+		display_2states(db, x, y, active, text_bt, text_bt, xspan);
+	#else /* LCDMODE_COLORED */
+		display_text(db, x, y, active ? "BT" : "", xspan);
+	#endif /* LCDMODE_COLORED */
+#endif /* WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
+}
+
+// отображение состояния USB HOST
+static void display2_usbsts3(const gxdrawb_t * db,
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	const uint_fast8_t active = hamradio_get_usbmsc_active();
+	#if LCDMODE_COLORED
+		static const char text_usb [] = "USB";
+		display_2states(db, x, y, active, text_usb, text_usb, xspan);
+	#else /* LCDMODE_COLORED */
+		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), xspan);
+	#endif /* LCDMODE_COLORED */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
 
 //////////////
