@@ -81,7 +81,7 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 		if (pd->qrj == RJ_SMETER)
 			lv_dropdown_set_options(dd, "BARS\n" "DIAL");
 		else if (pd->qrj == RJ_TXAUDIO)
-			for (int i = 0; i < TXAUDIOSRC_COUNT; i ++)
+			for (unsigned int i = 0; i < TXAUDIOSRC_COUNT; i ++)
 				lv_dropdown_add_option(dd, txaudiosrcs[i].label, LV_DROPDOWN_POS_LAST);
 		else if (pd->qrj == RJ_SMETER)
 			for (int i = 0; i < VIEW_count; i ++)
