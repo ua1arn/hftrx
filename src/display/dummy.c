@@ -30,8 +30,8 @@ colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 
 uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
-	* yp = GRID2Y(y);
-	return GRID2X(x);
+	* yp = 0;
+	return 0;
 }
 
 
