@@ -214,8 +214,7 @@ R"##(
 <style>
  #id1 { position:absolute; left:0px; top:0px; width:144px; height:20px; }
  #id2 { position:absolute; left:160px; top:0px; width:144px; height:20px; }
- #id3x { position:absolute; left:320px; top:0px; width:64px; height:20px; }
- #id3 { z-index:999; position:absolute; left:400px; top:120px; width:120px; height:90px; }
+ #id3 { position:absolute; left:320px; top:0px; width:64px; height:20px; }
  #id4 { position:absolute; left:400px; top:0px; width:48px; height:20px; }
  #id5 { position:absolute; left:496px; top:0px; width:144px; height:20px; }
  #id6 { position:absolute; left:656px; top:0px; width:144px; height:20px; }
@@ -232,7 +231,8 @@ R"##(
  #id19 { position:absolute; left:384px; top:100px; width:192px; height:20px; }
  #id20 { position:absolute; left:592px; top:100px; width:48px; height:20px; }
  #id21 { position:absolute; left:656px; top:100px; width:48px; height:20px; }
- #id22 { position:absolute; left:16px; top:125px; width:80px; height:20px; }
+ #id22 { position:absolute; left:0px; top:125px; width:80px; height:20px; }
+ #id23 { position:absolute; left:96px; top:125px; width:80px; height:20px; }
  #id24 { position:absolute; left:224px; top:125px; width:64px; height:20px; }
  #id25 { position:absolute; left:304px; top:125px; width:80px; height:20px; }
  #id26 { position:absolute; left:400px; top:125px; width:48px; height:20px; }
@@ -240,77 +240,53 @@ R"##(
  #id28 { position:absolute; left:592px; top:125px; width:48px; height:20px; }
  #id29 { position:absolute; left:656px; top:125px; width:48px; height:20px; }
  #id30 { position:absolute; left:720px; top:125px; width:64px; height:20px; }
- #id31 { position:absolute; left:592px; top:150px; width:128px; height:20px; }
+ #id31 { position:absolute; left:0px; top:150px; width:800px; height:20px; }
+ #id32 { position:absolute; left:0px; top:175px; width:800px; height:20px; }
+ #id35 { position:absolute; left:0px; top:200px; width:800px; height:250px; }
  #id36 { position:absolute; left:0px; top:455px; width:192px; height:20px; }
+ #id37 { position:absolute; left:368px; top:455px; width:64px; height:20px; }
  #id38 { position:absolute; left:448px; top:455px; width:48px; height:20px; }
- #id39 { position:absolute; left:512px; top:455px; width:112px; height:20px; }
- .on { background-color:red; color:white; visibility:visible; }
- .off { background-color:green; color:black; visibility:hidden; }
+ #id39 { position:absolute; left:512px; top:455px; width:32px; height:20px; }
+ #id40 { position:absolute; left:560px; top:455px; width:112px; height:20px; }
 </style>
 </head>
 <body style="background-color:orange;">
- <div id="id1" class="on">WWWWWWWWW</div>
- <div id="id2" class="on">WWWWWWWWW</div>
- <div id="id3x" class="on off">WWWW</div>
- <div id="id3sssss" class="on off">Menu</div>
-<div id="id3" class="on off">
-    <div class="menu-head">Select band</div>
-    <table style="width: 100%">
-        <tr>
-            <td><div class="menu-click">160m</div></td>
-            <td><div class="menu-click">80m</div></td>
-            <td><div class="menu-click">40m</div></td>
-            <td><div class="menu-click">30m</div></td>
-        </tr>
-        <tr>
-            <td><div class="menu-click">20m</div></td>
-            <td><div class="menu-click on">17m</div></td>
-            <td><div class="menu-click">15m</div></td>
-            <td><div class="menu-click">12m</div></td>
-        </tr>
-        <tr>
-            <td><div class="menu-click">10m</div></td>
-            <td><div class="menu-click">6m</div></td>
-            <td><div class="menu-click">2m</div></td>
-            <td><div class="menu-click">70cm</div></td>
-        </tr>
-        <tr>
-            <td><div class="menu-click">23cm</div></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
-</div>
-
- <div id="id4" style="background-color:blue; color:black;">WWW</div>
- <div id="id5" style="background-color:blue; color:black;">WWWWWWWWW</div>
- <div id="id6" style="background-color:blue; color:black;">WWWWWWWWW</div>
- <div id="id8" style="background-color:blue; color:black;">WWWWWWWWWWWWWWW</div>
- <div id="id10" style="background-color:blue; color:black;">WWWWWWWWWWWWWWWWWWWWW</div>
- <div id="id11" style="background-color:blue; color:black;">WWW</div>
- <div id="id12" style="background-color:blue; color:black;">WWW</div>
- <div id="id13" style="background-color:blue; color:black;">WWW</div>
- <div id="id14" style="background-color:blue; color:black;">WWW</div>
- <div id="id15" style="background-color:blue; color:black;">WWW</div>
- <div id="id16" style="background-color:blue; color:black;">WWWWW</div>
- <div id="id17" style="background-color:blue; color:black;">WWW</div>
- <div id="id18" style="background-color:blue; color:black;">WWW</div>
- <div id="id19" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
- <div id="id20" style="background-color:blue; color:black;">WWW</div>
- <div id="id21" style="background-color:blue; color:black;">WWW</div>
- <div id="id22" style="background-color:blue; color:black;">WWWWW</div>
- <div id="id24" style="background-color:blue; color:black;">WWWW</div>
- <div id="id25" style="background-color:blue; color:black;">WWWWW</div>
- <div id="id26" style="background-color:blue; color:black;">WWW</div>
- <div id="id27" style="background-color:blue; color:black;">WWW</div>
- <div id="id28" style="background-color:blue; color:black;">WWW</div>
- <div id="id29" style="background-color:blue; color:black;">WWW</div>
- <div id="id30" style="background-color:blue; color:black;">WWWW</div>
- <div id="id31" style="background-color:blue; color:black;">WWWWWWWW</div>
- <div id="id36" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
- <div id="id38" style="background-color:blue; color:black;">WWW</div>
- <div id="id39" style="background-color:blue; color:black;">WWWWWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="ant" style="background-color:blue; color:black;">WWWW</div>
+ <div id="ant" style="background-color:blue; color:black;">WWW</div>
+ <div id="compat" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">WWWWWWWWWWWWWWW</div>
+ <div id="freq-a" style="background-color:blue; color:black;">WWWWWWWWWWWWWWWWWWWWW</div>
+ <div id="mode-a" style="background-color:blue; color:black;">WWW</div>
+ <div id="rxbw" style="background-color:blue; color:black;">WWW</div>
+ <div id="agc" style="background-color:blue; color:black;">WWW</div>
+ <div id="nr" style="background-color:blue; color:black;">WWW</div>
+ <div id="datamode" style="background-color:blue; color:black;">WWW</div>
+ <div id="notch" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">WWW</div>
+ <div id="vfomode" style="background-color:blue; color:black;">WWW</div>
+ <div id="freq-b" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
+ <div id="mode-b" style="background-color:blue; color:black;">WWW</div>
+ <div id="voxtune" style="background-color:blue; color:black;">WWW</div>
+ <div id="voltlevel" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="currlevel" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="rxbwval" style="background-color:blue; color:black;">WWWW</div>
+ <div id="ant" style="background-color:blue; color:black;">WWWWW</div>
+ <div id="byp" style="background-color:blue; color:black;">WWW</div>
+ <div id="rec" style="background-color:blue; color:black;">WWW</div>
+ <div id="spk" style="background-color:blue; color:black;">WWW</div>
+ <div id="bkin" style="background-color:blue; color:black;">WWW</div>
+ <div id="lock" style="background-color:blue; color:black;">WWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">             WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</div>
+ <div id="compat" style="background-color:blue; color:black;">             WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</div>
+ <div id="gcombo" style="background-color:blue; color:black;">             WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</div>
+ <div id="datetime12" style="background-color:blue; color:black;">WWWWWWWWWWWW</div>
+ <div id="thermo" style="background-color:blue; color:black;">WWWW</div>
+ <div id="usbact" style="background-color:blue; color:black;">WWW</div>
+ <div id="bt" style="background-color:blue; color:black;">WW</div>
+ <div id="classa" style="background-color:blue; color:black;">WWWWWWW</div>
 </body>
 </html>
 )##";

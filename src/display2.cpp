@@ -9205,7 +9205,7 @@ void hftrxgd::get_client_rect(litehtml::position &client) const
 }
 void hftrxgd::get_viewport(litehtml::position& viewport) const
 {
-	ASSERT(0);
+	//ASSERT(0);
 }
 
 #if 0
@@ -9892,8 +9892,8 @@ void display2_initialize(void)
 					continue;
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
-				PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
-						(int) i,
+				PRINTF(" <div id=\"%s\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+						dzp->dzip->id,
 						dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 						);
 			}
