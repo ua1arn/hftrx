@@ -9892,8 +9892,8 @@ void display2_initialize(void)
 					continue;
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
-				PRINTF(" <div id=\"%s\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
-						dzp->dzip->id,
+				PRINTF(" <div id=\"%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+						(int) i,
 						dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 						);
 			}
